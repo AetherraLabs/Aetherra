@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 SPDX-License-Identifier: GPL-3.0-or-later
 SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
-🚀 AETHERRA AI OPERATING SYSTEM - MAIN ENTRY POINT
+[LAUNCH] AETHERRA AI OPERATING SYSTEM - MAIN ENTRY POINT
 ==================================================
 
 Licensed under GNU General Public License v3.0
@@ -51,17 +52,17 @@ if str(PROJECT_ROOT) not in sys.path:
 
 def launch_hybrid_interface():
     """Launch the designated Aetherra GUI interface and start OS backend"""
-    print("🚀 Starting Aetherra AI Operating System with Designated GUI...")
-    print("🖥️ This will:")
-    print("   • Start the Aetherra OS kernel and core systems")
-    print("   • Launch the official Aetherra/gui interface")
-    print("   • Connect to real-time OS data")
-    print("   • Provide neural OS monitoring and control")
+    print("[LAUNCH] Starting Aetherra AI Operating System with Designated GUI...")
+    print("[DESKTOP] This will:")
+    print("   * Start the Aetherra OS kernel and core systems")
+    print("   * Launch the official Aetherra/gui interface")
+    print("   * Connect to real-time OS data")
+    print("   * Provide neural OS monitoring and control")
     print()
 
     # First, start the OS backend systems
     try:
-        print("🔧 Starting Aetherra OS backend services...")
+        print("[TOOL] Starting Aetherra OS backend services...")
         import asyncio
         import threading
 
@@ -81,10 +82,10 @@ def launch_hybrid_interface():
         import time
 
         time.sleep(3)
-        print("✅ Aetherra OS backend started")
+        print("[OK] Aetherra OS backend started")
 
     except Exception as e:
-        print(f"⚠️ OS backend start warning: {e}")
+        print(f"[WARN] OS backend start warning: {e}")
         print("Continuing with GUI launch...")
 
     # Now launch the designated GUI
@@ -99,7 +100,7 @@ def launch_hybrid_interface():
 
         return gui_main()
     except ImportError as e:
-        print(f"❌ Failed to import official Aetherra GUI: {e}")
+        print(f"[ERROR] Failed to import official Aetherra GUI: {e}")
         print("📁 Make sure Aetherra/gui/aetherra_enhanced_neural_os.py exists")
         print("[TOOL] Make sure PySide6 is installed: pip install PySide6")
         return 1
@@ -112,7 +113,7 @@ def launch_web_interface():
 
         return start_web_interface()
     except ImportError as e:
-        print(f"❌ Failed to import web interface: {e}")
+        print(f"[ERROR] Failed to import web interface: {e}")
         return 1
 
 
@@ -123,25 +124,25 @@ def launch_gui_interface():
 
 def show_system_info():
     """Show system information and available interfaces"""
-    print("🤖 AETHERRA AI OPERATING SYSTEM")
+    print("[BOT] AETHERRA AI OPERATING SYSTEM")
     print("=" * 40)
-    print("🖥️ Available Interfaces:")
-    print("  • hybrid - PySide6 + Web hybrid interface (recommended)")
-    print("  • web    - Web-only interface")
-    print("  • gui    - GUI interface (alias for hybrid)")
+    print("[DESKTOP] Available Interfaces:")
+    print("  * hybrid - PySide6 + Web hybrid interface (recommended)")
+    print("  * web    - Web-only interface")
+    print("  * gui    - GUI interface (alias for hybrid)")
     print()
-    print("🧠 Core Features:")
-    print("  • Real-time AI system monitoring")
-    print("  • Quantum memory visualization")
-    print("  • Agent ecosystem management")
-    print("  • Consciousness state tracking")
-    print("  • Live cognitive metrics")
+    print("[BRAIN] Core Features:")
+    print("  * Real-time AI system monitoring")
+    print("  * Quantum memory visualization")
+    print("  * Agent ecosystem management")
+    print("  * Consciousness state tracking")
+    print("  * Live cognitive metrics")
     print()
     print("📁 Project Structure:")
-    print("  • Aetherra/GUI/           - Official Aetherra OS GUI interface")
-    print("  • Aetherra/aetherra_core/ - Core Aetherra memory & processing engines")
-    print("  • Aetherra/gui/          - Web interface server")
-    print("  • Aetherra/plugins/      - Plugin ecosystem & management")
+    print("  * Aetherra/GUI/           - Official Aetherra OS GUI interface")
+    print("  * Aetherra/aetherra_core/ - Core Aetherra memory & processing engines")
+    print("  * Aetherra/gui/          - Web interface server")
+    print("  * Aetherra/plugins/      - Plugin ecosystem & management")
     print()
 
 
@@ -176,8 +177,8 @@ Examples:
         show_system_info()
         return 0
 
-    print("🤖 AETHERRA AI OPERATING SYSTEM")
-    print(f"🚀 Launching {args.interface} interface...")
+    print("[BOT] AETHERRA AI OPERATING SYSTEM")
+    print(f"[LAUNCH] Launching {args.interface} interface...")
     print("=" * 40)
 
     if args.interface == "hybrid":
@@ -187,7 +188,7 @@ Examples:
     elif args.interface == "gui":
         return launch_gui_interface()
     else:
-        print(f"❌ Unknown interface type: {args.interface}")
+        print(f"[ERROR] Unknown interface type: {args.interface}")
         return 1
 
 
