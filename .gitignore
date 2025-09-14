@@ -167,6 +167,7 @@ reports/
 cleanup_report.json
 *audit*.json
 *report*.json
+docs/docs_architecture_report.json  # Ephemeral generated docs architecture scan (not versioned)
 
 # Backup files
 backups/

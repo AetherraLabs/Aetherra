@@ -12,11 +12,13 @@ of various Aetherra subsystems.
 """
 
 import asyncio
+import contextlib
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -48,15 +50,15 @@ class ScheduledTask:
     name: str
     func: Callable
     args: tuple = ()
-    kwargs: Optional[dict] = None
+    kwargs: dict | None = None
     priority: TaskPriority = TaskPriority.NORMAL
-    interval: Optional[float] = None  # For recurring tasks
-    next_run: Optional[datetime] = None
+    interval: float | None = None  # For recurring tasks
+    next_run: datetime | None = None
     status: TaskStatus = TaskStatus.PENDING
-    created_at: Optional[datetime] = None
-    last_run: Optional[datetime] = None
+    created_at: datetime | None = None
+    last_run: datetime | None = None
     run_count: int = 0
-    max_runs: Optional[int] = None
+    max_runs: int | None = None
 
     def __post_init__(self):
         if self.kwargs is None:
@@ -76,9 +78,9 @@ class AetherraScheduler:
     """
 
     def __init__(self):
-        self.tasks: Dict[str, ScheduledTask] = {}
+        self.tasks: dict[str, ScheduledTask] = {}
         self.running = False
-        self._scheduler_task: Optional[asyncio.Task] = None
+        self._scheduler_task: asyncio.Task | None = None
         self._task_counter = 0
 
     async def start(self):
@@ -102,26 +104,24 @@ class AetherraScheduler:
 
         if self._scheduler_task:
             self._scheduler_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._scheduler_task
-            except asyncio.CancelledError:
-                pass
 
         logger.info("[OK] Aetherra Scheduler stopped")
 
+    # --- Public task management API ---
     def schedule_task(
         self,
         name: str,
         func: Callable,
         args: tuple = (),
-        kwargs: Optional[Dict[str, Any]] = None,
+        kwargs: dict[str, Any] | None = None,
         priority: TaskPriority = TaskPriority.NORMAL,
         delay: float = 0,
-        interval: Optional[float] = None,
-        max_runs: Optional[int] = None,
+        interval: float | None = None,
+        max_runs: int | None = None,
     ) -> str:
-        """
-        Schedule a task for execution.
+        """Schedule a task for execution.
 
         Args:
             name: Human-readable task name
@@ -166,12 +166,12 @@ class AetherraScheduler:
             return True
         return False
 
-    def get_task_status(self, task_id: str) -> Optional[TaskStatus]:
+    def get_task_status(self, task_id: str) -> TaskStatus | None:
         """Get the status of a task."""
         task = self.tasks.get(task_id)
         return task.status if task else None
 
-    def list_tasks(self) -> List[Dict[str, Any]]:
+    def list_tasks(self) -> list[dict[str, Any]]:
         """List all tasks with their status."""
         task_list = []
         for task in self.tasks.values():
@@ -190,6 +190,7 @@ class AetherraScheduler:
 
         return task_list
 
+    # --- Internal execution loop ---
     async def _scheduler_loop(self):
         """Main scheduler loop."""
         logger.info("[LOOP] Scheduler loop started")
@@ -201,7 +202,7 @@ class AetherraScheduler:
 
             except asyncio.CancelledError:
                 break
-            except Exception as e:
+            except Exception as e:  # pragma: no cover - defensive
                 logger.error(f"[ERROR] Error in scheduler loop: {e}")
                 await asyncio.sleep(5)  # Wait before retrying
 
@@ -219,14 +220,13 @@ class AetherraScheduler:
             ):
                 ready_tasks.append(task)
 
-        # Sort by priority
+        # Sort by priority (higher value first)
         ready_tasks.sort(key=lambda t: t.priority.value, reverse=True)
 
         # Execute ready tasks
         for task in ready_tasks:
             if not self.running:
                 break
-
             await self._execute_task(task)
 
     async def _execute_task(self, task: ScheduledTask):
@@ -237,12 +237,11 @@ class AetherraScheduler:
             task.last_run = datetime.now()
             task.run_count += 1
 
-            # Execute the task function
             kwargs_to_use = task.kwargs or {}
             if asyncio.iscoroutinefunction(task.func):
-                result = await task.func(*task.args, **kwargs_to_use)
+                await task.func(*task.args, **kwargs_to_use)
             else:
-                result = task.func(*task.args, **kwargs_to_use)
+                task.func(*task.args, **kwargs_to_use)
 
             task.status = TaskStatus.COMPLETED
             logger.debug(f"[OK] Task '{task.name}' completed")
@@ -254,18 +253,16 @@ class AetherraScheduler:
                 logger.debug(
                     f"[LOOP] Rescheduled recurring task '{task.name}' for {task.next_run}"
                 )
-
-        except Exception as e:
+        except Exception as e:  # pragma: no cover - defensive
             task.status = TaskStatus.FAILED
             logger.error(f"[ERROR] Task '{task.name}' failed: {e}")
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get scheduler status information."""
-        task_counts = {}
-        for status in TaskStatus:
-            task_counts[status.value] = sum(
-                1 for t in self.tasks.values() if t.status == status
-            )
+        task_counts = {
+            status.value: sum(1 for t in self.tasks.values() if t.status == status)
+            for status in TaskStatus
+        }
 
         return {
             "running": self.running,
@@ -274,19 +271,16 @@ class AetherraScheduler:
             "next_task": self._get_next_task_info(),
         }
 
-    def _get_next_task_info(self) -> Optional[Dict[str, Any]]:
+    def _get_next_task_info(self) -> dict[str, Any] | None:
         """Get information about the next task to run."""
         pending_tasks = [
             t
             for t in self.tasks.values()
             if t.status == TaskStatus.PENDING and t.next_run is not None
         ]
-
         if not pending_tasks:
             return None
-
         next_task = min(pending_tasks, key=lambda t: t.next_run)  # type: ignore
-
         return {
             "id": next_task.task_id,
             "name": next_task.name,
@@ -295,8 +289,15 @@ class AetherraScheduler:
         }
 
 
+# Backwards-compatible alias expected by tests importing `Scheduler`
+class Scheduler(AetherraScheduler):
+    """Compatibility alias class (no additional behavior)."""
+
+    pass
+
+
 # Default scheduler instance
-_default_scheduler: Optional[AetherraScheduler] = None
+_default_scheduler: AetherraScheduler | None = None
 
 
 async def get_scheduler() -> AetherraScheduler:
@@ -328,7 +329,7 @@ async def cancel_task(task_id: str) -> bool:
     return scheduler.cancel_task(task_id)
 
 
-async def list_tasks() -> List[Dict[str, Any]]:
+async def list_tasks() -> list[dict[str, Any]]:
     """List all tasks using the default scheduler."""
     scheduler = await get_scheduler()
     return scheduler.list_tasks()

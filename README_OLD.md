@@ -1,0 +1,510 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+# Aetherra
+
+> AI-native development environment (Beta). Version: **0.5.0-beta.0**
+
+![Status](https://img.shields.io/badge/Status-BETA-blue)
+![Version](https://img.shields.io/badge/Version-0.5.0--beta.0-0891b2)
+![License](https://img.shields.io/badge/License-GPLv3-0891b2)
+![Language](https://img.shields.io/badge/Language-Python%20%2B%20Aetherra-8b5cf6)
+![Responsible AI](https://img.shields.io/badge/Responsible%20AI-Policies%20Published-22c55e)
+![Aether Script Signatures CI](https://github.com/AetherraLabs/Aetherra/actions/workflows/aether-verify-signatures.yml/badge.svg)
+![Aether Risk](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/AetherraLabs/Aetherra/main/badge/aether_risk.json)
+
+Aetherra pairs a lightweight Hub (APIs + metrics) with the Lyrixa AI assistant, pluggable memory systems, an intent‑driven workflow language (`.aether`), and first-class observability. Now in **public Beta**: core surfaces are stabilizing while certain subsystems (trainer persistence, federation) remain in-progress. See `BETA_READINESS_REPORT.md` for evidence and `ROADMAP.md` for trajectory.
+
+## What Makes Aetherra Unique
+
+| Dimension              | Aetherra Approach                                | Why It Matters                      |
+| ---------------------- | ------------------------------------------------ | ----------------------------------- |
+| Integrity              | Signed `.aether` workflows (plugins next)        | Trust & audit trail for automation  |
+| Memory                 | Persistent + quantum-augmented (QFAC) layers     | Rich recall & experimentation       |
+| Observability          | Prometheus-first metrics for every subsystem     | Debug & capacity planning early     |
+| Resilience             | Deterministic fallbacks (offline/local provider) | Predictable under outage/quota      |
+| Capability Enforcement | Runtime reinforcement of intelligence flags      | Prevents silent regression          |
+| Lifecycle Tests        | 32 capability tests incl. plugin reload          | Evidence-backed stability           |
+| Extensibility          | Plugin chain executor (sequential today)         | Composable augmentation surface     |
+| Governance             | License policy & ownership memory                | Attribution & compliance continuity |
+
+Quick links: [`INSTALL.md`](INSTALL.md) · [`ROADMAP.md`](ROADMAP.md) · [`CHANGELOG.md`](CHANGELOG.md) · [`SECURITY.md`](SECURITY.md) · [`Security: Production‑Safe Defaults`](SECURITY.md#production-safe-defaults-hub-developer-ai-api) · [`BETA_READINESS_REPORT.md`](BETA_READINESS_REPORT.md) · [`Developer Onboarding`](docs/DEVELOPER_ONBOARDING.md) · [`QFAC Policy`](docs/QFAC_POLICY.md)
+
+### Local Security Scanning (Bandit + pip-audit)
+
+Run combined static + dependency vulnerability scan producing SARIF artifacts (`bandit.sarif`, `pipaudit.sarif`):
+
+```powershell
+pwsh tools/security_scan.ps1
+```
+
+Behavior:
+
+
+To open SARIF locally (VS Code): install "SARIF Viewer" extension and open the files.
+
+Add to pre-commit (optional excerpt):
+
+```yaml
+        hooks:
+            - id: security-scan
+                name: security-scan
+                entry: pwsh tools/security_scan.ps1
+                language: system
+                pass_filenames: false
+```
+
+
+## Fast Contributor Quality Loop
+
+To reduce friction before pushing, we provide two complementary layers:
+
+1. **Pre-commit hooks** (`.pre-commit-config.yaml`): run signing, legacy import blocks, lint/format (Black, isort), Ruff (lint + format), security (Bandit), typing (mypy) and docstyle. Enable with:
+
+```bash
+pip install pre-commit
+pre-commit install --install-hooks
+```
+
+2. **Ultra-fast aggregation script** (`tools/quick_quality_check.ps1`): executes in seconds for a spot check.
+
+```powershell
+pwsh tools/quick_quality_check.ps1          # read-only checks
+pwsh tools/quick_quality_check.ps1 -Fix     # auto-fix formatters
+```
+
+Steps performed:
+
+- Ruff lint + format check
+- Black / isort style verification
+- Minimal targeted pytest (fast schema test) if present
+- Small parse baseline sample (10) for early parse/validation drift signals
+- Small workflow classifier sample (10) to surface systemic runtime errors
+
+3. **Fast CI Gate** (`.github/workflows/ci-fast-quality.yml`): triggers on pushes / PRs touching Python, `.aether`, or config. It mirrors the local quick script and uploads a lightweight parse baseline artifact.
+
+Recommended workflow:
+
+- Run the quick script locally until green.
+- Commit; let fast CI validate; then rely on deeper gates (quality_gates, classifier, parse baseline full) for comprehensive coverage.
+
+## Table of Contents
+
+1. Overview
+1. Core Capabilities (Alpha)
+1. Architecture Snapshot
+1. Quick Start
+1. Metrics & Observability
+1. Alpha Limitations & Road to Beta
+1. Workflow Language (`.aether`)
+1. Development & Tests
+1. Contributing & Community
+1. License & Notices
+
+### Unified Identity & Consciousness (New)
+
+Lyrixa and the Aetherra OS now operate as a single unified identity ("Lyrixa = Aetherra"). The system expresses internal cognition in the first person ("I …") and attaches lightweight tone markers derived from the affect engine and ethics critic when enabled. A rolling narrative layer periodically summarizes salient episodic events and exports:
+
+- `aetherra_consciousness_narrative_coherence` – heuristic topical coherence (0–1)
+- `aetherra_consciousness_identity_coherence` – proportion of recent thought/narrative/action events already in first‑person form (0–1)
+- Workspace + narrative performance histograms (latency + generation time)
+- Candidate / broadcast counters (per-source) and queue size gauge
+
+Self model extensions (see `docs/CONSCIOUSNESS_UNIFIED_IDENTITY.md`):
+
+- `identity.unified_identity`: canonical merged self string
+- `identity.embodiment`: short statement grounding where/what the system “is”
+- `identity.voice_guidelines[]`: style guardrails for responses & narratives
+
+Environment flags:
+
+| Variable                           | Purpose                               | Default                    |
+| ---------------------------------- | ------------------------------------- | -------------------------- |
+| AETHERRA_PROMETHEUS                | Enable consciousness metrics exporter | 0                          |
+| AETHERRA_CONSCIOUSNESS_STREAM      | Emit consciousness stream log / hook  | 0                          |
+| AETHERRA_CONSCIOUSNESS_STREAM_PATH | Override stream log path              | aetherra_consciousness.log |
+| AETHERRA_NARRATIVE_ENABLED         | Enable narrative chapter generation   | 0                          |
+
+Quality gates now enforce presence + numeric bounds of identity coherence when Prometheus metrics are enabled. This provides an auditable signal that first‑person perspective is consistently applied.
+
+Quick check (PowerShell):
+
+```powershell
+$env:AETHERRA_PROMETHEUS='1'; $env:AETHERRA_NARRATIVE_ENABLED='1'; python -c "import time, Aetherra.consciousness.metrics_exporter as m; m.initialize_exporter(); print('metrics active on :9109'); time.sleep(3)"
+curl 'http://localhost:9109/metrics' | Select-String aetherra_consciousness_identity_coherence
+```
+
+If absent, confirm exporter flag and that at least one narrative cycle has executed (identity coherence updates on chapter generation).
+
+---
+\n## 1. Overview
+
+
+**Goal:** Provide an AI-native development surface where code, memory, evaluation, and intelligent assistance unify behind explicit APIs and transparent metrics.
+
+Core design principles:
+
+- Explicit feature gating via environment flags (secure by default)
+- Deterministic fallbacks when upstream models are unavailable
+- Early instrumentation (Prometheus-first) for every new subsystem
+- Human-readable workflow & memory artifacts (auditable evolution)
+
+---
+\n## 2. Core Capabilities (Alpha)
+
+Implemented and test-covered today:
+
+| Area                        | Capability                                      | Notes                                               |
+| --------------------------- | ----------------------------------------------- | --------------------------------------------------- |
+| Chat                        | `/api/lyrixa/chat`, fallback offline generation | Streaming & upstream gated by env flags             |
+| Memory Narratives           | `/api/memory/narratives`                        | Stub narrative list (expands in beta)               |
+| Trainer/Eval (In‑Memory)    | `/api/trainer/*`                                | Simulated jobs + evals; lifecycle + metrics         |
+| Quantum / Coherence Signals | `/metrics`                                      | Gauges & counters for quantum/coherence model stubs |
+| Per-Principal Metrics       | Prometheus labels                               | Per-stream gauge & latency surfaces                 |
+| Workflow Language           | `.aether` signed workflows                      | Signing & static verification tasks                 |
+| Ownership Memory            | Seed + recall tests                             | Ensures identity & attribution continuity           |
+| Safety Surface              | Policy snapshot + redactions                    | Headers + DP/flag disclosure                        |
+
+See CHANGELOG for incremental additions.
+
+---
+\n## 3. Architecture Snapshot
+
+```text
+Hub (Flask) ──► API Routes (chat, trainer, memory, telemetry)
+            └─► Metrics Export (/metrics, Prometheus format)
+
+Lyrixa Core ─► Intelligence facade (multi-provider fallback)
+            └─► Memory Systems (persistent + quantum/QFAC optional)
+
+Trainer/Eval (alpha stub) ─► In‑memory queues + background simulation
+
+Workflow Layer ─► Signed `.aether` specs → execution / validation tasks
+
+Observability ─► aetherra_trainer_*, chat/per-principal, quantum/coherence series
+```
+
+Import conventions: use `aetherra_*` / `lyrixa_*` modules (see `docs/import_map.md`).
+
+---
+\n## 4. Quick Start
+
+Prerequisites: Python 3.11+ (recommended), virtual environment activated.
+
+Clone the repository:
+
+`git clone https://github.com/AetherraLabs/Aetherra.git`
+
+```powershell
+# Clone
+git clone https://github.com/AetherraLabs/Aetherra.git
+cd "Aetherra"
+
+# (Optional) create virtual env
+python -m venv .venv; .\.venv\Scripts\Activate.ps1
+
+# Install (placeholder – adjust when pyproject/req file finalized)
+pip install -r requirements.txt
+
+# Enable chat + streaming (temporary shell scope) THEN run hub (default port 3001)
+$env:AETHERRA_AI_API_ENABLED='1'
+$env:AETHERRA_AI_API_STREAM='1'
+python -m aetherra_hub.compat
+
+# In a second PowerShell, minimal chat call (Invoke-RestMethod handles JSON nicely)
+Invoke-RestMethod -Method Post -Uri 'http://localhost:3001/api/lyrixa/chat' -ContentType 'application/json' -Body '{"message":"hello alpha"}'
+
+# (Alternative quick inline Python if you prefer):
+python - <<'PY'
+import requests;print(requests.post('http://localhost:3001/api/lyrixa/chat',json={'message':'hello alpha'}).json())
+PY
+```
+
+Ultra-Quick (one command, auto-env + run + sample request):
+
+```powershell
+python tools/dev_quickstart.py --auto-chat
+```
+
+This helper will:
+
+1. Export chat env flags (if not already set)
+2. Start the Hub on port 3001
+3. Perform a test POST to `/api/lyrixa/chat` and print the JSON response
+4. Remind you how to stream or view metrics
+
+Expected minimal JSON response shape (fields may evolve in alpha):
+
+```json
+{
+    "ok": true,
+    "result": {
+        "response": "hello alpha (offline stub)",
+        "session_id": "...",
+        "timestamp": "2025-09-06T12:34:56.789012",
+        "relevant_memories_count": 0,
+        "confidence_breakdown": {
+            "model": 0.5,
+            "grounding": 0.5,
+            "coherence": 0.5,
+            "safety": 1.0
+        }
+    }
+}
+```
+
+Basic streaming (Server-Sent Events) when `AETHERRA_AI_API_STREAM=1`:
+
+```powershell
+$env:AETHERRA_AI_API_ENABLED='1'; $env:AETHERRA_AI_API_STREAM='1'
+python -m aetherra_hub.compat
+
+# In another shell use curl to watch events (Windows curl supports --no-buffer)
+curl --no-buffer -X POST -H "Content-Type: application/json" ^
+    http://localhost:3001/api/ai/stream ^
+    -d '{"message":"test streaming"}'
+```
+
+Docker quick start (build dev image, run hub, probe chat + metrics):
+
+```powershell
+./tools/docker_quickstart.ps1
+```
+
+Minimal docker-compose snippet (future refinement) — save as `docker-compose.yml`:
+
+
+```yaml
+services:
+    aetherra:
+        build:
+            context: .
+            target: development
+        image: aetherra-dev:local
+        environment:
+            AETHERRA_AI_API_ENABLED: "1"
+            AETHERRA_AI_API_STREAM: "1"
+        ports:
+            - "3001:3001"
+    command: ["python", "-m", "aetherra_hub.compat"]
+```
+
+### Demo Endpoint Shapes (Beta Snapshot)
+
+Representative minimal responses (fields may expand):
+
+Chat (`POST /api/lyrixa/chat`):
+
+```json
+{"ok": true, "result": {"response": "hello beta (offline stub)", "session_id": "...", "timestamp": "2025-09-07T00:00:00Z"}}
+```
+
+Memory Narratives (`GET /api/memory/narratives`):
+
+```json
+{"ok": true, "narratives": [{"id":"seed","title":"Seed Narrative","summary":"Narrative stub"}]}
+```
+
+Trainer Jobs (`POST /api/trainer/jobs` then `GET /api/trainer/jobs`):
+
+```json
+{"ok": true, "job_id": "train_20250907_123456_ab12cd34"}
+```
+
+Metrics (excerpt `GET /metrics`):
+
+```text
+aetherra_trainer_enabled 0
+aetherra_trainer_jobs_total 0
+```
+
+Trainer/eval demo (ephemeral):
+
+```powershell
+$env:AETHERRA_TRAINER_ENABLED='1'
+python - <<'PY'
+import requests,time;port=3023
+j=requests.post(f'http://localhost:{port}/api/trainer/jobs',json={'task':'sft'}).json();print(j)
+time.sleep(1)
+print(requests.get(f'http://localhost:{port}/api/trainer/jobs').json())
+print('metrics sample:');print('\n'.join(requests.get(f'http://localhost:{port}/metrics').text.splitlines()[:12]))
+PY
+```
+
+More environment flags and safe defaults: `docs/ALPHA_READINESS.md`.
+
+### Quality Gates & Coverage (New Flags)
+
+| Variable                | Purpose                                                            | Default                   |
+| ----------------------- | ------------------------------------------------------------------ | ------------------------- |
+| GENERATE_PR_DESCRIPTION | Emit `pr_description.md` (or custom path) summarizing gate results | 0                         |
+| PR_DESCRIPTION_PATH     | Output path for generated PR description                           | pr_description.md         |
+| COVERAGE_REPORT_JSON    | Path for structured gate report JSON                               | coverage_gate_report.json |
+| COVERAGE_FILE_RETENTION | Max per-file snapshot count (`audit/coverage_delta/`)              | 30                        |
+| COVERAGE_PRUNE_ORPHANS  | Remove legacy root `coverage.json` when snapshots exist            | 1                         |
+| TEST_SELECTION          | Enable heuristic test subset selection (Phase 1)                   | 1                         |
+| TEST_SELECTION_MIN_CONF | Min confidence for adopting subset                                 | 0.8                       |
+
+Additional CI Guards (security & packaging):
+
+- repo_security_scan: heuristic scan for risky primitives (eval/exec/subprocess misuse, bare except) – enabled when REPO_SECURITY_SCAN=1.
+- ci_verify_no_discord_bot: ensures internal Discord Bot artifacts/imports are excluded (DISCORD_EXCLUSION_CHECK=1).
+- ci_verify_no_website_artifacts: prevents accidental commit of website build/source (WEBSITE_ARTIFACT_CHECK=1; override with AETHERRA_ALLOW_WEBSITE=1 when running dedicated deploy workflow).
+
+
+Structured gate report fields (schema_version=1):
+
+- coverage, previous, delta, min_threshold, drop, updated_baseline
+- gating_reasons[] (code, severity, message)
+- selection (strategy, candidates, confidence, fallback, reason)
+- file_deltas[] (path, before, after, delta, changed)
+- future (enforce_branch_coverage, enforce_statement_coverage)
+
+
+---
+
+## 5. Metrics & Observability
+
+Prometheus text endpoint: `/metrics` (Hub).
+
+Full catalog with alert sketches: see `docs/METRICS_REFERENCE.md`.
+
+Key series (alpha):
+
+- `aetherra_trainer_enabled`, `aetherra_trainer_jobs_total{state=…}`, `aetherra_trainer_evals_total{state=…}`, `aetherra_trainer_eval_runs_total`, `aetherra_trainer_eval_last_score`
+- Chat metrics: `aetherra_chat_requests_total`, `aetherra_chat_streams_current`, `aetherra_chat_streams_current_by_principal{principal=…}`, latency/TTFT aggregates and buckets (`aetherra_chat_latency_ms_sum|_count|_bucket{le=…}`, `aetherra_chat_ttft_ms_sum|_count|_bucket{le=…}`), `aetherra_chat_chunks_total`, token/char totals in/out, `aetherra_chat_resume_gaps_total` (SSE resume gap detections), `aetherra_chat_soft_timeouts_total` (Hub‑enforced soft stream timeouts), `aetherra_chat_breaker_open_total` (timeouts/breaker events)
+- Fallback accounting: `aetherra_chat_fallback_total{path="mock|cached|engine"}`; mock path is also tracked with a dedicated counter to ensure deterministic visibility on first scrape
+- Error/resilience: `aetherra_chat_rate_limited_total`, `…_policy_denied_total`, `…_backend_unavailable_total`, `…_timeout_total`, `…_breaker_tripped_total`, `…_breaker_open_total`
+- Kernel/Orchestrator: uptime, queue sizes/limits, rolling latency buckets; per-agent low‑cardinality gauges when available; guard rails: `aetherra_kernel_backpressure_guard_pass`, `aetherra_kernel_backpressure_guard_violations{violation=…}`, `aetherra_kernel_night_schedule_guard_pass` (timezone configuration safety)
+- Quantum/Coherence & Policy: coherence score, fragments/branches/entanglement nodes, lightweight per‑branch gauges (cardinality‑capped); QFAC policy gating: `aetherra_qfac_policy_mode_current` (0=classical,1=hybrid,2=quantum), `aetherra_qfac_policy_allowed` (1 if desired mode allowed; 0 if downgraded), `aetherra_qfac_policy_info{key="reason"|"policy",value="…"}`.
+        - These reflect live gating decisions (coherence EMA / drift / backend validation) and support shadow vs. enforce auditing.
+
+Security & Key Management: `aetherra_keys_encrypted` (1 if `keys.json` is encrypted layout), `aetherra_master_key_present` (1 if master key available), unsafe overrides: `aetherra_unsafe_override_present` and `aetherra_unsafe_override_info{override=…}`.
+
+Determinism: the exporter normalizes first-scrape baselines (e.g., mock fallback, chunks) and applies reuse resets between runs to keep CI metrics stable.
+
+### Debug metrics flag (optional)
+
+For troubleshooting fallback determinism, you can enable additional diagnostic series by setting the environment variable `AETHERRA_HUB_DEBUG_METRICS=1`. This emits a dual view of the mock fallback counters (raw vs. derived), allowing you to confirm baseline synchronization without affecting core series. This flag is off by default and should remain disabled in normal CI and production runs.
+
+### AI API Security: Allowlist + Tokens (Production‑safe defaults)
+
+- Deny‑by‑default network policy on AI routes with allowlist enforcement. Configure with:
+    - AETHERRA_NETWORK_ALLOWLIST: comma‑separated hosts or suffixes (e.g., `localhost,127.0.0.1,.aetherra.dev`)
+    - AETHERRA_NET_STRICT=1: block any domain not on the allowlist (recommended in prod)
+- Token‑gated AI endpoints in production. Set:
+    - AETHERRA_PROFILE=prod (implies stricter defaults)
+    - AETHERRA_AI_API_REQUIRE_TOKEN=1 and provide AETHERRA_AI_API_TOKEN (or AETHERRA_HUB_CONTROL_TOKEN)
+- CORS/PNA headers are emitted conservatively; prefer same‑origin access in production.
+
+See `SECURITY.md#production-safe-defaults-hub-developer-ai-api` for details and bootstrapping notes.
+
+---
+
+## 6. Alpha Limitations & Road to Beta
+
+Summary (full detail: `docs/ALPHA_READINESS.md`):
+
+| Aspect             | Current Limitation               | Planned (Beta)                              |
+| ------------------ | -------------------------------- | ------------------------------------------- |
+| Trainer/Eval       | In-memory only                   | Persistent store + cancel/retry             |
+| Evaluation Scoring | Deterministic placeholder (0.9)  | Pluggable metrics + dataset registry        |
+| Federation         | Announce/sync return 501 (stubs) | Secure peer handshake + signing enforcement |
+| Narratives         | Static stub list                 | Query + enrichment pipeline                 |
+| Model Providers    | Fallback mock when unreachable   | Explicit provider status endpoint           |
+| Access Control     | No multi-tenant isolation        | Token / principal level quotas & gating     |
+
+---
+
+## 7. Workflow Language (`.aether`)
+
+Workflows define goals, triggers, memory operations, AI tasks and actions. Files are cryptographically signed and can be statically verified. See sample workflows under `workflows/` and signing utility (`tools/sign_aether.py`).
+
+Minimal example:
+
+```aether
+goal: nightly memory digest
+think "summarize recent memory events"
+run trainer if metric.trainer_backlog < 5
+export report to path="reports/digest.txt"
+```
+
+---
+
+## 8. Development & Tests
+
+Run capability suite (core behaviors + metrics assertions):
+
+```powershell
+pytest -q -o addopts= tests/capabilities
+```
+
+Other helpful tasks (VS Code → Run Task): *Verify Aetherra OS (Headless Smoke)*, *Update System Index*, *Quality Gates*.
+
+### Continuous Integration (Lyrixa Health Gate)
+
+For pipelines, use the lightweight health script to ensure critical Lyrixa systems (hub + basic chat) are up while allowing non‑critical degradation (e.g., empty registry) without failing the build:
+
+```powershell
+./tools/ci_lyrixa_check.ps1
+```
+
+Behavior:
+
+- Exit 0: All critical systems pass (or only WARN conditions)
+- Exit 1: Critical failure (Hub unreachable or basic chat unusable)
+
+
+Integrate into GitHub Actions (excerpt):
+
+```yaml
+    - name: Lyrixa health check
+        shell: pwsh
+        run: ./tools/ci_lyrixa_check.ps1
+```
+
+The script internally runs `tools/lyrixa_diagnostics.py --skip-advanced` and normalizes exit codes.
+
+---
+
+## 9. Contributing & Community
+
+We welcome focused, test-backed contributions aligned with alpha scope.
+
+1. Open an issue tagged `proposal` or `alpha-feedback`.
+2. Keep PRs small; include capability / or metrics delta tests.
+3. Follow coding & policy guidelines (see `CODE_OF_CONDUCT.md`, `GOVERNANCE.md`).
+
+Useful docs:
+
+- Architecture: `docs/PROJECT_OVERVIEW.md`
+- Safe defaults / flags: `docs/ALPHA_READINESS.md`
+- Coverage policy: `docs/COVERAGE_POLICY.md`
+- Release process: `docs/RELEASE_PROCESS.md`
+- License policy & enforcement: `LICENSE_POLICY.md`
+- QFAC modes (quantum memory): `docs/QFAC_MODE_GUIDE.md`
+- QFAC policy & live-metrics gating: `docs/QFAC_POLICY.md`
+- Changelog: `CHANGELOG.md`
+- Override pruning (dry-run): `python tools/prune_license_overrides.py --dry-run` (requires fresh `licenses_report.json`)
+
+Star the repo and join discussions to influence beta priorities.
+
+---
+
+## 10. License & Notices
+
+Licensed under **GPL-3.0-or-later** (see `LICENSE`). All new contributions must retain SPDX headers where present.
+
+Key notices:
+
+- AI outputs may be incomplete or imprecise; review before production use.
+- Some features (Discord bot, internal monitoring suites) are intentionally excluded from public builds.
+- Trademarks and branding remain property of their respective owners.
+
+Standard disclaimer: Aetherra is provided "AS IS" without warranty (see GPLv3
+Sections 15–16). This README is informational and not legal advice. Aetherra is
+developed and stewarded by **Aetherra Labs and Contributors**. For attribution
+transparency see `NOTICE`; for dependency/license analysis see
+`LEGAL_COMPLIANCE.md`.
+
+---
+© 2025 Aetherra Labs and Contributors

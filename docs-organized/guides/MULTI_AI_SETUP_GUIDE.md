@@ -182,8 +182,3 @@ The system automatically uses the most cost-effective available option while mai
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
 
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
-
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

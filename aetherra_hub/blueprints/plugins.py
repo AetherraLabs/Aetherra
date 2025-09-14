@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
@@ -22,6 +23,7 @@ log = logging.getLogger(__name__)
 # In-memory plugin registry (minimal slice)
 _PLUGIN_REGISTRY: Dict[str, Dict[str, Any]] = {}
 _IDEM = IdempotencyStore(ttl_seconds=600)
+_PARALLEL_SAMPLE_LAST: Dict[str, Any] | None = None  # cached last sample summary
 
 # counters now sourced from plugin_metrics service
 
@@ -324,3 +326,74 @@ def register_plugin():
             "advanced": False,
         }
     )
+
+
+@bp.get("/parallel_sample")
+def parallel_sample():
+    """Execute a lightweight parallel sample across up to 3 loaded plugins.
+
+    Returns JSON with fields: success, failed, total, total_time, plugins[].
+    If no suitable plugins are present, returns 503 with reason.
+    Result is cached in module-level _PARALLEL_SAMPLE_LAST for stats exposure.
+    """
+    global _PARALLEL_SAMPLE_LAST  # noqa: PLW0603
+    try:
+        # Discover plugin execution manager (advanced) if available
+        from Aetherra.aetherra_core.plugins.advanced_plugins import (
+            LyrixaAdvancedPluginManager,
+        )  # type: ignore
+
+        mgr = getattr(current_app, "_adv_plugin_mgr", None)  # type: ignore[attr-defined]
+        if mgr is None:
+            mgr = LyrixaAdvancedPluginManager()
+            # Best-effort init (no plugins => 503)
+            try:
+                # Run async init quickly
+                asyncio.run(mgr.initialize())
+            except RuntimeError:
+                # Fallback if event loop already running
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    # schedule initialize and wait
+                    loop.run_until_complete(mgr.initialize())  # type: ignore
+            setattr(current_app, "_adv_plugin_mgr", mgr)  # cache
+        plugins_loaded = list(mgr.plugins.keys())
+        if not plugins_loaded:
+            return jsonify({"error": "no_plugins_available"}), 503
+        sample = plugins_loaded[:3]
+        steps = [{"plugin": p, "function": "main"} for p in sample]
+        # Execute parallel sample with short timeout per plugin
+        try:
+            result = asyncio.run(
+                mgr.execute_plugin_chain_parallel(
+                    steps, shared_input={"sample": True}, timeout=0.25
+                )
+            )
+        except RuntimeError:
+            # Already in loop: create task group
+            loop = asyncio.get_event_loop()
+            result = loop.run_until_complete(  # type: ignore
+                mgr.execute_plugin_chain_parallel(
+                    steps, shared_input={"sample": True}, timeout=0.25
+                )
+            )
+        summary = {
+            "success": result.get("success"),
+            "failed": result.get("failed"),
+            "total": len(result.get("results", [])),
+            "total_time": result.get("total_time"),
+            "plugins": [
+                {
+                    "plugin": r.get("plugin"),
+                    "success": r.get("success"),
+                    "error": r.get("error"),
+                    "execution_time": r.get("execution_time"),
+                }
+                for r in result.get("results", [])
+            ],
+        }
+        _PARALLEL_SAMPLE_LAST = summary
+        return jsonify(summary)
+    except Exception as e:  # pragma: no cover - defensive
+        log.exception("parallel_sample failed")
+        return jsonify({"error": "parallel_sample_failed", "detail": str(e)}), 500

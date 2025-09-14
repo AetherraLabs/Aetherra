@@ -64,8 +64,3 @@ echo 'export AETHERRA_PEERS=http://host1:3001,http://host2:3001' >> ~/.bashrc
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
 
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
-
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

@@ -138,7 +138,6 @@ class MemoryCompressionAnalyzer:
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS performance_metrics (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 memory_type TEXT,
                 compression_time REAL,
                 decompression_time REAL,
@@ -176,7 +175,7 @@ class MemoryCompressionAnalyzer:
 
     def _init_compression_schemas(self) -> Dict[str, CompressionSchema]:
         """Initialize compression schemas for different memory types"""
-        schemas = {
+        return {
             MemoryType.TEXT: CompressionSchema(
                 memory_type=MemoryType.TEXT,
                 algorithm="adaptive_lz",
@@ -209,7 +208,7 @@ class MemoryCompressionAnalyzer:
                 adaptive_threshold=0.95,
                 parameters={
                     "delta_encoding": True,
-                    "timestamp_precision": 1000,  # milliseconds
+                    "timestamp_precision": 1000,
                     "event_clustering": True,
                 },
             ),
@@ -250,8 +249,6 @@ class MemoryCompressionAnalyzer:
                 },
             ),
         }
-
-        return schemas
 
     async def analyze_memory_fragment(
         self,
@@ -347,9 +344,9 @@ class MemoryCompressionAnalyzer:
 
             # Update summaries
             recommendations["summary"]["total_original_size"] += score.original_size
-            recommendations["summary"][
-                "estimated_compressed_size"
-            ] += score.compressed_size
+            recommendations["summary"]["estimated_compressed_size"] += (
+                score.compressed_size
+            )
 
             # Track distributions
             fidelity_counts[score.fidelity_level.value] = (
@@ -923,3 +920,6 @@ async def demo_compression_analyzer():
 
 if __name__ == "__main__":
     asyncio.run(demo_compression_analyzer())
+
+# Backwards-compatible alias expected by tests
+FileCompressionAnalyzer = MemoryCompressionAnalyzer  # type: ignore

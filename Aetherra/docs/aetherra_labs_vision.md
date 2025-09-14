@@ -80,8 +80,3 @@ Source: [github.com/Zyonic88/Aetherra](https://github.com/Zyonic88/Aetherra)
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
 
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
-
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

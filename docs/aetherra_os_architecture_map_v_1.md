@@ -212,7 +212,6 @@
 ### Usage
 - Treat this map as the top‑level index. Each section mirrors the corresponding spec/doc and repository modules. Update alongside changes to contracts or behavior.
 
-
 # 🌌 Aetherra OS Architecture Map (v1.1)
 
 ## 🔑 Core Principles
@@ -334,8 +333,3 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
 
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
-
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

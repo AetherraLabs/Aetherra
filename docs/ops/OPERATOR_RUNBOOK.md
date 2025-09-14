@@ -11,7 +11,6 @@ This runbook summarizes day-2 operations for Aetherra during the Alpha window.
 
 ## 3‑command triage
 
-
 - Health: curl <http://localhost:3001/health>
 - Stats: curl <http://localhost:3001/api/stats> | jq .
 - Metrics: curl <http://localhost:3001/metrics> | head -n 50
@@ -42,7 +41,6 @@ Notes:
   - `$env:AETHERRA_NIGHT_UTC = "1"`   # pin scheduling to UTC
 - Optional per‑service staggering: `$env:AETHERRA_NIGHT_STAGGER_MAX_SEC = "900"`  # up to 15m jitter inside window
 - Window: `$env:AETHERRA_NIGHT_START_HOUR`/`$env:AETHERRA_NIGHT_END_HOUR` (defaults 2–4)
-
 
 Use HMR to swap components in‑process without a full restart. Phase‑2 adds source gating, in‑flight drain, and audit logging.
 
@@ -203,8 +201,3 @@ From the VS Code “Run Task…” menu you can run:
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
 
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
-
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

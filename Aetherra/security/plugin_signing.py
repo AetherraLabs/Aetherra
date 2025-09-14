@@ -16,9 +16,11 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import logging
 import os
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Iterable, cast
+from typing import Any, cast
 
 STRICT = os.environ.get("AETHERRA_SIGNING_STRICT", "0") == "1"
 APP_DIR = Path(os.path.expanduser("~/.aetherra")).resolve()
@@ -85,8 +87,8 @@ def _append_transparency(entry: dict) -> None:
         APP_DIR.mkdir(parents=True, exist_ok=True)
         with open(TRANSPARENCY_LOG, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, separators=(",", ":")) + "\n")
-    except Exception:
-        pass
+    except Exception as exc:  # pragma: no cover
+        logging.debug("plugin_signing.transparency_append_failed: %s", exc)
 
 
 def compute_files_hash(paths: Iterable[str]) -> str:
@@ -110,7 +112,9 @@ def generate_keypair(seed: bytes | None = None) -> tuple[str, str]:
     if NACL:
         sk = SigningKey(seed) if seed else SigningKey.generate()  # type: ignore[call-arg,attr-defined]
         pk = sk.verify_key
-        return base64.b64encode(bytes(pk)).decode(), base64.b64encode(bytes(sk)).decode()
+        return base64.b64encode(bytes(pk)).decode(), base64.b64encode(
+            bytes(sk)
+        ).decode()
     if CRYPTO:
         # cryptography doesn't support seeding directly; ignore seed in fallback
         sk = Ed25519PrivateKey.generate()
@@ -163,9 +167,8 @@ def sign_manifest(manifest: dict, secret_b64: str | None) -> dict:
                 }
             )
             return out
-    except Exception:
-        # fall through to null signature
-        pass
+    except Exception as exc:  # pragma: no cover - signature fallback
+        logging.debug("plugin_signing.sign_manifest_failed: %s", exc)
     out.setdefault("signature", None)
     out.setdefault("pubkey", None)
     return out
@@ -179,7 +182,9 @@ def verify_plugin_signature(manifest: dict) -> bool:
     # revocation check
     if _is_revoked(pub, manifest.get("key_id")):
         return False
-    msg = _manifest_bytes({k: v for k, v in manifest.items() if k not in ("signature", "pubkey")})
+    msg = _manifest_bytes(
+        {k: v for k, v in manifest.items() if k not in ("signature", "pubkey")}
+    )
     # Try PyNaCl, then cryptography
     if NACL:
         try:
@@ -210,3 +215,31 @@ def verify_plugin_signature(manifest: dict) -> bool:
         if calculated != code_hash:
             return False
     return True
+
+
+def validate_plugin_signature(plugin_data: dict) -> dict:
+    """Validate plugin signature structure for tests.
+
+    Returns a result dict with minimal fields:
+      {"name": str, "valid": bool, "reason": str | None}
+    Always graceful on malformed input; never raises.
+    """
+    name = str(plugin_data.get("name", "")) if isinstance(plugin_data, dict) else ""
+    manifest = plugin_data if isinstance(plugin_data, dict) else {}
+    try:
+        valid = verify_plugin_signature(manifest)
+        return {
+            "name": name,
+            "valid": bool(valid),
+            "reason": None if valid else "invalid_signature",
+        }
+    except Exception as e:  # pragma: no cover - defensive
+        return {"name": name, "valid": False, "reason": str(e)}
+
+
+__all__ = [
+    "generate_keypair",
+    "sign_manifest",
+    "verify_plugin_signature",
+    "validate_plugin_signature",
+]

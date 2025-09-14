@@ -43,17 +43,38 @@ QISKIT_AVAILABLE = False
 CIRQ_AVAILABLE = False
 
 try:
-    # Try Qiskit (IBM Quantum)
+    # Try Qiskit (IBM Quantum) - compatible with Qiskit 2.x
     from qiskit import (
         ClassicalRegister,
         QuantumCircuit,
         QuantumRegister,
-        execute,
         transpile,
     )
     from qiskit.circuit.library import QFT
-    from qiskit.providers.aer import AerSimulator
     from qiskit.quantum_info import Statevector
+
+    # Import AerSimulator from the correct location in Qiskit 2.x
+    try:
+        from qiskit_aer import AerSimulator
+    except ImportError:
+        # Fallback to older location
+        from qiskit.providers.aer import AerSimulator
+
+    # Create a compatibility execute function for Qiskit 2.x
+    def execute_compat(circuit, backend, shots=1024):
+        """Compatibility wrapper for execute function"""
+        if hasattr(backend, "run"):
+            # Modern Qiskit 2.x approach
+            job = backend.run(circuit, shots=shots)
+            return job
+        else:
+            # Fallback for older Qiskit versions
+            from qiskit import execute
+
+            return execute(circuit, backend, shots=shots)
+
+    # Use our compatibility function
+    execute = execute_compat
 
     QISKIT_AVAILABLE = True
     print("[OK] Qiskit available - IBM Quantum integration enabled")
@@ -150,7 +171,9 @@ class QuantumCircuitTemplate:
     gate_sequence: List[Dict[str, Any]]
     parameter_count: int
     description: str
-    memory_operation_type: str  # 'compression', 'retrieval', 'branching', 'interference'
+    memory_operation_type: (
+        str  # 'compression', 'retrieval', 'branching', 'interference'
+    )
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization"""
@@ -980,9 +1003,9 @@ async def demo_quantum_bridge():
 
     # Create second quantum state
     memory_data_2 = memory_data.copy()
-    memory_data_2[
-        "content"
-    ] = "Fractal patterns in consciousness suggest scale-invariant cognition"
+    memory_data_2["content"] = (
+        "Fractal patterns in consciousness suggest scale-invariant cognition"
+    )
     memory_data_2["emotional_tag"] = "wonder"
 
     quantum_state_2 = await bridge.encode_memory_to_quantum(

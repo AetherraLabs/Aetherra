@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import ast
 import threading
-from typing import Any, Dict, Optional
+from typing import Any
 
 try:
     import psutil  # type: ignore
@@ -31,6 +31,14 @@ SAFE_BUILTINS = {
 
 
 class SandboxViolation(Exception):
+    """Base sandbox violation."""
+
+    pass
+
+
+class SandboxViolationError(Exception):
+    """Base sandbox violation."""
+
     pass
 
 
@@ -42,7 +50,7 @@ class MemoryBudgetExceeded(SandboxViolation):
     pass
 
 
-def safe_eval(expr: str, variables: Dict[str, Any] | None = None) -> Any:
+def safe_eval(expr: str, variables: dict[str, Any] | None = None) -> Any:
     """Evaluate a small arithmetic/logic expression safely.
     Blocks attribute access, function defs/calls (except whitelisted builtins),
     comprehensions, and dunder names.
@@ -54,7 +62,7 @@ def safe_eval(expr: str, variables: Dict[str, Any] | None = None) -> Any:
     try:
         tree = ast.parse(expr, mode="eval")
     except Exception as e:
-        raise SandboxViolation(f"Parse error: {e}")
+        raise SandboxViolation(f"Parse error: {e}") from None
 
     # Disallow dangerous nodes; allow ast.Call conditionally (handled below)
     forbidden = (
@@ -77,27 +85,27 @@ def safe_eval(expr: str, variables: Dict[str, Any] | None = None) -> Any:
     for node in ast.walk(tree):
         if isinstance(node, forbidden):
             raise SandboxViolation(f"Forbidden construct: {type(node).__name__}")
-        if isinstance(node, ast.Call):
-            # Only allow direct Name calls where the function id is in SAFE_BUILTINS
-            if not isinstance(node.func, ast.Name) or node.func.id not in SAFE_BUILTINS:
-                raise SandboxViolation("Forbidden function call")
+        if isinstance(node, ast.Call) and (
+            not isinstance(node.func, ast.Name) or node.func.id not in SAFE_BUILTINS
+        ):
+            raise SandboxViolation("Forbidden function call")
 
-    allowed = dict(SAFE_BUILTINS)
-    # Only allow provided variables as names; no globals
-    names = dict(variables or {})
-    return eval(compile(tree, "<sandbox>", "eval"), {"__builtins__": allowed}, names)
+    # Safe evaluation: use eval with restricted globals and provided variables
+    safe_globals = {"__builtins__": SAFE_BUILTINS}
+    safe_locals = variables or {}
+    return eval(compile(tree, "<sandbox>", "eval"), safe_globals, safe_locals)
 
 
 def run_with_timeout(
     func,
-    args: Optional[tuple] = None,
-    kwargs: Optional[dict] = None,
+    args: tuple | None = None,
+    kwargs: dict | None = None,
     timeout_sec: float = 5.0,
 ):
     """Run a callable with a wall-clock timeout; raises TimeBudgetExceeded on timeout.
     Returns the function result otherwise.
     """
-    result: Dict[str, Any] = {"value": None, "error": None}
+    result: dict[str, Any] = {"value": None, "error": None}
 
     def _target():
         try:
@@ -115,7 +123,7 @@ def run_with_timeout(
     return result["value"]
 
 
-def ensure_memory_budget(max_mb: Optional[float]) -> None:
+def ensure_memory_budget(max_mb: float | None) -> None:
     """Raise MemoryBudgetExceeded if current process RSS exceeds max_mb (best-effort)."""
     if not max_mb:
         return
@@ -131,3 +139,61 @@ def ensure_memory_budget(max_mb: Optional[float]) -> None:
     except Exception:
         # Best-effort only
         return
+
+
+class SecuritySandbox:
+    """Minimal SecuritySandbox implementation expected by tests.
+
+    Accepts a configuration dictionary with optional keys:
+      - memory_limit (int MB)
+      - timeout (seconds for generic operations)
+      - max_operations (int pseudo budget)
+      - allowed_modules (list[str])
+      - blocked_functions (list[str])
+
+    The implementation is intentionally lightweight; it provides
+    interface coverage and basic budget checking rather than full isolation.
+    """
+
+    def __init__(self, config: dict | None = None):
+        self.config = config or {}
+        self._ops = 0
+        self._max_ops = int(self.config.get("max_operations", 10_000) or 10_000)
+        self._memory_limit = self.config.get("memory_limit")
+        self._timeout = float(self.config.get("timeout", 5) or 5)
+        self._allowed_modules = set(self.config.get("allowed_modules", []) or [])
+        self._blocked_functions = set(self.config.get("blocked_functions", []) or [])
+
+    # Simple allow list semantics; expand later as needed
+    def is_allowed(self, operation: str) -> bool:
+        op = (operation or "").strip().lower()
+        if not op:
+            return False
+        # Increment operation counter
+        self._ops += 1
+        if self._ops > self._max_ops:
+            raise TimeBudgetExceeded("Operation budget exceeded")
+        # Basic heuristic: block if name matches blocked_functions
+        return op not in self._blocked_functions
+
+    def check_resource_limits(self) -> None:
+        # Memory budget check (best-effort)
+        ensure_memory_budget(self._memory_limit)
+        # Time budget is enforced per operation via run_with_timeout if used externally.
+        return
+
+    # Convenience wrapper to execute a callable under timeout & memory check
+    def run(self, func, *args, **kwargs):  # pragma: no cover - thin wrapper
+        self.check_resource_limits()
+        return run_with_timeout(
+            func, args=args, kwargs=kwargs, timeout_sec=self._timeout
+        )
+
+
+__all__ = [
+    "SecuritySandbox",
+    "SandboxViolation",
+    "TimeBudgetExceeded",
+    "MemoryBudgetExceeded",
+    "safe_eval",
+]
