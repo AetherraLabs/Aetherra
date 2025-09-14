@@ -48,6 +48,6 @@ See the `docs/` directory for detailed documentation, guides, and API references
 
 ## License
 
-GPL-3.0-only — see the root LICENSE file for full terms.
+GPL-3.0-or-later — see the root LICENSE file for full terms.
 
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

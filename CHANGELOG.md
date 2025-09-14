@@ -178,8 +178,6 @@ Initial public alpha snapshot.
 * Pluggable evaluation metrics and dataset registry.
 * Hardened coverage for disabled feature paths (partially added in this release).
 
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
 * Memory narratives endpoints (`/api/memory/narratives`, `/memory/narratives`).
 * Expanded Prometheus metrics: per-principal stream gauges, quantum + observer/coherence signals, trainer series.
 * Docs consistency automation and project overview inventory of env flags and endpoints.
@@ -205,11 +203,3 @@ Next:
 * Pluggable evaluation metrics and dataset registry.
 * Hardened coverage for disabled feature paths (partially added in this release).
 
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
-
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
-
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

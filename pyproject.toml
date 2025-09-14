@@ -1,159 +1,153 @@
-# Aetherra Testing Configuration
-# This file configures pytest for the Aetherra project
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
+[project]
+name = "aetherra"
+version = "0.5.0-beta.0"
+description = "AI-native development environment with intelligent workflows and persistent memory"
+readme = "README.md"
+license = {text = "GPL-3.0-or-later"}
+authors = [
+    {name = "Aetherra Labs and Contributors", email = "contact@aetherra.dev"}
+]
+maintainers = [
+    {name = "Aetherra Labs", email = "contact@aetherra.dev"}
+]
+keywords = [
+    "ai", "automation", "workflow", "memory", "quantum", "development", "assistant"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Distributed Computing",
+]
+requires-python = ">=3.11"
+dependencies = [
+    "flask>=2.3.0",
+    "requests>=2.31.0",
+    "prometheus-client>=0.19.0",
+    "pyyaml>=6.0",
+    "cryptography>=41.0.0",
+    "numpy>=1.24.0",
+    "qiskit>=1.0.0",
+    "qiskit-aer>=0.13.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-timeout>=2.1.0",
+    "coverage[toml]>=7.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "ruff>=0.1.0",
+    "mypy>=1.5.0",
+    "pre-commit>=3.3.0",
+    "bandit[toml]>=1.7.0",
+    "safety>=2.3.0",
+    "pip-audit>=2.6.0",
+]
+gui = [
+    "tkinter",
+    "matplotlib>=3.7.0",
+    "plotly>=5.15.0",
+    "dash>=2.10.0",
+]
+quantum = [
+    "qiskit[all]>=1.0.0",
+    "cirq>=1.2.0",
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.1.0",
+    "mkdocs-mermaid2-plugin>=1.0.0",
+]
+
+[project.urls]
+"Homepage" = "https://aetherra.dev"
+"Documentation" = "https://docs.aetherra.dev"
+"Repository" = "https://github.com/AetherraLabs/Aetherra"
+"Bug Tracker" = "https://github.com/AetherraLabs/Aetherra/issues"
+"Changelog" = "https://github.com/AetherraLabs/Aetherra/blob/main/CHANGELOG.md"
+
+[project.scripts]
+aetherra = "aetherra_os_launcher:main"
+lyrixa = "Aetherra.lyrixa.lyrixa_basic:main"
+aether = "aether:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["Aetherra*", "aetherra*"]
+exclude = ["tests*", "*.tests*", "*.tests"]
+
+[tool.setuptools.package-data]
+"*" = ["*.md", "*.txt", "*.yaml", "*.yml", "*.json", "*.aether"]
+
+# Testing Configuration
 [tool.pytest.ini_options]
-# Test discovery
 minversion = "7.0"
-testpaths = [
-    "tests",
-    "integration_tests",
-    "src"  # For doctests
-]
+testpaths = ["tests", "integration_tests"]
+python_files = ["test_*.py", "*_test.py", "tests.py"]
+python_classes = ["Test*", "*Tests"]
+python_functions = ["test_*"]
 
-# Test patterns
-python_files = [
-    "test_*.py",
-    "*_test.py",
-    "tests.py"
-]
-
-python_classes = [
-    "Test*",
-    "*Tests"
-]
-
-python_functions = [
-    "test_*"
-]
-
-# Output and reporting
 addopts = [
-    # Verbose output
     "-v",
-
-    # Show local variables in tracebacks
-    "-l",
-
-    # Show extra test summary info
+    "-l", 
     "-ra",
-
-    # Coverage reporting
-    "--cov=src",
     "--cov=Aetherra",
     "--cov-report=term-missing",
     "--cov-report=html:htmlcov",
     "--cov-report=xml:coverage.xml",
-
-    # Coverage configuration
     "--cov-fail-under=70",
     "--cov-branch",
-
-    # Doctests
     "--doctest-modules",
     "--doctest-ignore-import-errors",
-
-    # Performance
     "--durations=10",
-
-    # Warnings
     "--strict-markers",
-
-    # Output formatting
     "--tb=short",
-
-    # Parallel execution (uncomment if needed)
-    # "-n", "auto",
 ]
 
-# Test markers for categorization
 markers = [
-    "unit: Unit tests for individual components",
+    "asyncio: Asynchronous tests using asyncio",
+    "unit: Unit tests for individual components", 
     "integration: Integration tests for component interactions",
     "e2e: End-to-end tests for complete workflows",
     "slow: Tests that take a significant amount of time",
     "fast: Quick tests that run in under 1 second",
     "memory: Tests related to memory systems",
     "agents: Tests for agent functionality",
-    "analytics: Tests for analytics and reporting",
-    "ui: User interface tests",
     "api: API endpoint tests",
-    "database: Database operation tests",
-    "neural: Neural interface tests",
     "quantum: Quantum computing integration tests",
     "security: Security and authentication tests",
-    "performance: Performance and benchmarking tests",
     "smoke: Basic smoke tests for deployment verification",
-    "regression: Regression tests for bug fixes",
-    "experimental: Tests for experimental features",
     "critical: Critical path tests that must always pass",
-    "network: Tests requiring network access",
-    "gpu: Tests requiring GPU resources",
-    "external: Tests that depend on external services"
 ]
 
-# Filtering
 filterwarnings = [
     "error",
     "ignore::UserWarning",
     "ignore::DeprecationWarning",
     "ignore::PendingDeprecationWarning",
-    # Ignore specific library warnings
     "ignore::ImportWarning",
     "ignore:.*deprecated.*:DeprecationWarning",
-    # TensorFlow warnings
-    "ignore:.*TensorFlow.*:UserWarning",
-    # NumPy warnings
-    "ignore:.*numpy.*:DeprecationWarning",
-    # Matplotlib warnings
-    "ignore:.*matplotlib.*:UserWarning"
 ]
 
-# Test execution configuration
-console_output_style = "progress"
-log_level = "INFO"
-log_cli = true
-log_cli_level = "INFO"
-log_cli_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
-log_cli_date_format = "%Y-%m-%d %H:%M:%S"
-
-# Timeout configuration
-timeout = 300  # 5 minutes default timeout
-timeout_method = "thread"
-
-# Test collection
-collect_ignore = [
-    "setup.py",
-    "build",
-    "dist",
-    ".tox",
-    ".git",
-    "node_modules",
-    "__pycache__",
-    "*.egg-info",
-    "venv",
-    ".venv",
-    "env",
-    ".env",
-    "unused",
-    "backup*",
-    "old*",
-    "legacy*"
-]
-
-# Doctest configuration
-doctest_optionflags = [
-    "NORMALIZE_WHITESPACE",
-    "IGNORE_EXCEPTION_DETAIL",
-    "ELLIPSIS"
-]
-
-# Coverage configuration
+# Coverage Configuration
 [tool.coverage.run]
-source = [
-    "src",
-    "Aetherra"
-]
-
+source = ["Aetherra"]
 omit = [
     "*/tests/*",
     "*/test_*",
@@ -172,39 +166,27 @@ omit = [
     "*/old*/*",
     "*/legacy*/*"
 ]
-
 branch = true
 parallel = true
 
 [tool.coverage.report]
-# Fail if coverage falls below this percentage
 fail_under = 70
-
-# Show missing lines
 show_missing = true
-
-# Skip covered files in report
 skip_covered = false
-
-# Skip empty files
 skip_empty = true
-
-# Exclude lines from coverage
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
     "def __str__",
     "if self.debug:",
     "if settings.DEBUG",
-    "raise AssertionError",
+    "raise AssertionError", 
     "raise NotImplementedError",
     "if 0:",
     "if __name__ == .__main__.:",
     "class .*\\bProtocol\\):",
     "@(abc\\.)?abstractmethod"
 ]
-
-# Sort by coverage percentage
 sort = "Cover"
 
 [tool.coverage.html]
@@ -213,3 +195,115 @@ title = "Aetherra Test Coverage Report"
 
 [tool.coverage.xml]
 output = "coverage.xml"
+
+# Code Formatting and Linting
+[tool.black]
+line-length = 88
+target-version = ['py311', 'py312', 'py313']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+  | node_modules
+  | frontend/Lib
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["aetherra", "Aetherra"]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+import_heading_stdlib = "Standard library imports"
+import_heading_thirdparty = "Third party imports"
+import_heading_firstparty = "Aetherra imports"
+import_heading_localfolder = "Local imports"
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+extend-exclude = [
+    ".git",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+    "node_modules",
+    "frontend/Lib",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "N",   # pep8-naming
+    "S",   # flake8-bandit (security)
+    "T20", # flake8-print
+    "PT",  # flake8-pytest-style
+    "Q",   # flake8-quotes
+    "RET", # flake8-return
+    "SIM", # flake8-simplify
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "S101",  # use of assert (OK in tests)
+    "S603",  # subprocess call (OK for tools)
+    "T201",  # print statements (OK for CLI tools)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "S105", "S106", "S107"]  # Security checks relaxed in tests
+"tools/**/*.py" = ["T201", "S603", "S607"]         # Print and subprocess OK in tools
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "qiskit.*",
+    "cirq.*",
+    "prometheus_client.*",
+    "requests.*", 
+    "flask.*",
+    "numpy.*",
+    "matplotlib.*",
+    "plotly.*",
+    "dash.*",
+]
+ignore_missing_imports = true
+
+# Security Scanning
+[tool.bandit]
+exclude_dirs = ["tests", "node_modules", "frontend/Lib"]
+skips = ["B101", "B601"]  # Skip assert_used and shell injection (handled separately)
+
+[tool.bandit.assert_used]
+skips = ["**/test_*.py", "**/*_test.py"]  # Allow asserts in tests

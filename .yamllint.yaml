@@ -1,0 +1,53 @@
+# Yamllint configuration for Aetherra
+extends: default
+
+rules:
+  # Line length
+  line-length:
+    max: 120
+    level: warning
+
+  # Indentation
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+
+  # Comments
+  comments:
+    min-spaces-from-content: 1
+
+  # Document markers
+  document-start: disable
+  document-end: disable
+
+  # Brackets
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+  # Braces
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+  # Truthy values
+  truthy:
+    allowed-values: ['true', 'false', 'yes', 'no']
+
+# File patterns to ignore
+ignore: |
+  frontend/Lib/
+  node_modules/
+  .git/
+  __pycache__/
+  *.egg-info/
+  build/
+  dist/
+  .venv/
+  venv/
+  unused/
+  backup*/
+  old*/
+  legacy*/
+  archive*/

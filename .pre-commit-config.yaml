@@ -1,42 +1,15 @@
-repos:
-  - repo: local
-    hooks:
-      - id: aether-sign
-        name: Aether: Sign .aether files
-        entry: python tools/precommit_sign_aether.py
-        language: system
-        pass_filenames: true
-        files: \.aether$
-      - id: aether-verify-strict
-        name: Aether: Strict verification (.aether)
-        entry: python tools/verify_aether_scripts.py --root . --output aether_static_report.md --strict
-        language: system
-        pass_filenames: false
-        stages: [commit]
-      - id: block-runtime-artifacts
-        name: Block committing runtime artifacts
-        entry: python scripts/precommit_block_artifacts.py
-        language: system
-        pass_filenames: false
-        stages: [commit]
-      - id: block-legacy-hub-import
-        name: Block deprecated aetherra_hub_server imports
-        entry: python tools/precommit_block_legacy_hub.py
-        language: system
-        pass_filenames: false
-        stages: [commit]
 # Aetherra Pre-commit Configuration
-# Ensures code quality before commits
+# Ensures code quality and security before commits
 
 repos:
   # Built-in hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.6.0
+    rev: v4.6.0
     hooks:
       - id: trailing-whitespace
-        exclude: ^(unused|backup|archive)/
+        exclude: ^(unused|backup|archive|frontend/Lib)/
       - id: end-of-file-fixer
-        exclude: ^(unused|backup|archive)/
+        exclude: ^(unused|backup|archive|frontend/Lib)/
       - id: check-yaml
       - id: check-json
       - id: check-toml
@@ -50,44 +23,44 @@ repos:
 
   # Python code formatting
   - repo: https://github.com/psf/black
-  rev: 24.4.2
+    rev: 24.4.2
     hooks:
       - id: black
-        exclude: ^(unused|backup|archive)/
-        args: [--line-length=120]
+        exclude: ^(unused|backup|archive|frontend/Lib)/
+        args: [--config=pyproject.toml]
 
   # Import sorting
   - repo: https://github.com/pycqa/isort
-  rev: 5.13.2
+    rev: 5.13.2
     hooks:
       - id: isort
-        exclude: ^(unused|backup|archive)/
-        args: [--profile=black, --line-length=120]
+        exclude: ^(unused|backup|archive|frontend/Lib)/
+        args: [--settings-path=pyproject.toml]
 
-  # Linting
-  - repo: https://github.com/pycqa/flake8
-  rev: 7.1.1
+  # Linting and formatting with Ruff
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.0
     hooks:
-      - id: flake8
-        exclude: ^(unused|backup|archive)/
-        args: [--max-line-length=120, --max-complexity=12, --ignore=E203,W503]
-
-  # Security scanning
-  - repo: https://github.com/PyCQA/bandit
-  rev: 1.7.9
-    hooks:
-      - id: bandit
-        exclude: ^(unused|backup|archive|tests)/
-        args: [-ll]
+      - id: ruff
+        args: ["--fix"]
+      - id: ruff-format
 
   # Type checking
   - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.10.0
+    rev: v1.10.0
     hooks:
       - id: mypy
-        exclude: ^(unused|backup|archive)/
-        additional_dependencies: [types-requests, types-PyYAML]
-        args: [--ignore-missing-imports, --no-strict-optional]
+        exclude: ^(unused|backup|archive|frontend/Lib)/
+        additional_dependencies: [types-requests, types-PyYAML, types-cryptography]
+        args: [--config-file=pyproject.toml]
+
+  # Security scanning
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.9
+    hooks:
+      - id: bandit
+        exclude: ^(unused|backup|archive|tests|frontend/Lib)/
+        args: [-c, pyproject.toml]
 
   # Dependency vulnerability checking
   - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
@@ -96,37 +69,106 @@ repos:
       - id: python-safety-dependencies-check
         files: requirements.*\.txt$
 
-  # Documentation
+  # Documentation style checking
   - repo: https://github.com/pycqa/pydocstyle
     rev: 6.3.0
     hooks:
       - id: pydocstyle
-        exclude: ^(unused|backup|archive|tests)/
+        exclude: ^(unused|backup|archive|tests|frontend/Lib)/
         args: [--convention=google]
 
-  # Ruff (lint + extra rules) replaces part of flake8 scope gradually
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.0
-    hooks:
-      - id: ruff
-        args: ["--fix"]
-      - id: ruff-format
-
-  # Legacy banned import check using Ruff TID251 mapping to new namespaces
+  # Aetherra-specific hooks
   - repo: local
     hooks:
+      # Aether workflow signing
+      - id: aether-sign
+        name: Aether: Sign .aether files
+        entry: python tools/precommit_sign_aether.py
+        language: system
+        pass_filenames: true
+        files: \.aether$
+
+      # Aether workflow verification
+      - id: aether-verify-strict
+        name: Aether: Strict verification (.aether)
+        entry: python tools/verify_aether_scripts.py --root . --output aether_static_report.md --strict
+        language: system
+        pass_filenames: false
+        stages: [commit]
+
+      # Block runtime artifacts
+      - id: block-runtime-artifacts
+        name: Block committing runtime artifacts
+        entry: python scripts/precommit_block_artifacts.py
+        language: system
+        pass_filenames: false
+        stages: [commit]
+
+      # Block legacy imports
+      - id: block-legacy-hub-import
+        name: Block deprecated aetherra_hub_server imports
+        entry: python tools/precommit_block_legacy_hub.py
+        language: system
+        pass_filenames: false
+        stages: [commit]
+
+      # Banned imports check
       - id: aetherra-banned-imports
-        name: aetherra banned legacy imports check
+        name: Check for banned legacy imports
         entry: ruff check --select TID251
         language: system
         types: [python]
         pass_filenames: true
 
-# Configuration
-default_stages: [commit, push]
-fail_fast: false
+      # SPDX header verification
+      - id: spdx-check
+        name: Verify SPDX headers
+        entry: python tools/spdx_verify.py
+        language: system
+        files: \.(py|md)$
+        pass_filenames: false
 
-# Custom settings
+      # License consistency
+      - id: license-check
+        name: Check license consistency
+        entry: python tools/check_license_consistency.py
+        language: system
+        pass_filenames: false
+
+      # Markdown line wrapping / formatting (non-destructive for code blocks)
+      - id: markdown-format
+        name: Format Markdown (wrap >120 chars)
+        entry: python tools/format_markdown.py --fix --line-length 120
+        language: system
+        types: [markdown]
+        pass_filenames: true
+
+# Configuration
+default_stages: [commit]
+fail_fast: false
+exclude: |
+  (?x)^(
+    .*\.egg-info/.*|
+    build/.*|
+    dist/.*|
+    \.git/.*|
+    \.mypy_cache/.*|
+    \.pytest_cache/.*|
+    \.ruff_cache/.*|
+    __pycache__/.*|
+    node_modules/.*|
+    frontend/Lib/.*|
+    \.venv/.*|
+    venv/.*|
+    unused/.*|
+    backup.*/.*|
+    old.*/.*|
+    legacy.*/.*|
+    archive.*/.*
+  )$
+
+# CI-specific configuration
 ci:
   autofix_prs: true
-  autoupdate_schedule: monthly
+  autoupgrade_schedule: weekly
+  skip: [aether-verify-strict, block-runtime-artifacts]  # Skip heavy checks in CI

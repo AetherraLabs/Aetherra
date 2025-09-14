@@ -1,0 +1,18 @@
+{
+  "_meta": {
+    "profile": "test",
+    "ts": 1757808442.6264913,
+    "all_passed": true
+  },
+  "memory_qfac": {
+    "ok": true,
+    "manual": false,
+    "duration_sec": 2.064,
+    "details": {
+      "node": "qfac_node_000000",
+      "retrieved_type": "dict",
+      "nodes_total": 1,
+      "mode": "hybrid"
+    }
+  }
+}

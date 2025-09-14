@@ -150,6 +150,14 @@ def main() -> int:
             "tests/test_aar_outbox.py",
             "tests/test_agent_pipeline_smoke.py",
         ]
+        # Ensure critical contract tests explicitly included if they exist
+        contract_tests = [
+            "tests/capabilities/test_diagnostics_schema.py",
+            "tests/capabilities/test_plugin_parallel_and_failure_paths.py",
+        ]
+        for ct in contract_tests:
+            if Path(ct).exists():
+                candidates.append(ct)
         targets = [t for t in candidates if Path(t).exists()]
         # Fallback to tests/capabilities or tests if nothing found
         if not targets:

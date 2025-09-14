@@ -1,6 +1,5 @@
 # AETHERRA MANIFESTO (v6.0 – July 2025)
 
-
 ## 🌌 What is Aetherra?
 
 > Aetherra is developed and maintained by **Aetherra Labs**, the official steward of the AI OS.
@@ -173,8 +172,3 @@ The AI Operating System is not just a technical achievement — it's a **transfo
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
 
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
-
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

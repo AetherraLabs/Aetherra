@@ -12,6 +12,11 @@ from typing import Any, Dict
 
 from flask import Blueprint, jsonify, request
 
+try:  # optional import; if missing we just omit field
+    from .plugins import _PARALLEL_SAMPLE_LAST  # type: ignore
+except Exception:  # pragma: no cover
+    _PARALLEL_SAMPLE_LAST = None  # type: ignore
+
 bp = Blueprint("telemetry", __name__)
 
 _lock = threading.Lock()
@@ -37,4 +42,7 @@ def ingest():  # pragma: no cover - validated via capability tests
 def stats():  # pragma: no cover
     with _lock:
         # Don't expose full events to keep payload small
-        return jsonify(dict(_state)), 200
+        payload = dict(_state)
+        if _PARALLEL_SAMPLE_LAST:
+            payload["parallel_sample_last"] = _PARALLEL_SAMPLE_LAST
+        return jsonify(payload), 200

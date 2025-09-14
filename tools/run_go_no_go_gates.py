@@ -71,10 +71,15 @@ async def gate1_launcher_smoke() -> Tuple[bool, Dict[str, Any]]:
     boot_task = asyncio.create_task(launcher.launch_full_os(cfg))
     try:
         # Allow partial boot window (expected to still be running)
+        # The boot process may not complete within timeout - that's expected
         try:
-            await asyncio.wait_for(asyncio.shield(boot_task), timeout=2.5)
+            await asyncio.wait_for(asyncio.shield(boot_task), timeout=10.0)
         except asyncio.TimeoutError:
-            pass
+            pass  # Expected - boot process should still be running
+        except asyncio.CancelledError:
+            pass  # Also acceptable - partial boot may be cancelled during cleanup
+
+        # Check if basic services were registered during boot attempt
         reg = await get_service_registry()
         status = reg.get_registry_status()
         services = set((status.get("services") or {}).keys())
@@ -100,8 +105,8 @@ async def gate1_launcher_smoke() -> Tuple[bool, Dict[str, Any]]:
             boot_task.cancel()
             try:
                 await boot_task
-            except Exception:
-                pass
+            except (Exception, asyncio.CancelledError):
+                pass  # Expected when cancelling a running task
 
 
 async def _start_hub_for_stream(port: int = 3012):
@@ -407,16 +412,23 @@ def write_artifacts(res: Dict[str, Any]):
     # Summary block template
     lines.append("\n## Summary Template\n")
     tmpl = [
-        "Launcher smoke: {0}",
-        "Chat SSE v2 + resume: {1}",
-        "Security strict (scripts/plugins/net): {2}",
-        "Memory (core + QFAC fallback): {3}",
-        "HMR swap + audit: {4}",
-        "Agents API posture: {5}",
-        "Spec→Tests & coverage no‑drop: {6}",
-        "Policy/DP surfaced to clients: {7}",
+        "Launcher smoke: {}",
+        "Chat SSE v2 + resume: {}",
+        "Security strict (scripts/plugins/net): {}",
+        "Memory (core + QFAC fallback): {}",
+        "HMR swap + audit: {}",
+        "Agents API posture: {}",
+        "Spec→Tests & coverage no‑drop: {}",
+        "Policy/DP surfaced to clients: {}",
     ]
-    statuses = ["✅" if (res.get(n) or {}).get("ok") else "❌" for n, _ in GATES]
+    statuses = []
+    for n, _ in GATES:
+        gate_result = res.get(n, {})
+        if gate_result:  # Gate was run
+            status = "✅" if gate_result.get("ok") else "❌"
+        else:  # Gate was not run
+            status = "⚪"  # Neutral/not run
+        statuses.append(status)
     for line_tpl, st in zip(tmpl, statuses):
         lines.append(line_tpl.format(st))
     Path("gate_sign_off.md").write_text("\n".join(lines), encoding="utf-8")

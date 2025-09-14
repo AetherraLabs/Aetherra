@@ -490,6 +490,113 @@ class LyrixaAdvancedPluginManager:
             "total_time": sum(step["execution_time"] for step in execution_log),
         }
 
+    async def execute_plugin_chain_parallel(
+        self,
+        steps: List[Dict[str, Any]],
+        shared_input: Any,
+        timeout: float = 5.0,
+        fail_fast: bool = False,
+    ) -> Dict[str, Any]:
+        """Execute multiple plugin steps concurrently.
+
+        Args:
+            steps: List of step dicts {plugin, function?, config?}
+            shared_input: Input object passed to each plugin (not mutated here)
+            timeout: Per-plugin timeout in seconds
+            fail_fast: If True, cancel remaining tasks on first failure
+
+        Returns:
+            Dict with fields:
+              parallel: True
+              results: list of {plugin,function,success,execution_time,error}
+              success: bool (all succeeded)
+              total_time: wall clock time
+              failed: count of failed plugins
+        """
+        import asyncio as _asyncio
+
+        start = _asyncio.get_event_loop().time()
+        results: List[Dict[str, Any]] = []
+
+        async def _run_step(idx: int, step: Dict[str, Any]):
+            plugin_name = step.get("plugin")
+            function_name = step.get("function", "main")
+            config = step.get("config", {})
+            try:
+                exec_task = self.execute_plugin(
+                    plugin_name, function_name, shared_input, **config
+                )
+                execution = await _asyncio.wait_for(exec_task, timeout=timeout)
+                return {
+                    "index": idx,
+                    "plugin": plugin_name,
+                    "function": function_name,
+                    "success": execution.success,
+                    "execution_time": execution.execution_time,
+                    "error": execution.error_message,
+                }
+            except _asyncio.TimeoutError:
+                return {
+                    "index": idx,
+                    "plugin": plugin_name,
+                    "function": function_name,
+                    "success": False,
+                    "execution_time": timeout,
+                    "error": "timeout",
+                }
+            except Exception as e:  # noqa: BLE001
+                return {
+                    "index": idx,
+                    "plugin": plugin_name,
+                    "function": function_name,
+                    "success": False,
+                    "execution_time": 0.0,
+                    "error": str(e),
+                }
+
+        # Launch concurrently
+        tasks = [_run_step(i, step) for i, step in enumerate(steps)]
+
+        if fail_fast:
+            # Collect as they finish; cancel remainder on first failure
+            pending: List[_asyncio.Task] = []
+            for coro in tasks:
+                pending.append(_asyncio.create_task(coro))
+            while pending:
+                done, pending_set = await _asyncio.wait(
+                    pending, return_when=_asyncio.FIRST_COMPLETED
+                )
+                for d in done:
+                    r = await d
+                    results.append(r)
+                    if not r["success"]:
+                        # cancel remaining
+                        for p in pending_set:
+                            p.cancel()
+                        # gather cancellations
+                        for p in pending_set:
+                            try:
+                                await p
+                            except Exception:
+                                pass
+                        pending = []
+                        break
+                else:
+                    pending = list(pending_set)
+        else:
+            results = await _asyncio.gather(*tasks)
+
+        wall_time = _asyncio.get_event_loop().time() - start
+        results.sort(key=lambda r: r["index"])  # stable ordering
+        failed = sum(1 for r in results if not r["success"])
+        return {
+            "parallel": True,
+            "results": results,
+            "success": failed == 0,
+            "failed": failed,
+            "total_time": wall_time,
+        }
+
     def execute_chain(self, user_message: str) -> str:
         """Execute a chain of plugins based on the user message (synchronous wrapper)."""
         try:

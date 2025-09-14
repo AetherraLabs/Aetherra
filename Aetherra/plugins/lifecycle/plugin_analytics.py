@@ -50,9 +50,25 @@ class PluginMetricsCollector:
         self.lock = threading.Lock()
         self._init_database()
 
+    def close(self):
+        """Close any open database connections."""
+        # Force garbage collection to help release any lingering connections
+        import gc
+
+        gc.collect()
+        # Add a small delay to help Windows release file handles
+        import time
+
+        time.sleep(0.1)
+
     def _init_database(self):
-        """Initialize the analytics database."""
+        """Initialize the analytics database & apply schema migrations.
+
+        Baseline schema (v1) is the original table set without latency_ms column.
+        Current latest version (v2) introduces latency_ms INTEGER (ms) on plugin_executions.
+        """
         with sqlite3.connect(self.db_path) as conn:
+            # --- Baseline tables (v1) ---
             conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS plugin_executions (
@@ -97,7 +113,24 @@ class PluginMetricsCollector:
             """
             )
 
-            # Create indexes for better performance
+            # Schema version meta table
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS plugin_schema_version (
+                    version INTEGER NOT NULL
+                )
+            """
+            )
+
+            # Initialize version row if absent (baseline=1)
+            cur = conn.execute("SELECT COUNT(*) FROM plugin_schema_version")
+            if (cur.fetchone() or [0])[0] == 0:
+                conn.execute("INSERT INTO plugin_schema_version (version) VALUES (1)")
+
+            # Apply migrations to reach latest schema
+            self._apply_migrations(conn)
+
+            # Create indexes (safe & idempotent)
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_plugin_id ON plugin_executions(plugin_id)"
             )
@@ -107,6 +140,56 @@ class PluginMetricsCollector:
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_plugin_usage ON plugin_usage(plugin_id, timestamp)"
             )
+
+            # Detect available columns post-migration
+            self._has_latency_ms = self._detect_latency_ms(conn)
+
+    # -----------------------------
+    # Migration framework helpers
+    # -----------------------------
+    _LATEST_SCHEMA_VERSION = 2  # increment when adding new migrations
+
+    def _get_current_version(self, conn: sqlite3.Connection) -> int:
+        try:
+            cur = conn.execute("SELECT version FROM plugin_schema_version LIMIT 1")
+            row = cur.fetchone()
+            return int(row[0]) if row else 1
+        except Exception:
+            return 1
+
+    def _set_version(self, conn: sqlite3.Connection, version: int):
+        conn.execute("DELETE FROM plugin_schema_version")
+        conn.execute(
+            "INSERT INTO plugin_schema_version (version) VALUES (?)", (version,)
+        )
+
+    def _detect_latency_ms(self, conn: sqlite3.Connection) -> bool:
+        try:
+            cur = conn.execute("PRAGMA table_info(plugin_executions)")
+            cols = [r[1] for r in cur.fetchall()]
+            return "latency_ms" in cols
+        except Exception:
+            return False
+
+    def _migration_add_latency_ms(self, conn: sqlite3.Connection):
+        """Add latency_ms column (v1 -> v2). Idempotent."""
+        cur = conn.execute("PRAGMA table_info(plugin_executions)")
+        cols = [r[1] for r in cur.fetchall()]
+        if "latency_ms" not in cols:
+            conn.execute("ALTER TABLE plugin_executions ADD COLUMN latency_ms INTEGER")
+
+    def _apply_migrations(self, conn: sqlite3.Connection):
+        current = self._get_current_version(conn)
+        # Sequentially upgrade; for now only v1->v2
+        if current < 2:
+            try:
+                self._migration_add_latency_ms(conn)
+                self._set_version(conn, 2)
+                current = 2
+                logger.info("Plugin analytics schema migrated to v2 (latency_ms)")
+            except Exception as e:  # pragma: no cover - defensive logging
+                logger.error(f"Migration to v2 failed: {e}")
+        # Future migrations would continue pattern
 
     def record_execution(
         self,
@@ -124,27 +207,55 @@ class PluginMetricsCollector:
             with self.lock:
                 timestamp = datetime.now().isoformat()
                 context_hash = self._hash_context(context or {})
+                latency_ms = (
+                    int(round(execution_time * 1000))
+                    if execution_time is not None
+                    else None
+                )
 
                 with sqlite3.connect(self.db_path) as conn:
-                    conn.execute(
-                        """
-                        INSERT INTO plugin_executions
-                        (plugin_id, execution_time, success, error_message,
-                         memory_usage, cpu_usage, timestamp, context_hash, user_session)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """,
-                        (
-                            plugin_id,
-                            execution_time,
-                            success,
-                            error_message,
-                            memory_usage,
-                            cpu_usage,
-                            timestamp,
-                            context_hash,
-                            session_id,
-                        ),
-                    )
+                    if getattr(self, "_has_latency_ms", False):
+                        conn.execute(
+                            """
+                            INSERT INTO plugin_executions
+                            (plugin_id, execution_time, success, error_message,
+                             memory_usage, cpu_usage, timestamp, context_hash, user_session, latency_ms)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                            (
+                                plugin_id,
+                                execution_time,
+                                success,
+                                error_message,
+                                memory_usage,
+                                cpu_usage,
+                                timestamp,
+                                context_hash,
+                                session_id,
+                                latency_ms,
+                            ),
+                        )
+                    else:
+                        # Pre-migration legacy insertion (should only occur if migration failed)
+                        conn.execute(
+                            """
+                            INSERT INTO plugin_executions
+                            (plugin_id, execution_time, success, error_message,
+                             memory_usage, cpu_usage, timestamp, context_hash, user_session)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                            (
+                                plugin_id,
+                                execution_time,
+                                success,
+                                error_message,
+                                memory_usage,
+                                cpu_usage,
+                                timestamp,
+                                context_hash,
+                                session_id,
+                            ),
+                        )
 
                 # Update session data
                 if session_id not in self.session_data:
@@ -538,6 +649,19 @@ class PluginAnalyticsIntegration:
             plugin_id, type(error).__name__, str(error), traceback.format_exc(), context
         )
 
+    def record_execution(
+        self,
+        plugin_id: str,
+        execution_time: float,
+        success: bool = True,
+        memory_usage: Optional[int] = None,
+        context: Optional[Dict[str, Any]] = None,
+    ):
+        """Record a plugin execution."""
+        self.metrics_collector.record_execution(
+            plugin_id, execution_time, success, memory_usage, context
+        )
+
     def get_plugin_analytics(self, plugin_id: Optional[str] = None) -> Dict[str, Any]:
         """Get analytics for a specific plugin or system overview."""
         if plugin_id:
@@ -552,6 +676,10 @@ class PluginAnalyticsIntegration:
     def get_dashboard_data(self) -> Dict[str, Any]:
         """Get complete dashboard data."""
         return self.dashboard.generate_dashboard_data()
+
+    def close(self):
+        """Close any open database connections."""
+        self.metrics_collector.close()
 
 
 class PluginExecutionTracker:
