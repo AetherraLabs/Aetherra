@@ -1,0 +1,33 @@
+{
+    "palette": {
+        "bg_root": "#0f172a",
+        "bg_panel": "#132032",
+        "bg_panel_glass": "rgba(19,32,50,0.70)",
+        "border_glow": "#0891b2",
+        "accent_primary": "#0891b2",
+        "accent_secondary": "#22c55e",
+        "text_primary": "#e6f7ff",
+        "text_secondary": "#94a3b8",
+        "text_muted": "#64748b",
+        "danger": "#ef4444",
+        "warning": "#f59e0b",
+        "success": "#22c55e",
+        "shadow": "#021017"
+    },
+    "fonts": {
+        "mono": "'JetBrains Mono', 'Consolas', 'Courier New', monospace",
+        "ui": "'JetBrains Mono', 'Segoe UI', 'Inter', sans-serif"
+    },
+    "effects": {
+        "glow_radius": 14,
+        "transition_ms": 420
+    },
+    "qss": {
+        "root": "QMainWindow { background: ${bg_root}; color: ${text_primary}; font-family: ${font_ui}; }\n* { selection-background-color: ${accent_primary}; }",
+        "panels": ".LyrixaGlassPanel { background: ${bg_panel_glass}; border: 1px solid ${border_glow}; border-radius: 12px; }\n.LyrixaGlassPanel:hover { border-color: ${accent_secondary}; }",
+        "chat": "#LyrixaChatDisplay { background: ${bg_panel_glass}; border: 1px solid ${accent_primary}; border-radius: 10px; padding: 10px; font-family: ${font_mono}; }",
+        "inputs": "QLineEdit { background: #142536; border: 1px solid ${accent_primary}; border-radius: 8px; padding: 6px 10px; color: ${text_primary}; font-family: ${font_mono}; } QLineEdit:focus { border-color: ${accent_secondary}; }",
+        "buttons": "QPushButton.cyber { background: qlineargradient(x1:0,y1:0,x2:1,y2:1, stop:0 ${accent_primary}, stop:1 ${accent_secondary}); color: #ffffff; border: 1px solid ${accent_primary}; border-radius: 8px; padding: 8px 18px; font-weight: 600; font-family: ${font_ui}; } QPushButton.cyber:hover { box-shadow: 0 0 8px ${accent_primary}; border-color: ${accent_secondary}; } QPushButton.cyber:pressed { background: ${accent_secondary}; }",
+        "cards": "QScrollArea#PluginCardsArea { border: 1px solid ${accent_primary}; border-radius: 10px; background: transparent; }\nQFrame#PluginCard { background: ${bg_panel_glass}; border:1px solid ${border_glow}; border-radius:12px; transition: all 180ms ease; font-family:${font_ui}; }\nQFrame#PluginCard:hover { border:1px solid ${accent_secondary}; box-shadow:0 0 6px ${accent_primary}; }\nQFrame#PluginCard[installed=\"true\"] { border:1px solid ${accent_secondary}; }\nQFrame#PluginCard QPushButton[card-install=\"installed\"] { background: #1e293b; color:${accent_secondary}; border:1px solid ${accent_secondary}; }\nQFrame#PluginCard QPushButton[card-install=\"installed\"]:disabled { opacity:0.85; }\nQFrame#PluginCard QLabel { color:${text_secondary}; }\nQFrame#PluginCard QLabel:hover { color:${text_primary}; }"
+    }
+}

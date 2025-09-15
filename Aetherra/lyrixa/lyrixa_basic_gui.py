@@ -31,6 +31,7 @@ Clean, simple design that expands when plugins are installed.
 
 import json
 import logging
+import os
 from html import escape as _html_escape
 
 from PySide6.QtCore import Qt, QThread, QTimer, Signal, Slot
@@ -48,6 +49,7 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPushButton,
+    QScrollArea,
     QSplitter,
     QTabWidget,
     QTextEdit,
@@ -56,6 +58,47 @@ from PySide6.QtWidgets import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+class StatusSidebar(QFrame):
+    """Phase 1 minimal status sidebar (placeholder metrics)."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setObjectName("StatusSidebar")
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setSpacing(4)
+
+        def add_row(title: str, name: str):
+            row = QHBoxLayout()
+            lab = QLabel(title)
+            val = QLabel("–")
+            val.setObjectName(name)
+            val.setProperty("class", "status-value")
+            row.addWidget(lab)
+            row.addStretch(1)
+            row.addWidget(val)
+            w = QWidget()
+            w.setLayout(row)
+            layout.addWidget(w)
+            return val
+
+        self.os_val = add_row("OS", "osStatus")
+        self.hub_val = add_row("Hub", "hubStatus")
+        self.model_val = add_row("Model", "modelStatus")
+        self.mem_val = add_row("Memory", "memoryStatus")
+        layout.addStretch(1)
+
+    def update_status(self, *, os_s=None, hub=None, model=None, memory=None):
+        if os_s is not None:
+            self.os_val.setText(str(os_s))
+        if hub is not None:
+            self.hub_val.setText(str(hub))
+        if model is not None:
+            self.model_val.setText(str(model))
+        if memory is not None:
+            self.mem_val.setText(str(memory))
 
 
 class LyrixaBasicWindow(QMainWindow):
@@ -74,21 +117,35 @@ class LyrixaBasicWindow(QMainWindow):
         self.ai_chat = ai_chat
         self.hub_connector = hub_connector
         self.service_registry = service_registry
+        # Feature flags
+        self.use_plugin_cards = os.environ.get(
+            "LYRIXA_USE_PLUGIN_CARDS", "0"
+        ).lower() in {"1", "true", "yes", "on"}
 
-        # UI components
+        # UI components (list mode)
         self.chat_input = None
         self.chat_display = None
         self.plugin_list = None
         self.installed_plugins_list = None
 
+        # Card mode containers
+        self.plugin_cards_area = None
+        self.plugin_cards_container = None
+        self.plugin_cards_layout = None
+        self.plugin_cards: dict[str, QWidget] = {}
+        # Incremental update helpers (card mode)
+        self._installed_registry_cache: set[str] | None = None
+        self.plugin_filter_input = None
+
         self._setup_ui()
-        self._setup_styling()
+        self._apply_theme_or_fallback()
         self._connect_signals()
         self._load_initial_data()
+        self._init_status_timer()
 
     def _setup_ui(self):
         """Setup the basic UI layout."""
-        self.setWindowTitle("Lyrixa - AI Assistant")
+        self.setWindowTitle("Lyrixa – Cyber Assistant")
         self.setGeometry(100, 100, 1200, 800)
 
         # Central widget with main tab widget
@@ -113,9 +170,17 @@ class LyrixaBasicWindow(QMainWindow):
         chat_panel = self._create_chat_panel()
         splitter.addWidget(chat_panel)
 
-        # Right Panel: Aetherra Hub
+        # Right Panel container: hub + status sidebar (vertical)
+        right_container = QWidget()
+        right_layout = QVBoxLayout(right_container)
+        right_layout.setContentsMargins(0, 0, 0, 0)
+        right_layout.setSpacing(6)
         hub_panel = self._create_hub_panel()
-        splitter.addWidget(hub_panel)
+        right_layout.addWidget(hub_panel, 6)
+        self.status_sidebar = StatusSidebar()
+        self.status_sidebar.setFixedHeight(170)
+        right_layout.addWidget(self.status_sidebar, 2)
+        splitter.addWidget(right_container)
 
         # Set initial splitter sizes (60% chat, 40% hub)
         splitter.setSizes([720, 480])
@@ -206,15 +271,53 @@ class LyrixaBasicWindow(QMainWindow):
         available_tab = QWidget()
         available_layout = QVBoxLayout(available_tab)
 
-        available_label = QLabel("Available Plugins:")
-        available_layout.addWidget(available_label)
+        if not self.use_plugin_cards:
+            # Legacy list-based UI
+            available_label = QLabel("Available Plugins:")
+            available_layout.addWidget(available_label)
 
-        self.plugin_list = QListWidget()
-        available_layout.addWidget(self.plugin_list)
+            self.plugin_list = QListWidget()
+            available_layout.addWidget(self.plugin_list)
 
-        install_button = QPushButton("Install Selected Plugin")
-        install_button.clicked.connect(self._install_selected_plugin)
-        available_layout.addWidget(install_button)
+            install_button = QPushButton("Install Selected Plugin")
+            install_button.clicked.connect(self._install_selected_plugin)
+            available_layout.addWidget(install_button)
+        else:
+            from Aetherra.lyrixa.ui.flow_layout import FlowLayout  # type: ignore
+            from Aetherra.lyrixa.ui.plugin_card import (  # type: ignore
+                PluginCard,
+                PluginMeta,
+            )
+
+            header_row = QHBoxLayout()
+            available_label = QLabel("Available Plugins (Card Preview Mode):")
+            header_row.addWidget(available_label)
+            header_row.addStretch(1)
+            # Filter input
+            self.plugin_filter_input = QLineEdit()
+            self.plugin_filter_input.setPlaceholderText("Filter plugins…")
+            self.plugin_filter_input.textChanged.connect(self._filter_plugin_cards)  # type: ignore[arg-type]
+            header_row.addWidget(self.plugin_filter_input)
+            header_widget = QWidget()
+            header_widget.setLayout(header_row)
+            available_layout.addWidget(header_widget)
+
+            self.plugin_cards_area = QScrollArea()
+            self.plugin_cards_area.setWidgetResizable(True)
+            self.plugin_cards_area.setObjectName("PluginCardsArea")
+            self.plugin_cards_container = QWidget()
+            self.plugin_cards_layout = FlowLayout(
+                self.plugin_cards_container, margin=6, spacing=12
+            )
+            self.plugin_cards_area.setWidget(self.plugin_cards_container)
+            available_layout.addWidget(self.plugin_cards_area)
+
+            # Add small helper note
+            note = QLabel(
+                "Set LYRIXA_USE_PLUGIN_CARDS=0 to revert to list view. Cards are experimental."
+            )
+            note.setStyleSheet("color:#888; font-size:11px;")
+            available_layout.addWidget(note)
 
         tab_widget.addTab(available_tab, "Available")
 
@@ -262,110 +365,32 @@ class LyrixaBasicWindow(QMainWindow):
 
         return panel
 
-    def _setup_styling(self):
-        """Setup the application styling."""
-        # Dark theme styling
-        self.setStyleSheet(
-            """
-            QMainWindow {
-                background-color: #0d1117;
-                color: #f0f6fc;
-            }
-
-            QFrame {
-                background-color: #161b22;
-                border: 1px solid #30363d;
-                border-radius: 6px;
-                margin: 5px;
-            }
-
-            QTextEdit {
-                background-color: #0d1117;
-                border: 1px solid #30363d;
-                border-radius: 6px;
-                padding: 10px;
-                color: #f0f6fc;
-                font-family: 'Segoe UI', sans-serif;
-                font-size: 14px;
-            }
-
-            QLineEdit {
-                background-color: #21262d;
-                border: 1px solid #30363d;
-                border-radius: 6px;
-                padding: 8px;
-                color: #f0f6fc;
-                font-size: 14px;
-            }
-
-            QLineEdit:focus {
-                border-color: #58a6ff;
-            }
-
-            QPushButton {
-                background-color: #238636;
-                border: 1px solid #2ea043;
-                border-radius: 6px;
-                color: white;
-                padding: 8px 16px;
-                font-weight: 500;
-                font-size: 14px;
-            }
-
-            QPushButton:hover {
-                background-color: #2ea043;
-            }
-
-            QPushButton:pressed {
-                background-color: #1a7f37;
-            }
-
-            QListWidget {
-                background-color: #0d1117;
-                border: 1px solid #30363d;
-                border-radius: 6px;
-                color: #ffffff;
-                font-size: 14px;
-                font-weight: 500;
-            }
-
-            QListWidget::item {
-                padding: 12px;
-                border-bottom: 1px solid #21262d;
-                color: #ffffff;
-                background-color: transparent;
-            }
-
-            QListWidget::item:hover {
-                background-color: #1f2937;
-                color: #ffffff;
-            }
-
-            QListWidget::item:selected {
-                background-color: #1f6feb;
-                color: #ffffff;
-                font-weight: 600;
-            }
-
-            QTabWidget::pane {
-                border: 1px solid #30363d;
-                background-color: #161b22;
-            }
-
-            QTabBar::tab {
-                background-color: #21262d;
-                border: 1px solid #30363d;
-                padding: 8px 16px;
-                margin-right: 2px;
-                color: #f0f6fc;
-            }
-
-            QTabBar::tab:selected {
-                background-color: #161b22;
-                border-bottom-color: #161b22;
-            }
-        """
+    def _fallback_stylesheet(self) -> str:
+        return (
+            "QMainWindow { background:#0d1117; color:#f0f6fc; }\n"
+            "QFrame { background:#161b22; border:1px solid #30363d; border-radius:6px; }\n"
+            "QLineEdit, QTextEdit { background:#0d1117; border:1px solid #30363d; border-radius:6px; color:#f0f6fc; }\n"
+            "QLineEdit:focus { border-color:#58a6ff; }\n"
+            "QPushButton { background:#238636; border:1px solid #2ea043; border-radius:6px; color:white; padding:6px 14px; }\n"
+            "QPushButton:hover { background:#2ea043; }\n"
+            "QPushButton:pressed { background:#1a7f37; }\n"
         )
+
+    def _apply_theme_or_fallback(self):
+        try:
+            from Aetherra.lyrixa.ui.theme_manager import get_theme_manager
+
+            tm = get_theme_manager()
+            desired = os.environ.get("LYRIXA_THEME", "cyber")
+            tm.load(desired)
+            qss = tm.build_stylesheet()
+            if not qss.strip():
+                raise RuntimeError("Empty theme stylesheet")
+            self.setStyleSheet(qss)
+            logger.info("[GUI] Applied theme '%s'", desired)
+        except Exception as exc:  # noqa: BLE001 broad fallback acceptable
+            logger.warning("[GUI] Theme apply failed, using fallback: %s", exc)
+            self.setStyleSheet(self._fallback_stylesheet())
 
     def _connect_signals(self):
         """Connect UI signals."""
@@ -373,6 +398,26 @@ class LyrixaBasicWindow(QMainWindow):
         self.refresh_timer = QTimer()
         self.refresh_timer.timeout.connect(self._refresh_hub_data)
         self.refresh_timer.start(30000)  # Refresh every 30 seconds
+
+    def _init_status_timer(self):
+        self._status_timer = QTimer(self)
+        self._status_timer.setInterval(3000)
+        self._status_timer.timeout.connect(self._update_status_sidebar)
+        self._status_timer.start()
+
+    def _update_status_sidebar(self):
+        try:
+            if not hasattr(self, "status_sidebar"):
+                return
+            os_ready = os.environ.get("LYRIXA_OS_READY", "ok")
+            hub = os.environ.get("AETHERRA_HUB_STATUS", "ok")
+            model = os.environ.get("LYRIXA_MODEL", "default")
+            memory = "active"
+            self.status_sidebar.update_status(
+                os_s=os_ready, hub=hub, model=model, memory=memory
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("[GUI] Status sidebar update failed: %s", exc)
 
     def _create_styled_message_box(
         self,
@@ -642,11 +687,37 @@ class LyrixaBasicWindow(QMainWindow):
     @Slot(list)
     def _update_plugin_list(self, plugins: list):
         """Update the available plugins list."""
-        if not self.plugin_list:
+        # Card mode
+        if self.use_plugin_cards:
+            # (Imports deferred inside upsert; keep minimal pre-check here)
+            if not self.plugin_cards_layout:
+                return
+
+            # Load installed registry once for reconciliation
+            installed = self._load_installed_registry()
+
+            for plugin in plugins:
+                name = plugin.get("name") or plugin.get("id") or "unknown"
+                version = plugin.get("version", "1.0.0")
+                desc = plugin.get("description", "No description available")
+                display_name = plugin.get("display_name", name)
+                self._upsert_plugin_card(
+                    name,
+                    display_name,
+                    version,
+                    desc,
+                    installed_flag=name in installed,
+                    plugin_data=plugin,
+                )
+            # Apply filter if present
+            if self.plugin_filter_input and self.plugin_filter_input.text().strip():
+                self._filter_plugin_cards(self.plugin_filter_input.text())
             return
 
+        # Legacy list mode
+        if not self.plugin_list:
+            return
         self.plugin_list.clear()
-
         for plugin in plugins:
             item = QListWidgetItem()
             item.setText(
@@ -1471,6 +1542,27 @@ class LyrixaBasicWindow(QMainWindow):
     def _remove_plugin_from_available_list(self, plugin_name: str):
         """Remove an installed plugin from the available plugins list."""
         try:
+            if self.use_plugin_cards:
+                card = self.plugin_cards.get(plugin_name)
+                if card:
+                    # Instead of removing, mark installed to visually transition
+                    try:
+                        if hasattr(card, "mark_installed"):
+                            card.mark_installed(True)  # type: ignore[attr-defined]
+                        logger.info(
+                            "[GUI] Marked card '%s' installed (card mode)",
+                            plugin_name,
+                        )
+                    except Exception as exc:  # noqa: BLE001
+                        logger.debug(
+                            "[GUI] Failed to mark card installed, fallback remove: %s",
+                            exc,
+                        )
+                        card.setParent(None)
+                        card.deleteLater()
+                        self.plugin_cards.pop(plugin_name, None)
+                return
+
             if not self.plugin_list:
                 logger.warning(
                     f"[GUI] Plugin list is None, cannot remove {plugin_name}"
@@ -1505,6 +1597,98 @@ class LyrixaBasicWindow(QMainWindow):
 
         except Exception as e:
             logger.error(f"[GUI] Failed to remove plugin from available list: {e}")
+
+    # --- Card Mode Helpers -------------------------------------------------
+    def _load_installed_registry(self) -> set[str]:
+        if self._installed_registry_cache is not None:
+            return self._installed_registry_cache
+        result: set[str] = set()
+        try:
+            from pathlib import Path
+
+            lyrixa_plugins_dir = Path(__file__).parent / "plugins"
+            registry_file = lyrixa_plugins_dir / "installed_plugins.json"
+            if registry_file.exists():
+                import json as _json
+
+                with open(registry_file, encoding="utf-8") as f:
+                    data = _json.load(f)
+                if isinstance(data, dict):
+                    result.update(data.keys())
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("[GUI] Failed loading installed registry: %s", exc)
+        self._installed_registry_cache = result
+        return result
+
+    def _upsert_plugin_card(
+        self,
+        name: str,
+        display_name: str,
+        version: str,
+        description: str,
+        *,
+        installed_flag: bool,
+        plugin_data: dict,
+    ) -> None:
+        if not self.plugin_cards_layout:
+            return
+        try:  # local import for optional dependency path
+            from Aetherra.lyrixa.ui.plugin_card import (  # type: ignore
+                PluginCard,
+                PluginMeta,
+            )
+        except Exception as exc:  # pragma: no cover
+            logger.debug("[GUI] Upsert card import failed: %s", exc)
+            return
+
+        existing = self.plugin_cards.get(name)
+        if existing:
+            # Update description/version if changed
+            # (Lightweight: recreate meta & update label if present)
+            if hasattr(existing, "meta"):
+                meta = existing.meta  # type: ignore[attr-defined]
+                meta.display_name = display_name
+                meta.version = version
+                meta.description = description
+            if installed_flag and hasattr(existing, "mark_installed"):
+                existing.mark_installed(True)  # type: ignore[attr-defined]
+            return
+
+        # Create new card
+        meta = PluginMeta(
+            name=name,
+            display_name=display_name,
+            version=version,
+            description=description,
+            installed=installed_flag,
+        )
+
+        def _on_install(m: PluginMeta, pdata=plugin_data):  # closure
+            self._perform_plugin_installation(m.name, pdata)
+
+        card = PluginCard(
+            meta,
+            on_install=None if installed_flag else _on_install,
+            parent=self.plugin_cards_container,
+        )
+        self.plugin_cards_layout.addWidget(card)
+        self.plugin_cards[name] = card
+
+    def _filter_plugin_cards(self, text: str):
+        query = (text or "").strip().lower()
+        for name, card in self.plugin_cards.items():
+            show = True
+            if query:
+                meta = getattr(card, "meta", None)
+                blob = " ".join(
+                    [
+                        name,
+                        getattr(meta, "display_name", ""),
+                        getattr(meta, "description", ""),
+                    ]
+                ).lower()
+                show = query in blob
+            card.setVisible(show)
 
     def _add_plugin_to_available_list(self, plugin_name: str, plugin_data: dict):
         """Add an uninstalled plugin back to the available plugins list."""
