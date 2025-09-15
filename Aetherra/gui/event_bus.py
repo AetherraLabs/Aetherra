@@ -25,12 +25,17 @@ import weakref
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any
+from types import MethodType
+from typing import Any, Protocol
 from uuid import uuid4
 
 from PySide6.QtCore import QObject, Signal, Slot
 
 logger = logging.getLogger(__name__)
+
+
+class _ConnectableSignal(Protocol):
+    def connect(self, slot: Callable[..., Any]) -> Any: ...
 
 
 class EventPriority(Enum):
@@ -70,7 +75,8 @@ class LayoutEvent(Event):
 class PluginEvent(Event):
     """Plugin-related events."""
 
-    plugin_id: str
+    # Default provided to satisfy dataclass ordering (base class has defaulted fields).
+    plugin_id: str = ""
     state: str | None = None
     error: str | None = None
 
@@ -88,8 +94,9 @@ class ChatEvent(Event):
 class PerformanceEvent(Event):
     """Performance monitoring events."""
 
-    metric_name: str
-    value: float
+    # Defaults added to satisfy dataclass field ordering after base class defaults.
+    metric_name: str = ""
+    value: float = 0.0
     unit: str = "ms"
 
 
@@ -105,31 +112,41 @@ class EventSubscription:
         self.id = str(uuid4())
         self.event_type = event_type
         self.filter_func = filter_func
-
         # Use weak reference to prevent memory leaks
-        if hasattr(callback, "__self__"):
-            # Method - store weak reference to object and method name
+        if isinstance(callback, MethodType):
+            # Bound method - store weak reference to object and method name
             self.obj_ref = weakref.ref(callback.__self__)
             self.method_name = callback.__name__
             self.callback = None
         else:
-            # Function - store direct weak reference
+            # Function or other callable - attempt weak reference, fallback to strong reference wrapper
             self.obj_ref = None
             self.method_name = None
-            self.callback = weakref.ref(callback)
+            try:
+                self.callback = weakref.ref(callback)  # type: ignore[arg-type]
+            except TypeError:
+                # Fallback strong reference via closure when weakref is not supported
+                self.callback = lambda: callback
 
     def is_alive(self) -> bool:
         """Check if the subscription is still valid."""
         if self.obj_ref:
             return self.obj_ref() is not None
-        return self.callback() is not None
+        if self.callback:
+            try:
+                return self.callback() is not None
+            except TypeError:
+                # If callback is a direct function (strong ref), consider it alive
+                return True
+        return False
 
     def get_callback(self) -> Callable | None:
         """Get the actual callback function."""
         if self.obj_ref:
             obj = self.obj_ref()
-            if obj:
-                return getattr(obj, self.method_name, None)
+            if obj and self.method_name is not None:
+                # self.method_name is guaranteed to be str in this branch
+                return getattr(obj, self.method_name)
             return None
         if self.callback:
             return self.callback()
@@ -160,18 +177,20 @@ class QtSignalBridge(QObject):
         super().__init__()
         self.event_bus = event_bus
 
-    @Slot(object)
     def emit_event(self, event: Event) -> None:
-        """Emit an event through Qt signals."""
+        """Emit an event via Qt signal."""
         self.event_emitted.emit(event)
 
-    def bridge_signal(self, qt_signal: Signal, event_factory: Callable) -> None:
-        """Bridge a Qt signal to create events."""
+    def bridge_signal(
+        self, qt_signal: _ConnectableSignal, event_factory: Callable[..., Event]
+    ) -> None:
+        """Bridge a Qt signal (any object with a connect() method) to create events."""
 
         def signal_handler(*args):
             try:
                 event = event_factory(*args)
-                self.event_bus.emit(event)
+                # Forward to bus (which will also emit back to Qt via emit_event)
+                self.event_bus.publish(event)
             except Exception as e:
                 logger.error(f"Signal bridge error: {e}")
 
@@ -203,8 +222,8 @@ class EventBus(QObject):
 
         logger.info("EventBus initialized")
 
-    def emit(self, event: Event) -> None:
-        """Emit an event to all subscribers."""
+    def publish(self, event: Event) -> None:
+        """Publish (emit) an event to all subscribers (renamed from 'emit' to avoid QObject.emit override)."""
         logger.debug(f"Emitting event: {event.type} from {event.source}")
         self._stats["events_emitted"] += 1
 
@@ -271,8 +290,10 @@ class EventBus(QObject):
                     return True
         return False
 
-    def subscribe_qt_signal(self, qt_signal: Signal, event_factory: Callable) -> None:
-        """Subscribe a Qt signal to emit events."""
+    def subscribe_qt_signal(
+        self, qt_signal: _ConnectableSignal, event_factory: Callable[..., Event]
+    ) -> None:
+        """Subscribe a Qt signal (any object with connect()) to emit events."""
         self._qt_bridge.bridge_signal(qt_signal, event_factory)
         logger.debug("Bridged Qt signal to event factory")
 
@@ -403,7 +424,7 @@ def get_event_bus() -> EventBus:
 
 def emit_event(event: Event) -> None:
     """Convenience function to emit an event on the global bus."""
-    get_event_bus().emit(event)
+    get_event_bus().publish(event)
 
 
 def subscribe_event(

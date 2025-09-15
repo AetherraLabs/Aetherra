@@ -153,43 +153,124 @@ class LyrixaBasicAssistant:
     async def _check_aetherra_os(self) -> bool:
         """Check if Aetherra OS is running (hard dependency)."""
         try:
-            # Configurable wait window for OS readiness (default 45s)
+            # --- Configuration knobs (env overrides) ---
+            # Maximum time to wait for OS readiness (default 45s, clamp 5-180)
             try:
                 wait_total = int(os.getenv("LYRIXA_WAIT_FOR_OS_SECONDS", "45"))
             except Exception:
                 wait_total = 45
-            wait_total = max(5, min(wait_total, 180))  # clamp to sane bounds
-            poll_interval = 2
+            wait_total = max(5, min(wait_total, 180))
+
+            # Poll interval (seconds) when waiting for readiness
+            try:
+                poll_interval = float(os.getenv("LYRIXA_OS_POLL_INTERVAL", "2"))
+            except Exception:
+                poll_interval = 2.0
+            poll_interval = max(0.25, min(poll_interval, 10.0))
+
+            # Minimum number of services considered a healthy OS (default 3).
+            # Allow lowering for lightweight / headless development.
+            try:
+                min_services = int(os.getenv("LYRIXA_MIN_OS_SERVICES", "3"))
+            except Exception:
+                min_services = 3
+            min_services = max(0, min(min_services, 50))
+
+            # If set, skip waiting entirely and continue in degraded mode
+            skip_wait = os.getenv("LYRIXA_SKIP_OS_WAIT", "0") == "1"
+            # If set, after timeout continue startup (degraded) instead of hard fail
+            allow_degraded = (
+                os.getenv("LYRIXA_ALLOW_DEGRADED_START", "0") == "1" or skip_wait
+            )
+
+            if skip_wait:
+                logger.info(
+                    "[OS] Skip wait requested (LYRIXA_SKIP_OS_WAIT=1); attempting immediate registry access"
+                )
+
+            # Base Hub URL (configurable); support legacy AETHERRA_WEB_PORT / AETHERRA_HUB_PORT overrides
+            hub_port = (
+                os.getenv("AETHERRA_HUB_PORT")
+                or os.getenv("AETHERRA_WEB_PORT")
+                or "3001"
+            )
+            hub_host = os.getenv("AETHERRA_HUB_HOST", "localhost")
+            base_hub = os.getenv(
+                "AETHERRA_HUB_BASE_URL", f"http://{hub_host}:{hub_port}"
+            ).rstrip("/")
+
+            # Allow reverting to legacy single-endpoint probe for stability
+            legacy_mode = os.getenv("LYRIXA_OS_LEGACY_DETECTION", "0") == "1"
+
+            # Candidate endpoints (new mode); legacy uses only root
+            if legacy_mode:
+                hub_probe_urls = [f"{base_hub}/"]
+            else:
+                hub_probe_urls = [
+                    f"{base_hub}/health",
+                    f"{base_hub}/api/health",
+                    f"{base_hub}/api/plugins",
+                    f"{base_hub}/",  # fallback root
+                ]
+
+            if legacy_mode:
+                logger.info(
+                    "[OS] Legacy detection mode enabled (LYRIXA_OS_LEGACY_DETECTION=1)"
+                )
 
             # Check if Aetherra Hub is running (indicates OS is active)
-            # The Hub runs on port 3001 when OS is active
+            # The Hub runs on internal marketplace server; any healthy response is acceptable
             import urllib.error
             import urllib.request
 
             elapsed = 0
             attempt = 1
-            while elapsed <= wait_total:
+            # Fast path: if minimum required services is 0, treat as logically connected
+            if min_services == 0 and not skip_wait:
                 try:
-                    # Quick HTTP check to Aetherra Hub
-                    with urllib.request.urlopen(
-                        "http://localhost:3001/", timeout=3
-                    ) as response:
-                        if response.status == 200:
-                            # If Hub responds, OS is definitely running
-                            logger.info("[OS] Connected to Aetherra OS via Hub")
-                            self.aetherra_os_connected = True
+                    from aetherra_service_registry import get_service_registry
 
-                            # Still try to get service registry for internal communication
-                            try:
-                                from aetherra_service_registry import (
-                                    get_service_registry,
-                                )
+                    self.service_registry = await get_service_registry()
+                    logger.info(
+                        "[OS] Bypassing service count check (LYRIXA_MIN_OS_SERVICES=0) — continuing in lightweight mode"
+                    )
+                    self.aetherra_os_connected = True
+                    return True
+                except Exception:
+                    # Fall through to normal loop if registry can't be obtained yet
+                    pass
 
-                                self.service_registry = await get_service_registry()
-                            except Exception:
-                                pass  # Hub connection is sufficient
+            while elapsed <= wait_total or skip_wait:
+                try:
+                    # Quick HTTP check to Aetherra Hub across candidate endpoints
+                    hub_ok = False
+                    last_status = None
+                    for url in hub_probe_urls:
+                        try:
+                            with urllib.request.urlopen(url, timeout=2.5) as response:
+                                last_status = response.status
+                                if (
+                                    200 <= response.status < 500
+                                ):  # even 404 proves server up
+                                    hub_ok = True
+                                    break
+                        except Exception:
+                            continue
+                    if hub_ok:
+                        logger.info(
+                            f"[OS] Hub responsive at {url} (status={last_status})"
+                        )
+                        # Attempt registry enrichment but don't fail if it errors
+                        try:
+                            from aetherra_service_registry import get_service_registry
 
-                            return True
+                            self.service_registry = await get_service_registry()
+                        except Exception as reg_err:
+                            logger.debug(
+                                f"[OS] Registry fetch after hub check failed: {reg_err}"
+                            )
+                        self.aetherra_os_connected = True
+                        return True
                 except (
                     urllib.error.URLError,
                     urllib.error.HTTPError,
@@ -206,25 +287,57 @@ class LyrixaBasicAssistant:
                     self.service_registry = await get_service_registry()
                     if self.service_registry:
                         services = self.service_registry.list_services()
-                        if len(services) >= 3:  # Expect core OS services
+                        # Fast success path: if core identifiers present, accept even if below min_services
+                        core_names = {
+                            "aetherra_hub",
+                            "plugin_discovery",
+                            "service_registry",
+                            "registry",
+                        }
+                        present = set(services.keys())
+                        if present & core_names:
+                            if len(services) >= min_services or legacy_mode:
+                                logger.info(
+                                    f"[OS] Registry core services detected ({len(services)} total) — proceeding"
+                                )
+                                self.aetherra_os_connected = True
+                                return True
+                        if len(services) >= min_services:
                             logger.info(
-                                f"[OS] Connected to Aetherra OS ({len(services)} services)"
+                                f"[OS] Connected to Aetherra OS ({len(services)} services >= {min_services} required)"
                             )
                             self.aetherra_os_connected = True
                             return True
                         else:
-                            logger.info(
-                                f"[OS] OS not ready yet (attempt {attempt}): {len(services)} services < 3; waiting..."
-                            )
+                            if not skip_wait:
+                                logger.info(
+                                    f"[OS] OS not ready yet (attempt {attempt}): {len(services)} services < {min_services}; waiting..."
+                                )
+                            else:
+                                logger.info(
+                                    f"[OS] Degraded start: only {len(services)} services (< {min_services}) but skip wait enabled"
+                                )
+                                self.aetherra_os_connected = False
+                                return True  # proceed degraded
                     else:
-                        logger.info(
-                            f"[OS] Service registry unavailable (attempt {attempt}); waiting..."
-                        )
+                        if not skip_wait:
+                            logger.info(
+                                f"[OS] Service registry unavailable (attempt {attempt}); waiting..."
+                            )
+                        else:
+                            logger.info(
+                                "[OS] Service registry not ready but skip wait enabled; proceeding in degraded mode"
+                            )
+                            return True
                 except Exception:
                     # Likely OS not ready or registry not reachable yet
                     logger.debug(
                         f"[OS] Registry check failed (attempt {attempt}); will retry"
                     )
+
+                if skip_wait:
+                    # One immediate iteration only when skip_wait is set
+                    break
 
                 if elapsed >= wait_total:
                     break
@@ -233,8 +346,28 @@ class LyrixaBasicAssistant:
                 elapsed += poll_interval
                 attempt += 1
 
+            # Final diagnostic: try one last registry snapshot for operator insight
+            diag_services = {}
+            try:
+                from aetherra_service_registry import get_service_registry
+
+                reg = await get_service_registry()
+                diag_services = {
+                    name: info.status.value
+                    for name, info in reg.list_services().items()
+                }
+            except Exception as diag_err:
+                logger.debug(f"[OS] Final diagnostic registry fetch failed: {diag_err}")
+
+            if allow_degraded:
+                logger.warning(
+                    f"[OS] Aetherra OS not ready after {wait_total}s (services < {min_services}). Continuing in degraded mode (limited features). Current services: {diag_services}"
+                )
+                self.aetherra_os_connected = False
+                return True
+
             logger.error(
-                f"[OS] Aetherra OS not ready after {wait_total}s. Please start the OS and try again."
+                f"[OS] Aetherra OS not ready after {wait_total}s. Observed services: {diag_services}. Set LYRIXA_ALLOW_DEGRADED_START=1 to bypass or adjust LYRIXA_MIN_OS_SERVICES."
             )
             return False
 
@@ -566,37 +699,80 @@ class LyrixaBasicAssistant:
                             f"[HUB] Found plugin: {plugin_info.get('description', 'No description')}"
                         )
 
-                        # Install the plugin
-                        if "local_path" in plugin_info:
-                            import shutil
+                        # --- Resolve source path (may be missing from hub payload) ---
+                        source_path: Path | None = None
 
-                            source_path = Path(plugin_info["local_path"])
-
-                            if source_path.is_file():
-                                # Single file plugin
-                                dest_path = lyrixa_plugins_dir / source_path.name
-                                shutil.copy2(source_path, dest_path)
-                                logger.info(f"[HUB] Copied plugin file to: {dest_path}")
-
-                            elif source_path.is_dir():
-                                # Directory plugin
-                                dest_path = lyrixa_plugins_dir / plugin_name
-                                if dest_path.exists():
-                                    shutil.rmtree(dest_path)
-                                shutil.copytree(source_path, dest_path)
-                                logger.info(
-                                    f"[HUB] Copied plugin directory to: {dest_path}"
+                        if plugin_info.get("local_path"):
+                            source_path = Path(plugin_info["local_path"]).resolve()
+                        else:
+                            logger.info(
+                                f"[HUB] Plugin '{plugin_name}' missing local_path; attempting discovery fallback"
+                            )
+                            # Attempt dynamic discovery
+                            try:
+                                from aetherra_plugin_discovery import (
+                                    AetherraPluginDiscovery,
                                 )
 
-                            else:
-                                logger.error(
-                                    f"[HUB] Plugin source path doesn't exist: {source_path}"
+                                disc = AetherraPluginDiscovery()
+                                await disc.discover_all_plugins()
+                                md = disc.discovered_plugins.get(plugin_name)
+                                if md and md.local_path:
+                                    source_path = Path(md.local_path).resolve()
+                                    logger.info(
+                                        f"[HUB] Resolved local path via discovery: {source_path}"
+                                    )
+                            except Exception as disc_err:
+                                logger.debug(
+                                    f"[HUB] Discovery fallback failed for {plugin_name}: {disc_err}"
                                 )
-                                return False
 
+                            # Heuristic search if still unresolved
+                            if source_path is None:
+                                candidates: list[Path] = []
+                                plugins_root = Path("Aetherra/plugins").resolve()
+                                candidates.append(plugins_root / plugin_name)
+                                candidates.append(plugins_root / f"{plugin_name}.py")
+                                # Scan for single file matching plugin_name inside plugins root
+                                try:
+                                    for py in plugins_root.glob("*.py"):
+                                        if py.stem == plugin_name:
+                                            candidates.append(py)
+                                except Exception:
+                                    pass
+                                for cand in candidates:
+                                    if cand.exists():
+                                        source_path = cand
+                                        logger.info(
+                                            f"[HUB] Heuristic resolved plugin '{plugin_name}' to {cand}"
+                                        )
+                                        break
+
+                        if source_path is None:
+                            logger.error(
+                                f"[HUB] No installation method available for plugin: {plugin_name} (unable to resolve local source)"
+                            )
+                            return False
+
+                        import shutil
+
+                        if source_path.is_file():
+                            dest_path = lyrixa_plugins_dir / source_path.name
+                            shutil.copy2(source_path, dest_path)
+                            logger.info(
+                                f"[HUB] Installed single-file plugin to: {dest_path}"
+                            )
+                        elif source_path.is_dir():
+                            dest_path = lyrixa_plugins_dir / plugin_name
+                            if dest_path.exists():
+                                shutil.rmtree(dest_path)
+                            shutil.copytree(source_path, dest_path)
+                            logger.info(
+                                f"[HUB] Installed directory plugin to: {dest_path}"
+                            )
                         else:
                             logger.error(
-                                f"[HUB] No installation method available for plugin: {plugin_name}"
+                                f"[HUB] Resolved source path does not exist or is not a file/dir: {source_path}"
                             )
                             return False
 

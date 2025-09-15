@@ -15,6 +15,7 @@ import asyncio
 import logging
 import os
 import time
+from contextlib import suppress
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -42,7 +43,9 @@ class ServiceInfo:
     status: ServiceStatus = ServiceStatus.STARTING
     registered_at: datetime = field(default_factory=datetime.now)
     last_heartbeat: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: Dict[str, Any] = field(
+        default_factory=dict
+    )  # may include 'self_heartbeat': bool
     dependencies: List[str] = field(default_factory=list)
 
 
@@ -195,10 +198,16 @@ class AetherraServiceRegistry:
             if cname in self._services:
                 logger.warning(f"[WARN] Service {name} already registered, updating...")
 
+            md = metadata or {}
+            # Normalize explicit self-heartbeat flag to bool if present
+            if "self_heartbeat" in md:
+                with suppress(Exception):
+                    md["self_heartbeat"] = bool(md.get("self_heartbeat"))
+
             service_info = ServiceInfo(
                 name=cname,
                 instance=instance,
-                metadata=metadata or {},
+                metadata=md,
                 dependencies=dependencies or [],
             )
 
@@ -212,7 +221,8 @@ class AetherraServiceRegistry:
 
             # Broadcast registration event
             await self._broadcast_event(
-                "service.registered", {"service_name": cname, "metadata": metadata}
+                "service.registered",
+                {"service_name": cname, "metadata": md},
             )
 
             # Check if this registration satisfies any pending dependencies
@@ -359,6 +369,32 @@ class AetherraServiceRegistry:
 
         self._services[cname].last_heartbeat = datetime.now()
         logger.debug(f"[HEARTBEAT] Heartbeat updated for service '{cname}'")
+
+    # ---- Self-heartbeat API ----
+    def mark_service_self_heartbeat(self, name: str, enabled: bool = True) -> bool:
+        """Mark/unmark a service as self-heartbeating (registry won't passively refresh it).
+
+        Returns True if the service metadata was updated.
+        """
+        cname = self._canonical(name)
+        svc = self._services.get(cname)
+        if not svc:
+            return False
+        try:
+            svc.metadata["self_heartbeat"] = bool(enabled)
+            return True
+        except Exception:
+            return False
+
+    def is_self_heartbeating(self, name: str) -> bool:
+        cname = self._canonical(name)
+        svc = self._services.get(cname)
+        if not svc:
+            return False
+        try:
+            return bool(svc.metadata.get("self_heartbeat"))
+        except Exception:
+            return False
 
     async def send_message(
         self, target_service: str, message_type: str, data: Any
@@ -548,6 +584,7 @@ class AetherraServiceRegistry:
                     "registered_at": info.registered_at.isoformat(),
                     "last_heartbeat": info.last_heartbeat.isoformat(),
                     "dependencies": info.dependencies,
+                    "self_heartbeat": bool(info.metadata.get("self_heartbeat")),
                 }
                 for name, info in self._services.items()
             },

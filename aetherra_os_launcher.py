@@ -362,6 +362,21 @@ class AetherraOSLauncher:
             # Phase 2: Load and validate core systems
             await self._load_core_systems(config)
 
+            # Log summary of registered services and health
+            try:
+                if self.service_registry:
+                    status = self.service_registry.get_registry_status()
+                    logger.info("[REGISTRY] Service summary after startup:")
+                    logger.info(
+                        f"[REGISTRY] Total services: {status['total_services']}"
+                    )
+                    for name, info in status["services"].items():
+                        logger.info(
+                            f"[REGISTRY] Service '{name}': status={info['status']}, deps={info['dependencies']}"
+                        )
+            except Exception as e:
+                logger.warning(f"[REGISTRY] Failed to log service summary: {e}")
+
             # Phase 3: Start Kernel Loop
             await self._start_kernel_loop()
 

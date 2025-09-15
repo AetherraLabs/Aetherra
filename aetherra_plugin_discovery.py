@@ -13,15 +13,26 @@ visible in the Hub marketplace interface.
 
 import asyncio
 import hashlib
+import importlib
 import importlib.util
 import json
 import logging
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any  # reduced imports; use built-in generics only
 
 import requests
+
+# Optional security signing modules (best-effort). We import them here so that
+# in-function logic can rely on names existing or handle NameError gracefully.
+try:  # pragma: no cover - optional dependency path
+    from Aetherra.security.api_keys import get_key  # type: ignore
+    from Aetherra.security.plugin_signing import sign_manifest  # type: ignore
+
+    _SIGNING_AVAILABLE = True
+except Exception:  # broad: any failure means signing disabled
+    _SIGNING_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
@@ -37,15 +48,14 @@ class PluginMetadata:
     category: str = "utility"
     license: str = "GPL-3.0"
     aetherra_version: str = ">=3.0.0"
-    # Accept either dict (name->version) or list[str] to interop with hub schema
-    dependencies: Optional[Union[Dict[str, str], List[str]]] = None
-    keywords: Optional[List[str]] = None
-    entry_point: Optional[str] = None
-    exports: Optional[Dict[str, str]] = None
-    repository: Optional[str] = None
-    documentation: Optional[str] = None
-    homepage: Optional[str] = None
-    local_path: Optional[str] = None
+    dependencies: dict[str, str] | list[str] | None = None
+    keywords: list[str] | None = None
+    entry_point: str | None = None
+    exports: dict[str, str] | None = None
+    repository: str | None = None
+    documentation: str | None = None
+    homepage: str | None = None
+    local_path: str | None = None
     plugin_type: str = "local"  # local, hub, system
 
     def __post_init__(self):
@@ -64,15 +74,15 @@ class AetherraPluginDiscovery:
     Discovers and catalogs local plugins, making them available to the Hub.
     """
 
-    def __init__(self, plugins_dir: Optional[Union[str, Path]] = None):
+    def __init__(self, plugins_dir: str | Path | None = None):
         # Normalize to an absolute Path for consistent downstream usage
         self.plugins_dir: Path = (
             Path(plugins_dir) if plugins_dir is not None else Path("Aetherra/plugins")
         ).absolute()
-        self.discovered_plugins: Dict[str, PluginMetadata] = {}
+        self.discovered_plugins: dict[str, PluginMetadata] = {}
         self.hub_url = "http://localhost:3001"
 
-    async def discover_all_plugins(self) -> Dict[str, PluginMetadata]:
+    async def discover_all_plugins(self) -> dict[str, PluginMetadata]:
         """Discover all plugins in the plugins directory."""
         logger.info("[SCAN] Starting plugin discovery...")
         if not self.plugins_dir.exists():
@@ -169,15 +179,31 @@ class AetherraPluginDiscovery:
             logger.error(f"[ERROR] Error reading {py_file}: {e}")
 
     async def _extract_python_plugin_metadata(self, py_file: Path, content: str):
-        """Extract metadata from a Python plugin class."""
+        """Extract metadata from a Python plugin class.
+
+        Enhanced: soft-skip GUI plugins ( *_gui.py ) when PySide6 not installed.
+        """
         try:
-            # Try to import the module and extract metadata
+            # Optional explicit skip via env toggle
+            if os.getenv(
+                "AETHERRA_SKIP_GUI_PLUGINS", "0"
+            ) == "1" and py_file.name.endswith("_gui.py"):
+                logger.info(
+                    f"[SKIP] GUI plugin {py_file.name} skipped via AETHERRA_SKIP_GUI_PLUGINS=1"
+                )
+                return
+            if (
+                py_file.name.endswith("_gui.py")
+                and importlib.util.find_spec("PySide6") is None
+            ):
+                logger.info(
+                    f"[SKIP] GUI plugin {py_file.name} skipped (PySide6 not installed)"
+                )
+                return
             spec = importlib.util.spec_from_file_location("plugin_module", py_file)
             if spec and spec.loader:
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)
-
-                # Look for plugin classes
                 for attr_name in dir(module):
                     attr = getattr(module, attr_name)
                     if hasattr(attr, "name") and hasattr(attr, "description"):
@@ -193,13 +219,20 @@ class AetherraPluginDiscovery:
                             plugin_type="python",
                             keywords=["python", "local"],
                         )
-
                         self.discovered_plugins[metadata.name] = metadata
                         logger.info(f"[OK] Discovered Python plugin: {metadata.name}")
                         break
-
         except Exception as e:
-            logger.error(f"[ERROR] Error importing {py_file}: {e}")
+            err_txt = str(e)
+            if py_file.name.endswith("_gui.py") and any(
+                token in err_txt
+                for token in ("PySide6", "QWidget", "QMainWindow", "pyqtSignal")
+            ):
+                logger.info(
+                    f"[SKIP] GUI plugin {py_file.name} not loaded (Qt dependency issue): {e}"
+                )
+            else:
+                logger.error(f"[ERROR] Error importing {py_file}: {e}")
 
     async def _extract_plugin_data_metadata(self, py_file: Path, content: str):
         """Extract metadata from plugin_data dictionary."""
@@ -270,14 +303,9 @@ class AetherraPluginDiscovery:
             logger.error(f"[ERROR] Error processing sample plugin {sample_file}: {e}")
 
     async def register_with_hub(self, plugin_metadata: PluginMetadata) -> bool:
-        """Register a plugin with the Aetherra Hub."""
         try:
-            # Convert metadata to Hub format
-            # Ensure schema-compatible fields for Hub validator
-            # - entry_point: required non-empty string
-            # - dependencies: list[str]
+            entry_point: str | None = plugin_metadata.entry_point
             # Infer a reasonable entry_point when missing
-            entry_point: Optional[str] = plugin_metadata.entry_point
             if not entry_point:
                 lp = plugin_metadata.local_path or ""
                 if lp and lp.endswith(".py"):
@@ -324,15 +352,15 @@ class AetherraPluginDiscovery:
 
             # Optional: sign manifest
             try:
-                if os.environ.get("AETHERRA_SIGN_PLUGINS") == "1":
-                    from Aetherra.security.api_keys import get_key
-                    from Aetherra.security.plugin_signing import sign_manifest
-
-                    secret = get_key("plugin_signing_secret")
+                if (
+                    _SIGNING_AVAILABLE
+                    and os.environ.get("AETHERRA_SIGN_PLUGINS") == "1"
+                ):
+                    secret = get_key("plugin_signing_secret")  # type: ignore[name-defined]
                     if secret:
-                        hub_plugin = sign_manifest(hub_plugin, secret)
-            except Exception:
-                pass
+                        hub_plugin = sign_manifest(hub_plugin, secret)  # type: ignore[name-defined]
+            except Exception as signing_exc:  # best-effort; log at debug level
+                logger.debug(f"[SIGN] Plugin signing skipped: {signing_exc}")
 
             # Try to register with Hub API
             try:
@@ -342,16 +370,15 @@ class AetherraPluginDiscovery:
                 if response.status_code in [200, 201]:
                     logger.info(f"[OK] Registered {plugin_metadata.name} with Hub")
                     return True
-                else:
-                    # Capture server-provided error details if present
-                    detail = None
-                    try:
-                        detail = response.json()
-                    except Exception:
-                        detail = (response.text or "").strip()
-                    logger.warning(
-                        f"[WARN] Hub registration failed for {plugin_metadata.name}: {response.status_code} details={detail}"
-                    )
+                # Capture server-provided error details if present
+                detail = None
+                try:
+                    detail = response.json()
+                except Exception:
+                    detail = (response.text or "").strip()
+                logger.warning(
+                    f"[WARN] Hub registration failed for {plugin_metadata.name}: {response.status_code} details={detail}"
+                )
             except requests.exceptions.RequestException:
                 logger.warning(
                     f"[WARN] Hub not available for {plugin_metadata.name} registration"
@@ -372,7 +399,7 @@ class AetherraPluginDiscovery:
         await self.discover_all_plugins()
 
         success_count = 0
-        for plugin_name, metadata in self.discovered_plugins.items():
+        for _plugin_name, metadata in self.discovered_plugins.items():
             if await self.register_with_hub(metadata):
                 success_count += 1
 
@@ -381,7 +408,7 @@ class AetherraPluginDiscovery:
         )
         return success_count
 
-    def get_plugin_summary(self) -> Dict[str, Any]:
+    def get_plugin_summary(self) -> dict[str, Any]:
         """Get a summary of discovered plugins."""
         by_type = {}
         by_category = {}
@@ -397,18 +424,16 @@ class AetherraPluginDiscovery:
             "total_plugins": len(self.discovered_plugins),
             "by_type": by_type,
             "by_category": by_category,
-            "plugin_names": list(self.discovered_plugins.keys()),
+            "plugin_names": list(self.discovered_plugins),
             "hashes": {
-                k: self._plugin_hash_cache.get(k)
-                for k in self.discovered_plugins.keys()
+                k: self._plugin_hash_cache.get(k) for k in self.discovered_plugins
             },
         }
 
-    # ---------------- Integrity Hashing -----------------
-    _plugin_hash_cache: Dict[str, str] = {}
+    _plugin_hash_cache: dict[str, str] = {}
 
     def _hash_all_plugins(self):
-        for name, meta in self.discovered_plugins.items():
+        for _name, meta in self.discovered_plugins.items():
             path = meta.local_path
             if not path or not os.path.exists(path):
                 continue
@@ -422,14 +447,16 @@ class AetherraPluginDiscovery:
                                 with open(fp, "rb") as fh:
                                     for chunk in iter(lambda: fh.read(65536), b""):
                                         h.update(chunk)
-                            except Exception:
+                            except Exception as exc:
+                                logger.debug("[HASH] Skipped file %s: %s", fp, exc)
                                 continue
-                    self._plugin_hash_cache[name] = h.hexdigest()
+                    self._plugin_hash_cache[_name] = h.hexdigest()
                 else:
                     with open(path, "rb") as fh:
                         data = fh.read()
-                    self._plugin_hash_cache[name] = hashlib.sha256(data).hexdigest()
-            except Exception:
+                    self._plugin_hash_cache[_name] = hashlib.sha256(data).hexdigest()
+            except Exception as exc:
+                logger.debug("[HASH] Failed hashing %s: %s", path, exc)
                 continue
 
 
