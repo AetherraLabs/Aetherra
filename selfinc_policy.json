@@ -1,0 +1,7 @@
+{
+    "unique_capabilities": [
+        "process_ownership",
+        "primary_ui_shell",
+        "system_scheduler"
+    ]
+}

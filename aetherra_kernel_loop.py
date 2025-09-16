@@ -462,6 +462,59 @@ class AetherraKernelLoop:
         self.service_registry = service_registry
         logger.info("[LINK] Core systems injected into kernel loop")
 
+    async def _enqueue_self_incorporation_startup(self):
+        """[SELFINC] Enqueue self-incorporation startup task if enabled."""
+        try:
+            # Check if self-incorporation is enabled via environment variable
+            enabled = os.getenv("AETHERRA_SELFINC_ENABLED", "1").strip().lower()
+            if enabled not in ("1", "true", "yes", "on"):
+                logger.info(
+                    "[SELFINC] Self-incorporation disabled via AETHERRA_SELFINC_ENABLED"
+                )
+                return
+
+            # Import and instantiate SelfIncorporationService
+            from aetherra_self_incorporation import (
+                SelfIncorporationConfig,
+                SelfIncorporationService,
+            )
+
+            logger.info("[SELFINC] Enqueuing self-incorporation startup task")
+
+            # Create self-incorporation service task
+            selfinc_task = {
+                "id": f"selfinc_startup_{uuid.uuid4()}",
+                "action": "self_incorporation_startup",
+                "payload": {"enabled": True},
+                "timestamp": time.time(),
+                "service": "self_incorporation",
+            }
+
+            # Enqueue with high priority
+            await self.add_task(selfinc_task, priority="high")
+
+            # Register service in registry
+            await self._ensure_self_incorporation_registered()
+
+        except Exception as e:
+            logger.error(
+                f"[SELFINC][FATAL] Failed to enqueue self-incorporation startup: {e}"
+            )
+
+    async def _ensure_self_incorporation_registered(self):
+        """[SELFINC] Ensure self-incorporation service is registered in service registry."""
+        try:
+            if self.service_registry:
+                await self.service_registry.register_service(
+                    "self_incorporation",
+                    {"status": "starting", "type": "autonomous_service"},
+                )
+                logger.info(
+                    "[SELFINC] Self-incorporation service registered in service registry"
+                )
+        except Exception as e:
+            logger.error(f"[SELFINC][DEBUG] Service registration failed: {e}")
+
     async def start_kernel_loop(self):
         """[LAUNCH] Start the main OS kernel loop."""
         logger.info("[CORE] Starting Aetherra OS Kernel Loop...")
@@ -522,6 +575,9 @@ class AetherraKernelLoop:
         # Load any persisted tasks (best-effort)
         if self.persist_tasks:
             await self._load_persisted_tasks()
+
+        # Enqueue self-incorporation startup task
+        await self._enqueue_self_incorporation_startup()
 
         # Start concurrent tasks
         tasks = [
@@ -1315,6 +1371,48 @@ class AetherraKernelLoop:
                         await self.aetherra_engine.process_message(thought_content)
                     finally:
                         self._inflight_dec(target_for_inflight)
+            elif task.get("action") == "self_incorporation_startup":
+                # Handle self-incorporation startup task
+                try:
+                    from aetherra_self_incorporation import (
+                        SelfIncorporationConfig,
+                        SelfIncorporationService,
+                    )
+
+                    logger.info("[SELFINC] Executing self-incorporation startup task")
+
+                    # Create and initialize self-incorporation service
+                    config = SelfIncorporationConfig()
+                    service = SelfIncorporationService(config)
+
+                    # Update service registry status
+                    if self.service_registry:
+                        await self.service_registry.register_service(
+                            "self_incorporation",
+                            {"status": "active", "type": "autonomous_service"},
+                        )
+
+                    logger.info(
+                        "[SELFINC] Self-incorporation startup task completed successfully"
+                    )
+
+                except Exception as e:
+                    logger.error(
+                        f"[SELFINC][FATAL] Self-incorporation startup failed: {e}"
+                    )
+                    # Update service registry status to failed
+                    if self.service_registry:
+                        try:
+                            await self.service_registry.register_service(
+                                "self_incorporation",
+                                {
+                                    "status": "failed",
+                                    "type": "autonomous_service",
+                                    "error": str(e),
+                                },
+                            )
+                        except Exception:
+                            pass  # Best effort registry update
             else:
                 logger.warning(f"[WARN] Unknown task type: {task_type}")
 
