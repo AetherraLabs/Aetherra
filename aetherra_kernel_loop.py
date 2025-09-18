@@ -18,7 +18,7 @@ import secrets
 import time
 import uuid
 from collections.abc import Coroutine
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 
@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 class AetherraKernelLoop:
-    def _get_passive_services(self):
+    def _get_passive_services(self) -> list[str]:
         raw_list = (os.getenv("AETHERRA_PASSIVE_SERVICES", "") or "").strip()
         if raw_list:
             return [s.strip() for s in raw_list.split(",") if s.strip()]
@@ -61,11 +61,11 @@ class AetherraKernelLoop:
     def __init__(self, config: dict | None = None):
         self.config = config or {}
         self.running = False
-        self.start_time = None
+        self.start_time: datetime | None = None
         self.cycle_count = 0
-        self.last_night_cycle = None
+        self.last_night_cycle: datetime | None = None
         # Track a per-day key to ensure once-per-day behavior in selected TZ
-        self._night_last_date_key = None
+        self._night_last_date_key: str | None = None
         self._night_cycle_scheduled = False
 
         # Core systems (will be injected by startup)
@@ -89,9 +89,9 @@ class AetherraKernelLoop:
         }
 
         # Task queues
-        self.high_priority_queue = asyncio.Queue()
-        self.normal_priority_queue = asyncio.Queue()
-        self.background_queue = asyncio.Queue()
+        self.high_priority_queue: asyncio.Queue[dict[str, Any]] = asyncio.Queue()
+        self.normal_priority_queue: asyncio.Queue[dict[str, Any]] = asyncio.Queue()
+        self.background_queue: asyncio.Queue[dict[str, Any]] = asyncio.Queue()
 
         # Optional bounded queue sizes (0 = unbounded)
         self.queue_limits = {
@@ -421,19 +421,19 @@ class AetherraKernelLoop:
         try:
             if self.night_tz_name:
                 try:
-                    from zoneinfo import ZoneInfo  # type: ignore
+                    from zoneinfo import ZoneInfo
 
                     return datetime.now(ZoneInfo(self.night_tz_name))
                 except Exception:
                     try:
-                        import pytz  # type: ignore
+                        import pytz  # type: ignore[import-untyped]
 
                         tz = pytz.timezone(self.night_tz_name)
                         return datetime.now(tz)
                     except Exception:
-                        return datetime.now(datetime.UTC)
+                        return datetime.now(UTC)
             if self.night_utc:
-                return datetime.now(datetime.UTC)
+                return datetime.now(UTC)
             return datetime.now()
         except Exception:
             logger.exception("Exception occurred in _now_in_night_tz")
@@ -448,12 +448,12 @@ class AetherraKernelLoop:
 
     def inject_systems(
         self,
-        memory_system,
-        plugin_manager,
-        aetherra_engine,
-        scheduler,
-        service_registry,
-    ):
+        memory_system: Any,
+        plugin_manager: Any,
+        aetherra_engine: Any,
+        scheduler: Any,
+        service_registry: Any,
+    ) -> None:
         """[PLUGIN] Inject core system references for orchestration."""
         self.memory_system = memory_system
         self.plugin_manager = plugin_manager
@@ -462,7 +462,8 @@ class AetherraKernelLoop:
         self.service_registry = service_registry
         logger.info("[LINK] Core systems injected into kernel loop")
 
-    async def _enqueue_self_incorporation_startup(self):
+    async def _enqueue_self_incorporation_startup(self) -> None:
+        """[SELFINC] Enqueue self-incorporation startup task if enabled."""
         """[SELFINC] Enqueue self-incorporation startup task if enabled."""
         try:
             # Check if self-incorporation is enabled via environment variable
@@ -472,12 +473,6 @@ class AetherraKernelLoop:
                     "[SELFINC] Self-incorporation disabled via AETHERRA_SELFINC_ENABLED"
                 )
                 return
-
-            # Import and instantiate SelfIncorporationService
-            from aetherra_self_incorporation import (
-                SelfIncorporationConfig,
-                SelfIncorporationService,
-            )
 
             logger.info("[SELFINC] Enqueuing self-incorporation startup task")
 
@@ -501,13 +496,41 @@ class AetherraKernelLoop:
                 f"[SELFINC][FATAL] Failed to enqueue self-incorporation startup: {e}"
             )
 
-    async def _ensure_self_incorporation_registered(self):
+    async def _ensure_self_incorporation_registered(self) -> None:
         """[SELFINC] Ensure self-incorporation service is registered in service registry."""
         try:
             if self.service_registry:
+                # Import and create the actual service instance
+                from aetherra_self_incorporation import (
+                    SelfIncorporationConfig,
+                    SelfIncorporationService,
+                )
+
+                # Create service instance with default config
+                config = SelfIncorporationConfig()
+                service_instance = SelfIncorporationService(config)
+
+                # Inject kernel systems into service
+                service_instance.inject_systems(
+                    self.service_registry,
+                    self,
+                    self.plugin_manager,
+                    None,  # agent_orchestrator not available in kernel
+                )
+
+                # Start the service
+                await service_instance.start()
+
+                # Register the actual service instance
                 await self.service_registry.register_service(
                     "self_incorporation",
-                    {"status": "starting", "type": "autonomous_service"},
+                    service_instance,
+                    metadata={
+                        "version": "1.0.0",
+                        "description": "Autonomous codebase incorporation system",
+                        "capabilities": ["discovery", "classification", "integration"],
+                        "self_heartbeat": True,
+                    },
                 )
                 logger.info(
                     "[SELFINC] Self-incorporation service registered in service registry"
@@ -515,7 +538,7 @@ class AetherraKernelLoop:
         except Exception as e:
             logger.error(f"[SELFINC][DEBUG] Service registration failed: {e}")
 
-    async def start_kernel_loop(self):
+    async def start_kernel_loop(self) -> None:
         """[LAUNCH] Start the main OS kernel loop."""
         logger.info("[CORE] Starting Aetherra OS Kernel Loop...")
         # Backpressure guard enforcement before declaring running
@@ -600,7 +623,7 @@ class AetherraKernelLoop:
             logger.error(f"[ERROR] Kernel loop error: {e}")
             await self.shutdown()
 
-    async def _heartbeat_loop(self):
+    async def _heartbeat_loop(self) -> None:
         """💓 Send regular heartbeat to service registry."""
         while self.running:
             try:
@@ -611,7 +634,7 @@ class AetherraKernelLoop:
                 logger.error(f"[ERROR] Kernel heartbeat error: {e}")
                 await asyncio.sleep(60)
 
-    async def _passive_services_heartbeat_loop(self):
+    async def _passive_services_heartbeat_loop(self) -> None:
         """Emit periodic heartbeats for passive/core services that rarely self-report.
 
         Many subsystems are largely event-driven and may appear "stale" even when healthy.
@@ -668,7 +691,7 @@ class AetherraKernelLoop:
                 )
                 await asyncio.sleep(min(0.05, max(5, interval)))
 
-    async def _visible_heartbeat_loop(self):
+    async def _visible_heartbeat_loop(self) -> None:
         """Emit a lightweight heartbeat log at a configurable interval for operator visibility.
 
         Controlled via env:
@@ -712,7 +735,7 @@ class AetherraKernelLoop:
                 # Backoff minimally to avoid tight loop on repeated errors
                 await asyncio.sleep(max(5, interval))
 
-    async def _main_processing_loop(self):
+    async def _main_processing_loop(self) -> None:
         """[LOOP] Main processing cycle - handles events and orchestration."""
         while self.running:
             cycle_start = time.time()
@@ -759,7 +782,7 @@ class AetherraKernelLoop:
                 self.metrics["errors_count"] += 1
                 await asyncio.sleep(1.0)
 
-    async def _background_maintenance_loop(self):
+    async def _background_maintenance_loop(self) -> None:
         """🛠️ Background system maintenance and optimization."""
         while self.running:
             try:
@@ -792,7 +815,7 @@ class AetherraKernelLoop:
                 logger.error(f"[ERROR] Background maintenance error: {e}")
                 await asyncio.sleep(60)
 
-    async def _health_monitoring_loop(self):
+    async def _health_monitoring_loop(self) -> None:
         """💓 Continuous system health monitoring."""
         while self.running:
             try:
@@ -844,7 +867,7 @@ class AetherraKernelLoop:
                 logger.error(f"[ERROR] Health monitoring error: {e}")
                 await asyncio.sleep(30)
 
-    async def _memory_optimization_loop(self):
+    async def _memory_optimization_loop(self) -> None:
         """[BRAIN] Continuous memory system optimization."""
         while self.running:
             try:
@@ -858,7 +881,7 @@ class AetherraKernelLoop:
                 logger.error(f"[ERROR] Memory optimization error: {e}")
                 await asyncio.sleep(600)
 
-    async def _plugin_orchestration_loop(self):
+    async def _plugin_orchestration_loop(self) -> None:
         """[PLUGIN] Plugin coordination and execution."""
         while self.running:
             try:
@@ -872,7 +895,7 @@ class AetherraKernelLoop:
                 logger.error(f"[ERROR] Plugin orchestration error: {e}")
                 await asyncio.sleep(120)
 
-    async def _check_night_cycle(self):
+    async def _check_night_cycle(self) -> None:
         """🌙 Check if we should perform night cycle processing (TZ-aware, once/day)."""
         # Safety: in production refuse to run if TZ not explicitly set
         profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
@@ -920,7 +943,7 @@ class AetherraKernelLoop:
                 max(0, self._night_stagger_sec), max(0, window_len_sec - 60)
             )
 
-            async def _run_after_delay(delay: float, date_key_val: str):
+            async def _run_after_delay(delay: float, date_key_val: str) -> None:
                 try:
                     if delay > 0:
                         await asyncio.sleep(delay)
@@ -942,7 +965,7 @@ class AetherraKernelLoop:
                 self._night_cycle_scheduled = True
                 asyncio.create_task(_run_after_delay(delay_sec, date_key))
 
-    async def _perform_night_cycle(self):
+    async def _perform_night_cycle(self) -> None:
         """🌙 Deep system optimization and reflection during night cycle."""
         try:
             logger.info("🌙 Night Cycle: Deep Memory Consolidation...")
@@ -966,8 +989,8 @@ class AetherraKernelLoop:
             logger.error(f"[ERROR] Night cycle error: {e}")
 
     async def _process_task_queue(
-        self, queue: asyncio.Queue, pending_key: str, max_tasks: int = 5
-    ):
+        self, queue: asyncio.Queue[dict[str, Any]], pending_key: str, max_tasks: int = 5
+    ) -> None:
         """📋 Process tasks from a priority queue."""
         processed = 0
         while not queue.empty() and processed < max_tasks:
@@ -1007,7 +1030,7 @@ class AetherraKernelLoop:
             except Exception as e:
                 logger.error(f"[ERROR] Task processing error: {e}")
 
-    async def _apply_priority_aging(self):
+    async def _apply_priority_aging(self) -> None:
         """Promote long-waiting tasks from lower queues to higher priority.
 
         - If AETHERRA_KERNEL_AGING_SEC > 0, tasks in normal older than this are promoted to high.
@@ -1020,8 +1043,11 @@ class AetherraKernelLoop:
         now = time.time()
 
         def _promote(
-            src_q: asyncio.Queue, dst_q: asyncio.Queue, src_key: str, dst_key: str
-        ):
+            src_q: asyncio.Queue[dict[str, Any]],
+            dst_q: asyncio.Queue[dict[str, Any]],
+            src_key: str,
+            dst_key: str,
+        ) -> int:
             import contextlib
 
             try:
@@ -1076,7 +1102,7 @@ class AetherraKernelLoop:
                 + int(moved_nm)
             )
 
-    async def _execute_task(self, task: dict[str, Any]):
+    async def _execute_task(self, task: dict[str, Any]) -> Any:
         """[SYS] Execute a single task."""
         try:
             task_type = task.get("type")
@@ -1149,7 +1175,7 @@ class AetherraKernelLoop:
                 try:
                     from Aetherra.security.capabilities import (
                         has_capability,
-                    )  # type: ignore
+                    )
                 except Exception:
                     has_capability = None  # type: ignore
 
@@ -1180,7 +1206,7 @@ class AetherraKernelLoop:
                     now = int(time.time() // 60)  # minute window
                     if not hasattr(self, "_rl_window"):
                         self._rl_window = now
-                        self._rl_counts = {}
+                        self._rl_counts: dict[str, int] = {}
                     if getattr(self, "_rl_window", now) != now:
                         self._rl_window = now
                         self._rl_counts = {}
@@ -1210,7 +1236,7 @@ class AetherraKernelLoop:
                         try:
                             from Aetherra.security.capabilities import (
                                 get_capability_limits,
-                            )  # type: ignore
+                            )
 
                             cap_limits = get_capability_limits(cap)
                         except Exception:
@@ -1237,7 +1263,7 @@ class AetherraKernelLoop:
                             try:
                                 from Aetherra.security.capabilities import (
                                     get_capability_limits,
-                                )  # type: ignore
+                                )
 
                                 cap_limits = get_capability_limits(cap)
                                 if isinstance(cap_limits, dict) and cap_limits.get(
@@ -1374,23 +1400,19 @@ class AetherraKernelLoop:
             elif task.get("action") == "self_incorporation_startup":
                 # Handle self-incorporation startup task
                 try:
-                    from aetherra_self_incorporation import (
-                        SelfIncorporationConfig,
-                        SelfIncorporationService,
-                    )
-
                     logger.info("[SELFINC] Executing self-incorporation startup task")
 
-                    # Create and initialize self-incorporation service
-                    config = SelfIncorporationConfig()
-                    service = SelfIncorporationService(config)
-
-                    # Update service registry status
-                    if self.service_registry:
-                        await self.service_registry.register_service(
-                            "self_incorporation",
-                            {"status": "active", "type": "autonomous_service"},
+                    # Get the registered self-incorporation service
+                    service = self.service_registry.get_service("self_incorporation")
+                    if service:
+                        logger.info("[SELFINC] Service found, running discovery scan")
+                        # Trigger initial codebase discovery scan
+                        result = await service.trigger_scan()
+                        logger.info(
+                            f"[SELFINC] Discovery scan completed: {result.get('discovered', 0)} files discovered"
                         )
+                    else:
+                        logger.error("[SELFINC] Service not found in registry")
 
                     logger.info(
                         "[SELFINC] Self-incorporation startup task completed successfully"
@@ -1422,8 +1444,9 @@ class AetherraKernelLoop:
     def _plugin_cb_is_open(self) -> bool:
         return time.time() < float(self._plugin_cb_open_until or 0)
 
-    def _record_plugin_failure(self):
-        self._plugin_cb_failures += 1
+        def _record_plugin_failure(self) -> None:
+            self._plugin_cb_failures += 1
+
         if self._plugin_cb_failures >= max(1, self.plugin_cb_threshold):
             self._plugin_cb_open_until = time.time() + max(
                 1, self.plugin_cb_cooldown_sec
@@ -1436,7 +1459,7 @@ class AetherraKernelLoop:
                 f"[CB] Opened circuit for plugin_invoke cooldown={self.plugin_cb_cooldown_sec}s"
             )
 
-    def _record_plugin_success(self):
+    def _record_plugin_success(self) -> None:
         # On success, gradually heal failures
         if self._plugin_cb_failures > 0:
             self._plugin_cb_failures = 0
@@ -1480,7 +1503,7 @@ class AetherraKernelLoop:
 
         return health
 
-    async def _perform_health_check(self):
+    async def _perform_health_check(self) -> None:
         """[HEALTH] Perform comprehensive system health check."""
         logger.info("[HEALTH] Performing system health check...")
         health = await self._gather_health_metrics()
@@ -1495,19 +1518,19 @@ class AetherraKernelLoop:
             # Never allow health logging to raise due to missing keys
             logger.info(f"[STATS] Health Summary: {health}")
 
-    async def _optimize_memory(self):
+    async def _optimize_memory(self) -> None:
         """[BRAIN] Perform memory optimization."""
         if self.memory_system:
             logger.info("[BRAIN] Performing memory optimization...")
             await self.memory_system.optimize()
 
-    async def _check_plugin_health(self):
+    async def _check_plugin_health(self) -> None:
         """[PLUGIN] Check plugin system health."""
         if self.plugin_manager:
             logger.info("[PLUGIN] Checking plugin health...")
             await self.plugin_manager.health_check()
 
-    async def _cleanup_temporary_files(self):
+    async def _cleanup_temporary_files(self) -> None:
         """🧹 Clean up temporary files and logs."""
         try:
             # Clean up old log files (older than 7 days)
@@ -1521,7 +1544,7 @@ class AetherraKernelLoop:
         except Exception as e:
             logger.error(f"[ERROR] Cleanup error: {e}")
 
-    def _update_metrics(self, cycle_time: float):
+    def _update_metrics(self, cycle_time: float) -> None:
         """[STATS] Update kernel performance metrics."""
         self.cycle_count += 1
         self.metrics["total_cycles"] = self.cycle_count
@@ -1536,7 +1559,7 @@ class AetherraKernelLoop:
                 alpha * cycle_time + (1 - alpha) * self.metrics["avg_cycle_time"]
             )
 
-    async def add_task(self, task: dict[str, Any], priority: str = "normal"):
+    async def add_task(self, task: dict[str, Any], priority: str = "normal") -> None:
         """📝 Add a task to the appropriate priority queue with optional backpressure and snapshotting."""
         # Ensure task envelope fields
         task = self._ensure_task_envelope(task)
@@ -1588,7 +1611,7 @@ class AetherraKernelLoop:
             pass
         return task
 
-    def _dlq_write(self, task: dict[str, Any], reason: str = "unknown"):
+    def _dlq_write(self, task: dict[str, Any], reason: str = "unknown") -> None:
         try:
             if not self.dlq_enabled:
                 return
@@ -1612,7 +1635,7 @@ class AetherraKernelLoop:
 
     async def _requeue_after_delay(
         self, task: dict[str, Any], delay_sec: float, priority: str = "normal"
-    ):
+    ) -> None:
         """Helper: re-enqueue a task after a delay (best-effort)."""
         try:
             await asyncio.sleep(max(0.0, float(delay_sec)))
@@ -1620,7 +1643,7 @@ class AetherraKernelLoop:
         except Exception as e:
             logger.debug(f"[REQUEUE] Failed to requeue task: {e}")
 
-    async def _maybe_retry(self, task: dict[str, Any], reason: str = "error"):
+    async def _maybe_retry(self, task: dict[str, Any], reason: str = "error") -> None:
         """Schedule a retry with jittered exponential backoff if policy allows."""
         try:
             if self.retry_max <= 0:
@@ -1652,7 +1675,7 @@ class AetherraKernelLoop:
         except Exception as e:
             logger.debug(f"[RETRY] Failed to schedule retry: {e}")
 
-    async def shutdown(self):
+    async def shutdown(self) -> None:
         """🛑 Gracefully shutdown the kernel loop."""
         logger.info("🛑 Shutting down Aetherra OS Kernel Loop...")
         self.running = False
@@ -1666,7 +1689,7 @@ class AetherraKernelLoop:
 
         logger.info("[OK] Kernel loop shutdown complete")
 
-    async def _save_metrics(self):
+    async def _save_metrics(self) -> None:
         """[MEM] Save kernel metrics to file."""
         try:
             metrics_file = Path("aetherra_kernel_metrics.json")

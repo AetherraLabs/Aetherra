@@ -1,6 +1,9 @@
 import os
+
 from flask.testing import FlaskClient
+
 from aetherra_hub.app import create_app
+
 
 class _DummySelfInc:
     async def get_status(self):  # minimal async contract used by blueprint
@@ -10,7 +13,9 @@ class _DummySelfInc:
 def _register_dummy_service():
     # Lazy import inside helper to avoid import cycles if registry not initialized yet
     import asyncio
+
     from aetherra_service_registry import register_service
+
     asyncio.run(register_service("self_incorporation", _DummySelfInc()))
 
 

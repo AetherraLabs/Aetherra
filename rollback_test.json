@@ -1,0 +1,920 @@
+[
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.996382",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:e1cac076929b0eda1ba507d725cdee17a666e85dc8cdf7ef452a3ef61ff9d79c",
+      "type": "utility",
+      "capabilities": [
+        "network_access",
+        "* ability to support basic authentication via request header."
+      ],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": ".venv\\Lib\\site-packages\\google\\oauth2\\utils.py"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.992748",
+    "action": "register_plugin",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:bf1eb5db026184a0dda87094263ddb4a62daa13a5ba95c3bf58e390720985aa9",
+      "type": "plugin",
+      "capabilities": [
+        "aetherra_integration",
+        "system_component"
+      ],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "plugin_manager_missing",
+      "action": "register_plugin"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.989044",
+    "action": "register_plugin",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:2a4bd0ca5a388f1cb936d2d957ac96d7eb93e71a8e176f704af0f0053f91ceaa",
+      "type": "plugin",
+      "capabilities": [
+        "async_execution",
+        "network_access",
+        "aetherra_integration"
+      ],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "plugin_manager_missing",
+      "action": "register_plugin"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.985675",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:8473a85c64bb4391acf5a6c3c8689a04fe8fe9b78ee3ae566b1ecc640229b5fb",
+      "type": "utility",
+      "capabilities": [
+        "aetherra_integration",
+        "system_component",
+        "\u2022 quantum consciousness state tunneling"
+      ],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "Aetherra\\consciousness\\quantum\\quantum_consciousness_tunneling.py"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.981829",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:520e6c4297ddb705d1da9c264f804dc6edcf8ff4e84861cc4d5c55af3deda5bb",
+      "type": "utility",
+      "capabilities": [
+        "file_write",
+        "- it is serializable",
+        "so you can save/load this product from disk without"
+      ],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": ".venv\\Lib\\site-packages\\torch\\_inductor\\output_code.py"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.978261",
+    "action": "load_dataset",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:00f8093854c35e09044ceeed277d908b5b6dd1b82679841a52624913c0de00d8",
+      "type": "dataset",
+      "capabilities": [
+        "plugin_config"
+      ],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "load_dataset",
+      "path": ".aetherra\\rollback\\scaffold-1757292449.json"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.974308",
+    "action": "index_documentation",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:6f31853c11923f8972ef1c258017e7db267e37071aa4ebfd790a101f9e3eceb0",
+      "type": "docs",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "index_documentation",
+      "path": "what is Aether Script.md"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.970709",
+    "action": "index_documentation",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:11dc667ef54e2bc2a5843c35c0c0f4b2dffd52da35eb77df8c5b031d1ab28264",
+      "type": "docs",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "index_documentation",
+      "path": "website_truth_audit.md"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.967073",
+    "action": "index_documentation",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:d76a391d9221050ef7d13b0f568d15a7b3477047fd110bb808151d3746583420",
+      "type": "docs",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "index_documentation",
+      "path": "toolshed\\README.md"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.963525",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:19e0de5abaf7db840193a600f431cd34be4b908558f7b8fc095e98b38f30f409",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "tools\\security_scan.ps1"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.960137",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:a4ccbb41fb82dcb666fa35588d428e085ecc4b6b3b8ff8fd078568d80cdd73c5",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "tools\\quick_quality_check.ps1"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.956370",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:c9bdc469eda7791b2b946ec491f90ffa6cb1ac23667f048d59286571153a81fb",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "tools\\lyrixa_improvement.db"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.953002",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:7261c09b3a72d88be299714c7b17313c309a6a803d6f9a772cd9dacfadc39c77",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "tools\\docker_quickstart.ps1"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.949344",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:1240f16cb6d9e3ae5f5638e7b57ceba42ed8fedb554d34a0a71b63c94f0d8e89",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "tools\\ci_lyrixa_check.ps1"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.945727",
+    "action": "index_documentation",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:61ebbb32ca78bdabcb24e6367ad230f9edf19c0c37592081a74f4f103da79e7e",
+      "type": "docs",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "index_documentation",
+      "path": "tests\\unit\\README.md"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.942060",
+    "action": "index_documentation",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:51e0f3944a015871c6e65dc700859d63775c67cb5153b7082e1e4594f4a54d97",
+      "type": "docs",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "index_documentation",
+      "path": "tests\\README.md"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.938374",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:3111d6404c045ef86062424dc234a8282bbb15f8d81e1ae3d64fb8361638d1b5",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "templates\\memory_dashboard.html"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.934662",
+    "action": "index_documentation",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:daeac8ec69cf06f0818a818cb0d7636722810756687c9f15f2c30c5ee30a617f",
+      "type": "docs",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "index_documentation",
+      "path": "templates\\README.md"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.930871",
+    "action": "load_dataset",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:2b92b12e447ec53e87b92c2c9b8fe321b593c431eac60940d5c749a71dde6dbe",
+      "type": "dataset",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "load_dataset",
+      "path": "selfinc_policy.json"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.927404",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:fcb090054d24d066ee35c0aa2ed637f8b5db68478819b49ddb44646d0acdbd02",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "self_improvement.db"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.923326",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:20a939aa07270af970b3ccabb3c1b06ecaf527d5ef04d434c833a2d35f6a6937",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "scripts\\devops\\dev-website.sh"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.919943",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:86e4e31046539f77dba362aa8da5af61cd2985e6ffc4c5bf2f38facdd02c4621",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "scripts\\devops\\dev-website.bat"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.916317",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:55f7af1f8d0c0154000b5b41d1f9237759f7600ed7f78b7571405388723cd5b5",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "scripts\\devops\\build-website.sh"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.912853",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:5e86f3d762c97392ecc1da2c9616f84a85aa45f3871d538f2b16d0a9a9415280",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "scripts\\devops\\build-website.bat"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.909277",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:ac40b9af0cd3c336d8c2826c39d58458e296c0158395181058eaa967368968b0",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "scripts\\bootstrap.sh"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.905694",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:3d059b66b982e02b134495f50522337e1760434a52f001d3bb56c2eefc214de6",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "scripts\\bootstrap.ps1"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.902303",
+    "action": "index_documentation",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:df9af7d1971102651b9a6bf29419e16f3987e0d3b869de0c8be33447466419e1",
+      "type": "docs",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "index_documentation",
+      "path": "requirements\\quantum.txt"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.898775",
+    "action": "index_documentation",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:7c63654db97c8a5a0979e39906872df1fe3b839f9998c1f4f7003474b7022e3b",
+      "type": "docs",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "index_documentation",
+      "path": "requirements\\dev.txt"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.895241",
+    "action": "index_documentation",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:1b8c71b1b3db14927a4434fe4060fe28efe395b4fd331ed6c4a0796436d3604d",
+      "type": "docs",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "index_documentation",
+      "path": "requirements\\ci.txt"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.891693",
+    "action": "index_documentation",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:6556f5086d475677d66af5da0f1a035659dcb99a8872eeab6b18a62c995db3f1",
+      "type": "docs",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "index_documentation",
+      "path": "requirements\\base.txt"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.888022",
+    "action": "index_documentation",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:7517992d0202a8f10f589fe081362899a588d1a091261c08301f10b77f135fd3",
+      "type": "docs",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "index_documentation",
+      "path": "requirements\\README.md"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.884315",
+    "action": "index_documentation",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:1253d34ee6366222d40588d5208460aee1ffdcf9c84d7b41d6b806ae9d6ccad6",
+      "type": "docs",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "index_documentation",
+      "path": "requirements.txt"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.880581",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:a8e00b0146a9186734a923004add221a7333dc1d578c5eff6246ad00e8c14980",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "requirements.lock"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.876959",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:30f1f14c9d772c656bf857dfbf522a0b3732412e0483cab6b9770073d32863e8",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "reasoning_engine.db"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.873271",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:f8ab620a89f82837358714487ba314907123ecd54acd0107ea09aadf1b6cd9ec",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "quantum_dashboard\\static\\dashboard.html"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.869905",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:adee8c9e5b205b7efbf4c099f7eee2bcf0e16432925056071addc299b6cb8959",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "qfac_memory_system\\analyzer\\compression_analysis.db"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.866308",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:9b6bf289fff49fa1fbfa6bcbcd7b4cda203df2c05a863edff0f98a9a32502013",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "qfac_compression_data\\compression_analysis.db"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.862554",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:866f973ed01f7c641e579a2614088155bfff2904670d25225da6d0b032a1ec63",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "pyproject_old.toml"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.859092",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:9fa60590652fc860042a9744b9609b488d5dc29b5884a232e2ec080c477dbf6d",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "pyproject.toml"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.855566",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:c305d415fb7b7511a5998b1029438a454a1b26092379675a09cc483194d83e7e",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "plugins\\network_panel.html"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.852012",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:f08757385b4f91cfbe096cdd235310ea2298d7e3e8c14367710788508af5ebd7",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "plugins\\network_analyzer.aetherplugin"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.848149",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:9fba312aa273c36c96b7994a79222eb712ce54d4b88c4e34d6126b72f2978f3f",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "plugins\\memory_styles.css"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.844449",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:a46c6041b41220f1e7fdfd6a0c3b59f5c6afb6c52c0f095828880ddd48b2db54",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "plugins\\memory_panel.html"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.840482",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:e197aee4dedd6f89bc7d718986bec6b42caa920af370a958ca80a91b2dc31563",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "plugins\\memory_monitor.aetherplugin"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.836787",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:5ae477cbba5ca0c48016398eb8139e4ba4328b8c5c31f3b5f3d3f68512ca8d67",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "outbox\\outbox.jsonl"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.833021",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:7d600c29226ceecb43724193fec62cc40597b1699ac3e29e7fa6d5b33bea29eb",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "lyrixa_orchestrator.db"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.829390",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:0b75e2af0b6e2f74080d714b84b321e2d9e18259f2dc216323825a51e8fe9e84",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "lyrixa_improvement.db"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.825810",
+    "action": "load_dataset",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:695a3c54fad81e6781a3a666cee10a0ff02303c0a9e5e1b192f49e69557c1e97",
+      "type": "dataset",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "load_dataset",
+      "path": "license_overrides.yml"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.822030",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:711198e2390dbfaa97f577081e54bba60925042f80101d9c009dbbf3c7b789ed",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "htmlcov\\z_fd44004ce2284dd4_self_model_py.html"
+    }
+  },
+  {
+    "plan_id": "7750f0ab",
+    "timestamp": "2025-09-16T00:46:51.818050",
+    "action": "import_utility",
+    "status": "skipped",
+    "target": {
+      "file_id": "sha256:8e82d32d2729d49d916c3a982136647603494fefcaa3b5c6a04421301e0a8eb0",
+      "type": "utility",
+      "capabilities": [],
+      "trust_tier": "standard"
+    },
+    "result": {
+      "status": "skipped",
+      "reason": "no_op_minimal",
+      "action": "import_utility",
+      "path": "htmlcov\\z_fd44004ce2284dd4_personal_history_py.html"
+    }
+  }
+]

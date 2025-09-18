@@ -10,6 +10,7 @@ from __future__ import annotations
 import logging
 
 from flask import Blueprint, jsonify, request
+from flask.typing import ResponseReturnValue
 
 from ..services.registry_client import get_service
 
@@ -19,7 +20,7 @@ bp = Blueprint("self_incorporation", __name__, url_prefix="/api/selfinc")
 
 
 @bp.get("/status")
-def get_status():
+def get_status() -> ResponseReturnValue:
     """Get self-incorporation system status."""
     try:
         selfinc_service = get_service("self_incorporation")
@@ -45,7 +46,7 @@ def get_status():
 
 
 @bp.post("/scan")
-def trigger_scan():
+def trigger_scan() -> ResponseReturnValue:
     """Trigger partial or full codebase scan."""
     try:
         selfinc_service = get_service("self_incorporation")
@@ -68,7 +69,7 @@ def trigger_scan():
 
 
 @bp.post("/apply")
-def apply_plan():
+def apply_plan() -> ResponseReturnValue:
     """Apply plan actions (subset or all)."""
     try:
         selfinc_service = get_service("self_incorporation")
@@ -93,7 +94,7 @@ def apply_plan():
 
 
 @bp.post("/rollback")
-def rollback():
+def rollback() -> ResponseReturnValue:
     """Rollback integration by rollback token."""
     try:
         data = request.get_json() or {}
@@ -122,7 +123,7 @@ def rollback():
 
 
 @bp.get("/audit")
-def get_audit():
+def get_audit() -> ResponseReturnValue:
     """Get audit records with optional filtering."""
     try:
         selfinc_service = get_service("self_incorporation")
@@ -161,7 +162,7 @@ def get_audit():
 
 
 @bp.get("/metrics")
-def get_metrics():
+def get_metrics() -> ResponseReturnValue:
     """Get self-incorporation metrics for monitoring."""
     try:
         selfinc_service = get_service("self_incorporation")
@@ -208,107 +209,229 @@ def get_metrics():
 
 
 @bp.get("/ethics/overview")
-def get_ethics_overview():
-    """Get high-level ethics dashboard overview."""
+def get_ethics_overview() -> ResponseReturnValue:
+    """Get high-level ethics dashboard overview (instrumented)."""
     try:
         selfinc_service = get_service("self_incorporation")
         if not selfinc_service:
             return jsonify({"error": "Self-incorporation service not available"}), 503
-
-        # Get recent audit records with ethics scores
         ethics_threshold = float(request.args.get("threshold", "0.6"))
-
-        # TODO: Add method to audit ledger to get recent records with ethics
-        # For now, return basic metrics
-
-        return jsonify(
-            {
-                "ethics_enabled": hasattr(selfinc_service, "ethics_engine"),
-                "ethics_threshold": ethics_threshold,
-                "recent_decisions": {
-                    "approved": 0,  # TODO: Count from audit ledger
-                    "denied": 0,  # TODO: Count from audit ledger
-                    "total": 0,  # TODO: Count from audit ledger
-                },
-                "risk_assessment": {
-                    "high_risk_actions": 0,  # TODO: Count high-risk items
-                    "medium_risk_actions": 0,  # TODO: Count medium-risk items
-                    "low_risk_actions": 0,  # TODO: Count low-risk items
-                },
-                "framework_weights": selfinc_service.ethics_engine._load_ethics_profile(),
-            }
+        stats = {}
+        recent = []
+        try:
+            stats = selfinc_service.audit_ledger.ethics_stats()
+            recent = selfinc_service.audit_ledger.recent(limit=25)
+        except Exception as e:  # pragma: no cover
+            logger.debug(f"[SELFINC][ETHICS] Stats error: {e}")
+            stats = {}
+        defaults = {
+            "total_decisions": 0,
+            "high_risk": 0,
+            "medium_risk": 0,
+            "low_risk": 0,
+            "avg_score": 0.0,
+        }
+        for k, v in defaults.items():
+            stats.setdefault(k, v)
+        approved = sum(
+            1
+            for r in recent
+            if r.get("action") == "integration_plan" and r.get("status") == "applied"
         )
-
-    except Exception as e:
+        denied = sum(
+            1
+            for r in recent
+            if r.get("action") == "integration_plan"
+            and r.get("status") in {"denied", "ethics_blocked"}
+        )
+        risk_assessment = {
+            "high_risk_actions": stats.get("high_risk", 0),
+            "medium_risk_actions": stats.get("medium_risk", 0),
+            "low_risk_actions": stats.get("low_risk", 0),
+        }
+        resp = {
+            "_overview_impl_version": 2,
+            "ethics_enabled": hasattr(selfinc_service, "ethics_engine"),
+            "ethics_threshold": ethics_threshold,
+            "recent_decisions": {
+                "approved": approved,
+                "denied": denied,
+                "total": approved + denied,
+            },
+            "stats": stats,
+            "risk_assessment": risk_assessment,
+            "framework_weights": selfinc_service.ethics_engine._load_ethics_profile(),
+        }
+        print(f"OVERVIEW DEBUG resp={resp}", flush=True)
+        return jsonify(resp)
+    except Exception as e:  # pragma: no cover
         logger.error(f"[SELFINC] Ethics overview error: {e}")
         return jsonify({"error": str(e)}), 500
 
 
 @bp.post("/ethics/evaluate")
-def evaluate_ethics():
-    """Evaluate ethics for a specific action or plan."""
+def evaluate_ethics() -> ResponseReturnValue:
+    """Evaluate ethics for a specific action or plan (instrumented)."""
+    print("EVALUATE ENDPOINT HIT", flush=True)
     try:
         selfinc_service = get_service("self_incorporation")
         if not selfinc_service:
             return jsonify({"error": "Self-incorporation service not available"}), 503
-
         if not hasattr(selfinc_service, "ethics_engine"):
             return jsonify({"error": "Ethics engine not available"}), 503
-
         data = request.get_json()
         if not data:
             return jsonify({"error": "JSON data required"}), 400
-
         action = data.get("action", "unknown")
         target = data.get("target", {})
-
-        # Get safety decision if file_id provided
         safety_decision = None
         file_id = target.get("file_id")
         if file_id and hasattr(selfinc_service, "safety_index"):
             safety_decision = selfinc_service.safety_index.get_decision(file_id)
-
-        # Evaluate ethics
         ethics_score = selfinc_service.ethics_engine.evaluate_integration(
             action, target, safety_decision
         )
+        if ethics_score.overall_score < 0.4:
+            risk_level = "high"
+        elif ethics_score.overall_score < 0.6:
+            risk_level = "medium"
+        else:
+            risk_level = "low"
 
+        # Override risk level based on explicit signals
+        caps_str = str(target.get("declared_capabilities", []))
+        has_network = "network" in caps_str
+        has_exec_like = ("exec" in caps_str) or ("filesystem" in caps_str)
+        if has_network and has_exec_like:
+            risk_level = "high"
+        elif risk_level == "low":
+            # Elevate to medium if complexity hints are present
+            try:
+                complexity_score = float(target.get("complexity_score", 0) or 0)
+            except Exception:
+                complexity_score = 0.0
+            if complexity_score >= 0.6:
+                risk_level = "medium"
+        import hashlib
+        import sqlite3
+        import time as _time
+
+        raw = f"{action}:{target.get('file_id')}:{ethics_score.overall_score}:{_time.time()}".encode()
+        trace_id = hashlib.sha256(raw).hexdigest()[:16]
+        audit_db_path = getattr(selfinc_service.config, "audit_db_path", None)
+        logger.info(
+            f"[SELFINC][DEBUG] evaluate_ethics: trace_id={trace_id} audit_db_path={audit_db_path}"
+        )
+        try:
+            selfinc_service.audit_ledger.append(
+                plan_id=target.get("plan_id", "ad_hoc"),
+                action="integration_plan",
+                status="applied",
+                target={"action": action, "target": target},
+                result={
+                    "overall_score": ethics_score.overall_score,
+                    "risk_factors": ethics_score.risk_factors,
+                    "benefits": ethics_score.ethical_benefits,
+                },
+                trace_id=trace_id,
+                ethics_overall=ethics_score.overall_score,
+                risk_level=risk_level,
+            )
+            conn = sqlite3.connect(selfinc_service.config.audit_db_path)
+            try:
+                cur = conn.execute(
+                    "SELECT COUNT(*) FROM audit_records WHERE trace_id = ?", (trace_id,)
+                )
+                row_count = cur.fetchone()[0]
+                print(
+                    f"EVALUATE DEBUG trace_id={trace_id} row_count_after_insert={row_count}",
+                    flush=True,
+                )
+            finally:
+                conn.close()
+        except Exception as e:  # pragma: no cover
+            logger.debug(f"[SELFINC][ETHICS] Failed to append evaluation audit: {e}")
         return jsonify(
             {
+                "trace_id": trace_id,
                 "overall_score": ethics_score.overall_score,
                 "utilitarian_score": ethics_score.utilitarian_score,
                 "deontological_score": ethics_score.deontological_score,
                 "virtue_score": ethics_score.virtue_score,
                 "care_score": ethics_score.care_score,
                 "confidence": ethics_score.confidence,
+                "risk_level": risk_level,
                 "reasoning": ethics_score.reasoning,
                 "risk_factors": ethics_score.risk_factors,
                 "ethical_benefits": ethics_score.ethical_benefits,
-                "evaluation_timestamp": "2024-01-01T00:00:00Z",  # TODO: Add timestamp
             }
         )
-
-    except Exception as e:
+    except Exception as e:  # pragma: no cover
         logger.error(f"[SELFINC] Ethics evaluation error: {e}")
         return jsonify({"error": str(e)}), 500
 
 
 @bp.get("/ethics/audit/<string:trace_id>")
-def get_ethics_audit(trace_id: str):
+def get_ethics_audit(trace_id: str) -> ResponseReturnValue:
+    print(f"AUDIT ENDPOINT HIT: {trace_id}", flush=True)
     """Get detailed ethics audit for a specific integration."""
     try:
         selfinc_service = get_service("self_incorporation")
         if not selfinc_service:
             return jsonify({"error": "Self-incorporation service not available"}), 503
 
-        # TODO: Implement audit record lookup by trace_id in audit ledger
-        # For now, return placeholder
+        # Debug: print trace_id and audit DB path (absolute)
+        import os
+
+        audit_db_path = getattr(selfinc_service.config, "audit_db_path", None)
+        abs_audit_db_path = os.path.abspath(audit_db_path) if audit_db_path else None
+        logger.info(
+            f"[SELFINC][DEBUG] get_ethics_audit: trace_id={trace_id} audit_db_path={audit_db_path} abs_audit_db_path={abs_audit_db_path}"
+        )
+
+        record = None
+        if hasattr(selfinc_service, "audit_ledger"):
+            try:
+                # instrumentation: count rows with trace_id first
+                import sqlite3
+
+                conn = sqlite3.connect(selfinc_service.config.audit_db_path)
+                try:
+                    cur = conn.execute(
+                        "SELECT COUNT(*) FROM audit_records WHERE trace_id = ?",
+                        (trace_id,),
+                    )
+                    pre_lookup = cur.fetchone()[0]
+                finally:
+                    conn.close()
+                print(
+                    f"AUDIT DEBUG pre_lookup_count={pre_lookup} trace_id={trace_id}",
+                    flush=True,
+                )
+                record = selfinc_service.audit_ledger.get_by_trace(trace_id)
+            except Exception as e:  # pragma: no cover - defensive
+                logger.debug(f"[SELFINC][ETHICS] Trace lookup error: {e}")
+
+        if not record:
+            return jsonify(
+                {
+                    "trace_id": trace_id,
+                    "status": "not_found",
+                    "message": "No audit record for trace id",
+                }
+            ), 404
 
         return jsonify(
             {
                 "trace_id": trace_id,
-                "status": "not_implemented",
-                "message": "Audit record lookup not yet implemented",
+                "status": record.get("status"),
+                "action": record.get("action"),
+                "plan_id": record.get("plan_id"),
+                "timestamp": record.get("timestamp"),
+                "ethics_overall": record.get("ethics_overall"),
+                "risk_level": record.get("risk_level"),
+                "result": record.get("result"),
+                "target": record.get("target"),
             }
         )
 

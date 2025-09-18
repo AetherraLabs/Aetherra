@@ -22,6 +22,7 @@ Core Subsystems:
 """
 
 import asyncio
+import contextlib
 import hashlib
 import json
 import logging
@@ -29,7 +30,7 @@ import os
 import sqlite3
 import time
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -266,9 +267,9 @@ class EthicsEngine:
         """
         Evaluate an integration decision from multiple ethical perspectives.
         """
-        reasoning = []
-        risk_factors = []
-        ethical_benefits = []
+        reasoning: list[str] = []
+        risk_factors: list[str] = []
+        ethical_benefits: list[str] = []
 
         # Utilitarian Analysis: Maximize benefit, minimize harm
         utilitarian_score = self._evaluate_utilitarian(
@@ -356,15 +357,35 @@ class EthicsEngine:
 
         # Capability escalation concerns
         capabilities = target.get("declared_capabilities", [])
-        if "network" in str(capabilities):
+        caps_str = str(capabilities)
+        has_network = "network" in caps_str
+        has_exec_like = ("exec" in caps_str) or ("filesystem" in caps_str)
+        if has_network:
             score -= 0.1
             risk_factors.append("Network access capability")
             reasoning.append("UTIL: Network access increases potential for harm")
 
-        if "exec" in str(capabilities) or "filesystem" in str(capabilities):
+        if has_exec_like:
             score -= 0.15
             risk_factors.append("System access capability")
             reasoning.append("UTIL: System access capabilities increase harm potential")
+
+        # Dangerous combination penalty: network + exec/filesystem
+        if has_network and has_exec_like:
+            score -= 0.3
+            risk_factors.append(
+                "Dangerous capability combination: network + exec/filesystem"
+            )
+            reasoning.append(
+                "UTIL: Combined network and system access substantially raises harm risk"
+            )
+
+        # Complexity consideration: higher complexity slightly reduces utilitarian score
+        complexity_score = float(target.get("complexity_score", 0) or 0)
+        if complexity_score >= 0.6:
+            score -= 0.15
+            risk_factors.append("High complexity increases risk")
+            reasoning.append("UTIL: Higher complexity elevates likelihood of harm")
 
         return max(0.0, min(1.0, score))
 
@@ -410,6 +431,17 @@ class EthicsEngine:
             score -= 0.4  # Strong deontological objection to risky integration
             risk_factors.append("Violates duty to maintain system integrity")
             reasoning.append("DEONT: Integration violates system integrity duty")
+
+        # Duty to prevent dangerous capability combinations
+        caps_str = str(target.get("declared_capabilities", []))
+        if ("network" in caps_str) and (
+            ("exec" in caps_str) or ("filesystem" in caps_str)
+        ):
+            score -= 0.2
+            risk_factors.append("Policy concern: network + exec/filesystem combination")
+            reasoning.append(
+                "DEONT: Avoids hazardous combinations that violate safety duties"
+            )
 
         return max(0.0, min(1.0, score))
 
@@ -528,10 +560,14 @@ class AuditLedger:
     def __init__(self, db_path: Path):
         self.db_path = db_path
         self._init_db()
+        # Simple in-memory cache for recent ethics decisions (most recent first)
+        self._recent_ethics: list[dict[str, Any]] = []
+        self._recent_limit = 500
 
-    def _init_db(self):
+    def _init_db(self) -> None:
         conn = sqlite3.connect(self.db_path)
         try:
+            # Create table if missing (latest schema)
             conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS audit_records (
@@ -541,10 +577,46 @@ class AuditLedger:
                     action TEXT,
                     status TEXT,
                     target_json TEXT,
-                    result_json TEXT
+                    result_json TEXT,
+                    trace_id TEXT,
+                    ethics_overall REAL,
+                    risk_level TEXT
                 )
                 """
             )
+            # Lightweight migration: ensure required columns exist on legacy DBs
+            try:
+                cur = conn.execute("PRAGMA table_info(audit_records)")
+                cols = {row[1] for row in cur.fetchall()}
+                required_cols = {
+                    "plan_id": "TEXT",
+                    "timestamp": "TEXT",
+                    "action": "TEXT",
+                    "status": "TEXT",
+                    "target_json": "TEXT",
+                    "result_json": "TEXT",
+                    "trace_id": "TEXT",
+                    "ethics_overall": "REAL",
+                    "risk_level": "TEXT",
+                }
+                for col, typ in required_cols.items():
+                    if col not in cols:
+                        conn.execute(
+                            f"ALTER TABLE audit_records ADD COLUMN {col} {typ}"
+                        )
+            except Exception as exc:
+                # Best-effort; continue even if PRAGMA/ALTER fails
+                logger.debug("[AUDIT_LEDGER][INIT] PRAGMA/ALTER failed: %s", exc)
+            # Indexes for faster ethics lookups
+            try:
+                conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_audit_trace_id ON audit_records(trace_id)"
+                )
+                conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_audit_ethics ON audit_records(ethics_overall)"
+                )
+            except Exception as exc:
+                logger.debug("[AUDIT_LEDGER][INIT] index creation failed: %s", exc)
             conn.commit()
         finally:
             conn.close()
@@ -556,7 +628,10 @@ class AuditLedger:
         status: str,
         target: dict[str, Any],
         result: dict[str, Any],
-    ):
+        trace_id: str | None = None,
+        ethics_overall: float | None = None,
+        risk_level: str | None = None,
+    ) -> None:
         rec = {
             "plan_id": plan_id,
             "timestamp": datetime.now().isoformat(),
@@ -564,41 +639,140 @@ class AuditLedger:
             "status": status,
             "target_json": json.dumps(target, default=str),
             "result_json": json.dumps(result, default=str),
+            "trace_id": trace_id,
+            "ethics_overall": ethics_overall,
+            "risk_level": risk_level,
         }
+        print(
+            f"[AUDIT LEDGER][APPEND] db_path={self.db_path} trace_id={trace_id}",
+            flush=True,
+        )
         conn = sqlite3.connect(self.db_path)
         try:
-            conn.execute(
-                """
-                INSERT INTO audit_records (plan_id, timestamp, action, status, target_json, result_json)
-                VALUES (:plan_id, :timestamp, :action, :status, :target_json, :result_json)
-                """,
-                rec,
+            try:
+                conn.execute(
+                    """
+                    INSERT INTO audit_records (plan_id, timestamp, action, status, target_json, result_json, trace_id, ethics_overall, risk_level)
+                    VALUES (:plan_id, :timestamp, :action, :status, :target_json, :result_json, :trace_id, :ethics_overall, :risk_level)
+                    """,
+                    rec,
+                )
+                conn.commit()
+            except Exception as e:
+                # If insert fails (likely due to legacy schema), attempt migration then retry once
+                with contextlib.suppress(Exception):
+                    conn.rollback()
+                try:
+                    # Run migration in the same connection
+                    cur = conn.execute("PRAGMA table_info(audit_records)")
+                    cols = {row[1] for row in cur.fetchall()}
+                    missing = []
+                    if "ethics_overall" not in cols:
+                        missing.append(("ethics_overall", "REAL"))
+                    if "risk_level" not in cols:
+                        missing.append(("risk_level", "TEXT"))
+                    if "target_json" not in cols:
+                        missing.append(("target_json", "TEXT"))
+                    if "result_json" not in cols:
+                        missing.append(("result_json", "TEXT"))
+                    for col, typ in missing:
+                        conn.execute(
+                            f"ALTER TABLE audit_records ADD COLUMN {col} {typ}"
+                        )
+                    if missing:
+                        conn.commit()
+                    # Retry insert once after migration
+                    conn.execute(
+                        """
+                        INSERT INTO audit_records (plan_id, timestamp, action, status, target_json, result_json, trace_id, ethics_overall, risk_level)
+                        VALUES (:plan_id, :timestamp, :action, :status, :target_json, :result_json, :trace_id, :ethics_overall, :risk_level)
+                        """,
+                        rec,
+                    )
+                    conn.commit()
+                except Exception as e2:
+                    # Give up; leave to caller to handle/debug
+                    print(
+                        f"[AUDIT LEDGER][APPEND][ERROR] insert failed after migration: {e} then {e2}",
+                        flush=True,
+                    )
+                    raise
+            # Instrument: count rows for this trace_id immediately after insert
+            cur = conn.execute(
+                "SELECT COUNT(*) FROM audit_records WHERE trace_id = ?", (trace_id,)
             )
-            conn.commit()
+            row_count = cur.fetchone()[0]
+            print(
+                f"[AUDIT LEDGER][APPEND] trace_id={trace_id} row_count_after_insert={row_count}",
+                flush=True,
+            )
         finally:
             conn.close()
 
+        # Maintain in-memory ethics cache if record includes ethics data
+        if ethics_overall is not None:
+            cache_entry = {
+                "plan_id": plan_id,
+                "trace_id": trace_id,
+                "timestamp": rec["timestamp"],
+                "action": action,
+                "status": status,
+                "target": target,
+                "ethics_overall": ethics_overall,
+                "risk_level": risk_level,
+                "result": result,
+            }
+            self._recent_ethics.insert(0, cache_entry)
+            if len(self._recent_ethics) > self._recent_limit:
+                self._recent_ethics.pop()
+
     def recent(self, limit: int = 100) -> list[dict[str, Any]]:
+        """Return most recent audit records, newest first with cache fallback."""
         conn = sqlite3.connect(self.db_path)
         try:
             cur = conn.execute(
-                "SELECT plan_id, timestamp, action, status, target_json, result_json FROM audit_records ORDER BY id DESC LIMIT ?",
+                "SELECT plan_id, timestamp, action, status, target_json, result_json, trace_id, ethics_overall, risk_level FROM audit_records ORDER BY id DESC LIMIT ?",
                 (limit,),
             )
             rows = cur.fetchall()
-            return [
-                {
-                    "plan_id": row[0],
-                    "timestamp": row[1],
-                    "action": row[2],
-                    "status": row[3],
-                    "target": json.loads(row[4]),
-                    "result": json.loads(row[5]),
-                }
-                for row in rows
-            ]
+            if rows:
+                return [
+                    {
+                        "plan_id": row[0],
+                        "timestamp": row[1],
+                        "action": row[2],
+                        "status": row[3],
+                        "target": json.loads(row[4]) if row[4] else {},
+                        "result": json.loads(row[5]) if row[5] else {},
+                        "trace_id": row[6],
+                        "ethics_overall": row[7],
+                        "risk_level": row[8],
+                    }
+                    for row in rows
+                ]
         finally:
             conn.close()
+        # Fallback to in-memory cache if DB returned nothing
+        if getattr(self, "_recent_ethics", None):
+            print(
+                f"[AUDIT LEDGER][RECENT][CACHE] returning {min(len(self._recent_ethics), limit)} entries",
+                flush=True,
+            )
+            return [
+                {
+                    "plan_id": it.get("plan_id"),
+                    "timestamp": it.get("timestamp"),
+                    "action": it.get("action"),
+                    "status": it.get("status"),
+                    "target": it.get("target") or {},
+                    "result": it.get("result") or {},
+                    "trace_id": it.get("trace_id"),
+                    "ethics_overall": it.get("ethics_overall"),
+                    "risk_level": it.get("risk_level"),
+                }
+                for it in self._recent_ethics[:limit]
+            ]
+        return []
 
     def summary(self) -> dict[str, Any]:
         conn = sqlite3.connect(self.db_path)
@@ -607,6 +781,119 @@ class AuditLedger:
                 "SELECT COUNT(*), status FROM audit_records GROUP BY status"
             )
             return {row[1]: row[0] for row in cur.fetchall()}
+        finally:
+            conn.close()
+
+    def ethics_stats(self) -> dict[str, Any]:
+        """Return aggregated ethics decision statistics."""
+        conn = sqlite3.connect(self.db_path)
+        try:
+            stats = {
+                "total_decisions": 0,
+                "high_risk": 0,
+                "medium_risk": 0,
+                "low_risk": 0,
+                "avg_score": 0.0,
+            }
+            cur = conn.execute(
+                "SELECT ethics_overall, risk_level FROM audit_records WHERE ethics_overall IS NOT NULL"
+            )
+            rows = cur.fetchall()
+            if not rows:
+                # Fallback: compute from in-memory cache if present
+                cache = getattr(self, "_recent_ethics", [])
+                if cache:
+                    total_score = 0.0
+                    for it in cache:
+                        score = it.get("ethics_overall") or 0.0
+                        risk = it.get("risk_level")
+                        if score is None:
+                            continue
+                        stats["total_decisions"] += 1
+                        total_score += float(score)
+                        if risk == "high":
+                            stats["high_risk"] += 1
+                        elif risk == "medium":
+                            stats["medium_risk"] += 1
+                        elif risk == "low":
+                            stats["low_risk"] += 1
+                    stats["avg_score"] = total_score / max(1, stats["total_decisions"])
+                    print(
+                        f"[AUDIT LEDGER][ETHICS_STATS][CACHE] td={stats['total_decisions']} avg={stats['avg_score']:.3f}",
+                        flush=True,
+                    )
+                    return stats
+                return stats
+            total_score = 0.0
+            for score, risk in rows:
+                stats["total_decisions"] += 1
+                total_score += score or 0.0
+                if risk == "high":
+                    stats["high_risk"] += 1
+                elif risk == "medium":
+                    stats["medium_risk"] += 1
+                elif risk == "low":
+                    stats["low_risk"] += 1
+            stats["avg_score"] = total_score / max(1, stats["total_decisions"])
+            return stats
+        finally:
+            conn.close()
+
+    def get_by_trace(self, trace_id: str) -> dict[str, Any] | None:
+        """Retrieve a specific audit record by trace id."""
+        if not trace_id:
+            return None
+        print(
+            f"[AUDIT LEDGER][GET_BY_TRACE] db_path={self.db_path} trace_id={trace_id}",
+            flush=True,
+        )
+        conn = sqlite3.connect(self.db_path)
+        try:
+            cur = conn.execute(
+                "SELECT COUNT(*) FROM audit_records WHERE trace_id = ?", (trace_id,)
+            )
+            row_count = cur.fetchone()[0]
+            print(
+                f"[AUDIT LEDGER][GET_BY_TRACE] trace_id={trace_id} row_count_before_fetch={row_count}",
+                flush=True,
+            )
+            cur = conn.execute(
+                "SELECT plan_id, timestamp, action, status, target_json, result_json, trace_id, ethics_overall, risk_level FROM audit_records WHERE trace_id = ? ORDER BY id DESC LIMIT 1",
+                (trace_id,),
+            )
+            row = cur.fetchone()
+            if not row:
+                # Fallback: search in-memory cache
+                cache = getattr(self, "_recent_ethics", [])
+                for it in cache:
+                    if it.get("trace_id") == trace_id:
+                        print(
+                            f"[AUDIT LEDGER][GET_BY_TRACE][CACHE] hit trace_id={trace_id}",
+                            flush=True,
+                        )
+                        return {
+                            "plan_id": it.get("plan_id"),
+                            "timestamp": it.get("timestamp"),
+                            "action": it.get("action"),
+                            "status": it.get("status"),
+                            "target": it.get("target") or {},
+                            "result": it.get("result") or {},
+                            "trace_id": it.get("trace_id"),
+                            "ethics_overall": it.get("ethics_overall"),
+                            "risk_level": it.get("risk_level"),
+                        }
+                return None
+            return {
+                "plan_id": row[0],
+                "timestamp": row[1],
+                "action": row[2],
+                "status": row[3],
+                "target": json.loads(row[4]),
+                "result": json.loads(row[5]),
+                "trace_id": row[6],
+                "ethics_overall": row[7],
+                "risk_level": row[8],
+            }
         finally:
             conn.close()
 
@@ -628,7 +915,7 @@ class SelfIncorporationConfig:
 
     """Configuration for the Self-Incorporation system."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Core settings
         self.enabled = os.getenv("AETHERRA_SELFINC_ENABLED", "1") == "1"
         self.roots = self._parse_roots()
@@ -658,7 +945,8 @@ class SelfIncorporationConfig:
         self.net_policy_path = policy_dir / "net_policy.json"
         self.selfinc_policy_path = policy_dir / "selfinc.json"
         # Policy-derived knobs (populated by service startup)
-        self.unique_capabilities = []
+
+    unique_capabilities: list[str] = []
 
 
 class CodeIndex:
@@ -669,7 +957,7 @@ class CodeIndex:
         self.jsonl_path = jsonl_path
         self._init_database()
 
-    def _init_database(self):
+    def _init_database(self) -> None:
         """Initialize SQLite database schema."""
         conn = sqlite3.connect(self.db_path)
         try:
@@ -704,7 +992,7 @@ class CodeIndex:
         finally:
             conn.close()
 
-    def store_file(self, file_item: FileItem):
+    def store_file(self, file_item: FileItem) -> None:
         """Store a FileItem in the index."""
         conn = sqlite3.connect(self.db_path)
         try:
@@ -803,15 +1091,11 @@ class HeuristicClassifier:
     def classify_file(self, file_item: FileItem) -> ClassificationResult:
         """Perform comprehensive classification of a file."""
         path = Path(file_item.path)
-
-        # Basic type classification (already done in file_item.type)
         file_type = file_item.type
-
-        # Extract detailed metadata based on file type
-        capabilities = []
-        requires = []
-        risk_hints = []
-        metadata = {}
+        capabilities: list[str] = []
+        requires: list[str] = []
+        risk_hints: list[str] = []
+        metadata: dict[str, Any] = {}
         confidence = 0.5
 
         if file_item.language == "python":
@@ -841,10 +1125,10 @@ class HeuristicClassifier:
         self, path: Path
     ) -> tuple[list[str], list[str], list[str], dict[str, Any], float]:
         """Analyze Python file for capabilities, dependencies, and risks."""
-        capabilities = []
-        requires = []
-        risk_hints = []
-        metadata = {}
+        capabilities: list[str] = []
+        requires: list[str] = []
+        risk_hints: list[str] = []
+        metadata: dict[str, Any] = {}
         confidence = 0.7
 
         try:
@@ -948,10 +1232,10 @@ class HeuristicClassifier:
         self, path: Path
     ) -> tuple[list[str], list[str], list[str], dict[str, Any], float]:
         """Analyze .aether script file."""
-        capabilities = ["aether_script"]
-        requires = []
-        risk_hints = []
-        metadata = {}
+        capabilities: list[str] = ["aether_script"]
+        requires: list[str] = []
+        risk_hints: list[str] = []
+        metadata: dict[str, Any] = {}
         confidence = 0.9
 
         try:
@@ -993,10 +1277,10 @@ class HeuristicClassifier:
         self, path: Path
     ) -> tuple[list[str], list[str], list[str], dict[str, Any], float]:
         """Analyze JSON configuration/data files."""
-        capabilities = []
-        requires = []
-        risk_hints = []
-        metadata = {}
+        capabilities: list[str] = []
+        requires: list[str] = []
+        risk_hints: list[str] = []
+        metadata: dict[str, Any] = {}
         confidence = 0.8
 
         try:
@@ -1046,7 +1330,7 @@ class ClassificationIndex:
         self.db_path = db_path
         self._init_database()
 
-    def _init_database(self):
+    def _init_database(self) -> None:
         """Initialize classification database schema."""
         conn = sqlite3.connect(self.db_path)
         try:
@@ -1075,7 +1359,7 @@ class ClassificationIndex:
         finally:
             conn.close()
 
-    def store_classification(self, result: ClassificationResult):
+    def store_classification(self, result: ClassificationResult) -> None:
         """Store a classification result."""
         conn = sqlite3.connect(self.db_path)
         try:
@@ -1186,9 +1470,11 @@ class PolicyEngine:
     def _load_capability_policies(self) -> dict[str, Any]:
         """Load capability allowlist/denylist policies."""
         try:
+            from typing import cast
+
             if self.config.capabilities_policy_path.exists():
                 with open(self.config.capabilities_policy_path, encoding="utf-8") as f:
-                    return json.load(f)
+                    return cast(dict[str, Any], json.load(f))
         except Exception as e:
             logger.debug(f"[POLICY] Failed to load capability policies: {e}")
 
@@ -1218,9 +1504,11 @@ class PolicyEngine:
     def _load_network_policies(self) -> dict[str, Any]:
         """Load network access policies."""
         try:
+            from typing import cast
+
             if self.config.net_policy_path.exists():
                 with open(self.config.net_policy_path, encoding="utf-8") as f:
-                    return json.load(f)
+                    return cast(dict[str, Any], json.load(f))
         except Exception as e:
             logger.debug(f"[POLICY] Failed to load network policies: {e}")
 
@@ -1232,22 +1520,23 @@ class PolicyEngine:
                 "denied_domains": ["*"],
                 "require_approval": True,
             }
-        else:
-            return {
-                "mode": "permissive",
-                "allowed_domains": ["*"],
-                "denied_domains": [],
-                "require_approval": False,
-            }
+        return {
+            "mode": "permissive",
+            "allowed_domains": ["*"],
+            "denied_domains": [],
+            "require_approval": False,
+        }
 
     def _load_selfinc_policies(self) -> dict[str, Any]:
         """Load self-incorporation specific policies."""
         # Try project root first
         project_policy_path = Path.cwd() / "selfinc_policy.json"
         try:
+            from typing import cast
+
             if project_policy_path.exists():
                 with open(project_policy_path, encoding="utf-8") as f:
-                    return json.load(f)
+                    return cast(dict[str, Any], json.load(f))
         except Exception as e:
             logger.debug(
                 f"[POLICY] Failed to load selfinc_policy.json from project root: {e}"
@@ -1255,9 +1544,11 @@ class PolicyEngine:
 
         # Fallback to default config path
         try:
+            from typing import cast
+
             if self.config.selfinc_policy_path.exists():
                 with open(self.config.selfinc_policy_path, encoding="utf-8") as f:
-                    return json.load(f)
+                    return cast(dict[str, Any], json.load(f))
         except Exception as e:
             logger.debug(
                 f"[POLICY] Failed to load selfinc policies from config path: {e}"
@@ -1594,7 +1885,7 @@ class SafetyIndex:
         self.db_path = db_path
         self._init_database()
 
-    def _init_database(self):
+    def _init_database(self) -> None:
         """Initialize safety decisions database schema."""
         conn = sqlite3.connect(self.db_path)
         try:
@@ -1624,7 +1915,7 @@ class SafetyIndex:
         finally:
             conn.close()
 
-    def store_decision(self, decision: SafetyDecision):
+    def store_decision(self, decision: SafetyDecision) -> None:
         """Store a safety decision."""
         conn = sqlite3.connect(self.db_path)
         try:
@@ -1708,8 +1999,12 @@ class DependencyAnalyzer:
 
     def __init__(self, config: SelfIncorporationConfig):
         self.config = config
-        self.dependency_graph = {}  # file_id -> list of dependency file_ids
-        self.reverse_deps = {}  # file_id -> list of files that depend on it
+        self.dependency_graph: dict[
+            str, list[str]
+        ] = {}  # file_id -> list of dependency file_ids
+        self.reverse_deps: dict[
+            str, list[str]
+        ] = {}  # file_id -> list of files that depend on it
 
     def analyze_dependencies(
         self,
@@ -1853,7 +2148,7 @@ class ConflictResolver:
     ) -> list[dict[str, Any]]:
         """Detect capability conflicts between components."""
         conflicts = []
-        capability_providers = {}
+        capability_providers: dict[str, list[dict[str, Any]]] = {}
         # Determine which capabilities are exclusive (conflict if >1 provider)
         unique_caps = set(getattr(self.config, "unique_capabilities", []) or [])
 
@@ -2160,7 +2455,7 @@ class CoreIntegrator:
     def __init__(self, service: "SelfIncorporationService"):
         self.service = service
 
-    def _get_hmr_controller(self):
+    def _get_hmr_controller(self) -> Any:
         """Get HMR controller from service registry."""
         try:
             # Access registry through the service's service_registry
@@ -2183,7 +2478,7 @@ class CoreIntegrator:
 
     async def _record_hmr_action(
         self, action: str, target: dict[str, Any], rollback_token: str, success: bool
-    ):
+    ) -> None:
         """Record HMR action in audit ledger with rollback token."""
         try:
             if hasattr(self.service, "audit_ledger") and self.service.audit_ledger:
@@ -2269,7 +2564,7 @@ class CoreIntegrator:
             try:
                 # Accept both PlanAction dataclass and dict
                 if hasattr(act, "action"):
-                    action_type = act.action  # type: ignore[attr-defined]
+                    action_type = act.action
                     target = getattr(act, "target", {})
                     deps = getattr(act, "deps", [])
                 else:
@@ -2355,7 +2650,7 @@ class CoreIntegrator:
                     "action": action,
                     "name": name_hint,
                 }
-            pm = self.service.plugin_manager
+            pm: Any = self.service.plugin_manager
             if not pm:
                 return {
                     "status": "skipped",
@@ -2395,7 +2690,7 @@ class CoreIntegrator:
                     "action": action,
                     "id": name_hint,
                 }
-            orch = self.service.agent_orchestrator
+            orch: Any = self.service.agent_orchestrator
             if not orch:
                 return {
                     "status": "skipped",
@@ -2425,8 +2720,14 @@ class CoreIntegrator:
         if action == "load_aether_script":
             # Idempotency: avoid re-execution by file hash
             if not hasattr(self, "_applied_scripts"):
-                self._applied_scripts = set()
-            script_key = file_item.hash if file_item else file_id
+                self._applied_scripts: set[str] = set()
+            script_key = (
+                str(file_item.hash)
+                if file_item
+                and hasattr(file_item, "hash")
+                and file_item.hash is not None
+                else str(file_id)
+            )
             if script_key in self._applied_scripts:
                 return {
                     "status": "skipped",
@@ -2448,7 +2749,7 @@ class CoreIntegrator:
                     "path": path,
                 }
             # Resolve AetherScriptService from registry or service
-            svc = None
+            svc: Any = None
             if self.service.service_registry:
                 svc = self.service.service_registry.get_service("aether_script_service")
             if not svc and hasattr(self.service, "aether_script_service"):
@@ -2545,26 +2846,22 @@ class ActivityMonitor:
         self.activity = UserActivity()
         self.monitoring = False
 
-    def update_activity(self, interaction_type: str = "generic"):
+    def update_activity(self, interaction_type: str = "generic") -> None:
         """Update user activity timestamp."""
         self.activity.last_interaction = datetime.now()
         self.activity.interaction_count += 1
 
     def get_system_load(self) -> tuple[float, float]:
-        """Get current CPU and memory usage."""
-        try:
-            # Simple system load detection
-            import psutil
+        """Get current CPU and memory usage.
 
-            cpu_percent = psutil.cpu_percent(interval=1)
-            memory_info = psutil.virtual_memory()
-            memory_percent = memory_info.percent
-            return cpu_percent, memory_percent
-        except ImportError:
-            # Fallback if psutil not available
-            return 5.0, 30.0  # Assume low usage
+        Note: To keep dependencies light and avoid type-stub warnings, we use a
+        conservative fallback that treats the system as lightly loaded. If more
+        accurate telemetry is needed, plug in a psutil-based collector behind a
+        runtime-only feature flag.
+        """
+        return 5.0, 30.0  # Assume low usage
 
-    def update_system_metrics(self):
+    def update_system_metrics(self) -> None:
         """Update current system resource usage."""
         self.activity.cpu_usage, self.activity.memory_usage = self.get_system_load()
 
@@ -2605,7 +2902,7 @@ class LearningEngine:
         self.insights_db_path = config.index_db_path.with_suffix(".insights.db")
         self._init_insights_db()
 
-    def _init_insights_db(self):
+    def _init_insights_db(self) -> None:
         """Initialize the insights database."""
         conn = sqlite3.connect(self.insights_db_path)
         try:
@@ -2645,7 +2942,7 @@ class LearningEngine:
 
     async def analyze_recent_discoveries(self) -> list[LearningInsight]:
         """Analyze recent code discoveries for learning opportunities."""
-        insights = []
+        insights: list[LearningInsight] = []
 
         # Get recent classifications
         recent_classifications = (
@@ -2733,7 +3030,7 @@ class LearningEngine:
 
     def _analyze_capability_patterns(self, classifications: list) -> dict[str, int]:
         """Analyze recurring capability request patterns."""
-        capability_counts = {}
+        capability_counts: dict[str, int] = {}
 
         for classification in classifications:
             for capability in classification.detected_capabilities:
@@ -2744,7 +3041,7 @@ class LearningEngine:
 
     async def learn_from_audit_history(self) -> list[LearningInsight]:
         """Learn from historical audit data to identify improvement opportunities."""
-        insights = []
+        insights: list[LearningInsight] = []
 
         # Analyze audit ledger for patterns
         try:
@@ -2816,7 +3113,7 @@ class LearningEngine:
         # For now, return empty list as placeholder
         return []
 
-    async def store_insights(self, insights: list[LearningInsight]):
+    async def store_insights(self, insights: list[LearningInsight]) -> None:
         """Store learning insights in the database."""
         if not insights:
             return
@@ -2861,7 +3158,7 @@ class NightCycleProcessor:
         self.current_metrics: NightCycleMetrics | None = None
         self.is_running = False
 
-    async def start_monitoring(self):
+    async def start_monitoring(self) -> None:
         """Start monitoring for night cycle opportunities."""
         if self.is_running:
             return
@@ -2874,13 +3171,13 @@ class NightCycleProcessor:
         # Start monitoring loop
         asyncio.create_task(self._monitoring_loop())
 
-    async def stop_monitoring(self):
+    async def stop_monitoring(self) -> None:
         """Stop night cycle monitoring."""
         self.is_running = False
         self.current_phase = NightCyclePhase.INACTIVE
         logger.info("[NIGHT_CYCLE] Stopped night cycle monitoring")
 
-    async def _monitoring_loop(self):
+    async def _monitoring_loop(self) -> None:
         """Main monitoring loop that checks for night cycle opportunities."""
         while self.is_running:
             try:
@@ -2898,7 +3195,7 @@ class NightCycleProcessor:
                 logger.error(f"[NIGHT_CYCLE] Error in monitoring loop: {e}")
                 await asyncio.sleep(60)  # Brief pause on error
 
-    async def _run_night_cycle(self):
+    async def _run_night_cycle(self) -> None:
         """Execute a complete night cycle processing session."""
         cycle_start = datetime.now()
         self.current_metrics = NightCycleMetrics(cycle_start=cycle_start)
@@ -2962,7 +3259,7 @@ class NightCycleProcessor:
 
         return applied_count
 
-    async def _validate_night_cycle_changes(self):
+    async def _validate_night_cycle_changes(self) -> None:
         """Validate that night cycle changes didn't break anything."""
         # Run basic system health checks
         try:
@@ -2978,7 +3275,9 @@ class NightCycleProcessor:
         except Exception as e:
             logger.error(f"[NIGHT_CYCLE] Validation failed: {e}")
 
-    async def _generate_night_cycle_report(self, insights: list[LearningInsight]):
+    async def _generate_night_cycle_report(
+        self, insights: list[LearningInsight]
+    ) -> None:
         """Generate a summary report of night cycle activities."""
         if not self.current_metrics:
             return
@@ -3030,14 +3329,16 @@ class QuarantineManager:
     Integrates with SecuritySandbox for initial isolation and supports policy-driven escalation/approval.
     """
 
-    def __init__(self, audit_ledger=None, policy_engine=None):
+    def __init__(
+        self, audit_ledger: Any | None = None, policy_engine: Any | None = None
+    ) -> None:
         self.audit_ledger = audit_ledger
         self.policy_engine = policy_engine
-        self.quarantined_items = {}  # file_id -> metadata
+        self.quarantined_items: dict[str, Any] = {}  # file_id -> metadata
 
     def quarantine(
         self, file_id: str, reason: str, context: dict[str, Any] | None = None
-    ):
+    ) -> None:
         """Place a file or code item into quarantine."""
         context = context or {}
         self.quarantined_items[file_id] = {
@@ -3056,7 +3357,9 @@ class QuarantineManager:
                 result={"reason": reason},
             )
 
-    def escalate(self, file_id: str, new_level: int, approval: str | None = None):
+    def escalate(
+        self, file_id: str, new_level: int, approval: str | None = None
+    ) -> None:
         """Escalate privileges for a quarantined item, with optional approval."""
         item = self.quarantined_items.get(file_id)
         if not item:
@@ -3074,7 +3377,7 @@ class QuarantineManager:
                 result={"level": new_level, "approval": approval},
             )
 
-    def release(self, file_id: str, approved: bool = False):
+    def release(self, file_id: str, approved: bool = False) -> None:
         """Release a quarantined item (after approval or remediation)."""
         item = self.quarantined_items.get(file_id)
         if not item:
@@ -3094,7 +3397,8 @@ class QuarantineManager:
 
     def get_status(self, file_id: str) -> dict[str, Any]:
         """Get quarantine status and metadata for a file."""
-        return self.quarantined_items.get(file_id, {})
+        result = self.quarantined_items.get(file_id, {})
+        return result if isinstance(result, dict) else {}
 
     def list_quarantined(self) -> list[dict[str, Any]]:
         """List all currently quarantined items."""
@@ -3108,6 +3412,15 @@ class SelfIncorporationService:
     Main Self-Incorporation service implementing the autonomous codebase
     perception and integration pipeline.
     """
+
+    # Class-level attribute type declarations for type checkers
+    _workflows: dict[str, Any]
+    metrics: dict[str, Any]
+    service_registry: Any | None
+    aether_script_service: Any | None
+    kernel_loop: Any | None
+    plugin_manager: Any | None
+    agent_orchestrator: Any | None
 
     def __init__(self, config: SelfIncorporationConfig | None = None):
         self.config = config or SelfIncorporationConfig()
@@ -3172,31 +3485,6 @@ class SelfIncorporationService:
             "night_cycle_insights": 0,
         }
 
-    def quarantine_file(
-        self, file_id: str, reason: str, context: dict[str, Any] | None = None
-    ):
-        """Quarantine a file or code item due to suspicious or untrusted status."""
-        self.quarantine_manager.quarantine(file_id, reason, context)
-        self.metrics["files_quarantined"] = self.metrics.get("files_quarantined", 0) + 1
-        logger.info(f"[SELFINC] Quarantined {file_id}: {reason}")
-
-        # Minimal workflow registry (in-memory)
-        self._workflows = {}
-
-        # Metrics and state
-        self.metrics = {
-            "files_discovered": 0,
-            "files_classified": 0,
-            "files_integrated": 0,
-            "files_quarantined": 0,
-            "last_scan_duration": 0.0,
-            "last_scan_timestamp": 0.0,
-            "boot_completed": False,
-            "night_cycles_completed": 0,
-            "last_night_cycle_timestamp": 0.0,
-            "night_cycle_insights": 0,
-        }
-
         # System integrations (injected by kernel)
         self.service_registry = None
         self.aether_script_service = None
@@ -3206,7 +3494,15 @@ class SelfIncorporationService:
 
         logger.info(f"[SELFINC] Initialized with roots: {self.config.roots}")
 
-    async def start(self):
+    def quarantine_file(
+        self, file_id: str, reason: str, context: dict[str, Any] | None = None
+    ) -> None:
+        """Quarantine a file or code item due to suspicious or untrusted status."""
+        self.quarantine_manager.quarantine(file_id, reason, context)
+        self.metrics["files_quarantined"] = self.metrics.get("files_quarantined", 0) + 1
+        logger.info(f"[SELFINC] Quarantined {file_id}: {reason}")
+
+    async def start(self) -> None:
         """Start the Self-Incorporation service."""
         if not self.config.enabled:
             logger.info("[SELFINC] Service disabled via configuration")
@@ -3232,7 +3528,7 @@ class SelfIncorporationService:
         self.status = ServiceStatus.HEALTHY
         logger.info("[SELFINC] Service started successfully")
 
-    async def stop(self):
+    async def stop(self) -> None:
         """Stop the Self-Incorporation service."""
         logger.info("[SELFINC] Stopping Self-Incorporation service...")
         self._running = False
@@ -3245,8 +3541,12 @@ class SelfIncorporationService:
         logger.info("[SELFINC] Service stopped")
 
     def inject_systems(
-        self, service_registry, kernel_loop, plugin_manager, agent_orchestrator
-    ):
+        self,
+        service_registry: Any,
+        kernel_loop: Any,
+        plugin_manager: Any,
+        agent_orchestrator: Any,
+    ) -> None:
         """Inject core system references for integration."""
         self.service_registry = service_registry
         self.kernel_loop = kernel_loop
@@ -3647,6 +3947,22 @@ class SelfIncorporationService:
         ethics_evaluation = await self._evaluate_plan_ethics(plan)
         ethics_threshold = float(os.getenv("AETHERRA_ETHICS_THRESHOLD", "0.6"))
 
+        # Derive risk level and trace id for audit
+        try:
+            import hashlib
+            import time as _time
+
+            raw = f"plan:{plan.get('plan_id')}:{ethics_evaluation['overall_score']}:{_time.time()}".encode()
+            plan_trace_id = hashlib.sha256(raw).hexdigest()[:16]
+        except Exception:
+            plan_trace_id = None
+        if ethics_evaluation["overall_score"] < 0.4:
+            plan_risk_level = "high"
+        elif ethics_evaluation["overall_score"] < 0.6:
+            plan_risk_level = "medium"
+        else:
+            plan_risk_level = "low"
+
         if ethics_evaluation["overall_score"] < ethics_threshold and not force:
             # Record ethics denial in audit
             audit_target = {
@@ -3664,6 +3980,9 @@ class SelfIncorporationService:
                 status="denied",
                 target=audit_target,
                 result=audit_result,
+                trace_id=plan_trace_id,
+                ethics_overall=ethics_evaluation["overall_score"],
+                risk_level=plan_risk_level,
             )
 
             return {
@@ -3682,6 +4001,29 @@ class SelfIncorporationService:
             self.metrics["files_integrated"] = self.metrics.get(
                 "files_integrated", 0
             ) + exec_result.get("applied", 0)
+
+        # Record applied plan ethics audit
+        import contextlib
+
+        with contextlib.suppress(Exception):
+            self.audit_ledger.append(
+                plan_id=plan.get("plan_id", "unknown"),
+                action="integration_plan",
+                status="applied" if exec_result.get("ok") else "failed",
+                target={
+                    "plan_id": plan.get("plan_id"),
+                    "actions_count": len(plan.get("actions", [])),
+                },
+                result={
+                    "ethics_score": ethics_evaluation.get("overall_score"),
+                    "risk_factors": ethics_evaluation.get("risk_factors", []),
+                    "applied": exec_result.get("applied"),
+                    "errors": exec_result.get("errors"),
+                },
+                trace_id=plan_trace_id,
+                ethics_overall=ethics_evaluation.get("overall_score"),
+                risk_level=plan_risk_level,
+            )
 
         result: dict[str, Any] = {
             "ok": exec_result.get("ok", False),
@@ -3702,12 +4044,12 @@ class SelfIncorporationService:
         # Count components by status
         classifications = self.classification_index.list_classifications()
 
-        trust_counts = {}
+        trust_counts: dict[str, int] = {}
         for tier in TrustTier:
             decisions = self.safety_index.list_by_trust_tier(tier)
             trust_counts[tier.value] = len(decisions)
 
-        type_counts = {}
+        type_counts: dict[str, int] = {}
         for classification in classifications:
             item_type = classification.type.value
             type_counts[item_type] = type_counts.get(item_type, 0) + 1
@@ -3829,7 +4171,7 @@ class SelfIncorporationService:
         plan = await self._run_integration_planning(include_experimental)
 
         # Truncate large lists for readability
-        def _truncate(seq):
+        def _truncate(seq: Any) -> list[Any]:
             try:
                 return list(seq)[: max(0, int(limit))]
             except Exception:

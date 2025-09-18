@@ -4,13 +4,16 @@ import types
 
 import tools.run_hub_ai_api as script
 
+
 class _DummyServer:
     def __init__(self, port):
         self.port = port
         self.started = False
+
     def start_server(self):
         self.started = True
         return True
+
 
 class _DummyCompat(types.SimpleNamespace):
     pass
@@ -21,7 +24,15 @@ def test_main_sets_env_and_starts(monkeypatch):
     dummy_mod = _DummyCompat(AetherraHubServer=_DummyServer)
     monkeypatch.setitem(sys.modules, "aetherra_hub.compat", dummy_mod)
     argv_backup = list(sys.argv)
-    sys.argv = ["run_hub_ai_api.py", "--port", "3111", "--require-token", "--token", "SECRET"]
+    sys.argv = [
+        "run_hub_ai_api.py",
+        "--port",
+        "3111",
+        "--require-token",
+        "--token",
+        "SECRET",
+    ]
+
     # Cause main loop to exit after first sleep attempt
     def _raise_keyboard_interrupt(_):  # noqa: D401
         raise KeyboardInterrupt

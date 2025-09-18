@@ -1,0 +1,154 @@
+{
+    "title": "Aetherra Self-Incorporation System – Production Readiness Guide",
+    "date": "2025-09-16",
+    "status": "Hardened (Phase 1 complete)",
+    "owner": "Self-Incorporation / Platform Engineering",
+    "dimensions": [
+        {
+            "name": "Cold Boot",
+            "outcome": "PASS",
+            "notes": "Registers real instance; artifacts created"
+        },
+        {
+            "name": "API Availability",
+            "outcome": "PASS",
+            "notes": "Status endpoint healthy"
+        },
+        {
+            "name": "Security Strict Mode",
+            "outcome": "PASS",
+            "notes": "Env guard enforces strict posture"
+        },
+        {
+            "name": "Capability Denial",
+            "outcome": "PASS",
+            "notes": "Unauthorized ops denied"
+        },
+        {
+            "name": "HMR Rollback Resilience",
+            "outcome": "PASS (code-path)",
+            "notes": "Rollback path & metrics verified"
+        },
+        {
+            "name": "Spec → Tests Enforcement",
+            "outcome": "PASS",
+            "notes": "Kernel loop + hub + registry + script tests"
+        }
+    ],
+    "env_matrix": [
+        {
+            "var": "AETHERRA_PROFILE",
+            "required": "prod/production",
+            "purpose": "Activates hardening guard",
+            "auto": "N/A"
+        },
+        {
+            "var": "AETHERRA_REQUIRE_CAPABILITIES",
+            "required": "1",
+            "purpose": "Capability policy enforcement",
+            "auto": "Abort if unset"
+        },
+        {
+            "var": "AETHERRA_SCRIPT_VERIFY_STRICT",
+            "required": "1",
+            "purpose": "Script signature strictness",
+            "auto": "Abort if unset"
+        },
+        {
+            "var": "AETHERRA_SIGNING_STRICT",
+            "required": "1",
+            "purpose": "Plugin signing strict mode",
+            "auto": "Abort if unset"
+        },
+        {
+            "var": "AETHERRA_NET_STRICT",
+            "required": "1",
+            "purpose": "Restrict outbound network",
+            "auto": "Auto-enable + allowlist"
+        },
+        {
+            "var": "AETHERRA_NETWORK_ALLOWLIST",
+            "required": "Value list",
+            "purpose": "Hosts allowlist",
+            "auto": "Defaults if missing"
+        },
+        {
+            "var": "AETHERRA_AI_API_ENABLED",
+            "required": "1 (if AI API)",
+            "purpose": "Enable AI endpoints",
+            "auto": "Warn if insecure"
+        },
+        {
+            "var": "AETHERRA_AI_API_REQUIRE_TOKEN",
+            "required": "1 (if AI API)",
+            "purpose": "Require auth token",
+            "auto": "Failure recorded if missing"
+        },
+        {
+            "var": "AETHERRA_AI_API_TOKEN / AETHERRA_HUB_CONTROL_TOKEN",
+            "required": "Yes",
+            "purpose": "Authentication secret",
+            "auto": "Required if require_token=1"
+        },
+        {
+            "var": "AETHERRA_SELFINC_ENABLED",
+            "required": "1 (optional)",
+            "purpose": "Auto startup task",
+            "auto": "Idle if missing"
+        }
+    ],
+    "api_endpoints": [
+        {
+            "path": "/api/selfinc/status",
+            "method": "GET",
+            "auth": "None",
+            "shape": "{status,running,...}"
+        },
+        {
+            "path": "/api/selfinc/scan",
+            "method": "POST",
+            "auth": "None",
+            "shape": "{queued|started|...}"
+        },
+        {
+            "path": "/api/selfinc/apply",
+            "method": "POST",
+            "auth": "None",
+            "shape": "{ok,applied,rb_token?}"
+        },
+        {
+            "path": "/api/selfinc/rollback",
+            "method": "POST",
+            "auth": "None",
+            "shape": "{ok}|error"
+        },
+        {
+            "path": "/api/selfinc/audit",
+            "method": "GET",
+            "auth": "None",
+            "shape": "{audit_summary,filters}"
+        }
+    ],
+    "risks": [
+        {
+            "risk": "Ethics endpoints instrumentation",
+            "likelihood": "Medium",
+            "impact": "Low",
+            "mitigation": "Ledger-backed metrics, audit, and scoring now implemented; further hardening in Phase 2."
+        },
+        {
+            "risk": "Apply/rollback race",
+            "likelihood": "Low",
+            "impact": "Medium",
+            "mitigation": "Add lock + idempotency"
+        }
+    ],
+    "phase2_items": [
+        "Token + capability scoped auth",
+        "Ethics decision provenance",
+        "Streaming scan progress",
+        "Deterministic synthetic delta fixtures",
+        "Cryptographic signing of plans",
+        "Expanded metrics (latency, ethics counts)"
+    ]
+}

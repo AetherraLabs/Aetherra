@@ -6,15 +6,20 @@ Incrementally registers extracted blueprints; legacy monolith can be phased out.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 import os
 
 from flask import Flask
 
+# Optional CORS support with dynamic import to avoid type stub errors
 try:
-    from flask_cors import CORS  # optional
+    import importlib
+
+    _flask_cors = importlib.import_module("flask_cors")
+    CORS = getattr(_flask_cors, "CORS", None)
 except Exception:  # pragma: no cover
-    CORS = None  # type: ignore
+    CORS = None
 
 from .blueprints import (
     ai_ask,
@@ -30,6 +35,7 @@ from .blueprints import (
     peers,  # federation stub
     plugins,
     quantum,  # new
+    self_incorporation,  # new
     site_status,
     telemetry,  # new
     trainer,  # new
@@ -57,6 +63,7 @@ BLUEPRINTS = [
     trainer.bp,
     peers.bp,
     memory.bp,
+    self_incorporation.bp,
 ]
 
 
@@ -67,7 +74,7 @@ def create_app(cfg: Settings | None = None) -> Flask:
     app.settings = cfg  # type: ignore[attr-defined]
 
     # Early production hardening guard (fail-fast for insecure posture)
-    def _prod_security_guard():
+    def _prod_security_guard() -> None:
         profile = (os.environ.get("AETHERRA_PROFILE", "") or "").lower()
         if profile not in ("prod", "production"):
             return
@@ -124,7 +131,7 @@ def create_app(cfg: Settings | None = None) -> Flask:
 
     if CORS:
         try:
-            CORS(app)  # type: ignore
+            CORS(app)
         except Exception:
             logger.warning("CORS init failed")
 
@@ -135,23 +142,21 @@ def create_app(cfg: Settings | None = None) -> Flask:
             app.register_blueprint(bp)
 
     # Optional engine reset on startup (test/support use-cases)
-    def _maybe_reset_engine():
+    def _maybe_reset_engine() -> None:
         if not (
             os.environ.get("AETHERRA_HUB_RESET_ENGINE_ON_START", "0") == "1"
             or os.environ.get("AETHERRA_TEST_RESET_ENGINE", "0") == "1"
         ):
             return
         try:
-            from aetherra_service_registry import (  # type: ignore
+            from aetherra_service_registry import (
                 get_service_registry,
             )
 
-            async def _do():
+            async def _do() -> None:
                 reg = await get_service_registry()
-                try:
+                with contextlib.suppress(Exception):
                     await reg.unregister_service("aetherra_engine")
-                except Exception:
-                    pass
 
             # Run quickly (non-blocking degrade if fails)
             asyncio.run(_do())
@@ -164,17 +169,17 @@ def create_app(cfg: Settings | None = None) -> Flask:
     _maybe_reset_engine()
 
     @app.get("/api/ping")
-    def _ping():  # simple liveness
+    def _ping() -> dict[str, bool]:  # simple liveness
         return {"pong": True}
 
     @app.before_request
-    def _log_req():  # lightweight request logging
+    def _log_req() -> None:  # lightweight request logging
         try:
             if getattr(app, "settings", None) and app.settings.log_requests:  # type: ignore[attr-defined]
                 from flask import request
 
                 logger.info("REQ %s %s", request.method, request.path)
-        except Exception:
-            pass
+        except Exception as exc:  # pragma: no cover - defensive
+            logger.debug("[REQLOG] request logging suppressed due to error: %s", exc)
 
     return app

@@ -44,7 +44,7 @@ def main() -> int:
     os.environ.update(desired_flags)
 
     try:
-    from aetherra_hub.compat import AetherraHubServer
+        from aetherra_hub.compat import AetherraHubServer
     except Exception as e:
         print(f"[ERR] failed to import hub server: {e}")
         return 1
@@ -58,10 +58,11 @@ def main() -> int:
         print(f"[ERR] failed to start Hub on {args.port}")
         return 1
 
-    # Register a minimal demo engine so /api/ai/* works end-to-end in this process
+    # Register required services so /api/selfinc/* and /api/ai/* work end-to-end
     try:
         import asyncio
 
+        from aetherra_self_incorporation import SelfIncorporationService
         from aetherra_service_registry import register_service
 
         class _DemoEngine:
@@ -76,12 +77,15 @@ def main() -> int:
                 }
 
         async def _register():
+            # Register self-incorporation service for /api/selfinc/* endpoints
+            await register_service("self_incorporation", SelfIncorporationService())
+            # Register demo engine for /api/ai/* endpoints
             await register_service("aetherra_engine", _DemoEngine())
 
         asyncio.run(_register())
-        print("[OK] Registered demo engine in-process (service: aetherra_engine)")
+        print("[OK] Registered self_incorporation and demo engine in-process")
     except Exception as e:
-        print(f"[WARN] Could not register demo engine: {e}")
+        print(f"[WARN] Could not register required services: {e}")
 
     print(f"[OK] Hub with AI API on http://127.0.0.1:{args.port}")
     # Re-apply flags one more time in case start_server triggered a .env reload

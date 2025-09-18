@@ -260,3 +260,20 @@ def get_keb_status() -> dict[str, Any]:
 
 def get_quantum_bridge_status() -> dict[str, Any]:
     return _generic_service_call("quantum_bridge", "get_status")
+
+
+def get_service(service_name: str):
+    """Get a service instance by name from the registry."""
+    try:
+
+        async def _go():
+            reg = await _get_registry_async()
+            info = reg.get_service_info(service_name)
+            if not info or not info.instance:
+                return None
+            return info.instance
+
+        return _run_coro(_go())
+    except Exception as exc:
+        logger.debug("get_service(%s) error: %s", service_name, exc)
+        return None

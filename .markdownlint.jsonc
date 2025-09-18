@@ -1,0 +1,13 @@
+{
+    "MD013": {
+        "line_length": 140,
+        "code_block_line_length": 160,
+        "tables": false
+    },
+    "MD033": false,
+    "MD024": true,
+    "MD022": true,
+    "MD031": true,
+    "MD032": true,
+    "MD056": true
+}

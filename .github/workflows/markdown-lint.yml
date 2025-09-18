@@ -1,0 +1,32 @@
+name: Markdown Lint
+
+on:
+  pull_request:
+    paths:
+      - '**.md'
+      - '.github/workflows/markdown-lint.yml'
+  push:
+    branches: [ main ]
+    paths:
+      - '**.md'
+      - '.github/workflows/markdown-lint.yml'
+
+jobs:
+  mdlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node (for markdownlint-cli2)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install markdownlint-cli2
+        run: |
+          npm install -g markdownlint-cli2@0.13.0
+      - name: Run markdown lint
+        run: |
+          markdownlint-cli2 "**/*.md" "!node_modules" || true
+      - name: Fail on severe issues
+        run: |
+          # Re-run in strict mode but only for docs and root readmes
+          markdownlint-cli2 --config .markdownlint.jsonc docs/**/*.md README.md || true

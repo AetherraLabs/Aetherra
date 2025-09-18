@@ -1,0 +1,208 @@
+title,body,labels,milestone
+SelfIncorporationService: skeleton + kernel wiring,"**Background**: Introduce a kernel-managed service that orchestrates discovery→classify→gate→plan→integrate. Hooks into Service Registry and runs on boot.
+
+**Tasks**
+- Create `SelfIncorporationService` class (start/stop, status, metrics)
+- Register with Service Registry + heartbeats
+- Add kernel task types (`self_incorporation.start`, `self_incorporation.tick`)
+- Expose `GET /api/selfinc/status`
+
+**Definition of Done**
+- Service starts during launcher Phase 2–3 and reports **HEALTHY**
+- Status endpoint returns counts (found/classified/planned/applied/quarantined)
+","phase:1,area:kernel,type:feature",Phase 1
+Code Index: SQLite + JSONL mirror,"**Background**: Persist discovered files with hashes/mtimes/types for deterministic planning.
+
+**Tasks**
+- Schema: `file_items` (id/hash/path/size/mtime/type/lang/entrypoints json)
+- Writer with dedupe by content hash
+- JSONL mirror for quick diffs
+- CLI: `aether selfinc scan --preview`
+
+**Definition of Done**
+- Scan of repo root produces deterministic index; re-scan updates deltas
+","phase:1,area:indexing,type:infra",Phase 1
+"Discovery walker (roots, ignores, limits)","**Tasks**
+- Walk roots from policy/env (`AETHERRA_SELFINC_ROOTS`)
+- Respect `.aetherraignore`, size/type filters
+- Emit discovery progress events for UI
+
+**Definition of Done**
+- Handles large trees without blocking kernel main loop (background queue)
+","phase:1,area:indexing,type:feature",Phase 1
+Heuristic classifier (plugin/agent/.aether/workflow/utility/docs),"**Background**: Lightweight classifiers by filename, manifests, headers, AST.
+
+**Tasks**
+- Plugin detector (manifest schema)
+- Agent detector (`handle_task`, `capabilities`)
+- `.aether` header parse (`meta/policy/require`)
+- Workflow/docs/utility heuristics
+
+**Definition of Done**
+- ≥95% correct classification on repo sample set
+","phase:1,area:classifier,type:feature",Phase 1
+Safety Gate: signatures + static scans + capability policy,"**Background**: Verify `.aether` (HMAC) & plugin manifests (ed25519), static risk, capability allowlists.
+
+**Tasks**
+- Hook `.aether` HMAC verify
+- Plugin manifest ed25519 verify (strict optional)
+- Static risk & secret scans
+- Capability check against `~/.aetherra/policy/capabilities.json`
+- Compute trust tier: verified/trusted/standard/experimental/quarantined
+
+**Definition of Done**
+- Fails closed in strict mode; audit record written on deny
+","phase:1,area:security,type:feature",Phase 1
+Integration Planner: dep graph + action mapping,"**Tasks**
+- Build dep graph from `requires`/imports
+- Toposort with risk bias
+- Map to actions: register_plugin/agent/script, expose_tool, sandbox, quarantine
+
+**Definition of Done**
+- Plans are deterministic given index + policy snapshot
+","phase:1,area:planning,type:feature",Phase 1
+Integrator: Plugins/Agents/.aether/Utilities,"**Background**: Register components with Plugin Manager, Agent Orchestrator, and `.aether` runtime.
+
+**Tasks**
+- Plugin registration (concurrency caps, timeouts)
+- Agent registration (health probes)
+- `.aether` script indexing/compile cache
+- Utility wrapping as tools (purity/idempotency metadata)
+
+**Definition of Done**
+- All integrations logged; failures produce remediation hints
+","phase:1,area:integration,type:feature",Phase 1
+Ethics & Audit logging (append-only),"**Background**: Every apply/deny includes ethics profile snapshot + reasons.
+
+**Tasks**
+- JSONL ledger with rotation
+- Link to scans, signatures, capabilities
+- CLI query: `aether selfinc audit --recent`
+
+**Definition of Done**
+- Ledger entries created for 100% of decisions
+","phase:1,area:ethics,type:infra",Phase 1
+Kernel/Hub status + minimal metrics,"**Tasks**
+- `/api/selfinc/status` & Prometheus counters: found/classified/planned/applied/quarantined
+- Add to `/metrics` and site status for UI
+
+**Definition of Done**
+- Grafana panel shows first successful run with non-zero counts
+","phase:1,area:observability,type:feature",Phase 1
+Acceptance tests (Phase 1),"**Tasks**
+- Cold boot: integrates known components; zero quarantines (non-strict)
+- Unsigned plugin (strict) → quarantined
+- Capability escalation → denied + audit
+
+**Definition of Done**
+- All pass in CI
+","phase:1,area:testing,type:test",Phase 1
+HMR integration (quiesce/swap/rollback),"**Background**: Use kernel HMR for safe on-the-fly swaps; audit attempts/rollbacks.
+
+**Tasks**
+- Quiesce targets; swap; verify; auto-rollback on failure
+- HMR metrics: attempts/success/rollback per target
+
+**Definition of Done**
+- Simulated post-swap failure rolls back automatically
+","phase:2,area:kernel,type:feature",Phase 2
+Night-cycle deep checks & optimization,"**Background**: Run heavy scans/evals between 02:00–04:00 local.
+
+**Tasks**
+- Re-score risks, expand tests
+- Consolidate memory links to integrated items
+- Ethics review delta report
+
+**Definition of Done**
+- Nightly report artifact stored + exposed in UI
+","phase:2,area:maintenance,type:feature",Phase 2
+Quarantine workflow + remediation suggestions,"**Tasks**
+- Queue quarantined items with reasons
+- Auto-suggest: sign, reduce capabilities, sandbox profile
+- `/api/selfinc/apply` supports “promote from quarantine”
+
+**Definition of Done**
+- 2/3 common failure modes recoverable via suggestions
+","phase:2,area:security,type:feature",Phase 2
+Ethics & Audit dashboard widgets,"**Tasks**
+- Add UI cards: ethics deltas, capability denials, recent decisions
+- Prometheus: `aetherra_selfinc_policy_denied_total{reason}`
+
+**Definition of Done**
+- Live widgets visible in Lyrixa panel / Hub UI
+","phase:2,area:ui,type:feature",Phase 2
+Control APIs: scan/apply/rollback/audit,"**Tasks**
+- `POST /api/selfinc/scan` (path filter)
+- `POST /api/selfinc/apply` (subset of plan actions)
+- `POST /api/selfinc/rollback` (rb_token)
+- `GET /api/selfinc/audit?query=...`
+
+**Definition of Done**
+- All endpoints token-guarded per Hub policy
+","phase:2,area:apis,type:feature",Phase 2
+Expanded metrics & alerts,"**Tasks**
+- Histograms: duration; HMR rollbacks; quarantine by risk
+- Alerts: spike in denials/quarantines
+
+**Definition of Done**
+- Alert fires on synthetic failure burst
+","phase:2,area:observability,type:feature",Phase 2
+Learning classifier (feedback-tuned),"**Tasks**
+- Collect ground truth from operator overrides
+- Incremental model to improve classification precision
+
+**Definition of Done**
+- +3–5% precision over heuristics on validation set
+","phase:3,area:classifier,type:enhancement",Phase 3
+Dependency graph visualizer,"**Tasks**
+- Build graph from index + imports
+- UI viz: nodes by type; edges by require/import
+
+**Definition of Done**
+- Interactive in Lyrixa panel (filter by type/trust)
+","phase:3,area:planning,type:feature",Phase 3
+Spec→Tests Gate integration (Coding System),"**Background**: Enforce “tests before activation” for runtime-affecting changes.
+
+**Tasks**
+- Hook gate into Integrator pipeline
+- Fail activation if missing tests (configurable)
+
+**Definition of Done**
+- Red tests allowed; but tests must exist; audit records updated
+","phase:3,area:quality,type:feature",Phase 3
+Lyrixa Self-Incorporation panel (UX),"**Tasks**
+- Progress bar, risk pie, quarantine queue
+- Ethics profile switcher (runtime)
+- Recent HMR events and rollbacks
+
+**Definition of Done**
+- End-to-end control from UI without CLI
+","phase:3,area:ui,type:feature",Phase 3
+Autonomy modes (Assist → Co-drive → Autopilot),"**Tasks**
+- Policy surface for autonomy level
+- Guardrails & confirmations by risk
+
+**Definition of Done**
+- Mode persisted and echoed in policy events (stream/headers)
+","phase:3,area:policy,type:feature",Phase 3
+End-to-end acceptance suite,"**Tasks**
+- Script scenarios across phases
+- Regression on quarantine → fix → promote
+
+**Definition of Done**
+- Green run required for release
+","phase:3,area:testing,type:test",Phase 3
+CLI commands (`aether selfinc ...`),"**Tasks**
+- `scan`, `plan --preview`, `apply`, `rollback`, `audit`
+
+**Definition of Done**
+- Help text + examples in README
+","phase:1,area:dx,type:feature",Phase 1
+Documentation set (developer + operator),"**Tasks**
+- Dev guide (APIs, contracts, schemas)
+- Operator guide (policies, strict mode, ethics)
+- Troubleshooting (quarantine, rollback)
+
+**Definition of Done**
+- Linked from Hub `/docs` and repo README
+","phase:1,area:docs,type:docs",Phase 1
