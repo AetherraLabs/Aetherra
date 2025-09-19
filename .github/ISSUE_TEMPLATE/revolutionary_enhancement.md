@@ -49,9 +49,19 @@ assignees: ''
 ## 🌍 Long-term Vision
 **How does this contribute to Aetherra becoming the universal AI programming standard by 2026?**
 
+## 🧪 Spec→Tests Gate Planning
+
+Please evaluate the scope of testing and documentation for this enhancement:
+
+- [ ] This enhancement requires extensive new tests (unit, integration, capabilities, performance)
+- [ ] This enhancement needs comprehensive docs updates (architecture, user guides, API refs)
+- [ ] This enhancement will expose significant new metrics and observability data
+- [ ] This enhancement has major security/policy implications requiring audit trails
+
 ---
 
-**Remember**: Aetherra aims to be the language where humans express intent and AI handles implementation. Every enhancement should move us closer to that vision! 🧬✨
+**Remember**: Aetherra aims to be the language where humans express intent and AI handles
+implementation. Every enhancement should move us closer to that vision! 🧬✨
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

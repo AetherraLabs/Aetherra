@@ -4,8 +4,7 @@ Document: D:\Aetherra Project\docs\PROJECT_OVERVIEW.md
 
 ## Environment Variables
 
-Missing in docs (1):
-- AETHERRA_CAPABILITIES_PERMISSIVE
+Missing in docs (0):
 
 Documented but not found in code (0):
 

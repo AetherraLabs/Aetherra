@@ -59,29 +59,30 @@ def main() -> int:
         return 1
 
     # Register required services so /api/selfinc/* and /api/ai/* work end-to-end
-    try:
-        import asyncio
+    import asyncio
 
+    class _DemoEngine:
+        async def process_message(self, msg: str, ctx: dict) -> dict:
+            text = f"Echo: {msg}"
+            return {
+                "result": {
+                    "response": text
+                    + "\n[demo-engine] Provide your own engine for real answers.",
+                    "context": ctx or {},
+                }
+            }
+
+    async def _register() -> None:
+        # Import lazily inside task so failures are caught by the wrapper below
         from aetherra_self_incorporation import SelfIncorporationService
         from aetherra_service_registry import register_service
 
-        class _DemoEngine:
-            async def process_message(self, msg: str, ctx: dict):
-                text = f"Echo: {msg}"
-                return {
-                    "result": {
-                        "response": text
-                        + "\n[demo-engine] Provide your own engine for real answers.",
-                        "context": ctx or {},
-                    }
-                }
+        # Register self-incorporation service for /api/selfinc/* endpoints
+        await register_service("self_incorporation", SelfIncorporationService())
+        # Register demo engine for /api/ai/* endpoints
+        await register_service("aetherra_engine", _DemoEngine())
 
-        async def _register():
-            # Register self-incorporation service for /api/selfinc/* endpoints
-            await register_service("self_incorporation", SelfIncorporationService())
-            # Register demo engine for /api/ai/* endpoints
-            await register_service("aetherra_engine", _DemoEngine())
-
+    try:
         asyncio.run(_register())
         print("[OK] Registered self_incorporation and demo engine in-process")
     except Exception as e:

@@ -22,6 +22,14 @@ Explain how this helps developers express intentions rather than implementations
 **Additional context**
 Add any other context or examples about the feature request here.
 
+**Spec→Tests Gate Considerations**
+Please check all that apply:
+
+- [ ] This feature requires new or updated tests (unit, integration, capabilities)
+- [ ] This feature needs docs updates (env vars, endpoints, user guides)
+- [ ] This feature exposes new metrics or observability data
+- [ ] This feature has security/policy implications (capabilities, tokens, signatures)
+
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
 

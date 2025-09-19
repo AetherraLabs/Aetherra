@@ -54,3 +54,17 @@ body:
           required: true
         - label: I would be willing to help implement this.
           required: false
+  - type: checkboxes
+    id: spec_tests
+    attributes:
+      label: Spec→Tests Gate Considerations
+      description: Evaluate test and documentation impact for this feature
+      options:
+        - label: This feature requires new or updated tests (unit, integration, capabilities)
+          required: false
+        - label: This feature needs docs updates (env vars, endpoints, USER guides)
+          required: false
+        - label: This feature exposes new metrics or observability data
+          required: false
+        - label: This feature has security/policy implications (capabilities, tokens, signatures)
+          required: false

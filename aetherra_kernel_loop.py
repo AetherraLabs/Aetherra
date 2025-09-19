@@ -17,7 +17,6 @@ import os
 import secrets
 import time
 import uuid
-from collections.abc import Coroutine
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
@@ -69,11 +68,11 @@ class AetherraKernelLoop:
         self._night_cycle_scheduled = False
 
         # Core systems (will be injected by startup)
-        self.memory_system = None
-        self.plugin_manager = None
-        self.aetherra_engine = None
-        self.scheduler = None
-        self.service_registry = None
+        self.memory_system: Any = None
+        self.plugin_manager: Any = None
+        self.aetherra_engine: Any = None
+        self.scheduler: Any = None
+        self.service_registry: Any = None
 
         # Performance metrics
         self.metrics = {
@@ -244,7 +243,7 @@ class AetherraKernelLoop:
             self.priority_aging_sec = 0
 
         # HMR integration (metrics and control)
-        self._hmr_metrics = {
+        self._hmr_metrics: dict[str, Any] = {
             "attempts": 0,
             "success": 0,
             "rollback": 0,
@@ -252,7 +251,7 @@ class AetherraKernelLoop:
             "per_target": {},
         }
         self._quiesced_targets: set[str] = set()
-        self.hmr_controller = None  # set by launcher when HMR is enabled
+        self.hmr_controller: Any | None = None  # set by launcher when HMR is enabled
         # In-flight counters per target to support safer quiesce/drain
         self._inflight_by_target: dict[str, int] = {}
         # Optional reply waiters for synchronous result patterns
@@ -271,11 +270,6 @@ class AetherraKernelLoop:
 
         # --- Production defaults & safety rails ---
         # Apply conservative defaults in production profile when not explicitly configured.
-        # Goals:
-        # - Bounded queues (avoid unbounded backpressure)
-        # - DLQ enabled
-        # - Plugin invoke timeout <= 20s
-        # - Circuit breaker threshold low by default
         try:
             profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
             is_prod = profile in ("prod", "production", "staging")
@@ -463,7 +457,6 @@ class AetherraKernelLoop:
         logger.info("[LINK] Core systems injected into kernel loop")
 
     async def _enqueue_self_incorporation_startup(self) -> None:
-        """[SELFINC] Enqueue self-incorporation startup task if enabled."""
         """[SELFINC] Enqueue self-incorporation startup task if enabled."""
         try:
             # Check if self-incorporation is enabled via environment variable
@@ -675,8 +668,6 @@ class AetherraKernelLoop:
                 slept = 0.0
                 sleep_step = min(0.05, interval)
                 while slept < interval:
-                    if not self.running:
-                        break
                     try:
                         await asyncio.sleep(sleep_step)
                     except asyncio.CancelledError:
@@ -689,7 +680,8 @@ class AetherraKernelLoop:
                 logger.error(
                     f"[PASSIVE-HB] Error emitting passive service heartbeat: {e}"
                 )
-                await asyncio.sleep(min(0.05, max(5, interval)))
+                # Backoff a bit on error but don't spin too fast
+                await asyncio.sleep(min(5, interval))
 
     async def _visible_heartbeat_loop(self) -> None:
         """Emit a lightweight heartbeat log at a configurable interval for operator visibility.
@@ -1135,10 +1127,10 @@ class AetherraKernelLoop:
                     logger.warning("[HMR] HMR task received but controller not enabled")
                     return {"ok": False, "error": "hmr_disabled"}
                 try:
-                    coro_or_result = self.hmr_controller.handle_kernel_task(task)
-                    if asyncio.iscoroutine(coro_or_result):
-                        return await cast(Coroutine[Any, Any, Any], coro_or_result)
-                    return coro_or_result
+                    hmr_res = self.hmr_controller.handle_kernel_task(task)
+                    if asyncio.iscoroutine(hmr_res):
+                        hmr_res = await hmr_res
+                    return hmr_res
                 except Exception as e:
                     logger.error(f"[HMR] HMR task handling error: {e}")
                     return {"ok": False, "error": "hmr_exception"}
@@ -1218,8 +1210,8 @@ class AetherraKernelLoop:
                         self.metrics["plugin_invoke_rate_limited"] = (
                             self.metrics.get("plugin_invoke_rate_limited", 0) + 1
                         )
-                    return None
-                    # consume
+                        return None
+                    # consume a token for this minute
                     self._rl_counts[requester] = cnt + 1
 
                 if self.plugin_manager:
@@ -1424,7 +1416,9 @@ class AetherraKernelLoop:
                     )
                     # Update service registry status to failed
                     if self.service_registry:
-                        try:
+                        import contextlib
+
+                        with contextlib.suppress(Exception):
                             await self.service_registry.register_service(
                                 "self_incorporation",
                                 {
@@ -1433,8 +1427,6 @@ class AetherraKernelLoop:
                                     "error": str(e),
                                 },
                             )
-                        except Exception:
-                            pass  # Best effort registry update
             else:
                 logger.warning(f"[WARN] Unknown task type: {task_type}")
 
@@ -1444,9 +1436,9 @@ class AetherraKernelLoop:
     def _plugin_cb_is_open(self) -> bool:
         return time.time() < float(self._plugin_cb_open_until or 0)
 
-        def _record_plugin_failure(self) -> None:
-            self._plugin_cb_failures += 1
-
+    def _record_plugin_failure(self) -> None:
+        """Record a plugin failure and open the circuit if threshold reached."""
+        self._plugin_cb_failures += 1
         if self._plugin_cb_failures >= max(1, self.plugin_cb_threshold):
             self._plugin_cb_open_until = time.time() + max(
                 1, self.plugin_cb_cooldown_sec
@@ -1466,7 +1458,7 @@ class AetherraKernelLoop:
 
     async def _gather_health_metrics(self) -> dict[str, Any]:
         """[HEALTH] Gather comprehensive system health metrics."""
-        health = {
+        health: dict[str, Any] = {
             "timestamp": datetime.now().isoformat(),
             "kernel_uptime": (datetime.now() - self.start_time).total_seconds()
             if self.start_time
@@ -1499,7 +1491,9 @@ class AetherraKernelLoop:
 
         except Exception as e:
             logger.error(f"[ERROR] Health metrics gathering error: {e}")
-            health["critical_issues"].append(f"Health check error: {str(e)}")
+            issues = health.setdefault("critical_issues", [])
+            if isinstance(issues, list):
+                issues.append(f"Health check error: {str(e)}")
 
         return health
 
@@ -1594,22 +1588,32 @@ class AetherraKernelLoop:
         with contextlib.suppress(Exception):
             self._pending_tasks[key].append(task)
 
-    def _ensure_task_envelope(self, task: dict[str, Any]) -> dict[str, Any]:
+    def _ensure_task_envelope(self, task: Any) -> dict[str, Any]:
+        task_dict: dict[str, Any]
         try:
-            if not isinstance(task, dict):
-                task = {"type": "unknown", "data": {"raw": str(task)}}
-            if "trace_id" not in task:
-                task["trace_id"] = uuid.uuid4().hex
-            if "enqueued_ts" not in task:
-                task["enqueued_ts"] = time.time()
+            if isinstance(task, dict):
+                task_dict = task
+            else:
+                task_dict = {"type": "unknown", "data": {"raw": str(task)}}
+            if "trace_id" not in task_dict:
+                task_dict["trace_id"] = uuid.uuid4().hex
+            if "enqueued_ts" not in task_dict:
+                task_dict["enqueued_ts"] = time.time()
             # Apply default TTL if provided and no deadline present
-            if task.get("deadline_ts") is None and self.default_task_ttl_sec > 0:
-                task["deadline_ts"] = float(task["enqueued_ts"]) + float(
+            if task_dict.get("deadline_ts") is None and self.default_task_ttl_sec > 0:
+                task_dict["deadline_ts"] = float(task_dict["enqueued_ts"]) + float(
                     self.default_task_ttl_sec
                 )
-        except Exception:
-            pass
-        return task
+        except Exception as e:
+            logger.debug(f"[ENVELOPE] Failed to build task envelope: {e}")
+            # Fallback to a minimal envelope
+            task_dict = {
+                "type": "unknown",
+                "data": {"raw": "<invalid>"},
+                "trace_id": uuid.uuid4().hex,
+                "enqueued_ts": time.time(),
+            }
+        return task_dict
 
     def _dlq_write(self, task: dict[str, Any], reason: str = "unknown") -> None:
         try:
@@ -1693,8 +1697,9 @@ class AetherraKernelLoop:
         """[MEM] Save kernel metrics to file."""
         try:
             metrics_file = Path("aetherra_kernel_metrics.json")
-            self.metrics["shutdown_time"] = datetime.now().isoformat()
-            self.metrics["live_time"] = datetime.now().isoformat()
+            # Store ISO timestamps; cast for static type-checkers
+            self.metrics["shutdown_time"] = cast(Any, datetime.now().isoformat())
+            self.metrics["live_time"] = cast(Any, datetime.now().isoformat())
 
             with open(metrics_file, "w") as f:
                 json.dump(self.metrics, f, indent=2)
@@ -1736,7 +1741,7 @@ class AetherraKernelLoop:
         }
 
     # -------------------- HMR helpers --------------------
-    def record_hmr_attempt(self, target: str):
+    def record_hmr_attempt(self, target: str) -> None:
         try:
             self._hmr_metrics["attempts"] += 1
             per = self._hmr_metrics.setdefault("per_target", {})
@@ -1745,7 +1750,7 @@ class AetherraKernelLoop:
         except Exception as e:
             logger.debug(f"[HMR] Failed to record attempt: {e}")
 
-    def record_hmr_success(self, target: str, swap_ms: int):
+    def record_hmr_success(self, target: str, swap_ms: int) -> None:
         try:
             self._hmr_metrics["success"] += 1
             self._hmr_metrics["last_swap_ms"] = int(swap_ms)
@@ -1755,7 +1760,7 @@ class AetherraKernelLoop:
         except Exception as e:
             logger.debug(f"[HMR] Failed to record success: {e}")
 
-    def record_hmr_rollback(self, target: str):
+    def record_hmr_rollback(self, target: str) -> None:
         try:
             self._hmr_metrics["rollback"] += 1
             per = self._hmr_metrics.setdefault("per_target", {})
@@ -1787,7 +1792,7 @@ class AetherraKernelLoop:
         with contextlib.suppress(Exception):
             self._quiesced_targets.discard(str(target))
 
-    async def swap_system(self, target: str, new_instance) -> bool:
+    async def swap_system(self, target: str, new_instance: Any) -> bool:
         """Replace kernel-held reference for a target."""
         try:
             t = str(target)
@@ -1807,7 +1812,7 @@ class AetherraKernelLoop:
             return False
 
     # -------------------- In-flight helpers --------------------
-    def _inflight_inc(self, target: str | None):
+    def _inflight_inc(self, target: str | None) -> None:
         try:
             if not target:
                 return
@@ -1816,7 +1821,7 @@ class AetherraKernelLoop:
         except Exception as e:
             logger.debug(f"[INFLIGHT] Failed to increment: {e}")
 
-    def _inflight_dec(self, target: str | None):
+    def _inflight_dec(self, target: str | None) -> None:
         try:
             if not target:
                 return
@@ -1825,22 +1830,22 @@ class AetherraKernelLoop:
         except Exception as e:
             logger.debug(f"[INFLIGHT] Failed to decrement: {e}")
 
-    async def rollback_swap(self, target: str, old_instance) -> None:
+    async def rollback_swap(self, target: str, old_instance: Any) -> None:
         import contextlib
 
         with contextlib.suppress(Exception):
             await self.swap_system(target, old_instance)
 
     # -------------------- Control-plane helpers --------------------
-    def pause(self):
+    def pause(self) -> None:
         """Pause processing of queues (idempotent)."""
         self.paused = True
 
-    def resume(self):
+    def resume(self) -> None:
         """Resume processing of queues (idempotent)."""
         self.paused = False
 
-    async def drain_queue(self, name: str, mode: str = "dlq"):
+    async def drain_queue(self, name: str, mode: str = "dlq") -> None:
         """Drain a queue by name: 'high_priority'|'normal_priority'|'background'.
 
         mode='dlq' writes items to DLQ; mode='drop' discards silently.
@@ -1869,7 +1874,7 @@ class AetherraKernelLoop:
                 self.metrics.get("queue_drained_total", 0) + drained
             )
 
-    def set_queue_limits(self, limits: dict[str, int]):
+    def set_queue_limits(self, limits: dict[str, int]) -> None:
         """Dynamically update queue limits at runtime (best-effort)."""
         try:
             for k in ("high_priority", "normal_priority", "background"):
@@ -1879,7 +1884,7 @@ class AetherraKernelLoop:
         except Exception as e:
             logger.debug(f"[LIMITS] Failed to set queue limits: {e}")
 
-    async def _snapshot_tasks(self):
+    async def _snapshot_tasks(self) -> None:
         """Persist a best-effort snapshot of pending tasks to disk."""
         try:
             self.tasks_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1895,7 +1900,7 @@ class AetherraKernelLoop:
         except Exception as e:
             logger.debug(f"[SNAPSHOT] Failed to save pending tasks: {e}")
 
-    async def _load_persisted_tasks(self):
+    async def _load_persisted_tasks(self) -> None:
         """Load previously persisted tasks (if any) into queues (best-effort)."""
         try:
             if not self.tasks_path.exists():
@@ -2047,7 +2052,7 @@ class AetherraKernelLoop:
 kernel_loop = AetherraKernelLoop()
 
 
-async def start_kernel(config: dict | None = None):
+async def start_kernel(config: dict | None = None) -> None:
     """[LAUNCH] Start the Aetherra OS kernel loop."""
     global kernel_loop
     if config:
@@ -2055,7 +2060,7 @@ async def start_kernel(config: dict | None = None):
     await kernel_loop.start_kernel_loop()
 
 
-async def shutdown_kernel():
+async def shutdown_kernel() -> None:
     """🛑 Shutdown the kernel loop."""
     global kernel_loop
     await kernel_loop.shutdown()
@@ -2067,55 +2072,6 @@ def get_kernel() -> AetherraKernelLoop:
 
 
 if __name__ == "__main__":
-    # Test the kernel loop
-    async def test_kernel():
-        kernel = AetherraKernelLoop()
-
-        # Mock system injection
-        class MockSystem:
-            async def light_optimization(self):
-                pass
-
-            async def deep_consolidation(self):
-                pass
-
-            async def optimize(self):
-                pass
-
-            async def get_health_status(self):
-                return "healthy"
-
-            async def process_query(self, data):
-                pass
-
-            async def execute_scheduled_tasks(self):
-                pass
-
-            async def invoke_plugin(self, data):
-                pass
-
-            async def optimize_plugins(self):
-                pass
-
-            async def health_check(self):
-                pass
-
-            async def process_thought(self, data):
-                pass
-
-            async def reflect_on_day(self):
-                pass
-
-        mock_system = MockSystem()
-        kernel.inject_systems(
-            mock_system, mock_system, mock_system, mock_system, mock_system
-        )
-
-        # Run for a short test
-        try:
-            await asyncio.wait_for(kernel.start_kernel_loop(), timeout=5.0)
-        except TimeoutError:
-            await kernel.shutdown()
-            print("[OK] Kernel loop test completed successfully")
-
-    asyncio.run(test_kernel())
+    # Optional manual test harness has been removed to satisfy strict linters.
+    # Launch is orchestrated by the OS launcher modules.
+    print("AetherraKernelLoop module. No direct CLI entry.")

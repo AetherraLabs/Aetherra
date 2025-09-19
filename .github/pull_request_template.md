@@ -1,9 +1,11 @@
 # Pull Request
 
 ## Summary
-Explain the change in one or two sentences.
+
+- What does this PR change and why?
 
 ## Type of Change
+
 - [ ] Fix (bug fix, no breaking change)
 - [ ] Feature (new capability)
 - [ ] Refactor / Internal
@@ -12,42 +14,48 @@ Explain the change in one or two sentences.
 - [ ] Breaking Change
 
 ## Context / Motivation
-Why is this change needed? Link related issues.
+
+- Why is this change needed? Link related issues.
 
 ## Implementation Notes
-Key design decisions, data structures, algorithms, migration steps.
+
+- Key design decisions, data structures, algorithms, migration steps.
 
 ## Testing
-Describe test coverage added or updated.
+
+- Describe test coverage added or updated.
 - [ ] Added new tests
 - [ ] Updated existing tests
 - [ ] Manually verified locally
 
-## Checklist
-- [ ] Conventional Commit compliant title (e.g., feat(parser): add X)
-- [ ] Linked issue (if exists)
-- [ ] Docs updated (README / SPEC / CHANGELOG if user facing)
-- [ ] Added/Updated tests for changed behavior
-- [ ] No unrelated changes mixed in
-- [ ] Security impact reviewed (secrets, paths, network)
-- [ ] Performance considerations reviewed
+## Checklist (Spec→Tests Gate)
+
+- [ ] Tests added or updated for runtime-impacting changes (Spec→Tests Gate)
+- [ ] Docs updated (env vars, endpoints, UI) where applicable
+- [ ] Metrics exposed/updated and described if relevant
+- [ ] Security/policy changes documented (caps, signatures, tokens)
+
+## Validation
+
+- [ ] Unit tests pass locally
+- [ ] Smoke / capabilities / SSE tests unaffected or updated
+- [ ] Docs consistency passes locally (tools/verify_docs_consistency.py)
+
+## Notes for Reviewers
+
+- Anything surprising or risky the reviewer should know
 
 ## Screenshots / Logs (optional)
-If UI or relevant console excerpts.
+
+- If UI or relevant console excerpts.
 
 ## Breaking Changes
-Describe migration path or note N/A.
+
+- Describe migration path or note N/A.
 
 ## Additional Notes
-Anything else for reviewers.
 
-## Notes
-
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
-
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+- Anything else for reviewers.
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

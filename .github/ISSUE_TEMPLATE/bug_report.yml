@@ -74,3 +74,17 @@ body:
           required: true
         - label: I am willing to submit a PR to help fix this.
           required: false
+  - type: checkboxes
+    id: spec_tests
+    attributes:
+      label: Spec→Tests Gate Impact
+      description: Indicate test and validation scope for the fix
+      options:
+        - label: This bug fix requires new or updated tests to prevent regression
+          required: false
+        - label: This bug affects documented behavior (docs need updates)
+          required: false
+        - label: This bug impacts metrics, observability, or monitoring
+          required: false
+        - label: This bug has security implications (capabilities, auth, tokens)
+          required: false

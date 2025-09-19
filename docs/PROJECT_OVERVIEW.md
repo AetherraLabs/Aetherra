@@ -689,6 +689,33 @@ These variables are now part of the automated docs consistency verification. Rem
 
 ---
 
+### Environment Variables — Self-Incorporation and Passive Services
+
+Self-Incorporation controls:
+
+- `AETHERRA_SELFINC_ENABLED` — 1/0 to enable the self-incorporation service (default 1).
+- `AETHERRA_SELFINC_STRICT` — 1/0 strict mode for incorporation decisions
+  (unknown/restricted capabilities blocked; signatures enforced when available).
+- `AETHERRA_SELFINC_ROOTS` — CSV of directory roots to scan for incorporable artifacts (e.g., `.` or `src,plugins,workflows`).
+- `AETHERRA_SELFINC_MAX_MB` — Maximum file size in megabytes considered during indexing/classification (oversize items are skipped).
+
+Passive services and heartbeats:
+
+- `AETHERRA_PASSIVE_SERVICES` — CSV list of service ids that run in passive mode (emit heartbeats only; no active work loops).
+- `AETHERRA_PASSIVE_HEARTBEATS` — 1/0 to enable passive heartbeat loop for applicable services.
+- `AETHERRA_PASSIVE_HEARTBEAT_SEC` — Passive heartbeat interval seconds (guards against tight polling).
+- `AETHERRA_PASSIVE_HEARTBEAT_ALLOW_FLOOR` — 1/0 allow an adaptive floor/jitter to prevent spin under load when interval is small.
+
+Capability and ethics tuning:
+
+- `AETHERRA_CAPABILITIES_PERMISSIVE` — 1/0 to permit undeclared/unknown capabilities in non‑strict contexts (testing/dev only).
+- `AETHERRA_ETHICS_PROFILE` — Named profile for the ethics evaluator (e.g., `standard`, `strict`).
+- `AETHERRA_ETHICS_THRESHOLD` — Float threshold (0..1) for ethics decisions; below this actions are held/denied depending on policy.
+
+Hub status:
+
+- `AETHERRA_HUB_STATUS` — Explicit toggle or mode for Hub status reporting (used by site status and widgets when present).
+
 ## Endpoints (canonical)
 
 Primary Hub endpoints added/updated in this release (canonical list; see full inventory above for all routes):

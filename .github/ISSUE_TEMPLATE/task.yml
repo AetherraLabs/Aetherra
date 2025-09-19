@@ -63,3 +63,17 @@ body:
           required: true
         - label: No unrelated changes will be bundled.
           required: true
+  - type: checkboxes
+    id: spec_tests
+    attributes:
+      label: Spec→Tests Gate Planning
+      description: Assess test and documentation requirements for this task
+      options:
+        - label: This task requires adding/updating tests (unit, integration, capabilities)
+          required: false
+        - label: This task needs docs updates (PROJECT_OVERVIEW.md, user guides, runbooks)
+          required: false
+        - label: This task affects metrics or observability (Prometheus, endpoints)
+          required: false
+        - label: This task involves security/policy changes (caps, signatures, auth)
+          required: false
