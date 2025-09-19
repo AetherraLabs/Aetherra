@@ -302,6 +302,7 @@ scripts/*.cmd
 
 # ===== FINAL CATCH-ALL =====
 # Any additional files that shouldn't be committed
+.aetherra/
 .aetherra_temp*
 *.tmp.*
 temp_*
