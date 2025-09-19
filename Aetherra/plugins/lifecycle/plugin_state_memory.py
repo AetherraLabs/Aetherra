@@ -33,7 +33,7 @@ class PluginStateMemory:
     def _generate_session_id(self) -> str:
         """Generate a unique session ID."""
         timestamp = datetime.now().isoformat()
-        return hashlib.md5(timestamp.encode()).hexdigest()[:12]
+        return hashlib.sha256(timestamp.encode()).hexdigest()[:12]
 
     def _initialize_database(self):
         """Initialize the plugin state memory database."""

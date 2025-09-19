@@ -30,7 +30,7 @@ def _tokenize(text: str) -> Iterable[str]:
 
 def _token_weight(token: str) -> float:
     # Deterministic weight per token (bounded)
-    h = hashlib.sha1(token.encode("utf-8")).digest()
+    h = hashlib.sha256(token.encode("utf-8")).digest()
     # Map first 4 bytes to [0.5, 1.5)
     v = int.from_bytes(h[:4], "big") / (1 << 32)
     return 0.5 + v
@@ -46,8 +46,8 @@ def simhash_text(text: str, bits: int = 64, seed: Optional[int] = None) -> int:
     jitter = 1 if ((qrng_int(0, 1, seed=seed) % 2) == 0) else -1
     for tok in tokens:
         w = _token_weight(tok)
-        # Deterministic per-token bit pattern using sha1
-        h = hashlib.sha1(tok.encode("utf-8")).digest()
+        # Deterministic per-token bit pattern using sha256
+        h = hashlib.sha256(tok.encode("utf-8")).digest()
         # Expand into as many bits as needed by repeating digest
         idx = 0
         needed = bits

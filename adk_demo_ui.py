@@ -667,6 +667,48 @@ class ChatStreamWindow(QMainWindow):
         except Exception:
             pass
 
+    def _is_safe_url(self, url: str) -> bool:
+        """Validate that URL is safe and well-formed."""
+        import urllib.parse
+
+        if not url:
+            return False
+
+        # Must start with safe protocols
+        if not (url.startswith("https://") or url.startswith("http://")):
+            return False
+
+        try:
+            parsed = urllib.parse.urlparse(url)
+
+            # Must have valid scheme and netloc
+            if not parsed.scheme or not parsed.netloc:
+                return False
+
+            # Block local/private IPs and dangerous hosts
+            dangerous_hosts = [
+                "localhost",
+                "127.0.0.1",
+                "0.0.0.0",
+                "::1",
+                "10.",
+                "172.",
+                "192.168.",
+                "169.254.",
+                "metadata.google.internal",
+                "169.254.169.254",
+            ]
+
+            netloc_lower = parsed.netloc.lower()
+            if any(netloc_lower.startswith(host) for host in dangerous_hosts):
+                return False
+
+            # Block non-HTTP schemes
+            return parsed.scheme in ("http", "https")
+
+        except Exception:
+            return False
+
     def _open_path(self, path: str):
         try:
             path = os.path.expanduser(path)
@@ -715,9 +757,7 @@ class ChatStreamWindow(QMainWindow):
                     if line.startswith("Source: "):
                         source = line[len("Source: ") :].strip()
                         break
-            if source and (
-                str(source).startswith("http://") or str(source).startswith("https://")
-            ):
+            if source and self._is_safe_url(str(source)):
                 menu.addSeparator()
                 menu.addAction("Open URL", lambda s=source: webbrowser.open(s))
             if source and os.path.exists(str(source)):

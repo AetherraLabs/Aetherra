@@ -95,7 +95,7 @@ class FileOrganizer:
         for file_info in self.files.values():
             try:
                 with open(file_info.path, "rb") as f:
-                    file_info.hash = hashlib.md5(f.read()).hexdigest()
+                    file_info.hash = hashlib.sha256(f.read()).hexdigest()
             except Exception as e:
                 self.logger.error(f"Failed to hash {file_info.path}: {e}")
 

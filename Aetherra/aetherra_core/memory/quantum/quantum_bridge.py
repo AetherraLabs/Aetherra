@@ -142,7 +142,7 @@ class QuantumBridge:
     def _seed_from_recipe(self, recipe: QuantumRecipe) -> int:
         base = int(time.time())
         try:
-            h = hashlib.sha1()
+            h = hashlib.sha256()
             if recipe.circuit:
                 h.update(repr(sorted(recipe.circuit.items())).encode("utf-8"))
             if recipe.noise:

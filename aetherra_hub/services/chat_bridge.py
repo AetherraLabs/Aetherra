@@ -74,6 +74,14 @@ def handle_chat(payload: Dict[str, Any]) -> Tuple[Dict[str, Any], int, Dict[str,
     chat_metrics.add_input_stats(message, count_tokens(message))
 
     trace_id = payload.get("trace_id") or _gen_trace_id()
+    # Sanitize trace_id to prevent header injection
+    if trace_id and isinstance(trace_id, str):
+        # Remove any characters that could cause header injection
+        trace_id = "".join(c for c in trace_id if c.isprintable() and c not in "\r\n\0")
+        # Limit length to prevent abuse
+        trace_id = trace_id[:64] if trace_id else _gen_trace_id()
+    else:
+        trace_id = _gen_trace_id()
 
     # Expiry check
     if deadline_ts and deadline_ts < time.time():

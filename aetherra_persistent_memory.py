@@ -148,7 +148,7 @@ class AetherraMemoryIndex:
     def index_memory(self, memory: AetherraMemoryNode):
         """Add memory to indices."""
         # Content index
-        content_hash = hashlib.md5(str(memory.content).encode()).hexdigest()
+        content_hash = hashlib.sha256(str(memory.content).encode()).hexdigest()
         self.content_index[content_hash] = memory.id
 
         # Tag index
@@ -184,7 +184,7 @@ class AetherraMemoryIndex:
 
     def find_by_content_similarity(self, query: str) -> set:
         """Find memories with similar content."""
-        query_hash = hashlib.md5(query.encode()).hexdigest()
+        query_hash = hashlib.sha256(query.encode()).hexdigest()
         # Simple similarity - in production would use embedding similarity
         similar_ids = set()
         for content_hash, memory_id in self.content_index.items():
@@ -232,7 +232,7 @@ class AetherraPerśistentMemorySystem:
     def _generate_session_id(self) -> str:
         """Generate unique session identifier."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        return f"session_{timestamp}_{hashlib.md5(str(time.time()).encode()).hexdigest()[:8]}"
+        return f"session_{timestamp}_{hashlib.sha256(str(time.time()).encode()).hexdigest()[:8]}"
 
     def _init_database(self):
         """Initialize SQLite database for persistent storage."""
@@ -730,7 +730,7 @@ class AetherraPerśistentMemorySystem:
         if not tokens:
             return vec
         for tok in tokens:
-            h = int(hashlib.sha1(tok.encode("utf-8")).hexdigest()[:8], 16)
+            h = int(hashlib.sha256(tok.encode("utf-8")).hexdigest()[:8], 16)
             idx = h % dim
             vec[idx] += 1.0
         # L2 normalize to avoid length bias

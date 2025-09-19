@@ -42,7 +42,9 @@ def get_status() -> ResponseReturnValue:
         return jsonify(status)
     except Exception as e:
         logger.error(f"[SELFINC] Status error: {e}")
-        return jsonify({"status": "error", "running": False, "error": str(e)}), 500
+        return jsonify(
+            {"status": "error", "running": False, "error": "Internal server error"}
+        ), 500
 
 
 @bp.post("/scan")
@@ -65,7 +67,7 @@ def trigger_scan() -> ResponseReturnValue:
         return jsonify(result)
     except Exception as e:
         logger.error(f"[SELFINC] Scan error: {e}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Failed to trigger scan"}), 500
 
 
 @bp.post("/apply")
@@ -90,7 +92,7 @@ def apply_plan() -> ResponseReturnValue:
         return jsonify(result)
     except Exception as e:
         logger.error(f"[SELFINC] Apply error: {e}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Failed to apply plan"}), 500
 
 
 @bp.post("/rollback")
@@ -119,7 +121,7 @@ def rollback() -> ResponseReturnValue:
 
     except Exception as e:
         logger.error(f"[SELFINC] Rollback error: {e}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Rollback operation failed"}), 500
 
 
 @bp.get("/audit")

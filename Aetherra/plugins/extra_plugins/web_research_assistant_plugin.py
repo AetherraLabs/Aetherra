@@ -339,19 +339,35 @@ class WebExtractor:
 
     def _extract_content_fallback(self, html: str) -> str:
         """Fallback content extraction without BeautifulSoup."""
+        import html as html_module
         import re
 
-        # Remove scripts and styles
-        html = re.sub(r"<script.*?</script>", "", html, flags=re.IGNORECASE | re.DOTALL)
-        html = re.sub(r"<style.*?</style>", "", html, flags=re.IGNORECASE | re.DOTALL)
+        try:
+            # First decode HTML entities
+            html = html_module.unescape(html)
 
-        # Remove HTML tags
-        text = re.sub(r"<[^>]+>", " ", html)
+            # Remove dangerous tags completely with their content
+            dangerous_tags = r"<(?:script|style|object|embed|applet|iframe|frame|frameset|meta|link)[^>]*>.*?</(?:script|style|object|embed|applet|iframe|frame|frameset|meta|link)>"
+            html = re.sub(dangerous_tags, "", html, flags=re.IGNORECASE | re.DOTALL)
 
-        # Clean up whitespace
-        text = re.sub(r"\s+", " ", text)
+            # Remove any remaining script/style tags (unclosed ones)
+            html = re.sub(
+                r"<(?:script|style|object|embed|applet|iframe|frame|frameset|meta|link)[^>]*>",
+                "",
+                html,
+                flags=re.IGNORECASE,
+            )
 
-        return text.strip()
+            # Remove all remaining HTML tags (now safe since dangerous content is gone)
+            text = re.sub(r"<[^>]*>", " ", html)
+
+            # Clean up whitespace
+            text = re.sub(r"\s+", " ", text)
+
+            return text.strip()
+        except Exception:
+            # Ultra-safe fallback: just remove everything that looks like HTML
+            return re.sub(r"<[^>]*>", " ", html).strip()
 
     def _generate_excerpt(self, content: str, max_length: int = 300) -> str:
         """Generate excerpt from content."""
@@ -515,7 +531,7 @@ class SearchEngine:
                             # Extract result links
                             for link in soup.find_all("a", class_="result__a"):
                                 href = link.get("href")
-                                if href and href.startswith("http"):
+                                if href and self._is_safe_url(href):
                                     urls.append(href)
                                     if len(urls) >= max_results:
                                         break
@@ -524,6 +540,48 @@ class SearchEngine:
             logger.error(f"DuckDuckGo search error: {e}")
 
         return urls[:max_results]
+
+    def _is_safe_url(self, url: str) -> bool:
+        """Validate that URL is safe and well-formed."""
+        import urllib.parse
+
+        if not url:
+            return False
+
+        # Must start with safe protocols
+        if not (url.startswith("https://") or url.startswith("http://")):
+            return False
+
+        try:
+            parsed = urllib.parse.urlparse(url)
+
+            # Must have valid scheme and netloc
+            if not parsed.scheme or not parsed.netloc:
+                return False
+
+            # Block local/private IPs and dangerous hosts
+            dangerous_hosts = [
+                "localhost",
+                "127.0.0.1",
+                "0.0.0.0",
+                "::1",
+                "10.",
+                "172.",
+                "192.168.",
+                "169.254.",
+                "metadata.google.internal",
+                "169.254.169.254",
+            ]
+
+            netloc_lower = parsed.netloc.lower()
+            if any(netloc_lower.startswith(host) for host in dangerous_hosts):
+                return False
+
+            # Block non-HTTP schemes
+            return parsed.scheme in ("http", "https")
+
+        except Exception:
+            return False
 
     async def _search_bing(self, query: str, max_results: int) -> list[str]:
         """Search using Bing (requires API key)."""
@@ -759,6 +817,48 @@ class WebResearchAssistantPlugin:
             "citation_management",
             "content_summarization",
         ]
+
+    def _is_safe_url(self, url: str) -> bool:
+        """Validate that URL is safe and well-formed."""
+        import urllib.parse
+
+        if not url:
+            return False
+
+        # Must start with safe protocols
+        if not (url.startswith("https://") or url.startswith("http://")):
+            return False
+
+        try:
+            parsed = urllib.parse.urlparse(url)
+
+            # Must have valid scheme and netloc
+            if not parsed.scheme or not parsed.netloc:
+                return False
+
+            # Block local/private IPs and dangerous hosts
+            dangerous_hosts = [
+                "localhost",
+                "127.0.0.1",
+                "0.0.0.0",
+                "::1",
+                "10.",
+                "172.",
+                "192.168.",
+                "169.254.",
+                "metadata.google.internal",
+                "169.254.169.254",
+            ]
+
+            netloc_lower = parsed.netloc.lower()
+            if any(netloc_lower.startswith(host) for host in dangerous_hosts):
+                return False
+
+            # Block non-HTTP schemes
+            return parsed.scheme in ("http", "https")
+
+        except Exception:
+            return False
 
     async def invoke(
         self, action: str, payload: dict[str, Any], context=None

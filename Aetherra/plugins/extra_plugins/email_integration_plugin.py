@@ -1088,7 +1088,7 @@ class EmailIntegrationPlugin:
         """Add new email account."""
         try:
             # Generate account ID
-            account_id = hashlib.md5(
+            account_id = hashlib.sha256(
                 account_config["email_address"].encode()
             ).hexdigest()[:12]
 
@@ -1268,7 +1268,9 @@ class EmailIntegrationPlugin:
     async def create_template(self, template_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create email template."""
         try:
-            template_id = hashlib.md5(template_data["name"].encode()).hexdigest()[:12]
+            template_id = hashlib.sha256(template_data["name"].encode()).hexdigest()[
+                :12
+            ]
 
             template = EmailTemplate(
                 id=template_id,

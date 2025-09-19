@@ -356,7 +356,7 @@ class SecurityAgent(AgentBase):
             "agent": self.name,
             "security_type": "incident_response",
             "incident_details": {
-                "incident_id": f"INC-{int(time.time())}-{hashlib.md5(incident_type.encode()).hexdigest()[:8]}",
+                "incident_id": f"INC-{int(time.time())}-{hashlib.sha256(incident_type.encode()).hexdigest()[:8]}",
                 "type": incident_type,
                 "severity": severity,
                 "status": "investigating",

@@ -5,9 +5,9 @@ import json
 import logging
 import os
 from time import perf_counter
-from typing import Any, Dict, List
+from typing import Any
 
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, current_app, jsonify, request, Response
 
 from ..services.idempotency_simple import IdempotencyStore
 from ..services.plugin_metrics import observe_registration_latency, plugin_metrics
@@ -21,9 +21,9 @@ bp = Blueprint("plugins", __name__)
 log = logging.getLogger(__name__)
 
 # In-memory plugin registry (minimal slice)
-_PLUGIN_REGISTRY: Dict[str, Dict[str, Any]] = {}
+_PLUGIN_REGISTRY: dict[str, dict[str, Any]] = {}
 _IDEM = IdempotencyStore(ttl_seconds=600)
-_PARALLEL_SAMPLE_LAST: Dict[str, Any] | None = None  # cached last sample summary
+_PARALLEL_SAMPLE_LAST: dict[str, Any] | None = None  # cached last sample summary
 
 # counters now sourced from plugin_metrics service
 
@@ -40,7 +40,7 @@ def _advanced_mode(settings) -> bool:  # type: ignore[no-untyped-def]
     return any(env_flags)
 
 
-def _merged_plugins() -> Dict[str, Dict[str, Any]]:
+def _merged_plugins() -> dict[str, dict[str, Any]]:
     merged = dict(_PLUGIN_REGISTRY)
     try:  # include advanced store plugins if present
         from ..services import plugins as adv
@@ -305,7 +305,9 @@ def register_plugin():
         )
     except PluginValidationError as e:
         plugin_metrics["validation_errors_total"] += 1
-        return jsonify({"error": "validation_error", "detail": str(e)}), 400
+        return jsonify(
+            {"error": "validation_error", "detail": "Plugin validation failed"}
+        ), 400
     except Exception:
         log.exception("registration failed")
         return jsonify({"error": "internal_error"}), 500
@@ -396,4 +398,6 @@ def parallel_sample():
         return jsonify(summary)
     except Exception as e:  # pragma: no cover - defensive
         log.exception("parallel_sample failed")
-        return jsonify({"error": "parallel_sample_failed", "detail": str(e)}), 500
+        return jsonify(
+            {"error": "parallel_sample_failed", "detail": "Sample execution failed"}
+        ), 500

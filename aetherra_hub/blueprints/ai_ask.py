@@ -71,7 +71,7 @@ def ai_ask_post():
                 {
                     "error": {
                         "code": "rate_limited",
-                        "message": msg,
+                        "message": "AI service rate limit exceeded",
                         "details": {"retry_after_sec": ra_int},
                     }
                 }

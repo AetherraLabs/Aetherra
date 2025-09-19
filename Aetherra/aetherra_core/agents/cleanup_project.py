@@ -384,7 +384,7 @@ class AetherraCleanup:
                 import hashlib
 
                 with open(file_path, "rb") as f:
-                    file_hash = hashlib.md5(f.read()).hexdigest()
+                    file_hash = hashlib.sha256(f.read()).hexdigest()
 
                 if file_hash in file_hashes:
                     duplicates.append((file_hashes[file_hash], file_path))
