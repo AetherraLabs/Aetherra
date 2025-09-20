@@ -40,8 +40,8 @@ class Concept:
     embedding: List[float]
     frequency: int = 1
     last_accessed: str = ""
-    related_concepts: List[str] = None
-    semantic_tags: List[str] = None
+    related_concepts: Optional[List[str]] = None
+    semantic_tags: Optional[List[str]] = None
 
     def __post_init__(self):
         if self.related_concepts is None:
@@ -196,9 +196,8 @@ class ConceptClusteringEngine:
         # Standard library imports
         import hashlib
         import random
-
-        # Create deterministic embedding based on text hash
-        text_hash = hashlib.md5(text.encode()).hexdigest()
+        # Create deterministic embedding based on text hash (secure deterministic hash)
+        text_hash = hashlib.sha256(text.encode()).hexdigest()
         random.seed(text_hash)
 
         # Generate 384-dimensional embedding (typical for sentence transformers)
@@ -222,9 +221,9 @@ class ConceptClusteringEngine:
         if norm1 == 0 or norm2 == 0:
             return 0.0
 
-        return dot_product / (norm1 * norm2)
+        return float(dot_product / (norm1 * norm2))
 
-    async def add_concept(self, text: str, semantic_tags: List[str] = None) -> str:
+    async def add_concept(self, text: str, semantic_tags: Optional[List[str]] = None) -> str:
         """Add a new concept to the clustering system"""
         try:
             # Generate concept ID
@@ -250,10 +249,12 @@ class ConceptClusteringEngine:
                 existing_concept.last_accessed = datetime.now().isoformat()
 
                 if semantic_tags:
+                    if existing_concept.semantic_tags is None:
+                        existing_concept.semantic_tags = []
                     existing_concept.semantic_tags.extend(
                         tag
                         for tag in semantic_tags
-                        if tag not in existing_concept.semantic_tags
+                        if tag not in (existing_concept.semantic_tags or [])
                     )
 
                 await self._save_concept(existing_concept)
@@ -456,7 +457,13 @@ class ConceptClusteringEngine:
                     )
 
             # Sort by similarity and return top results
-            related.sort(key=lambda x: x["similarity"], reverse=True)
+            def _sim_key(item: Dict[str, Any]) -> float:
+                try:
+                    return float(item.get("similarity", 0.0))
+                except Exception:
+                    return 0.0
+
+            related.sort(key=_sim_key, reverse=True)
             return related[:limit]
 
         except Exception as e:

@@ -500,7 +500,8 @@ class LyrixaMemorySystem:
         content_str = json.dumps(content, sort_keys=True)
         context_str = json.dumps(context or {}, sort_keys=True)
         combined = f"{content_str}:{context_str}:{datetime.now().isoformat()}"
-        return hashlib.md5(combined.encode()).hexdigest()
+        # Use a strong, fast hash for IDs while keeping a compact 32-hex length
+        return hashlib.blake2s(combined.encode(), digest_size=16).hexdigest()
 
     async def search_memories(self, query: MemoryQuery) -> List[Memory]:
         """Advanced memory search with multiple criteria"""

@@ -860,7 +860,8 @@ class AgentRegistry:
         import hashlib
 
         query_str = json.dumps(query_dict, sort_keys=True)
-        return hashlib.md5(query_str.encode()).hexdigest()
+        # Use secure, deterministic hash for cache key
+        return hashlib.sha256(query_str.encode()).hexdigest()
 
     def _get_cached_result(self, cache_key: str) -> Optional[List[Dict[str, Any]]]:
         """Get cached discovery result if still valid"""
@@ -869,7 +870,7 @@ class AgentRegistry:
             if cache_time:
                 cache_age = (datetime.now() - cache_time).total_seconds()
                 if cache_age < self.config["service_discovery_cache_ttl"]:
-                    return self.query_cache[cache_key]
+                    return list(self.query_cache[cache_key])
         return None
 
     def _cache_result(self, cache_key: str, result: List[Dict[str, Any]]):

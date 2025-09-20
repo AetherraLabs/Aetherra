@@ -14,7 +14,7 @@ Layers (low → high):
   - `LyrixaMemoryEngine` is a compatibility alias to `AetherraMemoryEngine` so existing plugins work unchanged.
   - `AetherraMemoryEngine` adapts to the canonical `QuantumEnhancedMemoryEngine` and maintains a tiny in‑memory list for legacy substring retrieval in tests.
 - Core memory (local, SQLite)
-  - `LyrixaMemorySystem` stores conversation, project, preferences, and learning memories with indexes for efficient lookup.
+  - `LyrixaMemorySystem` stores conversation, project, preferences, and learning memories with indexes for efficient lookup. Note: the `memory_core.py` module header is marked “DEPRECATED” because top-level engine calls are adapted to QEME; however, the SQLite-backed `LyrixaMemorySystem` class remains fully supported and is used by the advanced orchestrator and tests.
 - Orchestrated advanced memory
   - `AetherraMemoryEngineAdvanced` coordinates: core memory, fractal/concept/episodic structures, narrative generation, pulse/health monitoring, and reflective analysis.
 - Compression and quantum‑hybrid
@@ -25,6 +25,14 @@ Key properties
 - Local-first persistence with graceful degradation (features run even if optional components are unavailable).
 - Backward compatibility for existing plugins and tests.
 - Async-first API in advanced/core systems; small sync helpers for compatibility.
+
+Implementation notes (current state)
+
+- Strong hashing and determinism:
+  - Memory IDs are generated with BLAKE2s-128 (32-hex chars) in `LyrixaMemorySystem` to keep IDs compact while avoiding weak hashes.
+  - QFAC metrics caches (entropy/pattern) use SHA-256 keys.
+  - Concept embeddings use a deterministic SHA-256–seeded PRNG for reproducibility.
+  - Legacy MD5/SHA1 usages have been removed from memory-related paths.
 
 Design goals
 
@@ -62,6 +70,11 @@ File: `Aetherra/aetherra_core/memory/memory_core.py`
   - `consolidate_memories()` (cleanup/importance updates)
   - `get_memory_stats()`
   - Export/Import helpers and connection lifecycle helpers
+
+ID generation and hashing
+
+- `LyrixaMemorySystem._generate_memory_id(...)` computes a compact strong ID using `hashlib.blake2s(..., digest_size=16).hexdigest()`.
+- Text-analysis caches used by compression metrics (see QFAC section) use `hashlib.sha256`.
 
 ### 3) Advanced orchestrator
 
@@ -102,6 +115,11 @@ Note: Some helpers (e.g., `FractalMeshCore`, `EpisodicTimeline`, `MemoryNarrator
   - Modes (env `AETHERRA_QFAC_MODE`): `classical` (default), `hybrid`, `quantum`.
   - In `hybrid`/`quantum`, uses `QuantumMemoryBridge` when available, with graceful fallback to classical shadow.
   - System APIs: `store_memory`, `retrieve_memory`, `compress_all_eligible`, `optimize_system`, `get_system_status`, `export_system_report`, `start_dashboard`, `stop_dashboard`.
+\
+Deterministic behavior and hashing
+
+- QFAC’s `CompressionMetrics` (`compression_metrics.py`) uses SHA‑256 for cache keys to ensure deterministic and collision‑resistant memoization for entropy and recursive pattern density.
+- Concept clustering (`concept_clustering.py`) seeds its deterministic mock embeddings with a SHA‑256 hash of the input text, keeping clustering reproducible without external models.
 - `QuantumMemoryBridge` (`quantum_memory_bridge.py`)
   - Experimental phase: integrates with Qiskit/Cirq if installed; otherwise simulates.
   - Core APIs: `encode_memory_to_quantum`, `quantum_memory_retrieval`, `quantum_interference_experiment`, `quantum_error_correction_test`, `get_quantum_statistics`.
@@ -127,6 +145,11 @@ Note: Some helpers (e.g., `FractalMeshCore`, `EpisodicTimeline`, `MemoryNarrator
   - `AetherraMemoryEngine.retrieve()` continues to return `list[dict]` in legacy mode.
   - Adapters are provided to map `MemoryRecallResult` → `list[dict]` and vice‑versa (used by `AetherraMemoryEngine` and tests).
   - Engines should avoid “half‑structured” responses: choose the canonical typed result internally, adapt only at the very edge for legacy callers.
+
+Adapter/deprecation clarity
+
+- `AetherraMemoryEngine` is an adapter for `QuantumEnhancedMemoryEngine` (QEME) and also maintains a tiny in‑memory list to satisfy legacy substring retrieval in tests and older plugins.
+- `memory_core.py` remains as a compatibility and SQLite-backed core store; the module header notes deprecation because canonical engine orchestration goes through QEME, but the `LyrixaMemorySystem` class is actively used by the advanced engine.
 
 ### Narrative records as first‑class objects
 
@@ -388,15 +411,15 @@ These APIs utilize `EpisodicTimeline` and remain deterministic in test mode (see
 
 ## Deterministic test harness
 
-Enable a fully reproducible profile for tests and offline debugging:
+Current reproducibility focuses on deterministic hashing and seeded mock embeddings:
 
-- Environment flags:
-  - `AETHERRA_MEMORY_DETERMINISTIC=1` → freeze time/ RNG and mock embeddings.
-  - `AETHERRA_FIXED_TIMESTAMP=2025-01-01T00:00:00Z` → override time source.
-  - `AETHERRA_EMBEDDING_SEED=42` → seeded mock embeddings.
-  - `AETHERRA_SESSION_REPLAY_PATH=./.replay` → write/read replayable sessions.
-- Config toggles (`MemorySystemConfig`): `deterministic=True`, `fixed_time_source`, `embedding_seed`, `replay_session_id`.
-- Behavior: fixed timestamps, seeded clustering, deterministic hybrid recall ordering, and narrative/pulse runs recorded to replay logs.
+- SHA‑256–seeded embeddings in concept clustering
+- SHA‑256 cache keys in compression metrics
+- BLAKE2s-128 memory IDs
+
+Planned flags (to be wired across modules): `AETHERRA_MEMORY_DETERMINISTIC`,
+`AETHERRA_FIXED_TIMESTAMP`, `AETHERRA_EMBEDDING_SEED`, and
+`AETHERRA_SESSION_REPLAY_PATH`, along with matching `MemorySystemConfig` toggles.
 
 ## Quantum integration: deterministic shadow states
 
@@ -449,6 +472,14 @@ Additional JSON:
 
 - GET /api/memory/audit → { enabled, ephemeral?, audit } with branch DAG audit (nodes/edges) when available; falls back to an empty audit on ephemeral engine.
 
+## Keeping this document current
+
+- Use the VS Code task “Verify Docs Consistency” to catch path/section drifts.
+- When changing code, check these anchors:
+  - `Aetherra/aetherra_core/memory/memory_core.py` → `_generate_memory_id` (BLAKE2s)
+  - `Aetherra/aetherra_core/memory/compression_metrics.py` → SHA‑256 caches
+  - `Aetherra/aetherra_core/memory/concept_clustering.py` → SHA‑256–seeded embeddings
+  - `Aetherra/aetherra_core/memory/aetherra_memory_engine.py` → adapter + legacy shape
+
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
-

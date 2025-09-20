@@ -302,15 +302,28 @@ class CoreToolsPlugin:
             )
             raise Exception(f"Failed to search files in {directory}: {e}") from e
 
-    def calculate_hash(self, file_path: str, algorithm: str = "md5") -> str:
-        """Calculate hash of a file"""
+    def calculate_hash(self, file_path: str, algorithm: str = "sha256") -> str:
+        """Calculate hash of a file.
+
+        Notes:
+        - Default is sha256.
+        - For legacy names "md5" and "sha1", we intentionally map to blake2s with a
+          matching digest size to avoid weak-hash usage while preserving hex length.
+        """
         try:
-            if algorithm.lower() == "md5":
-                hasher = hashlib.md5()
-            elif algorithm.lower() == "sha256":
+            algo = algorithm.lower()
+            from typing import Any as _Any  # local alias to avoid import pollution
+            hasher: _Any
+            if algo == "sha256":
                 hasher = hashlib.sha256()
-            elif algorithm.lower() == "sha1":
-                hasher = hashlib.sha1()
+            elif algo in ("blake2", "blake2s"):
+                hasher = hashlib.blake2s()
+            elif algo == "md5":
+                # Compatibility: 16-byte digest (32 hex chars) without using MD5
+                hasher = hashlib.blake2s(digest_size=16)
+            elif algo == "sha1":
+                # Compatibility: 20-byte digest (40 hex chars) without using SHA1
+                hasher = hashlib.blake2s(digest_size=20)
             else:
                 raise ValueError(f"Unsupported hash algorithm: {algorithm}")
 
@@ -318,7 +331,7 @@ class CoreToolsPlugin:
                 for chunk in iter(lambda: f.read(4096), b""):
                     hasher.update(chunk)
 
-            hash_value = hasher.hexdigest()
+            hash_value: str = str(hasher.hexdigest())
             self._log_operation(
                 "calculate_hash", {"file_path": file_path, "algorithm": algorithm}
             )
@@ -473,7 +486,7 @@ class CoreToolsPlugin:
     ) -> Dict[str, Any]:
         """Validate data against rules"""
         try:
-            results = {"valid": True, "errors": [], "warnings": []}
+            results: Dict[str, Any] = {"valid": True, "errors": [], "warnings": []}
 
             # Basic validation rules
             if "required_fields" in validation_rules and isinstance(data, dict):

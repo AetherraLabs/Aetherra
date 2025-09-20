@@ -24,7 +24,7 @@ import time
 from collections import Counter
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Dict
 
 # Third party imports
 import numpy as np
@@ -73,9 +73,9 @@ class CompressionMetrics:
     """
 
     def __init__(self):
-        self.pattern_cache = {}
-        self.entropy_cache = {}
-        self.structure_cache = {}
+        self.pattern_cache: Dict[str, float] = {}
+        self.entropy_cache: Dict[str, float] = {}
+        self.structure_cache: Dict[str, int] = {}
 
         # Fidelity thresholds
         self.fidelity_thresholds = {
@@ -170,10 +170,10 @@ class CompressionMetrics:
         if not data:
             return 0.0
 
-        # Use cache for repeated calculations
-        data_hash = hashlib.md5(data.encode()).hexdigest()
+        # Use cache for repeated calculations (secure, deterministic hash)
+        data_hash = hashlib.sha256(data.encode()).hexdigest()
         if data_hash in self.entropy_cache:
-            return self.entropy_cache[data_hash]
+            return float(self.entropy_cache[data_hash])
 
         # Calculate character frequency
         counter = Counter(data)
@@ -212,7 +212,7 @@ class CompressionMetrics:
                 return current_depth
 
         try:
-            return _depth(data)
+            return int(_depth(data))
         except (RecursionError, TypeError):
             # Handle deeply nested or problematic structures
             return 10  # Reasonable default for complex structures
@@ -224,8 +224,8 @@ class CompressionMetrics:
         if len(data) < 4:
             return 0.0
 
-        # Use cache for expensive calculations
-        data_hash = hashlib.md5(data.encode()).hexdigest()
+        # Use cache for expensive calculations (secure, deterministic hash)
+        data_hash = hashlib.sha256(data.encode()).hexdigest()
         if data_hash in self.pattern_cache:
             return self.pattern_cache[data_hash]
 
@@ -255,13 +255,13 @@ class CompressionMetrics:
         # Weighted average (favor longer patterns)
         if pattern_scores:
             weights = np.linspace(1, 2, len(pattern_scores))
-            recursive_density = np.average(pattern_scores, weights=weights)
+            recursive_density = float(np.average(pattern_scores, weights=weights))
         else:
             recursive_density = 0.0
 
         # Cache result
-        self.pattern_cache[data_hash] = recursive_density
-        return min(1.0, recursive_density)  # Cap at 1.0
+        self.pattern_cache[data_hash] = float(recursive_density)
+        return min(1.0, float(recursive_density))  # Cap at 1.0
 
     def _serialize_memory_data(self, data: Any) -> str:
         """
