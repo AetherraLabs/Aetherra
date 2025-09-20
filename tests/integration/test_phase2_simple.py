@@ -11,6 +11,7 @@ No GUI instantiation, Windows PowerShell compatible.
 """
 
 
+# Standard library imports
 import platform
 import sys
 
@@ -23,6 +24,7 @@ def test_phase2_launcher():
     try:
         # Test 1: Import launcher
         sys.path.append("Aetherra")
+        # Third party imports
         from lyrixa.launcher import LyrixaOperatingSystem
 
         print("[OK] Launcher imported successfully")
@@ -50,6 +52,7 @@ def test_phase2_launcher():
         # Test 5: Test Phase 2 features check (without GUI creation)
         try:
             # Import the hybrid window class to verify it exists
+            # Third party imports
             from lyrixa.gui.main_window import LyrixaHybridWindow
 
             print("[OK] LyrixaHybridWindow class imported successfully")
@@ -59,6 +62,7 @@ def test_phase2_launcher():
             print(f"[BRIDGE] Has __init__ method: {has_init_method}")
 
             # Check if LyrixaContextBridge is referenced in the file
+            # Standard library imports
             import inspect
 
             source = inspect.getsource(LyrixaHybridWindow)
@@ -112,6 +116,7 @@ def test_phase2_launcher():
 
     except Exception as e:
         print(f"[ERROR] Test failed: {e}")
+        # Standard library imports
         import traceback
 
         traceback.print_exc()

@@ -9,10 +9,12 @@ Agent responsible for goal management, tracking, and achievement
 within the Aetherra AI OS system.
 """
 
+# Standard library imports
 import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+# Local imports
 from .agent_base import AgentBase
 
 

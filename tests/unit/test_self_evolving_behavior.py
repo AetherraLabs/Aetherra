@@ -19,6 +19,7 @@ As described in the Aetherra specification:
 """
 
 
+# Standard library imports
 import sys
 import unittest
 from datetime import datetime

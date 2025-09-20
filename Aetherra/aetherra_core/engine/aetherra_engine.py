@@ -9,6 +9,7 @@ Main execution engine for Aetherra AI system. Provides conversational AI,
 reasoning, memory management, and intelligent task orchestration.
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -20,6 +21,7 @@ from typing import Any, Dict, List, Optional
 
 # Try to import components with graceful fallbacks
 try:
+    # Local imports
     from ..memory.memory_core import AetherraMemorySystem
 except ImportError:
     # Create a mock memory system
@@ -53,6 +55,7 @@ except ImportError:
 
 
 try:
+    # Local imports
     from .introspection_controller import IntrospectionController
 except ImportError:
 
@@ -75,6 +78,7 @@ except ImportError:
 
 
 try:
+    # Local imports
     from .reasoning_engine import ReasoningEngine
 except ImportError:
 
@@ -87,6 +91,7 @@ except ImportError:
 
 
 try:
+    # Local imports
     from .self_improvement_engine import SelfImprovementEngine
 except ImportError:
 
@@ -108,6 +113,7 @@ except ImportError:
 
 
 try:
+    # Local imports
     from .plugin_chain_executor import PluginChainExecutor
 except ImportError:
 
@@ -121,10 +127,12 @@ except ImportError:
 
 try:
     # Prefer canonical path
+    # Local imports
     from ..agents.agent_orchestrator import AgentOrchestrator
 except ImportError:
     try:
         # Fallback to deprecated shim (emits DeprecationWarning)
+        # Local imports
         from ..orchestration.agent_orchestrator import AgentOrchestrator  # type: ignore
     except ImportError:
 
@@ -232,9 +240,10 @@ class AetherraEngine:
         try:
             # Bring up LLM manager (best-effort); selection happens below
             try:
-                from Aetherra.core.multi_llm_manager import (
+                # Aetherra imports
+                from Aetherra.core.multi_llm_manager import (  # type: ignore
                     MultiLLMManager,
-                )  # type: ignore
+                )
 
                 self._llm_manager = MultiLLMManager()
             except Exception as _e:
@@ -313,18 +322,22 @@ class AetherraEngine:
 
                 if loop and loop.is_running():
                     # Create a dedicated loop in a fresh policy to run the coroutine safely
+                    # Standard library imports
                     import threading
 
                     result_container = {}
 
                     def _runner():
                         try:
+                            # Standard library imports
                             import asyncio as _asyncio
 
                             _new_loop = _asyncio.new_event_loop()
                             try:
                                 _asyncio.set_event_loop(_new_loop)
-                                result_container["stats"] = _new_loop.run_until_complete(
+                                result_container[
+                                    "stats"
+                                ] = _new_loop.run_until_complete(
                                     self.memory_system.get_memory_stats()
                                 )
                             finally:
@@ -338,7 +351,9 @@ class AetherraEngine:
                     if "stats" in result_container:
                         stats = result_container["stats"] or {}
                     else:
-                        raise RuntimeError(result_container.get("error", "health-check-timeout"))
+                        raise RuntimeError(
+                            result_container.get("error", "health-check-timeout")
+                        )
                 else:
                     # Safe to use asyncio.run when not in a running loop
                     stats = asyncio.run(self.memory_system.get_memory_stats())
@@ -389,7 +404,9 @@ class AetherraEngine:
                 )
                 logger.info("[OK] Component monitoring enabled")
             else:
-                logger.info("[INFO] Component monitoring not available - using basic health checks")
+                logger.info(
+                    "[INFO] Component monitoring not available - using basic health checks"
+                )
         except Exception as e:
             logger.warning(f"[WARN] Component monitoring setup failed: {e}")
             logger.info("[INFO] Continuing with basic health checks")
@@ -441,7 +458,9 @@ class AetherraEngine:
 
         try:
             # Mid-stream callback hooks (optional)
-            _cbs = (context or {}).get("_callbacks") if isinstance(context, dict) else None
+            _cbs = (
+                (context or {}).get("_callbacks") if isinstance(context, dict) else None
+            )
 
             def _cb(name: str):
                 try:
@@ -512,7 +531,9 @@ class AetherraEngine:
             try:
                 if bucket == "quantum" and await self._ensure_persistent_memory():
                     pm = self._persistent_memory
-                    raw = await pm.retrieve(safe_message, limit=8, memory_type="conversation")
+                    raw = await pm.retrieve(
+                        safe_message, limit=8, memory_type="conversation"
+                    )
                     # Adapt to expected shape for downstream usage
                     relevant_memories = [
                         {
@@ -587,7 +608,11 @@ class AetherraEngine:
                 "context_data": {
                     "user_message": safe_message,
                     "conversation_history": [
-                        (m.content if hasattr(m, "content") else ((m or {}).get("content")))
+                        (
+                            m.content
+                            if hasattr(m, "content")
+                            else ((m or {}).get("content"))
+                        )
                         for m in (relevant_memories or [])
                     ],
                     "evidence": evidence,
@@ -625,7 +650,9 @@ class AetherraEngine:
                     )
                     # Prefer async path; add diagnostic snapshot
                     try:
-                        raw_response = await self._llm_manager.generate_response(base_prompt)
+                        raw_response = await self._llm_manager.generate_response(
+                            base_prompt
+                        )
                         used_llm = True
                         try:
                             mi = (
@@ -689,6 +716,7 @@ class AetherraEngine:
 
             # Human style layer (env-driven; best-effort)
             try:
+                # Local imports
                 from ..conversation.human_style import HumanStyle
 
                 styler = getattr(self, "_human_styler", None)
@@ -784,7 +812,9 @@ class AetherraEngine:
                         if (self._llm_manager and self._llm_selected)
                         else None
                     ),
-                    **({} if not self._last_llm_info else {"diag": self._last_llm_info}),
+                    **(
+                        {} if not self._last_llm_info else {"diag": self._last_llm_info}
+                    ),
                 },
             }
 
@@ -797,7 +827,9 @@ class AetherraEngine:
                 "timestamp": datetime.now().isoformat(),
             }
 
-    def _generate_response(self, message: str, reasoning_result, relevant_memories: List) -> str:
+    def _generate_response(
+        self, message: str, reasoning_result, relevant_memories: List
+    ) -> str:
         """Generate response based on message and context (placeholder implementation)"""
 
         # This is a simple placeholder - in a real system this would use an LLM
@@ -820,14 +852,17 @@ class AetherraEngine:
             return {"status": "no_active_session"}
 
         # Get conversation memories
-        memories = await self.memory_system.get_conversation_context(self.session_id, limit=20)
+        memories = await self.memory_system.get_conversation_context(
+            self.session_id, limit=20
+        )
 
         return {
             "session_id": self.session_id,
             "context": self.conversation_context,
             "message_count": len(memories),
             "duration_minutes": (
-                datetime.now() - self.conversation_context.get("start_time", datetime.now())
+                datetime.now()
+                - self.conversation_context.get("start_time", datetime.now())
             ).total_seconds()
             / 60,
             "topics": self.conversation_context.get("topics", []),
@@ -861,7 +896,9 @@ class AetherraEngine:
                 ),
                 "rag_hits": self.session_metrics.get("rag_hits", 0),
                 "rag_misses": self.session_metrics.get("rag_misses", 0),
-                "safety_filters_triggered": self.session_metrics.get("safety_filters_triggered", 0),
+                "safety_filters_triggered": self.session_metrics.get(
+                    "safety_filters_triggered", 0
+                ),
                 # Style layer counters
                 "style_contractions": self.session_metrics.get("style_contractions", 0),
                 "style_questions": self.session_metrics.get("style_questions", 0),
@@ -871,7 +908,9 @@ class AetherraEngine:
                 "ab_recall_classical_total": self.session_metrics.get(
                     "ab_recall_classical_total", 0
                 ),
-                "ab_recall_quantum_total": self.session_metrics.get("ab_recall_quantum_total", 0),
+                "ab_recall_quantum_total": self.session_metrics.get(
+                    "ab_recall_quantum_total", 0
+                ),
                 "ab_recall_latency_ms_sum_classical": self.session_metrics.get(
                     "ab_recall_latency_ms_sum_classical", 0.0
                 ),
@@ -918,7 +957,10 @@ class AetherraEngine:
         req_caps = task_data.get("required_capabilities", [])
         try:
             caps = [str(c).lower() for c in (req_caps or [])]
-            if any(c in {"network", "filesystem_write", "external_call", "danger"} for c in caps):
+            if any(
+                c in {"network", "filesystem_write", "external_call", "danger"}
+                for c in caps
+            ):
                 sensitive = True
         except Exception:
             pass
@@ -1098,11 +1140,15 @@ class AetherraEngine:
                 int(self.session_metrics.get("ab_recall_total", 0)) + 1
             )
             k_total = f"ab_recall_{bucket}_total"
-            self.session_metrics[k_total] = int(self.session_metrics.get(k_total, 0)) + 1
+            self.session_metrics[k_total] = (
+                int(self.session_metrics.get(k_total, 0)) + 1
+            )
             # latency aggregates
             ksum = f"ab_recall_latency_ms_sum_{bucket}"
             kcnt = f"ab_recall_latency_ms_count_{bucket}"
-            self.session_metrics[ksum] = float(self.session_metrics.get(ksum, 0.0)) + float(dt_ms)
+            self.session_metrics[ksum] = float(
+                self.session_metrics.get(ksum, 0.0)
+            ) + float(dt_ms)
             self.session_metrics[kcnt] = int(self.session_metrics.get(kcnt, 0)) + 1
         except Exception:
             pass
@@ -1114,6 +1160,7 @@ class AetherraEngine:
                 return True
             if self._ab_mode() not in ("quantum", "abp"):
                 return False
+            # Aetherra imports
             from aetherra_persistent_memory import (
                 get_persistent_memory_system as _get_pmem,
             )
@@ -1168,7 +1215,9 @@ class AetherraEngine:
             return {"status": "error"}
 
     # --------- Agent Evaluation Harness (lightweight) ---------
-    async def run_agent_evaluation(self, plan: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def run_agent_evaluation(
+        self, plan: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """Run a tiny benchmark of agent tasks via the orchestrator and summarize.
 
         Inputs:
@@ -1262,13 +1311,17 @@ class AetherraEngine:
         total = len(results)
         succ = sum(1 for r in results if r.get("ok"))
         fail = total - succ
-        avg_dur = sum(float(r.get("duration_sec", 0) or 0) for r in results) / max(1, total)
+        avg_dur = sum(float(r.get("duration_sec", 0) or 0) for r in results) / max(
+            1, total
+        )
         # Error clustering (very light): by error string or state
         clusters: Dict[str, int] = {}
         for r in results:
             key = None
             if not r.get("ok"):
-                key = str(r.get("error") or (r.get("status") or {}).get("state") or "error")
+                key = str(
+                    r.get("error") or (r.get("status") or {}).get("state") or "error"
+                )
             if key:
                 clusters[key] = clusters.get(key, 0) + 1
 

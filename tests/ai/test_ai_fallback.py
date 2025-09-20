@@ -7,6 +7,7 @@ Test script to demonstrate Lyrixa's Multi-AI Fallback System
 """
 
 
+# Standard library imports
 import sys
 from pathlib import Path
 
@@ -15,6 +16,7 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "Aetherra"))
 
+# Aetherra imports
 # Load environment
 from Aetherra.lyrixa.launcher import load_env_file
 
@@ -30,6 +32,7 @@ def test_ai_fallback():
     # Import after env loading
     try:
         # Test the available models function directly without full initialization
+        # Standard library imports
         import os
 
         # Check available AI models
@@ -101,6 +104,7 @@ def test_ai_fallback():
 
     except Exception as e:
         print(f"❌ Test failed: {e}")
+        # Standard library imports
         import traceback
 
         traceback.print_exc()

@@ -20,6 +20,7 @@ Quick probe to list agents and exercise a couple of agent calls via the Service 
 Usage: python tools/agents_probe.py [--run planner "goal text"] [--ops]
 """
 
+# Standard library imports
 import argparse
 import asyncio
 import json
@@ -64,6 +65,7 @@ async def main(argv):
     )
     args = parser.parse_args(argv)
 
+    # Aetherra imports
     from aetherra_service_registry import get_service_registry
 
     reg = await get_service_registry()
@@ -76,6 +78,7 @@ async def main(argv):
             return 1
         # Auto-bootstrap a local Agent Fabric in this process
         try:
+            # Aetherra imports
             from aetherra_agent_fabric import get_agent_fabric
             from aetherra_service_registry import register_service
 

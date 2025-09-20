@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import importlib.util
 import time
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from aetherra_hub.compat import AetherraHubServer
 from aetherra_plugin_discovery import AetherraPluginDiscovery, PluginMetadata
 
@@ -28,9 +31,11 @@ def test_discovery_registers_signed_manifest(monkeypatch, tmp_path):
     monkeypatch.setenv("AETHERRA_SIGN_PLUGINS", "1")
     # Store a temp key for signing
     monkeypatch.setenv("AETHERRA_HOME", str(tmp_path))
+    # Aetherra imports
     from Aetherra.security.api_keys import set_key
 
     set_key("plugin_signing_secret", "")  # ensure exists
+    # Aetherra imports
     from Aetherra.security.plugin_signing import generate_keypair
 
     pub, secret = generate_keypair()
@@ -47,10 +52,12 @@ def test_discovery_registers_signed_manifest(monkeypatch, tmp_path):
             author="",
         )
         # call register
+        # Standard library imports
         import asyncio
 
         asyncio.get_event_loop().run_until_complete(disc.register_with_hub(meta))
         # Fetch back
+        # Third party imports
         import requests
 
         r2 = requests.get("http://localhost:3016/api/plugins/disc_signed", timeout=5)

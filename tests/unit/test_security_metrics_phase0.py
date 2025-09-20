@@ -1,10 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Security metrics Phase 0 tests: ensure auth + HMR counters exported.
 
+# Standard library imports
 import re
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from aetherra_hub.compat import start_hub_server
 
 requests = pytest.importorskip("requests")

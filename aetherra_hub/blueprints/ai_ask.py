@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+# Standard library imports
 import os
 import time
 
+# Third party imports
 from flask import Blueprint, jsonify, request
 
+# Local imports
 from ..services.ai_stream import _get_engine  # reuse engine fetch
 
 bp = Blueprint("ai_ask", __name__)
@@ -23,6 +26,7 @@ def ai_ask_post():
             # Increment invalid token counter when a token is provided but incorrect
             try:
                 if provided:
+                    # Local imports
                     from ..services import metrics_accum
 
                     metrics_accum.inc_auth_invalid_token()
@@ -45,6 +49,7 @@ def ai_ask_post():
             {"ok": True, "result": {"text": "offline", "response": "offline"}}
         )
     try:
+        # Standard library imports
         import asyncio
 
         async def _run():

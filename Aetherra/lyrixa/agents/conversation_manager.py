@@ -20,6 +20,7 @@ Builds upon Enhanced Conversational AI (#7) for intelligent error communication.
 """
 
 
+# Standard library imports
 import logging
 import os
 import re
@@ -467,51 +468,13 @@ class LyrixaEnhancedConversationManager:
 
         return False
 
-        if context is None:
-            context = {}
-
-        # Store the message in history
-        message_entry = {
-            "timestamp": datetime.now().isoformat(),
-            "user_id": user_id,
-            "message": message,
-            "context": context,
-        }
-
-        self.conversation_history.append(message_entry)
-
-        # Keep history within window size
-        if len(self.conversation_history) > self.context_window_size:
-            self.conversation_history = self.conversation_history[
-                -self.context_window_size :
-            ]
-
-        # Generate response (placeholder for now)
-        response = self._generate_response(message, context)
-
-        # Store response in history
-        response_entry = {
-            "timestamp": datetime.now().isoformat(),
-            "user_id": "lyrixa",
-            "message": response,
-            "context": {"type": "response"},
-        }
-
-        self.conversation_history.append(response_entry)
-
-        return {
-            "response": response,
-            "timestamp": datetime.now().isoformat(),
-            "context": context,
-            "status": "success",
-        }
-
     def _generate_response(self, message: str, context: Dict[str, Any]) -> str:
         """Generate an intelligent response to the message"""
 
         # Check if OpenAI API is available
         if os.getenv("OPENAI_API_KEY"):
             try:
+                # Third party imports
                 import openai
 
                 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -556,6 +519,7 @@ class LyrixaEnhancedConversationManager:
     ) -> str:
         """Generate response using OpenAI API with full conversation context."""
         try:
+            # Third party imports
             import openai
 
             client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))

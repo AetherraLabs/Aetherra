@@ -21,6 +21,7 @@ Tests Coverage:
 - Dynamic Agent Scaling
 """
 
+# Standard library imports
 import os
 import sys
 import time
@@ -39,6 +40,7 @@ class MultiAgentCoordinationTestSuite(unittest.TestCase):
 
         # Import multi-agent coordination components
         try:
+            # Aetherra imports
             from Aetherra.agents.base_agent import BaseAgent
             from Aetherra.agents.coordination import AgentCoordinator
             from Aetherra.agents.specialized import (

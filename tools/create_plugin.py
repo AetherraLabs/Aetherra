@@ -23,6 +23,7 @@ The generated class inherits PluginInterface and includes TODO markers.
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import sys
 from datetime import datetime

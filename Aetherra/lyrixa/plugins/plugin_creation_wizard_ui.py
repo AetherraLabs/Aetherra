@@ -7,8 +7,10 @@ Step-by-step plugin creation interface for non-technical users
 """
 
 
+# Standard library imports
 import sys
 
+# Third party imports
 from PySide6.QtCore import Qt  # noqa: F401 (optional runtime import)
 from PySide6.QtGui import QFont, QPixmap  # noqa: F401 (optional runtime import)
 from PySide6.QtWidgets import (
@@ -697,6 +699,7 @@ class PluginCreationWizardUI(QWizard):
 
         # Simulate generation process
 
+        # Third party imports
         from PySide6.QtCore import QTimer
 
         self.gen_timer = QTimer()
@@ -822,9 +825,10 @@ class PluginCreationWizardUI(QWizard):
 
 
 if __name__ == "__main__":
+    # Third party imports
     from PySide6.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
     wizard = PluginCreationWizardUI()
     wizard.show()
-    sys.exit(app.exec())
+    sys.exit(app.exec())  # nosec B102: Qt application execution

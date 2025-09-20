@@ -17,9 +17,11 @@ Features:
 - Comprehensive logging and analytics
 """
 
+# Standard library imports
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+# Local imports
 # Import Phase 2 components
 from .critique_agent import analyze_and_improve_response, get_critique_agent_status
 
@@ -336,6 +338,7 @@ class AdvancedPersonalityIntegration:
                     " Would you like me to explain more?",
                     " Does that help clarify things?",
                 ]
+                # Standard library imports
                 import random
 
                 response += random.choice(questions)
@@ -349,6 +352,7 @@ class AdvancedPersonalityIntegration:
                     "I think ",
                     "From my perspective, ",
                 ]
+                # Standard library imports
                 import random
 
                 response = random.choice(personal_additions) + response.lower()

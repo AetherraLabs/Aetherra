@@ -16,11 +16,14 @@ can extend this (service registry rehydration, agent restart sequencing, etc.).
 
 from __future__ import annotations
 
+# Standard library imports
 import tempfile
 from pathlib import Path
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.aetherra_core.memory.memory_core import LyrixaMemorySystem
 
 

@@ -1,3 +1,4 @@
+# Standard library imports
 import json
 import os
 import subprocess
@@ -22,9 +23,9 @@ def run(cmd, env=None):
 
 def test_basic_run_exit_zero():
     r = run([str(SCRIPT)])
-    assert r.returncode == 0, (
-        f"Non-zero exit code. stdout=\n{r.stdout}\n--- stderr=\n{r.stderr}"
-    )
+    assert (
+        r.returncode == 0
+    ), f"Non-zero exit code. stdout=\n{r.stdout}\n--- stderr=\n{r.stderr}"
 
 
 def test_debug_flag_creates_json():

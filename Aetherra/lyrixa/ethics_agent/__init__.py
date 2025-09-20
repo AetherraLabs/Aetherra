@@ -11,16 +11,19 @@ and value alignment within the Aetherra AI OS.
 
 # Import ethics components
 try:
+    # Local imports
     from .moral_reasoning import MoralReasoningEngine
 except ImportError:
     MoralReasoningEngine = None
 
 try:
+    # Local imports
     from .bias_detector import BiasDetectionEngine
 except ImportError:
     BiasDetectionEngine = None
 
 try:
+    # Local imports
     from .value_alignment import ValueAlignmentEngine
 except ImportError:
     ValueAlignmentEngine = None

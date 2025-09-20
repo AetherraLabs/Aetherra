@@ -17,9 +17,11 @@ Enhanced interpreter for the new .aether language features including:
 - import/use module system
 """
 
+# Standard library imports
 import time
 from typing import Any, Dict
 
+# Local imports
 from ..aetherra_grammar import AetherraCodeAST
 
 
@@ -306,7 +308,7 @@ class AetherraEnhancedInterpreter:
         parameters = node.metadata.get("parameters", [])
         body = node.children
 
-        def aether_function(*args):
+        def aether_function(*args: Any) -> Any:
             old_in_function = self.in_function
             self.in_function = True
 
@@ -389,7 +391,7 @@ class AetherraEnhancedInterpreter:
             else:
                 # Check if it's a variable
                 return bool(self.variables.get(condition, False))
-        elif isinstance(condition, (int, float)):
+        elif isinstance(condition, int | float):
             return condition != 0
         else:
             return bool(condition)
@@ -417,17 +419,17 @@ class AetherraEnhancedInterpreter:
         right = self._evaluate_expression(node.children[1])
         op = node.value
 
-        if op == "==":
-            return left == right
-        elif op == "!=":
-            return left != right
-        elif op == ">":
-            return left > right
-        elif op == "<":
-            return left < right
-        elif op == ">=":
-            return left >= right
-        elif op == "<=":
-            return left <= right
+        # Use dictionary lookup for operators (SIM116)
+        operators = {
+            "==": lambda left_val, right_val: left_val == right_val,
+            "!=": lambda left_val, right_val: left_val != right_val,
+            ">": lambda left_val, right_val: left_val > right_val,
+            "<": lambda left_val, right_val: left_val < right_val,
+            ">=": lambda left_val, right_val: left_val >= right_val,
+            "<=": lambda left_val, right_val: left_val <= right_val,
+        }
+
+        if op in operators:
+            return operators[op](left, right)
         else:
             return False

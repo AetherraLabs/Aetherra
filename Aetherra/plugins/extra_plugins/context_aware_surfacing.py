@@ -9,6 +9,7 @@ Intelligent plugin recommendation and surfacing based on current context,
 user behavior, task patterns, and environmental factors.
 """
 
+# Standard library imports
 import json
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
@@ -94,6 +95,7 @@ class ContextAwareSurfacing:
     def _load_learning_data(self):
         """Load learning data from storage."""
         try:
+            # Standard library imports
             import os
 
             data_file = os.path.join(os.path.dirname(__file__), "surfacing_data.json")
@@ -107,6 +109,7 @@ class ContextAwareSurfacing:
     def _save_learning_data(self):
         """Save learning data to storage."""
         try:
+            # Standard library imports
             import os
 
             data_file = os.path.join(os.path.dirname(__file__), "surfacing_data.json")

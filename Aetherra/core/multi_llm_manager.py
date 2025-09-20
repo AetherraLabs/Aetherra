@@ -18,6 +18,7 @@ This enables AetherraCode to work with any LLM backend,
 making it truly independent and privacy-focused.
 """
 
+# Standard library imports
 import asyncio
 import importlib
 import importlib.util
@@ -161,6 +162,7 @@ class MultiLLMManager:
         if LLMProvider.OLLAMA in self.providers:
             # Check what models are actually available locally
             try:
+                # Third party imports
                 import ollama
 
                 client = ollama.Client()
@@ -395,6 +397,7 @@ class OpenAIProvider:
 
     def __init__(self):
         try:
+            # Third party imports
             import openai
 
             self.client = openai.OpenAI()
@@ -429,6 +432,7 @@ class OllamaProvider:
 
     def __init__(self):
         try:
+            # Third party imports
             import ollama
 
             self.client = ollama.Client()
@@ -479,6 +483,7 @@ class LlamaCppProvider:
 
     def __init__(self):
         try:
+            # Third party imports
             from llama_cpp import Llama
 
             self.Llama = Llama
@@ -523,6 +528,7 @@ class AnthropicProvider:
 
     def __init__(self):
         try:
+            # Third party imports
             import anthropic
 
             self.client = anthropic.Anthropic()
@@ -557,6 +563,7 @@ class GeminiProvider:
 
     def __init__(self):
         try:
+            # Third party imports
             import google.generativeai as genai  # type: ignore
 
             self.genai = genai

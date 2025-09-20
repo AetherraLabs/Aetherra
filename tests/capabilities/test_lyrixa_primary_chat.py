@@ -17,12 +17,14 @@ advanced components being importable.
 
 from __future__ import annotations
 
+# Standard library imports
 import asyncio
 
 # Add project root to path
 import sys
 from pathlib import Path
 
+# Third party imports
 import pytest
 
 ROOT = Path(__file__).parent.parent.parent
@@ -32,6 +34,7 @@ if str(ROOT) not in sys.path:
 
 @pytest.mark.asyncio
 async def test_advanced_chat_backend_selected():
+    # Aetherra imports
     from Aetherra.lyrixa.lyrixa_basic import LyrixaBasicAssistant
 
     assistant = LyrixaBasicAssistant()
@@ -67,6 +70,7 @@ async def test_advanced_chat_backend_selected():
 
 
 def test_model_alias_normalization():
+    # Aetherra imports
     from Aetherra.lyrixa.intelligence.lyrixa_full_intelligence import (
         LyrixaIntelligenceCore,
     )
@@ -83,6 +87,7 @@ def test_model_alias_normalization():
 
 
 def test_intelligence_capabilities_reinforced():
+    # Aetherra imports
     from Aetherra.lyrixa.intelligence.lyrixa_full_intelligence import (
         LyrixaIntelligenceCore,
     )

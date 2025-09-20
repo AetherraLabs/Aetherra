@@ -7,8 +7,10 @@ If HMR controller & kernel support dynamic reload tasks, we enqueue a reload wit
 bogus source to force failure and expect either an audit event or safe failure.
 """
 
+# Standard library imports
 import asyncio
 
+# Third party imports
 import pytest
 
 pytestmark = pytest.mark.unit
@@ -16,6 +18,7 @@ pytestmark = pytest.mark.unit
 
 @pytest.mark.asyncio
 async def test_hmr_reload_failure(monkeypatch):
+    # Aetherra imports
     from aetherra_os_launcher import AetherraOSLauncher
     from aetherra_service_registry import get_service_registry
 

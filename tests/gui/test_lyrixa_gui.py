@@ -6,6 +6,7 @@
 Direct test of the Lyrixa Hybrid GUI - Phase 1 Implementation
 """
 
+# Standard library imports
 import os
 import sys
 
@@ -14,6 +15,7 @@ lyrixa_core_path = os.path.join(os.path.dirname(__file__), "Aetherra", "lyrixa_c
 sys.path.insert(0, lyrixa_core_path)
 
 try:
+    # Third party imports
     from gui.main_window import LyrixaHybridWindow
     from PySide6.QtCore import Qt  # noqa: F401 (optional runtime import)
     from PySide6.QtWidgets import QApplication
@@ -43,7 +45,7 @@ try:
         print("💡 Click the buttons to test panel switching and web integration")
 
         # Start the application event loop
-        return app.exec()
+        return app.exec()  # nosec B102: Qt application execution
 
     if __name__ == "__main__":
         exit_code = test_hybrid_gui()
@@ -51,6 +53,7 @@ try:
 
 except Exception as e:
     print(f"[ERROR] Error testing Lyrixa Hybrid GUI: {e}")
+    # Standard library imports
     import traceback
 
     traceback.print_exc()

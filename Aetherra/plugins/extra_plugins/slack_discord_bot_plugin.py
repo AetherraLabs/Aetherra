@@ -15,12 +15,14 @@ Features:
 - Logging and analytics for bot usage
 """
 
+# Standard library imports
 import logging
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
 try:
+    # Third party imports
     import discord
     from discord.ext import commands
 
@@ -29,6 +31,7 @@ except ImportError:
     DISCORD_AVAILABLE = False
 
 try:
+    # Third party imports
     from slack_sdk import WebClient as SlackClient
     from slack_sdk.errors import SlackApiError
 
@@ -171,6 +174,7 @@ def create_plugin():
 
 
 if __name__ == "__main__":
+    # Standard library imports
     import os
 
     # Demo: Initialize and start bots (requires valid tokens)

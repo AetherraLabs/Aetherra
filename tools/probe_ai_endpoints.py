@@ -15,11 +15,13 @@ Exit codes:
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import json
 import sys
 import time
 
+# Third party imports
 import requests
 
 

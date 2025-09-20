@@ -16,6 +16,7 @@ Exit codes:
 
 from __future__ import annotations
 
+# Standard library imports
 import os
 import subprocess
 import sys
@@ -24,23 +25,33 @@ from shutil import which
 ROOT = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 
-def run(cmd: list[str]) -> tuple[int, str]:
-    """Run a command capturing combined stdout/stderr as UTF-8, replacing undecodable bytes.
+def run(cmd: list[str], timeout: float | None = None) -> tuple[int, str]:
+    """Run a command and return (exit_code, output) with robust decoding and optional timeout.
 
-    Using explicit encoding avoids Windows cp1252 decode failures when tools emit
-    Unicode characters outside the code page.
+    - Uses UTF-8 decoding with errors="replace" for Windows compatibility
+    - On timeout, terminates the process and returns code 124 with a diagnostic message
     """
-    proc = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        cwd=ROOT,
-    )
-    out, _ = proc.communicate()
-    return proc.returncode, out
+    try:
+        completed = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            cwd=ROOT,
+            timeout=timeout,
+        )
+        return completed.returncode, completed.stdout
+    except subprocess.TimeoutExpired as e:
+        out = ""
+        # Prefer .output (stdout) attribute; .stderr is None when merged
+        if getattr(e, "output", None):
+            out += str(e.output)
+        if getattr(e, "stderr", None):
+            out += "\n" + str(e.stderr)
+        out += f"\n[TIMEOUT] Command exceeded {timeout}s: {' '.join(cmd)}"
+        return 124, out
 
 
 def tool_exists(name: str) -> bool:
@@ -64,14 +75,19 @@ def main() -> int:
         else:
             steps.append(("black", ["black", "."]))
     if tool_exists("ruff"):
-        steps.append(("ruff", ["ruff", "--fix" if fix else "check", "."]))
+        ruff_cmd = ["ruff", "check"]
+        if fix:
+            ruff_cmd.append("--fix")
+        ruff_cmd.append(".")
+        steps.append(("ruff", ruff_cmd))
     if want_mypy and tool_exists("mypy"):
         steps.append(("mypy", ["mypy", "Aetherra", "aetherra_coding"]))
     if want_flake8 and tool_exists("flake8"):
         steps.append(("flake8", ["flake8", "."]))
 
     for name, cmd in steps:
-        code, out = run(cmd)
+        # Most formatters/linters should finish quickly; provide a generous but finite timeout
+        code, out = run(cmd, timeout=600)
         print(f"[{name}] exit={code}")
         # print first 40 lines of output to keep logs concise
         lines = out.strip().splitlines()

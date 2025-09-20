@@ -18,6 +18,7 @@ License: GPL-3.0-or-later
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import re
 import sys
@@ -190,6 +191,7 @@ def write_reports(report: ScanReport, json_path: Path, md_path: Path | None = No
 
 
 def main():  # pragma: no cover - CLI wrapper
+    # Standard library imports
     import argparse
 
     parser = argparse.ArgumentParser(description="Static security scanner")

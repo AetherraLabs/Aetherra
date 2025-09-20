@@ -11,6 +11,7 @@ for sophisticated storytelling with emotional context and multi-perspective narr
 This represents the Phase 2 enhancement over the basic template-based narrator.
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -27,6 +28,7 @@ def get_importance_score(fragment):
 
 
 try:
+    # Third party imports
     import openai
 
     OPENAI_AVAILABLE = True
@@ -34,12 +36,14 @@ except ImportError:
     OPENAI_AVAILABLE = False
 
 try:
+    # Third party imports
     import anthropic
 
     ANTHROPIC_AVAILABLE = True
 except ImportError:
     ANTHROPIC_AVAILABLE = False
 
+# Local imports
 from ..fractal_mesh.base import MemoryFragment
 from .story_model import MemoryNarrative, MemoryNarrator
 

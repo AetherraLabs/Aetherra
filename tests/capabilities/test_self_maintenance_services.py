@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import asyncio
 import contextlib
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from aetherra_os_launcher import AetherraOSLauncher
 from aetherra_service_registry import get_service_registry
 

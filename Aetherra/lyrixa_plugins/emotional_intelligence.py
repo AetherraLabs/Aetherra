@@ -18,10 +18,12 @@ Features:
 - Emotional contagion and appropriate mirroring
 """
 
+# Standard library imports
 import statistics
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
+# Local imports
 from .emotion_detector import EmotionDetector, detect_user_emotion
 
 

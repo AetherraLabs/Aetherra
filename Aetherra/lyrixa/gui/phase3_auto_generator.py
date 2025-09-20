@@ -21,6 +21,7 @@ Architecture:
 """
 
 
+# Standard library imports
 import json
 import logging
 from dataclasses import asdict, dataclass
@@ -28,6 +29,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Third party imports
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
 
 logger = logging.getLogger(__name__)
@@ -353,6 +355,7 @@ class StateIntrospector(QObject):
     def _introspect_metrics(self) -> List[ComponentState]:
         """Introspect system metrics"""
         try:
+            # Third party imports
             import psutil
 
             # System metrics
@@ -387,6 +390,7 @@ class StateIntrospector(QObject):
     def _get_network_activity(self) -> Dict[str, int]:
         """Get network activity metrics"""
         try:
+            # Third party imports
             import psutil
 
             net_io = psutil.net_io_counters()

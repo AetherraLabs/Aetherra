@@ -11,11 +11,13 @@ Falls back gracefully if artifacts are missing and notes TODO sections.
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import json
 from datetime import datetime
 from pathlib import Path
 
+# Third party imports
 from defusedxml import ElementTree
 
 

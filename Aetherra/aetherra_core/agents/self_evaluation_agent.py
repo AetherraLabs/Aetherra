@@ -2,8 +2,10 @@
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
 
+# Standard library imports
 from typing import Any, Dict, Optional
 
+# Local imports
 from .agent_base import AgentBase, AgentResponse
 
 

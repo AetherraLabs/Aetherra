@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import importlib
 
 
@@ -44,6 +45,7 @@ def test_human_style_env_toggles(monkeypatch):
 
 def test_engine_integration_exports(monkeypatch):
     # Simulate minimal engine usage: style metrics should be present in session_metrics
+    # Aetherra imports
     from Aetherra.aetherra_core.engine.aetherra_engine import AetherraEngine
 
     monkeypatch.setenv("AETHERRA_STYLE_ENABLED", "1")
@@ -55,6 +57,7 @@ def test_engine_integration_exports(monkeypatch):
         st = await eng.get_system_status()
         return st
 
+    # Standard library imports
     import asyncio
 
     st = asyncio.get_event_loop().run_until_complete(_run())

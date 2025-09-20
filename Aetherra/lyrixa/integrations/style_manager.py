@@ -7,6 +7,7 @@ JavaScript Style Manager for Lyrixa Web Panels
 Prevents style redeclaration errors and manages dynamic styling
 """
 
+# Standard library imports
 import logging
 from typing import Optional, Set
 
@@ -47,6 +48,7 @@ class JavaScriptStyleManager:
                     "text-shadow"
                 ):
                     # Remove entire property declarations
+                    # Standard library imports
                     import re
 
                     pattern = rf"{unsupported}[^;]*;"

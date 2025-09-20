@@ -8,11 +8,13 @@ Bridge integration: sensor events are logged as episodic events and may enqueue 
 
 from __future__ import annotations
 
+# Standard library imports
 import abc
 import os
 import time
 from typing import Any, Dict, Optional
 
+# Local imports
 from ..episodic_store import get_episodic_store
 from ..workspace_core import get_workspace
 

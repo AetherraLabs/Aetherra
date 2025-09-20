@@ -9,12 +9,14 @@ Specialized agent for security monitoring, threat detection, and vulnerability a
 within the Aetherra AI OS ecosystem.
 """
 
+# Standard library imports
 import asyncio
 import hashlib
 import logging
 import time
 from typing import Any, Dict
 
+# Local imports
 from .agent_base import AgentBase
 
 logger = logging.getLogger(__name__)

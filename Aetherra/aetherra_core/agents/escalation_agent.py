@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Optional
 
+# Local imports
 from .agent_base import AgentBase, AgentResponse
 
 

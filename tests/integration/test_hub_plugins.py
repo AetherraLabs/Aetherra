@@ -6,6 +6,7 @@
 Quick test script to check available plugins in Aetherra Hub
 """
 
+# Standard library imports
 import json
 import urllib.request
 
@@ -52,6 +53,7 @@ def check_hub_plugins():
 
     except Exception as e:
         print(f"Error connecting to Hub: {e}")
+        # Standard library imports
         import traceback
 
         traceback.print_exc()

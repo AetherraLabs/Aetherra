@@ -14,16 +14,19 @@ result in a Response.
 
 from __future__ import annotations
 
+# Standard library imports
 import os
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List
 
+# Local imports
 from . import registry_client
 
 # (plugin metrics imported lazily in builder)
 
 try:  # trainer service optional (may not yet be fully migrated)
+    # Local imports
     from . import trainer as trainer_service  # type: ignore
 except Exception:  # pragma: no cover - fallback stub
     trainer_service = None  # type: ignore
@@ -615,6 +618,7 @@ def build_all_metrics_lines() -> List[str]:  # core builder used by blueprint
             )
     # QFAC policy decision metrics (P1 #9). Best-effort: try optional qfac_memory_system
     try:
+        # Aetherra imports
         from Aetherra.aetherra_core.memory.qfac_integration import (
             QFACMemorySystem,  # type: ignore
         )
@@ -697,6 +701,7 @@ def build_all_metrics_lines() -> List[str]:  # core builder used by blueprint
 
     # Plugin metrics appended last
     try:
+        # Local imports
         from .plugin_metrics import (
             as_prometheus_lines as plugin_metrics_lines,  # type: ignore
         )
@@ -709,6 +714,7 @@ def build_all_metrics_lines() -> List[str]:  # core builder used by blueprint
         keys_path = os.path.expanduser("~/.aetherra/keys.json")
         enc = 0
         if os.path.exists(keys_path):
+            # Standard library imports
             import json as _json  # local import to avoid global cost
 
             try:

@@ -29,11 +29,13 @@ The Basic Lyrixa GUI with just two core functions:
 Clean, simple design that expands when plugins are installed.
 """
 
+# Standard library imports
 import json
 import logging
 import os
 from html import escape as _html_escape
 
+# Third party imports
 from PySide6.QtCore import Qt, QThread, QTimer, Signal, Slot
 
 # Note: GUI font utilities can be imported by plugins as needed
@@ -283,10 +285,11 @@ class LyrixaBasicWindow(QMainWindow):
             install_button.clicked.connect(self._install_selected_plugin)
             available_layout.addWidget(install_button)
         else:
+            # Aetherra imports
             from Aetherra.lyrixa.ui.flow_layout import FlowLayout  # type: ignore
             from Aetherra.lyrixa.ui.plugin_card import (  # type: ignore
-                PluginCard,
-                PluginMeta,
+                PluginCard,  # noqa: F401
+                PluginMeta,  # noqa: F401
             )
 
             header_row = QHBoxLayout()
@@ -378,6 +381,7 @@ class LyrixaBasicWindow(QMainWindow):
 
     def _apply_theme_or_fallback(self):
         try:
+            # Aetherra imports
             from Aetherra.lyrixa.ui.theme_manager import get_theme_manager
 
             tm = get_theme_manager()
@@ -537,6 +541,7 @@ class LyrixaBasicWindow(QMainWindow):
 
             def run(self):
                 try:
+                    # Standard library imports
                     import asyncio
 
                     loop = asyncio.new_event_loop()
@@ -569,7 +574,7 @@ class LyrixaBasicWindow(QMainWindow):
         # Normalize response
         try:
             # Support ChatResponse dataclass (from lyrixa_chat_service)
-            if not isinstance(response, (dict, str)) and hasattr(response, "text"):
+            if not isinstance(response, dict | str) and hasattr(response, "text"):
                 try:
                     text = getattr(response, "text", "")
                     awareness = getattr(response, "awareness", None)
@@ -632,10 +637,10 @@ class LyrixaBasicWindow(QMainWindow):
                     if source:
                         line += f" — <span style='color:#aaa'>{_html_escape(str(source))}</span>"
                     if score is not None:
-                        try:
+                        from contextlib import suppress
+
+                        with suppress(Exception):
                             line += f" (score {float(score):.2f})"
-                        except Exception:
-                            pass
                     if snippet:
                         line += f"<br/><span style='color:#aaa'>{_html_escape(str(snippet))}</span>"
                     lines.append(line)
@@ -668,6 +673,7 @@ class LyrixaBasicWindow(QMainWindow):
 
             def run(self):
                 try:
+                    # Standard library imports
                     import asyncio
 
                     loop = asyncio.new_event_loop()
@@ -737,7 +743,7 @@ class LyrixaBasicWindow(QMainWindow):
                 "Plugin list is not available yet.",
                 QMessageBox.Icon.Warning,
             )
-            warning_msg.exec()
+            warning_msg.exec()  # nosec B102: Qt GUI dialog/menu execution
             return
         current_item = self.plugin_list.currentItem()
         if not current_item:
@@ -746,7 +752,7 @@ class LyrixaBasicWindow(QMainWindow):
                 "Please select a plugin to install.",
                 QMessageBox.Icon.Warning,
             )
-            warning_msg.exec()
+            warning_msg.exec()  # nosec B102: Qt GUI dialog/menu execution
             return
 
         plugin_data = current_item.data(Qt.ItemDataRole.UserRole)
@@ -761,7 +767,7 @@ class LyrixaBasicWindow(QMainWindow):
         )
         msg_box.setDefaultButton(QMessageBox.StandardButton.Yes)
 
-        reply = msg_box.exec()
+        reply = msg_box.exec()  # nosec B102: Qt GUI dialog/menu execution
 
         if reply == QMessageBox.StandardButton.Yes:
             self._perform_plugin_installation(plugin_name, plugin_data)
@@ -780,6 +786,7 @@ class LyrixaBasicWindow(QMainWindow):
 
             def run(self):
                 try:
+                    # Standard library imports
                     import asyncio
 
                     loop = asyncio.new_event_loop()
@@ -807,7 +814,7 @@ class LyrixaBasicWindow(QMainWindow):
                 f"Plugin '{plugin_name}' installed successfully!",
                 QMessageBox.Icon.Information,
             )
-            success_msg.exec()
+            success_msg.exec()  # nosec B102: Qt GUI dialog/menu execution
             self._refresh_installed_plugins()
             # Remove the installed plugin from available plugins list
             self._remove_plugin_from_available_list(plugin_name)
@@ -819,7 +826,7 @@ class LyrixaBasicWindow(QMainWindow):
                 f"Failed to install plugin '{plugin_name}'.",
                 QMessageBox.Icon.Critical,
             )
-            error_msg.exec()
+            error_msg.exec()  # nosec B102: Qt GUI dialog/menu execution
 
     def _add_plugin_panel(self, plugin_name: str):
         """Dynamically add a new panel for the installed plugin."""
@@ -844,7 +851,7 @@ class LyrixaBasicWindow(QMainWindow):
                     f"New '{tab_name}' panel added to Lyrixa interface!",
                     QMessageBox.Icon.Information,
                 )
-                expansion_msg.exec()
+                expansion_msg.exec()  # nosec B102: Qt GUI dialog/menu execution
 
         except Exception as e:
             logger.error(f"[GUI] Failed to add plugin panel for {plugin_name}: {e}")
@@ -861,6 +868,7 @@ class LyrixaBasicWindow(QMainWindow):
             layout.addWidget(QLabel("Advanced code editing capabilities"))
 
             # Add a basic text editor
+            # Third party imports
             from PySide6.QtWidgets import QTextEdit
 
             editor = QTextEdit()
@@ -876,6 +884,7 @@ class LyrixaBasicWindow(QMainWindow):
             layout.addWidget(QLabel("Create and manage AI workflows"))
 
             # Add workflow designer interface
+            # Third party imports
             from PySide6.QtWidgets import QTabWidget, QTextEdit
 
             workflow_tabs = QTabWidget()
@@ -938,6 +947,7 @@ class LyrixaBasicWindow(QMainWindow):
         """Create tabs for all currently installed plugins on startup."""
         try:
             # Check for installed plugins registry
+            # Standard library imports
             import json
             from pathlib import Path
 
@@ -952,7 +962,7 @@ class LyrixaBasicWindow(QMainWindow):
                     logger.info(
                         f"[GUI] Creating tabs for {len(registry)} installed plugins"
                     )
-                    for plugin_name, info in registry.items():
+                    for plugin_name, _info in registry.items():
                         # Create a tab for each installed plugin
                         self._add_plugin_panel(plugin_name)
                         logger.info(
@@ -993,6 +1003,7 @@ class LyrixaBasicWindow(QMainWindow):
     def _load_plugin_ui_class(self, plugin_name: str):
         """Try to load a plugin's UI class from its Python module."""
         try:
+            # Standard library imports
             import importlib
             import sys
             from pathlib import Path
@@ -1040,6 +1051,7 @@ class LyrixaBasicWindow(QMainWindow):
     def _load_plugin_web_ui(self, plugin_name: str):
         """Try to load a plugin's web-based UI using QWebEngineView."""
         try:
+            # Standard library imports
             from pathlib import Path
 
             # Look for HTML UI files in plugin directory
@@ -1054,6 +1066,7 @@ class LyrixaBasicWindow(QMainWindow):
             for html_file in possible_files:
                 if html_file.exists():
                     try:
+                        # Third party imports
                         from PySide6.QtWebEngineWidgets import QWebEngineView
 
                         web_view = QWebEngineView()
@@ -1061,6 +1074,7 @@ class LyrixaBasicWindow(QMainWindow):
                         return web_view
                     except ImportError:
                         # QWebEngineView not available, create iframe-like placeholder
+                        # Third party imports
                         from PySide6.QtWidgets import QTextEdit
 
                         web_placeholder = QTextEdit()
@@ -1085,6 +1099,7 @@ class LyrixaBasicWindow(QMainWindow):
     def _load_plugin_ui_file(self, plugin_name: str):
         """Try to load a plugin's .ui file created with Qt Designer."""
         try:
+            # Standard library imports
             from pathlib import Path
 
             # Look for .ui files in plugin directory
@@ -1098,6 +1113,7 @@ class LyrixaBasicWindow(QMainWindow):
             for ui_file in possible_files:
                 if ui_file.exists():
                     try:
+                        # Third party imports
                         from PySide6 import QtUiTools
 
                         loader = QtUiTools.QUiLoader()
@@ -1105,6 +1121,7 @@ class LyrixaBasicWindow(QMainWindow):
                         return ui_widget
                     except ImportError:
                         # QtUiTools not available
+                        # Third party imports
                         from PySide6.QtWidgets import QLabel
 
                         ui_placeholder = QLabel(
@@ -1123,6 +1140,7 @@ class LyrixaBasicWindow(QMainWindow):
 
     def _create_memory_system_ui(self):
         """Create a comprehensive memory system UI with real data integration."""
+        # Third party imports
         from PySide6.QtWidgets import (
             QGridLayout,
             QProgressBar,
@@ -1322,6 +1340,7 @@ class LyrixaBasicWindow(QMainWindow):
 
         try:
             # Check for installed plugins registry
+            # Standard library imports
             import json
             from pathlib import Path
 
@@ -1388,7 +1407,7 @@ class LyrixaBasicWindow(QMainWindow):
                 "No installed plugins to uninstall.",
                 QMessageBox.Icon.Warning,
             )
-            warning_msg.exec()
+            warning_msg.exec()  # nosec B102: Qt GUI dialog/menu execution
             return
         current_item = self.installed_plugins_list.currentItem()
         if not current_item:
@@ -1397,7 +1416,7 @@ class LyrixaBasicWindow(QMainWindow):
                 "Please select an installed plugin to uninstall.",
                 QMessageBox.Icon.Warning,
             )
-            warning_msg.exec()
+            warning_msg.exec()  # nosec B102: Qt GUI dialog/menu execution
             return
 
         # Get plugin data from the list item
@@ -1424,7 +1443,7 @@ class LyrixaBasicWindow(QMainWindow):
             )
             msg_box.setDefaultButton(QMessageBox.StandardButton.No)
 
-            reply = msg_box.exec()
+            reply = msg_box.exec()  # nosec B102: Qt GUI dialog/menu execution
 
             if reply == QMessageBox.StandardButton.Yes:
                 self._perform_plugin_uninstall(plugin_name)
@@ -1435,11 +1454,12 @@ class LyrixaBasicWindow(QMainWindow):
                 f"Failed to uninstall plugin: {str(e)}",
                 QMessageBox.Icon.Critical,
             )
-            error_msg.exec()
+            error_msg.exec()  # nosec B102: Qt GUI dialog/menu execution
 
     def _perform_plugin_uninstall(self, plugin_name: str):
         """Perform the actual plugin uninstallation."""
         try:
+            # Standard library imports
             import json
             import shutil
             from pathlib import Path
@@ -1504,7 +1524,7 @@ class LyrixaBasicWindow(QMainWindow):
                 f"Available for reinstall: ✅",
                 QMessageBox.Icon.Information,
             )
-            success_msg.exec()
+            success_msg.exec()  # nosec B102: Qt GUI dialog/menu execution
 
             logger.info(f"[GUI] Successfully uninstalled plugin: {plugin_name}")
 
@@ -1515,7 +1535,7 @@ class LyrixaBasicWindow(QMainWindow):
                 f"Failed to uninstall plugin '{plugin_name}':\n\n{str(e)}",
                 QMessageBox.Icon.Critical,
             )
-            error_msg.exec()
+            error_msg.exec()  # nosec B102: Qt GUI dialog/menu execution
 
     def _remove_plugin_tab(self, plugin_name: str):
         """Remove a plugin's tab from the main tab widget."""
@@ -1604,11 +1624,13 @@ class LyrixaBasicWindow(QMainWindow):
             return self._installed_registry_cache
         result: set[str] = set()
         try:
+            # Standard library imports
             from pathlib import Path
 
             lyrixa_plugins_dir = Path(__file__).parent / "plugins"
             registry_file = lyrixa_plugins_dir / "installed_plugins.json"
             if registry_file.exists():
+                # Standard library imports
                 import json as _json
 
                 with open(registry_file, encoding="utf-8") as f:
@@ -1633,6 +1655,7 @@ class LyrixaBasicWindow(QMainWindow):
         if not self.plugin_cards_layout:
             return
         try:  # local import for optional dependency path
+            # Aetherra imports
             from Aetherra.lyrixa.ui.plugin_card import (  # type: ignore
                 PluginCard,
                 PluginMeta,
@@ -1919,6 +1942,7 @@ Select an option to customize how this plugin operates within Lyrixa.
 
 def main():
     """Test the Basic Lyrixa GUI."""
+    # Standard library imports
     import argparse
     import asyncio
     import sys
@@ -1941,9 +1965,10 @@ def main():
     if not args.force_mock:
         try:
             # Attempt full assistant initialization
-            from Aetherra.lyrixa.lyrixa_basic import (
+            # Aetherra imports
+            from Aetherra.lyrixa.lyrixa_basic import (  # type: ignore
                 LyrixaBasicAssistant,
-            )  # type: ignore
+            )
 
             async def _init_full():
                 assistant = LyrixaBasicAssistant()
@@ -1996,7 +2021,7 @@ def main():
     )
     window.show()
 
-    sys.exit(app.exec())
+    sys.exit(app.exec())  # nosec B102: Qt application execution
 
 
 if __name__ == "__main__":

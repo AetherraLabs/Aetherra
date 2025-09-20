@@ -1,10 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import socket
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from aetherra_hub import compat as hub_mod
 
 requests = pytest.importorskip("requests")

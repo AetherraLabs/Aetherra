@@ -18,10 +18,12 @@ and augments it by probing configured providers exposed on that instance.
 
 from __future__ import annotations
 
+# Standard library imports
 import asyncio
 import difflib
+import logging
 import statistics
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 
 
 class AdaptiveIntelligenceOrchestrator:
@@ -38,22 +40,22 @@ class AdaptiveIntelligenceOrchestrator:
         }
 
     async def orchestrate(
-        self, message: str, context: Optional[Dict[str, Any]] = None
-    ) -> Optional[Dict[str, Any]]:
+        self, message: str, context: dict[str, Any] | None = None
+    ) -> dict[str, Any] | None:
         if not self.intelligence or not getattr(self.intelligence, "providers", None):
             return None
 
-        ctx: Dict[str, Any] = context or {}
+        ctx: dict[str, Any] = context or {}
         intent = self._classify_intent(message)
         provider_names = self._select_providers(intent)
         if not provider_names:
             return None
 
         # Fire providers in parallel and gather results
-    results: List[tuple[str, Dict[str, Any]]] = []
+        results: list[tuple[str, dict[str, Any]]] = []
         tasks = [self._run_provider(name, message, ctx) for name in provider_names]
         done = await asyncio.gather(*tasks, return_exceptions=True)
-        for name, res in zip(provider_names, done):
+        for name, res in zip(provider_names, done, strict=True):
             if isinstance(res, Exception) or not isinstance(res, dict):
                 continue
             if res.get("response") and not self._looks_errorish(
@@ -94,14 +96,14 @@ class AdaptiveIntelligenceOrchestrator:
             return "analytical"
         return "general"
 
-    def _select_providers(self, intent: str) -> List[str]:
+    def _select_providers(self, intent: str) -> list[str]:
         # If intelligence is missing, no providers
         if not self.intelligence:
             return []
-        providers: List[str] = []
+        providers: list[str] = []
         wanted = self.capabilities.get(intent, [])
         providers_map = cast(
-            Dict[str, Any], getattr(self.intelligence, "providers", {})
+            dict[str, Any], getattr(self.intelligence, "providers", {})
         )
         for name in wanted:
             p = providers_map.get(name)
@@ -115,8 +117,8 @@ class AdaptiveIntelligenceOrchestrator:
         return providers[:2]  # cap ensemble size
 
     async def _run_provider(
-        self, name: str, message: str, ctx: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, name: str, message: str, ctx: dict[str, Any]
+    ) -> dict[str, Any]:
         # Use the intelligence pipeline but bias to provider by temporarily switching active_provider
         if not self.intelligence:
             return {}
@@ -129,10 +131,10 @@ class AdaptiveIntelligenceOrchestrator:
 
     def _synthesize(
         self,
-    results: List[tuple[str, Dict[str, Any]]],
+        results: list[tuple[str, dict[str, Any]]],
         message: str,
-        ctx: Dict[str, Any],
-    ) -> tuple[str, Dict[str, float], List[Dict[str, Any]]]:
+        ctx: dict[str, Any],
+    ) -> tuple[str, dict[str, float], list[dict[str, Any]]]:
         # Rank by length as a baseline
         ranked = sorted(
             results, key=lambda kv: len(str(kv[1].get("response", ""))), reverse=True
@@ -142,7 +144,7 @@ class AdaptiveIntelligenceOrchestrator:
 
         # Compute simple consensus across provider responses
         texts = [str(r[1].get("response", "")) for r in results]
-        consensus_scores: List[float] = []
+        consensus_scores: list[float] = []
         for i in range(len(texts)):
             for j in range(i + 1, len(texts)):
                 consensus_scores.append(
@@ -157,7 +159,7 @@ class AdaptiveIntelligenceOrchestrator:
             conc = awareness.get("consciousness", {}) or {}
             coherence = float(conc.get("coherence", coherence))
         except Exception:
-            pass
+            logging.exception("Exception extracting coherence from context")
 
         # Provider reliability (static defaults, allow override from intelligence providers)
         provider_reliability_defaults = {"openai": 0.9, "anthropic": 0.86, "local": 0.6}
@@ -176,7 +178,7 @@ class AdaptiveIntelligenceOrchestrator:
                         max(0.0, min(1.0, reliability + (0.02 if prio == 1 else 0.0)))
                     )
         except Exception:
-            pass
+            logging.exception("Exception extracting provider reliability")
 
         # Memory match strength based on memories used (intelligence returns count)
         memories_used = int(best_res.get("memories_used", 0) or 0)
@@ -186,7 +188,7 @@ class AdaptiveIntelligenceOrchestrator:
             if memories_used > 0:
                 mem_match = float(min(0.95, 0.3 + 0.25 * (1 + (memories_used**0.5))))
         except Exception:
-            pass
+            logging.exception("Exception calculating memory match strength")
 
         # Confidence breakdown with richer signals (preserve existing keys)
         model_signal = 0.82 if best_name == "openai" else 0.76
@@ -213,10 +215,10 @@ class AdaptiveIntelligenceOrchestrator:
             )
             cb["overall"] = float(round(max(0.0, min(1.0, overall)), 3))
         except Exception:
-            pass
+            logging.exception("Exception calculating overall confidence score")
 
         # Evidence payload: top provider picks + memory usage
-        evidence: List[Dict[str, Any]] = []
+        evidence: list[dict[str, Any]] = []
         if memories_used:
             evidence.append({"type": "memory_usage", "count": memories_used})
         # Include brief provider attribution

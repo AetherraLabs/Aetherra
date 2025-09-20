@@ -6,8 +6,10 @@
 Interface between Aetherra Core and Lyrixa memory access
 """
 
+# Standard library imports
 from typing import Dict, List
 
+# Local imports
 from ..kernel.memory_kernel import MemoryKernel
 
 

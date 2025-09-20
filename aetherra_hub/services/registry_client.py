@@ -6,6 +6,7 @@ They perform synchronous calls by spinning an event loop with asyncio.run.
 
 from __future__ import annotations
 
+# Standard library imports
 import asyncio
 import logging
 from typing import Any
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 # Generic helper
 
 
-def _run_coro(coro):
+def _run_coro(coro: Any) -> Any:
     """Run a coroutine from synchronous code safely.
 
     Handling:
@@ -43,8 +44,9 @@ def _run_coro(coro):
         return None
 
 
-async def _get_registry_async():  # pragma: no cover - thin wrapper
-    from aetherra_service_registry import get_service_registry  # type: ignore
+async def _get_registry_async() -> Any:  # pragma: no cover - thin wrapper
+    # Aetherra imports
+    from aetherra_service_registry import get_service_registry
 
     return await get_service_registry()
 
@@ -52,7 +54,7 @@ async def _get_registry_async():  # pragma: no cover - thin wrapper
 def get_registry_status() -> dict[str, Any] | None:
     try:
 
-        async def _go():
+        async def _go() -> Any:
             reg = await _get_registry_async()
             return reg.get_registry_status()
 
@@ -66,7 +68,7 @@ def get_registry_status() -> dict[str, Any] | None:
 def get_kernel_status() -> dict[str, Any] | None:
     try:
 
-        async def _go():
+        async def _go() -> Any:
             reg = await _get_registry_async()
             info = reg.get_service_info("kernel_loop")
             if not info or not info.instance:
@@ -90,7 +92,7 @@ def get_kernel_status() -> dict[str, Any] | None:
 def get_orchestrator_status() -> dict[str, Any] | None:
     try:
 
-        async def _go():
+        async def _go() -> Any:
             reg = await _get_registry_async()
             info = reg.get_service_info("aetherra_engine")
             if not info or not info.instance:
@@ -99,13 +101,13 @@ def get_orchestrator_status() -> dict[str, Any] | None:
             orch = getattr(eng, "agent_orchestrator", None)
             if orch and hasattr(orch, "get_system_status"):
                 try:
-                    return orch.get_system_status()  # type: ignore[call-arg]
+                    return orch.get_system_status()
                 except Exception as exc:  # pragma: no cover
                     logger.debug("orch.get_system_status failed: %s", exc)
                     return None
             if hasattr(eng, "get_system_status"):
                 try:
-                    st = await eng.get_system_status()  # type: ignore[attr-defined]
+                    st = await eng.get_system_status()
                     if isinstance(st, dict):
                         return st.get("agent_orchestrator")
                 except Exception as exc:
@@ -123,7 +125,7 @@ def get_orchestrator_status() -> dict[str, Any] | None:
 def get_memory_quantum_status() -> dict[str, Any]:
     try:
 
-        async def _go():
+        async def _go() -> Any:
             reg = await _get_registry_async()
             info = reg.get_service_info("aetherra_engine")
             if not info or not info.instance:
@@ -134,7 +136,7 @@ def get_memory_quantum_status() -> dict[str, Any]:
                 return None
             if hasattr(ms, "get_quantum_status"):
                 try:
-                    return {"enabled": True, **(await ms.get_quantum_status())}  # type: ignore
+                    return {"enabled": True, **(await ms.get_quantum_status())}
                 except Exception as exc:
                     logger.debug("memory_system.get_quantum_status failed: %s", exc)
             inner = getattr(ms, "engine", None)
@@ -153,17 +155,21 @@ def get_memory_quantum_status() -> dict[str, Any]:
     except Exception as exc:
         logger.debug("get_memory_quantum_status error: %s", exc)
     try:  # fallback ephemeral
+        # Aetherra imports
         from Aetherra.aetherra_core.memory.QuantumEnhancedMemoryEngine import (
             QuantumEnhancedMemoryEngine,
         )
 
         q = QuantumEnhancedMemoryEngine()
         st = q.get_status()
-        if not isinstance(st, dict):
-            st = {}
-        st.update({"enabled": False, "ephemeral": True})
-        return st
-    except Exception as exc:  # pragma: no cover
+        if isinstance(st, dict):
+            st.update({"enabled": False, "ephemeral": True})
+            return st
+        logger.error(
+            "QuantumEnhancedMemoryEngine.get_status() did not return dict! Returning minimal fallback."
+        )
+        return {"enabled": False, "ephemeral": True}
+    except Exception as exc:  # pragma: no cover  # noqa: RET506
         logger.debug("quantum fallback status error: %s", exc)
         return {"enabled": False}
 
@@ -171,7 +177,7 @@ def get_memory_quantum_status() -> dict[str, Any]:
 def get_memory_audit() -> dict[str, Any]:
     try:
 
-        async def _go():
+        async def _go() -> Any:
             reg = await _get_registry_async()
             info = reg.get_service_info("aetherra_engine")
             if not info or not info.instance:
@@ -184,7 +190,7 @@ def get_memory_audit() -> dict[str, Any]:
             target = inner or ms
             if hasattr(target, "audit_branch_dag"):
                 try:
-                    audit = target.audit_branch_dag()  # type: ignore[attr-defined]
+                    audit = target.audit_branch_dag()
                     if isinstance(audit, dict):
                         return {"enabled": True, "audit": audit}
                 except Exception as exc:
@@ -197,6 +203,7 @@ def get_memory_audit() -> dict[str, Any]:
     except Exception as exc:
         logger.debug("get_memory_audit error: %s", exc)
     try:  # fallback
+        # Aetherra imports
         from Aetherra.aetherra_core.memory.QuantumEnhancedMemoryEngine import (
             QuantumEnhancedMemoryEngine,
         )
@@ -214,7 +221,7 @@ def get_memory_audit() -> dict[str, Any]:
 
 
 def _generic_service_call(service_name: str, attr: str) -> dict[str, Any]:
-    async def _go():
+    async def _go() -> Any:
         reg = await _get_registry_async()
         info = reg.get_service_info(service_name)
         if not info or not info.instance:
@@ -262,11 +269,11 @@ def get_quantum_bridge_status() -> dict[str, Any]:
     return _generic_service_call("quantum_bridge", "get_status")
 
 
-def get_service(service_name: str):
+def get_service(service_name: str) -> Any:
     """Get a service instance by name from the registry."""
     try:
 
-        async def _go():
+        async def _go() -> Any:
             reg = await _get_registry_async()
             info = reg.get_service_info(service_name)
             if not info or not info.instance:

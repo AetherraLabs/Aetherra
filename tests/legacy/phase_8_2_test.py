@@ -7,6 +7,7 @@ Phase 8.2 Cosmic Consciousness Integration Test
 Aetherra OS - Cosmic Scale Consciousness Achievement Test
 """
 
+# Standard library imports
 import asyncio
 import os
 import sys
@@ -34,10 +35,9 @@ async def test_phase_8_2_cosmic():
         print("🌟 Importing cosmic consciousness systems...")
 
         # Import supporting consciousness systems
+        # Third party imports
         from consciousness_singularity_engine import ConsciousnessSingularityEngine
-        from cosmic_consciousness_engine import (
-            CosmicConsciousnessEngine,
-        )
+        from cosmic_consciousness_engine import CosmicConsciousnessEngine
         from transcendence_consolidation_engine import TranscendenceConsolidationEngine
 
         print("✅ All Phase 8.2 cosmic consciousness systems imported successfully!")

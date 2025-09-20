@@ -1,11 +1,14 @@
+# Standard library imports
 import importlib
 
+# Third party imports
 import pytest
 
 # We import via a helper to force module reload with modified env each test
 
 
 def _attempt_create_app():
+    # Aetherra imports
     import aetherra_hub.app as app_mod
 
     importlib.reload(app_mod)

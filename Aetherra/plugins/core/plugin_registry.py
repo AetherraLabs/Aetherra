@@ -6,6 +6,7 @@ Aetherra Plugin Registry
 Handles plugin discovery, metadata loading, and dynamic registration into the Aetherra OS.
 """
 
+# Standard library imports
 import json
 import re
 from pathlib import Path

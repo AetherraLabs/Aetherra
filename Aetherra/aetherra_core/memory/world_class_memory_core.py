@@ -6,23 +6,67 @@ DEPRECATED: world_class_memory_core.py is now an adapter for QuantumEnhancedMemo
 All memory operations are delegated to the canonical engine.
 """
 
+# Standard library imports
+import math
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
+import json
+import random
 from typing import Any, Dict, List, Optional
 
-from ..memory.QuantumEnhancedMemoryEngine.engine import QuantumEnhancedMemoryEngine
+# Third party imports - Qt GUI framework
+from PySide6.QtCore import QPoint, Qt, QTimer, Signal
+from PySide6.QtGui import QAction, QBrush, QColor, QFont, QPainter, QPen
+from PySide6.QtWidgets import (
+    QApplication,
+    QCheckBox,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QGraphicsEllipseItem,
+    QGraphicsItem,
+    QGraphicsLineItem,
+    QGraphicsScene,
+    QGraphicsTextItem,
+    QGraphicsView,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QListWidgetItem,
+    QMenu,
+    QMessageBox,
+    QPushButton,
+    QSlider,
+    QTableWidget,
+    QTableWidgetItem,
+    QTabWidget,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
+
+# Local imports
+from ..memory.QuantumEnhancedMemoryEngine import QuantumEnhancedMemoryEngine
 
 
-class WorldClassMemoryCore:
-    def __init__(self, *args, **kwargs):
+class WorldClassMemoryCoreAdapter:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.engine = QuantumEnhancedMemoryEngine()
 
-    def store(self, memory_entry: dict) -> dict:
-        return self.engine.store(memory_entry)
+    def store(self, memory_entry: Dict[str, Any], context: Optional[Dict[str, Any]] = None) -> bool:
+        return self.engine.store(memory_entry, context)
 
-    def retrieve(self, query: str, context: dict = None) -> dict:
+    def retrieve(self, query: str, context: Dict[str, Any] | None = None) -> Dict[str, Any]:
         return self.engine.retrieve(query, context)
 
+
+@dataclass
+class Memory:
+    """Core memory data structure"""
+
+    id: str
     content: str
     timestamp: datetime
     memory_type: str = "general"  # general, goal, insight, experience, knowledge
@@ -66,7 +110,7 @@ class Goal:
 class MemoryGraphNode(QGraphicsEllipseItem):
     """Interactive memory node for graph visualization"""
 
-    def __init__(self, memory: Memory, x: float, y: float, radius: float = 20):
+    def __init__(self, memory: Memory, x: float, y: float, radius: float = 20) -> None:
         super().__init__(-radius, -radius, radius * 2, radius * 2)
         self.memory = memory
         self.radius = radius
@@ -77,9 +121,9 @@ class MemoryGraphNode(QGraphicsEllipseItem):
         self.update_appearance()
 
         # Make interactive
-        self.setFlag(QGraphicsItem.ItemIsMovable, True)
-        self.setFlag(QGraphicsItem.ItemIsSelectable, True)
-        self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
+        self.setFlag(QGraphicsItem.ItemIsMovable, True)  # type: ignore[attr-defined]
+        self.setFlag(QGraphicsItem.ItemIsSelectable, True)  # type: ignore[attr-defined]
+        self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)  # type: ignore[attr-defined]
 
         # Tooltip
         self.setToolTip(f"{memory.memory_type.title()}: {memory.content[:100]}...")
@@ -89,7 +133,7 @@ class MemoryGraphNode(QGraphicsEllipseItem):
         self.text_item.setPos(-50, radius + 5)
         self.text_item.setFont(QFont("Arial", 8))
 
-    def update_appearance(self):
+    def update_appearance(self) -> None:
         """Update node appearance based on memory properties"""
         # Color based on type
         type_colors = {
@@ -118,7 +162,7 @@ class MemoryGraphNode(QGraphicsEllipseItem):
         scale = 0.8 + (min(self.memory.access_count, 10) * 0.02)
         self.setScale(scale)
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: Any) -> None:
         """Handle mouse press for selection"""
         super().mousePressEvent(event)
         if self.graph_view:
@@ -133,7 +177,7 @@ class MemoryConnection(QGraphicsLineItem):
         start_node: MemoryGraphNode,
         end_node: MemoryGraphNode,
         strength: float = 0.5,
-    ):
+    ) -> None:
         super().__init__()
         self.start_node = start_node
         self.end_node = end_node
@@ -148,7 +192,7 @@ class MemoryConnection(QGraphicsLineItem):
         width = 1 + (strength * 2)
         self.setPen(QPen(color, width))
 
-    def update_line(self):
+    def update_line(self) -> None:
         """Update line position based on node positions"""
         start_pos = self.start_node.pos()
         end_pos = self.end_node.pos()
@@ -161,14 +205,14 @@ class MemoryGraphView(QGraphicsView):
     memory_selected = Signal(Memory)
     memories_connected = Signal(str, str)  # memory_id1, memory_id2
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.scene = QGraphicsScene()
-        self.setScene(self.scene)
+        self._scene = QGraphicsScene()
+        self.setScene(self._scene)
 
         # Setup view
-        self.setRenderHint(QPainter.Antialiasing)
-        self.setDragMode(QGraphicsView.RubberBandDrag)
+        self.setRenderHint(QPainter.Antialiasing)  # type: ignore[attr-defined]
+        self.setDragMode(QGraphicsView.RubberBandDrag)  # type: ignore[attr-defined]
         self.setMinimumSize(400, 300)
 
         # Memory nodes and connections
@@ -181,10 +225,10 @@ class MemoryGraphView(QGraphicsView):
         self.radius_multiplier = 100
 
         # Context menu
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)  # type: ignore[attr-defined]
         self.customContextMenuRequested.connect(self.show_context_menu)
 
-    def add_memory_node(self, memory: Memory):
+    def add_memory_node(self, memory: Memory) -> MemoryGraphNode:
         """Add a memory node to the graph"""
         # Calculate position (simple circular layout for now)
         angle = len(self.memory_nodes) * (2 * math.pi / max(len(self.memory_nodes) + 1, 8))
@@ -193,14 +237,13 @@ class MemoryGraphView(QGraphicsView):
 
         # Create node
         node = MemoryGraphNode(memory, x, y)
-        node.graph_view = self  # Set reference for signal emission
+        node.graph_view = self  # type: ignore[assignment]  # Set reference for signal emission
         self.memory_nodes[memory.id] = node
-        scene = self.scene()
-        scene.addItem(node)
+        self._scene.addItem(node)
 
         return node
 
-    def add_connection(self, memory_id1: str, memory_id2: str, strength: float = 0.5):
+    def add_connection(self, memory_id1: str, memory_id2: str, strength: float = 0.5) -> None:
         """Add connection between memory nodes"""
         if memory_id1 in self.memory_nodes and memory_id2 in self.memory_nodes:
             node1 = self.memory_nodes[memory_id1]
@@ -208,11 +251,11 @@ class MemoryGraphView(QGraphicsView):
 
             connection = MemoryConnection(node1, node2, strength)
             self.connections.append(connection)
-            self.scene.addItem(connection)
+            self._scene.addItem(connection)
 
-    def cluster_layout(self, clusters: List[MemoryCluster]):
+    def cluster_layout(self, clusters: List[MemoryCluster]) -> None:
         """Arrange nodes in clusters"""
-        self.scene.clear()
+        self._scene.clear()
         self.memory_nodes.clear()
         self.connections.clear()
 
@@ -237,19 +280,19 @@ class MemoryGraphView(QGraphicsView):
             cluster_bg.setBrush(QBrush(QColor(cluster.color).lighter(150)))
             cluster_bg.setPen(QPen(QColor(cluster.color), 2))
             cluster_bg.setOpacity(0.3)
-            self.scene.addItem(cluster_bg)
+            self._scene.addItem(cluster_bg)
 
             # Add cluster label
             label = QGraphicsTextItem(cluster.name)
             label.setPos(cx - 30, cy - cluster_radius - 20)
-            label.setFont(QFont("Arial", 10, QFont.Bold))
-            self.scene.addItem(label)
+            label.setFont(QFont("Arial", 10, QFont.Bold))  # type: ignore[attr-defined]
+            self._scene.addItem(label)
 
-    def on_node_selected(self, memory: Memory):
+    def on_node_selected(self, memory: Memory) -> None:
         """Handle node selection"""
         self.memory_selected.emit(memory)
 
-    def show_context_menu(self, position):
+    def show_context_menu(self, position: QPoint) -> None:
         """Show context menu for graph operations"""
         menu = QMenu(self)
 
@@ -262,7 +305,7 @@ class MemoryGraphView(QGraphicsView):
         layout_action.triggered.connect(self.reorganize_layout)
         menu.addAction(layout_action)
 
-        menu.exec(self.mapToGlobal(position))
+        menu.exec(self.mapToGlobal(position))  # nosec B102: Qt GUI dialog/menu execution
 
     def auto_cluster(self):
         """Auto-cluster memories based on similarity"""
@@ -297,7 +340,7 @@ class MemorySearchWidget(QWidget):
     search_performed = Signal(str, dict)  # query, filters
     memory_selected = Signal(Memory)
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.init_ui()
 
@@ -386,7 +429,7 @@ class MemorySearchWidget(QWidget):
 
         self.search_performed.emit(query, filters)
 
-    def update_results(self, memories: List[Memory]):
+    def update_results(self, memories: List[Memory]) -> None:
         """Update search results"""
         self.results_list.clear()
 
@@ -435,7 +478,7 @@ class MemoryInjectionDialog(QDialog):
 
     memory_created = Signal(Memory)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.setWindowTitle("💉 Inject New Memory")
         self.setModal(True)
@@ -546,7 +589,7 @@ class MemoryInjectionDialog(QDialog):
 class WorldClassMemoryCore(QWidget):
     """World-class interactive memory management system"""
 
-    def __init__(self, memory_manager=None):
+    def __init__(self, memory_manager=None) -> None:
         super().__init__()
         self.memory_manager = memory_manager
         self.memories = {}  # memory_id -> Memory
@@ -785,7 +828,7 @@ class WorldClassMemoryCore(QWidget):
 
         self.setLayout(layout)
 
-    def setup_graph_tab(self):
+    def setup_graph_tab(self) -> None:
         """Setup memory graph visualization tab"""
         graph_widget = QWidget()
         layout = QVBoxLayout(graph_widget)
@@ -834,7 +877,7 @@ class WorldClassMemoryCore(QWidget):
         # Populate graph
         self.populate_memory_graph()
 
-    def setup_search_tab(self):
+    def setup_search_tab(self) -> None:
         """Setup memory search tab"""
         search_widget = QWidget()
         layout = QVBoxLayout(search_widget)
@@ -845,7 +888,7 @@ class WorldClassMemoryCore(QWidget):
 
         self.tabs.addTab(search_widget, "🔍 Memory Search")
 
-    def setup_analytics_tab(self):
+    def setup_analytics_tab(self) -> None:
         """Setup memory analytics tab"""
         analytics_widget = QWidget()
         layout = QVBoxLayout(analytics_widget)
@@ -874,7 +917,7 @@ class WorldClassMemoryCore(QWidget):
 
         self.tabs.addTab(analytics_widget, "📊 Analytics")
 
-    def setup_management_tab(self):
+    def setup_management_tab(self) -> None:
         """Setup memory management tab"""
         management_widget = QWidget()
         layout = QVBoxLayout(management_widget)
@@ -908,7 +951,7 @@ class WorldClassMemoryCore(QWidget):
 
         self.tabs.addTab(management_widget, "⚙️ Management")
 
-    def setup_connections(self):
+    def setup_connections(self) -> None:
         """Setup signal connections"""
         # Memory graph connections
         self.memory_graph.memory_selected.connect(self.on_memory_selected)
@@ -917,7 +960,7 @@ class WorldClassMemoryCore(QWidget):
         self.search_widget.search_performed.connect(self.perform_memory_search)
         self.search_widget.memory_selected.connect(self.on_memory_selected)
 
-    def initialize_sample_data(self):
+    def initialize_sample_data(self) -> None:
         """Initialize with sample memory data"""
         # Sample memories
         sample_memories = [
@@ -1022,7 +1065,7 @@ class WorldClassMemoryCore(QWidget):
     def populate_memory_graph(self):
         """Populate the memory graph with current memories"""
         # Clear existing graph
-        self.memory_graph.scene.clear()
+        self.memory_graph._scene.clear()
         self.memory_graph.memory_nodes.clear()
         self.memory_graph.connections.clear()
 
@@ -1074,7 +1117,7 @@ class WorldClassMemoryCore(QWidget):
             item.setData(Qt.UserRole, cluster)
             self.clusters_list.addItem(item)
 
-    def update_analytics(self):
+    def update_analytics(self) -> None:
         """Update memory analytics display"""
         total_memories = len(self.memories)
 
@@ -1112,7 +1155,7 @@ Recent Activity:
 
         self.analytics_text.setPlainText(analytics_text)
 
-    def update_timeline(self):
+    def update_timeline(self) -> None:
         """Update memory timeline"""
         sorted_memories = sorted(self.memories.values(), key=lambda m: m.timestamp, reverse=True)
 
@@ -1134,7 +1177,7 @@ Recent Activity:
     def inject_memory(self):
         """Open memory injection dialog"""
         dialog = MemoryInjectionDialog(self)
-        if dialog.exec() == QDialog.Accepted:
+        if dialog.exec() == QDialog.Accepted:  # nosec B102: Qt GUI dialog/menu execution
             memory_data = dialog.get_memory_data()
             self.create_memory_from_data(memory_data)
 
@@ -1500,6 +1543,7 @@ Connected Memories: {len(memory.connections)}
 
 # Demo application
 if __name__ == "__main__":
+    # Standard library imports
     import sys
 
     app = QApplication(sys.argv)
@@ -1510,4 +1554,4 @@ if __name__ == "__main__":
     memory_core.resize(1200, 800)
     memory_core.show()
 
-    sys.exit(app.exec())
+    sys.exit(app.exec())  # nosec B102: Qt application execution

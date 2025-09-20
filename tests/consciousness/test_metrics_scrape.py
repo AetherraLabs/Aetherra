@@ -1,9 +1,12 @@
+# Standard library imports
 import os
 import time
 import urllib.request
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.consciousness.metrics_exporter import (
     initialize_exporter,
     update_workspace_queue,

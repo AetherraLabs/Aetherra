@@ -15,10 +15,12 @@ This script shows:
 4. Plugin metadata properly structured
 """
 
+# Standard library imports
 import asyncio
 import json
 from pathlib import Path
 
+# Aetherra imports
 from aetherra_plugin_discovery import AetherraPluginDiscovery
 
 

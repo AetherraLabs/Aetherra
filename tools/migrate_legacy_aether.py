@@ -31,23 +31,30 @@ Exit codes:
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import difflib
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import List, Tuple
+from typing import Any
 
-TRANSFORMS = []  # populated after definitions
+# Each transform takes the file text and returns (updated_text, changes)
+TRANSFORMS: list[
+    Callable[[str], tuple[str, list[str]]]
+] = []  # populated after definitions
 
 
-def t(fn):
+def t(
+    fn: Callable[[str], tuple[str, list[str]]],
+) -> Callable[[str], tuple[str, list[str]]]:
     TRANSFORMS.append(fn)
     return fn
 
 
 @t
-def transform_intent(goal: str) -> Tuple[str, List[str]]:
-    changed: List[str] = []
+def transform_intent(goal: str) -> tuple[str, list[str]]:
+    changed: list[str] = []
     lines = goal.splitlines()
     out = []
     for line in lines:
@@ -61,8 +68,8 @@ def transform_intent(goal: str) -> Tuple[str, List[str]]:
 
 
 @t
-def normalize_goal_quotes(text: str) -> Tuple[str, List[str]]:
-    changed: List[str] = []
+def normalize_goal_quotes(text: str) -> tuple[str, list[str]]:
+    changed: list[str] = []
     lines = text.splitlines()
     out = []
     for line in lines:
@@ -73,7 +80,9 @@ def normalize_goal_quotes(text: str) -> Tuple[str, List[str]]:
                 and not (rest.startswith('"') and rest.endswith('"'))
                 and not (rest.startswith("'") and rest.endswith("'"))
             ):
-                new_line = f'goal: "{rest.strip("\"'")}"'
+                # Avoid backslash escapes inside f-string expressions (Py311-compatible)
+                rest_stripped = rest.strip("\"'")
+                new_line = f'goal: "{rest_stripped}"'
                 if new_line != line:
                     changed.append(
                         f"quote-normalize: {line.strip()} => {new_line.strip()}"
@@ -84,8 +93,8 @@ def normalize_goal_quotes(text: str) -> Tuple[str, List[str]]:
 
 
 @t
-def collapse_blank_lines(text: str) -> Tuple[str, List[str]]:
-    changed: List[str] = []
+def collapse_blank_lines(text: str) -> tuple[str, list[str]]:
+    changed: list[str] = []
     lines = text.splitlines()
     out = []
     blank_run = 0
@@ -103,8 +112,8 @@ def collapse_blank_lines(text: str) -> Tuple[str, List[str]]:
     return result, changed
 
 
-def apply_transforms(original: str) -> Tuple[str, List[str]]:
-    cumulative_changes: List[str] = []
+def apply_transforms(original: str) -> tuple[str, list[str]]:
+    cumulative_changes: list[str] = []
     current = original
     for fn in TRANSFORMS:
         current, changes = fn(current)
@@ -112,7 +121,7 @@ def apply_transforms(original: str) -> Tuple[str, List[str]]:
     return current, cumulative_changes
 
 
-def migrate_file(path: Path, dry_run: bool) -> Tuple[bool, List[str], str]:
+def migrate_file(path: Path, dry_run: bool) -> tuple[bool, list[str], str]:
     try:
         original = path.read_text(encoding="utf-8", errors="ignore")
     except Exception as e:
@@ -134,17 +143,17 @@ def migrate_file(path: Path, dry_run: bool) -> Tuple[bool, List[str], str]:
     return True, changes, diff
 
 
-def enumerate_targets(target: Path) -> List[Path]:
+def enumerate_targets(target: Path) -> list[Path]:
     if target.is_file() and target.suffix == ".aether":
         return [target]
-    files: List[Path] = []
+    files: list[Path] = []
     for p in target.rglob("*.aether"):
         if p.is_file():
             files.append(p)
     return sorted(files)
 
 
-def write_report(entries, output: Path):
+def write_report(entries: list[dict[str, Any]], output: Path) -> None:
     lines = ["# .aether Migration Report", ""]
     for info in entries:
         path = info["path"]
@@ -161,7 +170,7 @@ def write_report(entries, output: Path):
     output.write_text("\n".join(lines), encoding="utf-8")
 
 
-def main():
+def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("target", help="File or directory containing .aether workflows")
     ap.add_argument("--dry-run", action="store_true", help="Show diffs only; no writes")

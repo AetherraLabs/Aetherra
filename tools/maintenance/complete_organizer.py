@@ -8,6 +8,7 @@
 Addresses ALL remaining organizational issues and fixes imports systematically.
 """
 
+# Standard library imports
 import ast
 import logging
 import os
@@ -387,6 +388,7 @@ class ComprehensiveAetherraOrganizer:
 
 def main():
     """Main entry point"""
+    # Standard library imports
     import argparse
 
     parser = argparse.ArgumentParser(

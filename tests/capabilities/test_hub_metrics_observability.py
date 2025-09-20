@@ -1,18 +1,22 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import asyncio
 import os
 import re
 import time
 
+# Third party imports
 import pytest
 import requests
 
+# Aetherra imports
 from aetherra_hub.compat import start_hub_server
 
 HAS_FLASK = True
 try:
+    # Third party imports
     import flask  # noqa: F401
 except Exception:
     HAS_FLASK = False
@@ -181,6 +185,7 @@ def test_metrics_chunks_total_increments_with_chunking_stream():
             return {"response": "ok"}
 
     async def _register(engine):
+        # Aetherra imports
         from aetherra_service_registry import get_service_registry
 
         reg = await get_service_registry()
@@ -242,6 +247,7 @@ def test_metrics_breaker_open_increments_on_timeout():
             raise Exception("timeout: simulated upstream")
 
     async def _register(engine):
+        # Aetherra imports
         from aetherra_service_registry import get_service_registry
 
         reg = await get_service_registry()

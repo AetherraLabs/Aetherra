@@ -16,6 +16,7 @@ Observer Effects Simulator
 Mutates memory when accessed, modeling quantum observer interference.
 """
 
+# Standard library imports
 import time
 from random import random
 

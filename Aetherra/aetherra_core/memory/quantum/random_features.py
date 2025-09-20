@@ -9,10 +9,12 @@ Provides a deterministic Gaussian random projection for simple RFF-like maps.
 
 from __future__ import annotations
 
+# Standard library imports
 import math
 import random
 from typing import List, Optional, Sequence
 
+# Local imports
 from .qrng_service import qrng_int
 
 

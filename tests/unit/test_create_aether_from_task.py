@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Third party imports
 import pytest
 
 
@@ -22,12 +23,14 @@ async def test_create_aether_from_task_custom_template(monkeypatch, tmp_path):
     monkeypatch.setenv("AETHERRA_REQUIRE_STRICT", "0")
 
     # Act: run generator main with --out
+    # Aetherra imports
     from tools import create_aether_from_task as gen
 
     monkeypatch.chdir(tmp_path)
     # emulate CLI args
     monkeypatch.setenv("PYTHONUNBUFFERED", "1")
     # Call main via function to avoid subprocess
+    # Standard library imports
     import sys
 
     argv_bak = sys.argv[:]

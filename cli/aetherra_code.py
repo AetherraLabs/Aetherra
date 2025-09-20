@@ -15,9 +15,11 @@ Autonomy mode via env AETHERRA_MODE (assist|co-drive|autopilot).
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 from pathlib import Path
 
+# Aetherra imports
 from aetherra_coding import CodeOrchestrator
 
 
@@ -96,6 +98,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "generate":
         pr = orch.generate(step_index=args.step)
         if args.json:
+            # Standard library imports
             import json as _json
 
             print(
@@ -124,6 +127,7 @@ def main(argv: list[str] | None = None) -> int:
             diff_text, dry_run=args.dry_run, colorize=not args.no_color
         )
         if args.json:
+            # Standard library imports
             import json as _json
 
             print(
@@ -155,6 +159,7 @@ def main(argv: list[str] | None = None) -> int:
             run_format_lint=not args.no_format,
         )
         if args.json:
+            # Standard library imports
             import json as _json
             import os as _os
 
@@ -189,6 +194,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "revert":
         pr = orch.revert(token=args.token)
         if args.json:
+            # Standard library imports
             import json as _json
 
             print(
@@ -210,6 +216,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.plugin_cmd == "scaffold":
             pr = orch.scaffold_plugin(name=args.name)
             if args.json:
+                # Standard library imports
                 import json as _json
 
                 print(
@@ -230,10 +237,12 @@ def main(argv: list[str] | None = None) -> int:
                     print(d)
             return 0 if pr.applied else 1
         elif args.plugin_cmd == "list":
+            # Aetherra imports
             from Aetherra.plugins.core import plugin_registry as _preg
 
             data = _preg.discover_plugins()
             if args.json:
+                # Standard library imports
                 import json as _json
 
                 print(_json.dumps(data))

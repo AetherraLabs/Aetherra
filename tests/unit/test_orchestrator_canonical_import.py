@@ -1,3 +1,4 @@
+# Standard library imports
 import importlib
 import sys
 import warnings
@@ -15,9 +16,9 @@ def test_canonical_import_only():
         sh = importlib.import_module(
             "Aetherra.aetherra_core.orchestration.agent_orchestrator"
         )
-        assert any(issubclass(x.category, DeprecationWarning) for x in w), (
-            "no DeprecationWarning emitted"
-        )
+        assert any(
+            issubclass(x.category, DeprecationWarning) for x in w
+        ), "no DeprecationWarning emitted"
         assert hasattr(sh, "AgentOrchestrator")
         assert sh.AgentOrchestrator is mod.AgentOrchestrator
         assert sh.Task is mod.Task

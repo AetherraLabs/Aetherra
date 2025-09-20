@@ -15,6 +15,7 @@ Exit code is 0 even on findings to remain CI-friendly unless --strict is set.
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import pathlib
 import sys

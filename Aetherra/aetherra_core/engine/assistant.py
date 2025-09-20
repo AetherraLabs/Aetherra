@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# pyright: reportMissingImports=false
+
 """
 🎙️ LYRIXA AI ASSISTANT - FULLY REBUILT
 ======================================
@@ -10,22 +12,30 @@ Complete rebuild of Lyrixa with ALL missing features restored and enhanced.
 This is the main orchestrator that brings together all advanced capabilities.
 """
 
+# Standard library imports
 import asyncio
 import os
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from .core.advanced_plugins import LyrixaAdvancedPluginManager
+# Local imports
+from .core.advanced_plugins import LyrixaAdvancedPluginManager  # type: ignore[reportMissingImports]
+from ..agents.goals import LyrixaGoalSystem
 
 # Import all enhanced systems
-from .core.aether_interpreter import AetherInterpreter
-from .core.agents import AgentOrchestrator
-from .core.conversation import LyrixaConversationalEngine, PersonalityType
-from .core.enhanced_memory import LyrixaEnhancedMemorySystem
-from .core.enhanced_self_evaluation_agent import EnhancedSelfEvaluationAgent
+from .core.aether_interpreter import AetherInterpreter  # type: ignore[reportMissingImports]
+from .core.agents import AgentOrchestrator  # type: ignore[reportMissingImports]
+from .core.conversation import (  # type: ignore[reportMissingImports]
+    LyrixaConversationalEngine,
+    PersonalityType,
+)
+from .core.enhanced_memory import LyrixaEnhancedMemorySystem  # type: ignore[reportMissingImports]
+from .core.enhanced_self_evaluation_agent import (  # type: ignore[reportMissingImports]
+    EnhancedSelfEvaluationAgent,
+)
 
 # Import autonomous self-improvement systems
-from .core.self_improvement_scheduler import SelfImprovementScheduler
+from .core.self_improvement_scheduler import SelfImprovementScheduler  # type: ignore[reportMissingImports]
 
 # Aetherra integration will be imported when needed to avoid circular imports
 
@@ -109,6 +119,7 @@ class LyrixaAI:
         self.memory = LyrixaEnhancedMemorySystem(memory_db_path=memory_db_path)
         # Test memory system with proper async handling
         try:
+            # Standard library imports
             import asyncio
 
             # Check if we're in an async context already
@@ -203,6 +214,7 @@ class LyrixaAI:
         # 8. Aetherra Integration for true autonomous capabilities
         self.aetherra_integration = None
         try:
+            # Third party imports
             from simplified_lyrixa_aetherra_integration import (
                 SimplifiedLyrixaAetherraIntegration,
             )

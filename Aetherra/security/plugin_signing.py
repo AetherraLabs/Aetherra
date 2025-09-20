@@ -13,6 +13,7 @@ Never fail closed in dev; callers can enforce strict mode via AETHERRA_SIGNING_S
 
 from __future__ import annotations
 
+# Standard library imports
 import base64
 import hashlib
 import json
@@ -29,6 +30,7 @@ TRANSPARENCY_LOG = APP_DIR / "signing_log.jsonl"
 
 try:
     # PyNaCl optional (fast path)
+    # Third party imports
     from nacl.exceptions import BadSignatureError  # type: ignore
     from nacl.signing import SigningKey, VerifyKey  # type: ignore
 
@@ -42,6 +44,7 @@ except Exception:
 # Secondary fallback: cryptography's Ed25519
 CRYPTO = True
 try:
+    # Third party imports
     from cryptography.hazmat.primitives.asymmetric.ed25519 import (  # type: ignore
         Ed25519PrivateKey,
         Ed25519PublicKey,
@@ -112,9 +115,10 @@ def generate_keypair(seed: bytes | None = None) -> tuple[str, str]:
     if NACL:
         sk = SigningKey(seed) if seed else SigningKey.generate()  # type: ignore[call-arg,attr-defined]
         pk = sk.verify_key
-        return base64.b64encode(bytes(pk)).decode(), base64.b64encode(
-            bytes(sk)
-        ).decode()
+        return (
+            base64.b64encode(bytes(pk)).decode(),
+            base64.b64encode(bytes(sk)).decode(),
+        )
     if CRYPTO:
         # cryptography doesn't support seeding directly; ignore seed in fallback
         sk = Ed25519PrivateKey.generate()

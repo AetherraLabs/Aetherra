@@ -20,6 +20,7 @@ This helper is additive; integrate into CI or quality gates as needed.
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import os
 import re
@@ -36,20 +37,50 @@ PATTERNS = {
     "exec": re.compile(r"\bexec\s*\("),
     "subprocess": re.compile(r"\bsubprocess\."),
     "requests": re.compile(r"\brequests\."),
-    "bare_except_pass": re.compile(r"except:\s*pass"),
-    "broad_except": re.compile(r"except\s+Exception"),
+    # Tightened to match code-only bare except patterns at start of a statement
+    "bare_except_pass": re.compile(r"^\s*except\s*:\s*pass\b"),
+    # Tightened to match code-only broad except patterns at start of a statement
+    "broad_except": re.compile(r"^\s*except\s+Exception\b"),
 }
 
 IGNORE_DIRS = {"tests", "build", "dist", ".venv", "archive", "backup"}
 
 
-def scan_file(path: Path):
+def scan_file(path: Path) -> None:
+    """Scan a single file for simple risky patterns.
+
+    Heuristics:
+    - Skip comments and docstrings/triple-quoted blocks to avoid false positives
+    - Tighten except-patterns to only match at statement start
+    """
     try:
-        text = path.read_text(encoding="utf-8", errors="ignore").splitlines()
+        lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
     except Exception:
         return
-    for lineno, line in enumerate(text, 1):
+
+    in_triple: str | None = None  # Track triple-quoted blocks (""" or ''')
+    for lineno, line in enumerate(lines, 1):
         stripped = line.strip()
+
+        # Skip pure comments
+        if stripped.startswith("#"):
+            continue
+
+        # Track and skip triple-quoted string blocks (docstrings)
+        if in_triple is not None:
+            # Toggle off when delimiter count is odd (start/end)
+            if in_triple in line and line.count(in_triple) % 2 == 1:
+                in_triple = None
+            continue
+        if '"""' in line or "'''" in line:
+            # If a triple quote appears with an odd count, enter docstring mode
+            if line.count('"""') % 2 == 1:
+                in_triple = '"""'
+                continue
+            if line.count("'''") % 2 == 1:
+                in_triple = "'''"
+                continue
+
         for key, pat in PATTERNS.items():
             if pat.search(line):
                 # Heuristics to downgrade/ignore
@@ -61,13 +92,10 @@ def scan_file(path: Path):
                     "net_policy" in stripped or "allowlist" in stripped
                 ):
                     continue
-                if key == "broad_except":
-                    if (
-                        "logger." in stripped
-                        or "raise " in stripped
-                        or "pass" in stripped
-                    ):
-                        continue
+                if key == "broad_except" and (
+                    "logger." in stripped or "raise " in stripped or "pass" in stripped
+                ):
+                    continue
                 results.append(
                     {
                         "file": str(path.relative_to(ROOT)),

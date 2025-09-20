@@ -7,31 +7,30 @@
 Test script to verify Unicode workflow fixes
 """
 
+# Standard library imports
 import os
 import subprocess
 import sys
 from pathlib import Path
 
+
 def test_unicode_fix():
     """Test that Unicode issues are resolved"""
     print("🧪 Testing Unicode Workflow Fixes")
     print("=" * 40)
-    
+
     # Set up environment like Windows would have issues
     test_env = os.environ.copy()
-    test_env.update({
-        'PYTHONIOENCODING': 'utf-8',
-        'PYTHONUTF8': '1'
-    })
-    
+    test_env.update({"PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1"})
+
     print("✅ Environment configured for Unicode support")
-    
+
     # Test critical files
     critical_tests = [
-        ('aether.py', ['--help']),
-        ('aetherra_os.py', ['--help']),
+        ("aether.py", ["--help"]),
+        ("aetherra_os.py", ["--help"]),
     ]
-    
+
     for script, args in critical_tests:
         if Path(script).exists():
             try:
@@ -41,9 +40,9 @@ def test_unicode_fix():
                     capture_output=True,
                     text=True,
                     timeout=10,
-                    env=test_env
+                    env=test_env,
                 )
-                
+
                 if result.returncode == 0:
                     print(f"  ✅ {script}: PASSED")
                 else:
@@ -51,15 +50,16 @@ def test_unicode_fix():
                     if result.stderr:
                         print(f"     Error: {result.stderr[:200]}")
                     return False
-                    
+
             except Exception as e:
                 print(f"  ❌ {script}: ERROR - {e}")
                 return False
         else:
             print(f"  ⚠️ {script}: File not found")
-    
+
     print("\n✅ All Unicode workflow fixes verified successfully!")
     return True
+
 
 if __name__ == "__main__":
     success = test_unicode_fix()

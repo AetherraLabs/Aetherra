@@ -6,10 +6,12 @@ Component Migrator
 Utilities for safely migrating existing components to clean architecture.
 """
 
+# Standard library imports
 import json
 import logging
 import shutil
 from pathlib import Path
+from typing import List
 
 logger = logging.getLogger(__name__)
 

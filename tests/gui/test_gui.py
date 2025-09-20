@@ -5,8 +5,10 @@
 """
 Simple GUI test to verify PySide6 works
 """
+# Standard library imports
 import sys
 
+# Third party imports
 from PySide6.QtWidgets import QApplication, QLabel, QMainWindow, QVBoxLayout, QWidget
 
 
@@ -29,7 +31,7 @@ def main():
     app = QApplication(sys.argv)
     window = TestWindow()
     window.show()
-    return app.exec()
+    return app.exec()  # nosec B102: Qt application execution
 
 
 if __name__ == "__main__":

@@ -18,11 +18,11 @@ Run this script after cloning/forking the repository to resolve
 import issues.
 """
 
+# Standard library imports
 import logging
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict
 
 # Setup logging
 logging.basicConfig(
@@ -34,11 +34,11 @@ logger = logging.getLogger(__name__)
 class AetherraImportFixer:
     """Utility class to fix import issues in Aetherra repository."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.project_root = Path(__file__).parent
         self.aetherra_dir = self.project_root / "Aetherra"
-        self.issues_found = []
-        self.fixes_applied = []
+        self.issues_found: list[str] = []
+        self.fixes_applied: list[str] = []
 
     def check_python_version(self) -> bool:
         """Check if Python version is compatible."""
@@ -59,11 +59,11 @@ class AetherraImportFixer:
         )
         return True
 
-    def find_missing_init_files(self) -> List[Path]:
+    def find_missing_init_files(self) -> list[Path]:
         """Find directories that need __init__.py files."""
         logger.info("🔍 Scanning for missing __init__.py files...")
 
-        missing_init_dirs = []
+        missing_init_dirs: list[Path] = []
 
         # Key directories that should be Python packages
         important_dirs = [
@@ -143,11 +143,11 @@ __all__ = [
             logger.error(f"[ERROR] Failed to create __init__.py in {directory}: {e}")
             return False
 
-    def check_dependencies(self) -> Dict[str, bool]:
+    def check_dependencies(self) -> dict[str, bool]:
         """Check if required dependencies are installed."""
         logger.info("[DISC] Checking dependencies...")
 
-        dependencies_status = {}
+        dependencies_status: dict[str, bool] = {}
 
         # Core dependencies that are essential for basic functionality
         core_deps = [
@@ -276,7 +276,7 @@ __all__ = [
 
         return True  # Return True as long as we tried - core deps are sufficient
 
-    def create_minimal_requirements(self):
+    def create_minimal_requirements(self) -> None:
         """Create a minimal requirements.txt file."""
         minimal_requirements = """# Minimal Aetherra requirements for development
 flask>=2.3.0
@@ -294,11 +294,11 @@ rich>=13.4.0
 
         logger.info("📝 Created minimal requirements.txt")
 
-    def test_imports(self) -> Dict[str, bool]:
+    def test_imports(self) -> dict[str, bool]:
         """Test common import patterns."""
         logger.info("🧪 Testing import patterns...")
 
-        import_tests = {}
+        import_tests: dict[str, bool] = {}
 
         # Test imports that commonly fail
         test_imports = [
@@ -313,7 +313,11 @@ rich>=13.4.0
 
         for name, import_statement in test_imports:
             try:
-                exec(import_statement)
+                # Use compile + exec for safer dynamic import testing
+                compiled_code = compile(
+                    import_statement, f"<import_test:{name}>", "exec"
+                )
+                exec(compiled_code)  # nosec B102: Intentional dynamic import test in tooling
                 import_tests[name] = True
                 logger.info(f"[OK] {name} import - Success")
             except Exception as e:
@@ -364,8 +368,8 @@ rich>=13.4.0
         return success
 
     def generate_report(
-        self, deps_status: Dict[str, bool], import_results: Dict[str, bool]
-    ):
+        self, deps_status: dict[str, bool], import_results: dict[str, bool]
+    ) -> None:
         """Generate a summary report."""
         logger.info("📊 Generating import fix report...")
 
@@ -420,7 +424,7 @@ Repository: https://github.com/AetherraLabs/Aetherra
         logger.info("📄 Report completed")
 
 
-def main():
+def main() -> int:
     """Main function to run the import fixer."""
     try:
         fixer = AetherraImportFixer()

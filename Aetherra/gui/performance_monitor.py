@@ -19,12 +19,14 @@ Key Features:
 
 from __future__ import annotations
 
+# Standard library imports
 import logging
 import os
 import time
 from dataclasses import dataclass, field
 from typing import Any
 
+# Third party imports
 import psutil
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
 
@@ -131,6 +133,7 @@ class PerformanceMonitor(QObject):
     def _get_widget_count(self) -> int:
         """Stub: Integrate with QApplication for widget count."""
         try:
+            # Third party imports
             from PySide6.QtWidgets import QApplication
 
             app = QApplication.instance()

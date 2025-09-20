@@ -10,6 +10,7 @@ Simple standalone launcher for the Enhanced Aetherra Neural OS Dashboard.
 This creates the complete unified interface with all requested features.
 """
 
+# Standard library imports
 import sys
 from pathlib import Path
 
@@ -36,6 +37,7 @@ def main():
 
     # Check for required dependencies
     try:
+        # Third party imports
         from PySide6.QtCore import Qt  # noqa: F401 (optional runtime import)
 
         # QApplication imported to confirm availability
@@ -53,6 +55,7 @@ def main():
         current_dir = Path(__file__).parent
         sys.path.insert(0, str(current_dir))
 
+        # Third party imports
         from aetherra_os_gui import main as monitor_main
 
         print("🧠 Starting Aetherra OS Monitor GUI...")
@@ -63,6 +66,7 @@ def main():
         return 1
     except Exception as e:
         print(f"❌ Error launching Aetherra OS: {e}")
+        # Standard library imports
         import traceback
 
         traceback.print_exc()

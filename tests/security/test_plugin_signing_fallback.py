@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import base64
 from pathlib import Path
 
+# Third party imports
 import pytest
 
 
@@ -12,6 +14,7 @@ def test_ed25519_cryptography_fallback_sign_and_verify(tmp_path: Path):
     Force PyNaCl path off and exercise the cryptography-backed Ed25519 fallback.
     Verifies: keypair generation, signing, and verification succeed; optional code_hash check passes.
     """
+    # Aetherra imports
     import Aetherra.security.plugin_signing as ps
 
     # Skip if cryptography backend is unavailable in the environment

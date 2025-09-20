@@ -20,6 +20,7 @@ Key Features:
 
 from __future__ import annotations
 
+# Standard library imports
 import hashlib
 import json
 import logging
@@ -31,6 +32,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+# Third party imports
 from PySide6.QtCore import QObject, QThread, QTimer, Signal, Slot
 
 logger = logging.getLogger(__name__)
@@ -520,6 +522,7 @@ class PluginLifecycleManager(QObject):
 
     def _get_current_time(self) -> float:
         """Get current timestamp."""
+        # Standard library imports
         import time
 
         return time.time()

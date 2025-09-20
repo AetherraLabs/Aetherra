@@ -16,6 +16,7 @@ Features:
 - Success tracking for curiosity-driven learning
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -26,6 +27,7 @@ from typing import Any, Dict, List
 
 # Try to import memory components with fallbacks
 try:
+    # Local imports
     from ..memory.fractal_mesh.base import FractalMesh
     from ..memory.fractal_mesh.concepts.concept_clusters import ConceptClusterManager
     from ..memory.fractal_mesh.timelines.reflective_timeline_engine import (
@@ -35,6 +37,7 @@ try:
 except ImportError:
     # Use quantum memory system instead of mock implementations
     try:
+        # Aetherra imports
         from Aetherra.lyrixa.memory.quantum_memory_integration import (
             QuantumEnhancedMemoryEngine,
             QuantumMemoryLayer,
@@ -56,6 +59,7 @@ except ImportError:
     except ImportError:
         # Try quantum memory system instead
         try:
+            # Aetherra imports
             from Aetherra.lyrixa.memory.quantum_memory_integration import (
                 QuantumMemorySystem,
             )

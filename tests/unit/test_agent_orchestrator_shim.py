@@ -7,23 +7,21 @@ canonical implementation under aetherra_core.agents.
 
 from __future__ import annotations
 
+# Standard library imports
 import warnings
 
 
 def test_legacy_orchestration_import_emits_warning_and_forwards_symbols():
     # Import canonical first
+    # Aetherra imports
+    from Aetherra.aetherra_core.agents.agent_orchestrator import Agent as CanonicalAgent
     from Aetherra.aetherra_core.agents.agent_orchestrator import (
-        Agent as CanonicalAgent,
-    )
-    from Aetherra.aetherra_core.agents.agent_orchestrator import (  # type: ignore
-        AgentOrchestrator as CanonicalOrchestrator,
+        AgentOrchestrator as CanonicalOrchestrator,  # type: ignore
     )
     from Aetherra.aetherra_core.agents.agent_orchestrator import (
         AgentStatus as CanonicalAgentStatus,
     )
-    from Aetherra.aetherra_core.agents.agent_orchestrator import (
-        Task as CanonicalTask,
-    )
+    from Aetherra.aetherra_core.agents.agent_orchestrator import Task as CanonicalTask
     from Aetherra.aetherra_core.agents.agent_orchestrator import (
         TaskPriority as CanonicalTaskPriority,
     )
@@ -33,6 +31,7 @@ def test_legacy_orchestration_import_emits_warning_and_forwards_symbols():
 
     with warnings.catch_warnings(record=True) as w:  # type: ignore
         warnings.simplefilter("always")
+        # Aetherra imports
         from Aetherra.aetherra_core.orchestration.agent_orchestrator import (  # type: ignore  # noqa: E501
             Agent,
             AgentOrchestrator,
@@ -44,9 +43,9 @@ def test_legacy_orchestration_import_emits_warning_and_forwards_symbols():
         )
 
     # Must have at least one DeprecationWarning captured
-    assert any(isinstance(x.message, DeprecationWarning) for x in w), (
-        "Expected DeprecationWarning when importing deprecated orchestrator shim"
-    )
+    assert any(
+        isinstance(x.message, DeprecationWarning) for x in w
+    ), "Expected DeprecationWarning when importing deprecated orchestrator shim"
 
     # Identity checks: forwarded symbols should be exactly the same objects
     assert AgentOrchestrator is CanonicalOrchestrator

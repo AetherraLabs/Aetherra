@@ -15,6 +15,7 @@ Provides high-level assistant capabilities including:
 - Multi-modal interaction
 """
 
+# Standard library imports
 import logging
 import sys
 from datetime import datetime
@@ -31,6 +32,7 @@ logger = logging.getLogger(__name__)
 
 # Import Lyrixa core components
 try:
+    # Local imports
     from .lyrixa import LyrixaCore
     from .lyrixa_agent_integration import LyrixaAgentInterface
 

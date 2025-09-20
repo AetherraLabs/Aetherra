@@ -15,6 +15,7 @@ Features:
 - Email search and indexing capabilities
 """
 
+# Standard library imports
 import asyncio
 import base64
 import email
@@ -38,6 +39,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 try:
+    # Third party imports
     import aiofiles
     import aiosmtplib
 
@@ -139,7 +141,8 @@ class EmailDatabase:
             cursor = conn.cursor()
 
             # Accounts table
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS accounts (
                     id TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
@@ -155,10 +158,12 @@ class EmailDatabase:
                     last_sync TIMESTAMP,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
+            """
+            )
 
             # Messages table
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS messages (
                     uid TEXT,
                     message_id TEXT,
@@ -181,10 +186,12 @@ class EmailDatabase:
                     PRIMARY KEY (uid, account_id),
                     FOREIGN KEY (account_id) REFERENCES accounts (id)
                 )
-            """)
+            """
+            )
 
             # Filters table
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS filters (
                     id TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
@@ -194,10 +201,12 @@ class EmailDatabase:
                     priority INTEGER DEFAULT 0,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
+            """
+            )
 
             # Templates table
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS templates (
                     id TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
@@ -208,10 +217,12 @@ class EmailDatabase:
                     category TEXT DEFAULT 'general',
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
+            """
+            )
 
             # Contacts table
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS contacts (
                     id TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
@@ -223,10 +234,12 @@ class EmailDatabase:
                     last_contact TIMESTAMP,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
+            """
+            )
 
             # Email analytics table
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS email_analytics (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     account_id TEXT NOT NULL,
@@ -239,7 +252,8 @@ class EmailDatabase:
                     top_subjects TEXT,
                     FOREIGN KEY (account_id) REFERENCES accounts (id)
                 )
-            """)
+            """
+            )
 
             conn.commit()
 
@@ -764,11 +778,13 @@ class EmailFilterEngine:
         try:
             with sqlite3.connect(self.database.db_path) as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT * FROM filters
                     WHERE is_active = TRUE
                     ORDER BY priority DESC
-                """)
+                """
+                )
                 rows = cursor.fetchall()
 
                 filters = []

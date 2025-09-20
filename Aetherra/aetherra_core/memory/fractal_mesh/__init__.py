@@ -9,6 +9,7 @@ Multi-dimensional episodic memory system with temporal, symbolic, and associativ
 Enables narrative continuity, pattern recognition, and self-reflective memory exploration.
 """
 
+# Local imports
 from .analogs.pattern_matcher import CrossContextAnalogies
 from .base import FractalMeshCore
 from .concepts.concept_clusters import ConceptClusterManager

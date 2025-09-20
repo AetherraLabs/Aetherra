@@ -1,8 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.security.capabilities import POLICY_FILE as CAP_FILE
 from Aetherra.security.capabilities import has_capability
 from Aetherra.security.net_policy import POLICY_FILE as NET_FILE

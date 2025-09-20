@@ -2,7 +2,17 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
-"""Unicode-safe logging helpers (alpha utility)."""
+"""Unicode-Safe Logging Configuration for Aetherra OS.
+
+Provides logging that properly handles Unicode characters and emojis.
+"""
+
+# Standard library imports
+import logging
+import sys
+from collections.abc import Mapping
+from logging.handlers import RotatingFileHandler
+from typing import Any
 
 
 def ensure_unicode(text: str) -> str:
@@ -12,22 +22,10 @@ def ensure_unicode(text: str) -> str:
         return text
 
 
-#!/usr/bin/env python3
-"""
-🌌 Unicode-Safe Logging Configuration for Aetherra OS
-====================================================
-Provides logging that properly handles Unicode characters and emojis.
-"""
-
-import logging
-import sys
-from logging.handlers import RotatingFileHandler
-
-
 class UnicodeFormatter(logging.Formatter):
     """Custom formatter that safely handles Unicode characters."""
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord) -> str:
         try:
             return super().format(record)
         except UnicodeError:
@@ -36,7 +34,7 @@ class UnicodeFormatter(logging.Formatter):
             return super().format(record)
 
 
-def setup_unicode_logging(level=logging.INFO):
+def setup_unicode_logging(level: int = logging.INFO) -> logging.Logger:
     """Set up Unicode-safe logging for Aetherra OS."""
 
     # Clear any existing handlers
@@ -71,30 +69,103 @@ def setup_unicode_logging(level=logging.INFO):
     return root_logger
 
 
-def get_safe_logger(name):
-    """Get a Unicode-safe logger instance."""
-    logger = logging.getLogger(name)
+class SafeLogger:
+    """Proxy wrapper providing safe_* methods while delegating all other attributes."""
 
-    # Add a safe logging method that handles Unicode errors
-    def safe_log(level, msg, *args, **kwargs):
+    def __init__(self, logger: logging.Logger):
+        self._logger = logger
+
+    def __getattr__(self, name: str) -> Any:  # delegate normal Logger API
+        return getattr(self._logger, name)
+
+    def _safe_log(
+        self,
+        level: int,
+        msg: object,
+        *args: object,
+        exc_info: Any | None = None,
+        stack_info: bool = False,
+        stacklevel: int = 1,
+        extra: Mapping[str, object] | None = None,
+    ) -> None:
         try:
-            logger.log(level, msg, *args, **kwargs)
+            self._logger.log(
+                level,
+                msg,
+                *args,
+                exc_info=exc_info,
+                stack_info=stack_info,
+                stacklevel=stacklevel,
+                extra=extra,
+            )
         except UnicodeError:
-            # Fallback: convert to safe ASCII
             safe_msg = str(msg).encode("ascii", "replace").decode("ascii")
-            logger.log(level, safe_msg, *args, **kwargs)
+            self._logger.log(
+                level,
+                safe_msg,
+                *args,
+                exc_info=exc_info,
+                stack_info=stack_info,
+                stacklevel=stacklevel,
+                extra=extra,
+            )
 
-    logger.safe_info = lambda msg, *args, **kwargs: safe_log(
-        logging.INFO, msg, *args, **kwargs
-    )
-    logger.safe_error = lambda msg, *args, **kwargs: safe_log(
-        logging.ERROR, msg, *args, **kwargs
-    )
-    logger.safe_warning = lambda msg, *args, **kwargs: safe_log(
-        logging.WARNING, msg, *args, **kwargs
-    )
+    def safe_info(self, msg: object, *args: object, **kwargs: object) -> None:
+        extra_obj = kwargs.get("extra")
+        extra_map: Mapping[str, object] | None = (
+            extra_obj if isinstance(extra_obj, Mapping) else None
+        )
+        stacklevel_obj = kwargs.get("stacklevel", 1)
+        stacklevel_val = stacklevel_obj if isinstance(stacklevel_obj, int) else 1
+        self._safe_log(
+            logging.INFO,
+            msg,
+            *args,
+            exc_info=kwargs.get("exc_info"),
+            stack_info=bool(kwargs.get("stack_info", False)),
+            stacklevel=stacklevel_val,
+            extra=extra_map,
+        )
 
-    return logger
+    def safe_warning(self, msg: object, *args: object, **kwargs: object) -> None:
+        extra_obj = kwargs.get("extra")
+        extra_map: Mapping[str, object] | None = (
+            extra_obj if isinstance(extra_obj, Mapping) else None
+        )
+        stacklevel_obj = kwargs.get("stacklevel", 1)
+        stacklevel_val = stacklevel_obj if isinstance(stacklevel_obj, int) else 1
+        self._safe_log(
+            logging.WARNING,
+            msg,
+            *args,
+            exc_info=kwargs.get("exc_info"),
+            stack_info=bool(kwargs.get("stack_info", False)),
+            stacklevel=stacklevel_val,
+            extra=extra_map,
+        )
+
+    def safe_error(self, msg: object, *args: object, **kwargs: object) -> None:
+        extra_obj = kwargs.get("extra")
+        extra_map: Mapping[str, object] | None = (
+            extra_obj if isinstance(extra_obj, Mapping) else None
+        )
+        stacklevel_obj = kwargs.get("stacklevel", 1)
+        stacklevel_val = stacklevel_obj if isinstance(stacklevel_obj, int) else 1
+        self._safe_log(
+            logging.ERROR,
+            msg,
+            *args,
+            exc_info=kwargs.get("exc_info"),
+            stack_info=bool(kwargs.get("stack_info", False)),
+            stacklevel=stacklevel_val,
+            extra=extra_map,
+        )
+
+
+def get_safe_logger(name: str) -> SafeLogger:
+    """Get a Unicode-safe logger proxy instance with safe_* methods."""
+    logger = logging.getLogger(name)
+    return SafeLogger(logger)
 
 
 # Safe emoji alternatives for Windows console
@@ -145,12 +216,11 @@ SAFE_EMOJIS = {
     "⭐": "[STAR]",
     "☀️": "[SUN]",
     "🌡️": "[THERMOMETER]",
-    "🎪": "[TENT]",
-    "🎨": "[ART]",
+    # Duplicates removed to avoid repeated dictionary keys
 }
 
 
-def safe_emoji_message(message):
+def safe_emoji_message(message: str) -> str:
     """Convert emojis to safe alternatives for Windows console."""
     if sys.platform == "win32":
         for emoji, safe in SAFE_EMOJIS.items():

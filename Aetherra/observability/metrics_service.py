@@ -24,6 +24,7 @@ Design goals:
 
 from __future__ import annotations
 
+# Standard library imports
 import asyncio
 import contextlib
 import json
@@ -65,7 +66,9 @@ class MetricsService:
         self._server = None
         logger.info("MetricsService stopped")
 
-    async def _handle_client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
+    async def _handle_client(
+        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
+    ):
         try:
             data = await reader.readline()
             request_line = data.decode(errors="ignore").strip()

@@ -13,6 +13,7 @@ Features:
 - Export capabilities with multiple format support
 """
 
+# Standard library imports
 import asyncio
 import json
 import os
@@ -22,6 +23,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 try:
+    # Third party imports
     from PySide6.QtCore import (
         QEasingCurve,
         QMutex,
@@ -808,7 +810,8 @@ class WebResearchAssistantGUI(QMainWindow):
     def init_style(self):
         """Initialize the application style."""
         # Set a modern look
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             QMainWindow {
                 background-color: #f5f5f5;
             }
@@ -877,7 +880,8 @@ class WebResearchAssistantGUI(QMainWindow):
                 background-color: #0078d4;
                 border-radius: 3px;
             }
-        """)
+        """
+        )
 
     def new_research(self):
         """Start a new research session."""
@@ -893,7 +897,10 @@ class WebResearchAssistantGUI(QMainWindow):
     def configure_query(self):
         """Open query configuration dialog."""
         dialog = ResearchQueryDialog(self)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
+        if (
+            dialog.exec()  # nosec B102: Qt GUI dialog/menu execution
+            == QDialog.DialogCode.Accepted
+        ):
             config = dialog.get_research_config()
             self.query_edit.setText(config["query"])
             # Store additional config for use in research
@@ -1293,8 +1300,7 @@ def main():
     # Create and show the GUI
     gui = WebResearchAssistantGUI()
     gui.show()
-
-    sys.exit(app.exec())
+    sys.exit(app.exec())  # nosec B102: Qt application execution
 
 
 if __name__ == "__main__":

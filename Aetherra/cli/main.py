@@ -15,6 +15,7 @@ Usage examples:
   aetherra emergency "server crashed!"
 """
 
+# Standard library imports
 import argparse
 import sys
 from pathlib import Path
@@ -34,11 +35,13 @@ get_persona_engine = None  # type: ignore
 try:
     # Try multiple import paths for persona modules
     try:
+        # Third party imports
         import src.aethercode.persona.contextual_adaptation as context_module
         import src.aethercode.persona.emotional_memory as memory_module
         import src.aethercode.persona.engine as engine_module
     except ImportError:
         try:
+            # Aetherra imports
             import aetherra.persona.contextual_adaptation as context_module
             import aetherra.persona.emotional_memory as memory_module
             import aetherra.persona.engine as engine_module
@@ -61,6 +64,7 @@ except ImportError:
     PERSONA_AVAILABLE = False
 
     # Create fallback enums and classes
+    # Standard library imports
     from enum import Enum
 
     class ContextType(Enum):  # type: ignore

@@ -10,6 +10,7 @@ Test the updated launcher with Phase 2 Live Context Bridge capabilities.
 """
 
 
+# Standard library imports
 import sys
 from pathlib import Path
 
@@ -24,6 +25,7 @@ def test_phase2_launcher():
 
     try:
         # Test 1: Import launcher
+        # Third party imports
         from lyrixa.launcher import LyrixaOperatingSystem
 
         print("✅ Launcher imported successfully")
@@ -101,6 +103,7 @@ def test_phase2_launcher():
 
     except Exception as e:
         print(f"[ERROR] Test failed: {e}")
+        # Standard library imports
         import traceback
 
         traceback.print_exc()

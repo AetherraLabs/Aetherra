@@ -8,8 +8,10 @@ Code Generator Tool for Lyrixa
 Converts natural language descriptions to .aether code.
 """
 
+# Standard library imports
 from typing import Optional
 
+# Local imports
 from ..models.model_router import router
 
 

@@ -11,6 +11,7 @@ This service scans the Aetherra/plugins directory and makes local plugins
 visible in the Hub marketplace interface.
 """
 
+# Standard library imports
 import asyncio
 import hashlib
 import importlib
@@ -22,11 +23,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any  # reduced imports; use built-in generics only
 
+# Third party imports
 import requests
 
 # Optional security signing modules (best-effort). We import them here so that
 # in-function logic can rely on names existing or handle NameError gracefully.
 try:  # pragma: no cover - optional dependency path
+    # Aetherra imports
     from Aetherra.security.api_keys import get_key  # type: ignore
     from Aetherra.security.plugin_signing import sign_manifest  # type: ignore
 

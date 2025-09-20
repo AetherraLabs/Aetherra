@@ -23,6 +23,7 @@ Copyright (C) 2025 AetherraLabs
 Licensed under GNU General Public License v3.0
 """
 
+# Standard library imports
 import asyncio
 import logging
 import sys
@@ -38,6 +39,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 # Web framework
 try:
+    # Third party imports
     from flask import Flask, jsonify, render_template
     from flask_socketio import SocketIO, emit
 
@@ -50,6 +52,7 @@ except ImportError:
 
 # Aetherra components
 try:
+    # Aetherra imports
     from aetherra_service_registry import get_service_registry
     from aetherra_shared_service_registry import get_shared_service_registry
 
@@ -221,6 +224,7 @@ class CognitiveTaskManager:
 
             except Exception as e:
                 logger.error(f"❌ Service monitoring error: {e}")
+                # Standard library imports
                 import traceback
 
                 traceback.print_exc()

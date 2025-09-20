@@ -12,6 +12,7 @@ For new code, consider using the modular interfaces directly:
 - core.memory.UnifiedMemoryInterface for all capabilities
 """
 
+# Standard library imports
 from datetime import datetime, timedelta
 
 # Speed enhancement functions disabled for now
@@ -49,6 +50,7 @@ class AetherraMemory:
 
     def __init__(self):
         # Import the proper memory classes
+        # Local imports
         from .memory import BasicMemory
 
         self._memory_system = BasicMemory()
@@ -269,6 +271,7 @@ class AetherraMemory:
     def detect_recurring_patterns(self, min_frequency=3, timeframe_days=30):
         """Detect recurring patterns in memory automatically"""
         try:
+            # Local imports
             from .memory import PatternAnalyzer
 
             analyzer = PatternAnalyzer()

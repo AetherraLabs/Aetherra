@@ -5,15 +5,18 @@ Incrementally registers extracted blueprints; legacy monolith can be phased out.
 
 from __future__ import annotations
 
+# Standard library imports
 import asyncio
 import contextlib
 import logging
 import os
 
+# Third party imports
 from flask import Flask
 
 # Optional CORS support with dynamic import to avoid type stub errors
 try:
+    # Standard library imports
     import importlib
 
     _flask_cors = importlib.import_module("flask_cors")
@@ -21,7 +24,14 @@ try:
 except Exception:  # pragma: no cover
     CORS = None
 
-from .blueprints import (
+# Local imports
+from .blueprints import memory  # memory graph stub
+from .blueprints import peers  # federation stub
+from .blueprints import quantum  # new
+from .blueprints import self_incorporation  # new
+from .blueprints import telemetry  # new
+from .blueprints import trainer  # new
+from .blueprints import (  # pylint: disable=unused-import
     ai_ask,
     ai_stream,
     chat,
@@ -29,17 +39,11 @@ from .blueprints import (
     keb,
     kernel,
     klm,
-    memory,  # memory graph stub
     metrics,
     openapi,
-    peers,  # federation stub
     plugins,
-    quantum,  # new
-    self_incorporation,  # new
     site_status,
-    telemetry,  # new
-    trainer,  # new
-)  # pylint: disable=unused-import
+)
 from .config import Settings, settings
 
 logger = logging.getLogger(__name__)
@@ -149,9 +153,8 @@ def create_app(cfg: Settings | None = None) -> Flask:
         ):
             return
         try:
-            from aetherra_service_registry import (
-                get_service_registry,
-            )
+            # Aetherra imports
+            from aetherra_service_registry import get_service_registry
 
             async def _do() -> None:
                 reg = await get_service_registry()
@@ -176,6 +179,7 @@ def create_app(cfg: Settings | None = None) -> Flask:
     def _log_req() -> None:  # lightweight request logging
         try:
             if getattr(app, "settings", None) and app.settings.log_requests:  # type: ignore[attr-defined]
+                # Third party imports
                 from flask import request
 
                 logger.info("REQ %s %s", request.method, request.path)

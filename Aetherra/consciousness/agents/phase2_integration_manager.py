@@ -8,6 +8,7 @@
 Manages the integration of discovered agents into the consciousness orchestrator.
 """
 
+# Standard library imports
 import asyncio
 import logging
 from datetime import datetime
@@ -44,6 +45,7 @@ class Phase2IntegrationManager:
         """Initialize the integration manager and its components."""
         try:
             # Import and create integration adapter
+            # Local imports
             from .agent_integration_adapter import get_integration_adapter
 
             self.integration_adapter = await get_integration_adapter()
@@ -166,6 +168,7 @@ class Phase2IntegrationManager:
                 logger.info(f"🔗 Integrating priority agent: {agent_id}")
                 result = await self.integration_adapter.integrate_agent(agent_id)
 
+                # Local imports
                 from .agent_integration_adapter import IntegrationStatus
 
                 if result.status == IntegrationStatus.INTEGRATED:
@@ -231,6 +234,7 @@ class Phase2IntegrationManager:
             try:
                 result = await self.integration_adapter.integrate_agent(agent_id)
 
+                # Local imports
                 from .agent_integration_adapter import IntegrationStatus
 
                 if result.status == IntegrationStatus.INTEGRATED:
@@ -317,6 +321,7 @@ class Phase2IntegrationManager:
         }
 
         # Save report to file
+        # Standard library imports
         import json
 
         report_file = "phase2_integration_report.json"

@@ -19,6 +19,7 @@ Exit code: 0 pass, 1 fail, 2 soft-skip (no git or no changes)
 
 from __future__ import annotations
 
+# Standard library imports
 import os
 import subprocess
 from pathlib import Path
@@ -30,14 +31,22 @@ def git_diff(names_only: bool = True, staged: bool = True) -> list[str]:
     args = ["git", "--no-pager", "diff"]
     if staged:
         args.append("--cached")
-    args += ["--name-only"] if names_only else []
-    p = subprocess.Popen(
-        args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
-    )
-    out, err = p.communicate()
-    if p.returncode != 0:
+    if names_only:
+        args.append("--name-only")
+    try:
+        res = subprocess.run(
+            args,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=15,
+        )
+        if res.returncode != 0:
+            return []
+        return [line.strip() for line in res.stdout.splitlines() if line.strip()]
+    except Exception:
         return []
-    return [line.strip() for line in out.splitlines() if line.strip()]
 
 
 def classify(files: list[str]) -> tuple[list[Path], list[Path]]:

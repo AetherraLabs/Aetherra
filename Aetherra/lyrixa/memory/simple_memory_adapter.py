@@ -7,6 +7,7 @@ without complex dependencies for the GUI validation.
 """
 
 
+# Standard library imports
 import sqlite3
 import uuid
 from datetime import datetime

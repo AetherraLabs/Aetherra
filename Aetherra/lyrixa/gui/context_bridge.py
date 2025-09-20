@@ -13,6 +13,7 @@ Public API preserved: LyrixaContextBridge and LyrixaWebBridge alias.
 
 from __future__ import annotations
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -21,11 +22,13 @@ import threading
 from datetime import datetime
 from typing import Any, Dict
 
+# Third party imports
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
 
 # Unicode-safe logger (fallback to standard logger)
 try:
     # Late import from project root if available
+    # Aetherra imports
     from unicode_logger import get_safe_logger  # type: ignore
 
     logger = get_safe_logger(__name__)
@@ -102,6 +105,7 @@ class LyrixaContextBridge(QObject):
 
         # Lazy import security system
         try:
+            # Aetherra imports
             from Aetherra.aetherra_core.system.security_system import (
                 get_security_system as _get_sec,
             )
@@ -190,6 +194,7 @@ class LyrixaContextBridge(QObject):
         # Connect to real data systems
         try:
             # Import and initialize real data manager
+            # Aetherra imports
             from Aetherra.aetherra_core.orchestration.data_manager import (
                 AetherraDataManager,
             )
@@ -213,6 +218,7 @@ class LyrixaContextBridge(QObject):
 
         # Connect to real conversation manager
         try:
+            # Aetherra imports
             import Aetherra.aetherra_core.agents.conversation_manager as cm
 
             workspace_path = os.path.join(os.path.dirname(__file__), "..", "..", "..")
@@ -369,8 +375,10 @@ class LyrixaContextBridge(QObject):
 
     def refresh_metrics_data(self) -> None:
         """Refresh system metrics."""
+        # Standard library imports
         import time
 
+        # Third party imports
         import psutil
 
         try:
@@ -621,12 +629,14 @@ class LyrixaContextBridge(QObject):
         # Apply telemetry opt-in after try/except to avoid masking errors
         try:
             if "telemetry" in settings:
+                # Aetherra imports
                 from Aetherra.telemetry.optin import get_telemetry
 
                 tel = get_telemetry()
                 tel.set_opt_in(bool(settings["telemetry"]))
             # Apply Telemetry DP toggles if present
             if "telemetry_dp" in settings or "telemetry_dp_epsilon" in settings:
+                # Aetherra imports
                 from Aetherra.telemetry.optin import get_telemetry
 
                 tel = get_telemetry()
@@ -648,9 +658,11 @@ class LyrixaContextBridge(QObject):
     def getSystemMetrics(self) -> str:
         """Get comprehensive system metrics."""
         try:
+            # Standard library imports
             import random
             import time
 
+            # Third party imports
             import psutil
 
             # Get real system metrics
@@ -703,6 +715,7 @@ class LyrixaContextBridge(QObject):
         except Exception as e:
             print(f"❌ Error getting system metrics: {e}")
             # Return fallback metrics
+            # Standard library imports
             import time
 
             fallback_metrics = {

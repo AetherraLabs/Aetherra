@@ -10,6 +10,7 @@ The core heartbeat and orchestration engine for the AI-native Operating System.
 This is the living brain of Aetherra - continuously processing, learning, and evolving.
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -57,7 +58,7 @@ class AetherraKernelLoop:
     - System health monitoring
     """
 
-    def __init__(self, config: dict | None = None):
+    def __init__(self, config: dict | None = None) -> None:
         self.config = config or {}
         self.running = False
         self.start_time: datetime | None = None
@@ -205,6 +206,7 @@ class AetherraKernelLoop:
         # Optional per-capability concurrency caps via env JSON, e.g. {"network:outbound":1}
         self._cap_concurrency_caps: dict[str, int] = {}
         try:
+            # Standard library imports
             import json as _json
 
             cap_caps_raw = os.getenv("AETHERRA_PLUGIN_CAP_CONCURRENCY_MAP", "")
@@ -415,11 +417,13 @@ class AetherraKernelLoop:
         try:
             if self.night_tz_name:
                 try:
+                    # Standard library imports
                     from zoneinfo import ZoneInfo
 
                     return datetime.now(ZoneInfo(self.night_tz_name))
                 except Exception:
                     try:
+                        # Third party imports
                         import pytz  # type: ignore[import-untyped]
 
                         tz = pytz.timezone(self.night_tz_name)
@@ -494,6 +498,7 @@ class AetherraKernelLoop:
         try:
             if self.service_registry:
                 # Import and create the actual service instance
+                # Aetherra imports
                 from aetherra_self_incorporation import (
                     SelfIncorporationConfig,
                     SelfIncorporationService,
@@ -700,6 +705,7 @@ class AetherraKernelLoop:
         while self.running and interval > 0:
             try:
                 upt = 0
+                # Standard library imports
                 import contextlib
 
                 with contextlib.suppress(Exception):
@@ -739,6 +745,7 @@ class AetherraKernelLoop:
                     continue
 
                 # Apply priority aging (promote long-waiting tasks upward)
+                # Standard library imports
                 import contextlib
 
                 with contextlib.suppress(Exception):
@@ -814,6 +821,7 @@ class AetherraKernelLoop:
                 # Monitor system vitals
                 health_status = await self._gather_health_metrics()
                 # Enrich payload with kernel operational telemetry
+                # Standard library imports
                 import contextlib
 
                 with contextlib.suppress(Exception):
@@ -841,6 +849,7 @@ class AetherraKernelLoop:
                     )
 
                 # Broadcast structured health to services (best-effort)
+                # Standard library imports
                 import logging
 
                 try:
@@ -1008,6 +1017,7 @@ class AetherraKernelLoop:
                     await self._execute_task(task)
                 processed += 1
                 # Remove one matching entry from pending snapshot (best-effort)
+                # Standard library imports
                 import contextlib
 
                 with contextlib.suppress(Exception):
@@ -1040,6 +1050,7 @@ class AetherraKernelLoop:
             src_key: str,
             dst_key: str,
         ) -> int:
+            # Standard library imports
             import contextlib
 
             try:
@@ -1165,9 +1176,8 @@ class AetherraKernelLoop:
                     return None
                 # Optional security capability check to prevent bypass
                 try:
-                    from Aetherra.security.capabilities import (
-                        has_capability,
-                    )
+                    # Aetherra imports
+                    from Aetherra.security.capabilities import has_capability
                 except Exception:
                     has_capability = None  # type: ignore
 
@@ -1226,6 +1236,7 @@ class AetherraKernelLoop:
                     )
                     if cap:
                         try:
+                            # Aetherra imports
                             from Aetherra.security.capabilities import (
                                 get_capability_limits,
                             )
@@ -1253,6 +1264,7 @@ class AetherraKernelLoop:
                         # from policy limits if provided
                         if cap_conc_cap <= 0 and cap:
                             try:
+                                # Aetherra imports
                                 from Aetherra.security.capabilities import (
                                     get_capability_limits,
                                 )
@@ -1295,6 +1307,7 @@ class AetherraKernelLoop:
                                 )
                                 + 1
                             )
+                            # Standard library imports
                             import secrets
 
                             delay = 0.3 + secrets.randbelow(700) / 1000.0
@@ -1371,6 +1384,7 @@ class AetherraKernelLoop:
                         if target_for_inflight:
                             self._inflight_dec(target_for_inflight)
                         if plugin_id and eff_cap > 0:
+                            # Standard library imports
                             import contextlib
 
                             with contextlib.suppress(Exception):
@@ -1416,6 +1430,7 @@ class AetherraKernelLoop:
                     )
                     # Update service registry status to failed
                     if self.service_registry:
+                        # Standard library imports
                         import contextlib
 
                         with contextlib.suppress(Exception):
@@ -1583,6 +1598,7 @@ class AetherraKernelLoop:
 
         await q.put(task)
         # Track pending for snapshotting
+        # Standard library imports
         import contextlib
 
         with contextlib.suppress(Exception):
@@ -1787,6 +1803,7 @@ class AetherraKernelLoop:
             return False
 
     def resume_target(self, target: str) -> None:
+        # Standard library imports
         import contextlib
 
         with contextlib.suppress(Exception):
@@ -1831,6 +1848,7 @@ class AetherraKernelLoop:
             logger.debug(f"[INFLIGHT] Failed to decrement: {e}")
 
     async def rollback_swap(self, target: str, old_instance: Any) -> None:
+        # Standard library imports
         import contextlib
 
         with contextlib.suppress(Exception):
@@ -1917,6 +1935,7 @@ class AetherraKernelLoop:
                     await q.put(t)
                 self._pending_tasks[key] = list(tasks)
             # Remove file after load to avoid duplicate replays next boot
+            # Standard library imports
             import contextlib
 
             with contextlib.suppress(Exception):

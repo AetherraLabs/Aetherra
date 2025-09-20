@@ -17,6 +17,7 @@ def fractal_decompress(data):
 Fractal Encoder
 Compresses memory structures using recursive fractal patterns.
 """
+# Standard library imports
 import hashlib
 
 

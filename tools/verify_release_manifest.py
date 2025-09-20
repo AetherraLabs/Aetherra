@@ -20,6 +20,7 @@ Future: support multiple signatures, provenance chain.
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import hashlib
 import json
@@ -27,6 +28,7 @@ from pathlib import Path
 
 TRY_NACL = True
 try:
+    # Third party imports
     import nacl.encoding  # type: ignore
     import nacl.signing  # type: ignore
 except Exception:  # pragma: no cover
@@ -35,6 +37,7 @@ except Exception:  # pragma: no cover
 # Secondary backend: cryptography
 TRY_CRYPTO = True
 try:
+    # Third party imports
     from cryptography.hazmat.primitives.asymmetric.ed25519 import (  # type: ignore
         Ed25519PublicKey,
     )

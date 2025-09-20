@@ -6,6 +6,7 @@ Provides a simple function to start a default set of sensors.
 
 from __future__ import annotations
 
+# Local imports
 from .file_change_sensor import FileChangeSensor
 from .system_sensor import SystemSensor
 

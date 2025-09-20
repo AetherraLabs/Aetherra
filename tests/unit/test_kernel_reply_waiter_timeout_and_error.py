@@ -1,10 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Additional tests for kernel submit_plugin_invoke_and_wait timeout and error paths
 
+# Standard library imports
 import asyncio
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from aetherra_kernel_loop import AetherraKernelLoop
 
 

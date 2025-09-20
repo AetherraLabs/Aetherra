@@ -7,10 +7,12 @@ Sensors may be polling or push-based; for now we implement simple periodic polli
 
 from __future__ import annotations
 
+# Standard library imports
 import threading
 import time
 from typing import Any, Dict, Optional
 
+# Local imports
 from ..event_bus import get_event_bus
 
 

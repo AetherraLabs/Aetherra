@@ -15,6 +15,7 @@ Features:
 - Conversational memory and adaptation
 """
 
+# Standard library imports
 import random
 from enum import Enum
 from typing import Any, Dict, List, Optional
@@ -296,6 +297,7 @@ class LyrixaPersonality:
 
     def _get_timestamp(self) -> str:
         """Get current timestamp for logging"""
+        # Standard library imports
         from datetime import datetime
 
         return datetime.now().isoformat()

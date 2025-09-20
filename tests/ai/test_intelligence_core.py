@@ -14,6 +14,7 @@ Tests the core intelligence components including:
 - Reflexive Loop (meta-cognition, self-improvement)
 """
 
+# Standard library imports
 import sys
 import unittest
 from datetime import datetime
@@ -27,6 +28,7 @@ sys.path.insert(0, str(project_root))
 # Import the intelligence core modules
 try:
     # Core intelligence engine
+    # Aetherra imports
     from Aetherra.aetherra_core.kernel.core_migrated.engine.engine.intelligence import (
         LyrixaIntelligence,
     )
@@ -58,6 +60,7 @@ except ImportError as e:
     print("📝 Creating stub modules for testing...")
 
     # Create stub classes for testing if imports fail
+    # Standard library imports
     from enum import Enum
 
     class PersonalityTrait(Enum):
@@ -670,6 +673,7 @@ def main():
 
     # Run async tests
     try:
+        # Standard library imports
         import asyncio
 
         asyncio.run(run_async_tests())

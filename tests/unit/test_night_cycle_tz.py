@@ -1,8 +1,11 @@
+# Standard library imports
 import asyncio
 from datetime import datetime, timezone
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from aetherra_kernel_loop import AetherraKernelLoop
 
 

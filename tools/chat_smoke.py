@@ -2,8 +2,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import asyncio
 
+# Aetherra imports
 from Aetherra.lyrixa.chat.lyrixa_chat_service import ChatOptions, LyrixaChatService
 
 

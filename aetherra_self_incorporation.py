@@ -21,6 +21,7 @@ Core Subsystems:
 7. Hot-Swap & Rollback (HMR)
 """
 
+# Standard library imports
 import asyncio
 import contextlib
 import hashlib
@@ -961,7 +962,8 @@ class CodeIndex:
         """Initialize SQLite database schema."""
         conn = sqlite3.connect(self.db_path)
         try:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS files (
                     id TEXT PRIMARY KEY,
                     path TEXT NOT NULL,
@@ -974,19 +976,26 @@ class CodeIndex:
                     discovered_at TEXT NOT NULL,
                     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_files_path ON files(path)
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_files_type ON files(type)
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_files_hash ON files(hash)
-            """)
+            """
+            )
 
             conn.commit()
         finally:
@@ -1099,17 +1108,29 @@ class HeuristicClassifier:
         confidence = 0.5
 
         if file_item.language == "python":
-            capabilities, requires, risk_hints, metadata, confidence = (
-                self._analyze_python_file(path)
-            )
+            (
+                capabilities,
+                requires,
+                risk_hints,
+                metadata,
+                confidence,
+            ) = self._analyze_python_file(path)
         elif file_item.language == "aether":
-            capabilities, requires, risk_hints, metadata, confidence = (
-                self._analyze_aether_file(path)
-            )
+            (
+                capabilities,
+                requires,
+                risk_hints,
+                metadata,
+                confidence,
+            ) = self._analyze_aether_file(path)
         elif file_item.language == "json":
-            capabilities, requires, risk_hints, metadata, confidence = (
-                self._analyze_json_file(path)
-            )
+            (
+                capabilities,
+                requires,
+                risk_hints,
+                metadata,
+                confidence,
+            ) = self._analyze_json_file(path)
 
         return ClassificationResult(
             file_id=file_item.id,
@@ -1136,6 +1157,7 @@ class HeuristicClassifier:
                 content = f.read()
 
             # Extract imports
+            # Standard library imports
             import re
 
             # Standard imports
@@ -1334,7 +1356,8 @@ class ClassificationIndex:
         """Initialize classification database schema."""
         conn = sqlite3.connect(self.db_path)
         try:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS classifications (
                     file_id TEXT PRIMARY KEY,
                     type TEXT NOT NULL,
@@ -1345,15 +1368,20 @@ class ClassificationIndex:
                     confidence REAL DEFAULT 0.0,
                     classified_at TEXT DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_classifications_type ON classifications(type)
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_classifications_confidence ON classifications(confidence)
-            """)
+            """
+            )
 
             conn.commit()
         finally:
@@ -1470,6 +1498,7 @@ class PolicyEngine:
     def _load_capability_policies(self) -> dict[str, Any]:
         """Load capability allowlist/denylist policies."""
         try:
+            # Standard library imports
             from typing import cast
 
             if self.config.capabilities_policy_path.exists():
@@ -1504,6 +1533,7 @@ class PolicyEngine:
     def _load_network_policies(self) -> dict[str, Any]:
         """Load network access policies."""
         try:
+            # Standard library imports
             from typing import cast
 
             if self.config.net_policy_path.exists():
@@ -1532,6 +1562,7 @@ class PolicyEngine:
         # Try project root first
         project_policy_path = Path.cwd() / "selfinc_policy.json"
         try:
+            # Standard library imports
             from typing import cast
 
             if project_policy_path.exists():
@@ -1544,6 +1575,7 @@ class PolicyEngine:
 
         # Fallback to default config path
         try:
+            # Standard library imports
             from typing import cast
 
             if self.config.selfinc_policy_path.exists():
@@ -1683,9 +1715,9 @@ class SecurityGate:
 
             # Basic file safety checks
             if file_item.size > self.config.max_file_mb * 1024 * 1024:
-                results["size_check"] = (
-                    f"WARN: File size {file_item.size} exceeds limit"
-                )
+                results[
+                    "size_check"
+                ] = f"WARN: File size {file_item.size} exceeds limit"
             else:
                 results["size_check"] = "PASS"
 
@@ -1749,9 +1781,9 @@ class SecurityGate:
                     safe_count += 1
 
             if risky_count > 0:
-                results["import_hygiene"] = (
-                    f"WARN: {risky_count} risky imports, {safe_count} safe"
-                )
+                results[
+                    "import_hygiene"
+                ] = f"WARN: {risky_count} risky imports, {safe_count} safe"
             else:
                 results["import_hygiene"] = "PASS"
 
@@ -1889,7 +1921,8 @@ class SafetyIndex:
         """Initialize safety decisions database schema."""
         conn = sqlite3.connect(self.db_path)
         try:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS safety_decisions (
                     file_id TEXT PRIMARY KEY,
                     verified INTEGER NOT NULL,
@@ -1901,15 +1934,20 @@ class SafetyIndex:
                     timestamp TEXT NOT NULL,
                     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_safety_trust_tier ON safety_decisions(trust_tier)
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_safety_verified ON safety_decisions(verified)
-            """)
+            """
+            )
 
             conn.commit()
         finally:
@@ -2469,6 +2507,7 @@ class CoreIntegrator:
 
     def _generate_rollback_token(self, action: str, target: dict[str, Any]) -> str:
         """Generate a unique rollback token for this integration."""
+        # Standard library imports
         import uuid
 
         file_id = target.get("file_id", "unknown")
@@ -2756,6 +2795,7 @@ class CoreIntegrator:
                 svc = self.service.aether_script_service
             if not svc:
                 try:
+                    # Aetherra imports
                     from aetherra_script_service import get_aether_script_service
 
                     svc = await get_aether_script_service(self.service.service_registry)
@@ -2906,7 +2946,8 @@ class LearningEngine:
         """Initialize the insights database."""
         conn = sqlite3.connect(self.insights_db_path)
         try:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS learning_insights (
                     insight_id TEXT PRIMARY KEY,
                     category TEXT NOT NULL,
@@ -2919,9 +2960,11 @@ class LearningEngine:
                     applied INTEGER DEFAULT 0,
                     validated INTEGER DEFAULT 0
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS night_cycle_history (
                     cycle_id TEXT PRIMARY KEY,
                     start_time TEXT NOT NULL,
@@ -2934,7 +2977,8 @@ class LearningEngine:
                     quality_score REAL DEFAULT 0.0,
                     insights_generated TEXT
                 )
-            """)
+            """
+            )
 
             conn.commit()
         finally:
@@ -3856,9 +3900,9 @@ class SelfIncorporationService:
                 action_scores
             )
         else:
-            avg_overall = avg_utilitarian = avg_deontological = avg_virtue = (
-                avg_care
-            ) = avg_confidence = 0.5
+            avg_overall = (
+                avg_utilitarian
+            ) = avg_deontological = avg_virtue = avg_care = avg_confidence = 0.5
 
         # Plan-level risk assessment
         plan_reasoning = [f"Evaluated {len(actions)} integration actions"]
@@ -3949,6 +3993,7 @@ class SelfIncorporationService:
 
         # Derive risk level and trace id for audit
         try:
+            # Standard library imports
             import hashlib
             import time as _time
 
@@ -4003,6 +4048,7 @@ class SelfIncorporationService:
             ) + exec_result.get("applied", 0)
 
         # Record applied plan ethics audit
+        # Standard library imports
         import contextlib
 
         with contextlib.suppress(Exception):
@@ -4439,6 +4485,7 @@ class SelfIncorporationService:
                     content = f.read()
 
                 # Simple regex-based extraction (could be improved with AST)
+                # Standard library imports
                 import re
 
                 # Find class definitions
@@ -4459,6 +4506,7 @@ class SelfIncorporationService:
                 with open(path, encoding="utf-8") as f:
                     content = f.read()
 
+                # Standard library imports
                 import re
 
                 # Find function definitions

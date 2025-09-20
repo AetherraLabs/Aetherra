@@ -7,10 +7,12 @@ Future: integrate with a real watcher library.
 
 from __future__ import annotations
 
+# Standard library imports
 import os
 import time
 from pathlib import Path
 
+# Local imports
 from .base_sensor import BaseSensor
 
 

@@ -10,17 +10,63 @@ Real-time quantum state visualization and timeline management for consciousness 
 Phase 6.1 - Advanced Consciousness Dashboards
 """
 
+# pyright: reportMissingImports=false, reportIncompatibleVariableOverride=false
+
+# Standard library imports
 import json
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import List
+from typing import Any, List
 
+# Third party imports
 import numpy as np
-import pyqtgraph as pg
-from PySide6.QtCore import *
-from PySide6.QtGui import *
-from PySide6.QtWidgets import *
+from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtGui import QColor
+from PySide6.QtWidgets import (
+    QApplication,
+    QCheckBox,
+    QComboBox,
+    QFrame,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QListWidget,
+    QListWidgetItem,
+    QProgressBar,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
+
+try:
+    import pyqtgraph as pg
+except Exception:  # pragma: no cover - optional GUI dependency fallback
+    from types import SimpleNamespace
+
+    class _PlotWidgetFallback(QWidget):  # minimal stub for headless/type-checking
+        def __init__(self, *_, **__):
+            super().__init__()
+
+        def setBackground(self, *_):
+            pass
+
+        def setLabel(self, *_ , **__):
+            pass
+
+        def addItem(self, *_):
+            pass
+
+        def clear(self):
+            pass
+
+        def plot(self, *_, **__):
+            return None
+
+    pg: Any = SimpleNamespace(PlotWidget=_PlotWidgetFallback)
+
 
 logger = logging.getLogger(__name__)
 
@@ -811,9 +857,10 @@ class QuantumTemporalInterface(QWidget):
 
 
 if __name__ == "__main__":
+    # Standard library imports
     import sys
 
     app = QApplication(sys.argv)
     interface = QuantumTemporalInterface()
     interface.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

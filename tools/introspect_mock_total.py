@@ -1,7 +1,7 @@
-import time
-
+# Third party imports
 import requests
 
+# Aetherra imports
 import aetherra_hub.compat as hs
 
 port = 3052
@@ -19,10 +19,10 @@ resp = requests.post(
 print("POST status", resp.status_code)
 print("mock_total after post", s.chat_metrics.get("fallback_mock_total"))
 line = [
-    l
-    for l in requests.get(
+    line_text
+    for line_text in requests.get(
         f"http://localhost:{port}/metrics", timeout=5
     ).text.splitlines()
-    if 'aetherra_chat_fallback_total{path="mock"}' in l
+    if 'aetherra_chat_fallback_total{path="mock"}' in line_text
 ][0]
 print("metrics mock line:", line)

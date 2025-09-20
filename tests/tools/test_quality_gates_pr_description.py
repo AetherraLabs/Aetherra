@@ -1,3 +1,4 @@
+# Standard library imports
 import os
 import re
 import subprocess
@@ -65,6 +66,7 @@ def test_pr_description_generation(tmp_path, monkeypatch):
 
 
 if __name__ == "__main__":
+    # Third party imports
     import pytest
 
     raise SystemExit(pytest.main([__file__, "-q"]))

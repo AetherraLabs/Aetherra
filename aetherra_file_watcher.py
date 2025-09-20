@@ -10,6 +10,7 @@ Monitors file changes, plugin installations, and system events
 to trigger autonomous reorganization and optimization.
 """
 
+# Standard library imports
 import json
 import logging
 import os
@@ -18,17 +19,20 @@ import threading
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Set
 
+# Third party imports
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
 # Import our main organizer
 try:
+    # Aetherra imports
     from aetherra_self_organizer import AetherraFileIntelligence
 except ImportError:
     # Handle case where it's in a different location
     sys.path.append(os.path.dirname(__file__))
+    # Aetherra imports
     from aetherra_self_organizer import AetherraFileIntelligence
 
 logging.basicConfig(
@@ -92,33 +96,47 @@ class AetherraFileWatcher(FileSystemEventHandler):
 
         return True
 
+    def _as_str_path(self, p: Any) -> str:
+        """Normalize watchdog event paths which may be bytes|str into str."""
+        if isinstance(p, bytes):
+            try:
+                return p.decode(sys.getfilesystemencoding() or "utf-8", errors="ignore")
+            except Exception:
+                return p.decode("utf-8", errors="ignore")
+        return str(p)
+
     def on_created(self, event: FileSystemEvent):
         """Handle file creation events."""
-        if not event.is_directory and self._should_process_file(event.src_path):
-            logger.info(f"📁 New file detected: {event.src_path}")
-            self.pending_changes.add(event.src_path)
-            self._trigger_event("file_added", event.src_path)
+        src_path = self._as_str_path(getattr(event, "src_path", ""))
+        if not event.is_directory and self._should_process_file(src_path):
+            logger.info(f"📁 New file detected: {src_path}")
+            self.pending_changes.add(src_path)
+            self._trigger_event("file_added", src_path)
 
     def on_modified(self, event: FileSystemEvent):
         """Handle file modification events."""
-        if not event.is_directory and self._should_process_file(event.src_path):
-            logger.debug(f"✏️ File modified: {event.src_path}")
-            self.pending_changes.add(event.src_path)
-            self._trigger_event("file_modified", event.src_path)
+        src_path = self._as_str_path(getattr(event, "src_path", ""))
+        if not event.is_directory and self._should_process_file(src_path):
+            logger.debug(f"✏️ File modified: {src_path}")
+            self.pending_changes.add(src_path)
+            self._trigger_event("file_modified", src_path)
 
     def on_deleted(self, event: FileSystemEvent):
         """Handle file deletion events."""
-        if not event.is_directory and self._should_process_file(event.src_path):
-            logger.info(f"🗑️ File deleted: {event.src_path}")
-            self._trigger_event("file_deleted", event.src_path)
+        src_path = self._as_str_path(getattr(event, "src_path", ""))
+        if not event.is_directory and self._should_process_file(src_path):
+            logger.info(f"🗑️ File deleted: {src_path}")
+            self._trigger_event("file_deleted", src_path)
 
     def on_moved(self, event: FileSystemEvent):
         """Handle file move events."""
         if not event.is_directory:
             if hasattr(event, "dest_path"):
-                logger.info(f"[DISC] File moved: {event.src_path} -> {event.dest_path}")
-                if self._should_process_file(event.dest_path):
-                    self.pending_changes.add(event.dest_path)
+                src_path = self._as_str_path(getattr(event, "src_path", ""))
+                dest_path = self._as_str_path(getattr(event, "dest_path", ""))
+                logger.info(f"[DISC] File moved: {src_path} -> {dest_path}")
+                if self._should_process_file(dest_path):
+                    self.pending_changes.add(dest_path)
 
     def _trigger_event(self, event_type: str, file_path: str):
         """Trigger appropriate event handler."""
@@ -505,6 +523,7 @@ class AetherraFileWatcherDaemon:
 
 def main():
     """Main entry point for the file watcher daemon."""
+    # Standard library imports
     import argparse
 
     parser = argparse.ArgumentParser(description="Aetherra File Watcher Daemon")

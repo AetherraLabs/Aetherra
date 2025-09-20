@@ -40,6 +40,7 @@ The Aetherra OS provides:
 - Consciousness state monitoring
 """
 
+# Standard library imports
 import argparse
 import sys
 from pathlib import Path
@@ -63,12 +64,14 @@ def launch_hybrid_interface():
     # First, start the OS backend systems
     try:
         print("[TOOL] Starting Aetherra OS backend services...")
+        # Standard library imports
         import asyncio
         import threading
 
+        # Aetherra imports
         from aetherra_os_launcher import AetherraOSLauncher
 
-        async def start_os_backend():
+        async def start_os_backend() -> None:
             launcher = AetherraOSLauncher()
             await launcher.launch_full_os({"gui_enabled": False})  # Backend only
 
@@ -79,6 +82,7 @@ def launch_hybrid_interface():
         os_thread.start()
 
         # Give OS time to start
+        # Standard library imports
         import time
 
         time.sleep(3)
@@ -96,6 +100,7 @@ def launch_hybrid_interface():
             sys.path.insert(0, str(gui_path))
 
         # Import and run the official Aetherra GUI
+        # Third party imports
         from aetherra_enhanced_neural_os import main as gui_main
 
         return gui_main()
@@ -109,6 +114,7 @@ def launch_hybrid_interface():
 def launch_web_interface():
     """Launch web interface only"""
     try:
+        # Aetherra imports
         from Aetherra.gui.web_interface_server import start_web_interface
 
         return start_web_interface()

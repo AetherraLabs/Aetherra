@@ -9,6 +9,7 @@ Periodic self-realignment system that detects memory drift, contradiction,
 and degradation. Ensures memory system stays coherent and reliable.
 """
 
+# Standard library imports
 import json
 import sqlite3
 import uuid
@@ -16,6 +17,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any
 
+# Local imports
 from ..fractal_mesh.base import ConceptCluster, MemoryFragment
 
 
@@ -149,7 +151,9 @@ class MemoryPulseMonitor:
 
         # Detect specific issues
         contradictions = self._detect_contradictions(fragments)
-        orphaned_fragments = self._detect_orphaned_fragments(fragments, concept_clusters)
+        orphaned_fragments = self._detect_orphaned_fragments(
+            fragments, concept_clusters
+        )
         coherence_score = self._calculate_coherence_score(fragments, concept_clusters)
 
         health = MemoryHealth(
@@ -175,7 +179,9 @@ class MemoryPulseMonitor:
 
         return sum(f.confidence_score for f in fragments) / len(fragments)
 
-    def _detect_contradictions(self, fragments: list[MemoryFragment]) -> list[tuple[str, str]]:
+    def _detect_contradictions(
+        self, fragments: list[MemoryFragment]
+    ) -> list[tuple[str, str]]:
         """Detect contradictory fragments"""
         contradictions: list[tuple[str, str]] = []
 
@@ -198,7 +204,9 @@ class MemoryPulseMonitor:
                     for frag2 in tag_fragments[i + 1 :]:
                         conf_diff = abs(frag1.confidence_score - frag2.confidence_score)
                         if conf_diff > 0.5:
-                            contradictions.append((frag1.fragment_id, frag2.fragment_id))
+                            contradictions.append(
+                                (frag1.fragment_id, frag2.fragment_id)
+                            )
 
         return contradictions
 
@@ -260,7 +268,9 @@ class MemoryPulseMonitor:
 
         # Association density
         total_associations = sum(len(f.associative_links) for f in fragments)
-        association_density = min(total_associations / (len(fragments) * 2), 1.0)  # Normalize
+        association_density = min(
+            total_associations / (len(fragments) * 2), 1.0
+        )  # Normalize
 
         # Weighted coherence score
         coherence = (
@@ -284,11 +294,15 @@ class MemoryPulseMonitor:
         # Key metrics to compare
         coherence_change = current.coherence_score - previous.coherence_score
         confidence_change = current.average_confidence - previous.average_confidence
-        contradiction_change = current.contradiction_count - previous.contradiction_count
+        contradiction_change = (
+            current.contradiction_count - previous.contradiction_count
+        )
 
         # Weighted decision
         improvement_score = (
-            coherence_change * 0.4 + confidence_change * 0.4 + (-contradiction_change * 0.1) * 0.2
+            coherence_change * 0.4
+            + confidence_change * 0.4
+            + (-contradiction_change * 0.1) * 0.2
         )  # Fewer contradictions = better
 
         if improvement_score > 0.05:
@@ -368,7 +382,9 @@ class MemoryPulseMonitor:
         active_alerts = [alert for alert in self.drift_alerts if not alert.resolved]
 
         if severity_filter:
-            active_alerts = [alert for alert in active_alerts if alert.severity == severity_filter]
+            active_alerts = [
+                alert for alert in active_alerts if alert.severity == severity_filter
+            ]
 
         return sorted(active_alerts, key=lambda a: a.detected_at, reverse=True)
 
@@ -390,18 +406,26 @@ class MemoryPulseMonitor:
         active_alerts = self.get_active_alerts()
 
         return {
-            "overall_status": self._determine_overall_status(current_health, active_alerts),
+            "overall_status": self._determine_overall_status(
+                current_health, active_alerts
+            ),
             "coherence_score": current_health.coherence_score,
             "average_confidence": current_health.average_confidence,
             "total_fragments": current_health.total_fragments,
             "active_concepts": current_health.active_concepts,
             "health_trend": current_health.health_trend,
             "active_alerts": len(active_alerts),
-            "critical_alerts": len([a for a in active_alerts if a.severity == "critical"]),
-            "last_pulse_check": self.health_history[-1].__dict__ if self.health_history else None,
+            "critical_alerts": len(
+                [a for a in active_alerts if a.severity == "critical"]
+            ),
+            "last_pulse_check": self.health_history[-1].__dict__
+            if self.health_history
+            else None,
         }
 
-    def _determine_overall_status(self, health: MemoryHealth, alerts: list[DriftAlert]) -> str:
+    def _determine_overall_status(
+        self, health: MemoryHealth, alerts: list[DriftAlert]
+    ) -> str:
         """Determine overall system status"""
         critical_alerts = [a for a in alerts if a.severity == "critical"]
         high_alerts = [a for a in alerts if a.severity == "high"]
@@ -478,7 +502,9 @@ class MemoryPulseMonitor:
                     health.contradiction_count,
                     health.orphaned_fragments,
                     health.coherence_score,
-                    health.last_maintenance.isoformat() if health.last_maintenance else None,
+                    health.last_maintenance.isoformat()
+                    if health.last_maintenance
+                    else None,
                     health.health_trend,
                     datetime.now().isoformat(),
                 ),

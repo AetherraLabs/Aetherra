@@ -18,11 +18,13 @@ Key Features:
 
 from __future__ import annotations
 
+# Standard library imports
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
+# Third party imports
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QSplitter, QTabWidget, QWidget
 

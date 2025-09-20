@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
 
+# Standard library imports
 # Clean Architecture Imports
 import sys
 from pathlib import Path
@@ -14,11 +15,13 @@ Qt Web Bridge for Lyrixa Interface
 Handles communication between Qt application and web interface
 """
 
+# Standard library imports
 import json
 import logging
 from pathlib import Path
 from typing import Any, Dict
 
+# Third party imports
 from PySide6.QtCore import QObject, QUrl, Signal, Slot
 from PySide6.QtWebChannel import QWebChannel
 from PySide6.QtWebEngineWidgets import QWebEngineView

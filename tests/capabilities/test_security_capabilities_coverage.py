@@ -7,14 +7,17 @@ Focuses on uncovered security paths including capability grants, permission chec
 and authorization edge cases.
 """
 
+# Standard library imports
 from unittest.mock import patch
 
+# Third party imports
 import pytest
 
 
 @pytest.mark.asyncio
 async def test_capability_grant_edge_cases():
     """Test edge cases in capability granting system."""
+    # Aetherra imports
     from Aetherra.security.capabilities import check_capability, grant_capability
 
     # Test granting to non-existent principal
@@ -34,6 +37,7 @@ async def test_capability_grant_edge_cases():
 @pytest.mark.asyncio
 async def test_capability_permission_matrix():
     """Test various permission scenarios to increase coverage."""
+    # Aetherra imports
     from Aetherra.security.capabilities import check_capability, grant_capability
 
     test_cases = [
@@ -63,6 +67,7 @@ async def test_capability_permission_matrix():
 @pytest.mark.asyncio
 async def test_security_sandbox_initialization():
     """Test security sandbox initialization and edge cases."""
+    # Aetherra imports
     from Aetherra.security.sandbox import SecuritySandbox
 
     # Test with various configuration scenarios
@@ -89,6 +94,7 @@ async def test_security_sandbox_initialization():
 @pytest.mark.asyncio
 async def test_sandbox_resource_limit_checks():
     """Test sandbox resource limit validation."""
+    # Aetherra imports
     from Aetherra.security.sandbox import SecuritySandbox
 
     sandbox = SecuritySandbox(
@@ -114,6 +120,7 @@ async def test_sandbox_resource_limit_checks():
 @pytest.mark.asyncio
 async def test_capability_logging_and_audit():
     """Test capability usage logging and audit functionality."""
+    # Aetherra imports
     from Aetherra.security.capabilities import check_capability
 
     # Patch logging to capture security events
@@ -135,6 +142,7 @@ async def test_capability_logging_and_audit():
 @pytest.mark.asyncio
 async def test_security_plugin_validation():
     """Test security validation for plugin operations."""
+    # Aetherra imports
     from Aetherra.security.plugin_signing import validate_plugin_signature
 
     # Test with various plugin scenarios
@@ -158,6 +166,7 @@ async def test_security_plugin_validation():
 @pytest.mark.asyncio
 async def test_permission_inheritance_edge_cases():
     """Test edge cases in permission inheritance and delegation."""
+    # Aetherra imports
     from Aetherra.security.capabilities import check_capability, grant_capability
 
     # Test hierarchical permission scenarios
@@ -187,6 +196,7 @@ async def test_permission_inheritance_edge_cases():
 @pytest.mark.asyncio
 async def test_security_context_edge_cases():
     """Test security context handling in edge cases."""
+    # Aetherra imports
     from Aetherra.security.capabilities import check_capability
 
     # Test with unusual principal names and contexts
@@ -225,8 +235,10 @@ async def test_security_context_edge_cases():
 @pytest.mark.asyncio
 async def test_concurrent_security_operations():
     """Test concurrent security operations for thread safety."""
+    # Standard library imports
     import asyncio
 
+    # Aetherra imports
     from Aetherra.security.capabilities import check_capability, grant_capability
 
     async def security_worker(worker_id: int):
@@ -247,6 +259,7 @@ async def test_concurrent_security_operations():
 @pytest.mark.asyncio
 async def test_security_error_conditions():
     """Test security system behavior under error conditions."""
+    # Aetherra imports
     from Aetherra.security.capabilities import check_capability, grant_capability
 
     # Test with mocked failures

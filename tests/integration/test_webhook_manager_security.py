@@ -1,10 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import json
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.core.webhook_manager import WebhookManager
 from Aetherra.security.capabilities import POLICY_FILE as CAP_FILE
 from Aetherra.security.net_policy import POLICY_FILE as NET_FILE
@@ -68,6 +71,7 @@ def test_trigger_success_path(monkeypatch):
     write_net_policy(["api.service.local"])
 
     # Patch http_post to simulate success
+    # Aetherra imports
     import Aetherra.security.net_policy as netp
 
     class _R:

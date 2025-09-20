@@ -8,6 +8,7 @@ annotated tag script but uses a distinct message prefix and supports `--lightwei
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import hashlib
 import json

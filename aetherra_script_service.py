@@ -14,6 +14,7 @@ extended to support full EBNF from the specification. Optional signing
 verification can be enabled via environment flags for protection.
 """
 
+# Standard library imports
 import importlib
 import json
 import logging
@@ -26,6 +27,7 @@ from typing import Any, Dict, List, Optional
 
 # Optional runtime imports kept inside functions to avoid heavy deps on import
 try:  # Prefer absolute package path
+    # Aetherra imports
     from Aetherra.aetherra_core.memory.aetherra_memory_engine import (
         AetherraMemoryEngine,
     )
@@ -469,9 +471,10 @@ class AetherScriptService:
         strict = os.getenv("AETHERRA_SCRIPT_VERIFY_STRICT", "0") == "1"
         if not strict:
             return
-        from Aetherra.security.script_signing import (
+        # Aetherra imports
+        from Aetherra.security.script_signing import (  # type: ignore
             verify_embedded_signature,
-        )  # type: ignore
+        )
 
         ok, reason = verify_embedded_signature(script_content)
         if not ok:

@@ -13,6 +13,7 @@ This script provides easy access to all self-organizing capabilities:
 - .aether script orchestration
 """
 
+# Standard library imports
 import os
 import sys
 from pathlib import Path
@@ -22,13 +23,16 @@ aetherra_root = Path(__file__).parent.parent
 sys.path.insert(0, str(aetherra_root / "core"))
 sys.path.insert(0, str(aetherra_root / "tools"))
 
+# Third party imports
 from core.aetherra_self_organizer import AetherraFileIntelligence
 
+# Aetherra imports
 from tools.aetherra_file_watcher import AetherraFileWatcherDaemon
 
 
 def main():
     """Main launcher for Aetherra self-organizing intelligence."""
+    # Standard library imports
     import argparse
 
     parser = argparse.ArgumentParser(
@@ -83,6 +87,7 @@ Examples:
     args = parser.parse_args()
 
     # Setup logging
+    # Standard library imports
     import logging
 
     level = logging.DEBUG if args.verbose else logging.INFO
@@ -207,6 +212,7 @@ Examples:
     except Exception as e:
         print(f"\n❌ Error: {e}")
         if args.verbose:
+            # Standard library imports
             import traceback
 
             traceback.print_exc()

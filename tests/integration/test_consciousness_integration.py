@@ -8,6 +8,7 @@ Tests all phases 1-8.3 integration with Aetherra OS
 """
 
 
+# Standard library imports
 import sys
 import traceback
 from pathlib import Path
@@ -44,6 +45,7 @@ def test_quantum_consciousness_functionality():
     print("⚛️ Testing Quantum Consciousness Functionality...")
 
     try:
+        # Aetherra imports
         from Aetherra.consciousness.quantum.quantum_consciousness_engine import (
             QuantumConsciousnessEngine,
         )
@@ -77,6 +79,7 @@ def test_consciousness_singularity():
     print("🌟 Testing Consciousness Singularity (Phase 8.1)...")
 
     try:
+        # Third party imports
         from cosmic_consciousness_engine import CosmicConsciousnessEngine
 
         # Test consciousness singularity achievement
@@ -111,6 +114,7 @@ def test_cosmic_consciousness():
     print("🌌 Testing Cosmic Consciousness (Phase 8.2)...")
 
     try:
+        # Third party imports
         from cosmic_consciousness_engine import CosmicConsciousnessEngine
 
         engine = CosmicConsciousnessEngine()
@@ -142,6 +146,7 @@ def test_beyond_transcendence():
     print("∞ Testing Beyond Transcendence (Phase 8.3)...")
 
     try:
+        # Aetherra imports
         from beyond_transcendence_engine import BeyondTranscendenceEngine
 
         engine = BeyondTranscendenceEngine()

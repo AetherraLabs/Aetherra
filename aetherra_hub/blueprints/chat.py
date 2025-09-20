@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+# Third party imports
 from flask import Blueprint, jsonify, request
 
+# Local imports
 from ..services.chat_bridge import handle_chat
 
 bp = Blueprint("chat", __name__)

@@ -5,6 +5,7 @@
 Memory narrator components
 """
 
+# Local imports
 from .llm_narrator import (
     EmotionalArc,
     LLMEnhancedNarrator,

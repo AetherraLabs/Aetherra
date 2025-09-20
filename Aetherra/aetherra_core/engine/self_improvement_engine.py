@@ -6,6 +6,7 @@ Aetherra Self-Improvement Engine
 Continuous learning and system optimization capabilities.
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -20,6 +21,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List
 
 try:
+    # Third party imports
     import numpy as np  # type: ignore[assignment]
 except ImportError:
     # Fallback numpy-like functions
@@ -175,7 +177,8 @@ class MetricsCollector:
 
         # Calculate trend using linear regression
         timestamps = [
-            (m.timestamp - recent_metrics[0].timestamp).total_seconds() for m in recent_metrics
+            (m.timestamp - recent_metrics[0].timestamp).total_seconds()
+            for m in recent_metrics
         ]
         values = [m.value for m in recent_metrics]
 
@@ -190,13 +193,17 @@ class MetricsCollector:
 
         return 0.0, "stable"
 
-    def get_metric_statistics(self, name: str, window_hours: int = 24) -> Dict[str, float]:
+    def get_metric_statistics(
+        self, name: str, window_hours: int = 24
+    ) -> Dict[str, float]:
         """Get statistics for a metric"""
         if name not in self.metrics_history:
             return {}
 
         cutoff = datetime.now() - timedelta(hours=window_hours)
-        recent_metrics = [m.value for m in self.metrics_history[name] if m.timestamp > cutoff]
+        recent_metrics = [
+            m.value for m in self.metrics_history[name] if m.timestamp > cutoff
+        ]
 
         if not recent_metrics:
             return {}
@@ -232,13 +239,17 @@ class PatternAnalyzer:
                 patterns.append(pattern)
 
             # Analyze correlation patterns
-            correlation_pattern = self._analyze_correlations(metric_name, metric_list, metrics)
+            correlation_pattern = self._analyze_correlations(
+                metric_name, metric_list, metrics
+            )
             if correlation_pattern:
                 patterns.append(correlation_pattern)
 
         return patterns
 
-    def _analyze_temporal_pattern(self, name: str, metrics: List[PerformanceMetric]) -> Dict | None:
+    def _analyze_temporal_pattern(
+        self, name: str, metrics: List[PerformanceMetric]
+    ) -> Dict | None:
         """Analyze temporal patterns in metrics"""
         if len(metrics) < 10:
             return None
@@ -410,7 +421,9 @@ class ImprovementGenerator:
 
         return proposals
 
-    def _generate_from_metrics(self, metrics: Dict[str, Any]) -> List[ImprovementProposal]:
+    def _generate_from_metrics(
+        self, metrics: Dict[str, Any]
+    ) -> List[ImprovementProposal]:
         """Generate improvements from metric analysis"""
         proposals = []
 
@@ -433,22 +446,30 @@ class ImprovementGenerator:
 
         return proposals
 
-    def _generate_performance_improvements(self, context: Dict) -> List[ImprovementProposal]:
+    def _generate_performance_improvements(
+        self, context: Dict
+    ) -> List[ImprovementProposal]:
         """Generate performance-focused improvements"""
         # Implementation for performance improvements
         return []
 
-    def _generate_efficiency_improvements(self, context: Dict) -> List[ImprovementProposal]:
+    def _generate_efficiency_improvements(
+        self, context: Dict
+    ) -> List[ImprovementProposal]:
         """Generate efficiency improvements"""
         # Implementation for efficiency improvements
         return []
 
-    def _generate_reliability_improvements(self, context: Dict) -> List[ImprovementProposal]:
+    def _generate_reliability_improvements(
+        self, context: Dict
+    ) -> List[ImprovementProposal]:
         """Generate reliability improvements"""
         # Implementation for reliability improvements
         return []
 
-    def _generate_pattern_improvements(self, context: Dict) -> List[ImprovementProposal]:
+    def _generate_pattern_improvements(
+        self, context: Dict
+    ) -> List[ImprovementProposal]:
         """Generate improvements based on pattern analysis"""
         # Implementation for pattern-based improvements
         return []
@@ -549,7 +570,9 @@ class SelfImprovementEngine:
         finally:
             conn.close()
 
-    async def start_improvement_cycle(self, loop: asyncio.AbstractEventLoop | None = None):
+    async def start_improvement_cycle(
+        self, loop: asyncio.AbstractEventLoop | None = None
+    ):
         """Start the continuous improvement cycle"""
         if self.improvement_active:
             logger.warning("Improvement cycle already active")
@@ -615,7 +638,9 @@ class SelfImprovementEngine:
                     on_current_loop = False
 
                 if on_current_loop or (
-                    task_loop is not None and current_loop is not None and task_loop is current_loop
+                    task_loop is not None
+                    and current_loop is not None
+                    and task_loop is current_loop
                 ):
                     # Same loop: await directly
                     try:
@@ -623,8 +648,12 @@ class SelfImprovementEngine:
                         await self.improvement_task
                     except asyncio.CancelledError:
                         pass
-                elif task_loop is not None and getattr(task_loop, "is_running", lambda: False)():
+                elif (
+                    task_loop is not None
+                    and getattr(task_loop, "is_running", lambda: False)()
+                ):
                     # Different running loop: wait using a thread-safe done callback
+                    # Standard library imports
                     import concurrent.futures as _cf
 
                     waiter: _cf.Future = _cf.Future()
@@ -634,7 +663,9 @@ class SelfImprovementEngine:
                             waiter.set_result(True)
 
                     try:
-                        logger.debug("[SIE] Waiting for improvement task via thread-safe callback")
+                        logger.debug(
+                            "[SIE] Waiting for improvement task via thread-safe callback"
+                        )
                         task_loop.call_soon_threadsafe(
                             self.improvement_task.add_done_callback, _mark_done
                         )  # type: ignore[arg-type]
@@ -684,7 +715,9 @@ class SelfImprovementEngine:
                 metric_stats[name] = self.metrics_collector.get_metric_statistics(name)
 
             # Generate improvement proposals
-            proposals = self.improvement_generator.generate_improvements(patterns, metric_stats)
+            proposals = self.improvement_generator.generate_improvements(
+                patterns, metric_stats
+            )
 
             # Process proposals
             for proposal in proposals:
@@ -717,7 +750,9 @@ class SelfImprovementEngine:
             self.active_proposals[proposal.proposal_id] = proposal
             await self._store_proposal(proposal)
 
-            logger.info(f"High-confidence proposal: {proposal.description} (score: {score:.2f})")
+            logger.info(
+                f"High-confidence proposal: {proposal.description} (score: {score:.2f})"
+            )
 
             # Auto-implement low-risk, high-benefit proposals
             if proposal.risk_level < 0.3 and proposal.expected_benefit > 0.5:
@@ -809,7 +844,9 @@ class SelfImprovementEngine:
 
     def get_improvement_status(self) -> Dict[str, Any]:
         """Get current improvement system status"""
-        active_count = len([p for p in self.active_proposals.values() if p.status == "active"])
+        active_count = len(
+            [p for p in self.active_proposals.values() if p.status == "active"]
+        )
         implemented_count = len(
             [p for p in self.active_proposals.values() if p.status == "implemented"]
         )
@@ -826,7 +863,9 @@ class SelfImprovementEngine:
             "suppressed_exceptions": self._suppressed_exceptions,
         }
 
-    def export_internal_metrics(self) -> Dict[str, Any]:  # pragma: no cover - simple accessor
+    def export_internal_metrics(
+        self,
+    ) -> Dict[str, Any]:  # pragma: no cover - simple accessor
         return {
             "suppressed_exceptions": self._suppressed_exceptions,
             "analysis_cycles": self._analysis_cycles,
@@ -838,7 +877,9 @@ class SelfImprovementEngine:
         trends = {}
 
         for metric_name in self.metrics_collector.metrics_history:
-            trend_value, trend_direction = self.metrics_collector.get_metric_trend(metric_name)
+            trend_value, trend_direction = self.metrics_collector.get_metric_trend(
+                metric_name
+            )
             stats = self.metrics_collector.get_metric_statistics(metric_name)
 
             trends[metric_name] = {
@@ -946,11 +987,16 @@ async def test_self_improvement_engine():
     await engine.start_improvement_cycle()
 
     # Simulate recording metrics
+    # Standard library imports
     import random
 
     for _ in range(20):
-        engine.record_performance_metric("response_time", 100 + random.uniform(-20, 50), "ms")
-        engine.record_performance_metric("cpu_usage", 60 + random.uniform(-10, 30), "percent")
+        engine.record_performance_metric(
+            "response_time", 100 + random.uniform(-20, 50), "ms"
+        )
+        engine.record_performance_metric(
+            "cpu_usage", 60 + random.uniform(-10, 30), "percent"
+        )
         await asyncio.sleep(0.1)
 
     # Wait for analysis

@@ -10,6 +10,7 @@ This system provides reflexive intelligence for maintaining clean,
 optimal file structure and eliminating technical debt automatically.
 """
 
+# Standard library imports
 import ast
 import hashlib
 import importlib.util
@@ -777,6 +778,7 @@ remember analysis_results as "system_health_{datetime.now().strftime("%Y%m%d_%H%
 
 def main():
     """Main entry point for the file intelligence system."""
+    # Standard library imports
     import argparse
 
     parser = argparse.ArgumentParser(description="Aetherra File Intelligence System")

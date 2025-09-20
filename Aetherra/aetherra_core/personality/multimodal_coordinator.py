@@ -17,10 +17,12 @@ Features:
 - Context-aware modality optimization
 """
 
+# Standard library imports
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 
+# Local imports
 from .personality_engine import PersonalityTrait, lyrixa_personality
 
 

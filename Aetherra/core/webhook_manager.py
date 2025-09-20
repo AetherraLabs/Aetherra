@@ -1,15 +1,19 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import asyncio
 
+# Third party imports
 import requests
 
+# Aetherra imports
 from Aetherra.security.capabilities import get_capability_limits, has_capability
 from Aetherra.security.net_policy import http_post
 
 try:
     # Optional kernel helper for standardized capability-tagged invocation
+    # Aetherra imports
     from aetherra_kernel_loop import get_kernel  # type: ignore
 except Exception:  # pragma: no cover - kernel may be unavailable in some contexts
     get_kernel = None  # type: ignore

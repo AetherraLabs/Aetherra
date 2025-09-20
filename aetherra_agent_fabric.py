@@ -18,6 +18,7 @@ Agents are registered as individual services under the registry with names:
 Each agent exposes a minimal handle_message and subscribes to a topic on the KEB.
 """
 
+# Standard library imports
 import asyncio
 import logging
 import os
@@ -520,6 +521,7 @@ class AgentFabric:
         }
         # Optional outbox for deferred writes
         try:
+            # Aetherra imports
             from aetherra_outbox import Outbox  # type: ignore
 
             self.outbox = Outbox()
@@ -715,6 +717,7 @@ class AgentFabric:
         try:
             timeout_ms = 0
             try:
+                # Standard library imports
                 import os
 
                 timeout_ms = int(os.getenv("AETHERRA_AGENT_TIMEOUT_MS", "2000") or 2000)

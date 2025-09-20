@@ -7,8 +7,10 @@ that coherence_index lies within [0,1].
 
 from __future__ import annotations
 
+# Standard library imports
 from datetime import datetime, timedelta
 
+# Aetherra imports
 from Aetherra.consciousness.episodic_store import get_episodic_store
 from Aetherra.consciousness.narrator import get_narrative_layer
 from Aetherra.consciousness.schemas.episodic_event import (

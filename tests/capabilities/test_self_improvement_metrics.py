@@ -9,10 +9,13 @@ Focus:
 
 from __future__ import annotations
 
+# Standard library imports
 import asyncio
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.aetherra_core.engine.self_improvement_engine import SelfImprovementEngine
 from Aetherra.observability.metrics_service import MetricsService
 

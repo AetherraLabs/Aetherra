@@ -1,7 +1,10 @@
+# Standard library imports
 import json
 
+# Third party imports
 from flask import Flask
 
+# Aetherra imports
 from aetherra_hub.blueprints.ai_stream import bp as ai_stream_bp
 from aetherra_hub.blueprints.metrics import bp as metrics_bp
 
@@ -75,9 +78,9 @@ def test_debug_frame_emitted(monkeypatch):
         assert k in payload  # type: ignore[operator]
 
     # Confirm soft timeout final sequence present
-    assert "error" in kinds and "final" in kinds, (
-        "Expected soft timeout error/final events"
-    )
+    assert (
+        "error" in kinds and "final" in kinds
+    ), "Expected soft timeout error/final events"
 
     # Metrics export includes soft timeout counter
     mresp = client.get("/metrics")

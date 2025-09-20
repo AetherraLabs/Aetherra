@@ -9,6 +9,7 @@ This module provides an enhanced conversation manager that integrates
 with the Advanced Memory Systems for sophisticated context-aware conversations.
 """
 
+# Standard library imports
 import asyncio
 import logging
 import time
@@ -20,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 # Try to import OpenAI
 try:
+    # Third party imports
     from openai import OpenAI
 
     OPENAI_AVAILABLE = True
@@ -31,6 +33,7 @@ except ImportError as e:
 
 # Import our advanced memory system
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.memory.advanced_memory_integration import (
         AdvancedMemoryManager,
         create_advanced_memory_manager,

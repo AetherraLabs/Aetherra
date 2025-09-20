@@ -25,6 +25,7 @@ Commands:
 License: GPL-3.0
 """
 
+# Standard library imports
 import sys
 from pathlib import Path
 
@@ -33,6 +34,7 @@ plugins_dir = Path(__file__).parent.parent / "lyrixa" / "plugins"
 sys.path.insert(0, str(plugins_dir))
 
 try:
+    # Third party imports
     from enhanced_plugin_manager import PluginManager as EnhancedPluginManager
 except ImportError:
     print("❌ Error: Could not import AetherraCode plugin management system")

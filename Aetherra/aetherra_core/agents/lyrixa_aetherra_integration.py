@@ -15,6 +15,7 @@ This module integrates Lyrixa's GUI with Aetherra's core autonomous engines:
 This creates the bridge between Lyrixa's interface and her true autonomous intelligence.
 """
 
+# Standard library imports
 import asyncio
 import logging
 from datetime import datetime
@@ -23,6 +24,7 @@ from typing import TYPE_CHECKING, Any, Dict
 
 # Import Aetherra's core engines
 try:
+    # Aetherra imports
     from Aetherra.core.engine.agent_orchestrator import AgentOrchestrator
     from Aetherra.core.engine.introspection_controller import (
         IntrospectionController,
@@ -106,6 +108,7 @@ except ImportError as e:
     IntrospectionLevel = MockEnum()
 
 if TYPE_CHECKING:  # pragma: no cover - type checking only
+    # Aetherra imports
     from Aetherra.core.engine.agent_orchestrator import Task, TaskPriority  # noqa: F401
     from Aetherra.core.engine.self_improvement_engine import (  # noqa: F401
         ImprovementType,
@@ -124,7 +127,9 @@ class SimpleAetherraEngine:
         """Mock execute method"""
         return {
             "status": "success",
-            "results": [{"type": "comment", "message": f"Mock execution: {code[:50]}..."}],
+            "results": [
+                {"type": "comment", "message": f"Mock execution: {code[:50]}..."}
+            ],
             "context": self.execution_context,
         }
 
@@ -191,7 +196,9 @@ class LyrixaAetherraIntegration:
 
             # Start introspection controller
             if AETHERRA_ENGINES_AVAILABLE:
-                await self.introspection_controller.start_introspection(IntrospectionLevel.MODERATE)
+                await self.introspection_controller.start_introspection(
+                    IntrospectionLevel.MODERATE
+                )
             else:
                 await self.introspection_controller.start_introspection("moderate")
             self.autonomous_status["introspection_active"] = True
@@ -342,7 +349,9 @@ class LyrixaAetherraIntegration:
             agent_status = self.agent_orchestrator.get_system_status()
 
             # Calculate overall health score
-            overall_health = current_health.get("overall_health", 0.0) if current_health else 0.0
+            overall_health = (
+                current_health.get("overall_health", 0.0) if current_health else 0.0
+            )
 
             return {
                 "autonomous_mode_active": self.is_autonomous_active,
@@ -351,20 +360,26 @@ class LyrixaAetherraIntegration:
                     "self_improvement": {
                         "active": self.autonomous_status["self_improvement_active"],
                         "status": improvement_status.get("status", "unknown"),
-                        "active_proposals": improvement_status.get("active_proposals", 0),
+                        "active_proposals": improvement_status.get(
+                            "active_proposals", 0
+                        ),
                         "improvement_cycles": improvement_status.get("total_cycles", 0),
                     },
                     "introspection": {
                         "active": self.autonomous_status["introspection_active"],
                         "current_health": overall_health,
                         "health_trend": "stable",  # Could be calculated from history
-                        "monitoring_components": len(current_health.get("components", {}))
+                        "monitoring_components": len(
+                            current_health.get("components", {})
+                        )
                         if current_health
                         else 0,
                     },
                     "reasoning": {
                         "active": self.autonomous_status["reasoning_active"],
-                        "active_chains": len(self.autonomous_status["active_reasoning_chains"]),
+                        "active_chains": len(
+                            self.autonomous_status["active_reasoning_chains"]
+                        ),
                     },
                     "agent_orchestration": {
                         "active": self.autonomous_status["agent_orchestration_active"],
@@ -378,7 +393,9 @@ class LyrixaAetherraIntegration:
                     "self_healing": self.autonomous_status["self_improvement_active"],
                     "self_awareness": self.autonomous_status["introspection_active"],
                     "autonomous_reasoning": self.autonomous_status["reasoning_active"],
-                    "task_coordination": self.autonomous_status["agent_orchestration_active"],
+                    "task_coordination": self.autonomous_status[
+                        "agent_orchestration_active"
+                    ],
                 },
             }
 
@@ -396,7 +413,9 @@ class LyrixaAetherraIntegration:
             logger.info("🔍 Running immediate self-introspection...")
 
             # Force immediate introspection
-            await self.introspection_controller._perform_introspection(IntrospectionLevel.DEEP)
+            await self.introspection_controller._perform_introspection(
+                IntrospectionLevel.DEEP
+            )
 
             # Get the latest health data
             current_health = self.introspection_controller.get_current_health()
@@ -485,7 +504,9 @@ class LyrixaAetherraIntegration:
                 "message": "Failed to execute Aetherra code",
             }
 
-    async def _analyze_self_modification(self, code: str, execution_result: Dict[str, Any]):
+    async def _analyze_self_modification(
+        self, code: str, execution_result: Dict[str, Any]
+    ):
         """
         🔍 ANALYZE SELF-MODIFICATION
 
@@ -519,7 +540,9 @@ class LyrixaAetherraIntegration:
                 }
             )
 
-            logger.info(f"🔍 Self-modification analysis completed: {reasoning_result.conclusion}")
+            logger.info(
+                f"🔍 Self-modification analysis completed: {reasoning_result.conclusion}"
+            )
 
         except Exception as e:
             logger.error(f"Error analyzing self-modification: {e}")
@@ -564,7 +587,9 @@ class LyrixaAetherraIntegration:
                 )()
                 if self.aetherra_engine.llm_manager
                 else {},
-                "current_model": self.aetherra_engine.execution_context.get("current_model"),
+                "current_model": self.aetherra_engine.execution_context.get(
+                    "current_model"
+                ),
             },
         }
 

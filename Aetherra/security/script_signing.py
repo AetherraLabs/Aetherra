@@ -15,6 +15,7 @@ to plugin signing, but keep HMAC as a default path to avoid mandatory deps.
 
 from __future__ import annotations
 
+# Standard library imports
 import hashlib
 import hmac
 
@@ -22,6 +23,7 @@ import hmac
 
 try:
     # Preferred: use the API key store if available
+    # Aetherra imports
     from Aetherra.security.api_keys import get_key  # type: ignore
 except Exception:  # pragma: no cover - optional import
     get_key = None  # type: ignore

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+# Standard library imports
 import json
 import os
 
+# Aetherra imports
 from aetherra_hub.app import create_app
 from aetherra_hub.config import Settings
 from aetherra_hub.services.plugin_metrics import plugin_metrics, reset_for_tests
@@ -21,6 +23,7 @@ def test_signature_required_path(monkeypatch):
 
     # Simulate advanced verifier rejecting signature by monkeypatching if available
     try:
+        # Aetherra imports
         from aetherra_hub.services import plugins as adv
 
         def fake_register_fail(manifest):
@@ -50,6 +53,7 @@ def test_signature_required_path(monkeypatch):
 
     # Now monkeypatch success path
     try:
+        # Aetherra imports
         from aetherra_hub.services import plugins as adv2
 
         def fake_register_ok(manifest):

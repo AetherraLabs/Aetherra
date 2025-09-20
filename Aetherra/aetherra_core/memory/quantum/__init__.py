@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Local imports
 # Quantum memory utilities (bridge + QRNG + Q2 primitives)
 from .qhash import hamming_distance, simhash_text, to_hex  # noqa: F401
 from .qrng_service import qrng_bytes, qrng_int  # noqa: F401

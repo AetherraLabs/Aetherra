@@ -31,6 +31,7 @@ Fields (defaults in parentheses):
 
 from __future__ import annotations
 
+# Standard library imports
 from typing import Any, Dict, List
 
 ALLOWED_PERMISSIONS = {"filesystem", "network", "process", "lyrixa_core"}
@@ -106,7 +107,9 @@ def validate_manifest(
     # Classification
     cls = m.get("data_classification", "public")
     if not isinstance(cls, str) or cls not in ALLOWED_CLASSIFICATIONS:
-        errors.append(f"data_classification: must be one of {sorted(ALLOWED_CLASSIFICATIONS)}")
+        errors.append(
+            f"data_classification: must be one of {sorted(ALLOWED_CLASSIFICATIONS)}"
+        )
     m["data_classification"] = cls if isinstance(cls, str) else "public"
 
     # Determinism & side effects
@@ -151,7 +154,9 @@ def validate_manifest(
         else:
             mz = trust.get("min_zone", "unsigned")
             if mz not in ALLOWED_TRUST_ZONES:
-                errors.append(f"trust.min_zone: must be one of {sorted(ALLOWED_TRUST_ZONES)}")
+                errors.append(
+                    f"trust.min_zone: must be one of {sorted(ALLOWED_TRUST_ZONES)}"
+                )
             else:
                 trust["min_zone"] = mz
     else:

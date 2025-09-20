@@ -10,8 +10,10 @@ This keeps unit tests decoupled from the full AetherraMemoryEngineAdvanced.
 
 from __future__ import annotations
 
+# Standard library imports
 from typing import List, Optional
 
+# Aetherra imports
 from Aetherra.aetherra_core.memory.fractal_mesh import FractalMeshCore
 from Aetherra.aetherra_core.memory.fractal_mesh.base import MemoryFragment
 

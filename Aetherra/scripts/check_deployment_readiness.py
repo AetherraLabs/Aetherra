@@ -10,6 +10,7 @@ This script validates that the Aetherra project is ready for CI/CD deployment
 by checking all prerequisites, configurations, and system health.
 """
 
+# Standard library imports
 import json
 import logging
 import sys
@@ -562,6 +563,7 @@ class DeploymentReadinessChecker:
 
 def main():
     """Main entry point"""
+    # Standard library imports
     import argparse
 
     parser = argparse.ArgumentParser(

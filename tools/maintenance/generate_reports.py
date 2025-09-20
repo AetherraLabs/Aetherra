@@ -6,6 +6,7 @@
 Analysis Report Generator - Creates readable reports from project analysis
 """
 
+# Standard library imports
 import json
 from collections import defaultdict
 from pathlib import Path

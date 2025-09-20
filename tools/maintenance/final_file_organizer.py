@@ -8,6 +8,7 @@
 Moves the remaining misplaced files to their correct directories.
 """
 
+# Standard library imports
 import logging
 import os
 import shutil
@@ -206,6 +207,7 @@ class FinalFileOrganizer:
 
 def main():
     """Main entry point"""
+    # Standard library imports
     import argparse
 
     parser = argparse.ArgumentParser(

@@ -8,10 +8,13 @@ deterministic timeout (sleep > configured timeout). We avoid the full OS launche
 to reduce variability and external dependencies (LLM providers, hub, etc.).
 """
 
+# Standard library imports
 import asyncio
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from aetherra_kernel_loop import AetherraKernelLoop  # noqa: E402
 
 pytestmark = pytest.mark.unit

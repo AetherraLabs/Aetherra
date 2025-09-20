@@ -19,6 +19,7 @@ Then starts the Hub on the given port and keeps it running.
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import os
 import sys
@@ -44,6 +45,7 @@ def main() -> int:
     os.environ.update(desired_flags)
 
     try:
+        # Aetherra imports
         from aetherra_hub.compat import AetherraHubServer
     except Exception as e:
         print(f"[ERR] failed to import hub server: {e}")
@@ -59,6 +61,7 @@ def main() -> int:
         return 1
 
     # Register required services so /api/selfinc/* and /api/ai/* work end-to-end
+    # Standard library imports
     import asyncio
 
     class _DemoEngine:
@@ -74,6 +77,7 @@ def main() -> int:
 
     async def _register() -> None:
         # Import lazily inside task so failures are caught by the wrapper below
+        # Aetherra imports
         from aetherra_self_incorporation import SelfIncorporationService
         from aetherra_service_registry import register_service
 

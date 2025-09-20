@@ -9,14 +9,17 @@ Strategic coverage improvement tests using verified APIs that actually exist.
 This focuses on exercising code paths in modules with stable, working interfaces.
 """
 
+# Standard library imports
 import tempfile
 from unittest.mock import MagicMock, patch
 
+# Third party imports
 import pytest
 
 
 def test_security_capabilities_working_apis():
     """Test security capabilities using actual available functions."""
+    # Aetherra imports
     from Aetherra.security.capabilities import (
         _load_policy,
         get_capability_limits,
@@ -59,6 +62,7 @@ def test_security_capabilities_working_apis():
 
 def test_plugin_analytics_working_apis():
     """Test plugin analytics using actual available classes."""
+    # Aetherra imports
     from Aetherra.plugins.lifecycle.plugin_analytics import (
         PluginAnalyticsDashboard,
         PluginAnalyticsIntegration,
@@ -117,6 +121,7 @@ def test_plugin_analytics_working_apis():
             pass  # Context manager tracking
 
     finally:
+        # Standard library imports
         import os
 
         try:
@@ -127,6 +132,7 @@ def test_plugin_analytics_working_apis():
 
 def test_advanced_plugins_working_apis():
     """Test advanced plugins module coverage."""
+    # Aetherra imports
     from Aetherra.aetherra_core.plugins import advanced_plugins
 
     # Test available functions and classes
@@ -161,6 +167,7 @@ def test_advanced_plugins_working_apis():
 
 def test_config_loader_edge_cases():
     """Test config loader with various edge cases."""
+    # Aetherra imports
     from Aetherra.aetherra_core.config.config_loader import AetherraConfigLoader
 
     # Test with different config scenarios
@@ -183,6 +190,7 @@ def test_config_loader_edge_cases():
 
 def test_agent_orchestrator_edge_cases():
     """Test agent orchestrator functionality."""
+    # Aetherra imports
     from Aetherra.aetherra_core.agents.agent_orchestrator import AgentOrchestrator
 
     # Test initialization
@@ -209,6 +217,7 @@ def test_agent_orchestrator_edge_cases():
 @pytest.mark.asyncio
 async def test_memory_engine_async_operations():
     """Test async memory engine operations."""
+    # Aetherra imports
     from Aetherra.aetherra_core.memory.aetherra_memory_engine import (
         AetherraMemoryEngine,
     )
@@ -233,6 +242,7 @@ async def test_memory_engine_async_operations():
 
 def test_engine_initialization_paths():
     """Test various engine initialization scenarios."""
+    # Aetherra imports
     from Aetherra.aetherra_core.engine.aetherra_engine import AetherraEngine
 
     # Test different initialization parameters
@@ -262,6 +272,7 @@ def test_engine_initialization_paths():
 
 def test_file_system_compression_analyzer():
     """Test file system compression analyzer."""
+    # Aetherra imports
     from Aetherra.aetherra_core.file_system.compression_analyzer import (
         FileCompressionAnalyzer,
     )
@@ -298,6 +309,7 @@ def test_file_system_compression_analyzer():
 
 def test_scheduler_orchestration():
     """Test scheduler functionality."""
+    # Aetherra imports
     from Aetherra.aetherra_core.orchestration.scheduler import Scheduler
 
     scheduler = Scheduler()

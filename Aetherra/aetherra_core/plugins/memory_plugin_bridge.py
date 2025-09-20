@@ -10,13 +10,16 @@ Provides a stable API for plugins regardless of the underlying engine.
 
 from __future__ import annotations
 
+# Standard library imports
 from typing import Any, Dict, List
 
 try:
     # Prefer absolute import within Aetherra package layout
+    # Aetherra imports
     from Aetherra.aetherra_core.memory.lyrixa_memory_engine import LyrixaMemoryEngine
 except ImportError:
     # Fallback to relative style when package context differs
+    # Local imports
     from ..memory.lyrixa_memory_engine import LyrixaMemoryEngine  # type: ignore
 
 

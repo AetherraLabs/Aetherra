@@ -18,6 +18,7 @@ Exit code 1 if any violations are found so CI will fail.
 
 from __future__ import annotations
 
+# Standard library imports
 import ast
 import sys
 from pathlib import Path

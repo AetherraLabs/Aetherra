@@ -7,6 +7,7 @@ Memory System Adapter for Plugin UI
 Provides proper memory interface for plugin UI system
 """
 
+# Standard library imports
 import logging
 import random
 import time
@@ -28,6 +29,7 @@ class MemorySystemAdapter:
         # Try to initialize quantum memory if available
         try:
             if not self.memory_system:
+                # Third party imports
                 from lyrixa.memory.quantum_memory_integration import get_memory_system
 
                 self.memory_system = get_memory_system()

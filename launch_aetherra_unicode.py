@@ -4,6 +4,7 @@
 
 """Legacy shim retained for backward compatibility; delegates to aetherra_os."""
 
+# Aetherra imports
 from aetherra_os import main as os_main
 
 if __name__ == "__main__":  # pragma: no cover
@@ -15,6 +16,7 @@ if __name__ == "__main__":  # pragma: no cover
 A launcher that properly handles Unicode characters and emojis on Windows.
 """
 
+# Standard library imports
 import asyncio
 import locale
 import os
@@ -31,6 +33,7 @@ if sys.platform == "win32":
 
     # Try to set console encoding
     try:
+        # Standard library imports
         import io
 
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
@@ -54,6 +57,7 @@ def main():
 
     # Import and run the main launcher
     try:
+        # Aetherra imports
         from aetherra_os_launcher import main as aetherra_main
 
         return asyncio.run(aetherra_main())

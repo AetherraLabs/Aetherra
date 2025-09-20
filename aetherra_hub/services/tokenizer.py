@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+# Standard library imports
 import os
 from typing import Callable
 
+# Local imports
 from ..config import settings
 
 TokenCounter = Callable[[str], int]
@@ -19,6 +21,7 @@ def _heuristic(text: str) -> int:
 
 def _tiktoken_counter(model: str) -> TokenCounter:
     try:  # pragma: no cover - optional dependency
+        # Third party imports
         import tiktoken  # type: ignore
 
         try:
@@ -43,8 +46,10 @@ def _tiktoken_counter(model: str) -> TokenCounter:
 def _engine_counter() -> TokenCounter:
     def _cnt(text: str) -> int:
         try:
+            # Standard library imports
             import asyncio
 
+            # Aetherra imports
             from aetherra_service_registry import get_service_registry  # type: ignore
 
             async def _run():

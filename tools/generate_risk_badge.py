@@ -14,9 +14,11 @@ Exits 0 always (badge generation shouldn't fail CI), but prints score.
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 from pathlib import Path
 
+# Aetherra imports
 from Aetherra.analysis.static_risk import analyze_paths  # type: ignore
 
 IGNORE_DIRS = {".git", "dist", "build", "venv", ".venv", "__pycache__"}

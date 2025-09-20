@@ -40,6 +40,7 @@ This launcher implements your vision:
 4. ONE interface, no conflicts, no multiple GUIs
 """
 
+# Standard library imports
 import argparse
 import asyncio
 import logging
@@ -162,6 +163,7 @@ class LyrixaOperatingSystem:
 
             # Phase 1: Service Registry
             logger.info("[SRV] Phase 1: Initializing Service Registry...")
+            # Aetherra imports
             from aetherra_service_registry import get_service_registry
 
             self.service_registry = await get_service_registry()
@@ -229,6 +231,7 @@ class LyrixaOperatingSystem:
 
             # Phase 3: Plugin Manager
             logger.info("[PLG] Phase 3: Initializing Plugin Manager...")
+            # Aetherra imports
             from Aetherra.aetherra_core.plugins import plugin_manager_core
 
             self.plugin_manager = await plugin_manager_core.get_plugin_manager()
@@ -282,6 +285,7 @@ class LyrixaOperatingSystem:
 
             # Phase 4: Lyrixa Engine
             logger.info("[ENG] Phase 4: Initializing Lyrixa Engine...")
+            # Aetherra imports
             from Aetherra.aetherra_core.engine.lyrixa_engine import AetherraEngine
 
             self.lyrixa_engine = AetherraEngine()
@@ -323,6 +327,7 @@ class LyrixaOperatingSystem:
             # Phase 6b: Aetherra Hub Connection
             logger.info("[HUB] Phase 6b: Connecting to Aetherra Hub...")
             try:
+                # Third party imports
                 from lyrixa.integrations.aetherra_hub_connector import (
                     hub_connector as global_hub_connector,
                 )
@@ -354,6 +359,7 @@ class LyrixaOperatingSystem:
                     # Optional fallback: start a local Hub server to back the Basic GUI plugin list
                     if os.getenv("AETHERRA_START_LOCAL_HUB", "1") == "1":
                         try:
+                            # Aetherra imports
                             from aetherra_hub.compat import start_hub_server
 
                             self.hub_server = start_hub_server(port=3001)
@@ -376,6 +382,7 @@ class LyrixaOperatingSystem:
                 "[QCE] Phase 7: Connecting to Aetherra's Quantum Consciousness Engine..."
             )
             try:
+                # Third party imports
                 from consciousness.quantum.quantum_consciousness_engine import (
                     initialize_quantum_consciousness_engine,
                 )
@@ -406,6 +413,7 @@ class LyrixaOperatingSystem:
             # Phase 8: Memory System Integration for Plugin UI
             logger.info("[MEM] Phase 7: Setting up Memory System Integration...")
             try:
+                # Third party imports
                 from lyrixa.integrations.memory_adapter import get_memory_adapter
 
                 memory_adapter = get_memory_adapter()
@@ -424,6 +432,7 @@ class LyrixaOperatingSystem:
 
         except Exception as e:
             logger.error(f"[ERROR] CRITICAL: Aetherra Backend startup failed: {e}")
+            # Standard library imports
             import traceback
 
             traceback.print_exc()
@@ -448,6 +457,7 @@ class LyrixaOperatingSystem:
         try:
             # Check if GUI is available
             try:
+                # Third party imports
                 from PySide6.QtWidgets import QApplication
             except ImportError:
                 logger.error(
@@ -563,10 +573,11 @@ class LyrixaOperatingSystem:
             self.frontend_started = True
 
             # Start the Qt event loop
-            return self.gui_application.exec() == 0
+            return self.gui_application.exec()  # nosec B102: Qt GUI execution == 0
 
         except Exception as e:
             logger.error(f"[ERROR] GUI interface startup failed: {e}")
+            # Standard library imports
             import traceback
 
             traceback.print_exc()
@@ -631,6 +642,7 @@ class LyrixaOperatingSystem:
             # Priority 0: Lyrixa Basic GUI (preferred)
             # Try direct-module import first (since 'lyrixa' dir is on sys.path)
             try:
+                # Third party imports
                 from lyrixa_basic_gui import LyrixaBasicWindow  # type: ignore
 
                 logger.info("[OK] Using Lyrixa Basic GUI (preferred)")
@@ -639,9 +651,10 @@ class LyrixaOperatingSystem:
                 logger.debug(f"Lyrixa Basic GUI import (lyrixa_basic_gui) failed: {e0}")
                 # Try package-style import if package structure is available
                 try:
-                    from lyrixa.lyrixa_basic_gui import (
+                    # Third party imports
+                    from lyrixa.lyrixa_basic_gui import (  # type: ignore
                         LyrixaBasicWindow,
-                    )  # type: ignore
+                    )
 
                     logger.info("[OK] Using Lyrixa Basic GUI (preferred)")
                     return LyrixaBasicWindow
@@ -651,9 +664,10 @@ class LyrixaOperatingSystem:
                     )
                     # Fallback: namespaced under Aetherra if package layout requires it
                     try:
-                        from Aetherra.lyrixa.lyrixa_basic_gui import (
+                        # Aetherra imports
+                        from Aetherra.lyrixa.lyrixa_basic_gui import (  # type: ignore
                             LyrixaBasicWindow,
-                        )  # type: ignore
+                        )
 
                         logger.info("[OK] Using Lyrixa Basic GUI (preferred)")
                         return LyrixaBasicWindow
@@ -664,6 +678,7 @@ class LyrixaOperatingSystem:
 
         # Priority 1: Try the Phase 6 Hybrid GUI with Full Personality + State Memory
         try:
+            # Third party imports
             from lyrixa.gui.main_window import LyrixaHybridWindow
 
             logger.info("[OK] Using Lyrixa Hybrid GUI")
@@ -681,6 +696,7 @@ class LyrixaOperatingSystem:
 
         for module_name, class_name in gui_options:
             try:
+                # Standard library imports
                 import importlib
 
                 module = importlib.import_module(module_name)
@@ -705,6 +721,7 @@ class LyrixaOperatingSystem:
     def _create_minimal_gui_class(self):
         """Create a minimal GUI as last resort."""
         try:
+            # Third party imports
             from PySide6.QtCore import QTimer
             from PySide6.QtWidgets import (
                 QHBoxLayout,
@@ -1241,6 +1258,7 @@ async def main():
     if args.boot_menu or os.getenv("AETHERRA_BOOT_MENU", "0") == "1":
         try:
             logger.info("[BOOT] Boot menu requested; launching selector...")
+            # Aetherra imports
             from Aetherra.gui.boot_menu import show_boot_menu_and_get_choice
 
             choice = show_boot_menu_and_get_choice()
@@ -1257,6 +1275,7 @@ async def main():
                 args.cli = True
             elif mode == "diagnostics":
                 try:
+                    # Aetherra imports
                     from Aetherra.gui.aetherra_os_gui import console_once
 
                     console_once()
@@ -1291,6 +1310,7 @@ async def main():
             # GUI mode - needs special handling
             logger.info("[GUI] Starting Lyrixa GUI Interface...")
             try:
+                # Third party imports
                 from PySide6.QtWidgets import QApplication
 
                 # Check if QApplication already exists
@@ -1334,6 +1354,7 @@ async def main():
 
                 # Keep reference to hub connector if available
                 try:
+                    # Third party imports
                     from lyrixa.integrations.aetherra_hub_connector import (
                         hub_connector as global_hub_connector,
                     )
@@ -1432,7 +1453,7 @@ async def main():
                 lyrixa_os.frontend_started = True
 
                 # Start the Qt event loop (this will block until GUI is closed)
-                exit_code = app.exec()
+                exit_code = app.exec()  # nosec B102: Qt application execution
                 return exit_code
 
             except ImportError:
@@ -1442,6 +1463,7 @@ async def main():
                 return 1
             except Exception as e:
                 logger.error(f"[ERROR] GUI interface startup failed: {e}")
+                # Standard library imports
                 import traceback
 
                 traceback.print_exc()
@@ -1454,6 +1476,7 @@ async def main():
         return 0
     except Exception as e:
         logger.error(f"[ERROR] System failure: {e}")
+        # Standard library imports
         import traceback
 
         traceback.print_exc()

@@ -17,6 +17,7 @@ Core Features:
 • Cross-level pattern bridging
 """
 
+# Standard library imports
 import asyncio
 import json
 import sqlite3
@@ -25,6 +26,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Third party imports
 from fractal_encoder import FractalEncoder, FractalPattern
 
 

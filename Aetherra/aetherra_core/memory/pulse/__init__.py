@@ -5,6 +5,7 @@
 Memory pulse components
 """
 
+# Local imports
 from .deviation_checker import DriftAlert, MemoryHealth, MemoryPulseMonitor
 
 __all__ = ["MemoryPulseMonitor", "DriftAlert", "MemoryHealth"]

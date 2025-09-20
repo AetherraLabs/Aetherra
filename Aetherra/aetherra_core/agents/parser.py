@@ -19,6 +19,7 @@ Grammar Features:
 - Self-modification: suggest fix for "issue"
 """
 
+# Standard library imports
 import ast
 from dataclasses import dataclass
 from enum import Enum

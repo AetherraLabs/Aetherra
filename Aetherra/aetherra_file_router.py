@@ -14,10 +14,12 @@ This intelligent system-level utility:
 
 """
 
+# Standard library imports
 import json
 import shutil
 from pathlib import Path
 
+# Aetherra imports
 from Aetherra.aetherra_core.kernel import gui_generator, plugin_registry
 
 ## from Aetherra.aetherra_core.memory import lyrixa_memory_engine  # (Unused, removed)
@@ -86,6 +88,7 @@ class AetherraFileRouter:
             # If reflect_on_file is needed, implement in lyrixa_memory_engine or remove this call
             # lyrixa_memory_engine.reflect_on_file(target_path)
             try:
+                # Aetherra imports
                 from Aetherra.aetherra_core.system import memory_core_adapter
 
                 memory_core_adapter.adapt_memory_module(target_path)

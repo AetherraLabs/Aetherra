@@ -20,6 +20,7 @@ Key Features:
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import logging
 import threading
@@ -29,6 +30,7 @@ from enum import Enum
 from typing import Any, Callable
 from uuid import uuid4
 
+# Third party imports
 from PySide6.QtCore import QMutex, QObject, QThread, QTimer, Signal, Slot
 from PySide6.QtWidgets import (
     QApplication,

@@ -12,12 +12,14 @@ Steps:
 - Print results and exit
 """
 
+# Standard library imports
 import asyncio
 import json
 import os
 import sys
 from pathlib import Path
 
+# Aetherra imports
 from Aetherra.lyrixa.integrations.aetherra_hub_connector import (
     hub_connector,
     os_detector,

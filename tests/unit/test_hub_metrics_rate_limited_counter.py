@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import asyncio
 import socket
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 import aetherra_hub.compat as hub_mod
 
 requests = pytest.importorskip("requests")
@@ -26,6 +29,7 @@ def _free_port() -> int:
 
 
 async def _register_engine(engine):
+    # Aetherra imports
     from aetherra_service_registry import get_service_registry
 
     reg = await get_service_registry()
@@ -50,6 +54,7 @@ def test_rate_limited_counter_increments_on_429(monkeypatch):
     assert r1.status_code == 200
     body1 = r1.text
     # Parse current counter (default 0 if missing)
+    # Standard library imports
     import re
 
     def extract_rate_limited(text: str) -> int:
@@ -94,6 +99,7 @@ def test_stream_rate_limited_counter_increments_on_error(monkeypatch):
     # Initial scrape
     body1 = requests.get(f"{base}/metrics", timeout=5).text
 
+    # Standard library imports
     import re
 
     def extract_rate_limited(text: str) -> int:

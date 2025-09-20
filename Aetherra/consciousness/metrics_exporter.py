@@ -13,10 +13,12 @@ This lightweight module avoids adding the dependency overhead unless enabled.
 
 from __future__ import annotations
 
+# Standard library imports
 import os
 import threading
 
 try:  # optional dependency
+    # Third party imports
     from prometheus_client import (  # type: ignore
         Counter,
         Gauge,
@@ -43,15 +45,7 @@ _lock = threading.Lock()
 
 def initialize_exporter() -> bool:
     """Initialize exporter if enabled; idempotent. Returns True if active."""
-    global \
-        _started, \
-        _workspace_queue_gauge, \
-        _narrative_coherence_gauge, \
-        _narrative_chapters_gauge, \
-        _workspace_candidate_counter, \
-        _workspace_broadcast_counter, \
-        _workspace_latency_hist, \
-        _narrative_generation_hist
+    global _started, _workspace_queue_gauge, _narrative_coherence_gauge, _narrative_chapters_gauge, _workspace_candidate_counter, _workspace_broadcast_counter, _workspace_latency_hist, _narrative_generation_hist
     if os.getenv("AETHERRA_PROMETHEUS", "0") != "1":
         return False
     if Gauge is None:

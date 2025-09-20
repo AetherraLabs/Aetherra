@@ -9,8 +9,10 @@ Covers new execute_plugin_chain_parallel method contract:
 
 from __future__ import annotations
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.aetherra_core.plugins.advanced_plugins import (
     LyrixaAdvancedPluginManager,
     PluginStatus,

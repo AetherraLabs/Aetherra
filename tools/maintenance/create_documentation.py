@@ -6,6 +6,7 @@
 Directory Documentation Generator - Creates README.md files for each major directory
 """
 
+# Standard library imports
 import json
 from pathlib import Path
 

@@ -19,6 +19,7 @@ This script simulates the .aether execution environment while leveraging
 all the enhanced functions we've implemented.
 """
 
+# Standard library imports
 import asyncio
 import json
 import time
@@ -27,6 +28,7 @@ from pathlib import Path
 
 # Import enhanced autonomous intelligence agents
 try:
+    # Aetherra imports
     from Aetherra.core.agents.contradiction_detection_agent import (
         ContradictionDetectionAgent,
     )
@@ -36,6 +38,7 @@ try:
 
 except ImportError:
     print("⚠️ Using local import paths for demo")
+    # Standard library imports
     import sys
 
     sys.path.append(".")

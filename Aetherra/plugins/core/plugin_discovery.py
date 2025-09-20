@@ -9,6 +9,7 @@ Advanced plugin discovery, indexing, and recommendation system for Lyrixa.
 Automatically discovers, categorizes, and suggests relevant plugins.
 """
 
+# Standard library imports
 import hashlib
 import json
 import os
@@ -334,6 +335,7 @@ class PluginDiscovery:
     def _extract_module_docstring(self, content: str) -> str:
         """Extract module-level docstring."""
         try:
+            # Standard library imports
             import ast
 
             tree = ast.parse(content)
@@ -428,6 +430,7 @@ class PluginDiscovery:
     def _analyze_code_structure(self, content: str, metadata: PluginMetadata):
         """Analyze plugin code structure to determine capabilities."""
         try:
+            # Standard library imports
             import ast
 
             tree = ast.parse(content)

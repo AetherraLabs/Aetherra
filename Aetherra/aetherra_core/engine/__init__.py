@@ -14,6 +14,7 @@ and various intelligence modules.
 
 __version__ = "1.0.0"
 
+# Standard library imports
 # Graceful imports with fallbacks
 import logging
 
@@ -21,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 # Try to import aetherra_engine if available
 try:
+    # Local imports
     from .aetherra_engine import AetherraEngine
 
     AETHERRA_ENGINE_AVAILABLE = True

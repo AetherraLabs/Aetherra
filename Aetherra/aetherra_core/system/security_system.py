@@ -12,6 +12,7 @@ Author: Aetherra Security Team
 Date: July 16, 2025
 """
 
+# Standard library imports
 import json
 import logging
 import os
@@ -21,6 +22,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Aetherra imports
 from Aetherra.core.memory_manager import MemoryManager
 
 # Import our security modules
@@ -47,12 +49,8 @@ def _looks_like_secret(value: str) -> bool:
             return False
         v = value.strip()
         # Heuristic: long opaque tokens
-        return (
-            (len(v) >= 20)
-            and any(ch.isdigit() for ch in v)
-            and any(ch.isalpha() for ch in v)
-        )
-    except Exception:
+        return (len(v) >= 20) and any(ch.isdigit() for ch in v) and any(ch.isalpha() for ch in v)
+    except Exception:  # Defensive: broad exception for secret detection heuristics
         return False
 
 
@@ -66,9 +64,7 @@ def redact_secrets(data: Any) -> Any:
         if isinstance(data, dict):
             out: Dict[str, Any] = {}
             for k, v in data.items():
-                if isinstance(k, str) and any(
-                    p in k.lower() for p in SENSITIVE_KEY_PATTERNS
-                ):
+                if isinstance(k, str) and any(p in k.lower() for p in SENSITIVE_KEY_PATTERNS):
                     out[k] = "***REDACTED***"
                 else:
                     out[k] = redact_secrets(v)
@@ -112,7 +108,7 @@ class AetherraSecuritySystem:
         self,
         workspace_path: Optional[str] = None,
         config: Optional[SecurityConfig] = None,
-    ):
+    ) -> None:
         self.workspace_path = Path(workspace_path or ".")
         self.config = config or SecurityConfig()
 
@@ -131,9 +127,7 @@ class AetherraSecuritySystem:
         self._setup_logging()
 
         # Path for UI-consumable alerts
-        self.alerts_jsonl = (
-            self.workspace_path / ".aetherra" / "security" / "alerts.jsonl"
-        )
+        self.alerts_jsonl = self.workspace_path / ".aetherra" / "security" / "alerts.jsonl"
 
         # Start security monitoring
         self.start_monitoring()
@@ -222,7 +216,7 @@ class AetherraSecuritySystem:
                 try:
                     api_keys.set_key(f"{provider}_api_key", api_key)
                     self.logger.info(f"Secured API key for {provider}")
-                except Exception as e:
+                except Exception as e:  # Security: log API key storage failures
                     self.logger.error(f"Failed securing API key for {provider}: {e}")
 
                 # Remove from environment for security
@@ -244,7 +238,7 @@ class AetherraSecuritySystem:
             # This would be called when objects are created
             self.logger.debug(f"Memory protection enabled for {class_name}")
 
-    def start_monitoring(self):
+    def start_monitoring(self) -> None:
         """Start security monitoring"""
         if self.is_monitoring:
             return
@@ -265,7 +259,7 @@ class AetherraSecuritySystem:
 
         self.logger.info("🔍 Security monitoring started")
 
-    def stop_monitoring(self):
+    def stop_monitoring(self) -> None:
         """Stop security monitoring"""
         self.is_monitoring = False
         self.logger.info("🔍 Security monitoring stopped")
@@ -301,8 +295,7 @@ class AetherraSecuritySystem:
         return {
             "usage": stats,
             "leaks": leaks,
-            "high_usage": stats.get("usage_percent", 0.0)
-            > self.config.max_memory_usage_percent,
+            "high_usage": stats.get("usage_percent", 0.0) > self.config.max_memory_usage_percent,
         }
 
     def _scan_files(self) -> Dict[str, Any]:
@@ -350,6 +343,7 @@ class AetherraSecuritySystem:
                     if isinstance(ts, str):
                         # parse ISO-8601 best-effort
                         try:
+                            # Standard library imports
                             import datetime as _dt
 
                             last_updated = _dt.datetime.fromisoformat(ts).timestamp()
@@ -438,9 +432,7 @@ class AetherraSecuritySystem:
             )
 
         if api_results["potential_leaks"]:
-            alerts.append(
-                f"Potential API key leaks: {', '.join(api_results['potential_leaks'])}"
-            )
+            alerts.append(f"Potential API key leaks: {', '.join(api_results['potential_leaks'])}")
 
         # Check memory issues
         memory_results = results["memory"]
@@ -450,21 +442,15 @@ class AetherraSecuritySystem:
             )
 
         if memory_results["leaks"]:
-            alerts.append(
-                f"Memory leaks detected: {len(memory_results['leaks'])} locations"
-            )
+            alerts.append(f"Memory leaks detected: {len(memory_results['leaks'])} locations")
 
         # Check file issues
         file_results = results["files"]
         if file_results["suspicious_files"]:
-            alerts.append(
-                f"Suspicious files found: {len(file_results['suspicious_files'])}"
-            )
+            alerts.append(f"Suspicious files found: {len(file_results['suspicious_files'])}")
 
         if file_results["permissions_issues"]:
-            alerts.append(
-                f"File permission issues: {len(file_results['permissions_issues'])}"
-            )
+            alerts.append(f"File permission issues: {len(file_results['permissions_issues'])}")
 
         # Log alerts
         for alert in alerts:
@@ -490,9 +476,7 @@ class AetherraSecuritySystem:
             stats = self.memory_manager.get_memory_stats()
             if stats.get("usage_percent", 0.0) > self.config.max_memory_usage_percent:
                 # Placeholder: MemoryManager performs periodic cleanup itself; log for now
-                self.logger.info(
-                    "🧹 High memory usage detected; consider triggering cleanup cycle"
-                )
+                self.logger.info("🧹 High memory usage detected; consider triggering cleanup cycle")
         except Exception:
             pass
 
@@ -537,14 +521,10 @@ class AetherraSecuritySystem:
         }
         try:
             if api_keys.KEYS_FILE.exists():
-                data = json.loads(
-                    api_keys.KEYS_FILE.read_text(encoding="utf-8") or "{}"
-                )
+                data = json.loads(api_keys.KEYS_FILE.read_text(encoding="utf-8") or "{}")
                 status["encrypted"] = bool(data.get("__encrypted__") is True)
                 # count non-internal entries
-                status["key_count"] = len(
-                    [k for k in data.keys() if not k.startswith("__")]
-                )
+                status["key_count"] = len([k for k in data.keys() if not k.startswith("__")])
                 status["last_updated"] = data.get("__updated_at")
             # detect master key presence without generating it
             if os.getenv("AETHERRA_KEYS_MASTER"):
@@ -578,7 +558,7 @@ class AetherraSecuritySystem:
         self._run_security_scan()
         return self.get_security_status()
 
-    def cleanup_all(self):
+    def cleanup_all(self) -> None:
         """Cleanup all security-related resources"""
         # Cleanup API keys (no-op for function-based API)
         # In the future we could clear in-memory caches here.
@@ -612,7 +592,7 @@ def get_security_system() -> AetherraSecuritySystem:
 
 def initialize_aetherra_security(
     workspace_path: Optional[str] = None, config: Optional[SecurityConfig] = None
-):
+) -> None:
     """Initialize Aetherra security system"""
     global _security_system
     _security_system = AetherraSecuritySystem(workspace_path, config)
@@ -641,9 +621,7 @@ if __name__ == "__main__":
 
     # Get security status (sanitized for console output)
     status = redact_secrets(security_system.get_security_status())
-    print(
-        f"Security monitoring: {'Active' if status['monitoring_active'] else 'Inactive'}"
-    )
+    print(f"Security monitoring: {'Active' if status['monitoring_active'] else 'Inactive'}")
     print(f"Security alerts: {status['alerts']}")
     # Guard against missing keys and avoid printing raw objects
     mem = status.get("memory") or {}

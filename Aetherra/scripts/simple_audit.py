@@ -10,6 +10,7 @@ Ultra-lightweight script to count files and do basic cleanup.
 No complex analysis - just identify obvious unused files.
 """
 
+# Standard library imports
 import os
 import time
 

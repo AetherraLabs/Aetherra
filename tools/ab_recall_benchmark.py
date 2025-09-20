@@ -21,6 +21,7 @@ Env flags:
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import asyncio
 import json
@@ -31,6 +32,7 @@ from typing import Any, Dict, List
 
 async def _get_engine():
     try:
+        # Aetherra imports
         from aetherra_service_registry import get_service_registry
 
         reg = await get_service_registry()
@@ -40,6 +42,7 @@ async def _get_engine():
     except Exception:
         pass
     # Fallback: create a private engine
+    # Aetherra imports
     from Aetherra.aetherra_core.engine.aetherra_engine import AetherraEngine
 
     eng = AetherraEngine()

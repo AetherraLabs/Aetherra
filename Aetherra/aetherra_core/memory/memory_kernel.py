@@ -16,12 +16,14 @@ Core Components:
 - MemoryReflector: Meta-cognitive analysis and insights
 """
 
+# Standard library imports
 import asyncio
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
+# Local imports
 from ..memory.fractal_mesh.analogs import CrossContextAnalogies
 from ..memory.fractal_mesh.base import (
     FractalMeshCore,
@@ -34,6 +36,8 @@ from ..memory.fractal_mesh.timelines import EpisodicTimeline
 # Import existing memory components
 from ..memory.memory_core import LyrixaMemorySystem
 from .reflector import MemoryReflector
+from ..kernel.narrator import MemoryNarrator
+from ..kernel.pulse import MemoryPulseMonitor
 
 
 @dataclass

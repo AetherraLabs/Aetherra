@@ -11,6 +11,7 @@ that reintroduce `from __future__ import ...` or the same class twice.
 
 from __future__ import annotations
 
+# Standard library imports
 import re
 from collections import Counter
 from pathlib import Path

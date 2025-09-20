@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import json
 import logging
 import random
@@ -8,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Third party imports
 import psutil
 
 # Configure logging
@@ -182,6 +184,7 @@ def _initialize_sample_memories():
 
 # Try to import Aetherra modules with graceful fallback
 try:
+    # Aetherra imports
     from Aetherra.core.memory import recall as aetherra_recall
     from Aetherra.core.memory import search_memory_one as aetherra_search_memory_one
     from Aetherra.core.system import get_system_status as aetherra_get_system_status

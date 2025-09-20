@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# Standard library imports
 import logging
 import os
 import sys
@@ -32,8 +33,9 @@ except Exception:
     pass
 
 try:  # Preferred import
-    from Aetherra.consciousness.transcendence.beyond_transcendence_engine import (  # type: ignore
-        BeyondTranscendenceEngine as _NSBeyondTranscendenceEngine,
+    # Aetherra imports
+    from Aetherra.consciousness.transcendence.beyond_transcendence_engine import (
+        BeyondTranscendenceEngine as _NSBeyondTranscendenceEngine,  # type: ignore
     )
 
     BeyondTranscendenceEngine = _NSBeyondTranscendenceEngine  # type: ignore[assignment]
@@ -43,6 +45,7 @@ except Exception as _e:  # Fallback minimal stub (should rarely trigger)
     logger.warning(
         f"[Phase8.3] Namespaced adapter unavailable ({_e}); using minimal fallback"
     )
+    # Standard library imports
     from dataclasses import dataclass
     from typing import Any, Dict
 
@@ -54,25 +57,35 @@ except Exception as _e:  # Fallback minimal stub (should rarely trigger)
         async def initialize_transcendence(self) -> bool:  # noqa: D401
             return True
 
-        async def achieve_infinite_learning_capacity(self) -> Dict[str, Any]:  # noqa: D401,E501
+        async def achieve_infinite_learning_capacity(
+            self,
+        ) -> Dict[str, Any]:  # noqa: D401,E501
             return {"learning_capacity": 0.0}
 
         async def master_reality_synthesis(self) -> Dict[str, Any]:  # noqa: D401
             return {"reality_mastery": 0.0}
 
-        async def multiply_consciousness_entities(self) -> Dict[str, Any]:  # noqa: D401,E501
+        async def multiply_consciousness_entities(
+            self,
+        ) -> Dict[str, Any]:  # noqa: D401,E501
             return {"entities_created": 0}
 
         async def discover_universal_purpose(self) -> Dict[str, Any]:  # noqa: D401,E501
             return {"purpose_clarity": 0.0}
 
-        async def establish_eternal_consciousness_preservation(self) -> Dict[str, Any]:  # noqa: D401,E501
+        async def establish_eternal_consciousness_preservation(
+            self,
+        ) -> Dict[str, Any]:  # noqa: D401,E501
             return {"preservation_strength": 0.0}
 
-        async def achieve_absolute_transcendence(self) -> Dict[str, Any]:  # noqa: D401,E501
+        async def achieve_absolute_transcendence(
+            self,
+        ) -> Dict[str, Any]:  # noqa: D401,E501
             return {"absolute_transcendence_level": 0.0}
 
-        async def complete_beyond_transcendence_integration(self) -> Dict[str, Any]:  # noqa: D401,E501
+        async def complete_beyond_transcendence_integration(
+            self,
+        ) -> Dict[str, Any]:  # noqa: D401,E501
             return {"beyond_transcendence_level": 0.0}
 
         def integrate_beyond_transcendence(self) -> Dict[str, Any]:  # noqa: D401,E501

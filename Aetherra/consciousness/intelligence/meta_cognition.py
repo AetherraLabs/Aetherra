@@ -7,6 +7,7 @@ Advanced meta-memory and self-awareness system for Aetherra OS
 Addresses critical meta-memory coverage gap identified by AI OS self-reflection
 """
 
+# Standard library imports
 import json
 import logging
 import sqlite3
@@ -99,7 +100,9 @@ class MetaCognitionSystem:
         # Start continuous self-monitoring
         self._start_self_monitoring()
 
-        logging.info("Meta-Cognition System initialized - Enhanced self-knowledge active")
+        logging.info(
+            "Meta-Cognition System initialized - Enhanced self-knowledge active"
+        )
 
     def _init_database(self):
         """Initialize SQLite database for persistent meta-memory"""
@@ -225,7 +228,9 @@ class MetaCognitionSystem:
             {"domain": domain.value, "node_id": node_id, "confidence": confidence},
         )
 
-        logging.info(f"Enhanced self-knowledge in domain {domain.value} - Node {node_id}")
+        logging.info(
+            f"Enhanced self-knowledge in domain {domain.value} - Node {node_id}"
+        )
         return node_id
 
     def conduct_self_reflection(
@@ -314,7 +319,9 @@ class MetaCognitionSystem:
                     {
                         "domain": domain.value,
                         "coverage": coverage_score,
-                        "improvement_potential": self._estimate_improvement_potential(domain),
+                        "improvement_potential": self._estimate_improvement_potential(
+                            domain
+                        ),
                     }
                 )
 
@@ -322,10 +329,14 @@ class MetaCognitionSystem:
         coverage_report["overall_coverage"] = sum(domain_scores) / len(domain_scores)
 
         # Generate improvement priorities
-        coverage_report["improvement_priorities"] = self._generate_improvement_priorities()
+        coverage_report[
+            "improvement_priorities"
+        ] = self._generate_improvement_priorities()
 
         # Generate learning recommendations
-        coverage_report["learning_recommendations"] = self._generate_learning_recommendations()
+        coverage_report[
+            "learning_recommendations"
+        ] = self._generate_learning_recommendations()
 
         return coverage_report
 
@@ -479,7 +490,9 @@ class MetaCognitionSystem:
             insights.append("Significant knowledge gaps identified requiring attention")
 
         if assessment["learning_state"]["progress_rate"] > 0.8:
-            insights.append("High learning progress rate indicates effective adaptation")
+            insights.append(
+                "High learning progress rate indicates effective adaptation"
+            )
 
         # Add domain-specific insights
         for domain in SelfKnowledgeDomain:
@@ -612,7 +625,9 @@ class MetaCognitionSystem:
         """Find cross-references to other knowledge nodes"""
         return []  # Placeholder
 
-    def _identify_uncertainty_factors(self, knowledge_data: Dict[str, Any]) -> List[str]:
+    def _identify_uncertainty_factors(
+        self, knowledge_data: Dict[str, Any]
+    ) -> List[str]:
         """Identify factors that create uncertainty in this knowledge"""
         return []  # Placeholder
 
@@ -626,7 +641,9 @@ class MetaCognitionSystem:
         """Calculate learning weight for knowledge prioritization"""
         return 0.5  # Placeholder
 
-    def _update_domain_coverage(self, domain: SelfKnowledgeDomain, node: MetaMemoryNode):
+    def _update_domain_coverage(
+        self, domain: SelfKnowledgeDomain, node: MetaMemoryNode
+    ):
         """Update coverage statistics for a domain"""
         domain_data = self.self_knowledge_coverage[domain.value]
         domain_data["knowledge_nodes"].append(node.node_id)

@@ -9,6 +9,7 @@ User-friendly GUI wizard for creating plugins without requiring deep technical k
 Provides step-by-step guidance and auto-validation.
 """
 
+# Standard library imports
 import json
 import os
 import tkinter as tk
@@ -803,6 +804,7 @@ def main(endpoint, method="GET", data=None, **kwargs):
     def _generate_class_name(self, plugin_name: str) -> str:
         """Generate a valid Python class name from plugin name."""
         # Remove special characters and spaces, capitalize words
+        # Standard library imports
         import re
 
         clean_name = re.sub(r"[^a-zA-Z0-9\s]", "", plugin_name)

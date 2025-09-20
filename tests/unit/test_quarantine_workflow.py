@@ -1,5 +1,7 @@
+# Standard library imports
 from unittest.mock import MagicMock
 
+# Aetherra imports
 from aetherra_self_incorporation import QuarantineManager
 
 

@@ -10,10 +10,12 @@ Advanced autonomous agent that continuously monitors, evaluates, and improves
 Lyrixa's performance and capabilities based on self-insights and patterns.
 """
 
+# Standard library imports
 import asyncio
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
+# Local imports
 from .enhanced_memory import LyrixaEnhancedMemorySystem
 
 

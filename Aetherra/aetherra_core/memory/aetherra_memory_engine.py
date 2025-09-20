@@ -9,12 +9,14 @@ DEPRECATED: AetherraMemoryEngine is now an adapter for QuantumEnhancedMemoryEngi
 All memory operations are delegated to the canonical engine.
 """
 
+# Standard library imports
 import asyncio
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any, Callable, Optional
 
+# Local imports
 from ..kernel.narrator import MemoryNarrative, MemoryNarrator
 from .fractal_mesh import (
     ConceptClusterManager,
@@ -69,7 +71,9 @@ class AetherraMemoryEngine:
         """
         # Substring search over compat list
         q = str(query).lower()
-        results = [m for m in self._compat_mem if q in str(m.get("content", "")).lower()]
+        results = [
+            m for m in self._compat_mem if q in str(m.get("content", "")).lower()
+        ]
 
         # If nothing found, try underlying engine and adapt shape
         if not results:
@@ -78,7 +82,9 @@ class AetherraMemoryEngine:
                 if isinstance(raw, dict) and "data" in raw:
                     data = raw["data"]
                     # Try to adapt to expected shape
-                    content = data.get("content") if isinstance(data, dict) else str(data)
+                    content = (
+                        data.get("content") if isinstance(data, dict) else str(data)
+                    )
                     if content:
                         results = [{"content": content}]
             except Exception:
@@ -264,7 +270,9 @@ class AetherraMemoryEngineAdvanced:
 
             # Update fragment with associative links from clustering
             if affected_clusters:
-                fragment.associative_links.extend(affected_clusters[:5])  # Limit associations
+                fragment.associative_links.extend(
+                    affected_clusters[:5]
+                )  # Limit associations
                 self.fractal_mesh.store_fragment(fragment)  # Update with associations
 
             self.operation_stats["successful_operations"] += 1
@@ -322,7 +330,9 @@ class AetherraMemoryEngineAdvanced:
         results: list[dict[str, Any]] = []
 
         if recall_strategy in ["vector", "hybrid"]:
-            vector_results = await self.core_memory.recall_memories(query_text=query, limit=limit)
+            vector_results = await self.core_memory.recall_memories(
+                query_text=query, limit=limit
+            )
             for i, memory in enumerate(vector_results):
                 results.append(
                     {
@@ -337,7 +347,9 @@ class AetherraMemoryEngineAdvanced:
 
         if recall_strategy in ["conceptual", "hybrid"] and concept_filter:
             for concept in concept_filter:
-                concept_fragments = self.fractal_mesh.retrieve_by_concept(concept, limit)
+                concept_fragments = self.fractal_mesh.retrieve_by_concept(
+                    concept, limit
+                )
                 for fragment in concept_fragments:
                     results.append(
                         {
@@ -414,7 +426,9 @@ class AetherraMemoryEngineAdvanced:
         metadata = metadata or {}
         if self.config.redact_before_persist:
             try:
-                new_content, new_context = self.config.redact_before_persist(content, metadata)
+                new_content, new_context = self.config.redact_before_persist(
+                    content, metadata
+                )
                 # best-effort replacement; callers may ignore
                 if new_content is not None:
                     content = new_content
@@ -426,7 +440,9 @@ class AetherraMemoryEngineAdvanced:
 
         if self.config.persist_sensitive_only_if_signed:
             # Heuristics: treat project-category writes as plugin-origin unless explicitly marked otherwise
-            is_plugin = bool(metadata.get("plugin_id") or (metadata.get("category") == "project"))
+            is_plugin = bool(
+                metadata.get("plugin_id") or (metadata.get("category") == "project")
+            )
             is_signed = bool(metadata.get("signed") or metadata.get("trusted"))
             tags = metadata.get("tags") or []
             is_sensitive = bool(metadata.get("sensitive") or ("sensitive" in tags))
@@ -455,7 +471,11 @@ class AetherraMemoryEngineAdvanced:
         else:
             # Default to last 24 hours
             cutoff = datetime.now() - timedelta(days=1)
-            fragments = [f for f in self.fractal_mesh.fragments.values() if f.created_at >= cutoff]
+            fragments = [
+                f
+                for f in self.fractal_mesh.fragments.values()
+                if f.created_at >= cutoff
+            ]
 
         # Generate narrative based on type
         if narrative_type == "daily":
@@ -486,7 +506,9 @@ class AetherraMemoryEngineAdvanced:
             insights = self.reflector.reflect_on_past_range(fragments, time_range)
 
         elif reflection_type == "contradictions":
-            insights = self.reflector.analyze_contradictions(fragments, concept_clusters)
+            insights = self.reflector.analyze_contradictions(
+                fragments, concept_clusters
+            )
 
         elif reflection_type == "concept_exploration" and target_concept:
             insights = self.reflector.explore_concept_connections(
@@ -545,7 +567,9 @@ class AetherraMemoryEngineAdvanced:
                 else None,
                 "memory_stats": {
                     "last_check": self.last_pulse_check.isoformat(),
-                    "system_uptime": (datetime.now() - self.last_pulse_check).total_seconds(),
+                    "system_uptime": (
+                        datetime.now() - self.last_pulse_check
+                    ).total_seconds(),
                 },
                 "performance_metrics": self.operation_stats,
                 "status": "healthy" if health.coherence_score > 0.7 else "degraded",
@@ -602,7 +626,9 @@ class AetherraMemoryEngineAdvanced:
                 "health_trend": health.health_trend,
                 "drift_alerts": drift_alerts,
                 "monitoring_active": self.config.auto_pulse_monitoring,
-                "next_scheduled_check": (self.last_pulse_check + timedelta(hours=2)).isoformat(),
+                "next_scheduled_check": (
+                    self.last_pulse_check + timedelta(hours=2)
+                ).isoformat(),
             }
 
             return pulse_data
@@ -674,11 +700,15 @@ class AetherraMemoryEngineAdvanced:
         ]
 
         for alert in low_severity_alerts[:3]:  # Resolve up to 3 low-severity alerts
-            if self.pulse_monitor.resolve_alert(alert.alert_id, "Auto-resolved during maintenance"):
+            if self.pulse_monitor.resolve_alert(
+                alert.alert_id, "Auto-resolved during maintenance"
+            ):
                 maintenance_results["alerts_resolved"] += 1
 
         # Clean up very old low-confidence fragments
-        cutoff_date = datetime.now() - timedelta(days=self.config.fragment_retention_days)
+        cutoff_date = datetime.now() - timedelta(
+            days=self.config.fragment_retention_days
+        )
         old_fragments = [
             f
             for f in self.fractal_mesh.fragments.values()

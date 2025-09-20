@@ -25,6 +25,7 @@ Returns a dict like: {"mode": "basic|hybrid|cli|diagnostics|exit", "safe_mode": 
 
 from __future__ import annotations
 
+# Standard library imports
 import sys
 from dataclasses import dataclass
 from typing import Any, Dict
@@ -46,6 +47,7 @@ def show_boot_menu_and_get_choice() -> Dict[str, Any]:
     This function may create a QApplication if one does not exist yet.
     """
     try:
+        # Third party imports
         from PySide6.QtGui import QKeySequence, QShortcut
         from PySide6.QtWidgets import (
             QApplication,
@@ -174,7 +176,7 @@ def show_boot_menu_and_get_choice() -> Dict[str, Any]:
     win = BootMenuWindow()
     win.show()
     # Run a modal event loop until the window closes
-    app.exec()
+    app.exec()  # nosec B102: Qt application execution
     return choice.to_dict()
 
 

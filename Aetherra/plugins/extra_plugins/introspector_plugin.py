@@ -11,12 +11,14 @@ Scans Lyrixa's own codebase to identify improvement opportunities,
 issues, and patterns for self-enhancement.
 """
 
+# Standard library imports
 import ast
 import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Aetherra imports
 from Aetherra.aetherra_core.memory.enhanced_memory import LyrixaEnhancedMemorySystem
 
 

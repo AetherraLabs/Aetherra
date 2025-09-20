@@ -17,6 +17,7 @@ Key Features:
 - Real-time cluster updates
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -192,6 +193,7 @@ class ConceptClusteringEngine:
     def _generate_embedding(self, text: str) -> List[float]:
         """Generate embedding for text (mock implementation)"""
         # In real implementation, use actual embedding model
+        # Standard library imports
         import hashlib
         import random
 

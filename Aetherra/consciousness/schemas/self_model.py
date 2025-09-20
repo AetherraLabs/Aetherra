@@ -7,9 +7,11 @@ and adaptive reasoning. Designed to be compact, versioned, and forward-extensibl
 
 from __future__ import annotations
 
+# Standard library imports
 from datetime import datetime
 from typing import List, Optional
 
+# Third party imports
 from pydantic import BaseModel, Field
 
 SELF_MODEL_VERSION = 1

@@ -9,6 +9,7 @@
 Safely move only obviously unused files while preserving project structure.
 """
 
+# Standard library imports
 import os
 import shutil
 from pathlib import Path
@@ -148,6 +149,7 @@ def execute_cleanup(files_to_move, dry_run=True):
 
 def main():
     """Main function"""
+    # Standard library imports
     import argparse
 
     parser = argparse.ArgumentParser(description="Conservative Aetherra Cleanup")

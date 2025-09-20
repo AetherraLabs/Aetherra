@@ -1,8 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import os
 
+# Third party imports
 import pytest
 
 
@@ -15,6 +17,7 @@ async def test_read_only_queues_and_list_clear(tmp_path, monkeypatch):
     old_cwd = os.getcwd()
     os.chdir(tmp_path)
     try:
+        # Aetherra imports
         from aetherra_agent_fabric import AgentFabric
         from aetherra_service_registry import AetherraServiceRegistry
 

@@ -21,6 +21,7 @@ Usage:
     python test_phase6_integration.py
 """
 
+# Standard library imports
 import os
 import sys
 from pathlib import Path
@@ -38,15 +39,16 @@ def test_phase_imports():
 
     # Phase 1: Basic GUI
     try:
-        from PySide6.QtWebChannel import (
+        # Third party imports
+        from PySide6.QtWebChannel import (  # noqa: F401 (optional runtime import)
             QWebChannel,
-        )  # noqa: F401 (optional runtime import)
-        from PySide6.QtWebEngineWidgets import (
+        )
+        from PySide6.QtWebEngineWidgets import (  # noqa: F401 (optional runtime import)
             QWebEngineView,
-        )  # noqa: F401 (optional runtime import)
-        from PySide6.QtWidgets import (
+        )
+        from PySide6.QtWidgets import (  # noqa: F401 (optional runtime import)
             QApplication,
-        )  # noqa: F401 (optional runtime import)
+        )
 
         print("✅ Phase 1: PySide6 + WebEngine components available")
     except ImportError as e:
@@ -100,10 +102,13 @@ def test_main_window_phases():
 
     try:
         # Create instance (without showing)
+        # Standard library imports
         import sys
 
+        # Third party imports
         from PySide6.QtWidgets import QApplication
 
+        # Aetherra imports
         from Aetherra.lyrixa.gui.main_window import LyrixaHybridWindow
 
         app = QApplication.instance() or QApplication(sys.argv)
@@ -166,6 +171,7 @@ def test_phase6_components():
     print("=" * 50)
 
     try:
+        # Aetherra imports
         from Aetherra.lyrixa.gui.phase6_personality import (
             EmotionalState,
             EmotionalThemeEngine,
@@ -219,6 +225,7 @@ def test_phase6_components():
 
     except Exception as e:
         print(f"❌ Phase 6 Component Test Failed: {e}")
+        # Standard library imports
         import traceback
 
         traceback.print_exc()

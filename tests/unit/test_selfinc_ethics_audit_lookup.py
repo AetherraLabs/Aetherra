@@ -1,3 +1,4 @@
+# Third party imports
 import requests
 
 BASE = "http://localhost:3001/api/selfinc"

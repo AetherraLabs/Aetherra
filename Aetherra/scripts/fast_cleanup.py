@@ -10,6 +10,7 @@ Simplified and fast file cleanup for large projects.
 Focuses on identifying truly unused files quickly.
 """
 
+# Standard library imports
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -295,6 +296,7 @@ class FastFileCleanup:
 
 def main():
     """Main execution"""
+    # Standard library imports
     import argparse
 
     parser = argparse.ArgumentParser(description="Fast Aetherra File Cleanup")

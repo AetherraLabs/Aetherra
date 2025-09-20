@@ -9,9 +9,11 @@ Finds analogous patterns across different contexts and scenarios.
 Enables creative connections and pattern-based reasoning.
 """
 
+# Standard library imports
 from dataclasses import dataclass
 from datetime import datetime
 
+# Local imports
 from ..base import MemoryFragment
 
 
@@ -52,7 +54,9 @@ class CrossContextAnalogies:
         # Placeholder - would implement sophisticated pattern matching
         return []
 
-    def get_cross_context_connections(self, concept: str) -> list[tuple[str, str, float]]:
+    def get_cross_context_connections(
+        self, concept: str
+    ) -> list[tuple[str, str, float]]:
         """Get connections between different contexts for a concept"""
         # Placeholder - would implement context bridging
         return []

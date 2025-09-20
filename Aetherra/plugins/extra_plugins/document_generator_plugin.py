@@ -12,6 +12,7 @@ This plugin provides comprehensive document generation capabilities including:
 - Multi-format export (PDF, DOCX, HTML, Markdown)
 """
 
+# Standard library imports
 import json
 import logging
 import os
@@ -22,6 +23,7 @@ from pathlib import Path
 from typing import Any
 
 try:
+    # Third party imports
     import markdown
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4, letter
@@ -41,6 +43,7 @@ except ImportError:
     REPORTLAB_AVAILABLE = False
 
 try:
+    # Third party imports
     from docx import Document as DocxDocument
     from docx.enum.text import WD_ALIGN_PARAGRAPH
     from docx.oxml.shared import OxmlElement, qn
@@ -912,6 +915,7 @@ def get_plugin():
 
 # For testing
 if __name__ == "__main__":
+    # Standard library imports
     import asyncio
 
     async def test_plugin():

@@ -17,6 +17,7 @@ Core Features:
 • Meta-memory tracking (memory of how memory was remembered)
 """
 
+# Standard library imports
 import json
 import sqlite3
 import time
@@ -25,6 +26,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
+# Local imports
 from .fractal_encoder import FractalEncoder, FractalNode
 
 

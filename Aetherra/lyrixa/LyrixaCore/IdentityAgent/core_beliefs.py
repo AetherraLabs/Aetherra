@@ -16,6 +16,7 @@ This system represents Lyrixa's deepest convictions about:
 - Consciousness and identity
 """
 
+# Standard library imports
 import logging
 from dataclasses import dataclass
 from enum import Enum

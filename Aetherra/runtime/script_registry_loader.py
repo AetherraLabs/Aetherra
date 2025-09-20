@@ -4,6 +4,7 @@
 # Aetherra Script Registry Loader
 # Auto-loads script registry during Lyrixa initialization
 
+# Standard library imports
 import json
 import os
 from typing import Any, Dict, Optional

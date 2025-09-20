@@ -6,6 +6,7 @@
 Debug script to test shared registry connection from dashboard
 """
 
+# Standard library imports
 import asyncio
 import sys
 from pathlib import Path
@@ -14,6 +15,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+# Aetherra imports
 from aetherra_service_registry import get_service_registry
 
 
@@ -46,6 +48,7 @@ async def debug_registry_connection():
 
     except Exception as e:
         print(f"❌ Error: {e}")
+        # Standard library imports
         import traceback
 
         traceback.print_exc()

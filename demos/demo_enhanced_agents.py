@@ -8,6 +8,7 @@
 Demonstration of the new specialized agents for Aetherra AI OS.
 """
 
+# Standard library imports
 import asyncio
 import sys
 import time
@@ -18,6 +19,7 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.agents.data_agent import DataAgent
     from Aetherra.lyrixa.agents.security_agent import SecurityAgent
     from Aetherra.lyrixa.agents.support_agent import SupportAgent
@@ -276,6 +278,7 @@ async def main():
 
     except Exception as e:
         print(f"❌ Demo error: {e}")
+        # Standard library imports
         import traceback
 
         traceback.print_exc()

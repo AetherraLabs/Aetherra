@@ -12,12 +12,14 @@ Aligned to current endpoints:
 - Web Interface (port 8686): /api/system/status, /api/metrics/realtime
 """
 
+# Standard library imports
 import argparse
 import os
 import time
 from datetime import datetime
 from typing import Any, Dict, Optional
 
+# Third party imports
 import requests
 
 HUB_BASE = "http://localhost:3001"

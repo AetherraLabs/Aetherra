@@ -1,3 +1,4 @@
+# Aetherra imports
 from Aetherra.consciousness.active_inference import get_active_inference
 from Aetherra.consciousness.affect_engine import get_affect_engine
 from Aetherra.consciousness.episodic_store import get_episodic_store

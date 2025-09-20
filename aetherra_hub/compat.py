@@ -8,12 +8,15 @@ API surface functional.
 
 from __future__ import annotations
 
+# Standard library imports
 import threading
 import time
 from typing import Optional
 
+# Third party imports
 from werkzeug.serving import make_server
 
+# Local imports
 from .app import create_app
 from .services import plugins as _plugins
 from .services import registry_client as _reg_client
@@ -21,6 +24,7 @@ from .services.metrics_accum import chat_metrics
 
 # Expose a FLASK_AVAILABLE flag for legacy tests that gated execution
 try:  # pragma: no cover - simple availability flag
+    # Third party imports
     import flask  # type: ignore  # noqa: F401
 
     FLASK_AVAILABLE = True
@@ -118,6 +122,7 @@ def start_hub_server(port: int = 3001) -> AetherraHubServer:
         _global_server.start_server()
         # Best-effort readiness wait (avoids rare race where first test request 404s)
         try:  # pragma: no cover - timing dependent
+            # Third party imports
             import requests  # type: ignore
 
             base = f"http://localhost:{port}"

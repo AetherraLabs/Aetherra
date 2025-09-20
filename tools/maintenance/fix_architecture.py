@@ -11,6 +11,7 @@ Date: August 5, 2025
 Purpose: Fix violations detected by architectural compliance checker
 """
 
+# Standard library imports
 import os
 import re
 import shutil
@@ -334,6 +335,7 @@ if __name__ == "__main__":
 
 def main():
     """Main execution function"""
+    # Standard library imports
     import sys
 
     # Check for dry run mode

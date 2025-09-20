@@ -16,6 +16,7 @@ manual sections remain intact. To enable in-place updates, add markers later.
 
 from __future__ import annotations
 
+# Standard library imports
 import ast
 import json
 import os
@@ -434,6 +435,7 @@ def append_appendix(
 
 
 def main(argv: List[str]) -> int:
+    # Standard library imports
     import argparse
 
     parser = argparse.ArgumentParser(

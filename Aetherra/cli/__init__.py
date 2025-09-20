@@ -8,6 +8,7 @@ Command-line interfaces for all AetherraCode functionality.
 
 # Always available basic CLI
 try:
+    # Local imports
     from .basic import main as run_basic_cli
 
     BASIC_CLI_AVAILABLE = True
@@ -16,6 +17,7 @@ except ImportError:
     run_basic_cli = None
 
 try:
+    # Local imports
     from .demo import main as run_demo
     from .main import AetherraCodePersonaInterface
 
@@ -26,6 +28,7 @@ except ImportError:
     AetherraCodePersonaInterface = None
 
 try:
+    # Local imports
     from .persona import PersonaCLI
 
     PERSONA_CLI_AVAILABLE = True

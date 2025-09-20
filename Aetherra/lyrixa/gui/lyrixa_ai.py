@@ -8,12 +8,14 @@ LyrixaAI: Core AI intelligence for chat and reasoning.
 Extracted from phase6_personality.py to keep modules focused and maintainable.
 """
 
+# Standard library imports
 import logging
 import random
 from dataclasses import asdict
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+# Local imports
 from .phase6_types import (
     ChatMessage,
     EmotionalState,
@@ -292,6 +294,7 @@ What would you like to explore first?""".format(
     ) -> Optional[str]:
         """Try OpenAI API"""
         try:
+            # Third party imports
             import openai
 
             client = openai.OpenAI(api_key=api_key)
@@ -335,6 +338,7 @@ What would you like to explore first?""".format(
     ) -> Optional[str]:
         """Try Anthropic Claude API"""
         try:
+            # Third party imports
             import anthropic
 
             client = anthropic.Anthropic(api_key=api_key)
@@ -363,6 +367,7 @@ What would you like to explore first?""".format(
     ) -> Optional[str]:
         """Try Google Gemini API"""
         try:
+            # Third party imports
             import google.generativeai as genai
 
             genai.configure(api_key=api_key)  # type: ignore[attr-defined]
@@ -385,6 +390,7 @@ What would you like to explore first?""".format(
     ) -> Optional[str]:
         """Try Cohere API"""
         try:
+            # Third party imports
             import cohere  # type: ignore[import]
 
             client = cohere.Client(api_key)
@@ -412,6 +418,7 @@ What would you like to explore first?""".format(
     ) -> Optional[str]:
         """Try Hugging Face API"""
         try:
+            # Third party imports
             import requests
 
             headers = {"Authorization": f"Bearer {api_key}"}

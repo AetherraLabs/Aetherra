@@ -16,14 +16,16 @@ Core Features:
 - Memory-driven plugin parameter optimization
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
+# Aetherra imports
 from Aetherra.aetherra_core.memory.fractal_mesh.base import (
     MemoryFragment,
     MemoryFragmentType,
@@ -299,6 +301,7 @@ class MemoryAwarePluginRouter:
         """Execute plugin function with memory context"""
 
         # Check if plugin supports memory context
+        # Standard library imports
         import inspect
 
         sig = inspect.signature(plugin_function)

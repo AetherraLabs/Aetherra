@@ -18,6 +18,7 @@ Env:
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import logging
 import os
@@ -25,6 +26,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
+# Third party imports
 import requests
 
 logger = logging.getLogger(__name__)
@@ -84,7 +86,9 @@ def is_domain_allowed(url: str, requester: str) -> bool:
         except Exception:
             continue
     if strict:
-        logger.warning("Net policy strict deny (not in allow list): %s -> %s", requester, dom)
+        logger.warning(
+            "Net policy strict deny (not in allow list): %s -> %s", requester, dom
+        )
         return False
     logger.info("Net policy pass (no explicit rule): %s -> %s", requester, dom)
     return True

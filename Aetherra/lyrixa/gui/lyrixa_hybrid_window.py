@@ -19,6 +19,7 @@ This provides the best of both worlds:
 - Professional appearance and functionality
 """
 
+# Standard library imports
 import contextlib
 import logging
 import threading
@@ -30,6 +31,7 @@ from typing import TYPE_CHECKING, Any, Dict
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:  # Hints only
+    # Third party imports
     from PySide6.QtCore import QTimer, QUrl  # pragma: no cover
     from PySide6.QtWebEngineWidgets import QWebEngineView  # pragma: no cover
     from PySide6.QtWidgets import (  # pragma: no cover
@@ -45,6 +47,7 @@ if TYPE_CHECKING:  # Hints only
     )
 
 try:  # Runtime import (optional)
+    # Third party imports
     from PySide6.QtCore import QTimer, QUrl  # type: ignore
     from PySide6.QtWidgets import (  # type: ignore
         QFrame,
@@ -59,6 +62,7 @@ try:  # Runtime import (optional)
     )
 
     try:
+        # Third party imports
         from PySide6.QtWebEngineWidgets import QWebEngineView  # type: ignore
 
         WEBENGINE_AVAILABLE = True
@@ -73,6 +77,7 @@ except ImportError:
 
 # Check for Flask availability (optional web backend)
 try:  # pragma: no cover - network/server side effects
+    # Third party imports
     from flask import Flask, jsonify, render_template  # type: ignore
     from flask_socketio import SocketIO, emit  # type: ignore
 
@@ -232,11 +237,15 @@ if PYSIDE6_AVAILABLE:
             )
             hl = QHBoxLayout(frame)
             title = QLabel("🎙️ LYRIXA AI OPERATING SYSTEM")
-            title.setStyleSheet("font-size:24px; font-weight:bold; color:white; margin:10px;")
+            title.setStyleSheet(
+                "font-size:24px; font-weight:bold; color:white; margin:10px;"
+            )
             hl.addWidget(title)
             hl.addStretch()
             self.status_label = QLabel("🌟 Systems Online")
-            self.status_label.setStyleSheet("font-size:14px; color:#26d0ce; margin:10px;")
+            self.status_label.setStyleSheet(
+                "font-size:14px; color:#26d0ce; margin:10px;"
+            )
             hl.addWidget(self.status_label)
             return frame
 
@@ -338,7 +347,9 @@ if PYSIDE6_AVAILABLE:
             if hasattr(self, "status_display"):
                 self.status_display.setPlainText(text_blob)
             if hasattr(self, "console_output"):
-                self.console_output.append(f"[{time.strftime('%H:%M:%S')}] Status refreshed")
+                self.console_output.append(
+                    f"[{time.strftime('%H:%M:%S')}] Status refreshed"
+                )
             self.web_server.update_data(
                 {
                     "timestamp": time.time(),
@@ -385,13 +396,16 @@ if PYSIDE6_AVAILABLE:
                     # If web_server provided a wait method (future extension)
                     self.web_server.wait(3000)  # type: ignore[attr-defined]
             event.accept()
+
 else:
 
     class _LyrixaHybridWindowStub:  # pragma: no cover - executed only without PySide6
         """Fallback stub when PySide6 isn't installed."""
 
         def __init__(self):  # noqa: D401
-            raise RuntimeError("PySide6 not available; GUI not supported in this environment")
+            raise RuntimeError(
+                "PySide6 not available; GUI not supported in this environment"
+            )
 
     LyrixaHybridWindow = _LyrixaHybridWindowStub  # type: ignore
 # Export the main window class

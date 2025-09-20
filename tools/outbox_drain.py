@@ -22,6 +22,7 @@ Usage examples:
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import asyncio
 import json
@@ -30,6 +31,7 @@ from typing import Any, Dict, List
 
 
 async def _get_fabric():
+    # Aetherra imports
     from aetherra_agent_fabric import get_agent_fabric
     from aetherra_service_registry import get_service_registry, register_service
 
@@ -106,6 +108,7 @@ async def main(argv: List[str]) -> int:
         print(f"[WARN] Could not determine fabric status: {e}")
 
     # Load entries
+    # Aetherra imports
     from aetherra_outbox import Outbox
 
     outbox = Outbox()

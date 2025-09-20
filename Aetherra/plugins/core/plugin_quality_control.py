@@ -9,6 +9,7 @@ Comprehensive quality assurance system for Lyrixa plugins.
 Validates plugin structure, performance, security, and compliance.
 """
 
+# Standard library imports
 import ast
 import os
 import time
@@ -480,8 +481,10 @@ class PluginQualityControl:
         }
 
         try:
+            # Standard library imports
             import gc
 
+            # Third party imports
             import psutil
 
             # Get initial memory

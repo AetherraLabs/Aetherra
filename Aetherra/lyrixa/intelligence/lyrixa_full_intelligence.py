@@ -20,6 +20,7 @@ This module provides:
 Author: Aetherra Labs
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -35,17 +36,20 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "aetherra
 
 # Safe imports with fallbacks
 try:
+    # Aetherra imports
     from Aetherra.aetherra_core.config import config_loader
 except ImportError:
     config_loader = None
 
 try:
     # Prefer enhanced Lyrixa-compatible memory engines
+    # Aetherra imports
     from Aetherra.aetherra_core.memory.lyrixa_memory_engine import LyrixaMemoryEngine
 
     _memory_instance = LyrixaMemoryEngine()
 except ImportError:
     try:
+        # Aetherra imports
         from Aetherra.aetherra_core.memory.aetherra_memory_engine import (
             AetherraMemoryEngine,
         )
@@ -56,6 +60,7 @@ except ImportError:
 
 # Import LyrixaCore for integration
 try:
+    # Local imports
     from ..LyrixaCore import get_lyrixa_core
 except ImportError:
     get_lyrixa_core = None
@@ -214,6 +219,7 @@ class LyrixaIntelligenceCore:
             api_key = openai_config.get("api_key") or os.getenv("OPENAI_API_KEY")
 
             if api_key:
+                # Third party imports
                 from openai import AsyncOpenAI
 
                 # Normalize deprecated model names
@@ -255,6 +261,7 @@ class LyrixaIntelligenceCore:
             api_key = anthropic_config.get("api_key") or os.getenv("ANTHROPIC_API_KEY")
 
             if api_key:
+                # Third party imports
                 import anthropic
 
                 self.providers["anthropic"] = {
@@ -385,6 +392,7 @@ class LyrixaIntelligenceCore:
         """
         try:
             # Try to run the async method in an event loop
+            # Standard library imports
             import asyncio
 
             # Create context with user_id

@@ -7,11 +7,14 @@ planning, and integration of the OS codebase.
 
 from __future__ import annotations
 
+# Standard library imports
 import logging
 
+# Third party imports
 from flask import Blueprint, jsonify, request
 from flask.typing import ResponseReturnValue
 
+# Local imports
 from ..services.registry_client import get_service
 
 logger = logging.getLogger(__name__)
@@ -25,15 +28,19 @@ def get_status() -> ResponseReturnValue:
     try:
         selfinc_service = get_service("self_incorporation")
         if not selfinc_service:
-            return jsonify(
-                {
-                    "status": "disabled",
-                    "running": False,
-                    "error": "Self-incorporation service not registered",
-                }
-            ), 503
+            return (
+                jsonify(
+                    {
+                        "status": "disabled",
+                        "running": False,
+                        "error": "Self-incorporation service not registered",
+                    }
+                ),
+                503,
+            )
 
         # Get status from the service
+        # Standard library imports
         import asyncio
 
         loop = asyncio.get_event_loop()
@@ -42,9 +49,12 @@ def get_status() -> ResponseReturnValue:
         return jsonify(status)
     except Exception as e:
         logger.error(f"[SELFINC] Status error: {e}")
-        return jsonify(
-            {"status": "error", "running": False, "error": "Internal server error"}
-        ), 500
+        return (
+            jsonify(
+                {"status": "error", "running": False, "error": "Internal server error"}
+            ),
+            500,
+        )
 
 
 @bp.post("/scan")
@@ -59,6 +69,7 @@ def trigger_scan() -> ResponseReturnValue:
         data = request.get_json() or {}
         root_filter = data.get("path")
 
+        # Standard library imports
         import asyncio
 
         loop = asyncio.get_event_loop()
@@ -82,6 +93,7 @@ def apply_plan() -> ResponseReturnValue:
         data = request.get_json() or {}
         dry_run = data.get("dry_run", False)
 
+        # Standard library imports
         import asyncio
 
         loop = asyncio.get_event_loop()
@@ -109,6 +121,7 @@ def rollback() -> ResponseReturnValue:
         if not selfinc_service:
             return jsonify({"error": "Self-incorporation service not available"}), 503
 
+        # Standard library imports
         import asyncio
 
         loop = asyncio.get_event_loop()
@@ -137,6 +150,7 @@ def get_audit() -> ResponseReturnValue:
         action_filter = request.args.get("action")
         status_filter = request.args.get("status")
 
+        # Standard library imports
         import asyncio
 
         loop = asyncio.get_event_loop()
@@ -176,6 +190,7 @@ def get_metrics() -> ResponseReturnValue:
                 }
             )
 
+        # Standard library imports
         import asyncio
 
         loop = asyncio.get_event_loop()
@@ -314,6 +329,7 @@ def evaluate_ethics() -> ResponseReturnValue:
                 complexity_score = 0.0
             if complexity_score >= 0.6:
                 risk_level = "medium"
+        # Standard library imports
         import hashlib
         import sqlite3
         import time as _time
@@ -383,6 +399,7 @@ def get_ethics_audit(trace_id: str) -> ResponseReturnValue:
             return jsonify({"error": "Self-incorporation service not available"}), 503
 
         # Debug: print trace_id and audit DB path (absolute)
+        # Standard library imports
         import os
 
         audit_db_path = getattr(selfinc_service.config, "audit_db_path", None)
@@ -395,6 +412,7 @@ def get_ethics_audit(trace_id: str) -> ResponseReturnValue:
         if hasattr(selfinc_service, "audit_ledger"):
             try:
                 # instrumentation: count rows with trace_id first
+                # Standard library imports
                 import sqlite3
 
                 conn = sqlite3.connect(selfinc_service.config.audit_db_path)
@@ -415,13 +433,16 @@ def get_ethics_audit(trace_id: str) -> ResponseReturnValue:
                 logger.debug(f"[SELFINC][ETHICS] Trace lookup error: {e}")
 
         if not record:
-            return jsonify(
-                {
-                    "trace_id": trace_id,
-                    "status": "not_found",
-                    "message": "No audit record for trace id",
-                }
-            ), 404
+            return (
+                jsonify(
+                    {
+                        "trace_id": trace_id,
+                        "status": "not_found",
+                        "message": "No audit record for trace id",
+                    }
+                ),
+                404,
+            )
 
         return jsonify(
             {

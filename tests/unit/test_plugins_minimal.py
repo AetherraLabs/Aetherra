@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+# Standard library imports
 import json
 
+# Third party imports
 from flask import Flask
 
+# Aetherra imports
 from aetherra_hub.app import create_app
 from aetherra_hub.config import Settings
 

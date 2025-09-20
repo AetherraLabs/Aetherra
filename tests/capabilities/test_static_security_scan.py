@@ -1,5 +1,7 @@
+# Standard library imports
 from pathlib import Path
 
+# Aetherra imports
 from tools.static_security_scan import scan_root
 
 

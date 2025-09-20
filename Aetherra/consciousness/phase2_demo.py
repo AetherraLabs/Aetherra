@@ -9,6 +9,7 @@ Demonstrates the expanded consciousness system with integrated agents
 working together under Lyrixa's orchestration.
 """
 
+# Standard library imports
 import asyncio
 import logging
 from datetime import datetime
@@ -51,6 +52,7 @@ class Phase2ConsciousnessDemo:
 
         try:
             # Import core consciousness components
+            # Aetherra imports
             from Aetherra.consciousness.agents.agent_registry import AgentRegistry
             from Aetherra.consciousness.core.consciousness_bridge import (
                 ConsciousnessBridge,
@@ -97,6 +99,7 @@ class Phase2ConsciousnessDemo:
 
         # Load integration report to show what was integrated
         try:
+            # Standard library imports
             import json
 
             with open("phase2_integration_report.json", encoding="utf-8") as f:

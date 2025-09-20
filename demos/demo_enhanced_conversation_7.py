@@ -10,6 +10,7 @@ Demonstration of Lyrixa's Enhanced Conversational AI capabilities
 with multi-turn memory, intent translation, and advanced context management.
 """
 
+# Standard library imports
 import asyncio
 import os
 import sys
@@ -17,6 +18,7 @@ import sys
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+# Third party imports
 from enhanced_conversation_manager_7 import LyrixaEnhancedConversationManager
 
 

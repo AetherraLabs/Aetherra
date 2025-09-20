@@ -15,6 +15,7 @@ This file remains only as a compatibility forwarder and will be removed.
 
 from __future__ import annotations
 
+# Standard library imports
 import sys
 import traceback
 
@@ -22,6 +23,7 @@ import traceback
 def aetherra_startup() -> bool:
     try:
         # Prefer headless OS entrypoint to avoid accidental GUI
+        # Aetherra imports
         import aetherra_os as _os  # type: ignore
 
         if hasattr(_os, "main"):

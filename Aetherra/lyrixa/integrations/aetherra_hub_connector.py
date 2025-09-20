@@ -7,6 +7,7 @@ Aetherra Hub Connector for Lyrixa
 Connects Lyrixa to the existing Aetherra Hub infrastructure
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -15,6 +16,7 @@ import sys
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
+# Third party imports
 import aiohttp
 import websockets
 

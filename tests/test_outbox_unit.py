@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import os
 
 
@@ -9,6 +10,7 @@ def test_outbox_enqueue_iter_clear(tmp_path):
     old_cwd = os.getcwd()
     os.chdir(tmp_path)
     try:
+        # Aetherra imports
         from aetherra_outbox import Outbox
 
         ob = Outbox()

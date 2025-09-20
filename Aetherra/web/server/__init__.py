@@ -18,6 +18,7 @@ Key Components:
 - Server configuration and management
 """
 
+# Standard library imports
 import logging
 
 logger = logging.getLogger(__name__)
@@ -40,6 +41,7 @@ def get_server_status():
 def get_web_adapter():
     """Get the web interface adapter."""
     try:
+        # Local imports
         from .web_adapter import web_adapter
 
         SERVER_SYSTEMS["adapter"] = True
@@ -52,6 +54,7 @@ def get_web_adapter():
 def get_web_bridge():
     """Get the web bridge components."""
     try:
+        # Standard library imports
         import importlib.util
 
         spec = importlib.util.find_spec("Aetherra.web.server.web_bridge")
@@ -67,6 +70,7 @@ def get_web_bridge():
 def get_interface_server():
     """Get the web interface server."""
     try:
+        # Standard library imports
         import importlib.util
 
         spec = importlib.util.find_spec("Aetherra.web.server.web_interface_server")

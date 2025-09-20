@@ -15,6 +15,7 @@ enabling Lyrixa to act as a sophisticated AI agent with:
 - Inter-agent communication
 """
 
+# Standard library imports
 import logging
 import sys
 from datetime import datetime
@@ -32,6 +33,7 @@ logger = logging.getLogger(__name__)
 # Import Aetherra agent components
 try:
     # Try to import actual agent modules first
+    # Aetherra imports
     from Aetherra.aetherra_core.agents.agent_executor import (
         AgentExecutor as CoreAgentExecutor,
     )

@@ -9,6 +9,7 @@ left-to-right then wraps based on available width.
 
 from __future__ import annotations
 
+# Third party imports
 from PySide6.QtCore import QPoint, QRect, QSize
 from PySide6.QtWidgets import QLayout, QLayoutItem, QSizePolicy, QWidget
 

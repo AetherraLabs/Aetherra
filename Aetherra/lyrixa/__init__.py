@@ -14,11 +14,13 @@ __author__ = "Aetherra Labs"
 
 # Import core components for easy access
 try:
+    # Local imports
     from .intelligence.lyrixa_full_intelligence import LyrixaIntelligenceCore
 except ImportError:
     LyrixaIntelligenceCore = None
 
 try:
+    # Local imports
     from .LyrixaCore import LyrixaCoreInterface, get_lyrixa_core
 except ImportError:
     get_lyrixa_core = None

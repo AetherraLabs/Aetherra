@@ -16,12 +16,8 @@ Future:
     - Plugin scaffolding logic
 """
 
-from .orchestrator import (
-    CodeOrchestrator,
-    CommitResult,
-    PatchResult,
-    PlanResult,
-)
+# Local imports
+from .orchestrator import CodeOrchestrator, CommitResult, PatchResult, PlanResult
 
 __all__ = [
     "CodeOrchestrator",

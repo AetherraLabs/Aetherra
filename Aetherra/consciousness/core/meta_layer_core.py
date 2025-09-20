@@ -19,16 +19,19 @@ Version: 1.0.0
 Date: August 4, 2025
 """
 
+# Standard library imports
 import asyncio
+import contextlib
 import logging
 import uuid
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set
 
-from consciousness_bridge import (
+# Third party imports
+from ..core.consciousness_bridge import (
     ConsciousnessMessage,
     get_consciousness_bridge,
 )
@@ -862,8 +865,6 @@ class MetaLayerCore:
     async def _remove_stale_agent(self, agent_id: str):
         """Remove a stale agent from the system"""
         if agent_id in self.agents:
-            agent = self.agents[agent_id]
-
             # Remove connections to this agent
             for other_agent in self.agents.values():
                 other_agent.connections.discard(agent_id)
@@ -881,19 +882,18 @@ class MetaLayerCore:
         agent_id = event_data.get("agent_id")
         system_id = event_data.get("system_id")
 
-        if agent_id and system_id:
+        if agent_id and system_id and agent_id not in self.agents:
             # Create agent profile if not exists
-            if agent_id not in self.agents:
-                self.agents[agent_id] = AgentProfile(
-                    agent_id=agent_id,
-                    name=agent_id,  # Will be updated when agent provides more info
-                    agent_type="unknown",
-                    capabilities=[],
-                    system_origin=system_id,
-                    state=AgentState.ACTIVE,
-                )
+            self.agents[agent_id] = AgentProfile(
+                agent_id=agent_id,
+                name=agent_id,  # Will be updated when agent provides more info
+                agent_type="unknown",
+                capabilities=[],
+                system_origin=system_id,
+                state=AgentState.ACTIVE,
+            )
 
-                self.logger.info(f"Registered new agent: {agent_id} from {system_id}")
+            self.logger.info(f"Registered new agent: {agent_id} from {system_id}")
 
     async def _on_agent_unregistered(self, event_data: Dict[str, Any]):
         """Handle agent unregistration event"""
@@ -978,10 +978,7 @@ class MetaLayerCore:
 
             # Check system origin
             system_origins = criteria.get("system_origins", [])
-            if system_origins and agent.system_origin not in system_origins:
-                return False
-
-            return True
+            return not (system_origins and agent.system_origin not in system_origins)
 
         except Exception as e:
             self.logger.error(f"Error matching agent criteria: {e}")
@@ -1209,10 +1206,8 @@ class MetaLayerCore:
 
         if self.coordination_task:
             self.coordination_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self.coordination_task
-            except asyncio.CancelledError:
-                pass
 
         # Clear data structures
         self.agents.clear()
@@ -1248,6 +1243,7 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.INFO)
 
         # Initialize consciousness bridge first
+        # Third party imports
         from consciousness_bridge import initialize_consciousness_bridge
 
         await initialize_consciousness_bridge()

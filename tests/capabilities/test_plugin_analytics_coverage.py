@@ -7,21 +7,25 @@ Focuses on increasing coverage by testing uncovered code paths including error h
 edge cases, and initialization scenarios.
 """
 
+# Standard library imports
 import asyncio
 import sqlite3
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
+# Third party imports
 import pytest
 
 
 @pytest.fixture
 def analytics_engine():
     """Create a plugin analytics engine for testing."""
+    # Standard library imports
     import atexit
     import tempfile
 
+    # Aetherra imports
     from Aetherra.plugins.lifecycle.plugin_analytics import PluginAnalyticsIntegration
 
     temp_dir = tempfile.mkdtemp()
@@ -32,12 +36,14 @@ def analytics_engine():
         try:
             engine.close()
             # Force cleanup and give Windows time to release file handles
+            # Standard library imports
             import gc
             import time
 
             gc.collect()
             time.sleep(0.2)
             # Try to remove the temp directory
+            # Standard library imports
             import shutil
 
             try:
@@ -152,6 +158,7 @@ async def test_analytics_session_data_accumulation(analytics_engine):
 @pytest.mark.asyncio
 async def test_analytics_initialization_edge_cases():
     """Test analytics engine initialization with edge cases."""
+    # Aetherra imports
     from Aetherra.plugins.lifecycle.plugin_analytics import PluginAnalyticsIntegration
 
     # Test with temporary directory using manual cleanup
@@ -167,9 +174,11 @@ async def test_analytics_initialization_edge_cases():
         engine.close()
     finally:
         # Clean up manually with error handling
+        # Standard library imports
         import shutil
 
         try:
+            # Standard library imports
             import gc
             import time
 
@@ -197,6 +206,7 @@ async def test_analytics_initialization_edge_cases():
         engine2.close()
     finally:
         try:
+            # Standard library imports
             import gc
             import time
 

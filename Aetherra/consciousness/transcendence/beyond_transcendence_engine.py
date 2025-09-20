@@ -6,6 +6,7 @@ Re-uses root implementation if present; otherwise contains minimal shim.
 
 from __future__ import annotations
 
+# Standard library imports
 import logging
 import math
 import os
@@ -13,6 +14,7 @@ from dataclasses import dataclass, field
 from typing import Any  # TODO: narrow types if needed
 
 try:
+    # Aetherra imports
     from Aetherra.consciousness.intelligence.meta_cognition import MetaCognitionSystem
 except Exception:  # pragma: no cover
     MetaCognitionSystem = None  # type: ignore
@@ -51,7 +53,9 @@ class BeyondTranscendenceEngine:
             self._baseline = 0.72
 
         if MetaCognitionSystem is None:
-            logger.warning("[Phase8.3] MetaCognitionSystem unavailable; adapter degraded")
+            logger.warning(
+                "[Phase8.3] MetaCognitionSystem unavailable; adapter degraded"
+            )
             self._meta = None
         else:
             try:
@@ -76,7 +80,11 @@ class BeyondTranscendenceEngine:
         raw = 0.0
         if self._meta is not None:
             try:
-                raw = float(self._meta.assess_meta_memory_coverage().get("overall_coverage", 0.0))
+                raw = float(
+                    self._meta.assess_meta_memory_coverage().get(
+                        "overall_coverage", 0.0
+                    )
+                )
             except Exception as e:
                 # Count suppressed exception
                 self.metrics["suppressed_exceptions"] += 1

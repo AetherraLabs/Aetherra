@@ -12,12 +12,13 @@ This script only creates missing __init__.py files and tests basic imports.
 For full dependency management, use fix_imports.py
 """
 
-
+# Standard library imports
+import importlib
 import sys
 from pathlib import Path
 
 
-def check_python_version():
+def check_python_version() -> bool:
     """Check if Python version is compatible."""
     print("🐍 Checking Python version...")
 
@@ -34,7 +35,7 @@ def check_python_version():
     return True
 
 
-def create_init_file(directory: Path, package_name: str = None):
+def create_init_file(directory: Path, package_name: str | None = None) -> bool:
     """Create a basic __init__.py file."""
     if package_name is None:
         package_name = directory.name.replace("_", " ").title()
@@ -74,7 +75,7 @@ __all__ = ['get_package_status', 'PACKAGE_AVAILABLE']
         return False
 
 
-def fix_missing_inits():
+def fix_missing_inits() -> bool:
     """Fix missing __init__.py files."""
     print("🔍 Scanning for missing __init__.py files...")
 
@@ -104,37 +105,45 @@ def fix_missing_inits():
 
     fixed_count = 0
     for dir_path, package_name in important_dirs:
-        if dir_path.exists() and dir_path.is_dir():
-            if create_init_file(dir_path, package_name):
-                fixed_count += 1
+        if (
+            dir_path.exists()
+            and dir_path.is_dir()
+            and create_init_file(dir_path, package_name)
+        ):
+            fixed_count += 1
 
     print(f"✅ Fixed {fixed_count} missing __init__.py files")
     return True
 
 
-def test_basic_imports():
+def test_basic_imports() -> int:
     """Test basic import patterns."""
     print("🧪 Testing basic imports...")
 
     tests = [
-        ("aetherra_core", "from Aetherra.aetherra_core import get_package_status"),
-        ("kernel_loop", "from aetherra_kernel_loop import AetherraKernelLoop"),
-        ("os_launcher", "import aetherra_os_launcher"),
+        ("aetherra_core", "Aetherra.aetherra_core", "get_package_status"),
+        ("kernel_loop", "aetherra_kernel_loop", "AetherraKernelLoop"),
+        ("os_launcher", "aetherra_os_launcher", None),
     ]
 
     passed = 0
-    for name, import_statement in tests:
+    for name, module_name, attr_name in tests:
         try:
-            exec(import_statement)
+            module = importlib.import_module(module_name)
+            if attr_name is not None:
+                # Access attribute to ensure it's importable
+                getattr(module, attr_name)
             print(f"✅ {name} import - Success")
             passed += 1
-        except Exception as e:
+        except (
+            Exception
+        ) as e:  # noqa: BLE001 - tooling-only broad catch to report status
             print(f"[WARN]  {name} import - Failed: {e}")
 
     return passed
 
 
-def main():
+def main() -> int:
     """Main function."""
     print("🌌 Aetherra Quick Import Fix")
     print("=" * 40)

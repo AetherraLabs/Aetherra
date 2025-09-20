@@ -6,9 +6,11 @@
 Advanced consciousness monitoring and visualization interface with quantum dashboards.
 """
 
+# Standard library imports
 import logging
 from datetime import datetime
 
+# Third party imports
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
 from PySide6.QtGui import QFont  # noqa: F401 (optional runtime import)
 from PySide6.QtWebChannel import QWebChannel
@@ -32,8 +34,10 @@ for module_name in [
 ]:
     try:
         if module_name == "quantum_temporal_interface":
+            # Local imports
             from .quantum_temporal_interface import QuantumTemporalInterface
         else:
+            # Local imports
             from .consciousness.quantum_temporal_interface import (
                 QuantumTemporalInterface,
             )
@@ -47,8 +51,10 @@ for module_name in [
 ]:
     try:
         if module_name == "evolution_monitoring_system":
+            # Local imports
             from .evolution_monitoring_system import EvolutionMonitoringSystem
         else:
+            # Local imports
             from .consciousness.evolution_monitoring_system import (
                 EvolutionMonitoringSystem,
             )
@@ -62,8 +68,10 @@ for module_name in [
 ]:
     try:
         if module_name == "meta_learning_control_panel":
+            # Local imports
             from .meta_learning_control_panel import MetaLearningControlPanel
         else:
+            # Local imports
             from .consciousness.meta_learning_control_panel import (
                 MetaLearningControlPanel,
             )
@@ -167,6 +175,7 @@ class ConsciousnessWebBridge(QObject):
                     )
 
             # Run in thread to avoid blocking UI
+            # Standard library imports
             import threading
 
             threading.Thread(target=run_async_command, daemon=True).start()
@@ -1000,11 +1009,13 @@ __all__ = ["ConsciousnessPanel", "create_consciousness_panel"]
 
 
 if __name__ == "__main__":
+    # Standard library imports
     import sys
 
+    # Third party imports
     from PySide6.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
     panel = create_consciousness_panel()
     panel.show()
-    sys.exit(app.exec())
+    sys.exit(app.exec())  # nosec B102: Qt application execution

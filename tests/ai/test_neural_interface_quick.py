@@ -10,6 +10,7 @@ Simple integration test to verify the Neural Interface can be launched
 and basic functionality works correctly.
 """
 
+# Standard library imports
 import sys
 from pathlib import Path
 
@@ -27,11 +28,13 @@ def test_neural_interface_quick():
 
     try:
         # Test Qt availability
+        # Third party imports
         from PySide6.QtWidgets import QApplication
 
         print("✅ Qt framework available")
 
         # Test GUI components import
+        # Third party imports
         from gui.aetherra_neural_interface import (
             AetherraNeralInterface,
             create_aetherra_neural_interface,
@@ -98,6 +101,7 @@ def test_neural_interface_quick():
 
     except Exception as e:
         print(f"[ERROR] Test failed: {e}")
+        # Standard library imports
         import traceback
 
         traceback.print_exc()

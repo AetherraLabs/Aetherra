@@ -5,6 +5,7 @@
 Pytest configuration for Aetherra tests
 """
 
+# Standard library imports
 import asyncio
 import inspect
 import os
@@ -12,6 +13,7 @@ import sys
 import warnings
 from pathlib import Path
 
+# Third party imports
 import pytest
 
 # Add the project root to the Python path

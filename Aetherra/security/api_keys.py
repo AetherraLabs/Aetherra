@@ -18,6 +18,7 @@ Encryption design:
 
 from __future__ import annotations
 
+# Standard library imports
 import contextlib
 import json
 import os
@@ -26,6 +27,7 @@ from pathlib import Path
 from typing import Any
 
 try:  # Optional dependency
+    # Third party imports
     from cryptography.fernet import Fernet  # type: ignore
 except Exception:  # pragma: no cover - optional
     Fernet = None  # type: ignore

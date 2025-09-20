@@ -6,9 +6,11 @@ Captures latency + TTFT (placeholder) observations into metrics_accum.ChatMetric
 
 from __future__ import annotations
 
+# Standard library imports
 import time
 from typing import Any, Dict, Mapping, Tuple
 
+# Local imports
 from ..utils.http import run_coro_blocking
 from .metrics_accum import chat_metrics
 from .security import policy_snapshot, safety_precheck
@@ -27,6 +29,7 @@ def _registry_call(
     ttl_sec,
 ):
     try:
+        # Aetherra imports
         from aetherra_service_registry import get_service_registry  # type: ignore
 
         async def _call():
@@ -225,12 +228,14 @@ def _observe_latency(t0: float):
 
 
 def _gen_trace_id() -> str:
+    # Standard library imports
     import uuid
 
     return uuid.uuid4().hex
 
 
 def _std_headers(trace_id: str, policy=None) -> Dict[str, str]:
+    # Standard library imports
     import json
 
     pol = policy or policy_snapshot()

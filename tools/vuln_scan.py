@@ -16,6 +16,7 @@ Exit non-zero if any vulnerability meets or exceeds the configured fail level
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import json
 import os

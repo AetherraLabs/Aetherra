@@ -12,6 +12,7 @@ This plugin provides comprehensive web research capabilities including:
 - Citation management and source tracking
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -22,9 +23,11 @@ from datetime import datetime
 from typing import Any
 from urllib.parse import quote, urljoin, urlparse
 
+# Third party imports
 import aiohttp
 
 try:
+    # Third party imports
     from bs4 import BeautifulSoup
 
     BEAUTIFULSOUP_AVAILABLE = True
@@ -32,6 +35,7 @@ except ImportError:
     BEAUTIFULSOUP_AVAILABLE = False
 
 try:
+    # Third party imports
     import requests
 
     REQUESTS_AVAILABLE = True
@@ -39,6 +43,7 @@ except ImportError:
     REQUESTS_AVAILABLE = False
 
 try:
+    # Third party imports
     from newspaper import Article
 
     NEWSPAPER_AVAILABLE = True
@@ -46,6 +51,7 @@ except ImportError:
     NEWSPAPER_AVAILABLE = False
 
 try:
+    # Third party imports
     from textstat import automated_readability_index, flesch_reading_ease
 
     TEXTSTAT_AVAILABLE = True
@@ -326,6 +332,7 @@ class WebExtractor:
 
     def _extract_title_fallback(self, html: str) -> str:
         """Fallback title extraction without BeautifulSoup."""
+        # Standard library imports
         import re
 
         # Extract title from HTML
@@ -339,6 +346,7 @@ class WebExtractor:
 
     def _extract_content_fallback(self, html: str) -> str:
         """Fallback content extraction without BeautifulSoup."""
+        # Standard library imports
         import html as html_module
         import re
 
@@ -450,6 +458,7 @@ class WebExtractor:
 
     def _clean_content(self, content: str) -> str:
         """Clean extracted content."""
+        # Standard library imports
         import re
 
         # Remove excessive whitespace
@@ -543,6 +552,7 @@ class SearchEngine:
 
     def _is_safe_url(self, url: str) -> bool:
         """Validate that URL is safe and well-formed."""
+        # Standard library imports
         import urllib.parse
 
         if not url:
@@ -624,6 +634,7 @@ class FactChecker:
 
     def _extract_claims(self, content: str) -> list[str]:
         """Extract factual claims from content."""
+        # Standard library imports
         import re
 
         # Simple claim extraction based on sentence patterns
@@ -820,6 +831,7 @@ class WebResearchAssistantPlugin:
 
     def _is_safe_url(self, url: str) -> bool:
         """Validate that URL is safe and well-formed."""
+        # Standard library imports
         import urllib.parse
 
         if not url:

@@ -1,6 +1,8 @@
+# Standard library imports
 import pathlib
 import re
 
+# Aetherra imports
 from aetherra_hub.services import metrics_accum
 
 # Minimal drift guard: ensure every ChatMetrics exported counter/gauge appears at least once

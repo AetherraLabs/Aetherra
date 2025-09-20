@@ -20,6 +20,7 @@ This utility provides:
 Author: Aetherra Labs
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -29,6 +30,7 @@ import time
 from pathlib import Path
 from typing import Dict, List
 
+# Third party imports
 import psutil
 
 # Setup logging
@@ -277,6 +279,7 @@ class AetherraRestartManager:
                     if temp_file.is_file():
                         temp_file.unlink()
                     elif temp_file.is_dir():
+                        # Standard library imports
                         import shutil
 
                         shutil.rmtree(temp_file)
@@ -311,6 +314,7 @@ class AetherraRestartManager:
 
         # Check 1: Python environment
         try:
+            # Standard library imports
             import sys
 
             python_version = sys.version_info
@@ -357,6 +361,7 @@ class AetherraRestartManager:
 
         # Check 5: Network connectivity (optional)
         try:
+            # Standard library imports
             import socket
 
             socket.create_connection(("8.8.8.8", 53), timeout=5)
@@ -510,6 +515,7 @@ class AetherraRestartManager:
 
 async def main():
     """Main entry point for the restart utility"""
+    # Standard library imports
     import argparse
 
     parser = argparse.ArgumentParser(description="Aetherra System Restart Utility")

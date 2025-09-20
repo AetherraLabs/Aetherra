@@ -11,12 +11,14 @@ This provides a quick way to see what plugins have been discovered and
 would be visible in the Aetherra Hub marketplace.
 """
 
+# Standard library imports
 import asyncio
 import json
 import threading
 import tkinter as tk
 from tkinter import messagebox, scrolledtext, ttk
 
+# Aetherra imports
 from aetherra_plugin_discovery import AetherraPluginDiscovery
 
 
@@ -216,6 +218,7 @@ class PluginViewerGUI:
     def export_plugin_list(self):
         """Export the plugin list to a file."""
         try:
+            # Standard library imports
             from tkinter import filedialog
 
             # Ask for save location

@@ -13,15 +13,18 @@ Safe to delete after migration.
 
 from __future__ import annotations
 
+# Standard library imports
 import warnings
 
 try:  # optional legacy flag
+    # Third party imports
     from flask import Flask  # type: ignore  # noqa: F401
 
     FLASK_AVAILABLE = True
 except Exception:  # pragma: no cover
     FLASK_AVAILABLE = False  # type: ignore
 
+# Aetherra imports
 from aetherra_hub.compat import AetherraHubServer, start_hub_server  # noqa: F401
 
 warnings.filterwarnings("once", category=DeprecationWarning, module=__name__)

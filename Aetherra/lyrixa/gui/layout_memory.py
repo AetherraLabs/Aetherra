@@ -7,6 +7,7 @@
 Manages persistent GUI state and learned user preferences.
 """
 
+# Standard library imports
 import json
 import logging
 import sqlite3
@@ -15,8 +16,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+# Third party imports
 from PySide6.QtCore import QMutex
 
+# Local imports
 from .phase6_types import GUIState
 
 logger = logging.getLogger(__name__)

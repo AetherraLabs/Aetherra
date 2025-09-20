@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 # core/interpreter.py
 import ast
 import difflib
@@ -17,8 +18,10 @@ from typing import Any, List
 try:
     # Try relative imports first (when run as module)
     try:
+        # Third party imports
         from core.memory.base import AetherraMemory  # type: ignore
 
+        # Local imports
         from .agent import AetherraAgent  # type: ignore
         from .ai_runtime import auto_tag_content  # type: ignore
         from .ai_runtime import ask_ai, reflect_on_memories, suggest_next_actions
@@ -30,6 +33,7 @@ try:
         from .plugin_manager import PLUGIN_REGISTRY  # type: ignore
     except ImportError:
         # Fallback to direct imports (when run from parent directory)
+        # Third party imports
         from core.aetherra_memory import AetherraMemory  # type: ignore
         from core.block_executor import BlockExecutor  # type: ignore
         from core.debug_system import AetherraDebugSystem  # type: ignore
@@ -38,12 +42,14 @@ try:
         from core.meta_plugins import MetaPluginSystem  # type: ignore
         from core.plugin_manager import PLUGIN_REGISTRY  # type: ignore
 
+        # Local imports
         from ..agent import AetherraAgent  # type: ignore
         from ..ai_runtime import auto_tag_content  # type: ignore
         from ..ai_runtime import ask_ai, reflect_on_memories, suggest_next_actions
 except ImportError:
     # Fallback for when running as standalone script or from different context
     try:
+        # Third party imports
         from core.aetherra_memory import AetherraMemory  # type: ignore
         from core.agent import AetherraAgent  # type: ignore
         from core.ai_runtime import auto_tag_content  # type: ignore
@@ -56,6 +62,7 @@ except ImportError:
         from core.plugin_manager import PLUGIN_REGISTRY  # type: ignore
     except ImportError:
         # Silently handle missing dependencies and try alternative import paths
+        # Standard library imports
         import sys
         from pathlib import Path
 
@@ -72,6 +79,7 @@ except ImportError:
 
         # Try importing again with correct path
         try:
+            # Third party imports
             from agent import AetherraAgent  # type: ignore
             from ai_runtime import auto_tag_content  # type: ignore
             from ai_runtime import ask_ai, reflect_on_memories, suggest_next_actions
@@ -274,9 +282,11 @@ PLUGIN_REGISTRY = {}
 
 # Import stdlib manager for standard plugins
 try:
+    # Aetherra imports
     from Aetherra.stdlib import stdlib_manager
 except ImportError:
     try:
+        # Local imports
         from ...stdlib import stdlib_manager
     except ImportError:
         print("⚠️ Standard library manager not available")
@@ -387,6 +397,7 @@ class AetherraInterpreter:
         - remember("content") as "tag" category: "learning"
         - remember("content") with confidence: 0.9 as "tag"
         """
+        # Standard library imports
         import re
 
         # Pattern: remember("content") as "tags" [optional extras]
@@ -435,6 +446,7 @@ class AetherraInterpreter:
         - goal: "objective" priority: medium deadline: "next week"
         - goal: "objective" with agent: "specialist" priority: high
         """
+        # Standard library imports
         import re
 
         # Extract goal content
@@ -470,6 +482,7 @@ class AetherraInterpreter:
 
     def _parse_enhanced_agent(self, line):
         """Enhanced agent command parsing with specialization"""
+        # Standard library imports
         import re
 
         # Pattern: agent: on specialization: "data analysis"
@@ -492,6 +505,7 @@ class AetherraInterpreter:
 
     def _parse_enhanced_plugin(self, line):
         """Enhanced plugin command with parameter parsing"""
+        # Standard library imports
         import re
 
         # Pattern: plugin: name(param1="value1", param2="value2")
@@ -1016,6 +1030,7 @@ Answer this: {query}"""
             self.loaded_files[filename] = content
 
             # Use AI to analyze the file and provide insights
+            # Third party imports
             from core.ai_runtime import analyze_code_structure, generate_code_summary
 
             analysis = analyze_code_structure(content, filename)
@@ -1055,6 +1070,7 @@ Answer this: {query}"""
         )  # Recent relevant memories
 
         # Use AI to perform deep code analysis
+        # Third party imports
         from core.ai_runtime import deep_code_analysis, suggest_code_improvements
 
         analysis = deep_code_analysis(content, filename, memory_context)
@@ -1096,6 +1112,7 @@ Answer this: {query}"""
         memory_context = "\n".join([m["text"] for m in memories[-3:]])
 
         # Use AI to suggest refactoring
+        # Third party imports
         from core.ai_runtime import justify_refactoring, suggest_refactoring
 
         refactor_suggestion = suggest_refactoring(
@@ -1517,6 +1534,7 @@ Answer this: {query}"""
 
     def _extract_function_name(self, line):
         """Extract function name from definition line"""
+        # Standard library imports
         import re
 
         match = re.search(r"define\s+(\w+)", line)
@@ -1581,6 +1599,7 @@ Answer this: {query}"""
 
         # Parse function signature
         signature = self.block_buffer[0].strip()
+        # Standard library imports
         import re
 
         # Enhanced function parsing: define func_name(param1, param2) or define func_name:

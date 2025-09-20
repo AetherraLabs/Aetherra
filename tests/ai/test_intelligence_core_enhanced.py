@@ -11,6 +11,7 @@ This version attempts to import actual modules and provides comprehensive testin
 """
 
 
+# Standard library imports
 import sys
 import unittest
 from pathlib import Path
@@ -68,6 +69,7 @@ def try_import_intelligence_modules():
         )
 
         # Try importing modules directly
+        # Third party imports
         import intelligence
         import personality_engine
 
@@ -88,6 +90,7 @@ def try_import_intelligence_modules():
 
 def create_stub_modules():
     """Create comprehensive stub modules for testing"""
+    # Standard library imports
     from datetime import datetime
     from enum import Enum
 

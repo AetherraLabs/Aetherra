@@ -9,6 +9,7 @@ Test Unicode encoding fixes
 print("=== UNICODE ENCODING TEST ===")
 print("Testing imports...")
 
+# Standard library imports
 import sys
 
 sys.path.insert(0, ".")

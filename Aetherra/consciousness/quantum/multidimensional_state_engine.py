@@ -23,6 +23,7 @@ Version: 7.4.0 - Multidimensional Expansion
 Date: August 5, 2025
 """
 
+# Standard library imports
 import asyncio
 import logging
 import math
@@ -32,6 +33,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
+# Third party imports
 import numpy as np
 
 # Import supporting systems

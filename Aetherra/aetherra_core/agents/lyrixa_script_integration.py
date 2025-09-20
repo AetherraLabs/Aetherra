@@ -4,10 +4,12 @@
 # Aetherra Library Integration for Lyrixa
 # Main integration module that handles script library initialization and management
 
+# Standard library imports
 import os
 import sys
 from typing import Any, Dict
 
+# Aetherra imports
 from Aetherra.runtime.script_memory_integrator import script_memory_integrator
 from Aetherra.runtime.script_registry_loader import script_registry_loader
 from Aetherra.runtime.script_router import ScriptRouter

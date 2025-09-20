@@ -7,10 +7,12 @@
 Generates dynamic ThemeConfiguration based on PersonalityState and EmotionalState.
 """
 
+# Standard library imports
 import logging
 from dataclasses import asdict
 from typing import Dict
 
+# Local imports
 from .phase6_types import EmotionalState, PersonalityState, ThemeConfiguration
 
 logger = logging.getLogger(__name__)

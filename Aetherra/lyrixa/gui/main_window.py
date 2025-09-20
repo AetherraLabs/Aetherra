@@ -17,6 +17,7 @@ Architecture:
 - Styling: Authentic Aetherra colors and effects
 """
 
+# Standard library imports
 import json
 import logging
 import os
@@ -26,6 +27,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
+# Third party imports
 from PySide6.QtCore import Qt, QTimer, QUrl, Slot
 from PySide6.QtWebChannel import QWebChannel
 from PySide6.QtWebEngineWidgets import QWebEngineView
@@ -40,6 +42,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+# Local imports
 from .context_bridge import LyrixaContextBridge as LyrixaWebBridge
 
 # Phase 3: Auto-Generation System
@@ -61,6 +64,7 @@ try:
     # Try to import from project root
     project_root = Path(__file__).parent.parent.parent.parent
     sys.path.insert(0, str(project_root))
+    # Aetherra imports
     from unicode_logger import get_safe_logger
 
     logger = get_safe_logger(__name__)
@@ -68,6 +72,7 @@ try:
 except ImportError as e:
     # Fallback to regular logger if unicode_logger not available
     print(f"❌ Unicode logger import failed: {e}, falling back to standard logger")
+    # Standard library imports
     import logging
 
     logger = logging.getLogger(__name__)
@@ -473,6 +478,7 @@ class LyrixaHybridWindow(QMainWindow):
 
             # Adjust emotional state heuristically
             try:
+                # Local imports
                 from .phase6_personality import EmotionalState
 
                 if depth > 0.75:
@@ -510,6 +516,7 @@ class LyrixaHybridWindow(QMainWindow):
             elif "memory_recall" in thought_type:
                 # contemplative nudge
                 try:
+                    # Local imports
                     from .phase6_personality import EmotionalState
 
                     ps.emotional_state = EmotionalState.CONTEMPLATIVE
@@ -534,6 +541,7 @@ class LyrixaHybridWindow(QMainWindow):
 
             ps = pm.ai.personality_state
             try:
+                # Local imports
                 from .phase6_personality import EmotionalState
 
                 if status == "completed":
@@ -765,6 +773,7 @@ class LyrixaHybridWindow(QMainWindow):
             ):
                 # Use style manager for safe CSS injection
                 try:
+                    # Aetherra imports
                     from Aetherra.lyrixa.integrations.style_manager import (
                         JavaScriptStyleManager,
                     )
@@ -1008,6 +1017,7 @@ class LyrixaHybridWindow(QMainWindow):
 
         except Exception as e:
             logger.error(f"❌ Error loading panel {panel_id}: {e}")
+            # Standard library imports
             import traceback
 
             logger.debug(f"Full traceback: {traceback.format_exc()}")
@@ -1019,6 +1029,7 @@ class LyrixaHybridWindow(QMainWindow):
 
             # Try to import consciousness panel
             try:
+                # Local imports
                 from .consciousness_panel import create_consciousness_panel
 
                 logger.debug("Successfully imported consciousness_panel")
@@ -1071,6 +1082,7 @@ class LyrixaHybridWindow(QMainWindow):
 
         except Exception as e:
             logger.error(f"❌ Failed to load consciousness panel: {e}")
+            # Standard library imports
             import traceback
 
             logger.debug(f"Full traceback: {traceback.format_exc()}")
@@ -1127,6 +1139,7 @@ class LyrixaHybridWindow(QMainWindow):
 
         except Exception as e:
             logger.error(f"❌ Failed to load web consciousness panel: {e}")
+            # Standard library imports
             import traceback
 
             logger.debug(f"Full traceback: {traceback.format_exc()}")
@@ -1285,6 +1298,7 @@ class LyrixaHybridWindow(QMainWindow):
     def updateMetrics(self):
         """Update metrics display."""
         # This will be connected to real backend metrics in later phases
+        # Standard library imports
         import random
 
         # Simulate live metrics for now
@@ -1365,6 +1379,7 @@ class LyrixaHybridWindow(QMainWindow):
 
         # Connect real conversation manager for the main window too
         try:
+            # Aetherra imports
             import Aetherra.aetherra_core.agents.conversation_manager as cm
 
             workspace_path = os.path.join(os.path.dirname(__file__), "..", "..", "..")
@@ -1396,14 +1411,14 @@ def main():
 
     window = LyrixaHybridWindow()
     window.show()
-
-    sys.exit(app.exec())
+    sys.exit(app.exec())  # nosec B102: Qt application execution
 
 
 # Compatibility aliasing: prefer the new LyrixaBasicWindow when available
 # unless explicitly forced to use the legacy hybrid via AETHERRA_USE_HYBRID=1
 try:
     if os.getenv("AETHERRA_USE_HYBRID", "0") != "1":
+        # Aetherra imports
         from Aetherra.lyrixa.lyrixa_basic_gui import (
             LyrixaBasicWindow as _LyrixaBasicWindow,
         )

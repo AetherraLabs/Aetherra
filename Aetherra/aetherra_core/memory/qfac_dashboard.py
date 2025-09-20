@@ -10,9 +10,11 @@ This module exposes two integration surfaces:
 - A tiny Flask app/blueprint for optional HTTP metrics
 """
 
+# Standard library imports
 import time
 from typing import Any, Dict
 
+# Third party imports
 from flask import Blueprint, Flask, jsonify
 
 # --- In-process dashboard API used by QFACMemorySystem ---
@@ -43,6 +45,7 @@ class QFACDashboard:
 
     async def get_dashboard_summary(self) -> Dict[str, Any]:
         # Pull phase metrics (always available via stubbed state tracker)
+        # Local imports
         from .qfac_state_tracker import get_qfac_phase_metrics
 
         phases = get_qfac_phase_metrics()
@@ -69,6 +72,7 @@ qfac_dashboard = Blueprint("qfac_dashboard", __name__)
 
 @app.route("/qfac/metrics")
 def qfac_metrics():
+    # Local imports
     from .qfac_state_tracker import get_qfac_phase_metrics
 
     return jsonify(get_qfac_phase_metrics())

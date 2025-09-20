@@ -17,6 +17,7 @@ Use --apply to actually delete; otherwise runs in dry-run mode.
 """
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import shutil
 from pathlib import Path

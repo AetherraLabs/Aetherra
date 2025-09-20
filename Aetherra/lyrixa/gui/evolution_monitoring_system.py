@@ -14,6 +14,7 @@ and transcendence potential indicators for consciousness evolution.
 Phase 6.1 - Advanced Consciousness Dashboards
 """
 
+# Standard library imports
 import json
 import logging
 import random
@@ -21,12 +22,28 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Dict, List
 
+# Third party imports
 import numpy as np
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from PySide6.QtCore import *
-from PySide6.QtGui import *
-from PySide6.QtWidgets import *
+from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtGui import QColor
+from PySide6.QtWidgets import (
+    QApplication,
+    QFrame,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QListWidget,
+    QListWidgetItem,
+    QProgressBar,
+    QPushButton,
+    QSlider,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -253,7 +270,7 @@ class EvolutionMonitoringSystem(QWidget):
         # Gene controls
         gene_controls = QHBoxLayout()
 
-        self.mutation_rate_slider = QSlider(Qt.Horizontal)
+        self.mutation_rate_slider = QSlider(Qt.Orientation.Horizontal)
         self.mutation_rate_slider.setRange(1, 100)
         self.mutation_rate_slider.setValue(10)
         self.mutation_rate_slider.valueChanged.connect(self.update_mutation_rate)
@@ -342,7 +359,7 @@ class EvolutionMonitoringSystem(QWidget):
         # Transcendence threshold control
         threshold_layout = QHBoxLayout()
         threshold_layout.addWidget(QLabel("Threshold:"))
-        self.threshold_slider = QSlider(Qt.Horizontal)
+        self.threshold_slider = QSlider(Qt.Orientation.Horizontal)
         self.threshold_slider.setRange(50, 99)
         self.threshold_slider.setValue(85)
         self.threshold_slider.valueChanged.connect(self.update_transcendence_threshold)
@@ -413,8 +430,10 @@ class EvolutionMonitoringSystem(QWidget):
 
         # Speed control
         speed_layout = QVBoxLayout()
-        speed_layout.addWidget(QLabel("Evolution Speed:", styleSheet="color: white;"))
-        self.speed_slider = QSlider(Qt.Horizontal)
+        _speed_label = QLabel("Evolution Speed:")
+        _speed_label.setStyleSheet("color: white;")
+        speed_layout.addWidget(_speed_label)
+        self.speed_slider = QSlider(Qt.Orientation.Horizontal)
         self.speed_slider.setRange(100, 2000)
         self.speed_slider.setValue(1000)
         self.speed_slider.valueChanged.connect(self.update_evolution_speed)
@@ -792,7 +811,7 @@ class EvolutionMonitoringSystem(QWidget):
         """Update genes composition table"""
         self.genes_table.setRowCount(len(self.consciousness_genes))
 
-        for row, (gene_id, gene) in enumerate(self.consciousness_genes.items()):
+        for row, (_, gene) in enumerate(self.consciousness_genes.items()):
             # Gene name
             self.genes_table.setItem(row, 0, QTableWidgetItem(gene.trait_name))
 
@@ -927,9 +946,10 @@ class EvolutionMonitoringSystem(QWidget):
 
 
 if __name__ == "__main__":
+    # Standard library imports
     import sys
 
     app = QApplication(sys.argv)
     system = EvolutionMonitoringSystem()
     system.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

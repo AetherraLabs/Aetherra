@@ -11,9 +11,11 @@ This transforms AetherraCode from a framework into a true programming language
 with proper syntax, grammar rules, and AST generation.
 """
 
+# Standard library imports
 from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
+# Third party imports
 from lark import Lark, Transformer
 from lark.exceptions import LarkError
 

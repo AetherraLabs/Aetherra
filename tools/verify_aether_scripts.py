@@ -12,6 +12,7 @@ Verify .aether scripts for signing and static risk.
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import os
 import random
@@ -20,10 +21,12 @@ from pathlib import Path
 from typing import List
 
 try:
+    # Third party imports
     import numpy as _np  # type: ignore
 except Exception:
     _np = None
 
+# Aetherra imports
 from Aetherra.analysis.static_risk import analyze_paths  # type: ignore
 from Aetherra.security.script_signing import verify_embedded_signature  # type: ignore
 
@@ -107,6 +110,7 @@ def main() -> int:
     # Apply excludes
     excludes = getattr(args, "exclude", []) or []
     if excludes:
+        # Standard library imports
         import fnmatch
 
         files = [

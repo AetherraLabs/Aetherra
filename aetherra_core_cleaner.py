@@ -6,6 +6,7 @@ Aetherra Core Cleanup Script
 Removes exact duplicates and reorganizes misplaced files
 """
 
+# Standard library imports
 import json
 import os
 import shutil

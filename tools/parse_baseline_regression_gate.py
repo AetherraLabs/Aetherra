@@ -23,6 +23,7 @@ The gate prints a JSON summary to stdout for CI consumption.
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import json
 import sys

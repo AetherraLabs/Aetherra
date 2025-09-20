@@ -10,16 +10,19 @@ Simple test launcher for the new Lyrixa GUI architecture.
 Demonstrates the zone-based layout and plugin system.
 """
 
+# Standard library imports
 import logging
 import sys
 from pathlib import Path
 
+# Third party imports
 from PySide6.QtWidgets import QApplication
 
 # Add project root to path for imports
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+# Aetherra imports
 from Aetherra.gui import create_lyrixa_gui
 
 
@@ -49,7 +52,7 @@ def main():
     logger.info("GUI launched successfully")
 
     # Start event loop
-    return app.exec()
+    return app.exec()  # nosec B102: Qt application execution
 
 
 if __name__ == "__main__":

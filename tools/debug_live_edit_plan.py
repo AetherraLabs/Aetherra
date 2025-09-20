@@ -1,9 +1,12 @@
+# Standard library imports
 import sys
 import time
 import types
 
+# Third party imports
 import requests
 
+# Aetherra imports
 from aetherra_hub.compat import start_hub_server
 
 

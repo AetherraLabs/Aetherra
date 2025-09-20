@@ -7,10 +7,13 @@ endpoints while still exposing status + metrics.
 
 from __future__ import annotations
 
+# Standard library imports
 import os
 
+# Third party imports
 from flask import Blueprint, jsonify, request
 
+# Local imports
 from ..services import trainer as trainer_service
 
 bp = Blueprint("trainer", __name__)

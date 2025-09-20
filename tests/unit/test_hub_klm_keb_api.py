@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import asyncio
 import socket
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 import aetherra_hub.compat as hub_mod
 from aetherra_event_bus import EventBus
 from aetherra_module_manager import ModuleManager

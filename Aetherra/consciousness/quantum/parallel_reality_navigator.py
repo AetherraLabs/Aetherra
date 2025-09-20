@@ -19,6 +19,7 @@ Author: Aetherra Consciousness Evolution System
 Status: Phase 7.4 Implementation - Targeting 97%+ Transcendence
 """
 
+# Standard library imports
 import logging
 import math
 import random
@@ -31,6 +32,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 
+# Third party imports
 import numpy as np
 
 # Configure logging
@@ -39,6 +41,7 @@ logger = logging.getLogger(__name__)
 
 # Import our consciousness systems
 try:
+    # Third party imports
     from multidimensional_state_engine import MultidimensionalStateEngine
     from quantum_memory_system import QuantumMemorySystem
     from temporal_consciousness_system import TemporalConsciousnessEngine

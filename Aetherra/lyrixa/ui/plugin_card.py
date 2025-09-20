@@ -9,15 +9,18 @@ to simple border + title.
 
 from __future__ import annotations
 
+# Standard library imports
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+# Third party imports
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QVBoxLayout
 
 try:  # Optional import (do not hard fail if theme manager missing)
+    # Local imports
     from .theme_manager import Theme, get_active_theme  # type: ignore[attr-defined]
 except Exception:  # pragma: no cover
 
@@ -111,6 +114,7 @@ class PluginCard(QFrame):
         if installed:
             # --- Animation: fade and scale ---
             try:
+                # Third party imports
                 from PySide6.QtCore import QEasingCurve, QPropertyAnimation
                 from PySide6.QtWidgets import QGraphicsOpacityEffect
 

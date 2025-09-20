@@ -22,6 +22,7 @@ Architecture:
 - StateAwareInterface: Context-sensitive UI behavior
 """
 
+# Standard library imports
 import json
 import logging
 import random
@@ -29,8 +30,10 @@ from dataclasses import asdict
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+# Third party imports
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
 
+# Local imports
 from .chat_interface import ChatInterface
 from .emotional_theme import EmotionalThemeEngine
 from .layout_memory import LayoutMemorySystem
@@ -446,6 +449,7 @@ Respond in character as Lyrixa, keeping responses concise but personality-rich. 
         self, model_config: dict, system_prompt: str, user_message: str
     ) -> Optional[str]:
         """Try to get a response from a specific AI model"""
+        # Standard library imports
         import os
 
         # Check if API key is available
@@ -637,6 +641,7 @@ Respond in character as Lyrixa, keeping responses concise but personality-rich. 
 
     def get_available_ai_models(self) -> List[str]:
         """Get list of AI models that have API keys configured"""
+        # Standard library imports
         import os
 
         available_models = []

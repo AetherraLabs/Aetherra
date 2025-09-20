@@ -16,14 +16,19 @@ Usage:
 
 from __future__ import annotations
 
+# Standard library imports
+import contextlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 import threading
 import webbrowser
-from typing import Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
+# Third party imports
 from PySide6.QtCore import QObject, Qt, QTimer, Signal
 from PySide6.QtGui import QTextOption
 from PySide6.QtWidgets import (
@@ -45,6 +50,7 @@ from PySide6.QtWidgets import (
 )
 
 try:
+    # Third party imports
     import requests
 except Exception:
     requests = None
@@ -67,12 +73,10 @@ class LogPane(QPlainTextEdit):
         super().__init__()
         self.setReadOnly(read_only)
         self.setMaximumBlockCount(5000)
-        try:
+        with contextlib.suppress(Exception):
             wrap_mode = getattr(QTextOption, "WrapAtWordBoundaryOrAnywhere", None)
             if wrap_mode is not None:
                 self.setWordWrapMode(wrap_mode)
-        except Exception:
-            pass
         self.setStyleSheet(
             "QPlainTextEdit { background:#0a0a0a; color:#00ff88; font-family:'JetBrains Mono', monospace; font-size:12px; border-radius:10px; padding:8px; }"
         )
@@ -117,13 +121,13 @@ class Streamer(QObject):
     finished = Signal(int)
 
     def __init__(
-        self, argv: list[str], cwd: Optional[str] = None, env: Optional[dict] = None
+        self, argv: list[str], cwd: str | None = None, env: dict | None = None
     ):
         super().__init__()
         self.argv = argv
         self.cwd = cwd
         self.env = env or os.environ.copy()
-        self._proc: Optional[subprocess.Popen] = None
+        self._proc: subprocess.Popen | None = None
 
     def start(self):
         def run():
@@ -142,7 +146,7 @@ class Streamer(QObject):
                 code = self._proc.wait()
                 self.finished.emit(code)
             except FileNotFoundError:
-                self.line.emit("[ERROR] Command not found: %r" % (self.argv,))
+                self.line.emit(f"[ERROR] Command not found: {self.argv!r}")
                 self.finished.emit(127)
             except Exception as e:
                 self.line.emit(f"[ERROR] {e}")
@@ -156,7 +160,7 @@ class Streamer(QObject):
 
 
 class KernelStatusWindow(QMainWindow):
-    def __init__(self, base_url: Optional[str] = None):
+    def __init__(self, base_url: str | None = None):
         super().__init__()
         self.setWindowTitle("Aetherra • Kernel Status")
         self.resize(980, 680)
@@ -208,7 +212,7 @@ class KernelStatusWindow(QMainWindow):
         else:
             self.t.start(secs * 1000)
 
-    def _get(self, path: str) -> Optional[dict]:
+    def _get(self, path: str) -> dict[str, Any] | None:
         if requests is None:
             self.log.println("[WARN] requests not installed; skipping HTTP calls.")
             return None
@@ -216,7 +220,13 @@ class KernelStatusWindow(QMainWindow):
         try:
             r = requests.get(url, timeout=4)
             r.raise_for_status()
-            return r.json()
+            data = r.json()
+            if isinstance(data, dict):
+                return data
+            self.log.println(
+                f"[HTTP] GET {url} → unexpected JSON type: {type(data).__name__}"
+            )
+            return None
         except Exception as e:
             self.log.println(f"[HTTP] GET {url} → ERROR: {e}")
             return None
@@ -229,7 +239,7 @@ class KernelStatusWindow(QMainWindow):
         if cur:
             candidates.append(cur)
         if os.environ.get("AETHERRA_BASE_URL"):
-            candidates.append(os.environ["AETHERRA_BASE_URL"])  # type: ignore[index]
+            candidates.append(os.environ["AETHERRA_BASE_URL"])
         host = os.environ.get("AETHERRA_HUB_HOST", "127.0.0.1").strip()
         try:
             port = int(os.environ.get("AETHERRA_HUB_PORT", "3001").strip())
@@ -250,22 +260,22 @@ class KernelStatusWindow(QMainWindow):
                     self.base_url_edit.setText(base)
                     self.log.println(f"[INFO] Using Hub at {base}")
                     return True
-            except Exception:
+            except Exception as e:
+                self.log.println(f"[INFO] Probe failed for {base}: {e}")
                 continue
         return False
 
     def refresh(self):
         status = self._get("/api/kernel/status")
         metrics = self._get("/api/kernel/metrics")
-        if not status and not metrics:
-            if self._probe_base_url():
-                status = self._get("/api/kernel/status")
-                metrics = self._get("/api/kernel/metrics")
+        if (not status and not metrics) and self._probe_base_url():
+            status = self._get("/api/kernel/status")
+            metrics = self._get("/api/kernel/metrics")
         if status:
             running = "✅" if status.get("running") else "❌"
             self.running_card.set_value(running)
             self.uptime_card.set_value(str(status.get("uptime", "—")))
-            qs = {}
+            qs: dict[str, int] = {}
             try:
                 if isinstance(status.get("queue_sizes"), dict):
                     qs = status.get("queue_sizes", {}) or {}
@@ -300,7 +310,7 @@ class AgentPipelineWindow(QMainWindow):
 
         self.log = LogPane()
         v.addWidget(self.log, 1)
-        self.streamer: Optional[Streamer] = None
+        self.streamer: Streamer | None = None
         self.run_btn.clicked.connect(self.on_run)
 
     def on_run(self):
@@ -507,7 +517,7 @@ class ChatStreamWindow(QMainWindow):
         self.copy_aw_btn.clicked.connect(self._copy_awareness_summary)
         controls.hbox.addWidget(self.copy_aw_btn)
 
-        self.streamer: Optional[Streamer] = None
+        self.streamer: Streamer | None = None
         self.run_btn.clicked.connect(self.on_run)
         self.aw_toggle.toggled.connect(self.aw_panel.setVisible)
         self.aw_panel.setVisible(True)
@@ -542,39 +552,25 @@ class ChatStreamWindow(QMainWindow):
 
     def _reset_awareness(self):
         for lab in (getattr(self, "cb_labels", {}) or {}).values():
-            try:
+            with contextlib.suppress(Exception):
                 lab.setText("—")
-            except Exception:
-                pass
-        try:
+        with contextlib.suppress(Exception):
             self.ev_list.clear()
-        except Exception:
-            pass
-        try:
+        with contextlib.suppress(Exception):
             self.persona_label.setText("—")
             self.model_label.setText("—")
             self.chunks_label.setText("0")
             self.chunk_count = 0
-        except Exception:
-            pass
-        try:
+        with contextlib.suppress(Exception):
             self.sug_list.clear()
-        except Exception:
-            pass
-        try:
+        with contextlib.suppress(Exception):
             self.applied_list.clear()
-        except Exception:
-            pass
-        try:
+        with contextlib.suppress(Exception):
             self.usage_label.setText("—")
-        except Exception:
-            pass
 
     def _on_stream_line(self, line: str):
-        try:
+        with contextlib.suppress(Exception):
             self.log.println(line)
-        except Exception:
-            pass
         s = line.strip()
         try:
             if s.startswith("[PERSONA] "):
@@ -585,10 +581,8 @@ class ChatStreamWindow(QMainWindow):
                 return
             if s.startswith("[CHUNK] "):
                 self.chunk_count = (self.chunk_count or 0) + 1
-                try:
+                with contextlib.suppress(Exception):
                     self.chunks_label.setText(str(self.chunk_count))
-                except Exception:
-                    pass
             if s.startswith("[CONF] "):
                 payload = s[len("[CONF] ") :]
                 for part in payload.split("|"):
@@ -626,13 +620,11 @@ class ChatStreamWindow(QMainWindow):
                 if score_val:
                     tt.append(f"Score: {score_val}")
                 item.setToolTip("\n".join(tt))
-                try:
+                with contextlib.suppress(Exception):
                     item.setData(
                         Qt.ItemDataRole.UserRole,
                         {"title": title, "source": source, "score": score_val},
                     )
-                except Exception:
-                    pass
                 self.ev_list.addItem(item)
                 while self.ev_list.count() > 3:
                     self.ev_list.takeItem(0)
@@ -658,17 +650,16 @@ class ChatStreamWindow(QMainWindow):
                     self.applied_list.takeItem(0)
             elif s.startswith("[USAGE] "):
                 self.usage_label.setText(s[len("[USAGE] ") :].strip() or "—")
-        except Exception:
-            pass
+        except Exception as e:
+            self.log.println(f"[STREAM] Parse error: {e}")
 
     def _copy_to_clipboard(self, text: str):
-        try:
+        with contextlib.suppress(Exception):
             QApplication.clipboard().setText(text)
-        except Exception:
-            pass
 
     def _is_safe_url(self, url: str) -> bool:
         """Validate that URL is safe and well-formed."""
+        # Standard library imports
         import urllib.parse
 
         if not url:
@@ -689,7 +680,7 @@ class ChatStreamWindow(QMainWindow):
             dangerous_hosts = [
                 "localhost",
                 "127.0.0.1",
-                "0.0.0.0",
+                "0.0.0.0",  # noqa: S104 - listed to block targets, not to bind
                 "::1",
                 "10.",
                 "172.",
@@ -713,11 +704,24 @@ class ChatStreamWindow(QMainWindow):
         try:
             path = os.path.expanduser(path)
             if sys.platform.startswith("win"):
-                os.startfile(path)  # type: ignore[attr-defined]
+                # Prefer Explorer on Windows to avoid shell execution concerns
+                exe = shutil.which("explorer")
+                if exe:
+                    subprocess.Popen([exe, path])
+                else:
+                    self.log.println("[OPEN] 'explorer' not found")
             elif sys.platform == "darwin":
-                subprocess.Popen(["open", path])
+                exe = shutil.which("open")
+                if exe:
+                    subprocess.Popen([exe, path])
+                else:
+                    self.log.println("[OPEN] 'open' not found")
             else:
-                subprocess.Popen(["xdg-open", path])
+                exe = shutil.which("xdg-open")
+                if exe:
+                    subprocess.Popen([exe, path])
+                else:
+                    self.log.println("[OPEN] 'xdg-open' not found")
         except Exception as e:
             self.log.println(f"[OPEN] Failed: {e}")
 
@@ -725,15 +729,27 @@ class ChatStreamWindow(QMainWindow):
         try:
             path = os.path.abspath(path)
             if sys.platform.startswith("win"):
+                exe = shutil.which("explorer")
+                if not exe:
+                    self.log.println("[REVEAL] 'explorer' not found")
+                    return
                 if os.path.isdir(path):
-                    subprocess.Popen(["explorer", path])
+                    subprocess.Popen([exe, path])
                 else:
-                    subprocess.Popen(["explorer", "/select,", path])
+                    subprocess.Popen([exe, "/select,", path])
             elif sys.platform == "darwin":
-                subprocess.Popen(["open", "-R", path])
+                exe = shutil.which("open")
+                if exe:
+                    subprocess.Popen([exe, "-R", path])
+                else:
+                    self.log.println("[REVEAL] 'open' not found")
             else:
                 folder = path if os.path.isdir(path) else os.path.dirname(path) or "."
-                subprocess.Popen(["xdg-open", folder])
+                exe = shutil.which("xdg-open")
+                if exe:
+                    subprocess.Popen([exe, folder])
+                else:
+                    self.log.println("[REVEAL] 'xdg-open' not found")
         except Exception as e:
             self.log.println(f"[REVEAL] Failed: {e}")
 
@@ -767,9 +783,9 @@ class ChatStreamWindow(QMainWindow):
                     "Reveal in Explorer",
                     lambda s=source: self._reveal_in_explorer(str(s)),
                 )
-            menu.exec(self.ev_list.mapToGlobal(pos))
-        except Exception:
-            pass
+            menu.exec(self.ev_list.mapToGlobal(pos))  # nosec B102: Qt GUI menu execution
+        except Exception as e:
+            self.log.println(f"[EV MENU] Failed: {e}")
 
     def _on_sug_context_menu(self, pos):
         try:
@@ -779,9 +795,9 @@ class ChatStreamWindow(QMainWindow):
             menu = QMenu(self)
             text = item.text()
             menu.addAction("Copy", lambda: self._copy_to_clipboard(text))
-            menu.exec(self.sug_list.mapToGlobal(pos))
-        except Exception:
-            pass
+            menu.exec(self.sug_list.mapToGlobal(pos))  # nosec B102: Qt GUI menu execution
+        except Exception as e:
+            self.log.println(f"[SUG MENU] Failed: {e}")
 
     def _on_applied_context_menu(self, pos):
         try:
@@ -801,9 +817,9 @@ class ChatStreamWindow(QMainWindow):
                     "Reveal in Explorer",
                     lambda p=path_candidate: self._reveal_in_explorer(p),
                 )
-            menu.exec(self.applied_list.mapToGlobal(pos))
-        except Exception:
-            pass
+            menu.exec(self.applied_list.mapToGlobal(pos))  # nosec B102: Qt GUI menu execution
+        except Exception as e:
+            self.log.println(f"[APPLIED MENU] Failed: {e}")
 
     def _copy_awareness_summary(self):
         try:
@@ -818,12 +834,10 @@ class ChatStreamWindow(QMainWindow):
             lines.append(f"Chunks: {chunks}")
             parts = []
             for k in ("model", "grounding", "coherence", "safety"):
-                try:
+                with contextlib.suppress(Exception):
                     v = self.cb_labels[k].text().strip()
                     if v:
                         parts.append(f"{k}:{v}")
-                except Exception:
-                    continue
             if parts:
                 lines.append("Confidence: " + " | ".join(parts))
             if self.ev_list is not None:
@@ -878,7 +892,7 @@ def launch(demo: str):
         sys.exit(2)
     win = ctor()
     win.show()
-    sys.exit(app.exec())
+    sys.exit(app.exec())  # nosec B102: Qt application execution
 
 
 if __name__ == "__main__":

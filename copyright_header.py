@@ -34,5 +34,3 @@ Architecture:
 - Simple, clean interface with just chat and plugin store
 - Dynamic expansion through user-installed plugins
 """
-
-

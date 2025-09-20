@@ -15,11 +15,13 @@ Counter-proposal generic templates.
 
 from __future__ import annotations
 
+# Standard library imports
 import os
 import re
 import uuid
 from typing import Optional, Tuple
 
+# Local imports
 from .episodic_store import get_episodic_store
 from .schemas.ethics_incident import EthicsIncident
 

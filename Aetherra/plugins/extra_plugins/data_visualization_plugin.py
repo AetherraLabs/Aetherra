@@ -12,6 +12,7 @@ This plugin provides comprehensive data visualization capabilities including:
 - Export capabilities for reports and presentations
 """
 
+# Standard library imports
 import base64
 import io
 import json
@@ -22,13 +23,16 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+# Third party imports
 import numpy as np
 import pandas as pd
 
 try:
+    # Third party imports
     import matplotlib
 
     matplotlib.use("Agg")  # Use non-interactive backend
+    # Third party imports
     import matplotlib.dates as mdates
     import matplotlib.pyplot as plt
     from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -38,6 +42,7 @@ except ImportError:
     MATPLOTLIB_AVAILABLE = False
 
 try:
+    # Third party imports
     import seaborn as sns
 
     SEABORN_AVAILABLE = True
@@ -45,6 +50,7 @@ except ImportError:
     SEABORN_AVAILABLE = False
 
 try:
+    # Third party imports
     import plotly.express as px
     import plotly.graph_objects as go
     import plotly.offline as pyo
@@ -55,6 +61,7 @@ except ImportError:
     PLOTLY_AVAILABLE = False
 
 try:
+    # Third party imports
     import scipy.stats as stats
     from scipy.cluster.hierarchy import dendrogram, linkage
 
@@ -63,6 +70,7 @@ except ImportError:
     SCIPY_AVAILABLE = False
 
 try:
+    # Third party imports
     import sqlalchemy
 
     SQLALCHEMY_AVAILABLE = True
@@ -1306,6 +1314,7 @@ if __name__ == "__main__":
 
         await plugin.cleanup()
 
+    # Standard library imports
     import asyncio
 
     asyncio.run(test_plugin())

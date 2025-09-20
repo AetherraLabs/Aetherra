@@ -7,6 +7,7 @@ Plugin Installation Test Script
 Tests the plugin installation workflow for Lyrixa Basic
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging

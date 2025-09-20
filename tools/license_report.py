@@ -17,6 +17,7 @@ Exit code:
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import json
 import os
@@ -25,6 +26,7 @@ from importlib import metadata
 from pathlib import Path
 
 try:
+    # Third party imports
     import yaml  # type: ignore
 except Exception:  # pragma: no cover
     yaml = None
@@ -75,6 +77,7 @@ def compress_multiline(lic: str) -> str:
     if "\n" not in lic:
         return lic
     # Replace all whitespace (including newlines) with single spaces
+    # Standard library imports
     import re as _re  # local import to avoid top-level cost
 
     compact = _re.sub(r"\s+", " ", lic).strip()

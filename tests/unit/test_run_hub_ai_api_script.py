@@ -1,7 +1,9 @@
+# Standard library imports
 import os
 import sys
 import types
 
+# Aetherra imports
 import tools.run_hub_ai_api as script
 
 

@@ -18,6 +18,7 @@ Key Components:
 - Integration protocols and standards
 """
 
+# Standard library imports
 import logging
 from typing import Any, Dict
 
@@ -46,6 +47,7 @@ def get_integration_status() -> Dict[str, Any]:
 def get_aetherra_lyrixa_bridge():
     """Get the main Aetherra-Lyrixa communication bridge."""
     try:
+        # Local imports
         from .bridges.aetherra_lyrixa_bridge import AetherraLyrixaBridge
 
         INTEGRATION_SYSTEMS["bridges"] = True
@@ -58,6 +60,7 @@ def get_aetherra_lyrixa_bridge():
 def get_memory_adapter():
     """Get the memory adapter implementation."""
     try:
+        # Local imports
         from .adapters.memory_adapter_impl import MemoryAdapterImpl
 
         INTEGRATION_SYSTEMS["adapters"] = True
@@ -70,6 +73,7 @@ def get_memory_adapter():
 def get_memory_bridge_adapter():
     """Get the memory bridge adapter."""
     try:
+        # Local imports
         from .bridges.memory_adapter import MemoryIntegrationAdapter
 
         INTEGRATION_SYSTEMS["adapters"] = True
@@ -86,6 +90,7 @@ def initialize_integration_systems():
 
     # Check adapter availability
     try:
+        # Standard library imports
         import importlib.util
 
         spec = importlib.util.find_spec("Aetherra.integration.adapters")
@@ -99,6 +104,7 @@ def initialize_integration_systems():
 
     # Check bridges availability
     try:
+        # Standard library imports
         import importlib.util
 
         spec = importlib.util.find_spec("Aetherra.integration.bridges")
@@ -112,6 +118,7 @@ def initialize_integration_systems():
 
     # Check protocols availability
     try:
+        # Standard library imports
         import importlib.util
 
         spec = importlib.util.find_spec("Aetherra.integration.protocols")
@@ -125,6 +132,7 @@ def initialize_integration_systems():
 
     # Check monitoring availability
     try:
+        # Standard library imports
         import importlib.util
 
         spec = importlib.util.find_spec("Aetherra.integration.monitoring")

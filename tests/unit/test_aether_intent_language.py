@@ -19,6 +19,7 @@ Tests Coverage:
 - Reflection and Analysis (AI insights)
 """
 
+# Standard library imports
 import os
 import sys
 import tempfile
@@ -37,6 +38,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
 
         # Import the .aether interpreter
         try:
+            # Aetherra imports
             from Aetherra.runtime.aether_parser import AetherraInterpreter
 
             self.interpreter = AetherraInterpreter()

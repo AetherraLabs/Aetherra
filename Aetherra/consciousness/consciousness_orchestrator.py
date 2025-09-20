@@ -13,6 +13,7 @@ Version: 1.0.0
 Date: August 4, 2025
 """
 
+# Standard library imports
 import asyncio
 import logging
 import os
@@ -27,9 +28,11 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "agents"))
 
 # ARCHITECTURAL FIX: Removed Lyrixa import - from lyrixa_consciousness import initialize_lyrixa_consciousness, get_lyrixa_consciousness
 try:  # Optional dependency
+    # Third party imports
     from consciousness_bridge import initialize_consciousness_bridge  # type: ignore
 except Exception:  # pragma: no cover
     initialize_consciousness_bridge = None  # type: ignore
+# Local imports
 from .narrator import get_narrative_layer
 
 
@@ -87,6 +90,7 @@ class ConsciousnessOrchestrator:
                             self.consciousness_bridge = None
                     elif component_name == "agent_registry":
                         try:
+                            # Third party imports
                             from agent_registry import (
                                 initialize_agent_registry,  # type: ignore
                             )
@@ -98,6 +102,7 @@ class ConsciousnessOrchestrator:
                             self.agent_registry = None
                     elif component_name == "meta_layer_core":
                         try:
+                            # Third party imports
                             from meta_layer_core import (
                                 initialize_meta_layer_core,  # type: ignore
                             )
@@ -149,9 +154,7 @@ class ConsciousnessOrchestrator:
             self.logger.info("=" * 60)
 
         except Exception as e:
-            self.logger.error(
-                f"💥 Failed to initialize Consciousness Orchestrator: {e}"
-            )
+            self.logger.error(f"💥 Failed to initialize Consciousness Orchestrator: {e}")
             await self._emergency_shutdown()
             raise
 
@@ -163,9 +166,9 @@ class ConsciousnessOrchestrator:
 
         # Check consciousness bridge
         if self.consciousness_bridge:
-            health_status["consciousness_bridge"] = (
-                self.consciousness_bridge.is_consciousness_bridge_healthy()
-            )
+            health_status[
+                "consciousness_bridge"
+            ] = self.consciousness_bridge.is_consciousness_bridge_healthy()
 
         # Check agent registry
         if self.agent_registry:
@@ -199,6 +202,7 @@ class ConsciousnessOrchestrator:
         """Announce initialization to the consciousness network"""
         if self.consciousness_bridge:
             try:
+                # Third party imports
                 from consciousness_bridge import ConsciousnessMessage  # type: ignore
             except Exception:  # pragma: no cover - optional dependency
                 ConsciousnessMessage = None  # type: ignore
@@ -385,6 +389,7 @@ class ConsciousnessOrchestrator:
             # Announce shutdown
             if self.consciousness_bridge:
                 try:
+                    # Third party imports
                     from consciousness_bridge import (
                         ConsciousnessMessage,  # type: ignore
                     )
@@ -529,6 +534,7 @@ class ConsciousnessOrchestrator:
             self.last_narrative_coherence = chapter.coherence_index
             # Prometheus exporter integration
             try:
+                # Local imports
                 from .metrics_exporter import (
                     increment_chapter_count,
                     initialize_exporter,
@@ -609,6 +615,7 @@ if __name__ == "__main__":
     # Example usage and testing
     async def test_consciousness_orchestrator():
         """Test the consciousness orchestrator"""
+        # Standard library imports
         import logging
 
         logging.basicConfig(level=logging.INFO)

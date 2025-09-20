@@ -9,6 +9,7 @@
 Quick test to verify OpenAI API integration is working properly.
 """
 
+# Standard library imports
 import os
 import sys
 
@@ -37,6 +38,7 @@ def load_env_file():
 # Load environment variables
 load_env_file()
 
+# Aetherra imports
 from Aetherra.lyrixa.agents.conversation_manager import LyrixaConversationManager
 from Aetherra.lyrixa.agents.lyrixa_ai import LyrixaAI
 
@@ -105,6 +107,7 @@ async def test_openai_integration():
 
 
 if __name__ == "__main__":
+    # Standard library imports
     import asyncio
 
     asyncio.run(test_openai_integration())

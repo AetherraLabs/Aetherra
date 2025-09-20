@@ -6,6 +6,7 @@ Aetherra Introspection Controller
 Self-awareness and internal state monitoring system.
 """
 
+# Standard library imports
 import asyncio
 import gc
 import json
@@ -21,6 +22,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List
 
 try:
+    # Third party imports
     import psutil  # type: ignore[assignment]
 except ImportError:
     # Fallback system monitoring
@@ -391,6 +393,7 @@ class IntrospectionController:
                     task_loop is not None
                     and getattr(task_loop, "is_running", lambda: False)()
                 ):
+                    # Standard library imports
                     import concurrent.futures as _cf
 
                     waiter: _cf.Future = _cf.Future()

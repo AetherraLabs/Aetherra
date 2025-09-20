@@ -8,8 +8,10 @@ memory system retrieval to raise and ensures the higher-level component
 (Engine or Chat bridge) returns a safe error or fallback structure.
 """
 
+# Standard library imports
 import asyncio
 
+# Third party imports
 import pytest
 
 pytestmark = pytest.mark.unit
@@ -17,6 +19,7 @@ pytestmark = pytest.mark.unit
 
 @pytest.mark.asyncio
 async def test_memory_recall_graceful(monkeypatch):
+    # Aetherra imports
     from aetherra_os_launcher import AetherraOSLauncher
     from aetherra_service_registry import get_service_registry
 

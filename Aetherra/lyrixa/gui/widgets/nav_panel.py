@@ -3,8 +3,10 @@
 
 from __future__ import annotations
 
+# Standard library imports
 from typing import Any, Callable, Dict, List, Optional
 
+# Third party imports
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QFrame, QLabel, QPushButton, QVBoxLayout, QWidget
 

@@ -9,9 +9,11 @@ idempotent re-run.
 
 from __future__ import annotations
 
+# Standard library imports
 import sqlite3
 from pathlib import Path
 
+# Aetherra imports
 from Aetherra.plugins.lifecycle.plugin_analytics import PluginMetricsCollector
 
 

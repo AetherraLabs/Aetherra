@@ -11,10 +11,12 @@ Bias integration: provide weight multiplier for workspace candidate prioritizati
 
 from __future__ import annotations
 
+# Standard library imports
 import os
 from datetime import datetime, timedelta
 from typing import Optional
 
+# Local imports
 from .episodic_store import EpisodicStore, get_episodic_store
 from .schemas.affect_snapshot import AffectSnapshot
 

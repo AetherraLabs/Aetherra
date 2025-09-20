@@ -7,9 +7,11 @@ Analytics dashboard for plugin usage and performance metrics
 """
 
 
+# Standard library imports
 import sys
 from datetime import datetime
 
+# Third party imports
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
@@ -780,11 +782,16 @@ class PluginAnalyticsUI(QWidget):
     def refresh_data(self):
         """Refresh analytics data."""
         # Update metrics with slight variations
+        # Standard library imports
         import random
 
         # Update usage count
         for row in range(self.usage_table.rowCount()):
-            current_usage = int(self.usage_table.item(row, 1).text())
+            item = self.usage_table.item(row, 1)
+            try:
+                current_usage = int(item.text()) if item is not None else 0
+            except ValueError:
+                current_usage = 0
             new_usage = current_usage + random.randint(0, 5)
             self.usage_table.setItem(row, 1, QTableWidgetItem(str(new_usage)))
 
@@ -881,9 +888,10 @@ Recommendations:
 
 
 if __name__ == "__main__":
+    # Third party imports
     from PySide6.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
     window = PluginAnalyticsUI()
     window.show()
-    sys.exit(app.exec())
+    sys.exit(app.exec())  # nosec B102: Qt application execution

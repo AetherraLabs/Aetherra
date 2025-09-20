@@ -15,6 +15,7 @@ Exit codes:
 
 from __future__ import annotations
 
+# Standard library imports
 import re
 import sys
 from pathlib import Path

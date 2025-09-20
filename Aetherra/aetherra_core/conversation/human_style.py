@@ -15,6 +15,7 @@ Design goals:
 
 from __future__ import annotations
 
+# Standard library imports
 import os
 import re
 from dataclasses import dataclass
@@ -93,6 +94,7 @@ class HumanStyle:
 
         # Optional safe emoji adapter
         try:
+            # Aetherra imports
             from unicode_logger import safe_emoji_message  # type: ignore
 
             self._emoji_safe = safe_emoji_message

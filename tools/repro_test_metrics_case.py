@@ -1,9 +1,12 @@
+# Standard library imports
 import os
 import re
 import time
 
+# Third party imports
 import requests
 
+# Aetherra imports
 from aetherra_hub.compat import start_hub_server
 
 port = 3018

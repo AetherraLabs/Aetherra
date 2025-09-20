@@ -21,6 +21,7 @@ Version: 1.0.0
 Date: August 5, 2025
 """
 
+# Standard library imports
 import asyncio
 import cmath
 import logging
@@ -31,10 +32,12 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List
 
+# Third party imports
 import numpy as np
 
 # Quantum computing imports with fallbacks
 try:
+    # Third party imports
     from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister  # noqa: F401
     from qiskit.quantum_info import DensityMatrix, Statevector  # noqa: F401
     from qiskit_aer import AerSimulator  # noqa: F401

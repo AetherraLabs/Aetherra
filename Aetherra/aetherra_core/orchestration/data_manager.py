@@ -7,13 +7,16 @@ Connects to actual LyrixaCore systems and provides live data feeds
 """
 
 
+# Standard library imports
 import time
 from typing import Any, Dict
 
+# Third party imports
 from PySide6.QtCore import QObject, QTimer, Signal
 
 # Import LyrixaCore components
 try:
+    # Local imports
     from ..LyrixaCore.IdentityAgent.self_model import SelfModel
     from ..LyrixaCore.interface_bridge import ContextType, LyrixaContextBridge
 except ImportError as e:
@@ -23,16 +26,19 @@ except ImportError as e:
     ContextType = None
 
 try:
+    # Local imports
     from ..personality.reflection_system import PersonalityReflectionSystem
 except ImportError:
     PersonalityReflectionSystem = None
 
 try:
+    # Local imports
     from ..ethics_agent.ethics_trace import EthicsTrace
 except ImportError:
     EthicsTrace = None
 
 try:
+    # Local imports
     from ..agents.reflection_agent import ReflectionAgent
 except ImportError:
     ReflectionAgent = None

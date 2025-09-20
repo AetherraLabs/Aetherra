@@ -3,6 +3,7 @@
 
 # aetherra/runtime/aether_runtime.py
 
+# Standard library imports
 import asyncio
 import re
 import time
@@ -335,6 +336,7 @@ class AetherRuntime:
     ) -> str:
         """Execute a command asynchronously using the executor."""
         if not hasattr(self, "executor"):
+            # Aetherra imports
             from Aetherra.stdlib.executor import ExecutorPlugin
 
             self.executor = ExecutorPlugin()

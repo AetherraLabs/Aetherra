@@ -9,6 +9,7 @@ FastAPI + WebSockets server for the revolutionary Aetherra OS cyberpunk interfac
 Real-time system monitoring with stunning visual effects.
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -18,6 +19,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
+# Third party imports
 import psutil
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
@@ -29,9 +31,11 @@ logger = logging.getLogger(__name__)
 
 # Try to import Aetherra engine
 try:
+    # Standard library imports
     import sys
 
     sys.path.append(str(Path(__file__).parent.parent))
+    # Aetherra imports
     from Aetherra.aetherra_core.engine.aetherra_engine import aetherra_engine
 
     AETHERRA_AVAILABLE = True
@@ -414,7 +418,6 @@ async def send_aetherra_message(data: dict):
         return {"error": "An internal error occurred while processing the message"}
 
 
-
 @app.get("/api/status")
 async def get_status():
     """Get current system status"""
@@ -432,6 +435,7 @@ async def get_status():
 
 
 if __name__ == "__main__":
+    # Third party imports
     import uvicorn
 
     logger.info("🚀 Starting Aetherra OS Web Interface...")

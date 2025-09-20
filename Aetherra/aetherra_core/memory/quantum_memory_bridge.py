@@ -26,6 +26,7 @@ Production Notes: EXPERIMENTAL PHASE - Sandboxed quantum integration only
 No production commitment until quantum computing infrastructure matures.
 """
 
+# Standard library imports
 import asyncio
 import tempfile
 import time
@@ -35,6 +36,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Third party imports
 import numpy as np
 
 # Quantum computing framework imports with fallbacks
@@ -44,18 +46,17 @@ CIRQ_AVAILABLE = False
 
 try:
     # Try Qiskit (IBM Quantum) - compatible with Qiskit 2.x
-    from qiskit import (
-        ClassicalRegister,
-        QuantumCircuit,
-        QuantumRegister,
-    )
+    # Third party imports
+    from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
     from qiskit.circuit.library import QFT
 
     # Import AerSimulator from the correct location in Qiskit 2.x
     try:
+        # Third party imports
         from qiskit_aer import AerSimulator
     except ImportError:
         # Fallback to older location
+        # Third party imports
         from qiskit.providers.aer import AerSimulator
 
     # Create a compatibility execute function for Qiskit 2.x
@@ -67,6 +68,7 @@ try:
             return job
         else:
             # Fallback for older Qiskit versions
+            # Third party imports
             from qiskit import execute
 
             return execute(circuit, backend, shots=shots)
@@ -81,6 +83,7 @@ except ImportError:
 
 try:
     # Try Cirq (Google Quantum)
+    # Third party imports
     import cirq
 
     CIRQ_AVAILABLE = True
@@ -95,6 +98,7 @@ if not QUANTUM_AVAILABLE:
 
 # Import Phase 2-4 components for integration
 try:
+    # Standard library imports
     import sys
     from pathlib import Path
 
@@ -143,6 +147,7 @@ class QuantumMemoryState:
         # Reconstruct quantum state if available
         if "quantum_state_real" in data and "quantum_state_imag" in data:
             if QISKIT_AVAILABLE:
+                # Third party imports
                 from qiskit.quantum_info import Statevector
 
                 real_part = np.array(data["quantum_state_real"])
@@ -224,6 +229,7 @@ class QuantumMemoryBridge:
         Perform quantum interference experiments between multiple memory states.
         Returns a QuantumExperimentResult.
         """
+        # Standard library imports
         import time
 
         start_time = time.time()
@@ -267,6 +273,7 @@ class QuantumMemoryBridge:
             )
         except Exception as e:
             execution_time = (time.time() - start_time) * 1000
+            # Standard library imports
             import logging
 
             logging.warning(f"Quantum interference experiment failed: {e}")
@@ -1049,9 +1056,9 @@ async def demo_quantum_bridge():
 
     # Create second quantum state
     memory_data_2 = memory_data.copy()
-    memory_data_2["content"] = (
-        "Fractal patterns in consciousness suggest scale-invariant cognition"
-    )
+    memory_data_2[
+        "content"
+    ] = "Fractal patterns in consciousness suggest scale-invariant cognition"
     memory_data_2["emotional_tag"] = "wonder"
 
     quantum_state_2 = await bridge.encode_memory_to_quantum(

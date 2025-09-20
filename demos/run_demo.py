@@ -16,6 +16,7 @@ Env:
 - AETHERRA_WEB_PORT (default: 3001)
 """
 
+# Standard library imports
 import argparse
 import json
 import os
@@ -23,6 +24,7 @@ import sys
 from typing import Any, Dict
 
 try:
+    # Third party imports
     import requests
 except Exception:
     print("requests is required. Please install it in your environment.")
@@ -219,6 +221,7 @@ def demo_quantum_run(args: argparse.Namespace) -> int:
 
 def demo_qhash(args: argparse.Namespace) -> int:
     try:
+        # Aetherra imports
         from Aetherra.aetherra_core.memory.quantum.qhash import simhash_text, to_hex
     except Exception as e:
         print(f"[ERR] qhash module not available: {e}")

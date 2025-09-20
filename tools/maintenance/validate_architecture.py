@@ -11,6 +11,7 @@ Date: August 5, 2025
 Purpose: Prevent architectural confusion and validate directory structure
 """
 
+# Standard library imports
 import os
 import re
 from dataclasses import dataclass
@@ -459,6 +460,7 @@ class AetherraDirectoryValidator:
 
 def main():
     """Main validation function"""
+    # Standard library imports
     import sys
 
     # Get project root

@@ -1,8 +1,11 @@
+# Standard library imports
 import socket
 
+# Third party imports
 import pytest
 import requests
 
+# Aetherra imports
 from aetherra_hub.compat import AetherraHubServer
 
 

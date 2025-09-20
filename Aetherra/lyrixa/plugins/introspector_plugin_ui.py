@@ -7,9 +7,11 @@ System analysis and self-reflection capabilities
 """
 
 
+# Standard library imports
 import sys
 from datetime import datetime
 
+# Third party imports
 import psutil
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QColor
@@ -739,9 +741,10 @@ class IntrospectorUI(QWidget):
 
 
 if __name__ == "__main__":
+    # Third party imports
     from PySide6.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
     window = IntrospectorUI()
     window.show()
-    sys.exit(app.exec())
+    sys.exit(app.exec())  # nosec B102: Qt application execution

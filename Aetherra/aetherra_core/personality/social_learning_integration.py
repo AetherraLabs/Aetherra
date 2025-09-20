@@ -16,9 +16,11 @@ Features:
 - Personality optimization based on community insights
 """
 
+# Standard library imports
 from datetime import datetime
 from typing import Any, Dict, Optional
 
+# Local imports
 # Import Phase 3.2 emotional intelligence
 from .emotional_intelligence_integration import EmotionalIntelligenceIntegration
 
@@ -232,6 +234,7 @@ class SocialLearningIntegration:
             pass
 
         # Return a default emotional state
+        # Local imports
         from .emotional_intelligence import EmotionalState
 
         return EmotionalState(

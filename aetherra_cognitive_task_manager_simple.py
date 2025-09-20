@@ -10,6 +10,7 @@ A reliable real-time dashboard for monitoring Aetherra AI OS cognitive activity.
 This version focuses on working correctly with the shared registry.
 """
 
+# Standard library imports
 import asyncio
 import logging
 import sys
@@ -24,6 +25,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 # Web framework
 try:
+    # Third party imports
     from flask import Flask, jsonify
     from flask_socketio import SocketIO, emit
 
@@ -34,6 +36,7 @@ except ImportError:
 
 # Service registry
 try:
+    # Aetherra imports
     from aetherra_service_registry import get_service_registry
 
     REGISTRY_AVAILABLE = True

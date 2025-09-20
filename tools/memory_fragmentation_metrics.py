@@ -22,6 +22,7 @@ License: GPL-3.0-or-later
 
 from __future__ import annotations
 
+# Standard library imports
 import gc
 import tracemalloc
 from dataclasses import asdict, dataclass

@@ -8,6 +8,7 @@
 Main dashboard implementation for the self metrics dashboard.
 """
 
+# Local imports
 from . import SelfMetricsDashboard, main_dashboard
 
 

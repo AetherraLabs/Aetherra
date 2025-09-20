@@ -16,10 +16,12 @@ Notes:
 
 from __future__ import annotations
 
+# Standard library imports
 import sys
 from pathlib import Path
 from typing import Iterable
 
+# Aetherra imports
 from Aetherra.security.script_signing import embed_signature  # type: ignore
 
 

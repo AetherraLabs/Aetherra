@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+# Standard library imports
 import os
 
+# Third party imports
 from flask import Blueprint, Response, jsonify, request
 
+# Local imports
 from ..services import metrics_accum
 from ..services.ai_stream import stream_sse
 

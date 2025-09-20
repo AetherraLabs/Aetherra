@@ -20,6 +20,7 @@ This script simulates the .aether execution environment while leveraging
 all the enhanced functions we've implemented.
 """
 
+# Standard library imports
 import asyncio
 import json
 import time
@@ -28,6 +29,7 @@ from pathlib import Path
 
 # Import enhanced autonomous intelligence agents
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.agents.contradiction_detection_agent import (
         ContradictionDetectionAgent,
     )
@@ -37,6 +39,7 @@ try:
 
 except ImportError:
     print("[WARN] Using local import paths for demo")
+    # Standard library imports
     import sys
 
     sys.path.append(".")
@@ -600,7 +603,9 @@ class AetherScriptExecutor:
         print("* [OK] Comprehensive session logging with self-awareness")
 
         print(f"\n[MEM] Detailed report saved to: {report_file}")
-        print("\n[SUCCESS] **AETHER SCRIPT: FULLY OPERATIONAL WITH ENHANCED INTELLIGENCE!**")
+        print(
+            "\n[SUCCESS] **AETHER SCRIPT: FULLY OPERATIONAL WITH ENHANCED INTELLIGENCE!**"
+        )
 
 
 async def main():
@@ -619,7 +624,9 @@ async def main():
         print("\n" + "=" * 70)
         print("🏁 AETHER SCRIPT EXECUTION COMPLETED SUCCESSFULLY!")
         print("[OK] All Phase 3 enhanced autonomous intelligence functions operational")
-        print("[OK] Curiosity-driven exploration and conflict resolution cycle complete")
+        print(
+            "[OK] Curiosity-driven exploration and conflict resolution cycle complete"
+        )
         print("[OK] Meta-learning tracker with strategy optimization functional")
         print("[OK] Self-directed learning and adaptive optimization validated")
         print("=" * 70)

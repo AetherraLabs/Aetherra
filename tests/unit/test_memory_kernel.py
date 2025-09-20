@@ -5,9 +5,11 @@
 Test suite for Quantum Memory Engine (QFAC/FractalMesh) in memory_kernel.py
 """
 
+# Standard library imports
 import unittest
 from datetime import datetime
 
+# Aetherra imports
 from Aetherra.aetherra_core.kernel.memory_kernel import LyrixaMemoryEngine
 from Aetherra.aetherra_core.memory.fractal_mesh.base import (
     MemoryFragment,

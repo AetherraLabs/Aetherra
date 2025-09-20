@@ -19,12 +19,14 @@ Key Features:
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import logging
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
+# Third party imports
 from PySide6.QtCore import QObject, QTimer, QUrl, Signal, Slot
 from PySide6.QtWebEngineCore import QWebEngineProfile, QWebEngineSettings
 from PySide6.QtWebEngineWidgets import QWebEngineView
@@ -125,19 +127,22 @@ class PluginUIHost(QWidget):
 
         # Loading indicator (will be replaced by WebView)
         self._loading_label = QLabel(f"Loading {self.manifest.name}...")
-        self._loading_label.setStyleSheet("""
+        self._loading_label.setStyleSheet(
+            """
             QLabel {
                 color: #666;
                 font-size: 14px;
                 padding: 20px;
                 text-align: center;
             }
-        """)
+        """
+        )
         layout.addWidget(self._loading_label)
 
         # Error display (initially hidden)
         self._error_label = QLabel()
-        self._error_label.setStyleSheet("""
+        self._error_label.setStyleSheet(
+            """
             QLabel {
                 color: #d32f2f;
                 background-color: #ffebee;
@@ -146,7 +151,8 @@ class PluginUIHost(QWidget):
                 border-radius: 4px;
                 font-family: monospace;
             }
-        """)
+        """
+        )
         self._error_label.hide()
         layout.addWidget(self._error_label)
 

@@ -5,6 +5,7 @@
 Launch utilities for Lyrixa
 """
 
+# Standard library imports
 import os
 import socket
 import subprocess
@@ -43,7 +44,9 @@ def run_self_improvement_api():
     """Start the enhanced API server in the background"""
     try:
         # Get the project root directory
-        project_root = Path(__file__).parent.parent.parent  # Go up from utils to Aetherra Project
+        project_root = Path(
+            __file__
+        ).parent.parent.parent  # Go up from utils to Aetherra Project
         api_script = project_root / "run_self_improvement_api.py"
 
         if api_script.exists():
@@ -64,7 +67,9 @@ def run_self_improvement_api():
                     [sys.executable, str(api_script)],
                     stdout=log,
                     stderr=subprocess.STDOUT,
-                    creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
+                    creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
+                    if os.name == "nt"
+                    else 0,
                     cwd=str(project_root),  # Set working directory
                 )
 
@@ -91,6 +96,7 @@ def run_self_improvement_api():
 
     except Exception as e:
         print(f">> Failed to start API server: {e}")
+        # Standard library imports
         import traceback
 
         traceback.print_exc()
@@ -113,16 +119,19 @@ def check_dependencies():
     missing_deps = []
 
     try:
+        # Third party imports
         import PySide6  # type: ignore  # noqa: F401
     except ImportError:
         missing_deps.append("PySide6")
 
     try:
+        # Third party imports
         import uvicorn  # type: ignore  # noqa: F401
     except ImportError:
         missing_deps.append("uvicorn")
 
     try:
+        # Third party imports
         import fastapi  # type: ignore  # noqa: F401
     except ImportError:
         missing_deps.append("fastapi")

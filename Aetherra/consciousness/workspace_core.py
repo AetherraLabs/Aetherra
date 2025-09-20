@@ -26,6 +26,7 @@ Future phases will extend with:
 
 from __future__ import annotations
 
+# Standard library imports
 import asyncio
 import heapq
 import os
@@ -34,21 +35,12 @@ from dataclasses import dataclass, field
 from typing import Any, Awaitable, Callable, List, Optional
 
 try:  # optional metrics exporter
-    from .metrics_exporter import (
-        inc_workspace_broadcast as _metrics_inc_broadcast,
-    )
-    from .metrics_exporter import (
-        inc_workspace_candidate as _metrics_inc_candidate,
-    )
-    from .metrics_exporter import (
-        initialize_exporter as _metrics_init,
-    )
-    from .metrics_exporter import (
-        observe_workspace_latency as _metrics_obs_latency,
-    )
-    from .metrics_exporter import (
-        update_workspace_queue as _metrics_update_q,
-    )
+    # Local imports
+    from .metrics_exporter import inc_workspace_broadcast as _metrics_inc_broadcast
+    from .metrics_exporter import inc_workspace_candidate as _metrics_inc_candidate
+    from .metrics_exporter import initialize_exporter as _metrics_init
+    from .metrics_exporter import observe_workspace_latency as _metrics_obs_latency
+    from .metrics_exporter import update_workspace_queue as _metrics_update_q
 except Exception:  # pragma: no cover
     _metrics_init = None  # type: ignore
     _metrics_update_q = None  # type: ignore
@@ -57,6 +49,7 @@ except Exception:  # pragma: no cover
     _metrics_obs_latency = None  # type: ignore
 
 try:  # optional affect engine biasing
+    # Local imports
     from .affect_engine import get_affect_engine as _get_affect_engine
 except Exception:  # pragma: no cover
     _get_affect_engine = None  # type: ignore

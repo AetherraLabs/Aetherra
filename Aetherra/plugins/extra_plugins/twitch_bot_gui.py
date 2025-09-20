@@ -4,13 +4,15 @@ Author: Aetherra Plugin System
 Version: 1.0.0
 """
 
+# Standard library imports
 import asyncio
 import sys
 from datetime import datetime
 from typing import Any
 
 try:
-    from PySide6.QtCore import Qt, QThread, QTimer, Signal, pyqtSignal
+    # Third party imports
+    from PySide6.QtCore import Qt, QThread, QTimer, Signal
     from PySide6.QtGui import QFont, QIcon, QPixmap
     from PySide6.QtWidgets import (
         QApplication,
@@ -45,9 +47,9 @@ if PYSIDE6_AVAILABLE:
     class TwitchBotWorker(QThread):
         """Worker thread for Twitch bot operations."""
 
-        message_received = pyqtSignal(dict)
-        connection_status = pyqtSignal(bool)
-        error_occurred = pyqtSignal(str)
+        message_received = Signal(dict)
+        connection_status = Signal(bool)
+        error_occurred = Signal(str)
 
         def __init__(self, plugin):
             super().__init__()
@@ -126,7 +128,7 @@ class TwitchBotGUI(QMainWindow):
         conn_layout.addWidget(QLabel("OAuth Token:"), 1, 0)
         self.oauth_edit = QLineEdit()
         self.oauth_edit.setPlaceholderText("oauth:your_token_here")
-        self.oauth_edit.setEchoMode(QLineEdit.Password)
+        self.oauth_edit.setEchoMode(QLineEdit.EchoMode.Password)
         conn_layout.addWidget(self.oauth_edit, 1, 1)
 
         # Channel
@@ -144,7 +146,7 @@ class TwitchBotGUI(QMainWindow):
         conn_layout.addWidget(QLabel("Client Secret:"), 4, 0)
         self.client_secret_edit = QLineEdit()
         self.client_secret_edit.setPlaceholderText("Twitch application client secret")
-        self.client_secret_edit.setEchoMode(QLineEdit.Password)
+        self.client_secret_edit.setEchoMode(QLineEdit.EchoMode.Password)
         conn_layout.addWidget(self.client_secret_edit, 4, 1)
 
         layout.addWidget(conn_group)
@@ -424,7 +426,7 @@ class TwitchBotGUI(QMainWindow):
         chart_placeholder = QLabel(
             "Activity chart would be displayed here\n(Requires matplotlib or similar)"
         )
-        chart_placeholder.setAlignment(Qt.AlignCenter)
+        chart_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
         chart_placeholder.setStyleSheet("border: 2px dashed #ccc; padding: 50px;")
         activity_layout.addWidget(chart_placeholder)
 
@@ -570,6 +572,7 @@ class TwitchBotGUI(QMainWindow):
 
     def open_oauth_generator(self):
         """Open OAuth token generator in browser."""
+        # Standard library imports
         import webbrowser
 
         webbrowser.open("https://twitchapps.com/tmi/")
@@ -644,9 +647,9 @@ class TwitchBotGUI(QMainWindow):
                 self,
                 "Delete Command",
                 "Are you sure you want to delete this command?",
-                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             )
-            if reply == QMessageBox.Yes:
+            if reply == QMessageBox.StandardButton.Yes:
                 self.custom_commands_list.takeItem(current_row)
 
     def add_banned_word(self):
@@ -679,9 +682,9 @@ class TwitchBotGUI(QMainWindow):
                 self,
                 "Ban User",
                 f"Are you sure you want to ban {username}?",
-                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             )
-            if reply == QMessageBox.Yes:
+            if reply == QMessageBox.StandardButton.Yes:
                 self.append_chat_message(
                     "System", f"User {username} has been banned.", "system"
                 )
@@ -717,9 +720,9 @@ class TwitchBotGUI(QMainWindow):
             self,
             "Reset Configuration",
             "Are you sure you want to reset all settings to defaults?",
-            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
-        if reply == QMessageBox.Yes:
+        if reply == QMessageBox.StandardButton.Yes:
             # Reset all form fields to defaults
             self.username_edit.clear()
             self.oauth_edit.clear()
@@ -760,6 +763,6 @@ if __name__ == "__main__":
         app = QApplication(sys.argv)
         window = TwitchBotGUI()
         window.show()
-        sys.exit(app.exec())
+        sys.exit(app.exec())  # nosec B102: Qt application execution
     else:
         print("PySide6 is not available. GUI cannot be started.")

@@ -12,6 +12,7 @@ Outputs a short report to stdout and a markdown file docs/DOCS_CONSISTENCY_REPOR
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import json
 import os

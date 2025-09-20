@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Aetherra imports
 from Aetherra.plugins.manifest_schema import compute_trust_zone, validate_manifest
 
 
@@ -56,6 +57,7 @@ def test_plugin_policy_enforcement(tmp_path, monkeypatch):
     )
 
     # Point system to temp dir
+    # Aetherra imports
     import Aetherra.plugins.core.plugin_system as ps
 
     ps.Path = lambda p="": tmp_path / (p or "")  # monkeypatch Path used in ctor

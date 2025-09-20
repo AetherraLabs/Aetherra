@@ -18,6 +18,7 @@ Components:
 - Static assets and templates
 """
 
+# Standard library imports
 import logging
 
 logger = logging.getLogger(__name__)
@@ -61,6 +62,7 @@ def initialize_web_systems():
         logger.warning("[WARN] Web components not available")
 
     # Check static files
+    # Standard library imports
     from pathlib import Path
 
     static_path = Path(__file__).parent / "static"

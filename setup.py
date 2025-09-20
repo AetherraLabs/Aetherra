@@ -6,8 +6,10 @@
 Setup script for Aetherra AI Operating System
 """
 
+# Standard library imports
 from pathlib import Path
 
+# Third party imports
 from setuptools import find_packages, setup
 
 # Read the README file

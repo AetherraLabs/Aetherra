@@ -17,6 +17,7 @@ Features:
 • Backward compatibility with existing memory API
 """
 
+# Standard library imports
 import asyncio
 import json
 import os
@@ -24,10 +25,12 @@ import time
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+# Local imports
 from ..file_system.compression_analyzer import MemoryCompressionAnalyzer
 from .compression_metrics import FidelityLevel
 
 try:
+    # Local imports
     from .qfac_dashboard import QFACDashboard  # type: ignore
 except Exception:
     # Fallback stub to avoid import errors when dashboard class isn't available
@@ -45,6 +48,7 @@ except Exception:
             return {"status": "unavailable", "reason": "dashboard stub"}
 
 
+# Local imports
 from .qfac_policy import QFACPolicy
 from .quantum_memory_bridge import QuantumMemoryBridge
 
@@ -200,6 +204,7 @@ class QFACMemoryNode:
                 try:
                     # Build a lightweight quantum state handle using stored metadata and classical shadow
                     # We don't persist full state; QuantumMemoryBridge can use classical_shadow path
+                    # Local imports
                     from .quantum_memory_bridge import QuantumMemoryState
 
                     q_meta = self.compression_metadata["quantum_encoding"]
@@ -330,6 +335,7 @@ class QFACMemorySystem:
             # Local async helper to query the service registry
             async def _run() -> Optional[Dict[str, Any]]:
                 try:
+                    # Aetherra imports
                     from aetherra_service_registry import (
                         get_service_registry,  # type: ignore
                     )
@@ -370,6 +376,7 @@ class QFACMemorySystem:
 
             # Safely run coroutine from possibly running loop (mirrors hub helper pattern)
             try:
+                # Standard library imports
                 import asyncio as _asyncio
 
                 try:
@@ -377,6 +384,7 @@ class QFACMemorySystem:
                 except RuntimeError:
                     loop = None
                 if loop and loop.is_running():
+                    # Standard library imports
                     import threading as _threading
 
                     container: Dict[str, Any] = {}

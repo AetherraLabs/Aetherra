@@ -16,6 +16,7 @@ This is the REAL plugin system that Lyrixa needs.
 NO MORE SCATTERED CODE - THIS IS THE ONE TRUE SYSTEM
 """
 
+# Standard library imports
 import importlib.util
 import json
 import os
@@ -53,6 +54,7 @@ class PluginManifest:
     def __init__(self, data: Dict[str, Any]):
         # Validate and normalize using central schema
         try:
+            # Aetherra imports
             from Aetherra.plugins.manifest_schema import validate_manifest
 
             ok, errs, norm = validate_manifest(data)
@@ -186,6 +188,7 @@ class PluginInstance:
                     raise AttributeError("execute function not callable")
 
                 def _with_timeout(func, timeout_sec):
+                    # Standard library imports
                     import threading
 
                     res: Dict[str, Any] = {"value": None, "error": None}

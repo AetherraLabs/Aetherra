@@ -14,6 +14,7 @@ This enhances the current interpreter.py with:
 5. Abstract Syntax Tree generation for optimization
 """
 
+# Standard library imports
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, List, Optional
@@ -377,34 +378,34 @@ class AetherraParser:
         self._advance()  # Skip 'remember'
 
         # Expect opening parenthesis
-        if self._match_operator("("):
+        if self._match_operator("(") and self._current_token().type == TokenType.STRING:
             # Parse content string
-            if self._current_token().type == TokenType.STRING:
-                content_node = ASTNode(
-                    "CONTENT",
-                    self._current_token().value,
-                    [],
-                    self._current_token().line,
-                    self._current_token().column,
-                )
-                node.add_child(content_node)
-                self._advance()
+            content_node = ASTNode(
+                "CONTENT",
+                self._current_token().value,
+                [],
+                self._current_token().line,
+                self._current_token().column,
+            )
+            node.add_child(content_node)
+            self._advance()
 
-                # Expect closing parenthesis
-                if self._match_operator(")"):
-                    # Look for 'as' keyword
-                    if self._match_operator("as"):
-                        # Parse tags
-                        if self._current_token().type == TokenType.STRING:
-                            tags_node = ASTNode(
-                                "TAGS",
-                                self._current_token().value,
-                                [],
-                                self._current_token().line,
-                                self._current_token().column,
-                            )
-                            node.add_child(tags_node)
-                            self._advance()
+            # Expect closing parenthesis
+            if self._match_operator(")"):
+                # Look for 'as' keyword and parse tags in one condition
+                if (
+                    self._match_operator("as")
+                    and self._current_token().type == TokenType.STRING
+                ):
+                    tags_node = ASTNode(
+                        "TAGS",
+                        self._current_token().value,
+                        [],
+                        self._current_token().line,
+                        self._current_token().column,
+                    )
+                    node.add_child(tags_node)
+                    self._advance()
 
         return node
 
@@ -417,18 +418,20 @@ class AetherraParser:
         self._advance()  # Skip 'recall'
 
         # Handle 'recall tag: "tagname"' syntax
-        if self._match_operator("tag"):
-            if self._match_operator(":"):
-                if self._current_token().type == TokenType.STRING:
-                    tag_node = ASTNode(
-                        "TAG_FILTER",
-                        self._current_token().value,
-                        [],
-                        self._current_token().line,
-                        self._current_token().column,
-                    )
-                    node.add_child(tag_node)
-                    self._advance()
+        if (
+            self._match_operator("tag")
+            and self._match_operator(":")
+            and self._current_token().type == TokenType.STRING
+        ):
+            tag_node = ASTNode(
+                "TAG_FILTER",
+                self._current_token().value,
+                [],
+                self._current_token().line,
+                self._current_token().column,
+            )
+            node.add_child(tag_node)
+            self._advance()
 
         return node
 

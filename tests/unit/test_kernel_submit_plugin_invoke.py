@@ -1,8 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Basic unit test for kernel submit_plugin_invoke envelope formation
 
+# Standard library imports
 import asyncio
 
+# Aetherra imports
 from aetherra_kernel_loop import AetherraKernelLoop
 
 

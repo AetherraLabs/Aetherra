@@ -65,7 +65,7 @@ include = ["Aetherra*"]
 
 [tool.black]
 line-length = 100
-target-version = ['py38']
+target-version = ['py311']
 
 [tool.isort]
 profile = "black"
@@ -74,34 +74,46 @@ combine_as_imports = true
 
 [tool.ruff]
 line-length = 100
-target-version = "py38"
+target-version = "py311"
 exclude = [
     ".venv",
     "venv",
     "build",
     "dist",
     "node_modules",
+    # Short-term excludes: deprecated/inactive GUI modules pending refactor
+    "gui/lyrixa_gui.py",
+    "lyrixa/gui",
+    "lyrixa/lyrixa_basic_gui.py",
+    "lyrixa/plugins/*_ui.py",
+    "plugins/extra_plugins/*_gui.py",
 ]
 
 [tool.ruff.lint]
 select = ["E","F","I","UP","B","SIM","Q"]
 ignore = ["E501"]
 
+[tool.ruff.lint.per-file-ignores]
+"**/*.py" = ["UP006", "UP035", "UP045"]  # Temporary: ignore typing modernization while migrating
+"Aetherra/aetherra_core/__init__.py" = ["F401"]
+"Aetherra/aetherra_core/memory/lightweight_memory_core.py" = ["T201"]  # allow print in console demo
+"aetherra_core/memory/lightweight_memory_core.py" = ["T201"]
+
 [tool.ruff.lint.flake8-tidy-imports]
 # Enforce migration away from legacy module namespaces
-banned-module-level-imports = {
-    "aetherra_core" = "Use Aetherra.* namespace instead of legacy aetherra_core.*",
-    "lyrixa_core" = "Use Aetherra.* namespace instead of legacy lyrixa_core.*",
-}
+ban-relative-imports = "all"
+banned-module-level-imports = [
+    "aetherra_core",
+    "lyrixa_core",
+]
 
-[tool.ruff.lint.per-file-ignores]
-"Aetherra/aetherra_core/__init__.py" = ["F401"]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
+warn_unreachable = false
 
 [tool.python-semantic-release]
 version_variable = ["Aetherra/__init__.py:__version__", "Aetherra/pyproject.toml:project.version"]

@@ -1,5 +1,7 @@
+# Third party imports
 import pytest
 
+# Aetherra imports
 from aetherra_kernel_loop import AetherraKernelLoop
 
 

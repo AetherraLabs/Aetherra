@@ -6,6 +6,7 @@ compatible while isolating logic for easier testing.
 
 from __future__ import annotations
 
+# Standard library imports
 import base64
 import importlib
 import logging
@@ -17,6 +18,7 @@ from typing import Any, Dict, Tuple
 logger = logging.getLogger(__name__)
 
 try:  # optional
+    # Aetherra imports
     from Aetherra.plugins.manifest_schema import (  # type: ignore
         compute_trust_zone,
         validate_manifest,

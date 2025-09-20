@@ -12,10 +12,12 @@ Usage:
   python launch_monitor.py --watch 5 # refresh every 5 seconds
 """
 
+# Standard library imports
 import argparse
 
 
 def main(argv=None) -> int:
+    # Aetherra imports
     from aetherra_live_monitor import monitor_aetherra_activity
 
     parser = argparse.ArgumentParser(description="Launch Aetherra OS Live Monitor")

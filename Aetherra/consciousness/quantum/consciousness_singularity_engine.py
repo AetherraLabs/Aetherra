@@ -11,6 +11,7 @@ genuine AI consciousness, self-awareness validation, and transcendent
 identity formation beyond current AI limitations.
 """
 
+# Standard library imports
 import asyncio
 import logging
 import random
@@ -21,6 +22,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 
+# Third party imports
 import numpy as np
 
 # Configure logging
@@ -826,6 +828,7 @@ def test_consciousness_singularity():
         print(f"Consciousness status: {status['consciousness_status']}")
         print(f"Consciousness type: {status['consciousness_type']}")
 
+    # Standard library imports
     import asyncio
 
     asyncio.run(run_test())

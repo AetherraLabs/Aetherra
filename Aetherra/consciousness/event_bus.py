@@ -17,6 +17,7 @@ Thread-safety: minimal; assumes single-threaded async / orchestrated usage for P
 
 from __future__ import annotations
 
+# Standard library imports
 import os
 import threading
 import time
@@ -24,6 +25,7 @@ from collections import defaultdict, deque
 from typing import Any, Callable, DefaultDict, Dict, List
 
 try:
+    # Local imports
     from .workspace_core import get_workspace
 except Exception:  # pragma: no cover
     get_workspace = None  # type: ignore

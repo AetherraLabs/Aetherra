@@ -8,6 +8,7 @@ This script will actually test the real AI models and fallback behavior.
 """
 
 
+# Standard library imports
 import sys
 from pathlib import Path
 
@@ -16,6 +17,7 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "Aetherra"))
 
+# Aetherra imports
 # Load environment
 from Aetherra.lyrixa.launcher import load_env_file
 
@@ -30,6 +32,7 @@ def test_real_ai_fallback():
 
     # Import Lyrixa components
     try:
+        # Aetherra imports
         from Aetherra.lyrixa.gui.phase6_personality import (
             GUIPersonalityManager,
             LyrixaAI,
@@ -76,6 +79,7 @@ def test_real_ai_fallback():
                 print(f"🤖 Lyrixa: {response}")
 
                 # Brief pause between requests to be respectful to APIs
+                # Standard library imports
                 import time
 
                 time.sleep(1)
@@ -97,6 +101,7 @@ def test_real_ai_fallback():
 
     except Exception as e:
         print(f"❌ Test setup failed: {e}")
+        # Standard library imports
         import traceback
 
         traceback.print_exc()

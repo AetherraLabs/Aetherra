@@ -9,6 +9,7 @@ Refer to `Aetherra.core.interpreter` package for canonical implementations.
 
 # Import performance optimizations
 try:
+    # Local imports
     from .performance_integration import optimized_operation, performance_optimized
 
     PERFORMANCE_AVAILABLE = True
@@ -31,6 +32,7 @@ def memory_optimized(*args, **kwargs):
 
 # Import speed enhancement suite
 try:
+    # Local imports
     from .speed_enhancement_suite import optimize_interpreter_system, ultra_fast
 
     SPEED_ENHANCEMENT_AVAILABLE = True
@@ -47,6 +49,7 @@ except ImportError:
 
 # Import everything from the new modular system
 try:
+    # Local imports
     from .interpreter.main import AetherraInterpreter as ModularAetherraInterpreter
 
     _MODULAR_AVAILABLE = True

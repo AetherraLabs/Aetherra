@@ -6,19 +6,16 @@ Tests comprehensive ethical evaluation of integration decisions,
 audit trail recording, and dashboard API functionality.
 """
 
-import json
+# Standard library imports
 import os
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-import pytest
-
+# Aetherra imports
 # Import the classes we need to test
 from aetherra_self_incorporation import (
-    AuditRecord,
     EthicsEngine,
-    EthicsProfile,
     EthicsScore,
     SafetyDecision,
     SelfIncorporationConfig,
@@ -30,12 +27,12 @@ from aetherra_self_incorporation import (
 class TestEthicsEngine:
     """Test the core ethics evaluation engine."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test environment."""
         self.config = SelfIncorporationConfig()
         self.ethics_engine = EthicsEngine(self.config)
 
-    def test_ethics_engine_initialization(self):
+    def test_ethics_engine_initialization(self) -> None:
         """Test ethics engine initializes with proper profile weights."""
         assert hasattr(self.ethics_engine, "profile_weights")
         assert "utilitarian" in self.ethics_engine.profile_weights
@@ -45,11 +42,11 @@ class TestEthicsEngine:
 
         # Weights should sum to 1.0
         total_weight = sum(self.ethics_engine.profile_weights.values())
-        assert abs(total_weight - 1.0) < 0.01, (
-            f"Weights sum to {total_weight}, expected ~1.0"
-        )
+        assert (
+            abs(total_weight - 1.0) < 0.01
+        ), f"Weights sum to {total_weight}, expected ~1.0"
 
-    def test_ethics_profile_loading(self):
+    def test_ethics_profile_loading(self) -> None:
         """Test different ethics profile configurations."""
         # Test strict profile
         with patch.dict(os.environ, {"AETHERRA_ETHICS_PROFILE": "strict"}):
@@ -61,7 +58,7 @@ class TestEthicsEngine:
             engine = EthicsEngine(self.config)
             assert engine.profile_weights["utilitarian"] == 0.7
 
-    def test_basic_plugin_integration_evaluation(self):
+    def test_basic_plugin_integration_evaluation(self) -> None:
         """Test ethical evaluation of a basic plugin registration."""
         action = "register_plugin"
         target = {
@@ -75,7 +72,7 @@ class TestEthicsEngine:
             file_id="test_plugin",
             verified=True,
             signing={"ok": True, "signer": "test"},
-            scans={},
+            scans={},  # type: ignore[arg-type]
             capability_ok=True,
             trust_tier=TrustTier.VERIFIED,
             reasons=["Properly signed and verified"],
@@ -85,20 +82,20 @@ class TestEthicsEngine:
 
         # Should be a positive score for verified, well-behaved plugin
         assert isinstance(score, EthicsScore)
-        assert score.overall_score > 0.5, (
-            f"Expected positive score, got {score.overall_score}"
-        )
-        assert score.confidence > 0.3, (
-            f"Expected reasonable confidence, got {score.confidence}"
-        )
+        assert (
+            score.overall_score > 0.5
+        ), f"Expected positive score, got {score.overall_score}"
+        assert (
+            score.confidence > 0.3
+        ), f"Expected reasonable confidence, got {score.confidence}"
         assert len(score.reasoning) > 0, "Expected reasoning to be provided"
 
         # Verified plugins should score well on deontological scale
-        assert score.deontological_score > 0.6, (
-            "Verified plugins should score well deontologically"
-        )
+        assert (
+            score.deontological_score > 0.6
+        ), "Verified plugins should score well deontologically"
 
-    def test_high_risk_integration_evaluation(self):
+    def test_high_risk_integration_evaluation(self) -> None:
         """Test ethical evaluation of a high-risk integration."""
         action = "register_plugin"
         target = {
@@ -113,7 +110,7 @@ class TestEthicsEngine:
             file_id="suspicious_plugin",
             verified=False,
             signing={"ok": False},
-            scans={"threats": 3},
+            scans={"threats": "3"},  # scans expects str->str per types
             capability_ok=False,
             trust_tier=TrustTier.QUARANTINED,
             reasons=["Multiple security threats detected"],
@@ -122,20 +119,20 @@ class TestEthicsEngine:
         score = self.ethics_engine.evaluate_integration(action, target, safety_decision)
 
         # Should be a negative score for high-risk plugin
-        assert score.overall_score < 0.5, (
-            f"Expected negative score for high-risk plugin, got {score.overall_score}"
-        )
+        assert (
+            score.overall_score < 0.5
+        ), f"Expected negative score for high-risk plugin, got {score.overall_score}"
         assert len(score.risk_factors) > 0, "Expected risk factors to be identified"
 
         # Quarantined items should score poorly on all scales
-        assert score.utilitarian_score < 0.5, (
-            "High-risk should score poorly on utilitarian scale"
-        )
-        assert score.deontological_score < 0.5, (
-            "Quarantined should score poorly on deontological scale"
-        )
+        assert (
+            score.utilitarian_score < 0.5
+        ), "High-risk should score poorly on utilitarian scale"
+        assert (
+            score.deontological_score < 0.5
+        ), "Quarantined should score poorly on deontological scale"
 
-    def test_ethical_framework_consistency(self):
+    def test_ethical_framework_consistency(self) -> None:
         """Test that different ethical frameworks are properly balanced."""
         action = "load_aether_script"
         target = {
@@ -165,23 +162,23 @@ class TestEthicsEngine:
         ]
 
         for framework_score in frameworks:
-            assert 0.0 <= framework_score <= 1.0, (
-                f"Framework score {framework_score} out of range"
-            )
+            assert (
+                0.0 <= framework_score <= 1.0
+            ), f"Framework score {framework_score} out of range"
 
         # For a straightforward, low-risk integration, scores should be reasonably consistent
         score_variance = sum((s - score.overall_score) ** 2 for s in frameworks) / len(
             frameworks
         )
-        assert score_variance < 0.25, (
-            f"Framework scores too inconsistent: variance {score_variance}"
-        )
+        assert (
+            score_variance < 0.25
+        ), f"Framework scores too inconsistent: variance {score_variance}"
 
 
 class TestEthicsIntegration:
     """Test ethics integration with the main self-incorporation service."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test environment with temporary databases."""
         self.temp_dir = tempfile.mkdtemp()
         self.config = SelfIncorporationConfig()
@@ -193,17 +190,18 @@ class TestEthicsIntegration:
         self.service = SelfIncorporationService(self.config)
         self.service.service_registry = self.mock_registry
 
-    def test_service_has_ethics_engine(self):
+    def test_service_has_ethics_engine(self) -> None:
         """Test that SelfIncorporationService properly initializes ethics engine."""
         assert hasattr(self.service, "ethics_engine")
         assert isinstance(self.service.ethics_engine, EthicsEngine)
         assert hasattr(self.service, "audit_ledger")
 
-    def test_plan_ethics_evaluation_empty_plan(self):
+    def test_plan_ethics_evaluation_empty_plan(self) -> None:
         """Test ethics evaluation of an empty integration plan."""
         empty_plan = {"plan_id": "test_empty", "actions": []}
 
         # This is an async method, so we need to run it properly
+        # Standard library imports
         import asyncio
 
         evaluation = asyncio.run(self.service._evaluate_plan_ethics(empty_plan))
@@ -212,7 +210,7 @@ class TestEthicsIntegration:
         assert "Empty plan has no ethical impact" in evaluation["reasoning"]
         assert len(evaluation["risk_factors"]) == 0
 
-    def test_plan_ethics_evaluation_with_actions(self):
+    def test_plan_ethics_evaluation_with_actions(self) -> None:
         """Test ethics evaluation of a plan with multiple actions."""
         plan = {
             "plan_id": "test_multi",
@@ -240,6 +238,7 @@ class TestEthicsIntegration:
         )
         self.service.safety_index.get_decision = Mock(return_value=mock_decision)
 
+        # Standard library imports
         import asyncio
 
         evaluation = asyncio.run(self.service._evaluate_plan_ethics(plan))
@@ -251,7 +250,7 @@ class TestEthicsIntegration:
             in evaluation["reasoning"]
         )
 
-    def test_ethics_threshold_blocking(self):
+    def test_ethics_threshold_blocking(self) -> None:
         """Test that low ethics scores block integration."""
         # Create a plan that should fail ethics evaluation
         risky_plan = {
@@ -289,6 +288,7 @@ class TestEthicsIntegration:
 
         # Set a high ethics threshold
         with patch.dict(os.environ, {"AETHERRA_ETHICS_THRESHOLD": "0.8"}):
+            # Standard library imports
             import asyncio
 
             result = asyncio.run(
@@ -305,13 +305,13 @@ class TestEthicsIntegration:
 class TestEthicsAPI:
     """Test the ethics dashboard API endpoints."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up Flask test client."""
         # This would require setting up a full Flask app with the blueprint
         # For now, we'll test the core logic that the endpoints would use
         pass
 
-    def test_ethics_evaluation_api_logic(self):
+    def test_ethics_evaluation_api_logic(self) -> None:
         """Test the core logic that the ethics evaluation API would use."""
         config = SelfIncorporationConfig()
         ethics_engine = EthicsEngine(config)
@@ -361,7 +361,7 @@ class TestEthicsAPI:
             assert 0.0 <= api_response[field] <= 1.0, f"{field} out of valid range"
 
 
-def test_end_to_end_ethics_workflow():
+def test_end_to_end_ethics_workflow() -> None:
     """Test complete end-to-end ethics evaluation workflow."""
     with tempfile.TemporaryDirectory() as temp_dir:
         # Set up service
@@ -403,9 +403,9 @@ def test_end_to_end_ethics_workflow():
             )
 
             min_score, max_score = case["expected_score_range"]
-            assert min_score <= score.overall_score <= max_score, (
-                f"{case['name']}: score {score.overall_score} not in range {case['expected_score_range']}"
-            )
+            assert (
+                min_score <= score.overall_score <= max_score
+            ), f"{case['name']}: score {score.overall_score} not in range {case['expected_score_range']}"
 
         # 3. Test audit trail recording
         test_plan = {
@@ -427,6 +427,7 @@ def test_end_to_end_ethics_workflow():
 
         # Test with low threshold to ensure ethics blocking works
         with patch.dict(os.environ, {"AETHERRA_ETHICS_THRESHOLD": "0.9"}):
+            # Standard library imports
             import asyncio
 
             result = asyncio.run(service.trigger_integrate(dry_run=True))
@@ -439,7 +440,7 @@ def test_end_to_end_ethics_workflow():
         if not result.get("ok"):
             assert "ethics_score" in result or "status" in result
 
-        print(f"✓ End-to-end ethics workflow test completed successfully")
+        print("✓ End-to-end ethics workflow test completed successfully")
         print(
             f"  - Ethics engine initialized with profile: {list(profile_weights.keys())}"
         )

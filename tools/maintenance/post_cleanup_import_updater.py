@@ -7,6 +7,7 @@ Aetherra Post-Cleanup Import Updater
 Updates import statements after our specific plugins and lyrixa reorganization
 """
 
+# Standard library imports
 import os
 import re
 from pathlib import Path

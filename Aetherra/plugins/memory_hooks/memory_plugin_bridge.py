@@ -16,12 +16,14 @@ This script:
 4. Updates the roadmap to mark Phase 1.3 as complete
 """
 
+# Standard library imports
 import asyncio
 import logging
 import sys
 from pathlib import Path
 from typing import Optional
 
+# Aetherra imports
 from Aetherra.aetherra_core.memory.aetherra_memory_engine import AetherraMemoryEngine
 from Aetherra.plugins.memory_hooks.plugin_manager_stubs import (
     MemoryAwarePluginRouter,

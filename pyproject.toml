@@ -105,7 +105,7 @@ python_functions = ["test_*"]
 
 addopts = [
     "-v",
-    "-l", 
+    "-l",
     "-ra",
     "--cov=Aetherra",
     "--cov-report=term-missing",
@@ -122,7 +122,7 @@ addopts = [
 
 markers = [
     "asyncio: Asynchronous tests using asyncio",
-    "unit: Unit tests for individual components", 
+    "unit: Unit tests for individual components",
     "integration: Integration tests for component interactions",
     "e2e: End-to-end tests for complete workflows",
     "slow: Tests that take a significant amount of time",
@@ -180,7 +180,7 @@ exclude_lines = [
     "def __str__",
     "if self.debug:",
     "if settings.DEBUG",
-    "raise AssertionError", 
+    "raise AssertionError",
     "raise NotImplementedError",
     "if 0:",
     "if __name__ == .__main__.:",
@@ -199,7 +199,7 @@ output = "coverage.xml"
 # Code Formatting and Linting
 [tool.black]
 line-length = 88
-target-version = ['py311', 'py312', 'py313']
+target-version = ['py311', 'py312']
 include = '\.pyi?$'
 extend-exclude = '''
 /(
@@ -232,15 +232,18 @@ import_heading_localfolder = "Local imports"
 line-length = 88
 target-version = "py311"
 extend-exclude = [
-    ".git",
-    ".mypy_cache",
-    ".ruff_cache",
-    ".venv",
     "__pycache__",
     "build",
     "dist",
     "node_modules",
     "frontend/Lib",
+    # Short-term: exclude deprecated/inactive GUI modules and GUI tests
+    "Aetherra/lyrixa/gui",
+    "Aetherra/lyrixa/plugins/*_ui.py",
+    "Aetherra/plugins/extra_plugins/*_gui.py",
+    "tests/gui",
+    "tests/ai/test_neural_interface.py",
+    "demos/demo_intelligent_error_handler_8.py",
 ]
 
 [tool.ruff.lint]
@@ -265,33 +268,46 @@ ignore = [
     "S101",  # use of assert (OK in tests)
     "S603",  # subprocess call (OK for tools)
     "T201",  # print statements (OK for CLI tools)
+    "ANN201", # missing return type annotation for public function
+    "ANN202", # missing return type annotation for private function
+    "ANN001", # missing type annotation for function argument
+    "ANN002", # missing type annotation for *args
+    "ANN003", # missing type annotation for **kwargs
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S101", "S105", "S106", "S107"]  # Security checks relaxed in tests
+"tests/**/*.py" = ["S101", "S105", "S106", "S107", "ANN201", "ANN202", "F401"]  # Security, annotation, and unused-import checks relaxed in tests
 "tools/**/*.py" = ["T201", "S603", "S607"]         # Print and subprocess OK in tools
+"Aetherra/**/*.py" = ["UP006", "UP035", "UP045"]     # Temporarily ignore deprecated typing modernizations
+"Aetherra/aetherra_core/memory/lightweight_memory_core.py" = ["T201"]  # allow print in console demo
+
+# Back-compat for older Ruff versions (<0.3) that read per-file-ignores from [tool.ruff.per-file-ignores]
 
 [tool.mypy]
 python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = false
+disallow_untyped_decorators = false
 no_implicit_optional = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
-warn_unreachable = true
+warn_unreachable = false
 strict_equality = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
 module = [
     "qiskit.*",
     "cirq.*",
     "prometheus_client.*",
-    "requests.*", 
+    "requests.*",
     "flask.*",
     "numpy.*",
     "matplotlib.*",

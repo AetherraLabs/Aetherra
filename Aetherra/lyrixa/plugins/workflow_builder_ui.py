@@ -6,10 +6,12 @@ Workflow Builder Plugin UI
 Visual workflow design and automation system
 """
 
+# Standard library imports
 import json
 import sys
 from pathlib import Path
 
+# Third party imports
 from PySide6.QtCore import QRectF, Qt, QTimer  # noqa: F401 (optional runtime import)
 from PySide6.QtGui import QBrush, QColor, QPen
 from PySide6.QtWidgets import (
@@ -221,7 +223,9 @@ class WorkflowBuilderUI(QWidget):
         self.workflow_scene.setBackgroundBrush(QBrush(QColor(25, 25, 25)))
 
         self.workflow_view = QGraphicsView(self.workflow_scene)
-        self.workflow_view.setRenderHint(self.workflow_view.RenderHint.Antialiasing)
+        # Use QPainter render hint to avoid attribute errors
+        from PySide6.QtGui import QPainter  # local import to limit top-level deps
+        self.workflow_view.setRenderHint(QPainter.RenderHint.Antialiasing)
         canvas_layout.addWidget(self.workflow_view)
 
         # Add panels to splitter
@@ -731,9 +735,10 @@ class WorkflowBuilderUI(QWidget):
 
 
 if __name__ == "__main__":
+    # Third party imports
     from PySide6.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
     window = WorkflowBuilderUI()
     window.show()
-    sys.exit(app.exec())
+    sys.exit(app.exec())  # nosec B102: Qt application execution

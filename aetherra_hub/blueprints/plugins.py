@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -7,8 +8,10 @@ import os
 from time import perf_counter
 from typing import Any
 
-from flask import Blueprint, current_app, jsonify, request, Response
+# Third party imports
+from flask import Blueprint, Response, current_app, jsonify, request
 
+# Local imports
 from ..services.idempotency_simple import IdempotencyStore
 from ..services.plugin_metrics import observe_registration_latency, plugin_metrics
 from ..services.plugin_security import (
@@ -43,18 +46,19 @@ def _advanced_mode(settings) -> bool:  # type: ignore[no-untyped-def]
 def _merged_plugins() -> dict[str, dict[str, Any]]:
     merged = dict(_PLUGIN_REGISTRY)
     try:  # include advanced store plugins if present
+        # Local imports
         from ..services import plugins as adv
 
-        for k, v in adv.store.plugins.items():  # type: ignore[attr-defined]
+        for k, v in adv.store.plugins.items():
             merged[k] = v
     except Exception:
-        pass
+        log.debug("Failed to access advanced plugin store")
     return merged
 
 
 @bp.get("")
-def list_plugins():
-    items: List[Dict[str, Any]] = []
+def list_plugins() -> Any:
+    items: list[dict[str, Any]] = []
     for name, meta in sorted(_merged_plugins().items()):
         items.append(
             {
@@ -70,12 +74,12 @@ def list_plugins():
 
 
 @bp.get("/metrics")
-def plugin_metrics_endpoint():
+def plugin_metrics_endpoint() -> Any:
     return jsonify(plugin_metrics)
 
 
 @bp.get("/openapi.json")
-def plugin_openapi_spec():
+def plugin_openapi_spec() -> Any:
     spec = {
         "openapi": "3.0.1",
         "info": {"title": "Aetherra Plugin API", "version": "1.1.0"},
@@ -198,20 +202,19 @@ def plugin_openapi_spec():
 
 
 @bp.get("/openapi.yaml")
-def plugin_openapi_yaml():
+def plugin_openapi_yaml() -> Any:
     # Reuse JSON spec then dump to YAML (manual minimal serializer to avoid new deps)
+    # Standard library imports
     import json as _json
 
-    from flask import Response
+    spec = plugin_openapi_spec().json
 
-    spec = plugin_openapi_spec().json  # type: ignore[attr-defined]
-
-    def _to_yaml(obj, indent=0):
+    def _to_yaml(obj: Any, indent: int = 0) -> str:
         pad = "  " * indent
         if isinstance(obj, dict):
             lines = []
             for k, v in obj.items():
-                if isinstance(v, (dict, list)):
+                if isinstance(v, dict | list):
                     lines.append(f"{pad}{k}:")
                     lines.append(_to_yaml(v, indent + 1))
                 else:
@@ -221,7 +224,7 @@ def plugin_openapi_yaml():
         if isinstance(obj, list):
             lines = []
             for item in obj:
-                if isinstance(item, (dict, list)):
+                if isinstance(item, dict | list):
                     lines.append(f"{pad}-")
                     lines.append(_to_yaml(item, indent + 1))
                 else:
@@ -235,7 +238,7 @@ def plugin_openapi_yaml():
 
 
 @bp.post("/register")
-def register_plugin():
+def register_plugin() -> Any:
     settings = current_app.settings  # type: ignore[attr-defined]
     start_t = perf_counter()
 
@@ -251,9 +254,12 @@ def register_plugin():
     raw = request.get_data(cache=False, as_text=True) or "{}"
     kb = len(raw.encode("utf-8")) / 1024.0
     if kb > settings.max_payload_kb:
-        return jsonify(
-            {"error": "payload_too_large", "limit_kb": settings.max_payload_kb}
-        ), 413
+        return (
+            jsonify(
+                {"error": "payload_too_large", "limit_kb": settings.max_payload_kb}
+            ),
+            413,
+        )
 
     try:
         payload = json.loads(raw)
@@ -266,10 +272,11 @@ def register_plugin():
     # Possible advanced path
     if _advanced_mode(settings):
         try:
+            # Local imports
             from ..services import plugins as adv
 
             adv_used = True
-            ok, result = adv.store.register(payload)  # type: ignore[attr-defined]
+            ok, result = adv.store.register(payload)
             if not ok:
                 # Heuristic: signature errors vs validation
                 if "signature" in str(result).lower():
@@ -278,7 +285,7 @@ def register_plugin():
                     plugin_metrics["validation_errors_total"] += 1
                 return jsonify(result), 400
             plugin_id = result.get("plugin_id")
-            meta = adv.store.plugins.get(plugin_id, {}).copy()  # type: ignore[attr-defined]
+            meta = adv.store.plugins.get(plugin_id, {}).copy() if plugin_id else {}
             safe_desc = redact_text(meta.get("description", ""))
             plugin_metrics["registrations_total"] += 1
             plugin_metrics["advanced_mode_used_total"] += 1
@@ -298,21 +305,24 @@ def register_plugin():
 
     # Minimal path
     try:
-        result = validate_and_register_plugin(
+        validation_result = validate_and_register_plugin(
             payload=payload,
             require_signature=settings.require_plugin_signature,
             max_description_len=settings.max_description_len,
         )
-    except PluginValidationError as e:
+    except PluginValidationError:
         plugin_metrics["validation_errors_total"] += 1
-        return jsonify(
-            {"error": "validation_error", "detail": "Plugin validation failed"}
-        ), 400
+        return (
+            jsonify(
+                {"error": "validation_error", "detail": "Plugin validation failed"}
+            ),
+            400,
+        )
     except Exception:
         log.exception("registration failed")
         return jsonify({"error": "internal_error"}), 500
 
-    meta = result.registry_record
+    meta = validation_result.registry_record
     _PLUGIN_REGISTRY[meta["name"]] = meta
     safe_desc = redact_text(meta.get("description", ""))
     plugin_metrics["registrations_total"] += 1
@@ -331,7 +341,7 @@ def register_plugin():
 
 
 @bp.get("/parallel_sample")
-def parallel_sample():
+def parallel_sample() -> Any:
     """Execute a lightweight parallel sample across up to 3 loaded plugins.
 
     Returns JSON with fields: success, failed, total, total_time, plugins[].
@@ -341,11 +351,12 @@ def parallel_sample():
     global _PARALLEL_SAMPLE_LAST  # noqa: PLW0603
     try:
         # Discover plugin execution manager (advanced) if available
+        # Aetherra imports
         from Aetherra.aetherra_core.plugins.advanced_plugins import (
             LyrixaAdvancedPluginManager,
-        )  # type: ignore
+        )
 
-        mgr = getattr(current_app, "_adv_plugin_mgr", None)  # type: ignore[attr-defined]
+        mgr = getattr(current_app, "_adv_plugin_mgr", None)
         if mgr is None:
             mgr = LyrixaAdvancedPluginManager()
             # Best-effort init (no plugins => 503)
@@ -357,8 +368,8 @@ def parallel_sample():
                 loop = asyncio.get_event_loop()
                 if loop.is_running():
                     # schedule initialize and wait
-                    loop.run_until_complete(mgr.initialize())  # type: ignore
-            setattr(current_app, "_adv_plugin_mgr", mgr)  # cache
+                    loop.run_until_complete(mgr.initialize())
+            setattr(current_app, "_adv_plugin_mgr", mgr)  # cache  # noqa: B010
         plugins_loaded = list(mgr.plugins.keys())
         if not plugins_loaded:
             return jsonify({"error": "no_plugins_available"}), 503
@@ -374,7 +385,7 @@ def parallel_sample():
         except RuntimeError:
             # Already in loop: create task group
             loop = asyncio.get_event_loop()
-            result = loop.run_until_complete(  # type: ignore
+            result = loop.run_until_complete(
                 mgr.execute_plugin_chain_parallel(
                     steps, shared_input={"sample": True}, timeout=0.25
                 )
@@ -396,8 +407,11 @@ def parallel_sample():
         }
         _PARALLEL_SAMPLE_LAST = summary
         return jsonify(summary)
-    except Exception as e:  # pragma: no cover - defensive
+    except Exception:  # pragma: no cover - defensive
         log.exception("parallel_sample failed")
-        return jsonify(
-            {"error": "parallel_sample_failed", "detail": "Sample execution failed"}
-        ), 500
+        return (
+            jsonify(
+                {"error": "parallel_sample_failed", "detail": "Sample execution failed"}
+            ),
+            500,
+        )

@@ -1,8 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.aetherra_core.memory.aetherra_memory_engine import AetherraMemoryEngine
 
 

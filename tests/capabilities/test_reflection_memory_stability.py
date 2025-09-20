@@ -16,13 +16,16 @@ be tuned if legitimate changes increase bounded retention.
 
 from __future__ import annotations
 
+# Standard library imports
 import os
 import tracemalloc
 from typing import List
 
+# Third party imports
 import pytest
 
 try:
+    # Aetherra imports
     from Aetherra.aetherra_core.system.reflection_system import (
         PersonalityReflectionSystem,
     )

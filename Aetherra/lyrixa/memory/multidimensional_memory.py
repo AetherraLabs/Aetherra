@@ -19,6 +19,7 @@ typed metadata and tags so higher layers can build on top without blocking.
 
 from __future__ import annotations
 
+# Standard library imports
 import asyncio
 from typing import Any, Dict, List
 
@@ -46,9 +47,10 @@ class MultidimensionalMemory:
             return True
         try:
             # Import lazily to avoid heavy imports at module import time
-            from aetherra_persistent_memory import (
+            # Aetherra imports
+            from aetherra_persistent_memory import (  # type: ignore
                 get_persistent_memory_system,
-            )  # type: ignore
+            )
 
             self._pmem = await get_persistent_memory_system()
             self._initialized = True

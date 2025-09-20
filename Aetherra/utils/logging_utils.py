@@ -5,6 +5,7 @@
 Logging utilities for Lyrixa
 """
 
+# Standard library imports
 import logging
 import sys
 from datetime import datetime
@@ -86,6 +87,7 @@ def setup_file_logging(log_dir: str | None = None):
 
 def log_system_info():
     """Log system information for debugging"""
+    # Standard library imports
     import platform
     import sys
 
@@ -117,6 +119,7 @@ def log_agent_activity(agent_name: str, activity: str, details: str = ""):
 
 def log_error_with_traceback(message: str, exception: Exception):
     """Log error with full traceback"""
+    # Standard library imports
     import traceback
 
     log(f"ERROR: {message}", "ERROR")

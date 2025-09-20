@@ -19,6 +19,7 @@ This module enables:
 Author: Aetherra Labs
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -28,11 +29,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Third party imports
 import aiohttp
 
 # Add Aetherra to path
 sys.path.insert(0, "Aetherra")
 
+# Aetherra imports
 from Aetherra.aetherra_core.config import config_loader
 
 logger = logging.getLogger(__name__)
@@ -470,6 +473,7 @@ class AetherraHubIntegration:
             if plugin_path.is_file():
                 plugin_path.unlink()
             elif plugin_path.is_dir():
+                # Standard library imports
                 import shutil
 
                 shutil.rmtree(plugin_path)

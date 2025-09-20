@@ -6,6 +6,7 @@
 AetherraCode Persona CLI - Command-line interface for persona management
 """
 
+# Standard library imports
 import argparse
 import sys
 from pathlib import Path
@@ -24,9 +25,11 @@ get_persona_engine = None  # type: ignore
 try:
     # Try multiple import paths for persona modules
     try:
+        # Third party imports
         import src.aethercode.persona.engine as engine_module
     except ImportError:
         try:
+            # Aetherra imports
             import aetherra.persona.engine as engine_module
         except ImportError:
             # Skip the core.persona.engine import as it doesn't exist
@@ -64,6 +67,7 @@ except ImportError:
     PERSONA_ENGINE_AVAILABLE = False
 
     # Create fallback classes and enums when imports fail
+    # Standard library imports
     from enum import Enum
 
     class PersonaArchetype(Enum):  # type: ignore

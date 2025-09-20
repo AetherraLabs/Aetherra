@@ -19,6 +19,7 @@ Key Features:
 
 from __future__ import annotations
 
+# Standard library imports
 import asyncio
 import logging
 import weakref
@@ -29,13 +30,15 @@ from types import MethodType
 from typing import Any, Protocol
 from uuid import uuid4
 
+# Third party imports
 from PySide6.QtCore import QObject, Signal, Slot
 
 logger = logging.getLogger(__name__)
 
 
 class _ConnectableSignal(Protocol):
-    def connect(self, slot: Callable[..., Any]) -> Any: ...
+    def connect(self, slot: Callable[..., Any]) -> Any:
+        ...
 
 
 class EventPriority(Enum):

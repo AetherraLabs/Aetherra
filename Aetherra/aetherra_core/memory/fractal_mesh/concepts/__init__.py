@@ -5,6 +5,7 @@
 Concept clustering components
 """
 
+# Local imports
 from .concept_clusters import (
     ConceptClusterManager,
     ConceptContradiction,

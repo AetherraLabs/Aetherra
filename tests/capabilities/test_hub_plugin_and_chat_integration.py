@@ -2,12 +2,14 @@
 # Verifies hub server exposes plugin endpoints and Lyrixa chat bridge functionality.
 from __future__ import annotations
 
+# Standard library imports
 import os
 import socket
 import sys
 import time
 from pathlib import Path
 
+# Third party imports
 import pytest
 
 ROOT = Path(__file__).parent.parent.parent
@@ -31,6 +33,7 @@ def hub_server():
     env_backup = os.environ.copy()
     os.environ.setdefault("AETHERRA_HUB_SKIP_OPTIONALS", "1")
 
+    # Aetherra imports
     from aetherra_hub.compat import AetherraHubServer
 
     hub = AetherraHubServer(port=HUB_PORT)
@@ -58,6 +61,7 @@ def hub_server():
 
 @pytest.mark.asyncio
 async def test_plugin_registration_and_listing(hub_server):
+    # Third party imports
     import requests
 
     # Register a plugin
@@ -71,12 +75,13 @@ async def test_plugin_registration_and_listing(hub_server):
     r2 = requests.get(f"http://localhost:{HUB_PORT}/api/plugins", timeout=3)
     assert r2.status_code == 200, r2.text
     data = r2.json()
-    assert any(p.get("name") == "sample_plugin" for p in data.get("plugins", [])), (
-        "Registered plugin not in listing"
-    )
+    assert any(
+        p.get("name") == "sample_plugin" for p in data.get("plugins", [])
+    ), "Registered plugin not in listing"
 
 
 def test_lyrixa_chat_bridge_fallback_or_forward(hub_server):
+    # Third party imports
     import requests
 
     # Send a chat request (Lyrixa service likely not registered in minimal test environment)

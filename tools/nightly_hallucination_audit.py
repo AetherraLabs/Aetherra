@@ -17,6 +17,7 @@ Environment:
   AETHERRA_AUDIT_OUT        Output path (default audits/hallucination_audit_<date>.md)
 """
 
+# Standard library imports
 import os
 import sqlite3
 from datetime import datetime, timedelta
@@ -81,6 +82,7 @@ def main() -> int:
             # Simple parse for category
             category = None
             if context_json:
+                # Standard library imports
                 import json
 
                 ctx = json.loads(context_json)

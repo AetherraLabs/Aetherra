@@ -8,9 +8,11 @@
 Enhanced version that generates more insights by adding problematic patterns.
 """
 
+# Standard library imports
 import asyncio
 import random
 
+# Third party imports
 from demo_analytics_standalone import AnalyticsInsightsDemo, SimpleAnalyticsEngine
 
 

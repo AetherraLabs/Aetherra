@@ -9,9 +9,11 @@ FastAPI Models for Aetherra .aether Script Execution API
 Pydantic models defining request/response schemas for the API endpoints.
 """
 
+# Standard library imports
 from datetime import datetime
 from typing import Any, Dict, Optional
 
+# Third party imports
 from pydantic import BaseModel, Field
 
 

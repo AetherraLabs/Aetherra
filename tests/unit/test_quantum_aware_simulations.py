@@ -21,6 +21,7 @@ Test Coverage:
 """
 
 
+# Standard library imports
 import math
 import tempfile
 import time
@@ -45,6 +46,7 @@ class TestQuantumAwareSimulations(unittest.TestCase):
 
     def tearDown(self):
         """Clean up test environment"""
+        # Standard library imports
         import shutil
 
         shutil.rmtree(self.test_dir, ignore_errors=True)
@@ -56,6 +58,7 @@ class TestCausalBranchSimulator(TestQuantumAwareSimulations):
     def test_causal_branch_creation(self):
         """Test creating causal branches from memory"""
         try:
+            # Standard library imports
             import sys
 
             sys.path.append(
@@ -63,6 +66,7 @@ class TestCausalBranchSimulator(TestQuantumAwareSimulations):
             )
 
             # Mock the causal branch simulator
+            # Standard library imports
             from unittest.mock import MagicMock
 
             # Create mock simulator

@@ -7,6 +7,7 @@ return a lightweight snapshot and leave TODO hooks for future expansion.
 
 from __future__ import annotations
 
+# Third party imports
 from flask import Blueprint, jsonify
 
 bp = Blueprint("quantum", __name__)

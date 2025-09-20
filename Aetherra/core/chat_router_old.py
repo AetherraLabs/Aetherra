@@ -11,21 +11,32 @@ with Aetherra's autonomous capabilities. It processes user messages and routes
 them to appropriate handlers based on intent, context, and capabilities.
 """
 
+# Standard library imports
 import asyncio
+import json
 import logging
 import re
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
 # Try to import Aetherra components with fallback
 try:
-    from Aetherra.core.engine.introspection_controller import IntrospectionController
-    from Aetherra.core.engine.reasoning_engine import ReasoningContext, ReasoningEngine
-    from Aetherra.core.self_improvement_engine import SelfImprovementEngine
+    # Aetherra imports
+    from Aetherra.core.engine.introspection_controller import (  # type: ignore
+        IntrospectionController,
+    )
+    from Aetherra.core.engine.reasoning_engine import (  # type: ignore
+        ReasoningContext,
+        ReasoningEngine,
+    )
+    from Aetherra.core.self_improvement_engine import (  # type: ignore
+        SelfImprovementEngine,
+    )
 
     HAS_AETHERRA_ENGINES = True
 except ImportError:
@@ -58,6 +69,36 @@ except ImportError:
     class SelfImprovementEngine:
         async def improve(self, context):
             return {"status": "improvement_not_available"}
+
+# Legacy/compat compatibility: provide stubs for older components if missing
+try:
+    # Attempt imports from potential legacy locations (best effort)
+    from Aetherra.core.ai import ask_ai  # type: ignore
+    from Aetherra.core.compiler import NaturalLanguageCompiler  # type: ignore
+    from Aetherra.core.interpreter import AetherraInterpreter  # type: ignore
+    from Aetherra.core.memory import AetherraMemory  # type: ignore
+except Exception:  # noqa: BLE001
+    class AetherraInterpreter:  # type: ignore
+        def execute(self, code: str) -> str:  # minimal API
+            return f"[interpreted] {code}"
+
+    class AetherraMemory:  # type: ignore
+        def __init__(self) -> None:
+            self._mem: List[str] = []
+
+        def remember(self, item: str) -> None:
+            self._mem.append(item)
+
+        def recall(self, query: str, limit: int = 3) -> List[str]:
+            # naive recall: return last N memories
+            return self._mem[-limit:]
+
+    class NaturalLanguageCompiler:  # type: ignore
+        def generate_aether_workflow(self, description: str) -> str:
+            return f"# workflow for: {description}"
+
+    def ask_ai(prompt: str, temperature: float = 0.5) -> str:  # type: ignore
+        return f"[mock-ai] {prompt[:120]}..."
 
 
 class IntentType(Enum):
@@ -107,7 +148,7 @@ class ChatMessage:
     timestamp: datetime
     user_id: str = "default"
     session_id: str = "default"
-    metadata: Dict[str, Any] = None
+    metadata: Optional[Dict[str, Any]] = None
 
     def __post_init__(self):
         if self.metadata is None:

@@ -17,6 +17,7 @@ Notes:
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import os
 import sys
@@ -29,6 +30,7 @@ WEB_BASE = os.getenv("AETHERRA_WEB_BASE", "http://localhost:8686")
 
 def _fetch_json(url: str, timeout: float = 1.8) -> Optional[Dict[str, Any]]:
     try:
+        # Third party imports
         import requests  # Lazy import in case only --once is used
 
         r = requests.get(url, timeout=timeout)
@@ -118,6 +120,7 @@ def _ensure_utf8_console() -> None:
 
 def launch_gui(interval_ms: int = 2000) -> int:
     try:
+        # Third party imports
         from PySide6.QtCore import Qt, QTimer  # noqa: F401 (optional runtime import)
         from PySide6.QtGui import QTextCursor
         from PySide6.QtWidgets import (
@@ -238,7 +241,7 @@ def launch_gui(interval_ms: int = 2000) -> int:
     app = QApplication.instance() or QApplication(sys.argv)
     win = MonitorWindow()
     win.show()
-    return app.exec()
+    return app.exec()  # nosec B102: Qt application execution
 
 
 def main(argv: Optional[list[str]] = None) -> int:

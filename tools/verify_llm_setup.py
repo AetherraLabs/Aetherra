@@ -17,6 +17,7 @@ Exit codes:
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import os
 import sys
@@ -75,6 +76,7 @@ def maybe_round_trip() -> Dict[str, Any]:
     key = os.environ.get("OPENAI_API_KEY", "").strip()
     if key:
         try:
+            # Third party imports
             from openai import OpenAI  # type: ignore
 
             client = OpenAI()
@@ -90,6 +92,7 @@ def maybe_round_trip() -> Dict[str, Any]:
     akey = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     if akey:
         try:
+            # Third party imports
             import anthropic  # type: ignore
 
             _ = anthropic.Anthropic(api_key=akey)

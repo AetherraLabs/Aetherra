@@ -15,6 +15,7 @@ __version__ = "1.0.0"
 __author__ = "AetherraLabs"
 __email__ = "contact@aetherralabs.com"
 
+# Standard library imports
 # Core module imports with graceful fallbacks
 import logging
 from pathlib import Path
@@ -23,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 # Try to import core components with fallbacks
 try:
+    # Aetherra imports
     from Aetherra.aetherra_core import memory  # noqa: F401
 
     MEMORY_AVAILABLE = True
@@ -31,6 +33,7 @@ except ImportError as e:
     MEMORY_AVAILABLE = False
 
 try:
+    # Aetherra imports
     from Aetherra.aetherra_core import engine  # noqa: F401
 
     ENGINE_AVAILABLE = True
@@ -39,6 +42,7 @@ except ImportError as e:
     ENGINE_AVAILABLE = False
 
 try:
+    # Aetherra imports
     from Aetherra.aetherra_core import orchestration  # noqa: F401
 
     ORCHESTRATION_AVAILABLE = True
@@ -47,6 +51,7 @@ except ImportError as e:
     ORCHESTRATION_AVAILABLE = False
 
 try:
+    # Aetherra imports
     from Aetherra.aetherra_core import plugins  # noqa: F401
 
     PLUGINS_AVAILABLE = True
@@ -55,6 +60,7 @@ except ImportError as e:
     PLUGINS_AVAILABLE = False
 
 try:
+    # Aetherra imports
     from Aetherra.aetherra_core import config  # noqa: F401
 
     CONFIG_AVAILABLE = True
@@ -79,6 +85,7 @@ def get_system_status():
 
 def check_dependencies():
     """Check if all required dependencies are available."""
+    # Standard library imports
     import importlib.util as _spec
 
     required = ["asyncio", "json", "logging"]

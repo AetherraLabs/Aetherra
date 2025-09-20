@@ -11,6 +11,7 @@ Built-in Python-based plugin marketplace server for Aetherra OS.
 Provides plugin registration, discovery, and basic marketplace functionality.
 """
 
+# Standard library imports
 import asyncio
 import logging
 import os
@@ -20,6 +21,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional, cast
 
 try:
+    # Third party imports
     from flask import Flask, jsonify, request
     from flask_cors import CORS
 
@@ -109,6 +111,7 @@ class AetherraHubServer:
             self._ws_sock = None
             if self._ws_enabled_flag:
                 try:
+                    # Third party imports
                     from flask_sock import Sock  # type: ignore
 
                     self._ws_sock = Sock(self.app)  # type: ignore[assignment]
@@ -232,6 +235,7 @@ class AetherraHubServer:
     def _trainer_submit_job(self, payload: Dict[str, Any]) -> str:
         # Generate a simple job id
         try:
+            # Standard library imports
             import uuid
 
             jid = f"train_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
@@ -328,6 +332,7 @@ class AetherraHubServer:
     def _trainer_submit_eval(self, payload: Dict[str, Any]) -> str:
         # Generate a simple eval id
         try:
+            # Standard library imports
             import uuid
 
             eid = f"eval_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
@@ -466,6 +471,7 @@ class AetherraHubServer:
         # Enable by setting AETHERRA_HUB_SKIP_OPTIONALS=0
         if os.environ.get("AETHERRA_HUB_SKIP_OPTIONALS", "1") == "0":
             try:
+                # Aetherra imports
                 from Aetherra.hub.federation import get_federation_manager
 
                 self.federation = get_federation_manager(
@@ -482,12 +488,14 @@ class AetherraHubServer:
             except Exception:
                 self.federation = None
             try:
+                # Aetherra imports
                 from Aetherra.telemetry.optin import get_telemetry
 
                 self.telemetry = get_telemetry()
             except Exception:
                 self.telemetry = None
             try:
+                # Aetherra imports
                 from Aetherra.memory.graph_optics import summarize_memory_graph
 
                 self.memory_summarizer = summarize_memory_graph
@@ -495,6 +503,7 @@ class AetherraHubServer:
                 self.memory_summarizer = None
             # Optional signing verification
             try:
+                # Standard library imports
                 import importlib
 
                 ps = importlib.import_module("Aetherra.security.plugin_signing")
@@ -532,6 +541,7 @@ class AetherraHubServer:
               - AETHERRA_PNA_ALLOW: '1' to enable Access-Control-Allow-Private-Network (default '1')
             """
             try:
+                # Standard library imports
                 import re
 
                 origin = request.headers.get("Origin")  # type: ignore[name-defined]
@@ -546,13 +556,13 @@ class AetherraHubServer:
                     vary = resp.headers.get("Vary")
                     resp.headers["Vary"] = (vary + ", Origin") if vary else "Origin"
                     resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-                    resp.headers["Access-Control-Allow-Headers"] = (
-                        "Content-Type, X-Aetherra-Token, X-Aetherra-Trace-Id, X-Aetherra-Chat-Version, X-Aetherra-Policy"
-                    )
+                    resp.headers[
+                        "Access-Control-Allow-Headers"
+                    ] = "Content-Type, X-Aetherra-Token, X-Aetherra-Trace-Id, X-Aetherra-Chat-Version, X-Aetherra-Policy"
                     # Expose custom headers to browser JS
-                    resp.headers["Access-Control-Expose-Headers"] = (
-                        "X-Aetherra-Trace-Id, X-Aetherra-Chat-Version, X-Aetherra-Policy"
-                    )
+                    resp.headers[
+                        "Access-Control-Expose-Headers"
+                    ] = "X-Aetherra-Trace-Id, X-Aetherra-Chat-Version, X-Aetherra-Policy"
                     # Only opt into Private Network Access for allowed origins
                     if pna_allow:
                         resp.headers["Access-Control-Allow-Private-Network"] = "true"
@@ -566,6 +576,7 @@ class AetherraHubServer:
         @app.route("/", methods=["OPTIONS"])  # type: ignore[misc]
         @app.route("/<path:_any>", methods=["OPTIONS"])  # type: ignore[misc]
         def _cors_options(_any: Optional[str] = None):
+            # Third party imports
             from flask import make_response  # type: ignore
 
             # Empty 204 response; headers are added by after_request above
@@ -710,6 +721,7 @@ class AetherraHubServer:
                 shape as POST /api/ai/stream. Server then pushes JSON envelopes:
                 {id, trace_id, ts, type, data, client_message_id?} until final/error.
                 """
+                # Standard library imports
                 import json as _json
 
                 # Gates: enabled + streaming flags
@@ -828,6 +840,7 @@ class AetherraHubServer:
                         return
 
                 # Envelope utility
+                # Standard library imports
                 import time as _t
 
                 # Honor optional last_event_id for monotonic resume semantics
@@ -903,6 +916,7 @@ class AetherraHubServer:
 
                 # Mid-stream events queue
                 try:
+                    # Standard library imports
                     import queue as _queue
 
                     _evt_q: _queue.Queue = _queue.Queue()
@@ -937,6 +951,7 @@ class AetherraHubServer:
 
                 def _runner_thread(eng):
                     try:
+                        # Standard library imports
                         import asyncio as _asyncio
 
                         async def _go():
@@ -988,6 +1003,7 @@ class AetherraHubServer:
                         pass
                     return
 
+                # Standard library imports
                 import threading as _threading
 
                 t = _threading.Thread(
@@ -1102,6 +1118,7 @@ class AetherraHubServer:
             try:
                 now = time.time()
             except Exception:
+                # Standard library imports
                 import time as _t2
 
                 now = _t2.time()
@@ -1244,6 +1261,7 @@ class AetherraHubServer:
         def _security_ledger_write(event: str, trace_id: str, details: Dict[str, Any]):
             """Append a single security event to the security ledger JSONL (best-effort)."""
             try:
+                # Standard library imports
                 import json as _json
                 from pathlib import Path as _Path
 
@@ -1271,6 +1289,7 @@ class AetherraHubServer:
 
         def _redact_text(text: str) -> Dict[str, Any]:
             """Return { text, redactions: [ { pattern, start, end }... ] } with basic secret redactions."""
+            # Standard library imports
             import re as _re
 
             s = str(text or "")
@@ -1296,6 +1315,7 @@ class AetherraHubServer:
             return {"text": s, "redactions": redactions}
 
         def _extract_urls_hosts(text: str) -> list[str]:
+            # Standard library imports
             import re as _re
 
             s = str(text or "")
@@ -1431,6 +1451,7 @@ class AetherraHubServer:
             body: Optional[Dict[str, Any]] = None,
             query: Optional[Dict[str, Any]] = None,
         ) -> str:
+            # Standard library imports
             import uuid as _uuid
 
             try:
@@ -1483,6 +1504,7 @@ class AetherraHubServer:
                 pass
             # Fallback local DLQ
             try:
+                # Standard library imports
                 import json as _json
                 from pathlib import Path as _Path
 
@@ -1515,6 +1537,7 @@ class AetherraHubServer:
             mode = os.environ.get("AETHERRA_TOKENIZER", "heuristic").strip().lower()
             if mode == "tiktoken":
                 try:
+                    # Third party imports
                     import tiktoken  # type: ignore
 
                     model = os.environ.get("AETHERRA_TOKENIZER_MODEL", "cl100k_base")
@@ -1689,8 +1712,10 @@ class AetherraHubServer:
 
         def _get_registry_status_sync():
             try:
+                # Standard library imports
                 import asyncio as _a
 
+                # Aetherra imports
                 from aetherra_service_registry import get_service_registry as _get
 
                 async def _run():
@@ -1703,8 +1728,10 @@ class AetherraHubServer:
 
         def _get_kernel_status_sync():
             try:
+                # Standard library imports
                 import asyncio as _a
 
+                # Aetherra imports
                 from aetherra_service_registry import get_service_registry as _get
 
                 async def _run():
@@ -1724,8 +1751,10 @@ class AetherraHubServer:
         def _get_orchestrator_status_sync():
             """Best-effort lookup of orchestrator status via the engine service."""
             try:
+                # Standard library imports
                 import asyncio as _a
 
+                # Aetherra imports
                 from aetherra_service_registry import get_service_registry as _get
 
                 async def _run():
@@ -1760,8 +1789,10 @@ class AetherraHubServer:
             (kernel -> awaitable result). Returns (ok: bool, message|payload).
             """
             try:
+                # Standard library imports
                 import asyncio as _a
 
+                # Aetherra imports
                 from aetherra_service_registry import get_service_registry as _get
 
                 async def _run():
@@ -1798,8 +1829,10 @@ class AetherraHubServer:
             """
             # Try via service registry and engine
             try:
+                # Standard library imports
                 import asyncio as _a
 
+                # Aetherra imports
                 from aetherra_service_registry import get_service_registry as _get
 
                 async def _run():
@@ -1837,6 +1870,7 @@ class AetherraHubServer:
 
             # Fallback: ephemeral instance
             try:
+                # Aetherra imports
                 from Aetherra.aetherra_core.memory.QuantumEnhancedMemoryEngine import (
                     QuantumEnhancedMemoryEngine as _Q,
                 )
@@ -1860,8 +1894,10 @@ class AetherraHubServer:
             """
             # Try via service registry and engine
             try:
+                # Standard library imports
                 import asyncio as _a
 
+                # Aetherra imports
                 from aetherra_service_registry import get_service_registry as _get
 
                 async def _run():
@@ -1892,6 +1928,7 @@ class AetherraHubServer:
 
             # Fallback: ephemeral instance
             try:
+                # Aetherra imports
                 from Aetherra.aetherra_core.memory.QuantumEnhancedMemoryEngine import (
                     QuantumEnhancedMemoryEngine as _Q,
                 )
@@ -1908,8 +1945,10 @@ class AetherraHubServer:
         def _get_hmr_audit_counters_sync():
             """Best-effort HMR audit counters from the controller via the service registry."""
             try:
+                # Standard library imports
                 import asyncio as _a
 
+                # Aetherra imports
                 from aetherra_service_registry import get_service_registry as _get
 
                 async def _run():
@@ -1935,6 +1974,7 @@ class AetherraHubServer:
         # Quantum bridge (simulator-first)
         def _get_quantum_bridge_status():
             try:
+                # Aetherra imports
                 from Aetherra.aetherra_core.memory.quantum.quantum_bridge import (
                     get_quantum_bridge as _gqb,
                 )
@@ -1965,6 +2005,7 @@ class AetherraHubServer:
               - response: str (best-effort derived from raw)
             """
             try:
+                # Standard library imports
                 import uuid as _uuid
             except Exception:
                 _uuid = None  # type: ignore
@@ -2035,6 +2076,7 @@ class AetherraHubServer:
                     pass
 
             # Confidence (structured + legacy)
+            # Standard library imports
             from typing import Optional as _Opt
 
             cb: Dict[str, _Opt[float]] = {
@@ -2232,8 +2274,10 @@ class AetherraHubServer:
         def _get_klm_metrics_sync():
             """Best-effort Module Manager (KLM) metrics via the registry."""
             try:
+                # Standard library imports
                 import asyncio as _a
 
+                # Aetherra imports
                 from aetherra_service_registry import get_service_registry as _get
 
                 async def _run():
@@ -2259,8 +2303,10 @@ class AetherraHubServer:
         def _get_klm_status_sync():
             """Best-effort Module Manager (KLM) status via the registry."""
             try:
+                # Standard library imports
                 import asyncio as _a
 
+                # Aetherra imports
                 from aetherra_service_registry import get_service_registry as _get
 
                 async def _run():
@@ -2286,8 +2332,10 @@ class AetherraHubServer:
         def _get_keb_metrics_sync():
             """Best-effort Event Bus (KEB) metrics via the registry."""
             try:
+                # Standard library imports
                 import asyncio as _a
 
+                # Aetherra imports
                 from aetherra_service_registry import get_service_registry as _get
 
                 async def _run():
@@ -2313,8 +2361,10 @@ class AetherraHubServer:
         def _get_keb_status_sync():
             """Best-effort Event Bus (KEB) status via the registry."""
             try:
+                # Standard library imports
                 import asyncio as _a
 
+                # Aetherra imports
                 from aetherra_service_registry import get_service_registry as _get
 
                 async def _run():
@@ -2416,6 +2466,7 @@ class AetherraHubServer:
                 schema_errors = []
                 normalized = dict(plugin_data)
                 try:
+                    # Aetherra imports
                     from Aetherra.plugins.manifest_schema import validate_manifest
 
                     ok, errs, norm = validate_manifest(plugin_data)
@@ -2446,6 +2497,7 @@ class AetherraHubServer:
                             not getattr(self, "_signing_has_lib", False)
                         ):
                             try:
+                                # Standard library imports
                                 import importlib as _imp
 
                                 _ps = _imp.import_module(
@@ -2488,6 +2540,7 @@ class AetherraHubServer:
                         return jsonify({"error": "invalid signature"}), 400  # type: ignore[name-defined]
                     # Quick sanity check: signature and pubkey must be valid base64
                     try:
+                        # Standard library imports
                         import base64 as _b64
 
                         sig_b64 = str(plugin_data.get("signature"))
@@ -2501,6 +2554,7 @@ class AetherraHubServer:
                         not getattr(self, "_signing_has_lib", False)
                     ):
                         try:
+                            # Standard library imports
                             import importlib as _imp
 
                             _ps = _imp.import_module("Aetherra.security.plugin_signing")
@@ -2535,6 +2589,7 @@ class AetherraHubServer:
                 # Compute trust zone mapping
                 trust_zone = "unsigned"
                 try:
+                    # Aetherra imports
                     from Aetherra.plugins.manifest_schema import compute_trust_zone
 
                     trust_zone = compute_trust_zone(strict, bool(verified))
@@ -2588,6 +2643,7 @@ class AetherraHubServer:
             out = dict(self.stats)
             # Best-effort: include Lyrixa chat service availability from the registry
             try:
+                # Aetherra imports
                 from aetherra_service_registry import get_service_registry
 
                 async def _get():
@@ -2633,9 +2689,10 @@ class AetherraHubServer:
               chat: minimal chat counters
             """
             self.stats["requests_served"] += 1
+            # Standard library imports
             from datetime import (
-                datetime as _dt,
-            )  # local import to avoid top-level churn
+                datetime as _dt,  # local import to avoid top-level churn
+            )
 
             # Defensive wrappers
             def _subset_kernel(ks: Dict[str, Any]) -> Dict[str, Any]:  # type: ignore[name-defined]
@@ -3206,7 +3263,9 @@ class AetherraHubServer:
                     lines.append(
                         'aetherra_orchestrator_task_latency_ms_bucket{le="+Inf"} 0.0'.replace(
                             "{", "{{"
-                        ).replace("}", "}}")
+                        ).replace(
+                            "}", "}}"
+                        )
                     )
                 except Exception:
                     pass
@@ -3570,6 +3629,7 @@ class AetherraHubServer:
                     if os.environ.get("AETHERRA_AGENT_PER_METRICS", "1") != "1":
                         return
                     try:
+                        # Aetherra imports
                         from Aetherra.consciousness.agents.agent_registry import (
                             get_agent_registry,
                         )
@@ -3634,6 +3694,7 @@ class AetherraHubServer:
             _emit_agents()
 
             body = "\n".join(lines) + "\n"
+            # Third party imports
             from flask import Response  # type: ignore
 
             return Response(body, mimetype="text/plain; version=0.0.4; charset=utf-8")  # type: ignore[call-arg]
@@ -3687,8 +3748,10 @@ class AetherraHubServer:
         def _with_engine_call(fn):
             """Call into the registered Aetherra engine (sync or async)."""
             try:
+                # Standard library imports
                 import asyncio as _a
 
+                # Aetherra imports
                 from aetherra_service_registry import get_service_registry as _get
 
                 async def _run():
@@ -3921,6 +3984,7 @@ class AetherraHubServer:
                 try:
                     deadline_ts = time.time() + float(ttl_sec)  # type: ignore[name-defined]
                 except Exception:
+                    # Standard library imports
                     import time as _t2
 
                     deadline_ts = _t2.time() + float(ttl_sec)
@@ -3950,6 +4014,7 @@ class AetherraHubServer:
                     try:
                         r.headers["X-Aetherra-Trace-Id"] = trace_id
                         r.headers["X-Aetherra-Chat-Version"] = "2"
+                        # Standard library imports
                         import json as _json
 
                         r.headers["X-Aetherra-Policy"] = _json.dumps(
@@ -3979,6 +4044,7 @@ class AetherraHubServer:
                     try:
                         r.headers["X-Aetherra-Trace-Id"] = trace_id
                         r.headers["X-Aetherra-Chat-Version"] = "2"
+                        # Standard library imports
                         import json as _json
 
                         r.headers["X-Aetherra-Policy"] = _json.dumps(
@@ -3998,6 +4064,7 @@ class AetherraHubServer:
                 self.chat_metrics["tokens_in_total"] += _count_tokens(msg)
             except Exception:
                 pass
+            # Standard library imports
             import time as _t
 
             _t0 = _t.time()
@@ -4033,6 +4100,7 @@ class AetherraHubServer:
                 dt_ms = (time.time() - _t0) * 1000.0  # type: ignore[name-defined]
             except Exception:
                 try:
+                    # Standard library imports
                     import time as _t2
 
                     dt_ms = (_t2.time() - _t0) * 1000.0
@@ -4090,6 +4158,7 @@ class AetherraHubServer:
                 try:
                     resp_obj.headers["X-Aetherra-Trace-Id"] = trace_id
                     resp_obj.headers["X-Aetherra-Chat-Version"] = "2"
+                    # Standard library imports
                     import json as _json
 
                     resp_obj.headers["X-Aetherra-Policy"] = _json.dumps(
@@ -4125,6 +4194,7 @@ class AetherraHubServer:
                         resp_obj.headers["Retry-After"] = str(hdrs["Retry-After"])  # type: ignore[index]
                 except Exception:
                     pass
+                # Standard library imports
                 import json as _json
 
                 resp_obj.headers["X-Aetherra-Policy"] = _json.dumps(
@@ -4274,6 +4344,7 @@ class AetherraHubServer:
                 try:
                     deadline_ts = time.time() + float(ttl_sec)  # type: ignore[name-defined]
                 except Exception:
+                    # Standard library imports
                     import time as _t2
 
                     deadline_ts = _t2.time() + float(ttl_sec)
@@ -4282,6 +4353,7 @@ class AetherraHubServer:
             ttft_ctrl = {"done": False, "t0": None}
 
             def _sse(event: str, data: Dict[str, Any]):
+                # Standard library imports
                 import json as _json
                 import time as _t_local
 
@@ -4340,6 +4412,7 @@ class AetherraHubServer:
             def _generate():
                 # Working copy of prompt (may be redacted by safety preflight)
                 msg2 = msg
+                # Standard library imports
                 import time as _t
 
                 # Time-to-first-token baseline
@@ -4435,6 +4508,7 @@ class AetherraHubServer:
                     pass
                 # Mid-stream event queue from engine callbacks
                 try:
+                    # Standard library imports
                     import queue as _queue
 
                     _evt_q: _queue.Queue = _queue.Queue()
@@ -4471,6 +4545,7 @@ class AetherraHubServer:
 
                 def _runner_thread(eng):
                     try:
+                        # Standard library imports
                         import asyncio as _asyncio
 
                         async def _go():
@@ -4551,6 +4626,7 @@ class AetherraHubServer:
                         pass
                     return
 
+                # Standard library imports
                 import threading as _threading
 
                 t = _threading.Thread(
@@ -4745,6 +4821,7 @@ class AetherraHubServer:
                 except Exception:
                     pass
 
+            # Third party imports
             from flask import Response  # type: ignore
 
             resp_obj = Response(
@@ -4759,6 +4836,7 @@ class AetherraHubServer:
             try:
                 resp_obj.headers["X-Aetherra-Trace-Id"] = trace_id
                 resp_obj.headers["X-Aetherra-Chat-Version"] = "2"
+                # Standard library imports
                 import json as _json
 
                 resp_obj.headers["X-Aetherra-Policy"] = _json.dumps(
@@ -4895,6 +4973,7 @@ class AetherraHubServer:
             except Exception:
                 sp_q = None
             try:
+                # Standard library imports
                 import json as _json  # noqa: F401
             except Exception:
                 pass
@@ -4933,6 +5012,7 @@ class AetherraHubServer:
                 try:
                     deadline_ts = time.time() + float(ttl_sec)  # type: ignore[name-defined]
                 except Exception:
+                    # Standard library imports
                     import time as _t2
 
                     deadline_ts = _t2.time() + float(ttl_sec)
@@ -4941,6 +5021,7 @@ class AetherraHubServer:
             ttft_ctrl_get = {"done": False, "t0": None}
 
             def _sse(event: str, data: Dict[str, Any]):
+                # Standard library imports
                 import json as _json
                 import time as _t_local
 
@@ -4997,6 +5078,7 @@ class AetherraHubServer:
             def _generate():
                 # Working copy of prompt
                 msg2 = msg
+                # Standard library imports
                 import time as _t
 
                 _t0s = _t.time()
@@ -5090,6 +5172,7 @@ class AetherraHubServer:
                     pass
                 # Mid-stream queue and callbacks
                 try:
+                    # Standard library imports
                     import queue as _queue
 
                     _evt_q: _queue.Queue = _queue.Queue()
@@ -5124,6 +5207,7 @@ class AetherraHubServer:
 
                 def _runner_thread(eng):
                     try:
+                        # Standard library imports
                         import asyncio as _asyncio
 
                         async def _go():
@@ -5183,6 +5267,7 @@ class AetherraHubServer:
                     yield _sse("final", _e)
                     return
 
+                # Standard library imports
                 import threading as _threading
 
                 t = _threading.Thread(
@@ -5333,6 +5418,7 @@ class AetherraHubServer:
                 except Exception:
                     pass
 
+            # Third party imports
             from flask import Response  # type: ignore
 
             resp_obj = Response(
@@ -5347,6 +5433,7 @@ class AetherraHubServer:
             try:
                 resp_obj.headers["X-Aetherra-Trace-Id"] = trace_id
                 resp_obj.headers["X-Aetherra-Chat-Version"] = "2"
+                # Standard library imports
                 import json as _json
 
                 resp_obj.headers["X-Aetherra-Policy"] = _json.dumps(
@@ -5400,6 +5487,7 @@ class AetherraHubServer:
                     # Fallback to full engine status
                     if hasattr(eng, "get_system_status"):
                         # Engine method is async per engine implementation
+                        # Standard library imports
                         import asyncio as _a
 
                         async def _g():
@@ -5570,6 +5658,7 @@ class AetherraHubServer:
             poll_ms = int(os.environ.get("AETHERRA_AGENTS_STREAM_POLL_MS", "200"))
 
             def _sse(event: str, data: Dict[str, Any]):
+                # Standard library imports
                 import json as _json
 
                 return f"event: {event}\ndata: {_json.dumps(data)}\n\n"
@@ -5583,6 +5672,7 @@ class AetherraHubServer:
                 yield _sse("token", {"required": require, "ok": True})
 
                 # Poll for status a few times or until complete
+                # Standard library imports
                 import time as _t
 
                 def _get_once():
@@ -5628,6 +5718,7 @@ class AetherraHubServer:
                     st = {}
                 yield _sse("final", {"ok": True, "task_id": task_id, "status": st})
 
+            # Third party imports
             from flask import Response  # type: ignore
 
             return Response(
@@ -5694,11 +5785,13 @@ class AetherraHubServer:
                 except Exception:
                     deadline_ts = None
                 if deadline_ts is None and ttl_sec is not None and ttl_sec > 0:
+                    # Standard library imports
                     import time as _t2
 
                     deadline_ts = _t2.time() + float(ttl_sec)
                 # Expiry check
                 try:
+                    # Standard library imports
                     import time as _t3
 
                     if deadline_ts and float(deadline_ts) < float(_t3.time()):
@@ -5719,6 +5812,7 @@ class AetherraHubServer:
                         try:
                             r.headers["X-Aetherra-Trace-Id"] = trace_id
                             r.headers["X-Aetherra-Chat-Version"] = "2"
+                            # Standard library imports
                             import json as _json
 
                             r.headers["X-Aetherra-Policy"] = _json.dumps(
@@ -5745,6 +5839,7 @@ class AetherraHubServer:
                         try:
                             r.headers["X-Aetherra-Trace-Id"] = trace_id
                             r.headers["X-Aetherra-Chat-Version"] = "2"
+                            # Standard library imports
                             import json as _json
 
                             r.headers["X-Aetherra-Policy"] = _json.dumps(
@@ -5758,6 +5853,7 @@ class AetherraHubServer:
 
                 # Lazy import to avoid tight coupling
                 try:
+                    # Aetherra imports
                     from aetherra_service_registry import get_service_registry
 
                     async def _call():
@@ -5823,6 +5919,7 @@ class AetherraHubServer:
                     try:
                         r.headers["X-Aetherra-Trace-Id"] = trace_id
                         r.headers["X-Aetherra-Chat-Version"] = "2"
+                        # Standard library imports
                         import json as _json
 
                         r.headers["X-Aetherra-Policy"] = _json.dumps(
@@ -5966,6 +6063,7 @@ class AetherraHubServer:
                 try:
                     r.headers["X-Aetherra-Trace-Id"] = trace_id
                     r.headers["X-Aetherra-Chat-Version"] = "2"
+                    # Standard library imports
                     import json as _json
 
                     r.headers["X-Aetherra-Policy"] = _json.dumps(
@@ -6038,6 +6136,7 @@ class AetherraHubServer:
             """Run a small quantum recipe against the simulator/provider (best-effort)."""
             self.stats["requests_served"] += 1
             try:
+                # Aetherra imports
                 from Aetherra.aetherra_core.memory.quantum.quantum_bridge import (
                     QuantumRecipe,
                     get_quantum_bridge,
@@ -6364,6 +6463,7 @@ class AetherraHubServer:
                 pass
 
             # Start Flask server in a separate thread
+            # Standard library imports
             import socket
             import threading
 

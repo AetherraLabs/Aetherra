@@ -22,6 +22,7 @@ Key Features:
 - Layout preservation across sessions
 """
 
+# Local imports
 from .event_bus import EventBus, EventFactory, get_event_bus
 from .lyrixa_gui import LyrixaGUI, create_lyrixa_gui
 from .plugin_ui_host import PluginUIHost, PluginUIManager

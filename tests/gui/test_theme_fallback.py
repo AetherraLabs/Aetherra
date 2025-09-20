@@ -6,9 +6,11 @@ We simulate a missing/empty theme by pointing LYRIXA_THEME to a non-existent nam
 Expectation: window.styleSheet() is non-empty due to fallback path.
 """
 
+# Standard library imports
 import os
 import sys
 
+# Third party imports
 from PySide6.QtWidgets import QApplication
 
 # Ensure package import path contains project root
@@ -23,6 +25,7 @@ def test_theme_or_fallback_applied():
 
     app = QApplication.instance() or QApplication([])
 
+    # Aetherra imports
     from Aetherra.lyrixa.lyrixa_basic_gui import LyrixaBasicWindow  # import after env
 
     window = LyrixaBasicWindow(ai_chat=None, hub_connector=None, service_registry=None)

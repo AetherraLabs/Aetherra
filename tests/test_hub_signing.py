@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import importlib.util
 import time
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from aetherra_hub.compat import AetherraHubServer
 
 HAS_FLASK = importlib.util.find_spec("flask") is not None
@@ -22,6 +25,7 @@ def _start_server(port=3011):
 
 
 def _post_json(url, payload):
+    # Third party imports
     import requests
 
     return requests.post(url, json=payload, timeout=5)
@@ -63,6 +67,7 @@ def test_register_unsigned_strict(monkeypatch):
 def test_register_signed_valid(monkeypatch):
     monkeypatch.setenv("AETHERRA_SIGNING_STRICT", "1")
     # Generate key and sign
+    # Aetherra imports
     from Aetherra.security.plugin_signing import generate_keypair, sign_manifest
 
     pub, secret = generate_keypair()
@@ -74,6 +79,7 @@ def test_register_signed_valid(monkeypatch):
         resp = _post_json("http://localhost:3014/api/plugins/register", signed)
         assert resp.status_code == 200
         # Fetch back
+        # Third party imports
         import requests
 
         r2 = requests.get("http://localhost:3014/api/plugins/signed_plugin", timeout=5)

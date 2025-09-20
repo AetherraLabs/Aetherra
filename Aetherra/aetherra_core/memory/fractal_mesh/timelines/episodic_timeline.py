@@ -9,6 +9,7 @@ Manages temporal sequences of memory fragments with narrative continuity.
 Enables story-like recall, causal relationship tracking, and temporal pattern recognition.
 """
 
+# Standard library imports
 import json
 import sqlite3
 import uuid
@@ -16,6 +17,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any
 
+# Local imports
 from ..base import EpisodicChain, MemoryFragment, MemoryFragmentType
 
 
@@ -224,7 +226,9 @@ class EpisodicTimeline:
                 best_chain.temporal_span[0],
                 fragment.created_at,
             )
-            best_chain.significance_score = self._calculate_chain_significance(best_chain)
+            best_chain.significance_score = self._calculate_chain_significance(
+                best_chain
+            )
             self._persist_chain(best_chain)
             return best_chain.chain_id
 
@@ -351,11 +355,15 @@ class EpisodicTimeline:
                 arc.fragments.append(fragment.fragment_id)
 
                 # Update emotional trajectory (simplified)
-                emotional_value = fragment.confidence_score  # Proxy for emotional valence
+                emotional_value = (
+                    fragment.confidence_score
+                )  # Proxy for emotional valence
                 arc.emotional_trajectory.append(emotional_value)
 
                 # Update themes based on fragment symbolic tags
-                arc.themes.extend([tag for tag in fragment.symbolic_tags if tag not in arc.themes])
+                arc.themes.extend(
+                    [tag for tag in fragment.symbolic_tags if tag not in arc.themes]
+                )
 
                 self._persist_narrative_arc(arc)
                 return
@@ -367,7 +375,9 @@ class EpisodicTimeline:
                 arc_id=arc_id,
                 title=f"Arc starting {fragment.created_at.strftime('%Y-%m-%d')}",
                 fragments=[fragment.fragment_id],
-                key_moments=[fragment.fragment_id] if fragment.confidence_score > 0.7 else [],
+                key_moments=[fragment.fragment_id]
+                if fragment.confidence_score > 0.7
+                else [],
                 themes=list(fragment.symbolic_tags),
                 emotional_trajectory=[fragment.confidence_score],
                 resolution_status="ongoing",
@@ -398,7 +408,9 @@ class EpisodicTimeline:
         length_factor = min(len(chain.fragments) / 10, 1.0)  # Normalize to 10 fragments
 
         # Temporal span factor (longer spans = more significant, up to a point)
-        span_hours = (chain.temporal_span[1] - chain.temporal_span[0]).total_seconds() / 3600
+        span_hours = (
+            chain.temporal_span[1] - chain.temporal_span[0]
+        ).total_seconds() / 3600
         span_factor = min(span_hours / (24 * 7), 1.0)  # Normalize to 1 week
 
         # Causal density (more causal links = more significant)
@@ -475,7 +487,9 @@ class EpisodicTimeline:
 
         return network
 
-    def detect_temporal_patterns(self, pattern_type: str = "daily") -> list[TemporalPattern]:
+    def detect_temporal_patterns(
+        self, pattern_type: str = "daily"
+    ) -> list[TemporalPattern]:
         """Get detected temporal patterns of specified type"""
         return [
             pattern
@@ -624,7 +638,8 @@ class EpisodicTimeline:
             relationship_type=row[3] or "unknown",
             confidence=row[4] or 0.5,
             temporal_delay=timedelta(
-                seconds=int(row[5].split(":")[0]) * 3600 + int(row[5].split(":")[1]) * 60
+                seconds=int(row[5].split(":")[0]) * 3600
+                + int(row[5].split(":")[1]) * 60
             )
             if row[5]
             else timedelta(),

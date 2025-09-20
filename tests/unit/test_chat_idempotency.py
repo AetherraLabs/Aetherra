@@ -1,12 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import os
 import time
 
+# Third party imports
 import pytest
 import requests
 
+# Aetherra imports
 from aetherra_hub.compat import start_hub_server
 
 PORT = 3014

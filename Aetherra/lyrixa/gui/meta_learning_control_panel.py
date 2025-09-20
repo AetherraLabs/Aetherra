@@ -11,6 +11,7 @@ and learning episode management for advanced consciousness evolution.
 Phase 6.1 - Advanced Consciousness Dashboards
 """
 
+# Standard library imports
 import json
 import logging
 import random
@@ -18,10 +19,32 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Dict, List
 
+# Third party imports
 import numpy as np
-from PySide6.QtCore import *
-from PySide6.QtGui import *
-from PySide6.QtWidgets import *
+from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtGui import QColor
+from PySide6.QtWidgets import (
+    QApplication,
+    QCheckBox,
+    QComboBox,
+    QFrame,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QListWidgetItem,
+    QProgressBar,
+    QPushButton,
+    QSlider,
+    QTableWidget,
+    QTableWidgetItem,
+    QTextEdit,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -362,7 +385,8 @@ class MetaLearningControlPanel(QWidget):
         analytics_layout = QVBoxLayout(analytics_group)
 
         # Learning curve visualization
-        from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+        # Third party imports
+        from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
         from matplotlib.figure import Figure
 
         self.analytics_figure = Figure(figsize=(8, 3), dpi=100)
@@ -484,7 +508,7 @@ class MetaLearningControlPanel(QWidget):
         # Learning rate
         lr_layout = QHBoxLayout()
         lr_layout.addWidget(QLabel("Learning Rate:"))
-        self.learning_rate_slider = QSlider(Qt.Horizontal)
+        self.learning_rate_slider = QSlider(Qt.Orientation.Horizontal)
         self.learning_rate_slider.setRange(1, 100)
         self.learning_rate_slider.setValue(10)
         self.learning_rate_slider.valueChanged.connect(self.update_learning_rate)
@@ -496,7 +520,7 @@ class MetaLearningControlPanel(QWidget):
         # Adaptation threshold
         threshold_layout = QHBoxLayout()
         threshold_layout.addWidget(QLabel("Adaptation Threshold:"))
-        self.adaptation_threshold_slider = QSlider(Qt.Horizontal)
+        self.adaptation_threshold_slider = QSlider(Qt.Orientation.Horizontal)
         self.adaptation_threshold_slider.setRange(50, 95)
         self.adaptation_threshold_slider.setValue(80)
         self.adaptation_threshold_slider.valueChanged.connect(
@@ -799,7 +823,7 @@ class MetaLearningControlPanel(QWidget):
         if random.random() < 0.2:
             available_nodes = [
                 nid
-                for nid in self.knowledge_base.keys()
+                for nid in self.knowledge_base
                 if nid != node_id and nid not in node.connections
             ]
             if available_nodes:
@@ -827,7 +851,7 @@ class MetaLearningControlPanel(QWidget):
 
         # Adapt parameters based on recent performance
         for param_name, param_value in strategy.parameters.items():
-            if isinstance(param_value, (int, float)):
+            if isinstance(param_value, int | float):
                 adaptation_rate = 0.05
                 change = random.uniform(-adaptation_rate, adaptation_rate)
                 strategy.parameters[param_name] = max(0.001, param_value * (1 + change))
@@ -998,7 +1022,7 @@ class MetaLearningControlPanel(QWidget):
             else:
                 item.setBackground(QColor("#ff6b6b"))
 
-            item.setData(Qt.UserRole, strategy.strategy_id)
+            item.setData(Qt.ItemDataRole.UserRole, strategy.strategy_id)
             self.strategies_list.addItem(item)
 
     def update_analytics(self):
@@ -1077,7 +1101,8 @@ Connected Concepts:
         """Handle episode selection"""
         current_row = self.episodes_table.currentRow()
         if current_row >= 0:
-            episode_id = self.episodes_table.item(current_row, 0).text()
+            item = self.episodes_table.item(current_row, 0)
+            episode_id = item.text() if item is not None else ""
             # Find the episode
             selected_episode = None
             for ep in self.learning_episodes:
@@ -1105,7 +1130,7 @@ Outcomes:
 
     def on_strategy_selected(self, item):
         """Handle strategy selection"""
-        strategy_id = item.data(Qt.UserRole)
+        strategy_id = item.data(Qt.ItemDataRole.UserRole)
         if strategy_id in self.adaptation_strategies:
             strategy = self.adaptation_strategies[strategy_id]
             self.current_strategy_label.setText(strategy.strategy_name)
@@ -1126,7 +1151,7 @@ Outcomes:
         """Activate the selected strategy"""
         current_item = self.strategies_list.currentItem()
         if current_item:
-            strategy_id = current_item.data(Qt.UserRole)
+            strategy_id = current_item.data(Qt.ItemDataRole.UserRole)
             if strategy_id in self.adaptation_strategies:
                 self.current_strategy = strategy_id
                 strategy = self.adaptation_strategies[strategy_id]
@@ -1251,9 +1276,10 @@ Outcomes:
 
 
 if __name__ == "__main__":
+    # Standard library imports
     import sys
 
     app = QApplication(sys.argv)
     panel = MetaLearningControlPanel()
     panel.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

@@ -10,6 +10,7 @@ Demonstration of Lyrixa's Intelligent Error Handling system
 with AI-powered diagnosis, automatic corrections, and learning capabilities.
 """
 
+# Standard library imports
 import asyncio
 import os
 import sys
@@ -17,6 +18,7 @@ import sys
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+# Third party imports
 from intelligent_error_handler_8 import (
     LyrixaIntelligentErrorHandler,
     error_monitor,
@@ -36,13 +38,14 @@ class MockAnalyticsEngine:
         print(f"📊 Analytics: {metrics}")
 
 
-def create_test_errors():
+    def create_test_errors():
     """Create various test errors for demonstration"""
 
     test_errors = []
 
     # Plugin import error
     try:
+        # Third party imports
         import nonexistent_plugin_module  # noqa: F401
     except ImportError as e:
         test_errors.append(("Plugin Import Error", e))
@@ -55,7 +58,8 @@ def create_test_errors():
 
     # Syntax error simulation
     try:
-        exec("def broken_function(\n    pass")  # Invalid syntax
+        # Simulate syntax error without using exec() for security
+        compile("def broken_function(\n    pass", "<demo>", "exec")
     except SyntaxError as e:
         test_errors.append(("Syntax Error", e))
 
@@ -295,11 +299,13 @@ async def interactive_error_handler_demo():
                 # Trigger different types of errors
                 try:
                     if error_type == "import":
+                        # Third party imports
                         import nonexistent_plugin_module  # noqa: F401
                     elif error_type == "permission":
                         raise PermissionError("Simulated permission error")
                     elif error_type == "syntax":
-                        exec("invalid syntax here")
+                        # Simulate syntax error without using exec() for security
+                        compile("invalid syntax here", "<demo>", "exec")
                     elif error_type == "memory":
                         raise MemoryError("Simulated memory error")
                     elif error_type == "network":

@@ -12,10 +12,12 @@ Assumptions:
 
 from __future__ import annotations
 
+# Standard library imports
 import importlib
 import sys
 import types
 
+# Third party imports
 import pytest
 
 MODULE_PATH = "Aetherra.consciousness.transcendence.beyond_transcendence_engine"
@@ -34,6 +36,7 @@ def _make_engine(monkeypatch, meta_impl):
     monkeypatch.setenv("AETH_META_DB", "__unused__.db")
 
     # Monkeypatch by inserting into sys.modules path before import
+    # Standard library imports
     import sys
 
     package_path = "Aetherra.consciousness.intelligence.meta_cognition"
@@ -85,6 +88,7 @@ def test_transcendence_level_metric_updates(monkeypatch):
 
     engine = _make_engine(monkeypatch, StaticMeta)
     assert engine.metrics["transcendence_level_last"] == 0.0
+    # Standard library imports
     import asyncio
 
     # Use asyncio.run for portability across Python versions / test runners

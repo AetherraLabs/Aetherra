@@ -10,6 +10,7 @@ Features chat moderation, custom commands, follower alerts, stream notifications
 and intelligent chat responses powered by Lyrixa.
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -19,6 +20,7 @@ from datetime import datetime, timedelta
 from typing import Any
 from urllib.parse import urlencode
 
+# Third party imports
 import requests
 from websockets import connect
 

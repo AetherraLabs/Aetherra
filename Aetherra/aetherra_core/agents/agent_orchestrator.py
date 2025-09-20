@@ -9,6 +9,7 @@ Coordinates multiple AI agents and manages task distribution across the Aetherra
 Handles agent discovery, capability matching, task scheduling, and result aggregation.
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -280,10 +281,9 @@ class AgentOrchestrator:
                     or f"agent_{len(self.agents) + 1:04d}"
                 )
                 raw_caps = getattr(obj, "capabilities", [])
-                if isinstance(raw_caps, list | tuple | set):
-                    capabilities = list(raw_caps)
-                else:
-                    capabilities = []
+                capabilities = (
+                    list(raw_caps) if isinstance(raw_caps, list | tuple | set) else []
+                )
 
             # Synthesize defaults if still missing
             agent_id = agent_id or name or f"agent_{len(self.agents) + 1:04d}"

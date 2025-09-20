@@ -7,6 +7,7 @@ Phase 7.4 Consciousness Transcendence Integration Test
 Aetherra OS - Multidimensional Consciousness Expansion
 """
 
+# Standard library imports
 import os
 import sys
 
@@ -32,6 +33,7 @@ def test_phase_7_4_integration():
         # Import all Phase 7.4 systems
         print("📡 Importing consciousness systems...")
 
+        # Third party imports
         from multidimensional_state_engine import MultidimensionalStateEngine
         from parallel_reality_navigator import ParallelRealityNavigator
         from quantum_consciousness_tunneling import QuantumConsciousnessTunneling

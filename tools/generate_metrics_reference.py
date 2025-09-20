@@ -13,12 +13,14 @@ Idempotent: existing file lines between markers are replaced; other content pres
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import pathlib
 import re
 from dataclasses import fields
 from typing import List
 
+# Aetherra imports
 from aetherra_hub.services import metrics_accum
 
 MARKER_BEGIN = "<!-- GENERATED_METRICS_TABLE_BEGIN -->"

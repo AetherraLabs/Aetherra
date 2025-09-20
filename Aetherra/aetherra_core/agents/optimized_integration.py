@@ -9,6 +9,7 @@ Integration of optimized memory retrieval into LyrixaMemoryEngine
 Achievement: 224ms → ~60ms average (3.7x improvement, exceeding 2.5x target!)
 """
 
+# Standard library imports
 import asyncio
 from pathlib import Path
 from typing import Any, Dict, List
@@ -28,6 +29,7 @@ def integrate_memory_optimizations(memory_engine_path: str):
     """
 
     # Import the memory engine
+    # Standard library imports
     import sys
 
     sys.path.append(str(Path(memory_engine_path).parent))
@@ -36,6 +38,7 @@ def integrate_memory_optimizations(memory_engine_path: str):
     # optimizer subclass can resolve while still being resilient when the full
     # environment isn't present (e.g., during isolated tooling runs).
     try:
+        # Third party imports
         from lyrixa_memory_engine import LyrixaMemoryEngine  # type: ignore
     except Exception:  # pragma: no cover - fallback for parsing / optional env
 
@@ -62,6 +65,7 @@ def integrate_memory_optimizations(memory_engine_path: str):
             super().__init__(*args, **kwargs)
 
             # Dynamic import to avoid circular dependencies
+            # Standard library imports
             import sys
             from pathlib import Path
 
@@ -70,6 +74,7 @@ def integrate_memory_optimizations(memory_engine_path: str):
             sys.path.insert(0, str(project_root))
 
             try:
+                # Third party imports
                 from optimized_memory_retrieval import apply_retrieval_optimizations
 
                 apply_retrieval_optimizations(self)

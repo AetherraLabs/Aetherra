@@ -7,6 +7,7 @@ Intelligence Report Generator
 Creates comprehensive reports from advanced project analysis
 """
 
+# Standard library imports
 import json
 from collections import Counter, defaultdict
 from pathlib import Path

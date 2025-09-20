@@ -1,7 +1,10 @@
+# Standard library imports
 import os
 
+# Third party imports
 from flask.testing import FlaskClient
 
+# Aetherra imports
 from aetherra_hub.app import create_app
 
 
@@ -12,8 +15,10 @@ class _DummySelfInc:
 
 def _register_dummy_service():
     # Lazy import inside helper to avoid import cycles if registry not initialized yet
+    # Standard library imports
     import asyncio
 
+    # Aetherra imports
     from aetherra_service_registry import register_service
 
     asyncio.run(register_service("self_incorporation", _DummySelfInc()))

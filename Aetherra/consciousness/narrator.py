@@ -28,6 +28,7 @@ Future phases:
 
 from __future__ import annotations
 
+# Standard library imports
 import os
 import threading
 import time
@@ -38,9 +39,8 @@ from pathlib import Path
 from typing import Callable, List, Optional
 
 try:  # optional metrics instrumentation
-    from .metrics_exporter import (
-        increment_chapter_count as _metrics_inc_chapter,
-    )
+    # Local imports
+    from .metrics_exporter import increment_chapter_count as _metrics_inc_chapter
     from .metrics_exporter import (
         observe_narrative_generation as _metrics_obs_narrative_time,
     )
@@ -55,25 +55,30 @@ except Exception:  # pragma: no cover
 # Identity coherence gauge updater (lazy import pattern)
 # Attempt identity coherence import separately (exporter may not define if disabled)
 try:  # pragma: no cover
+    # Local imports
     from .metrics_exporter import (
         update_identity_coherence as _metrics_identity_coherence,
     )
 except Exception:  # noqa: E722
     _metrics_identity_coherence = None  # type: ignore
 
+# Local imports
 from .episodic_store import get_episodic_store
 from .schemas.episodic_event import EpisodicEvent, EventAttribution
 from .schemas.narrative_chapter import NarrativeChapter
 from .self_model import embodiment_statement, who_am_i
 
 try:  # optional affect & ethics
+    # Local imports
     from .affect_engine import get_affect_engine as _get_affect
 except Exception:  # pragma: no cover
     _get_affect = None  # type: ignore
 try:
+    # Local imports
     from .ethics_critic import get_ethics_critic as _get_ethics
 except Exception:  # pragma: no cover
     _get_ethics = None  # type: ignore
+# Local imports
 from .workspace_core import get_workspace
 
 _LOCK = threading.Lock()

@@ -6,9 +6,11 @@ This test is light and skips automatically if the environment can't create
 an offscreen QApplication (common in certain CI without X/Windows display).
 """
 
+# Standard library imports
 import os
 import sys
 
+# Third party imports
 import pytest
 from PySide6.QtWidgets import QApplication
 
@@ -49,6 +51,7 @@ def test_plugin_cards_population_and_install_state():
         async def install_plugin(self, name):  # noqa: D401
             return True
 
+    # Aetherra imports
     from Aetherra.lyrixa.lyrixa_basic_gui import LyrixaBasicWindow
 
     window = LyrixaBasicWindow(ai_chat=None, hub_connector=MockHubConnector())

@@ -7,6 +7,7 @@ Provides the foundational OS-level integration for AI-driven computing.
 """
 
 
+# Standard library imports
 import logging
 import platform
 import subprocess
@@ -54,6 +55,7 @@ class AetherraOS:
 
             # Try to load Lyrixa core
             try:
+                # Aetherra imports
                 from Aetherra.lyrixa.launcher import LyrixaCore
 
                 self.ai_services["lyrixa_core"] = LyrixaCore
@@ -63,6 +65,7 @@ class AetherraOS:
 
             # Try to load consciousness engine
             try:
+                # Aetherra imports
                 from Aetherra.lyrixa.gui.consciousness_panel import ConsciousnessPanel
 
                 self.ai_services["consciousness_engine"] = ConsciousnessPanel
@@ -125,8 +128,10 @@ class AetherraOS:
         try:
             if interface_type == "full":
                 # Launch full Aetherra interface with consciousness
+                # Third party imports
                 from PySide6.QtWidgets import QApplication
 
+                # Aetherra imports
                 from Aetherra.lyrixa.gui.main_window import MainWindow
 
                 app = QApplication.instance()
@@ -142,8 +147,10 @@ class AetherraOS:
 
             elif interface_type == "consciousness":
                 # Launch consciousness-only interface
+                # Third party imports
                 from PySide6.QtWidgets import QApplication
 
+                # Aetherra imports
                 from Aetherra.lyrixa.gui.consciousness_panel import ConsciousnessPanel
 
                 app = QApplication.instance()

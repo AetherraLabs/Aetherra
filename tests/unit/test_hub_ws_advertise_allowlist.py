@@ -1,13 +1,16 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import socket
 
+# Third party imports
 import pytest
 
 requests = pytest.importorskip("requests")
 
 
+# Aetherra imports
 import aetherra_hub.compat as hub_mod
 
 FLASK_AVAILABLE = getattr(hub_mod, "FLASK_AVAILABLE", False)

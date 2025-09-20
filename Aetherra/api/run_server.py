@@ -10,6 +10,7 @@ Startup script for the Aetherra .aether Script Execution API.
 """
 
 
+# Standard library imports
 import sys
 from pathlib import Path
 
@@ -21,8 +22,10 @@ sys.path.insert(0, str(project_root))
 def main():
     """Main entry point for the API server"""
     try:
+        # Third party imports
         import uvicorn
 
+        # Aetherra imports
         from Aetherra.api.aether_server import app
 
         print("🚀 Starting Aetherra Script Execution API...")

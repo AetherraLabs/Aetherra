@@ -12,9 +12,11 @@ is not initialized; designed for gradual adoption.
 
 from __future__ import annotations
 
+# Standard library imports
 from typing import Any, Dict, Optional
 
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.consciousness_integration import (
         ConsciousnessMessage,
         get_consciousness_bridge,

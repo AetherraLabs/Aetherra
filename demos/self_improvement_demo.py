@@ -8,11 +8,13 @@ Runs the SelfImprovementEngine for a short burst, records metrics,
 prints proposals and trends, then shuts down cleanly.
 """
 
+# Standard library imports
 import asyncio
 import json
 import random
 from pathlib import Path
 
+# Aetherra imports
 from Aetherra.aetherra_core.engine.self_improvement_engine import SelfImprovementEngine
 
 

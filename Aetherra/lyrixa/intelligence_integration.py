@@ -11,6 +11,7 @@ into Lyrixa, providing real-time awareness and system orchestration.
 """
 
 
+# Standard library imports
 import logging
 import sys
 from datetime import datetime
@@ -46,6 +47,7 @@ class LyrixaIntelligenceStack:
         """Get the conversation manager instance"""
         if not self.conversation_manager:
             try:
+                # Local imports
                 from .conversation_manager import LyrixaConversationManager
 
                 self.conversation_manager = LyrixaConversationManager()

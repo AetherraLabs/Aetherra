@@ -9,6 +9,7 @@ Idempotent: overwrites output file.
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import json
 from datetime import datetime
@@ -66,7 +67,8 @@ def main():
     phase2_list = "\n".join(f"- {item}" for item in meta.get("phase2_items", []))
 
     doc = (
-        dedent(f"""
+        dedent(
+            f"""
     # {title}
 
     Date: {date}
@@ -96,7 +98,8 @@ def main():
 
     ---
     Generated: {datetime.utcnow().isoformat()}Z
-    """).strip()
+    """
+        ).strip()
         + "\n"
     )
 

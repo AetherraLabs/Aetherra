@@ -7,6 +7,7 @@
 Built-in plugin for file access and core utility tools
 """
 
+# Standard library imports
 import base64
 import csv
 import hashlib
@@ -635,6 +636,7 @@ class CoreToolsPlugin:
     def _format_as_csv(self, data: Any) -> str:
         """Format data as CSV"""
         if isinstance(data, list) and data and isinstance(data[0], dict):
+            # Standard library imports
             import io
 
             output = io.StringIO()

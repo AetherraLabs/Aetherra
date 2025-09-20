@@ -19,6 +19,7 @@ This service exposes a simple async API:
 
 from __future__ import annotations
 
+# Standard library imports
 import asyncio
 import contextlib
 import os
@@ -29,7 +30,10 @@ from typing import Any
 
 # Optional capabilities import for evidence gating
 try:
-    from Aetherra.security.capabilities import has_capability as _has_capability  # type: ignore
+    # Aetherra imports
+    from Aetherra.security.capabilities import (
+        has_capability as _has_capability,  # type: ignore
+    )
 except Exception:
 
     def _has_capability(requester: str, capability: str) -> bool:  # type: ignore
@@ -38,11 +42,13 @@ except Exception:
 
 # Optional: import chat router and intelligence if present
 try:
+    # Aetherra imports
     from Aetherra.core.chat_router import create_chat_router
 except Exception:
     create_chat_router = None
 
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.intelligence.lyrixa_full_intelligence import (
         get_lyrixa_intelligence,
     )
@@ -51,6 +57,7 @@ except Exception:
 
 # Optional: new adaptive orchestrator and memory evidence
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.intelligence.adaptive_orchestrator import (
         AdaptiveIntelligenceOrchestrator,
     )
@@ -58,12 +65,14 @@ except Exception:
     AdaptiveIntelligenceOrchestrator = None  # type: ignore
 
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.memory.multidimensional_memory import MultidimensionalMemory
 except Exception:
     MultidimensionalMemory = None  # type: ignore
 
 # Prefer the lightweight chat↔consciousness wrapper when available; fallback to core bridge
 try:
+    # Aetherra imports
     from Aetherra.quantum.chat_consciousness_bridge import (
         ChatConsciousnessBridge as QuantumChatBridge,
     )
@@ -71,24 +80,28 @@ except Exception:
     QuantumChatBridge = None  # type: ignore
 
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.consciousness_integration import ConsciousnessBridge
 except Exception:
     ConsciousnessBridge = None  # type: ignore
 
 # Optional: service registry
 try:
+    # Aetherra imports
     from aetherra_service_registry import get_service_registry
 except Exception:
     get_service_registry = None
 
 # Persistent memory
 try:
+    # Aetherra imports
     from aetherra_persistent_memory import get_persistent_memory_system
 except Exception:
     get_persistent_memory_system = None
 
 # Optional: self-improvement engine
 try:
+    # Aetherra imports
     from Aetherra.aetherra_core.engine.self_improvement_engine import (
         SelfImprovementEngine,
     )
@@ -97,6 +110,7 @@ except Exception:
 
 # Optional: proactive consciousness
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.proactive.proactive_consciousness import ProactiveConsciousness
 except Exception:
     ProactiveConsciousness = None  # type: ignore
@@ -168,7 +182,9 @@ class LyrixaChatService:
         # When enabled, initialization will skip external subsystems and operate
         # in a pure fallback/identity/ownership-safe mode.
         try:
-            self._forced_offline = os.getenv("AETHERRA_LYRIXA_FORCE_OFFLINE", "0") == "1"
+            self._forced_offline = (
+                os.getenv("AETHERRA_LYRIXA_FORCE_OFFLINE", "0") == "1"
+            )
         except Exception:
             self._forced_offline = False
 
@@ -189,15 +205,21 @@ class LyrixaChatService:
             self._proactive_monitor = None
             # Note degraded components for visibility
             with contextlib.suppress(Exception):
-                self._cfg.setdefault("lyrixa_chat", {})["degraded_components"] = ["forced_offline"]
+                self._cfg.setdefault("lyrixa_chat", {})["degraded_components"] = [
+                    "forced_offline"
+                ]
             return
         # Extract optional coherence threshold from multiple possible config shapes
         try:
-            lyx = self._cfg.get("lyrixa_chat", {}) if isinstance(self._cfg, dict) else {}
+            lyx = (
+                self._cfg.get("lyrixa_chat", {}) if isinstance(self._cfg, dict) else {}
+            )
             thr = None
             # New-style settings block (non-breaking addition)
             if isinstance(lyx.get("consciousness_integration_settings"), dict):
-                thr = lyx["consciousness_integration_settings"].get("coherence_threshold")
+                thr = lyx["consciousness_integration_settings"].get(
+                    "coherence_threshold"
+                )
             # If older plan-shaped config exists directly under key
             if thr is None and isinstance(lyx.get("consciousness_integration"), dict):
                 thr = lyx["consciousness_integration"].get("coherence_threshold")
@@ -233,7 +255,9 @@ class LyrixaChatService:
 
         if AdaptiveIntelligenceOrchestrator:
             try:
-                self._orchestrator = AdaptiveIntelligenceOrchestrator(self._intelligence)
+                self._orchestrator = AdaptiveIntelligenceOrchestrator(
+                    self._intelligence
+                )
             except Exception:
                 self._orchestrator = None
                 missing.append("adaptive_orchestrator_init")
@@ -279,7 +303,9 @@ class LyrixaChatService:
             # Use simple env guard to avoid noisy output in production runs
             if os.environ.get("AETHERRA_CHAT_DEBUG"):
                 with contextlib.suppress(Exception):
-                    print(f"[LyrixaChatService] degraded initialization: missing={missing}")
+                    print(
+                        f"[LyrixaChatService] degraded initialization: missing={missing}"
+                    )
             self._cfg.setdefault("lyrixa_chat", {})["degraded_components"] = missing
 
         # Initialize and start proactive monitor (best-effort)
@@ -326,12 +352,16 @@ class LyrixaChatService:
             await self._maybe_log_response(
                 message, reply, confidence=conf, verified=verified, category="ownership"
             )
-            return ChatResponse(text=reply, suggestions=[], applied_changes=[], awareness=awareness)
+            return ChatResponse(
+                text=reply, suggestions=[], applied_changes=[], awareness=awareness
+            )
 
         # If it's an identity/awareness query, answer deterministically
         if self._is_identity_or_awareness_query(message):
             reply = self._fallback_reply(message)
-            return ChatResponse(text=reply, suggestions=[], applied_changes=[], awareness=awareness)
+            return ChatResponse(
+                text=reply, suggestions=[], applied_changes=[], awareness=awareness
+            )
 
         # Prefer orchestrator → intelligence → router → deterministic fallback
         reply = None
@@ -410,7 +440,9 @@ class LyrixaChatService:
             k in message.lower()
             for k in ["fix", "update", "change", "refactor", "rename", "bug", "error"]
         ):
-            suggestions = await self.suggest_fixes(message, read_only=not bool(opts.allow_edits))
+            suggestions = await self.suggest_fixes(
+                message, read_only=not bool(opts.allow_edits)
+            )
             if opts.allow_edits and suggestions:
                 first = suggestions[0]
                 ok, change = await self.apply_fix(first, edit_root=opts.edit_root)
@@ -484,7 +516,9 @@ class LyrixaChatService:
         # Kick off post-interaction learning in the background (non-blocking)
         with contextlib.suppress(Exception):
             asyncio.create_task(
-                self._post_interaction_learning(message, str(reply), awareness, path_used)
+                self._post_interaction_learning(
+                    message, str(reply), awareness, path_used
+                )
             )
 
         return ChatResponse(
@@ -502,9 +536,12 @@ class LyrixaChatService:
         try:
             cfg_path = self.root / "config.json"
             if cfg_path.is_file():
+                # Standard library imports
                 import json
 
-                self._cfg = json.loads(cfg_path.read_text(encoding="utf-8", errors="ignore"))
+                self._cfg = json.loads(
+                    cfg_path.read_text(encoding="utf-8", errors="ignore")
+                )
         except Exception:
             self._cfg = {}
 
@@ -516,7 +553,9 @@ class LyrixaChatService:
             return
         try:
             if self._self_improver is None:
-                self._self_improver = SelfImprovementEngine(db_path="lyrixa_improvement.db")
+                self._self_improver = SelfImprovementEngine(
+                    db_path="lyrixa_improvement.db"
+                )
                 # Start cycle in background; ignore if already running
                 await self._self_improver.start_improvement_cycle()
 
@@ -620,7 +659,9 @@ class LyrixaChatService:
                 if (
                     create2
                     and collapse2
-                    and all(asyncio.iscoroutinefunction(x) for x in (create2, collapse2))
+                    and all(
+                        asyncio.iscoroutinefunction(x) for x in (create2, collapse2)
+                    )
                 ):
                     states = await create2(query)  # type: ignore[misc]
                     decision = await collapse2(states)  # type: ignore[misc]
@@ -780,7 +821,10 @@ class LyrixaChatService:
 
     def _is_identity_or_awareness_query(self, message: str) -> bool:
         m = message.lower().strip()
-        if any(k in m for k in ["who are you", "what are you", "who is lyrixa", "what is lyrixa"]):
+        if any(
+            k in m
+            for k in ["who are you", "what are you", "who is lyrixa", "what is lyrixa"]
+        ):
             return True
         if "aetherra" in m and any(
             kw in m
@@ -851,7 +895,10 @@ class LyrixaChatService:
         m = message.lower().strip()
         if self._is_ownership_query(m):
             return "I don't have a record of ownership."
-        if any(k in m for k in ["who are you", "what are you", "who is lyrixa", "what is lyrixa"]):
+        if any(
+            k in m
+            for k in ["who are you", "what are you", "who is lyrixa", "what is lyrixa"]
+        ):
             return f"I'm {IDENTITY['name']} — {IDENTITY['title']}. {IDENTITY['about']}"
         if any(k in m for k in ["what is aetherra", "aetherra os", "aetherra"]):
             return IDENTITY["aetherra"]
@@ -878,7 +925,9 @@ class LyrixaChatService:
 
     def _estimate_confidence(self, path: str, message: str, reply: str) -> float:
         # Identity/ownership deterministic answers are high confidence
-        if self._is_ownership_query(message) or self._is_identity_or_awareness_query(message):
+        if self._is_ownership_query(message) or self._is_identity_or_awareness_query(
+            message
+        ):
             return 1.0
         if path == "intelligence":
             return 0.7

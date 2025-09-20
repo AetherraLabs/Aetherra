@@ -26,6 +26,7 @@ Production Notes: EXPERIMENTAL PHASE - Sandboxed quantum integration only
 No production commitment until quantum computing infrastructure matures.
 """
 
+# Standard library imports
 import asyncio
 import tempfile
 import time
@@ -35,6 +36,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Third party imports
 import numpy as np
 
 # Quantum computing framework imports with fallbacks
@@ -44,20 +46,18 @@ CIRQ_AVAILABLE = False
 
 try:
     # Try Qiskit (IBM Quantum) - compatible with Qiskit 2.x
-    from qiskit import (
-        ClassicalRegister,
-        QuantumCircuit,
-        QuantumRegister,
-        transpile,
-    )
+    # Third party imports
+    from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister, transpile
     from qiskit.circuit.library import QFT
     from qiskit.quantum_info import Statevector
 
     # Import AerSimulator from the correct location in Qiskit 2.x
     try:
+        # Third party imports
         from qiskit_aer import AerSimulator
     except ImportError:
         # Fallback to older location
+        # Third party imports
         from qiskit.providers.aer import AerSimulator
 
     # Create a compatibility execute function for Qiskit 2.x
@@ -69,6 +69,7 @@ try:
             return job
         else:
             # Fallback for older Qiskit versions
+            # Third party imports
             from qiskit import execute
 
             return execute(circuit, backend, shots=shots)
@@ -83,6 +84,7 @@ except ImportError:
 
 try:
     # Try Cirq (Google Quantum)
+    # Third party imports
     import cirq
 
     CIRQ_AVAILABLE = True
@@ -97,6 +99,7 @@ if not QUANTUM_AVAILABLE:
 
 # Import Phase 2-4 components for integration
 try:
+    # Standard library imports
     import sys
     from pathlib import Path
 
@@ -1003,9 +1006,9 @@ async def demo_quantum_bridge():
 
     # Create second quantum state
     memory_data_2 = memory_data.copy()
-    memory_data_2["content"] = (
-        "Fractal patterns in consciousness suggest scale-invariant cognition"
-    )
+    memory_data_2[
+        "content"
+    ] = "Fractal patterns in consciousness suggest scale-invariant cognition"
     memory_data_2["emotional_tag"] = "wonder"
 
     quantum_state_2 = await bridge.encode_memory_to_quantum(

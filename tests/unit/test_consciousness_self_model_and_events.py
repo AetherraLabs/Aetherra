@@ -6,8 +6,10 @@ Validates self model bootstrap/update and episodic event append + retention trim
 
 from __future__ import annotations
 
+# Standard library imports
 from datetime import datetime, timedelta
 
+# Aetherra imports
 from Aetherra.consciousness.episodic_store import get_episodic_store
 from Aetherra.consciousness.self_model_manager import get_self_model_manager
 

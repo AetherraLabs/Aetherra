@@ -11,6 +11,7 @@ with Aetherra's autonomous capabilities. It processes user messages and routes
 them to appropriate handlers based on intent, context, and capabilities.
 """
 
+# Standard library imports
 import asyncio
 import logging
 import re
@@ -23,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 # Try to import Aetherra components with fallback
 try:
+    # Aetherra imports
     from Aetherra.core.engine.introspection_controller import IntrospectionController
     from Aetherra.core.engine.reasoning_engine import ReasoningContext, ReasoningEngine
     from Aetherra.core.self_improvement_engine import SelfImprovementEngine

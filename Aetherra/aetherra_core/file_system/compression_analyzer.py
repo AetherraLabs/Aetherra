@@ -16,6 +16,7 @@ Features:
 • Adaptive compression strategy adjustment
 """
 
+# Standard library imports
 import asyncio
 import sqlite3
 import time
@@ -23,6 +24,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Local imports
 from ..memory.compression_metrics import (
     CompressionMetrics,
     CompressionScore,
@@ -344,9 +346,9 @@ class MemoryCompressionAnalyzer:
 
             # Update summaries
             recommendations["summary"]["total_original_size"] += score.original_size
-            recommendations["summary"]["estimated_compressed_size"] += (
-                score.compressed_size
-            )
+            recommendations["summary"][
+                "estimated_compressed_size"
+            ] += score.compressed_size
 
             # Track distributions
             fidelity_counts[score.fidelity_level.value] = (

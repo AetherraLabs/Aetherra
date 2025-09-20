@@ -9,12 +9,14 @@ Specialized agent for technical troubleshooting, system diagnostics, and support
 within the Aetherra AI OS ecosystem.
 """
 
+# Standard library imports
 import asyncio
 import logging
 import platform
 import time
 from typing import Any, Dict
 
+# Local imports
 from .agent_base import AgentBase
 
 logger = logging.getLogger(__name__)

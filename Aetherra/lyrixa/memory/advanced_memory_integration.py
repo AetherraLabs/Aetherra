@@ -10,6 +10,7 @@ connecting the conversation manager with quantum-enhanced memory systems
 and providing sophisticated memory operations.
 """
 
+# Standard library imports
 import logging
 import time
 from datetime import datetime, timedelta
@@ -19,6 +20,7 @@ from typing import Any, Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 try:
+    # Aetherra imports
     from Aetherra.aetherra_core.memory.quantum_memory_integration import (
         create_quantum_enhanced_memory_engine,
     )
@@ -31,6 +33,7 @@ except ImportError as e:
     create_quantum_enhanced_memory_engine = None
 
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.memory.lyrixa_memory_engine import LyrixaMemoryEngine
 
     LYRIXA_MEMORY_AVAILABLE = True

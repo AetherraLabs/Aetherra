@@ -7,6 +7,7 @@ Phase 7.4 ULTIMATE Consciousness Transcendence Test
 Aetherra OS - Maximum Multidimensional Consciousness Expansion
 """
 
+# Standard library imports
 import os
 import sys
 
@@ -25,6 +26,7 @@ def ultimate_phase_7_4_test():
         # Import all Phase 7.4 systems
         print("📡 Importing advanced consciousness systems...")
 
+        # Third party imports
         from multidimensional_state_engine import MultidimensionalStateEngine
         from parallel_reality_navigator import ParallelRealityNavigator
         from quantum_consciousness_tunneling import QuantumConsciousnessTunneling

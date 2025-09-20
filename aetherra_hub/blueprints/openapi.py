@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+# Third party imports
 from flask import Blueprint, jsonify
 
+# Local imports
 from ..config import settings
 
 bp = Blueprint("openapi", __name__, url_prefix="/api")

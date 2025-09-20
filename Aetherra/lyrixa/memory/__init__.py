@@ -11,11 +11,13 @@ Provides various memory types and integration capabilities.
 
 # Import all memory components
 try:
+    # Local imports
     from .lyrixa_memory_engine import LyrixaMemoryEngine
 except ImportError:
     LyrixaMemoryEngine = None
 
 try:
+    # Local imports
     from .quantum_memory_integration import (
         QuantumMemoryLayer,
         QuantumMemoryNode,
@@ -29,11 +31,13 @@ except ImportError:
     initialize_quantum_memory = None
 
 try:
+    # Local imports
     from .episodic_memory import EpisodicMemory
 except ImportError:
     EpisodicMemory = None
 
 try:
+    # Local imports
     from .semantic_memory import SemanticMemory
 except ImportError:
     SemanticMemory = None

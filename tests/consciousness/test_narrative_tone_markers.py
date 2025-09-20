@@ -1,3 +1,4 @@
+# Aetherra imports
 from Aetherra.consciousness.episodic_store import get_episodic_store
 from Aetherra.consciousness.narrator import NarrativeLayer
 

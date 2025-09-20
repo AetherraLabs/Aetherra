@@ -16,6 +16,7 @@ Exit codes:
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import json
 import os
@@ -24,6 +25,7 @@ import sys
 from pathlib import Path
 
 try:
+    # Third party imports
     import yaml  # type: ignore
 except Exception:  # pragma: no cover
     yaml = None

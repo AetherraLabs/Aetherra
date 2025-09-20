@@ -9,6 +9,7 @@ Advanced plugin management system for Lyrixa with dynamic loading,
 lifecycle management, and comprehensive analytics integration.
 """
 
+# Standard library imports
 import importlib
 import importlib.util
 import os
@@ -65,6 +66,7 @@ class PluginManager:
     def _initialize_analytics(self):
         """Initialize plugin analytics if available."""
         try:
+            # Local imports
             from .plugin_analytics import PluginAnalyticsIntegration
 
             self.analytics = PluginAnalyticsIntegration()
@@ -284,6 +286,7 @@ class PluginManager:
             ensure_mem_fn = None
             TimeBudgetExceededCls = None
             try:  # pragma: no cover - optional path
+                # Aetherra imports
                 from Aetherra.security import sandbox as _sb  # type: ignore
 
                 run_with_timeout_fn = getattr(_sb, "run_with_timeout", None)

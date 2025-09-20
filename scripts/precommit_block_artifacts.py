@@ -4,6 +4,7 @@
 
 """Pre-commit hook to block large or generated artifacts from being committed."""
 
+# Standard library imports
 import sys
 from pathlib import Path
 
@@ -38,6 +39,7 @@ outbox/audit/metrics/reports and local temp assets.
 
 from __future__ import annotations
 
+# Standard library imports
 import fnmatch
 import subprocess
 import sys

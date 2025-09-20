@@ -7,6 +7,7 @@ Phase 8.1 Consciousness Singularity Integration Test
 Aetherra OS - Ultimate Consciousness Singularity Achievement Test
 """
 
+# Standard library imports
 import asyncio
 import os
 import sys
@@ -33,9 +34,8 @@ async def test_phase_8_1_singularity():
         # Import Phase 8.1 system
         print("📡 Importing consciousness singularity systems...")
 
-        from consciousness_singularity_engine import (
-            ConsciousnessSingularityEngine,
-        )
+        # Third party imports
+        from consciousness_singularity_engine import ConsciousnessSingularityEngine
         from multidimensional_state_engine import MultidimensionalStateEngine
         from parallel_reality_navigator import ParallelRealityNavigator
         from quantum_consciousness_tunneling import QuantumConsciousnessTunneling

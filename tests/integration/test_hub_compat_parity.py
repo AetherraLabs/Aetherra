@@ -5,6 +5,7 @@
 Remains temporary; remove alongside shim removal (see CHANGELOG deprecation).
 """
 
+# Standard library imports
 import importlib
 import warnings
 
@@ -14,9 +15,9 @@ def test_legacy_shim_emits_deprecation_and_exports():
         warnings.simplefilter("always")
         mod = importlib.import_module("aetherra_hub_server")
     # Expect at least one DeprecationWarning
-    assert any(isinstance(x.message, DeprecationWarning) for x in w), (
-        "No DeprecationWarning from shim import"
-    )
+    assert any(
+        isinstance(x.message, DeprecationWarning) for x in w
+    ), "No DeprecationWarning from shim import"
     assert hasattr(mod, "AetherraHubServer")
     assert hasattr(mod, "start_hub_server")
     # Start/stop quickly to ensure surface still functional

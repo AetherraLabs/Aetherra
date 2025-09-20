@@ -2,6 +2,7 @@
 # Lightweight test for tools/run_go_no_go_gates.py
 # Verifies: script runs (subset), emits artifacts with expected keys.
 
+# Standard library imports
 import json
 import os
 import subprocess

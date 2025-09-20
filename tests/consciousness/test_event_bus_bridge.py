@@ -1,3 +1,4 @@
+# Aetherra imports
 from Aetherra.consciousness.event_bus import get_event_bus
 from Aetherra.consciousness.workspace_core import get_workspace
 

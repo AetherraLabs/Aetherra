@@ -23,6 +23,7 @@ Note: Further phases will delegate to specialization agents & analysis modules.
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import os
 import subprocess
@@ -31,6 +32,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional
 
+# Local imports
 from . import audit, ops_engine, safety
 
 

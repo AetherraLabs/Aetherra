@@ -11,6 +11,7 @@ Telemetry opt-in manager and emitter with privacy guardrails.
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import math
 import os
@@ -20,6 +21,7 @@ from pathlib import Path
 from typing import Dict, Optional
 
 try:
+    # Third party imports
     import requests  # type: ignore
 except Exception:
     requests = None  # type: ignore

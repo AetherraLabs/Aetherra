@@ -7,9 +7,11 @@ Optimized for append-only storage with optional summarization later.
 
 from __future__ import annotations
 
+# Standard library imports
 from datetime import datetime
 from typing import List, Optional
 
+# Third party imports
 from pydantic import BaseModel, Field
 
 EVENT_SCHEMA_VERSION = 1

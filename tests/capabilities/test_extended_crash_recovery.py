@@ -12,12 +12,15 @@ that higher-level agents depend upon.
 
 from __future__ import annotations
 
+# Standard library imports
 import asyncio
 import tempfile
 from pathlib import Path
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.aetherra_core.memory.memory_core import LyrixaMemorySystem
 from aetherra_service_registry import AetherraServiceRegistry, ServiceStatus
 

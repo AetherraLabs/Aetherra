@@ -1,13 +1,16 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import json
 import os
 import time
 
+# Third party imports
 import pytest
 import requests
 
+# Aetherra imports
 from aetherra_hub.compat import start_hub_server
 
 PORT = 3012
@@ -213,6 +216,7 @@ def test_expiry_stream_get_emits_error_and_final():
 @pytest.mark.integration
 def test_expired_request_writes_fallback_dlq_file():
     _start_hub()
+    # Standard library imports
     import tempfile
     from pathlib import Path
 

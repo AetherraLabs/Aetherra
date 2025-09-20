@@ -13,6 +13,7 @@ Strategy:
 
 from __future__ import annotations
 
+# Standard library imports
 import asyncio
 import json
 import os
@@ -40,6 +41,7 @@ async def _live_check(timeout_s: float = 2.5) -> Dict[str, Any]:
     t0 = time.perf_counter()
 
     try:
+        # Aetherra imports
         from aetherra_service_registry import get_service_registry  # type: ignore
     except Exception as e:  # pragma: no cover - import-time failure path
         raise RuntimeError(f"registry import failed: {e}")

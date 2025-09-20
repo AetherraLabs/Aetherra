@@ -7,6 +7,7 @@ Aetherra Core Directory Analyzer
 Analyzes aetherra_core for duplicates and proper file organization
 """
 
+# Standard library imports
 import hashlib
 import os
 import re

@@ -5,6 +5,7 @@
 Lyrixa Intelligence Stack
 """
 
+# Standard library imports
 import sys
 from pathlib import Path
 
@@ -15,6 +16,7 @@ if parent_dir not in sys.path:
 
 try:
     # Import the intelligence module from the parent directory and extract the class
+    # Standard library imports
     import importlib.util
 
     intelligence_file = Path(__file__).parent.parent / "intelligence.py"
@@ -43,6 +45,7 @@ except Exception as e:
 # Try to import intelligence integration if available
 LyrixaIntelligenceStack = None
 try:
+    # Third party imports
     from intelligence_integration import LyrixaIntelligenceStack
 except ImportError:
     pass  # Optional component

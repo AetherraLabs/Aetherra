@@ -8,10 +8,13 @@ Goals:
 
 from __future__ import annotations
 
+# Standard library imports
 from pathlib import Path
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.consciousness.intelligence.meta_cognition import (
     MetaCognitionSystem,
     SelfKnowledgeDomain,

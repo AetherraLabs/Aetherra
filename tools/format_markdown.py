@@ -14,6 +14,7 @@ Pre-commit integration uses --fix. For a dry run, omit --fix to just report.
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import re
 import sys

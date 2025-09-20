@@ -18,11 +18,13 @@ Features:
 - Differential privacy for user data protection
 """
 
+# Standard library imports
 import hashlib
 import statistics
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
+# Local imports
 from .emotional_intelligence import EmotionalState
 
 

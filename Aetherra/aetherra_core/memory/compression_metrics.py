@@ -16,6 +16,7 @@ Core Metrics:
 • Fidelity Score: {lossless, lossy-safe, lossy-risky}
 """
 
+# Standard library imports
 import hashlib
 import json
 import math
@@ -25,6 +26,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, List, Optional
 
+# Third party imports
 import numpy as np
 
 
@@ -478,6 +480,7 @@ async def demo_compression_metrics():
 
 
 if __name__ == "__main__":
+    # Standard library imports
     import asyncio
 
     asyncio.run(demo_compression_metrics())

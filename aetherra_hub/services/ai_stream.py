@@ -14,6 +14,7 @@ Replay cache and full idempotency / breaker logic can be added incrementally.
 
 from __future__ import annotations
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -24,6 +25,7 @@ import time
 from datetime import datetime
 from typing import Any, Dict, Iterable
 
+# Local imports
 from ..utils.http import run_coro_blocking
 
 # Import chat_metrics at module scope for type checkers (was imported lazily earlier)
@@ -45,6 +47,7 @@ logger = logging.getLogger(__name__)
 # Simple engine registry fetch
 async def _get_engine_async():  # pragma: no cover (network/async heavy)
     try:
+        # Aetherra imports
         from aetherra_service_registry import get_service_registry  # type: ignore
 
         reg = await get_service_registry()
@@ -126,6 +129,7 @@ class StreamContext:
         if not self.ttft_done:
             try:
                 dt_ms = (time.time() - self.ttft_t0) * 1000.0
+                # Local imports
                 from .metrics_accum import chat_metrics as _cm
 
                 _cm.ttft_ms_sum += dt_ms
@@ -249,6 +253,7 @@ def stream_sse(
     allow_unmask = False
     principal_cap = principal
     try:  # local import to avoid global dependency
+        # Aetherra imports
         from Aetherra.security.capabilities import (
             has_capability as _has_cap,  # type: ignore
         )
@@ -683,6 +688,7 @@ def stream_sse(
 
 
 def _gen_trace_id() -> str:
+    # Standard library imports
     import uuid
 
     return uuid.uuid4().hex

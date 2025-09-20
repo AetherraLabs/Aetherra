@@ -16,9 +16,11 @@ Features:
 - Performance tracking and metrics
 """
 
+# Standard library imports
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+# Local imports
 from .emotion_detector import detect_user_emotion
 
 # Import Phase 1 personality components
@@ -650,6 +652,7 @@ class ResponseCritiqueAgent:
     ) -> None:
         """Safely adjust a personality trait"""
         try:
+            # Local imports
             from .personality_engine import PersonalityTrait
 
             trait_map = {

@@ -13,10 +13,12 @@ and generates a comprehensive legal compliance report.
 """
 
 
+# Standard library imports
 import re
 import sys
 from pathlib import Path
 
+# Third party imports
 import pkg_resources
 
 # GPL-3.0 compatible licenses

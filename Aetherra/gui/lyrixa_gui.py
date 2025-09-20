@@ -20,9 +20,11 @@ Key Features:
 
 from __future__ import annotations
 
+# Standard library imports
 import logging
 from pathlib import Path
 
+# Third party imports
 from PySide6.QtCore import QTimer, Signal, Slot
 from PySide6.QtGui import QAction, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
@@ -35,6 +37,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+# Local imports
 from .event_bus import EventFactory, LayoutEvent, PluginEvent, get_event_bus
 from .plugin_ui_host import PluginUIManager
 from .zone_manager import LayoutMode, ZoneManager, ZoneType
@@ -434,6 +437,7 @@ def create_lyrixa_gui() -> LyrixaGUI:
 
 
 if __name__ == "__main__":
+    # Standard library imports
     import sys
 
     app = QApplication(sys.argv)
@@ -451,4 +455,4 @@ if __name__ == "__main__":
     gui = create_lyrixa_gui()
     gui.show()
 
-    sys.exit(app.exec())
+    sys.exit(app.exec())  # nosec B102: Qt application execution

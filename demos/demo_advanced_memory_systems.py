@@ -9,6 +9,7 @@ Demo script for the Aetherra Advanced Memory Systems (#5)
 Showcases quantum-enhanced memory integration with conversation management.
 """
 
+# Standard library imports
 import asyncio
 import os
 import sys
@@ -19,6 +20,7 @@ from datetime import datetime
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.agents.enhanced_conversation_manager import (
         create_enhanced_conversation_manager,
     )
@@ -478,6 +480,7 @@ class AdvancedMemoryDemo:
 
         except Exception as e:
             print(f"\n❌ Demo failed with error: {e}")
+            # Standard library imports
             import traceback
 
             traceback.print_exc()

@@ -13,6 +13,7 @@ This script analyzes the Aetherra project to identify:
 4. Recommended file structure cleanup
 """
 
+# Standard library imports
 import ast
 import json
 import re

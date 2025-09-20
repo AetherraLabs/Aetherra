@@ -18,6 +18,7 @@ No external deps; uses wsgiref + a background asyncio loop to drive Fabric.
 
 from __future__ import annotations
 
+# Standard library imports
 import asyncio
 import json
 import threading
@@ -38,6 +39,7 @@ class _AARLoop:
         self.loop.run_forever()
 
     async def _bootstrap(self):
+        # Aetherra imports
         from aetherra_agent_fabric import get_agent_fabric
         from aetherra_service_registry import get_service_registry, register_service
 
@@ -93,6 +95,7 @@ def application(environ, start_response):  # WSGI entry
                 data = {}
 
         async def call(message_type: str, payload: Dict[str, Any]):
+            # Aetherra imports
             from aetherra_service_registry import get_service_registry
 
             reg = await get_service_registry()

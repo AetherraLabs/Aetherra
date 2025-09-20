@@ -1,14 +1,17 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Third party imports
 import pytest
 import requests
 from schema_validators import validate_lyrixa_chat_response
 
+# Aetherra imports
 from aetherra_hub.compat import start_hub_server
 
 HAS_FLASK = True
 try:
+    # Third party imports
     import flask  # noqa: F401
 except Exception:
     HAS_FLASK = False

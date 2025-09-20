@@ -3,9 +3,11 @@
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import sys
 
+# Third party imports
 import pytest
 
 
@@ -19,6 +21,7 @@ def test_policy_bootstrap_creates_files(tmp_path, monkeypatch):
     monkeypatch.setenv("AETHERRA_POLICY_HOME", str(policy_dir))
 
     # Import module and run main
+    # Aetherra imports
     from Aetherra.cli.policy_bootstrap import main  # type: ignore
 
     rc = main(["--all", "--allow", "api.example.com", ".corp.example"])

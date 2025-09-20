@@ -1,5 +1,7 @@
+# Third party imports
 import pytest  # noqa: F401  (kept for potential future extension)
 
+# Aetherra imports
 from aetherra_kernel_loop import AetherraKernelLoop
 
 

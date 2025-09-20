@@ -7,10 +7,12 @@ Lyrixa Plugin System
 
 try:
     # Try relative import first (when used as a package)
+    # Local imports
     from .enhanced_plugin_manager import PluginManager
 except ImportError:
     # Fall back to absolute import (when imported directly)
     try:
+        # Aetherra imports
         from Aetherra.lyrixa.plugins.enhanced_plugin_manager import PluginManager
     except ImportError:
         # If that fails too, provide a placeholder

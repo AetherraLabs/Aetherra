@@ -15,6 +15,7 @@ This is the primary interface to the Aetherra AI Operating System.
 """
 
 
+# Standard library imports
 import json
 import os
 import sys
@@ -22,18 +23,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict
 
-from PySide6.QtCore import (
-    QSettings,  # noqa: F401 (optional runtime import)
-    Qt,
-    QThread,
-    QUrl,
-    Signal,
-)
-from PySide6.QtGui import (
-    QAction,  # noqa: F401 (optional runtime import)
-    QFont,
-    QIcon,
-)
+# Third party imports
+from PySide6.QtCore import QSettings  # noqa: F401 (optional runtime import)
+from PySide6.QtCore import Qt, QThread, QUrl, Signal
+from PySide6.QtGui import QAction  # noqa: F401 (optional runtime import)
+from PySide6.QtGui import QFont, QIcon
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import (
     QApplication,
@@ -56,6 +50,7 @@ sys.path.insert(0, str(project_root))
 
 # Import Aetherra OS components
 try:
+    # Aetherra imports
     from Aetherra.gui.web_interface_server import AetherraWebServer
 
     AETHERRA_SERVER_AVAILABLE = True
@@ -64,6 +59,7 @@ except ImportError:
     print("[WARN] Aetherra web server not available - running in demo mode")
 
 try:
+    # Third party imports
     import psutil
 
     SYSTEM_MONITORING_AVAILABLE = True
@@ -133,6 +129,7 @@ class AetherraOSMonitor(QThread):
             )
         else:
             # Mock data for demo
+            # Standard library imports
             import random
 
             data.update(
@@ -477,6 +474,7 @@ class AetherraOSMainWindow(QMainWindow):
             try:
                 self.web_server = AetherraWebServer(host="127.0.0.1", port=8686)
                 # Start server in separate thread
+                # Standard library imports
                 import threading
 
                 server_thread = threading.Thread(
@@ -928,6 +926,7 @@ class AetherraOSMainWindow(QMainWindow):
 
     def show_system_health(self):
         """Show system health dialog"""
+        # Third party imports
         from PySide6.QtWidgets import QMessageBox
 
         msg = QMessageBox()
@@ -935,7 +934,7 @@ class AetherraOSMainWindow(QMainWindow):
         msg.setText(
             "🟢 All systems operational\n\n• CPU: Normal\n• Memory: Normal\n• Disk: Normal\n• Network: Normal"
         )
-        msg.exec()
+        msg.exec()  # nosec B102: Qt GUI dialog/menu execution
 
     def show_agent_dashboard(self):
         """Switch to agent dashboard tab"""
@@ -1072,7 +1071,7 @@ def main():
     window = AetherraOSMainWindow()
     window.show()
 
-    return app.exec()
+    return app.exec()  # nosec B102: Qt application execution
 
 
 if __name__ == "__main__":

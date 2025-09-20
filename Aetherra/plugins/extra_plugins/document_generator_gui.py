@@ -11,6 +11,7 @@ This GUI provides a comprehensive interface for:
 - Custom template creation
 """
 
+# Standard library imports
 import json
 import os
 import sys
@@ -18,7 +19,8 @@ from datetime import datetime
 from typing import Any
 
 try:
-    from PySide6.QtCore import QDate, Qt, QThread, QTime, QTimer, pyqtSignal
+    # Third party imports
+    from PySide6.QtCore import QDate, Qt, QThread, QTime, QTimer, Signal
     from PySide6.QtGui import QFont, QPixmap, QTextOption
     from PySide6.QtWebEngineWidgets import QWebEngineView
     from PySide6.QtWidgets import (
@@ -54,7 +56,8 @@ try:
     PYSIDE6_AVAILABLE = True
 except ImportError:
     try:
-        from PySide6.QtCore import QDate, Qt, QThread, QTime, QTimer, pyqtSignal
+        # Third party imports
+        from PySide6.QtCore import QDate, Qt, QThread, QTime, QTimer, Signal
         from PySide6.QtGui import QFont, QPixmap, QTextOption
         from PySide6.QtWidgets import (
             QApplication,
@@ -96,9 +99,9 @@ except ImportError:
 class DocumentWorker(QThread):
     """Worker thread for document generation tasks."""
 
-    document_generated = pyqtSignal(dict)
-    progress_updated = pyqtSignal(int)
-    error_occurred = pyqtSignal(str)
+    document_generated = Signal(dict)
+    progress_updated = Signal(int)
+    error_occurred = Signal(str)
 
     def __init__(
         self, plugin, template_id: str, data: dict, output_format: str, output_path: str
@@ -116,6 +119,7 @@ class DocumentWorker(QThread):
             self.progress_updated.emit(25)
 
             # Simulate processing steps
+            # Standard library imports
             import asyncio
 
             loop = asyncio.new_event_loop()
@@ -351,7 +355,8 @@ class DocumentGeneratorGUI(QMainWindow):
         self.generate_btn = QPushButton("Generate Document")
         self.generate_btn.clicked.connect(self.generate_document)
         self.generate_btn.setEnabled(False)
-        self.generate_btn.setStyleSheet("""
+        self.generate_btn.setStyleSheet(
+            """
             QPushButton {
                 background-color: #3498db;
                 color: white;
@@ -366,7 +371,8 @@ class DocumentGeneratorGUI(QMainWindow):
             QPushButton:disabled {
                 background-color: #bdc3c7;
             }
-        """)
+        """
+        )
         export_layout.addWidget(self.generate_btn, 2, 0, 1, 2)
 
         # Progress bar
@@ -432,7 +438,8 @@ class DocumentGeneratorGUI(QMainWindow):
 
         help_text = QTextEdit()
         help_text.setReadOnly(True)
-        help_text.setHtml("""
+        help_text.setHtml(
+            """
         <h3>Document Generator Help</h3>
         <h4>Getting Started:</h4>
         <ol>
@@ -464,7 +471,8 @@ class DocumentGeneratorGUI(QMainWindow):
         <li>For array fields, enter one item per line</li>
         <li>Dates should be in YYYY-MM-DD format</li>
         </ul>
-        """)
+        """
+        )
         help_layout.addWidget(help_text)
 
         self.preview_tabs.addTab(help_tab, "Help")
@@ -478,6 +486,7 @@ class DocumentGeneratorGUI(QMainWindow):
             return
 
         try:
+            # Standard library imports
             import asyncio
 
             loop = asyncio.new_event_loop()
@@ -611,6 +620,7 @@ class DocumentGeneratorGUI(QMainWindow):
 
             # Generate preview content
             if self.plugin:
+                # Standard library imports
                 import asyncio
 
                 loop = asyncio.new_event_loop()
@@ -625,6 +635,7 @@ class DocumentGeneratorGUI(QMainWindow):
                 if WEBENGINE_AVAILABLE and preview_format == "html":
                     # Convert markdown to HTML for web view
                     try:
+                        # Third party imports
                         import markdown
 
                         html_content = markdown.markdown(content)
@@ -805,6 +816,6 @@ if __name__ == "__main__":
         app = QApplication(sys.argv)
         window = DocumentGeneratorGUI()
         window.show()
-        sys.exit(app.exec())
+        sys.exit(app.exec())  # nosec B102: Qt application execution
     else:
         print("PySide6 is not available. GUI cannot be started.")

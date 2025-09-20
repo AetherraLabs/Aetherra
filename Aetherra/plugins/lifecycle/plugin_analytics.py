@@ -10,6 +10,7 @@ Tracks execution metrics, usage patterns, performance data, and provides insight
 for optimization and plugin management.
 """
 
+# Standard library imports
 import json
 import logging
 import sqlite3
@@ -53,10 +54,12 @@ class PluginMetricsCollector:
     def close(self):
         """Close any open database connections."""
         # Force garbage collection to help release any lingering connections
+        # Standard library imports
         import gc
 
         gc.collect()
         # Add a small delay to help Windows release file handles
+        # Standard library imports
         import time
 
         time.sleep(0.1)
@@ -335,6 +338,7 @@ class PluginMetricsCollector:
 
     def _hash_context(self, context: Dict[str, Any]) -> str:
         """Create a hash for context data."""
+        # Standard library imports
         import hashlib
 
         context_str = json.dumps(context, sort_keys=True)
@@ -643,6 +647,7 @@ class PluginAnalyticsIntegration:
         self, plugin_id: str, error: Exception, context: Optional[Dict[str, Any]] = None
     ):
         """Record a plugin error."""
+        # Standard library imports
         import traceback
 
         self.metrics_collector.record_error(
@@ -713,6 +718,7 @@ class PluginExecutionTracker:
         )
 
         if not success:
+            # Standard library imports
             import traceback
 
             self.metrics.record_error(
@@ -737,6 +743,7 @@ if __name__ == "__main__":
     print("=== Plugin Analytics Demo ===")
 
     # Simulate plugin executions
+    # Standard library imports
     import random
     import time
 

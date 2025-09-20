@@ -7,6 +7,7 @@ Advanced Project Intelligence System - Fixed Version
 Provides comprehensive file and directory analysis with deep insights
 """
 
+# Standard library imports
 import ast
 import hashlib
 import json
@@ -282,6 +283,7 @@ class AdvancedProjectAnalyzer:
 
         try:
             if filepath.suffix == ".json":
+                # Standard library imports
                 import json
 
                 data = json.loads(content)

@@ -11,6 +11,7 @@ and predictive insights.
 """
 
 
+# Standard library imports
 import json
 import logging
 import sqlite3
@@ -34,6 +35,7 @@ logger = logging.getLogger(__name__)
 
 # Try to import advanced memory systems
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.memory.advanced_memory_integration import AdvancedMemoryManager
 
     MEMORY_INTEGRATION_AVAILABLE = True
@@ -45,6 +47,7 @@ except ImportError as e:
 
 # Try to import conversation manager
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.agents.enhanced_conversation_manager import (
         EnhancedConversationManager,
     )

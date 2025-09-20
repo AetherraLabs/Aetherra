@@ -7,10 +7,12 @@ Comprehensive interface for memory management and analysis
 """
 
 
+# Standard library imports
 import sqlite3
 import sys
 from pathlib import Path
 
+# Third party imports
 from PySide6.QtCore import Qt, QTimer, Signal  # noqa: F401 (optional runtime import)
 from PySide6.QtGui import QColor, QFont  # noqa: F401 (optional runtime import)
 from PySide6.QtWidgets import (
@@ -774,9 +776,10 @@ class AdvancedMemorySystemUI(QWidget):
 
 
 if __name__ == "__main__":
+    # Third party imports
     from PySide6.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
     window = AdvancedMemorySystemUI()
     window.show()
-    sys.exit(app.exec())
+    sys.exit(app.exec())  # nosec B102: Qt application execution

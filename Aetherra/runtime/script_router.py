@@ -3,8 +3,10 @@
 
 # aetherra/runtime/script_router.py
 
+# Standard library imports
 import re
 
+# Aetherra imports
 from Aetherra.runtime.script_registry_loader import script_registry_loader
 from Aetherra.runtime.script_runner import ScriptRunner
 

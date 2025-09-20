@@ -11,12 +11,15 @@ These tests validate that:
 - System status exports include expected fields and do not crash.
 """
 
+# Standard library imports
 import asyncio
 import os
 from contextlib import contextmanager
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.aetherra_core.memory.qfac_integration import QFACMemorySystem
 
 

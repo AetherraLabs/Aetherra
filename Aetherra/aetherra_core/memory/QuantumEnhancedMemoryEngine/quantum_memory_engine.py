@@ -14,6 +14,7 @@ Minimum quantum hardening (coherence/branch/observer):
 - branch-aware retrieval and branch DAG audit helpers
 """
 
+# Standard library imports
 import logging
 import uuid
 from datetime import datetime
@@ -41,7 +42,9 @@ class QuantumEnhancedMemoryEngine:
         """Override the default coherence_id if needed."""
         self.coherence_id = coherence_id
 
-    def fork_branch(self, new_branch_id: str, parent_branch_id: Optional[str] = None) -> str:
+    def fork_branch(
+        self, new_branch_id: str, parent_branch_id: Optional[str] = None
+    ) -> str:
         """Create a new branch with an optional explicit parent (defaults to current)."""
         parent = parent_branch_id or self.current_branch
         if new_branch_id not in self.branch_parents:
@@ -64,11 +67,15 @@ class QuantumEnhancedMemoryEngine:
     def _now(self) -> str:
         return datetime.utcnow().isoformat() + "Z"
 
-    def store(self, memory_entry: Dict[str, Any], context: Optional[Dict[str, Any]] = None) -> bool:
+    def store(
+        self, memory_entry: Dict[str, Any], context: Optional[Dict[str, Any]] = None
+    ) -> bool:
         """Store memory entry with quantum enhancement"""
         try:
             context = context or {}
-            branch_id = context.get("branch_id", memory_entry.get("branch_id", self.current_branch))
+            branch_id = context.get(
+                "branch_id", memory_entry.get("branch_id", self.current_branch)
+            )
             # Ensure branch exists (create if needed, parent = current)
             if branch_id not in self.branch_parents:
                 self.branch_parents[branch_id] = self.current_branch
@@ -98,7 +105,9 @@ class QuantumEnhancedMemoryEngine:
                         for oid in observer_ids
                     ]
                 },
-                "entangled_with": sorted(list(self.entanglement_map.get(entry_id, set()))),
+                "entangled_with": sorted(
+                    list(self.entanglement_map.get(entry_id, set()))
+                ),
             }
 
             self.memory_fragments.append(enhanced_entry)
@@ -117,7 +126,9 @@ class QuantumEnhancedMemoryEngine:
         # Simple text containment over serialized data
         return query.lower() in str(fragment.get("data", "")).lower()
 
-    def retrieve(self, query: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def retrieve(
+        self, query: str, context: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """Retrieve memory with quantum enhancement"""
         try:
             context = context or {}

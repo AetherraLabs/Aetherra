@@ -9,6 +9,7 @@ Main enhanced UI window for the Lyrixa assistant system.
 Provides a sophisticated interface for Aetherra code interaction.
 """
 
+# Standard library imports
 import sys
 
 # Public exports for optional GUI component
@@ -35,6 +36,7 @@ class EnhancedLyrixaWindow:
 
         # Check if Qt is available
         try:
+            # Third party imports
             from PySide6.QtCore import Qt  # noqa: F401 (optional runtime import)
 
             # Defer heavy widget imports to _setup_qt_window to avoid F401 noise here
@@ -58,6 +60,7 @@ class EnhancedLyrixaWindow:
 
     def _setup_qt_window(self):
         """Setup Qt-based GUI if available."""
+        # Third party imports
         from PySide6.QtCore import Qt
         from PySide6.QtWidgets import (
             QHBoxLayout,
@@ -86,6 +89,7 @@ class EnhancedLyrixaWindow:
 
                 # Create main splitter with safe orientation attempt
                 main_splitter = QSplitter()
+                # Standard library imports
                 import contextlib
 
                 with contextlib.suppress(Exception):
@@ -205,13 +209,14 @@ class EnhancedLyrixaWindow:
 def launch_enhanced_lyrixa():
     """Launch function to run the Enhanced Lyrixa Window."""
     try:
+        # Third party imports
         from PySide6.QtWidgets import QApplication
 
         app = QApplication(sys.argv)
         window = EnhancedLyrixaWindow()
         qt_window = window.show()
         if qt_window and hasattr(qt_window, "exec"):
-            sys.exit(app.exec())
+            sys.exit(app.exec())  # nosec B102: Qt application execution
         elif qt_window:
             sys.exit(app.exec_())
     except ImportError:

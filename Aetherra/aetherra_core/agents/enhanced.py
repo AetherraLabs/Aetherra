@@ -7,11 +7,14 @@ AetherraCode Enhancement Integration
 Integrates new AI capabilities with existing interpreter
 """
 
+# Standard library imports
 import os
 import sys
 import time
+from contextlib import suppress
 from typing import Any, Dict
 
+# Local imports
 # Import base interpreter first
 from .base import AetherraInterpreter
 
@@ -118,30 +121,15 @@ local_ask_ai = None
 PerformanceOptimizer = None
 EnhancedSemanticMemory = None
 
-try:
-    from ..ai.collaboration import AICollaborationFramework
-except ImportError:
-    pass
+with suppress(ImportError):
+    # Local sibling imports
+    # Local imports
+    from .collaboration import AICollaborationFramework, PerformanceOptimizer
 
-try:
-    from ..ai.runtime import ask_ai
-except ImportError:
-    pass
-
-try:
-    from ..parser.intent_parser import IntentToCodeParser, parse_natural_intent
-except ImportError:
-    pass
-
-try:
-    from ..ai.local_ai import LocalAIEngine, local_analyze_code, local_ask_ai
-except ImportError:
-    pass
-
-try:
-    from ..memory.vector import EnhancedSemanticMemory
-except ImportError:
-    pass
+with suppress(ImportError):
+    # Absolute import to core ai runtime
+    # Aetherra imports
+    from Aetherra.core.ai_runtime import ask_ai
 
 ENHANCEMENTS_AVAILABLE = bool(AICollaborationFramework and ask_ai and LocalAIEngine)
 
@@ -466,7 +454,13 @@ Generated AetherraCode:
         self.performance_metrics["optimizations_applied"] += 1
 
         if command == "status":
-            metrics = self.performance_optimizer.get_performance_report()
+            get_report = getattr(
+                self.performance_optimizer, "get_performance_report", None
+            )
+            if not callable(get_report):
+                return "[Enhancement] Performance optimizer does not support reporting"
+            metrics_obj = get_report()
+            metrics = metrics_obj if isinstance(metrics_obj, dict) else {}
             response = "⚡ Performance Optimization Status\n\n"
             response += f"Commands monitored: {len(metrics.get('commands', {}))}\n"
             response += (
@@ -479,7 +473,13 @@ Generated AetherraCode:
 
         elif command.startswith("analyze"):
             # Get recent performance data
-            report = self.performance_optimizer.get_performance_report()
+            get_report = getattr(
+                self.performance_optimizer, "get_performance_report", None
+            )
+            if not callable(get_report):
+                return "[Enhancement] Performance optimizer does not support analysis"
+            report_obj = get_report()
+            report = report_obj if isinstance(report_obj, dict) else {}
 
             response = "📊 Performance Analysis\n\n"
             if "suggestions" in report and report["suggestions"]:
@@ -508,13 +508,17 @@ Generated AetherraCode:
                 result = self.core_interpreter.execute(code_to_profile)
                 execution_time = time.time() - start_time
 
-                # Record metrics using the correct method
-                self.performance_optimizer.profile_execution(
-                    command=code_to_profile,
-                    execution_time=execution_time,
-                    memory_usage=None,  # Will be auto-detected
-                    context={"result_length": len(str(result))},
+                # Record metrics if supported by optimizer
+                profile_exec = getattr(
+                    self.performance_optimizer, "profile_execution", None
                 )
+                if callable(profile_exec):
+                    profile_exec(
+                        command=code_to_profile,
+                        execution_time=execution_time,
+                        memory_usage=None,  # Will be auto-detected
+                        context={"result_length": len(str(result))},
+                    )
 
                 return (
                     f"⏱️ Profiled execution in {execution_time:.3f}s\nResult: {result}"
@@ -551,6 +555,7 @@ Generated AetherraCode:
                 return "[Error] No task description provided"
 
             # Use async wrapper for collaborative solving
+            # Standard library imports
             import asyncio
 
             try:
@@ -592,6 +597,7 @@ Generated AetherraCode:
 
         elif command == "benchmark":
             # Run a quick benchmark
+            # Standard library imports
             import time
 
             start_time = time.time()

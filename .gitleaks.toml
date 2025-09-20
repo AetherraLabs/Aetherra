@@ -1,0 +1,28 @@
+# Gitleaks configuration for Aetherra
+# Exclude common build and cache directories to reduce noise
+
+[allowlist]
+# Paths are regexes; matched files/dirs are skipped
+paths = [
+  "^node_modules/",
+  "^dist/",
+  "^build/",
+  "^htmlcov/",
+  "^__pycache__/",
+  "^\.venv/",
+  "^venv/",
+  "^\.mypy_cache/",
+  "^\.pytest_cache/",
+  "^\.ruff_cache/",
+  "^frontend/Lib/",
+  "^unused/",
+  "^backup.*/",
+  "^old.*/",
+  "^legacy.*/",
+  "^archive.*/"
+]
+
+# Optionally allow known test tokens or patterns here (examples commented out)
+# regexes = [
+#   "^TEST_TOKEN_[A-Z0-9]{16}$",
+# ]

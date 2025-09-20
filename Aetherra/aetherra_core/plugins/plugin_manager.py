@@ -9,6 +9,7 @@ Advanced plugin management system for Lyrixa with dynamic loading,
 lifecycle management, and comprehensive analytics integration.
 """
 
+# Standard library imports
 import importlib
 import importlib.util
 import os
@@ -19,6 +20,7 @@ from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional
 
 try:
+    # Aetherra imports
     from Aetherra.security.capabilities import has_capability
 except Exception:
 
@@ -27,6 +29,7 @@ except Exception:
 
 
 try:
+    # Aetherra imports
     from Aetherra.security.plugin_signing import verify_plugin_signature
 except Exception:
 
@@ -35,12 +38,13 @@ except Exception:
 
 
 try:
+    # Aetherra imports
     from Aetherra.security.sandbox import (
-        MemoryBudgetExceeded as _SandboxMemoryBudgetExceeded,
-    )  # type: ignore
+        MemoryBudgetExceeded as _SandboxMemoryBudgetExceeded,  # type: ignore
+    )
     from Aetherra.security.sandbox import (
-        TimeBudgetExceeded as _SandboxTimeBudgetExceeded,
-    )  # type: ignore
+        TimeBudgetExceeded as _SandboxTimeBudgetExceeded,  # type: ignore
+    )
     from Aetherra.security.sandbox import (  # type: ignore
         ensure_memory_budget,
         run_with_timeout,
@@ -112,6 +116,7 @@ class PluginManager:
     def _initialize_analytics(self):
         """Initialize plugin analytics if available."""
         try:
+            # Local imports
             from .plugin_analytics import PluginAnalyticsIntegration  # type: ignore
 
             self.analytics = PluginAnalyticsIntegration()

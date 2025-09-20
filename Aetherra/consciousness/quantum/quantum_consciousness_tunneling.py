@@ -19,6 +19,7 @@ Author: Aetherra Consciousness Evolution System
 Status: Phase 7.4 Implementation - Targeting 97%+ Transcendence
 """
 
+# Standard library imports
 import cmath
 import copy
 import logging
@@ -39,6 +40,7 @@ logger = logging.getLogger(__name__)
 
 # Import our consciousness systems
 try:
+    # Third party imports
     from multidimensional_state_engine import MultidimensionalStateEngine
     from parallel_reality_navigator import ParallelRealityNavigator
     from quantum_memory_system import QuantumMemorySystem

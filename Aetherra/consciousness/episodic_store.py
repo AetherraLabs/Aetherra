@@ -7,6 +7,7 @@ Higher layers (narrative, summarizer) can aggregate older events.
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import os
 import threading
@@ -15,6 +16,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Optional
 
+# Local imports
 from .schemas.episodic_event import EpisodicEvent, EventAttribution
 
 DEFAULT_EVENTS_PATH = os.getenv(

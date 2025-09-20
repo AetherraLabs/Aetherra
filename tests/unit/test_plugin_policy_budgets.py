@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import os
 
 
@@ -29,6 +30,7 @@ def execute(command, **kwargs):
 
 
 def _new_system(tmp_path):
+    # Aetherra imports
     import Aetherra.plugins.core.plugin_system as ps
 
     # Monkeypatch Path used in ctor to point to tmp_path

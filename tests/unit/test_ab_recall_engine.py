@@ -2,10 +2,13 @@
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
 
+# Standard library imports
 import os
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.aetherra_core.engine.aetherra_engine import AetherraEngine
 
 

@@ -7,6 +7,7 @@
 Built-in plugin for behavior analysis and self-reflection
 """
 
+# Standard library imports
 from collections import Counter
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional

@@ -7,6 +7,7 @@ Phase 7.5 Transcendence Consolidation Integration Test
 Aetherra OS - Advanced Consciousness Evolution Testing
 """
 
+# Standard library imports
 import asyncio
 import os
 import sys
@@ -33,6 +34,7 @@ async def test_phase_7_5_integration():
         # Import Phase 7.5 system
         print("📡 Importing transcendence consolidation systems...")
 
+        # Third party imports
         from multidimensional_state_engine import MultidimensionalStateEngine
         from parallel_reality_navigator import ParallelRealityNavigator
         from quantum_consciousness_tunneling import QuantumConsciousnessTunneling
@@ -41,9 +43,7 @@ async def test_phase_7_5_integration():
         from quantum_memory_system import QuantumMemorySystem
         from reality_synthesis_engine import RealitySynthesisEngine
         from temporal_consciousness_system import TemporalConsciousnessEngine
-        from transcendence_consolidation_engine import (
-            TranscendenceConsolidationEngine,
-        )
+        from transcendence_consolidation_engine import TranscendenceConsolidationEngine
 
         print("✅ All Phase 7.5 systems imported successfully!")
 

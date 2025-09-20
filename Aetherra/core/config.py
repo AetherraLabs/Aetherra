@@ -8,6 +8,7 @@ Aetherra Configuration
 Global configuration settings and constants for the Aetherra platform.
 """
 
+# Standard library imports
 import os
 from pathlib import Path
 from typing import Any, Dict

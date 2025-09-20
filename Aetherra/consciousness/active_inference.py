@@ -13,9 +13,11 @@ Future phases: incorporate predictive model distribution & free energy minimizat
 
 from __future__ import annotations
 
+# Standard library imports
 import os
 from typing import Tuple
 
+# Local imports
 from .affect_engine import get_affect_engine
 from .ethics_critic import get_ethics_critic
 

@@ -5,6 +5,7 @@
 Episodic timeline components
 """
 
+# Local imports
 from .episodic_timeline import (
     CausalLink,
     EpisodicTimeline,

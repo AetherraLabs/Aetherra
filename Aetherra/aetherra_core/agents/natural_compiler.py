@@ -10,8 +10,10 @@ This revolutionary compiler bridges the gap between human thought
 and AI execution, making programming as natural as conversation.
 """
 
+# Standard library imports
 import re
 from datetime import datetime
+from typing import Dict, Tuple
 
 
 class NaturalLanguageCompiler:
@@ -267,6 +269,7 @@ class AetherraCodeIDE:
 
 def main():
     """Main entry point for natural language compilation"""
+    # Standard library imports
     import argparse
 
     parser = argparse.ArgumentParser(

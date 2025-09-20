@@ -24,6 +24,7 @@ Requirements:
     - Aetherra OS components
 """
 
+# Standard library imports
 import os
 import sys
 from pathlib import Path
@@ -79,6 +80,7 @@ def check_os_status():
 
     try:
         # Try to import and check OS components
+        # Aetherra imports
         from aetherra_kernel_loop import get_kernel
 
         # Check if kernel is running
@@ -111,6 +113,7 @@ def start_aetherra_os():
             print("📍 Found OS launcher, starting Aetherra OS...")
 
             # Import and run the OS launcher
+            # Standard library imports
             import asyncio
             import sys
 
@@ -118,14 +121,18 @@ def start_aetherra_os():
             if str(project_root) not in sys.path:
                 sys.path.insert(0, str(project_root))
 
+            # Aetherra imports
             from aetherra_os_launcher import AetherraOSLauncher
 
             # Create and start OS launcher in background
             async def start_os_background():
                 launcher = AetherraOSLauncher()
-                await launcher.launch_full_os({"gui_enabled": False})  # Start without GUI
+                await launcher.launch_full_os(
+                    {"gui_enabled": False}
+                )  # Start without GUI
 
             # Run OS startup in background thread
+            # Standard library imports
             import threading
 
             def run_os():
@@ -136,6 +143,7 @@ def start_aetherra_os():
 
             # Give OS time to start
             print("⏳ Waiting for OS to initialize...")
+            # Standard library imports
             import time
 
             time.sleep(3)
@@ -158,6 +166,7 @@ def launch_interface():
 
     try:
         # Import and run the main interface
+        # Aetherra imports
         from Aetherra.interface.main_window import main
 
         print("🖥️ Starting hybrid PySide6 + Web interface...")
@@ -209,11 +218,14 @@ def main():
             return 1
 
         # Check again after starting
+        # Standard library imports
         import time
 
         time.sleep(2)
         if not check_os_status():
-            print("[WARN] OS may still be starting up - continuing with interface launch")
+            print(
+                "[WARN] OS may still be starting up - continuing with interface launch"
+            )
 
     # Launch interface
     exit_code = launch_interface()

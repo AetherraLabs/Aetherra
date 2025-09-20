@@ -21,6 +21,7 @@ Version: 7.2.0
 Date: August 5, 2025
 """
 
+# Standard library imports
 import asyncio
 import logging
 import time
@@ -29,6 +30,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
+# Third party imports
 import numpy as np
 
 # Set up logging

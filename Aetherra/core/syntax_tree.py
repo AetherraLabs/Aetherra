@@ -19,6 +19,7 @@ The modular syntax system is organized as follows:
 This file maintains backward compatibility with existing code.
 """
 
+# Local imports
 # Import everything from the new modular system
 from .syntax import parse_aetherra  # Legacy alias
 from .syntax import (
@@ -33,6 +34,7 @@ from .syntax import (
 # Legacy function for backward compatibility
 def _calculate_depth(node, current_depth=0):
     """Calculate the maximum depth of a syntax tree (legacy function)"""
+    # Local imports
     from .syntax.analysis import _calculate_depth as new_calculate_depth
 
     return new_calculate_depth(node, current_depth)

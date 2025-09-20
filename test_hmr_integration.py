@@ -7,24 +7,26 @@ Test script to verify that HMR integration is properly implemented
 in the self-incorporation system.
 """
 
+# Standard library imports
 import asyncio
-import json
 import logging
+import os
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import Mock  # noqa: F401 (reserved for future extensions)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-async def test_hmr_integration():
+async def test_hmr_integration() -> bool:
     """Test HMR integration functionality."""
     logger.info("🧪 Starting HMR Integration Test...")
 
     try:
         # Import the self-incorporation service
+        # Aetherra imports
         from aetherra_self_incorporation import (
             SelfIncorporationConfig,
             SelfIncorporationService,
@@ -60,9 +62,9 @@ async def test_hmr_integration():
             )
             logger.info(f"✅ Rollback token generated: {rollback_token}")
 
-            assert rollback_token.startswith("rb_register_plugin_"), (
-                f"Invalid token format: {rollback_token}"
-            )
+            assert rollback_token.startswith(
+                "rb_register_plugin_"
+            ), f"Invalid token format: {rollback_token}"
 
             # Test HMR routing logic
             should_use_hmr_plugin = integrator._should_use_hmr(
@@ -74,11 +76,14 @@ async def test_hmr_integration():
                 f"✅ HMR routing - plugin: {should_use_hmr_plugin}, docs: {should_use_hmr_docs}"
             )
 
-            assert should_use_hmr_plugin == True, "register_plugin should use HMR"
-            assert should_use_hmr_docs == False, "index_docs should not use HMR"
+            assert should_use_hmr_plugin, "register_plugin should use HMR"
+            assert not should_use_hmr_docs, "index_docs should not use HMR"
 
             # Test rollback functionality
-            test_token = "rb_test_action_123456789_1726467600_abcd1234"
+            # Non-secret demo token; allow override via env to avoid hardcoding complaints
+            test_token = os.getenv(
+                "AETHERRA_TEST_ROLLBACK_TOKEN", "rb_test_action_demo_token"
+            )  # nosec B105
             rollback_result = await service.trigger_rollback(test_token)
 
             logger.info(f"✅ Rollback test result: {rollback_result}")
@@ -86,9 +91,9 @@ async def test_hmr_integration():
             # In test environment, HMR controller may not be available
             expected_errors = ["rollback_token_not_found", "hmr_controller_unavailable"]
             actual_error = rollback_result.get("error")
-            assert actual_error in expected_errors, (
-                f"Expected one of {expected_errors}, got: {rollback_result}"
-            )
+            assert (
+                actual_error in expected_errors
+            ), f"Expected one of {expected_errors}, got: {rollback_result}"
 
             # Test API integration patterns
             logger.info("✅ Testing integration with HMR...")
@@ -110,22 +115,23 @@ async def test_hmr_integration():
             integration_result = await integrator.execute_plan(test_plan, dry_run=True)
             logger.info(f"✅ Dry-run integration result: {integration_result}")
 
-            assert integration_result.get("ok") is not None, (
-                "Integration should return ok status"
-            )
+            assert (
+                integration_result.get("ok") is not None
+            ), "Integration should return ok status"
 
         logger.info("🎉 All HMR integration tests passed!")
         return True
 
     except Exception as e:
         logger.error(f"❌ HMR integration test failed: {e}")
+        # Standard library imports
         import traceback
 
         traceback.print_exc()
         return False
 
 
-async def main():
+async def main() -> None:
     """Run the HMR integration test."""
     success = await test_hmr_integration()
     if success:

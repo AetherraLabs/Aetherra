@@ -9,6 +9,7 @@ Standalone demonstration of Advanced Memory Systems that doesn't rely on
 complex external dependencies. This showcases the core memory functionality.
 """
 
+# Standard library imports
 import asyncio
 import time
 from datetime import datetime
@@ -285,6 +286,7 @@ async def main():
 
     except Exception as e:
         print(f"\n❌ Demo failed: {e}")
+        # Standard library imports
         import traceback
 
         traceback.print_exc()

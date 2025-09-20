@@ -13,6 +13,7 @@ task scheduling, and workflow management.
 
 __version__ = "1.0.0"
 
+# Standard library imports
 # Graceful imports with fallbacks
 import logging
 
@@ -20,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 # Try to import scheduler if available
 try:
+    # Local imports
     from .scheduler import AetherraScheduler
 
     SCHEDULER_AVAILABLE = True

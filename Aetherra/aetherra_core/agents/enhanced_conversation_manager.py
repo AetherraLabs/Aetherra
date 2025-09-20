@@ -16,6 +16,7 @@ Key Enhancements:
 - Narrative continuity across sessions
 """
 
+# Standard library imports
 import asyncio
 import logging
 import os
@@ -34,6 +35,7 @@ logger = logging.getLogger(__name__)
 
 # Import base conversation manager
 try:
+    # Local imports
     from .conversation_manager import (
         LyrixaConversationManager as BaseLyrixaConversationManager,
     )
@@ -45,7 +47,9 @@ except ImportError as e:
 
     # Create a minimal base class if the original isn't available
     class BaseLyrixaConversationManager:
-        def __init__(self, workspace_path: str, aether_runtime=None, gui_interface=None):
+        def __init__(
+            self, workspace_path: str, aether_runtime=None, gui_interface=None
+        ):
             self.workspace_path = workspace_path
             self.aether_runtime = aether_runtime
             self.gui_interface = gui_interface
@@ -75,6 +79,7 @@ except ImportError as e:
 
 # Import the enhanced memory engine
 try:
+    # Local imports
     from .memory.lyrixa_memory_engine import (
         LyrixaMemoryEngine,
         MemoryFragmentType,
@@ -98,6 +103,7 @@ except ImportError as e:
 
 
 try:
+    # Aetherra imports
     from Aetherra.core.ai.multi_llm_manager import MultiLLMManager
 
     LLM_AVAILABLE = True
@@ -127,7 +133,9 @@ class EnhancedLyrixaConversationManager(BaseLyrixaConversationManager):
         if MEMORY_ENGINE_AVAILABLE and LyrixaMemoryEngine:
             try:
                 memory_config_path = (
-                    os.path.join(workspace_path, "memory") if workspace_path else "memory"
+                    os.path.join(workspace_path, "memory")
+                    if workspace_path
+                    else "memory"
                 )
                 os.makedirs(memory_config_path, exist_ok=True)
 
@@ -145,11 +153,15 @@ class EnhancedLyrixaConversationManager(BaseLyrixaConversationManager):
         else:
             self.memory_engine = None
             self.memory_enabled = False
-            logger.warning("⚠️ Memory engine not available, using basic conversation history")
+            logger.warning(
+                "⚠️ Memory engine not available, using basic conversation history"
+            )
 
         # Enhanced session tracking with memory integration
         self.session_start_time = datetime.now()
-        self.memory_context_window = 10  # Number of recent memories to include in context
+        self.memory_context_window = (
+            10  # Number of recent memories to include in context
+        )
         self.last_memory_update = None
 
         logger.info(
@@ -249,7 +261,9 @@ class EnhancedLyrixaConversationManager(BaseLyrixaConversationManager):
                 memory_context.append(
                     {
                         "content": memory.content,
-                        "timestamp": memory.created_at.isoformat() if memory.created_at else None,
+                        "timestamp": memory.created_at.isoformat()
+                        if memory.created_at
+                        else None,
                         "tags": memory.tags,
                         "confidence": memory.confidence,
                         "metadata": memory.metadata,
@@ -259,7 +273,9 @@ class EnhancedLyrixaConversationManager(BaseLyrixaConversationManager):
                     }
                 )
 
-            logger.info(f"🧠 Retrieved {len(memory_context)} relevant memories for context")
+            logger.info(
+                f"🧠 Retrieved {len(memory_context)} relevant memories for context"
+            )
             return memory_context
 
         except Exception as e:
@@ -299,7 +315,9 @@ class EnhancedLyrixaConversationManager(BaseLyrixaConversationManager):
                 )
 
             if len(memories) > 5:
-                context_lines.append(f"• ... and {len(memories) - 5} more related memories")
+                context_lines.append(
+                    f"• ... and {len(memories) - 5} more related memories"
+                )
 
             return "\\n".join(context_lines) + "\\n"
 
@@ -346,7 +364,9 @@ Based on your memory of previous interactions and current system state, please p
 
                 # Add recent conversation history for immediate context
                 for msg in self.conversation_history[-4:]:  # Last 4 messages
-                    messages.insert(-1, {"role": msg["role"], "content": msg["content"]})
+                    messages.insert(
+                        -1, {"role": msg["role"], "content": msg["content"]}
+                    )
 
                 prompt = self.format_messages_as_prompt(messages)
 
@@ -373,7 +393,9 @@ Based on your memory of previous interactions and current system state, please p
 
             # Fallback: Use memory context for smart response
             if memory_context:
-                return await self._generate_memory_informed_fallback(user_input, memory_context)
+                return await self._generate_memory_informed_fallback(
+                    user_input, memory_context
+                )
             else:
                 return await self._generate_smart_fallback_response(user_input)
 
@@ -418,11 +440,18 @@ Based on your memory of previous interactions and current system state, please p
                 content = memory["content"].lower()
                 if memory.get("metadata", {}).get("speaker") == "user":
                     # Extract user patterns/interests
-                    if any(word in content for word in ["help", "how", "what", "why", "can you"]):
+                    if any(
+                        word in content
+                        for word in ["help", "how", "what", "why", "can you"]
+                    ):
                         user_patterns.append("asks questions")
-                    if any(word in content for word in ["plugin", "system", "aetherra"]):
+                    if any(
+                        word in content for word in ["plugin", "system", "aetherra"]
+                    ):
                         recent_topics.append("system management")
-                    if any(word in content for word in ["memory", "remember", "recall"]):
+                    if any(
+                        word in content for word in ["memory", "remember", "recall"]
+                    ):
                         recent_topics.append("memory systems")
 
             # Generate contextual response
@@ -504,7 +533,9 @@ How can I best help you today?"""
                     time_range=timedelta(hours=2),
                 )
                 return (
-                    narrative.content if narrative else "Unable to generate conversation summary."
+                    narrative.content
+                    if narrative
+                    else "Unable to generate conversation summary."
                 )
             else:
                 return "No memories found for this conversation session."
@@ -521,7 +552,9 @@ How can I best help you today?"""
         try:
             health_status = await self.memory_engine.check_memory_health()
             return {
-                "status": "healthy" if health_status.overall_health > 0.7 else "needs_attention",
+                "status": "healthy"
+                if health_status.overall_health > 0.7
+                else "needs_attention",
                 "overall_health": health_status.overall_health,
                 "coherence_score": health_status.coherence_score,
                 "drift_level": health_status.drift_level,
@@ -555,7 +588,9 @@ How can I best help you today?"""
                         metadata={
                             "session_id": self.session_id,
                             "conversation_count": self.conversation_count,
-                            "session_duration": str(datetime.now() - self.session_start_time),
+                            "session_duration": str(
+                                datetime.now() - self.session_start_time
+                            ),
                             "timestamp": datetime.now().isoformat(),
                         },
                         fragment_type=MemoryFragmentType.REFLECTIVE,
@@ -582,7 +617,9 @@ def create_enhanced_conversation_manager(
     workspace_path: str, aether_runtime=None, gui_interface=None
 ) -> EnhancedLyrixaConversationManager:
     """Create and return an enhanced conversation manager instance"""
-    return EnhancedLyrixaConversationManager(workspace_path, aether_runtime, gui_interface)
+    return EnhancedLyrixaConversationManager(
+        workspace_path, aether_runtime, gui_interface
+    )
 
 
 # For backward compatibility

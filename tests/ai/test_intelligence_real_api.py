@@ -11,6 +11,7 @@ Tests the real intelligence API as it exists in the codebase.
 """
 
 
+# Standard library imports
 import sys
 import unittest
 from datetime import datetime
@@ -68,6 +69,7 @@ def try_import_intelligence_modules():
             )
         )
 
+        # Third party imports
         import intelligence
         import personality_engine
 
@@ -88,6 +90,7 @@ def try_import_intelligence_modules():
 
 def create_stub_modules():
     """Create comprehensive stub modules for testing"""
+    # Standard library imports
     from enum import Enum
 
     class PersonalityTrait(Enum):

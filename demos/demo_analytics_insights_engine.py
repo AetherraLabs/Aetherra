@@ -9,6 +9,7 @@ Comprehensive demonstration of the Analytics & Insights Engine,
 showcasing integration with Advanced Memory Systems and Enhanced Agents.
 """
 
+# Standard library imports
 import asyncio
 import logging
 import random
@@ -23,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 # Try to import analytics components
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.analytics_insights_engine import (
         AnalyticsEngine,
         AnalyticsMetric,
@@ -40,6 +42,7 @@ except ImportError as e:
 
 # Try to import dashboard
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.analytics_dashboard import (
         AnalyticsDashboard,
         create_analytics_dashboard,
@@ -53,6 +56,7 @@ except ImportError as e:
 
 # Try to import advanced memory
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.memory.advanced_memory_integration import AdvancedMemoryManager
 
     MEMORY_AVAILABLE = True

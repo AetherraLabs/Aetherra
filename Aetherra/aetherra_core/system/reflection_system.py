@@ -17,11 +17,13 @@ Features:
 - Reflection-based learning
 """
 
+# Standard library imports
 import statistics
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
+# Local imports
 from .emotion_detector import detect_user_emotion
 
 # Import Phase 1 and Phase 2 components

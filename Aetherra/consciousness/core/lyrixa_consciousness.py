@@ -21,6 +21,7 @@ Version: 1.0.0
 Date: August 4, 2025
 """
 
+# Standard library imports
 import asyncio
 import logging
 import random
@@ -30,14 +31,9 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from consciousness_bridge import (
-    ConsciousnessMessage,
-    get_consciousness_bridge,
-)
-from meta_layer_core import (
-    AgentProfile,
-    get_meta_layer_core,
-)
+# Third party imports
+from consciousness_bridge import ConsciousnessMessage, get_consciousness_bridge
+from meta_layer_core import AgentProfile, get_meta_layer_core
 
 
 class EmotionalState(Enum):
@@ -1436,11 +1432,13 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.INFO)
 
         # Initialize consciousness bridge first
+        # Third party imports
         from consciousness_bridge import initialize_consciousness_bridge
 
         await initialize_consciousness_bridge()
 
         # Initialize meta-layer core
+        # Third party imports
         from meta_layer_core import initialize_meta_layer_core
 
         await initialize_meta_layer_core()

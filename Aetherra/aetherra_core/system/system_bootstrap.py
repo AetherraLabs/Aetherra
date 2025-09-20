@@ -18,6 +18,7 @@ This enables Lyrixa to provide meaningful context at startup:
 "Here's what I remember and where we left off."
 """
 
+# Standard library imports
 import json
 import os
 import sqlite3
@@ -27,6 +28,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Third party imports
 import psutil
 
 

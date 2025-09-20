@@ -1,13 +1,16 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import json
 import os
 import time
 
+# Third party imports
 import pytest
 import requests
 
+# Aetherra imports
 from aetherra_hub.compat import start_hub_server
 
 PORT = 3012
@@ -333,8 +336,10 @@ def test_get_stream_echoes_scratchpad_policy_in_final():
 @pytest.mark.integration
 def test_stream_resume_after_rate_limit_with_last_event_id():
     _start_hub()
+    # Standard library imports
     import asyncio
 
+    # Aetherra imports
     from aetherra_service_registry import get_service_registry
 
     class RateLimitedEngine:

@@ -13,12 +13,14 @@ chat service to surface hints.
 
 from __future__ import annotations
 
+# Standard library imports
 import asyncio
 from collections import deque
 from typing import Any, Deque, Dict, List, Optional
 
 # Use the same chat-focused bridge as the main service
 try:
+    # Aetherra imports
     from Aetherra.quantum.chat_consciousness_bridge import (
         ChatConsciousnessBridge as QuantumChatBridge,
     )
@@ -27,6 +29,7 @@ except Exception:
 
 # Use the kernel event bus for system-wide events
 try:
+    # Aetherra imports
     from aetherra_event_bus import get_event_bus
 except Exception:
     get_event_bus = None

@@ -13,6 +13,7 @@ of various plugins that extend Aetherra's capabilities.
 
 __version__ = "1.0.0"
 
+# Standard library imports
 # Graceful imports with fallbacks
 import logging
 
@@ -20,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 # Try to import plugin manager if available
 try:
+    # Local imports
     from .plugin_manager import PluginManager
 
     PLUGIN_MANAGER_AVAILABLE = True

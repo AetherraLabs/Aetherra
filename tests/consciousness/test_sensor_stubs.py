@@ -1,5 +1,7 @@
+# Standard library imports
 import time
 
+# Aetherra imports
 from Aetherra.consciousness.event_bus import get_event_bus
 from Aetherra.consciousness.sensors.registry import (
     start_default_sensors,

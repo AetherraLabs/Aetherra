@@ -6,6 +6,7 @@ Aetherra Introspection Controller
 Self-awareness and internal state monitoring system.
 """
 
+# Standard library imports
 import asyncio
 import gc
 import json
@@ -21,6 +22,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List
 
 try:
+    # Third party imports
     import psutil
 except ImportError:
     # Fallback system monitoring

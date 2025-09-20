@@ -7,10 +7,12 @@ Intelligent content recommendation and surfacing system
 """
 
 
+# Standard library imports
 import sqlite3
 import sys
 from pathlib import Path
 
+# Third party imports
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
@@ -720,9 +722,10 @@ class ContextAwareSurfacingUI(QWidget):
 
 
 if __name__ == "__main__":
+    # Third party imports
     from PySide6.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
     window = ContextAwareSurfacingUI()
     window.show()
-    sys.exit(app.exec())
+    sys.exit(app.exec())  # nosec B102: Qt application execution

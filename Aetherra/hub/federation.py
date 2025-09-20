@@ -14,6 +14,7 @@ This module is optional; callers should handle ImportError gracefully.
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import os
 import threading
@@ -23,11 +24,13 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 try:
+    # Third party imports
     import requests  # type: ignore
 except Exception:  # pragma: no cover - optional dep
     requests = None  # type: ignore
 
 try:
+    # Aetherra imports
     from Aetherra.security.plugin_signing import verify_plugin_signature
 except Exception:
 

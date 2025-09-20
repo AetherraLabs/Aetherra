@@ -16,17 +16,20 @@ This creates true AI self-awareness through reflexive analysis.
 """
 
 
+# Standard library imports
 import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Union
 
 # Import both memory systems for compatibility
 try:
+    # Local imports
     from .enhanced_memory import LyrixaEnhancedMemorySystem
     from .memory import LyrixaMemorySystem
 except ImportError:
     # Fallback for standalone testing
+    # Standard library imports
     import sys
     from pathlib import Path
 

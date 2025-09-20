@@ -1,3 +1,4 @@
+# Standard library imports
 import sys
 import types
 from typing import Any
@@ -16,16 +17,19 @@ def test_run_hub_ai_api_main_flags(monkeypatch: Any) -> None:
     fake_mod = types.SimpleNamespace(AetherraHubServer=FakeServer)
     monkeypatch.setitem(sys.modules, "aetherra_hub.compat", fake_mod)
 
+    # Standard library imports
     import importlib
 
     mod = importlib.import_module("tools.run_hub_ai_api")
 
     # Replace asyncio.run path to skip actual register_service calls
+    # Standard library imports
     import asyncio
 
     monkeypatch.setattr(asyncio, "run", lambda coro: None)  # type: ignore
 
     # Prevent infinite sleep loop by making time.sleep raise KeyboardInterrupt once
+    # Standard library imports
     import time as _time
 
     def _sleep_raises(_: float) -> None:
@@ -37,6 +41,7 @@ def test_run_hub_ai_api_main_flags(monkeypatch: Any) -> None:
     rc = mod.main(["--port", "3012", "--require-token", "--token", "ABC123"])
     assert rc == 0
     # Environment flags should be set accordingly
+    # Standard library imports
     import os
 
     assert os.environ.get("AETHERRA_AI_API_ENABLED") == "1"

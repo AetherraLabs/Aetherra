@@ -7,12 +7,15 @@ Also provides /api/stats returning a snapshot including telemetry_received.
 
 from __future__ import annotations
 
+# Standard library imports
 import threading
 from typing import Any, Dict
 
+# Third party imports
 from flask import Blueprint, jsonify, request
 
 try:  # optional import; if missing we just omit field
+    # Local imports
     from .plugins import _PARALLEL_SAMPLE_LAST  # type: ignore
 except Exception:  # pragma: no cover
     _PARALLEL_SAMPLE_LAST = None  # type: ignore

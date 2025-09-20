@@ -9,9 +9,11 @@ This provides a best-effort summary, even if no real memory engine exists.
 
 from __future__ import annotations
 
+# Standard library imports
 from typing import Any, Dict, List
 
 try:
+    # Standard library imports
     import sqlite3
 except Exception:
     sqlite3 = None  # type: ignore

@@ -11,11 +11,13 @@ This is a best-effort shim:
 
 from __future__ import annotations
 
+# Standard library imports
 import ast
 import threading
 from typing import Any
 
 try:
+    # Third party imports
     import psutil  # type: ignore
 except Exception:
     psutil = None  # type: ignore
@@ -93,6 +95,7 @@ def safe_eval(expr: str, variables: dict[str, Any] | None = None) -> Any:
     # Safe evaluation: use eval with restricted globals and provided variables
     safe_globals = {"__builtins__": SAFE_BUILTINS}
     safe_locals = variables or {}
+    # nosec B307: eval used in controlled sandbox with restricted globals/builtins
     return eval(compile(tree, "<sandbox>", "eval"), safe_globals, safe_locals)
 
 
@@ -107,7 +110,7 @@ def run_with_timeout(
     """
     result: dict[str, Any] = {"value": None, "error": None}
 
-    def _target():
+    def _target() -> Any:
         try:
             result["value"] = func(*(args or ()), **(kwargs or {}))
         except Exception as e:
@@ -183,11 +186,9 @@ class SecuritySandbox:
         return
 
     # Convenience wrapper to execute a callable under timeout & memory check
-    def run(self, func, *args, **kwargs):  # pragma: no cover - thin wrapper
+    def run(self, func, *args, **kwargs) -> Any:  # pragma: no cover - thin wrapper
         self.check_resource_limits()
-        return run_with_timeout(
-            func, args=args, kwargs=kwargs, timeout_sec=self._timeout
-        )
+        return run_with_timeout(func, args=args, kwargs=kwargs, timeout_sec=self._timeout)
 
 
 __all__ = [

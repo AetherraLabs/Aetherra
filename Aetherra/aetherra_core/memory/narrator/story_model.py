@@ -10,11 +10,13 @@ Transforms factual memory logs into story-like recollections.
 """
 
 
+# Standard library imports
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, List
 
+# Local imports
 from ..fractal_mesh.base import EpisodicChain, MemoryFragment
 
 

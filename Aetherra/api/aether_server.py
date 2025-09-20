@@ -10,14 +10,17 @@ FastAPI-based REST API for executing and managing .aether scripts.
 Provides endpoints for running scripts, monitoring job status, and system health.
 """
 
+# Standard library imports
 import time
 from datetime import datetime, timezone
 from typing import Optional
 
+# Third party imports
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+# Local imports
 from .job_controller import job_controller
 from .models import (
     CancelResponse,
@@ -271,6 +274,7 @@ async def shutdown_event():
 
 
 if __name__ == "__main__":
+    # Third party imports
     import uvicorn
 
     # Run the server

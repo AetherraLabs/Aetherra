@@ -28,6 +28,7 @@ License: GPL-3.0-or-later (inherits project license)
 
 from __future__ import annotations
 
+# Standard library imports
 import asyncio
 import json
 from dataclasses import asdict, dataclass
@@ -35,6 +36,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
+# Aetherra imports
 from Aetherra.aetherra_core.memory.memory_core import LyrixaMemorySystem
 from aetherra_service_registry import AetherraServiceRegistry, ServiceStatus
 
@@ -207,6 +209,7 @@ async def snapshot_and_replay_to_file(
 
 
 if __name__ == "__main__":  # pragma: no cover - manual diagnostic
+    # Standard library imports
     import argparse
     import tempfile
 

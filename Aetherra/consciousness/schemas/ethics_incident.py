@@ -6,9 +6,11 @@ Records an ethics evaluation result, including any veto actions or counter-propo
 
 from __future__ import annotations
 
+# Standard library imports
 from datetime import datetime
 from typing import Optional
 
+# Third party imports
 from pydantic import BaseModel, Field
 
 ETHICS_SCHEMA_VERSION = 1

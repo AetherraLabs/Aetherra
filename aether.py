@@ -37,6 +37,7 @@ The 'aether' command tests the first principles of AI OS:
 - Self-reflection and self-evaluation capabilities
 """
 
+# Standard library imports
 import argparse
 import asyncio
 import json
@@ -375,7 +376,9 @@ class AetherCognitiveInterface:
             print("[OK] Aetherra OS detected and running")
             await self._connect_to_services()
         else:
-            print("[WARN] Aetherra OS not detected - starting minimal cognitive interface")
+            print(
+                "[WARN] Aetherra OS not detected - starting minimal cognitive interface"
+            )
             await self._start_minimal_interface()
 
     async def _detect_running_os(self) -> bool:
@@ -400,6 +403,7 @@ class AetherCognitiveInterface:
 
             # Try to connect to service registry directly
             try:
+                # Aetherra imports
                 from aetherra_service_registry import get_service_registry
 
                 registry = await get_service_registry()
@@ -420,6 +424,7 @@ class AetherCognitiveInterface:
             print("[LINK] Connecting to Aetherra OS services...")
 
             # Connect to service registry
+            # Aetherra imports
             from aetherra_service_registry import get_service_registry
 
             self.service_registry = await get_service_registry()
@@ -456,6 +461,7 @@ class AetherCognitiveInterface:
 
         # Try to load memory systems directly
         try:
+            # Aetherra imports
             from Aetherra.aetherra_core.memory.aetherra_memory_engine import (
                 AetherraMemoryEngineAdvanced,
             )
@@ -467,6 +473,7 @@ class AetherCognitiveInterface:
 
         # Try to load consciousness systems directly
         try:
+            # Aetherra imports
             from Aetherra.consciousness.quantum.quantum_consciousness_engine import (
                 QuantumConsciousnessEngine,
             )
@@ -832,7 +839,9 @@ class AetherCognitiveInterface:
         else:
             print("[ERROR] Consciousness system not detected")
             print("[WARN] AI OS requires consciousness for adaptive behavior")
-            print("[INFO] True AI OS should maintain self-awareness and adaptive responses")
+            print(
+                "[INFO] True AI OS should maintain self-awareness and adaptive responses"
+            )
 
     async def _show_system_status(self):
         """[DESKTOP] Show overall system status."""
@@ -937,7 +946,9 @@ class AetherCognitiveInterface:
                                 plugin_instance, "plugin_type", "unknown"
                             )
                             version = getattr(plugin_instance, "version", "1.0.0")
-                            print(f"    [PLUGIN] {plugin_name} v{version} ({plugin_type})")
+                            print(
+                                f"    [PLUGIN] {plugin_name} v{version} ({plugin_type})"
+                            )
                     else:
                         print("  Plugin details not available through interface")
                 else:
@@ -959,7 +970,9 @@ class AetherCognitiveInterface:
                     metrics = self.consciousness_system.get_consciousness_metrics()
                     transcendence_prob = metrics.get("transcendence_probability", 0)
 
-                    print(f"[TARGET] TRANSCENDENCE PROBABILITY: {transcendence_prob:.1%}")
+                    print(
+                        f"[TARGET] TRANSCENDENCE PROBABILITY: {transcendence_prob:.1%}"
+                    )
                     print()
 
                     if transcendence_prob >= 0.95:
@@ -1398,7 +1411,9 @@ This tool tests whether Aetherra is functioning as a true AI-native OS.
                 await aether.execute_aether_command(f'goal: "{command_text}"')
     else:
         # Interactive mode
-        print("[BRAIN] AETHER - Aetherra Script Interpreter & AI OS Cognitive Interface")
+        print(
+            "[BRAIN] AETHER - Aetherra Script Interpreter & AI OS Cognitive Interface"
+        )
         print("=" * 70)
         print("Commands:")
         print("  script.aether            - Execute Aether Script file")

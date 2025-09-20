@@ -7,9 +7,11 @@ Intelligent plugin creation and code generation interface
 """
 
 
+# Standard library imports
 import sys
 
-from PySide6.QtCore import Qt, QTimer, pyqtSignal
+# Third party imports
+from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QFont  # noqa: F401 (optional runtime import)
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -36,8 +38,7 @@ from PySide6.QtWidgets import (
 
 class AIPluginGeneratorUI(QWidget):
     """AI Plugin Generator UI for intelligent plugin creation."""
-
-    plugin_generated = pyqtSignal(str)  # Signal when plugin is generated
+    plugin_generated = Signal(str)  # emitted when a plugin is generated
 
     def __init__(self):
         super().__init__()
@@ -929,9 +930,10 @@ class {}:
 
 
 if __name__ == "__main__":
+    # Third party imports
     from PySide6.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
     window = AIPluginGeneratorUI()
     window.show()
-    sys.exit(app.exec())
+    sys.exit(app.exec())  # nosec B102: Qt application execution

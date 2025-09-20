@@ -1,9 +1,11 @@
+# Standard library imports
 import importlib
 import json
 import os
 import sys
 from pathlib import Path
 
+# Third party imports
 import pytest
 
 MODULE = "Aetherra.security.api_keys"

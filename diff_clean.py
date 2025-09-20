@@ -1,3 +1,4 @@
+# Standard library imports
 import difflib
 import pathlib
 

@@ -7,6 +7,7 @@ Headless smoke test for Aetherra OS.
 Performs end-to-end probe: service start/stop, health checks, indices validation.
 """
 
+# Standard library imports
 import asyncio
 import os
 import sys
@@ -22,6 +23,7 @@ if ROOT not in sys.path:
 async def check_service_health() -> bool:
     """Check if core services can be imported and initialized."""
     try:
+        # Aetherra imports
         from aetherra_self_incorporation import (
             SelfIncorporationConfig,
             SelfIncorporationService,
@@ -89,6 +91,7 @@ def check_indices_present() -> bool:
 async def test_service_lifecycle() -> bool:
     """Test basic service start/stop lifecycle."""
     try:
+        # Aetherra imports
         from aetherra_self_incorporation import (
             SelfIncorporationConfig,
             SelfIncorporationService,

@@ -1,7 +1,10 @@
+# Standard library imports
 import asyncio
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.consciousness.workspace_core import get_workspace
 
 

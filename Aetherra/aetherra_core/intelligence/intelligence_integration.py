@@ -10,6 +10,7 @@ This module integrates all Aetherra AI OS Intelligence Stack components
 into Lyrixa, providing real-time awareness and system orchestration.
 """
 
+# Standard library imports
 import asyncio
 import logging
 import sys
@@ -23,6 +24,7 @@ sys.path.insert(0, str(project_root))
 
 # Import Aetherra runtime components
 try:
+    # Aetherra imports
     from Aetherra.runtime.aether_runtime import AetherRuntime
 except ImportError:
     print("⚠️ Aetherra runtime not available")
@@ -38,6 +40,7 @@ try:
         global LyrixaConversationManager, CONVERSATION_MANAGER_AVAILABLE
         if LyrixaConversationManager is None:
             try:
+                # Local imports
                 from .conversation_manager import LyrixaConversationManager
 
                 CONVERSATION_MANAGER_AVAILABLE = True
@@ -163,6 +166,7 @@ class LyrixaIntelligenceStack:
         # Initialize intelligence system first
         try:
             # Import directly from the intelligence module file
+            # Standard library imports
             import importlib.util
 
             intelligence_path = Path(__file__).parent / "intelligence.py"
@@ -180,6 +184,7 @@ class LyrixaIntelligenceStack:
 
         # Initialize plugin-intelligence bridge for plugin awareness
         try:
+            # Aetherra imports
             from Aetherra.lyrixa.core.plugin_intelligence_bridge import (
                 PluginIntelligenceBridge,
             )
@@ -198,6 +203,7 @@ class LyrixaIntelligenceStack:
         try:
             # Try to connect to enhanced plugin manager
             try:
+                # Aetherra imports
                 from Aetherra.lyrixa.plugins.enhanced_plugin_manager import (
                     PluginManager,
                 )
@@ -209,6 +215,7 @@ class LyrixaIntelligenceStack:
 
             # Try basic plugin manager as fallback
             try:
+                # Aetherra imports
                 from Aetherra.core.plugin_manager import (
                     PluginManager as BasicPluginManager,
                 )
@@ -235,6 +242,7 @@ class LyrixaIntelligenceStack:
         try:
             # Try to connect to enhanced plugin manager
             try:
+                # Aetherra imports
                 from Aetherra.lyrixa.plugins.enhanced_plugin_manager import (
                     PluginManager,
                 )
@@ -247,6 +255,7 @@ class LyrixaIntelligenceStack:
 
             # Try to connect to self-improvement dashboard
             try:
+                # Aetherra imports
                 from Aetherra.lyrixa.self_improvement_dashboard import (
                     selfimprovementdashboard,
                 )
@@ -259,6 +268,7 @@ class LyrixaIntelligenceStack:
 
             # Try to connect to AetherHub client
             try:
+                # Third party imports
                 import requests
 
                 # Test AetherHub connection
@@ -280,8 +290,10 @@ class LyrixaIntelligenceStack:
     def get_real_time_metrics(self) -> Dict[str, Any]:
         """Get comprehensive real-time system metrics for dashboard"""
         try:
+            # Standard library imports
             import time
 
+            # Third party imports
             import psutil
 
             # Update performance metrics
@@ -884,6 +896,7 @@ class LyrixaIntelligenceStack:
                         asyncio.get_running_loop()
                         # If we reach here, there's a running loop
                         # Use thread executor to run async code
+                        # Standard library imports
                         import concurrent.futures
 
                         def run_async():
@@ -931,6 +944,7 @@ class LyrixaIntelligenceStack:
                 asyncio.get_running_loop()
                 # If we reach here, there's a running loop
                 # Use thread executor to run async code
+                # Standard library imports
                 import concurrent.futures
 
                 def run_async():

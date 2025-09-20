@@ -3,6 +3,7 @@
 
 # Minimal gui_generator for Aetherra
 
+# Standard library imports
 from pathlib import Path
 
 

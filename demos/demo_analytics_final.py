@@ -8,12 +8,14 @@
 Comprehensive demonstration with immediate insight generation.
 """
 
+# Standard library imports
 import asyncio
 import random
 import sqlite3
 import time
 from datetime import datetime
 
+# Third party imports
 from demo_analytics_standalone import SimpleAnalyticsEngine, SimpleInsightPattern
 
 

@@ -5,11 +5,13 @@ Ensures deterministic structure produced by tools/lyrixa_diagnostics.py --json
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import subprocess
 import sys
 from pathlib import Path
 
+# Third party imports
 import pytest
 
 DIAG_SCRIPT = Path("tools/lyrixa_diagnostics.py")
@@ -20,9 +22,11 @@ def test_diagnostics_json_schema_contract(tmp_path):
     # Run with --json and skip advanced for speed
     cmd = [sys.executable, str(DIAG_SCRIPT), "--json", "--skip-advanced"]
     proc = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8")
-    assert proc.returncode in (0, 2, 1), (
-        f"unexpected exit: {proc.returncode}\n{proc.stdout}\n{proc.stderr}"
-    )
+    assert proc.returncode in (
+        0,
+        2,
+        1,
+    ), f"unexpected exit: {proc.returncode}\n{proc.stdout}\n{proc.stderr}"
     # Parse JSON
     try:
         data = json.loads(proc.stdout)
@@ -56,6 +60,6 @@ def test_diagnostics_json_schema_contract(tmp_path):
     expected_order = sorted(data["results"].keys())
     # summary_lines lines start with name; extract
     observed_order = [line.split()[0] for line in data["summary_lines"] if line]
-    assert observed_order == expected_order, (
-        f"summary order mismatch: {observed_order} != {expected_order}"
-    )
+    assert (
+        observed_order == expected_order
+    ), f"summary order mismatch: {observed_order} != {expected_order}"

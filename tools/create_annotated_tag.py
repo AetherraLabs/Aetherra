@@ -19,6 +19,7 @@ Safe to run repeatedly; refuses if tag already exists.
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import hashlib
 import json

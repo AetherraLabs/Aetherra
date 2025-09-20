@@ -25,6 +25,7 @@ the complete neural processing dashboard experience.
 """
 
 
+# Standard library imports
 import sys
 from pathlib import Path
 
@@ -34,6 +35,7 @@ sys.path.insert(0, str(GUI_DIR))
 
 try:
     # Compatibility wrapper: delegate to the new minimal OS monitor GUI
+    # Third party imports
     from aetherra_os_gui import main as main
 
     if __name__ == "__main__":

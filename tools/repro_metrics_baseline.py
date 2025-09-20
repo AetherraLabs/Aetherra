@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 # Debug helper: print fallback mock metric before and after a chat call
+# Standard library imports
 import re
 import time
 
+# Third party imports
 import requests
 
+# Aetherra imports
 from aetherra_hub.compat import start_hub_server
 
 

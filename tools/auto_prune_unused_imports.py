@@ -16,6 +16,7 @@ Limitations: Does not perform static reference analysis; trusts ruff output.
 
 from __future__ import annotations
 
+# Standard library imports
 import re
 from pathlib import Path
 

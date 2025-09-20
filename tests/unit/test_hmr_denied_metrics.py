@@ -1,7 +1,9 @@
+# Standard library imports
 import importlib
 import re
 import sys
 
+# Third party imports
 import pytest
 
 # We will simulate HMR enabled with production profile but missing strict/allowed envs
@@ -27,6 +29,7 @@ async def test_hmr_denied_metric_increments(monkeypatch):
     monkeypatch.setenv("AETHERRA_PROD_UNSAFE_ALLOW", "1")  # allow unsafe for test
 
     # Launch minimal path: import launcher and construct, then invoke _load_core_systems directly
+    # Aetherra imports
     from aetherra_os_launcher import AetherraOSLauncher
 
     launcher = AetherraOSLauncher()
@@ -39,6 +42,7 @@ async def test_hmr_denied_metric_increments(monkeypatch):
         pass
 
     # Now scrape metrics via hub metrics module builder directly (lighter than HTTP)
+    # Aetherra imports
     from aetherra_hub.services.metrics_accum import build_all_metrics_lines
 
     lines = build_all_metrics_lines()

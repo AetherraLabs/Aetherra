@@ -19,6 +19,7 @@ model: llama2
 assistant: suggest code optimizations
 """
 
+# Standard library imports
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -28,6 +29,7 @@ def _get_llm_manager():
     """Dynamically import the LLM manager to handle path setup"""
     project_root = Path(__file__).parent.parent
     sys.path.insert(0, str(project_root))
+    # Third party imports
     from core.multi_llm_manager import llm_manager
 
     return llm_manager
@@ -220,6 +222,7 @@ class AetherraCodeLLMIntegration:
 
     def _get_timestamp(self) -> str:
         """Get current timestamp"""
+        # Standard library imports
         from datetime import datetime
 
         return datetime.now().isoformat()

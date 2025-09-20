@@ -16,6 +16,7 @@ Notes:
 
 from __future__ import annotations
 
+# Standard library imports
 import asyncio
 import signal
 import sys
@@ -23,6 +24,7 @@ from typing import Any
 
 
 async def _start_fabric() -> None:
+    # Aetherra imports
     from aetherra_agent_fabric import get_agent_fabric
     from aetherra_service_registry import get_service_registry, register_service
 
@@ -81,6 +83,7 @@ def main() -> int:
                 await task
         return 0
 
+    # Standard library imports
     import contextlib
 
     try:

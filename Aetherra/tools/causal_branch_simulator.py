@@ -24,6 +24,7 @@ Performance: Sub-100ms branch simulation, efficient delta compression
 Production: Full test coverage with comprehensive quantum-inspired memory modeling
 """
 
+# Standard library imports
 import asyncio
 import json
 import math
@@ -39,6 +40,7 @@ from typing import Any, Dict, List, Optional
 
 # Import Phase 2 and Phase 3 components for integration
 try:
+    # Standard library imports
     import sys
     from pathlib import Path
 
@@ -47,8 +49,9 @@ try:
     if aetherra_memory_path.exists():
         sys.path.insert(0, str(aetherra_memory_path))
 
-    from fractal_encoder import CompressionResult
-    from observer_effect_simulator import MemoryAccess
+    # Third party imports
+    from fractal_encoder import CompressionResult  # type: ignore[import-not-found]
+    from observer_effect_simulator import MemoryAccess  # type: ignore[import-not-found]
 
     PHASE_INTEGRATION = True
     print("[OK] Phase 2/3 integration enabled")
@@ -149,9 +152,9 @@ class CausalBranchSimulator:
 
     def __init__(
         self,
-        data_dir: str = None,
-        fractal_encoder: "FractalEncoder" = None,
-        observer_simulator: "ObserverEffectSimulator" = None,
+        data_dir: Optional[str] = None,
+        fractal_encoder: Any = None,
+        observer_simulator: Any = None,
     ):
         """Initialize the causal branch simulator"""
         if data_dir is None:
@@ -277,7 +280,7 @@ class CausalBranchSimulator:
         source_memory_id: str,
         memory_content: Dict[str, Any],
         branch_scenario: str,
-        probability_weight: float = None,
+        probability_weight: Optional[float] = None,
     ) -> CausalBranch:
         """
         Create a new causal branch from a source memory with potential future evolution
@@ -294,7 +297,9 @@ class CausalBranchSimulator:
         start_time = time.time()
 
         # Generate branch content based on scenario
-        branch_content = await self._generate_branch_content(memory_content, branch_scenario)
+        branch_content = await self._generate_branch_content(
+            memory_content, branch_scenario
+        )
 
         # Calculate probability weight if not provided
         if probability_weight is None:
@@ -303,10 +308,14 @@ class CausalBranchSimulator:
             )
 
         # Calculate coherence score
-        coherence_score = await self._calculate_coherence_score(memory_content, branch_content)
+        coherence_score = await self._calculate_coherence_score(
+            memory_content, branch_content
+        )
 
         # Generate delta compression
-        delta_compression = await self._create_delta_compression(memory_content, branch_content)
+        delta_compression = await self._create_delta_compression(
+            memory_content, branch_content
+        )
 
         # Create the branch
         branch = CausalBranch(
@@ -432,7 +441,9 @@ class CausalBranchSimulator:
         (
             interference_type,
             interference_strength,
-        ) = await self._calculate_interference_properties(branch_a, branch_b, phase_difference)
+        ) = await self._calculate_interference_properties(
+            branch_a, branch_b, phase_difference
+        )
 
         # Create interference pattern
         pattern = InterferencePattern(
@@ -466,7 +477,7 @@ class CausalBranchSimulator:
         return pattern
 
     async def collapse_superposition(
-        self, superposition_id: str, collapse_trigger: str = None
+        self, superposition_id: str, collapse_trigger: Optional[str] = None
     ) -> str:
         """
         Collapse a superposition state to a single branch based on coherence
@@ -493,7 +504,9 @@ class CausalBranchSimulator:
                 branches.append(branch)
 
         # Calculate collapse probabilities
-        collapse_probs = await self._calculate_collapse_probabilities(superposition, branches)
+        collapse_probs = await self._calculate_collapse_probabilities(
+            superposition, branches
+        )
 
         # Select collapsed branch based on quantum-inspired probability
         collapsed_branch_id = await self._select_collapsed_branch(collapse_probs)
@@ -541,7 +554,9 @@ class CausalBranchSimulator:
 
         return branches
 
-    async def get_superposition_state(self, memory_id: str) -> Optional[SuperpositionState]:
+    async def get_superposition_state(
+        self, memory_id: str
+    ) -> Optional[SuperpositionState]:
         """Get the current superposition state for a memory"""
         with sqlite3.connect(self.superposition_db_path) as conn:
             cursor = conn.execute(
@@ -630,13 +645,17 @@ class CausalBranchSimulator:
         prob_adjustment = content_similarity * 0.3
 
         # Add scenario-specific adjustments
-        scenario_weight = len(scenario) / 100.0  # Longer scenarios have lower probability
+        scenario_weight = (
+            len(scenario) / 100.0
+        )  # Longer scenarios have lower probability
         scenario_adjustment = max(0.1, 1.0 - scenario_weight)
 
         # Add quantum noise
         noise = random.uniform(-self.quantum_noise_factor, self.quantum_noise_factor)
 
-        final_prob = max(0.01, min(0.99, base_prob + prob_adjustment * scenario_adjustment + noise))
+        final_prob = max(
+            0.01, min(0.99, base_prob + prob_adjustment * scenario_adjustment + noise)
+        )
         return final_prob
 
     async def _calculate_coherence_score(
@@ -700,7 +719,9 @@ class CausalBranchSimulator:
         # Value similarity for common keys
         value_similarity = 0.0
         if common_keys:
-            matching_values = sum(1 for key in common_keys if content_a[key] == content_b[key])
+            matching_values = sum(
+                1 for key in common_keys if content_a[key] == content_b[key]
+            )
             value_similarity = matching_values / len(common_keys)
 
         return (key_similarity + value_similarity) / 2.0
@@ -737,7 +758,9 @@ class CausalBranchSimulator:
             return 0.0
 
         # Average branch coherence
-        avg_branch_coherence = sum(branch.coherence_score for branch in branches) / len(branches)
+        avg_branch_coherence = sum(branch.coherence_score for branch in branches) / len(
+            branches
+        )
 
         # Interference coherence
         n = len(branches)
@@ -898,7 +921,9 @@ class CausalBranchSimulator:
     async def _get_branch(self, branch_id: str) -> Optional[CausalBranch]:
         """Retrieve causal branch from database"""
         with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.execute("SELECT * FROM causal_branches WHERE branch_id = ?", (branch_id,))
+            cursor = conn.execute(
+                "SELECT * FROM causal_branches WHERE branch_id = ?", (branch_id,)
+            )
             row = cursor.fetchone()
 
         if not row:
@@ -939,7 +964,9 @@ class CausalBranchSimulator:
                 ),
             )
 
-    async def _get_superposition(self, superposition_id: str) -> Optional[SuperpositionState]:
+    async def _get_superposition(
+        self, superposition_id: str
+    ) -> Optional[SuperpositionState]:
         """Retrieve superposition state from database"""
         with sqlite3.connect(self.superposition_db_path) as conn:
             cursor = conn.execute(
@@ -1026,11 +1053,17 @@ async def demo_causal_branching():
     )
 
     # Simulate interference
-    interference1 = await simulator.simulate_interference(branch1.branch_id, branch2.branch_id)
-    interference2 = await simulator.simulate_interference(branch1.branch_id, branch3.branch_id)
+    interference1 = await simulator.simulate_interference(
+        branch1.branch_id, branch2.branch_id
+    )
+    interference2 = await simulator.simulate_interference(
+        branch1.branch_id, branch3.branch_id
+    )
 
     # Collapse superposition
-    collapsed_branch = await simulator.collapse_superposition(superposition.superposition_id)
+    collapsed_branch = await simulator.collapse_superposition(
+        superposition.superposition_id
+    )
 
     # Get statistics
     stats = await simulator.get_causal_statistics()

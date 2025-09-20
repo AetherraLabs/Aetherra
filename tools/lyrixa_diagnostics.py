@@ -23,6 +23,7 @@ Exit codes:
 
 from __future__ import annotations
 
+# Standard library imports
 import asyncio
 import os
 import socket
@@ -106,6 +107,7 @@ async def run_checks(
     # 2. Service registry
     async def registry_check():
         try:
+            # Aetherra imports
             from aetherra_service_registry import get_service_registry  # type: ignore
 
             reg = await get_service_registry()
@@ -121,9 +123,10 @@ async def run_checks(
     # 3. Persistent memory
     async def memory_check():
         try:
-            from aetherra_persistent_memory import (
+            # Aetherra imports
+            from aetherra_persistent_memory import (  # type: ignore
                 get_persistent_memory_system,
-            )  # type: ignore
+            )
 
             mem = await get_persistent_memory_system()
             if not mem:
@@ -142,6 +145,7 @@ async def run_checks(
         placeholder = os.getenv("OPENAI_API_KEY", "")
         if not placeholder or placeholder.startswith("__"):
             return False, "assistant init disabled(no-api)"
+        # Aetherra imports
         from Aetherra.lyrixa.lyrixa_basic import LyrixaBasicAssistant  # type: ignore
 
         assistant = LyrixaBasicAssistant()
@@ -169,9 +173,10 @@ async def run_checks(
             placeholder = os.getenv("OPENAI_API_KEY", "")
             if not placeholder or placeholder.startswith("__"):
                 return False, "assistant init disabled(no-api)"
-            from Aetherra.lyrixa.lyrixa_basic import (
+            # Aetherra imports
+            from Aetherra.lyrixa.lyrixa_basic import (  # type: ignore
                 LyrixaBasicAssistant,
-            )  # type: ignore
+            )
 
             assistant = LyrixaBasicAssistant()
             ok = await assistant.initialize()
@@ -198,6 +203,7 @@ async def run_checks(
 
         async def advanced_chat_check():
             try:
+                # Aetherra imports
                 from Aetherra.lyrixa.chat.lyrixa_chat_service import (  # type: ignore
                     ChatOptions,
                     LyrixaChatService,
@@ -216,9 +222,10 @@ async def run_checks(
     # 7. Intelligence capability reinforcement check
     async def intelligence_capabilities_check():
         try:
-            from Aetherra.lyrixa.intelligence.lyrixa_full_intelligence import (
+            # Aetherra imports
+            from Aetherra.lyrixa.intelligence.lyrixa_full_intelligence import (  # type: ignore
                 LyrixaIntelligenceCore,
-            )  # type: ignore
+            )
 
             core = LyrixaIntelligenceCore()
             # Force run provider init cheaply (may no-op if keys absent)
@@ -311,6 +318,7 @@ def _ordered(obj):
 
 
 async def main():
+    # Standard library imports
     import argparse
 
     parser = argparse.ArgumentParser(description="Lyrixa diagnostics")
@@ -323,6 +331,7 @@ async def main():
 
     # In JSON mode, suppress any third-party initialization prints by capturing stdout early
     if args.json:
+        # Standard library imports
         import logging
         from io import StringIO
 
@@ -369,6 +378,7 @@ async def main():
             "results": results_struct,
             "summary_lines": summary_lines,
         }
+        # Standard library imports
         import json as _json
 
         # Ensure nothing else polluted stdout (warnings may have been printed earlier)

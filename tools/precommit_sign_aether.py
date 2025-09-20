@@ -11,6 +11,7 @@ It is safe and idempotent. If no .aether files are in the staged set, exits 0.
 
 from __future__ import annotations
 
+# Standard library imports
 import subprocess
 import sys
 from pathlib import Path

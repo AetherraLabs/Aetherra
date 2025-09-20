@@ -1,5 +1,7 @@
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.aetherra_core.memory.qfac_integration import QFACMemorySystem
 
 
@@ -67,6 +69,7 @@ def test_qfac_policy_metrics_export(monkeypatch):
     QFACMemorySystem("_test_qfac_metrics")
 
     # Now build metrics lines
+    # Aetherra imports
     from aetherra_hub.services.metrics_accum import build_all_metrics_lines
 
     lines = build_all_metrics_lines()

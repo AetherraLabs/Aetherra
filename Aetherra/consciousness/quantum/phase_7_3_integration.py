@@ -21,12 +21,14 @@ Version: 7.3.0 Integration
 Date: August 5, 2025
 """
 
+# Standard library imports
 import asyncio
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
+# Third party imports
 # Import quantum memory and temporal consciousness systems
 from quantum_memory_system import MemoryType, initialize_quantum_memory_system
 from temporal_consciousness_system import initialize_temporal_consciousness_engine

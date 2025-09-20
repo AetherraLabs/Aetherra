@@ -29,6 +29,7 @@ Features:
 - Real-time plugin state monitoring
 """
 
+# Standard library imports
 import json
 import logging
 from dataclasses import dataclass
@@ -38,10 +39,12 @@ from typing import Any, Dict, List, Optional
 
 try:
     # Prefer central sandbox for safe expression evaluation
+    # Aetherra imports
     from Aetherra.security.sandbox import safe_eval as sandbox_safe_eval
 except Exception:  # pragma: no cover - fallback stub if import path differs in some envs
     sandbox_safe_eval = None  # type: ignore
 
+# Third party imports
 from PySide6.QtCore import (
     QObject,  # noqa: F401 (optional runtime import)
     QTimer,
@@ -233,6 +236,7 @@ class PluginConditionEvaluator:
         try:
             if sandbox_safe_eval is None:
                 # Fallback: extremely restrictive eval with no builtins
+                # nosec B307: eval used with no builtins for UI expression evaluation
                 return bool(eval(rewritten, {"__builtins__": {}}, vars_map))
             value = sandbox_safe_eval(rewritten, variables=vars_map)
             return bool(value)
@@ -449,6 +453,7 @@ class PluginUIManager(QObject):
         try:
             # Update system state in condition evaluator using memory adapter
             try:
+                # Aetherra imports
                 from Aetherra.lyrixa.integrations.memory_adapter import (
                     create_system_object_for_plugins,
                 )

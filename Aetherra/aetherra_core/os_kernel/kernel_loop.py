@@ -6,6 +6,7 @@
 This preserves public APIs while we incrementally migrate implementation files.
 """
 
+# Aetherra imports
 from aetherra_kernel_loop import AetherraKernelLoop  # type: ignore
 from aetherra_kernel_loop import get_kernel, kernel_loop, shutdown_kernel, start_kernel
 

@@ -7,6 +7,7 @@
 Built-in plugin for AetherraCode to monitor system statistics
 """
 
+# Standard library imports
 import platform
 import subprocess
 from datetime import datetime
@@ -46,6 +47,7 @@ class SystemMonitorPlugin:
         """Check available disk space"""
         try:
             # Use shutil.disk_usage (available in Python 3.3+, cross-platform)
+            # Standard library imports
             import shutil
 
             total, used, free = shutil.disk_usage(path)
@@ -57,6 +59,7 @@ class SystemMonitorPlugin:
             }
         except ImportError:
             # shutil.disk_usage not available, use platform-specific method
+            # Standard library imports
             import platform
 
             if platform.system() == "Windows":

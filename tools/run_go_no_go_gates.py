@@ -27,6 +27,7 @@ Exit code: 0 if all mandatory gates pass, 1 otherwise. Manual follow-ups do not 
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import asyncio
 import json
@@ -63,6 +64,7 @@ async def gate1_launcher_smoke() -> Tuple[bool, Dict[str, Any]]:
     """Launcher smoke: phased boot + registry core services.
     Reuses tools/os_smoke.py logic programmatically for richer detail.
     """
+    # Aetherra imports
     from aetherra_os_launcher import AetherraOSLauncher
     from aetherra_service_registry import get_service_registry
 
@@ -113,11 +115,14 @@ async def _start_hub_for_stream(port: int = 3012):
     os.environ.setdefault("AETHERRA_AI_API_ENABLED", "1")
     os.environ.setdefault("AETHERRA_AI_API_STREAM", "1")
     os.environ.setdefault("AETHERRA_AI_API_REQUIRE_TOKEN", "0")
+    # Aetherra imports
     from aetherra_hub.compat import start_hub_server
 
     start_hub_server(port)
+    # Standard library imports
     import time as _t
 
+    # Third party imports
     import requests
 
     base = f"http://localhost:{port}"
@@ -131,6 +136,7 @@ async def _start_hub_for_stream(port: int = 3012):
 
 
 async def gate2_chat_sse_resume() -> Tuple[bool, Dict[str, Any]]:
+    # Third party imports
     import requests
 
     port = 3012
@@ -190,6 +196,7 @@ async def gate2_chat_sse_resume() -> Tuple[bool, Dict[str, Any]]:
 
 async def gate3_security_strict() -> Tuple[bool, Dict[str, Any]]:
     # Run verify_aether_scripts in-process (simpler) then attempt plugin strict tests if present (skip heavy pytest)
+    # Standard library imports
     import subprocess
 
     env = os.environ.copy()
@@ -211,6 +218,7 @@ async def gate3_security_strict() -> Tuple[bool, Dict[str, Any]]:
     # Network strict dry-run (set strict env and attempt disallowed outbound)
     env["AETHERRA_NET_STRICT"] = "1"
     try:
+        # Third party imports
         import requests
 
         try:
@@ -226,6 +234,7 @@ async def gate3_security_strict() -> Tuple[bool, Dict[str, Any]]:
 
 async def gate4_memory_qfac() -> Tuple[bool, Dict[str, Any]]:
     os.environ.setdefault("AETHERRA_QFAC_MODE", "hybrid")
+    # Aetherra imports
     from Aetherra.aetherra_core.memory.qfac_integration import QFACMemorySystem
 
     sysm = QFACMemorySystem("_gate_qfac")
@@ -244,6 +253,7 @@ async def gate4_memory_qfac() -> Tuple[bool, Dict[str, Any]]:
 async def gate5_hmr_quiesce() -> Tuple[bool, Dict[str, Any]]:
     # Best-effort: locate controller if registered else skip with manual flag
     try:
+        # Aetherra imports
         from aetherra_service_registry import get_service_registry
 
         reg = await get_service_registry()
@@ -261,10 +271,13 @@ async def gate5_hmr_quiesce() -> Tuple[bool, Dict[str, Any]]:
 
 
 async def gate6_agents_api() -> Tuple[bool, Dict[str, Any]]:
+    # Standard library imports
     import socket
 
+    # Third party imports
     import requests
 
+    # Aetherra imports
     from aetherra_hub.compat import AetherraHubServer
 
     # pick a free port
@@ -285,6 +298,7 @@ async def gate6_agents_api() -> Tuple[bool, Dict[str, Any]]:
 
     # Need a mock engine registration for 200 path
     async def _register():
+        # Aetherra imports
         from aetherra_service_registry import get_service_registry
 
         reg = await get_service_registry()
@@ -307,6 +321,7 @@ async def gate6_agents_api() -> Tuple[bool, Dict[str, Any]]:
 
 
 async def gate7_quality_gates() -> Tuple[bool, Dict[str, Any]]:
+    # Standard library imports
     import subprocess
 
     # Fast subset: run capabilities tests only (mirrors CI quick path)
@@ -324,6 +339,7 @@ async def gate7_quality_gates() -> Tuple[bool, Dict[str, Any]]:
 
 
 async def gate8_policy_privacy() -> Tuple[bool, Dict[str, Any]]:
+    # Third party imports
     import requests
 
     port = 3013

@@ -9,11 +9,13 @@ Specialized agent for user support, ticket management, and assistance coordinati
 within the Aetherra AI OS ecosystem.
 """
 
+# Standard library imports
 import asyncio
 import logging
 import time
 from typing import Any, Dict
 
+# Local imports
 from .agent_base import AgentBase
 
 logger = logging.getLogger(__name__)

@@ -23,6 +23,7 @@ Notes:
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import contextlib
 import importlib
@@ -208,6 +209,7 @@ def _find_free_port() -> int:
 
 def check_hub_minimal_api_probe(port: int | None = None, timeout: float = 1.5) -> Dict:
     try:
+        # Aetherra imports
         from aetherra_hub.compat import AetherraHubServer  # updated to compat layer
     except Exception as e:
         return {
@@ -277,6 +279,7 @@ def check_capability_policies_and_deny_defaults() -> Dict:
     - Unknown capability defaults to deny
     - read_only respects AAR_* env
     """
+    # Standard library imports
     import asyncio as _a
     from types import SimpleNamespace
 
@@ -305,6 +308,7 @@ def check_capability_policies_and_deny_defaults() -> Dict:
                     os.environ.pop(k, None)
                 else:
                     os.environ[k] = v
+            # Aetherra imports
             from aetherra_agent_fabric import AgentFabric
 
             reg = _StubReg()
@@ -394,6 +398,7 @@ def check_hmr_env_behavior() -> Dict:
                 return {"running": True}
 
         # Registry not used by ctor
+        # Aetherra imports
         from aetherra_hmr_controller import HMRController
 
         ctrl = HMRController(registry=object(), kernel=_K(), strict=False)

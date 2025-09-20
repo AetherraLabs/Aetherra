@@ -11,6 +11,7 @@ to the main Aetherra system, providing backward compatibility while
 adding the new control structures and language features.
 """
 
+# Standard library imports
 import sys
 from pathlib import Path
 from typing import Any, Dict
@@ -19,10 +20,12 @@ from typing import Any, Dict
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 try:
+    # Local imports
     from .aetherra_grammar import AetherraParser
     from .aetherra_interpreter import AetherraInterpreter
     from .interpreter.enhanced_interpreter import AetherraEnhancedInterpreter
 except ImportError:
+    # Third party imports
     from aetherra_grammar import AetherraParser
     from aetherra_interpreter import AetherraInterpreter
     from interpreter.enhanced_interpreter import AetherraEnhancedInterpreter

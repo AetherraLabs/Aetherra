@@ -16,9 +16,11 @@ Usage:
     - test: Only test, don't apply fixes
 """
 
+# Standard library imports
 import os
 import sys
 from pathlib import Path
+
 
 def setup_unicode_environment():
     """Set up Unicode environment variables"""
@@ -26,30 +28,34 @@ def setup_unicode_environment():
     os.environ["PYTHONUTF8"] = "1"
     print("✅ Unicode environment configured")
 
+
 def main():
     scope = sys.argv[1] if len(sys.argv) > 1 else "critical"
-    
+
     print("🔧 Aetherra Workflow Quick Fix")
     print("=" * 40)
     print(f"Scope: {scope}")
     print()
-    
+
     # Set up environment
     setup_unicode_environment()
-    
+
     # Add tools directory to path
     tools_dir = Path(__file__).parent / "tools"
     if str(tools_dir) not in sys.path:
         sys.path.insert(0, str(tools_dir))
-    
+
     try:
         # Import and run the comprehensive fix
+        # Third party imports
         from auto_fix_workflow_failures import WorkflowFixer
-        
+
         if scope == "test":
             print("🧪 Testing current state...")
             # Just run the test
+            # Standard library imports
             import subprocess
+
             result = subprocess.run([sys.executable, "test_unicode_workflow_fix.py"])
             sys.exit(result.returncode)
         elif scope == "critical":
@@ -57,10 +63,10 @@ def main():
             fixer = WorkflowFixer()
             critical_files = [
                 "aether.py",
-                "aetherra_os.py", 
+                "aetherra_os.py",
                 "Aetherra/cli/main.py",
                 "Aetherra/runtime/aether_executor.py",
-                "Aetherra/aetherra_core/orchestration/scheduler.py"
+                "Aetherra/aetherra_core/orchestration/scheduler.py",
             ]
             for file_path in critical_files:
                 full_path = Path(file_path)
@@ -74,14 +80,16 @@ def main():
             print(f"❌ Unknown scope: {scope}")
             print("Available scopes: critical, all, test")
             sys.exit(1)
-            
+
         print("\n✅ Fixes applied successfully!")
-        
+
         # Test the fixes
         print("\n🧪 Testing fixes...")
+        # Standard library imports
         import subprocess
+
         result = subprocess.run([sys.executable, "test_unicode_workflow_fix.py"])
-        
+
         if result.returncode == 0:
             print("\n🎉 All workflow failures should now be fixed!")
             print("\n📋 What was fixed:")
@@ -91,7 +99,7 @@ def main():
             print("  • UnicodeEncodeError on Windows systems resolved")
         else:
             print("\n⚠️ Some issues may remain - check the test output above")
-            
+
     except ImportError as e:
         print(f"❌ Could not import WorkflowFixer: {e}")
         print("   Make sure you're running from the project root directory")
@@ -99,6 +107,7 @@ def main():
     except Exception as e:
         print(f"❌ Error during fix process: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

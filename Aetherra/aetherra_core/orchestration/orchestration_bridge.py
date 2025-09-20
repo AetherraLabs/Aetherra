@@ -10,6 +10,7 @@ Lyrixa's multi-agent system for complex task orchestration.
 Manages specialized AI agents that work together to solve problems.
 """
 
+# Standard library imports
 import asyncio
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -540,6 +541,7 @@ class CoderAgent(LyrixaAgent):
 
         # Initialize Natural Language Aether Generator
         if memory_system:
+            # Local imports
             from .natural_language_aether_generator import (
                 NaturalLanguageAetherGenerator,
             )
@@ -668,6 +670,7 @@ class CoderAgent(LyrixaAgent):
         context = input_data.get("context", {})
 
         # Find parameter placeholders
+        # Standard library imports
         import re
 
         placeholder_pattern = r"<([^>]+)>"

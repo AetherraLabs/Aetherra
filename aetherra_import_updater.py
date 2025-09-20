@@ -7,6 +7,7 @@ Aetherra Import Updater
 Updates import statements after file reorganization in aetherra_core
 """
 
+# Standard library imports
 import os
 import re
 from pathlib import Path

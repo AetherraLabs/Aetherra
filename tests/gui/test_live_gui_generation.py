@@ -26,6 +26,7 @@ and reconfigures itself intelligently based on context, usage patterns, and syst
 This is not just responsive design - it's intelligent interface evolution.
 """
 
+# Standard library imports
 import time
 import unittest
 from dataclasses import dataclass, field
@@ -1083,6 +1084,7 @@ def run_comprehensive_test():
 
 
 if __name__ == "__main__":
+    # Standard library imports
     import sys
 
     success = run_comprehensive_test()

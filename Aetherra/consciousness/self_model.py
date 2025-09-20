@@ -11,12 +11,14 @@ Default path: ./self_model.json (repo root)
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+# Local imports
 from .episodic_store import get_episodic_store
 
 DEFAULT_SELF_MODEL_PATH = Path(os.getenv("AETHERRA_SELF_MODEL_PATH", "self_model.json"))

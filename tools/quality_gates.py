@@ -34,6 +34,7 @@ Env/config:
     REQUIRE_LICENSE_POLICY    : 1 require LICENSE_POLICY.md presence (default 1)
 """
 
+# Standard library imports
 import json
 import os
 import re
@@ -43,22 +44,26 @@ from datetime import datetime
 from pathlib import Path
 
 
-def run(cmd: list[str]) -> tuple[int, str]:
+def run(cmd: list[str], timeout: float | None = None) -> tuple[int, str]:
     """Run a command and return (exit_code, stdout+stderr) decoded as UTF-8.
 
-    Using explicit UTF-8 decoding avoids Windows cp1252 decode errors when
-    the child process emits Unicode (e.g., emojis, checkmarks).
+    Uses subprocess.run for improved timeout control and simpler IO.
     """
-    p = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-    )
-    out, _ = p.communicate()
-    return p.returncode, out
+    try:
+        res = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout,
+        )
+        return res.returncode, res.stdout
+    except subprocess.TimeoutExpired as e:
+        out = e.output or ""
+        out += f"\n[TIMEOUT] Command exceeded {timeout}s: {' '.join(cmd)}"
+        return 124, out
 
 
 def run_optional_tool(label: str, args: list[str], fail_fatal: bool = True) -> bool:
@@ -257,7 +262,7 @@ def main() -> int:
         "--cov-report",
         "term",
     ] + targets
-    code, out = run(cmd)
+    code, out = run(cmd, timeout=float(os.getenv("TEST_TIMEOUT", "0")) or None)
     print(out)
     if code != 0:
         print("[GATES] Tests failed; gate failed.")
@@ -310,8 +315,9 @@ def main() -> int:
         if not coverage_json_path.exists():
             try:
                 code_cov_json, out_cov_json = run(
-                    [sys.executable, "-m", "coverage", "json", "-o", "coverage.json"]
-                )  # type: ignore[list-item]
+                    [sys.executable, "-m", "coverage", "json", "-o", "coverage.json"],
+                    timeout=120,
+                )
                 if code_cov_json != 0:
                     print(
                         "[GATES] Warning: coverage json generation failed; skipping per-file deltas"
@@ -357,7 +363,16 @@ def main() -> int:
                 )
             if not changed_files:
                 try:
-                    code_diff, out_diff = run(["git", "diff", "--name-only", "HEAD~1"])
+                    code_diff, out_diff = run(
+                        [
+                            "git",
+                            "--no-pager",
+                            "diff",
+                            "--name-only",
+                            "HEAD~1",
+                        ],
+                        timeout=15,
+                    )
                     if code_diff == 0:
                         for line in out_diff.splitlines():
                             if line.endswith(".py"):
@@ -442,7 +457,7 @@ def main() -> int:
         scan_script = Path("tools/repo_security_scan.py")
         if scan_script.exists():
             print("[GATES] Running repo_security_scan (heuristic risk scan)...")
-            code_repo, out_repo = run([sys.executable, str(scan_script)])
+            code_repo, out_repo = run([sys.executable, str(scan_script)], timeout=120)
             print(out_repo)
             if code_repo != 0 and os.getenv("REPO_SECURITY_STRICT", "1") == "1":
                 print("[GATES] repo_security_scan reported high severity findings.")
@@ -452,7 +467,7 @@ def main() -> int:
     if os.getenv("DISCORD_EXCLUSION_CHECK", "1") == "1":
         discord_guard = Path("tools/ci_verify_no_discord_bot.py")
         if discord_guard.exists():
-            code_disc, out_disc = run([sys.executable, str(discord_guard)])
+            code_disc, out_disc = run([sys.executable, str(discord_guard)], timeout=60)
             print(out_disc)
             if code_disc != 0:
                 print("[GATES] Discord exclusion guard failed.")
@@ -461,7 +476,9 @@ def main() -> int:
             # Fallback to legacy guard if present
             legacy_guard = Path("tools/guard_discord_exclusion.py")
             if legacy_guard.exists():
-                code_disc, out_disc = run([sys.executable, str(legacy_guard)])
+                code_disc, out_disc = run(
+                    [sys.executable, str(legacy_guard)], timeout=60
+                )
                 print(out_disc)
                 if code_disc != 0:
                     print("[GATES] Legacy discord exclusion guard failed.")
@@ -471,7 +488,7 @@ def main() -> int:
     if os.getenv("WEBSITE_ARTIFACT_CHECK", "1") == "1":
         site_guard = Path("tools/ci_verify_no_website_artifacts.py")
         if site_guard.exists():
-            code_site, out_site = run([sys.executable, str(site_guard)])
+            code_site, out_site = run([sys.executable, str(site_guard)], timeout=60)
             print(out_site)
             if code_site != 0:
                 print("[GATES] Website artifact guard failed.")
@@ -492,7 +509,8 @@ def main() -> int:
                     "security_scan_report.json",
                     "--md",
                     "security_scan_report.md",
-                ]
+                ],
+                timeout=300,
             )
             print(out_scan)
             if code_scan != 0:
@@ -509,6 +527,7 @@ def main() -> int:
             code_frag, out_frag = run([sys.executable, str(frag_tool)])
             print(out_frag)
             # Attempt to parse dict literal (safe eval using json after replacement)
+            # Standard library imports
             import json as _json
             import re as _re
 
@@ -600,6 +619,7 @@ def main() -> int:
                     try:
                         report_json = Path(json_out)
                         if report_json.exists():
+                            # Standard library imports
                             import json as _json
 
                             data = _json.loads(report_json.read_text(encoding="utf-8"))
@@ -847,6 +867,7 @@ def main() -> int:
     print("[GATES] All quality gates passed.")
     # Optional Prometheus metrics validation (after other gates succeed)
     if os.getenv("CONSCIOUSNESS_METRICS_CHECK", "0") == "1":
+        # Standard library imports
         import time
         import urllib.request
 

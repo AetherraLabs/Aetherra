@@ -35,6 +35,7 @@ Architecture:
 - Dynamic expansion through user-installed plugins
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -46,6 +47,7 @@ from typing import Optional
 
 # Persistent memory access
 try:
+    # Aetherra imports
     from aetherra_persistent_memory import get_persistent_memory_system
 except Exception:
     get_persistent_memory_system = None
@@ -86,7 +88,7 @@ class LyrixaBasicAssistant:
     Everything else comes through plugins installed from the Hub.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.aetherra_os_connected = False
         self.service_registry = None
         self.hub_connector = None
@@ -220,6 +222,7 @@ class LyrixaBasicAssistant:
 
             # Check if Aetherra Hub is running (indicates OS is active)
             # The Hub runs on internal marketplace server; any healthy response is acceptable
+            # Standard library imports
             import urllib.error
             import urllib.request
 
@@ -228,6 +231,7 @@ class LyrixaBasicAssistant:
             # Fast path: if minimum required services is 0, treat as logically connected
             if min_services == 0 and not skip_wait:
                 try:
+                    # Aetherra imports
                     from aetherra_service_registry import get_service_registry
 
                     self.service_registry = await get_service_registry()
@@ -262,6 +266,7 @@ class LyrixaBasicAssistant:
                         )
                         # Attempt registry enrichment but don't fail if it errors
                         try:
+                            # Aetherra imports
                             from aetherra_service_registry import get_service_registry
 
                             self.service_registry = await get_service_registry()
@@ -282,6 +287,7 @@ class LyrixaBasicAssistant:
 
                 # Fallback in same loop: Try direct service registry connection
                 try:
+                    # Aetherra imports
                     from aetherra_service_registry import get_service_registry
 
                     self.service_registry = await get_service_registry()
@@ -349,6 +355,7 @@ class LyrixaBasicAssistant:
             # Final diagnostic: try one last registry snapshot for operator insight
             diag_services = {}
             try:
+                # Aetherra imports
                 from aetherra_service_registry import get_service_registry
 
                 reg = await get_service_registry()
@@ -380,16 +387,17 @@ class LyrixaBasicAssistant:
         try:
             # First attempt: use advanced LyrixaChatService for richer awareness
             try:
+                # Aetherra imports
                 from Aetherra.lyrixa.chat.lyrixa_chat_service import (
                     ChatOptions,
                     LyrixaChatService,
                 )
 
                 class _AdvancedChatWrapper:
-                    def __init__(self):
+                    def __init__(self) -> None:
                         self._svc: Optional[LyrixaChatService] = None  # type: ignore[name-defined]
 
-                    async def initialize(self):
+                    async def initialize(self) -> None:
                         self._svc = LyrixaChatService(workspace_root=Path(os.getcwd()))  # type: ignore[name-defined]
                         await self._svc.initialize()
                         return True
@@ -412,7 +420,7 @@ class LyrixaBasicAssistant:
 
             # Create a simple chat system with model fallback
             class BasicChatSystem:
-                def __init__(self):
+                def __init__(self) -> None:
                     self.current_model = None
                     self.available_models = []
                     self._pmemory = None
@@ -522,6 +530,7 @@ class LyrixaBasicAssistant:
                     if name == "OpenAI GPT" and os.getenv("OPENAI_API_KEY"):
                         try:
                             # Lazy import to avoid hard dependency when key isn't set
+                            # Third party imports
                             import openai  # type: ignore
 
                             api_key = os.getenv("OPENAI_API_KEY")
@@ -568,6 +577,7 @@ class LyrixaBasicAssistant:
                 async def _try_ollama(self, message: str) -> Optional[str]:
                     """Try to use local Ollama as fallback by calling its HTTP API."""
                     try:
+                        # Standard library imports
                         import json as _json
                         import urllib.request as _ureq
 
@@ -623,7 +633,7 @@ class LyrixaBasicAssistant:
         try:
             # Create a basic hub connector
             class BasicHubConnector:
-                def __init__(self):
+                def __init__(self) -> None:
                     self.connected = False
                     self.available_plugins = []
 
@@ -631,6 +641,7 @@ class LyrixaBasicAssistant:
                     """Connect to Aetherra Hub."""
                     try:
                         # Try to connect to local hub server
+                        # Third party imports
                         import aiohttp
 
                         async with aiohttp.ClientSession() as session:
@@ -710,6 +721,7 @@ class LyrixaBasicAssistant:
                             )
                             # Attempt dynamic discovery
                             try:
+                                # Aetherra imports
                                 from aetherra_plugin_discovery import (
                                     AetherraPluginDiscovery,
                                 )
@@ -754,6 +766,7 @@ class LyrixaBasicAssistant:
                             )
                             return False
 
+                        # Standard library imports
                         import shutil
 
                         if source_path.is_file():
@@ -819,17 +832,18 @@ class LyrixaBasicAssistant:
         """Optionally wire local workspace awareness and safe edits via Lyrixa Chat Service."""
         try:
             # Lazy import to avoid hard dependency
+            # Aetherra imports
             from Aetherra.lyrixa.chat.lyrixa_chat_service import (
                 ChatOptions,
                 LyrixaChatService,
             )
 
             class BasicWorkspaceTools:
-                def __init__(self, root: Path):
+                def __init__(self, root: Path) -> None:
                     self.root = Path(root)
                     self._svc: Optional[LyrixaChatService] = None  # type: ignore[name-defined]
 
-                async def initialize(self):
+                async def initialize(self) -> None:
                     self._svc = LyrixaChatService(workspace_root=self.root)  # type: ignore[name-defined]
                     await self._svc.initialize()
                     return True
@@ -892,6 +906,7 @@ class LyrixaBasicAssistant:
     def start_gui(self) -> bool:
         """Start the Basic Lyrixa GUI."""
         try:
+            # Third party imports
             from PySide6.QtWidgets import QApplication
 
             # Add the current directory to path for imports
@@ -899,6 +914,7 @@ class LyrixaBasicAssistant:
             if str(current_dir) not in sys.path:
                 sys.path.insert(0, str(current_dir))
 
+            # Third party imports
             from lyrixa_basic_gui import LyrixaBasicWindow
 
             # Create Qt Application
@@ -927,7 +943,7 @@ class LyrixaBasicAssistant:
             logger.info("=" * 50)
 
             # Start Qt event loop
-            return self.gui_app.exec() == 0
+            return self.gui_app.exec()  # nosec B102: Qt application execution == 0
 
         except ImportError:
             logger.error(
@@ -941,6 +957,7 @@ class LyrixaBasicAssistant:
 
 async def main():
     """Main entry point for Lyrixa Basic."""
+    # Standard library imports
     import argparse
 
     parser = argparse.ArgumentParser(description="Lyrixa Basic AI Assistant")

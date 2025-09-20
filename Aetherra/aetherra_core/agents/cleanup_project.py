@@ -10,6 +10,7 @@ This script performs comprehensive cleanup of the Aetherra project based on
 the file usage audit results and implements best practices for code organization.
 """
 
+# Standard library imports
 import argparse
 import json
 import logging
@@ -381,6 +382,7 @@ class AetherraCleanup:
                 continue
 
             try:
+                # Standard library imports
                 import hashlib
 
                 with open(file_path, "rb") as f:

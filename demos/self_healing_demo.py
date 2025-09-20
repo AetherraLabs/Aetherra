@@ -7,6 +7,7 @@ Self-Healing Demo
 Uses the SelfRepairPlugin to detect issues, suggest fixes, and attempt auto-repair.
 """
 
+# Aetherra imports
 from Aetherra.stdlib.selfrepair import SelfRepairPlugin
 
 SAMPLE_BROKEN_CODE = """

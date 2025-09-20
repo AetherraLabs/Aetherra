@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 from datetime import datetime
 from typing import Any, Dict, Optional
 
+# Aetherra imports
 from Aetherra.plugins.agent_adapters.agent_base import AgentBase, AgentResponse
 
 
@@ -392,6 +394,7 @@ What would you like to do with plugins?"""
         """Handle plugin generation requests using the PluginGeneratorPlugin"""
         try:
             # Import and initialize the plugin generator (updated modular path)
+            # Aetherra imports
             from Aetherra.plugins.core.plugin_generator_plugin import (
                 PluginGeneratorPlugin,
             )

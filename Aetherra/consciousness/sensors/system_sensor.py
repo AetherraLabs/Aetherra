@@ -6,14 +6,17 @@ Emits rudimentary system heartbeat metrics (time only for Phase 1). Future: CPU,
 
 from __future__ import annotations
 
+# Standard library imports
 import os
 import time
 
 try:  # optional psutil
+    # Third party imports
     import psutil  # type: ignore
 except Exception:  # pragma: no cover
     psutil = None  # type: ignore
 
+# Local imports
 from .base_sensor import BaseSensor
 
 

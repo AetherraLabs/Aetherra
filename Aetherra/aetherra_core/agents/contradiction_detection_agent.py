@@ -16,6 +16,7 @@ Integrates with:
 - Resolution strategy generation
 """
 
+# Standard library imports
 import asyncio
 import json
 from dataclasses import asdict, dataclass
@@ -24,10 +25,12 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Local imports
 from .agent_base import AgentBase, AgentResponse
 
 # Try to import memory components
 try:
+    # Local imports
     from ..memory.fractal_mesh.base import FractalMesh
     from ..memory.reflector.reflect_analyzer import ReflectAnalyzer
 except ImportError:

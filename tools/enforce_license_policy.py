@@ -29,6 +29,7 @@ quality_gates.py or external collectors can parse easily.
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import os
 import time
@@ -104,6 +105,7 @@ def main() -> int:
 
     # Optional Prometheus metrics export (best-effort, non-fatal)
     try:  # pragma: no cover - side-effect only
+        # Third party imports
         from prometheus_client import Gauge  # type: ignore
 
         g_unknown = Gauge(

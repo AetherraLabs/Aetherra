@@ -9,6 +9,7 @@ adding heavy external dependencies. Not CycloneDX compliant yet.
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import json
 import os

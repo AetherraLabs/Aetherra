@@ -23,6 +23,7 @@ Future: integrate formal key management, multiple signatures, provenance (SLSA).
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import datetime as dt
 import hashlib
@@ -36,6 +37,7 @@ from pathlib import Path
 
 TRY_NACL = True
 try:
+    # Third party imports
     import nacl.encoding  # type: ignore
     import nacl.signing  # type: ignore
 except Exception:  # pragma: no cover

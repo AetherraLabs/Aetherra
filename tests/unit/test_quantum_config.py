@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Standard library imports
 import os
 
 print("🔍 Checking quantum memory configuration...")
@@ -10,6 +11,7 @@ print(f"AETHERRA_QFAC_POLICY: {os.getenv('AETHERRA_QFAC_POLICY')}")
 
 print("\n🧪 Testing QFAC policy resolution...")
 try:
+    # Aetherra imports
     from Aetherra.aetherra_core.memory.qfac_policy import QFACPolicy
 
     policy = QFACPolicy()
@@ -17,6 +19,7 @@ try:
     print(f"Policy result: {result}")
 
     print("\n⚛️ Testing quantum memory bridge initialization...")
+    # Aetherra imports
     from Aetherra.aetherra_core.memory.quantum_memory_bridge import QuantumMemoryBridge
 
     bridge = QuantumMemoryBridge(quantum_backend="qiskit", max_qubits=16)
@@ -25,6 +28,7 @@ try:
 
 except Exception as e:
     print(f"❌ Error: {e}")
+    # Standard library imports
     import traceback
 
     traceback.print_exc()

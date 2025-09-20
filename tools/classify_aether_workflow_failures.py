@@ -32,6 +32,7 @@ Exit code: 0 always (informational). Downstream gating can decide thresholds.
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import concurrent.futures
 import hashlib
@@ -94,6 +95,7 @@ def discover_aether_files(root: Path) -> List[Path]:
 
 def verify_signature_and_risk(path: Path) -> Tuple[bool | None, int | None]:
     try:
+        # Aetherra imports
         from Aetherra.analysis.static_risk import analyze_paths  # type: ignore
         from Aetherra.security.script_signing import (
             verify_embedded_signature,  # type: ignore

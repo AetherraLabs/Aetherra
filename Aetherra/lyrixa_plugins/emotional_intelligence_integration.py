@@ -16,9 +16,11 @@ Features:
 - Compatibility with multi-modal coordination
 """
 
+# Standard library imports
 from datetime import datetime
 from typing import Any, Dict, Optional
 
+# Local imports
 # Import Phase 3.2 emotional intelligence
 from .emotional_intelligence import (
     enhance_response_with_emotional_intelligence,

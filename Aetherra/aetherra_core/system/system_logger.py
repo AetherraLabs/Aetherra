@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 # Minimal system_logger for Aetherra
 # Logs to console and to a file in the system directory
 import datetime

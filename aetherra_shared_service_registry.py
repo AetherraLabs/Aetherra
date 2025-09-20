@@ -14,6 +14,7 @@ Copyright (C) 2025 AetherraLabs
 Licensed under GNU General Public License v3.0
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -229,6 +230,7 @@ class AetherraSharedServiceRegistry:
         """Check if a process is still alive."""
         try:
             if os.name == "nt":  # Windows
+                # Standard library imports
                 import subprocess
 
                 result = subprocess.run(

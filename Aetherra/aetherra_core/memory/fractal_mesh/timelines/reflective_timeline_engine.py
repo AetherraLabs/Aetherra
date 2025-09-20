@@ -11,6 +11,7 @@ emotional trajectory mapping, and milestone event highlighting.
 This extends the basic EpisodicTimeline with sophisticated Phase 2 capabilities.
 """
 
+# Standard library imports
 import json
 import logging
 import sqlite3
@@ -19,6 +20,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
+# Local imports
 from ..base import MemoryFragment
 from .episodic_timeline import EpisodicTimeline, NarrativeArc
 

@@ -23,6 +23,7 @@ Exit codes:
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import json
 import os
@@ -30,6 +31,7 @@ import sys
 from typing import Dict, Optional
 
 try:
+    # Third party imports
     import requests
 except Exception:
     print("requests is required. Please install it in your environment.")

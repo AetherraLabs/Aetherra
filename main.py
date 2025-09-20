@@ -4,6 +4,7 @@
 
 """Convenience launcher alias for aetherra_os main entry point."""
 
+# Aetherra imports
 from aetherra_os import main as os_main
 
 if __name__ == "__main__":  # pragma: no cover

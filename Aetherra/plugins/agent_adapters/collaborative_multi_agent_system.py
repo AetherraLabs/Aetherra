@@ -5,6 +5,7 @@
 # 🤖 Collaborative Multi-Agent Code Work for Lyrixa
 # Specialized agents working together on complex code tasks
 
+# Standard library imports
 import asyncio
 import logging
 import time
@@ -12,6 +13,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
+from dataclasses import dataclass, field
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +54,7 @@ class CodeTask:
     metadata: Dict[str, Any]
     created_timestamp: float
     deadline: Optional[float] = None
-    assigned_agents: List[str] = None
+    assigned_agents: Optional[List[str]] = None
 
     def __post_init__(self):
         if self.assigned_agents is None:
@@ -783,7 +785,7 @@ class CollaborativeMultiAgentSystem:
         try:
             # Phase 1: Analysis - Each agent analyzes the task
             logger.info(f"🔍 Phase 1: Analysis for task '{task.title}'")
-            analyses = {}
+            analyses: Dict[str, Dict[str, Any]] = {}
             for agent_id in assigned_agent_ids:
                 agent = self._get_agent_by_id(agent_id)
                 if agent:
@@ -807,7 +809,7 @@ class CollaborativeMultiAgentSystem:
 
             # Phase 3: Review - Agents review each other's contributions
             logger.info(f"🔍 Phase 3: Peer review for task '{task.title}'")
-            reviews = []
+            reviews: List[Dict[str, Any]] = []
             for contribution in contributions:
                 for agent_id in assigned_agent_ids:
                     if agent_id != contribution.agent_id:  # Don't review your own work
@@ -1019,7 +1021,7 @@ class CollaborativeMultiAgentSystem:
             return {}
 
         # Analyze contribution types
-        contribution_types = {}
+        contribution_types: Dict[str, int] = {}
         for result in self.collaboration_history:
             for contribution in result.contributions:
                 contribution_types[contribution.contribution_type] = (
@@ -1027,7 +1029,7 @@ class CollaborativeMultiAgentSystem:
                 )
 
         # Analyze agent combinations
-        agent_combinations = {}
+        agent_combinations: Dict[str, int] = {}
         for result in self.collaboration_history:
             agents = sorted(set(c.agent_id for c in result.contributions))
             combo_key = "+".join(agents)

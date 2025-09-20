@@ -33,6 +33,7 @@ Date: January 31, 2025
 """
 
 
+# Standard library imports
 import sys
 import time
 import unittest
@@ -46,11 +47,9 @@ if str(project_root) not in sys.path:
 # Test Qt availability for GUI testing
 QT_AVAILABLE = False
 try:
-    from PySide6.QtCore import (
-        QPoint,  # noqa: F401 (optional runtime import)
-        Qt,
-        QTimer,
-    )
+    # Third party imports
+    from PySide6.QtCore import QPoint  # noqa: F401 (optional runtime import)
+    from PySide6.QtCore import Qt, QTimer
     from PySide6.QtGui import QKeySequence  # noqa: F401 (optional runtime import)
     from PySide6.QtTest import QTest  # noqa: F401 (optional runtime import)
     from PySide6.QtWidgets import QApplication, QMainWindow
@@ -85,6 +84,7 @@ except ImportError:
 
 # Import GUI components with fallback handling
 try:
+    # Third party imports
     from gui.aetherra_neural_interface import (
         AetherraNeralInterface,
         AgentManagementPanel,
@@ -823,8 +823,10 @@ class TestPerformanceMetrics(unittest.TestCase):
     def test_memory_usage(self):
         """Test memory usage of interface components"""
         try:
+            # Standard library imports
             import os
 
+            # Third party imports
             import psutil
 
             # Get initial memory usage

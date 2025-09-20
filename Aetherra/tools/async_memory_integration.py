@@ -23,6 +23,7 @@ Expected Integration Benefits:
 - Comprehensive performance analytics
 """
 
+# Standard library imports
 import asyncio
 import functools
 import logging
@@ -33,6 +34,7 @@ from typing import Any, Dict, List, Optional
 
 # Import existing memory manager
 try:
+    # Aetherra imports
     from Aetherra.core.memory_manager import (
         MemoryEntry,
         MemoryManager,
@@ -41,9 +43,11 @@ try:
     )
 except ImportError:
     # Fallback for testing
+    # Third party imports
     from memory_manager import MemoryEntry, MemoryManager, MemoryPriority, MemoryType
 
 # Import our async optimization
+# Third party imports
 from concurrent_access_optimization import AsyncConcurrentMemoryManager
 
 logger = logging.getLogger(__name__)
@@ -59,6 +63,7 @@ def async_to_sync(coro_func):
             loop = asyncio.get_event_loop()
             if loop.is_running():
                 # If loop is running, we need to run in executor
+                # Standard library imports
                 import concurrent.futures
 
                 with concurrent.futures.ThreadPoolExecutor() as executor:

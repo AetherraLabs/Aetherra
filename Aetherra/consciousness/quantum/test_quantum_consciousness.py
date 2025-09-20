@@ -8,6 +8,7 @@ Phase 7.2 Component Testing
 Simple test runner to verify all quantum consciousness components work correctly.
 """
 
+# Standard library imports
 import asyncio
 import logging
 import os
@@ -29,6 +30,7 @@ async def test_quantum_decision_engine():
         print("🧠 Testing Quantum Decision Engine...")
 
         # Import and test locally
+        # Third party imports
         from quantum_decision_engine import test_quantum_decision
 
         await test_quantum_decision()
@@ -46,6 +48,7 @@ async def test_quantum_tunneling():
     try:
         print("\n🌀 Testing Quantum Tunneling Logic...")
 
+        # Third party imports
         from quantum_tunneling_logic import test_quantum_tunneling
 
         await test_quantum_tunneling()
@@ -63,6 +66,7 @@ async def test_quantum_interference():
     try:
         print("\n🌊 Testing Quantum Interference Patterns...")
 
+        # Third party imports
         from quantum_interference_patterns import test_quantum_interference
 
         await test_quantum_interference()

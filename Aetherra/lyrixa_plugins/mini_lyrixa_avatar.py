@@ -6,19 +6,18 @@ AI Presence Projection - Mini-Lyrixa Avatar
 A dynamic AI glyph that visualizes Lyrixa's cognitive state
 """
 
+# Standard library imports
 import math
 
+# Third party imports
 from PySide6.QtCore import (  # noqa: F401 (optional runtime import)
     QEasingCurve,
     QPropertyAnimation,
     Qt,
     QTimer,
 )
-from PySide6.QtGui import (
-    QBrush,  # noqa: F401 (optional runtime import)
-    QColor,
-    QPainter,
-)
+from PySide6.QtGui import QBrush  # noqa: F401 (optional runtime import)
+from PySide6.QtGui import QColor, QPainter
 from PySide6.QtWidgets import QWidget
 
 

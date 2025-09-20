@@ -7,8 +7,10 @@ Training and customization interface for AI assistants
 """
 
 
+# Standard library imports
 import sys
 
+# Third party imports
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
@@ -814,9 +816,10 @@ class AssistantTrainerUI(QWidget):
 
 
 if __name__ == "__main__":
+    # Third party imports
     from PySide6.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
     window = AssistantTrainerUI()
     window.show()
-    sys.exit(app.exec())
+    sys.exit(app.exec())  # nosec B102: Qt application execution

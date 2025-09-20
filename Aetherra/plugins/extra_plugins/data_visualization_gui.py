@@ -13,6 +13,7 @@ Features:
 - Dashboard creation with multiple chart layouts
 """
 
+# Standard library imports
 import base64
 import io
 import json
@@ -21,10 +22,12 @@ import sys
 from datetime import datetime
 from typing import Any
 
+# Third party imports
 import numpy as np
 import pandas as pd
 
 try:
+    # Third party imports
     from PySide6.QtCore import (
         QAbstractTableModel,
         QEasingCurve,
@@ -960,7 +963,8 @@ class DataVisualizationGUI(QMainWindow):
 
     def init_style(self):
         """Initialize the application style."""
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             QMainWindow {
                 background-color: #f5f5f5;
             }
@@ -1042,7 +1046,8 @@ class DataVisualizationGUI(QMainWindow):
                 background-color: #0078d4;
                 border-radius: 3px;
             }
-        """)
+        """
+        )
 
     def open_data_file(self):
         """Open file dialog to select data file."""
@@ -1525,8 +1530,7 @@ def main():
     # Create and show the GUI
     gui = DataVisualizationGUI()
     gui.show()
-
-    sys.exit(app.exec())
+    sys.exit(app.exec())  # nosec B102: Qt application execution
 
 
 if __name__ == "__main__":

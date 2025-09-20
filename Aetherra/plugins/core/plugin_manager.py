@@ -9,6 +9,7 @@ Advanced plugin management system for Lyrixa with dynamic loading,
 lifecycle management, and comprehensive analytics integration.
 """
 
+# Standard library imports
 import importlib
 import importlib.util
 import os
@@ -20,6 +21,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 # Optional consciousness imports (lazy, guarded)
 try:  # pragma: no cover - imported when consciousness enabled
+    # Aetherra imports
     from Aetherra.consciousness.active_inference import get_active_inference
     from Aetherra.consciousness.episodic_store import get_episodic_store
     from Aetherra.consciousness.ethics_critic import get_ethics_critic
@@ -77,6 +79,7 @@ class PluginManager:
     def _initialize_analytics(self):
         """Initialize plugin analytics if available."""
         try:
+            # Local imports
             from .plugin_analytics import PluginAnalyticsIntegration
 
             self.analytics = PluginAnalyticsIntegration()
@@ -296,6 +299,7 @@ class PluginManager:
             ensure_mem_fn = None
             TimeBudgetExceededCls = None
             try:  # pragma: no cover - optional path
+                # Aetherra imports
                 from Aetherra.security import sandbox as _sb  # type: ignore
 
                 run_with_timeout_fn = getattr(_sb, "run_with_timeout", None)
@@ -321,7 +325,9 @@ class PluginManager:
             ):
                 try:
                     ws = get_workspace()
-                    if ws.enabled():  # add lightweight candidate representing planned plugin execution
+                    if (
+                        ws.enabled()
+                    ):  # add lightweight candidate representing planned plugin execution
                         ws.add_candidate(
                             payload={
                                 "type": "plugin_execution_intent",

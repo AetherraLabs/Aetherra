@@ -6,6 +6,7 @@ Quantum Web Dashboard
 Displays real-time quantum memory metrics: coherence, branching, entropy.
 """
 
+# Third party imports
 from flask import Blueprint, Flask, jsonify
 
 quantum_dashboard = Blueprint("quantum_dashboard", __name__)

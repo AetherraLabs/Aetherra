@@ -6,6 +6,7 @@ Web Interface Integration Adapter
 Connects your existing web interface to the clean architecture.
 """
 
+# Standard library imports
 import logging
 import sys
 from pathlib import Path
@@ -13,6 +14,7 @@ from pathlib import Path
 # Add clean architecture paths
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+# Aetherra imports
 from Aetherra.integration.bridges.aetherra_lyrixa_bridge import bridge
 from Aetherra.integration.bridges.memory_adapter import memory_adapter
 

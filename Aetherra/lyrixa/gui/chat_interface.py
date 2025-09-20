@@ -10,12 +10,14 @@ Provides full conversational AI integration for the Phase 6 GUI.
 Extracted from phase6_personality.py to keep modules focused and smaller.
 """
 
+# Standard library imports
 import json
 import logging
 from dataclasses import asdict
 from datetime import datetime
 from typing import Any, Protocol, runtime_checkable
 
+# Third party imports
 from PySide6.QtCore import QObject, Signal, Slot
 
 logger = logging.getLogger(__name__)

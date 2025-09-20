@@ -16,6 +16,7 @@ Notes:
 
 from __future__ import annotations
 
+# Standard library imports
 import argparse
 import asyncio
 import json
@@ -27,6 +28,7 @@ from typing import Any, Dict
 async def run_pipeline(topic: str) -> int:
     try:
         # Lazy imports so error messages are clean if modules are missing
+        # Aetherra imports
         from aetherra_agent_fabric import AgentFabric  # type: ignore
         from aetherra_service_registry import AetherraServiceRegistry  # type: ignore
     except Exception as e:

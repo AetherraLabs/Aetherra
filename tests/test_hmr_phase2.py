@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import importlib
 
 
@@ -15,12 +16,14 @@ def test_hmr_source_gating_blocks_unlisted(monkeypatch):
         registry = getattr(reg_mod, "get_service_registry")()
         ctrl = mod.HMRController(registry, kernel, strict=True)
         # simulate start
+        # Standard library imports
         import asyncio
 
         asyncio.get_event_loop().run_until_complete(ctrl.start())
         kernel.hmr_controller = ctrl
 
     # attempt a reload with an unlisted source
+    # Standard library imports
     import asyncio
 
     async def run():

@@ -1,5 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+from __future__ import annotations
+
+import argparse
+import json
+import os
+from collections.abc import Iterable
+from pathlib import Path
 
 """
 Policy Bootstrap CLI
@@ -20,14 +27,6 @@ Usage examples:
     python -m Aetherra.cli.policy_bootstrap --network --allow api.example.com .corp.example
     python -m Aetherra.cli.policy_bootstrap --selfinc
 """
-
-from __future__ import annotations
-
-import argparse
-import json
-import os
-from collections.abc import Iterable
-from pathlib import Path
 
 
 def _policy_home() -> Path:
@@ -108,12 +107,8 @@ def bootstrap_selfinc_policy(target_dir: Path, force: bool = False) -> Path:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Bootstrap Aetherra policy files")
     parser.add_argument("--all", action="store_true", help="Generate all policies")
-    parser.add_argument(
-        "--capabilities", action="store_true", help="Generate capabilities.json"
-    )
-    parser.add_argument(
-        "--network", action="store_true", help="Generate net_policy.json"
-    )
+    parser.add_argument("--capabilities", action="store_true", help="Generate capabilities.json")
+    parser.add_argument("--network", action="store_true", help="Generate net_policy.json")
     parser.add_argument("--selfinc", action="store_true", help="Generate selfinc.json")
     parser.add_argument(
         "--allow",
@@ -121,9 +116,7 @@ def main(argv: list[str] | None = None) -> int:
         default=[],
         help="Additional entries for allow_domains (network policy)",
     )
-    parser.add_argument(
-        "--force", action="store_true", help="Overwrite existing policy files"
-    )
+    parser.add_argument("--force", action="store_true", help="Overwrite existing policy files")
     args = parser.parse_args(argv)
 
     target = _policy_home()

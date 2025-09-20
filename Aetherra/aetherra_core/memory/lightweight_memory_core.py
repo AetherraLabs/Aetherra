@@ -1,12 +1,76 @@
-# SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
-
 """
 DEPRECATED: lightweight_memory_core.py is now an adapter for QuantumEnhancedMemoryEngine.
 All memory operations are delegated to the canonical engine.
 """
 
-from ..memory.QuantumEnhancedMemoryEngine.engine import QuantumEnhancedMemoryEngine
+from __future__ import annotations
+
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+# Standard library imports
+import random
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
+
+# Optional Qt imports for type checking in GUI section
+try:  # pragma: no cover - optional UI types
+    from PySide6.QtCore import Qt, Signal
+    from PySide6.QtWidgets import (
+        QApplication,
+        QComboBox,
+        QDialog,
+        QDialogButtonBox,
+        QFormLayout,
+        QGroupBox,
+        QHBoxLayout,
+        QLabel,
+        QLineEdit,
+        QListWidget,
+        QListWidgetItem,
+        QMessageBox,
+        QPushButton,
+        QSlider,
+        QTabWidget,
+        QTextEdit,
+        QVBoxLayout,
+        QWidget,
+    )
+    HAS_PYSIDE6 = True
+except Exception:  # pragma: no cover - headless
+    HAS_PYSIDE6 = False
+    # Define minimal shims for type names to allow parsing
+    Qt = object  # type: ignore
+    Signal = object  # type: ignore
+    QApplication = object  # type: ignore
+    QComboBox = object  # type: ignore
+    QDialog = object  # type: ignore
+    QDialogButtonBox = object  # type: ignore
+    QFormLayout = object  # type: ignore
+    QGroupBox = object  # type: ignore
+    QHBoxLayout = object  # type: ignore
+    QLabel = object  # type: ignore
+    QLineEdit = object  # type: ignore
+    QListWidget = object  # type: ignore
+    QListWidgetItem = object  # type: ignore
+    QMessageBox = object  # type: ignore
+    QPushButton = object  # type: ignore
+    QSlider = object  # type: ignore
+    QTabWidget = object  # type: ignore
+    QTextEdit = object  # type: ignore
+    QVBoxLayout = object  # type: ignore
+    QWidget = object  # type: ignore
+
+# Local imports (optional: engine not required for parsing/UI demo)
+try:
+    from ..memory.QuantumEnhancedMemoryEngine.engine import QuantumEnhancedMemoryEngine
+except Exception:  # pragma: no cover - allow import failure
+    class QuantumEnhancedMemoryEngine:  # type: ignore
+        def store(self, memory_entry: dict) -> dict:
+            return memory_entry
+
+        def retrieve(self, query: str, context: Optional[dict] = None) -> dict:
+            return {"query": query, "context": context or {}}
 
 
 class LightweightMemoryCore:
@@ -16,9 +80,16 @@ class LightweightMemoryCore:
     def store(self, memory_entry: dict) -> dict:
         return self.engine.store(memory_entry)
 
-    def retrieve(self, query: str, context: dict = None) -> dict:
+    def retrieve(self, query: str, context: Optional[dict] = None) -> dict:
         return self.engine.retrieve(query, context)
 
+
+@dataclass
+class Memory:
+    """Lightweight memory entry used for UI demos and core search logic."""
+
+    id: str
+    content: str
     memory_type: str = "general"  # general, goal, insight, experience, knowledge
     importance: float = 0.5  # 0.0 to 1.0
     confidence: float = 0.8  # 0.0 to 1.0
@@ -28,6 +99,7 @@ class LightweightMemoryCore:
     access_count: int = 0
     last_accessed: Optional[datetime] = None
     relevance_score: float = 0.0  # For goal relevance
+    timestamp: datetime = field(default_factory=datetime.now)
 
 
 @dataclass
@@ -122,7 +194,7 @@ class MemoryCore:
         ]
 
     def search_memories(
-        self, query: str, filters: Dict[str, Any] = None
+        self, query: str, filters: Optional[Dict[str, Any]] = None
     ) -> List[Memory]:
         """Search memories with filters"""
         results = []
@@ -134,17 +206,17 @@ class MemoryCore:
 
             # Apply filters if provided
             if filters:
-                if filters.get("type") and filters["type"] != "All Types":
-                    if memory.memory_type != filters["type"].lower():
-                        continue
+                mem_type = filters.get("type")
+                if mem_type and mem_type != "All Types" and memory.memory_type != mem_type.lower():
+                    continue
 
                 if filters.get("importance", 0) > memory.importance:
                     continue
 
-                if filters.get("time") and filters["time"] != "All Time":
-                    time_delta = self.get_time_delta(filters["time"])
-                    if datetime.now() - memory.timestamp > time_delta:
-                        continue
+                if (t := filters.get("time")) and t != "All Time" and (
+                    datetime.now() - memory.timestamp
+                ) > self.get_time_delta(t):
+                    continue
 
             results.append(memory)
 
@@ -162,7 +234,7 @@ class MemoryCore:
             return timedelta(days=30)
         return timedelta(days=365)
 
-    def get_relevant_memories(self, goal_id: str = None) -> List[Memory]:
+    def get_relevant_memories(self, goal_id: Optional[str] = None) -> List[Memory]:
         """Get memories relevant to a goal"""
         if not self.current_goals:
             return []
@@ -198,10 +270,7 @@ class MemoryCore:
         relevance = 0.0
 
         # Direct goal linking
-        if (
-            "linked_goals" in memory.context
-            and goal.id in memory.context["linked_goals"]
-        ):
+        if "linked_goals" in memory.context and goal.id in memory.context["linked_goals"]:
             relevance += 0.5
 
         # Keyword matching
@@ -228,7 +297,7 @@ class MemoryCore:
         memory_type: str = "general",
         importance: float = 0.5,
         confidence: float = 0.8,
-        tags: List[str] = None,
+        tags: Optional[List[str]] = None,
         auto_link: bool = True,
     ) -> Memory:
         """Inject a new memory"""
@@ -573,6 +642,7 @@ if HAS_PYSIDE6:
         def inject_memory(self):
             """Open memory injection dialog"""
             dialog = MemoryInjectionDialog(self.memory_core, self)
+            # nosec B102: Qt GUI dialog/menu execution
             if dialog.exec() == QDialog.Accepted:
                 data = dialog.get_memory_data()
                 memory = self.memory_core.inject_memory(
@@ -793,7 +863,7 @@ def main():
             "Try 'Show Relevant to Goal' to see intelligent discovery!",
         )
 
-        app.exec()
+        app.exec()  # nosec B102: Qt application execution
     else:
         console_demo()
 

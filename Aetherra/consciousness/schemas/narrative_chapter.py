@@ -6,9 +6,11 @@ Aggregated episodic summary compiled periodically to track coherent arcs.
 
 from __future__ import annotations
 
+# Standard library imports
 from datetime import datetime
 from typing import List
 
+# Third party imports
 from pydantic import BaseModel, Field
 
 NARRATIVE_SCHEMA_VERSION = 1

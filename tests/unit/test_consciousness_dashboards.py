@@ -6,6 +6,7 @@
 Test script to verify consciousness dashboard component imports
 """
 
+# Standard library imports
 import logging
 import os
 import sys
@@ -52,6 +53,7 @@ def test_dashboard_imports():
     print("\n🧠 Testing consciousness panel dashboard imports...")
 
     # Test 5: Check what the consciousness panel actually imports
+    # Third party imports
     import lyrixa.gui.consciousness_panel as cp_module
 
     if (
@@ -91,6 +93,7 @@ if __name__ == "__main__":
             sys.exit(1)
     except Exception as e:
         print(f"\n💥 Unexpected error during testing: {e}")
+        # Standard library imports
         import traceback
 
         traceback.print_exc()

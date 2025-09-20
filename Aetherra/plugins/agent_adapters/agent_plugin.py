@@ -1,13 +1,16 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 # plugins/agent_plugin.py - AI Agent Reflection and Analysis Plugin
 from typing import Any, Dict
 
 try:
+    # Third party imports
     from core.plugin_manager import register_plugin
 except ImportError:
     try:
+        # Aetherra imports
         from Aetherra.aetherra_core.plugins.plugin_manager_core import register_plugin
     except ImportError:
         # Fallback decorator if plugin manager not available

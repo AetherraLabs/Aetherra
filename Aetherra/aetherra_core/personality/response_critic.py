@@ -15,6 +15,7 @@ Features:
 - Suggestion generation for improvements
 """
 
+# Standard library imports
 import re
 from typing import Any, Dict, Optional
 
@@ -432,6 +433,7 @@ class ResponseQuality:
                 "I can see how that would be frustrating. ",
                 "That makes perfect sense. ",
             ]
+            # Standard library imports
             import random
 
             improved = random.choice(empathy_intros) + improved

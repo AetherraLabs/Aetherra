@@ -9,11 +9,13 @@ Specialized agent for data analysis, pattern recognition, and insights generatio
 within the Aetherra AI OS ecosystem.
 """
 
+# Standard library imports
 import asyncio
 import logging
 import time
 from typing import Any, Dict, List
 
+# Local imports
 from .agent_base import AgentBase
 
 logger = logging.getLogger(__name__)

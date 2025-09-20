@@ -17,6 +17,7 @@ This system provides:
 - Adaptive memory organization
 """
 
+# Standard library imports
 import hashlib
 import json
 import logging
@@ -27,6 +28,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Aetherra imports
 from Aetherra.aetherra_core.memory.quantum.qhash import hamming_distance, simhash_text
 from Aetherra.aetherra_core.memory.quantum.random_features import (
     RandomFeatureMap,

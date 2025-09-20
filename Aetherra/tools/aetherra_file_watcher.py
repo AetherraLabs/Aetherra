@@ -10,6 +10,7 @@ Monitors file changes, plugin installations, and system events
 to trigger autonomous reorganization and optimization.
 """
 
+# Standard library imports
 import json
 import logging
 import os
@@ -18,17 +19,20 @@ import threading
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Set
 
+# Third party imports
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
 # Import our main organizer
 try:
+    # Local imports
     from ..core.aetherra_self_organizer import AetherraFileIntelligence
 except ImportError:
     # Handle case where it's in a different location
     sys.path.append(os.path.join(os.path.dirname(__file__), "..", "core"))
+    # Aetherra imports
     from aetherra_self_organizer import AetherraFileIntelligence
 
 logging.basicConfig(
@@ -505,6 +509,7 @@ class AetherraFileWatcherDaemon:
 
 def main():
     """Main entry point for the file watcher daemon."""
+    # Standard library imports
     import argparse
 
     parser = argparse.ArgumentParser(description="Aetherra File Watcher Daemon")

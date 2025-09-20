@@ -7,6 +7,7 @@ Step 6: Comprehensive Agent Discovery and Integration
 Finds ALL agents throughout the codebase and integrates them into clean architecture.
 """
 
+# Standard library imports
 import ast
 import re
 from datetime import datetime
@@ -554,6 +555,7 @@ class ComprehensiveAgentDiscovery:
         tools_dir = self.clean_dir / "tools" / "migration"
         tools_dir.mkdir(parents=True, exist_ok=True)
 
+        # Standard library imports
         import json
 
         report_file = tools_dir / f"agent_discovery_report_{self.timestamp}.json"

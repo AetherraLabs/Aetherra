@@ -10,6 +10,7 @@ consciousness orchestrator system, maintaining their functionality while
 adding consciousness-layer coordination.
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
@@ -23,6 +24,7 @@ from typing import Any, Dict, List, Optional, Set
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 try:
+    # Local imports
     from ..core.consciousness_bridge import ConsciousnessMessage, MessageType
     from .agent_registry import (
         AgentCapability,
@@ -32,6 +34,7 @@ try:
     )
 except ImportError:
     # Fallback imports for development
+    # Standard library imports
     from dataclasses import dataclass
     from enum import Enum
 
@@ -292,6 +295,7 @@ class AgentIntegrationAdapter:
     def _extract_agent_name(self, content: str, default_name: str) -> str:
         """Extract agent name from file content."""
         # Look for class names that end with Agent
+        # Standard library imports
         import re
 
         class_matches = re.findall(r"class\s+(\w*[Aa]gent\w*)", content)
@@ -357,6 +361,7 @@ class AgentIntegrationAdapter:
 
     def _extract_description(self, content: str) -> str:
         """Extract description from agent content."""
+        # Standard library imports
         import re
 
         # Look for docstrings
@@ -381,6 +386,7 @@ class AgentIntegrationAdapter:
 
     def _extract_methods(self, content: str) -> List[str]:
         """Extract method names from agent content."""
+        # Standard library imports
         import re
 
         # Find all method definitions
@@ -398,6 +404,7 @@ class AgentIntegrationAdapter:
 
     def _extract_dependencies(self, content: str) -> List[str]:
         """Extract dependencies from agent content."""
+        # Standard library imports
         import re
 
         # Find import statements

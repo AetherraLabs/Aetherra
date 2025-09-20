@@ -1,9 +1,12 @@
+# Standard library imports
 import asyncio
 import json
 import os
 
+# Third party imports
 import requests
 
+# Aetherra imports
 from aetherra_hub.compat import start_hub_server
 from aetherra_service_registry import get_service_registry
 

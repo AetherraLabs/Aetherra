@@ -20,16 +20,19 @@ Version: 1.0.0
 Date: August 4, 2025
 """
 
+# Standard library imports
 import asyncio
+import contextlib
 import json
 import logging
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set
 
-from consciousness_bridge import (
+# Third party imports
+from ..core.consciousness_bridge import (
     ConsciousnessMessage,
     get_consciousness_bridge,
 )
@@ -853,6 +856,7 @@ class AgentRegistry:
         }
 
         # Convert to string and hash
+        # Standard library imports
         import hashlib
 
         query_str = json.dumps(query_dict, sort_keys=True)
@@ -880,7 +884,7 @@ class AgentRegistry:
 
             # Find matching services
             matching_services = []
-            for service_id, service in self.services.items():
+            for _service_id, service in self.services.items():
                 # Check if provider agent is active
                 if service.provider_agent_id not in self.agents:
                     continue
@@ -1127,10 +1131,8 @@ class AgentRegistry:
 
         if self.registry_task:
             self.registry_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self.registry_task
-            except asyncio.CancelledError:
-                pass
 
         # Clear data structures
         self.agents.clear()
@@ -1172,7 +1174,25 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.INFO)
 
         # Initialize consciousness bridge first
-        from consciousness_bridge import initialize_consciousness_bridge
+        # Third party imports
+        try:
+            from ..core.consciousness_bridge import (
+                initialize_consciousness_bridge,
+            )
+        except ImportError:
+            try:
+                from Aetherra.consciousness.core.consciousness_bridge import (
+                    initialize_consciousness_bridge,
+                )
+            except ImportError:
+                import os
+                import sys
+                sys.path.append(
+                    os.path.join(os.path.dirname(__file__), "..", "core")
+                )
+                from consciousness_bridge import (  # type: ignore
+                    initialize_consciousness_bridge,
+                )
 
         await initialize_consciousness_bridge()
 
@@ -1189,6 +1209,7 @@ if __name__ == "__main__":
             system_origin="test_system",
             capabilities=["testing", "validation", "monitoring"],
             interfaces=["consciousness_bridge", "rest_api"],
+            dependencies=[],
             provides_services=["test_execution", "validation"],
         )
 

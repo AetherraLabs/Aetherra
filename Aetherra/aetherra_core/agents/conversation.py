@@ -10,6 +10,7 @@ Advanced conversational capabilities with personality system,
 tone adaptation, multi-turn memory, and emotional intelligence.
 """
 
+# Standard library imports
 import json
 import random
 from dataclasses import dataclass
@@ -1155,6 +1156,7 @@ class LyrixaConversationalEngine:
                 print("   ⚠️ No memory system available for Knowledge Responder")
                 return
 
+            # Local imports
             from .project_knowledge_responder import ProjectKnowledgeResponder
 
             self.knowledge_responder = ProjectKnowledgeResponder(self.memory_system)
@@ -1166,6 +1168,7 @@ class LyrixaConversationalEngine:
 
 # Example usage
 if __name__ == "__main__":
+    # Standard library imports
     import asyncio
 
     async def test_conversation():

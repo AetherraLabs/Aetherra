@@ -7,6 +7,7 @@ Test Phase 3 Auto-Generation System
 Tests the core functionality of the auto-generation system
 """
 
+# Standard library imports
 import sys
 from pathlib import Path
 
@@ -16,10 +17,12 @@ sys.path.insert(0, str(aetherra_path))
 
 try:
     # Test Phase 3 imports
+    # Standard library imports
     import json
     from dataclasses import asdict
     from datetime import datetime
 
+    # Third party imports
     from lyrixa.gui.phase3_auto_generator import (
         ComponentState,
         PanelGenerator,
@@ -59,6 +62,7 @@ try:
 
 except Exception as e:
     print(f"❌ Test failed: {e}")
+    # Standard library imports
     import traceback
 
     traceback.print_exc()

@@ -15,8 +15,10 @@ Features:
 - Quality assessment and improvement suggestions
 """
 
+# Standard library imports
 from typing import Any, Dict, Optional
 
+# Local imports
 from .emotion_detector import detect_user_emotion
 
 # Import the new personality components
@@ -227,6 +229,7 @@ class PersonalityIntegration:
 
     def _get_timestamp(self) -> str:
         """Get current timestamp"""
+        # Standard library imports
         from datetime import datetime
 
         return datetime.now().isoformat()

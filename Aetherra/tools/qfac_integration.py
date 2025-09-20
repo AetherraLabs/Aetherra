@@ -14,24 +14,26 @@ This module provides:
 - Production-ready component coordination
 """
 
+# Standard library imports
 import asyncio
 import sys
+import importlib
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 
 class QFACIntegrationManager:
     """Manages integration between QFAC phases with graceful degradation"""
 
-    def __init__(self, base_path: str = None):
+    def __init__(self, base_path: Optional[str] = None):
         """Initialize integration manager with component discovery"""
         if base_path is None:
-            base_path = Path(__file__).parent
+            base_path_path = Path(__file__).parent
         else:
-            base_path = Path(base_path)
+            base_path_path = Path(base_path)
 
-        self.base_path = base_path
-        self.aetherra_path = base_path / "Aetherra" / "lyrixa" / "memory"
+        self.base_path: Path = base_path_path
+        self.aetherra_path: Path = base_path_path / "Aetherra" / "lyrixa" / "memory"
 
         # Component availability flags
         self.phase2_available = False
@@ -81,7 +83,7 @@ class QFACIntegrationManager:
 
         return False
 
-    async def initialize_phase2(self, data_dir: str = None) -> Optional[Any]:
+    async def initialize_phase2(self, data_dir: Optional[str] = None) -> Optional[Any]:
         """Initialize Phase 2 FractalEncoder if available"""
         if not self.phase2_available:
             return None
@@ -91,10 +93,9 @@ class QFACIntegrationManager:
             if (self.aetherra_path / "fractal_encoder.py").exists():
                 sys.path.insert(0, str(self.aetherra_path))
 
-            # Import and initialize
-            import fractal_encoder
-
-            self.fractal_encoder = fractal_encoder.FractalEncoder(data_dir=data_dir)
+            # Import and initialize dynamically
+            fractal_encoder = importlib.import_module("fractal_encoder")
+            self.fractal_encoder = getattr(fractal_encoder, "FractalEncoder")(data_dir=data_dir)
             print(f"🧬 Phase 2 initialized: {data_dir or 'default'}")
             return self.fractal_encoder
 
@@ -103,7 +104,7 @@ class QFACIntegrationManager:
             return None
 
     async def initialize_phase3(
-        self, data_dir: str = None, fractal_encoder: Any = None
+        self, data_dir: Optional[str] = None, fractal_encoder: Any = None
     ) -> Optional[Any]:
         """Initialize Phase 3 ObserverEffectSimulator if available"""
         if not self.phase3_available:
@@ -114,10 +115,9 @@ class QFACIntegrationManager:
             if (self.aetherra_path / "observer_effect_simulator.py").exists():
                 sys.path.insert(0, str(self.aetherra_path))
 
-            # Import and initialize
-            import observer_effect_simulator
-
-            self.observer_simulator = observer_effect_simulator.ObserverEffectSimulator(
+            # Import and initialize dynamically
+            observer_effect_simulator = importlib.import_module("observer_effect_simulator")
+            self.observer_simulator = getattr(observer_effect_simulator, "ObserverEffectSimulator")(
                 data_dir=data_dir,
                 fractal_encoder=fractal_encoder or self.fractal_encoder,
             )
@@ -130,7 +130,7 @@ class QFACIntegrationManager:
 
     async def initialize_phase4(
         self,
-        data_dir: str = None,
+        data_dir: Optional[str] = None,
         fractal_encoder: Any = None,
         observer_simulator: Any = None,
     ) -> Optional[Any]:
@@ -139,10 +139,9 @@ class QFACIntegrationManager:
             return None
 
         try:
-            # Import and initialize
-            import causal_branch_simulator
-
-            self.causal_simulator = causal_branch_simulator.CausalBranchSimulator(
+            # Import and initialize dynamically
+            causal_branch_simulator = importlib.import_module("causal_branch_simulator")
+            self.causal_simulator = getattr(causal_branch_simulator, "CausalBranchSimulator")(
                 data_dir=data_dir,
                 fractal_encoder=fractal_encoder or self.fractal_encoder,
                 observer_simulator=observer_simulator or self.observer_simulator,
@@ -155,7 +154,7 @@ class QFACIntegrationManager:
             return None
 
     async def initialize_full_pipeline(
-        self, base_data_dir: str = None
+        self, base_data_dir: Optional[str] = None
     ) -> Dict[str, Any]:
         """Initialize complete Phase 2-3-4 pipeline"""
         print("🚀 Initializing QFAC Full Pipeline...")
@@ -306,7 +305,7 @@ class QFACIntegrationManager:
 _integration_manager = None
 
 
-def get_integration_manager(base_path: str = None) -> QFACIntegrationManager:
+def get_integration_manager(base_path: Optional[str] = None) -> QFACIntegrationManager:
     """Get or create the global integration manager"""
     global _integration_manager
     if _integration_manager is None:

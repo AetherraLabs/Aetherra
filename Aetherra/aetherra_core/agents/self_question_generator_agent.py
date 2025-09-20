@@ -16,6 +16,7 @@ Integrates with:
 - Goal system for question prioritization
 """
 
+# Standard library imports
 import asyncio
 import json
 from dataclasses import asdict, dataclass
@@ -23,10 +24,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Local imports
 from .agent_base import AgentBase, AgentResponse
 
 # Try to import memory components
 try:
+    # Local imports
     from ..memory.narrator.memory_narrator import MemoryNarrator
     from ..memory.reflector.reflect_analyzer import ReflectAnalyzer
 except ImportError:

@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import asyncio
 from pathlib import Path
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.aetherra_core.engine.self_improvement_engine import SelfImprovementEngine
 
 

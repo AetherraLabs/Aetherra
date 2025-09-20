@@ -5,6 +5,7 @@
 Analogical pattern components
 """
 
+# Local imports
 from .pattern_matcher import AnalogicalPattern, CrossContextAnalogies
 
 __all__ = ["CrossContextAnalogies", "AnalogicalPattern"]

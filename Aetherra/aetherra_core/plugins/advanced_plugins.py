@@ -10,6 +10,7 @@ Enhanced plugin system with auto-discovery, chaining, scaffolding,
 and intelligent routing based on natural language intent.
 """
 
+# Standard library imports
 import asyncio
 import importlib
 import importlib.util
@@ -223,6 +224,7 @@ class LyrixaAdvancedPluginManager:
         plugin_name = plugin_dir.name
 
         # Add to Python path temporarily
+        # Standard library imports
         import sys
 
         sys.path.insert(0, str(self.plugin_directory))
@@ -513,6 +515,7 @@ class LyrixaAdvancedPluginManager:
               total_time: wall clock time
               failed: count of failed plugins
         """
+        # Standard library imports
         import asyncio as _asyncio
 
         start = _asyncio.get_event_loop().time()
@@ -615,6 +618,7 @@ class LyrixaAdvancedPluginManager:
             # Try to route to plugins using intent routing
             try:
                 # Use async method in sync context carefully
+                # Standard library imports
                 import asyncio
 
                 if asyncio.get_event_loop().is_running():

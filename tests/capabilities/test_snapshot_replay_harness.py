@@ -1,8 +1,11 @@
+# Standard library imports
 import json
 import tempfile
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.aetherra_core.memory.memory_core import LyrixaMemorySystem
 from aetherra_service_registry import AetherraServiceRegistry
 from tools.snapshot_replay_harness import create_snapshot, replay_services
@@ -20,6 +23,7 @@ async def test_snapshot_replay_harness_round_trip():
     await reg.register_service("core.engine", object())
     await reg.register_service("agent.planner", object(), dependencies=["core.engine"])
     # mark core healthy, resolve dependencies
+    # Aetherra imports
     from aetherra_service_registry import ServiceStatus
 
     await reg.update_service_status("core.engine", ServiceStatus.HEALTHY)

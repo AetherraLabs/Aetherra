@@ -7,8 +7,10 @@ Initial MVP: valence, arousal, uncertainty. Extensible with appraisal dimensions
 
 from __future__ import annotations
 
+# Standard library imports
 from datetime import datetime
 
+# Third party imports
 from pydantic import BaseModel, Field
 
 AFFECT_SCHEMA_VERSION = 1

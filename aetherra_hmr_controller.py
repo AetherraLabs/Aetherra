@@ -14,6 +14,7 @@ Phase 1 scope:
 - Best-effort quiesce and swap with optional state hand-off hooks
 """
 
+# Standard library imports
 import asyncio
 import importlib
 import importlib.util
@@ -339,6 +340,7 @@ class HMRController:
             # rotate if file too large before appending
             self._maybe_rotate_audit(path)
             with open(path, "a", encoding="utf-8") as f:
+                # Standard library imports
                 import json
 
                 f.write(json.dumps(record) + "\n")
@@ -407,6 +409,7 @@ class HMRController:
             ts = time.strftime("%Y%m%d-%H%M%S", time.localtime())
             rotated = f"{path}.{ts}"
             try:
+                # Standard library imports
                 import shutil
 
                 shutil.move(path, rotated)

@@ -6,10 +6,12 @@
 Test launcher GUI detection only
 """
 
+# Standard library imports
 import sys
 
 sys.path.append("Aetherra")
 
+# Third party imports
 from lyrixa.launcher import LyrixaOperatingSystem
 
 # Test GUI detection

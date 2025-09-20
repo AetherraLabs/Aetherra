@@ -7,6 +7,7 @@ Universal Directory Analyzer
 Analyzes any directory for duplicates and proper file organization
 """
 
+# Standard library imports
 import hashlib
 import os
 import re

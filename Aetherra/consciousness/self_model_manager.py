@@ -7,6 +7,7 @@ coherence scoring stub. Lightweight; persistence is JSON file based for Phase 1.
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import os
 import threading
@@ -14,6 +15,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable, Optional
 
+# Local imports
 from .schemas.self_model import (
     CapabilityDescriptor,
     IdentityProfile,

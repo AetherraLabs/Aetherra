@@ -9,15 +9,18 @@ Primary AI agent for handling intelligent conversations and responses
 using OpenAI or other AI models.
 """
 
+# Standard library imports
 import os
 from typing import Any, Dict, List, Optional
 
 # Persistent memory
 try:
+    # Aetherra imports
     from aetherra_persistent_memory import get_persistent_memory_system
 except Exception:
     get_persistent_memory_system = None
 
+# Local imports
 from .agent_base import AgentBase
 
 
@@ -144,6 +147,7 @@ class LyrixaAI(AgentBase):
             AI-generated response
         """
         try:
+            # Third party imports
             import openai
 
             # Initialize OpenAI client

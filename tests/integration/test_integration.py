@@ -9,6 +9,7 @@ Automated integration test for Aetherra Core Systems
 
 # Plugin system
 def test_plugin_registry_import():
+    # Aetherra imports
     from plugins.plugin_registry import discover_plugins
 
     plugins = discover_plugins()
@@ -17,6 +18,7 @@ def test_plugin_registry_import():
 
 # Memory engine
 def test_memory_engine_store_retrieve():
+    # Third party imports
     from memory.aetherra_memory_engine import AetherraMemoryEngine
 
     engine = AetherraMemoryEngine()
@@ -27,6 +29,7 @@ def test_memory_engine_store_retrieve():
 
 # Quantum dashboards
 def test_qfac_dashboard_endpoint():
+    # Third party imports
     from memory.qfac_dashboard import app
 
     with app.test_client() as client:
@@ -37,6 +40,7 @@ def test_qfac_dashboard_endpoint():
 
 
 def test_quantum_web_status():
+    # Third party imports
     from memory.quantum_web_dashboard import app
 
     with app.test_client() as client:
@@ -48,6 +52,7 @@ def test_quantum_web_status():
 
 # Fractal compression
 def test_fractal_compression_roundtrip():
+    # Third party imports
     from memory.QuantumEnhancedMemoryEngine.fractal_encoder import (
         fractal_compress,
         fractal_decompress,
@@ -62,10 +67,12 @@ def test_fractal_compression_roundtrip():
 # Observer effects
 def test_observer_effect_mutation():
     try:
+        # Third party imports
         from memory.QuantumEnhancedMemoryEngine.observer_effects import (
             ObserverEffectEngine,
         )
     except ImportError:
+        # Third party imports
         from memory.observer_effects import ObserverEffectEngine
     engine = ObserverEffectEngine()
     base = {"id": "test123", "confidence": 1.0}

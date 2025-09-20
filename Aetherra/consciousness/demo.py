@@ -15,6 +15,7 @@ Version: 1.0.0
 Date: August 4, 2025
 """
 
+# Standard library imports
 import asyncio
 import logging
 import os
@@ -43,6 +44,7 @@ async def run_consciousness_demo():
 
     try:
         # Import after path setup
+        # Third party imports
         from consciousness_orchestrator import get_consciousness_orchestrator
 
         logger.info("Starting Consciousness Orchestrator Demo...")
@@ -145,6 +147,7 @@ async def run_consciousness_demo():
         logger.info("Demo interrupted by user")
     except Exception as e:
         logger.error(f"Demo error: {e}")
+        # Standard library imports
         import traceback
 
         traceback.print_exc()
@@ -173,6 +176,7 @@ async def quick_test():
     try:
         # Test consciousness bridge
         print("Testing Consciousness Bridge...")
+        # Third party imports
         from consciousness_bridge import initialize_consciousness_bridge
 
         bridge = await initialize_consciousness_bridge()
@@ -181,6 +185,7 @@ async def quick_test():
 
         # Test agent registry
         print("Testing Agent Registry...")
+        # Third party imports
         from agent_registry import initialize_agent_registry
 
         registry = await initialize_agent_registry()
@@ -192,6 +197,7 @@ async def quick_test():
 
     except Exception as e:
         print(f"❌ Component test failed: {e}")
+        # Standard library imports
         import traceback
 
         traceback.print_exc()

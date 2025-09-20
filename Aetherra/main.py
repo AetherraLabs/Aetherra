@@ -16,6 +16,7 @@ The new launcher provides:
 - Complete system integration and control
 """
 
+# Standard library imports
 import sys
 
 
@@ -36,6 +37,7 @@ def main():
     choice = input("\nLaunch new unified system? (y/n): ").strip().lower()
     if choice in ["y", "yes", ""]:
         print("🚀 Launching Lyrixa AI Operating System...")
+        # Standard library imports
         import subprocess
 
         subprocess.run([sys.executable, "lyrixa/launcher.py"])

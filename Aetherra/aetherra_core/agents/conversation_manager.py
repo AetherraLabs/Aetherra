@@ -10,6 +10,7 @@ Advanced conversation system for Lyrixa with LLM-powered responses,
 personality, memory integration, and system awareness.
 """
 
+# Standard library imports
 import asyncio
 import logging
 import os
@@ -27,6 +28,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 try:
+    # Aetherra imports
     from Aetherra.core.multi_llm_manager import MultiLLMManager
 
     LLM_AVAILABLE = True
@@ -38,6 +40,7 @@ except ImportError as e:
 
 # Import the enhanced prompt engine
 try:
+    # Aetherra imports
     from Aetherra.core.prompt_engine import build_dynamic_prompt
 
     PROMPT_ENGINE_AVAILABLE = True
@@ -49,6 +52,7 @@ except ImportError as e:
 
 # Import Plugin Editor Controller
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.gui.plugin_editor_controller import PluginEditorController
 
     PLUGIN_EDITOR_AVAILABLE = True
@@ -60,6 +64,7 @@ except ImportError as e:
 
 # Import Meta-Reasoning Engine
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.intelligence.meta_reasoning import MetaReasoningEngine
 
     META_REASONING_AVAILABLE = True
@@ -71,6 +76,7 @@ except ImportError as e:
 
 # Import FractalMesh Memory System
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.memory.fractal_mesh import FractalMeshCore
 
     FRACTAL_MESH_AVAILABLE = True
@@ -82,6 +88,7 @@ except ImportError as e:
 
 # Import Integrated Memory Engine
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.memory.lyrixa_memory_engine import (
         LyrixaMemoryEngine,
         MemorySystemConfig,
@@ -98,6 +105,7 @@ except ImportError as e:
 
 # Import Plugin System
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.plugins.enhanced_plugin_manager import PluginManager
     from Aetherra.lyrixa.plugins.memory_aware_plugin_router import (
         MemoryAwarePluginRouter,
@@ -113,6 +121,7 @@ except ImportError as e:
 
 # Import Reflection Engine
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.reflection_engine.shadow_state_forker import ShadowStateForker
     from Aetherra.lyrixa.reflection_engine.validation_engine import ValidationEngine
 
@@ -126,6 +135,7 @@ except ImportError as e:
 
 # Import Self Metrics Dashboard
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.self_metrics_dashboard.main_dashboard import (
         SelfMetricsDashboard,
     )
@@ -143,6 +153,7 @@ except ImportError as e:
 
 # Import LyrixaCore Unified Cognitive Stack
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.LyrixaCore.IdentityAgent.core_beliefs import CoreBeliefs
     from Aetherra.lyrixa.LyrixaCore.IdentityAgent.personal_history import (
         PersonalHistory,
@@ -159,6 +170,7 @@ except ImportError as e:
 
 # Import Ethics System
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.ethics_agent.bias_detector import BiasDetectionEngine
     from Aetherra.lyrixa.ethics_agent.moral_reasoning import MoralReasoningEngine
     from Aetherra.lyrixa.ethics_agent.value_alignment import ValueAlignmentEngine
@@ -177,6 +189,7 @@ except ImportError as e:
 
 # Import Cognitive Architecture Adapters
 try:
+    # Local imports
     from .cognitive_adapters import (
         CompatiblePluginRouter,
         FractalMeshToLyrixaAdapter,
@@ -193,6 +206,7 @@ except ImportError as e:
 
 # Graceful fallbacks for missing components
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.gui.plugin_editor_controller import PluginEditorController
 
     PLUGIN_EDITOR_AVAILABLE = True
@@ -208,6 +222,7 @@ except ImportError:
     PLUGIN_EDITOR_AVAILABLE = False
 
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.memory.fractal_mesh import FractalMeshCore
 
     FRACTAL_MESH_AVAILABLE = True
@@ -223,6 +238,7 @@ except ImportError:
     FRACTAL_MESH_AVAILABLE = False
 
 try:
+    # Aetherra imports
     from Aetherra.lyrixa.LyrixaCore.IdentityAgent.core_beliefs import CoreBeliefs
 
     CORE_BELIEFS_AVAILABLE = True
@@ -1452,9 +1468,11 @@ I'm here to think through this with you and provide real value, not just generic
 
         try:
             # Import the memory classes we need
+            # Standard library imports
             import uuid
             from datetime import datetime
 
+            # Aetherra imports
             from Aetherra.lyrixa.memory.fractal_mesh.base import (
                 MemoryFragment,
                 MemoryFragmentType,
@@ -2180,6 +2198,7 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
     def enable_self_improvement_monitoring(self, check_interval_hours: int = 24):
         """Enable automatic plugin improvement monitoring"""
         try:
+            # Local imports
             from .self_improvement_trigger import SelfImprovementScheduler
 
             if not hasattr(self, "improvement_scheduler"):
@@ -2206,6 +2225,7 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
     async def suggest_plugin_improvements(self, user_context: str = "") -> str:
         """Generate plugin improvement suggestions based on current context"""
         try:
+            # Local imports
             from .plugin_diff_engine import PluginDiffEngine
 
             # Initialize diff engine if not already done

@@ -11,6 +11,7 @@ Python backend and web panels with live data updates.
 """
 
 
+# Standard library imports
 import sys
 import time
 from pathlib import Path
@@ -20,6 +21,7 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root / "Aetherra"))
 
 try:
+    # Third party imports
     from lyrixa.gui.main_window import LyrixaHybridWindow
     from PySide6.QtCore import QTimer
     from PySide6.QtWidgets import QApplication
@@ -90,6 +92,7 @@ try:
         update_timer = QTimer()
 
         def update_metrics():
+            # Standard library imports
             import random
 
             # Generate realistic system metrics
@@ -183,7 +186,7 @@ try:
         live_timer = create_live_updates(window)
 
         # Start the Qt event loop
-        exit_code = app.exec()
+        exit_code = app.exec()  # nosec B102: Qt application execution
 
         live_timer.stop()
         return exit_code
@@ -194,6 +197,7 @@ try:
 
 except Exception as e:
     print(f"[ERROR] Error testing Phase 2 bridge: {e}")
+    # Standard library imports
     import traceback
 
     traceback.print_exc()

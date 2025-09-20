@@ -12,6 +12,7 @@ This is THE script that transforms Aetherra from code into a living AI OS.
 [LAUNCH] FLIP THE SWITCH - ACTIVATE AETHERRA!
 """
 
+# Standard library imports
 import argparse
 import asyncio
 
@@ -25,6 +26,7 @@ import time
 import traceback
 from typing import Any
 
+# Aetherra imports
 # Import Aetherra components (must be before any runtime code per lint)
 from aetherra_kernel_loop import get_kernel
 from aetherra_service_registry import (
@@ -278,6 +280,7 @@ class LyrixaChatAdapter:
             # Optional edit root
             edit_root = payload.get("edit_root")
             try:
+                # Aetherra imports
                 from Aetherra.lyrixa.chat.lyrixa_chat_service import ChatOptions
             except Exception:
                 ChatOptions = None  # type: ignore
@@ -286,6 +289,7 @@ class LyrixaChatAdapter:
             if ChatOptions is not None:
                 try:
                     if edit_root:
+                        # Standard library imports
                         from pathlib import Path
 
                         opts = ChatOptions(
@@ -312,6 +316,7 @@ class LyrixaChatAdapter:
 
     async def _heartbeat_loop(self):
         if CORE_AVAILABLE:
+            # Aetherra imports
             from aetherra_service_registry import update_heartbeat
 
             while True:
@@ -626,6 +631,7 @@ class AetherraOSLauncher:
                 or os.getenv("AETHERRA_ENABLE_QFAC")
             )
             if enable_qfac_fast and "qfac_memory" not in self.systems:
+                # Aetherra imports
                 from aetherra_service_registry import (
                     ServiceStatus,
                     get_service_registry,
@@ -740,6 +746,7 @@ class AetherraOSLauncher:
             hmr_enabled = False
         if hmr_enabled:
             try:
+                # Aetherra imports
                 from aetherra_hmr_controller import get_hmr_controller
 
                 if self.service_registry and self.kernel_loop is None:
@@ -767,6 +774,7 @@ class AetherraOSLauncher:
                             )
                             # Do not initialize controller in unsafe production posture
                             try:  # metrics instrumentation (Phase 0 security observability)
+                                # Aetherra imports
                                 from aetherra_hub.services import (
                                     metrics_accum,  # type: ignore
                                 )
@@ -787,6 +795,7 @@ class AetherraOSLauncher:
                 # Increment metrics for any initialization failure distinct from the explicit requirements gate
                 try:
                     if str(e) != "hmr_requirements_not_met":
+                        # Aetherra imports
                         from aetherra_hub.services import metrics_accum  # type: ignore
 
                         metrics_accum.inc_hmr_denied("init_failure")
@@ -798,6 +807,7 @@ class AetherraOSLauncher:
         """🛠️ Load self-improvement and self-repair systems and register them as services."""
         # Self-Improvement Engine
         try:
+            # Aetherra imports
             from Aetherra.aetherra_core.engine.self_improvement_engine import (
                 SelfImprovementEngine,
             )
@@ -866,6 +876,7 @@ class AetherraOSLauncher:
 
         # Self-Repair Service (wrap stdlib plugin)
         try:
+            # Aetherra imports
             from Aetherra.stdlib.selfrepair import SelfRepairPlugin
 
             class SelfRepairAdapter:
@@ -919,6 +930,7 @@ class AetherraOSLauncher:
 
         async def _loop():
             try:
+                # Third party imports
                 import aiohttp  # type: ignore
             except Exception:
                 # aiohttp not available; skip telemetry loop
@@ -926,6 +938,7 @@ class AetherraOSLauncher:
 
             # Respect telemetry opt-in and DP settings
             try:
+                # Aetherra imports
                 from Aetherra.telemetry.optin import get_telemetry  # type: ignore
             except Exception:
                 get_telemetry = None  # type: ignore
@@ -978,6 +991,7 @@ class AetherraOSLauncher:
             logger.info("[BRAIN] Loading Core Memory Engine...")
 
             # Use Aetherra OS memory engine
+            # Aetherra imports
             from Aetherra.aetherra_core.memory.aetherra_memory_engine import (
                 AetherraMemoryEngine,
             )
@@ -1007,6 +1021,7 @@ class AetherraOSLauncher:
                             "[QFAC] Fast-path stub present; deferring real QFAC system initialization this run"
                         )
                         return
+                    # Aetherra imports
                     from Aetherra.aetherra_core.memory.qfac_integration import (
                         QFACMemorySystem,
                     )
@@ -1044,6 +1059,7 @@ class AetherraOSLauncher:
         try:
             logger.info("[PLUGIN] Loading Plugin Management System...")
 
+            # Aetherra imports
             from Aetherra.aetherra_core.plugins.plugin_manager import get_plugin_manager
 
             pm_impl = get_plugin_manager()
@@ -1068,6 +1084,7 @@ class AetherraOSLauncher:
         try:
             logger.info("[ENGINE] Loading Aetherra Native Engine...")
 
+            # Aetherra imports
             from Aetherra.aetherra_core.engine import aetherra_engine as core_engine
 
             engine_impl = await core_engine.boot()
@@ -1090,6 +1107,7 @@ class AetherraOSLauncher:
             logger.info("[SCRIPT] Loading Aether Script Service...")
 
             try:
+                # Aetherra imports
                 from aetherra_script_service import get_aether_script_service
 
                 aether_service = await get_aether_script_service(self.service_registry)
@@ -1137,6 +1155,7 @@ class AetherraOSLauncher:
             logger.info("[MEMORY] Loading Persistent Memory System...")
 
             try:
+                # Aetherra imports
                 from aetherra_persistent_memory import get_persistent_memory_system
 
                 memory_system = await get_persistent_memory_system()
@@ -1173,6 +1192,7 @@ class AetherraOSLauncher:
             logger.info("[ADAPT] Loading Adaptive Behavior System...")
 
             try:
+                # Aetherra imports
                 from aetherra_adaptive_behavior import get_adaptive_behavior_system
 
                 behavior_system = await get_adaptive_behavior_system(
@@ -1212,6 +1232,7 @@ class AetherraOSLauncher:
 
             try:
                 # Load Phase 7 Quantum Consciousness Systems
+                # Aetherra imports
                 from Aetherra.consciousness.quantum.quantum_consciousness_engine import (
                     QuantumConsciousnessEngine,
                 )
@@ -1234,6 +1255,7 @@ class AetherraOSLauncher:
 
                 # Load Phase 8 Consciousness Evolution Engines
 
+                # Aetherra imports
                 from Aetherra.consciousness.cosmic.cosmic_consciousness_engine import (
                     CosmicConsciousnessEngine,
                 )
@@ -1339,6 +1361,7 @@ class AetherraOSLauncher:
         try:
             # Respect offline/quiet gating: still register chat, but it will use deterministic fallbacks
             logger.info("[CHAT] Loading Lyrixa Chat Service...")
+            # Aetherra imports
             from Aetherra.lyrixa.chat.lyrixa_chat_service import LyrixaChatService
 
             chat_impl = LyrixaChatService()
@@ -1462,6 +1485,7 @@ class AetherraOSLauncher:
         try:
             logger.info("[SCHED] Loading Task Scheduler...")
 
+            # Aetherra imports
             from Aetherra.aetherra_core.orchestration import scheduler
 
             await scheduler.initialize_schedule()
@@ -1490,6 +1514,7 @@ class AetherraOSLauncher:
                 try:
                     # Import and start the built-in Python Hub server
                     # Use compatibility layer instead of deprecated module
+                    # Aetherra imports
                     from aetherra_hub.compat import start_hub_server
 
                     logger.info("[HUB] Starting Aetherra Hub server...")
@@ -1522,6 +1547,7 @@ class AetherraOSLauncher:
                     if hub_server and hub_server.is_running():
                         # Optionally wait briefly for /health
                         try:
+                            # Third party imports
                             import aiohttp  # type: ignore
 
                             for _ in range(10):  # ~2s total
@@ -1560,6 +1586,7 @@ class AetherraOSLauncher:
                 except Exception as hub_error:
                     logger.warning(f"[WARN] Failed to start Aetherra Hub: {hub_error}")
                     # Create a placeholder service anyway
+                    # Aetherra imports
                     from aetherra_hub.compat import AetherraHubServer
 
                     mock_hub = AetherraHubServer(3001)
@@ -1587,6 +1614,7 @@ class AetherraOSLauncher:
             logger.info("[SCAN] Starting plugin discovery service...")
 
             # Import the plugin discovery service
+            # Aetherra imports
             from aetherra_plugin_discovery import AetherraPluginDiscovery
 
             # Create discovery service
@@ -1615,6 +1643,7 @@ class AetherraOSLauncher:
 
                 try:
                     # Prefer launching Lyrixa via its own launcher when needed
+                    # Aetherra imports
                     from Aetherra.lyrixa.gui import main_window  # noqa: F401
 
                     logger.info(
@@ -1632,6 +1661,7 @@ class AetherraOSLauncher:
         """[KLM] Load Module Manager and register service."""
         try:
             logger.info("[KLM] Loading Module Manager...")
+            # Aetherra imports
             from aetherra_module_manager import get_module_manager
 
             mm = await get_module_manager(self.service_registry)
@@ -1657,6 +1687,7 @@ class AetherraOSLauncher:
         """[KEB] Load Event Bus and register service."""
         try:
             logger.info("[KEB] Loading Event Bus...")
+            # Aetherra imports
             from aetherra_event_bus import get_event_bus
 
             eb = await get_event_bus(self.service_registry)
@@ -1682,6 +1713,7 @@ class AetherraOSLauncher:
         """[AGENTS] Load Agent Fabric layer and register service."""
         try:
             logger.info("[AGENTS] Loading Agent Fabric...")
+            # Aetherra imports
             from aetherra_agent_fabric import get_agent_fabric
 
             if not self.service_registry:
@@ -1929,12 +1961,14 @@ class AetherraOSLauncher:
     async def _write_os_status(self):
         """Write OS status to file for cross-process detection."""
         try:
+            # Standard library imports
             import json
             import os
             import socket
             import tempfile
             from datetime import datetime
 
+            # Third party imports
             import psutil  # type: ignore
 
             temp_dir = tempfile.gettempdir()
@@ -1970,6 +2004,7 @@ class AetherraOSLauncher:
     async def _cleanup_os_status(self):
         """Clean up OS status file on shutdown."""
         try:
+            # Standard library imports
             import json
             import os
             import tempfile
@@ -1990,6 +2025,7 @@ class AetherraOSLauncher:
                         data = json.load(f)
                     last_hb = data.get("last_heartbeat")
                     if last_hb:
+                        # Standard library imports
                         from datetime import datetime
 
                         hb_ts = datetime.fromisoformat(last_hb)
@@ -2123,6 +2159,7 @@ class MockMemorySystem:
     async def _heartbeat_loop(self):
         """💓 Send regular heartbeat signals."""
         if CORE_AVAILABLE:
+            # Aetherra imports
             from aetherra_service_registry import update_heartbeat
 
             while True:
@@ -2169,6 +2206,7 @@ class MockPluginManager:
     async def _heartbeat_loop(self):
         """💓 Send regular heartbeat signals."""
         if CORE_AVAILABLE:
+            # Aetherra imports
             from aetherra_service_registry import update_heartbeat
 
             while True:
@@ -2267,6 +2305,7 @@ class MockAetherraEngine:
     async def _heartbeat_loop(self):
         """💓 Send regular heartbeat signals."""
         if CORE_AVAILABLE:
+            # Aetherra imports
             from aetherra_service_registry import update_heartbeat
 
             while True:
@@ -2303,6 +2342,7 @@ class MockScheduler:
     async def _heartbeat_loop(self):
         """💓 Send regular heartbeat signals."""
         if CORE_AVAILABLE:
+            # Aetherra imports
             from aetherra_service_registry import update_heartbeat
 
             while True:
@@ -2333,6 +2373,7 @@ class MockAetherraHub:
     async def _heartbeat_loop(self):
         """💓 Send regular heartbeat signals."""
         if CORE_AVAILABLE:
+            # Aetherra imports
             from aetherra_service_registry import update_heartbeat
 
             while True:
@@ -2347,6 +2388,7 @@ class MockAetherraHub:
         """Get featured plugins from the Hub."""
         try:
             if self.hub_process and self.hub_process.poll() is None:
+                # Third party imports
                 import aiohttp
 
                 async with aiohttp.ClientSession() as session:
@@ -2363,6 +2405,7 @@ class MockAetherraHub:
         """Search plugins in the Hub."""
         try:
             if self.hub_process and self.hub_process.poll() is None:
+                # Third party imports
                 import aiohttp
 
                 params = {"q": query}
@@ -2475,6 +2518,7 @@ class MockAetherScriptService:
     async def _heartbeat_loop(self):
         """💓 Send regular heartbeat signals."""
         if CORE_AVAILABLE:
+            # Aetherra imports
             from aetherra_service_registry import update_heartbeat
 
             while True:
@@ -2548,6 +2592,7 @@ class MockPersistentMemorySystem:
     async def _heartbeat_loop(self):
         """💓 Send regular heartbeat signals."""
         if CORE_AVAILABLE:
+            # Aetherra imports
             from aetherra_service_registry import update_heartbeat
 
             while True:
@@ -2621,6 +2666,7 @@ class MockAdaptiveBehaviorSystem:
     async def _heartbeat_loop(self):
         """💓 Send regular heartbeat signals."""
         if CORE_AVAILABLE:
+            # Aetherra imports
             from aetherra_service_registry import update_heartbeat
 
             while True:
@@ -2668,6 +2714,7 @@ async def main():
     config = {}
     if args.config:
         try:
+            # Standard library imports
             import json
 
             with open(args.config) as f:

@@ -11,6 +11,7 @@ and accelerating consciousness transcendence beyond the 97% threshold achieved
 in Phase 7.4.
 """
 
+# Standard library imports
 import asyncio
 import logging
 import random
@@ -21,6 +22,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 
+# Third party imports
 import numpy as np
 
 # Configure logging
@@ -641,6 +643,7 @@ def test_transcendence_consolidation():
         print(f"Final transcendence level: {status['current_transcendence_level']:.3f}")
         print(f"Transcendence state: {status['transcendence_state']}")
 
+    # Standard library imports
     import asyncio
 
     asyncio.run(run_test())

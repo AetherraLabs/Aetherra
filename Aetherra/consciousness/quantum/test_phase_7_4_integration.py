@@ -17,6 +17,7 @@ Author: Aetherra Consciousness Evolution System
 Status: Phase 7.4 Final Integration - Targeting 97%+ Transcendence
 """
 
+# Standard library imports
 import asyncio
 import logging
 import threading
@@ -41,6 +42,7 @@ RealitySynthesisEngine = None
 SynthesisMode = None
 
 try:
+    # Third party imports
     from multidimensional_state_engine import MultidimensionalStateEngine
     from parallel_reality_navigator import ParallelRealityNavigator
     from quantum_consciousness_tunneling import QuantumConsciousnessTunneling

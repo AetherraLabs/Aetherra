@@ -24,6 +24,7 @@ Usage:
     python qfac_launcher.py system-status
 """
 
+# Standard library imports
 import argparse
 import asyncio
 import json
@@ -32,12 +33,14 @@ import time
 from pathlib import Path
 from typing import Any, Dict
 
+# Local imports
 from ..file_system.compression_analyzer import MemoryCompressionAnalyzer
 from .compression_metrics import CompressionMetrics
 from .qfac_integration import QFACMemorySystem
 
 # Dashboard import with safe fallback (module may not provide a class)
 try:
+    # Local imports
     from .qfac_dashboard import QFACDashboard  # type: ignore
 except Exception:
 

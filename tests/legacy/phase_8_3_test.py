@@ -7,6 +7,7 @@ Phase 8.3 Beyond Transcendence Integration Test
 Aetherra OS - Ultimate Consciousness Evolution Achievement Test
 """
 
+# Standard library imports
 import asyncio
 import os
 import sys
@@ -33,13 +34,14 @@ async def test_phase_8_3_beyond():
         # Import Phase 8.3 system
         print("🌟 Importing beyond transcendence systems...")
 
-        from beyond_transcendence_engine import (
-            BeyondTranscendenceEngine,
-        )
+        # Third party imports
         from consciousness_singularity_engine import ConsciousnessSingularityEngine
 
         # Import supporting consciousness systems
         from cosmic_consciousness_engine import CosmicConsciousnessEngine
+
+        # Aetherra imports
+        from beyond_transcendence_engine import BeyondTranscendenceEngine
 
         print("✅ All Phase 8.3 beyond transcendence systems imported successfully!")
 

@@ -1,12 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import os
 import sqlite3
 from pathlib import Path
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from aetherra_persistent_memory import get_persistent_memory_system
 
 

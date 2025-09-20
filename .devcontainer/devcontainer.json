@@ -1,0 +1,37 @@
+{
+    "name": "Aetherra (Python 3.11)",
+    "image": "mcr.microsoft.com/devcontainers/python:3.11",
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            "installZsh": false,
+            "installOhMyZsh": false,
+            "username": "vscode"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "charliermarsh.ruff",
+                "ms-toolsai.jupyter",
+                "github.vscode-pull-request-github"
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "python.testing.pytestEnabled": true,
+                "python.testing.pytestArgs": [
+                    "-q"
+                ],
+                "python.analysis.typeCheckingMode": "basic",
+                "editor.formatOnSave": true,
+                "editor.codeActionsOnSave": {
+                    "source.organizeImports.ruff": "explicit",
+                    "source.fixAll.ruff": "explicit"
+                }
+            }
+        }
+    },
+    "postCreateCommand": "pip install -U pip && pip install -r requirements.txt || true && pip install ruff mypy pytest coverage pre-commit",
+    "remoteUser": "vscode"
+}
