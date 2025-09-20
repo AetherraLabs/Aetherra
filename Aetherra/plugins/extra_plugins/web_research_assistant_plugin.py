@@ -355,7 +355,7 @@ class WebExtractor:
             html = html_module.unescape(html)
 
             # Remove dangerous tags completely with their content
-            dangerous_tags = r"<(?:script|style|object|embed|applet|iframe|frame|frameset|meta|link)[^>]*>.*?</(?:script|style|object|embed|applet|iframe|frame|frameset|meta|link)>"
+            dangerous_tags = r"<(?:script|style|object|embed|applet|iframe|frame|frameset|meta|link)\b[^>]*>.*?</(?:script|style|object|embed|applet|iframe|frame|frameset|meta|link)\b[^>]*>"
             html = re.sub(dangerous_tags, "", html, flags=re.IGNORECASE | re.DOTALL)
 
             # Remove any remaining script/style tags (unclosed ones)
