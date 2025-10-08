@@ -358,8 +358,31 @@ class AetherraOSLauncher:
         self.startup_time = time.time()
 
         try:
+            # Enforce "no fake data" posture in all-systems mode when requested
+            cfg = config or {}
+            run_mode = (
+                str(cfg.get("mode") or os.getenv("AETHERRA_MODE") or "full")
+                .strip()
+                .lower()
+            )
+            no_fake_env = os.getenv("AETHERRA_NO_FAKE_DATA", "")
+            no_fake = (no_fake_env not in (None, "", "0")) or (run_mode == "full")
+            if no_fake:
+                # Disable any test-only fake metrics or stubs via env overrides
+                os.environ["AETHERRA_QFAC_VALIDATOR_FAKE"] = "1"
+                os.environ["AETHERRA_QFAC_SHADOW_FAKE"] = "0"
+                os.environ["AETHERRA_QFAC_FAST_STUB"] = "0"
+                # Also clear specific fake counters if present
+                for k in (
+                    "AETHERRA_QFAC_VALIDATOR_FAKE_GREEN",
+                    "AETHERRA_QFAC_VALIDATOR_FAKE_BLOCKED",
+                    "AETHERRA_QFAC_SHADOW_FAKE_TOTAL",
+                    "AETHERRA_QFAC_SHADOW_FAKE_RECENT",
+                ):
+                    os.environ.pop(k, None)
+
             # Apply logging mode (quiet or custom level) ASAP
-            self._apply_logging_mode(config or {})
+            self._apply_logging_mode(cfg)
 
             # Phase 1: Initialize Service Registry
             await self._initialize_service_registry()
@@ -457,8 +480,14 @@ class AetherraOSLauncher:
             enable_qfac_early = bool(
                 os.getenv("AETHERRA_QFAC_IN_OS") or os.getenv("AETHERRA_ENABLE_QFAC")
             )
+            _profile = (os.environ.get("AETHERRA_PROFILE", "") or "").strip().lower()
+            # Only use the ultra-early stub in tests/CI or when explicitly requested
+            use_fast_stub = os.getenv(
+                "AETHERRA_QFAC_FAST_STUB", "0"
+            ) == "1" or _profile in ("test", "ci")
             if (
                 enable_qfac_early
+                and use_fast_stub
                 and self.service_registry.get_service_info("qfac_memory_system") is None
             ):
                 logger.info(
@@ -518,7 +547,7 @@ class AetherraOSLauncher:
                     pass
                 self.systems["qfac_memory"] = early_stub
                 logger.info("[OK] QFAC early stub registered (pre-core systems)")
-            elif enable_qfac_early:
+            elif enable_qfac_early and use_fast_stub:
                 logger.info(
                     "[QFAC][TRACE] Early QFAC enable flag set but service already present; refreshing metadata"
                 )
@@ -630,7 +659,11 @@ class AetherraOSLauncher:
                 or os.getenv("AETHERRA_QFAC_IN_OS")
                 or os.getenv("AETHERRA_ENABLE_QFAC")
             )
-            if enable_qfac_fast and "qfac_memory" not in self.systems:
+            _profile = (os.environ.get("AETHERRA_PROFILE", "") or "").strip().lower()
+            use_fast_stub = os.getenv(
+                "AETHERRA_QFAC_FAST_STUB", "0"
+            ) == "1" or _profile in ("test", "ci")
+            if enable_qfac_fast and use_fast_stub and "qfac_memory" not in self.systems:
                 # Aetherra imports
                 from aetherra_service_registry import (
                     ServiceStatus,
@@ -1014,13 +1047,24 @@ class AetherraOSLauncher:
                     or os.getenv("AETHERRA_ENABLE_QFAC")
                 )
                 if enable_qfac:
-                    # If a fast-path stub was already registered, defer real system initialization
+                    # Prefer real QFAC system unless explicitly running in fast-stub mode (tests/CI)
+                    _profile = (
+                        (os.environ.get("AETHERRA_PROFILE", "") or "").strip().lower()
+                    )
+                    use_fast_stub = os.getenv(
+                        "AETHERRA_QFAC_FAST_STUB", "0"
+                    ) == "1" or _profile in ("test", "ci")
                     existing = self.systems.get("qfac_memory")
                     if existing is not None and getattr(existing, "_is_stub", False):
+                        if use_fast_stub:
+                            logger.info(
+                                "[QFAC] Fast-path stub present; deferring real QFAC system initialization in %s profile",
+                                _profile or "fast-stub",
+                            )
+                            return
                         logger.info(
-                            "[QFAC] Fast-path stub present; deferring real QFAC system initialization this run"
+                            "[QFAC] Replacing fast-path stub with real QFAC Memory System"
                         )
-                        return
                     # Aetherra imports
                     from Aetherra.aetherra_core.memory.qfac_integration import (
                         QFACMemorySystem,
@@ -1039,13 +1083,27 @@ class AetherraOSLauncher:
                         },
                     )
                     # Immediately mark healthy to satisfy optional service capability test
-                    try:
-                        if self.service_registry:
+                    # Best-effort status update; ignore failures
+                    if self.service_registry:
+                        from contextlib import suppress
+
+                        with suppress(Exception):
                             await self.service_registry.update_service_status(
                                 "qfac_memory_system", ServiceStatus.HEALTHY
                             )
-                    except Exception:
-                        pass
+                    # Optionally auto-start the QFAC dashboard for live metrics during OS runtime
+                    try:
+                        if os.getenv("AETHERRA_QFAC_DASHBOARD", "0") == "1":
+                            dash = getattr(qfac_system, "dashboard", None)
+                            if dash and hasattr(dash, "start_dashboard"):
+                                asyncio.create_task(dash.start_dashboard("interactive"))
+                                logger.info(
+                                    "[QFAC] Dashboard auto-start requested (AETHERRA_QFAC_DASHBOARD=1)"
+                                )
+                    except Exception as _dash_exc:
+                        logger.debug(
+                            "[QFAC] Dashboard auto-start suppressed: %s", _dash_exc
+                        )
                     logger.info("[OK] QFAC Memory System registered (optional)")
             except Exception as qerr:
                 logger.warning(f"[WARN] QFAC Memory System not available: {qerr}")
@@ -1136,14 +1194,25 @@ class AetherraOSLauncher:
                         "[OK] Aether Script Service online - .aether files ready"
                     )
             except ImportError as e:
-                logger.warning(f"[WARN] Using mock Aether Script service: {e}")
-                mock_aether_script = MockAetherScriptService()
-                self.systems["aether_script"] = mock_aether_script
-                await register_service(
-                    "aether_script_service",
-                    mock_aether_script,
-                    metadata={"type": "mock", "version": "1.0"},
-                )
+                logger.warning(f"[WARN] Aether Script service not available: {e}")
+                no_fake = os.getenv("AETHERRA_NO_FAKE_DATA", "") not in (
+                    None,
+                    "",
+                    "0",
+                ) or (os.getenv("AETHERRA_MODE", "").strip().lower() == "full")
+                if no_fake:
+                    logger.info(
+                        "[SCRIPT] No-fake-data policy active; skipping mock Aether Script service"
+                    )
+                else:
+                    logger.warning("[WARN] Using mock Aether Script service")
+                    mock_aether_script = MockAetherScriptService()
+                    self.systems["aether_script"] = mock_aether_script
+                    await register_service(
+                        "aether_script_service",
+                        mock_aether_script,
+                        metadata={"type": "mock", "version": "1.0"},
+                    )
 
         except Exception as e:
             logger.error(f"[ERROR] Failed to load Aether Script service: {e}")
@@ -1173,14 +1242,25 @@ class AetherraOSLauncher:
                     "[OK] Persistent Memory System online - cognitive state preserved"
                 )
             except ImportError as e:
-                logger.warning(f"[WARN] Using mock persistent memory system: {e}")
-                mock_persistent_memory = MockPersistentMemorySystem()
-                self.systems["persistent_memory"] = mock_persistent_memory
-                await register_service(
-                    "persistent_memory_system",
-                    mock_persistent_memory,
-                    metadata={"type": "mock", "version": "1.0"},
-                )
+                logger.warning(f"[WARN] Persistent memory system not available: {e}")
+                no_fake = os.getenv("AETHERRA_NO_FAKE_DATA", "") not in (
+                    None,
+                    "",
+                    "0",
+                ) or (os.getenv("AETHERRA_MODE", "").strip().lower() == "full")
+                if no_fake:
+                    logger.info(
+                        "[MEMORY] No-fake-data policy active; skipping mock persistent memory system"
+                    )
+                else:
+                    logger.warning("[WARN] Using mock persistent memory system")
+                    mock_persistent_memory = MockPersistentMemorySystem()
+                    self.systems["persistent_memory"] = mock_persistent_memory
+                    await register_service(
+                        "persistent_memory_system",
+                        mock_persistent_memory,
+                        metadata={"type": "mock", "version": "1.0"},
+                    )
 
         except Exception as e:
             logger.error(f"[ERROR] Failed to load Persistent Memory system: {e}")
@@ -1212,14 +1292,25 @@ class AetherraOSLauncher:
                     "[OK] Adaptive Behavior System online - continuous learning active"
                 )
             except ImportError as e:
-                logger.warning(f"[WARN] Using mock adaptive behavior system: {e}")
-                mock_adaptive_behavior = MockAdaptiveBehaviorSystem()
-                self.systems["adaptive_behavior"] = mock_adaptive_behavior
-                await register_service(
-                    "adaptive_behavior_system",
-                    mock_adaptive_behavior,
-                    metadata={"type": "mock", "version": "1.0"},
-                )
+                logger.warning(f"[WARN] Adaptive behavior system not available: {e}")
+                no_fake = os.getenv("AETHERRA_NO_FAKE_DATA", "") not in (
+                    None,
+                    "",
+                    "0",
+                ) or (os.getenv("AETHERRA_MODE", "").strip().lower() == "full")
+                if no_fake:
+                    logger.info(
+                        "[ADAPT] No-fake-data policy active; skipping mock adaptive behavior system"
+                    )
+                else:
+                    logger.warning("[WARN] Using mock adaptive behavior system")
+                    mock_adaptive_behavior = MockAdaptiveBehaviorSystem()
+                    self.systems["adaptive_behavior"] = mock_adaptive_behavior
+                    await register_service(
+                        "adaptive_behavior_system",
+                        mock_adaptive_behavior,
+                        metadata={"type": "mock", "version": "1.0"},
+                    )
 
         except Exception as e:
             logger.error(f"[ERROR] Failed to load Adaptive Behavior system: {e}")
@@ -1229,6 +1320,16 @@ class AetherraOSLauncher:
         """🧠 Load the consciousness evolution systems (Phases 1-8.3)."""
         try:
             logger.info("[CONSCIOUSNESS] Loading Consciousness Evolution Systems...")
+
+            # Determine no-fake-data posture to decide whether to allow mocks
+            try:
+                cfg_mode = str(os.getenv("AETHERRA_MODE", "")).strip().lower()
+            except Exception:
+                cfg_mode = ""
+            no_fake_env = os.getenv("AETHERRA_NO_FAKE_DATA", "")
+            no_fake_policy = (no_fake_env not in (None, "", "0")) or (
+                cfg_mode == "full"
+            )
 
             try:
                 # Load Phase 7 Quantum Consciousness Systems
@@ -1307,13 +1408,50 @@ class AetherraOSLauncher:
                 logger.warning(
                     f"[WARN] Phase 8 consciousness engines not available: {e}"
                 )
-                # Create mock Phase 8 systems
+                if no_fake_policy:
+                    logger.info(
+                        "[CONSCIOUSNESS] No-fake-data policy active; skipping mock Phase 8 registrations"
+                    )
+                else:
+                    # Create mock Phase 8 systems for non-strict runs
+                    mock_cosmic = MockCosmicConsciousness()
+                    mock_transcendence = MockBeyondTranscendence()
+
+                    self.systems["universal_cognition"] = mock_cosmic
+                    self.systems["meta_cognition"] = mock_transcendence
+
+                    await register_service(
+                        "universal_cognition",
+                        mock_cosmic,
+                        metadata={"type": "mock", "version": "8.2"},
+                    )
+                    await register_service(
+                        "meta_cognition",
+                        mock_transcendence,
+                        metadata={"type": "mock", "version": "8.3"},
+                    )
+
+        except ImportError as e:
+            logger.warning(f"[WARN] Quantum consciousness systems not available: {e}")
+            if no_fake_policy:
+                logger.info(
+                    "[CONSCIOUSNESS] No-fake-data policy active; skipping all mock consciousness registrations"
+                )
+            else:
+                # Create mock consciousness systems for non-strict runs
+                mock_quantum = MockQuantumConsciousness()
                 mock_cosmic = MockCosmicConsciousness()
                 mock_transcendence = MockBeyondTranscendence()
 
+                self.systems["quantum_cognition"] = mock_quantum
                 self.systems["universal_cognition"] = mock_cosmic
                 self.systems["meta_cognition"] = mock_transcendence
 
+                await register_service(
+                    "quantum_cognition",
+                    mock_quantum,
+                    metadata={"type": "mock", "version": "7.0"},
+                )
                 await register_service(
                     "universal_cognition",
                     mock_cosmic,
@@ -1324,33 +1462,6 @@ class AetherraOSLauncher:
                     mock_transcendence,
                     metadata={"type": "mock", "version": "8.3"},
                 )
-
-        except ImportError as e:
-            logger.warning(f"[WARN] Quantum consciousness systems not available: {e}")
-            # Create mock consciousness systems
-            mock_quantum = MockQuantumConsciousness()
-            mock_cosmic = MockCosmicConsciousness()
-            mock_transcendence = MockBeyondTranscendence()
-
-            self.systems["quantum_cognition"] = mock_quantum
-            self.systems["universal_cognition"] = mock_cosmic
-            self.systems["meta_cognition"] = mock_transcendence
-
-            await register_service(
-                "quantum_cognition",
-                mock_quantum,
-                metadata={"type": "mock", "version": "7.0"},
-            )
-            await register_service(
-                "universal_cognition",
-                mock_cosmic,
-                metadata={"type": "mock", "version": "8.2"},
-            )
-            await register_service(
-                "meta_cognition",
-                mock_transcendence,
-                metadata={"type": "mock", "version": "8.3"},
-            )
 
         except Exception as e:
             logger.error(f"[ERROR] Failed to load consciousness systems: {e}")
@@ -1890,6 +2001,38 @@ class AetherraOSLauncher:
 
         logger.info("[OK] System health validation complete")
 
+        # Strict no-fake-data guard: in all-systems runs, refuse to continue if any mock/stub is present
+        try:
+            cfg_mode = None
+            try:
+                # Best effort: the main() placed mode into config; we keep a shadow copy in env if needed
+                cfg_mode = os.getenv("AETHERRA_MODE")
+            except Exception:
+                cfg_mode = None
+            no_fake_env = os.getenv("AETHERRA_NO_FAKE_DATA", "")
+            no_fake = (no_fake_env not in (None, "", "0")) or (cfg_mode == "full")
+            if no_fake and self.service_registry:
+                fake_services: list[str] = []
+                for name, info in self.service_registry.list_services().items():
+                    meta = info.metadata or {}
+                    if str(meta.get("type", "")).lower() == "mock" or bool(
+                        meta.get("stub")
+                    ):
+                        fake_services.append(name)
+                # Also check if launcher kept a stub instance for QFAC
+                qfac = self.systems.get("qfac_memory")
+                if qfac is not None and getattr(qfac, "_is_stub", False):
+                    fake_services.append("qfac_memory_system")
+                if fake_services:
+                    logger.error(
+                        "[ERROR] No-fake-data policy enforced: mock/stub services detected in all-systems run: %s",
+                        ", ".join(sorted(set(fake_services))),
+                    )
+                    raise RuntimeError("no_fake_data_violation")
+        except Exception as _nf_err:
+            # Bubble up to main loop to trigger emergency shutdown
+            raise
+
     async def _announce_os_online(self):
         """📢 Announce that Aetherra OS is fully online."""
         start_t = self.startup_time if self.startup_time is not None else time.time()
@@ -1912,6 +2055,18 @@ class AetherraOSLauncher:
         logger.info("[MEM] Quantum memory: Operational")
         logger.info("[SCHED] Task scheduler: Running")
         logger.info("=" * 60)
+
+        # Optionally launch a lightweight monitor window (separate process)
+        try:
+            if os.getenv("AETHERRA_KEEP_MONITOR", "0") == "1":
+                import subprocess
+                import sys as _sys
+
+                monitor_path = os.path.join("Aetherra", "gui", "boot_monitor.py")
+                subprocess.Popen([_sys.executable, monitor_path])
+                logger.info("[MON] Boot monitor launched")
+        except Exception as _mon_err:
+            logger.debug(f"[MON] Monitor launch suppressed: {_mon_err}")
 
         # Send first thought to Aetherra
         if self.kernel_loop:
@@ -2703,6 +2858,12 @@ async def main():
     parser.add_argument("--gui", action="store_true", help="Force enable GUI")
     parser.add_argument("--no-gui", action="store_true", help="Force disable GUI")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose logging")
+    # Optional BIOS-like boot menu before launch
+    parser.add_argument(
+        "--boot-menu",
+        action="store_true",
+        help="Show the boot menu to pick mode and toggles before launching",
+    )
 
     args = parser.parse_args()
 
@@ -2728,6 +2889,83 @@ async def main():
         config["gui_enabled"] = True
     elif args.no_gui:
         config["gui_enabled"] = False
+
+    # Persist selected mode into config for downstream policy gates
+    config["mode"] = args.mode
+
+    # Optionally collect boot choice and apply to env/config
+    try:
+        want_boot_menu = args.boot_menu or os.getenv("AETHERRA_BOOT_MENU", "0") == "1"
+    except Exception:
+        want_boot_menu = False
+
+    if want_boot_menu:
+        try:
+            # Aetherra imports (boot menu has a console fallback if PySide6 is missing)
+            from Aetherra.gui.boot_menu import (
+                show_boot_menu_and_get_choice,  # type: ignore
+            )
+
+            choice = show_boot_menu_and_get_choice() or {}
+            # Map choice into env/config
+            if isinstance(choice, dict):
+                # Safe mode maps to minimal launch
+                if bool(choice.get("safe_mode")):
+                    config["mode"] = "minimal"
+                # Respect explicit profile
+                profile = (choice.get("profile") or "").strip()
+                if profile:
+                    os.environ["AETHERRA_PROFILE"] = profile
+                # No-fake-data enforcement
+                if "no_fake_data" in choice:
+                    os.environ["AETHERRA_NO_FAKE_DATA"] = (
+                        "1" if choice.get("no_fake_data") else "0"
+                    )
+                # QFAC enablement inside OS
+                if "enable_qfac" in choice:
+                    val = "1" if choice.get("enable_qfac") else "0"
+                    os.environ["AETHERRA_ENABLE_QFAC"] = val
+                    os.environ["AETHERRA_QFAC_IN_OS"] = val
+                # QFAC dashboard auto-start
+                if "start_qfac_dashboard" in choice:
+                    os.environ["AETHERRA_QFAC_DASHBOARD"] = (
+                        "1" if choice.get("start_qfac_dashboard") else "0"
+                    )
+                # Strict security posture
+                if "strict_security" in choice:
+                    val = "1" if choice.get("strict_security") else "0"
+                    os.environ["AETHERRA_NET_STRICT"] = val
+                    os.environ["AETHERRA_SCRIPT_VERIFY_STRICT"] = val
+                # Keep monitor window after boot
+                if "keep_monitor" in choice:
+                    os.environ["AETHERRA_KEEP_MONITOR"] = (
+                        "1" if choice.get("keep_monitor") else "0"
+                    )
+                # Mode selection (used by downstream UIs); OS keeps its own launch mode handling
+                sel_mode = (choice.get("mode") or "").strip().lower()
+                if sel_mode == "exit":
+                    logger.info("[BOOT] Exit selected in boot menu; aborting launch")
+                    return 0
+                # Expose selection for downstream consumers (Lyrixa launcher, GUIs)
+                if sel_mode:
+                    os.environ["AETHERRA_BOOT_SELECTION"] = sel_mode
+                # CLI/Diagnostics imply headless preference for this process
+                if sel_mode in {"cli", "diagnostics"}:
+                    config["gui_enabled"] = False
+            # Persist effective mode into env for later guards
+            if config.get("mode"):
+                os.environ["AETHERRA_MODE"] = str(config["mode"]).lower()
+            logger.info(
+                "[BOOT] Applied boot choice: mode=%s, profile=%s, no_fake=%s, qfac=%s, dash=%s, strict=%s",
+                config.get("mode"),
+                os.environ.get("AETHERRA_PROFILE", ""),
+                os.environ.get("AETHERRA_NO_FAKE_DATA", ""),
+                os.environ.get("AETHERRA_ENABLE_QFAC", ""),
+                os.environ.get("AETHERRA_QFAC_DASHBOARD", ""),
+                os.environ.get("AETHERRA_NET_STRICT", ""),
+            )
+        except Exception as e:
+            logger.warning(f"[BOOT] Boot menu unavailable or failed: {e}")
 
     # Create and launch OS
     launcher = AetherraOSLauncher()

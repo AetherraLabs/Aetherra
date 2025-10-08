@@ -25,13 +25,8 @@ except Exception:  # pragma: no cover
     CORS = None
 
 # Local imports
-from .blueprints import memory  # memory graph stub
-from .blueprints import peers  # federation stub
-from .blueprints import quantum  # new
-from .blueprints import self_incorporation  # new
-from .blueprints import telemetry  # new
-from .blueprints import trainer  # new
 from .blueprints import (  # pylint: disable=unused-import
+    agents,
     ai_ask,
     ai_stream,
     chat,
@@ -39,10 +34,17 @@ from .blueprints import (  # pylint: disable=unused-import
     keb,
     kernel,
     klm,
+    memory,  # memory graph stub
     metrics,
     openapi,
+    peers,  # federation stub
     plugins,
+    qfac_admin,
+    quantum,  # new
+    self_incorporation,  # new
     site_status,
+    telemetry,  # new
+    trainer,  # new
 )
 from .config import Settings, settings
 
@@ -55,10 +57,12 @@ BLUEPRINTS = [
     metrics.bp,
     health.bp,
     site_status.bp,
+    qfac_admin.bp,
     kernel.bp,
     klm.bp,
     keb.bp,
     plugins.bp,
+    agents.bp,
     chat.bp,
     ai_ask.bp,
     ai_stream.bp,

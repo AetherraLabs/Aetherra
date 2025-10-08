@@ -1,0 +1,130 @@
+{
+  "_meta": {
+    "profile": "test",
+    "ts": 1758593416.0234954,
+    "all_passed": true
+  },
+  "launcher_smoke": {
+    "ok": true,
+    "manual": false,
+    "duration_sec": 15.339,
+    "details": {
+      "services": [
+        "adaptive_behavior_system",
+        "aether_script_service",
+        "aetherra_engine",
+        "agent.bughunter",
+        "agent.ethics_guard",
+        "agent.executor",
+        "agent.memory_analyzer",
+        "agent.ops",
+        "agent.planner",
+        "agent.retriever",
+        "agent.summarizer",
+        "agent.toolsmith",
+        "agent_fabric",
+        "event_bus",
+        "kernel_loop",
+        "lyrixa_chat",
+        "memory_system",
+        "meta_cognition",
+        "module_manager",
+        "persistent_memory_system",
+        "plugin_manager",
+        "qfac_memory_system",
+        "quantum_cognition",
+        "scheduler",
+        "self_improvement_engine",
+        "self_incorporation",
+        "self_repair_service",
+        "universal_cognition"
+      ],
+      "missing": [],
+      "expected": [
+        "aetherra_engine",
+        "memory_system",
+        "plugin_manager"
+      ],
+      "evidence_status_file": "kernel_status_ui.py"
+    }
+  },
+  "chat_sse_resume": {
+    "ok": true,
+    "manual": false,
+    "duration_sec": 5.913,
+    "details": {
+      "last_id": 3,
+      "resumed_first": 4,
+      "monotonic": true
+    }
+  },
+  "security_strict": {
+    "ok": true,
+    "manual": false,
+    "duration_sec": 3.769,
+    "details": {
+      "scripts_ok": true,
+      "report": "aether_static_report.md",
+      "stdout": "",
+      "stderr": "",
+      "scripts_ok_report_override": true,
+      "net_call_status": 200
+    }
+  },
+  "memory_qfac": {
+    "ok": true,
+    "manual": false,
+    "duration_sec": 0.004,
+    "details": {
+      "node": "qfac_node_000000",
+      "retrieved_type": "dict",
+      "nodes_total": 1,
+      "mode": "hybrid"
+    }
+  },
+  "hmr_quiesce": {
+    "ok": true,
+    "manual": true,
+    "duration_sec": 0.0,
+    "details": {
+      "manual_followup": true,
+      "reason": "hmr_controller not registered (enable in launcher to fully test)"
+    }
+  },
+  "agents_api": {
+    "ok": true,
+    "manual": false,
+    "duration_sec": 4.069,
+    "details": {
+      "disabled_status": 501,
+      "enabled_status": 200
+    }
+  },
+  "quality_gates": {
+    "ok": true,
+    "manual": false,
+    "duration_sec": 187.471,
+    "details": {
+      "tests_ok": true,
+      "stdout_snippet": [
+        "........................................................................ [ 63%]",
+        ".........................................                                [100%]",
+        "113 passed, 1 skipped in 179.48s (0:02:59)"
+      ],
+      "spec_tests_exit": 0,
+      "spec_tests_stdout": [
+        "[SPEC->TESTS] OK: 2 test file(s) changed for 9 code file(s)."
+      ],
+      "spec_tests_stderr": ""
+    }
+  },
+  "policy_privacy": {
+    "ok": true,
+    "manual": false,
+    "duration_sec": 3.06,
+    "details": {
+      "header_present": true,
+      "policy_event": true
+    }
+  }
+}

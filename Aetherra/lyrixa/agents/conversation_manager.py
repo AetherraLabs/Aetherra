@@ -19,7 +19,6 @@ ROADMAP ITEM #8: Intelligent Error Handling
 Builds upon Enhanced Conversational AI (#7) for intelligent error communication.
 """
 
-
 # Standard library imports
 import logging
 import os
@@ -225,9 +224,7 @@ class LyrixaEnhancedConversationManager:
 
         # Retrieve conversation history and memory context
         conversation_history = self._get_conversation_history(session_id, thread_id)
-        memory_context = await self._retrieve_memory_context(
-            message, user_id, conv_context
-        )
+        memory_context = await self._retrieve_memory_context(message, user_id, conv_context)
 
         # Generate enhanced response
         response = await self._generate_enhanced_response(
@@ -306,9 +303,7 @@ class LyrixaEnhancedConversationManager:
         max_score = 0.0
 
         if intent_scores:
-            primary_intent_name = max(
-                intent_scores.keys(), key=lambda k: intent_scores[k]["score"]
-            )
+            primary_intent_name = max(intent_scores.keys(), key=lambda k: intent_scores[k]["score"])
             max_score = intent_scores[primary_intent_name]["score"]
 
             if max_score >= self.intent_confidence_threshold:
@@ -353,14 +348,10 @@ class LyrixaEnhancedConversationManager:
             return ConversationType.SYSTEM_COMMAND
 
         # Fallback classification
-        if any(
-            word in message_lower
-            for word in ["?", "what", "how", "why", "when", "where"]
-        ):
+        if any(word in message_lower for word in ["?", "what", "how", "why", "when", "where"]):
             return ConversationType.QUESTION
         elif any(
-            word in message_lower
-            for word in ["create", "build", "make", "generate", "write"]
+            word in message_lower for word in ["create", "build", "make", "generate", "write"]
         ):
             return ConversationType.CODE_REQUEST
         else:
@@ -395,10 +386,7 @@ class LyrixaEnhancedConversationManager:
             for word in ["urgent", "critical", "emergency", "asap", "immediately"]
         ):
             urgency = 5
-        elif any(
-            word in message_lower
-            for word in ["important", "priority", "needed", "required"]
-        ):
+        elif any(word in message_lower for word in ["important", "priority", "needed", "required"]):
             urgency = 4
         elif any(word in message_lower for word in ["soon", "quickly", "fast"]):
             urgency = 3
@@ -441,32 +429,29 @@ class LyrixaEnhancedConversationManager:
 
         return None
 
-    def _assess_followup_need(
-        self, message: str, intent_scores: Dict[str, Any]
-    ) -> bool:
+    def _assess_followup_need(self, message: str, intent_scores: Dict[str, Any]) -> bool:
         """Determine if conversation likely needs followup"""
         message_lower = message.lower()
 
         # Questions typically need followup
-        if any(
-            word in message_lower for word in ["?", "what", "how", "why", "explain"]
-        ):
+        if any(word in message_lower for word in ["?", "what", "how", "why", "explain"]):
             return True
 
         # Complex requests need followup
         if any(
-            intent in intent_scores
-            for intent in ["create_code", "debug_issue", "manage_project"]
+            intent in intent_scores for intent in ["create_code", "debug_issue", "manage_project"]
         ):
             return True
 
         # Learning requests need followup
-        if any(
-            word in message_lower for word in ["learn", "tutorial", "guide", "teach"]
-        ):
-            return True
-
-        return False
+        return (
+            any(word in message_lower for word in ["learn", "tutorial", "guide", "teach"])
+            or any(
+                intent in intent_scores
+                for intent in ["create_code", "debug_issue", "manage_project"]
+            )
+            or any(word in message_lower for word in ["?", "what", "how", "why", "explain"])
+        )
 
     def _generate_response(self, message: str, context: Dict[str, Any]) -> str:
         """Generate an intelligent response to the message"""
@@ -563,9 +548,7 @@ class LyrixaEnhancedConversationManager:
             logger.error(f"OpenAI API error: {e}")
             return await self._generate_fallback_response(message, context)
 
-    async def _generate_fallback_response(
-        self, message: str, context: Dict[str, Any]
-    ) -> str:
+    async def _generate_fallback_response(self, message: str, context: Dict[str, Any]) -> str:
         """Generate fallback response when AI API is unavailable."""
         message_lower = message.lower()
 
@@ -605,4 +588,11 @@ def get_conversation_manager(memory_engine=None) -> LyrixaEnhancedConversationMa
     return LyrixaEnhancedConversationManager(memory_engine)
 
 
-__all__ = ["LyrixaEnhancedConversationManager", "get_conversation_manager"]
+# Backwards compatibility alias expected by legacy tests
+LyrixaConversationManager = LyrixaEnhancedConversationManager
+
+__all__ = [
+    "LyrixaEnhancedConversationManager",
+    "LyrixaConversationManager",
+    "get_conversation_manager",
+]

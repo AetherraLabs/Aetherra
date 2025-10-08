@@ -15,10 +15,12 @@ result in a Response.
 from __future__ import annotations
 
 # Standard library imports
+import contextlib
+import logging
 import os
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 # Local imports
 from . import registry_client
@@ -27,7 +29,7 @@ from . import registry_client
 
 try:  # trainer service optional (may not yet be fully migrated)
     # Local imports
-    from . import trainer as trainer_service  # type: ignore
+    from . import trainer as trainer_service
 except Exception:  # pragma: no cover - fallback stub
     trainer_service = None  # type: ignore
 
@@ -42,15 +44,15 @@ class ChatMetrics:
 
     requests_total: int = 0
     streams_current: int = 0
-    streams_by_principal: Dict[str, int] = field(default_factory=dict)
+    streams_by_principal: dict[str, int] = field(default_factory=dict)
     fallback_mock_total: int = 0  # aggregate counter (stable underlying counter)
-    fallback_path_counts: Dict[str, int] = field(
+    fallback_path_counts: dict[str, int] = field(
         default_factory=lambda: {"mock": 0, "cached": 0, "engine": 0}
     )
     # Latency histogram + aggregates
     latency_ms_sum: float = 0.0
     latency_count: int = 0
-    latency_hist: Dict[int, int] = field(
+    latency_hist: dict[int, int] = field(
         default_factory=lambda: {
             50: 0,
             100: 0,
@@ -64,7 +66,7 @@ class ChatMetrics:
     # Time-to-first-token (TTFT) placeholders for future streaming extraction
     ttft_ms_sum: float = 0.0
     ttft_count: int = 0
-    ttft_hist: Dict[int, int] = field(
+    ttft_hist: dict[int, int] = field(
         default_factory=lambda: {50: 0, 100: 0, 250: 0, 500: 0, 1000: 0, 2000: 0}
     )
     # Text + token IO counters
@@ -83,7 +85,7 @@ class ChatMetrics:
         0  # Provided token rejected (placeholder; increment site-wide when implemented)
     )
     hmr_denied_total: int = 0  # Total HMR load/reload requests denied
-    hmr_denied_reasons: Dict[str, int] = field(default_factory=dict)  # reason -> count
+    hmr_denied_reasons: dict[str, int] = field(default_factory=dict)  # reason -> count
     # SSE resume gap counter (P1 replay feature)
     resume_gaps_total: int = 0
     # Export deltas
@@ -129,32 +131,25 @@ class ChatMetrics:
             self.latency_hist[5000] = int(self.latency_hist.get(5000, 0)) + 1
 
     def add_input_stats(self, text: str, tokens: int):
-        try:
+        with contextlib.suppress(Exception):
             self.chars_in_total += len(text or "")
-        except Exception:
-            pass
-        try:
+        with contextlib.suppress(Exception):
             self.tokens_in_total += int(tokens)
-        except Exception:
-            pass
 
     def add_output_stats(self, text: str, tokens: int):
-        try:
+        with contextlib.suppress(Exception):
             self.chars_out_total += len(text or "")
-        except Exception:
-            pass
-        try:
+        with contextlib.suppress(Exception):
             self.tokens_out_total += int(tokens)
-        except Exception:
-            pass
 
 
 chat_metrics = ChatMetrics()
+logger = logging.getLogger(__name__)
 
 
 @dataclass
 class KernelHist:
-    buckets: Dict[int, int] = field(
+    buckets: dict[int, int] = field(
         default_factory=lambda: {10: 0, 20: 0, 50: 0, 100: 0, 200: 0, 500: 0, 1000: 0}
     )
     inf: int = 0
@@ -171,9 +166,9 @@ class KernelHist:
         if not placed:
             self.inf += 1
 
-    def lines(self) -> List[str]:
+    def lines(self) -> list[str]:
         cum = 0
-        out: List[str] = []
+        out: list[str] = []
         for b in (10, 20, 50, 100, 200, 500, 1000):
             cum += int(self.buckets.get(b, 0))
             out.append(f'aetherra_kernel_cycle_time_ms_bucket{{le="{b}"}} {cum}')
@@ -185,7 +180,7 @@ class KernelHist:
 
 @dataclass
 class OrchestratorHist:
-    buckets: Dict[int, int] = field(
+    buckets: dict[int, int] = field(
         default_factory=lambda: {
             10: 0,
             20: 0,
@@ -211,9 +206,9 @@ class OrchestratorHist:
         if not placed:
             self.inf += 1
 
-    def lines(self) -> List[str]:
+    def lines(self) -> list[str]:
         cum = 0
-        out: List[str] = []
+        out: list[str] = []
         for b in (10, 20, 50, 100, 200, 500, 1000, 2000):
             cum += int(self.buckets.get(b, 0))
             out.append(
@@ -231,33 +226,23 @@ orchestrator_hist = OrchestratorHist()
 
 # --- Security / HMR metrics helpers (Phase 0) ---
 def inc_auth_missing_token():  # pragma: no cover - simple counter
-    try:
-        chat_metrics.auth_missing_token_total += 1
-    except Exception:
-        pass
+    chat_metrics.auth_missing_token_total += 1
 
 
 def inc_auth_invalid_token():  # pragma: no cover
-    try:
-        chat_metrics.auth_invalid_token_total += 1
-    except Exception:
-        pass
+    chat_metrics.auth_invalid_token_total += 1
 
 
 def inc_hmr_denied(reason: str):  # pragma: no cover
-    try:
-        chat_metrics.hmr_denied_total += 1
-        if reason:
-            chat_metrics.hmr_denied_reasons[reason] = (
-                chat_metrics.hmr_denied_reasons.get(reason, 0) + 1
-            )
-    except Exception:
-        pass
+    chat_metrics.hmr_denied_total += 1
+    if reason:
+        chat_metrics.hmr_denied_reasons[reason] = (
+            chat_metrics.hmr_denied_reasons.get(reason, 0) + 1
+        )
 
 
-def export_prometheus(lines: List[str]) -> str:
-    body = "\n".join(lines) + "\n"
-    return body
+def export_prometheus(lines: list[str]) -> str:
+    return "\n".join(lines) + "\n"
 
 
 def baseline_reset_if_first(metrics: ChatMetrics):
@@ -269,8 +254,8 @@ def baseline_reset_if_first(metrics: ChatMetrics):
         metrics.first_scrape = False
 
 
-def chat_metrics_lines(metrics: ChatMetrics) -> List[str]:
-    lines: List[str] = []
+def chat_metrics_lines(metrics: ChatMetrics) -> list[str]:
+    lines: list[str] = []
     # HELP/TYPE preamble (added once per scrape; harmless repetition per Prometheus exposition format)
     lines.extend(
         [
@@ -291,14 +276,12 @@ def chat_metrics_lines(metrics: ChatMetrics) -> List[str]:
         ]
     )
     # Per-principal gauges
-    try:
+    with contextlib.suppress(Exception):
         for p, v in metrics.streams_by_principal.items():
             lines.append(
                 f'aetherra_chat_streams_current_by_principal{{principal="{p}"}} {v}'
             )
-    except Exception:
-        pass
-    try:
+    with contextlib.suppress(Exception):
         cum = 0
         order = [50, 100, 250, 500, 1000, 2000, 5000]
         for b in order:
@@ -311,8 +294,6 @@ def chat_metrics_lines(metrics: ChatMetrics) -> List[str]:
                 lines.append("# TYPE aetherra_chat_latency_ms_bucket histogram")
             lines.append(f'aetherra_chat_latency_ms_bucket{{le="{b}"}} {cum}')
         lines.append(f'aetherra_chat_latency_ms_bucket{{le="+Inf"}} {cum}')
-    except Exception:
-        pass
     # Fallback path counters
     mock_val = metrics.fallback_mock_total + metrics.fallback_mock_delta
     lines.append("# HELP aetherra_chat_fallback_total Fallback path counts by path")
@@ -354,7 +335,7 @@ def chat_metrics_lines(metrics: ChatMetrics) -> List[str]:
     lines.append("# HELP aetherra_chat_ttft_count Number of TTFT observations")
     lines.append("# TYPE aetherra_chat_ttft_count counter")
     lines.append(f"aetherra_chat_ttft_count {metrics.ttft_count}")
-    try:
+    with contextlib.suppress(Exception):
         cum_t = 0
         order_t = [50, 100, 250, 500, 1000, 2000]
         for b in order_t:
@@ -367,8 +348,6 @@ def chat_metrics_lines(metrics: ChatMetrics) -> List[str]:
                 lines.append("# TYPE aetherra_chat_ttft_ms_bucket histogram")
             lines.append(f'aetherra_chat_ttft_ms_bucket{{le="{b}"}} {cum_t}')
         lines.append(f'aetherra_chat_ttft_ms_bucket{{le="+Inf"}} {cum_t}')
-    except Exception:
-        pass
     # Breaker metric
     lines.append(
         "# HELP aetherra_chat_breaker_open_total Circuit breaker/timeouts opened total"
@@ -425,7 +404,14 @@ def _num(x: Any) -> float:  # safe numeric conversion
         return 0.0
 
 
-def _trainer_metrics_lines() -> List[str]:
+def _safe_len(obj: Any) -> int:
+    try:
+        return int(len(obj))
+    except Exception:
+        return 0
+
+
+def _trainer_metrics_lines() -> list[str]:
     # Provide HELP/TYPE once (not strictly required each scrape but acceptable)
     preamble = [
         "# HELP aetherra_trainer_enabled Trainer enabled gauge (1=enabled,0=disabled)",
@@ -457,13 +443,13 @@ def _trainer_metrics_lines() -> List[str]:
             "aetherra_trainer_eval_last_score 0",
         ]
     try:
-        snap = trainer_service.snapshot_metrics()  # type: ignore[attr-defined]
+        snap = trainer_service.snapshot_metrics()
     except Exception:
         return preamble + [
             "aetherra_trainer_enabled 0",
             "aetherra_trainer_eval_last_score 0",
         ]
-    lines: List[str] = []
+    lines: list[str] = []
     lines.append(f"aetherra_trainer_enabled {1 if snap.get('enabled') else 0}")
     for st in ("queued", "running", "completed", "failed"):
         lines.append(
@@ -485,8 +471,8 @@ def _trainer_metrics_lines() -> List[str]:
     return preamble + lines
 
 
-def build_all_metrics_lines() -> List[str]:  # core builder used by blueprint
-    lines: List[str] = []
+def build_all_metrics_lines() -> list[str]:  # core builder used by blueprint
+    lines: list[str] = []
     # Chat
     baseline_reset_if_first(chat_metrics)
     lines.extend(chat_metrics_lines(chat_metrics))
@@ -533,14 +519,12 @@ def build_all_metrics_lines() -> List[str]:  # core builder used by blueprint
             )
             lines.append("# TYPE aetherra_kernel_backpressure_guard_violations gauge")
             for v in viol:
-                try:
+                with contextlib.suppress(Exception):
                     lines.append(
                         f'aetherra_kernel_backpressure_guard_violations{{violation="{v}"}} 1'
                     )
-                except Exception:
-                    pass
     except Exception:
-        pass
+        logger.exception("metrics: kernel status export failed")
     # Unsafe override detection gauges
     try:
         overrides = {
@@ -561,7 +545,7 @@ def build_all_metrics_lines() -> List[str]:  # core builder used by blueprint
             val = 1 if v not in (None, "", "0") else 0
             lines.append(f'aetherra_unsafe_override_info{{override="{k}"}} {val}')
     except Exception:
-        pass
+        logger.debug("metrics: kernel histogram observe failed", exc_info=True)
     # Always export histogram buckets for discoverability (even if zero)
     try:
         raw = float((m or {}).get("last_cycle_time", 0.0))
@@ -569,7 +553,7 @@ def build_all_metrics_lines() -> List[str]:  # core builder used by blueprint
         if ms_val:
             kernel_hist.observe_cycle_ms(ms_val)
     except Exception:
-        pass
+        logger.debug("metrics: orchestrator latency observe failed", exc_info=True)
     lines.extend(kernel_hist.lines())
     if ks:
         qsz = ks.get("queue_sizes", {}) or {}
@@ -590,7 +574,7 @@ def build_all_metrics_lines() -> List[str]:  # core builder used by blueprint
         if ms_val:
             orchestrator_hist.observe_latency_ms(ms_val)
     except Exception:
-        pass
+        logger.debug("metrics: plugin metrics export failed", exc_info=True)
     # Always export orchestrator histogram buckets
     lines.extend(orchestrator_hist.lines())
     if orch:
@@ -616,11 +600,109 @@ def build_all_metrics_lines() -> List[str]:  # core builder used by blueprint
             lines.append(
                 f"aetherra_memory_fragments_total {_num(mq.get('fragments', 0))}"
             )
+
+    # QFAC validator & shadow logs (Phase 2 scaffolding): best-effort local probes
+    def _get_qfac_validator_status() -> dict[str, Any]:
+        try:
+            # Try to reach a known service if present
+            svc = registry_client.get_service("qfac_validator")
+            if svc and hasattr(svc, "get_status"):
+                st = svc.get_status()
+                return st if isinstance(st, dict) else {}
+        except Exception:
+            logger.debug("metrics: qfac validator status probe failed", exc_info=True)
+        return {}
+
+    # Optional test overrides
+    try:
+        _v_fake = os.getenv("AETHERRA_QFAC_VALIDATOR_FAKE", "0")
+        _v_green = int(os.getenv("AETHERRA_QFAC_VALIDATOR_FAKE_GREEN", "0"))
+        _v_blocked = int(os.getenv("AETHERRA_QFAC_VALIDATOR_FAKE_BLOCKED", "0"))
+    except Exception:
+        _v_fake, _v_green, _v_blocked = "0", 0, 0
+    qv = _get_qfac_validator_status()
+    if _v_fake in ("1", "true", "True"):
+        qv = {"green_total": _v_green, "blocked_total": _v_blocked}
+    if qv:
+        # Gauges: validator green/blocked counts
+        lines.append(
+            "# HELP aetherra_qfac_validator_green_total Total validations passed (green)"
+        )
+        lines.append("# TYPE aetherra_qfac_validator_green_total counter")
+        lines.append(
+            f"aetherra_qfac_validator_green_total {_num(qv.get('green_total', 0))}"
+        )
+        lines.append(
+            "# HELP aetherra_qfac_validator_blocked_total Total validations blocked"
+        )
+        lines.append("# TYPE aetherra_qfac_validator_blocked_total counter")
+        lines.append(
+            f"aetherra_qfac_validator_blocked_total {_num(qv.get('blocked_total', 0))}"
+        )
+    else:
+        # Schema defaults
+        lines.append(
+            "# HELP aetherra_qfac_validator_green_total Total validations passed (green)"
+        )
+        lines.append("# TYPE aetherra_qfac_validator_green_total counter")
+        lines.append("aetherra_qfac_validator_green_total 0")
+        lines.append(
+            "# HELP aetherra_qfac_validator_blocked_total Total validations blocked"
+        )
+        lines.append("# TYPE aetherra_qfac_validator_blocked_total counter")
+        lines.append("aetherra_qfac_validator_blocked_total 0")
+
+    def _get_qfac_shadow_log_status() -> dict[str, Any]:
+        try:
+            svc = registry_client.get_service("qfac_shadow_logger")
+            if svc and hasattr(svc, "get_status"):
+                st = svc.get_status()
+                return st if isinstance(st, dict) else {}
+        except Exception:
+            logger.debug("metrics: qfac shadow log status probe failed", exc_info=True)
+        return {}
+
+    try:
+        _s_fake = os.getenv("AETHERRA_QFAC_SHADOW_FAKE", "0")
+        _s_total = int(os.getenv("AETHERRA_QFAC_SHADOW_FAKE_TOTAL", "0"))
+        _s_recent = int(os.getenv("AETHERRA_QFAC_SHADOW_FAKE_RECENT", "0"))
+    except Exception:
+        _s_fake, _s_total, _s_recent = "0", 0, 0
+    ql = _get_qfac_shadow_log_status()
+    if _s_fake in ("1", "true", "True"):
+        ql = {"logs_total": _s_total, "logs_recent": _s_recent}
+    if ql:
+        lines.append(
+            "# HELP aetherra_qfac_shadow_logs_total Total shadow logs recorded"
+        )
+        lines.append("# TYPE aetherra_qfac_shadow_logs_total counter")
+        lines.append(f"aetherra_qfac_shadow_logs_total {_num(ql.get('logs_total', 0))}")
+        lines.append(
+            "# HELP aetherra_qfac_shadow_logs_recent Recent shadow logs in window"
+        )
+        lines.append("# TYPE aetherra_qfac_shadow_logs_recent gauge")
+        lines.append(
+            f"aetherra_qfac_shadow_logs_recent {_num(ql.get('logs_recent', 0))}"
+        )
+    else:
+        lines.append(
+            "# HELP aetherra_qfac_shadow_logs_total Total shadow logs recorded"
+        )
+        lines.append("# TYPE aetherra_qfac_shadow_logs_total counter")
+        lines.append("aetherra_qfac_shadow_logs_total 0")
+        lines.append(
+            "# HELP aetherra_qfac_shadow_logs_recent Recent shadow logs in window"
+        )
+        lines.append("# TYPE aetherra_qfac_shadow_logs_recent gauge")
+        lines.append("aetherra_qfac_shadow_logs_recent 0")
     # QFAC policy decision metrics (P1 #9). Best-effort: try optional qfac_memory_system
+    policy_emitted = False
+    snapshot_emitted = False
+    parity_emitted = False
     try:
         # Aetherra imports
         from Aetherra.aetherra_core.memory.qfac_integration import (
-            QFACMemorySystem,  # type: ignore
+            QFACMemorySystem,
         )
 
         # Access via service registry for canonical instance
@@ -630,7 +712,7 @@ def build_all_metrics_lines() -> List[str]:  # core builder used by blueprint
             # Not all registries expose direct instance list; fallback: dynamic import probe below
             _ = qs  # placeholder to avoid linter
         except Exception:
-            pass
+            logger.debug("metrics: registry status fetch failed", exc_info=True)
         # Direct import path: attempt to locate a global instance reference from launcher systems via registry
         try:
             # Indirect retrieval: memory quantum status may include qfac info in future; for now attempt attribute walk
@@ -643,13 +725,15 @@ def build_all_metrics_lines() -> List[str]:  # core builder used by blueprint
                     qfac_status = obj.get_policy_decision()
                     break
         except Exception:
+            logger.debug("metrics: global QFAC scan failed", exc_info=True)
             qfac_status = None
         if not qfac_status:
             # Fallback: attempt lazy construction only to introspect policy; this yields a fresh decision
             try:
-                _tmp = QFACMemorySystem("_qfac_policy_probe")  # type: ignore
+                _tmp = QFACMemorySystem("_qfac_policy_probe")
                 qfac_status = _tmp.get_policy_decision()
             except Exception:
+                logger.debug("metrics: policy probe construct failed", exc_info=True)
                 qfac_status = None
         if isinstance(qfac_status, dict) and qfac_status:
             mode = qfac_status.get("mode", "classical")
@@ -679,17 +763,326 @@ def build_all_metrics_lines() -> List[str]:  # core builder used by blueprint
             lines.append(
                 f'aetherra_qfac_policy_info{{key="policy",value="{safe_policy}"}} 1'
             )
+            policy_emitted = True
+
+        # Always attempt a lightweight QFAC metrics snapshot for observability
+        try:
+            # Try to discover a live instance (heuristic); otherwise temp-construct
+            live_inst = None
+            for obj in list(globals().values()):  # pragma: no cover - best-effort
+                if isinstance(obj, QFACMemorySystem):
+                    live_inst = obj
+                    break
+            if live_inst is None:
+                try:
+                    live_inst = QFACMemorySystem("_qfac_metrics_probe")
+                except Exception:
+                    live_inst = None
+            if live_inst is not None and hasattr(live_inst, "get_metrics_snapshot"):
+                snap = live_inst.get_metrics_snapshot()
+                if isinstance(snap, dict) and snap:
+                    lines.append(
+                        "# HELP aetherra_qfac_nodes_total Total QFAC nodes tracked"
+                    )
+                    lines.append("# TYPE aetherra_qfac_nodes_total gauge")
+                    lines.append(
+                        f"aetherra_qfac_nodes_total {_num(snap.get('nodes_total', 0))}"
+                    )
+                    lines.append(
+                        "# HELP aetherra_qfac_nodes_compressed Total QFAC nodes currently compressed"
+                    )
+                    lines.append("# TYPE aetherra_qfac_nodes_compressed gauge")
+                    lines.append(
+                        f"aetherra_qfac_nodes_compressed {_num(snap.get('nodes_compressed', 0))}"
+                    )
+                    lines.append(
+                        "# HELP aetherra_qfac_degraded_nodes_total Nodes flagged degraded by fidelity analysis"
+                    )
+                    lines.append("# TYPE aetherra_qfac_degraded_nodes_total gauge")
+                    lines.append(
+                        f"aetherra_qfac_degraded_nodes_total {_num(snap.get('degraded_nodes_total', 0))}"
+                    )
+                    lines.append(
+                        "# HELP aetherra_qfac_compression_ratio Overall compression ratio (original/comp)"
+                    )
+                    lines.append("# TYPE aetherra_qfac_compression_ratio gauge")
+                    lines.append(
+                        f"aetherra_qfac_compression_ratio {_num(snap.get('overall_compression_ratio', 1.0))}"
+                    )
+                    lines.append(
+                        "# HELP aetherra_qfac_compression_ratio_avg Average per-node compression ratio"
+                    )
+                    lines.append("# TYPE aetherra_qfac_compression_ratio_avg gauge")
+                    lines.append(
+                        f"aetherra_qfac_compression_ratio_avg {_num(snap.get('compression_ratio_avg', 1.0))}"
+                    )
+                    snapshot_emitted = True
+
+            # Retrieval parity metrics snapshot (Phase 1 planning)
+            if live_inst is not None and hasattr(
+                live_inst, "get_retrieval_parity_metrics_snapshot"
+            ):
+                try:
+                    p = live_inst.get_retrieval_parity_metrics_snapshot()
+                except Exception:
+                    p = None
+                if isinstance(p, dict):
+                    lines.append(
+                        "# HELP aetherra_qfac_retrieval_parity_total Total retrieval comparisons performed for parity"
+                    )
+                    lines.append("# TYPE aetherra_qfac_retrieval_parity_total counter")
+                    lines.append(
+                        f"aetherra_qfac_retrieval_parity_total {_num(p.get('total', 0))}"
+                    )
+                    lines.append(
+                        "# HELP aetherra_qfac_retrieval_parity_top1_match_total Retrievals where top-1 matched between base and boosted"
+                    )
+                    lines.append(
+                        "# TYPE aetherra_qfac_retrieval_parity_top1_match_total counter"
+                    )
+                    lines.append(
+                        f"aetherra_qfac_retrieval_parity_top1_match_total {_num(p.get('top1_match', 0))}"
+                    )
+                    lines.append(
+                        "# HELP aetherra_qfac_retrieval_parity_any_rank_mismatch_total Retrievals where any rank order differed"
+                    )
+                    lines.append(
+                        "# TYPE aetherra_qfac_retrieval_parity_any_rank_mismatch_total counter"
+                    )
+                    lines.append(
+                        f"aetherra_qfac_retrieval_parity_any_rank_mismatch_total {_num(p.get('any_rank_mismatch', 0))}"
+                    )
+                    lines.append(
+                        "# HELP aetherra_qfac_retrieval_threshold_dropped_results_total Total results dropped due to retrieval threshold"
+                    )
+                    lines.append(
+                        "# TYPE aetherra_qfac_retrieval_threshold_dropped_results_total counter"
+                    )
+                    lines.append(
+                        f"aetherra_qfac_retrieval_threshold_dropped_results_total {_num(p.get('threshold_dropped', 0))}"
+                    )
+                    # Parity ratio gauge (top1_match / total)
+                    try:
+                        total = _num(p.get("total", 0))
+                        top1 = _num(p.get("top1_match", 0))
+                        ratio = (top1 / total) if total > 0 else 0.0
+                    except Exception:
+                        ratio = 0.0
+                    lines.append(
+                        "# HELP aetherra_qfac_retrieval_parity_ratio Ratio of top1 matches to total parity comparisons"
+                    )
+                    lines.append("# TYPE aetherra_qfac_retrieval_parity_ratio gauge")
+                    lines.append(f"aetherra_qfac_retrieval_parity_ratio {ratio}")
+                    # Per-k parity ratios (topK_match / total) for K in {3,5,10}
+                    # Will be computed after we resolve byk in the following block.
+                    # Optional: per-k parity counters (e.g., k=1,3,5,10)
+                    try:
+                        # Prefer dedicated method if present
+                        byk_obj: Any = None
+                        if hasattr(live_inst, "get_retrieval_parity_by_k_snapshot"):
+                            byk_obj = live_inst.get_retrieval_parity_by_k_snapshot()
+                        elif isinstance(p, dict):
+                            byk_obj = p.get("parity_by_k")
+                        # Normalize keys to ints {1,3,5,10}
+                        norm: dict[int, float] = {}
+                        if isinstance(byk_obj, dict):
+                            for k0, v0 in list(byk_obj.items()):
+                                try:
+                                    kk_int = int(k0) if not isinstance(k0, int) else k0
+                                except Exception:
+                                    logger.debug(
+                                        "metrics: parity_by_k key normalization failed",
+                                        exc_info=True,
+                                    )
+                                    continue
+                                try:
+                                    norm[int(kk_int)] = float(v0)
+                                except Exception:
+                                    logger.debug(
+                                        "metrics: parity_by_k value normalization failed",
+                                        exc_info=True,
+                                    )
+                            # HELP/TYPE for per-k counters
+                            for kk in (1, 3, 5, 10):
+                                lines.append(
+                                    f"# HELP aetherra_qfac_retrieval_parity_top{kk}_match_total Retrievals where top-{kk} prefix matched between base and boosted"
+                                )
+                                lines.append(
+                                    f"# TYPE aetherra_qfac_retrieval_parity_top{kk}_match_total counter"
+                                )
+                            for kk in (1, 3, 5, 10):
+                                v = norm.get(kk, 0.0)
+                                lines.append(
+                                    f"aetherra_qfac_retrieval_parity_top{kk}_match_total {_num(int(v))}"
+                                )
+                            # Per-k ratios (topK/total)
+                            try:
+                                byk_total = float(total)
+                            except Exception:
+                                byk_total = 0.0
+                            for kk in (3, 5, 10):
+                                num = float(norm.get(kk, 0.0))
+                                rk = (num / byk_total) if byk_total > 0 else 0.0
+                                lines.append(
+                                    f"# HELP aetherra_qfac_retrieval_parity_top{kk}_ratio Ratio of top{kk} prefix matches to total parity comparisons"
+                                )
+                                lines.append(
+                                    f"# TYPE aetherra_qfac_retrieval_parity_top{kk}_ratio gauge"
+                                )
+                                lines.append(
+                                    f"aetherra_qfac_retrieval_parity_top{kk}_ratio {rk}"
+                                )
+                    except Exception:
+                        logger.debug(
+                            "metrics: parity_by_k export failed", exc_info=True
+                        )
+                    parity_emitted = True
+
+            # Retrieval policy config gauges (threshold + parity_enabled)
+            if live_inst is not None and hasattr(
+                live_inst, "get_retrieval_policy_config_snapshot"
+            ):
+                try:
+                    cfg = live_inst.get_retrieval_policy_config_snapshot()
+                except Exception:
+                    cfg = None
+                if isinstance(cfg, dict):
+                    lines.append(
+                        "# HELP aetherra_qfac_retrieval_threshold Current retrieval score threshold"
+                    )
+                    lines.append("# TYPE aetherra_qfac_retrieval_threshold gauge")
+                    lines.append(
+                        f"aetherra_qfac_retrieval_threshold {_num(cfg.get('threshold', 0.0))}"
+                    )
+                    lines.append(
+                        "# HELP aetherra_qfac_retrieval_parity_enabled Parity counting enabled (1) or disabled (0)"
+                    )
+                    lines.append("# TYPE aetherra_qfac_retrieval_parity_enabled gauge")
+                    lines.append(
+                        f"aetherra_qfac_retrieval_parity_enabled {_num(cfg.get('parity_enabled', 0))}"
+                    )
+        except Exception:
+            logger.debug("metrics: qfac snapshot probe failed", exc_info=True)
     except Exception:
-        pass
+        logger.debug("metrics: qfac policy block failed", exc_info=True)
+    # Emit safe defaults if QFAC is unavailable, to keep schema stable
+    if not policy_emitted:
+        lines.append(
+            "# HELP aetherra_qfac_policy_mode_current Current effective QFAC mode"
+        )
+        lines.append("# TYPE aetherra_qfac_policy_mode_current gauge")
+        lines.append("aetherra_qfac_policy_mode_current 0")
+        lines.append(
+            "# HELP aetherra_qfac_policy_allowed 1 if desired mode allowed, 0 if downgraded"
+        )
+        lines.append("# TYPE aetherra_qfac_policy_allowed gauge")
+        lines.append("aetherra_qfac_policy_allowed 0")
+        lines.append(
+            "# HELP aetherra_qfac_policy_info Info series for QFAC policy decision (value=1)"
+        )
+        lines.append("# TYPE aetherra_qfac_policy_info gauge")
+        lines.append('aetherra_qfac_policy_info{key="reason",value="unavailable"} 1')
+        lines.append('aetherra_qfac_policy_info{key="policy",value="unknown"} 1')
+    if not snapshot_emitted:
+        lines.append("# HELP aetherra_qfac_nodes_total Total QFAC nodes tracked")
+        lines.append("# TYPE aetherra_qfac_nodes_total gauge")
+        lines.append("aetherra_qfac_nodes_total 0")
+        lines.append(
+            "# HELP aetherra_qfac_nodes_compressed Total QFAC nodes currently compressed"
+        )
+        lines.append("# TYPE aetherra_qfac_nodes_compressed gauge")
+        lines.append("aetherra_qfac_nodes_compressed 0")
+        lines.append(
+            "# HELP aetherra_qfac_degraded_nodes_total Nodes flagged degraded by fidelity analysis"
+        )
+        lines.append("# TYPE aetherra_qfac_degraded_nodes_total gauge")
+        lines.append("aetherra_qfac_degraded_nodes_total 0")
+        lines.append(
+            "# HELP aetherra_qfac_compression_ratio Overall compression ratio (original/comp)"
+        )
+        lines.append("# TYPE aetherra_qfac_compression_ratio gauge")
+        lines.append("aetherra_qfac_compression_ratio 1")
+        lines.append(
+            "# HELP aetherra_qfac_compression_ratio_avg Average per-node compression ratio"
+        )
+        lines.append("# TYPE aetherra_qfac_compression_ratio_avg gauge")
+        lines.append("aetherra_qfac_compression_ratio_avg 1")
+    # Retrieval parity/threshold metrics schema (emit zeros for discoverability if not available)
+    if not parity_emitted:
+        lines.append(
+            "# HELP aetherra_qfac_retrieval_parity_total Total retrieval comparisons performed for parity"
+        )
+        lines.append("# TYPE aetherra_qfac_retrieval_parity_total counter")
+        lines.append("aetherra_qfac_retrieval_parity_total 0")
+        lines.append(
+            "# HELP aetherra_qfac_retrieval_parity_top1_match_total Retrievals where top-1 matched between base and boosted"
+        )
+        lines.append("# TYPE aetherra_qfac_retrieval_parity_top1_match_total counter")
+        lines.append("aetherra_qfac_retrieval_parity_top1_match_total 0")
+        lines.append(
+            "# HELP aetherra_qfac_retrieval_parity_any_rank_mismatch_total Retrievals where any rank order differed"
+        )
+        lines.append(
+            "# TYPE aetherra_qfac_retrieval_parity_any_rank_mismatch_total counter"
+        )
+        lines.append("aetherra_qfac_retrieval_parity_any_rank_mismatch_total 0")
+        lines.append(
+            "# HELP aetherra_qfac_retrieval_threshold_dropped_results_total Total results dropped due to retrieval threshold"
+        )
+        lines.append(
+            "# TYPE aetherra_qfac_retrieval_threshold_dropped_results_total counter"
+        )
+        lines.append("aetherra_qfac_retrieval_threshold_dropped_results_total 0")
+        # Parity ratio gauge schema default
+        lines.append(
+            "# HELP aetherra_qfac_retrieval_parity_ratio Ratio of top1 matches to total parity comparisons"
+        )
+        lines.append("# TYPE aetherra_qfac_retrieval_parity_ratio gauge")
+        lines.append("aetherra_qfac_retrieval_parity_ratio 0")
+        # Per-k counters default (discoverability) with HELP/TYPE
+        for kk in (1, 3, 5, 10):
+            lines.append(
+                f"# HELP aetherra_qfac_retrieval_parity_top{kk}_match_total Retrievals where top-{kk} prefix matched between base and boosted"
+            )
+            lines.append(
+                f"# TYPE aetherra_qfac_retrieval_parity_top{kk}_match_total counter"
+            )
+        for kk in (1, 3, 5, 10):
+            lines.append(f"aetherra_qfac_retrieval_parity_top{kk}_match_total 0")
+        # Per-k ratio gauges defaults (discoverability)
+        for kk in (3, 5, 10):
+            lines.append(
+                f"# HELP aetherra_qfac_retrieval_parity_top{kk}_ratio Ratio of top{kk} prefix matches to total parity comparisons"
+            )
+            lines.append(f"# TYPE aetherra_qfac_retrieval_parity_top{kk}_ratio gauge")
+            lines.append(f"aetherra_qfac_retrieval_parity_top{kk}_ratio 0")
+    # Retrieval policy gauges (always emit for stable schema)
+    lines.append(
+        "# HELP aetherra_qfac_retrieval_threshold Current retrieval score threshold"
+    )
+    lines.append("# TYPE aetherra_qfac_retrieval_threshold gauge")
+    try:
+        lines.append(
+            f"aetherra_qfac_retrieval_threshold {_num(os.getenv('AETHERRA_QFAC_RETRIEVAL_THRESHOLD', 0.0))}"
+        )
+    except Exception:
+        lines.append("aetherra_qfac_retrieval_threshold 0")
+    lines.append(
+        "# HELP aetherra_qfac_retrieval_parity_enabled Parity counting enabled (1) or disabled (0)"
+    )
+    lines.append("# TYPE aetherra_qfac_retrieval_parity_enabled gauge")
+    lines.append(
+        f"aetherra_qfac_retrieval_parity_enabled {1 if (os.getenv('AETHERRA_QFAC_RETRIEVAL_PARITY', '1') not in ('0', 'false', 'False')) else 0}"
+    )
     ma = registry_client.get_memory_audit() or {}
     if isinstance(ma.get("audit"), dict):
         audit = ma.get("audit") or {}
-        nodes_val = audit.get("nodes")
-        if isinstance(nodes_val, (list, tuple)):
-            lines.append(f"aetherra_memory_branch_nodes_total {_num(len(nodes_val))}")
-        edges_val = audit.get("edges")
-        if isinstance(edges_val, (list, tuple)):
-            lines.append(f"aetherra_memory_branch_edges_total {_num(len(edges_val))}")
+        nodes_count = _safe_len(audit.get("nodes"))
+        if nodes_count > 0:
+            lines.append(f"aetherra_memory_branch_nodes_total {_num(nodes_count)}")
+        edges_count = _safe_len(audit.get("edges"))
+        if edges_count > 0:
+            lines.append(f"aetherra_memory_branch_edges_total {_num(edges_count)}")
 
     # Trainer metrics
     lines.extend(_trainer_metrics_lines())
@@ -703,12 +1096,12 @@ def build_all_metrics_lines() -> List[str]:  # core builder used by blueprint
     try:
         # Local imports
         from .plugin_metrics import (
-            as_prometheus_lines as plugin_metrics_lines,  # type: ignore
+            as_prometheus_lines as plugin_metrics_lines,
         )
 
         lines.extend(plugin_metrics_lines())
     except Exception:
-        pass
+        logger.debug("metrics: plugin metrics import failed", exc_info=True)
     # Key encryption status (security hardening P1) – best-effort
     try:
         keys_path = os.path.expanduser("~/.aetherra/keys.json")
@@ -718,11 +1111,12 @@ def build_all_metrics_lines() -> List[str]:  # core builder used by blueprint
             import json as _json  # local import to avoid global cost
 
             try:
-                data = _json.loads(open(keys_path, "r", encoding="utf-8").read())
+                with open(keys_path, encoding="utf-8") as f:
+                    data = _json.load(f)
                 if isinstance(data, dict) and data.get("__encrypted__") is True:
                     enc = 1
             except Exception:
-                pass
+                logger.debug("metrics: keys.json read failed", exc_info=True)
         mk_present = (
             1
             if (
@@ -742,5 +1136,5 @@ def build_all_metrics_lines() -> List[str]:  # core builder used by blueprint
         lines.append("# TYPE aetherra_master_key_present gauge")
         lines.append(f"aetherra_master_key_present {mk_present}")
     except Exception:
-        pass
+        logger.debug("metrics: key encryption status export failed", exc_info=True)
     return lines

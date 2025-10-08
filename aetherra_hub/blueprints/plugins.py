@@ -31,7 +31,7 @@ _PARALLEL_SAMPLE_LAST: dict[str, Any] | None = None  # cached last sample summar
 # counters now sourced from plugin_metrics service
 
 
-def _advanced_mode(settings) -> bool:  # type: ignore[no-untyped-def]
+def _advanced_mode(settings) -> bool:
     if getattr(settings, "require_plugin_signature", False):
         return True
     env_flags = [
@@ -142,7 +142,20 @@ def plugin_openapi_spec() -> Any:
                                 "application/json": {
                                     "schema": {
                                         "$ref": "#/components/schemas/PluginList"
-                                    }
+                                    },
+                                    "example": {
+                                        "plugins": [
+                                            {
+                                                "name": "hello_world",
+                                                "version": "1.0.0",
+                                                "display_name": "Hello World",
+                                                "description": "Greets the world",
+                                                "category": "utilities",
+                                                "registered_at": "2025-01-01T00:00:00Z",
+                                            }
+                                        ],
+                                        "total": 1,
+                                    },
                                 }
                             },
                         }
@@ -158,7 +171,13 @@ def plugin_openapi_spec() -> Any:
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/PluginRegisterRequest"
-                                }
+                                },
+                                "example": {
+                                    "name": "hello_world",
+                                    "version": "1.0.0",
+                                    "description": "Greets the world",
+                                    "category": "utilities",
+                                },
                             }
                         },
                     },
@@ -167,7 +186,15 @@ def plugin_openapi_spec() -> Any:
                             "description": "Registered",
                             "content": {
                                 "application/json": {
-                                    "schema": {"$ref": "#/components/schemas/Plugin"}
+                                    "schema": {"$ref": "#/components/schemas/Plugin"},
+                                    "example": {
+                                        "name": "hello_world",
+                                        "version": "1.0.0",
+                                        "display_name": "Hello World",
+                                        "description": "Greets the world",
+                                        "category": "utilities",
+                                        "registered_at": "2025-01-01T00:00:00Z",
+                                    },
                                 }
                             },
                         },
@@ -175,7 +202,20 @@ def plugin_openapi_spec() -> Any:
                             "description": "Validation error",
                             "content": {
                                 "application/json": {
-                                    "schema": {"$ref": "#/components/schemas/Error"}
+                                    "schema": {"$ref": "#/components/schemas/Error"},
+                                    "examples": {
+                                        "invalid": {
+                                            "summary": "Invalid JSON",
+                                            "value": {"error": "invalid_json"},
+                                        },
+                                        "validation": {
+                                            "summary": "Validation failed",
+                                            "value": {
+                                                "error": "validation_error",
+                                                "detail": "Plugin validation failed",
+                                            },
+                                        },
+                                    },
                                 }
                             },
                         },
@@ -183,7 +223,11 @@ def plugin_openapi_spec() -> Any:
                             "description": "Payload too large",
                             "content": {
                                 "application/json": {
-                                    "schema": {"$ref": "#/components/schemas/Error"}
+                                    "schema": {"$ref": "#/components/schemas/Error"},
+                                    "example": {
+                                        "error": "payload_too_large",
+                                        "limit_kb": 256,
+                                    },
                                 }
                             },
                         },

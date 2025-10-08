@@ -14,20 +14,27 @@ Hybrid PySide6 + Web Dashboard for Aetherra Operating System
 This is the primary interface to the Aetherra AI Operating System.
 """
 
-
 # Standard library imports
 import json
 import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 # Third party imports
-from PySide6.QtCore import QSettings  # noqa: F401 (optional runtime import)
-from PySide6.QtCore import Qt, QThread, QUrl, Signal
-from PySide6.QtGui import QAction  # noqa: F401 (optional runtime import)
-from PySide6.QtGui import QFont, QIcon
+from PySide6.QtCore import (
+    QSettings,  # noqa: F401 (optional runtime import)
+    Qt,
+    QThread,
+    QUrl,
+    Signal,
+)
+from PySide6.QtGui import (
+    QAction,  # noqa: F401 (optional runtime import)
+    QFont,
+    QIcon,
+)
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import (
     QApplication,
@@ -50,13 +57,13 @@ sys.path.insert(0, str(project_root))
 
 # Import Aetherra OS components
 try:
-    # Aetherra imports
+    # Aetherra imports (optional embedded server)
     from Aetherra.gui.web_interface_server import AetherraWebServer
 
     AETHERRA_SERVER_AVAILABLE = True
-except ImportError:
+except Exception:
     AETHERRA_SERVER_AVAILABLE = False
-    print("[WARN] Aetherra web server not available - running in demo mode")
+    print("[WARN] Aetherra web server not available - running in direct-fetch mode")
 
 try:
     # Third party imports
@@ -80,6 +87,15 @@ class AetherraOSMonitor(QThread):
         super().__init__(parent)
         self.running = True
         self.update_interval = 1000  # 1 second
+        # Endpoints configurable via environment
+        self.base_url: str = os.environ.get("AETHERRA_BASE_URL", "http://127.0.0.1:3001").rstrip(
+            "/"
+        )
+        self.qfac_url: str = os.environ.get("AETHERRA_QFAC_URL", "http://127.0.0.1:4020").rstrip(
+            "/"
+        )
+        # Resolve Windows drive root for psutil disk
+        self._disk_root = "C:\\" if os.name == "nt" else "/"
 
     def run(self):
         """Main monitoring loop"""
@@ -109,77 +125,78 @@ class AetherraOSMonitor(QThread):
 
     def collect_system_metrics(self) -> Dict[str, Any]:
         """Collect system performance metrics"""
-        data = {
+        data: Dict[str, Any] = {
             "timestamp": datetime.now().isoformat(),
             "status": "online",
             "uptime": self.get_uptime(),
         }
 
         if SYSTEM_MONITORING_AVAILABLE:
-            data.update(
-                {
-                    "cpu_percent": psutil.cpu_percent(interval=0.1),
-                    "memory_percent": psutil.virtual_memory().percent,
-                    "disk_usage": psutil.disk_usage("/").percent
-                    if os.name != "nt"
-                    else psutil.disk_usage("C:\\").percent,
-                    "active_processes": len(psutil.pids()),
-                    "network_connections": len(psutil.net_connections()),
-                }
-            )
-        else:
-            # Mock data for demo
-            # Standard library imports
-            import random
-
-            data.update(
-                {
-                    "cpu_percent": random.uniform(15, 45),
-                    "memory_percent": random.uniform(35, 65),
-                    "disk_usage": random.uniform(25, 75),
-                    "active_processes": random.randint(120, 180),
-                    "network_connections": random.randint(15, 35),
-                }
-            )
+            data["cpu_percent"] = psutil.cpu_percent(interval=0.1)
+            data["memory_percent"] = psutil.virtual_memory().percent
+            data["disk_usage"] = psutil.disk_usage(self._disk_root).percent
+            data["active_processes"] = len(psutil.pids())
+            data["network_connections"] = len(psutil.net_connections())
 
         return data
 
     def collect_memory_metrics(self) -> Dict[str, Any]:
-        """Collect Aetherra memory system metrics"""
+        """Collect Aetherra memory (QFAC) metrics from live endpoint with fallback"""
+        # Try QFAC dashboard endpoints
+        status = self._http_get_json(f"{self.qfac_url}/api/status")
+        perf = self._http_get_json(f"{self.qfac_url}/api/performance")
+        if status or perf:
+            data: Dict[str, Any] = {"timestamp": datetime.now().isoformat()}
+            if status:
+                data.update(
+                    {
+                        "memory_health": status.get("health") or status.get("status"),
+                        "total_memories": status.get("total_memories") or status.get("memories"),
+                        "recent_events": status.get("recent_events") or status.get("recent") or [],
+                    }
+                )
+            if perf:
+                data.update(
+                    {
+                        "fractal_compression_ratio": perf.get("compression_ratio")
+                        or perf.get("ratio"),
+                        "quantum_coherence": perf.get("parity") or perf.get("coherence"),
+                        "observer_branches": perf.get("nodes") or perf.get("branches"),
+                    }
+                )
+            return data
+
+        # Fallback minimal when endpoints unavailable
         return {
             "timestamp": datetime.now().isoformat(),
-            "total_memories": 1247,
-            "fractal_compression_ratio": 4.6,
-            "recent_events": [
-                "Enhanced conversation processed",
-                "Memory fragment stored",
-                "Agent collaboration initiated",
-                "Ethics check completed",
-            ],
-            "observer_branches": 3,
-            "quantum_coherence": 0.94,
-            "memory_health": "excellent",
+            "memory_health": "unknown",
+            "recent_events": [],
         }
 
     def collect_agent_metrics(self) -> Dict[str, Any]:
-        """Collect agent ecosystem metrics"""
-        return {
-            "timestamp": datetime.now().isoformat(),
-            "active_agents": 6,
-            "agent_status": {
-                "DataAgent": {"status": "active", "load": 0.3, "health": 0.97},
-                "TechnicalAgent": {"status": "active", "load": 0.5, "health": 0.95},
-                "SupportAgent": {"status": "idle", "load": 0.1, "health": 0.98},
-                "SecurityAgent": {"status": "monitoring", "load": 0.2, "health": 0.99},
-                "EthicsAgent": {"status": "monitoring", "load": 0.1, "health": 0.98},
-                "CuriosityAgent": {"status": "exploring", "load": 0.7, "health": 0.92},
-            },
-            "running_workflows": [
-                "conversation_enhancement.aether",
-                "memory_optimization.aether",
-                "ethics_monitoring.aether",
-            ],
-        }
+        """Collect agent ecosystem metrics from Hub API"""
+        agents_json = self._http_get_json(f"{self.base_url}/api/agents")
+        data: Dict[str, Any] = {"timestamp": datetime.now().isoformat()}
+        items_list: list = []
+        if isinstance(agents_json, dict):
+            maybe = agents_json.get("agents")
+            if isinstance(maybe, list):
+                items_list = maybe
+        elif isinstance(agents_json, list):
+            items_list = agents_json
+
+        data["active_agents"] = len(items_list)
+        status_map: Dict[str, Any] = {}
+        for i, a in enumerate(items_list):
+            if isinstance(a, dict):
+                name = str(a.get("name", f"agent_{i}"))
+                status_map[name] = {
+                    "status": a.get("status", "unknown"),
+                    "load": a.get("load", 0),
+                    "health": a.get("health", 1.0),
+                }
+        data["agent_status"] = status_map
+        return data
 
     def collect_cognitive_metrics(self) -> Dict[str, Any]:
         """Collect Lyrixa cognitive state metrics"""
@@ -209,6 +226,28 @@ class AetherraOSMonitor(QThread):
             return str(uptime).split(".")[0]  # Remove microseconds
         else:
             return "2:34:17"  # Mock uptime
+
+    # --- HTTP helpers ---
+    def _http_get_json(self, url: str, timeout: float = 1.2) -> Optional[Any]:
+        """Lightweight HTTP GET returning JSON without third-party deps.
+
+        Uses urllib to avoid adding requests dependency to the GUI.
+        """
+        try:
+            # Standard library imports
+            import json as _json
+            from urllib.error import HTTPError, URLError
+            from urllib.request import Request, urlopen
+
+            req = Request(url, headers={"Accept": "application/json"})
+            with urlopen(req, timeout=timeout) as resp:  # nosec B310: trusted localhost endpoints
+                ctype = resp.headers.get("Content-Type", "")
+                raw = resp.read()
+                if b"application/json" in ctype.encode() or raw.strip().startswith(b"{"):
+                    return _json.loads(raw.decode("utf-8", errors="ignore"))
+                return None
+        except (URLError, HTTPError, ValueError):
+            return None
 
     def stop(self):
         """Stop the monitoring thread"""
@@ -258,7 +297,7 @@ class AetherraOSMainWindow(QMainWindow):
         self.create_toolbar()
 
         # Main splitter (horizontal)
-        main_splitter = QSplitter(Qt.Horizontal)
+        main_splitter = QSplitter(Qt.Orientation.Horizontal)
         main_layout.addWidget(main_splitter)
 
         # Left panel - System Overview
@@ -322,7 +361,9 @@ class AetherraOSMainWindow(QMainWindow):
 
         # Status indicator
         self.status_indicator = QLabel("🟢 ONLINE")
-        self.status_indicator.setFont(QFont("Arial", 10, QFont.Bold))
+        bold_font = QFont("Arial", 10)
+        bold_font.setBold(True)
+        self.status_indicator.setFont(bold_font)
         self.status_indicator.setStyleSheet("color: #00ff88; padding: 5px;")
         toolbar.addWidget(self.status_indicator)
 
@@ -368,11 +409,11 @@ class AetherraOSMainWindow(QMainWindow):
 
         # Title
         title = QLabel("AETHERRA OS STATUS")
-        title.setFont(QFont("Arial", 14, QFont.Bold))
-        title.setAlignment(Qt.AlignCenter)
-        title.setStyleSheet(
-            "color: #00ffaa; padding: 10px; border-bottom: 2px solid #00ffaa;"
-        )
+        title_font = QFont("Arial", 14)
+        title_font.setBold(True)
+        title.setFont(title_font)
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title.setStyleSheet("color: #00ffaa; padding: 10px; border-bottom: 2px solid #00ffaa;")
         overview_layout.addWidget(title)
 
         # System metrics web view
@@ -384,7 +425,7 @@ class AetherraOSMainWindow(QMainWindow):
     def create_tabbed_interface(self, parent):
         """Create the main tabbed interface"""
         self.tab_widget = QTabWidget()
-        self.tab_widget.setTabPosition(QTabWidget.North)
+        self.tab_widget.setTabPosition(QTabWidget.TabPosition.North)
 
         # Dashboard tab
         self.dashboard_view = QWebEngineView()
@@ -450,9 +491,7 @@ class AetherraOSMainWindow(QMainWindow):
         """Setup system tray icon"""
         if QSystemTrayIcon.isSystemTrayAvailable():
             self.tray_icon = QSystemTrayIcon()
-            self.tray_icon.setIcon(
-                QIcon("assets/aetherra_icon.png")
-            )  # You'll need to add this
+            self.tray_icon.setIcon(QIcon("assets/aetherra_icon.png"))  # You'll need to add this
 
             # Tray menu
             tray_menu = QMenu()
@@ -476,6 +515,13 @@ class AetherraOSMainWindow(QMainWindow):
                 # Start server in separate thread
                 # Standard library imports
                 import threading
+
+                if not (
+                    self.web_server
+                    and hasattr(self.web_server, "socketio")
+                    and hasattr(self.web_server, "app")
+                ):
+                    raise RuntimeError("Embedded web server missing required attributes")
 
                 server_thread = threading.Thread(
                     target=lambda: self.web_server.socketio.run(
@@ -507,6 +553,10 @@ class AetherraOSMainWindow(QMainWindow):
         # Create system overview panel
         self.load_system_overview()
 
+        # If QFAC dashboard is available, load it in Memory tab
+        qfac_url = os.environ.get("AETHERRA_QFAC_URL", "http://127.0.0.1:4020").rstrip("/")
+        self._try_load_qfac_dashboard(qfac_url)
+
     def load_system_overview(self):
         """Load system overview panel"""
         overview_html = self.create_system_overview_html()
@@ -521,6 +571,24 @@ class AetherraOSMainWindow(QMainWindow):
         self.memory_view.setHtml(memory_html)
 
         self.load_system_overview()
+
+        # Attempt to point Memory tab to live QFAC dashboard if running
+        qfac_url = os.environ.get("AETHERRA_QFAC_URL", "http://127.0.0.1:4020").rstrip("/")
+        self._try_load_qfac_dashboard(qfac_url)
+
+    def _try_load_qfac_dashboard(self, qfac_url: str) -> None:
+        """Try loading the QFAC dashboard; fallback HTML remains if not reachable."""
+        # Use a tiny HEAD/GET to test
+        try:
+            from urllib.error import URLError
+            from urllib.request import Request, urlopen
+
+            req = Request(qfac_url + "/", method="GET")
+            with urlopen(req, timeout=0.6):  # nosec B310: local endpoint
+                pass
+            self.memory_view.load(QUrl(qfac_url + "/"))
+        except URLError:
+            pass
 
     def create_system_overview_html(self) -> str:
         """Create HTML for system overview panel"""
@@ -984,66 +1052,67 @@ class AetherraOSMainWindow(QMainWindow):
         """Get dark theme stylesheet"""
         return """
         QMainWindow {
-            background-color: #1a1a2e;
-            color: #00ffaa;
+            background-color: #0a0a0f;
+            color: #a5f1ff;
         }
         QTabWidget::pane {
-            border: 1px solid #00ffaa;
-            background-color: #0a0a0a;
+            border: 1px solid #7a00ff;
+            background-color: #0e0e18;
         }
         QTabBar::tab {
-            background-color: #1a1a2e;
-            color: #00ffaa;
-            padding: 8px 16px;
+            background-color: #121225;
+            color: #d8cfff;
+            padding: 10px 18px;
             margin-right: 2px;
         }
         QTabBar::tab:selected {
-            background-color: #00ffaa;
-            color: #000000;
+            background-color: #00e5ff;
+            color: #0b0b12;
         }
         QStatusBar {
-            background-color: #1a1a2e;
-            color: #00ffaa;
-            border-top: 1px solid #00ffaa;
+            background-color: #0e0e18;
+            color: #9adfff;
+            border-top: 1px solid #7a00ff;
         }
         QMenuBar {
-            background-color: #1a1a2e;
-            color: #00ffaa;
+            background-color: #0e0e18;
+            color: #a5f1ff;
         }
         QMenuBar::item:selected {
-            background-color: #00ffaa;
-            color: #000000;
+            background-color: #7a00ff;
+            color: #ffffff;
         }
         QMenu {
-            background-color: #1a1a2e;
-            color: #00ffaa;
-            border: 1px solid #00ffaa;
+            background-color: #0e0e18;
+            color: #a5f1ff;
+            border: 1px solid #7a00ff;
         }
         QMenu::item:selected {
-            background-color: #00ffaa;
-            color: #000000;
+            background-color: #00e5ff;
+            color: #0b0b12;
         }
         QToolBar {
-            background-color: #1a1a2e;
+            background-color: #0e0e18;
             border: none;
             spacing: 10px;
         }
         QPushButton {
-            background-color: #2a2a3e;
-            color: #00ffaa;
-            border: 1px solid #00ffaa;
-            padding: 6px 12px;
-            border-radius: 4px;
+            background-color: #121225;
+            color: #d8cfff;
+            border: 1px solid #7a00ff;
+            padding: 8px 14px;
+            border-radius: 6px;
         }
         QPushButton:hover {
-            background-color: #00ffaa;
-            color: #000000;
+            background-color: #1a1a33;
+            color: #ffffff;
+            border-color: #00e5ff;
         }
         QLabel {
-            color: #00ffaa;
+            color: #a5f1ff;
         }
         QSplitter::handle {
-            background-color: #00ffaa;
+            background-color: #7a00ff;
         }
         """
 

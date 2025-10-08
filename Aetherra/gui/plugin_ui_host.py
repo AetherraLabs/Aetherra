@@ -96,10 +96,8 @@ class PluginUIHost(QWidget):
     error_occurred = Signal(str, str)  # plugin_id, error_message
     load_finished = Signal(str, bool)  # plugin_id, success
 
-    def __init__(
-        self, plugin_id: str, manifest: PluginManifest, parent: QObject | None = None
-    ):
-        super().__init__(parent)
+    def __init__(self, plugin_id: str, manifest: PluginManifest, parent: QWidget | None = None):
+        super().__init__(parent)  # parent narrowed to QWidget for type safety
 
         self.plugin_id = plugin_id
         self.manifest = manifest
@@ -166,9 +164,7 @@ class PluginUIHost(QWidget):
 
         if self.manifest.sandbox:
             # Strict sandboxing
-            settings.setAttribute(
-                QWebEngineSettings.WebAttribute.LocalStorageEnabled, False
-            )
+            settings.setAttribute(QWebEngineSettings.WebAttribute.LocalStorageEnabled, False)
             settings.setAttribute(
                 QWebEngineSettings.WebAttribute.LocalContentCanAccessRemoteUrls, False
             )
@@ -180,27 +176,22 @@ class PluginUIHost(QWidget):
             )
         else:
             # Relaxed for trusted plugins
-            settings.setAttribute(
-                QWebEngineSettings.WebAttribute.LocalStorageEnabled, True
-            )
+            settings.setAttribute(QWebEngineSettings.WebAttribute.LocalStorageEnabled, True)
             settings.setAttribute(
                 QWebEngineSettings.WebAttribute.LocalContentCanAccessFileUrls, True
             )
 
         # Always disabled for security
-        settings.setAttribute(
-            QWebEngineSettings.WebAttribute.JavascriptCanOpenWindows, False
-        )
-        settings.setAttribute(
-            QWebEngineSettings.WebAttribute.JavascriptCanAccessClipboard, False
-        )
+        settings.setAttribute(QWebEngineSettings.WebAttribute.JavascriptCanOpenWindows, False)
+        settings.setAttribute(QWebEngineSettings.WebAttribute.JavascriptCanAccessClipboard, False)
         settings.setAttribute(
             QWebEngineSettings.WebAttribute.AllowGeolocationOnInsecureOrigins, False
         )
 
         # Create WebView with isolated profile
         web_view = QWebEngineView(self)
-        web_view.setPage(profile.createDefaultPage(web_view))
+        # Avoid using createDefaultPage (not always exposed); rely on default page
+        web_view.setPage(web_view.page())
 
         # Connect signals
         web_view.loadFinished.connect(self._on_load_finished)
@@ -275,7 +266,9 @@ class PluginUIHost(QWidget):
 
             # Add WebView to layout if not already added
             if self._web_view.parent() != self:
-                self.layout().addWidget(self._web_view)
+                lay = self.layout()
+                if lay is not None:
+                    lay.addWidget(self._web_view)
             self._web_view.show()
 
             logger.info(f"Plugin {self.plugin_id} loaded successfully")
@@ -292,9 +285,7 @@ class PluginUIHost(QWidget):
     @Slot()
     def _on_load_timeout(self) -> None:
         """Handle load timeout."""
-        logger.warning(
-            f"Plugin {self.plugin_id} load timeout ({self.manifest.timeout_ms}ms)"
-        )
+        logger.warning(f"Plugin {self.plugin_id} load timeout ({self.manifest.timeout_ms}ms)")
         self._set_state(PluginState.TIMEOUT)
         self._set_error(f"Plugin load timeout after {self.manifest.timeout_ms}ms")
 
@@ -340,6 +331,8 @@ class PluginUIManager(QObject):
 
         self._hosts: dict[str, PluginUIHost] = {}
         self._plugin_dirs: dict[str, Path] = {}
+        # Cache of last discovery roots to support refresh
+        self._last_discovery_roots: list[Path] = []
 
         logger.info("PluginUIManager initialized")
 
@@ -355,7 +348,8 @@ class PluginUIManager(QObject):
             manifest = PluginManifest.from_file(manifest_path)
 
             # Create host
-            host = PluginUIHost(plugin_id, manifest, self)
+            # Parent left as None to avoid QObject/QWidget mismatch; manager tracks lifecycle
+            host = PluginUIHost(plugin_id, manifest, None)
 
             # Connect signals
             host.state_changed.connect(self._on_plugin_state_changed)
@@ -398,6 +392,66 @@ class PluginUIManager(QObject):
     def list_loaded_plugins(self) -> list[str]:
         """Get list of currently loaded plugin IDs."""
         return list(self._hosts.keys())
+
+    # --- New discovery & permission stubs ---
+    def discover_plugins(
+        self, roots: list[Path] | None = None, *, reload: bool = False
+    ) -> list[str]:
+        """Discover plugin manifests under provided root directories.
+
+        Args:
+            roots: List of root directories to scan. If None, reuses last roots or defaults to sibling 'Aetherra/lyrixa/plugins'.
+            reload: If True, unloads and reloads any already loaded plugin found.
+
+        Returns:
+            List of plugin ids successfully (re)loaded or already active.
+        """
+        if roots is None:
+            if not self._last_discovery_roots:
+                # Heuristic default relative to common project layout
+                candidate = Path.cwd() / "Aetherra" / "lyrixa" / "plugins"
+                if candidate.exists():
+                    self._last_discovery_roots = [candidate]
+                else:
+                    logger.warning("No plugin discovery roots available")
+                    return []
+            roots = self._last_discovery_roots
+        else:
+            self._last_discovery_roots = roots
+
+        discovered: list[str] = []
+        for root in roots:
+            try:
+                for manifest_path in root.rglob("manifest.json"):
+                    plugin_dir = manifest_path.parent
+                    try:
+                        manifest = PluginManifest.from_file(manifest_path)
+                    except Exception:
+                        continue
+                    # Simple permission gate stub (extend later)
+                    if not self._check_permissions(manifest):
+                        logger.warning("Denied plugin %s due to permission policy", manifest.id)
+                        continue
+                    if manifest.id in self._hosts and reload:
+                        self.unload_plugin(manifest.id)
+                    if manifest.id not in self._hosts:
+                        host = self.load_plugin(manifest.id, plugin_dir)
+                        if host:
+                            discovered.append(manifest.id)
+                    else:
+                        discovered.append(manifest.id)
+            except Exception as e:
+                logger.error(f"Error scanning plugin root {root}: {e}")
+        if discovered:
+            logger.info("Discovered plugins: %s", ", ".join(discovered))
+        else:
+            logger.info("No plugins discovered")
+        return discovered
+
+    def _check_permissions(self, manifest: PluginManifest) -> bool:
+        """Placeholder permission enforcement (allow all for now)."""
+        # Future: compare against central policy / allowlist
+        return True
 
     @Slot(str, PluginState)
     def _on_plugin_state_changed(self, plugin_id: str, state: PluginState) -> None:

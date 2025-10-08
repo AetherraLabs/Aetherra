@@ -134,6 +134,8 @@ markers = [
     "security: Security and authentication tests",
     "smoke: Basic smoke tests for deployment verification",
     "critical: Critical path tests that must always pass",
+    "capabilities: Capability verification tests (added)",
+    "ui: GUI/UI related tests (added)",
 ]
 
 filterwarnings = [

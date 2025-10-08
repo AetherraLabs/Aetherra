@@ -1,28 +1,33 @@
 from __future__ import annotations
 
+# Third party imports
+import contextlib
+
 # Standard library imports
 import os
 
-# Third party imports
 from flask import Blueprint, Response, jsonify, request
 
 # Local imports
 from ..services import metrics_accum
 from ..services.ai_stream import stream_sse
+from ..services.security import policy_snapshot
 
 bp = Blueprint("ai_stream", __name__)
 
 
 def _build_response(gen_func):
-    return Response(
-        gen_func(),
-        mimetype="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no",
-        },
-    )
+    # Standard library imports
+    import json
+
+    headers = {
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+        "X-Accel-Buffering": "no",
+        # Surface current policy in responses (gate8 expectation)
+        "X-Aetherra-Policy": json.dumps(policy_snapshot()),
+    }
+    return Response(gen_func(), mimetype="text/event-stream", headers=headers)
 
 
 @bp.post("/api/ai/stream")
@@ -59,15 +64,12 @@ def ai_stream_post():
         )
         provided = request.headers.get("X-Aetherra-Token", "")
         if expected and provided and provided != expected:
-            try:
+            with contextlib.suppress(Exception):
                 metrics_accum.inc_auth_invalid_token()
-            except Exception:
-                pass
             return jsonify({"error": "forbidden"}), 403
 
     def generate():
-        for chunk in stream_sse(body, hdrs, last_event_id=last_event_id):
-            yield chunk
+        yield from stream_sse(body, hdrs, last_event_id=last_event_id)
 
     return _build_response(generate)
 
@@ -76,7 +78,7 @@ def ai_stream_post():
 def ai_stream_get():
     # Accept query params equivalent to body keys
     # Convert MultiDict to plain dict (first values only)
-    args = {k: v for k, v in request.args.items()}
+    args = dict(request.args.items())
     last_event_id = request.headers.get("Last-Event-ID")
     hdrs = {
         "trace_id": request.headers.get("X-Aetherra-Trace-Id", ""),
@@ -104,14 +106,11 @@ def ai_stream_get():
         )
         provided = request.headers.get("X-Aetherra-Token", "")
         if expected and provided and provided != expected:
-            try:
+            with contextlib.suppress(Exception):
                 metrics_accum.inc_auth_invalid_token()
-            except Exception:
-                pass
             return jsonify({"error": "forbidden"}), 403
 
     def generate():
-        for chunk in stream_sse(args, hdrs, last_event_id=last_event_id, method="GET"):
-            yield chunk
+        yield from stream_sse(args, hdrs, last_event_id=last_event_id, method="GET")
 
     return _build_response(generate)

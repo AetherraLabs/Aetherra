@@ -106,6 +106,22 @@ Unlike theoretical AI systems, Aetherra has been comprehensively tested with 213
 - **Validated Excellence**: Every major system comprehensively tested and proven production-ready.
 - **Democratic AI**: Open source foundation preventing AI monopolization and ensuring community control.
 
+### 🔒 No-Fake-Data Pledge (All-Systems Mode)
+
+When Aetherra runs in full “all systems” mode, the system must operate without test doubles:
+
+- No mocks, stubs, or synthetic/fake metrics are allowed in runtime paths.
+- Test-only overrides such as `AETHERRA_QFAC_VALIDATOR_FAKE`, `AETHERRA_QFAC_SHADOW_FAKE`, and QFAC fast stubs are disabled.
+- The launcher enforces this policy: if any registered service identifies as `mock` or `stub`, the run fails fast with a clear error.
+
+How it’s enforced:
+
+- The launcher treats full mode as no-fake by default. You can also set `AETHERRA_NO_FAKE_DATA=1` to force this posture explicitly.
+- During startup, test-only env knobs are cleared and the system scans the registry for any mock/stub services.
+- If detected, the launcher aborts to protect integrity of demos and production runs.
+
+This pledge ensures measurements, dashboards, and demos reflect the real system’s behavior.
+
 ## 🌍 The Vision: Democratic AI Computing
 
 We see Aetherra as the **Linux of AI Operating Systems** — a community-powered, transparent foundation for artificial minds that are not only intelligent, but **coherent, introspective, and aligned**.

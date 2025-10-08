@@ -19,10 +19,14 @@ from __future__ import annotations
 
 # Standard library imports
 import argparse
+import contextlib
 import os
 import sys
 from datetime import datetime
 from typing import Any, Dict, Optional
+
+# Optional auth token (bearer) for secured Hub endpoints
+HUB_TOKEN = os.getenv("AETHERRA_HUB_TOKEN")
 
 HUB_BASE = os.getenv("AETHERRA_HUB_BASE", "http://localhost:3001")
 WEB_BASE = os.getenv("AETHERRA_WEB_BASE", "http://localhost:8686")
@@ -33,9 +37,14 @@ def _fetch_json(url: str, timeout: float = 1.8) -> Optional[Dict[str, Any]]:
         # Third party imports
         import requests  # Lazy import in case only --once is used
 
-        r = requests.get(url, timeout=timeout)
+        headers = {}
+        if HUB_TOKEN:  # Inject auth header if token present
+            headers["Authorization"] = f"Bearer {HUB_TOKEN}"
+        r = requests.get(url, timeout=timeout, headers=headers)
         if r.ok:
-            return r.json()
+            data = r.json()
+            if isinstance(data, dict):  # best-effort narrowing
+                return data
         return None
     except Exception:
         return None
@@ -53,12 +62,8 @@ def _snapshot() -> Dict[str, Any]:
     return {
         "hub": {
             "ok": bool(health or status),
-            "uptime": int(
-                health.get("uptime_seconds") or status.get("uptime_seconds") or 0
-            ),
-            "requests": health.get("requests_served")
-            or stats.get("requests_served")
-            or 0,
+            "uptime": int(health.get("uptime_seconds") or status.get("uptime_seconds") or 0),
+            "requests": health.get("requests_served") or stats.get("requests_served") or 0,
             "plugins": (
                 len(plugins.get("plugins", []))
                 if isinstance(plugins.get("plugins"), list)
@@ -89,11 +94,11 @@ def console_once() -> None:
         print("🔴 HUB OFFLINE (http://localhost:3001)")
     if snap["web"]["ok"]:
         parts = []
-        if isinstance(snap["web"]["cpu"], (int, float)):
+        if isinstance(snap["web"]["cpu"], int | float):
             parts.append(f"CPU {snap['web']['cpu']}%")
-        if isinstance(snap["web"]["mem"], (int, float)):
+        if isinstance(snap["web"]["mem"], int | float):
             parts.append(f"MEM {snap['web']['mem']}%")
-        if isinstance(snap["web"]["rt"], (int, float)):
+        if isinstance(snap["web"]["rt"], int | float):
             parts.append(f"RT {snap['web']['rt']}ms")
         extras = " | ".join(parts)
         print("🟢 WEB ACTIVE" + (f" | {extras}" if extras else ""))
@@ -112,10 +117,8 @@ def _tail_log(path: str, lines: int = 12) -> list[str]:
 
 def _ensure_utf8_console() -> None:
     if os.name == "nt":
-        try:
+        with contextlib.suppress(Exception):
             os.system("chcp 65001 > nul")
-        except Exception:
-            pass
 
 
 def launch_gui(interval_ms: int = 2000) -> int:
@@ -138,11 +141,22 @@ def launch_gui(interval_ms: int = 2000) -> int:
         console_once()
         return 1
 
+    # Lazy import of event bus only in GUI mode
+    try:
+        from .event_bus import EventFactory, get_event_bus
+    except Exception:  # pragma: no cover - fallback if relative import context differs
+        EventFactory = None  # type: ignore
+        get_event_bus = None  # type: ignore
+
     class MonitorWindow(QMainWindow):
         def __init__(self) -> None:
             super().__init__()
             self.setWindowTitle("Aetherra OS Monitor")
             self.resize(900, 600)
+            self._event_bus = None
+            if EventFactory is not None and callable(get_event_bus):
+                with contextlib.suppress(Exception):  # pragma: no cover
+                    self._event_bus = get_event_bus()
 
             cw = QWidget()
             self.setCentralWidget(cw)
@@ -173,9 +187,7 @@ def launch_gui(interval_ms: int = 2000) -> int:
             self.log_title.setStyleSheet("font-weight: 700; font-size: 16px;")
             self.log_view = QTextEdit()
             self.log_view.setReadOnly(True)
-            self.log_view.setStyleSheet(
-                "font-family: Consolas, monospace; font-size: 12px;"
-            )
+            self.log_view.setStyleSheet("font-family: Consolas, monospace; font-size: 12px;")
 
             # Layout
             grid.addWidget(self.hub_title, 0, 0)
@@ -193,6 +205,18 @@ def launch_gui(interval_ms: int = 2000) -> int:
             # Initial refresh
             self.refresh()
 
+        def _publish_metric(self, metric_name: str, value: Any, unit: str = "count") -> None:
+            """Publish a performance/status metric if event bus available."""
+            if self._event_bus and EventFactory is not None:
+                try:
+                    # Reuse performance_metric factory for simplicity
+                    evt = EventFactory.performance_metric(
+                        metric_name, float(value or 0), unit, "os_monitor"
+                    )
+                    self._event_bus.publish(evt)
+                except Exception:
+                    pass
+
         def refresh(self) -> None:
             snap = _snapshot()
 
@@ -201,6 +225,10 @@ def launch_gui(interval_ms: int = 2000) -> int:
                 self.hub_meta.setText(
                     f"⏱️ {snap['hub']['uptime']}s   •   📈 {snap['hub']['requests']} req   •   🔌 {snap['hub']['plugins']} plugins"
                 )
+                # Emit hub metrics
+                self._publish_metric("hub_uptime_seconds", snap["hub"]["uptime"], "s")
+                self._publish_metric("hub_requests_total", snap["hub"]["requests"], "count")
+                self._publish_metric("hub_plugins_active", snap["hub"]["plugins"], "count")
             else:
                 self.hub_status.setText("🔴 OFFLINE")
                 self.hub_meta.setText("Hub not responding at localhost:3001")
@@ -210,14 +238,21 @@ def launch_gui(interval_ms: int = 2000) -> int:
                 cpu = snap["web"]["cpu"]
                 mem = snap["web"]["mem"]
                 rt = snap["web"]["rt"]
-                if isinstance(cpu, (int, float)):
+                if isinstance(cpu, int | float):
                     parts.append(f"CPU {cpu}%")
-                if isinstance(mem, (int, float)):
+                if isinstance(mem, int | float):
                     parts.append(f"MEM {mem}%")
-                if isinstance(rt, (int, float)):
+                if isinstance(rt, int | float):
                     parts.append(f"RT {rt}ms")
                 self.web_status.setText("🟢 ACTIVE")
                 self.web_metrics.setText("   •   ".join(parts))
+                # Publish web metrics
+                if isinstance(cpu, int | float):
+                    self._publish_metric("web_cpu_percent", cpu, "%")
+                if isinstance(mem, int | float):
+                    self._publish_metric("web_mem_percent", mem, "%")
+                if isinstance(rt, int | float):
+                    self._publish_metric("web_rt_ms", rt, "ms")
             else:
                 self.web_status.setText("🟡 Not detected")
                 self.web_metrics.setText("Web UI optional at localhost:8686")
@@ -225,15 +260,12 @@ def launch_gui(interval_ms: int = 2000) -> int:
             recent = _tail_log("aetherra_os.log", lines=18)
             if recent:
                 self.log_view.setPlainText("\n".join(recent))
-                try:
+                with contextlib.suppress(Exception):
                     # Prefer explicit enum path for type checkers
                     self.log_view.moveCursor(QTextCursor.MoveOperation.End)
-                except Exception:
-                    # Fallback for older bindings
-                    try:
-                        self.log_view.moveCursor(QTextCursor.End)  # type: ignore[attr-defined]
-                    except Exception:
-                        pass
+                # Fallback attempt (older bindings) in separate suppress block
+                with contextlib.suppress(Exception):
+                    self.log_view.moveCursor(QTextCursor.End)  # type: ignore[attr-defined]
             else:
                 self.log_view.setPlainText("(no recent log lines or log missing)")
 
@@ -246,9 +278,7 @@ def launch_gui(interval_ms: int = 2000) -> int:
 
 def main(argv: Optional[list[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Aetherra OS Monitor GUI")
-    parser.add_argument(
-        "--once", action="store_true", help="Print a one-time snapshot and exit"
-    )
+    parser.add_argument("--once", action="store_true", help="Print a one-time snapshot and exit")
     parser.add_argument(
         "--interval", type=int, default=2000, help="Refresh interval in ms (GUI mode)"
     )

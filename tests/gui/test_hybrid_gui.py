@@ -41,8 +41,13 @@ try:
     print("🎨 Web panels with Aetherra styling should be visible")
     print("📡 WebChannel bridge is active")
 
-    # Run event loop
-    sys.exit(app.exec()  # nosec B102: Qt application execution)
+    # Skip actual event loop in headless/CI unless explicitly requested via marker
+    import os
+    if os.environ.get("AETHERRA_RUN_GUI_TESTS") == "1":
+        # Run event loop only when environment flag set
+        sys.exit(app.exec())  # nosec B102: Qt application execution
+    else:
+        print("[SKIP] GUI event loop not started (AETHERRA_RUN_GUI_TESTS unset)")
 
 except ImportError as e:
     print(f"[ERROR] Import error: {e}")

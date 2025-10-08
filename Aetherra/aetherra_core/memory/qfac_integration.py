@@ -17,38 +17,19 @@ Features:
 • Backward compatibility with existing memory API
 """
 
+from __future__ import annotations
+
 # Standard library imports
 import asyncio
 import json
 import os
 import time
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, cast
 
 # Local imports
 from ..file_system.compression_analyzer import MemoryCompressionAnalyzer
-from .compression_metrics import FidelityLevel
-
-try:
-    # Local imports
-    from .qfac_dashboard import QFACDashboard  # type: ignore
-except Exception:
-    # Fallback stub to avoid import errors when dashboard class isn't available
-    class QFACDashboard:  # type: ignore
-        def __init__(self, analyzer):
-            self.analyzer = analyzer
-
-        async def start_dashboard(self, mode: str = "text"):
-            return None
-
-        async def stop_dashboard(self):
-            return None
-
-        async def get_dashboard_summary(self):
-            return {"status": "unavailable", "reason": "dashboard stub"}
-
-
-# Local imports
+from .compression_metrics import CompressionScore, FidelityLevel
 from .qfac_policy import QFACPolicy
 from .quantum_memory_bridge import QuantumMemoryBridge
 
@@ -67,25 +48,25 @@ class QFACMemoryNode:
         quantum_bridge: Optional[QuantumMemoryBridge] = None,
         qfac_mode: str = "classical",
     ):
-        self.node_id = node_id
-        self.original_data = original_data
-        self.compressed_data = None
-        self.compression_metadata = None
-        self.is_compressed = False
+        self.node_id: str = node_id
+        self.original_data: Any = original_data
+        self.compressed_data: Optional[bytes] = None
+        self.compression_metadata: Optional[Dict[str, Any]] = None
+        self.is_compressed: bool = False
 
         # QFAC components
-        self.analyzer = compression_analyzer
-        self.compression_score = None
+        self.analyzer: MemoryCompressionAnalyzer = compression_analyzer
+        self.compression_score: Optional[CompressionScore] = None
 
         # Quantum-hybrid
-        self.quantum_bridge = quantum_bridge
-        self.qfac_mode = qfac_mode
-        self.quantum_state_id = None
+        self.quantum_bridge: Optional[QuantumMemoryBridge] = quantum_bridge
+        self.qfac_mode: str = qfac_mode
+        self.quantum_state_id: Optional[str] = None
 
         # State tracking
-        self.access_count = 0
-        self.last_access_time = time.time()
-        self.creation_time = time.time()
+        self.access_count: int = 0
+        self.last_access_time: float = time.time()
+        self.creation_time: float = time.time()
 
         # Auto-compression
         if auto_compress:
@@ -142,16 +123,11 @@ class QFACMemoryNode:
             }
 
             # Optional quantum-hybrid path: encode a classical shadow via QuantumMemoryBridge
-            if (
-                self.qfac_mode in ("hybrid", "quantum")
-                and self.quantum_bridge is not None
-            ):
+            if self.qfac_mode in ("hybrid", "quantum") and self.quantum_bridge is not None:
                 try:
                     quantum_payload = {
                         "content": self.original_data,
-                        "complexity": float(
-                            getattr(self.compression_score, "entropy", 0.5)
-                        ),
+                        "complexity": float(getattr(self.compression_score, "entropy", 0.5)),
                         "confidence": float(
                             getattr(self.compression_score, "pattern_confidence", 0.8)
                         ),
@@ -161,8 +137,10 @@ class QFACMemoryNode:
                         memory_data=quantum_payload,
                         operation_type="compression",
                     )
-                    self.quantum_state_id = qstate.state_id
+                    self.quantum_state_id = str(qstate.state_id)
                     # Augment metadata with quantum info (works in sim mode too)
+                    if self.compression_metadata is None:
+                        self.compression_metadata = {}
                     self.compression_metadata["quantum_encoding"] = {
                         "state_id": qstate.state_id,
                         "qubits": qstate.qubit_count,
@@ -175,9 +153,13 @@ class QFACMemoryNode:
                     print(f"⚠️ Quantum-hybrid encode failed for {self.node_id}: {qe}")
 
             self.is_compressed = True
-            print(
-                f"✅ Compressed {self.node_id}: {self.compression_metadata['original_size']} → {self.compression_metadata['compressed_size']} bytes"
-            )
+            try:
+                md = self.compression_metadata or {}
+                print(
+                    f"✅ Compressed {self.node_id}: {md.get('original_size', '?')} → {md.get('compressed_size', '?')} bytes"
+                )
+            except Exception:
+                pass
             return True
 
         except Exception as e:
@@ -216,20 +198,14 @@ class QFACMemoryNode:
                         quantum_state=None,
                         classical_shadow={
                             "content": self.original_data,
-                            "complexity": float(
-                                getattr(self.compression_score, "entropy", 0.5)
-                            ),
+                            "complexity": float(getattr(self.compression_score, "entropy", 0.5)),
                             "confidence": float(
-                                getattr(
-                                    self.compression_score, "pattern_confidence", 0.8
-                                )
+                                getattr(self.compression_score, "pattern_confidence", 0.8)
                             ),
                         },
                         encoding_fidelity=float(q_meta.get("fidelity", 0.9)),
                         measurement_results=None,
-                        creation_timestamp=__import__(
-                            "datetime"
-                        ).datetime.fromtimestamp(
+                        creation_timestamp=__import__("datetime").datetime.fromtimestamp(
                             self.compression_metadata["compression_timestamp"]
                         ),
                     )
@@ -241,9 +217,7 @@ class QFACMemoryNode:
                     if reconstructed and "content" in reconstructed:
                         decompressed_data = reconstructed["content"]
                 except Exception as qe2:
-                    print(
-                        f"⚠️ Quantum-hybrid retrieval fallback for {self.node_id}: {qe2}"
-                    )
+                    print(f"⚠️ Quantum-hybrid retrieval fallback for {self.node_id}: {qe2}")
 
             # Update access tracking
             self.access_count += 1
@@ -272,9 +246,7 @@ class QFACMemoryNode:
 
         # Simulate compression ratio from our analysis
         if self.compression_score:
-            target_size = int(
-                len(compressed) / self.compression_score.compression_ratio
-            )
+            target_size = int(len(compressed) / self.compression_score.compression_ratio)
             compressed = compressed[:target_size]  # Simulate compression
 
         return compressed
@@ -315,7 +287,36 @@ class QFACMemorySystem:
 
         # Core QFAC components
         self.analyzer = MemoryCompressionAnalyzer(str(self.data_dir / "analyzer"))
-        self.dashboard = QFACDashboard(self.analyzer)
+
+        # Dashboard builder avoids top-level import/type conflicts
+        def _build_dashboard(analyzer: MemoryCompressionAnalyzer):
+            try:
+                # Local imports
+                from .qfac_dashboard import QFACDashboard as _RealDashboard
+
+                try:
+                    return _RealDashboard(analyzer, self)  # type: ignore[arg-type]
+                except TypeError:
+                    # Older signature: analyzer only
+                    return _RealDashboard(analyzer)
+            except Exception:
+                # Fallback stub to avoid import errors when dashboard class isn't available
+                class _DashboardStub:
+                    def __init__(self, _analyzer):
+                        self.analyzer = _analyzer
+
+                    async def start_dashboard(self, mode: str = "text"):
+                        return None
+
+                    async def stop_dashboard(self):
+                        return None
+
+                    async def get_dashboard_summary(self):
+                        return {"status": "unavailable", "reason": "dashboard stub"}
+
+                return _DashboardStub(analyzer)
+
+        self.dashboard = _build_dashboard(self.analyzer)
 
         # Mode selection: classical | hybrid | quantum — governed by policy
         desired_mode = os.getenv("AETHERRA_QFAC_MODE", "classical").lower()
@@ -323,7 +324,6 @@ class QFACMemorySystem:
             desired_mode = "classical"
 
         profile = os.getenv("AETHERRA_PROFILE", "").lower() or "dev"
-        # Prefer live coherence/drift metrics when available (service registry → orchestrator)
         policy = QFACPolicy()
 
         def _fetch_coherence_metrics_sync() -> Optional[Dict[str, Any]]:
@@ -332,13 +332,9 @@ class QFACMemorySystem:
             Returns a dict with keys {ema, last_drift_alert} when available, else None.
             """
 
-            # Local async helper to query the service registry
             async def _run() -> Optional[Dict[str, Any]]:
                 try:
-                    # Aetherra imports
-                    from aetherra_service_registry import (
-                        get_service_registry,  # type: ignore
-                    )
+                    from aetherra_service_registry import get_service_registry
 
                     reg = await get_service_registry()
                     info = reg.get_service_info("aetherra_engine")
@@ -354,7 +350,7 @@ class QFACMemorySystem:
                             status = None
                     if status is None and hasattr(eng, "get_system_status"):
                         try:
-                            st = await eng.get_system_status()  # type: ignore[attr-defined]
+                            st = await eng.get_system_status()
                             if isinstance(st, dict):
                                 status = st.get("agent_orchestrator")
                         except Exception:
@@ -366,17 +362,13 @@ class QFACMemorySystem:
                         return None
                     ema = cp.get("ema")
                     last = cp.get("last_drift_alert")
-                    # Only use if EMA present; else treat as None to allow env fallback
                     if ema is None and last is None:
                         return None
-                    out: Dict[str, Any] = {"ema": ema, "last_drift_alert": last}
-                    return out
+                    return {"ema": ema, "last_drift_alert": last}
                 except Exception:
                     return None
 
-            # Safely run coroutine from possibly running loop (mirrors hub helper pattern)
             try:
-                # Standard library imports
                 import asyncio as _asyncio
 
                 try:
@@ -384,12 +376,11 @@ class QFACMemorySystem:
                 except RuntimeError:
                     loop = None
                 if loop and loop.is_running():
-                    # Standard library imports
                     import threading as _threading
 
                     container: Dict[str, Any] = {}
 
-                    def _runner():
+                    def _runner() -> None:
                         try:
                             new_loop = _asyncio.new_event_loop()
                             try:
@@ -415,29 +406,49 @@ class QFACMemorySystem:
             desired_mode=desired_mode,
             metrics=live_metrics,
         )
-        self.qfac_mode = decision["mode"]
+        self.qfac_mode = decision.get("mode", desired_mode)
         self.qfac_policy_decision = decision
 
         # Quantum bridge (lazy init)
-        self.quantum_bridge = None
+        self.quantum_bridge: Optional[QuantumMemoryBridge] = None
         if self.qfac_mode in ("hybrid", "quantum"):
             try:
                 backend = os.getenv("AETHERRA_QFAC_BACKEND", "simulator")
-                self.quantum_bridge = QuantumMemoryBridge(
-                    quantum_backend=backend, max_qubits=16
-                )
+                self.quantum_bridge = QuantumMemoryBridge(quantum_backend=backend, max_qubits=16)
             except Exception as e:
                 print(f"⚠️ Failed to initialize QuantumMemoryBridge: {e}")
                 self.quantum_bridge = None
 
         # Memory node storage
-        self.nodes = {}
-        self.node_index = 0
+        self.nodes: Dict[str, QFACMemoryNode] = {}
+        self.node_index: int = 0
 
         # System configuration
         self.auto_compression = True
         self.compression_threshold = 2.0  # Minimum compression ratio
         self.max_degraded_ratio = 0.1  # Max 10% degraded nodes
+
+        # Retrieval policy (Phase 1): threshold + parity counters
+        try:
+            self.retrieval_threshold = float(os.getenv("AETHERRA_QFAC_RETRIEVAL_THRESHOLD", "0"))
+        except Exception:
+            self.retrieval_threshold = 0.0
+        try:
+            self.retrieval_parity_enabled = (
+                0
+                if os.getenv("AETHERRA_QFAC_RETRIEVAL_PARITY", "1") in ("0", "false", "False")
+                else 1
+            )
+        except Exception:
+            self.retrieval_parity_enabled = 1
+        self._parity_metrics: Dict[str, int] = {
+            "total": 0,
+            "top1_match": 0,
+            "any_rank_mismatch": 0,
+            "threshold_dropped": 0,
+        }
+        # Optional per-k parity counters
+        self._parity_by_k: Dict[int, int] = {1: 0, 3: 0, 5: 0, 10: 0}
 
         print("🎯 QFAC Memory System initialized")
         print(f"   📁 Data directory: {self.data_dir}")
@@ -487,24 +498,21 @@ class QFACMemorySystem:
         if not node:
             print(f"❌ Node not found: {node_id}")
             return False
-
-        return await node.compress()
+        ok = await node.compress()
+        return bool(ok)
 
     async def compress_all_eligible(self) -> Dict[str, Any]:
         """Compress all eligible nodes"""
         print("🔄 Compressing all eligible nodes...")
 
-        results = {
-            "total_nodes": len(self.nodes),
-            "compressed": 0,
-            "skipped": 0,
-            "failed": 0,
-            "compression_details": [],
-        }
+        compressed_count: int = 0
+        skipped_count: int = 0
+        failed_count: int = 0
+        compression_details: List[Dict[str, Any]] = []
 
         for node_id, node in self.nodes.items():
             if node.is_compressed:
-                results["skipped"] += 1
+                skipped_count = int(skipped_count) + 1
                 continue
 
             # Get compression analysis if not done
@@ -517,25 +525,30 @@ class QFACMemorySystem:
             if node._should_compress():
                 success = await node.compress()
                 if success:
-                    results["compressed"] += 1
+                    compressed_count = int(compressed_count) + 1
                     if node.compression_metadata and node.compression_score:
-                        results["compression_details"].append(
+                        compression_details.append(
                             {
                                 "node_id": node_id,
-                                "original_size": node.compression_metadata[
-                                    "original_size"
-                                ],
-                                "compressed_size": node.compression_metadata[
-                                    "compressed_size"
-                                ],
+                                "original_size": node.compression_metadata.get("original_size", 0),
+                                "compressed_size": node.compression_metadata.get(
+                                    "compressed_size", 0
+                                ),
                                 "ratio": node.compression_score.compression_ratio,
                                 "fidelity": node.compression_score.fidelity_level.value,
                             }
                         )
                 else:
-                    results["failed"] += 1
+                    failed_count = int(failed_count) + 1
             else:
-                results["skipped"] += 1
+                skipped_count = int(skipped_count) + 1
+        results: Dict[str, Any] = {
+            "total_nodes": len(self.nodes),
+            "compressed": int(compressed_count),
+            "skipped": int(skipped_count),
+            "failed": int(failed_count),
+            "compression_details": compression_details,
+        }
 
         print(f"   ✅ Compressed: {results['compressed']}")
         print(f"   ⏭️ Skipped: {results['skipped']}")
@@ -551,14 +564,10 @@ class QFACMemorySystem:
         compressed_nodes = sum(1 for node in self.nodes.values() if node.is_compressed)
 
         # Size statistics
-        total_original_size = sum(
-            len(str(node.original_data)) for node in self.nodes.values()
-        )
+        total_original_size = sum(len(str(node.original_data)) for node in self.nodes.values())
 
         total_compressed_size = sum(
-            node.compression_metadata.get(
-                "compressed_size", len(str(node.original_data))
-            )
+            node.compression_metadata.get("compressed_size", len(str(node.original_data)))
             if node.compression_metadata
             else len(str(node.original_data))
             for node in self.nodes.values()
@@ -566,13 +575,11 @@ class QFACMemorySystem:
 
         # Compression ratio
         overall_compression_ratio = (
-            total_original_size / total_compressed_size
-            if total_compressed_size > 0
-            else 1.0
+            total_original_size / total_compressed_size if total_compressed_size > 0 else 1.0
         )
 
         # Fidelity distribution
-        fidelity_dist = {}
+        fidelity_dist: Dict[str, int] = {}
         for node in self.nodes.values():
             if node.compression_score:
                 fidelity = node.compression_score.fidelity_level.value
@@ -596,9 +603,7 @@ class QFACMemorySystem:
                 "overall_compression_ratio": overall_compression_ratio,
                 "space_saved_bytes": total_original_size - total_compressed_size,
                 "space_saved_percentage": (
-                    (total_original_size - total_compressed_size)
-                    / total_original_size
-                    * 100
+                    (total_original_size - total_compressed_size) / total_original_size * 100
                 )
                 if total_original_size > 0
                 else 0,
@@ -614,17 +619,12 @@ class QFACMemorySystem:
         """Perform system optimization"""
         print("🎯 Optimizing QFAC memory system...")
 
-        optimization_results = {
-            "actions_taken": [],
-            "before_stats": await self.get_system_status(),
-            "after_stats": None,
-        }
+        actions_taken: List[Dict[str, Any]] = []
+        before_stats = await self.get_system_status()
 
         # 1. Compress all eligible nodes
         compression_results = await self.compress_all_eligible()
-        optimization_results["actions_taken"].append(
-            {"action": "compress_eligible_nodes", "details": compression_results}
-        )
+        actions_taken.append({"action": "compress_eligible_nodes", "details": compression_results})
 
         # 2. Check for degraded nodes
         degraded_nodes = [
@@ -641,13 +641,11 @@ class QFACMemorySystem:
                 if node.is_compressed:
                     node.is_compressed = False
                     node.compressed_data = None
-                    optimization_results["actions_taken"].append(
-                        {"action": "decompress_degraded_node", "node_id": node_id}
-                    )
+                    actions_taken.append({"action": "decompress_degraded_node", "node_id": node_id})
 
         # 3. Update compression strategies based on access patterns
         await self._update_compression_strategies()
-        optimization_results["actions_taken"].append(
+        actions_taken.append(
             {
                 "action": "update_compression_strategies",
                 "details": "Updated based on access patterns",
@@ -655,10 +653,14 @@ class QFACMemorySystem:
         )
 
         # Get final stats
-        optimization_results["after_stats"] = await self.get_system_status()
+        after_stats = await self.get_system_status()
 
         print("   ✅ System optimization complete")
-        return optimization_results
+        return {
+            "actions_taken": actions_taken,
+            "before_stats": before_stats,
+            "after_stats": after_stats,
+        }
 
     async def _update_compression_strategies(self):
         """Update compression strategies based on usage patterns"""
@@ -687,9 +689,7 @@ class QFACMemorySystem:
             if not node.is_compressed and node._should_compress():
                 await node.compress()
 
-    async def export_system_report(
-        self, filename: str = "qfac_system_report.json"
-    ) -> str:
+    async def export_system_report(self, filename: str = "qfac_system_report.json") -> str:
         """Export comprehensive system report"""
         print(f"📄 Exporting system report to {filename}...")
 
@@ -742,6 +742,182 @@ class QFACMemorySystem:
         except Exception:
             return {}
 
+    def get_metrics_snapshot(self) -> Dict[str, Any]:
+        """Return a lightweight metrics snapshot for Prometheus export.
+
+        Exposes stable, numeric fields only to keep exporters simple and resilient:
+        - nodes_total (int)
+        - nodes_compressed (int)
+        - degraded_nodes_total (int)
+        - overall_compression_ratio (float)
+        - compression_ratio_avg (float)
+        """
+        try:
+            total_nodes = len(self.nodes)
+            nodes_compressed = 0
+            degraded_nodes = 0
+            total_original = 0
+            total_compressed = 0
+            ratios: list[float] = []
+
+            for node in self.nodes.values():
+                try:
+                    # Totals
+                    total_original += len(str(node.original_data))
+                    if node.compression_metadata and isinstance(node.compression_metadata, dict):
+                        csz = int(
+                            node.compression_metadata.get(
+                                "compressed_size", len(str(node.original_data))
+                            )
+                        )
+                        total_compressed += max(1, csz)
+                        osz = int(
+                            node.compression_metadata.get(
+                                "original_size", len(str(node.original_data))
+                            )
+                        )
+                        ratio = float(osz) / float(max(1, csz))
+                        ratios.append(max(0.0, ratio))
+                    else:
+                        total_compressed += len(str(node.original_data))
+                        ratios.append(1.0)
+
+                    # Flags
+                    if getattr(node, "is_compressed", False):
+                        nodes_compressed += 1
+                    cs = getattr(node, "compression_score", None)
+                    if cs is not None:
+                        try:
+                            cs2 = cast(CompressionScore, cs)
+                            if cs2.fidelity_level == FidelityLevel.DEGRADED:
+                                degraded_nodes += 1
+                        except Exception:
+                            pass
+                except Exception:
+                    # Defensive: continue aggregation even if one node malformed
+                    pass
+
+            overall_ratio = (
+                (float(total_original) / float(max(1, total_compressed)))
+                if (total_original and total_compressed)
+                else 1.0
+            )
+            avg_ratio = (sum(ratios) / len(ratios)) if ratios else 1.0
+
+            return {
+                "nodes_total": int(total_nodes),
+                "nodes_compressed": int(nodes_compressed),
+                "degraded_nodes_total": int(degraded_nodes),
+                "overall_compression_ratio": float(overall_ratio),
+                "compression_ratio_avg": float(avg_ratio),
+            }
+        except Exception:
+            # Fully defensive default snapshot
+            return {
+                "nodes_total": 0,
+                "nodes_compressed": 0,
+                "degraded_nodes_total": 0,
+                "overall_compression_ratio": 1.0,
+                "compression_ratio_avg": 1.0,
+            }
+
+    async def search_memory(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
+        """Simple retrieval over stored nodes (Phase 0/1 stub).
+
+        Returns a list of {node_id, score, is_compressed, fidelity, ratio}.
+        """
+        try:
+            # Local import to avoid graph cycles
+            from .qfac_retrieval import QFACRetrievalPipeline
+
+            pipeline = QFACRetrievalPipeline()
+            # Parity computation (increment counters based on one query)
+            if int(getattr(self, "retrieval_parity_enabled", 1)) == 1:
+                try:
+                    parity = pipeline.parity_compare(
+                        self.nodes,
+                        query=query,
+                        top_k=top_k,
+                        threshold=float(self.retrieval_threshold or 0.0),
+                    )
+                    # Aggregate
+                    self._parity_metrics["total"] += int(parity.get("total", 0))
+                    self._parity_metrics["top1_match"] += int(parity.get("top1_match", 0))
+                    self._parity_metrics["any_rank_mismatch"] += int(
+                        parity.get("any_rank_mismatch", 0)
+                    )
+                    self._parity_metrics["threshold_dropped"] += int(
+                        parity.get("threshold_dropped", 0)
+                    )
+                    # Per-k aggregation if present
+                    pbk = parity.get("parity_by_k")
+                    if isinstance(pbk, dict):
+                        for kk in (1, 3, 5, 10):
+                            try:
+                                v: Any = pbk.get(kk)
+                                if v is None:
+                                    v = pbk.get(str(kk))
+                                if isinstance(v, int | float):
+                                    self._parity_by_k[kk] = int(self._parity_by_k.get(kk, 0)) + int(
+                                        v
+                                    )
+                            except Exception:
+                                continue
+                except Exception:
+                    pass
+
+            # Apply threshold gating to returned results
+            results = pipeline.search_over_nodes(self.nodes, query=query, top_k=top_k)
+            th = float(self.retrieval_threshold or 0.0)
+            if th > 0.0:
+                import contextlib as _ctx
+
+                with _ctx.suppress(Exception):
+                    results = [r for r in results if float(r.get("score", 0.0)) >= th]
+            return results
+        except Exception:
+            # Fallback naive search
+            q = (query or "").lower()
+            scored = []
+            for nid, node in self.nodes.items():
+                try:
+                    text = json.dumps(node.original_data, default=str).lower()
+                    score = float(text.count(q)) if q else 0.0
+                except Exception:
+                    score = 0.0
+                scored.append((nid, score))
+            scored.sort(key=lambda t: t[1], reverse=True)
+            out: List[Dict[str, Any]] = []
+            for nid, s in scored[: max(1, int(top_k))]:
+                n = self.nodes.get(nid)
+                ratio = 1.0
+                fid = None
+                if n is not None and getattr(n, "compression_metadata", None):
+                    try:
+                        md = n.compression_metadata or {}
+                        osz = int(md.get("original_size", 1))
+                        csz = int(md.get("compressed_size", 1))
+                        ratio = float(osz) / float(max(1, csz))
+                    except Exception:
+                        ratio = 1.0
+                cs = getattr(n, "compression_score", None) if n is not None else None
+                if cs is not None:
+                    try:
+                        cs2 = cast(CompressionScore, cs)
+                        fid = cs2.fidelity_level.value
+                    except Exception:
+                        fid = None
+                out.append(
+                    {
+                        "node_id": nid,
+                        "score": float(s),
+                        "is_compressed": bool(getattr(n, "is_compressed", False)),
+                        "fidelity": fid,
+                        "ratio": float(ratio),
+                    }
+                )
+            return out
+
     async def start_dashboard(self, mode: str = "text"):
         """Start the QFAC dashboard"""
         await self.dashboard.start_dashboard(mode)
@@ -749,6 +925,61 @@ class QFACMemorySystem:
     async def stop_dashboard(self):
         """Stop the QFAC dashboard"""
         await self.dashboard.stop_dashboard()
+
+    # --- Retrieval parity metrics snapshot for exporter ---
+    def get_retrieval_parity_metrics_snapshot(self) -> Dict[str, int]:
+        try:
+            return {
+                "total": int(self._parity_metrics.get("total", 0)),
+                "top1_match": int(self._parity_metrics.get("top1_match", 0)),
+                "any_rank_mismatch": int(self._parity_metrics.get("any_rank_mismatch", 0)),
+                "threshold_dropped": int(self._parity_metrics.get("threshold_dropped", 0)),
+            }
+        except Exception:
+            return {"total": 0, "top1_match": 0, "any_rank_mismatch": 0, "threshold_dropped": 0}
+
+    def get_retrieval_parity_by_k_snapshot(self) -> Dict[int, int]:
+        """Expose per-k parity aggregate counters for preferred K values.
+
+        Keys are integers 1,3,5,10. Absent keys imply 0.
+        """
+        try:
+            # Return a shallow copy to avoid external mutation
+            out: Dict[int, int] = {}
+            for kk in (1, 3, 5, 10):
+                out[kk] = int(self._parity_by_k.get(kk, 0))
+            return out
+        except Exception:
+            return {1: 0, 3: 0, 5: 0, 10: 0}
+
+    def get_retrieval_policy_config_snapshot(self) -> Dict[str, float | int]:
+        """Expose retrieval policy config for exporter.
+
+        Returns keys:
+        - threshold: float
+        - parity_enabled: 1|0
+        """
+        try:
+            return {
+                "threshold": float(getattr(self, "retrieval_threshold", 0.0) or 0.0),
+                "parity_enabled": int(
+                    1 if int(getattr(self, "retrieval_parity_enabled", 1)) == 1 else 0
+                ),
+            }
+        except Exception:
+            return {"threshold": 0.0, "parity_enabled": 0}
+
+    def reset_retrieval_parity_counters(self) -> None:  # pragma: no cover - admin utility
+        import contextlib as _ctx
+
+        with _ctx.suppress(Exception):
+            self._parity_metrics = {
+                "total": 0,
+                "top1_match": 0,
+                "any_rank_mismatch": 0,
+                "threshold_dropped": 0,
+            }
+            self._parity_by_k = {1: 0, 3: 0, 5: 0, 10: 0}
 
 
 # Example usage and testing
@@ -829,12 +1060,8 @@ async def demo_qfac_integration():
     status = await qfac_system.get_system_status()
     print(f"   [DISC] Nodes: {status['node_statistics']['total_nodes']}")
     print(f"   🗜️ Compressed: {status['node_statistics']['compressed_nodes']}")
-    print(
-        f"   📈 Compression ratio: {status['size_statistics']['overall_compression_ratio']:.1f}x"
-    )
-    print(
-        f"   💾 Space saved: {status['size_statistics']['space_saved_percentage']:.1f}%"
-    )
+    print(f"   📈 Compression ratio: {status['size_statistics']['overall_compression_ratio']:.1f}x")
+    print(f"   💾 Space saved: {status['size_statistics']['space_saved_percentage']:.1f}%")
     print(f"   🏥 System health: {status['system_health']:.1%}")
 
     # Test data retrieval
@@ -850,9 +1077,7 @@ async def demo_qfac_integration():
 
     # Export report
     print("\n📄 Exporting system report...")
-    report_path = await qfac_system.export_system_report(
-        "demo_qfac_integration_report.json"
-    )
+    report_path = await qfac_system.export_system_report("demo_qfac_integration_report.json")
 
     print("\n✅ QFAC Integration demonstration complete!")
     print(f"📄 Report saved to: {report_path}")

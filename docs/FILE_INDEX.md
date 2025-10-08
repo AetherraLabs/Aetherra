@@ -129,6 +129,16 @@ Aetherra/
         __init__.py — SPDX-License-Identifier: GPL-3.0-or-later
         deviation_checker.py — Alert about detected memory drift"""
         README.md — pulse
+      qfac/
+        __init__.py — Store content in QFAC.
+        api.py — SPDX-License-Identifier: GPL-3.0-or-later
+        codec_pq.py — Very small OPQ-like: center and compute PCA rotation via SVD.
+        fractal_sig.py — SPDX-License-Identifier: GPL-3.0-or-later
+        index_ivf_pq.py — IVF-PQ index with optional FAISS acceleration and NumPy fallback.
+        materializer.py — Observer-dependent view materializer.
+        models.py — QFAC core models and helper utilities.
+        qfac_api.py — Minimal in-memory store and naive search for QFAC 2.5 scaffolding.
+        rewrite_daemon.py — Background Fractal GC (self-healing + compaction) stub.
       quantum/
         __init__.py — SPDX-License-Identifier: GPL-3.0-or-later
         qhash.py — Quantum-inspired hashing utilities (SimHash-style).
@@ -151,7 +161,7 @@ Aetherra/
       fractal_encoder.py — SPDX-License-Identifier: GPL-3.0-or-later
       fractal_hierarchies.py — Represents a fractal cluster in the hierarchy"""
       fractal_replay_engine.py — Represents a reconstructed memory episode"""
-      lightweight_memory_core.py — Goal for memory relevance"""
+      lightweight_memory_core.py — Lightweight memory entry used for UI demos and core search logic."""
       lyrixa_memory_engine.py — SPDX-License-Identifier: GPL-3.0-or-later
       memory_core.py — Close the underlying SQLite connection if open.
       memory_core_adapter.py — SPDX-License-Identifier: GPL-3.0-or-later
@@ -159,20 +169,21 @@ Aetherra/
       memory_learning.py — Classify the type of interaction for learning purposes"""
       models.py — Canonical typed recall contract.
       observer_effect_simulator.py — Different types of observers with varying impact levels"""
-      optimized_memory_engine.py — Start the async processing loop"""
+      optimized_memory_engine.py — SPDX-License-Identifier: GPL-3.0-or-later
       optimized_storage.py — Represents a pending write operation"""
       qfac_dashboard.py — Lightweight dashboard facade returning live QFAC metrics.
       qfac_integration.py — Automatically analyze and compress if beneficial"""
       qfac_launcher.py — Initialize QFAC components"""
       qfac_policy.py — !/usr/bin/env python3
+      qfac_retrieval.py — Return list of dicts per node with base and boosted scores.
       qfac_state_tracker.py — SPDX-License-Identifier: GPL-3.0-or-later
-      quantum_memory_bridge.py — Represents a memory state mapped to quantum circuit representation"""
+      quantum_memory_bridge.py — Compatibility wrapper for execute function"""
       quantum_memory_engine.py — SPDX-License-Identifier: GPL-3.0-or-later
       quantum_memory_integration.py — Quantum-specific memory metrics"""
       quantum_memory_state.py — SPDX-License-Identifier: GPL-3.0-or-later
       quantum_web_dashboard.py — SPDX-License-Identifier: GPL-3.0-or-later
-      README.md — Memory Subsystem
-      world_class_memory_core.py — Memory cluster for visualization"""
+      README.md — Memory subsystem (contributor guide)
+      world_class_memory_core.py — Core memory data structure"""
     orchestration/
       __init__.py — Mock AetherraScheduler for development when actual scheduler isn't available."""
       agent_orchestrator.py
@@ -474,13 +485,21 @@ Aetherra/
   growth_trajectory_data/
     README.md — growth_trajectory_data
   gui/
-    __init__.py — SPDX-License-Identifier: GPL-3.0-or-later
+    __init__.py — !/usr/bin/env python3
     aetherra_os_gui.py — !/usr/bin/env python3
     boot_menu.py — Show a BIOS-like boot menu and return the user's choice.
+    chat_hardened.py — Chat message types."""
+    event_bus.py — Event priority levels."""
     GUI_CURATION_PLAN.md
     launch_enhanced_neural_os.py — !/usr/bin/env python3
+    lyrixa_gui.py — Setup the main UI structure."""
+    performance_monitor.py — Performance metrics snapshot."""
+    plugin_installer.py — Plugin installation status."""
+    plugin_lifecycle.py — Plugin lifecycle status."""
+    plugin_ui_host.py — Plugin UI loading states."""
     README.md — Aetherra OS Monitor GUI
     run_aetherra_os.py — Launch the Enhanced Aetherra Neural OS Dashboard
+    zone_manager.py — Standard GUI zones as defined in the spec."""
   hub/
     federation.py — Simple peer registry and federated catalog cache."""
   integration/
@@ -597,31 +616,17 @@ Aetherra/
       README.md — memory
       simple_memory_adapter.py — Simple memory fragment for basic operations"""
     plugins/
-      advanced-memory-system/
-        aetherra-plugin.json
-        memory_plugin.aether
-        README.md — advanced-memory-system
       __init__.py — SPDX-License-Identifier: GPL-3.0-or-later
       advanced_memory_system_ui.py — Advanced Memory System Plugin UI with comprehensive memory management."""
       ai_plugin_generator_ui.py — AI Plugin Generator UI for intelligent plugin creation."""
-      assistant_trainer_plugin.py — Represents a training dataset for assistant training."""
       assistant_trainer_plugin_ui.py — Assistant Trainer Plugin UI for customizing AI behavior and training."""
-      context_aware_surfacing.py — Represents a snapshot of current context."""
       context_aware_surfacing_ui.py — Context Aware Surfacing Plugin UI for intelligent content recommendations."""
-      enhanced_plugin_manager.py — Plugin state management."""
       installed_plugins.json
-      introspector_plugin.py — Plugin for autonomous code analysis and self-insight generation"""
       introspector_plugin_ui.py — Introspector Plugin UI for system analysis and self-reflection."""
       memory_aware_plugin_router.py — Memory context provided to plugins for enhanced behavior"""
-      plugin_analytics.py — Collects detailed metrics for plugin execution and usage."""
       plugin_analytics_ui.py — Plugin Analytics UI for monitoring plugin usage and performance."""
-      plugin_creation_wizard.py — Plugin template for the wizard."""
       plugin_creation_wizard_ui.py — Plugin Creation Wizard UI with step-by-step guidance."""
-      plugin_discovery.py — Plugin metadata container."""
-      plugin_lifecycle_memory.py — Represents a memory entry for plugin lifecycle events."""
       plugin_manager.py — Plugin state management."""
-      plugin_quality_control.py — Quality metrics for plugin evaluation."""
-      workflow_builder_plugin.py — Represents a single step in a workflow."""
       workflow_builder_ui.py — A visual node in the workflow builder."""
     proactive/
       proactive_consciousness.py — Start the background monitoring task and subscribe to events."""
@@ -634,6 +639,12 @@ Aetherra/
       main_dashboard.py — Get the main dashboard instance.
       memory_continuity_score.py — SPDX-License-Identifier: GPL-3.0-or-later
       README.md — self_metrics_dashboard
+    ui/
+      themes/
+        cyber.json
+      flow_layout.py — Minimal FlowLayout for wrapping PluginCards.
+      plugin_card.py — PluginCard - Phase 1 lightweight visual representation of a plugin.
+      theme_manager.py — Lyrixa UI Theme Manager
     __init__.py — Enhanced intelligence stack with full AI capabilities"""
     analytics_dashboard.py — Initialize all dashboard components"""
     analytics_insights_engine.py — Data class for analytics metrics"""
@@ -642,7 +653,7 @@ Aetherra/
     intelligence_integration.py — Get the conversation manager instance"""
     launcher.py — Load environment variables from .env file"""
     lyrixa_basic.py — Initialize Basic Lyrixa with OS dependency check."""
-    lyrixa_basic_gui.py — Setup the basic UI layout."""
+    lyrixa_basic_gui.py — Phase 1 minimal status sidebar (placeholder metrics)."""
     README.md — lyrixa
   lyrixa_plugins/
     emotion_detector.py — Primary emotion categories"""
@@ -679,7 +690,6 @@ Aetherra/
       advanced-memory-system.py — Return basic plugin information"""
       agent_base.py — Standard response format for all agents"""
       AssistantTrainer.py — Return basic plugin information"""
-      enhanced_plugin_manager.py — Plugin state management."""
       plugin_api.py — Clean plugin interface for Lyrixa"""
       plugin_chain_executor.py — Status of plugin chain execution"""
       plugin_creation_wizard.py — Plugin template for the wizard."""
@@ -707,8 +717,20 @@ Aetherra/
       __init__.py — Placeholder PluginManager when imports fail.
       assistant_trainer_plugin.py — Represents a training dataset for assistant training."""
       context_aware_surfacing.py — Represents a snapshot of current context."""
+      data_visualization_gui.py — Model for displaying pandas DataFrames in QTableView."""
+      data_visualization_plugin.py — Chart configuration structure."""
+      document_generator_gui.py — Worker thread for document generation tasks."""
+      document_generator_plugin.py — Document template structure."""
+      email_integration_plugin.py — Email account configuration."""
+      file_organizer_plugin.py — File information and metadata."""
       introspector_plugin.py — Plugin for autonomous code analysis and self-insight generation"""
+      password_manager_plugin.py — Credential entry."""
       README.md — extra_plugins
+      slack_discord_bot_plugin.py — Bot configuration for Slack/Discord."""
+      twitch_bot_gui.py — Worker thread for Twitch bot operations."""
+      twitch_bot_plugin.py — Twitch API client for authentication and data retrieval."""
+      web_research_assistant_gui.py — Background worker for research operations."""
+      web_research_assistant_plugin.py — Web source information structure."""
       workflow_builder_plugin.py — Represents a single step in a workflow."""
     lifecycle/
       plugin_analytics.py — Collects detailed metrics for plugin execution and usage."""
@@ -758,7 +780,7 @@ Aetherra/
     net_policy.py — SPDX-License-Identifier: GPL-3.0-or-later
     plugin_signing.py — Compute a deterministic SHA256 tree hash for a list of file paths."""
     prompt_defense.py — Heuristic scan for prompt-injection and jailbreak attempts.
-    sandbox.py — Evaluate a small arithmetic/logic expression safely.
+    sandbox.py — Base sandbox violation."""
     script_signing.py — SPDX-License-Identifier: GPL-3.0-or-later
   stdlib/
     __init__.py — Manages AetherraCode standard library plugins"""
@@ -785,7 +807,7 @@ Aetherra/
     memory_analyzer.py — Analyzes memory patterns and generates insights"""
     qfac_integration.py — Manages integration between QFAC phases with graceful degradation"""
     quantum_dashboard_launcher.py — Launch the quantum dashboard in specified mode"""
-    quantum_memory_bridge.py — Represents a memory state mapped to quantum circuit representation"""
+    quantum_memory_bridge.py — Compatibility wrapper for execute function"""
     README.md — tools
   utils/
     __init__.py — SPDX-License-Identifier: GPL-3.0-or-later
@@ -821,6 +843,33 @@ docs/
     ADR-0005-exception-suppression-visibility.md — ADR-0005: Exception Suppression & Visibility Policy
   contributing/
     docs-consistency.md
+  issues/
+    bodies/
+      01_selfinc_status_metrics.md — Expose /api/selfinc/status + Prom metrics
+      02_strict_mode_gates.md — Strict mode gates (signatures + caps)
+      03_quarantine_flow_ui.md — Quarantine → Escalate → Release flow (UI hooks)
+      04_hmr_swap_rollback.md — HMR swap + auto-rollback integration
+      05_night_cycle_checks.md — Night cycle deep checks
+      06_cli_selfinc.md — CLI: aether selfinc {scan|plan|apply|rollback|audit}
+      07_spec_tests_gate_integrator.md — Spec→Tests Gate in Integrator
+      08_ethics_audit_ledger.md — Ethics & Audit Ledger (append-only)
+      09_hub_policy_alignment_tokens.md — Hub policy alignment + tokens
+      10_lyrixa_panel_selfinc.md — Lyrixa panel: Self-Incorporation
+    comments/
+      checklists/
+        66.md — Checklist — /api/selfinc/status + metrics
+        67.md — Checklist — Strict mode gates
+        68.md — Checklist — Quarantine → Escalate → Release (UI)
+        69.md — Checklist — HMR swap + auto-rollback
+        70.md — Checklist — Night cycle deep checks
+        71.md — Checklist — CLI: aether selfinc
+        72.md — Checklist — Spec→Tests Gate in Integrator
+        73.md — Checklist — Ethics & Audit Ledger
+        74.md — Checklist — Hub policy alignment + tokens
+        75.md — Checklist — Lyrixa panel: Self-Incorporation
+      tracking_comment.md — Tracking links for this issue
+    release_notes_template.md — Release Notes — Aetherra OS — Self-Incorporation v1
+    selfinc_v1_backlog.md — Aetherra OS — Self-Incorporation v1 Backlog (Copy/Paste Issues)
   ops/
     HUB_CONTROL_TOKEN.md — Hub Control Token
     OPERATOR_RUNBOOK.md — Aetherra Operator Runbook (Alpha)
@@ -912,6 +961,10 @@ docs/
     🚀 Aetherra AI Chat Enhancement Plan.md — Enhancement: Deep integration with quantum consciousness system
   sections/
     README.md — Aetherra Documentation Sections
+  selfinc/
+    README.md — Self-Incorporation (v1)
+  workflow-fixes/
+    README.md — Automated Workflow Failure Fixes
   Aether_Script_Language_System.md — Aether Script Language System (`.aether`)
   Aether_Script_Operator_Guide.md — Aether Script Operator Guide
   aether_script_protection.md — Aether Script Protection and Signing
@@ -941,6 +994,8 @@ docs/
   Demo_Playbook.md — Aetherra Demo Playbook
   DEPRECATION_TRACKER_LEGACY_HUB.md — Deprecation Tracker: Legacy Hub Script (`aetherra_hub_server.py`)
   DEVELOPER_ONBOARDING.md — Developer Onboarding
+  DOCS_ARCHITECTURE.md — Aetherra Documentation Architecture
+  docs_architecture_report.json
   docs_consistency.json
   DOCS_CONSISTENCY.md — Docs Consistency Verification
   DOCS_CONSISTENCY_REPORT.md — Docs Consistency Report
@@ -956,12 +1011,15 @@ docs/
   METRICS_REFERENCE.md — Aetherra Metrics Reference
   NEXT_STEPS.md — Next Steps: Lyrixa Chat Production Readiness
   PACKAGING_AND_RELEASE.md — Packaging & Release (Alpha)
+  PLUGIN_AUDIT_REPORT.md — Aetherra Plugin System Audit Report
   PROJECT_ANALYSIS.json
   PROJECT_OVERVIEW.md — Aetherra Project Overview
   PROJECT_STATUS_2025-08-11.md — Aetherra — Project Status and Architecture Map (2025-08-11)
+  QFAC_FILE_INDEX.md — QFAC File Index
   QFAC_MODE_GUIDE.md — AETHERRA QFAC Mode Guide
   QFAC_POLICY.md — QFAC Policy and Live-Metrics Gating
   QUANTUM_OVERVIEW.md — Aetherra Quantum Layer: Overview
+  README.md — Aetherra Documentation
   RELEASE_NOTES_v0.1.0-alpha.2.md — Aetherra v0.1.0-alpha.2 Release Notes
   RELEASE_PROCESS.md — Release Process (Alpha → Tag)
   REPO_CLEANUP_GUIDE.md — Repository Cleanup and Size Reduction
@@ -969,8 +1027,10 @@ docs/
   RISK_ACCEPTANCE.md — Risk Acceptance Register (Alpha)
   ROOT_CLEANUP_PLAN.md — Root Cleanup Plan (Alpha → Beta Hardening)
   SECURITY_FEDERATION_ENHANCEMENTS_2025-08-12.md — Security, Signing, and Federation Enhancements (2025-08-12)
+  SELFINC_PRODUCTION_READINESS.md — Aetherra Self-Incorporation System – Production Readiness Guide
   SYSTEM_INDEX.md — Aetherra System Index
   THREAT_MODEL.md — Aetherra Threat Model (Alpha)
+  ui_syntax_refactor_plan.md — UI Syntax Refactor Plan (Medium-term)
 tests/
   ai/
     README.md — ai
@@ -990,7 +1050,7 @@ tests/
     test_diagnostics_schema.py — Diagnostics JSON schema contract test.
     test_extended_crash_recovery.py — Extended Crash Recovery & Service Rehydration Capability Test
     test_hello_plugin_capability.py — Capability: hello plugin executes & returns expected greeting structure.
-    test_hello_plugin_metadata.py
+    test_hello_plugin_metadata.py — Standard library imports
     test_hub_metrics_observability.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_hub_plugin_and_chat_integration.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_hub_quantum_endpoint.py — SPDX-License-Identifier: GPL-3.0-or-later
@@ -1003,38 +1063,52 @@ tests/
     test_lyrixa_chat_schema_strict.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_lyrixa_ownership_answer.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_lyrixa_primary_chat.py — Lyrixa primary chat path tests.
-    test_memory_fragmentation_metrics.py
+    test_memory_fragmentation_metrics.py — Aetherra imports
     test_memory_module_integrity.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_memory_recall.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_memory_systems_coverage.py — Test quantum memory engine initialization edge cases."""
+    test_openapi_examples_and_runner_endpoints.py — Capabilities test: OpenAPI examples present and endpoints work via runner.
     test_ownership_memory.py — SPDX-License-Identifier: GPL-3.0-or-later
+    test_passive_heartbeat_interval.py
     test_plugin_analytics_coverage.py — Create a plugin analytics engine for testing."""
     test_plugin_exec_migrator.py — Capability test: plugin execution analytics schema migrator.
     test_plugin_parallel_and_failure_paths.py — Capability test: parallel plugin execution, failure + timeout paths.
     test_plugin_reload.py — Temporary plugin used to validate unregister + re-register lifecycle.
+    test_qfac_admin_cli.py
     test_qfac_in_os.py — SPDX-License-Identifier: GPL-3.0-or-later
+    test_qfac_metrics_schema.py
+    test_qfac_retrieval_parity_metrics_schema.py
+    test_qfac_retrieval_parity_per_k_counters_schema.py
+    test_qfac_retrieval_parity_per_k_ratio_schema.py
+    test_qfac_retrieval_parity_per_k_schema.py
+    test_qfac_retrieval_parity_ratio_schema.py
+    test_qfac_retrieval_parity_toggle.py
+    test_qfac_retrieval_policy_config_metrics_schema.py
+    test_qfac_retrieval_threshold_behavior.py
+    test_qfac_shadow_collection_smoke.py
+    test_qfac_validator_shadow_schema.py
     test_reflection_memory_stability.py — Reflection / Memory Stability Test
     test_security_capabilities_coverage.py — Test edge cases in capability granting system."""
     test_security_sandbox_placeholders.py — Security Sandbox Placeholder Capability Test
     test_self_improvement_metrics.py — Tests for SelfImprovementEngine internal metrics counters.
     test_self_maintenance_services.py — SPDX-License-Identifier: GPL-3.0-or-later
-    test_snapshot_replay_harness.py
-    test_static_security_scan.py
+    test_snapshot_replay_harness.py — Standard library imports
+    test_static_security_scan.py — Standard library imports
     test_transcendence_deterministic_metrics.py — Tests for deterministic baseline & metrics counters in BeyondTranscendenceEngine.
     test_working_api_coverage.py — Test security capabilities using actual available functions."""
   coding/
-    test_revert_and_diff.py
+    test_revert_and_diff.py — Standard library imports
   consciousness/
-    conftest.py
-    test_active_inference_integration.py
-    test_event_bus_bridge.py
-    test_identity_unified.py
-    test_metrics_exporter.py
-    test_metrics_scrape.py
-    test_narrative_tone_markers.py
-    test_self_model.py
-    test_sensor_stubs.py
-    test_workspace_basic.py
+    conftest.py — Standard library imports
+    test_active_inference_integration.py — Aetherra imports
+    test_event_bus_bridge.py — Aetherra imports
+    test_identity_unified.py — Aetherra imports
+    test_metrics_exporter.py — Standard library imports
+    test_metrics_scrape.py — Standard library imports
+    test_narrative_tone_markers.py — Aetherra imports
+    test_self_model.py — Aetherra imports
+    test_sensor_stubs.py — Standard library imports
+    test_workspace_basic.py — Standard library imports
   demos/
     test_self_improvement_demo.py — SPDX-License-Identifier: GPL-3.0-or-later
   failure_injection/
@@ -1049,9 +1123,13 @@ tests/
     test_hybrid_gui.py — !/usr/bin/env python3
     test_live_gui_generation.py — Types of UI elements that can be dynamically generated"""
     test_lyrixa_gui.py — Test the Lyrixa Hybrid GUI directly
+    test_plugin_cards_mode.py — Tests for plugin card mode (feature-flagged).
+    test_theme_fallback.py — Test that LyrixaBasicWindow applies either theme or fallback stylesheet.
   integration/
     README.md — integration
+    test_consciousness_integration.py — Test that all consciousness components can be imported"""
     test_hub_compat_parity.py — Compat parity test ensuring deprecated shim still re-exports expected API.
+    test_hub_plugins.py — !/usr/bin/env python3
     test_integration.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_launcher_detection.py — !/usr/bin/env python3
     test_metrics_histograms_end_to_end.py — SPDX-License-Identifier: GPL-3.0-or-later
@@ -1061,7 +1139,7 @@ tests/
     test_phase3.py — !/usr/bin/env python3
     test_phase6_integration.py — Test that all Phase components can be imported."""
     test_plugin_ecosystem.py — Test core plugin ecosystem functionality."""
-    test_qfac_live_metrics_integration.py
+    test_qfac_live_metrics_integration.py — Standard library imports
     test_webhook_manager_security.py — SPDX-License-Identifier: GPL-3.0-or-later
   kernel_unit/
     test_circuit_breaker.py
@@ -1081,17 +1159,26 @@ tests/
   meta/
     test_meta_cognition_stubs.py — Smoke tests ensuring MetaCognitionSystem public APIs are callable.
   plugins/
-    test_demo_scaffold_plugin.py
+    test_demo_scaffold_plugin.py — Standard library imports
+  qfac/
+    test_basic_qfac.py — SPDX-License-Identifier: GPL-3.0-or-later
+    test_index_parity.py — SPDX-License-Identifier: GPL-3.0-or-later
+    test_observer_and_gc.py — SPDX-License-Identifier: GPL-3.0-or-later
+    test_qfac_api.py — SPDX-License-Identifier: GPL-3.0-or-later
   quantum/
     test_qrng_qhash.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_random_features.py — SPDX-License-Identifier: GPL-3.0-or-later
   security/
     test_plugin_signing_fallback.py — SPDX-License-Identifier: GPL-3.0-or-later
+  smoke/
+    test_aetherra_kernel_loop_import.py
+    test_policy_bootstrap_import.py
+    test_run_hub_ai_api_import.py
   tools/
-    test_license_tools.py
-    test_quality_gates_pr_description.py
+    test_license_tools.py — Standard library imports
+    test_quality_gates_pr_description.py — Standard library imports
     test_run_go_no_go_gates.py — SPDX-License-Identifier: GPL-3.0-or-later
-    test_verify_docs_consistency.py
+    test_verify_docs_consistency.py — Standard library imports
   unit/
     README.md — unit
     test_ab_recall_engine.py — SPDX-License-Identifier: GPL-3.0-or-later
@@ -1103,24 +1190,26 @@ tests/
     test_aether_script_transactions_trace.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_aether_static_risk.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_agent_orchestrator_shim.py — Tests for deprecated agent orchestrator shim module.
-    test_ai_stream_debug_frame.py
+    test_ai_stream_debug_frame.py — Standard library imports
     test_ai_stream_replay_and_timeout.py — SPDX-License-Identifier: GPL-3.0-or-later
-    test_api_keys_enforcement.py
-    test_api_keys_prod_encryption_required.py
-    test_backpressure_guard.py
+    test_api_keys_enforcement.py — Standard library imports
+    test_api_keys_prod_encryption_required.py — Standard library imports
+    test_backpressure_guard.py — Third party imports
     test_capabilities_policy.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_capability_limits.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_chat_idempotency.py — SPDX-License-Identifier: GPL-3.0-or-later
+    test_consciousness_dashboards.py — Test importing all consciousness dashboard components.
     test_consciousness_narrative_layer.py — Narrative layer tests (Phase 1)
     test_consciousness_self_model_and_events.py — Phase 1 Consciousness basic tests
     test_create_aether_from_task.py — SPDX-License-Identifier: GPL-3.0-or-later
-    test_engine_reset_env_vars.py
+    test_engine_reset_env_vars.py — Standard library imports
     test_federation_manager.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_federation_persistence.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_gui_smoke.py — SPDX-License-Identifier: GPL-3.0-or-later
-    test_hmr_denied_metrics.py
+    test_hmr_denied_metrics.py — Standard library imports
     test_hub_agents_api.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_hub_ai_api.py — SPDX-License-Identifier: GPL-3.0-or-later
+    test_hub_app_selfinc_status.py — Standard library imports
     test_hub_chat_safety_preflight.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_hub_coherence_metrics.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_hub_control_plane.py — SPDX-License-Identifier: GPL-3.0-or-later
@@ -1144,7 +1233,9 @@ tests/
     test_hub_ws_advertise_allowlist.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_human_style_layer.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_imports.py — !/usr/bin/env python3
-    test_invalid_token_metric.py
+    test_invalid_token_metric.py — Standard library imports
+    test_kernel_loop_guards.py — Standard library imports
+    test_kernel_loop_self_incorporation.py — Unit tests for kernel loop self-incorporation service registration fix."""
     test_kernel_reply_waiter.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_kernel_reply_waiter_timeout_and_error.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_kernel_submit_plugin_invoke.py — SPDX-License-Identifier: GPL-3.0-or-later
@@ -1154,30 +1245,48 @@ tests/
     test_manifest_schema_and_trust.py — .strip()
     test_memory_engine_typed_and_policy.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_memory_kernel.py — SPDX-License-Identifier: GPL-3.0-or-later
-    test_metrics_reference_sync.py
+    test_metrics_reference_sync.py — Standard library imports
+    test_multiple_plugins.py — Test installing multiple plugins
     test_net_policy.py — SPDX-License-Identifier: GPL-3.0-or-later
-    test_night_cycle_tz.py
-    test_night_schedule_guard_metric.py
-    test_orchestrator_canonical_import.py
+    test_night_cycle_tz.py — Standard library imports
+    test_night_schedule_guard_metric.py — Third party imports
+    test_openapi_admin_paths.py
+    test_orchestrator_canonical_import.py — Standard library imports
+    test_plugin_installation.py — Handles plugin installation for Lyrixa Basic"""
     test_plugin_policy_budgets.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_plugin_signature_path.py
-    test_plugin_timeout_clamp.py
+    test_plugin_timeout_clamp.py — Third party imports
     test_plugins_minimal.py
     test_policy_bootstrap_cli.py — SPDX-License-Identifier: GPL-3.0-or-later
+    test_policy_bootstrap_selfinc.py — Standard library imports
     test_prod_defaults_policy.py — SPDX-License-Identifier: GPL-3.0-or-later
-    test_prod_security_guard.py
+    test_prod_security_guard.py — Standard library imports
     test_prompt_defense.py — SPDX-License-Identifier: GPL-3.0-or-later
+    test_qfac_admin_endpoints.py
     test_qfac_modes.py — SPDX-License-Identifier: GPL-3.0-or-later
-    test_qfac_policy.py
-    test_qfac_policy_gate_metrics.py
+    test_qfac_policy.py — Standard library imports
+    test_qfac_policy_gate_metrics.py — Third party imports
+    test_qiskit_direct.py — !/usr/bin/env python3
     test_quantum_aware_simulations.py — Test suite for Quantum-Aware Simulations system"""
+    test_quantum_config.py — !/usr/bin/env python3
     test_quantum_enhanced_recall.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_quantum_memory_hardening.py — SPDX-License-Identifier: GPL-3.0-or-later
-    test_scratchpad_policy_default_redacted.py
+    test_quarantine_workflow.py — Standard library imports
+    test_real_backend.py — SPDX-License-Identifier: GPL-3.0-or-later
+    test_real_llm.py — SPDX-License-Identifier: GPL-3.0-or-later
+    test_registry_client_best_effort.py — Standard library imports
+    test_run_hub_ai_api.py — Standard library imports
+    test_run_hub_ai_api_script.py — Standard library imports
+    test_scratchpad_policy_default_redacted.py — Standard library imports
     test_security_ledger_disabled.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_security_metrics_phase0.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_self_evolving_behavior.py — Test core self-evolving behavior functionality."""
-    test_sse_replay_gap_metric.py
+    test_selfinc_ethics_audit_lookup.py — Third party imports
+    test_selfinc_ethics_future.py
+    test_selfinc_ethics_overview.py — Third party imports
+    test_selfinc_readiness_generator.py — Standard library imports
+    test_shared_registry.py — !/usr/bin/env python3
+    test_sse_replay_gap_metric.py — Standard library imports
     test_sse_retry_after_header.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_telemetry_optin.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_unicode_fix.py — !/usr/bin/env python3
@@ -1188,6 +1297,7 @@ tests/
   test_aar_outbox.py — SPDX-License-Identifier: GPL-3.0-or-later
   test_aether_script_basic.py — SPDX-License-Identifier: GPL-3.0-or-later
   test_agent_pipeline_smoke.py — SPDX-License-Identifier: GPL-3.0-or-later
+  test_discovery_sanity.py
   test_discovery_signing.py — SPDX-License-Identifier: GPL-3.0-or-later
   test_headers_and_expiry.py — SPDX-License-Identifier: GPL-3.0-or-later
   test_hmr_phase2.py — SPDX-License-Identifier: GPL-3.0-or-later
@@ -1231,7 +1341,9 @@ tools/
   ab_recall_benchmark.py — A/B recall benchmark harness for classical vs quantum-enriched recall.
   agents_probe.py — Agent fabric probe utility (simplified placeholder)."""
   analyze_project.py — Detect key subsystems by presence of canonical files and dirs."""
+  auto_fix_workflow_failures.py — Main class for fixing workflow failures"""
   auto_prune_unused_imports.py — Bulk prune unused imports reported by ruff F401.
+  bandit_report.json
   build_release_bundle.py — One-shot build + SBOM + manifest helper.
   chat_smoke.py — !/usr/bin/env python3
   check_license_consistency.py — !/usr/bin/env python3
@@ -1243,52 +1355,66 @@ tools/
   create_annotated_tag.py — Create an annotated release tag embedding integrity manifest hash.
   create_plugin.py — Scaffold a new Aetherra plugin package.
   create_provenance_tag.py — Create a provenance tag (lightweight or annotated) referencing integrity manifest.
-  debug_fallback_metrics.py
-  debug_live_edit_plan.py
+  debug_fallback_metrics.py — Standard library imports
+  debug_live_edit_plan.py — Standard library imports
   dependency_lock.py — Generate a simple frozen dependency lock file (requirements.lock).
   dev_quickstart.py — Developer ultra-quick start helper.
-  diag_rate_limit_stream.py
+  diag_rate_limit_stream.py — Standard library imports
   enforce_license_policy.py — Lightweight license policy enforcement / telemetry.
   enforce_lock_sync.py — Verify that current environment matches requirements.lock.
   engine_audit.py — SPDX-License-Identifier: GPL-3.0-or-later
   engine_inspector.py — Ranking heuristic to pick canonical implementation.
   engine_usage_matrix.py — SPDX-License-Identifier: GPL-3.0-or-later
   engine_usage_probe.py — SPDX-License-Identifier: GPL-3.0-or-later
+  fix_duplicate_spdx.py — Fix duplicate SPDX blocks in a file, keeping only one."""
+  fix_gui_exec_security.py — Quick script to add nosec comments to legitimate Qt GUI exec() calls."""
+  fix_type_annotations.py — Automatically fix missing type annotations in Python files."""
+  fix_verbose_readmes.py — Generate a concise README for a directory."""
   format_changelog.py — Normalize CHANGELOG.md formatting after semantic-release.
   format_lint.py — Unified formatter & linter runner for Aetherra.
+  format_markdown.py — Lightweight Markdown formatter for line wrapping.
+  generate_beta_readiness_report.py — Generate or update the Beta Readiness Report.
   generate_file_index.py — Best-effort: return first line of top-level docstring or leading comment.
   generate_integrity_manifest.py — Generate integrity manifest for release artifacts.
   generate_metrics_reference.py — Generate docs/METRICS_REFERENCE.md from live metrics_accum definitions.
   generate_parse_baseline.py — Generate a baseline parse status JSON for all .aether workflows.
+  generate_qfac_file_index.py — SPDX-License-Identifier: GPL-3.0-or-later
   generate_risk_badge.py — Generate Shields.io endpoint JSON for total .aether static risk score.
   generate_sbom.py — Generate minimal SBOM (alpha) from license_report JSON.
+  generate_selfinc_readiness_doc.py — Generate Self-Inc Production Readiness doc from metadata.
   guard_discord_exclusion.py — CI/packaging guard to ensure the internal Discord Bot directory is excluded.
-  introspect_mock_counter.py
-  introspect_mock_total.py
+  introspect_mock_counter.py — Third party imports
+  introspect_mock_total.py — Third party imports
   license_report.py — Generate a license report for Python dependencies.
   lyrixa_connectivity_test.py — SPDX-License-Identifier: GPL-3.0-or-later
   lyrixa_diagnostics.py — Return a structure with deterministic key ordering for JSON emission.
   memory_fragmentation_metrics.py — Memory Fragmentation / Compaction Metrics (Lightweight)
   migrate_legacy_aether.py — !/usr/bin/env python3
   nightly_hallucination_audit.py — !/usr/bin/env python3
+  organize_directory_structure.py — Organize the Aetherra project directory structure.
   organize_repo.py — !/usr/bin/env python3
-  os_smoke.py — Headless smoke test scaffold (alpha)."""
+  os_smoke.py — Check if core services can be imported and initialized."""
   outbox_drain.py — !/usr/bin/env python3
   packaging_smoke.py — Packaging smoke test.
   parse_baseline_regression_gate.py — Parse Baseline Regression Gate
+  pip_audit_report.json
   precommit_block_legacy_hub.py — Pre-commit hook: block new imports of deprecated aetherra_hub_server.
   precommit_sign_aether.py — !/usr/bin/env python3
+  prepare_release_bundle.py — Prepare a curated release bundle directory (and optional zip).
   probe_ai_endpoints.py — Read a few SSE lines safely with a time limit.
-  probe_rate_limit_stream.py
+  probe_rate_limit_stream.py — Standard library imports
   provenance_tag_wrapper.py
   prune_aetherra_gui.py — !/usr/bin/env python3
   prune_license_overrides.py — Prune stale entries from license_overrides.yml.
+  qfac_admin.py — Attempt to obtain a QFACMemorySystem instance.
   quality_gates.py — Run a command and return (exit_code, stdout+stderr) decoded as UTF-8.
   quarantine_unused_engines.py — SPDX-License-Identifier: GPL-3.0-or-later
+  quick_type_fix.py — Fix the most common missing type annotation patterns."""
+  README_doctor.md — Project Doctor
   repo_security_scan.py — Lightweight repository security & hygiene scan.
-  repro_3018_internal.py
+  repro_3018_internal.py — Standard library imports
   repro_metrics_baseline.py — !/usr/bin/env python3
-  repro_test_metrics_case.py
+  repro_test_metrics_case.py — Standard library imports
   root_cleanup.py — Root cleanup orchestrator (non-destructive by default).
   run_go_no_go_gates.py — Launcher smoke: phased boot + registry core services.
   run_hub_ai_api.py — !/usr/bin/env python3
@@ -1308,14 +1434,15 @@ tools/
   validate_license_overrides.py — Validate license_overrides.yml structure & SPDX expressions (basic heuristics).
   verify_aether_scripts.py — Return all .aether files under the repo, excluding transient/ignored dirs.
   verify_architecture_map.py — Validate hub compatibility layer + Lyrixa chat service.
+  verify_docs_architecture.py — Verify documentation architecture structure and required files.
   verify_docs_consistency.py — Extract content under a markdown heading (any level >= 2) until the next heading of any level.
   verify_llm_setup.py — Attempt a minimal local round-trip if SDKs are installed and keys present.
   verify_release_manifest.py — Verify release manifest integrity and optional signature.
   verify_ui_standards.py — !/usr/bin/env python3
   verify_version_badge.py — Verify README version badge matches declared version.
   vuln_scan.py — Lightweight vulnerability scan wrapper (alpha implementation).
-adk_demo_ui.py — SPDX-License-Identifier: GPL-3.0-or-later
-advanced_project_intelligence.json
+.markdownlint.json
+adk_demo_ui.py — Validate that URL is safe and well-formed.
 Aether Script Language Specification.md — Aether Script Language System (`.aether`) — Legacy Spec (v1.0)
 aether.py — Execute Aether Script content."""
 aether_static_report.md — .aether Verification Report
@@ -1345,11 +1472,13 @@ aetherra_os_launcher.py — Adapts LyrixaMemorySystem to the kernel's expected i
 aetherra_outbox.py — !/usr/bin/env python3
 aetherra_persistent_memory.py — Individual memory node with cognitive metadata."""
 aetherra_plugin_catalog.json
+aetherra_plugin_catalog_backup.json
 aetherra_plugin_discovery.py — Plugin metadata structure."""
 aetherra_plugin_viewer.py — Simple GUI to view discovered plugins."""
 aetherra_plugins_cleaner.py — Safely remove a file with backup info"""
 aetherra_quantum_meta_learning.py — Calculate measurement probability for this state."""
 aetherra_script_service.py — Minimal .aether interpreter with async interface."""
+aetherra_self_incorporation.py — Track user activity patterns for night cycle scheduling."""
 aetherra_self_organizer.py — Comprehensive metadata for each file in the system."""
 aetherra_service_registry.py — Service health status enumeration."""
 aetherra_shared_service_registry.py — Service health status enumeration."""
@@ -1366,9 +1495,10 @@ CODE_OF_CONDUCT.md — Code of Conduct
 config.json
 CONTRIBUTING.md — Contributing
 copyright_header.py — !/usr/bin/env python3
-coverage.json
+create_github_issues.py — !/usr/bin/env python3
+create_labels.py — !/usr/bin/env python3
 DEPLOYMENT_TIERS.md — Aetherra Deployment Tiers
-diff_clean.py
+diff_clean.py — Standard library imports
 ENGINE_CURATION_PROPOSAL.md — Engine Curation Proposal (Dry-Run Plan)
 ENGINE_USAGE_MATRIX.md — Engine Usage Matrix
 evolution_history.aether
@@ -1382,31 +1512,29 @@ LEGAL_COMPLIANCE.md — Aetherra Project - Legal Compliance Documentation
 LICENSE_POLICY.md — License Policy & Enforcement Gates
 licenses_report.json
 licenses_unknown_history.json
-live_file_index.json
-lyrixa_intelligence.json
 lyrixa_system_check.aether
 main.py — Convenience launcher alias for aetherra_os main entry point.
 OWNERSHIP.md — Ownership & Release Authority
 package-lock.json
 package.json
-parse_baseline_local.json
-parse_baseline_sample.json
-phase2_integration_report.json
 PHASE_5_MILESTONE.md
 PRIVACY.md — Privacy Policy (Project Repository)
 QUANTUM_CONSCIOUSNESS_BREAKTHROUGH_ANNOUNCEMENT.md — 🎉 PHASE 7.2 ADVANCED QUANTUM COGNITION - COMPLETE! ✅
 quantum_memory_bridge.py — Quantum memory bridge placeholder (alpha stub)."""
+quick_fix_workflows.py — Set up Unicode environment variables
 README.md — Aetherra
 README_DEPLOY.md — Aetherra Deployment Guide
+README_OLD.md — Aetherra
 RELEASE_NOTES_0.5.0-beta.0.md — Aetherra 0.5.0-beta.0 Release Notes
 restart_aetherra.py — Perform pre-restart system checks"""
 ROADMAP.md — Aetherra Roadmap
-root_cleanup_apply.json
-root_cleanup_dryrun.json
-root_cleanup_prune.json
+rollback_test.json
+ruff_report.json
+ruff_report_latest.json
+ruff_report_post.json
 sbom.json
 SECURITY.md — Security Policy
-self_model.json
+security_scan.json
 self_organizer.aether
 setup.py — !/usr/bin/env python3
 setup_dev.py — Print the Aetherra setup banner"""
@@ -1414,22 +1542,12 @@ SMOKE_PROFILE.md — Deterministic Smoke Profile
 STEWARDSHIP.md — Aetherra Stewardship Statement
 SUPPORT.md — Support
 test_ai_os.aether
-test_consciousness_dashboards.py — Test importing all consciousness dashboard components.
-test_consciousness_integration.py — Test that all consciousness components can be imported"""
-test_hub_plugins.py — !/usr/bin/env python3
-test_multiple_plugins.py — Test installing multiple plugins
-test_plugin_installation.py — Handles plugin installation for Lyrixa Basic"""
-test_real_backend.py — SPDX-License-Identifier: GPL-3.0-or-later
-test_real_llm.py — SPDX-License-Identifier: GPL-3.0-or-later
-test_shared_registry.py — !/usr/bin/env python3
-ui_standards_report.md — UI Standards Report
-unicode_logger.py — Unicode-safe logging helpers (alpha utility)."""
+test_ethics_audit_integration.py — Test the core ethics evaluation engine."""
+test_hmr_integration.py — Test HMR integration functionality."""
+test_lyrixa_gui.py — Launch the test GUI.
+test_unicode_workflow_fix.py — Test that Unicode issues are resolved
+unicode_logger.py — Unicode-Safe Logging Configuration for Aetherra OS.
 website_truth_audit.md — Aetherra Website Truth Audit
-wf_sample.json
 what is Aether Script.md — Aether Script (`.aether`) Language Overview
-workflow_failures.md — Workflow Failure Classification
-workflow_failures_postpush.json
-workflow_failures_postpush.md — Workflow Failure Classification
-workflow_failures_sample.json
-workflow_failures_sample.md — Workflow Failure Classification
+workflow_failures.json
 ```

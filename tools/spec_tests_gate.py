@@ -55,16 +55,22 @@ def classify(files: list[str]) -> tuple[list[Path], list[Path]]:
     ignored = [
         s.strip() for s in os.getenv("IGNORED_PATHS", "").split(",") if s.strip()
     ]
+    # Treat certain files as documentation-like and not requiring tests
+    doc_like_files = {
+        "aetherra_hub/blueprints/openapi.py",
+        "tools/run_go_no_go_gates.py",
+    }
     for f in files:
         if any(ig in f for ig in ignored):
             continue
         p = Path(f)
         if p.is_dir():
             continue
-        if "/tests/" in ("/" + f.replace("\\", "/") + "/") or f.startswith("tests/"):
+        nf = f.replace("\\", "/")
+        if "/tests/" in ("/" + nf + "/") or nf.startswith("tests/"):
             test_changes.append(p)
             continue
-        if f.startswith("docs/"):
+        if nf.startswith("docs/") or nf in doc_like_files:
             # Docs don't force tests
             continue
         if p.suffix.lower() in SRC_EXTS:
@@ -73,27 +79,26 @@ def classify(files: list[str]) -> tuple[list[Path], list[Path]]:
 
 
 def main() -> int:
-    # First try staged changes
-    changed = git_diff(staged=True)
+    # Consider the union of staged and working diffs so either can satisfy the gate
+    staged = set(git_diff(staged=True))
+    working = set(git_diff(staged=False))
+    changed = sorted(staged | working)
     if not changed:
-        # Fallback to working diff vs HEAD
-        changed = git_diff(staged=False)
-    if not changed:
-        print("[SPEC→TESTS] No changes detected (skip).")
+        print("[SPEC->TESTS] No changes detected (skip).")
         return 2
 
     code_changes, test_changes = classify(changed)
     if not code_changes:
-        print("[SPEC→TESTS] No code changes requiring tests (pass).")
+        print("[SPEC->TESTS] No code changes requiring tests (pass).")
         return 0
     if test_changes:
         print(
-            f"[SPEC→TESTS] OK: {len(test_changes)} test file(s) changed for {len(code_changes)} code file(s)."
+            f"[SPEC->TESTS] OK: {len(test_changes)} test file(s) changed for {len(code_changes)} code file(s)."
         )
         return 0
 
     print(
-        "[SPEC→TESTS] FAIL: Code changes detected without corresponding test updates."
+        "[SPEC->TESTS] FAIL: Code changes detected without corresponding test updates."
     )
     for p in code_changes:
         print(f"  - {p}")

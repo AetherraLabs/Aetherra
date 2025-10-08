@@ -1,0 +1,17 @@
+# QFAC tier policies and budgets (scaffold)
+version: 2.5
+tiers:
+  T0:
+    read_latency_ms: [0, 12]
+    codec: pq
+    error_bounds:
+      semantic_sim: 0.97
+      recon_psnr: 0.90
+  T1:
+    read_latency_ms: [10, 30]
+    codec: wavelet_vae
+  T2:
+    read_latency_ms: [30, 80]
+    codec: ifs_temporal
+budgets:
+  rewrite_ms_per_minute: 200

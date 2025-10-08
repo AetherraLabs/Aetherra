@@ -33,39 +33,48 @@ import time
 from pathlib import Path
 from typing import Any, Dict
 
-# Local imports
-from ..file_system.compression_analyzer import MemoryCompressionAnalyzer
-from .compression_metrics import CompressionMetrics
-from .qfac_integration import QFACMemorySystem
+# Import shim: prefer absolute package imports; fall back to relative when run as a package
+try:  # absolute package imports
+    from Aetherra.aetherra_core.file_system.compression_analyzer import (
+        MemoryCompressionAnalyzer,
+    )
+    from Aetherra.aetherra_core.memory.compression_metrics import CompressionMetrics
+    from Aetherra.aetherra_core.memory.qfac_integration import QFACMemorySystem
+except Exception:  # relative imports (when executed with -m or within package)
+    from ..file_system.compression_analyzer import MemoryCompressionAnalyzer
+    from .compression_metrics import CompressionMetrics
+    from .qfac_integration import QFACMemorySystem
 
 # Dashboard import with safe fallback (module may not provide a class)
 try:
-    # Local imports
-    from .qfac_dashboard import QFACDashboard  # type: ignore
+    # absolute first
+    from Aetherra.aetherra_core.memory.qfac_dashboard import QFACDashboard  # type: ignore
 except Exception:
+    try:
+        # relative fallback
+        from .qfac_dashboard import QFACDashboard  # type: ignore
+    except Exception:
 
-    class QFACDashboard:  # type: ignore
-        def __init__(self, analyzer):
-            self.analyzer = analyzer
+        class QFACDashboard:  # type: ignore
+            def __init__(self, analyzer):
+                self.analyzer = analyzer
 
-        async def start_dashboard(self, mode: str = "text"):
-            return None
+            async def start_dashboard(self, mode: str = "text"):
+                return None
 
-        async def stop_dashboard(self):
-            return None
+            async def stop_dashboard(self):
+                return None
 
-        async def export_dashboard_report(
-            self, filename: str = "qfac_dashboard_report.json"
-        ):
-            # Minimal stub: persist performance snapshot from analyzer
-            try:
-                perf = await self.analyzer.monitor_compression_performance()
-            except Exception:
-                perf = {"status": "unavailable", "reason": "dashboard stub"}
-            output = Path(filename)
-            with open(output, "w") as f:
-                json.dump(perf, f, indent=2, default=str)
-            return str(output)
+            async def export_dashboard_report(self, filename: str = "qfac_dashboard_report.json"):
+                # Minimal stub: persist performance snapshot from analyzer
+                try:
+                    perf = await self.analyzer.monitor_compression_performance()
+                except Exception:
+                    perf = {"status": "unavailable", "reason": "dashboard stub"}
+                output = Path(filename)
+                with open(output, "w") as f:
+                    json.dump(perf, f, indent=2, default=str)
+                return str(output)
 
 
 class QFACLauncher:
@@ -93,11 +102,16 @@ class QFACLauncher:
         if not self.analyzer:
             self.analyzer = MemoryCompressionAnalyzer(str(self.data_dir / "analyzer"))
 
-        if not self.dashboard:
-            self.dashboard = QFACDashboard(self.analyzer)
-
         if not self.memory_system:
             self.memory_system = QFACMemorySystem(str(self.data_dir / "memory_system"))
+
+        if not self.dashboard:
+            # Pass memory_system so the dashboard can expose real status metrics
+            try:
+                self.dashboard = QFACDashboard(self.analyzer, self.memory_system)
+            except TypeError:
+                # Backwards compatibility with older dashboard signature
+                self.dashboard = QFACDashboard(self.analyzer)  # type: ignore
 
         # Ensure all components are initialized
         assert self.analyzer is not None
@@ -110,11 +124,7 @@ class QFACLauncher:
         print("=" * 60)
 
         self._init_components()
-        if (
-            self.memory_system is None
-            or self.analyzer is None
-            or self.dashboard is None
-        ):
+        if self.memory_system is None or self.analyzer is None or self.dashboard is None:
             raise RuntimeError("QFAC components failed to initialize")
 
         # 1. Core metrics demonstration
@@ -168,9 +178,7 @@ class QFACLauncher:
         print(
             f"   📊 Compression ratio: {status['size_statistics']['overall_compression_ratio']:.1f}x"
         )
-        print(
-            f"   💾 Space saved: {status['size_statistics']['space_saved_percentage']:.1f}%"
-        )
+        print(f"   💾 Space saved: {status['size_statistics']['space_saved_percentage']:.1f}%")
 
         # 3. Performance monitoring
         print("\n📈 3. Performance Monitoring")
@@ -188,21 +196,15 @@ class QFACLauncher:
         optimization = await self.memory_system.optimize_system()
         print(f"   [TOOL] Actions taken: {len(optimization['actions_taken'])}")
 
-        before_compressed = optimization["before_stats"]["node_statistics"][
-            "compressed_nodes"
-        ]
-        after_compressed = optimization["after_stats"]["node_statistics"][
-            "compressed_nodes"
-        ]
+        before_compressed = optimization["before_stats"]["node_statistics"]["compressed_nodes"]
+        after_compressed = optimization["after_stats"]["node_statistics"]["compressed_nodes"]
         print(f"   [DISC] Compressed nodes: {before_compressed} → {after_compressed}")
 
         # 5. Export reports
         print("\n📄 5. Report Generation")
         print("-" * 40)
 
-        system_report = await self.memory_system.export_system_report(
-            "demo_system_report.json"
-        )
+        system_report = await self.memory_system.export_system_report("demo_system_report.json")
         dashboard_report = await self.dashboard.export_dashboard_report(
             "demo_dashboard_report.json"
         )
@@ -223,8 +225,24 @@ class QFACLauncher:
             raise RuntimeError("QFAC dashboard not available")
 
         try:
-            await self.dashboard.start_dashboard(mode)
-        except KeyboardInterrupt:
+            # If interactive mode and memory is empty, auto-seed to make the UI meaningful
+            if (mode or "").lower() in ("interactive", "web", "ui") and self.memory_system:
+                try:
+                    st = await self.memory_system.get_system_status()
+                    if int(st.get("node_statistics", {}).get("total_nodes", 0)) == 0:
+                        print("   🌱 Memory empty — seeding demo data (3 nodes) for visualization…")
+                        await self.seed_demo(3)
+                except Exception:
+                    pass
+            info = await self.dashboard.start_dashboard(mode)
+            # If interactive mode, keep the process alive until interrupted
+            if isinstance(info, dict) and info.get("mode") == "interactive":
+                url = info.get("url", "http://127.0.0.1:4020/")
+                print(f"🖥️  Dashboard running at: {url}")
+                print("   Press Ctrl+C to stop\n")
+                while True:
+                    await asyncio.sleep(1)
+        except (KeyboardInterrupt, asyncio.CancelledError):
             print("\n🛑 Dashboard stopped by user")
         finally:
             await self.dashboard.stop_dashboard()
@@ -277,9 +295,7 @@ class QFACLauncher:
                     "\n✅ Recommendation: Excellent compression candidate - proceed with aggressive compression"
                 )
             elif score.compression_ratio > 3.0:
-                print(
-                    "\n👍 Recommendation: Good compression potential - use standard compression"
-                )
+                print("\n👍 Recommendation: Good compression potential - use standard compression")
             else:
                 print(
                     "\n🤔 Recommendation: Limited compression benefit - consider conservative approach"
@@ -303,18 +319,14 @@ class QFACLauncher:
 
             print("💾 Memory System:")
             print(f"   [DISC] Total nodes: {status['node_statistics']['total_nodes']}")
-            print(
-                f"   🗜️ Compressed nodes: {status['node_statistics']['compressed_nodes']}"
-            )
+            print(f"   🗜️ Compressed nodes: {status['node_statistics']['compressed_nodes']}")
             print(
                 f"   📊 Compression rate: {status['node_statistics']['compression_percentage']:.1f}%"
             )
             print(
                 f"   📈 Overall ratio: {status['size_statistics']['overall_compression_ratio']:.1f}x"
             )
-            print(
-                f"   💾 Space saved: {status['size_statistics']['space_saved_percentage']:.1f}%"
-            )
+            print(f"   💾 Space saved: {status['size_statistics']['space_saved_percentage']:.1f}%")
             print(f"   🏥 System health: {status['system_health']:.1%}")
 
             # Fidelity distribution
@@ -344,9 +356,7 @@ class QFACLauncher:
                 ratio = metrics.get("avg_compression_ratio", 0)
                 time_ms = metrics.get("avg_compression_time", 0) * 1000
                 count = metrics.get("sample_count", 0)
-                print(
-                    f"   🗂️ {mem_type:12s}: {ratio:5.1f}x | {time_ms:5.1f}ms | {count:3d} samples"
-                )
+                print(f"   🗂️ {mem_type:12s}: {ratio:5.1f}x | {time_ms:5.1f}ms | {count:3d} samples")
 
     async def run_benchmark(self):
         """Run compression benchmarks"""
@@ -372,9 +382,7 @@ class QFACLauncher:
             print(f"   📊 Benchmarking {dataset_name}...")
 
             start_time = time.time()
-            score = await self.analyzer.analyze_memory_fragment(
-                data, f"bench_{dataset_name}"
-            )
+            score = await self.analyzer.analyze_memory_fragment(data, f"bench_{dataset_name}")
             analysis_time = time.time() - start_time
 
             original_size = len(str(data))
@@ -405,9 +413,7 @@ class QFACLauncher:
 
         # Calculate summary
         overall_ratio = (
-            total_original_size / total_compressed_size
-            if total_compressed_size > 0
-            else 1.0
+            total_original_size / total_compressed_size if total_compressed_size > 0 else 1.0
         )
         avg_analysis_time = total_analysis_time / len(test_datasets)
 
@@ -419,9 +425,7 @@ class QFACLauncher:
             "total_analysis_time": total_analysis_time,
             "avg_analysis_time": avg_analysis_time,
             "space_saved_percentage": (
-                (total_original_size - total_compressed_size)
-                / total_original_size
-                * 100
+                (total_original_size - total_compressed_size) / total_original_size * 100
             )
             if total_original_size > 0
             else 0,
@@ -429,13 +433,9 @@ class QFACLauncher:
 
         print("\n📊 Benchmark Results:")
         print(f"   [DISC] Datasets tested: {results['summary']['total_datasets']}")
-        print(
-            f"   📈 Overall compression: {results['summary']['overall_compression_ratio']:.1f}x"
-        )
+        print(f"   📈 Overall compression: {results['summary']['overall_compression_ratio']:.1f}x")
         print(f"   💾 Space saved: {results['summary']['space_saved_percentage']:.1f}%")
-        print(
-            f"   ⏱️ Avg analysis time: {results['summary']['avg_analysis_time'] * 1000:.1f}ms"
-        )
+        print(f"   ⏱️ Avg analysis time: {results['summary']['avg_analysis_time'] * 1000:.1f}ms")
 
         # Save benchmark results
         benchmark_file = self.data_dir / f"benchmark_results_{int(time.time())}.json"
@@ -443,6 +443,45 @@ class QFACLauncher:
             json.dump(results, f, indent=2, default=str)
 
         print(f"\n✅ Benchmark results saved to: {benchmark_file}")
+
+    async def seed_demo(self, count: int = 3) -> None:
+        """Seed the memory system with highly compressible data and force compress.
+
+        Useful for demos so the dashboard shows >1.0x ratios and saved space.
+        """
+        print("\n🌱 Seeding QFAC memory with compressible samples")
+        print("=" * 60)
+
+        self._init_components()
+        if self.memory_system is None:
+            raise RuntimeError("QFAC memory system not available")
+
+        def _sample(i: int) -> Any:
+            # Highly compressible payloads: long repeated strings and patterns
+            base = ("NEON-" * 1000) + ("GRID-" * 800) + ("AETHERRA-" * 600)
+            return {
+                "id": f"seed_{i}",
+                "text": base,
+                "meta": {"kind": "demo_seed", "repeats": 2400, "created": time.time()},
+            }
+
+        node_ids = []
+        for i in range(max(1, int(count))):
+            data = _sample(i)
+            node_id = await self.memory_system.store_memory(data, f"seed_node_{i}")
+            node_ids.append(node_id)
+            print(f"   ✅ Seeded {node_id}")
+
+        # Allow background auto-analysis a moment to run
+        await asyncio.sleep(0.2)
+        # Compress all eligible nodes now that analysis is available
+        await self.memory_system.compress_all_eligible()
+
+        # Show quick status snapshot
+        status = await self.memory_system.get_system_status()
+        print("\n📊 Snapshot after seeding:")
+        print(f"   📈 Overall ratio: {status['size_statistics']['overall_compression_ratio']:.1f}x")
+        print(f"   💾 Space saved: {status['size_statistics']['space_saved_percentage']:.1f}%")
 
     def _generate_benchmark_data(self) -> Dict[str, Any]:
         """Generate test data for benchmarks"""
@@ -594,6 +633,7 @@ class QFACLauncher:
         print("  analyze <file>          Analyze file for compression potential")
         print("  status                  Show system status")
         print("  benchmark               Run compression benchmarks")
+        print("  seed [n]                Seed compressible demo data (default 3)")
         print("  help                    Show this help message")
         print("\nExamples:")
         print("  python qfac_launcher.py demo")
@@ -643,6 +683,15 @@ async def main():
 
         elif args.command == "benchmark":
             await launcher.run_benchmark()
+
+        elif args.command == "seed":
+            n = 3
+            try:
+                if args.args:
+                    n = int(args.args[0])
+            except Exception:
+                n = 3
+            await launcher.seed_demo(n)
 
         elif args.command == "help":
             launcher.show_help()

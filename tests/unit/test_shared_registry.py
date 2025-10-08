@@ -5,23 +5,47 @@
 # Standard library imports
 import asyncio
 
-# Aetherra imports
-from aetherra_service_registry import get_service_registry
+import pytest
+
+from aetherra_service_registry import (
+    ServiceStatus,
+    get_service_registry,
+    register_service,
+)
 
 
-async def test():
-    print("Testing shared registry access...")
-    registry = await get_service_registry(enable_shared=True)
-    print(f"Registry created: {registry}")
-    print(f"Shared enabled: {registry._shared_enabled}")
-    services = registry.list_services()
-    print(f"Local services: {list(services.keys())}")
+@pytest.mark.asyncio
+async def test_service_registry_basic_registration():
+    """Basic sanity test for the in-process service registry.
 
-    if registry._shared_registry:
-        shared_services = registry._shared_registry.list_services()
-        print(f"Shared services: {list(shared_services.keys())}")
-    else:
-        print("No shared registry found")
+    This replaces the ad-hoc script-style test that attempted to pass an
+    unsupported parameter. Keeps scope narrow to avoid side-effects.
+    """
+    registry = await get_service_registry()
 
+    class DummyService:
+        def __init__(self):
+            self.alive = True
 
-asyncio.run(test())
+        def is_alive(self):  # exercised indirectly by heartbeat monitor
+            return self.alive
+
+    svc = DummyService()
+    ok = await register_service("dummy_service", svc, metadata={"version": "1.0"})
+    assert ok is True
+
+    info = registry.get_service_info("dummy_service")
+    assert info is not None
+    # Dependency-free services become HEALTHY automatically
+    assert info.status in {ServiceStatus.HEALTHY, ServiceStatus.STARTING}
+
+    listed = registry.list_services()
+    assert "dummy_service" in listed
+
+    status_snapshot = registry.get_registry_status()
+    assert status_snapshot["total_services"] >= 1
+
+    # Minimal heartbeat update
+    await registry.update_heartbeat("dummy_service")
+
+    # No teardown here; global registry reused across tests.

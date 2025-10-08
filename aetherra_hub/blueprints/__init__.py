@@ -4,6 +4,7 @@ Ensures namespace stability and explicit imports for all blueprint modules.
 
 # Local imports
 from . import (  # noqa: F401
+    agents,
     ai_ask,
     ai_stream,
     chat,
@@ -16,6 +17,7 @@ from . import (  # noqa: F401
     openapi,
     peers,
     plugins,
+    qfac_admin,
     quantum,
     site_status,
     telemetry,
@@ -23,6 +25,7 @@ from . import (  # noqa: F401
 )
 
 __all__ = [
+    "agents",
     "ai_ask",
     "ai_stream",
     "chat",
@@ -39,4 +42,5 @@ __all__ = [
     "trainer",
     "peers",
     "memory",
+    "qfac_admin",
 ]

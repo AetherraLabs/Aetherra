@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Workflow Builder</title>
+    <style>
+        body {
+            font-family: system-ui, Arial, sans-serif;
+            margin: 0;
+            background: #121212;
+            color: #eee;
+        }
+
+        header {
+            padding: 10px 16px;
+            background: #1e1e1e;
+            font-weight: 600;
+        }
+
+        main {
+            padding: 12px 16px;
+        }
+
+        .status {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 8px;
+        }
+
+        button {
+            background: #2962ff;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1e53e6;
+        }
+    </style>
+</head>
+
+<body>
+    <header>⚡ Workflow Builder (Embedded)</header>
+    <main>
+        <p>This is a sandboxed UI host for the Workflow Builder plugin.</p>
+        <button onclick="document.getElementById('out').textContent='Ping '+Date.now()">Ping</button>
+        <div id="out" class="status">Ready.</div>
+    </main>
+</body>
+
+</html>

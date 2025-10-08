@@ -483,3 +483,63 @@ Additional JSON:
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+## QFAC 2.5 (Targeted Upgrades) — Scaffold Overview
+
+The QFAC 2.5 path is being brought online incrementally with a small, testable core that degrades gracefully when optional accelerators are missing.
+
+What’s available now (scaffold):
+
+- Core data model and helpers
+  - `Aetherra/aetherra_core/memory/qfac/models.py` → `MemoryRecord`, `Edge`, `FractalSignature`, `ObserverState`, `compute_content_hash`
+- Compression-aware indexing (fallback implementation)
+  - `Aetherra/aetherra_core/memory/qfac/index_ivf_pq.py` → NumPy cosine-sim index (ready to swap to FAISS OPQ + IVF-PQ for T0)
+- Observer-dependent views (quantum-esque variation)
+  - `Aetherra/aetherra_core/memory/qfac/materializer.py` → `ViewMaterializer` that biases
+    view scores by observer priors over edge types and motifs
+- Fractal signatures (multi-scale summary)
+  - `Aetherra/aetherra_core/memory/qfac/fractal_sig.py` → simple multi-scale, high-pass differences with motif hashing
+- API entrypoints
+  - `Aetherra/aetherra_core/memory/qfac/api.py` → `qfac_store`, `qfac_search`, `qfac_rewrite_budgeted` with an in-memory store for fast iteration
+- Background Fractal GC (budgeted rewrite)
+  - `Aetherra/aetherra_core/memory/qfac/rewrite_daemon.py` → `FractalGC.run_once(budget_ms)` stub (calls rewrite budgeted)
+- Config (tier policies and budgets)
+  - `configs/qfac.yaml` → T0/T1/T2 codec hints and rewrite budgets
+
+Planned next (high level):
+
+- T0: Swap NumPy index for FAISS IVF-PQ with OPQ rotation (8× memory reduction target with <1% recall drop)
+- Retrieval with compression awareness (Stages A/B/C) and partial residual decode
+- Integrity & safety: Merkle paths, CDC for text, shadow rewrites, and two-key GC rule
+- Causal checks: triplet consistency and contradiction detector hooks
+- Metrics & eval harness: fidelity A/B, observer delta reports, drift alarms
+
+Module map (current):
+
+- `qfac/models.py` — data contracts and hashing
+- `qfac/api.py` — store/search/rewrite API (scaffold storage)
+- `qfac/index_ivf_pq.py` — searchable index (NumPy fallback)
+- `qfac/fractal_sig.py` — fractal signature generator
+- `qfac/materializer.py` — observer-dependent view materialization
+- `qfac/rewrite_daemon.py` — budgeted rewrite stub
+- `qfac/codec_pq.py` — OPQ/PQ toy helpers (for future wiring)
+
+Quick test run (PowerShell):
+
+```powershell
+pytest -q -o addopts= tests/qfac/test_basic_qfac.py
+pytest -q -o addopts= tests/qfac/test_observer_and_gc.py
+```
+
+These exercise:
+
+- Basic store + search + observer materialization
+- Observer priors changing ranking order
+- Budgeted rewrite updating `last_rewrite`
+
+Notes:
+
+- The index currently uses NumPy cosine similarity.
+- When FAISS is available the `IVF_PQ_Index` switches to a `faiss.IndexIVFPQ` backend automatically.
+- If construction, training, or search fail, it falls back to NumPy without changing the public API.
+- APIs are intentionally small and sync to simplify early wiring; they will slot behind higher-level memory engines as they mature.

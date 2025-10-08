@@ -68,7 +68,6 @@ Tests provide end-to-end validation (capabilities: 8) and unit coverage (unit: 1
 
 Additional parity test added: `tests/integration/test_hub_compat_parity.py` (ensures deprecated shim emits warning & surface parity until removal).
 
-
 - AETHERRA_PROFILE
 - AETHERRA_DETERMINISTIC
 - AETHERRA_TRACE
@@ -191,7 +190,6 @@ Note: Aggregated site status endpoint (preferred by UI/widget)
 - /site_status
 Note: Global OPTIONS preflight handler (CORS/PNA)
 - `/&lt;param&gt;` (Flask-style catch‑all)
-
 
 ```text
 /<param>
@@ -520,6 +518,19 @@ Core toggles and networking:
 - `AETHERRA_TEMPLATE_DIR`
 - `AETHERRA_WEB_PORT`
 
+QFAC retrieval/admin and test toggles:
+
+- `AETHERRA_QFAC_RETRIEVAL_THRESHOLD` — Float threshold (0.0..1.0) used to drop low-scoring retrieval results.
+- `AETHERRA_QFAC_RETRIEVAL_PARITY` — 1/0 to enable parity counting (shadow-mode parity comparisons during retrieval).
+- `AETHERRA_QFAC_ADMIN_ENABLE_LIVE` — 1/0 to allow `tools/qfac_admin.py` to create
+  a live QFAC instance snapshot; default is 0 (safe JSON-only defaults).
+- `AETHERRA_QFAC_VALIDATOR_FAKE` — 1/0 test-only override to emit validator metrics without a running validator service.
+- `AETHERRA_QFAC_VALIDATOR_FAKE_GREEN` — Integer count for fake validator green_total when `AETHERRA_QFAC_VALIDATOR_FAKE=1`.
+- `AETHERRA_QFAC_VALIDATOR_FAKE_BLOCKED` — Integer count for fake validator blocked_total when `AETHERRA_QFAC_VALIDATOR_FAKE=1`.
+- `AETHERRA_QFAC_SHADOW_FAKE` — 1/0 test-only override to emit shadow log metrics without a running shadow logger.
+- `AETHERRA_QFAC_SHADOW_FAKE_TOTAL` — Integer count for fake total shadow logs when `AETHERRA_QFAC_SHADOW_FAKE=1`.
+- `AETHERRA_QFAC_SHADOW_FAKE_RECENT` — Integer count for fake recent shadow logs window when `AETHERRA_QFAC_SHADOW_FAKE=1`.
+
 - `AETHERRA_KEYS_ALLOW_PLAINTEXT` — 1/0 to allow storing API keys in plaintext (development only; encryption at rest recommended).
 - `AETHERRA_PRINCIPAL` — Caller identity propagated to services for policy and audit (e.g., user/session id).
 - `AETHERRA_QFAC_POLICY` — enforce | shadow | off (policy mode for quantum path gating).
@@ -552,7 +563,9 @@ Kernel scheduling, retry, and metrics:
 - `AETHERRA_NIGHT_TZ` — IANA time zone for night cycle window (e.g., "UTC", "America/Los_Angeles").
 - `AETHERRA_NIGHT_UTC` — 1/0 to pin night cycle scheduling to UTC.
 - `AETHERRA_NIGHT_STAGGER_MAX_SEC` — Max jitter seconds to stagger start within the window.
-  - Night cycle safety: In prod/staging the Kernel emits `aetherra_kernel_night_schedule_guard_pass=0` if neither `AETHERRA_NIGHT_TZ` nor `AETHERRA_NIGHT_UTC=1` is set (fail‑closed). Set one explicitly to pass the guard.
+  - Night cycle safety: In prod/staging the Kernel emits
+    `aetherra_kernel_night_schedule_guard_pass=0` if neither `AETHERRA_NIGHT_TZ` nor
+    `AETHERRA_NIGHT_UTC=1` is set (fail‑closed). Set one explicitly to pass the guard.
 
 Plugins runtime:
 
@@ -593,7 +606,9 @@ Chat and client defaults:
 - `AETHERRA_SSE_REPLAY_MAX_EVENTS` — Max number of SSE replay events retained.
 - `AETHERRA_STREAM_SOFT_TIMEOUT_S` — Soft timeout for streaming sessions before graceful finalization.
 - `AETHERRA_ENGINE_WAIT_MS` — Milliseconds to wait for engine registration at Hub start.
-  - Scratchpad redaction default: If `scratchpad_policy` is omitted on `/api/ai/stream` or `/api/ai/ask`, Hub defaults to `redacted`. `persisted` requires capability `evidence.view`; `ephemeral` always allowed.
+  - Scratchpad redaction default: If `scratchpad_policy` is omitted on `/api/ai/stream`
+    or `/api/ai/ask`, Hub defaults to `redacted`. `persisted` requires capability
+    `evidence.view`; `ephemeral` always allowed.
 - `AETHERRA_TEST_RESET_ENGINE` — 1/0 to reset/unregister engine at Hub start during tests.
 - `AETHERRA_HUB_RESET_ENGINE_ON_START` — 1/0 to force engine reset on Hub start.
 - `AETHERRA_HUB_DEBUG_METRICS` — 1/0 to enable extra Hub metrics debug logging for troubleshooting.
@@ -616,7 +631,10 @@ Transcendence metrics and baselines:
 
 ## Environment Variables — Affect, Consciousness, Narrative, Quantum, A/B & Workspace (Sept 2025 Additions)
 
-The following variables were newly audited in September 2025. They span: affect scoring, consciousness & narrative streaming, episodic memory retention, event bus/backpressure, quantum & recall experimentation, registry/versioning, sensors & self‑model, and workspace scheduling.
+The following variables were newly audited in September 2025. They span: affect
+scoring, consciousness & narrative streaming, episodic memory retention, event bus/
+backpressure, quantum & recall experimentation, registry/versioning, sensors & self‑model,
+and workspace scheduling.
 
 | Variable                                   | Default / Type                     | Description                                                                        |
 | ------------------------------------------ | ---------------------------------- | ---------------------------------------------------------------------------------- |
@@ -685,7 +703,8 @@ Families for experiments (A/B recall) and qhash hashing helpers should remain un
 - Narrative / episodic retention tuning should align with storage and privacy budgets; shorten windows for high-velocity event streams.
 - Workspace scheduling intervals below 100ms may increase CPU overhead without tangible latency benefit.
 
-These variables are now part of the automated docs consistency verification. Removing or renaming any requires updating this section to keep the quality gate green.
+These variables are now part of the automated docs consistency verification.
+Removing or renaming any requires updating this section to keep the quality gate green.
 
 ---
 
