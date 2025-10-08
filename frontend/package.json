@@ -12,15 +12,15 @@
     "dependencies": {
         "@react-three/drei": "^10.7.6",
         "@react-three/fiber": "^9.3.0",
-        "framer-motion": "^12.23.12",
-        "react": "^19.1.0",
-        "react-dom": "^19.1.0",
-        "react-router-dom": "^7.9.1",
+        "framer-motion": "^12.23.22",
+        "react": "^19.2.0",
+        "react-dom": "^19.2.0",
+        "react-router-dom": "^7.9.3",
         "three": "^0.180.0",
         "zustand": "^5.0.8"
     },
     "devDependencies": {
-        "@vitejs/plugin-react": "^5.0.2",
-        "vite": "^7.1.5"
+        "@vitejs/plugin-react": "^5.0.4",
+        "vite": "^7.1.9"
     }
 }
