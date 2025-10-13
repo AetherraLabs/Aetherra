@@ -154,6 +154,14 @@ data/aetherra_kernel_metrics.json
 aetherra.db
 aetherra_*.db
 
+# SQLite write-ahead log and shared memory files (transient, should not be committed)
+*.db-wal
+*.db-shm
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3-wal
+*.sqlite3-shm
+
 # AI model caches
 model_cache/
 embeddings_cache/
