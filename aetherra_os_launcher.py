@@ -769,6 +769,9 @@ class AetherraOSLauncher:
         await self._load_event_bus(system_config)
         await self._load_agent_fabric(system_config)
 
+        # Load homeostasis system for autonomous stability control
+        await self._load_homeostasis_system(system_config)
+
         # Initialize HMR Controller (opt-in) near end of Phase 2, before kernel starts accepting tasks
         try:
             hmr_enabled = bool(
@@ -1861,6 +1864,48 @@ class AetherraOSLauncher:
         except Exception as e:
             logger.warning(f"[WARN] Agent Fabric unavailable: {e}")
 
+    async def _load_homeostasis_system(self, config: dict[str, Any]):
+        """Load homeostasis system for autonomous system stability control."""
+        try:
+            logger.info("[SYS] Loading Homeostasis System...")
+
+            # Load homeostasis orchestrator
+            from Aetherra.homeostasis.homeostasis_integration import (
+                HomeostasisOrchestrator,
+            )
+
+            # Create orchestrator (it will handle service registry internally)
+            homeostasis = HomeostasisOrchestrator()
+
+            # Initialize the system
+            await homeostasis.initialize()
+
+            # Store in systems
+            self.systems["homeostasis"] = homeostasis
+
+            # Register with service registry
+            if CORE_AVAILABLE and self.service_registry:
+                await register_service(
+                    "homeostasis_system",
+                    homeostasis,
+                    metadata={
+                        "type": "system_stability",
+                        "version": "1.0",
+                        "features": [
+                            "stability_control",
+                            "metrics_collection",
+                            "supervision",
+                        ],
+                    },
+                )
+                await self.service_registry.update_service_status(
+                    "homeostasis_system", ServiceStatus.HEALTHY
+                )
+
+            logger.info("[OK] Homeostasis System loaded")
+        except Exception as e:
+            logger.warning(f"[WARN] Homeostasis System unavailable: {e}")
+
     async def _start_kernel_loop(self):
         """[SYS] Start the OS kernel loop."""
         logger.info("[SYS] Phase 3: Starting OS Kernel Loop...")
@@ -1952,6 +1997,20 @@ class AetherraOSLauncher:
                     await self.service_registry.update_service_status(
                         svc, ServiceStatus.HEALTHY
                     )
+
+        # Activate homeostasis system for autonomous stability control
+        if "homeostasis" in self.systems and hasattr(
+            self.systems["homeostasis"], "start"
+        ):
+            logger.info("[INIT] Starting homeostasis autonomous control loop...")
+            await self.systems["homeostasis"].start()
+
+            # Mark homeostasis as healthy
+            if self.service_registry and CORE_AVAILABLE:
+                await self.service_registry.update_service_status(
+                    "homeostasis_system", ServiceStatus.HEALTHY
+                )
+            logger.info("[OK] Homeostasis system activated")
 
         logger.info("[OK] All systems activated")
 

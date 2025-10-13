@@ -56,9 +56,15 @@ Legend: ✅ implemented · 🚧 partial · 🔮 planned
   - Purpose: This document describes the Aetherra Chat System: a platform-level conversational service that provides message transport, streaming, safety middleware, and observability for multiple clients (Lyrixa UI/CLI, tools, and future apps).
   - Status: 🚧 Partial
 
+- Aetherra Homeostasis System — ./AETHERRA_HOMEOSTASIS_SYSTEM.md
+  - Purpose: Autonomous system stability and equilibrium control for the entire Aetherra OS. Provides continuous
+    monitoring, deviation detection, and automatic corrective actions to maintain system health and reliability.
+  - Status: ✅ Implemented
+  - Dependencies: integrates with all core systems (Kernel, Memory, AI, Hub, Agents)
+
 ---
 
-Quick status: ✅ Implemented: 2 · 🚧 Partial: 6 · 🔮 Planned: 2
+Quick status: ✅ Implemented: 3 · 🚧 Partial: 6 · 🔮 Planned: 2
 
 How to use
 

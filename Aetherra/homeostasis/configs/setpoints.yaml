@@ -1,0 +1,229 @@
+# Aetherra Homeostasis Setpoints Configuration
+#
+# Defines target bands, SLOs, and stability thresholds for the homeostasis system.
+# These values are based on the stable baseline achieved during recent stabilization.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
+# Metadata
+version: "1.0.0"
+updated: "2025-10-12"
+description: "Initial setpoints based on stable release thresholds and Phase 3/7 readiness reports"
+
+# Core System Metrics
+core_metrics:
+  # Task Processing
+  task_throughput:
+    target: 10.0  # tasks/second
+    min_acceptable: 5.0
+    max_acceptable: 50.0
+    control_band: 2.0  # trigger control action if outside target ± band
+
+  task_latency:
+    target: 100.0  # milliseconds
+    max_acceptable: 500.0
+    p95_threshold: 250.0
+    control_band: 50.0
+
+  queue_depth:
+    target: 5.0  # items
+    max_acceptable: 50.0
+    critical_threshold: 100.0
+    control_band: 10.0
+
+  # Memory System
+  memory_rtt:
+    target: 50.0  # milliseconds
+    max_acceptable: 120.0
+    p95_threshold: 100.0
+    control_band: 20.0
+
+  memory_timeouts:
+    target: 0.0  # timeouts/hour
+    max_acceptable: 2.0
+    critical_threshold: 10.0
+    control_band: 1.0
+
+  # Exception and Error Handling
+  exception_suppression:
+    target: 0.0  # suppressions/hour
+    max_acceptable: 5.0
+    critical_threshold: 20.0
+    trend_threshold: 5.0  # max increase per hour
+    control_band: 2.0
+
+  # Plugin System
+  plugin_load_success:
+    target: 95.0  # percentage
+    min_acceptable: 85.0
+    critical_threshold: 70.0
+    control_band: 5.0
+
+  plugin_timeout_rate:
+    target: 1.0  # timeouts/hour
+    max_acceptable: 5.0
+    critical_threshold: 15.0
+    control_band: 2.0
+
+  # Hub and Connectivity
+  hub_connection:
+    target: 1.0  # connection state (1=connected, 0=disconnected)
+    reconnect_threshold: 1.0  # reconnects/24h
+    max_reconnects_per_day: 3.0
+    control_band: 0.5
+
+  hub_websocket_status:
+    target: 1.0  # websocket health (1=healthy, 0=unhealthy)
+    heartbeat_timeout: 30.0  # seconds
+    control_band: 0.5
+
+  # GUI and User Interface
+  gui_heartbeat:
+    target: 1.0  # seconds between heartbeats
+    max_acceptable: 5.0
+    critical_threshold: 10.0
+    control_band: 2.0
+
+  gui_responsiveness:
+    target: 100.0  # milliseconds
+    max_acceptable: 500.0
+    critical_threshold: 1000.0
+    control_band: 100.0
+
+# Cognitive System Metrics
+cognitive_metrics:
+  # Learning and Adaptation
+  learning_rate:
+    target: 0.01  # learning rate coefficient
+    min_acceptable: 0.001
+    max_acceptable: 0.1
+    control_band: 0.005
+
+  learning_cycle_time:
+    target: 300.0  # seconds
+    max_acceptable: 900.0
+    control_band: 120.0
+
+  # Confidence and Decision Making
+  confidence_level:
+    target: 0.8  # confidence coefficient
+    min_acceptable: 0.6
+    max_acceptable: 0.95
+    control_band: 0.1
+
+  uncertainty_level:
+    target: 0.1  # uncertainty coefficient
+    max_acceptable: 0.3
+    control_band: 0.05
+
+  # Model Performance
+  model_fallback_rate:
+    target: 0.0  # fallbacks/hour
+    max_acceptable: 2.0
+    critical_threshold: 10.0
+    control_band: 1.0
+
+  reflection_stability:
+    target: 0.9  # stability coefficient
+    min_acceptable: 0.7
+    control_band: 0.1
+
+# Service Availability Metrics
+service_metrics:
+  # Service Registry
+  registry_health:
+    target: 1.0  # health state
+    heartbeat_interval: 10.0  # seconds
+    control_band: 0.5
+
+  service_count:
+    target: 8.0  # expected active services
+    min_acceptable: 6.0
+    control_band: 1.0
+
+  # OS and Kernel
+  kernel_loop_health:
+    target: 1.0  # health state
+    cycle_time_target: 1.0  # seconds
+    max_cycle_time: 5.0
+    control_band: 0.5
+
+  os_runlevel:
+    target: "ONLINE"  # desired runlevel
+    acceptable_states: ["ONLINE", "DEGRADED"]
+    critical_states: ["OFFLINE", "FAILED"]
+
+# Control Parameters
+control_parameters:
+  # PID Controller Settings
+  pid_gains:
+    proportional: 1.0  # Kp
+    integral: 0.1     # Ki
+    derivative: 0.05   # Kd (optional, for spiky signals)
+
+  integral_limits:
+    max_integral: 10.0
+    min_integral: -10.0
+
+  # Control Action Thresholds
+  action_thresholds:
+    low_threshold: -2.0   # trigger corrective action
+    high_threshold: 2.0   # trigger corrective action
+    critical_threshold: 5.0  # trigger emergency action
+
+  # Timing and Debounce
+  control_intervals:
+    monitoring_interval: 10.0  # seconds between metric reads
+    control_interval: 30.0     # seconds between control decisions
+    debounce_time: 60.0        # seconds to wait before re-action
+
+  # Rate Limiting
+  rate_limits:
+    max_actions_per_minute: 3
+    max_actions_per_hour: 20
+    cooldown_after_action: 120.0  # seconds
+
+# Operating Modes
+operating_modes:
+  default_mode: "active"
+
+  modes:
+    observe_only:
+      description: "Monitor metrics but take no actions"
+      actions_enabled: false
+      logging_level: "INFO"
+
+    advisory:
+      description: "Suggest actions but don't execute them"
+      actions_enabled: false
+      suggest_actions: true
+      logging_level: "INFO"
+
+    active_limited:
+      description: "Execute safe, non-disruptive actions only"
+      actions_enabled: true
+      allowed_actuators: ["adjust_timeouts", "tune_learning_rate", "restart_plugins"]
+      logging_level: "INFO"
+
+    active:
+      description: "Full homeostasis control with all actuators"
+      actions_enabled: true
+      allowed_actuators: "all"
+      logging_level: "DEBUG"
+
+  # Change Windows (when to operate in different modes)
+  change_windows:
+    peak_hours:
+      start: "09:00"
+      end: "17:00"
+      mode: "observe_only"
+
+    off_peak:
+      start: "17:01"
+      end: "08:59"
+      mode: "active"
+
+    maintenance:
+      mode: "active_limited"
+      description: "Safe operations during maintenance windows"

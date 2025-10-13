@@ -1,0 +1,158 @@
+{
+  "export_timestamp": "2025-10-12T16:10:19.220304",
+  "monitoring_duration": 10.223472833633423,
+  "total_data_points": 2,
+  "metrics_collected": 2,
+  "alerts_triggered": 6,
+  "alert_thresholds": {
+    "effectiveness_min": 0.5,
+    "cpu_usage_max": 90.0,
+    "memory_usage_max": 85.0,
+    "error_rate_max": 10.0,
+    "response_time_max": 3.0
+  },
+  "metrics_history": [
+    {
+      "timestamp": "2025-10-12T16:10:11.211583",
+      "uptime": 2.2147538661956787,
+      "collection_count": 0,
+      "monitoring_active": true,
+      "homeostasis": {
+        "running": true,
+        "initialized": true,
+        "start_time": 1760307008.9971821,
+        "uptime": 2.214411735534668
+      },
+      "components": {
+        "metrics_active": true,
+        "controller_active": true,
+        "actuators_active": true,
+        "supervisor_active": true,
+        "feedback_active": true,
+        "validator_active": true
+      },
+      "watchdog": {
+        "active": true,
+        "cycle_count": 1,
+        "error_count": 0,
+        "last_heartbeat": 1760307009.0010364
+      },
+      "feedback": {
+        "total_entries": 1,
+        "active_adjustments": 1,
+        "systems_with_adjustments": [
+          "comprehensive_test"
+        ]
+      },
+      "validation": {
+        "total_validations": 2,
+        "last_validation": 1760307011.2105103,
+        "effectiveness_metrics": {
+          "stability_improvement": {
+            "current": 0.3,
+            "average": 0.3,
+            "trend": "stable"
+          },
+          "response_time_improvement": {
+            "current": 0.5,
+            "average": 0.5,
+            "trend": "stable"
+          },
+          "error_reduction": {
+            "current": 0.5,
+            "average": 0.5,
+            "trend": "stable"
+          },
+          "resource_efficiency": {
+            "current": 0.44050000000000006,
+            "average": 0.44375,
+            "trend": "stable"
+          }
+        }
+      },
+      "system_health": {
+        "runlevel": "UNKNOWN",
+        "health_score": 0.0,
+        "vital_checks": {}
+      },
+      "os": {
+        "cpu_percent": 10.4,
+        "memory_percent": 92.8,
+        "disk_percent": 55.7,
+        "load_average": 0.0,
+        "process_count": 270
+      }
+    },
+    {
+      "timestamp": "2025-10-12T16:10:16.343019",
+      "uptime": 7.346192121505737,
+      "collection_count": 1,
+      "monitoring_active": true,
+      "homeostasis": {
+        "running": true,
+        "initialized": true,
+        "start_time": 1760307008.9971821,
+        "uptime": 7.345851421356201
+      },
+      "components": {
+        "metrics_active": true,
+        "controller_active": true,
+        "actuators_active": true,
+        "supervisor_active": true,
+        "feedback_active": true,
+        "validator_active": true
+      },
+      "watchdog": {
+        "active": true,
+        "cycle_count": 1,
+        "error_count": 0,
+        "last_heartbeat": 1760307009.0010364
+      },
+      "feedback": {
+        "total_entries": 1,
+        "active_adjustments": 1,
+        "systems_with_adjustments": [
+          "comprehensive_test"
+        ]
+      },
+      "validation": {
+        "total_validations": 2,
+        "last_validation": 1760307011.2105103,
+        "effectiveness_metrics": {
+          "stability_improvement": {
+            "current": 0.3,
+            "average": 0.3,
+            "trend": "stable"
+          },
+          "response_time_improvement": {
+            "current": 0.5,
+            "average": 0.5,
+            "trend": "stable"
+          },
+          "error_reduction": {
+            "current": 0.5,
+            "average": 0.5,
+            "trend": "stable"
+          },
+          "resource_efficiency": {
+            "current": 0.44050000000000006,
+            "average": 0.44375,
+            "trend": "stable"
+          }
+        }
+      },
+      "system_health": {
+        "runlevel": "UNKNOWN",
+        "health_score": 0.0,
+        "vital_checks": {}
+      },
+      "os": {
+        "cpu_percent": 7.3,
+        "memory_percent": 92.9,
+        "disk_percent": 55.7,
+        "load_average": 0.0,
+        "process_count": 269
+      }
+    }
+  ]
+}

@@ -4,7 +4,15 @@ Document: D:\Aetherra Project\docs\PROJECT_OVERVIEW.md
 
 ## Environment Variables
 
-Missing in docs (0):
+Missing in docs (8):
+- AETHERRA_BOOT_SELECTION
+- AETHERRA_HUB_TOKEN
+- AETHERRA_KEEP_MONITOR
+- AETHERRA_NO_FAKE_DATA
+- AETHERRA_QFAC_DASHBOARD
+- AETHERRA_QFAC_FAST_STUB
+- AETHERRA_QFAC_URL
+- AETHERRA_RUN_GUI_TESTS
 
 Documented but not found in code (0):
 
@@ -33,7 +41,8 @@ Documented but not found in code (0):
 
 Missing in docs (0):
 
-Documented but not found in code (0):
+Documented but not found in code (1):
+- /qfac/metrics
 
 ## Consciousness Metrics Documentation
 

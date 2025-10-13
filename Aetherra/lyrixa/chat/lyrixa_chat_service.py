@@ -182,9 +182,7 @@ class LyrixaChatService:
         # When enabled, initialization will skip external subsystems and operate
         # in a pure fallback/identity/ownership-safe mode.
         try:
-            self._forced_offline = (
-                os.getenv("AETHERRA_LYRIXA_FORCE_OFFLINE", "0") == "1"
-            )
+            self._forced_offline = os.getenv("AETHERRA_LYRIXA_FORCE_OFFLINE", "0") == "1"
         except Exception:
             self._forced_offline = False
 
@@ -205,21 +203,15 @@ class LyrixaChatService:
             self._proactive_monitor = None
             # Note degraded components for visibility
             with contextlib.suppress(Exception):
-                self._cfg.setdefault("lyrixa_chat", {})["degraded_components"] = [
-                    "forced_offline"
-                ]
+                self._cfg.setdefault("lyrixa_chat", {})["degraded_components"] = ["forced_offline"]
             return
         # Extract optional coherence threshold from multiple possible config shapes
         try:
-            lyx = (
-                self._cfg.get("lyrixa_chat", {}) if isinstance(self._cfg, dict) else {}
-            )
+            lyx = self._cfg.get("lyrixa_chat", {}) if isinstance(self._cfg, dict) else {}
             thr = None
             # New-style settings block (non-breaking addition)
             if isinstance(lyx.get("consciousness_integration_settings"), dict):
-                thr = lyx["consciousness_integration_settings"].get(
-                    "coherence_threshold"
-                )
+                thr = lyx["consciousness_integration_settings"].get("coherence_threshold")
             # If older plan-shaped config exists directly under key
             if thr is None and isinstance(lyx.get("consciousness_integration"), dict):
                 thr = lyx["consciousness_integration"].get("coherence_threshold")
@@ -255,9 +247,7 @@ class LyrixaChatService:
 
         if AdaptiveIntelligenceOrchestrator:
             try:
-                self._orchestrator = AdaptiveIntelligenceOrchestrator(
-                    self._intelligence
-                )
+                self._orchestrator = AdaptiveIntelligenceOrchestrator(self._intelligence)
             except Exception:
                 self._orchestrator = None
                 missing.append("adaptive_orchestrator_init")
@@ -303,9 +293,7 @@ class LyrixaChatService:
             # Use simple env guard to avoid noisy output in production runs
             if os.environ.get("AETHERRA_CHAT_DEBUG"):
                 with contextlib.suppress(Exception):
-                    print(
-                        f"[LyrixaChatService] degraded initialization: missing={missing}"
-                    )
+                    print(f"[LyrixaChatService] degraded initialization: missing={missing}")
             self._cfg.setdefault("lyrixa_chat", {})["degraded_components"] = missing
 
         # Initialize and start proactive monitor (best-effort)
@@ -352,16 +340,17 @@ class LyrixaChatService:
             await self._maybe_log_response(
                 message, reply, confidence=conf, verified=verified, category="ownership"
             )
-            return ChatResponse(
-                text=reply, suggestions=[], applied_changes=[], awareness=awareness
-            )
+            return ChatResponse(text=reply, suggestions=[], applied_changes=[], awareness=awareness)
 
         # If it's an identity/awareness query, answer deterministically
         if self._is_identity_or_awareness_query(message):
             reply = self._fallback_reply(message)
-            return ChatResponse(
-                text=reply, suggestions=[], applied_changes=[], awareness=awareness
-            )
+            return ChatResponse(text=reply, suggestions=[], applied_changes=[], awareness=awareness)
+
+        # If it's a homeostasis/system health query, answer directly
+        if self._is_homeostasis_query(message):
+            reply = await self._homeostasis_reply(message)
+            return ChatResponse(text=reply, suggestions=[], applied_changes=[], awareness=awareness)
 
         # Prefer orchestrator → intelligence → router → deterministic fallback
         reply = None
@@ -440,9 +429,7 @@ class LyrixaChatService:
             k in message.lower()
             for k in ["fix", "update", "change", "refactor", "rename", "bug", "error"]
         ):
-            suggestions = await self.suggest_fixes(
-                message, read_only=not bool(opts.allow_edits)
-            )
+            suggestions = await self.suggest_fixes(message, read_only=not bool(opts.allow_edits))
             if opts.allow_edits and suggestions:
                 first = suggestions[0]
                 ok, change = await self.apply_fix(first, edit_root=opts.edit_root)
@@ -516,9 +503,7 @@ class LyrixaChatService:
         # Kick off post-interaction learning in the background (non-blocking)
         with contextlib.suppress(Exception):
             asyncio.create_task(
-                self._post_interaction_learning(
-                    message, str(reply), awareness, path_used
-                )
+                self._post_interaction_learning(message, str(reply), awareness, path_used)
             )
 
         return ChatResponse(
@@ -539,9 +524,7 @@ class LyrixaChatService:
                 # Standard library imports
                 import json
 
-                self._cfg = json.loads(
-                    cfg_path.read_text(encoding="utf-8", errors="ignore")
-                )
+                self._cfg = json.loads(cfg_path.read_text(encoding="utf-8", errors="ignore"))
         except Exception:
             self._cfg = {}
 
@@ -553,9 +536,7 @@ class LyrixaChatService:
             return
         try:
             if self._self_improver is None:
-                self._self_improver = SelfImprovementEngine(
-                    db_path="lyrixa_improvement.db"
-                )
+                self._self_improver = SelfImprovementEngine(db_path="lyrixa_improvement.db")
                 # Start cycle in background; ignore if already running
                 await self._self_improver.start_improvement_cycle()
 
@@ -659,9 +640,7 @@ class LyrixaChatService:
                 if (
                     create2
                     and collapse2
-                    and all(
-                        asyncio.iscoroutinefunction(x) for x in (create2, collapse2)
-                    )
+                    and all(asyncio.iscoroutinefunction(x) for x in (create2, collapse2))
                 ):
                     states = await create2(query)  # type: ignore[misc]
                     decision = await collapse2(states)  # type: ignore[misc]
@@ -821,10 +800,7 @@ class LyrixaChatService:
 
     def _is_identity_or_awareness_query(self, message: str) -> bool:
         m = message.lower().strip()
-        if any(
-            k in m
-            for k in ["who are you", "what are you", "who is lyrixa", "what is lyrixa"]
-        ):
+        if any(k in m for k in ["who are you", "what are you", "who is lyrixa", "what is lyrixa"]):
             return True
         if "aetherra" in m and any(
             kw in m
@@ -891,14 +867,74 @@ class LyrixaChatService:
             # On any error, avoid fabricating
             return ("I don't have a record of ownership.", 1.0, True)
 
+    def _is_homeostasis_query(self, message: str) -> bool:
+        """Detect homeostasis/system health queries."""
+        m = message.lower().strip()
+        return any(
+            kw in m
+            for kw in [
+                "homeostasis",
+                "system health",
+                "system status",
+                "stability",
+                "autonomous control",
+                "health check",
+                "system stability",
+                "is the system healthy",
+                "how is the system",
+                "system control",
+                "self regulation",
+            ]
+        )
+
+    async def _homeostasis_reply(self, message: str) -> str:
+        """Answer homeostasis/system health queries."""
+        try:
+            # Try to get homeostasis status from service registry
+            if hasattr(self, "registry") and self.registry:
+                homeostasis_info = self.registry.get_service_info("homeostasis_system")
+                if homeostasis_info:
+                    status = homeostasis_info.status.value
+                    if status == "healthy":
+                        return (
+                            "🟢 The Aetherra homeostasis system is running and healthy! "
+                            "I'm actively monitoring system stability through PID controllers, "
+                            "collecting metrics, and automatically adjusting system parameters "
+                            "to maintain optimal performance. All autonomous control loops are active."
+                        )
+                    elif status == "starting":
+                        return (
+                            "🟡 The homeostasis system is starting up. "
+                            "Stability control will be active shortly."
+                        )
+                    else:
+                        return (
+                            f"🔴 The homeostasis system status is: {status}. "
+                            "This may indicate system instability or issues with autonomous control."
+                        )
+                else:
+                    return (
+                        "⚪ The homeostasis system is not currently registered. "
+                        "Autonomous stability control may not be active."
+                    )
+            else:
+                return (
+                    "🔍 I don't have direct access to the service registry to check homeostasis status. "
+                    "The homeostasis system provides autonomous stability control for Aetherra OS, "
+                    "including PID controllers, metrics collection, and system supervision."
+                )
+        except Exception:
+            return (
+                "🔍 I'm unable to retrieve detailed homeostasis status at the moment. "
+                "The homeostasis system is designed to provide autonomous stability control "
+                "for Aetherra OS through continuous monitoring and automatic adjustments."
+            )
+
     def _fallback_reply(self, message: str) -> str:
         m = message.lower().strip()
         if self._is_ownership_query(m):
             return "I don't have a record of ownership."
-        if any(
-            k in m
-            for k in ["who are you", "what are you", "who is lyrixa", "what is lyrixa"]
-        ):
+        if any(k in m for k in ["who are you", "what are you", "who is lyrixa", "what is lyrixa"]):
             return f"I'm {IDENTITY['name']} — {IDENTITY['title']}. {IDENTITY['about']}"
         if any(k in m for k in ["what is aetherra", "aetherra os", "aetherra"]):
             return IDENTITY["aetherra"]
@@ -925,9 +961,7 @@ class LyrixaChatService:
 
     def _estimate_confidence(self, path: str, message: str, reply: str) -> float:
         # Identity/ownership deterministic answers are high confidence
-        if self._is_ownership_query(message) or self._is_identity_or_awareness_query(
-            message
-        ):
+        if self._is_ownership_query(message) or self._is_identity_or_awareness_query(message):
             return 1.0
         if path == "intelligence":
             return 0.7
