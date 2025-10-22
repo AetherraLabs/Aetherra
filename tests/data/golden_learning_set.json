@@ -1,0 +1,39 @@
+[
+    {
+        "query": "How does the Kernel schedule work?",
+        "expected_tags": [
+            "kernel",
+            "queues",
+            "scheduling"
+        ],
+        "must_contain": [
+            "high",
+            "normal",
+            "background"
+        ]
+    },
+    {
+        "query": "Night cycle purpose",
+        "expected_tags": [
+            "night_cycle",
+            "reflection",
+            "safety"
+        ],
+        "must_contain": [
+            "isolation",
+            "rollback"
+        ]
+    },
+    {
+        "query": "Lyrixa UI design language",
+        "expected_tags": [
+            "ui",
+            "aesthetic",
+            "signature"
+        ],
+        "must_contain": [
+            "living core",
+            "quantum grid"
+        ]
+    }
+]

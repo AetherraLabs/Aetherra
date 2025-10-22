@@ -1,0 +1,741 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Safe Ingest + Evaluate (docs/self)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/ingest_safe.py",
+				"docs/self",
+				"--run",
+				"--eval"
+			],
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Evaluate Learning KPIs (Golden Set)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/learning_evaluator.py",
+				"tests/data/golden_learning_set.json"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Doctor",
+			"type": "shell",
+			"command": "./tools/project-doctor.sh",
+			"windows": {
+				"command": "powershell.exe -ExecutionPolicy Bypass -File .\\tools\\project-doctor.ps1"
+			},
+			"problemMatcher": [
+				"$eslint-stylish",
+				"$eslint-compact",
+				"$tsc",
+				"$python",
+				{
+					"owner": "ruff",
+					"fileLocation": "autoDetect",
+					"pattern": {
+						"regexp": "^(.*?):(\\d+):(\\d+): ([A-Z]\\d{3,4}) (.*)$",
+						"file": 1,
+						"line": 2,
+						"column": 3,
+						"code": 4,
+						"message": 5
+					}
+				},
+				{
+					"owner": "mypy",
+					"fileLocation": "autoDetect",
+					"pattern": {
+						"regexp": "^(.*?):(\\\\d+):(?:(\\\\d+):)? (error|note|warning): (.*?)(?: \\\\[(.*)\\\\])?$",
+						"file": 1,
+						"line": 2,
+						"column": 3,
+						"severity": 4,
+						"message": 5,
+						"code": 6
+					}
+				}
+			],
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			}
+		},
+		{
+			"label": "Doctor (Check only)",
+			"type": "shell",
+			"command": "./tools/project-doctor.sh --check",
+			"windows": {
+				"command": "powershell.exe -ExecutionPolicy Bypass -File .\\tools\\project-doctor.ps1 --check"
+			},
+			"problemMatcher": [
+				"$python"
+			],
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			}
+		},
+		{
+			"label": "Doctor (Guarded fix)",
+			"type": "shell",
+			"command": "./tools/project-doctor.sh --guarded-fix",
+			"windows": {
+				"command": "powershell.exe -ExecutionPolicy Bypass -File .\\tools\\project-doctor.ps1 --guarded-fix"
+			},
+			"problemMatcher": [
+				"$python"
+			],
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			}
+		},
+		{
+			"label": "Smoke tests (no coverage)",
+			"type": "shell",
+			"command": "pytest",
+			"args": [
+				"-q",
+				"-o",
+				"addopts=",
+				"tests/smoke"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify Aetherra OS (Headless Smoke)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/os_smoke.py"
+			],
+			"options": {
+				"env": {
+					"AETHERRA_QUIET": "1"
+				}
+			},
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify Claims (Capabilities Tests)",
+			"type": "shell",
+			"command": "pytest",
+			"args": [
+				"-q",
+				"-o",
+				"addopts=",
+				"tests/capabilities"
+			],
+			"options": {
+				"env": {
+					"AETHERRA_QUIET": "1"
+				}
+			},
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run Go-NoGo Gates",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/run_go_no_go_gates.py",
+				"--all"
+			],
+			"options": {
+				"env": {
+					"AETHERRA_PROFILE": "test",
+					"AETHERRA_QUIET": "1"
+				}
+			},
+			"group": "test",
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify UI Standards",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/verify_ui_standards.py",
+				"--dir",
+				"src/lyrixa/ui",
+				"--output",
+				"ui_standards_report.md"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			]
+		},
+		{
+			"label": "Generate File Index (Docs Appendix)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/generate_file_index.py",
+				"--root",
+				".",
+				"--output",
+				"docs/FILE_INDEX.md"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify Docs Consistency",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/verify_docs_consistency.py"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Quality Gates (Tests + Coverage No-Drop)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/quality_gates.py"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Create .aether from Task",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/create_aether_from_task.py",
+				"${input:taskDescription}"
+			],
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Spec → Tests Gate",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/spec_tests_gate.py"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Aether Verify (Quick, Test Profile)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/verify_aether_scripts.py",
+				"--root",
+				".",
+				"--output",
+				"aether_static_report.md",
+				"--profile",
+				"test"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Aether Verify (Strict Signatures)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/verify_aether_scripts.py",
+				"--root",
+				".",
+				"--output",
+				"aether_static_report.md",
+				"--strict"
+			],
+			"options": {
+				"env": {
+					"AETHERRA_SCRIPT_VERIFY_STRICT": "1"
+				}
+			},
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Update System Index",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/update_system_index.py"
+			],
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Probe Agent Fabric",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/agents_probe.py",
+				"--ops"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Probe Agent Fabric (quiet)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/agents_probe.py",
+				"--ops"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Probe Agent Fabric (Run Planner)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/agents_probe.py",
+				"--run",
+				"planner",
+				"Plan a quick OS health check and report steps",
+				"--ops"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Probe Agent Fabric (Pipeline + Metrics)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/agents_probe.py",
+				"--pipeline",
+				"Quick check of memory for recent events",
+				"--metrics"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Create Sample Tool (Toolsmith)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/agents_probe.py",
+				"--create-tool",
+				"health_check",
+				"Quick OS health check tool stub"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Agent Fabric Daemon (Foreground)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"aetherra_agent_daemon.py"
+			],
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run Hub (AI API 3012)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/run_hub_ai_api.py",
+				"--port",
+				"3012"
+			],
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run Hub (Strict Prod AI API 3012)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/run_hub_ai_api.py",
+				"--port",
+				"3012"
+			],
+			"options": {
+				"env": {
+					"AETHERRA_PROFILE": "prod",
+					"AETHERRA_NET_STRICT": "1",
+					"AETHERRA_AI_API_ENABLED": "1",
+					"AETHERRA_AI_API_STREAM": "1",
+					"AETHERRA_AI_API_REQUIRE_TOKEN": "1",
+					"AETHERRA_AI_API_TOKEN": "${input:aetherraToken}",
+					"AETHERRA_NETWORK_ALLOWLIST": "localhost,127.0.0.1,.aetherra.dev"
+				}
+			},
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run OS Launcher (verbose)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-u",
+				"aetherra_os_launcher.py",
+				"--mode",
+				"full",
+				"-v"
+			],
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": [
+				"$python"
+			]
+		},
+		{
+			"label": "Spec → Tests Gate",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/spec_tests_gate.py"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run ownership capability tests",
+			"type": "shell",
+			"command": "pytest",
+			"args": [
+				"-q",
+				"-o",
+				"addopts=",
+				"tests/capabilities/test_ownership_memory.py",
+				"tests/capabilities/test_lyrixa_ownership_answer.py"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Re-run ownership capability tests",
+			"type": "shell",
+			"command": "pytest",
+			"args": [
+				"-q",
+				"-o",
+				"addopts=",
+				"tests/capabilities/test_ownership_memory.py",
+				"tests/capabilities/test_lyrixa_ownership_answer.py"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run Lyrixa Basic CLI ownership guard check",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"Aetherra/lyrixa/lyrixa_basic.py",
+				"--cli"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run Lyrixa Basic ownership guard check",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/check_lyrixa_basic_ownership_guard.py"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run workflow: Parallel demo",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"aether.py",
+				"workflows/parallel_workflow_demo.aether"
+			],
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run workflow: On-error demo",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"aether.py",
+				"workflows/on_error_chain_demo.aether"
+			],
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run workflow: Plugin chain demo",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"aether.py",
+				"workflows/plugin_chain_demo.aether"
+			],
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Aether: Re-sign edited workflows",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/sign_aether.py",
+				"workflows/parallel_workflow_demo.aether",
+				"workflows/on_error_chain_demo.aether",
+				"workflows/plugin_chain_demo.aether"
+			],
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run all sample workflows",
+			"type": "shell",
+			"command": "echo",
+			"args": [
+				"Running all sample workflows in sequence"
+			],
+			"dependsOn": [
+				"Run workflow: Parallel demo",
+				"Run workflow: On-error demo",
+				"Run workflow: Plugin chain demo"
+			],
+			"dependsOrder": "sequence",
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Aether: Re-sign and Strict verify",
+			"type": "shell",
+			"command": "echo",
+			"args": [
+				"Re-signing edited workflows then running strict verification"
+			],
+			"dependsOn": [
+				"Aether: Re-sign edited workflows",
+				"Aether Verify (Strict Signatures)"
+			],
+			"dependsOrder": "sequence",
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Bootstrap Policy Files",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-m",
+				"Aetherra.cli.policy_bootstrap",
+				"--all"
+			],
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run targeted capability tests (fallback mock + trainer status + lyrixa schema)",
+			"type": "shell",
+			"command": "pytest",
+			"args": [
+				"-q",
+				"-o",
+				"addopts=",
+				"tests/capabilities/test_hub_metrics_observability.py::test_metrics_fallback_mock_increments",
+				"tests/capabilities/test_hub_trainer_disabled_and_metrics.py::test_trainer_disabled_paths_expose_disabled_status_and_no_progress",
+				"tests/capabilities/test_lyrixa_chat_bridge_schema.py::test_edit_plan_mirrors_suggestions_and_confidence_defaults"
+			]
+		},
+		{
+			"label": "Run full capabilities tests",
+			"type": "shell",
+			"command": "pytest",
+			"args": [
+				"-q",
+				"-o",
+				"addopts=",
+				"tests/capabilities"
+			]
+		},
+		{
+			"label": "Run SSE v2 tests",
+			"type": "shell",
+			"command": "pytest",
+			"args": [
+				"-q",
+				"-o",
+				"addopts=",
+				"tests/test_sse_v2.py"
+			],
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Run Hub (AI API 3001)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/run_hub_ai_api.py",
+				"--port",
+				"3001"
+			],
+			"isBackground": true,
+			"group": "build"
+		},
+		{
+			"label": "Doctor (Check only)",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				".\\tools\\project-doctor.ps1",
+				"--check"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Generate QFAC File Index",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/generate_qfac_file_index.py",
+				"--root",
+				".",
+				"--output",
+				"docs/QFAC_FILE_INDEX.md"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Verify QFAC File Index",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/generate_qfac_file_index.py",
+				"--root",
+				".",
+				"--output",
+				"docs/QFAC_FILE_INDEX.md",
+				"--check"
+			],
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Start Lyrixa Dev (Backend + Frontend)",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"${workspaceFolder}\\tools\\start_lyrixa_dev.ps1"
+			],
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"clear": true
+			}
+		},
+		{
+			"label": "Start Lyrixa Backend Only",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"${workspaceFolder}\\tools\\start_lyrixa_dev.ps1",
+				"-BackendOnly"
+			],
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Start Lyrixa Frontend Only",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"${workspaceFolder}\\tools\\start_lyrixa_dev.ps1",
+				"-FrontendOnly"
+			],
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	],
+	"inputs": [
+		{
+			"id": "taskDescription",
+			"type": "promptString",
+			"description": "Describe the task to transform into a .aether file"
+		},
+		{
+			"id": "aetherraToken",
+			"type": "promptString",
+			"description": "AI API token for production (AETHERRA_AI_API_TOKEN)",
+			"password": true
+		}
+	]
+}
