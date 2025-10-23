@@ -220,6 +220,50 @@ def get_memory_audit() -> dict[str, Any]:
         return {"enabled": False}
 
 
+def get_storm_metrics() -> dict[str, Any]:
+    """Fetch STORM metrics snapshot from memory system.
+
+    Returns dict with STORM metrics or empty dict if unavailable.
+    STORM is feature-flagged and may not be enabled.
+    """
+    try:
+
+        async def _go() -> Any:
+            reg = await _get_registry_async()
+            info = reg.get_service_info("aetherra_engine")
+            if not info or not info.instance:
+                return None
+            eng = info.instance
+            ms = getattr(eng, "memory_system", None)
+            if ms is None:
+                return None
+            # Access STORM engine via memory_system.engine._storm_engine
+            engine = getattr(ms, "engine", None)
+            if engine is None:
+                return None
+            storm_engine = getattr(engine, "_storm_engine", None)
+            if storm_engine is None:
+                return None
+            # Get metrics snapshot from STORM engine
+            if hasattr(storm_engine, "metrics") and hasattr(
+                storm_engine.metrics, "snapshot"
+            ):
+                try:
+                    snapshot = storm_engine.metrics.snapshot()
+                    if isinstance(snapshot, dict):
+                        return {"enabled": True, **snapshot}
+                except Exception as exc:
+                    logger.debug("storm metrics.snapshot failed: %s", exc)
+            return None
+
+        r = _run_coro(_go())
+        if isinstance(r, dict):
+            return r
+    except Exception as exc:
+        logger.debug("get_storm_metrics error: %s", exc)
+    return {"enabled": False}
+
+
 def _generic_service_call(service_name: str, attr: str) -> dict[str, Any]:
     async def _go() -> Any:
         reg = await _get_registry_async()

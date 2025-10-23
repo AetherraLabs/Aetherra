@@ -973,6 +973,20 @@ class AetherraKernelLoop:
             if self.memory_system:
                 await self.memory_system.deep_consolidation()
 
+            logger.info("🌙 Night Cycle: STORM Maintenance...")
+            if self.memory_system and hasattr(self.memory_system, "_storm_engine"):
+                # Access STORM through AetherraMemoryEngineAdvanced
+                storm_engine = getattr(self.memory_system, "_storm_engine", None)
+                if storm_engine is not None:
+                    try:
+                        maintenance_results = await storm_engine.run_maintenance()
+                        logger.info(
+                            f"[OK] STORM maintenance completed: "
+                            f"{maintenance_results.get('inconsistency_scan', {}).get('avg_inconsistency', 0.0):.4f} avg inconsistency"
+                        )
+                    except Exception as e:
+                        logger.warning(f"[WARN] STORM maintenance failed: {e}")
+
             logger.info("🌙 Night Cycle: Plugin Optimization...")
             if self.plugin_manager:
                 await self.plugin_manager.optimize_plugins()

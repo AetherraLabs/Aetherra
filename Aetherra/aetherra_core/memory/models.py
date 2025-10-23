@@ -28,7 +28,15 @@ class PolicyViolation(Exception):
         self.code = code
 
 
-RecallSource = Literal["core", "conceptual", "episodic", "hybrid", "qfac"]
+RecallSource = Literal[
+    "core",
+    "conceptual",
+    "episodic",
+    "hybrid",
+    "qfac",
+    "storm",
+    "storm_hybrid",
+]
 
 
 @dataclass

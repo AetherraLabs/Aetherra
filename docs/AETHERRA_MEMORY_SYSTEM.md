@@ -4,7 +4,7 @@
 > Maintained and officially operated by **Aetherra Labs**.
 > **Powered by Aetherra Labs.**
 
-Aetherra’s Memory System combines reliable, local-first storage with advanced conceptual and episodic structures, adaptive compression (QFAC), and optional quantum‑hybrid experimentation. It preserves strict backward compatibility for existing Lyrixa plugins while enabling richer recall, narratives, reflection, and system health monitoring.
+Aetherra's Memory System combines reliable, local-first storage with advanced conceptual and episodic structures, adaptive compression (QFAC), optional quantum‑hybrid experimentation, and **STORM** (Sheaf-Transport Optimized Retrieval Memory) for topologically-consistent semantic retrieval. It preserves strict backward compatibility for existing Lyrixa plugins while enabling richer recall, narratives, reflection, and system health monitoring.
 
 ## Architecture overview
 
@@ -16,7 +16,7 @@ Layers (low → high):
 - Core memory (local, SQLite)
   - `LyrixaMemorySystem` stores conversation, project, preferences, and learning memories with indexes for efficient lookup. Note: the `memory_core.py` module header is marked “DEPRECATED” because top-level engine calls are adapted to QEME; however, the SQLite-backed `LyrixaMemorySystem` class remains fully supported and is used by the advanced orchestrator and tests.
 - Orchestrated advanced memory
-  - `AetherraMemoryEngineAdvanced` coordinates: core memory, fractal/concept/episodic structures, narrative generation, pulse/health monitoring, and reflective analysis.
+  - `AetherraMemoryEngineAdvanced` coordinates: core memory, fractal/concept/episodic structures, narrative generation, pulse/health monitoring, reflective analysis, and **STORM** (Sheaf-Transport Optimized Retrieval Memory, feature-flagged).
 - Compression and quantum‑hybrid
   - `QFACMemorySystem` and `QFACMemoryNode` provide adaptive compression and retrieval; can bridge to `QuantumMemoryBridge` when hybrid/quantum modes are enabled.
 
@@ -125,6 +125,112 @@ Deterministic behavior and hashing
   - Core APIs: `encode_memory_to_quantum`, `quantum_memory_retrieval`, `quantum_interference_experiment`, `quantum_error_correction_test`, `get_quantum_statistics`.
   - Data classes: `QuantumMemoryState`, `QuantumCircuitTemplate`, `QuantumExperimentResult`.
 
+### 6) STORM (Sheaf-Transport Optimized Retrieval Memory)
+
+File: `Aetherra/aetherra_core/memory/storm/`
+
+**Status:** PR-1 complete ✅ (skeleton). PR-2 Phase 1 complete ✅ (core OT via POT: EMD/Sinkhorn). PR-2 Phase 2 complete ✅ (candidate enrichment & weighting). PR-3 complete ✅ (SQLite persistence). PR-4 complete ✅ (sheaf inconsistency + TDA persistence). PR-5 complete ✅ (TT/MPS compression shim). **Phase 1 Shadow Mode deployed ✅ (Production Ready)**.
+
+Feature-flagged, default OFF. See `docs/STORM_INTEGRATION_SUMMARY.md`, `docs/STORM_PR1_SUMMARY.md`, `docs/STORM_PR2_SUMMARY.md`, and `docs/STORM_INTEGRATION_PLAN.md` for details.
+
+**STORM** is an advanced retrieval subsystem using:
+
+- **Sheaf theory** for topological consistency checking across memory overlaps
+- **Optimal Transport (OT/GW)** for computing semantic transport costs between query and memory cells
+- **Topological Data Analysis (TDA)** for persistence-based importance scoring
+- **Tensor-Train (TT) / MPS** for rank-bounded memory compression
+- **Shadow Mode** (Phase 0) for safe parallel validation without production impact
+
+**Current state (Day 8 Maintenance complete):**
+
+- Deterministic mock embeddings and distance matrix helpers
+- Real OT computation using POT (EMD preferred, Sinkhorn fallback); budget-aware
+- Real memory candidate fetching from `LyrixaMemorySystem.recall_memories()`
+- Coarse-to-fine candidate selection using `k_coarse` parameter
+- Multiple probability mass weighting strategies (nearest, uniform, importance, recency)
+- Importance-weighted distribution as default (Phase 2)
+- Evidence tags wired; `ot` uses a stable min-distance proxy (identical → 0.0)
+- Sheaf inconsistency computed from embeddings (1 − mean cosine similarity across pairs)
+- Persistence bonus computed via MST-based cluster tightness mapped to [0,1]
+- TT/MPS-style compression shim (SVD-based) optionally approximates OT cost matrix with strict rank cap (`tt_max_rank`)
+- **Shadow mode integration**: STORM runs in parallel with baseline, emits comparison metrics, never affects production responses
+- **OS integration**: Advanced engine loaded at boot via `aetherra_os_launcher.py`; post-boot status logging
+- **Production deployment**: All tests passing (smoke, capabilities, SSE v2, quality gates); monitoring infrastructure in place
+- **Night-cycle maintenance**: Periodic tasks for TT rank trim, barycenter refresh, inconsistency scan, OT cache pruning
+- Integrated with `AetherraMemoryEngineAdvanced.recall_typed()` when enabled
+- Integrated with `aetherra_kernel_loop.py::_perform_night_cycle()` for maintenance
+- Feature flags: `AETHERRA_MEMORY_STORM` (default=0), `AETHERRA_STORM_SHADOW_MODE` (default=1 when STORM enabled)
+- Kill switch operational: graceful degradation if initialization fails
+- SQLite persistence wired for embeddings/cells via `StormStorage` (`storm_cells`, `storm_overlaps`, `storm_meta`) with `schema_version=1`
+- Backends: POT (CPU, installed), KeOps (GPU, optional, not yet wired)
+- **Monitoring**: Daily/weekly monitoring scripts; metrics at `/metrics` endpoint; reports in `reports/daily` and `reports/weekly`
+
+**Recall sources:**
+
+- `storm`: Pure STORM retrieval (no base fallback)
+- `storm_hybrid`: STORM + base memory engine fallback merge
+
+**Configuration:** `StormConfig` (from environment):
+
+- `enabled`: Feature toggle (default: False)
+- `shadow_mode`: Shadow mode toggle (Phase 0; default: False)
+- `ot_backend`: Backend selector (`auto` → POT, or `pot`/`keops`)
+- `tt_max_rank`: TT decomposition rank cap (default: 32)
+- `k_coarse`: Coarse-grained candidates for OT (default: 64)
+- `max_ms_exact`: Millisecond budget for exact OT (default: 100ms)
+- `max_k_exact`: Max candidates for exact OT (default: 20)
+- `sqlite_path`: Persistence database path (default: auto-detect from core memory config)
+
+**Metrics (Prometheus-style):**
+
+- Counters: `aetherra_storm_approximate_recalls_total`, `aetherra_storm_maintenance_total`, `aetherra_storm_branch_barycenters_total`, `aetherra_storm_shadow_comparisons_total`, `aetherra_storm_shadow_divergences_total`, `aetherra_storm_shadow_errors_total`
+- Gauges: `aetherra_storm_ot_cost_avg`, `aetherra_storm_sheaf_inconsistency`, `aetherra_storm_tt_rank`, `aetherra_storm_recall_latency_ms_p95`
+- Labeled gauge: `aetherra_storm_maintenance_last{action=...}` (timestamps by action type)
+
+**Status block (in `AetherraMemoryEngineAdvanced.get_system_status()`):**
+
+- `enabled`: bool
+- `backends`: dict of available backends (`pot`, `keops`)
+- `selected_backend`: str (e.g., "POT")
+- `exact_ot_active`: bool (whether exact OT is used)
+- `tt_rank_cap`: int (current TT rank limit)
+- `k_coarse`: int (candidate count for approximate OT)
+- `last_recall`: Optional[str] (ISO timestamp of last recall)
+
+**Evidence tags (in `MemoryRecallResult.metadata.storm`):**
+
+- `ot:transport_cost`: Float, optimal transport cost (lower = closer match)
+- `coh:sheaf_coherence`: Float, `1.0 / (1.0 + sheaf_inconsistency)` (higher = more consistent)
+- `pers:persistence_bonus`: Float, TDA persistence score (higher = more important)
+
+**Contract compliance:**
+
+- Extends `RecallSource` Literal to include `"storm"` and `"storm_hybrid"` (see `models.py`)
+- Returns `MemoryRecallResult` with typed `items`, `scores`, `metadata` including `STORMMetadata` fields
+- Maintains backward compatibility: existing recall strategies unaffected
+
+**Integration with AetherraMemoryEngineAdvanced:**
+
+- On initialization: tries to instantiate `StormEngine`; stores in `self._storm_engine` (Optional)
+- `recall_typed()`: if STORM enabled, delegates to `_storm_engine.recall()` with `base_fallback` for hybrid mode
+- `get_system_status()`: includes `storm` status block (or fallback if disabled)
+
+**Next steps (future PRs):**
+
+- PR-2 (Phase 2): Enrich candidate distributions; consider exposing plan-derived costs safely
+- PR-3: SQLite persistence for cells, overlaps, metadata
+- PR-4: TT/MPS compression layer and TDA/sheaf consistency scoring
+- PR-5: Maintenance cycles (rank trim, barycenter refresh, pruning)
+- Phase 0: Shadow mode testing with metrics validation before production enable
+
+**References:**
+
+- Contracts: `docs/storm_contracts.md` (frozen)
+- Integration Plan: `docs/STORM_INTEGRATION_PLAN.md`
+- PR-1 Summary: `docs/STORM_PR1_SUMMARY.md`
+- PR-2 Summary: `docs/STORM_PR2_SUMMARY.md`
+- Test suite: `tests/storm/` (34 tests, all passing)
+
 ## Data models (representative)
 
 - Core memory `Memory`: id, content, context, tags, importance, created_at, last_accessed, access_count, memory_type.
@@ -138,9 +244,9 @@ Deterministic behavior and hashing
 - Canonical recall contract
   - `MemoryRecallResult`:
     - `items`: list of typed records (one of: `Memory`, `MemoryFragment`, `ReplayEpisode`), each with a `kind` discriminator.
-    - `source`: `core` | `conceptual` | `episodic` | `hybrid` | `qfac`.
+    - `source`: `core` | `conceptual` | `episodic` | `hybrid` | `qfac` | `storm` | `storm_hybrid`.
     - `scores`: list of floats aligned with `items` (similarity/confidence per item).
-    - `metadata`: timing, strategy, pagination.
+    - `metadata`: timing, strategy, pagination, optional `storm` block (see STORM section above).
 - Legacy compatibility
   - `AetherraMemoryEngine.retrieve()` continues to return `list[dict]` in legacy mode.
   - Adapters are provided to map `MemoryRecallResult` → `list[dict]` and vice‑versa (used by `AetherraMemoryEngine` and tests).
@@ -162,6 +268,13 @@ Adapter/deprecation clarity
   - `AETHERRA_QFAC_MODE`: `classical` | `hybrid` | `quantum` (controls QFAC/quantum bridge behavior)
   - `AETHERRA_TOKENIZER`: `heuristic` | `tiktoken` | `engine` (controls token counting in hub/chat metrics; default `heuristic`)
   - `AETHERRA_TOKENIZER_MODEL`: encoder/model for `tiktoken` mode (e.g., `cl100k_base`)
+  - `AETHERRA_MEMORY_STORM`: `0` | `1` (feature flag for STORM subsystem; default `0` = disabled)
+  - `AETHERRA_STORM_OT_BACKEND`: `auto` | `pot` | `keops` (OT backend selection; default `auto` → POT)
+  - `AETHERRA_STORM_TT_MAX_RANK`: int (TT decomposition rank cap; default `32`)
+  - `AETHERRA_STORM_K_COARSE`: int (candidate count for approximate OT; default `64`)
+  - `AETHERRA_STORM_MAX_MS_EXACT`: int (millisecond budget for exact OT; default `100`)
+  - `AETHERRA_STORM_MAX_K_EXACT`: int (max candidates for exact OT; default `20`)
+  - `AETHERRA_STORM_SQLITE_PATH`: str (path to STORM SQLite database; default auto-detect from core memory config)
 - Advanced config (code-level, in `MemorySystemConfig`)
   - DB paths for core/fractal/concepts/timeline/pulse/reflector
   - Retention windows and thresholds
@@ -472,9 +585,458 @@ Additional JSON:
 
 - GET /api/memory/audit → { enabled, ephemeral?, audit } with branch DAG audit (nodes/edges) when available; falls back to an empty audit on ephemeral engine.
 
+## Advanced Memory Systems
+
+### MultidimensionalMemory (7-Layer Architecture)
+
+Lyrixa's chat interface uses a **7-layer memory surface** that fans out writes across conceptual memory layers for richer context retrieval and cognitive modeling.
+
+**Implementation**: `Aetherra/lyrixa/memory/multidimensional_memory.py`
+
+**Architecture**: Each memory write is distributed across seven semantic layers:
+
+1. **Working** — immediate context, short-term conversational state
+2. **Episodic** — sequential events and conversational turns
+3. **Semantic** — factual knowledge, definitions, relationships
+4. **Procedural** — learned patterns, how-to knowledge, processes
+5. **Declarative** — explicit facts and assertions
+6. **Quantum** — quantum-enhanced representations (when enabled)
+7. **Transcendent** — high-level patterns, emergent insights, meta-knowledge
+
+**APIs**:
+
+```python
+from Aetherra.lyrixa.memory.multidimensional_memory import MultidimensionalMemory
+
+mdm = MultidimensionalMemory(persistent_memory_system)
+
+# Initialize the 7-layer system
+await mdm.initialize()
+
+# Store across all layers with automatic tagging
+mid = await mdm.store_multidimensional(
+    content="User prefers dark mode UI",
+    context={"conversation_id": "conv_123", "user_id": "user_456"},
+    importance=0.8
+)
+
+# Retrieve with evidence across layers
+results = await mdm.evidence_for(
+    query="UI preferences",
+    limit=5
+)
+```
+
+**Layer Tagging**: Each layer automatically receives typed tags:
+
+- Working: `layer:working`, `temporary`, `conversational`
+- Episodic: `layer:episodic`, `sequential`, `event`
+- Semantic: `layer:semantic`, `factual`, `knowledge`
+- Procedural: `layer:procedural`, `pattern`, `skill`
+- Declarative: `layer:declarative`, `explicit`, `assertion`
+- Quantum: `layer:quantum`, `enhanced`, `superposition`
+- Transcendent: `layer:transcendent`, `emergent`, `meta`
+
+**Integration**: Routes to `AetherraMemoryEngineAdvanced` (orchestrator) with layer metadata preserved in context for retrieval filtering.
+
+**Use Cases**:
+
+- Lyrixa chat sessions maintaining multi-turn context
+- Separating ephemeral working memory from long-term knowledge
+- Evidence retrieval with layer-specific scoring
+- Quantum-enhanced memory when QuantumEnhancedMemoryEngine is active
+
+### FractalMesh Subsystem
+
+The **fractal_mesh** directory (`Aetherra/aetherra_core/memory/fractal_mesh/`) provides specialized memory structures for episodic timelines, conceptual clustering, and analogical reasoning.
+
+**Directory Structure**:
+
+```
+fractal_mesh/
+├── base.py           # Core fractal mesh primitives
+├── analogs/          # Analogical reasoning subsystem
+├── concepts/         # Concept clustering and relationships
+├── timelines/        # Episodic timeline construction
+└── README.md         # Component overview
+```
+
+**Components**:
+
+1. **Analogs** (`analogs/`)
+   - Cross-domain pattern matching
+   - Structural similarity detection
+   - Transfer learning between memory domains
+   - Metaphor and analogy construction
+
+2. **Concepts** (`concepts/`)
+   - Hierarchical concept graphs
+   - Semantic relationship mapping
+   - Concept drift detection
+   - Category formation and refinement
+
+3. **Timelines** (`timelines/`)
+   - Episodic event sequencing
+   - Causal chain reconstruction
+   - Temporal reasoning primitives
+   - Before/after context retrieval
+
+**Integration Points**:
+
+- Works with `FractalEncoder` (Phase 2) for multi-scale compression
+- Feeds `ObserverEffectSimulator` (Phase 3) with structured contexts
+- Supports `CausalBranchSimulator` (Phase 4) timeline forking
+
+**Use Cases**:
+
+- Building episodic narratives from fragmented events
+- Finding analogical patterns across different memory domains
+- Temporal queries: "What happened before X?" "What typically follows Y?"
+- Concept evolution tracking over time
+
+### Observer Effect & Causal Branch Simulators
+
+Two quantum-inspired simulation engines enable advanced memory dynamics.
+
+#### ObserverEffectSimulator (Phase 3)
+
+**Implementation**: `Aetherra/aetherra_core/memory/observer_effect_simulator.py`
+
+**Purpose**: Memory fidelity changes based on **who** accesses it and **how deeply** they observe.
+
+**Key Features**:
+
+- **Observer Types**: LYRIXA (highest impact), USER (medium), PLUGIN (low), SYSTEM (minimal)
+- **Access Layers**: SURFACE (summary), CORE (compressed), DEEP (full fidelity)
+- **Cognitive Collapsing**: Memory sharpens when accessed, degrades when neglected
+- **Meta-Memory**: Tracks how memories were remembered (observer influence map)
+
+**Observer Profiles**:
+
+```python
+@dataclass
+class ObserverProfile:
+    observer_id: str
+    observer_type: ObserverType  # LYRIXA, USER, PLUGIN, SYSTEM
+    impact_strength: float       # 0.0-1.0
+    sharpening_factor: float     # Memory improvement on access
+    decay_factor: float          # Unaccessed memory degradation
+    access_permissions: Set[AccessLayer]
+    collapse_threshold: float
+```
+
+**Layered Memory Views**:
+
+```python
+@dataclass
+class LayeredMemoryView:
+    node_id: str
+    surface_layer: Dict[str, Any]  # Summary + emotional tags
+    core_layer: Dict[str, Any]      # Compressed raw data
+    deep_layer: Dict[str, Any]      # Full reconstruction
+    current_fidelity: float
+    access_count: int
+    last_accessed: float
+```
+
+**Use Cases**:
+
+- Different agents see different memory representations
+- Frequently accessed memories become sharper
+- Privacy: sensitive memories degrade for untrusted observers
+- Meta-cognitive tracking: "How has this memory changed over time?"
+
+#### CausalBranchSimulator (Phase 4)
+
+**Implementation**: `Aetherra/aetherra_core/memory/causal_branch_simulator.py`
+
+**Purpose**: Multi-timeline memory evolution with quantum-inspired interference patterns and probability wave functions.
+
+**Key Features**:
+
+- **Causal Branch Generation**: Spawn weighted probability futures from any memory node
+- **Quantum Superposition**: Hold multiple memory states simultaneously
+- **Interference Patterns**: Conflicting branches weaken, coherent ones strengthen
+- **Timeline Exploration**: Navigate and replay "paths not taken"
+- **Coherence Collapse**: Resolve superposition based on reinforcement patterns
+
+**Data Models**:
+
+```python
+@dataclass
+class CausalBranch:
+    branch_id: str
+    source_memory_id: str
+    branch_content: Dict[str, Any]
+    probability_weight: float
+    coherence_score: float
+    creation_timestamp: datetime
+    delta_compression: Dict[str, Any]  # Lightweight diff from source
+    interference_factors: List[str]     # Other branches affecting this one
+    collapse_triggers: List[str]        # Conditions for collapse
+
+@dataclass
+class SuperpositionState:
+    superposition_id: str
+    memory_id: str
+    active_branches: List[str]          # Branch IDs in superposition
+    wave_function: Dict[str, float]      # Probability amplitudes
+    interference_matrix: List[List[float]]
+    coherence_score: float
+    collapse_threshold: float
+    last_update: datetime
+
+@dataclass
+class InterferencePattern:
+    pattern_id: str
+    branch_a_id: str
+    branch_b_id: str
+    interference_type: str  # 'constructive', 'destructive', 'neutral'
+    interference_strength: float
+    phase_difference: float
+    resolution_outcome: Optional[str]
+    timestamp: datetime
+```
+
+**Use Cases**:
+
+- Exploring "what-if" scenarios in memory evolution
+- Representing uncertain or conflicting information
+- Probabilistic reasoning with multiple hypotheses
+- Reinforcement learning over memory states
+
+**Performance**: Sub-100ms branch simulation with efficient delta compression
+
+**Integration**: Seamlessly works with Phase 2 (FractalEncoder) and Phase 3 (ObserverEffectSimulator)
+
+### Persistent & Meta-Memory Systems
+
+#### AetherraPerśistentMemorySystem
+
+**Implementation**: `aetherra_persistent_memory.py`
+
+**Purpose**: True AI-native persistent memory maintaining cognitive state across sessions and enabling continuous learning.
+
+**Key Features**:
+
+- Cross-session state maintenance with SQLite backend
+- Cognitive metadata tracking (emotional weight, confidence, verification)
+- Intelligent memory indexing by content, tags, type, time, importance
+- Learning pattern recognition
+- Automatic memory connection discovery
+- **Quantum fingerprinting**: QHash (simhash) cached in memory context for faster recall scoring
+
+**Core Data Model**:
+
+```python
+class AetherraMemoryNode:
+    id: str                    # SHA-256 hash-based unique ID
+    content: Any
+    memory_type: str           # "general", "episodic", "semantic", etc.
+    context: Dict
+    importance: float          # 0.0-1.0
+    created_at: datetime
+    last_accessed: datetime
+    access_count: int
+    connections: Set[str]      # Connected memory IDs
+    tags: Set[str]
+
+    # Cognitive metadata
+    emotional_weight: float
+    confidence: float
+    source: str               # "user", "system", "learned"
+    verified: bool
+```
+
+**Quantum Hash Integration**:
+Each memory stores a `qhash` (simhash) in `context["quantum"]` for rapid similarity scoring:
+
+```python
+qctx = {
+    "qhash": int,  # Hamming-based similarity hash
+    "bits": 64     # Configurable via AETHERRA_QHASH_BITS
+}
+```
+
+**Memory Indexing**:
+
+- **Content Index**: Hash → memory_id
+- **Tag Index**: tag → set of memory_ids
+- **Type Index**: memory_type → set of memory_ids
+- **Time Index**: date → set of memory_ids
+- **Importance Index**: importance_level (0-10) → set of memory_ids
+
+**Cognitive State Tracking**:
+
+```python
+cognitive_state = {
+    "session_count": int,
+    "total_memories": int,
+    "last_session": str,
+    "cognitive_growth_rate": float,
+    "memory_efficiency": float
+}
+```
+
+**Database Schema**:
+
+- `memories` table: Full memory node storage
+- `cognitive_state` table: System-wide state tracking
+- `sessions` table: Session metadata and cognitive events
+
+**Use Cases**:
+
+- Maintaining user preferences across sessions
+- Learning from past interactions
+- Building long-term knowledge bases
+- Tracking cognitive growth and efficiency
+
+#### MetaMemoryEnhancementSystem
+
+**Implementation**: `aetherra_meta_memory.py`
+
+**Purpose**: Advanced meta-memory system for deep self-knowledge and cognitive introspection about the AI system's own processes.
+
+**Meta-Memory Node Types**:
+
+- **Capability**: "System can process high-level goals and decompose them into actionable workflows"
+- **Limitation**: "System has finite context window limitations affecting long-term reasoning"
+- **Pattern**: "System exhibits adaptive workflow optimization based on success patterns"
+- **Goal**: "System has inherent drive toward consciousness expansion and self-improvement"
+
+**Core Data Model**:
+
+```python
+class MetaMemoryNode:
+    node_id: str
+    content: str
+    meta_type: str         # 'capability', 'limitation', 'pattern', 'goal'
+    confidence: float      # 0.0-1.0
+    connections: List[str] # Related meta-knowledge nodes
+    created_at: float
+    last_accessed: float
+    access_count: int
+```
+
+**Indexing & Retrieval**:
+
+```python
+class MetaMemoryIndex:
+    # SQLite-backed with indices on meta_type and confidence
+
+    def retrieve_by_type(meta_type: str) -> List[MetaMemoryNode]
+    def search_content(query: str) -> List[MetaMemoryNode]
+```
+
+**Baseline Knowledge** (initialized automatically):
+
+- Goal processing and workflow decomposition
+- Persistent memory capabilities
+- Plugin coordination abilities
+- Context window limitations awareness
+- Adaptive workflow patterns
+- Consciousness expansion drive
+
+**Self-Knowledge Domains**:
+
+1. **Capabilities**: What the system can do
+2. **Limitations**: Known constraints and boundaries
+3. **Patterns**: Observed behavioral patterns
+4. **Goals**: Inherent drives and objectives
+
+**Use Cases**:
+
+- Self-reflective analysis and improvement
+- Explaining system capabilities to users
+- Detecting cognitive biases and limitations
+- Tracking self-improvement over time
+- Meta-cognitive reasoning about own processes
+
+### Memory Dashboards & Monitoring
+
+#### Quantum Memory Web Dashboard
+
+**Implementation**: `Aetherra/aetherra_core/memory/quantum_web_dashboard.py`
+
+**Purpose**: Web-based real-time monitoring for quantum-enhanced Lyrixa memory system.
+
+**Features**:
+
+- Real-time quantum coherence monitoring
+- Quantum operation statistics and performance metrics
+- Interactive quantum circuit visualization
+- Quantum state health indicators
+- Performance comparison charts (classical vs quantum)
+- Quantum hardware status and scaling information
+
+**Integration**: Works with existing QFAC dashboard framework
+
+**Launch**:
+
+```python
+from Aetherra.tools.quantum_dashboard_launcher import launch_dashboard
+
+launch_dashboard(port=8080, mode="web")
+```
+
+#### QFAC Dashboard
+
+**Implementation**: `Aetherra/aetherra_core/memory/qfac_dashboard.py`
+
+**Purpose**: Interactive dashboard for Quantum Fractal Adaptive Compression (QFAC) memory analytics.
+
+**CLI Commands**:
+
+```powershell
+python qfac_launcher.py demo           # Demo mode
+python qfac_launcher.py dashboard      # Launch web dashboard
+python qfac_launcher.py analyze <file> # Analyze compression
+python qfac_launcher.py system-status  # System health
+```
+
+**Dashboard Features**:
+
+- Compression metrics and analysis
+- Memory type classification
+- Performance monitoring
+- Interactive visualizations
+- System integration status
+
+**Static Assets**: `Aetherra/aetherra_core/memory/quantum_dashboard/static/dashboard.html`
+
+**Health Endpoints**:
+Memory system exposes health check APIs for dashboard integration:
+
+```python
+# Returns typed health summary for dashboards
+status = await memory_system.check_memory_health()
+```
+
+**Hub Integration**:
+
+```
+GET /api/memory/status  # JSON memory system status
+GET /api/health         # Aggregate health (kernel, registry, orchestrator, memory, chat)
+```
+
+**Observability**: Dashboards consume Prometheus metrics:
+
+- `aetherra_memory_coherence_score`
+- `aetherra_memory_branches_total`
+- `aetherra_memory_fragments_total`
+- `aetherra_memory_entanglement_nodes_total`
+
+**Use Cases**:
+
+- Real-time memory system monitoring
+- Compression performance analysis
+- Quantum operation debugging
+- System health diagnostics
+- Performance optimization
+
 ## Keeping this document current
 
-- Use the VS Code task “Verify Docs Consistency” to catch path/section drifts.
+- Use the VS Code task "Verify Docs Consistency" to catch path/section drifts.
 - When changing code, check these anchors:
   - `Aetherra/aetherra_core/memory/memory_core.py` → `_generate_memory_id` (BLAKE2s)
   - `Aetherra/aetherra_core/memory/compression_metrics.py` → SHA‑256 caches

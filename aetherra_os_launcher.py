@@ -1024,15 +1024,16 @@ class AetherraOSLauncher:
     async def _load_memory_system(self, config: dict[str, Any]):
         """[BRAIN] Load the quantum memory system."""
         try:
-            logger.info("[BRAIN] Loading Core Memory Engine...")
+            logger.info("[BRAIN] Loading Core Memory Engine (with STORM support)...")
 
-            # Use Aetherra OS memory engine
+            # Use Aetherra OS memory engine (Advanced orchestrator with STORM integration)
             # Aetherra imports
             from Aetherra.aetherra_core.memory.aetherra_memory_engine import (
-                AetherraMemoryEngine,
+                AetherraMemoryEngineAdvanced,
             )
 
-            memory_impl = AetherraMemoryEngine()
+            # Advanced engine auto-detects STORM via environment (AETHERRA_MEMORY_STORM)
+            memory_impl = AetherraMemoryEngineAdvanced()
             memory_adapter = MemoryAdapter(memory_impl)
             self.systems["memory"] = memory_adapter
             await register_service(
@@ -1040,7 +1041,29 @@ class AetherraOSLauncher:
                 memory_impl,
                 metadata={"type": "core", "version": "1.0"},
             )
-            logger.info("[OK] Aetherra Core Memory Engine online")
+            try:
+                # Surface STORM status in logs for visibility during boot
+                st = getattr(memory_impl, "get_system_status", None)
+                if callable(st):
+                    status = st()  # type: ignore[misc]
+                    storm = (
+                        (status or {}).get("storm")
+                        if isinstance(status, dict)
+                        else None
+                    )
+                    if isinstance(storm, dict):
+                        logger.info(
+                            "[STORM] enabled=%s shadow_mode=%s backend=%s tt_rank_cap=%s",
+                            storm.get("enabled"),
+                            storm.get("shadow_mode"),
+                            storm.get("ot_backend"),
+                            storm.get("tt_rank_cap"),
+                        )
+            except Exception:
+                # Best-effort; do not block OS startup on diagnostics
+                pass
+
+            logger.info("[OK] Aetherra Core Memory Engine online (Advanced)")
 
             # Optionally register QFAC memory system alongside core engine
             try:
@@ -1694,6 +1717,44 @@ class AetherraOSLauncher:
                         await self._start_plugin_discovery()
 
                         logger.info("[OK] Aetherra Hub online at http://localhost:3001")
+
+                        # Post-boot STORM status confirmation (after services are up)
+                        try:
+                            import aiohttp  # type: ignore
+
+                            timeout = aiohttp.ClientTimeout(total=2.5)
+                            async with (
+                                aiohttp.ClientSession() as session,
+                                session.get(
+                                    "http://localhost:3001/api/memory/status",
+                                    timeout=timeout,
+                                ) as r,
+                            ):
+                                if r.status == 200:
+                                    data = await r.json()
+                                    storm = (
+                                        (data or {}).get("storm")
+                                        if isinstance(data, dict)
+                                        else None
+                                    )
+                                    if isinstance(storm, dict):
+                                        logger.info(
+                                            "[STORM:POST-BOOT] enabled=%s shadow_mode=%s backend=%s tt_rank_cap=%s",
+                                            storm.get("enabled"),
+                                            storm.get("shadow_mode"),
+                                            storm.get("ot_backend"),
+                                            storm.get("tt_rank_cap"),
+                                        )
+                                else:
+                                    logger.debug(
+                                        "[STORM] Status endpoint not ready (HTTP %s)",
+                                        r.status,
+                                    )
+                        except Exception as exc:
+                            # Best-effort; do not fail launch due to diagnostics
+                            logger.debug(
+                                "[STORM] Post-boot status probe skipped: %s", exc
+                            )
                     else:
                         logger.warning("[WARN] Aetherra Hub failed to start")
 

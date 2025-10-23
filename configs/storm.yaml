@@ -1,0 +1,17 @@
+# STORM configuration (mirrors env vars). Values here can be overridden by env.
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+enabled: false                 # maps to AETHERRA_MEMORY_STORM (0|1)
+ot_backend: auto               # auto|pot|keops (auto prefers POT; KeOps only with GPU and non-test)
+tt_max_rank: 32               # maps to AETHERRA_STORM_TT_MAX_RANK
+k_coarse: 64                  # maps to AETHERRA_STORM_K_COARSE
+max_ms: 120                   # maps to AETHERRA_STORM_MAX_MS (budget for exact OT stage)
+max_k_exact: 16               # maps to AETHERRA_STORM_MAX_K_EXACT
+
+# Sheaf cover persistence
+sqlite_path: "storm_sheaf.db"  # SQLite DB file for cells/overlaps
+storm_schema_version: 1        # bump with migrations
+
+# Deterministic test profile behavior
+# When AETHERRA_PROFILE == "test":
+# - lock seeds, fix ANN ordering, activate numpy fallbacks, add tie-breakers

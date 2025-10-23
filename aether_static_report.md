@@ -1,7 +1,7 @@
 # .aether Verification Report
 
 Root: D:\Aetherra Project
-Files found: 33
+Files found: 39
 Profile: test
 
 ## Discovered .aether Files
@@ -23,6 +23,7 @@ Profile: test
 - D:\Aetherra Project\Aetherra\aetherra_core\system\test_enhanced_language.aether
 - D:\Aetherra Project\Aetherra\aetherra_core\system\test_goal_autopilot.aether
 - D:\Aetherra Project\Aetherra\aetherra_core\system\utils.aether
+- D:\Aetherra Project\Aetherra\lyrixa\plugins\advanced-memory-system\memory_plugin.aether
 - D:\Aetherra Project\Aetherra\plugins\examples\advanced-memory-system\memory_plugin.aether
 - D:\Aetherra Project\Aetherra\scripts\self_organizer.aether
 - D:\Aetherra Project\Aetherra\tools\curiosity_conflict_resolution.aether
@@ -35,9 +36,14 @@ Profile: test
 - D:\Aetherra Project\self_organizer.aether
 - D:\Aetherra Project\test_ai_os.aether
 - D:\Aetherra Project\workflows\hello_plugin_demo.aether
+- D:\Aetherra Project\workflows\ingest_safe_generated.aether
+- D:\Aetherra Project\workflows\knowledge_import.aether
+- D:\Aetherra Project\workflows\night_cycle_enhanced.aether
 - D:\Aetherra Project\workflows\on_error_chain_demo.aether
 - D:\Aetherra Project\workflows\parallel_workflow_demo.aether
 - D:\Aetherra Project\workflows\plugin_chain_demo.aether
+- D:\Aetherra Project\workflows\storm_demo.aether
+- D:\Aetherra Project\workflows\teach_lyrixa.aether
 
 ## Signature Verification (strict)
 - D:\Aetherra Project\Aetherra\aetherra_core\system\agent_diagnostics.aether: OK
@@ -58,6 +64,7 @@ Profile: test
 - D:\Aetherra Project\Aetherra\aetherra_core\system\test_enhanced_language.aether: OK
 - D:\Aetherra Project\Aetherra\aetherra_core\system\test_goal_autopilot.aether: OK
 - D:\Aetherra Project\Aetherra\aetherra_core\system\utils.aether: OK
+- D:\Aetherra Project\Aetherra\lyrixa\plugins\advanced-memory-system\memory_plugin.aether: OK
 - D:\Aetherra Project\Aetherra\plugins\examples\advanced-memory-system\memory_plugin.aether: OK
 - D:\Aetherra Project\Aetherra\scripts\self_organizer.aether: OK
 - D:\Aetherra Project\Aetherra\tools\curiosity_conflict_resolution.aether: OK
@@ -70,9 +77,14 @@ Profile: test
 - D:\Aetherra Project\self_organizer.aether: OK
 - D:\Aetherra Project\test_ai_os.aether: OK
 - D:\Aetherra Project\workflows\hello_plugin_demo.aether: OK
+- D:\Aetherra Project\workflows\ingest_safe_generated.aether: FAIL (missing signature header)
+- D:\Aetherra Project\workflows\knowledge_import.aether: FAIL (missing signature header)
+- D:\Aetherra Project\workflows\night_cycle_enhanced.aether: FAIL (missing signature header)
 - D:\Aetherra Project\workflows\on_error_chain_demo.aether: OK
 - D:\Aetherra Project\workflows\parallel_workflow_demo.aether: OK
 - D:\Aetherra Project\workflows\plugin_chain_demo.aether: OK
+- D:\Aetherra Project\workflows\storm_demo.aether: FAIL (missing signature header)
+- D:\Aetherra Project\workflows\teach_lyrixa.aether: FAIL (missing signature header)
 
 ## Static Risk Analysis
 Total risk score: 0
@@ -101,6 +113,7 @@ Top risky files:
 - D:\Aetherra Project\Aetherra\aetherra_core\system\test_enhanced_language.aether: score=0 findings=0
 - D:\Aetherra Project\Aetherra\aetherra_core\system\test_goal_autopilot.aether: score=0 findings=0
 - D:\Aetherra Project\Aetherra\aetherra_core\system\utils.aether: score=0 findings=0
+- D:\Aetherra Project\Aetherra\lyrixa\plugins\advanced-memory-system\memory_plugin.aether: score=0 findings=0
 - D:\Aetherra Project\Aetherra\plugins\examples\advanced-memory-system\memory_plugin.aether: score=0 findings=0
 - D:\Aetherra Project\Aetherra\scripts\self_organizer.aether: score=0 findings=0
 - D:\Aetherra Project\Aetherra\tools\curiosity_conflict_resolution.aether: score=0 findings=0
@@ -113,6 +126,11 @@ Top risky files:
 - D:\Aetherra Project\self_organizer.aether: score=0 findings=0
 - D:\Aetherra Project\test_ai_os.aether: score=0 findings=0
 - D:\Aetherra Project\workflows\hello_plugin_demo.aether: score=0 findings=0
+- D:\Aetherra Project\workflows\ingest_safe_generated.aether: score=0 findings=0
+- D:\Aetherra Project\workflows\knowledge_import.aether: score=0 findings=0
+- D:\Aetherra Project\workflows\night_cycle_enhanced.aether: score=0 findings=0
 - D:\Aetherra Project\workflows\on_error_chain_demo.aether: score=0 findings=0
 - D:\Aetherra Project\workflows\parallel_workflow_demo.aether: score=0 findings=0
 - D:\Aetherra Project\workflows\plugin_chain_demo.aether: score=0 findings=0
+- D:\Aetherra Project\workflows\storm_demo.aether: score=0 findings=0
+- D:\Aetherra Project\workflows\teach_lyrixa.aether: score=0 findings=0

@@ -54,12 +54,14 @@ python aether.py workflows/parallel_workflow_demo.aether
 
 ## 5. Environment Flags (Common)
 
-| Flag                       | Effect                          | Default |
-| -------------------------- | ------------------------------- | ------- |
-| `AETHERRA_AI_API_ENABLED`  | Enables chat endpoints          | 0       |
-| `AETHERRA_AI_API_STREAM`   | Enables streaming endpoint      | 0       |
-| `AETHERRA_TRAINER_ENABLED` | Enables trainer job/eval routes | 0       |
-| `AETHERRA_QUIET`           | Suppress verbose logs           | 0       |
+| Flag                         | Effect                                   | Default |
+| ---------------------------- | ---------------------------------------- | ------- |
+| `AETHERRA_AI_API_ENABLED`    | Enables chat endpoints                   | 0       |
+| `AETHERRA_AI_API_STREAM`     | Enables streaming endpoint               | 0       |
+| `AETHERRA_TRAINER_ENABLED`   | Enables trainer job/eval routes          | 0       |
+| `AETHERRA_QUIET`             | Suppress verbose logs                    | 0       |
+| `AETHERRA_MEMORY_STORM`      | Enable STORM memory features             | 0       |
+| `AETHERRA_STORM_SHADOW_MODE` | STORM runs in shadow mode (metrics only) | 1       |
 
 ## 6. Tests & Health
 
@@ -87,3 +89,21 @@ Remove-Item -Recurse -Force .venv
 - Explore metrics at `http://localhost:3001/metrics`
 - Inspect `BETA_READINESS_REPORT.md`
 - Sign workflows: `python tools/sign_aether.py workflows/parallel_workflow_demo.aether`
+
+## 9. Run OS with STORM (Shadow Mode)
+
+Recommended safe production validation path: STORM collects metrics while returning baseline results.
+
+```powershell
+# 1) Start the Hub (recommended)
+python tools/run_hub_ai_api.py --port 3001
+
+# 2) In another shell, enable STORM shadow mode and start the OS
+$env:AETHERRA_MEMORY_STORM='1'; $env:AETHERRA_STORM_SHADOW_MODE='1'; python aetherra_os_launcher.py --mode full -v
+```
+
+On boot you should see a STORM status line in logs similar to:
+
+```text
+[STORM:POST-BOOT] enabled=1 shadow_mode=1 backend=ot:earthmover tt_rank_cap=128
+```

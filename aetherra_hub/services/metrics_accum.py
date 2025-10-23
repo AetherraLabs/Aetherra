@@ -601,6 +601,40 @@ def build_all_metrics_lines() -> list[str]:  # core builder used by blueprint
                 f"aetherra_memory_fragments_total {_num(mq.get('fragments', 0))}"
             )
 
+    # STORM metrics (STORM PR-5 + Shadow Mode + Day 8 Maintenance)
+    storm = registry_client.get_storm_metrics() or {}
+    if storm.get("enabled"):
+        # Counters
+        for metric in [
+            "aetherra_storm_approximate_recalls_total",
+            "aetherra_storm_maintenance_total",
+            "aetherra_storm_branch_barycenters_total",
+            "aetherra_storm_shadow_comparisons_total",
+            "aetherra_storm_shadow_divergences_total",
+            "aetherra_storm_shadow_errors_total",
+        ]:
+            if metric in storm:
+                lines.append(f"{metric} {_num(storm.get(metric, 0))}")
+        # Gauges
+        for metric in [
+            "aetherra_storm_ot_cost_avg",
+            "aetherra_storm_sheaf_inconsistency",
+            "aetherra_storm_tt_rank",
+            "aetherra_storm_recall_latency_ms_p95",
+            "aetherra_storm_shadow_agreement_rate",
+            "aetherra_storm_shadow_latency_ms_avg",
+        ]:
+            if metric in storm:
+                lines.append(f"{metric} {_num(storm.get(metric, 0.0))}")
+        # Labeled gauge: maintenance_last{action=...}
+        maint_last = storm.get("aetherra_storm_maintenance_last")
+        if isinstance(maint_last, dict):
+            for action, timestamp in maint_last.items():
+                safe_action = str(action).replace('"', '\\"')
+                lines.append(
+                    f'aetherra_storm_maintenance_last{{action="{safe_action}"}} {_num(timestamp)}'
+                )
+
     # QFAC validator & shadow logs (Phase 2 scaffolding): best-effort local probes
     def _get_qfac_validator_status() -> dict[str, Any]:
         try:

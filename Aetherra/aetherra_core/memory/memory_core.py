@@ -19,6 +19,14 @@ from typing import Any, Dict, List, Optional
 # Import the canonical engine from the package (exported via __init__)
 from .QuantumEnhancedMemoryEngine import QuantumEnhancedMemoryEngine
 
+# Import the advanced memory engine with STORM support
+try:
+    from .aetherra_memory_engine import AetherraMemoryEngineAdvanced
+
+    ADVANCED_ENGINE_AVAILABLE = True
+except ImportError:
+    ADVANCED_ENGINE_AVAILABLE = False
+
 
 # Simple data classes for backward compatibility
 @dataclass
@@ -91,6 +99,14 @@ class LyrixaMemorySystem:
         # Initialize database synchronously
         self._initialize_database_sync()
 
+        # Initialize advanced memory engine for Hub integration
+        # Provides STORM support and system status reporting
+        if ADVANCED_ENGINE_AVAILABLE:
+            self.engine = AetherraMemoryEngineAdvanced()
+        else:
+            # Fallback to basic quantum engine if advanced not available
+            self.engine = QuantumEnhancedMemoryEngine()
+
     def close(self) -> None:
         """Close the underlying SQLite connection if open.
 
@@ -149,15 +165,9 @@ class LyrixaMemorySystem:
             )
 
             # Create indexes for efficient querying
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_memory_type ON memories(memory_type)"
-            )
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_importance ON memories(importance)"
-            )
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_created_at ON memories(created_at)"
-            )
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_memory_type ON memories(memory_type)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_importance ON memories(importance)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_created_at ON memories(created_at)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_tags ON memories(tags)")
 
             conn.commit()
@@ -177,13 +187,9 @@ class LyrixaMemorySystem:
     def validate_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """Validate and normalize query parameters."""
         validated = {}
-        validated["importance"] = self.normalize_importance(
-            params.get("importance", 0.0)
-        )
+        validated["importance"] = self.normalize_importance(params.get("importance", 0.0))
         validated["text"] = str(params.get("text", ""))
-        validated["tags"] = (
-            params.get("tags", []) if isinstance(params.get("tags"), list) else []
-        )
+        validated["tags"] = params.get("tags", []) if isinstance(params.get("tags"), list) else []
         validated["context"] = (
             params.get("context", {}) if isinstance(params.get("context"), dict) else {}
         )
@@ -237,9 +243,7 @@ class LyrixaMemorySystem:
             with self.db_session():
                 cursor = self.ensure_connection().cursor()
                 # Help type checker: created_at/last_accessed set above
-                assert (
-                    memory.created_at is not None and memory.last_accessed is not None
-                )
+                assert memory.created_at is not None and memory.last_accessed is not None
                 cursor.execute(
                     """
                     INSERT OR REPLACE INTO memories
@@ -337,9 +341,7 @@ class LyrixaMemorySystem:
             print(f"❌ Failed to recall memories: {e}")
             return []
 
-    async def get_conversation_context(
-        self, session_id: str, limit: int = 10
-    ) -> List[Memory]:
+    async def get_conversation_context(self, session_id: str, limit: int = 10) -> List[Memory]:
         """Get recent conversation context for a session"""
         return await self.recall_memories(
             query_text=session_id, limit=limit, memory_type="conversation"
@@ -369,25 +371,16 @@ class LyrixaMemorySystem:
         self, user_context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """Get user preferences"""
-        memories = await self.recall_memories(
-            query_text="", limit=100, memory_type="preference"
-        )
+        memories = await self.recall_memories(query_text="", limit=100, memory_type="preference")
 
         preferences = {}
         for memory in memories:
-            if (
-                "preference_key" in memory.content
-                and "preference_value" in memory.content
-            ):
-                preferences[memory.content["preference_key"]] = memory.content[
-                    "preference_value"
-                ]
+            if "preference_key" in memory.content and "preference_value" in memory.content:
+                preferences[memory.content["preference_key"]] = memory.content["preference_value"]
 
         return preferences
 
-    async def store_project_context(
-        self, project_name: str, context: Dict[str, Any]
-    ) -> str:
+    async def store_project_context(self, project_name: str, context: Dict[str, Any]) -> str:
         """Store project-specific context"""
         content = {"project_name": project_name, "context": context}
 
@@ -523,9 +516,7 @@ class LyrixaMemorySystem:
                 if query.text:
                     sql += " AND (content LIKE ? OR tags LIKE ?)"
 
-                    params.extend(
-                        [f"%{query.text}%", f"%{query.text}%"]
-                    )  # Cast to str explicitly
+                    params.extend([f"%{query.text}%", f"%{query.text}%"])  # Cast to str explicitly
 
                 if query.tags:
                     for tag in query.tags:
@@ -549,9 +540,7 @@ class LyrixaMemorySystem:
 
                 if query.text:
                     sql += " AND (content LIKE ? OR tags LIKE ?)"
-                    params.extend(
-                        [f"%{query.text}%", f"%{query.text}%"]
-                    )  # Cast to str explicitly
+                    params.extend([f"%{query.text}%", f"%{query.text}%"])  # Cast to str explicitly
 
                 if query.tags:
                     for tag in query.tags:
@@ -602,9 +591,7 @@ class LyrixaMemorySystem:
             total_memories = cursor.fetchone()[0]
 
             # Memories by type
-            cursor.execute(
-                "SELECT memory_type, COUNT(*) FROM memories GROUP BY memory_type"
-            )
+            cursor.execute("SELECT memory_type, COUNT(*) FROM memories GROUP BY memory_type")
             by_type = dict(cursor.fetchall())
 
             # Average importance
@@ -613,9 +600,7 @@ class LyrixaMemorySystem:
 
             # Recent activity
             recent_date = (datetime.now() - timedelta(days=7)).isoformat()
-            cursor.execute(
-                "SELECT COUNT(*) FROM memories WHERE created_at >= ?", (recent_date,)
-            )
+            cursor.execute("SELECT COUNT(*) FROM memories WHERE created_at >= ?", (recent_date,))
             recent_memories = cursor.fetchone()[0]
 
             return {
@@ -635,14 +620,10 @@ class LyrixaMemorySystem:
         params: List[Any] = []
 
         if query.memory_type:
-            params.append(
-                float(query.memory_type)
-            )  # Ensure type matches expected float
+            params.append(float(query.memory_type))  # Ensure type matches expected float
 
         if query.text:
-            params.extend(
-                [float(query.text), float(query.text)]
-            )  # Convert text to float if needed
+            params.extend([float(query.text), float(query.text)])  # Convert text to float if needed
 
         if query.tags:
             for tag in query.tags:
@@ -650,9 +631,7 @@ class LyrixaMemorySystem:
 
         if query.time_range:
             start_time, end_time = query.time_range
-            params.extend(
-                [start_time.timestamp(), end_time.timestamp()]
-            )  # Use timestamps
+            params.extend([start_time.timestamp(), end_time.timestamp()])  # Use timestamps
 
         return params
 
@@ -723,5 +702,6 @@ class LyrixaMemorySystem:
     # Ensure all methods that use the database call close_connection at the end
 
 
-# Backward compatibility alias
+# Backward compatibility aliases
 MemoryEngine = LyrixaMemorySystem
+AetherraMemorySystem = LyrixaMemorySystem  # Alias for AetherraEngine compatibility

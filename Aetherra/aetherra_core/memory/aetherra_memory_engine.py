@@ -32,6 +32,8 @@ from .QuantumEnhancedMemoryEngine.quantum_memory_engine import (
     QuantumEnhancedMemoryEngine,
 )
 from .reflector import MemoryReflector, ReflectionInsight
+from .storm.engine import StormConfig, StormEngine
+from .storm.shadow_logger import shadow_recall
 
 
 class AetherraMemoryEngine:
@@ -71,9 +73,7 @@ class AetherraMemoryEngine:
         """
         # Substring search over compat list
         q = str(query).lower()
-        results = [
-            m for m in self._compat_mem if q in str(m.get("content", "")).lower()
-        ]
+        results = [m for m in self._compat_mem if q in str(m.get("content", "")).lower()]
 
         # If nothing found, try underlying engine and adapt shape
         if not results:
@@ -82,9 +82,7 @@ class AetherraMemoryEngine:
                 if isinstance(raw, dict) and "data" in raw:
                     data = raw["data"]
                     # Try to adapt to expected shape
-                    content = (
-                        data.get("content") if isinstance(data, dict) else str(data)
-                    )
+                    content = data.get("content") if isinstance(data, dict) else str(data)
                     if content:
                         results = [{"content": content}]
             except Exception:
@@ -184,6 +182,18 @@ class AetherraMemoryEngineAdvanced:
         # In-memory store for test compatibility
         self._mem = []
 
+        # STORM (feature-flagged)
+        try:
+            storm_cfg = StormConfig.from_env()
+            self._storm_engine: StormEngine | None = (
+                StormEngine(config=storm_cfg, core_memory=self.core_memory)
+                if storm_cfg.enabled
+                else None
+            )
+        except Exception:
+            # Never fail constructor due to STORM wiring
+            self._storm_engine = None
+
     def store(self, content, metadata=None):
         """Store memory for test compatibility"""
         self._mem.append({"content": content, "metadata": metadata or {}})
@@ -270,9 +280,7 @@ class AetherraMemoryEngineAdvanced:
 
             # Update fragment with associative links from clustering
             if affected_clusters:
-                fragment.associative_links.extend(
-                    affected_clusters[:5]
-                )  # Limit associations
+                fragment.associative_links.extend(affected_clusters[:5])  # Limit associations
                 self.fractal_mesh.store_fragment(fragment)  # Update with associations
 
             self.operation_stats["successful_operations"] += 1
@@ -330,9 +338,7 @@ class AetherraMemoryEngineAdvanced:
         results: list[dict[str, Any]] = []
 
         if recall_strategy in ["vector", "hybrid"]:
-            vector_results = await self.core_memory.recall_memories(
-                query_text=query, limit=limit
-            )
+            vector_results = await self.core_memory.recall_memories(query_text=query, limit=limit)
             for i, memory in enumerate(vector_results):
                 results.append(
                     {
@@ -347,9 +353,7 @@ class AetherraMemoryEngineAdvanced:
 
         if recall_strategy in ["conceptual", "hybrid"] and concept_filter:
             for concept in concept_filter:
-                concept_fragments = self.fractal_mesh.retrieve_by_concept(
-                    concept, limit
-                )
+                concept_fragments = self.fractal_mesh.retrieve_by_concept(concept, limit)
                 for fragment in concept_fragments:
                     results.append(
                         {
@@ -401,19 +405,52 @@ class AetherraMemoryEngineAdvanced:
 
         Keeps recall() backward-compatible while exposing a unified contract.
         """
-        top = await self.recall(
+        base_items = await self.recall(
             query,
             recall_strategy=recall_strategy,
             limit=limit,
             time_filter=time_filter,
             concept_filter=concept_filter,
         )
-        scores = [r.get("relevance_score", 0.0) for r in top]
-        return MemoryRecallResult(
-            items=top,
-            scores=scores,
+        base_scores = [r.get("relevance_score", 0.0) for r in base_items]
+        base = MemoryRecallResult(
+            items=base_items,
+            scores=base_scores,
             metadata={"limit": limit, "strategy": recall_strategy},
         )
+
+        # STORM integration with shadow mode support (Phase 0)
+        if self._storm_engine is not None:
+            # Shadow mode: run STORM in parallel, emit metrics, return baseline
+            if self._storm_engine.config.shadow_mode:
+                try:
+                    # Run shadow recall and compare
+                    baseline_result, comparison = await shadow_recall(
+                        storm_engine=self._storm_engine,
+                        baseline_result=base,
+                        query=query,
+                        limit=limit,
+                    )
+                    # Record comparison metrics
+                    metrics = self._storm_engine.metrics
+                    if comparison.get("error"):
+                        metrics.record_shadow_error()
+                    else:
+                        metrics.record_shadow_comparison(
+                            agreed=comparison["agreed"],
+                            latency_ms=comparison["latency_ms"],
+                        )
+                    # Always return baseline in shadow mode
+                    return baseline_result
+                except Exception:
+                    # Shadow failures never affect production
+                    pass
+                return base
+
+            # Production mode: return STORM result
+            return await self._storm_engine.recall(query, limit=limit, base_fallback=base)
+
+        return base
 
     # Internal helpers
     def _apply_policy_guard(self, content: Any, metadata: Optional[dict]) -> None:
@@ -426,9 +463,7 @@ class AetherraMemoryEngineAdvanced:
         metadata = metadata or {}
         if self.config.redact_before_persist:
             try:
-                new_content, new_context = self.config.redact_before_persist(
-                    content, metadata
-                )
+                new_content, new_context = self.config.redact_before_persist(content, metadata)
                 # best-effort replacement; callers may ignore
                 if new_content is not None:
                     content = new_content
@@ -440,9 +475,7 @@ class AetherraMemoryEngineAdvanced:
 
         if self.config.persist_sensitive_only_if_signed:
             # Heuristics: treat project-category writes as plugin-origin unless explicitly marked otherwise
-            is_plugin = bool(
-                metadata.get("plugin_id") or (metadata.get("category") == "project")
-            )
+            is_plugin = bool(metadata.get("plugin_id") or (metadata.get("category") == "project"))
             is_signed = bool(metadata.get("signed") or metadata.get("trusted"))
             tags = metadata.get("tags") or []
             is_sensitive = bool(metadata.get("sensitive") or ("sensitive" in tags))
@@ -471,11 +504,7 @@ class AetherraMemoryEngineAdvanced:
         else:
             # Default to last 24 hours
             cutoff = datetime.now() - timedelta(days=1)
-            fragments = [
-                f
-                for f in self.fractal_mesh.fragments.values()
-                if f.created_at >= cutoff
-            ]
+            fragments = [f for f in self.fractal_mesh.fragments.values() if f.created_at >= cutoff]
 
         # Generate narrative based on type
         if narrative_type == "daily":
@@ -506,9 +535,7 @@ class AetherraMemoryEngineAdvanced:
             insights = self.reflector.reflect_on_past_range(fragments, time_range)
 
         elif reflection_type == "contradictions":
-            insights = self.reflector.analyze_contradictions(
-                fragments, concept_clusters
-            )
+            insights = self.reflector.analyze_contradictions(fragments, concept_clusters)
 
         elif reflection_type == "concept_exploration" and target_concept:
             insights = self.reflector.explore_concept_connections(
@@ -567,9 +594,7 @@ class AetherraMemoryEngineAdvanced:
                 else None,
                 "memory_stats": {
                     "last_check": self.last_pulse_check.isoformat(),
-                    "system_uptime": (
-                        datetime.now() - self.last_pulse_check
-                    ).total_seconds(),
+                    "system_uptime": (datetime.now() - self.last_pulse_check).total_seconds(),
                 },
                 "performance_metrics": self.operation_stats,
                 "status": "healthy" if health.coherence_score > 0.7 else "degraded",
@@ -626,9 +651,7 @@ class AetherraMemoryEngineAdvanced:
                 "health_trend": health.health_trend,
                 "drift_alerts": drift_alerts,
                 "monitoring_active": self.config.auto_pulse_monitoring,
-                "next_scheduled_check": (
-                    self.last_pulse_check + timedelta(hours=2)
-                ).isoformat(),
+                "next_scheduled_check": (self.last_pulse_check + timedelta(hours=2)).isoformat(),
             }
 
             return pulse_data
@@ -700,15 +723,11 @@ class AetherraMemoryEngineAdvanced:
         ]
 
         for alert in low_severity_alerts[:3]:  # Resolve up to 3 low-severity alerts
-            if self.pulse_monitor.resolve_alert(
-                alert.alert_id, "Auto-resolved during maintenance"
-            ):
+            if self.pulse_monitor.resolve_alert(alert.alert_id, "Auto-resolved during maintenance"):
                 maintenance_results["alerts_resolved"] += 1
 
         # Clean up very old low-confidence fragments
-        cutoff_date = datetime.now() - timedelta(
-            days=self.config.fragment_retention_days
-        )
+        cutoff_date = datetime.now() - timedelta(days=self.config.fragment_retention_days)
         old_fragments = [
             f
             for f in self.fractal_mesh.fragments.values()
@@ -741,7 +760,7 @@ class AetherraMemoryEngineAdvanced:
     def get_system_status(self) -> dict[str, Any]:
         """Get overall system status and metrics"""
 
-        return {
+        status = {
             "components": {
                 "core_memory": "active",
                 "fractal_mesh": f"{len(self.fractal_mesh.fragments)} fragments",
@@ -763,3 +782,26 @@ class AetherraMemoryEngineAdvanced:
                 "reflection_frequency": str(self.config.reflection_frequency),
             },
         }
+
+        # Add STORM status block
+        try:
+            if self._storm_engine is None:
+                status["storm"] = {
+                    "enabled": False,
+                    "backends": {"pot": True, "keops": False},
+                    "selected_backend": "pot",
+                    "exact_ot_active": False,
+                    "tt_rank_cap": StormConfig.from_env().tt_max_rank,
+                    "last_recall": {"approximate": None},
+                }
+            else:
+                status["storm"] = self._storm_engine.status()
+        except Exception:
+            # Never fail status due to STORM wiring
+            status["storm"] = {"enabled": False, "error": "status_unavailable"}
+
+        return status
+
+    def get_status(self) -> dict[str, Any]:
+        """Alias for get_system_status() for Hub compatibility."""
+        return self.get_system_status()

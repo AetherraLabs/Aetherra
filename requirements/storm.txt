@@ -1,0 +1,26 @@
+# STORM (Sheaf-Transport Optimized Retrieval Memory) Dependencies
+# Optional dependencies for advanced retrieval features
+
+-r base.txt
+
+# ===== OPTIMAL TRANSPORT =====
+# POT (Python Optimal Transport) for Wasserstein/Gromov-Wasserstein distances
+POT>=0.9.0
+
+# Optional GPU acceleration (requires CUDA)
+# pykeops>=2.1.0  # Uncomment for KeOps backend support (GPU required)
+
+# ===== TOPOLOGICAL DATA ANALYSIS =====
+# For persistence-based importance scoring
+# scikit-tda>=1.0.0  # Uncomment for full TDA features
+# giotto-tda>=0.6.0  # Alternative TDA library
+
+# ===== TENSOR DECOMPOSITION =====
+# For Tensor-Train / MPS compression
+# tensorly>=0.8.0  # Uncomment for TT decomposition support
+
+# ===== NOTES =====
+# - POT is the only required dependency for PR-2 (OT/GW algorithm implementation)
+# - TDA libraries are optional stubs for future PRs
+# - Tensor libraries are optional stubs for future PRs
+# - KeOps requires CUDA and is optional for GPU acceleration

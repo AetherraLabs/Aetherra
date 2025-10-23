@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
@@ -102,6 +101,12 @@ class AetherScriptInterpreter:
             "load_feature_index": self._builtin_load_feature_index,
             "available_plugins": self._builtin_available_plugins,
             "check_confidence": self._builtin_check_confidence,
+            # STORM memory functions (Day 9 integration)
+            "storm": {
+                "recall": self._builtin_storm_recall,
+                "sheaf_status": self._builtin_storm_sheaf_status,
+                "coherence_guard": self._builtin_storm_coherence_guard,
+            },
         }
 
     async def execute_script(self, script_content: str, filename: str = "<string>"):
@@ -133,9 +138,12 @@ class AetherScriptInterpreter:
         # Goal statement: goal: "description"
         if statement.startswith("goal:"):
             goal_text = statement[5:].strip()
-            if goal_text.startswith('"') and goal_text.endswith('"'):
-                goal_text = goal_text[1:-1]
-            elif goal_text.startswith("'") and goal_text.endswith("'"):
+            if (
+                goal_text.startswith('"')
+                and goal_text.endswith('"')
+                or goal_text.startswith("'")
+                and goal_text.endswith("'")
+            ):
                 goal_text = goal_text[1:-1]
 
             print(f"[TARGET] GOAL STATEMENT (Line {line_num}):")
@@ -246,8 +254,7 @@ class AetherScriptInterpreter:
             # Execute built-in function
             if func_name in self.built_in_functions:
                 return await self.built_in_functions[func_name](*processed_args)
-            else:
-                return f"Unknown function: {func_name}"
+            return f"Unknown function: {func_name}"
 
         except Exception as e:
             return f"Function execution error: {e}"
@@ -266,8 +273,7 @@ class AetherScriptInterpreter:
         try:
             if "." in expression:
                 return float(expression)
-            else:
-                return int(expression)
+            return int(expression)
         except ValueError:
             pass
 
@@ -293,8 +299,7 @@ class AetherScriptInterpreter:
         if target == "memory" or target is None:
             await self.cognitive_interface._show_memory_status()
             return "Memory summary generated"
-        else:
-            return f"Summary of {target} requested"
+        return f"Summary of {target} requested"
 
     async def _builtin_load_logs(self):
         """Built-in load_logs() function."""
@@ -347,6 +352,151 @@ class AetherScriptInterpreter:
     async def _builtin_check_confidence(self, plugin):
         """Built-in check_confidence() function."""
         return f"Confidence check for {plugin}: HIGH"
+
+    # STORM Memory Functions (Day 9 integration)
+    async def _builtin_storm_recall(self, query: str, limit: int = 10):
+        """
+        STORM recall function for .aether scripts.
+
+        Usage: storm.recall("query text", 10)
+        Returns STORM-powered memory recall results.
+        """
+        print(f"[STORM] Recalling memories: {query}")
+
+        # Try to access memory system with STORM
+        if self.cognitive_interface.memory_system:
+            try:
+                # Check if STORM is available
+                storm_engine = getattr(
+                    self.cognitive_interface.memory_system, "_storm_engine", None
+                )
+                if storm_engine and storm_engine.config.enabled:
+                    # Use STORM recall
+                    result = await self.cognitive_interface.memory_system.recall_typed(
+                        query=query, recall_strategy="storm", limit=limit
+                    )
+                    print(f"   [STORM] Found {len(result.items)} results via STORM")
+                    return {
+                        "type": "storm_recall",
+                        "query": query,
+                        "results": result.items,
+                        "source": result.source,
+                        "scores": result.scores,
+                    }
+                print("   [WARN] STORM not enabled, using baseline recall")
+                result = await self.cognitive_interface.memory_system.recall(
+                    query=query, limit=limit
+                )
+                return {
+                    "type": "baseline_recall",
+                    "query": query,
+                    "results": result,
+                }
+            except Exception as e:
+                print(f"   [ERROR] STORM recall failed: {e}")
+                return {"type": "error", "message": str(e)}
+        else:
+            print("   [WARN] No memory system available")
+            return {"type": "error", "message": "No memory system"}
+
+    async def _builtin_storm_sheaf_status(self):
+        """
+        Get STORM sheaf consistency status.
+
+        Usage: storm.sheaf_status()
+        Returns current sheaf inconsistency metric and coherence score.
+        """
+        print("[STORM] Querying sheaf consistency status...")
+
+        if self.cognitive_interface.memory_system:
+            try:
+                storm_engine = getattr(
+                    self.cognitive_interface.memory_system, "_storm_engine", None
+                )
+                if storm_engine and storm_engine.config.enabled:
+                    # Get current metrics
+                    snapshot = storm_engine.metrics.snapshot()
+                    inconsistency = snapshot.get(
+                        "aetherra_storm_sheaf_inconsistency", 0.0
+                    )
+                    coherence = (
+                        1.0 / (1.0 + inconsistency)
+                        if inconsistency is not None
+                        else 1.0
+                    )
+
+                    print(f"   Sheaf inconsistency: {inconsistency:.4f}")
+                    print(f"   Coherence score: {coherence:.4f}")
+
+                    return {
+                        "type": "sheaf_status",
+                        "inconsistency": inconsistency,
+                        "coherence": coherence,
+                        "tt_rank": snapshot.get("aetherra_storm_tt_rank", 0),
+                        "enabled": True,
+                    }
+                print("   [WARN] STORM not enabled")
+                return {"type": "sheaf_status", "enabled": False}
+            except Exception as e:
+                print(f"   [ERROR] Failed to get sheaf status: {e}")
+                return {"type": "error", "message": str(e)}
+        else:
+            print("   [WARN] No memory system available")
+            return {"type": "error", "message": "No memory system"}
+
+    async def _builtin_storm_coherence_guard(self, min_coherence: float = 0.9):
+        """
+        Alert if sheaf coherence drops below threshold.
+
+        Usage: storm.coherence_guard(0.9)
+        Raises alert if coherence < min_coherence (default 0.9).
+        """
+        print(f"[STORM] Checking coherence guard (threshold: {min_coherence})...")
+
+        if self.cognitive_interface.memory_system:
+            try:
+                storm_engine = getattr(
+                    self.cognitive_interface.memory_system, "_storm_engine", None
+                )
+                if storm_engine and storm_engine.config.enabled:
+                    snapshot = storm_engine.metrics.snapshot()
+                    inconsistency = snapshot.get(
+                        "aetherra_storm_sheaf_inconsistency", 0.0
+                    )
+                    coherence = (
+                        1.0 / (1.0 + inconsistency)
+                        if inconsistency is not None
+                        else 1.0
+                    )
+
+                    if coherence < min_coherence:
+                        print(
+                            f"   ⚠️  ALERT: Coherence {coherence:.4f} < {min_coherence:.4f}"
+                        )
+                        print(f"   Sheaf inconsistency: {inconsistency:.4f}")
+                        print("   Consider running maintenance or reducing load")
+                        return {
+                            "type": "coherence_alert",
+                            "alert": True,
+                            "coherence": coherence,
+                            "threshold": min_coherence,
+                            "inconsistency": inconsistency,
+                        }
+                    print(f"   ✓ Coherence OK: {coherence:.4f} >= {min_coherence:.4f}")
+                    return {
+                        "type": "coherence_ok",
+                        "alert": False,
+                        "coherence": coherence,
+                        "threshold": min_coherence,
+                    }
+                print("   [WARN] STORM not enabled")
+                return {"type": "coherence_guard", "enabled": False}
+            except Exception as e:
+                print(f"   [ERROR] Coherence guard failed: {e}")
+                return {"type": "error", "message": str(e)}
+        else:
+            print("   [WARN] No memory system available")
+            return {"type": "error", "message": "No memory system"}
 
 
 class AetherCognitiveInterface:
@@ -542,21 +692,19 @@ class AetherCognitiveInterface:
                             elif line_result.get("type") == "error":
                                 print(f"[ERROR] ERROR: {line_result['error']}")
                     return True
-                else:
-                    print(
-                        f"[ERROR] Script execution failed: {result.get('error', 'Unknown error')}"
-                    )
-                    return False
-            else:
-                # Fallback to internal script interpreter
-                with open(filepath, encoding="utf-8") as f:
-                    script_content = f.read()
-
-                print(f"[BRAIN] Executing Aether Script: {filepath}")
-                print("=" * 50)
-                return await self.script_interpreter.execute_script(
-                    script_content, filepath
+                print(
+                    f"[ERROR] Script execution failed: {result.get('error', 'Unknown error')}"
                 )
+                return False
+            # Fallback to internal script interpreter
+            with open(filepath, encoding="utf-8") as f:
+                script_content = f.read()
+
+            print(f"[BRAIN] Executing Aether Script: {filepath}")
+            print("=" * 50)
+            return await self.script_interpreter.execute_script(
+                script_content, filepath
+            )
 
         except FileNotFoundError:
             print(f"[ERROR] Aether Script file not found: {filepath}")
@@ -1335,17 +1483,16 @@ This tool tests whether Aetherra is functioning as a true AI-native OS.
                             file=command_text,
                             phase="parse",
                         )
-                    else:
-                        print(
-                            "[WARN] Semantic validation failed (unknown functions detected)"
-                        )
-                        return finish(
-                            AetherErrorCode.VALIDATION_ERROR,
-                            first_validation_msg or "validation error",
-                            file=command_text,
-                            phase="parse",
-                            line=first_validation_line,
-                        )
+                    print(
+                        "[WARN] Semantic validation failed (unknown functions detected)"
+                    )
+                    return finish(
+                        AetherErrorCode.VALIDATION_ERROR,
+                        first_validation_msg or "validation error",
+                        file=command_text,
+                        phase="parse",
+                        line=first_validation_line,
+                    )
                 return finish(
                     AetherErrorCode.PARSE_ERROR,
                     first_error_msg or "parse error",
@@ -1353,35 +1500,33 @@ This tool tests whether Aetherra is functioning as a true AI-native OS.
                     phase="parse",
                     line=first_error_line,
                 )
-            else:
-                # Full execution path with structured runtime error capture
-                try:
-                    success = await aether.execute_aether_file(command_text)
-                except Exception as e:  # Unexpected internal error
-                    return finish(
-                        AetherErrorCode.INTERNAL_ERROR,
-                        f"internal execution crash: {e}",
-                        file=command_text,
-                        phase="execute",
-                    )
-                if success:
-                    return finish(
-                        AetherErrorCode.SUCCESS,
-                        "ok",
-                        file=command_text,
-                        phase="execute",
-                    )
-                else:
-                    # Distinguish parse vs runtime not caught earlier; here treat as runtime
-                    return finish(
-                        AetherErrorCode.RUNTIME_ERROR,
-                        "runtime failure",
-                        file=command_text,
-                        phase="execute",
-                    )
+            # Full execution path with structured runtime error capture
+            try:
+                success = await aether.execute_aether_file(command_text)
+            except Exception as e:  # Unexpected internal error
+                return finish(
+                    AetherErrorCode.INTERNAL_ERROR,
+                    f"internal execution crash: {e}",
+                    file=command_text,
+                    phase="execute",
+                )
+            if success:
+                return finish(
+                    AetherErrorCode.SUCCESS,
+                    "ok",
+                    file=command_text,
+                    phase="execute",
+                )
+            # Distinguish parse vs runtime not caught earlier; here treat as runtime
+            return finish(
+                AetherErrorCode.RUNTIME_ERROR,
+                "runtime failure",
+                file=command_text,
+                phase="execute",
+            )
 
         # Handle goal: commands specially (Aether Script syntax)
-        elif command_text.startswith("goal:"):
+        if command_text.startswith("goal:"):
             goal = command_text[5:].strip()
             if goal.startswith('"') and goal.endswith('"'):
                 goal = goal[1:-1]  # Remove quotes
@@ -1440,7 +1585,7 @@ This tool tests whether Aetherra is functioning as a true AI-native OS.
                 user_input = input("aether> ").strip()
                 if user_input.lower() in ["exit", "quit"]:
                     break
-                elif user_input.endswith(".aether"):
+                if user_input.endswith(".aether"):
                     # Execute Aether Script file (interactive mode legacy path - no structured reporting)
                     await aether.execute_aether_file(user_input)
                 elif (
