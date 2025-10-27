@@ -71,33 +71,33 @@ function Invoke-CommandWithTimeout {
 function Run-RuffCheck {
   if (Get-Command ruff -ErrorAction SilentlyContinue) {
     Write-Host "[doctor] Ruff format --check"
-    Invoke-CommandWithTimeout -FilePath "ruff" -Arguments @("format","--check",".") -TimeoutSec [Math]::Min($TIMEOUT_SEC,180) | Out-Null
+    Invoke-CommandWithTimeout -FilePath "ruff" -Arguments @("format","--check",".") -TimeoutSec $([Math]::Min($TIMEOUT_SEC,180)) | Out-Null
     Write-Host "[doctor] Ruff check"
-    Invoke-CommandWithTimeout -FilePath "ruff" -Arguments @("check",".") -TimeoutSec [Math]::Min($TIMEOUT_SEC,300) | Out-Null
+    Invoke-CommandWithTimeout -FilePath "ruff" -Arguments @("check",".") -TimeoutSec $([Math]::Min($TIMEOUT_SEC,300)) | Out-Null
   } else { Write-Host "[doctor][warn] ruff not found; skipping format/lint" }
 }
 
 function Run-RuffFix {
   if (Get-Command ruff -ErrorAction SilentlyContinue) {
     Write-Host "[doctor] Ruff format & fix"
-    Invoke-CommandWithTimeout -FilePath "ruff" -Arguments @("format",".") -TimeoutSec [Math]::Min($TIMEOUT_SEC,180) | Out-Null
-    Invoke-CommandWithTimeout -FilePath "ruff" -Arguments @("check",".","--fix") -TimeoutSec [Math]::Min($TIMEOUT_SEC,300) | Out-Null
+    Invoke-CommandWithTimeout -FilePath "ruff" -Arguments @("format",".") -TimeoutSec $([Math]::Min($TIMEOUT_SEC,180)) | Out-Null
+    Invoke-CommandWithTimeout -FilePath "ruff" -Arguments @("check",".","--fix") -TimeoutSec $([Math]::Min($TIMEOUT_SEC,300)) | Out-Null
   } else { Write-Host "[doctor][warn] ruff not found; skipping format/lint" }
 }
 
 function Run-TypesAndTests {
   Write-Host "[doctor] MyPy (strict-ish)"
-  if (Get-Command mypy -ErrorAction SilentlyContinue) { Invoke-CommandWithTimeout -FilePath "mypy" -Arguments @($PY_DIRS) -TimeoutSec [Math]::Min($TIMEOUT_SEC,300) | Out-Null } else { Write-Host "[doctor][warn] mypy not found; skipping" }
+  if (Get-Command mypy -ErrorAction SilentlyContinue) { Invoke-CommandWithTimeout -FilePath "mypy" -Arguments @($PY_DIRS) -TimeoutSec $([Math]::Min($TIMEOUT_SEC,300)) | Out-Null } else { Write-Host "[doctor][warn] mypy not found; skipping" }
 
   Write-Host "[doctor] Pyright (optional)"
-  if (-not $FAST -and (Get-Command pyright -ErrorAction SilentlyContinue)) { Invoke-CommandWithTimeout -FilePath "pyright" -Arguments @() -TimeoutSec [Math]::Min($TIMEOUT_SEC,300) | Out-Null } else { Write-Host "[doctor][info] pyright not installed or fast mode" }
+  if (-not $FAST -and (Get-Command pyright -ErrorAction SilentlyContinue)) { Invoke-CommandWithTimeout -FilePath "pyright" -Arguments @() -TimeoutSec $([Math]::Min($TIMEOUT_SEC,300)) | Out-Null } else { Write-Host "[doctor][info] pyright not installed or fast mode" }
 
   # Prefer fast, reliable checks over full suite during local doctor runs
   # 1) Headless OS smoke
   Write-Host "[doctor] Smoke: tools/os_smoke.py"
   if (Get-Command python -ErrorAction SilentlyContinue) {
     $env:AETHERRA_QUIET = "1"
-    $rc = Invoke-CommandWithTimeout -FilePath "python" -Arguments @("tools/os_smoke.py") -TimeoutSec [Math]::Min($TIMEOUT_SEC,180)
+    $rc = Invoke-CommandWithTimeout -FilePath "python" -Arguments @("tools/os_smoke.py") -TimeoutSec $([Math]::Min($TIMEOUT_SEC,180))
     if ($rc -ne 0) {
       Write-Host "[doctor][error] Smoke test failed"
       $script:GLOBAL_LAST_ERROR = $rc
@@ -109,7 +109,7 @@ function Run-TypesAndTests {
     Write-Host "[doctor] PyTest (capabilities slice)"
     $env:AETHERRA_QUIET = "1"
     $pytestArgs = @("-m","pytest","-q","-o","addopts=","tests/capabilities")
-    $rc2 = Invoke-CommandWithTimeout -FilePath "python" -Arguments $pytestArgs -TimeoutSec [Math]::Min($TIMEOUT_SEC,600)
+    $rc2 = Invoke-CommandWithTimeout -FilePath "python" -Arguments $pytestArgs -TimeoutSec $([Math]::Min($TIMEOUT_SEC,600))
     if ($rc2 -ne 0) {
       Write-Host "[doctor][error] Capabilities tests failed"
       $script:GLOBAL_LAST_ERROR = $rc2
@@ -139,7 +139,7 @@ function Run-SecretsScan {
   Write-Host "[doctor] Gitleaks scan"
   $gitleaksExe = Get-GitleaksExe
   if ($gitleaksExe) {
-    $rc = Invoke-CommandWithTimeout -FilePath $gitleaksExe -Arguments @("detect","--no-banner","--redact","--report-path","tools/gitleaks_report.json") -TimeoutSec [Math]::Min($TIMEOUT_SEC,180)
+    $rc = Invoke-CommandWithTimeout -FilePath $gitleaksExe -Arguments @("detect","--no-banner","--redact","--report-path","tools/gitleaks_report.json") -TimeoutSec $([Math]::Min($TIMEOUT_SEC,180))
     if ($rc -ne 0) { Write-Host "[doctor] gitleaks found issues (report saved)" }
   } else {
     Write-Host "[doctor][warn] gitleaks not found; install via Chocolatey (choco install gitleaks) or Scoop (scoop install gitleaks)"
@@ -150,10 +150,10 @@ function Run-SecurityDeep {
   if ($SECURITY_DEEP) {
     Write-Host "[doctor] Security deep: bandit & pip-audit"
     if (Get-Command python -ErrorAction SilentlyContinue) {
-      $null = Invoke-CommandWithTimeout -FilePath "python" -Arguments @("-m","bandit","-q","-r",$PY_DIRS,"-f","json","-o","tools/bandit_report.json") -TimeoutSec [Math]::Min($TIMEOUT_SEC,300)
+      $null = Invoke-CommandWithTimeout -FilePath "python" -Arguments @("-m","bandit","-q","-r",$PY_DIRS,"-f","json","-o","tools/bandit_report.json") -TimeoutSec $([Math]::Min($TIMEOUT_SEC,300))
     } else { Write-Host "[doctor][info] python not found for bandit" }
     if (Get-Command python -ErrorAction SilentlyContinue) {
-      $null = Invoke-CommandWithTimeout -FilePath "python" -Arguments @("-m","pip_audit","-f","json","-o","tools/pip_audit_report.json") -TimeoutSec [Math]::Min($TIMEOUT_SEC,300)
+      $null = Invoke-CommandWithTimeout -FilePath "python" -Arguments @("-m","pip_audit","-f","json","-o","tools/pip_audit_report.json") -TimeoutSec $([Math]::Min($TIMEOUT_SEC,300))
     } else { Write-Host "[doctor][info] python not found for pip-audit" }
   }
 }
