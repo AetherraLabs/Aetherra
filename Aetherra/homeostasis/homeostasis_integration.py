@@ -33,8 +33,11 @@ from typing import Any, Dict, List, Optional
 from aetherra_service_registry import get_service_registry, register_service
 
 from .audit_trace_layer import get_audit_layer
+from .autonomous_error_corrector import AutonomousErrorCorrector
 from .homeostasis_actuators import HomeostasisActuators
 from .homeostasis_core import ControllerMode, HomeostasisController
+from .self_improvement_metrics_bridge import SelfImprovementMetricsBridge
+from .self_incorporation_metrics_bridge import SelfIncorporationMetricsBridge
 
 # Homeostasis imports
 from .stability_metrics import StabilityMetrics, get_stability_metrics
@@ -274,6 +277,283 @@ class HomeostasisWatchdog:
             logger.error(f"❌ Emergency restart failed: {e}")
 
 
+class DLQMonitor:
+    """
+    Dead Letter Queue monitoring service for Phase 2C.
+
+    Periodically polls kernel DLQ to:
+    - Analyze failure patterns (group by action_type, target_service, reason)
+    - Calculate failure rates per actuator type
+    - Auto-disable actuator types with high failure rates
+    - Expose DLQ health metrics for observability
+
+    Integrates with HomeostasisActuators to quarantine problematic actuators.
+    """
+
+    def __init__(
+        self,
+        kernel_loop=None,
+        actuators=None,
+        poll_interval: float = 60.0,
+        failure_rate_threshold: float = 0.5,
+        quarantine_threshold: int = 5,
+    ):
+        """
+        Initialize DLQ monitor.
+
+        Args:
+            kernel_loop: Kernel loop instance (for get_dlq_items)
+            actuators: HomeostasisActuators instance (for disable_actuator)
+            poll_interval: How often to poll DLQ (seconds)
+            failure_rate_threshold: Failure rate to trigger auto-disable (0.0-1.0)
+            quarantine_threshold: Minimum failures before auto-disable
+        """
+        self.kernel_loop = kernel_loop
+        self.actuators = actuators
+        self.poll_interval = poll_interval
+        self.failure_rate_threshold = failure_rate_threshold
+        self.quarantine_threshold = quarantine_threshold
+
+        self.running = False
+        self.monitor_task: Optional[asyncio.Task] = None
+
+        # Metrics
+        self.dlq_count = 0
+        self.top_failure_reasons: Dict[str, int] = {}
+        self.quarantined_actuators: List[str] = []
+        self.failure_history: Dict[str, List[dict]] = {}  # action_type -> [failures]
+
+        logger.info(
+            f"🔍 DLQ Monitor initialized (poll={poll_interval}s, "
+            f"threshold={failure_rate_threshold}, quarantine_min={quarantine_threshold})"
+        )
+
+    async def start(self):
+        """Start DLQ monitoring loop."""
+        if self.running:
+            logger.warning("[DLQ] Monitor already running")
+            return
+
+        self.running = True
+        self.monitor_task = asyncio.create_task(self._monitor_loop())
+        logger.info("🚀 DLQ Monitor started")
+
+    async def stop(self):
+        """Stop DLQ monitoring loop."""
+        self.running = False
+        if self.monitor_task and not self.monitor_task.done():
+            self.monitor_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await self.monitor_task
+        logger.info("🛑 DLQ Monitor stopped")
+
+    async def _monitor_loop(self):
+        """Main DLQ monitoring loop."""
+        while self.running:
+            try:
+                await self._poll_and_analyze_dlq()
+                await asyncio.sleep(self.poll_interval)
+
+            except asyncio.CancelledError:
+                logger.debug("[DLQ] Monitor loop cancelled")
+                break
+            except Exception as e:
+                logger.error(f"[DLQ] Monitor loop error: {e}", exc_info=True)
+                await asyncio.sleep(self.poll_interval)  # Continue despite errors
+
+    async def _poll_and_analyze_dlq(self):
+        """Poll DLQ and analyze failure patterns."""
+        if not self.kernel_loop:
+            logger.debug("[DLQ] No kernel loop available, skipping poll")
+            return
+
+        try:
+            # Get recent DLQ items (last 100)
+            if not hasattr(self.kernel_loop, "get_dlq_items"):
+                logger.debug("[DLQ] Kernel does not support get_dlq_items")
+                return
+
+            # Support both async and sync implementations of get_dlq_items
+            try:
+                items = self.kernel_loop.get_dlq_items(limit=100)
+            except TypeError:
+                # Some kernels may not accept keyword args
+                items = self.kernel_loop.get_dlq_items()  # type: ignore[call-arg]
+
+            import inspect
+
+            if inspect.isawaitable(items):
+                dlq_items = await items  # type: ignore[assignment]
+            else:
+                dlq_items = items  # type: ignore[assignment]
+
+            if dlq_items is None:
+                dlq_items = []
+            self.dlq_count = len(dlq_items)
+
+            if self.dlq_count == 0:
+                logger.debug("[DLQ] No items in DLQ")
+                return
+
+            logger.info(f"[DLQ] Analyzing {self.dlq_count} DLQ items")
+
+            # Analyze patterns
+            await self._analyze_failure_patterns(dlq_items)
+
+            # Check for high failure rates and quarantine if needed
+            await self._check_and_quarantine()
+
+        except Exception as e:
+            logger.error(f"[DLQ] Poll and analyze failed: {e}", exc_info=True)
+
+    async def _analyze_failure_patterns(self, dlq_items: List[dict]):
+        """
+        Analyze DLQ items for patterns.
+
+        Groups by:
+        - action_type (for actuator_action tasks)
+        - reason (failure reason)
+        """
+        reason_counts: Dict[str, int] = {}
+        action_type_failures: Dict[str, List[dict]] = {}
+
+        for item in dlq_items:
+            # Count reasons
+            reason = item.get("reason", "unknown")
+            reason_counts[reason] = reason_counts.get(reason, 0) + 1
+
+            # Track actuator_action failures
+            task_type = item.get("type")
+            if task_type == "actuator_action":
+                data = item.get("data", {})
+                action_type = data.get("action_type", "unknown")
+
+                if action_type not in action_type_failures:
+                    action_type_failures[action_type] = []
+
+                # Normalize timestamp to epoch seconds to avoid type errors when comparing to floats
+                raw_ts = item.get("ts")
+                ts_epoch: float
+                if isinstance(raw_ts, (int, float)):
+                    ts_epoch = float(raw_ts)
+                elif isinstance(raw_ts, str):
+                    # Try parsing as float string first, then ISO-8601
+                    try:
+                        ts_epoch = float(raw_ts)
+                    except Exception:
+                        try:
+                            s = raw_ts.replace("Z", "+00:00")
+                            dt = datetime.fromisoformat(s)
+                            ts_epoch = dt.timestamp()
+                        except Exception:
+                            ts_epoch = 0.0
+                else:
+                    ts_epoch = 0.0
+
+                action_type_failures[action_type].append(
+                    {
+                        "ts": ts_epoch,
+                        "reason": reason,
+                        "trace_id": item.get("trace_id"),
+                        "target": data.get("target_service"),
+                    }
+                )
+
+        # Update metrics
+        self.top_failure_reasons = dict(
+            sorted(reason_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+        )
+        self.failure_history.update(action_type_failures)
+
+        # Log top failures
+        if self.top_failure_reasons:
+            logger.info(
+                f"[DLQ] Top failure reasons: {', '.join(f'{r}={c}' for r, c in list(self.top_failure_reasons.items())[:3])}"
+            )
+
+    async def _check_and_quarantine(self):
+        """
+        Check failure rates and quarantine actuator types if needed.
+
+        Criteria:
+        - Failure rate > threshold (default 50%)
+        - At least quarantine_threshold failures (default 5)
+        """
+        if not self.actuators:
+            return
+
+        for action_type, failures in self.failure_history.items():
+            if action_type in self.quarantined_actuators:
+                continue  # Already quarantined
+
+            # Count recent failures (last hour)
+            recent_cutoff = time.time() - 3600
+            recent_failures = [f for f in failures if f.get("ts", 0) > recent_cutoff]
+
+            if len(recent_failures) < self.quarantine_threshold:
+                continue  # Not enough failures
+
+            # Calculate failure rate (assume all recent DLQ entries for this action are failures)
+            # This is conservative: we don't track successes separately, so we treat DLQ presence as failure
+            failure_count = len(recent_failures)
+
+            # For now, we use a simple heuristic: if we see N failures in DLQ and no successful execution info,
+            # we assume high failure rate
+            # TODO: Integrate with actuator success metrics for more accurate rate calculation
+
+            if failure_count >= self.quarantine_threshold:
+                logger.warning(
+                    f"[DLQ] Actuator '{action_type}' has {failure_count} recent failures, "
+                    f"auto-disabling (threshold={self.quarantine_threshold})"
+                )
+
+                # Quarantine actuator
+                await self._quarantine_actuator(action_type, recent_failures)
+
+    async def _quarantine_actuator(self, action_type: str, failures: List[dict]):
+        """
+        Quarantine an actuator type by disabling it.
+
+        Args:
+            action_type: Action type to disable
+            failures: List of failure records
+        """
+        if action_type in self.quarantined_actuators:
+            return
+
+        # Mark as quarantined
+        self.quarantined_actuators.append(action_type)
+
+        # Disable in actuators (if method exists)
+        if hasattr(self.actuators, "disable_actuator"):
+            try:
+                await self.actuators.disable_actuator(action_type)
+                logger.error(f"[DLQ] Actuator '{action_type}' QUARANTINED due to high failure rate")
+
+                # Log failure reasons
+                reasons = {f.get("reason", "unknown") for f in failures[:10]}
+                logger.error(f"[DLQ] Failure reasons: {', '.join(reasons)}")
+
+            except Exception as e:
+                logger.error(f"[DLQ] Failed to disable actuator '{action_type}': {e}")
+        else:
+            logger.warning("[DLQ] Actuators does not support disable_actuator method")
+
+    def get_metrics(self) -> dict:
+        """
+        Get DLQ health metrics.
+
+        Returns:
+            dict: DLQ metrics including count, top failures, quarantined actuators
+        """
+        return {
+            "dlq_count": self.dlq_count,
+            "top_failure_reasons": self.top_failure_reasons,
+            "quarantined_actuators": self.quarantined_actuators,
+            "quarantined_count": len(self.quarantined_actuators),
+        }
+
+
 class HomeostasisOrchestrator:
     """
     Main orchestrator for the Aetherra Homeostasis system (Phase 3: Singleton + Watchdog).
@@ -317,6 +597,18 @@ class HomeostasisOrchestrator:
         # Phase 6: Live observability system
         self.observability: Optional[LiveObservability] = None
 
+        # Phase 7: Autonomous error correction
+        self.error_corrector: Optional[AutonomousErrorCorrector] = None
+
+        # Phase 8: Self-improvement metrics bridge
+        self.metrics_bridge: Optional[SelfImprovementMetricsBridge] = None
+
+        # Phase 9: Self-incorporation metrics bridge
+        self.si_metrics_bridge: Optional[SelfIncorporationMetricsBridge] = None
+
+        # Phase 2C: DLQ monitoring service
+        self.dlq_monitor: Optional[DLQMonitor] = None
+
         # Performance tracking
         self.uptime_start: Optional[float] = None
         self.restart_count = 0
@@ -354,6 +646,24 @@ class HomeostasisOrchestrator:
 
             # Phase 6: Initialize live observability system
             self.observability = LiveObservability(self)
+
+            # Phase 7: Initialize autonomous error correction
+            self.error_corrector = AutonomousErrorCorrector()
+
+            # Phase 8: Initialize self-improvement metrics bridge
+            self.metrics_bridge = SelfImprovementMetricsBridge()
+
+            # Phase 9: Initialize self-incorporation metrics bridge
+            self.si_metrics_bridge = SelfIncorporationMetricsBridge()
+
+            # Phase 2C: Initialize DLQ monitor (will be started after kernel injection)
+            self.dlq_monitor = DLQMonitor(
+                kernel_loop=None,  # Will be set during injection
+                actuators=self.actuators,
+                poll_interval=60.0,
+                failure_rate_threshold=0.5,
+                quarantine_threshold=5,
+            )
 
             # Register with service registry
             await self._register_with_service_registry()
@@ -525,6 +835,10 @@ class HomeostasisOrchestrator:
                 self.watchdog.stop()
                 self.watchdog = None
 
+            # Phase 2C: Stop DLQ monitor
+            if self.dlq_monitor:
+                await self.dlq_monitor.stop()
+
             # Stop background tasks
             await self._stop_background_tasks()
 
@@ -606,11 +920,15 @@ class HomeostasisOrchestrator:
     async def _register_with_service_registry(self):
         """Register homeostasis with the service registry."""
         try:
+            # The registry expects metadata/dependencies, not arbitrary kwargs.
+            # Move service_type/description into metadata for compatibility.
             await register_service(
                 name="aetherra_homeostasis",
                 instance=self,
-                service_type="system_management",
-                description="Aetherra Homeostasis System for autonomous stability control",
+                metadata={
+                    "type": "system_management",
+                    "description": "Aetherra Homeostasis System for autonomous stability control",
+                },
             )
             logger.debug("📝 Registered with service registry")
 
@@ -638,11 +956,34 @@ class HomeostasisOrchestrator:
             controller_task = asyncio.create_task(self.controller.start())
             self.background_tasks.append(controller_task)
 
+        # Phase 7: Start autonomous error correction
+        if self.error_corrector:
+            await self.error_corrector.start()
+
+        # Phase 8: Start self-improvement metrics bridge
+        if self.metrics_bridge:
+            await self.metrics_bridge.start()
+
+        # Phase 9: Start self-incorporation metrics bridge
+        if self.si_metrics_bridge:
+            await self.si_metrics_bridge.start()
+
         logger.debug("🔧 All components started")
 
     async def _stop_components(self):
         """Stop all homeostasis components."""
-        # Stop controller first
+        # Stop metrics bridges first (Phase 9, then Phase 8)
+        if self.si_metrics_bridge:
+            await self.si_metrics_bridge.stop()
+
+        if self.metrics_bridge:
+            await self.metrics_bridge.stop()
+
+        # Stop autonomous error corrector
+        if self.error_corrector:
+            await self.error_corrector.stop()
+
+        # Stop controller
         if self.controller:
             self.controller.stop()
 
@@ -675,6 +1016,22 @@ class HomeostasisOrchestrator:
         # Start system verification loop (Phase 2 requirement)
         verification_task = asyncio.create_task(self._continuous_system_verification_loop())
         self.background_tasks.append(verification_task)
+
+        # Phase 2C: Start DLQ monitoring loop
+        if self.dlq_monitor:
+            # Inject kernel reference dynamically
+            try:
+                from aetherra_kernel_loop import get_kernel  # type: ignore
+
+                kernel = get_kernel()
+                if kernel:
+                    self.dlq_monitor.kernel_loop = kernel
+                    await self.dlq_monitor.start()
+                    logger.info("✅ DLQ Monitor started with kernel integration")
+                else:
+                    logger.warning("⚠️ Kernel not available, DLQ monitoring disabled")
+            except ImportError:
+                logger.warning("⚠️ Kernel loop not available, DLQ monitoring disabled")
 
         logger.debug("🔄 Background tasks started")
 
@@ -1006,6 +1363,10 @@ class HomeostasisOrchestrator:
         if self.supervisor:
             status["supervisor"] = self.supervisor.get_supervisor_status()
             status["system_health"] = self.supervisor.get_system_health()
+
+        # Phase 2C: Add DLQ monitor metrics
+        if self.dlq_monitor:
+            status["dlq_health"] = self.dlq_monitor.get_metrics()
 
         return status
 
@@ -1590,8 +1951,6 @@ class SystemFeedback:
     async def _apply_adaptive_adjustments(self, source: str, adjustments: Dict[str, float]):
         """Apply calculated adjustments to the homeostasis controller."""
         try:
-            controller = self.orchestrator.controller
-
             # Apply CPU sensitivity adjustments
             if "cpu_sensitivity" in adjustments:
                 # This would integrate with the controller's threshold management

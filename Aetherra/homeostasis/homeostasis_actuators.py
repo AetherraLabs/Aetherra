@@ -246,6 +246,48 @@ class HomeostasisActuators:
             logger.error(f"Error executing action {action.action_type}: {e}")
             return False
 
+    async def execute_action_via_kernel(self, action) -> bool:
+        """Execute an action using the kernel task envelope when available.
+
+        Falls back to direct execute_action if kernel submission isn't available.
+        """
+        try:
+            # Local import to avoid hard dependency at module import time
+            from aetherra_kernel_loop import get_kernel  # type: ignore
+
+            kernel = get_kernel()
+            # Map action priority to kernel queue priority
+            priority = "normal"
+            try:
+                from .homeostasis_core import ActionPriority  # type: ignore
+
+                pr = getattr(action, "priority", None)
+                if pr in (ActionPriority.CRITICAL, ActionPriority.EMERGENCY, ActionPriority.HIGH):
+                    priority = "high"
+                elif pr == ActionPriority.LOW:
+                    priority = "background"
+                else:
+                    priority = "normal"
+            except Exception:
+                priority = "normal"
+
+            # Submit and wait for result (boolean ok)
+            res = await kernel.submit_actuator_action_and_wait(
+                action_type=getattr(action, "action_type", ""),
+                target_service=getattr(action, "target_service", ""),
+                parameters=getattr(action, "parameters", {}) or {},
+                controller_name=getattr(action, "controller_name", "homeostasis"),
+                reason=getattr(action, "reason", "kernel_envelope"),
+                timeout_sec=float(getattr(action, "timeout", 0) or 0),
+                priority=priority,
+            )
+            if isinstance(res, dict) and "ok" in res:
+                return bool(res.get("ok"))
+            return bool(res)
+        except Exception as e:
+            logger.debug(f"[ACT] Kernel submission unavailable, executing directly: {e}")
+            return await self.execute_action(action)
+
     # Plugin System Actuators
 
     async def adjust_plugin_timeouts(
@@ -325,10 +367,10 @@ class HomeostasisActuators:
             optimized_services = []
             rollback_data: Dict[str, Any] = {"original_timeouts": {}}
 
-            for service_name, service_info in registry.services.items():
+            for service_name, service_info in registry.list_services().items():
                 if (
                     "plugin" in service_name.lower()
-                    and service_info.status.value == "HEALTHY"
+                    and service_info.status.value == "healthy"
                     and hasattr(service_info.instance, "timeout_config")
                 ):
                     current_timeout = getattr(
@@ -347,13 +389,21 @@ class HomeostasisActuators:
                         f"Optimized timeout for {service_name}: {current_timeout} → {new_timeout}"
                     )
 
+            # Return success even if no services were optimized (nothing to do is OK)
+            if not optimized_services:
+                return ActuatorResult(
+                    success=True,
+                    message="No plugin services with timeout_config found to optimize",
+                )
+
             return ActuatorResult(
                 success=True,
                 message=f"Optimized timeouts for {len(optimized_services)} plugin services",
-                rollback_data=rollback_data if optimized_services else None,
+                rollback_data=rollback_data,
             )
 
         except Exception as e:
+            logger.warning(f"Failed to optimize plugin timeouts: {e}", exc_info=True)
             return ActuatorResult(success=False, message=f"Failed to optimize plugin timeouts: {e}")
 
     # Memory System Actuators
@@ -429,7 +479,10 @@ class HomeostasisActuators:
             # Find kernel or task management service
             kernel_service = registry.get_service_info("aetherra_kernel")
             if not kernel_service or not kernel_service.instance:
-                return ActuatorResult(success=False, message="Kernel service not found")
+                # Service doesn't exist - not a failure, just nothing to do
+                return ActuatorResult(
+                    success=True, message="Kernel service not found - no workers to adjust"
+                )
 
             kernel_instance = kernel_service.instance
 
@@ -451,11 +504,13 @@ class HomeostasisActuators:
                     rollback_data=rollback_data,
                 )
             else:
+                # Kernel exists but doesn't support worker adjustment - success with info
                 return ActuatorResult(
                     success=True, message="Kernel does not support worker adjustment"
                 )
 
         except Exception as e:
+            logger.warning(f"Failed to adjust task workers: {e}", exc_info=True)
             return ActuatorResult(success=False, message=f"Failed to adjust task workers: {e}")
 
     # Cognitive System Actuators
@@ -518,11 +573,14 @@ class HomeostasisActuators:
             # Find Hub service
             hub_service = registry.get_service_info("aetherra_hub")
             if not hub_service or not hub_service.instance:
-                return ActuatorResult(success=False, message="Hub service not found")
+                # Hub not found - not a failure if it's not registered
+                return ActuatorResult(
+                    success=True, message="Hub service not found in registry - nothing to reconnect"
+                )
 
             hub_instance = hub_service.instance
 
-            # Attempt reconnection
+            # Attempt reconnection if supported
             if hasattr(hub_instance, "reconnect"):
                 await hub_instance.reconnect()
 
@@ -538,11 +596,13 @@ class HomeostasisActuators:
                         message="Reconnection attempted but connection not established",
                     )
             else:
+                # Hub exists but doesn't support reconnect - success with info
                 return ActuatorResult(
-                    success=False, message="Hub service does not support reconnection"
+                    success=True, message="Hub service does not support reconnection"
                 )
 
         except Exception as e:
+            logger.warning(f"Failed to reconnect Hub: {e}", exc_info=True)
             return ActuatorResult(success=False, message=f"Failed to reconnect Hub: {e}")
 
     # Service Management Actuators

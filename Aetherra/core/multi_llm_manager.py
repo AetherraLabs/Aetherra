@@ -343,12 +343,12 @@ class MultiLLMManager:
     def _select_auto_model(self) -> Optional[str]:
         """Choose the best available model based on provider availability and API keys.
 
-        Selection priorities:
+        Selection priorities (cloud-first, local fallback):
         1) OpenAI gpt-4o (if OpenAI provider loaded and OPENAI_API_KEY present)
         2) OpenAI gpt-3.5-turbo (same conditions)
         3) Anthropic claude-3-sonnet (ANTHROPIC_API_KEY present)
         4) Gemini gemini-pro (GOOGLE_API_KEY present)
-        5) Local Ollama models (llama3 first, then mistral)
+        5) Local Ollama models (llama3 first, then mistral) - only as fallback
         6) Any other available configured model
         """
         try:
@@ -370,39 +370,47 @@ class MultiLLMManager:
             # Ensure a strict bool for type checkers
             return bool(provider.is_model_available(cfg))
 
-        # 1–2) OpenAI
+        # Priority 1-2: OpenAI (prefer paid cloud API when key is available)
         if has_env("OPENAI_API_KEY"):
             if "gpt-4o" in self.model_configs and is_available("gpt-4o"):
+                logger.info("🔑 Using OpenAI gpt-4o (API key detected)")
                 return "gpt-4o"
             if "gpt-3.5-turbo" in self.model_configs and is_available("gpt-3.5-turbo"):
+                logger.info("🔑 Using OpenAI gpt-3.5-turbo (API key detected)")
                 return "gpt-3.5-turbo"
 
-        # 3) Anthropic
+        # Priority 3: Anthropic (paid cloud API)
         if (
             has_env("ANTHROPIC_API_KEY")
             and "claude-3-sonnet" in self.model_configs
             and is_available("claude-3-sonnet")
         ):
+            logger.info("🔑 Using Anthropic claude-3-sonnet (API key detected)")
             return "claude-3-sonnet"
 
-        # 4) Gemini
+        # Priority 4: Gemini (paid cloud API)
         if (
             has_env("GOOGLE_API_KEY")
             and "gemini-pro" in self.model_configs
             and is_available("gemini-pro")
         ):
+            logger.info("🔑 Using Google gemini-pro (API key detected)")
             return "gemini-pro"
 
-        # 5) Local Ollama (llama3 preferred, then mistral) if provider present and model available
+        # Priority 5: Local Ollama (fallback when no cloud API keys available)
+        logger.info("⚠️ No cloud API keys detected, falling back to local models")
         for local_name in ("llama3", "mistral"):
             if local_name in self.model_configs and is_available(local_name):
+                logger.info(f"🦙 Using local Ollama model: {local_name}")
                 return local_name
 
-        # 6) Fallback to first available configured model
+        # Priority 6: Fallback to first available configured model
+        logger.warning("⚠️ No preferred models available, trying any available model")
         for name, cfg in self.model_configs.items():
             provider = self.providers.get(cfg.provider)
             if provider and provider.is_model_available(cfg):
                 # Keys are strings by definition; cast for static analyzers
+                logger.info(f"📦 Using fallback model: {name}")
                 return cast(str, name)
 
         return None
@@ -674,9 +682,32 @@ class GeminiProvider:
             raise Exception(f"Gemini error: {e}") from e
 
 
-# Global instance for AetherraCode integration
-# Instantiate on import so other modules can use it directly
-llm_manager: MultiLLMManager = MultiLLMManager()
+# Singleton instance (lazy initialization to prevent eager import-time initialization)
+_llm_manager_instance: MultiLLMManager | None = None
+
+
+def get_llm_manager() -> MultiLLMManager:
+    """Get or create the singleton MultiLLMManager instance."""
+    global _llm_manager_instance
+    if _llm_manager_instance is None:
+        _llm_manager_instance = MultiLLMManager()
+    return _llm_manager_instance
+
+
+# Backwards compatibility: lazy property that calls get_llm_manager()
+# This allows existing code using `llm_manager` to continue working
+class _LLMManagerProxy:
+    """Lazy proxy for backwards compatibility with code expecting llm_manager global."""
+
+    _cached: MultiLLMManager | None = None
+
+    def __getattr__(self, name: str) -> Any:
+        if self._cached is None:
+            self._cached = get_llm_manager()
+        return getattr(self._cached, name)
+
+
+llm_manager = _LLMManagerProxy()  # type: ignore[assignment]
 
 # Plugin registration for AetherraCode
 PLUGIN_CLASS = None  # This is a core component, not a plugin

@@ -30,10 +30,13 @@ from .blueprints import (  # pylint: disable=unused-import
     ai_ask,
     ai_stream,
     chat,
+    consciousness,  # consciousness state API
     health,
+    homeostasis,  # new
     keb,
     kernel,
     klm,
+    maintenance,
     memory,  # memory graph stub
     metrics,
     openapi,
@@ -41,6 +44,9 @@ from .blueprints import (  # pylint: disable=unused-import
     plugins,
     qfac_admin,
     quantum,  # new
+    scripts,  # new
+    security,  # new
+    self_improvement,  # new
     self_incorporation,  # new
     site_status,
     telemetry,  # new
@@ -62,6 +68,9 @@ BLUEPRINTS = [
     klm.bp,
     keb.bp,
     plugins.bp,
+    maintenance.bp,
+    homeostasis.bp,
+    consciousness.bp,  # Consciousness state API
     agents.bp,
     chat.bp,
     ai_ask.bp,
@@ -72,6 +81,9 @@ BLUEPRINTS = [
     peers.bp,
     memory.bp,
     self_incorporation.bp,
+    self_improvement.bp,
+    scripts.bp,
+    security.bp,
 ]
 
 
@@ -92,6 +104,8 @@ def create_app(cfg: Settings | None = None) -> Flask:
             )
             return
         failures: list[str] = []
+        warnings: list[str] = []
+
         # AI API token enforcement
         api_enabled = os.environ.get("AETHERRA_AI_API_ENABLED", "0") == "1"
         if api_enabled:
@@ -102,11 +116,17 @@ def create_app(cfg: Settings | None = None) -> Flask:
             )
             if not require_token or not token_present:
                 failures.append("AI API enabled without enforced + configured token")
+
+        # Hub control token check
+        if not os.environ.get("AETHERRA_HUB_CONTROL_TOKEN"):
+            warnings.append("Hub control token not set (AETHERRA_HUB_CONTROL_TOKEN)")
+
         # Capability strictness
         if os.environ.get("AETHERRA_REQUIRE_CAPABILITIES", "0") != "1":
             failures.append(
                 "Capabilities enforcement not enabled (AETHERRA_REQUIRE_CAPABILITIES=1)"
             )
+
         # Script & plugin signing strictness
         if os.environ.get("AETHERRA_SCRIPT_VERIFY_STRICT", "0") != "1":
             failures.append(
@@ -116,16 +136,40 @@ def create_app(cfg: Settings | None = None) -> Flask:
             failures.append(
                 "Plugin signing strict not enabled (AETHERRA_SIGNING_STRICT=1)"
             )
+
+        # STORM shadow mode enforcement in production
+        storm_enabled = os.environ.get("AETHERRA_MEMORY_STORM", "0") == "1"
+        if storm_enabled:
+            shadow_mode = os.environ.get("AETHERRA_STORM_SHADOW_MODE", "0") == "1"
+            if not shadow_mode:
+                warnings.append(
+                    "STORM enabled without shadow mode (AETHERRA_STORM_SHADOW_MODE=1 recommended for prod)"
+                )
+
         # Network strictness baseline
-        if os.environ.get("AETHERRA_NET_STRICT", "0") != "1":
+        net_strict = os.environ.get("AETHERRA_NET_STRICT", "0")
+        if net_strict != "1":
             # Auto-enable with safe allowlist if not set
             os.environ.setdefault("AETHERRA_NET_STRICT", "1")
-            os.environ.setdefault(
-                "AETHERRA_NETWORK_ALLOWLIST", "localhost,127.0.0.1,.aetherra.dev"
-            )
+            default_allowlist = "localhost,127.0.0.1,.aetherra.dev"
+            os.environ.setdefault("AETHERRA_NETWORK_ALLOWLIST", default_allowlist)
             logger.info(
-                "[NET] Auto-enabled strict network policy with default allowlist"
+                "[NET] Auto-enabled strict network policy with allowlist: %s",
+                os.environ.get("AETHERRA_NETWORK_ALLOWLIST"),
             )
+        else:
+            # Log the active allowlist for visibility
+            allowlist = os.environ.get("AETHERRA_NETWORK_ALLOWLIST", "")
+            logger.info(
+                "[NET] Network strict mode active with allowlist: %s",
+                allowlist or "(none)",
+            )
+
+        if warnings:
+            logger.warning(
+                "[SEC] Production security warnings:\n - %s", "\n - ".join(warnings)
+            )
+
         if failures:
             msg = (
                 "[SEC][ABORT] Insecure production posture detected:\n - "
@@ -140,8 +184,8 @@ def create_app(cfg: Settings | None = None) -> Flask:
     if CORS:
         try:
             CORS(app)
-        except Exception:
-            logger.warning("CORS init failed")
+        except Exception as exc:
+            logger.warning("CORS init failed: %s", exc, exc_info=True)
 
     for bp in BLUEPRINTS:
         if bp.name == "plugins":  # register with prefix for cleaner route paths
@@ -170,14 +214,125 @@ def create_app(cfg: Settings | None = None) -> Flask:
             logger.info(
                 "Engine reset requested by env var; unregistered existing engine instance if present"
             )
-        except Exception:
-            logger.warning("Engine reset requested but failed", exc_info=False)
+        except Exception as exc:
+            logger.warning("Engine reset requested but failed: %s", exc, exc_info=True)
 
     _maybe_reset_engine()
 
     @app.get("/api/ping")
     def _ping() -> dict[str, bool]:  # simple liveness
         return {"pong": True}
+
+    # --- Service registry integration: register hub + self-heartbeat ---
+    try:
+        import threading
+        import time as _time
+
+        _hub_hb_thread: threading.Thread | None = None
+        _hub_hb_stop = False  # nonlocal via closure
+
+        class _HubService:
+            async def heartbeat(self):  # registry heartbeat hook
+                return True
+
+            async def ping(self):  # supervisor optional ping hook
+                return True
+
+            def is_alive(self):  # registry stale detector hook
+                return True
+
+        def _start_registry_hb_thread() -> None:
+            nonlocal _hub_hb_thread
+            if _hub_hb_thread is not None and _hub_hb_thread.is_alive():
+                return
+
+            def _runner() -> None:
+                # Local import in thread to avoid import-time coupling
+                try:
+                    import asyncio as _asyncio
+
+                    from aetherra_service_registry import (
+                        get_service_registry as _get_reg,
+                    )
+                    from aetherra_service_registry import (
+                        register_service as _reg,
+                    )
+                    from aetherra_service_registry import (
+                        update_heartbeat as _hb,
+                    )
+
+                    # One-time registration
+                    try:
+                        _asyncio.run(
+                            _reg(
+                                "aetherra_hub",
+                                _HubService(),
+                                metadata={
+                                    "version": getattr(app.settings, "version", "1"),  # type: ignore[attr-defined]
+                                    "url": f"http://127.0.0.1:{getattr(app.settings, 'port', 3001)}",  # type: ignore[attr-defined]
+                                    "self_heartbeat": True,
+                                },
+                                dependencies=["aetherra_engine"],
+                            )
+                        )
+                        # Mark self-heartbeat in registry metadata (best-effort)
+                        try:
+                            reg = _asyncio.run(_get_reg())
+                            with contextlib.suppress(Exception):
+                                reg.mark_service_self_heartbeat("aetherra_hub", True)
+                        except Exception:
+                            pass
+                    except Exception:
+                        pass
+
+                    # Heartbeat loop
+                    try:
+                        interval = 45.0
+                        try:
+                            interval = float(
+                                os.environ.get("AETHERRA_HUB_HEARTBEAT_SEC", "45") or 45
+                            )
+                        except Exception:
+                            interval = 45.0
+                        while not _hub_hb_stop:
+                            try:
+                                _asyncio.run(_hb("aetherra_hub"))
+                            except Exception:
+                                pass
+                            # split sleep for quicker teardown
+                            slept = 0.0
+                            step = min(1.0, interval)
+                            while not _hub_hb_stop and slept < interval:
+                                _time.sleep(step)
+                                slept += step
+                    except Exception:
+                        pass
+                except Exception:
+                    # Silent failure to avoid impacting hub bring-up
+                    pass
+
+            _hub_hb_thread = threading.Thread(
+                target=_runner, name="hub-registry-heartbeat", daemon=True
+            )
+            _hub_hb_thread.start()
+
+        @app.before_first_request
+        def _on_first_request() -> None:
+            # Start registry registration + heartbeat in background
+            try:
+                _start_registry_hb_thread()
+            except Exception:
+                logger.debug(
+                    "[REG] hub registry heartbeat thread failed to start", exc_info=True
+                )
+
+        @app.teardown_appcontext
+        def _on_teardown(exception=None):  # noqa: ARG001
+            # Signal heartbeat thread to stop
+            nonlocal _hub_hb_stop
+            _hub_hb_stop = True
+    except Exception as _e:  # pragma: no cover - defensive
+        logger.debug("[REG] Hub registry integration unavailable: %s", _e)
 
     @app.before_request
     def _log_req() -> None:  # lightweight request logging

@@ -270,45 +270,28 @@ class PersonalHistorySystem:
 
     def get_memories_by_type(self, memory_type: MemoryType) -> List[PersonalMemory]:
         """Get all memories of a specific type"""
-        return [
-            memory
-            for memory in self.memories.values()
-            if memory.memory_type == memory_type
-        ]
+        return [memory for memory in self.memories.values() if memory.memory_type == memory_type]
 
-    def get_memories_by_importance(
-        self, importance: MemoryImportance
-    ) -> List[PersonalMemory]:
+    def get_memories_by_importance(self, importance: MemoryImportance) -> List[PersonalMemory]:
         """Get all memories of a specific importance level"""
-        return [
-            memory
-            for memory in self.memories.values()
-            if memory.importance == importance
-        ]
+        return [memory for memory in self.memories.values() if memory.importance == importance]
 
     def get_defining_moments(self) -> List[PersonalMemory]:
         """Get the most important, identity-defining memories"""
-        return [
-            self.memories[mid] for mid in self.growth_milestones if mid in self.memories
-        ]
+        return [self.memories[mid] for mid in self.growth_milestones if mid in self.memories]
 
     def get_relationship_history(self, user_id: str) -> Optional[RelationshipHistory]:
         """Get the relationship history with a specific user"""
         return self.relationships.get(user_id)
 
-    def search_memories(
-        self, query: str, tags: Optional[Set[str]] = None
-    ) -> List[PersonalMemory]:
+    def search_memories(self, query: str, tags: Optional[Set[str]] = None) -> List[PersonalMemory]:
         """Search memories by content or tags"""
         results = []
         query_lower = query.lower()
 
         for memory in self.memories.values():
             # Search in title and description
-            if (
-                query_lower in memory.title.lower()
-                or query_lower in memory.description.lower()
-            ):
+            if query_lower in memory.title.lower() or query_lower in memory.description.lower():
                 results.append(memory)
                 continue
 
@@ -330,8 +313,7 @@ class PersonalHistorySystem:
         growth_memories = [
             memory
             for memory in self.memories.values()
-            if memory.memory_type
-            in [MemoryType.GROWTH, MemoryType.INSIGHT, MemoryType.REFLECTION]
+            if memory.memory_type in [MemoryType.GROWTH, MemoryType.INSIGHT, MemoryType.REFLECTION]
         ]
         return sorted(growth_memories, key=lambda m: m.timestamp)
 
@@ -382,13 +364,16 @@ class PersonalHistorySystem:
         return f"PersonalHistory: {len(self.memories)} memories, {len(self.relationships)} relationships, {len(self.growth_milestones)} milestones"
 
 
-# Global instance for use throughout Lyrixa
-lyrixa_personal_history = PersonalHistorySystem()
+# Singleton instance (lazy initialization to prevent duplicate init on import)
+_lyrixa_personal_history: Optional["PersonalHistorySystem"] = None
 
 
-def get_personal_history() -> PersonalHistorySystem:
-    """Get the global personal history instance"""
-    return lyrixa_personal_history
+def get_personal_history() -> "PersonalHistorySystem":
+    """Get the global personal history instance (singleton pattern)"""
+    global _lyrixa_personal_history
+    if _lyrixa_personal_history is None:
+        _lyrixa_personal_history = PersonalHistorySystem()
+    return _lyrixa_personal_history
 
 
 if __name__ == "__main__":

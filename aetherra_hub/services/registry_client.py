@@ -8,10 +8,35 @@ from __future__ import annotations
 
 # Standard library imports
 import asyncio
+import datetime as dt
+import json
 import logging
+import time
+from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger(__name__)
+
+# Singleton fallback memory engine instance (lazy init to prevent circular imports)
+_fallback_quantum_engine: Any | None = None
+
+
+def _get_fallback_quantum_engine() -> Any:
+    """Get or create singleton fallback QuantumEnhancedMemoryEngine."""
+    global _fallback_quantum_engine
+    if _fallback_quantum_engine is None:
+        try:
+            # Aetherra imports
+            from Aetherra.aetherra_core.memory.QuantumEnhancedMemoryEngine import (
+                QuantumEnhancedMemoryEngine,
+            )
+
+            _fallback_quantum_engine = QuantumEnhancedMemoryEngine()
+        except Exception as exc:
+            logger.debug(f"Failed to create fallback quantum engine: {exc}")
+            return None
+    return _fallback_quantum_engine
+
 
 # Generic helper
 
@@ -67,6 +92,57 @@ def get_registry_status() -> dict[str, Any] | None:
 
 def get_kernel_status() -> dict[str, Any] | None:
     try:
+        # Prefer central Registry Daemon if configured and reachable
+        try:
+            from aetherra_registry_client import http_get_status
+        except Exception:
+            http_get_status = None
+
+        if http_get_status is not None:
+            st = http_get_status()
+            if isinstance(st, dict):
+                services = st.get("services") or {}
+                kern = (
+                    services.get("kernel_loop") if isinstance(services, dict) else None
+                )
+                if isinstance(kern, dict):
+                    last = kern.get("last_heartbeat", 0.0)
+                    status_str = str(kern.get("status") or "").lower()
+                    now_ts = time.time()
+                    age_sec_daemon = None
+                    running = False
+                    try:
+                        age_sec_daemon = max(0.0, float(now_ts - float(last)))
+                        running = age_sec_daemon <= 180.0
+                    except Exception:
+                        age_sec_daemon = None
+                    if status_str in ("healthy",):
+                        running = True
+                    payload_daemon: dict[str, Any] = {
+                        "running": bool(running),
+                        "paused": False,
+                        "uptime": 0,
+                        "cycle_count": 0,
+                        "plugin_invoke_timeout_sec": 30.0,
+                        "backpressure_guard_pass": True,
+                        "backpressure_guard_violations": [],
+                        "night_schedule_guard_pass": True,
+                        "metrics": {"_source": "registry_daemon"},
+                        "queue_sizes": {
+                            "high_priority": 0,
+                            "normal_priority": 0,
+                            "background": 0,
+                        },
+                        "queue_limits": {},
+                        "plugin_cb_open": False,
+                        "dlq_count": 0,
+                        "hmr": {"fallback": True},
+                        "inflight": {},
+                        "_source": "registry_daemon",
+                    }
+                    if age_sec_daemon is not None:
+                        payload_daemon["stale_sec"] = age_sec_daemon
+                    return payload_daemon
 
         async def _go() -> Any:
             reg = await _get_registry_async()
@@ -83,7 +159,74 @@ def get_kernel_status() -> dict[str, Any] | None:
             return None
 
         r = _run_coro(_go())
-        return r if isinstance(r, dict) else None
+        if isinstance(r, dict):
+            return r
+        # Fallback path: attempt to infer kernel status from local metrics artifacts (dev-only)
+        try:
+            # Prefer root-level metrics file; fallback to data/
+            candidates = [
+                Path("aetherra_kernel_metrics.json"),
+                Path("data") / "aetherra_kernel_metrics.json",
+            ]
+            for p in candidates:
+                if p.exists():
+                    try:
+                        with p.open("r", encoding="utf-8") as f:
+                            metrics = json.load(f)
+                    except Exception as exc:  # pragma: no cover - defensive
+                        logger.debug("kernel metrics file parse failed: %s", exc)
+                        metrics = {}
+                    # Determine staleness based on 'live_time' if present
+                    live_iso = metrics.get("live_time") or metrics.get("shutdown_time")
+                    file_age_sec: float | None = None
+                    running = False
+                    if isinstance(live_iso, str):
+                        try:
+                            ts = dt.datetime.fromisoformat(
+                                live_iso.replace("Z", "+00:00")
+                            )
+                            if ts.tzinfo is None:
+                                ts = ts.replace(tzinfo=dt.UTC)
+                            file_age_sec = (
+                                dt.datetime.now(dt.UTC) - ts
+                            ).total_seconds()
+                            # Consider ONLINE if metrics were flushed recently (<= 180s)
+                            running = file_age_sec <= 180.0
+                        except Exception as exc:  # pragma: no cover
+                            logger.debug(
+                                "kernel metrics timestamp parse failed: %s", exc
+                            )
+                    # Minimal compatible payload mirroring kernel.get_status keys
+                    file_payload: dict[str, Any] = {
+                        "running": running,
+                        "paused": False,
+                        "uptime": 0,
+                        "cycle_count": metrics.get("cycle_count", 0),
+                        "plugin_invoke_timeout_sec": metrics.get(
+                            "plugin_invoke_timeout_sec", 30.0
+                        ),
+                        "backpressure_guard_pass": True,
+                        "backpressure_guard_violations": [],
+                        "night_schedule_guard_pass": True,
+                        "metrics": metrics,
+                        "queue_sizes": {
+                            "high_priority": 0,
+                            "normal_priority": 0,
+                            "background": 0,
+                        },
+                        "queue_limits": {},
+                        "plugin_cb_open": False,
+                        "dlq_count": 0,
+                        "hmr": {"fallback": True},
+                        "inflight": {},
+                        "_source": "file_fallback",
+                    }
+                    if file_age_sec is not None:
+                        file_payload["stale_sec"] = file_age_sec
+                    return file_payload
+        except Exception as exc:  # pragma: no cover - best effort
+            logger.debug("kernel status file fallback error: %s", exc)
+        return None
     except Exception as exc:  # pragma: no cover
         logger.debug("get_kernel_status error: %s", exc)
         return None
@@ -154,13 +297,10 @@ def get_memory_quantum_status() -> dict[str, Any]:
             return r
     except Exception as exc:
         logger.debug("get_memory_quantum_status error: %s", exc)
-    try:  # fallback ephemeral
-        # Aetherra imports
-        from Aetherra.aetherra_core.memory.QuantumEnhancedMemoryEngine import (
-            QuantumEnhancedMemoryEngine,
-        )
-
-        q = QuantumEnhancedMemoryEngine()
+    try:  # fallback
+        q = _get_fallback_quantum_engine()
+        if q is None:
+            return {"enabled": False}
         st = q.get_status()
         if isinstance(st, dict):
             st.update({"enabled": False, "ephemeral": True})
@@ -203,12 +343,9 @@ def get_memory_audit() -> dict[str, Any]:
     except Exception as exc:
         logger.debug("get_memory_audit error: %s", exc)
     try:  # fallback
-        # Aetherra imports
-        from Aetherra.aetherra_core.memory.QuantumEnhancedMemoryEngine import (
-            QuantumEnhancedMemoryEngine,
-        )
-
-        q = QuantumEnhancedMemoryEngine()
+        q = _get_fallback_quantum_engine()
+        if q is None:
+            return {"enabled": False}
         try:
             audit = q.audit_branch_dag()
         except Exception as inner_exc:  # pragma: no cover
@@ -306,6 +443,25 @@ def get_keb_metrics() -> dict[str, Any]:
 
 
 def get_keb_status() -> dict[str, Any]:
+    # Prefer Registry Daemon status if available
+    try:
+        from aetherra_registry_client import http_get_status
+    except Exception:
+        http_get_status = None
+    if http_get_status is not None:
+        st = http_get_status()
+        if isinstance(st, dict):
+            services = st.get("services") or {}
+            eb = services.get("event_bus") if isinstance(services, dict) else None
+            if isinstance(eb, dict):
+                # Enabled if present and recent heartbeat
+                last = eb.get("last_heartbeat", 0.0)
+                enabled = False
+                try:
+                    enabled = (time.time() - float(last)) <= 180.0
+                except Exception:
+                    enabled = False
+                return {"enabled": enabled, "source": "registry_daemon"}
     return _generic_service_call("event_bus", "get_status")
 
 

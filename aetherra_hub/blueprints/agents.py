@@ -38,13 +38,27 @@ def _orchestrator_status() -> dict[str, Any]:
 
 @bp.get("/api/agents")
 def list_agents():
-    # Disabled path mirrors other endpoints (501)
+    # If not enabled, return a benign 200 with enabled flag to avoid noisy 501s
     if not _authz_enabled():
-        return jsonify({"error": "disabled"}), 501
+        return jsonify(
+            {
+                "ok": True,
+                "enabled": False,
+                "agents": [],
+                "orchestrator": _orchestrator_status(),
+            }
+        ), 200
     # Optional token check
     if _require_token():
         got = request.headers.get("X-Aetherra-Token", "").strip()
         if not got or got != _expected_token():
             return jsonify({"error": "forbidden"}), 403
     # Happy path: surface orchestrator status basics
-    return jsonify({"ok": True, "orchestrator": _orchestrator_status()})
+    return jsonify(
+        {
+            "ok": True,
+            "enabled": True,
+            "agents": [],  # TODO: populate when agent registry is exposed
+            "orchestrator": _orchestrator_status(),
+        }
+    )

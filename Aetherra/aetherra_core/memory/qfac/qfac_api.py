@@ -51,6 +51,8 @@ class QFACStore:
     ) -> MemoryRecord:
         rec = MemoryRecord.new(content, embedding=embedding)
         if observer_state:
+            if rec.observer_state is None:
+                rec.observer_state = {}
             rec.observer_state.update(observer_state)
         self._by_id[rec.id] = rec
         self._index.append(

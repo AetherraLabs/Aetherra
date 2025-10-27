@@ -18,6 +18,7 @@ import asyncio
 
 # Configure logging with UTF-8 support for Windows
 import codecs
+import contextlib
 import logging
 import os
 import signal
@@ -349,6 +350,10 @@ class AetherraOSLauncher:
         self.startup_time = None
         # Self-maintenance
         self._improvement_telemetry_task = None
+        # STORM feature tracking
+        self._storm_enabled = False
+        # Registry Daemon heartbeat tasks
+        self._daemon_heartbeat_tasks: list[asyncio.Task] = []
 
     async def launch_full_os(self, config: dict[str, Any] | None = None):
         """[LAUNCH] Launch the complete Aetherra AI Operating System."""
@@ -445,7 +450,8 @@ class AetherraOSLauncher:
                 noisy_modules = [
                     __name__,
                     "werkzeug",
-                    "aetherra_hub_server",
+                    "aetherra_hub.app",
+                    "httpx",
                     "aetherra_plugin_discovery",
                     "aetherra_script_service",
                     "Aetherra.aetherra_core.engine.aetherra_engine",
@@ -458,6 +464,8 @@ class AetherraOSLauncher:
                 ]
                 for name in noisy_modules:
                     logging.getLogger(name).setLevel(logging.WARNING)
+                # Also disable Hub request logging in quiet mode
+                os.environ.setdefault("AETH_LOG_REQUESTS", "0")
         except Exception:
             # Never fail launch due to logging tweaks
             pass
@@ -910,6 +918,49 @@ class AetherraOSLauncher:
         except Exception as e:
             logger.warning(f"[WARN] Self-Improvement Engine unavailable: {e}")
 
+        # Self-Incorporation Service - Autonomous codebase perception and integration
+        try:
+            from pathlib import Path
+
+            from aetherra_self_incorporation import (
+                SelfIncorporationConfig,
+                SelfIncorporationService,
+            )
+
+            # Create configuration (class takes no kwargs; set attributes directly)
+            selfinc_config = SelfIncorporationConfig()
+            # Best-effort: if attributes differ, ignore and continue with defaults
+            with contextlib.suppress(Exception):
+                selfinc_config.enabled = True
+                selfinc_config.roots = [Path("."), Path("Aetherra")]
+                selfinc_config.trust_mode = "standard"
+
+            # Create service
+            selfinc = SelfIncorporationService(selfinc_config)
+
+            # Store in systems (will inject core systems later)
+            self.systems["self_incorporation"] = selfinc
+
+            # Register with service registry
+            await register_service(
+                "self_incorporation",
+                selfinc,
+                metadata={
+                    "type": "autonomous_evolution",
+                    "version": "1.0.0",
+                    "features": [
+                        "discovery",
+                        "classification",
+                        "integration",
+                        "night_cycle",
+                    ],
+                },
+            )
+            logger.info("[OK] Self-Incorporation Service loaded")
+
+        except Exception as e:
+            logger.warning(f"[WARN] Self-Incorporation Service unavailable: {e}")
+
         # Self-Repair Service (wrap stdlib plugin)
         try:
             # Aetherra imports
@@ -1002,11 +1053,17 @@ class AetherraOSLauncher:
                                 "ts": time.time(),
                             }
                             try:
-                                async with aiohttp.ClientSession() as session:
-                                    async with session.post(
-                                        "http://localhost:3001/api/telemetry", json=evt
-                                    ) as resp:
-                                        _ = await resp.text()
+                                hub_base = os.environ.get(
+                                    "AETHERRA_HUB_URL", "http://localhost:3001"
+                                )
+                                async with (
+                                    aiohttp.ClientSession() as session,
+                                    session.post(
+                                        f"{hub_base.rstrip('/')}/api/telemetry",
+                                        json=evt,
+                                    ) as resp,
+                                ):
+                                    _ = await resp.text()
                             except Exception:
                                 pass
 
@@ -1041,8 +1098,9 @@ class AetherraOSLauncher:
                 memory_impl,
                 metadata={"type": "core", "version": "1.0"},
             )
+            # Surface STORM status in logs for visibility during boot
+            storm_enabled = False
             try:
-                # Surface STORM status in logs for visibility during boot
                 st = getattr(memory_impl, "get_system_status", None)
                 if callable(st):
                     status = st()  # type: ignore[misc]
@@ -1052,6 +1110,7 @@ class AetherraOSLauncher:
                         else None
                     )
                     if isinstance(storm, dict):
+                        storm_enabled = storm.get("enabled", False)
                         logger.info(
                             "[STORM] enabled=%s shadow_mode=%s backend=%s tt_rank_cap=%s",
                             storm.get("enabled"),
@@ -1059,9 +1118,14 @@ class AetherraOSLauncher:
                             storm.get("ot_backend"),
                             storm.get("tt_rank_cap"),
                         )
-            except Exception:
+                    else:
+                        logger.debug("[STORM] Not configured or disabled")
+            except Exception as exc:
                 # Best-effort; do not block OS startup on diagnostics
-                pass
+                logger.debug("[STORM] Status check failed during boot: %s", exc)
+
+            # Store STORM enabled state for post-boot probe
+            self._storm_enabled = storm_enabled
 
             logger.info("[OK] Aetherra Core Memory Engine online (Advanced)")
 
@@ -1647,78 +1711,177 @@ class AetherraOSLauncher:
             if enabled is None:
                 enabled = os.getenv("AETHERRA_HUB_ENABLED", "1") != "0"
 
-            if enabled:
+            if not enabled:
+                logger.info("[INFO] Aetherra Hub disabled in configuration")
+                return
+
+            # Helpers
+            def _env_hub_url() -> str:
+                return os.environ.get("AETHERRA_HUB_URL", "http://localhost:3001")
+
+            def _parse_port_from_url(url: str) -> int:
                 try:
-                    # Import and start the built-in Python Hub server
-                    # Use compatibility layer instead of deprecated module
-                    # Aetherra imports
-                    from aetherra_hub.compat import start_hub_server
+                    from urllib.parse import urlparse
 
-                    logger.info("[HUB] Starting Aetherra Hub server...")
+                    p = urlparse(url)
+                    if p.port:
+                        return int(p.port)
+                    return 3001
+                except Exception:
+                    return 3001
 
-                    # Profile-aware defaults for Developer AI API.
-                    # In test/dev: enable for convenience. In prod: do not override, default-deny.
-                    _testing = str(os.environ.get("TESTING", "")).strip().lower() in (
-                        "true",
-                        "1",
-                    )
-                    _skip = (
-                        os.environ.get("AETHERRA_SKIP_LAUNCHER_AI_DEFAULTS", "0") == "1"
-                    )
-                    _profile = (
-                        (os.environ.get("AETHERRA_PROFILE", "") or "").strip().lower()
-                    )
-                    if not _skip:
-                        if _testing or _profile in ("test", "dev", "development"):
-                            os.environ.setdefault("AETHERRA_AI_API_ENABLED", "1")
-                            os.environ.setdefault("AETHERRA_AI_API_STREAM", "1")
-                            # In non-prod convenience profile, token optional by default
-                            os.environ.setdefault("AETHERRA_AI_API_REQUIRE_TOKEN", "0")
-                        elif _profile in ("prod", "production"):
-                            # Do not auto-enable in prod; if user enables, require token by default
-                            os.environ.setdefault("AETHERRA_AI_API_REQUIRE_TOKEN", "1")
+            def _is_port_in_use(port: int) -> bool:
+                try:
+                    import socket
 
-                    # Start the built-in Hub server
-                    hub_server = start_hub_server(port=3001)
+                    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                        s.settimeout(0.25)
+                        return s.connect_ex(("127.0.0.1", port)) == 0
+                except Exception:
+                    return False
 
-                    if hub_server and hub_server.is_running():
-                        # Optionally wait briefly for /health
-                        try:
-                            # Third party imports
-                            import aiohttp  # type: ignore
+            async def _hub_reachable(base_url: str) -> bool:
+                try:
+                    import aiohttp  # type: ignore
 
-                            for _ in range(10):  # ~2s total
-                                try:
-                                    async with aiohttp.ClientSession() as session:
-                                        async with session.get(
-                                            "http://localhost:3001/health"
-                                        ) as r:
-                                            if r.status == 200:
-                                                break
-                                except Exception:
-                                    pass
-                                await asyncio.sleep(0.2)
-                        except Exception:
-                            pass
+                    timeout = aiohttp.ClientTimeout(total=1.5)
+                    async with (
+                        aiohttp.ClientSession(timeout=timeout) as session,
+                        session.get(base_url.rstrip("/") + "/api/ping") as r,
+                    ):
+                        return r.status == 200
+                except Exception:
+                    return False
 
-                        # Register the Hub service
-                        self.systems["aetherra_hub"] = hub_server
-                        await register_service(
-                            "aetherra_hub",
-                            hub_server,
-                            metadata={
-                                "type": "marketplace",
-                                "version": "2.0",
-                                "port": 3001,
-                            },
+            # Resolve desired URL/port
+            desired_url = _env_hub_url()
+            desired_port = _parse_port_from_url(desired_url)
+
+            # If an external Hub is already running and reachable, use it
+            if await _hub_reachable(desired_url):
+                logger.info("[HUB] Found external Hub at %s", desired_url)
+                os.environ["AETHERRA_HUB_URL"] = desired_url
+
+                class _RemoteHub:
+                    def __init__(self, url: str):
+                        self.url = url
+                        self.port = _parse_port_from_url(url)
+
+                    def is_running(self) -> bool:
+                        return True
+
+                remote_hub = _RemoteHub(desired_url)
+                self.systems["aetherra_hub"] = remote_hub
+                await register_service(
+                    "aetherra_hub",
+                    remote_hub,
+                    metadata={
+                        "type": "marketplace",
+                        "version": "2.0",
+                        "port": remote_hub.port,
+                        "remote": True,
+                    },
+                )
+                # Start plugin discovery service
+                await self._start_plugin_discovery()
+                return
+
+            # Otherwise, start the built-in Hub with auto-port selection when needed
+            try:
+                # Import and start the built-in Python Hub server via compat layer
+                # Aetherra imports
+                from aetherra_hub.compat import start_hub_server
+
+                logger.info("[HUB] Starting Aetherra Hub server...")
+
+                # Profile-aware defaults for Developer AI API.
+                _testing = str(os.environ.get("TESTING", "")).strip().lower() in (
+                    "true",
+                    "1",
+                )
+                _skip = os.environ.get("AETHERRA_SKIP_LAUNCHER_AI_DEFAULTS", "0") == "1"
+                _profile = (
+                    (os.environ.get("AETHERRA_PROFILE", "") or "").strip().lower()
+                )
+                if not _skip:
+                    if _testing or _profile in ("test", "dev", "development"):
+                        os.environ.setdefault("AETHERRA_AI_API_ENABLED", "1")
+                        os.environ.setdefault("AETHERRA_AI_API_STREAM", "1")
+                        os.environ.setdefault("AETHERRA_AI_API_REQUIRE_TOKEN", "0")
+                    elif _profile in ("prod", "production"):
+                        os.environ.setdefault("AETHERRA_AI_API_REQUIRE_TOKEN", "1")
+
+                # Auto-port: if desired port is busy, and AUTOFIX or default behavior, pick next free
+                auto = os.environ.get("AETHERRA_HUB_PORT_AUTOFIX", "1") == "1"
+                chosen_port = desired_port
+                if _is_port_in_use(desired_port):
+                    if auto:
+                        for cand in range(desired_port, desired_port + 50):
+                            if not _is_port_in_use(cand):
+                                chosen_port = cand
+                                break
+                        if chosen_port != desired_port:
+                            logger.info(
+                                "[HUB] Port %s busy; auto-selected free port %s",
+                                desired_port,
+                                chosen_port,
+                            )
+                        else:
+                            logger.warning(
+                                "[HUB] Port %s busy and no free port found in +50 range; continuing anyway",
+                                desired_port,
+                            )
+                    else:
+                        logger.warning(
+                            "[HUB] Requested port %s appears busy (AUTOFIX disabled)",
+                            desired_port,
                         )
 
-                        # Start plugin discovery service
-                        await self._start_plugin_discovery()
+                # Start the built-in Hub server
+                hub_server = start_hub_server(port=chosen_port)
 
-                        logger.info("[OK] Aetherra Hub online at http://localhost:3001")
+                if hub_server and hub_server.is_running():
+                    # Expose chosen URL to environment for downstream consumers
+                    hub_url = f"http://localhost:{chosen_port}"
+                    os.environ["AETHERRA_HUB_URL"] = hub_url
 
-                        # Post-boot STORM status confirmation (after services are up)
+                    # Optionally wait briefly for /health
+                    try:
+                        import aiohttp  # type: ignore
+
+                        for _ in range(10):  # ~2s total
+                            try:
+                                async with (
+                                    aiohttp.ClientSession() as session,
+                                    session.get(hub_url + "/health") as r,
+                                ):
+                                    if r.status == 200:
+                                        break
+                            except Exception as exc:
+                                logger.debug("[HUB] Health wait probe error: %s", exc)
+                            await asyncio.sleep(0.2)
+                    except Exception as exc:
+                        logger.debug("[HUB] Health probe setup failed: %s", exc)
+
+                    # Register the Hub service
+                    self.systems["aetherra_hub"] = hub_server
+                    await register_service(
+                        "aetherra_hub",
+                        hub_server,
+                        metadata={
+                            "type": "marketplace",
+                            "version": "2.0",
+                            "port": chosen_port,
+                        },
+                    )
+
+                    # Start plugin discovery service
+                    await self._start_plugin_discovery()
+
+                    logger.info("[OK] Aetherra Hub online at %s", hub_url)
+
+                    # Post-boot STORM status confirmation (after services are up)
+                    if getattr(self, "_storm_enabled", False):
                         try:
                             import aiohttp  # type: ignore
 
@@ -1726,8 +1889,7 @@ class AetherraOSLauncher:
                             async with (
                                 aiohttp.ClientSession() as session,
                                 session.get(
-                                    "http://localhost:3001/api/memory/status",
-                                    timeout=timeout,
+                                    hub_url + "/api/memory/status", timeout=timeout
                                 ) as r,
                             ):
                                 if r.status == 200:
@@ -1739,44 +1901,49 @@ class AetherraOSLauncher:
                                     )
                                     if isinstance(storm, dict):
                                         logger.info(
-                                            "[STORM:POST-BOOT] enabled=%s shadow_mode=%s backend=%s tt_rank_cap=%s",
+                                            "[STORM:POST-BOOT] enabled=%s shadow_mode=%s backend=%s tt_rank_cap=%s cells=%s",
                                             storm.get("enabled"),
                                             storm.get("shadow_mode"),
                                             storm.get("ot_backend"),
                                             storm.get("tt_rank_cap"),
+                                            storm.get("cells_count", 0),
+                                        )
+                                    else:
+                                        logger.warning(
+                                            "[STORM] Expected STORM data in status response but found none"
                                         )
                                 else:
-                                    logger.debug(
-                                        "[STORM] Status endpoint not ready (HTTP %s)",
+                                    logger.warning(
+                                        "[STORM] Status endpoint returned HTTP %s (expected 200)",
                                         r.status,
                                     )
                         except Exception as exc:
-                            # Best-effort; do not fail launch due to diagnostics
-                            logger.debug(
-                                "[STORM] Post-boot status probe skipped: %s", exc
+                            logger.warning(
+                                "[STORM] Post-boot status probe failed: %s", exc
                             )
                     else:
-                        logger.warning("[WARN] Aetherra Hub failed to start")
+                        logger.debug(
+                            "[STORM] Post-boot probe skipped (STORM not enabled)"
+                        )
+                else:
+                    logger.warning("[WARN] Aetherra Hub failed to start")
 
-                except Exception as hub_error:
-                    logger.warning(f"[WARN] Failed to start Aetherra Hub: {hub_error}")
-                    # Create a placeholder service anyway
-                    # Aetherra imports
-                    from aetherra_hub.compat import AetherraHubServer
+            except Exception as hub_error:
+                logger.warning(f"[WARN] Failed to start Aetherra Hub: {hub_error}")
+                # Create a placeholder service anyway
+                from aetherra_hub.compat import AetherraHubServer
 
-                    mock_hub = AetherraHubServer(3001)
-                    self.systems["aetherra_hub"] = mock_hub
-                    await register_service(
-                        "aetherra_hub",
-                        mock_hub,
-                        metadata={
-                            "type": "marketplace",
-                            "version": "2.0",
-                            "status": "offline",
-                        },
-                    )
-            else:
-                logger.info("[INFO] Aetherra Hub disabled in configuration")
+                mock_hub = AetherraHubServer(desired_port)
+                self.systems["aetherra_hub"] = mock_hub
+                await register_service(
+                    "aetherra_hub",
+                    mock_hub,
+                    metadata={
+                        "type": "marketplace",
+                        "version": "2.0",
+                        "status": "offline",
+                    },
+                )
 
         except Exception as e:
             logger.error(f"[ERROR] Failed to load Aetherra Hub: {e}")
@@ -1855,6 +2022,49 @@ class AetherraOSLauncher:
                     "module_manager", ServiceStatus.HEALTHY
                 )
             logger.info("[OK] Module Manager online")
+
+            # Also register with Registry Daemon if configured
+            try:
+                from aetherra_registry_client import (
+                    http_heartbeat,
+                    http_register_service,
+                    http_update,
+                )
+
+                ok = http_register_service(
+                    "module_manager",
+                    status="healthy",
+                    metadata={
+                        "type": "klm",
+                        "version": "0.1",
+                        "capabilities": ["load", "unload", "reload", "list"],
+                    },
+                    endpoints={
+                        "status": "/api/klm/status",
+                        "metrics": "/api/klm/metrics",
+                    },
+                )
+                if ok:
+
+                    async def _mm_hb():
+                        while True:
+                            try:
+                                http_update("module_manager", status="healthy")
+                                http_heartbeat("module_manager")
+                            except Exception as _hb_exc:
+                                logger.debug(
+                                    "[REGISTRY_DAEMON] module_manager heartbeat error: %s",
+                                    _hb_exc,
+                                )
+                            await asyncio.sleep(60)
+
+                    self._daemon_heartbeat_tasks.append(asyncio.create_task(_mm_hb()))
+            except Exception as _daemon_exc:
+                logger.debug(
+                    "[REGISTRY_DAEMON] module_manager registration skipped: %s",
+                    _daemon_exc,
+                )
+
         except Exception as e:
             logger.warning(f"[WARN] Module Manager unavailable: {e}")
 
@@ -1881,6 +2091,48 @@ class AetherraOSLauncher:
                     "event_bus", ServiceStatus.HEALTHY
                 )
             logger.info("[OK] Event Bus online")
+
+            # Also register with Registry Daemon if configured
+            try:
+                from aetherra_registry_client import (
+                    http_heartbeat,
+                    http_register_service,
+                    http_update,
+                )
+
+                ok = http_register_service(
+                    "event_bus",
+                    status="healthy",
+                    metadata={
+                        "type": "keb",
+                        "version": "0.1",
+                        "capabilities": ["publish", "subscribe", "ack"],
+                    },
+                    endpoints={
+                        "status": "/api/keb/status",
+                        "metrics": "/api/keb/metrics",
+                    },
+                )
+                if ok:
+
+                    async def _eb_hb():
+                        while True:
+                            try:
+                                http_update("event_bus", status="healthy")
+                                http_heartbeat("event_bus")
+                            except Exception as _hb_exc:
+                                logger.debug(
+                                    "[REGISTRY_DAEMON] event_bus heartbeat error: %s",
+                                    _hb_exc,
+                                )
+                            await asyncio.sleep(60)
+
+                    self._daemon_heartbeat_tasks.append(asyncio.create_task(_eb_hb()))
+            except Exception as _daemon_exc:
+                logger.debug(
+                    "[REGISTRY_DAEMON] event_bus registration skipped: %s", _daemon_exc
+                )
+
         except Exception as e:
             logger.warning(f"[WARN] Event Bus unavailable: {e}")
 
@@ -1971,7 +2223,26 @@ class AetherraOSLauncher:
         """[SYS] Start the OS kernel loop."""
         logger.info("[SYS] Phase 3: Starting OS Kernel Loop...")
 
+        # Enable periodic kernel metrics flush for cross-process status visibility (Hub/UI)
+        # Flush every 30s so metrics file stays fresh for dev/monitoring
+        if not os.getenv("AETHERRA_KERNEL_METRICS_FLUSH_SEC"):
+            os.environ["AETHERRA_KERNEL_METRICS_FLUSH_SEC"] = "30"
+
         self.kernel_loop = get_kernel()
+
+        # Ensure periodic metrics flush is enabled in the kernel instance (pre-start)
+        try:
+            # Prefer env override, default to 30s for dev observability
+            flush = int(os.getenv("AETHERRA_KERNEL_METRICS_FLUSH_SEC", "30") or 30)
+        except Exception:
+            flush = 30
+        try:
+            self.kernel_loop.metrics_flush_sec = max(0, int(flush))
+            # Reset last flush so the first flush can occur promptly
+            self.kernel_loop._last_metrics_flush = 0.0  # type: ignore[attr-defined]
+        except Exception as _e:
+            # Non-fatal: continue without periodic flush if kernel structure changes
+            logger.debug("[KERNEL] Could not set metrics flush interval: %s", _e)
 
         # Inject systems into kernel
         self.kernel_loop.inject_systems(
@@ -1982,15 +2253,71 @@ class AetherraOSLauncher:
             self.service_registry,
         )
 
-        # Start kernel loop in background
-        asyncio.create_task(self.kernel_loop.start_kernel_loop())
+        # Start kernel loop in background (store task to catch exceptions)
+        self._kernel_task = asyncio.create_task(self.kernel_loop.start_kernel_loop())
+
+        # Add callback to log if kernel task fails
+        def _kernel_task_done(task):
+            try:
+                if task.exception():
+                    logger.error(
+                        f"[CRITICAL] Kernel loop task failed: {task.exception()}"
+                    )
+            except asyncio.CancelledError:
+                logger.info("[INFO] Kernel loop task was cancelled")
+
+        self._kernel_task.add_done_callback(_kernel_task_done)
+
+        # Give the kernel loop a moment to start before continuing
+        await asyncio.sleep(0.5)
+
+        # Verify kernel actually started
+        if not self.kernel_loop.running:
+            logger.warning(
+                "[WARN] Kernel loop task created but kernel.running is still False"
+            )
+            logger.warning(f"[WARN] Kernel status: {self.kernel_loop.get_status()}")
 
         # Register kernel as service
         await register_service(
             "kernel_loop", self.kernel_loop, metadata={"type": "core", "version": "1.0"}
         )
 
-        logger.info("[OK] OS Kernel Loop started")
+        logger.info("[OK] OS Kernel Loop task created and registered")
+
+        # Also register with Registry Daemon if configured
+        try:
+            from aetherra_registry_client import (
+                http_heartbeat,
+                http_register_service,
+                http_update,
+            )
+
+            ok = http_register_service(
+                "kernel_loop",
+                status="healthy" if self.kernel_loop.running else "starting",
+                metadata={"type": "core", "version": "1.0"},
+                endpoints={"status": "/api/kernel/status"},
+            )
+            if ok:
+
+                async def _hb():
+                    while True:
+                        try:
+                            # Bump status to healthy once running
+                            if getattr(self.kernel_loop, "running", False):
+                                http_update("kernel_loop", status="healthy")
+                            http_heartbeat("kernel_loop")
+                        except Exception as _hb_exc:
+                            logger.debug(
+                                "[REGISTRY_DAEMON] heartbeat error: %s", _hb_exc
+                            )
+                        await asyncio.sleep(60)
+
+                self._daemon_heartbeat_tasks.append(asyncio.create_task(_hb()))
+        except Exception as _daemon_exc:
+            # Daemon client not available or not configured; ignore but trace
+            logger.debug("[REGISTRY_DAEMON] registration skipped: %s", _daemon_exc)
 
         # If HMR controller was created in Phase 2, wire it into the kernel now
         try:
@@ -2000,6 +2327,22 @@ class AetherraOSLauncher:
                 logger.info("[HMR] Controller wired into kernel loop")
         except Exception:
             pass
+
+        # Inject core systems into Self-Incorporation for integration capabilities
+        try:
+            selfinc = self.systems.get("self_incorporation")
+            if selfinc is not None:
+                selfinc.inject_systems(
+                    self.service_registry,
+                    self.kernel_loop,
+                    self.systems.get("plugins"),
+                    self.systems.get("agents"),  # May be None, that's ok
+                )
+                logger.info(
+                    "[SELFINC] Core systems injected into Self-Incorporation service"
+                )
+        except Exception as e:
+            logger.debug(f"[SELFINC] System injection skipped: {e}")
 
     async def _activate_systems(self, config: dict[str, Any] | None = None):
         """[INIT] Activate all systems and establish connections."""
@@ -2018,6 +2361,44 @@ class AetherraOSLauncher:
             if self.service_registry and CORE_AVAILABLE:
                 await self.service_registry.update_service_status(
                     "memory_system", ServiceStatus.HEALTHY
+                )
+
+            # Also register with Registry Daemon if configured
+            try:
+                from aetherra_registry_client import (
+                    http_heartbeat,
+                    http_register_service,
+                    http_update,
+                )
+
+                ok = http_register_service(
+                    "memory_system",
+                    status="healthy",
+                    metadata={"type": "core", "version": "1.0"},
+                    endpoints={
+                        "status": "/api/memory/status",
+                        "quantum": "/api/memory/quantum",
+                    },
+                )
+                if ok:
+
+                    async def _mem_hb():
+                        while True:
+                            try:
+                                http_update("memory_system", status="healthy")
+                                http_heartbeat("memory_system")
+                            except Exception as _hb_exc:
+                                logger.debug(
+                                    "[REGISTRY_DAEMON] memory_system heartbeat error: %s",
+                                    _hb_exc,
+                                )
+                            await asyncio.sleep(60)
+
+                    self._daemon_heartbeat_tasks.append(asyncio.create_task(_mem_hb()))
+            except Exception as _daemon_exc:
+                logger.debug(
+                    "[REGISTRY_DAEMON] memory_system registration skipped: %s",
+                    _daemon_exc,
                 )
 
         # Activate plugin system
@@ -2072,6 +2453,29 @@ class AetherraOSLauncher:
                     "homeostasis_system", ServiceStatus.HEALTHY
                 )
             logger.info("[OK] Homeostasis system activated")
+
+        # Activate Self-Incorporation service for autonomous codebase evolution
+        if "self_incorporation" in self.systems:
+            selfinc = self.systems["self_incorporation"]
+            try:
+                logger.info(
+                    "[INIT] Starting Self-Incorporation autonomous discovery..."
+                )
+                await selfinc.start()
+
+                # Mark as healthy
+                if self.service_registry and CORE_AVAILABLE:
+                    await self.service_registry.update_service_status(
+                        "self_incorporation", ServiceStatus.HEALTHY
+                    )
+
+                # Trigger initial boot scan in background (non-blocking)
+                logger.info("[SELFINC] Triggering initial code discovery scan...")
+                asyncio.create_task(selfinc.trigger_scan())
+
+                logger.info("[OK] Self-Incorporation service activated")
+            except Exception as e:
+                logger.warning(f"[WARN] Self-Incorporation activation failed: {e}")
 
         logger.info("[OK] All systems activated")
 
@@ -2225,6 +2629,8 @@ class AetherraOSLauncher:
                         logger.error("[ERROR] Critical system failure detected")
                         break
 
+        except asyncio.CancelledError:
+            logger.debug("[LOOP] Operation loop cancelled (normal shutdown)")
         except KeyboardInterrupt:
             logger.info("🛑 Received shutdown signal")
         except Exception as e:
@@ -2638,7 +3044,7 @@ class MockAetherraHub:
         self.name = "aetherra_hub"
         self.heartbeat_task = None
         self.hub_process = hub_process
-        self.hub_url = "http://localhost:3001"
+        self.hub_url = os.environ.get("AETHERRA_HUB_URL", "http://localhost:3001")
         self.frontend_url = "http://localhost:8080"
 
     async def activate(self):
@@ -2666,12 +3072,12 @@ class MockAetherraHub:
                 # Third party imports
                 import aiohttp
 
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(
-                        f"{self.hub_url}/api/v1/plugins/featured"
-                    ) as response:
-                        if response.status == 200:
-                            return await response.json()
+                async with (
+                    aiohttp.ClientSession() as session,
+                    session.get(f"{self.hub_url}/api/v1/plugins/featured") as response,
+                ):
+                    if response.status == 200:
+                        return await response.json()
             return []
         except Exception:
             return []
@@ -2686,12 +3092,14 @@ class MockAetherraHub:
                 params = {"q": query}
                 if filters:
                     params.update(filters)
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(
+                async with (
+                    aiohttp.ClientSession() as session,
+                    session.get(
                         f"{self.hub_url}/api/v1/plugins/search", params=params
-                    ) as response:
-                        if response.status == 200:
-                            return await response.json()
+                    ) as response,
+                ):
+                    if response.status == 200:
+                        return await response.json()
             return {"plugins": [], "total": 0}
         except Exception:
             return {"plugins": [], "total": 0}
@@ -3136,5 +3544,13 @@ if __name__ == "__main__":
     print("[INIT] Ready to flip the switch and bring Aetherra online!")
     print()
 
-    exit_code = asyncio.run(main())
+    try:
+        exit_code = asyncio.run(main())
+    except KeyboardInterrupt:
+        logger.info("🛑 Shutdown complete")
+        exit_code = 0
+    except Exception as e:
+        logger.error(f"[ERROR] Fatal error: {e}")
+        exit_code = 1
+
     sys.exit(exit_code)

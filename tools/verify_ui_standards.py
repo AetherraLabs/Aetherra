@@ -20,7 +20,8 @@ import argparse
 import pathlib
 import sys
 from dataclasses import dataclass
-from typing import List
+
+# No typing.List import needed; using built-in generics (PEP 585)
 
 
 @dataclass
@@ -31,42 +32,98 @@ class Finding:
     message: str
 
 
-def scan_file(path: pathlib.Path) -> List[Finding]:
-    findings: List[Finding] = []
+def scan_file(path: pathlib.Path) -> list[Finding]:
+    findings: list[Finding] = []
     try:
         text = path.read_text(encoding="utf-8", errors="ignore").splitlines()
     except Exception as e:
         return [Finding(path, 0, "ERROR", f"Cannot read file: {e}")]
 
-    # Heuristics
-    for i, line in enumerate(text, start=1):
-        s = line.strip()
-        if "PySide2" in s or "from PySide2" in s:
-            findings.append(
-                Finding(path, i, "ERROR", "PySide2 import found; use PySide6")
-            )
-        if "QtWebKit" in s:
-            findings.append(
-                Finding(path, i, "ERROR", "Deprecated QtWebKit usage detected")
-            )
-        if "time.sleep(" in s:
-            findings.append(Finding(path, i, "WARN", "Blocking time.sleep in UI code"))
-        if "requests.get(" in s and "QThread" not in "\n".join(
-            text[max(0, i - 10) : i + 10]
-        ):
+    # Heuristics differ by file type
+    suffix = path.suffix.lower()
+
+    if suffix == ".py":
+        for i, line in enumerate(text, start=1):
+            s = line.strip()
+            if "PySide2" in s or "from PySide2" in s:
+                findings.append(
+                    Finding(path, i, "ERROR", "PySide2 import found; use PySide6")
+                )
+            if "QtWebKit" in s:
+                findings.append(
+                    Finding(path, i, "ERROR", "Deprecated QtWebKit usage detected")
+                )
+            if "time.sleep(" in s:
+                findings.append(
+                    Finding(path, i, "WARN", "Blocking time.sleep in UI code")
+                )
+            if "requests.get(" in s and "QThread" not in "\n".join(
+                text[max(0, i - 10) : i + 10]
+            ):
+                findings.append(
+                    Finding(
+                        path,
+                        i,
+                        "WARN",
+                        "Potential blocking network request in UI thread",
+                    )
+                )
+        # Module size warning (Python UI files)
+        if len(text) > 1500:
             findings.append(
                 Finding(
-                    path, i, "WARN", "Potential blocking network request in UI thread"
+                    path,
+                    0,
+                    "WARN",
+                    f"Large module ({len(text)} LOC); consider refactor",
                 )
             )
 
-    # Module size warning
-    if len(text) > 1500:
-        findings.append(
-            Finding(
-                path, 0, "WARN", f"Large module ({len(text)} LOC); consider refactor"
+    elif suffix in {".ts", ".tsx", ".js", ".jsx"}:
+        for i, line in enumerate(text, start=1):
+            s = line.strip()
+            # Dangerous HTML injection
+            if "dangerouslySetInnerHTML" in s:
+                findings.append(
+                    Finding(
+                        path,
+                        i,
+                        "ERROR",
+                        "dangerouslySetInnerHTML used; ensure sanitization or avoid",
+                    )
+                )
+            # No modal alerts in product UI
+            if "window.alert(" in s or "alert(" in s:
+                findings.append(
+                    Finding(path, i, "WARN", "Avoid alert(); prefer inline toasts")
+                )
+            # Console noise
+            if "console.log(" in s and "// ok:" not in s.lower():
+                findings.append(
+                    Finding(
+                        path, i, "INFO", "console.log present; remove for production"
+                    )
+                )
+            # Hard-coded localhost endpoints
+            if "http://localhost" in s or "127.0.0.1" in s:
+                findings.append(
+                    Finding(
+                        path,
+                        i,
+                        "WARN",
+                        "Hard-coded localhost endpoint; use configurable base URL",
+                    )
+                )
+        # Module size warning (React/TS files)
+        if len(text) > 1000:
+            findings.append(
+                Finding(
+                    path,
+                    0,
+                    "WARN",
+                    f"Large module ({len(text)} LOC); consider splitting components",
+                )
             )
-        )
 
     return findings
 
@@ -74,10 +131,10 @@ def scan_file(path: pathlib.Path) -> List[Finding]:
 def write_report(
     output: pathlib.Path,
     root: pathlib.Path,
-    scanned: List[pathlib.Path],
-    findings: List[Finding],
+    scanned: list[pathlib.Path],
+    findings: list[Finding],
 ) -> None:
-    lines: List[str] = []
+    lines: list[str] = []
     lines.append("# UI Standards Report")
     lines.append("")
     lines.append(f"Scanned directory: `{root}`")
@@ -97,7 +154,7 @@ def write_report(
     output.write_text("\n".join(lines), encoding="utf-8")
 
 
-def main(argv: List[str] | None = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dir", required=True, help="Directory to scan")
     parser.add_argument("--output", required=True, help="Markdown report output path")
@@ -113,6 +170,7 @@ def main(argv: List[str] | None = None) -> int:
     # Resolve a sensible default directory if requested root is missing
     if not root.exists():
         candidates = [
+            pathlib.Path("Aetherra/lyrixa/gui/src"),
             pathlib.Path("Aetherra/lyrixa/gui"),
             pathlib.Path("Aetherra/lyrixa"),
         ]
@@ -129,16 +187,18 @@ def main(argv: List[str] | None = None) -> int:
             )
             print(f"[INFO] Directory not found: {root}. Wrote stub report to {out}")
             return 0
-        else:
-            print(f"[INFO] Directory `{root}` not found. Scanning fallback: `{chosen}`")
-            root = chosen
+        print(f"[INFO] Directory `{root}` not found. Scanning fallback: `{chosen}`")
+        root = chosen
 
-    scanned: List[pathlib.Path] = []
-    findings: List[Finding] = []
+    scanned: list[pathlib.Path] = []
+    findings: list[Finding] = []
 
-    for p in root.rglob("*.py"):
-        scanned.append(p)
-        findings.extend(scan_file(p))
+    # Scan Python and frontend sources (TS/TSX/JS/JSX)
+    patterns = ["*.py", "*.ts", "*.tsx", "*.js", "*.jsx"]
+    for pat in patterns:
+        for p in root.rglob(pat):
+            scanned.append(p)
+            findings.extend(scan_file(p))
 
     write_report(out, root, scanned, findings)
     errors = [f for f in findings if f.level == "ERROR"]

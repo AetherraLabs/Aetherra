@@ -9,10 +9,9 @@ for the Aetherra project to improve code quality quickly.
 
 import re
 from pathlib import Path
-from typing import Dict, List, Tuple
 
 
-def fix_common_patterns(content: str) -> Tuple[str, bool]:
+def fix_common_patterns(content: str) -> tuple[str, bool]:
     """Fix the most common missing type annotation patterns."""
     original_content = content
 
@@ -43,7 +42,7 @@ def fix_common_patterns(content: str) -> Tuple[str, bool]:
 
     for method in setup_methods:
         pattern = rf"def ({method}[^(]*)\(([^)]*)\):"
-        replacement = rf"def \1(\2) -> None:"
+        replacement = r"def \1(\2) -> None:"
         content = re.sub(pattern, replacement, content)
 
     # Pattern 3: Boolean methods (is_, has_, can_, should_, check_, validate_)
@@ -51,7 +50,7 @@ def fix_common_patterns(content: str) -> Tuple[str, bool]:
 
     for method in bool_methods:
         pattern = rf"def ({method}[^(]*)\(([^)]*)\):"
-        replacement = rf"def \1(\2) -> bool:"
+        replacement = r"def \1(\2) -> bool:"
         content = re.sub(pattern, replacement, content)
 
     # Pattern 4: String methods (__str__, __repr__, get_name, get_title, etc.)
@@ -59,7 +58,7 @@ def fix_common_patterns(content: str) -> Tuple[str, bool]:
 
     for method in string_methods:
         pattern = rf"def ({method})\(([^)]*)\):"
-        replacement = rf"def \1(\2) -> str:"
+        replacement = r"def \1(\2) -> str:"
         content = re.sub(pattern, replacement, content)
 
     # Pattern 5: Common parameter types
@@ -113,7 +112,7 @@ def fix_common_patterns(content: str) -> Tuple[str, bool]:
 def fix_file(file_path: Path) -> bool:
     """Fix type annotations in a single file."""
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             content = f.read()
 
         new_content, changed = fix_common_patterns(content)
@@ -129,7 +128,7 @@ def fix_file(file_path: Path) -> bool:
     return False
 
 
-def fix_project_files(target_files: List[str]) -> Dict[str, int]:
+def fix_project_files(target_files: list[str]) -> dict[str, int]:
     """Fix type annotations in specific project files."""
     results = {"fixed": 0, "errors": 0, "skipped": 0}
 
@@ -164,7 +163,6 @@ def main():
         "Aetherra/aetherra_core/memory/world_class_memory_core.py",
         "Aetherra/aetherra_core/system/security_system.py",
         "tools/repo_security_scan.py",
-        "aetherra_hub_server.py",
         "Aetherra/lyrixa/lyrixa_basic.py",
         "aetherra_os.py",
         "aetherra_kernel_loop.py",
@@ -174,7 +172,7 @@ def main():
 
     results = fix_project_files(priority_files)
 
-    print(f"\n📊 Results:")
+    print("\n📊 Results:")
     print(f"  ✅ Fixed: {results['fixed']} files")
     print(f"  ❌ Errors: {results['errors']} files")
     print(f"  ⏭️  Skipped: {results['skipped']} files")

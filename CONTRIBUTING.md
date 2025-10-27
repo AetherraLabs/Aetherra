@@ -59,17 +59,10 @@ CI also runs a strict verification workflow (`aether-verify-signatures.yml`) to 
 
 ## Deprecations & Lifecycle
 
-Active deprecations are tracked to ensure safe removal after a stability window. Current tracker:
+Active deprecations are tracked to ensure safe removal after a stability window.
 
-- Legacy Hub script (`aetherra_hub_server.py`) — replaced by `python -m aetherra_hub.compat`.
-- Tracker: `docs/DEPRECATION_TRACKER_LEGACY_HUB.md`
-- Enforcement:
-- Quality gate blocks new imports unless `LEGACY_HUB_IMPORT_ENFORCE=0` (emergency override)
-- Pre-commit hook (`block-legacy-hub-import`) blocks staged legacy imports unless `LEGACY_HUB_IMPORT_ALLOW=1`
-- Removal earliest: first minor release after one full stabilization cycle (see tracker + CHANGELOG)
-- Parity test: `tests/integration/test_hub_compat_parity.py` (will be removed when shim deleted)
-
-Contributor expectation: do not reintroduce imports of `aetherra_hub_server`—use module form instead (`python -m aetherra_hub.compat` or direct package imports).
+**Recently Completed:**
+- Legacy Hub script (`aetherra_hub_server.py`) — fully migrated to `aetherra_hub.compat` module (removed).
 
 If proposing a new deprecation, open an issue with label `deprecation-proposal` containing:
 

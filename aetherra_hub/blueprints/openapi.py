@@ -74,6 +74,67 @@ def openapi_spec():
                     },
                 }
             },
+            "/api/maintenance/status": {
+                "get": {
+                    "summary": "Unified maintenance status",
+                    "description": "Aggregated, best-effort status across Homeostasis, Self-Improvement, and Self-Incorporation. Always returns 200 with availability flags; missing subsystems are reported as available: false.",
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/MaintenanceStatus"
+                                    },
+                                    "example": {
+                                        "ok": True,
+                                        "ts": "2025-10-23T12:34:56.789123",
+                                        "overall": {
+                                            "runlevel": "ONLINE",
+                                            "health_percent": 92.5,
+                                            "critical_health_percent": 98.0,
+                                            "overall_running": True,
+                                        },
+                                        "kpis": {
+                                            "system_health_score": 0.925,
+                                            "actions_executed": 245,
+                                            "proposals_generated": 12,
+                                            "proposals_executed": 10,
+                                            "proposals_accepted": 7,
+                                            "files_integrated": 80,
+                                            "files_quarantined": 5,
+                                            "last_rollback_token": None,
+                                        },
+                                        "homeostasis": {
+                                            "available": True,
+                                            "running": True,
+                                            "orchestrator": {
+                                                "running": True,
+                                                "initialized": True,
+                                            },
+                                            "health": {
+                                                "supervisor": {"runlevel": "ONLINE"}
+                                            },
+                                            "si_health_contribution": {"score": 0.12},
+                                        },
+                                        "self_improvement": {
+                                            "available": True,
+                                            "status": {
+                                                "improvement_active": True,
+                                                "total_proposals": 0,
+                                            },
+                                        },
+                                        "self_incorporation": {
+                                            "available": True,
+                                            "status": {"status": "ok", "running": True},
+                                        },
+                                    },
+                                }
+                            },
+                        }
+                    },
+                }
+            },
             "/api/qfac/admin/show": {
                 "get": {
                     "summary": "QFAC admin: Show retrieval policy and parity counters",
@@ -300,6 +361,72 @@ def openapi_spec():
         },
         "components": {
             "schemas": {
+                "MaintenanceStatus": {
+                    "type": "object",
+                    "properties": {
+                        "ok": {"type": "boolean"},
+                        "ts": {"type": "string", "format": "date-time"},
+                        "overall": {
+                            "type": "object",
+                            "properties": {
+                                "runlevel": {"type": "string"},
+                                "health_percent": {"type": ["number", "null"]},
+                                "critical_health_percent": {"type": ["number", "null"]},
+                                "overall_running": {"type": "boolean"},
+                            },
+                            "required": ["runlevel", "overall_running"],
+                        },
+                        "kpis": {
+                            "type": "object",
+                            "properties": {
+                                "system_health_score": {"type": ["number", "null"]},
+                                "actions_executed": {"type": ["integer", "null"]},
+                                "proposals_generated": {"type": ["integer", "null"]},
+                                "proposals_executed": {"type": ["integer", "null"]},
+                                "proposals_accepted": {"type": ["integer", "null"]},
+                                "files_integrated": {"type": ["integer", "null"]},
+                                "files_quarantined": {"type": ["integer", "null"]},
+                                "last_rollback_token": {"type": ["string", "null"]},
+                            },
+                        },
+                        "homeostasis": {
+                            "type": "object",
+                            "properties": {
+                                "available": {"type": "boolean"},
+                                "running": {"type": ["boolean", "null"]},
+                                "orchestrator": {"type": "object"},
+                                "health": {"type": "object"},
+                                "si_health_contribution": {"type": ["object", "null"]},
+                            },
+                            "required": ["available"],
+                        },
+                        "self_improvement": {
+                            "type": "object",
+                            "properties": {
+                                "available": {"type": "boolean"},
+                                "status": {"type": "object"},
+                            },
+                            "required": ["available"],
+                        },
+                        "self_incorporation": {
+                            "type": "object",
+                            "properties": {
+                                "available": {"type": "boolean"},
+                                "status": {"type": "object"},
+                            },
+                            "required": ["available"],
+                        },
+                    },
+                    "required": [
+                        "ok",
+                        "ts",
+                        "overall",
+                        "kpis",
+                        "homeostasis",
+                        "self_improvement",
+                        "self_incorporation",
+                    ],
+                },
                 "SSEEnvelopeV2": {
                     "type": "object",
                     "properties": {

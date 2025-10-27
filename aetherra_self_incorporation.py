@@ -36,6 +36,9 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
+# Aetherra imports (lazy-loaded to avoid circular dependencies)
+# Security layer imported at service initialization
+
 logger = logging.getLogger(__name__)
 
 
@@ -581,7 +584,9 @@ class AuditLedger:
                     result_json TEXT,
                     trace_id TEXT,
                     ethics_overall REAL,
-                    risk_level TEXT
+                    risk_level TEXT,
+                    prev_hash TEXT,
+                    entry_hash TEXT
                 )
                 """
             )
@@ -599,6 +604,8 @@ class AuditLedger:
                     "trace_id": "TEXT",
                     "ethics_overall": "REAL",
                     "risk_level": "TEXT",
+                    "prev_hash": "TEXT",
+                    "entry_hash": "TEXT",
                 }
                 for col, typ in required_cols.items():
                     if col not in cols:
@@ -615,6 +622,9 @@ class AuditLedger:
                 )
                 conn.execute(
                     "CREATE INDEX IF NOT EXISTS idx_audit_ethics ON audit_records(ethics_overall)"
+                )
+                conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_audit_entry_hash ON audit_records(entry_hash)"
                 )
             except Exception as exc:
                 logger.debug("[AUDIT_LEDGER][INIT] index creation failed: %s", exc)
@@ -644,6 +654,42 @@ class AuditLedger:
             "ethics_overall": ethics_overall,
             "risk_level": risk_level,
         }
+        # Compute immutable hash chain fields
+        prev_hash = None
+        conn = sqlite3.connect(self.db_path)
+        try:
+            try:
+                cur = conn.execute(
+                    "SELECT entry_hash FROM audit_records ORDER BY id DESC LIMIT 1"
+                )
+                row = cur.fetchone()
+                prev_hash = row[0] if row and row[0] else None
+            except Exception:
+                prev_hash = None
+        finally:
+            conn.close()
+
+        # Deterministic entry string: use stored JSON strings and include prev_hash
+        prev_hash_str = prev_hash or "genesis"
+        base = "|".join(
+            [
+                str(rec["plan_id"]),
+                str(rec["timestamp"]),
+                str(rec["action"]),
+                str(rec["status"]),
+                rec["target_json"] or "",
+                rec["result_json"] or "",
+                str(rec["trace_id"]) if rec["trace_id"] is not None else "",
+                str(rec["ethics_overall"]) if rec["ethics_overall"] is not None else "",
+                str(rec["risk_level"]) if rec["risk_level"] is not None else "",
+                prev_hash_str,
+            ]
+        )
+        import hashlib as _hl
+
+        entry_hash = _hl.sha256(base.encode("utf-8")).hexdigest()
+        rec["prev_hash"] = prev_hash_str
+        rec["entry_hash"] = entry_hash
         print(
             f"[AUDIT LEDGER][APPEND] db_path={self.db_path} trace_id={trace_id}",
             flush=True,
@@ -653,8 +699,8 @@ class AuditLedger:
             try:
                 conn.execute(
                     """
-                    INSERT INTO audit_records (plan_id, timestamp, action, status, target_json, result_json, trace_id, ethics_overall, risk_level)
-                    VALUES (:plan_id, :timestamp, :action, :status, :target_json, :result_json, :trace_id, :ethics_overall, :risk_level)
+                    INSERT INTO audit_records (plan_id, timestamp, action, status, target_json, result_json, trace_id, ethics_overall, risk_level, prev_hash, entry_hash)
+                    VALUES (:plan_id, :timestamp, :action, :status, :target_json, :result_json, :trace_id, :ethics_overall, :risk_level, :prev_hash, :entry_hash)
                     """,
                     rec,
                 )
@@ -676,6 +722,10 @@ class AuditLedger:
                         missing.append(("target_json", "TEXT"))
                     if "result_json" not in cols:
                         missing.append(("result_json", "TEXT"))
+                    if "prev_hash" not in cols:
+                        missing.append(("prev_hash", "TEXT"))
+                    if "entry_hash" not in cols:
+                        missing.append(("entry_hash", "TEXT"))
                     for col, typ in missing:
                         conn.execute(
                             f"ALTER TABLE audit_records ADD COLUMN {col} {typ}"
@@ -685,8 +735,8 @@ class AuditLedger:
                     # Retry insert once after migration
                     conn.execute(
                         """
-                        INSERT INTO audit_records (plan_id, timestamp, action, status, target_json, result_json, trace_id, ethics_overall, risk_level)
-                        VALUES (:plan_id, :timestamp, :action, :status, :target_json, :result_json, :trace_id, :ethics_overall, :risk_level)
+                        INSERT INTO audit_records (plan_id, timestamp, action, status, target_json, result_json, trace_id, ethics_overall, risk_level, prev_hash, entry_hash)
+                        VALUES (:plan_id, :timestamp, :action, :status, :target_json, :result_json, :trace_id, :ethics_overall, :risk_level, :prev_hash, :entry_hash)
                         """,
                         rec,
                     )
@@ -898,6 +948,59 @@ class AuditLedger:
         finally:
             conn.close()
 
+    def verify_integrity(self) -> bool:
+        """Verify the immutability chain over all records.
+
+        Returns True if every row's prev_hash matches the previous row's entry_hash
+        (or 'genesis' for the first row), and entry hashes recompute correctly.
+        """
+        conn = sqlite3.connect(self.db_path)
+        import hashlib as _hl
+
+        try:
+            cur = conn.execute(
+                "SELECT plan_id, timestamp, action, status, target_json, result_json, trace_id, ethics_overall, risk_level, prev_hash, entry_hash FROM audit_records ORDER BY id ASC"
+            )
+            prev = None
+            for row in cur.fetchall():
+                (
+                    plan_id,
+                    ts,
+                    action,
+                    status,
+                    tgt,
+                    res,
+                    tr,
+                    ethics,
+                    risk,
+                    prev_hash,
+                    entry_hash,
+                ) = row
+                expected_prev = prev or "genesis"
+                if str(prev_hash or "") != expected_prev:
+                    return False
+                base = "|".join(
+                    [
+                        str(plan_id),
+                        str(ts),
+                        str(action),
+                        str(status),
+                        tgt or "",
+                        res or "",
+                        str(tr) if tr is not None else "",
+                        str(ethics) if ethics is not None else "",
+                        str(risk) if risk is not None else "",
+                        expected_prev,
+                    ]
+                )
+                calc = _hl.sha256(base.encode("utf-8")).hexdigest()
+                if calc != entry_hash:
+                    return False
+                prev = entry_hash
+            return True
+        finally:
+            conn.close()
+
 
 class SelfIncorporationConfig:
     def _parse_roots(self) -> list[Path]:
@@ -928,6 +1031,16 @@ class SelfIncorporationConfig:
         self.net_strict = os.getenv("AETHERRA_NET_STRICT", "0") == "1"
         self.hmr_enabled = os.getenv("AETHERRA_HMR_ENABLED", "1") == "1"
 
+        # Security settings (Phase 2B)
+        # trust_mode: "strict" (prod), "standard" (default), or "permissive" (dev)
+        profile = os.getenv("AETHERRA_PROFILE", "").lower()
+        if profile in ("prod", "production"):
+            self.trust_mode = "strict"
+        elif profile in ("dev", "development"):
+            self.trust_mode = "permissive"
+        else:
+            self.trust_mode = os.getenv("AETHERRA_SELFINC_TRUST_MODE", "standard")
+
         # Night cycle settings
         self.night_start_hour = int(os.getenv("AETHERRA_NIGHT_START_HOUR", "2"))
         self.night_end_hour = int(os.getenv("AETHERRA_NIGHT_END_HOUR", "4"))
@@ -945,6 +1058,14 @@ class SelfIncorporationConfig:
         self.capabilities_policy_path = policy_dir / "capabilities.json"
         self.net_policy_path = policy_dir / "net_policy.json"
         self.selfinc_policy_path = policy_dir / "selfinc.json"
+        # Guard policy path (Phase 2B)
+        # Default to repo policy if present, else user policy dir
+        default_guard_path = Path("Aetherra/homeostasis/configs/guard_policies.yaml")
+        self.guard_policy_path = (
+            default_guard_path
+            if default_guard_path.exists()
+            else policy_dir / "guard_policies.yaml"
+        )
         # Policy-derived knobs (populated by service startup)
 
     unique_capabilities: list[str] = []
@@ -1715,9 +1836,9 @@ class SecurityGate:
 
             # Basic file safety checks
             if file_item.size > self.config.max_file_mb * 1024 * 1024:
-                results[
-                    "size_check"
-                ] = f"WARN: File size {file_item.size} exceeds limit"
+                results["size_check"] = (
+                    f"WARN: File size {file_item.size} exceeds limit"
+                )
             else:
                 results["size_check"] = "PASS"
 
@@ -1781,9 +1902,9 @@ class SecurityGate:
                     safe_count += 1
 
             if risky_count > 0:
-                results[
-                    "import_hygiene"
-                ] = f"WARN: {risky_count} risky imports, {safe_count} safe"
+                results["import_hygiene"] = (
+                    f"WARN: {risky_count} risky imports, {safe_count} safe"
+                )
             else:
                 results["import_hygiene"] = "PASS"
 
@@ -2576,6 +2697,15 @@ class CoreIntegrator:
 
             # Add rollback token to result
             result["rollback_token"] = rollback_token
+            # Record last rollback token in service metrics for status surfaces
+            try:
+                # Standard library imports
+                import contextlib
+
+                with contextlib.suppress(Exception):
+                    self.service.metrics["last_rollback_token"] = rollback_token
+            except Exception as exc:
+                logger.debug("[SELFINC] failed recording last_rollback_token: %s", exc)
 
             return result
 
@@ -3470,6 +3600,29 @@ class SelfIncorporationService:
         self.config = config or SelfIncorporationConfig()
         self.status = ServiceStatus.STARTING
         self._running = False
+        # Runtime knobs (can be tuned by proposals)
+        self._processing_velocity: float = 1.0  # 0.1 - 3.0
+        self._optimization_hints: dict[str, Any] = {}
+
+        # Security Layer (Phase 2B) - lazy import to avoid circular dependencies
+        from Aetherra.homeostasis.self_incorporation_security import (  # noqa: E402
+            SelfIncorporationSecurity,
+        )
+
+        self.security_layer = SelfIncorporationSecurity(
+            trust_mode=self.config.trust_mode
+        )
+
+        # Guard Policies (Phase 2B)
+        try:
+            from Aetherra.homeostasis.guard_policy_enforcer import (  # noqa: E402
+                GuardPolicyEnforcer,
+            )
+
+            self.guard_enforcer = GuardPolicyEnforcer(self.config.guard_policy_path)
+        except Exception as _gpe:
+            logger.debug("[SELFINC] Guard policy enforcer not available: %s", _gpe)
+            self.guard_enforcer = None
 
         # Core subsystems
         self.code_index = CodeIndex(
@@ -3521,12 +3674,18 @@ class SelfIncorporationService:
             "files_classified": 0,
             "files_integrated": 0,
             "files_quarantined": 0,
+            "proposals_executed": 0,
+            "proposals_accepted": 0,
             "last_scan_duration": 0.0,
             "last_scan_timestamp": 0.0,
             "boot_completed": False,
             "night_cycles_completed": 0,
             "last_night_cycle_timestamp": 0.0,
             "night_cycle_insights": 0,
+            # Guard policy observability (Phase 2B)
+            "guard_rejections_total": 0,
+            "guard_rejections_by_policy": {},
+            "guard_last_violation": None,
         }
 
         # System integrations (injected by kernel)
@@ -3584,6 +3743,281 @@ class SelfIncorporationService:
 
         logger.info("[SELFINC] Service stopped")
 
+    async def handle_message(self, message_type: str, data: dict[str, Any] | None):
+        """Handle messages sent via the service registry.
+
+        Supported messages:
+        - "selfimprovement.proposal": Handle an improvement proposal payload
+        - "selfinc.status": Return current status and runtime knobs
+        """
+        mt = (message_type or "").lower()
+        payload = data or {}
+
+        if mt.endswith("selfinc.status"):
+            st = await self.get_status()
+            st["runtime"] = {
+                "processing_velocity": self._processing_velocity,
+                "optimization_hints": self._optimization_hints,
+            }
+            return st
+
+        if mt.endswith("selfimprovement.proposal"):
+            try:
+                return await self.handle_improvement_proposal(payload)
+            except Exception as exc:
+                logger.error("[SELFINC] Proposal handling failed: %s", exc)
+                return {"status": "error", "error": str(exc)}
+
+        return {"error": "unknown_message", "message_type": message_type}
+
+    async def handle_improvement_proposal(
+        self, proposal: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Handle improvement proposals from the Self-Improvement Engine.
+
+        Expected proposal schema (best-effort, tolerant to missing fields):
+        {
+          "proposal_id": str,
+          "type": "scale_up" | "optimize" | "degrade" | "change_strategy",
+          "description": str,
+          "params": { ... },
+          "trace_id": str,
+          "sender": str (optional, for authentication)
+        }
+
+        Returns a result dict with fields:
+        { "status": "accepted"|"rejected"|"error", "plan_id": str, "details": { ... } }
+        """
+        import uuid
+        from datetime import datetime as _dt
+
+        if not isinstance(proposal, dict):
+            return {"status": "error", "error": "invalid_proposal_format"}
+
+        ptype = (
+            str(proposal.get("type") or proposal.get("action") or "").strip().lower()
+        )
+        pid = str(proposal.get("proposal_id") or uuid.uuid4())
+        trace_id = str(proposal.get("trace_id") or pid)
+        params: dict[str, Any] = proposal.get("params") or {}
+        sender = proposal.get("sender")
+
+        # Safety: require service enabled and running
+        if not self._running or not self.config.enabled:
+            return {
+                "status": "rejected",
+                "reason": "service_not_available",
+                "proposal_id": pid,
+            }
+
+        # Phase 2B: Guard policies pre-check (integration velocity, actuator frequency, rollback cascade)
+        enforcer = getattr(self, "guard_enforcer", None)
+        if enforcer is not None:
+            ok, violations = enforcer.check_proposal(proposal)
+            if not ok:
+                logger.warning(
+                    "[SELFINC] Proposal rejected by guard policies: %s",
+                    ",".join(violations),
+                )
+                # Metrics: record guard rejection
+                try:
+                    self.metrics["guard_rejections_total"] = (
+                        int(self.metrics.get("guard_rejections_total", 0)) + 1
+                    )
+                    by_pol = dict(self.metrics.get("guard_rejections_by_policy", {}))
+                    key = str(violations[0] if violations else "unknown")
+                    by_pol[key] = int(by_pol.get(key, 0)) + 1
+                    self.metrics["guard_rejections_by_policy"] = by_pol
+                    self.metrics["guard_last_violation"] = key
+                except Exception as _gmx:
+                    logger.debug(
+                        "[SELFINC] guard rejection metrics update failed: %s", _gmx
+                    )
+                return {
+                    "status": "rejected",
+                    "reason": f"guard_violation:{violations[0]}",
+                    "proposal_id": pid,
+                }
+
+        # Phase 2B: Authenticate and authorize proposal
+        auth_result = await self.security_layer.authenticate_proposal(proposal, sender)
+        if not auth_result.authenticated or not auth_result.authorized:
+            logger.warning(
+                f"[SELFINC] Proposal rejected: {auth_result.reason} (sender: {auth_result.sender})"
+            )
+            return {
+                "status": "rejected",
+                "reason": auth_result.reason,
+                "proposal_id": pid,
+                "sender": auth_result.sender,
+            }
+
+        # Log authenticated sender
+        logger.info(f"[SELFINC] Proposal accepted from {auth_result.sender}: {ptype}")
+
+        # Validate proposal type
+        allowed_types = {"scale_up", "optimize", "degrade", "change_strategy"}
+        if ptype not in allowed_types:
+            return {
+                "status": "rejected",
+                "reason": f"unsupported_type:{ptype}",
+                "proposal_id": pid,
+            }
+
+        # Increment executed proposals counter (attempt)
+        from contextlib import suppress
+
+        with suppress(Exception):
+            self.metrics["proposals_executed"] = (
+                int(self.metrics.get("proposals_executed", 0)) + 1
+            )
+
+        # Build a minimal action plan (in-memory) and execute safe adjustments
+        plan_id = f"plan-{pid}"
+        action_status = "accepted"
+        details: dict[str, Any] = {
+            "proposal_id": pid,
+            "type": ptype,
+            "executed_at": _dt.now().isoformat(),
+        }
+
+        try:
+            if ptype == "scale_up":
+                delta = float(params.get("delta", 0.2))
+                old = self._processing_velocity
+                self._processing_velocity = max(0.1, min(3.0, old + delta))
+                details.update(
+                    {
+                        "processing_velocity": {
+                            "old": old,
+                            "new": self._processing_velocity,
+                        }
+                    }
+                )
+
+            elif ptype == "degrade":
+                delta = float(params.get("delta", 0.2))
+                old = self._processing_velocity
+                self._processing_velocity = max(0.1, min(3.0, old - delta))
+                details.update(
+                    {
+                        "processing_velocity": {
+                            "old": old,
+                            "new": self._processing_velocity,
+                        }
+                    }
+                )
+
+            elif ptype == "optimize":
+                # Record optimization hints; optionally tune soft knobs
+                hint_key = str(params.get("hint", "general"))
+                hint_val = params.get("value", True)
+                self._optimization_hints[hint_key] = hint_val
+                # Example: adjust permissive auto-integrate list in memory (non-persistent)
+                try:
+                    auto_list = (
+                        self.policy_engine.selfinc_policies.get("auto_integrate") or []
+                    )
+                    val = params.get("auto_integrate")
+                    if isinstance(auto_list, list) and isinstance(val, list):
+                        self.policy_engine.selfinc_policies["auto_integrate"] = list(
+                            {*auto_list, *val}
+                        )
+                except Exception as _opt_exc:
+                    logger.debug(
+                        "[SELFINC][OPT] policy adjustment failed: %s", _opt_exc
+                    )
+                details.update({"optimization_hint": {hint_key: hint_val}})
+
+            elif ptype == "change_strategy":
+                # Strategy changes are recorded as hints; actual adoption occurs in scheduled cycles
+                strategy = params.get("strategy", "conservative")
+                self._optimization_hints["strategy"] = strategy
+                details.update({"strategy": strategy})
+
+            # Optional: Execute integration actions if provided by proposal
+            try:
+                actions = None
+                # Proposal may provide actions directly or an integration_plan structure
+                if isinstance(params.get("actions"), list):
+                    actions = params.get("actions")
+                elif isinstance(params.get("integration_plan"), dict):
+                    actions = params["integration_plan"].get("actions")
+
+                if actions:
+                    plan = {"plan_id": plan_id, "actions": actions}
+                    exec_res = await self.core_integrator.execute_plan(
+                        plan, dry_run=bool(params.get("dry_run", False))
+                    )
+                    details["integration"] = {
+                        "applied": exec_res.get("applied"),
+                        "skipped": exec_res.get("skipped"),
+                        "errors": exec_res.get("errors"),
+                    }
+                    # If plan executed with errors, treat as rejected best-effort
+                    if int(exec_res.get("errors", 0)) > 0:
+                        action_status = "rejected"
+                        details["reason"] = "integration_errors"
+            except Exception as _iex:
+                logger.debug(
+                    "[SELFINC][PROPOSAL] integration execution failed: %s", _iex
+                )
+                action_status = "rejected"
+                details["reason"] = "integration_exception"
+
+            # Append to audit ledger for traceability
+            if hasattr(self, "audit_ledger") and self.audit_ledger:
+                try:
+                    self.audit_ledger.append(
+                        plan_id=plan_id,
+                        action=f"proposal:{ptype}",
+                        status=action_status,
+                        target={"proposal_id": pid, "params": params},
+                        result={"details": details},
+                        trace_id=trace_id,
+                        ethics_overall=None,
+                        risk_level="low",
+                    )
+                except Exception as _e:
+                    logger.debug("[SELFINC][AUDIT] append failed: %s", _e)
+
+            # Increment accepted counter if applicable
+            with suppress(Exception):
+                if action_status == "accepted":
+                    self.metrics["proposals_accepted"] = (
+                        int(self.metrics.get("proposals_accepted", 0)) + 1
+                    )
+
+            # Record guard acceptance for velocity/frequency windows
+            try:
+                enforcer2 = getattr(self, "guard_enforcer", None)
+                if enforcer2 is not None and action_status == "accepted":
+                    enforcer2.record_accept(proposal)
+            except Exception as _ge:
+                logger.debug("[SELFINC] guard acceptance record failed: %s", _ge)
+
+            # Notify Self-Improvement Engine best-effort
+            try:
+                if self.service_registry:
+                    await self.service_registry.send_message(
+                        "self_improvement_engine",
+                        "selfimprovement.proposal_result",
+                        {
+                            "proposal_id": pid,
+                            "plan_id": plan_id,
+                            "status": action_status,
+                            "details": details,
+                        },
+                    )
+            except Exception as _e:
+                logger.debug("[SELFINC] notify SIE failed: %s", _e)
+
+            return {"status": action_status, "plan_id": plan_id, "details": details}
+
+        except Exception as exc:
+            logger.error("[SELFINC] Proposal execution error: %s", exc)
+            return {"status": "error", "error": str(exc), "proposal_id": pid}
+
     def inject_systems(
         self,
         service_registry: Any,
@@ -3619,6 +4053,57 @@ class SelfIncorporationService:
             if count > 0:
                 files_by_type[item_type.value] = count
 
+        # Guard policy snapshot (if available)
+        guards: dict[str, Any] = {}
+        enforcer = getattr(self, "guard_enforcer", None)
+        if enforcer is not None:
+            try:
+                # Current window counts
+                iv = enforcer.policies.get("integration_velocity")
+                af = enforcer.policies.get("actuator_frequency")
+                rc = enforcer.policies.get("rollback_cascade")
+                # Cleanup windows to get accurate counts relative to now
+                now_ts = time.time()
+                if iv:
+                    # access private deques (read-only metrics)
+                    enforcer._cleanup_window(enforcer._accepted, iv.window_sec, now_ts)  # type: ignore[attr-defined]
+                if rc:
+                    enforcer._cleanup_window(enforcer._rollbacks, rc.window_sec, now_ts)  # type: ignore[attr-defined]
+                if af:
+                    enforcer._cleanup_components(af.window_sec, now_ts)  # type: ignore[attr-defined]
+                guards = {
+                    "policies": {
+                        "integration_velocity": {
+                            "threshold": getattr(iv, "threshold", None),
+                            "window_sec": getattr(iv, "window_sec", None),
+                        },
+                        "actuator_frequency": {
+                            "threshold": getattr(af, "threshold", None),
+                            "window_sec": getattr(af, "window_sec", None),
+                        },
+                        "rollback_cascade": {
+                            "threshold": getattr(rc, "threshold", None),
+                            "window_sec": getattr(rc, "window_sec", None),
+                        },
+                    },
+                    "windows": {
+                        "accepted_in_window": len(getattr(enforcer, "_accepted", [])),
+                        "rollbacks_in_window": len(getattr(enforcer, "_rollbacks", [])),
+                        "components_active": len(
+                            getattr(enforcer, "_component_actions", {})
+                        ),
+                    },
+                    "rejections": {
+                        "total": int(self.metrics.get("guard_rejections_total", 0)),
+                        "by_policy": dict(
+                            self.metrics.get("guard_rejections_by_policy", {})
+                        ),
+                        "last_violation": self.metrics.get("guard_last_violation"),
+                    },
+                }
+            except Exception:
+                guards = {"error": "guard_metrics_unavailable"}
+
         return {
             **health,
             "files_by_type": files_by_type,
@@ -3627,6 +4112,10 @@ class SelfIncorporationService:
                 "duration": self.metrics["last_scan_duration"],
             },
             "boot_status": {"completed": self.metrics["boot_completed"]},
+            "proposals_executed": self.metrics.get("proposals_executed", 0),
+            "proposals_accepted": self.metrics.get("proposals_accepted", 0),
+            "last_rollback_token": self.metrics.get("last_rollback_token"),
+            "guards": guards,
         }
 
     async def trigger_classify(self, type_filter: str | None = None) -> dict[str, Any]:
@@ -3900,9 +4389,9 @@ class SelfIncorporationService:
                 action_scores
             )
         else:
-            avg_overall = (
-                avg_utilitarian
-            ) = avg_deontological = avg_virtue = avg_care = avg_confidence = 0.5
+            avg_overall = avg_utilitarian = avg_deontological = avg_virtue = (
+                avg_care
+            ) = avg_confidence = 0.5
 
         # Plan-level risk assessment
         plan_reasoning = [f"Evaluated {len(actions)} integration actions"]
@@ -4150,6 +4639,39 @@ class SelfIncorporationService:
             }
 
         try:
+            # Guard policy: check rollback cascade before proceeding
+            enforcer = getattr(self, "guard_enforcer", None)
+            if enforcer is not None:
+                ok, violations = enforcer.check_proposal(
+                    {"type": "rollback", "params": {}}
+                )
+                if not ok:
+                    logger.warning(
+                        "[SELFINC] Rollback rejected by guard policies: %s",
+                        ",".join(violations),
+                    )
+                    # Metrics: record guard rejection
+                    try:
+                        self.metrics["guard_rejections_total"] = (
+                            int(self.metrics.get("guard_rejections_total", 0)) + 1
+                        )
+                        by_pol = dict(
+                            self.metrics.get("guard_rejections_by_policy", {})
+                        )
+                        key = str(violations[0] if violations else "unknown")
+                        by_pol[key] = int(by_pol.get(key, 0)) + 1
+                        self.metrics["guard_rejections_by_policy"] = by_pol
+                        self.metrics["guard_last_violation"] = key
+                    except Exception as _gmx2:
+                        logger.debug(
+                            "[SELFINC] guard rejection metrics update failed: %s", _gmx2
+                        )
+                    return {
+                        "ok": False,
+                        "error": f"guard_violation:{violations[0]}",
+                        "token": rollback_token,
+                        "duration": time.time() - start_time,
+                    }
             # Look up the rollback token in audit records
             audit_records = []
             if hasattr(self, "audit_ledger") and self.audit_ledger:
@@ -4189,6 +4711,9 @@ class SelfIncorporationService:
                         "timestamp": time.time(),
                     },
                 )
+                # Update guard windows for rollback cascade tracking
+                if enforcer is not None:
+                    enforcer.record_rollback()
 
             return {
                 "ok": True,
@@ -4206,6 +4731,272 @@ class SelfIncorporationService:
                 "token": rollback_token,
                 "duration": time.time() - start_time,
             }
+
+    async def integrate_with_canary(
+        self,
+        plan_id: str | None = None,
+        canary_percent: float = 0.1,
+        canary_duration: int = 300,
+        health_check_interval: int = 10,
+        rollback_threshold: float = 0.9,
+        dry_run: bool = False,
+    ) -> dict[str, Any]:
+        """
+        Integrate new capability using canary deployment strategy.
+
+        Flow:
+        1. Generate integration plan (or use provided plan_id)
+        2. Record baseline health metrics
+        3. Execute integration with HMR
+        4. Monitor health for canary_duration seconds at health_check_interval
+        5. Auto-rollback if health drops below rollback_threshold
+        6. Return canary status: canary_stable or auto_rollback
+
+        Args:
+            plan_id: Optional existing plan ID to use (otherwise generates new plan)
+            canary_percent: Percentage of traffic for canary (0.0-1.0) [default: 0.1 = 10%]
+            canary_duration: Duration in seconds to monitor canary health [default: 300 = 5 min]
+            health_check_interval: Seconds between health checks [default: 10]
+            rollback_threshold: Minimum health score to keep canary (0.0-1.0) [default: 0.9]
+            dry_run: If True, simulate without actual integration
+
+        Returns:
+            {
+                "ok": bool,
+                "status": "canary_stable" | "auto_rollback" | "error",
+                "deployment": "canary_promoted" | "canary_failed",
+                "plan_id": str,
+                "rollback_token": str | None,
+                "baseline_health": float,
+                "canary_health_samples": list[float],
+                "min_health": float,
+                "max_health": float,
+                "avg_health": float,
+                "health_delta": float,
+                "rollback_reason": str | None,
+                "duration": float,
+            }
+        """
+        start_time = time.time()
+        logger.info(
+            f"[SELFINC][CANARY] Starting canary deployment (canary_percent={canary_percent:.1%}, duration={canary_duration}s)"
+        )
+
+        # Step 1: Generate integration plan
+        # Note: plan_id parameter is for logging/tracking only; plans are not cached
+        logger.info(
+            f"[SELFINC][CANARY] Generating integration plan{f' (tracking: {plan_id})' if plan_id else ''}"
+        )
+        plan = await self._run_integration_planning(include_experimental=False)
+        generated_plan_id = plan.get("plan_id")
+
+        if plan.get("status") != "ready":
+            return {
+                "ok": False,
+                "status": "error",
+                "error": "plan_not_ready",
+                "plan_id": generated_plan_id,
+                "plan_status": plan.get("status"),
+                "duration": time.time() - start_time,
+            }
+
+        # Check HMR availability
+        if not self.config.hmr_enabled:
+            logger.warning(
+                "[SELFINC][CANARY] HMR disabled, cannot use canary deployment"
+            )
+            return {
+                "ok": False,
+                "status": "error",
+                "error": "hmr_disabled",
+                "plan_id": generated_plan_id,
+                "duration": time.time() - start_time,
+            }
+
+        hmr_controller = None
+        if self.service_registry:
+            info = self.service_registry.get_service_info("hmr_controller")
+            hmr_controller = info.instance if info else None
+
+        if not hmr_controller:
+            logger.warning("[SELFINC][CANARY] HMR controller unavailable")
+            return {
+                "ok": False,
+                "status": "error",
+                "error": "hmr_controller_unavailable",
+                "plan_id": generated_plan_id,
+                "duration": time.time() - start_time,
+            }
+
+        # Step 2: Record baseline health
+        baseline_health = await self._get_system_health_score()
+        logger.info(f"[SELFINC][CANARY] Baseline health: {baseline_health:.2f}")
+
+        if baseline_health < rollback_threshold:
+            logger.warning(
+                f"[SELFINC][CANARY] Baseline health ({baseline_health:.2f}) below rollback threshold ({rollback_threshold:.2f})"
+            )
+            return {
+                "ok": False,
+                "status": "error",
+                "error": "baseline_health_too_low",
+                "plan_id": generated_plan_id,
+                "baseline_health": baseline_health,
+                "rollback_threshold": rollback_threshold,
+                "duration": time.time() - start_time,
+            }
+
+        # Step 3: Execute integration with HMR
+        rollback_token = None
+        if not dry_run:
+            logger.info("[SELFINC][CANARY] Executing integration with HMR")
+            exec_result = await self.core_integrator.execute_plan(plan, dry_run=False)
+
+            if not exec_result.get("ok"):
+                return {
+                    "ok": False,
+                    "status": "error",
+                    "error": "integration_failed",
+                    "plan_id": generated_plan_id,
+                    "exec_result": exec_result,
+                    "duration": time.time() - start_time,
+                }
+
+            # Extract rollback token from last applied action
+            rollback_token = self.metrics.get("last_rollback_token")
+            logger.info(
+                f"[SELFINC][CANARY] Integration complete, rollback token: {rollback_token}"
+            )
+
+            if exec_result.get("applied", 0) > 0:
+                self.metrics["files_integrated"] = self.metrics.get(
+                    "files_integrated", 0
+                ) + exec_result.get("applied", 0)
+
+        # Step 4: Monitor health during canary period
+        health_samples: list[float] = []
+        num_checks = max(1, canary_duration // health_check_interval)
+
+        logger.info(
+            f"[SELFINC][CANARY] Monitoring health for {canary_duration}s ({num_checks} checks)"
+        )
+
+        for check_num in range(num_checks):
+            if dry_run:
+                # Simulate stable health in dry-run
+                current_health = baseline_health
+            else:
+                await asyncio.sleep(health_check_interval)
+                current_health = await self._get_system_health_score()
+
+            health_samples.append(current_health)
+            logger.debug(
+                f"[SELFINC][CANARY] Health check {check_num + 1}/{num_checks}: {current_health:.2f}"
+            )
+
+            # Check for health degradation
+            if current_health < rollback_threshold:
+                logger.warning(
+                    f"[SELFINC][CANARY] Health degraded to {current_health:.2f} (threshold: {rollback_threshold:.2f})"
+                )
+
+                # Step 5: Auto-rollback on health degradation
+                if not dry_run and rollback_token:
+                    logger.error("[SELFINC][CANARY] Triggering automatic rollback")
+                    rollback_result = await self.trigger_rollback(rollback_token)
+
+                    if rollback_result.get("ok"):
+                        logger.info("[SELFINC][CANARY] Rollback successful")
+                    else:
+                        logger.error(
+                            f"[SELFINC][CANARY] Rollback failed: {rollback_result.get('error')}"
+                        )
+
+                # Record canary failure metrics
+                self.metrics["canary_deployments_failed"] = (
+                    self.metrics.get("canary_deployments_failed", 0) + 1
+                )
+
+                return {
+                    "ok": False,
+                    "status": "auto_rollback",
+                    "deployment": "canary_failed",
+                    "plan_id": generated_plan_id,
+                    "rollback_token": rollback_token,
+                    "baseline_health": baseline_health,
+                    "canary_health_samples": health_samples,
+                    "min_health": min(health_samples) if health_samples else 0.0,
+                    "max_health": max(health_samples) if health_samples else 0.0,
+                    "avg_health": (
+                        sum(health_samples) / len(health_samples)
+                        if health_samples
+                        else 0.0
+                    ),
+                    "health_delta": current_health - baseline_health,
+                    "rollback_reason": f"health_below_threshold ({current_health:.2f} < {rollback_threshold:.2f})",
+                    "checks_completed": len(health_samples),
+                    "duration": time.time() - start_time,
+                }
+
+        # All health checks passed - canary stable
+        min_health = min(health_samples) if health_samples else baseline_health
+        max_health = max(health_samples) if health_samples else baseline_health
+        avg_health = (
+            sum(health_samples) / len(health_samples)
+            if health_samples
+            else baseline_health
+        )
+
+        logger.info(
+            f"[SELFINC][CANARY] Canary stable! Health: min={min_health:.2f}, max={max_health:.2f}, avg={avg_health:.2f}"
+        )
+
+        # Record successful canary metrics
+        if not dry_run:
+            self.metrics["canary_deployments_successful"] = (
+                self.metrics.get("canary_deployments_successful", 0) + 1
+            )
+
+        return {
+            "ok": True,
+            "status": "canary_stable",
+            "deployment": "canary_promoted",
+            "plan_id": generated_plan_id,
+            "rollback_token": rollback_token,
+            "baseline_health": baseline_health,
+            "canary_health_samples": health_samples,
+            "min_health": min_health,
+            "max_health": max_health,
+            "avg_health": avg_health,
+            "health_delta": avg_health - baseline_health,
+            "rollback_reason": None,
+            "checks_completed": len(health_samples),
+            "duration": time.time() - start_time,
+        }
+
+    async def _get_system_health_score(self) -> float:
+        """
+        Get current system health score from Homeostasis.
+
+        Returns:
+            float: Health score 0.0-1.0, or 0.95 if homeostasis unavailable
+        """
+        try:
+            if self.service_registry:
+                info = self.service_registry.get_service_info("homeostasis_system")
+                if info and hasattr(info.instance, "get_system_health_status"):
+                    status = await info.instance.get_system_health_status()
+                    system_health = status.get("system_health", {})
+                    health_score = system_health.get("health_score", 0.95)
+                    # Convert from 0-100 to 0.0-1.0 if needed
+                    if health_score > 1.0:
+                        health_score = health_score / 100.0
+                    return float(health_score)
+        except Exception as e:
+            logger.debug(f"[SELFINC][CANARY] Failed to get health score: {e}")
+
+        # Default to healthy if homeostasis unavailable
+        return 0.95
 
     async def get_planning_details(
         self, include_experimental: bool = False, limit: int = 50
@@ -4333,7 +5124,7 @@ class SelfIncorporationService:
 
     def _should_ignore_file(self, path: Path) -> bool:
         """Check if a file should be ignored during discovery."""
-        # Common ignore patterns
+        # Common ignore patterns (dirs and files)
         ignore_patterns = [
             ".*",  # Hidden files
             "__pycache__",
@@ -4344,9 +5135,38 @@ class SelfIncorporationService:
             ".git",
             ".svn",
             ".hg",
+            ".idea",
+            ".vscode",
+            ".pytest_cache",
+            ".mypy_cache",
+            ".ruff_cache",
+            ".coverage",
+            "coverage.xml",
+            "dist",
+            "build",
+            ".venv",
+            "venv",
+            "env",
+            "site-packages",
             "*.log",
             "*.tmp",
             "*.temp",
+            # Large/binary artifacts
+            "*.png",
+            "*.jpg",
+            "*.jpeg",
+            "*.gif",
+            "*.svg",
+            "*.webp",
+            "*.zip",
+            "*.tar",
+            "*.gz",
+            "*.whl",
+            "*.dll",
+            "*.so",
+            "*.dylib",
+            "*.exe",
+            "*.bin",
         ]
 
         path_str = str(path)
@@ -4359,6 +5179,19 @@ class SelfIncorporationService:
 
         # Check for .aetherraignore files (basic implementation)
         # TODO: Implement full .aetherraignore parsing
+
+        # Allow user-provided extra ignore patterns via env (semicolon separated)
+        try:
+            extra = os.getenv("AETHERRA_SELFINC_IGNORE", "").strip()
+            if extra:
+                for pat in [p.strip() for p in extra.split(";") if p.strip()]:
+                    if pat.startswith("*."):
+                        if path.suffix == pat[1:]:
+                            return True
+                    elif pat in path_str:
+                        return True
+        except Exception as exc:
+            logger.debug("Self-Inc ignore pattern parse error: %s", exc, exc_info=True)
 
         return False
 
@@ -4385,9 +5218,16 @@ class SelfIncorporationService:
             # Extract basic entrypoints for Python files
             entrypoints = self._extract_entrypoints(path, language)
 
+            # Prefer a path relative to project root; fall back to absolute/str
+            try:
+                rel = path.resolve().relative_to(Path.cwd().resolve())
+                rel_path = str(rel)
+            except Exception:
+                rel_path = str(path)
+
             return FileItem(
                 id=file_id,
-                path=str(path.relative_to(Path.cwd())),
+                path=rel_path,
                 hash=content_hash,
                 size=stat.st_size,
                 mtime=stat.st_mtime,

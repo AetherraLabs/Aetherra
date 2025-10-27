@@ -125,6 +125,7 @@ markers = [
     "unit: Unit tests for individual components",
     "integration: Integration tests for component interactions",
     "e2e: End-to-end tests for complete workflows",
+    "acceptance: Acceptance tests validating complete system behaviors",
     "slow: Tests that take a significant amount of time",
     "fast: Quick tests that run in under 1 second",
     "memory: Tests related to memory systems",

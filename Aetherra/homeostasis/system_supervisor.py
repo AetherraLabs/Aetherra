@@ -653,7 +653,7 @@ class SystemSupervisor:
         This is the core self-verification method from Phase 2 of the roadmap.
         Returns comprehensive verification results.
         """
-        verification_results = {
+        verification_results: Dict[str, Any] = {
             "timestamp": time.time(),
             "overall_status": "unknown",
             "systems": {},
@@ -661,16 +661,9 @@ class SystemSupervisor:
             "corrective_actions": [],
         }
 
-        # Ensure vital_checks is a dict before assignment
-        if "vital_checks" not in verification_results or not isinstance(verification_results["vital_checks"], dict):
-            verification_results["vital_checks"] = {}
-
         try:
             # 1. Memory coherence check
             memory_result = await self._verify_memory_coherence()
-            # Ensure vital_checks is a dict before assignment
-            if "vital_checks" not in verification_results or not isinstance(verification_results["vital_checks"], dict):
-                verification_results["vital_checks"] = {}
             verification_results["vital_checks"]["memory_coherence"] = memory_result
 
             # 2. Plugin queue drain check
@@ -729,25 +722,32 @@ class SystemSupervisor:
         try:
             registry = await get_service_registry()
             if not registry:
+                logger.debug("[HEALTH] Memory coherence check: registry unavailable")
                 return {"status": "failed", "reason": "registry_unavailable"}
 
             memory_service = registry.get_service_info("memory_system")
             if not memory_service:
+                logger.debug("[HEALTH] Memory coherence check: service not found")
                 return {"status": "failed", "reason": "service_not_found"}
 
             # Check basic memory service health
             if memory_service.status.value != "healthy":
+                logger.debug(
+                    f"[HEALTH] Memory coherence check: service status={memory_service.status.value}"
+                )
                 return {"status": "degraded", "reason": f"status_{memory_service.status.value}"}
 
             # If the memory service has a coherence check method, use it
             if hasattr(memory_service.instance, "check_coherence"):
                 coherence_ok = await memory_service.instance.check_coherence()
                 if not coherence_ok:
+                    logger.debug("[HEALTH] Memory coherence check: coherence check failed")
                     return {"status": "degraded", "reason": "coherence_check_failed"}
 
             return {"status": "healthy", "uptime": getattr(memory_service, "uptime", 0)}
 
         except Exception as e:
+            logger.warning(f"[HEALTH] Memory coherence check exception: {e}", exc_info=True)
             return {"status": "error", "reason": str(e)}
 
     async def _verify_plugin_queue_health(self) -> Dict[str, Any]:
@@ -755,20 +755,26 @@ class SystemSupervisor:
         try:
             registry = await get_service_registry()
             if not registry:
+                logger.debug("[HEALTH] Plugin queue check: registry unavailable")
                 return {"status": "failed", "reason": "registry_unavailable"}
 
             plugin_service = registry.get_service_info("plugin_manager")
             if not plugin_service:
+                logger.debug("[HEALTH] Plugin queue check: service not found")
                 return {"status": "failed", "reason": "service_not_found"}
 
             # Check plugin manager health
             if plugin_service.status.value not in ["healthy", "starting"]:
+                logger.debug(
+                    f"[HEALTH] Plugin queue check: service status={plugin_service.status.value}"
+                )
                 return {"status": "degraded", "reason": f"status_{plugin_service.status.value}"}
 
             # If plugin manager has queue health check, use it
             if hasattr(plugin_service.instance, "get_queue_health"):
                 queue_health = await plugin_service.instance.get_queue_health()
                 if queue_health.get("status") != "healthy":
+                    logger.debug(f"[HEALTH] Plugin queue check: queue unhealthy: {queue_health}")
                     return {
                         "status": "degraded",
                         "reason": "queue_unhealthy",
@@ -778,6 +784,7 @@ class SystemSupervisor:
             return {"status": "healthy", "service_status": plugin_service.status.value}
 
         except Exception as e:
+            logger.warning(f"[HEALTH] Plugin queue check exception: {e}", exc_info=True)
             return {"status": "error", "reason": str(e)}
 
     async def _verify_lyrixa_heartbeat(self) -> Dict[str, Any]:
@@ -813,25 +820,32 @@ class SystemSupervisor:
         try:
             registry = await get_service_registry()
             if not registry:
+                logger.debug("[HEALTH] Hub connectivity check: registry unavailable")
                 return {"status": "failed", "reason": "registry_unavailable"}
 
             hub_service = registry.get_service_info("aetherra_hub")
             if not hub_service:
+                logger.debug("[HEALTH] Hub connectivity check: service not found")
                 return {"status": "failed", "reason": "service_not_found"}
 
             # Check Hub service health
             if hub_service.status.value not in ["healthy", "starting"]:
+                logger.debug(
+                    f"[HEALTH] Hub connectivity check: service status={hub_service.status.value}"
+                )
                 return {"status": "degraded", "reason": f"status_{hub_service.status.value}"}
 
             # Additional connectivity check - try to ping hub if possible
             if hasattr(hub_service.instance, "ping"):
                 ping_result = await hub_service.instance.ping()
                 if not ping_result:
+                    logger.debug("[HEALTH] Hub connectivity check: ping failed")
                     return {"status": "degraded", "reason": "ping_failed"}
 
             return {"status": "healthy", "service_status": hub_service.status.value}
 
         except Exception as e:
+            logger.warning(f"[HEALTH] Hub connectivity check exception: {e}", exc_info=True)
             return {"status": "error", "reason": str(e)}
 
     async def _verify_service_health(self) -> Dict[str, Any]:

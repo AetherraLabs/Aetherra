@@ -1405,6 +1405,136 @@ class AetherraKernelLoop:
                                 self._plugin_running_counts[plugin_id] = max(
                                     0, self._plugin_running_counts.get(plugin_id, 1) - 1
                                 )
+            elif task_type == "actuator_action":
+                # Execute a homeostasis actuator action inside kernel envelope
+                timeout = 0.0
+                try:
+                    timeout = float(
+                        task.get("timeout_sec") or task_data.get("timeout_sec") or 0
+                    )
+                except Exception:
+                    timeout = 0.0
+                # Resolve orchestrator and actuators via registry
+                actuators = None
+                try:
+                    if self.service_registry:
+                        svc = self.service_registry.get_service("aetherra_homeostasis")
+                        actuators = getattr(svc, "actuators", None) if svc else None
+                except Exception as _e:
+                    logger.debug(f"[ACT] Failed to resolve homeostasis actuators: {_e}")
+                if not actuators:
+                    logger.warning(
+                        "[ACT] Homeostasis actuators unavailable; dropping action"
+                    )
+                    self._dlq_write(task, reason="actuators_unavailable")
+                    return None
+                # Build ControlAction instance from payload
+                try:
+                    from Aetherra.homeostasis.homeostasis_core import (  # type: ignore
+                        ActionPriority,
+                        ControlAction,
+                    )
+                except Exception as _e:
+                    logger.error(f"[ACT] Cannot import ControlAction: {_e}")
+                    self._dlq_write(task, reason="controlaction_import_error")
+                    return None
+                try:
+                    action_type = str(
+                        task_data.get("action_type") or task.get("action") or ""
+                    )
+                    target_service = str(
+                        task_data.get("target_service") or task_data.get("target") or ""
+                    )
+                    parameters = dict(
+                        task_data.get("parameters") or task_data.get("params") or {}
+                    )
+                    controller_name = str(
+                        task_data.get("controller_name")
+                        or task_data.get("controller")
+                        or "homeostasis"
+                    )
+                    reason = str(
+                        task_data.get("reason")
+                        or task.get("reason")
+                        or "kernel_envelope"
+                    )
+                    estimated_impact = float(task_data.get("estimated_impact") or 0.0)
+                    requires_confirmation = bool(
+                        task_data.get("requires_confirmation") or False
+                    )
+                    # Map string priority if present
+                    pr = task.get("priority") or task_data.get("priority") or "MEDIUM"
+                    try:
+                        if isinstance(pr, str):
+                            pr_enum = getattr(
+                                ActionPriority, pr.upper(), ActionPriority.MEDIUM
+                            )
+                        elif isinstance(pr, int):
+                            # Bound by enum range
+                            pr_enum = ActionPriority(max(1, min(int(pr), 5)))
+                        else:
+                            pr_enum = ActionPriority.MEDIUM
+                    except Exception:
+                        pr_enum = ActionPriority.MEDIUM
+                    # Timeout default to plugin_invoke_timeout_sec as a conservative cap
+                    action_timeout = float(timeout or self.plugin_invoke_timeout_sec)
+                    action = ControlAction(
+                        action_type=action_type,
+                        target_service=target_service,
+                        parameters=parameters,
+                        priority=pr_enum,
+                        timestamp=time.time(),
+                        controller_name=controller_name,
+                        reason=reason,
+                        estimated_impact=estimated_impact,
+                        requires_confirmation=requires_confirmation,
+                        timeout=action_timeout,
+                    )
+                except Exception as _e:
+                    logger.error(f"[ACT] Failed to build ControlAction: {_e}")
+                    self._dlq_write(task, reason="action_build_error")
+                    return None
+                # Optional reply channel
+                reply_key = str(task_data.get("reply_key") or "").strip()
+                try:
+                    if timeout and timeout > 0:
+                        ok = await asyncio.wait_for(
+                            actuators.execute_action(action), timeout=timeout
+                        )
+                    else:
+                        ok = await actuators.execute_action(action)
+                except TimeoutError:
+                    self.metrics["actuator_action_timeouts"] = (
+                        self.metrics.get("actuator_action_timeouts", 0) + 1
+                    )
+                    logger.warning(
+                        f"[ACT][TIMEOUT] actuator_action timed out after {timeout}s trace={trace_id}"
+                    )
+                    await self._maybe_retry(task, reason="timeout")
+                    # fulfill waiter with timeout exception
+                    if reply_key:
+                        fut = self._reply_waiters.pop(reply_key, None)
+                        if fut and not fut.done():
+                            fut.set_exception(TimeoutError())
+                    return None
+                except Exception as ex:
+                    self.metrics["actuator_action_errors"] = (
+                        self.metrics.get("actuator_action_errors", 0) + 1
+                    )
+                    logger.error(
+                        f"[ACT][ERROR] actuator_action error trace={trace_id} err={ex}"
+                    )
+                    await self._maybe_retry(task, reason="error")
+                    if reply_key:
+                        fut = self._reply_waiters.pop(reply_key, None)
+                        if fut and not fut.done():
+                            fut.set_exception(ex)
+                    return None
+                # Deliver reply on success
+                if reply_key:
+                    fut = self._reply_waiters.pop(reply_key, None)
+                    if fut and not fut.done():
+                        fut.set_result({"ok": bool(ok)})
             elif task_type == "aetherra_thought":
                 if self.aetherra_engine:
                     # Process thought as a message to the Aetherra engine
@@ -2079,6 +2209,113 @@ class AetherraKernelLoop:
         finally:
             # Ensure cleanup
             self._reply_waiters.pop(reply_key, None)
+
+    # ---- Actuator action submission helpers ----
+    async def submit_actuator_action(
+        self,
+        *,
+        action_type: str,
+        target_service: str,
+        parameters: dict[str, Any] | None = None,
+        priority: str = "normal",
+        controller_name: str | None = None,
+        reason: str | None = None,
+        timeout_sec: float | None = None,
+        requester: str | None = None,
+    ) -> None:
+        """Submit an actuator action to be executed by Homeostasis actuators.
+
+        The task will be executed inside the kernel, honoring queue limits, deadlines (if configured), and DLQ on failure.
+        """
+        payload: dict[str, Any] = {
+            "type": "actuator_action",
+            "requester": requester or "",
+            "data": {
+                "action_type": action_type,
+                "target_service": target_service,
+                "parameters": dict(parameters or {}),
+                "controller_name": controller_name or "homeostasis",
+                "reason": reason or "kernel_envelope",
+            },
+        }
+        if timeout_sec is not None and float(timeout_sec) > 0:
+            payload["timeout_sec"] = float(timeout_sec)
+            payload["data"]["timeout_sec"] = float(timeout_sec)
+        await self.add_task(payload, priority=priority)
+
+    async def submit_actuator_action_and_wait(
+        self,
+        *,
+        action_type: str,
+        target_service: str,
+        parameters: dict[str, Any] | None = None,
+        priority: str = "normal",
+        controller_name: str | None = None,
+        reason: str | None = None,
+        timeout_sec: float | None = None,
+        requester: str | None = None,
+        wait_timeout: float | None = None,
+    ) -> Any:
+        """Submit an actuator action and wait for a boolean ok result.
+
+        If wait_timeout not provided, it defaults to timeout_sec or a conservative kernel plugin timeout.
+        """
+        reply_key = uuid.uuid4().hex
+        fut: asyncio.Future = asyncio.get_running_loop().create_future()
+        self._reply_waiters[reply_key] = fut
+
+        payload: dict[str, Any] = {
+            "type": "actuator_action",
+            "requester": requester or "",
+            "data": {
+                "action_type": action_type,
+                "target_service": target_service,
+                "parameters": dict(parameters or {}),
+                "controller_name": controller_name or "homeostasis",
+                "reason": reason or "kernel_envelope",
+                "reply_key": reply_key,
+            },
+        }
+        if timeout_sec is not None and float(timeout_sec) > 0:
+            payload["timeout_sec"] = float(timeout_sec)
+            payload["data"]["timeout_sec"] = float(timeout_sec)
+        await self.add_task(payload, priority=priority)
+
+        # Compute wait timeout
+        eff_wait: float | None = None
+        try:
+            eff_wait = float(wait_timeout) if wait_timeout is not None else None
+        except Exception:
+            eff_wait = None
+        if eff_wait is None:
+            try:
+                eff_wait = float(timeout_sec or self.plugin_invoke_timeout_sec)
+            except Exception:
+                eff_wait = self.plugin_invoke_timeout_sec
+        eff_wait = max(0.1, float(eff_wait)) + 0.2
+        try:
+            return await asyncio.wait_for(fut, timeout=eff_wait)
+        finally:
+            self._reply_waiters.pop(reply_key, None)
+
+    # ---- DLQ helpers ----
+    def get_dlq_items(self, limit: int = 100) -> list[dict[str, Any]]:
+        """Return the most recent DLQ records (best-effort)."""
+        items: list[dict[str, Any]] = []
+        try:
+            if not self.dlq_enabled or not self.dlq_path.exists():
+                return []
+            # Read last N lines efficiently
+            with open(self.dlq_path) as f:
+                lines = f.readlines()[-max(1, int(limit)) :]
+            for ln in lines:
+                try:
+                    items.append(json.loads(ln))
+                except Exception as exc:
+                    logger.debug(f"[DLQ] Failed to parse DLQ line: {exc}")
+        except Exception as e:
+            logger.debug(f"[DLQ] Failed to read DLQ items: {e}")
+        return items
 
 
 # Global kernel instance

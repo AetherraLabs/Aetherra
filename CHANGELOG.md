@@ -25,13 +25,10 @@
 * Federation secure peer handshake & signing enforcement
 * Enhanced evaluation metrics & dataset registry
 * Extended sandbox policy surfaces (syscall / resource limits) and deterministic replay signage
-* Removal of deprecated `aetherra_hub_server.py` shim (target: first release after 0.5.x once downstream migration confirmed)
 
-### Deprecations
+### Removed
 
-* `aetherra_hub_server.py` (monolithic hub) fully replaced by modular blueprint implementation exposed via `aetherra_hub.compat`. The shim now only re‑exports `AetherraHubServer` / `start_hub_server` and emits a `DeprecationWarning` on import. All tooling & docs invoke the Hub using `python -m aetherra_hub.compat`.
-	* Quality gates now enforce: any new direct `import aetherra_hub_server` usage (outside the shim itself) fails the build (can be bypassed with `LEGACY_HUB_IMPORT_ENFORCE=0`).
-	* Planned removal: after one stabilized minor cycle (earliest: post 0.5.0 GA). Downstream integrators should migrate immediately to `from aetherra_hub import compat` or `from aetherra_hub.app import create_app`.
+* `aetherra_hub_server.py` deprecated shim removed (replaced by `aetherra_hub.compat` module). All downstream code migrated to modular hub implementation. Quality gate enforcement and pre-commit hooks cleaned up.
 
 ---
 

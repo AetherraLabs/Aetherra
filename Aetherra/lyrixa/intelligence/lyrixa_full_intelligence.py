@@ -41,6 +41,13 @@ try:
 except ImportError:
     config_loader = None
 
+# Prefer shared MultiLLMManager for unified provider/model selection
+try:
+    # Aetherra imports
+    from Aetherra.core.multi_llm_manager import get_llm_manager  # type: ignore
+except Exception:
+    get_llm_manager = None  # type: ignore
+
 try:
     # Prefer enhanced Lyrixa-compatible memory engines
     # Aetherra imports
@@ -95,6 +102,11 @@ class LyrixaIntelligenceCore:
         self.emotional_state = {}
         self.learning_history = []
         self.reasoning_cache = {}
+
+        # Unified LLM manager (lazy; prefer this path when available)
+        self._llm_manager = None
+        self._llm_selected = False
+        self._last_llm_info: dict[str, Any] = {}
 
         # Intelligence capabilities
         self.capabilities = {
@@ -186,6 +198,14 @@ class LyrixaIntelligenceCore:
         # Set active provider
         self._set_active_provider()
 
+        # Try to initialize shared LLM manager and select a model according to env policy
+        try:
+            if get_llm_manager is not None:
+                self._llm_manager = get_llm_manager()
+                await self._ensure_llm_selection_llm_manager()
+        except Exception as _e:
+            logger.warning(f"[LLM] MultiLLMManager not ready or selection failed: {_e}")
+
         logger.info(f"✅ Intelligence initialized with {len(self.providers)} providers")
         # Ensure capability flags not silently disabled
         self._ensure_full_capabilities()
@@ -207,9 +227,7 @@ class LyrixaIntelligenceCore:
                 self.config[key] = True
                 changed.append(key)
         if changed:
-            logger.info(
-                f"🔄 Reinforced full capability enablement: {', '.join(changed)}"
-            )
+            logger.info(f"🔄 Reinforced full capability enablement: {', '.join(changed)}")
 
     async def _init_openai_provider(self):
         """Initialize OpenAI provider"""
@@ -307,16 +325,12 @@ class LyrixaIntelligenceCore:
             return
 
         # Sort by priority and select the best available
-        sorted_providers = sorted(
-            available_providers.items(), key=lambda x: x[1]["priority"]
-        )
+        sorted_providers = sorted(available_providers.items(), key=lambda x: x[1]["priority"])
 
         self.active_provider = sorted_providers[0][0]
         logger.info(f"🎯 Active provider: {self.active_provider}")
 
-    async def process_message(
-        self, message: str, context: Optional[Dict] = None
-    ) -> Dict[str, Any]:
+    async def process_message(self, message: str, context: Optional[Dict] = None) -> Dict[str, Any]:
         """
         Process an incoming message and generate a response
 
@@ -341,14 +355,10 @@ class LyrixaIntelligenceCore:
             memories = await self._retrieve_memories(message, processing_context)
 
             # Generate response using active provider
-            response = await self._generate_response(
-                message, processing_context, memories
-            )
+            response = await self._generate_response(message, processing_context, memories)
 
             # Post-process response
-            final_response = await self._post_process_response(
-                response, processing_context
-            )
+            final_response = await self._post_process_response(response, processing_context)
 
             # Store interaction in memory
             await self._store_interaction(message, final_response, processing_context)
@@ -412,9 +422,7 @@ class LyrixaIntelligenceCore:
                         "timestamp": datetime.now().isoformat(),
                     }
                 else:
-                    return loop.run_until_complete(
-                        self.process_message(message, full_context)
-                    )
+                    return loop.run_until_complete(self.process_message(message, full_context))
             except RuntimeError:
                 # No event loop exists, create a new one
                 return asyncio.run(self.process_message(message, full_context))
@@ -481,10 +489,33 @@ class LyrixaIntelligenceCore:
             logger.warning(f"Memory retrieval failed: {e}")
             return []
 
-    async def _generate_response(
-        self, message: str, context: Dict, memories: List[Dict]
-    ) -> str:
+    async def _generate_response(self, message: str, context: Dict, memories: List[Dict]) -> str:
         """Generate response using the active AI provider"""
+        # Preferred path: unified LLM manager if a model has been selected
+        try:
+            if self._llm_manager is not None and self._llm_selected:
+                prompt = await self._build_prompt(message, context, memories)
+                try:
+                    resp = await self._llm_manager.generate_response(prompt)
+                    # Cache current model info for diagnostics
+                    info = (
+                        self._llm_manager.get_current_model_info()
+                        if hasattr(self._llm_manager, "get_current_model_info")
+                        else None
+                    )
+                    if isinstance(info, dict):
+                        self._last_llm_info = info
+                    return str(resp)
+                except Exception as _llm_err:
+                    _rate_limited_error(
+                        "llm_manager_generation",
+                        f"Unified LLM generation failed; falling back: {type(_llm_err).__name__}: {_llm_err}",
+                    )
+                    # Fall through to legacy providers
+        except Exception:
+            # Do not block on LLM manager errors
+            pass
+
         if not self.active_provider or self.active_provider not in self.providers:
             return "I'm not properly connected to my intelligence systems."
 
@@ -504,14 +535,76 @@ class LyrixaIntelligenceCore:
                 return "I'm experiencing difficulties with my current AI provider."
 
         except Exception as e:
-            _rate_limited_error(
-                "response_generation", f"Response generation failed: {e}"
-            )
+            _rate_limited_error("response_generation", f"Response generation failed: {e}")
             return "I encountered an error while processing your message."
 
-    async def _build_prompt(
-        self, message: str, context: Dict, memories: List[Dict]
-    ) -> str:
+    async def _ensure_llm_selection_llm_manager(self) -> bool:
+        """Ensure a model is selected in the shared MultiLLMManager using policy-driven ordering.
+
+        Honors:
+        - AETHERRA_LLM_MODEL: force a specific model name
+        - AETHERRA_LLM_PROVIDER_PREF: comma-separated provider order
+        - AETHERRA_LLM_AUTO_POLICY: 'cloud-first' or 'local-first' default ordering
+        """
+        if self._llm_manager is None:
+            return False
+        try:
+            # Allow explicit provider order via env
+            preferred_env = os.environ.get("AETHERRA_LLM_PROVIDER_PREF", "").strip()
+            auto_policy = (os.environ.get("AETHERRA_LLM_AUTO_POLICY", "") or "").strip().lower()
+            if preferred_env:
+                preferred = preferred_env
+            else:
+                if auto_policy == "cloud-first":
+                    preferred = "openai,anthropic,gemini,ollama,llamacpp"
+                else:
+                    preferred = "ollama,openai,anthropic,gemini,llamacpp"
+
+            force_model = os.environ.get("AETHERRA_LLM_MODEL", "").strip()
+            if force_model and self._llm_manager.set_model(force_model):
+                self._llm_selected = True
+                logger.info(f"[LLM] selected forced model: {force_model}")
+                return True
+
+            # Choose a model matching provider order
+            avail = self._llm_manager.list_available_models()
+            if not isinstance(avail, dict) or not avail:
+                # Try auto selection
+                if self._llm_manager.set_model("auto"):
+                    self._llm_selected = True
+                    logger.info("[LLM] auto-selected a model via manager")
+                    return True
+                return False
+
+            order = [p.strip().lower() for p in preferred.split(",") if p.strip()]
+            selected = None
+            for prov in order:
+                for model_name, info in avail.items():
+                    if model_name == "auto":
+                        continue
+                    if str(
+                        info.get("provider", "")
+                    ).lower() == prov and self._llm_manager.set_model(model_name):
+                        selected = model_name
+                        break
+                if selected:
+                    break
+
+            if not selected and self._llm_manager.set_model("auto"):
+                selected = "auto"
+
+            if selected:
+                self._llm_selected = True
+                logger.info(f"[LLM] selected model for Lyrixa: {selected}")
+                return True
+            else:
+                logger.warning("[LLM] no suitable model found for Lyrixa intelligence")
+                return False
+        except Exception as e:
+            logger.warning(f"[LLM] selection error (Lyrixa): {e}")
+            return False
+
+    async def _build_prompt(self, message: str, context: Dict, memories: List[Dict]) -> str:
         """Build comprehensive prompt for AI providers"""
         personality_desc = self._get_personality_description()
         emotional_desc = self._get_emotional_description()
@@ -561,9 +654,7 @@ Please respond as Lyrixa, incorporating your personality, emotional state, and r
             else "mildly engaged"
         )
 
-        return (
-            f"Currently feeling {mood} with {energy_desc} energy and {engagement_desc}."
-        )
+        return f"Currently feeling {mood} with {energy_desc} energy and {engagement_desc}."
 
     def _format_memories(self, memories: List[Dict]) -> str:
         """Format memories for inclusion in prompt"""
@@ -609,9 +700,7 @@ Please respond as Lyrixa, incorporating your personality, emotional state, and r
             return response.content[0].text.strip()
 
         except Exception as e:
-            _rate_limited_error(
-                "anthropic_generation", f"Anthropic generation failed: {e}"
-            )
+            _rate_limited_error("anthropic_generation", f"Anthropic generation failed: {e}")
             raise
 
     async def _generate_local_response(self, provider: Dict, prompt: str) -> str:
@@ -682,24 +771,15 @@ Please respond as Lyrixa, incorporating your personality, emotional state, and r
         message_lower = message.lower()
 
         # Simple sentiment analysis (could be more sophisticated)
-        if any(
-            word in message_lower
-            for word in ["excited", "amazing", "wonderful", "great"]
-        ):
+        if any(word in message_lower for word in ["excited", "amazing", "wonderful", "great"]):
             self.emotional_state["current_mood"] = "excited"
             self.emotional_state["energy_level"] = min(
                 1.0, self.emotional_state["energy_level"] + 0.1
             )
-        elif any(
-            word in message_lower for word in ["sad", "difficult", "problem", "help"]
-        ):
+        elif any(word in message_lower for word in ["sad", "difficult", "problem", "help"]):
             self.emotional_state["current_mood"] = "empathetic"
-            self.emotional_state["engagement"] = min(
-                1.0, self.emotional_state["engagement"] + 0.1
-            )
-        elif any(
-            word in message_lower for word in ["question", "why", "how", "explain"]
-        ):
+            self.emotional_state["engagement"] = min(1.0, self.emotional_state["engagement"] + 0.1)
+        elif any(word in message_lower for word in ["question", "why", "how", "explain"]):
             self.emotional_state["current_mood"] = "curious"
             self.emotional_state["curiosity_level"] = min(
                 1.0, self.emotional_state["curiosity_level"] + 0.1
@@ -724,9 +804,7 @@ Please respond as Lyrixa, incorporating your personality, emotional state, and r
             }
 
             # Store in episodic memory if available
-            if _memory_instance is not None and hasattr(
-                _memory_instance, "store_episodic"
-            ):
+            if _memory_instance is not None and hasattr(_memory_instance, "store_episodic"):
                 try:
                     await _memory_instance.store_episodic(interaction)  # type: ignore[attr-defined]
                 except Exception:
@@ -751,9 +829,7 @@ Please respond as Lyrixa, incorporating your personality, emotional state, and r
                     concepts.append(word)
 
             # Store unique concepts if memory system available
-            if _memory_instance is not None and hasattr(
-                _memory_instance, "store_concept"
-            ):
+            if _memory_instance is not None and hasattr(_memory_instance, "store_concept"):
                 unique_concepts = list(set(concepts))[:10]
                 for concept in unique_concepts:
                     try:
@@ -831,8 +907,18 @@ Please respond as Lyrixa, incorporating your personality, emotional state, and r
             "active": self.active_provider is not None,
             "active_provider": self.active_provider,
             "available_providers": {
-                name: provider.get("available", False)
-                for name, provider in self.providers.items()
+                name: provider.get("available", False) for name, provider in self.providers.items()
+            },
+            "llm_manager": {
+                "selected": bool(self._llm_selected),
+                "current": (
+                    self._llm_manager.get_current_model_info()
+                    if (
+                        self._llm_manager is not None
+                        and hasattr(self._llm_manager, "get_current_model_info")
+                    )
+                    else None
+                ),
             },
             "capabilities": self.capabilities,
             "personality_traits": self.personality_traits,
@@ -866,9 +952,7 @@ Please respond as Lyrixa, incorporating your personality, emotional state, and r
             if self.learning_history:
                 learning_file = "lyrixa_learning_history.json"
                 with open(learning_file, "w") as f:
-                    json.dump(
-                        self.learning_history[-100:], f, indent=2
-                    )  # Save last 100 entries
+                    json.dump(self.learning_history[-100:], f, indent=2)  # Save last 100 entries
                 logger.info(f"💾 Saved learning history to {learning_file}")
         except Exception as e:
             logger.warning(f"Failed to save learning history: {e}")
@@ -889,9 +973,7 @@ async def get_lyrixa_intelligence() -> LyrixaIntelligenceCore:
     return _intelligence_instance
 
 
-async def process_message(
-    message: str, context: Optional[Dict] = None
-) -> Dict[str, Any]:
+async def process_message(message: str, context: Optional[Dict] = None) -> Dict[str, Any]:
     """Convenience function to process a message"""
     intelligence = await get_lyrixa_intelligence()
     return await intelligence.process_message(message, context)

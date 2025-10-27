@@ -23,6 +23,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import os
+import time
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -178,6 +179,11 @@ class LyrixaChatService:
         self._coherence_threshold: float = 0.7
         self._self_improver = None
         self._proactive_monitor = None
+        # Metrics cache (auto-wired via Service Registry broadcasts)
+        self._kernel_metrics: dict[str, Any] | None = None
+        self._kernel_metrics_ts: float | None = None
+        self._homeostasis_metrics: dict[str, Any] | None = None
+        self._homeostasis_metrics_ts: float | None = None
         # Deterministic offline guard for tests or constrained environments
         # When enabled, initialization will skip external subsystems and operate
         # in a pure fallback/identity/ownership-safe mode.
@@ -308,6 +314,95 @@ class LyrixaChatService:
             except Exception:
                 self._proactive_monitor = None
 
+    # ---- Service Registry broadcast hook ----
+    async def handle_message(
+        self, message_type: str, data: Any
+    ) -> Any:  # auto-wired by registry.broadcast_message
+        """Capture system metrics broadcasts so Lyrixa can surface them automatically.
+
+        Messages observed in the system:
+        - "kernel.health": periodic kernel telemetry broadcast (~30s)
+        - "system_health_update": supervisor health snapshots
+        - Homeostasis metrics snapshot endpoints may be bridged as broadcasts later; accept generic patterns.
+        """
+        try:
+            mt = (message_type or "").lower().strip()
+            payload = data or {}
+            now_ts = time.time()
+            # Kernel telemetry from kernel loop health monitor
+            if mt == "kernel.health":
+                if isinstance(payload, dict):
+                    self._kernel_metrics = payload.copy()
+                    self._kernel_metrics_ts = now_ts
+                return {"ok": True}
+            # Supervisor/system health updates
+            if mt == "system_health_update":
+                if isinstance(payload, dict):
+                    # Normalize into kernel-like structure if possible
+                    km = {
+                        "cycle_count": payload.get("cycle_count"),
+                        "critical_issues": payload.get("critical_issues", []),
+                        "memory_status": payload.get("memory_status"),
+                        "plugin_status": payload.get("plugin_status"),
+                        "aetherra_status": payload.get("aetherra_status")
+                        or payload.get("lyrixa_status"),
+                    }
+                    self._kernel_metrics = {
+                        **(self._kernel_metrics or {}),
+                        **{k: v for k, v in km.items() if v is not None},
+                    }
+                    self._kernel_metrics_ts = now_ts
+                return {"ok": True}
+            # Generic catch for homeostasis metrics broadcasts (future-proof)
+            if "homeostasis" in mt and "metrics" in mt:
+                if isinstance(payload, dict):
+                    self._homeostasis_metrics = payload.copy()
+                    self._homeostasis_metrics_ts = now_ts
+                return {"ok": True}
+        except Exception:
+            # Never allow message handling to break chat service
+            pass
+        return {"ok": False, "error": "unhandled_message"}
+
+    def _metrics_snapshot(self) -> dict[str, Any] | None:
+        """Return a compact metrics snapshot for awareness panels and answers.
+
+        Includes kernel cycles, avg/last cycle time, DLQ count, queue sizes, and
+        any homeostasis metrics if available. Timestamped for staleness checks.
+        """
+        try:
+            snap: dict[str, Any] = {}
+            if isinstance(self._kernel_metrics, dict):
+                km = self._kernel_metrics
+                m = km.get("metrics", {}) if isinstance(km.get("metrics"), dict) else {}
+                qs = km.get("queue_sizes", {}) if isinstance(km.get("queue_sizes"), dict) else {}
+                snap["kernel"] = {
+                    "running": km.get("running"),
+                    "cycle_count": km.get("cycle_count"),
+                    "avg_cycle_ms": float(m.get("avg_cycle_time", 0.0) or 0.0) * 1000.0,
+                    "last_cycle_ms": float(m.get("last_cycle_time", 0.0) or 0.0) * 1000.0,
+                    "dlq_count": km.get("dlq_count", m.get("dlq_count")),
+                    "queues": {
+                        "high": qs.get("high_priority", 0),
+                        "normal": qs.get("normal_priority", 0),
+                        "background": qs.get("background", 0),
+                    },
+                    "plugin_cb_open": km.get("plugin_cb_open"),
+                    "ts": self._kernel_metrics_ts,
+                }
+            if isinstance(self._homeostasis_metrics, dict):
+                snap["homeostasis"] = {
+                    **{
+                        k: v
+                        for k, v in self._homeostasis_metrics.items()
+                        if k in ("stability", "signals", "summary", "ts")
+                    },
+                    "ts": self._homeostasis_metrics_ts,
+                }
+            return snap or None
+        except Exception:
+            return None
+
     async def chat(self, message: str, opts: ChatOptions | None = None) -> ChatResponse:
         opts = opts or ChatOptions()
         interaction_id = str(uuid.uuid4())
@@ -323,6 +418,11 @@ class LyrixaChatService:
                 suggestions = await self._proactive_monitor.get_proactive_suggestions()
                 if suggestions:
                     awareness["proactive_suggestions"] = suggestions
+
+            # Add live Aetherra metrics snapshot (auto-wired via broadcasts)
+            msnap = self._metrics_snapshot()
+            if msnap:
+                awareness["aetherra_metrics"] = msnap
 
             # Optional anticipatory hints from consciousness (non-blocking)
             coh = await self._conscious_get_coherence()

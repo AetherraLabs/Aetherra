@@ -237,9 +237,107 @@ class StabilityMetrics:
                 # Extract additional memory health information
                 snapshot.raw_data["memory_audit"] = memory_audit
 
+            # Phase 2D: Collect memory health and STORM metrics
+            await self._collect_memory_health_metrics(snapshot)
+
             self.last_successful_collection["memory"] = time.time()
         except Exception as e:
             logger.debug(f"Memory metrics collection failed: {e}")
+
+    async def _collect_memory_health_metrics(self, snapshot: MetricSnapshot):
+        """
+        Collect memory health and STORM metrics (Phase 2D).
+
+        Extracts:
+        - Recall latency p95
+        - Memory pulse health (coherence_score, contradiction_count, orphaned_fragments)
+        - STORM metrics (sheaf_inconsistency, coherence_score, ot_cost_avg, tt_rank)
+        - Narrative completeness (if available)
+        """
+        try:
+            # Try to get memory engine instance
+            registry = await self._get_service_registry()
+            if not registry:
+                return
+
+            # Look for memory service
+            memory_service = registry.get_service_info("memory_system")
+            if not memory_service or not memory_service.instance:
+                logger.debug("[HOMEOSTASIS] Memory service not available for health metrics")
+                return
+
+            memory_engine = memory_service.instance
+
+            # Collect pulse health metrics
+            if hasattr(memory_engine, "get_memory_health"):
+                health = memory_engine.get_memory_health()
+                if health:
+                    snapshot.raw_data["memory_health"] = {
+                        "coherence_score": health.get("coherence_score", 0.0),
+                        "total_fragments": health.get("total_fragments", 0),
+                        "active_concepts": health.get("active_concepts", 0),
+                        "average_confidence": health.get("average_confidence", 0.0),
+                        "contradiction_count": health.get("contradiction_count", 0),
+                        "orphaned_fragments": health.get("orphaned_fragments", 0),
+                        "health_trend": health.get("health_trend", "unknown"),
+                        "status": health.get("status", "unknown"),
+                    }
+                    logger.debug(
+                        f"[HOMEOSTASIS] Memory pulse health: coherence={health.get('coherence_score', 0.0):.2f}, "
+                        f"status={health.get('status', 'unknown')}"
+                    )
+
+            # Collect STORM metrics if enabled
+            if hasattr(memory_engine, "_storm_engine"):
+                storm_engine = memory_engine._storm_engine
+                if storm_engine and storm_engine.config.enabled:
+                    storm_snapshot = storm_engine.metrics.snapshot()
+                    snapshot.raw_data["storm_metrics"] = {
+                        "sheaf_inconsistency": storm_snapshot.get(
+                            "aetherra_storm_sheaf_inconsistency", 0.0
+                        ),
+                        "ot_cost_avg": storm_snapshot.get("aetherra_storm_ot_cost_avg", 0.0),
+                        "tt_rank": storm_snapshot.get("aetherra_storm_tt_rank", 0),
+                        "recall_latency_ms_p95": storm_snapshot.get(
+                            "aetherra_storm_recall_latency_ms_p95", 0.0
+                        ),
+                        "approximate_recalls_total": storm_snapshot.get(
+                            "aetherra_storm_approximate_recalls_total", 0
+                        ),
+                        "maintenance_total": storm_snapshot.get(
+                            "aetherra_storm_maintenance_total", 0
+                        ),
+                        "shadow_comparisons_total": storm_snapshot.get(
+                            "aetherra_storm_shadow_comparisons_total", 0
+                        ),
+                        "shadow_agreement_rate": storm_snapshot.get(
+                            "aetherra_storm_shadow_agreement_rate", 1.0
+                        ),
+                    }
+                    # Calculate coherence from sheaf inconsistency
+                    sheaf_inc = storm_snapshot.get("aetherra_storm_sheaf_inconsistency", 0.0)
+                    storm_coherence = 1.0 / (1.0 + sheaf_inc) if sheaf_inc is not None else 1.0
+                    snapshot.raw_data["storm_metrics"]["coherence_score"] = storm_coherence
+
+                    logger.debug(
+                        f"[HOMEOSTASIS] STORM metrics: inconsistency={sheaf_inc:.4f}, "
+                        f"coherence={storm_coherence:.4f}, ot_cost={storm_snapshot.get('aetherra_storm_ot_cost_avg', 0.0):.4f}"
+                    )
+
+            # Collect narrative completeness (if available)
+            if hasattr(memory_engine, "generate_narrative") and "last_narrative" in getattr(
+                memory_engine, "_narrative_cache", {}
+            ):
+                # Check for recent narrative generation status (optional and non-blocking)
+                narrative_data = memory_engine._narrative_cache.get("last_narrative", {})
+                completeness = narrative_data.get("completeness", 1.0)
+                snapshot.raw_data["narrative_completeness"] = completeness
+                logger.debug(f"[HOMEOSTASIS] Narrative completeness: {completeness:.2f}")
+
+        except Exception as e:
+            logger.debug(
+                f"[HOMEOSTASIS] Memory health metrics collection failed: {e}", exc_info=True
+            )
 
     async def _collect_plugin_metrics(self, snapshot: MetricSnapshot):
         """Collect metrics from the plugin system."""
@@ -248,7 +346,7 @@ class StabilityMetrics:
             if registry:
                 # Get plugin-related services
                 plugin_services = []
-                for service_name, service_info in registry.services.items():
+                for service_name, service_info in registry.list_services().items():
                     if "plugin" in service_name.lower():
                         plugin_services.append(service_info)
 
@@ -314,7 +412,7 @@ class StabilityMetrics:
             if registry:
                 # Look for Lyrixa or GUI services
                 gui_services = []
-                for name, service in registry.services.items():
+                for name, service in registry.list_services().items():
                     if "lyrixa" in name.lower() or "gui" in name.lower():
                         gui_services.append(service)
 

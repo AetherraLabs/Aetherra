@@ -26,7 +26,7 @@ import sqlite3
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Aetherra imports
 from Aetherra.aetherra_core.memory.quantum.qhash import hamming_distance, simhash_text
@@ -58,7 +58,7 @@ class AetherraMemoryNode:
         self,
         content: Any,
         memory_type: str = "general",
-        context: Optional[Dict] = None,
+        context: dict | None = None,
         importance: float = 0.5,
     ):
         self.id = self._generate_id(content)
@@ -96,7 +96,7 @@ class AetherraMemoryNode:
         """Add descriptive tag."""
         self.tags.add(tag)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for storage."""
         return {
             "id": self.id,
@@ -116,7 +116,7 @@ class AetherraMemoryNode:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "AetherraMemoryNode":
+    def from_dict(cls, data: dict[str, Any]) -> "AetherraMemoryNode":
         """Create from dictionary."""
         node = cls(
             content=data["content"],
@@ -331,11 +331,11 @@ class AetherraPerśistentMemorySystem:
     async def store(
         self,
         content: Any,
-        context: Optional[Dict] = None,
+        context: dict | None = None,
         memory_type: str = "general",
         importance: float = 0.5,
-        tags: Optional[List[str]] = None,
-    ) -> Optional[str]:
+        tags: list[str] | None = None,
+    ) -> str | None:
         """Store new memory with cognitive metadata."""
         try:
             # Create memory node
@@ -395,8 +395,8 @@ class AetherraPerśistentMemorySystem:
             return None
 
     async def retrieve(
-        self, query: str, limit: int = 10, memory_type: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
+        self, query: str, limit: int = 10, memory_type: str | None = None
+    ) -> list[dict[str, Any]]:
         """Retrieve memories based on query with cognitive ranking."""
         try:
             logger.info(f"[MEMORY] Retrieving memories for query: {query}")
@@ -443,7 +443,7 @@ class AetherraPerśistentMemorySystem:
             _mem_rate_limited("retrieve", f"[MEMORY] Retrieval error: {e}")
             return []
 
-    async def recall_by_tag(self, tag: str, limit: int = 10) -> List[Dict[str, Any]]:
+    async def recall_by_tag(self, tag: str, limit: int = 10) -> list[dict[str, Any]]:
         """Recall memories by specific tag."""
         try:
             memory_ids = self.index.find_by_tag(tag)
@@ -462,7 +462,7 @@ class AetherraPerśistentMemorySystem:
             logger.error(f"[MEMORY] Tag recall error: {e}")
             return []
 
-    async def get_cognitive_state(self) -> Dict[str, Any]:
+    async def get_cognitive_state(self) -> dict[str, Any]:
         """Get current cognitive state and memory statistics."""
         try:
             # Calculate memory efficiency
@@ -518,8 +518,8 @@ class AetherraPerśistentMemorySystem:
             logger.error(f"[MEMORY] Memory optimization error: {e}")
 
     def _generate_auto_tags(
-        self, content: Any, context: Optional[Dict] = None
-    ) -> List[str]:
+        self, content: Any, context: dict | None = None
+    ) -> list[str]:
         """Generate automatic tags based on content analysis."""
         tags = []
 
@@ -580,7 +580,7 @@ class AetherraPerśistentMemorySystem:
 
     async def _rank_memories(
         self, candidate_ids: set, query: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Rank memories by relevance to query."""
         try:
             scored_memories = []
@@ -604,9 +604,9 @@ class AetherraPerśistentMemorySystem:
             )
 
             # Initialize defaults to satisfy type checkers
-            query_qhash: Optional[int] = None
-            rfm: Optional[RandomFeatureMap] = None
-            q_proj: Optional[List[float]] = None
+            query_qhash: int | None = None
+            rfm: RandomFeatureMap | None = None
+            q_proj: list[float] | None = None
             if use_quantum:
                 try:
                     query_qhash = simhash_text(query, bits=qhash_bits)
@@ -629,7 +629,7 @@ class AetherraPerśistentMemorySystem:
 
                 memory = self.memories[memory_id]
                 score = 0.0
-                q_audit: Dict[str, Any] = {}
+                q_audit: dict[str, Any] = {}
 
                 # Content relevance
                 content_str = str(memory.content).lower()
@@ -654,7 +654,7 @@ class AetherraPerśistentMemorySystem:
                 if use_quantum:
                     try:
                         # QHash similarity (1 - normalized Hamming distance)
-                        mh: Optional[int] = None
+                        mh: int | None = None
                         if isinstance(memory.context, dict):
                             qctx = memory.context.get("quantum")
                             if (
@@ -717,7 +717,7 @@ class AetherraPerśistentMemorySystem:
             return []
 
     @staticmethod
-    def _tokenize(text: str) -> List[str]:
+    def _tokenize(text: str) -> list[str]:
         if not text:
             return []
         return [
@@ -726,7 +726,7 @@ class AetherraPerśistentMemorySystem:
             if t
         ]
 
-    def _hashed_bow_vector(self, text: str, dim: int) -> List[float]:
+    def _hashed_bow_vector(self, text: str, dim: int) -> list[float]:
         vec = [0.0] * dim
         tokens = self._tokenize(text)
         if not tokens:
@@ -764,7 +764,7 @@ class AetherraPerśistentMemorySystem:
             logger.error(f"[MEMORY] Recent memories error: {e}")
             return set()
 
-    def _get_recent_memories(self, hours: int = 24) -> List[AetherraMemoryNode]:
+    def _get_recent_memories(self, hours: int = 24) -> list[AetherraMemoryNode]:
         """Get memories from recent time period."""
         try:
             cutoff_time = datetime.now() - timedelta(hours=hours)
@@ -780,7 +780,7 @@ class AetherraPerśistentMemorySystem:
             logger.error(f"[MEMORY] Recent memories error: {e}")
             return []
 
-    def _get_memory_type_distribution(self) -> Dict[str, int]:
+    def _get_memory_type_distribution(self) -> dict[str, int]:
         """Get distribution of memory types."""
         try:
             distribution = {}
@@ -792,7 +792,7 @@ class AetherraPerśistentMemorySystem:
             logger.error(f"[MEMORY] Type distribution error: {e}")
             return {}
 
-    def _get_recent_activity_summary(self) -> Dict[str, Any]:
+    def _get_recent_activity_summary(self) -> dict[str, Any]:
         """Get summary of recent memory activity."""
         try:
             recent = self._get_recent_memories(hours=24)
@@ -1130,9 +1130,15 @@ class AetherraPerśistentMemorySystem:
             logger.error(f"[MEMORY] Shutdown error: {e}")
 
 
+# Singleton instance (lazy initialization)
+_persistent_memory_instance = None
+
+
 # Factory function for service integration
 async def get_persistent_memory_system():
-    """Factory function to create and initialize the persistent memory system."""
-    memory_system = AetherraPerśistentMemorySystem()
-    await memory_system.initialize()
-    return memory_system
+    """Factory function to get or create the persistent memory system singleton."""
+    global _persistent_memory_instance
+    if _persistent_memory_instance is None:
+        _persistent_memory_instance = AetherraPerśistentMemorySystem()
+        await _persistent_memory_instance.initialize()
+    return _persistent_memory_instance

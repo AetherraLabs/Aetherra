@@ -604,6 +604,32 @@ def build_all_metrics_lines() -> list[str]:  # core builder used by blueprint
     # STORM metrics (STORM PR-5 + Shadow Mode + Day 8 Maintenance)
     storm = registry_client.get_storm_metrics() or {}
     if storm.get("enabled"):
+        # HELP and TYPE declarations for STORM metrics
+        lines.append(
+            "# HELP aetherra_storm_approximate_recalls_total Total approximate recalls executed by STORM"
+        )
+        lines.append("# TYPE aetherra_storm_approximate_recalls_total counter")
+        lines.append(
+            "# HELP aetherra_storm_maintenance_total Total STORM maintenance operations (compaction, rebalancing)"
+        )
+        lines.append("# TYPE aetherra_storm_maintenance_total counter")
+        lines.append(
+            "# HELP aetherra_storm_branch_barycenters_total Total branch barycenter calculations"
+        )
+        lines.append("# TYPE aetherra_storm_branch_barycenters_total counter")
+        lines.append(
+            "# HELP aetherra_storm_shadow_comparisons_total Total shadow mode baseline comparisons"
+        )
+        lines.append("# TYPE aetherra_storm_shadow_comparisons_total counter")
+        lines.append(
+            "# HELP aetherra_storm_shadow_divergences_total Total shadow mode result divergences detected"
+        )
+        lines.append("# TYPE aetherra_storm_shadow_divergences_total counter")
+        lines.append(
+            "# HELP aetherra_storm_shadow_errors_total Total shadow mode execution errors"
+        )
+        lines.append("# TYPE aetherra_storm_shadow_errors_total counter")
+
         # Counters
         for metric in [
             "aetherra_storm_approximate_recalls_total",
@@ -615,6 +641,29 @@ def build_all_metrics_lines() -> list[str]:  # core builder used by blueprint
         ]:
             if metric in storm:
                 lines.append(f"{metric} {_num(storm.get(metric, 0))}")
+
+        # HELP and TYPE declarations for STORM gauges
+        lines.append("# HELP aetherra_storm_ot_cost_avg Average optimal transport cost")
+        lines.append("# TYPE aetherra_storm_ot_cost_avg gauge")
+        lines.append(
+            "# HELP aetherra_storm_sheaf_inconsistency Sheaf inconsistency measure"
+        )
+        lines.append("# TYPE aetherra_storm_sheaf_inconsistency gauge")
+        lines.append("# HELP aetherra_storm_tt_rank Current tensor-train rank")
+        lines.append("# TYPE aetherra_storm_tt_rank gauge")
+        lines.append(
+            "# HELP aetherra_storm_recall_latency_ms_p95 95th percentile recall latency in milliseconds"
+        )
+        lines.append("# TYPE aetherra_storm_recall_latency_ms_p95 gauge")
+        lines.append(
+            "# HELP aetherra_storm_shadow_agreement_rate Shadow mode agreement rate (0.0-1.0)"
+        )
+        lines.append("# TYPE aetherra_storm_shadow_agreement_rate gauge")
+        lines.append(
+            "# HELP aetherra_storm_shadow_latency_ms_avg Average shadow mode comparison latency in milliseconds"
+        )
+        lines.append("# TYPE aetherra_storm_shadow_latency_ms_avg gauge")
+
         # Gauges
         for metric in [
             "aetherra_storm_ot_cost_avg",
@@ -626,7 +675,12 @@ def build_all_metrics_lines() -> list[str]:  # core builder used by blueprint
         ]:
             if metric in storm:
                 lines.append(f"{metric} {_num(storm.get(metric, 0.0))}")
+
         # Labeled gauge: maintenance_last{action=...}
+        lines.append(
+            "# HELP aetherra_storm_maintenance_last Timestamp of last maintenance operation by action type"
+        )
+        lines.append("# TYPE aetherra_storm_maintenance_last gauge")
         maint_last = storm.get("aetherra_storm_maintenance_last")
         if isinstance(maint_last, dict):
             for action, timestamp in maint_last.items():

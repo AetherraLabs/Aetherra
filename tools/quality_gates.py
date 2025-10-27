@@ -101,41 +101,8 @@ def parse_coverage(text: str) -> float | None:
 
 
 def main() -> int:
-    # Phase B: enforce no new imports of deprecated monolithic hub script
-    if os.getenv("LEGACY_HUB_IMPORT_ENFORCE", "1") == "1":
-        try:
-            bad_refs: list[str] = []
-            for path in Path(".").rglob("*.py"):
-                # Skip the shim file itself
-                if path.name == "aetherra_hub_server.py":
-                    continue
-                # Skip enforcement scripts to avoid self-flagging
-                if path.match("tools/precommit_block_legacy_hub.py") or path.match(
-                    "tools/quality_gates.py"
-                ):
-                    continue
-                try:
-                    text = path.read_text(encoding="utf-8", errors="ignore")
-                except Exception:
-                    continue
-                if (
-                    "import aetherra_hub_server" in text
-                    or "from aetherra_hub_server" in text
-                ):
-                    bad_refs.append(str(path))
-            if bad_refs:
-                print("[GATES] Legacy hub import usage detected in:")
-                for b in bad_refs[:10]:
-                    print(f"  - {b}")
-                print(
-                    '[GATES] FAIL: replace with "from aetherra_hub import compat" or module invocation "python -m aetherra_hub.compat"'
-                )
-                print(
-                    "        (override with LEGACY_HUB_IMPORT_ENFORCE=0 if absolutely necessary)"
-                )
-                return 1
-        except Exception as e:  # pragma: no cover - defensive
-            print(f"[GATES] Warning: legacy hub enforcement check failed: {e}")
+    # Legacy hub enforcement removed - monolithic hub fully migrated to aetherra_hub module
+
     # Default strict license trend controls (can be overridden by CI env)
     os.environ.setdefault("LICENSE_UNKNOWN_TREND_FAIL", "1")
     os.environ.setdefault("LICENSE_UNKNOWN_TOLERANCE", "0")
@@ -720,14 +687,14 @@ def main() -> int:
     if os.getenv("PUBLISH_ARTIFACTS", "1") == "1":
         artifacts_dir = Path(os.getenv("ARTIFACTS_DIR", "artifacts"))
         artifacts_dir.mkdir(exist_ok=True)
-        candidates = [
+        candidate_paths: list[Path] = [
             Path("licenses_report.json"),
             Path(os.getenv("SBOM_OUT", "sbom.json")),
             Path("integrity-manifest.json"),
             Path("requirements.lock"),
         ]
         copied = 0
-        for c in candidates:
+        for c in candidate_paths:
             if c.exists():
                 try:
                     target = artifacts_dir / c.name
@@ -824,16 +791,21 @@ def main() -> int:
                         f"| {r.get('code')} | {r.get('severity')} | {r.get('message', '').replace('|', '/')} |\n"
                     )
             # File coverage deltas summary
-            if report.get("file_deltas"):
+            file_deltas = report.get("file_deltas")
+            if file_deltas and isinstance(file_deltas, list):
                 drops = [
                     d
-                    for d in report["file_deltas"]
-                    if d.get("delta") is not None and d["delta"] < 0
+                    for d in file_deltas
+                    if isinstance(d, dict)
+                    and d.get("delta") is not None
+                    and d["delta"] < 0
                 ]
                 improves = [
                     d
-                    for d in report["file_deltas"]
-                    if d.get("delta") is not None and d["delta"] > 0
+                    for d in file_deltas
+                    if isinstance(d, dict)
+                    and d.get("delta") is not None
+                    and d["delta"] > 0
                 ]
                 drops.sort(key=lambda x: x["delta"])
                 improves.sort(key=lambda x: x["delta"], reverse=True)
@@ -851,7 +823,7 @@ def main() -> int:
                         )
             # Future flags exposure
             fut = report.get("future", {})
-            if fut:
+            if fut and isinstance(fut, dict):
                 lines.append("\n### Future Flags\n")
                 for k, v in fut.items():
                     lines.append(f"* {k}: {v}")
@@ -897,14 +869,14 @@ def main() -> int:
 
         # brief wait for exporter startup + small retry loop
         body = ""
-        for attempt in range(5):
+        for _attempt in range(5):
             try:
                 with urllib.request.urlopen(url, timeout=3) as resp:  # nosec B310
                     body = resp.read().decode("utf-8", errors="replace")
                 if body:
                     break
-            except Exception:
-                pass
+            except Exception as exc:
+                print(f"[GATES] Metrics fetch attempt failed: {exc}")
             time.sleep(0.5)
         if not body:
             print("[GATES] Consciousness metrics endpoint not reachable.")
@@ -950,7 +922,7 @@ def main() -> int:
             needle = f'{metric}{{source="{source_value}"}}'
             return needle in body
 
-        missing_base = [m for m in required_base.keys() if not present(m)]
+        missing_base = [m for m in required_base if not present(m)]
         if missing_base:
             print(
                 f"[GATES] Consciousness metrics check FAILED missing base metrics: {', '.join(missing_base)}"
@@ -958,7 +930,7 @@ def main() -> int:
             return 1
 
         # For detailed metrics, warn if missing unless strict
-        missing_detailed = [m for m in detailed_expected.keys() if not present(m)]
+        missing_detailed = [m for m in detailed_expected if not present(m)]
         type_mismatches: list[str] = []
         # Validate expected types when available
         for m, expected_type in {**required_base, **detailed_expected}.items():
@@ -971,8 +943,7 @@ def main() -> int:
             if strict:
                 print(f"[GATES] Metrics TYPE mismatch (strict): {msg}")
                 return 1
-            else:
-                print(f"[GATES] Warning: metrics TYPE mismatch: {msg}")
+            print(f"[GATES] Warning: metrics TYPE mismatch: {msg}")
 
         if missing_detailed:
             if strict:
@@ -980,17 +951,16 @@ def main() -> int:
                     f"[GATES] Consciousness detailed metrics missing (strict): {', '.join(missing_detailed)}"
                 )
                 return 1
-            else:
-                print(
-                    f"[GATES] Info: detailed metrics not all present: {', '.join(missing_detailed)}"
-                )
+            print(
+                f"[GATES] Info: detailed metrics not all present: {', '.join(missing_detailed)}"
+            )
         else:
             print("[GATES] Consciousness detailed metrics present.")
 
         # Optional: require that detailed metrics emit at least one sample (guards against registry init without updates)
         if require_samples:
             sample_missing: list[str] = []
-            for m in detailed_expected.keys():
+            for m in detailed_expected:
                 if not has_sample(m):
                     sample_missing.append(m)
             if sample_missing:
@@ -998,8 +968,7 @@ def main() -> int:
                 if strict:
                     print(f"[GATES] {msg} (strict)")
                     return 1
-                else:
-                    print(f"[GATES] Warning: {msg}")
+                print(f"[GATES] Warning: {msg}")
 
         # Optional: expected source labels must appear on counters
         if expect_sources:
@@ -1019,8 +988,7 @@ def main() -> int:
                 if strict:
                     print(f"[GATES] {msg} (strict)")
                     return 1
-                else:
-                    print(f"[GATES] Info: {msg}")
+                print(f"[GATES] Info: {msg}")
         print("[GATES] Consciousness metrics check OK (base metrics present)")
     return 0
 

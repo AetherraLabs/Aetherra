@@ -45,6 +45,66 @@ core_metrics:
     critical_threshold: 10.0
     control_band: 1.0
 
+  # Memory Health (Phase 2D)
+  memory_coherence_score:
+    target: 0.9  # coherence coefficient (0.0-1.0)
+    min_acceptable: 0.7
+    critical_threshold: 0.5
+    control_band: 0.1
+    breach_action: "trigger_memory_maintenance"
+
+  memory_contradiction_count:
+    target: 0.0  # contradictions in memory system
+    max_acceptable: 5.0
+    critical_threshold: 20.0
+    control_band: 2.0
+    breach_action: "trigger_contradiction_resolution"
+
+  memory_orphaned_fragments:
+    target: 0.0  # orphaned memory fragments
+    max_acceptable: 10.0
+    critical_threshold: 50.0
+    control_band: 5.0
+    breach_action: "trigger_fragment_cleanup"
+
+  # STORM Metrics (Phase 2D)
+  storm_sheaf_inconsistency:
+    target: 0.0  # sheaf inconsistency metric
+    max_acceptable: 0.1
+    critical_threshold: 0.3
+    control_band: 0.05
+    breach_action: "trigger_storm_maintenance"
+    cooldown_minutes: 60  # Prevent excessive maintenance
+
+  storm_coherence_score:
+    target: 1.0  # coherence score (inverse of inconsistency)
+    min_acceptable: 0.9
+    critical_threshold: 0.75
+    control_band: 0.05
+    breach_action: "trigger_storm_reindex"
+
+  storm_ot_cost_avg:
+    target: 0.0  # optimal transport cost
+    max_acceptable: 5.0
+    critical_threshold: 15.0
+    control_band: 2.0
+    description: "High OT cost indicates poor semantic alignment"
+
+  storm_recall_latency_ms_p95:
+    target: 50.0  # milliseconds
+    max_acceptable: 150.0
+    critical_threshold: 500.0
+    control_band: 50.0
+    description: "STORM recall latency at 95th percentile"
+
+  # Narrative Completeness (Phase 2D)
+  narrative_completeness:
+    target: 1.0  # completeness coefficient (0.0-1.0)
+    min_acceptable: 0.8
+    critical_threshold: 0.6
+    control_band: 0.1
+    description: "Memory narrative coherence and completeness"
+
   # Exception and Error Handling
   exception_suppression:
     target: 0.0  # suppressions/hour
@@ -227,3 +287,43 @@ operating_modes:
     maintenance:
       mode: "active_limited"
       description: "Safe operations during maintenance windows"
+
+# Memory and STORM Maintenance (Phase 2D)
+memory_storm_maintenance:
+  # STORM Maintenance Actions
+  storm_maintenance:
+    inconsistency_threshold: 0.1
+    actions:
+      - recompute_sheaf_topology
+      - rebuild_transport_maps
+      - validate_tt_decompositions
+      - clear_stale_embeddings
+    cooldown_minutes: 60  # Prevent excessive maintenance
+    max_actions_per_hour: 2
+
+  # Memory Pulse Maintenance
+  memory_maintenance:
+    coherence_threshold: 0.7
+    actions:
+      - resolve_contradictions
+      - cleanup_orphaned_fragments
+      - rebuild_concept_clusters
+      - reindex_embeddings
+    cooldown_minutes: 30
+    max_actions_per_hour: 3
+
+  # Narrative Maintenance
+  narrative_maintenance:
+    completeness_threshold: 0.8
+    actions:
+      - regenerate_narrative
+      - fill_narrative_gaps
+      - validate_temporal_consistency
+    cooldown_minutes: 120
+    max_actions_per_hour: 1
+
+  # Emergency Recovery
+  emergency_thresholds:
+    storm_coherence_critical: 0.75  # Trigger emergency STORM reindex
+    memory_coherence_critical: 0.5  # Trigger emergency memory rebuild
+    max_emergency_actions_per_day: 3

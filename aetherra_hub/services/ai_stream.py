@@ -22,8 +22,9 @@ import os
 import queue
 import threading
 import time
+from collections.abc import Iterable
 from datetime import datetime
-from typing import Any, Dict, Iterable
+from typing import Any
 
 # Local imports
 from ..utils.http import run_coro_blocking
@@ -40,8 +41,39 @@ _REPLAY_GLOBAL_MAX_TRACES = (
     100  # cap distinct traces retained to avoid unbounded growth
 )
 
+# Internal keys that should never leak in SSE final/result payloads
+# These are stripped defensively before JSON serialization to prevent
+# exposing implementation details or non-serializable objects.
+_INTERNAL_KEYS = frozenset(
+    {"_callbacks", "_metadata", "_trace", "_context", "_internal"}
+)
+
 logger = logging.getLogger(__name__)
 """(module continues)"""
+
+
+# JSON safety: ensure envelopes never crash due to unserializable objects
+def _json_default(o: Any):
+    try:
+        # Datetime → ISO
+        if isinstance(o, datetime):
+            return o.isoformat()
+        # Callables/functions → placeholder string
+        if callable(o):
+            try:
+                return f"<callable:{getattr(o, '__name__', type(o).__name__)}>"
+            except Exception:
+                return "<callable>"
+        # Bytes → utf-8 string (lossy-safe)
+        if isinstance(o, (bytes, bytearray)):
+            try:
+                return o.decode("utf-8", errors="replace")
+            except Exception:
+                return str(o)
+        # Fallback: string representation
+        return str(o)
+    except Exception:
+        return f"<unserializable:{type(o).__name__}>"
 
 
 # Simple engine registry fetch
@@ -100,7 +132,7 @@ class StreamContext:
         self.deadline_ts: float | None = None
         self.ttl_sec: int | None = None
         self.prompt: str = ""
-        self.ctx: Dict[str, Any] = {}
+        self.ctx: dict[str, Any] = {}
         self.scratchpad_policy: str | None = None
         self.pre_chunks: int = 0
         # Debug metrics flag
@@ -111,7 +143,21 @@ class StreamContext:
             dbg_val_l = str(dbg_val).lower()
         self.debug_metrics = dbg_val_l in ("1", "true", "yes")
 
-    def envelope(self, event: str, data: Dict[str, Any]) -> str:
+    def envelope(self, event: str, data: dict[str, Any]) -> str:
+        # Defensive: drop known non-JSON-safe internals if present in payloads
+        # e.g., engines that echo input context with callback functions or metadata
+        if event == "final" and isinstance(data, dict):
+            try:
+                res = data.get("result")
+                if isinstance(res, dict):
+                    # Strip any internal keys from result to prevent leakage
+                    if any(k in res for k in _INTERNAL_KEYS):
+                        res = {k: v for k, v in res.items() if k not in _INTERNAL_KEYS}
+                        data = dict(data)
+                        data["result"] = res
+            except Exception:
+                pass
+
         env = {
             "id": self.next_id,
             "trace_id": self.trace_id,
@@ -121,7 +167,7 @@ class StreamContext:
         }
         if self.client_message_id:
             env["client_message_id"] = self.client_message_id
-        out = f"id: {env['id']}\nevent: {event}\ndata: {json.dumps(env)}\n\n"
+        out = f"id: {env['id']}\nevent: {event}\ndata: {json.dumps(env, default=_json_default)}\n\n"
         self.next_id += 1
         return out
 
@@ -149,8 +195,8 @@ class StreamContext:
 
 
 def stream_sse(
-    body: Dict[str, Any],
-    headers: Dict[str, str],
+    body: dict[str, Any],
+    headers: dict[str, str],
     *,
     last_event_id: str | None = None,
     method: str = "POST",
@@ -276,7 +322,7 @@ def stream_sse(
     ctx.scratchpad_policy = eff_sp
 
     # Midstream queue for engine callbacks
-    q: "queue.Queue[tuple[str, Dict[str, Any]]]" = queue.Queue()
+    q: queue.Queue[tuple[str, dict[str, Any]]] = queue.Queue()
     global _REPLAY_PER_TRACE
 
     # Read dynamic streaming controls directly from environment each invocation (not cached)
@@ -292,7 +338,7 @@ def stream_sse(
     soft_timeout_s = _int_env("AETHERRA_STREAM_SOFT_TIMEOUT_S", 0)
     engine_wait_ms_cfg = _int_env("AETHERRA_ENGINE_WAIT_MS", 0)
 
-    def _emit(evt: str, data: Dict[str, Any]):
+    def _emit(evt: str, data: dict[str, Any]):
         try:
             q.put((evt, data))
         except Exception:
@@ -530,15 +576,30 @@ def stream_sse(
                     pass
                 if not ctx.ttft_done:
                     ctx.mark_ttft()
+                # Update output stats for usage prior to final
+                try:
+                    out_txt = "offline"
+                    CHAT_METRICS.add_output_stats(out_txt, count_tokens(out_txt))
+                except Exception:
+                    pass
+                # Emit chunk, usage, and final (include scratchpad_policy if set)
                 offline_chunk = ctx.envelope("chunk", {"text": "offline"})
-                offline_final = ctx.envelope(
-                    "final",
-                    {
-                        "ok": True,
-                        "result": {"response": "offline", "trace_id": trace_id},
-                    },
-                )
+                usage = {
+                    "tokens_in": CHAT_METRICS.tokens_in_total,
+                    "tokens_out": CHAT_METRICS.tokens_out_total,
+                    "chars_in": CHAT_METRICS.chars_in_total,
+                    "chars_out": CHAT_METRICS.chars_out_total,
+                }
+                usage_env = ctx.envelope("usage", usage)
+                final_payload = {
+                    "ok": True,
+                    "result": {"response": "offline", "trace_id": trace_id},
+                }
+                if ctx.scratchpad_policy:
+                    final_payload["result"]["scratchpad_policy"] = ctx.scratchpad_policy
+                offline_final = ctx.envelope("final", final_payload)
                 yield offline_chunk
+                yield usage_env
                 yield offline_final
                 offline_injected = True
                 payload_emitted = True
@@ -557,17 +618,31 @@ def stream_sse(
                     pass
                 if not ctx.ttft_done:
                     ctx.mark_ttft()
-                forced_final = ctx.envelope(
-                    "final",
-                    {
-                        "ok": True,
-                        "result": {
-                            "response": "offline",
-                            "trace_id": trace_id,
-                            "forced": True,
-                        },
+                # Update output stats for usage prior to final
+                try:
+                    out_txt = "offline"
+                    CHAT_METRICS.add_output_stats(out_txt, count_tokens(out_txt))
+                except Exception:
+                    pass
+                usage = {
+                    "tokens_in": CHAT_METRICS.tokens_in_total,
+                    "tokens_out": CHAT_METRICS.tokens_out_total,
+                    "chars_in": CHAT_METRICS.chars_in_total,
+                    "chars_out": CHAT_METRICS.chars_out_total,
+                }
+                usage_env = ctx.envelope("usage", usage)
+                final_payload = {
+                    "ok": True,
+                    "result": {
+                        "response": "offline",
+                        "trace_id": trace_id,
+                        "forced": True,
                     },
-                )
+                }
+                if ctx.scratchpad_policy:
+                    final_payload["result"]["scratchpad_policy"] = ctx.scratchpad_policy
+                forced_final = ctx.envelope("final", final_payload)
+                yield usage_env
                 yield forced_final
                 offline_injected = True
                 final_emitted = True

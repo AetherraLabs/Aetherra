@@ -29,15 +29,16 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 # Third party imports
 import yaml
 
-from .homeostasis_actuators import HomeostasisActuators
-
 # Aetherra imports
 from .stability_metrics import MetricSnapshot, StabilityMetrics, get_stability_metrics
+
+if TYPE_CHECKING:
+    from .homeostasis_actuators import HomeostasisActuators
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +129,7 @@ class HomeostasisController:
     def __init__(
         self,
         metrics: Optional[StabilityMetrics] = None,
-        actuators: Optional[HomeostasisActuators] = None,
+        actuators: Optional["HomeostasisActuators"] = None,
         config_path: Optional[str] = None,
         policy_path: Optional[str] = None,
     ):
@@ -554,7 +555,9 @@ class HomeostasisController:
                         priority=ActionPriority.MEDIUM,
                         timestamp=current_time,
                         controller_name=control_loop.name,
-                        reason=f"Plugin success rate {control_loop.state.current_value:.1f}% below target {control_loop.setpoint:.1f}%" if control_loop.state is not None else f"Plugin success rate below target {control_loop.setpoint:.1f}%",
+                        reason=f"Plugin success rate {control_loop.state.current_value:.1f}% below target {control_loop.setpoint:.1f}%"
+                        if control_loop.state is not None
+                        else f"Plugin success rate below target {control_loop.setpoint:.1f}%",
                     )
                 )
             elif output < -2.0:  # Plugin success is too high, can optimize
@@ -566,7 +569,9 @@ class HomeostasisController:
                         priority=ActionPriority.LOW,
                         timestamp=current_time,
                         controller_name=control_loop.name,
-                        reason=f"Plugin success rate {control_loop.state.current_value:.1f}% allows optimization" if control_loop.state is not None else f"Plugin success rate allows optimization",
+                        reason=f"Plugin success rate {control_loop.state.current_value:.1f}% allows optimization"
+                        if control_loop.state is not None
+                        else "Plugin success rate allows optimization",
                     )
                 )
 
@@ -580,7 +585,9 @@ class HomeostasisController:
                         priority=ActionPriority.MEDIUM,
                         timestamp=current_time,
                         controller_name=control_loop.name,
-                        reason=f"Memory RTT {control_loop.state.current_value:.1f}ms above target {control_loop.setpoint:.1f}ms" if control_loop.state is not None else f"Memory RTT above target {control_loop.setpoint:.1f}ms",
+                        reason=f"Memory RTT {control_loop.state.current_value:.1f}ms above target {control_loop.setpoint:.1f}ms"
+                        if control_loop.state is not None
+                        else f"Memory RTT above target {control_loop.setpoint:.1f}ms",
                     )
                 )
 
@@ -594,7 +601,9 @@ class HomeostasisController:
                         priority=ActionPriority.MEDIUM,
                         timestamp=current_time,
                         controller_name=control_loop.name,
-                        reason=f"Task latency {control_loop.state.current_value:.1f}ms above target {control_loop.setpoint:.1f}ms" if control_loop.state is not None else f"Task latency above target {control_loop.setpoint:.1f}ms",
+                        reason=f"Task latency {control_loop.state.current_value:.1f}ms above target {control_loop.setpoint:.1f}ms"
+                        if control_loop.state is not None
+                        else f"Task latency above target {control_loop.setpoint:.1f}ms",
                     )
                 )
 
@@ -609,7 +618,9 @@ class HomeostasisController:
                         priority=ActionPriority.LOW,
                         timestamp=current_time,
                         controller_name=control_loop.name,
-                        reason=f"Learning rate {control_loop.state.current_value:.4f} needs adjustment" if control_loop.state is not None else "Learning rate needs adjustment",
+                        reason=f"Learning rate {control_loop.state.current_value:.4f} needs adjustment"
+                        if control_loop.state is not None
+                        else "Learning rate needs adjustment",
                     )
                 )
 
@@ -794,9 +805,17 @@ class HomeostasisController:
                 logger.info(f"🤔 Action pending confirmation: {action.action_type}")
                 continue
 
-            # Execute action
+            # Execute action (kernel envelope when available)
             try:
-                success = await self.actuators.execute_action(action)
+                # Prefer kernel envelope for DLQ/backpressure handling
+                exec_method = getattr(self.actuators, "execute_action_via_kernel", None)
+                if callable(exec_method):
+                    import asyncio as _asyncio  # local to avoid top-level import churn
+
+                    _res = exec_method(action)
+                    success = await _res if _asyncio.iscoroutine(_res) else bool(_res)
+                else:
+                    success = await self.actuators.execute_action(action)
                 results.append((action, success))
 
                 if success:
