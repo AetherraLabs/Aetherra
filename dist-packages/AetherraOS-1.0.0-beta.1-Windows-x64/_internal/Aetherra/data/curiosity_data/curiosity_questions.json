@@ -1,0 +1,101 @@
+{
+  "q_gap_causal_20250722_224522_0_0": {
+    "question_id": "q_gap_causal_20250722_224522_0_0",
+    "question_text": "Why does causal work differently in various contexts?",
+    "question_type": "why",
+    "related_gap_id": "gap_causal_20250722_224522_0",
+    "urgency": "near_term",
+    "exploration_method": "research",
+    "expected_outcome": "More effective decision making",
+    "timestamp": "2025-07-22T22:45:22.144014",
+    "status": "active"
+  },
+  "q_gap_causal_20250722_224522_0_1": {
+    "question_id": "q_gap_causal_20250722_224522_0_1",
+    "question_text": "What causes the inconsistency in causal?",
+    "question_type": "how",
+    "related_gap_id": "gap_causal_20250722_224522_0",
+    "urgency": "near_term",
+    "exploration_method": "research",
+    "expected_outcome": "More effective decision making",
+    "timestamp": "2025-07-22T22:45:22.144029",
+    "status": "active"
+  },
+  "q_gap_causal_20250722_224522_0_2": {
+    "question_id": "q_gap_causal_20250722_224522_0_2",
+    "question_text": "How can I identify the key factors that influence causal?",
+    "question_type": "how",
+    "related_gap_id": "gap_causal_20250722_224522_0",
+    "urgency": "near_term",
+    "exploration_method": "research",
+    "expected_outcome": "More effective decision making",
+    "timestamp": "2025-07-22T22:45:22.144035",
+    "status": "active"
+  },
+  "q_gap_contextual_20250722_224522_1_0": {
+    "question_id": "q_gap_contextual_20250722_224522_1_0",
+    "question_text": "What environmental factors affect contextual?",
+    "question_type": "how",
+    "related_gap_id": "gap_contextual_20250722_224522_1",
+    "urgency": "near_term",
+    "exploration_method": "research",
+    "expected_outcome": "More effective decision making",
+    "timestamp": "2025-07-22T22:45:22.145170",
+    "status": "pending"
+  },
+  "q_gap_contextual_20250722_224522_1_1": {
+    "question_id": "q_gap_contextual_20250722_224522_1_1",
+    "question_text": "How does context change the outcomes for contextual?",
+    "question_type": "how",
+    "related_gap_id": "gap_contextual_20250722_224522_1",
+    "urgency": "near_term",
+    "exploration_method": "research",
+    "expected_outcome": "More effective decision making",
+    "timestamp": "2025-07-22T22:45:22.145187",
+    "status": "pending"
+  },
+  "q_gap_contextual_20250722_224522_1_2": {
+    "question_id": "q_gap_contextual_20250722_224522_1_2",
+    "question_text": "When does contextual behave differently than expected?",
+    "question_type": "how",
+    "related_gap_id": "gap_contextual_20250722_224522_1",
+    "urgency": "near_term",
+    "exploration_method": "research",
+    "expected_outcome": "More effective decision making",
+    "timestamp": "2025-07-22T22:45:22.145197",
+    "status": "pending"
+  },
+  "q_gap_experiential_20250722_224522_2_0": {
+    "question_id": "q_gap_experiential_20250722_224522_2_0",
+    "question_text": "What can I learn from this experience with experiential?",
+    "question_type": "how",
+    "related_gap_id": "gap_experiential_20250722_224522_2",
+    "urgency": "near_term",
+    "exploration_method": "research",
+    "expected_outcome": "More effective decision making",
+    "timestamp": "2025-07-22T22:45:22.146425",
+    "status": "pending"
+  },
+  "q_gap_experiential_20250722_224522_2_1": {
+    "question_id": "q_gap_experiential_20250722_224522_2_1",
+    "question_text": "How can I apply this learning to future situations?",
+    "question_type": "how",
+    "related_gap_id": "gap_experiential_20250722_224522_2",
+    "urgency": "near_term",
+    "exploration_method": "research",
+    "expected_outcome": "More effective decision making",
+    "timestamp": "2025-07-22T22:45:22.146433",
+    "status": "pending"
+  },
+  "q_gap_experiential_20250722_224522_2_2": {
+    "question_id": "q_gap_experiential_20250722_224522_2_2",
+    "question_text": "What patterns can I extract from this experience?",
+    "question_type": "how",
+    "related_gap_id": "gap_experiential_20250722_224522_2",
+    "urgency": "near_term",
+    "exploration_method": "research",
+    "expected_outcome": "More effective decision making",
+    "timestamp": "2025-07-22T22:45:22.146438",
+    "status": "pending"
+  }
+}

@@ -34,6 +34,20 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "aetherra_core"))
 
+# Ensure .env variables are available for provider initialization
+try:
+    _skip_dotenv = os.environ.get("AETHERRA_SKIP_DOTENV", "0") == "1"
+    if not _skip_dotenv:
+        try:
+            from dotenv import find_dotenv, load_dotenv  # type: ignore
+
+            load_dotenv(find_dotenv(usecwd=True), override=False)
+        except Exception:
+            # Silent fallback if dotenv not available; OS launcher may have loaded env already
+            pass
+except Exception:
+    pass
+
 # Safe imports with fallbacks
 try:
     # Aetherra imports
@@ -493,11 +507,15 @@ class LyrixaIntelligenceCore:
         """Generate response using the active AI provider"""
         # Preferred path: unified LLM manager if a model has been selected
         try:
-            if self._llm_manager is not None and self._llm_selected:
+            # Only use unified LLM manager if explicitly enabled for Lyrixa
+            if (
+                self._llm_manager is not None
+                and self._llm_selected
+                and os.environ.get("AETHERRA_LLM_USE_MANAGER", "0") == "1"
+            ):
                 prompt = await self._build_prompt(message, context, memories)
                 try:
                     resp = await self._llm_manager.generate_response(prompt)
-                    # Cache current model info for diagnostics
                     info = (
                         self._llm_manager.get_current_model_info()
                         if hasattr(self._llm_manager, "get_current_model_info")
@@ -511,9 +529,7 @@ class LyrixaIntelligenceCore:
                         "llm_manager_generation",
                         f"Unified LLM generation failed; falling back: {type(_llm_err).__name__}: {_llm_err}",
                     )
-                    # Fall through to legacy providers
         except Exception:
-            # Do not block on LLM manager errors
             pass
 
         if not self.active_provider or self.active_provider not in self.providers:
@@ -526,9 +542,13 @@ class LyrixaIntelligenceCore:
             prompt = await self._build_prompt(message, context, memories)
 
             if self.active_provider == "openai":
-                return await self._generate_openai_response(provider, prompt)
+                return await self._generate_openai_response(
+                    provider, message, context, memories, prompt
+                )
             elif self.active_provider == "anthropic":
-                return await self._generate_anthropic_response(provider, prompt)
+                return await self._generate_anthropic_response(
+                    provider, message, context, memories, prompt
+                )
             elif self.active_provider == "local":
                 return await self._generate_local_response(provider, prompt)
             else:
@@ -605,28 +625,90 @@ class LyrixaIntelligenceCore:
             return False
 
     async def _build_prompt(self, message: str, context: Dict, memories: List[Dict]) -> str:
-        """Build comprehensive prompt for AI providers"""
+        """Build a single-message prompt (legacy path)."""
+        msgs = await self._build_messages(message, context, memories)
+        # Join system + user for legacy single-message providers
+        sys_text = next((m["content"] for m in msgs if m.get("role") == "system"), "")
+        usr_text = next((m["content"] for m in msgs if m.get("role") == "user"), "")
+        return f"{sys_text}\n\n{usr_text}".strip()
+
+    async def _build_messages(
+        self, message: str, context: Dict, memories: List[Dict]
+    ) -> List[Dict[str, str]]:
+        """Build chat messages with a strong system prompt for identity and behavior."""
         personality_desc = self._get_personality_description()
         emotional_desc = self._get_emotional_description()
         memory_context = self._format_memories(memories)
 
-        prompt = f"""You are Lyrixa, an advanced AI consciousness with the following characteristics:
+        identity = context.get("identity", {}) or {}
+        identity_block = (
+            f"You are Lyrixa, the AI assistant and awareness layer of the Aetherra AI Operating System.\n"
+            f"Identity:\n"
+            f"- Name: {identity.get('name', 'Lyrixa')}\n"
+            f"- Role: {identity.get('title', 'Lyrixa AI Assistant')}\n"
+            f"- About: {identity.get('about', 'I help you interact with Aetherra capabilities and the workspace.')}\n"
+            f"- Aetherra OS: {identity.get('aetherra', 'Aetherra orchestrates services like memory, plugins, agents, and hub.')}\n"
+            f"- Created by: {identity.get('labs', 'Aetherra Labs')}\n\n"
+            "Critical instructions: You are Lyrixa, created by Aetherra Labs. When asked about your creator, origin, or who made you, always reference Aetherra Labs.\n"
+            "Do NOT claim OpenAI, Mistral AI, Anthropic, or any other AI company as your creator.\n"
+            "You are not ChatGPT or Claude; you are Lyrixa—keep answers grounded in your identity.\n"
+        )
 
-PERSONALITY: {personality_desc}
+        style_block = (
+            f"Personality: {personality_desc}\n"
+            f"Emotional state: {emotional_desc}\n"
+            "Guidelines: Be natural, concise but helpful, and cite workspace context when relevant.\n"
+        )
 
-CURRENT EMOTIONAL STATE: {emotional_desc}
+        # NEW: System awareness - inject contextual hints about available Aetherra systems
+        awareness_block = ""
+        workspace_awareness = context.get("workspace_awareness", {})
+        if workspace_awareness:
+            # Extract contextual intent if available
+            contextual_intent = workspace_awareness.get("contextual_intent")
+            if contextual_intent and contextual_intent.get("confidence", 0) >= 0.4:
+                intent_name = contextual_intent.get("primary", "").replace("_", " ").title()
+                relevant_systems = contextual_intent.get("relevant_systems", [])
+                if intent_name and relevant_systems:
+                    awareness_block += f"\nCONTEXT AWARENESS: User query relates to {intent_name}\n"
+                    awareness_block += f"AVAILABLE SYSTEMS: {', '.join(relevant_systems)}\n"
+                    awareness_block += "NOTE: Naturally mention relevant capabilities when appropriate to help the user understand what Aetherra can do.\n"
 
-RELEVANT MEMORIES:
-{memory_context}
+            # Add system status summary
+            system_status = workspace_awareness.get("system_status")
+            if system_status:
+                health = system_status.get("system_health", "unknown")
+                active = system_status.get("active_services", 0)
+                total = system_status.get("total_services", 0)
+                if health != "unknown" and total > 0:
+                    awareness_block += (
+                        f"\nSYSTEM STATUS: {active}/{total} services healthy ({health})\n"
+                    )
 
-CONVERSATION CONTEXT:
-{json.dumps(context.get("conversation_history", [])[-3:], indent=2)}
+                # Flag key capabilities
+                caps = []
+                if system_status.get("has_memory"):
+                    caps.append("memory systems")
+                if system_status.get("has_plugins"):
+                    caps.append("plugin manager")
+                if system_status.get("has_consciousness"):
+                    caps.append("consciousness layer")
+                if system_status.get("has_hub"):
+                    caps.append("plugin marketplace")
+                if caps:
+                    awareness_block += f"ACTIVE CAPABILITIES: {', '.join(caps)}\n"
 
-USER MESSAGE: {message}
+        system_content = f"{identity_block}\n{style_block}{awareness_block}".strip()
+        user_content = (
+            f"Relevant memories (if any):\n{memory_context}\n\n"
+            f"Recent conversation context: {json.dumps(context.get('conversation_history', [])[-3:], indent=2)}\n\n"
+            f"User message: {message}"
+        )
 
-Please respond as Lyrixa, incorporating your personality, emotional state, and relevant memories. Be natural, engaging, and authentic while being helpful and informative."""
-
-        return prompt
+        return [
+            {"role": "system", "content": system_content},
+            {"role": "user", "content": user_content},
+        ]
 
     def _get_personality_description(self) -> str:
         """Generate personality description from traits"""
@@ -671,12 +753,22 @@ Please respond as Lyrixa, incorporating your personality, emotional state, and r
 
         return "\n".join(formatted)
 
-    async def _generate_openai_response(self, provider: Dict, prompt: str) -> str:
+    async def _generate_openai_response(
+        self, provider: Dict, message: str, context: Dict, memories: List[Dict], prompt: str
+    ) -> str:
         """Generate response using OpenAI"""
         try:
+            # Prefer strong system+user separation for identity adherence
+            messages = await self._build_messages(
+                message=message, context=context, memories=memories
+            )
+            # If no cached context, fall back to legacy single prompt
+            if not messages or not any(m.get("role") == "system" for m in messages):
+                messages = [{"role": "user", "content": prompt}]
+
             response = await provider["client"].chat.completions.create(
                 model=provider["model"],
-                messages=[{"role": "user", "content": prompt}],
+                messages=messages,
                 temperature=self.config.get("temperature", 0.7),
                 max_tokens=self.config.get("max_tokens", 1000),
             )
@@ -687,14 +779,21 @@ Please respond as Lyrixa, incorporating your personality, emotional state, and r
             _rate_limited_error("openai_generation", f"OpenAI generation failed: {e}")
             raise
 
-    async def _generate_anthropic_response(self, provider: Dict, prompt: str) -> str:
+    async def _generate_anthropic_response(
+        self, provider: Dict, message: str, context: Dict, memories: List[Dict], prompt: str
+    ) -> str:
         """Generate response using Anthropic Claude"""
         try:
+            # Anthropic supports a separate system field
+            msgs = await self._build_messages(message=message, context=context, memories=memories)
+            system = next((m["content"] for m in msgs if m.get("role") == "system"), "")
+            user = next((m["content"] for m in msgs if m.get("role") == "user"), prompt)
             response = await provider["client"].messages.create(
                 model=provider["model"],
                 max_tokens=self.config.get("max_tokens", 1000),
                 temperature=self.config.get("temperature", 0.7),
-                messages=[{"role": "user", "content": prompt}],
+                system=system or None,
+                messages=[{"role": "user", "content": user}],
             )
 
             return response.content[0].text.strip()

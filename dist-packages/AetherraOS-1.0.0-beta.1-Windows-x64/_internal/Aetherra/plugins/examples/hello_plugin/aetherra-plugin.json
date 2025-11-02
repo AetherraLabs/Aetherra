@@ -1,0 +1,10 @@
+{
+    "name": "hello_plugin",
+    "version": "0.1.0",
+    "description": "Example hello plugin demonstrating plugin scaffold.",
+    "capabilities": [
+        "greeting"
+    ],
+    "license": "Apache-2.0",
+    "entry_point": "Aetherra.plugins.examples.hello_plugin.hello_plugin:HelloPlugin"
+}

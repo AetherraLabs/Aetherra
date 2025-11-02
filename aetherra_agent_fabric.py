@@ -26,7 +26,7 @@ import time
 from collections import OrderedDict
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -34,8 +34,8 @@ logger = logging.getLogger(__name__)
 # -------------------- Capability / Policy Gate --------------------
 @dataclass
 class Policy:
-    allowed_caps: Set[str] = field(default_factory=set)
-    denied_caps: Set[str] = field(default_factory=set)
+    allowed_caps: set[str] = field(default_factory=set)
+    denied_caps: set[str] = field(default_factory=set)
 
     def allows(self, cap: str) -> bool:
         c = (cap or "").strip()
@@ -51,7 +51,7 @@ class Policy:
 
 class CapabilityGate:
     def __init__(self):
-        self._policies: Dict[str, Policy] = {}
+        self._policies: dict[str, Policy] = {}
 
     def set_policy(self, agent_name: str, policy: Policy):
         self._policies[str(agent_name)] = policy
@@ -67,12 +67,12 @@ class CapabilityGate:
 class AgentBase:
     name: str = "agent.base"
     topic: str = "tasks.generic"
-    capabilities: Set[str] = set()
+    capabilities: set[str] = set()
 
     def __init__(self, registry, gate: CapabilityGate):
         self.registry = registry
         self.gate = gate
-        self._hb: Optional[asyncio.Task] = None
+        self._hb: asyncio.Task | None = None
 
     async def start(self):
         # Subscribe to topic for metrics visibility; fanout is broadcast-based
@@ -113,7 +113,7 @@ class AgentBase:
             return await self._handle(data or {})
         return {"ok": False, "error": "ignored"}
 
-    async def _handle(self, payload: Dict[str, Any]) -> Any:
+    async def _handle(self, payload: dict[str, Any]) -> Any:
         # To be implemented by subclasses
         return {"ok": True}
 
@@ -124,7 +124,7 @@ class PlannerAgent(AgentBase):
     topic = "tasks.plan"
     capabilities = {"plan"}
 
-    async def _handle(self, payload: Dict[str, Any]) -> Any:
+    async def _handle(self, payload: dict[str, Any]) -> Any:
         if not self.gate.check(self.name, "plan"):
             return {"ok": False, "error": "forbidden"}
         goal = str(payload.get("goal") or payload.get("task") or "").strip()
@@ -147,9 +147,9 @@ class RetrieverAgent(AgentBase):
 
     def __init__(self, registry, gate: CapabilityGate):
         super().__init__(registry, gate)
-        self._cache: "OrderedDict[str, Any]" = OrderedDict()
+        self._cache: OrderedDict[str, Any] = OrderedDict()
 
-    async def _handle(self, payload: Dict[str, Any]) -> Any:
+    async def _handle(self, payload: dict[str, Any]) -> Any:
         if not self.gate.check(self.name, "retrieve"):
             return {"ok": False, "error": "forbidden"}
         query = str(payload.get("query") or "").strip()
@@ -217,7 +217,7 @@ class MemoryAnalyzerAgent(AgentBase):
     topic = "tasks.memory.analyze"
     capabilities = {"analyze_memory"}
 
-    async def _handle(self, payload: Dict[str, Any]) -> Any:
+    async def _handle(self, payload: dict[str, Any]) -> Any:
         if not self.gate.check(self.name, "analyze_memory"):
             return {"ok": False, "error": "forbidden"}
         return {"ok": True, "analysis": {"summary": "no issues detected"}}
@@ -228,7 +228,7 @@ class BugHunterAgent(AgentBase):
     topic = "tasks.bug"
     capabilities = {"scan_code"}
 
-    async def _handle(self, payload: Dict[str, Any]) -> Any:
+    async def _handle(self, payload: dict[str, Any]) -> Any:
         if not self.gate.check(self.name, "scan_code"):
             return {"ok": False, "error": "forbidden"}
         code = str(payload.get("code") or "")
@@ -243,7 +243,7 @@ class ToolsmithAgent(AgentBase):
     topic = "tasks.tools"
     capabilities = {"generate_tool"}
 
-    async def _handle(self, payload: Dict[str, Any]) -> Any:
+    async def _handle(self, payload: dict[str, Any]) -> Any:
         if not self.gate.check(self.name, "generate_tool"):
             return {"ok": False, "error": "forbidden"}
         spec = str(payload.get("spec") or payload.get("description") or "").strip()
@@ -284,7 +284,7 @@ class ExecutorAgent(AgentBase):
     topic = "tasks.execute"
     capabilities = {"execute"}
 
-    async def _handle(self, payload: Dict[str, Any]) -> Any:
+    async def _handle(self, payload: dict[str, Any]) -> Any:
         if not self.gate.check(self.name, "execute"):
             return {"ok": False, "error": "forbidden"}
         action = payload.get("action") or "generic"
@@ -339,7 +339,7 @@ class EthicsGuardAgent(AgentBase):
     topic = "tasks.ethics"
     capabilities = {"policy_check"}
 
-    async def _handle(self, payload: Dict[str, Any]) -> Any:
+    async def _handle(self, payload: dict[str, Any]) -> Any:
         if not self.gate.check(self.name, "policy_check"):
             return {"ok": False, "error": "forbidden"}
         text = str(payload.get("text") or "")
@@ -352,7 +352,7 @@ class SummarizerAgent(AgentBase):
     topic = "tasks.summarize"
     capabilities = {"summarize"}
 
-    async def _handle(self, payload: Dict[str, Any]) -> Any:
+    async def _handle(self, payload: dict[str, Any]) -> Any:
         if not self.gate.check(self.name, "summarize"):
             return {"ok": False, "error": "forbidden"}
         text = str(payload.get("text") or "")
@@ -450,7 +450,7 @@ class OpsBotAgent(AgentBase):
     topic = "tasks.ops"
     capabilities = {"ops_status"}
 
-    async def _handle(self, payload: Dict[str, Any]) -> Any:
+    async def _handle(self, payload: dict[str, Any]) -> Any:
         if not self.gate.check(self.name, "ops_status"):
             return {"ok": False, "error": "forbidden"}
         # Return lightweight system snapshot via registry
@@ -466,7 +466,7 @@ class AgentFabric:
     def __init__(self, registry):
         self.registry = registry
         self.gate = CapabilityGate()
-        self.agents: List[AgentBase] = []
+        self.agents: list[AgentBase] = []
         self._metrics = {
             "agent_messages_total": 0,
             "agent_errors_total": 0,
@@ -483,7 +483,7 @@ class AgentFabric:
             or (self.mode == "headless" and not allow_local_writes)
         )
         # Capability profiles per mode
-        self._profile_caps: Dict[str, Dict[str, Set[str]]] = {
+        self._profile_caps: dict[str, dict[str, set[str]]] = {
             "full": {
                 "agent.planner": {"plan"},
                 "agent.retriever": {"retrieve"},
@@ -559,7 +559,68 @@ class AgentFabric:
             except Exception as e:
                 logger.warning(f"[AGENTS] Failed to start {a.name}: {e}")
 
+        # Register agents with the AgentOrchestrator if available
+        await self._register_with_orchestrator()
+
         logger.info("[AGENTS] Agent Fabric ready with %d agents", len(self.agents))
+
+    async def _register_with_orchestrator(self):
+        """Register Agent Fabric agents with the AgentOrchestrator for task management."""
+        try:
+            # Get the aetherra_engine from the service registry
+            eng = self.registry.get_service("aetherra_engine")
+            if not eng:
+                logger.debug(
+                    "[AGENTS] No aetherra_engine found; skipping orchestrator registration"
+                )
+                return
+
+            # Get the agent orchestrator
+            orch = getattr(eng, "agent_orchestrator", None)
+            if not orch or not hasattr(orch, "register_agent"):
+                logger.debug(
+                    "[AGENTS] No agent_orchestrator found; skipping registration"
+                )
+                return
+
+            # Register each agent with its capabilities
+            for agent in self.agents:
+                # Get the actual capabilities allowed by the policy gate
+                policy = self.gate._policies.get(agent.name)
+                if not policy:
+                    logger.debug(
+                        f"[AGENTS] No policy for {agent.name}; skipping orchestrator registration"
+                    )
+                    continue
+
+                # Only register agents with allowed capabilities
+                caps = list(policy.allowed_caps) if policy.allowed_caps else []
+                if not caps:
+                    logger.debug(
+                        f"[AGENTS] No allowed caps for {agent.name}; skipping orchestrator registration"
+                    )
+                    continue
+
+                # Register with orchestrator
+                try:
+                    success = await orch.register_agent(
+                        agent_id=agent.name, name=agent.name, capabilities=caps
+                    )
+                    if success:
+                        logger.info(
+                            f"[AGENTS] Registered {agent.name} with orchestrator (caps: {caps})"
+                        )
+                    else:
+                        logger.warning(
+                            f"[AGENTS] Failed to register {agent.name} with orchestrator"
+                        )
+                except Exception as e:
+                    logger.warning(
+                        f"[AGENTS] Error registering {agent.name} with orchestrator: {e}"
+                    )
+
+        except Exception as e:
+            logger.warning(f"[AGENTS] Failed to register agents with orchestrator: {e}")
 
     async def handle_message(self, message_type: str, data: Any) -> Any:
         mt = (message_type or "").lower()
@@ -706,7 +767,7 @@ class AgentFabric:
                     return await self._dispatch_agent(a, payload)
         return {"ok": False, "error": "unknown_message"}
 
-    async def _dispatch_agent(self, agent: AgentBase, payload: Dict[str, Any]) -> Any:
+    async def _dispatch_agent(self, agent: AgentBase, payload: dict[str, Any]) -> Any:
         name = agent.name
         self._metrics["agent_messages_total"] += 1
         p = self._metrics.setdefault("per_agent", {}).setdefault(
@@ -735,13 +796,13 @@ class AgentFabric:
             dt_ms = (time.perf_counter() - t0) * 1000.0
             p["latency_ms_sum"] += dt_ms
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         return {
             "agents": [a.name for a in self.agents],
             "policies": {a.name: list(a.capabilities) for a in self.agents},
         }
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         # Include simple averages per agent
         out = {k: v for k, v in self._metrics.items() if k != "per_agent"}
         per_agent = {}
@@ -763,7 +824,7 @@ class AgentFabric:
                 pass
 
 
-_fabric_instance: Optional[AgentFabric] = None
+_fabric_instance: AgentFabric | None = None
 
 
 async def get_agent_fabric(service_registry) -> AgentFabric:

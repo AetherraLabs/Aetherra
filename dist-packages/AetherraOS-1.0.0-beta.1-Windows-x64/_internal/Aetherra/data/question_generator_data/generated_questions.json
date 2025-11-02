@@ -1,0 +1,418 @@
+{
+  "sq_story_1_deep_why_20250722_224522": {
+    "question_id": "sq_story_1_deep_why_20250722_224522",
+    "question_text": "Why did async optimization success succeed when similar approaches failed before?",
+    "category": "deep_why",
+    "source_type": "story",
+    "source_id": "story_1",
+    "priority_score": 0.8999999999999999,
+    "urgency": "short_term",
+    "context": {
+      "story_theme": "async optimization success",
+      "insights": [
+        "async improved performance",
+        "user satisfaction increased",
+        "implementation was smooth"
+      ]
+    },
+    "expected_insights": [
+      "Pattern extraction",
+      "Principle generalization",
+      "Application opportunities"
+    ],
+    "exploration_methods": [
+      "reflection",
+      "experimentation"
+    ],
+    "timestamp": "2025-07-22T22:45:22.181461",
+    "status": "pending"
+  },
+  "sq_story_1_what_if_20250722_224522": {
+    "question_id": "sq_story_1_what_if_20250722_224522",
+    "question_text": "What if I applied the principles from async optimization success to other areas?",
+    "category": "what_if",
+    "source_type": "story",
+    "source_id": "story_1",
+    "priority_score": 0.8999999999999999,
+    "urgency": "short_term",
+    "context": {
+      "story_theme": "async optimization success",
+      "insights": [
+        "async improved performance",
+        "user satisfaction increased",
+        "implementation was smooth"
+      ]
+    },
+    "expected_insights": [
+      "Pattern extraction",
+      "Principle generalization",
+      "Application opportunities"
+    ],
+    "exploration_methods": [
+      "reflection",
+      "experimentation"
+    ],
+    "timestamp": "2025-07-22T22:45:22.181477",
+    "status": "pending"
+  },
+  "sq_story_1_how_to_20250722_224522": {
+    "question_id": "sq_story_1_how_to_20250722_224522",
+    "question_text": "How can I systematically replicate the success of async optimization success?",
+    "category": "how_to",
+    "source_type": "story",
+    "source_id": "story_1",
+    "priority_score": 0.8999999999999999,
+    "urgency": "short_term",
+    "context": {
+      "story_theme": "async optimization success",
+      "insights": [
+        "async improved performance",
+        "user satisfaction increased",
+        "implementation was smooth"
+      ]
+    },
+    "expected_insights": [
+      "Pattern extraction",
+      "Principle generalization",
+      "Application opportunities"
+    ],
+    "exploration_methods": [
+      "reflection",
+      "experimentation"
+    ],
+    "timestamp": "2025-07-22T22:45:22.181486",
+    "status": "pending"
+  },
+  "sq_story_1_impact_20250722_224522": {
+    "question_id": "sq_story_1_impact_20250722_224522",
+    "question_text": "What broader impact could understanding async optimization success have on my capabilities?",
+    "category": "impact",
+    "source_type": "story",
+    "source_id": "story_1",
+    "priority_score": 0.8999999999999999,
+    "urgency": "short_term",
+    "context": {
+      "story_theme": "async optimization success",
+      "insights": [
+        "async improved performance",
+        "user satisfaction increased",
+        "implementation was smooth"
+      ]
+    },
+    "expected_insights": [
+      "Pattern extraction",
+      "Principle generalization",
+      "Application opportunities"
+    ],
+    "exploration_methods": [
+      "reflection",
+      "experimentation"
+    ],
+    "timestamp": "2025-07-22T22:45:22.181494",
+    "status": "pending"
+  },
+  "sq_story_2_deep_why_20250722_224522": {
+    "question_id": "sq_story_2_deep_why_20250722_224522",
+    "question_text": "Why did user preference learning succeed when similar approaches failed before?",
+    "category": "deep_why",
+    "source_type": "story",
+    "source_id": "story_2",
+    "priority_score": 0.8999999999999999,
+    "urgency": "short_term",
+    "context": {
+      "story_theme": "user preference learning",
+      "insights": [
+        "user changed preferences",
+        "adaptation was slow",
+        "missed early signals"
+      ]
+    },
+    "expected_insights": [
+      "Pattern extraction",
+      "Principle generalization",
+      "Application opportunities"
+    ],
+    "exploration_methods": [
+      "reflection",
+      "experimentation"
+    ],
+    "timestamp": "2025-07-22T22:45:22.181502",
+    "status": "pending"
+  },
+  "sq_story_2_what_if_20250722_224522": {
+    "question_id": "sq_story_2_what_if_20250722_224522",
+    "question_text": "What if I applied the principles from user preference learning to other areas?",
+    "category": "what_if",
+    "source_type": "story",
+    "source_id": "story_2",
+    "priority_score": 0.8999999999999999,
+    "urgency": "short_term",
+    "context": {
+      "story_theme": "user preference learning",
+      "insights": [
+        "user changed preferences",
+        "adaptation was slow",
+        "missed early signals"
+      ]
+    },
+    "expected_insights": [
+      "Pattern extraction",
+      "Principle generalization",
+      "Application opportunities"
+    ],
+    "exploration_methods": [
+      "reflection",
+      "experimentation"
+    ],
+    "timestamp": "2025-07-22T22:45:22.181508",
+    "status": "pending"
+  },
+  "sq_story_2_how_to_20250722_224522": {
+    "question_id": "sq_story_2_how_to_20250722_224522",
+    "question_text": "How can I systematically replicate the success of user preference learning?",
+    "category": "how_to",
+    "source_type": "story",
+    "source_id": "story_2",
+    "priority_score": 0.8999999999999999,
+    "urgency": "short_term",
+    "context": {
+      "story_theme": "user preference learning",
+      "insights": [
+        "user changed preferences",
+        "adaptation was slow",
+        "missed early signals"
+      ]
+    },
+    "expected_insights": [
+      "Pattern extraction",
+      "Principle generalization",
+      "Application opportunities"
+    ],
+    "exploration_methods": [
+      "reflection",
+      "experimentation"
+    ],
+    "timestamp": "2025-07-22T22:45:22.181516",
+    "status": "pending"
+  },
+  "sq_story_2_impact_20250722_224522": {
+    "question_id": "sq_story_2_impact_20250722_224522",
+    "question_text": "What broader impact could understanding user preference learning have on my capabilities?",
+    "category": "impact",
+    "source_type": "story",
+    "source_id": "story_2",
+    "priority_score": 0.8999999999999999,
+    "urgency": "short_term",
+    "context": {
+      "story_theme": "user preference learning",
+      "insights": [
+        "user changed preferences",
+        "adaptation was slow",
+        "missed early signals"
+      ]
+    },
+    "expected_insights": [
+      "Pattern extraction",
+      "Principle generalization",
+      "Application opportunities"
+    ],
+    "exploration_methods": [
+      "reflection",
+      "experimentation"
+    ],
+    "timestamp": "2025-07-22T22:45:22.181521",
+    "status": "pending"
+  },
+  "rq_refl_1_deep_why_20250722_224522": {
+    "question_id": "rq_refl_1_deep_why_20250722_224522",
+    "question_text": "Why does structured approaches consistently outperform ad-hoc methods occur so consistently?",
+    "category": "deep_why",
+    "source_type": "reflection",
+    "source_id": "refl_1",
+    "priority_score": 0.8,
+    "urgency": "long_term",
+    "context": {
+      "reflection_insight": "Memory integration improved significantly with structured approach",
+      "uncertainty": "Not clear why structure helps so much"
+    },
+    "expected_insights": [
+      "Deeper understanding",
+      "Predictive ability",
+      "Pattern recognition"
+    ],
+    "exploration_methods": [
+      "reflection",
+      "observation"
+    ],
+    "timestamp": "2025-07-22T22:45:22.152841",
+    "status": "pending"
+  },
+  "rq_refl_1_how_to_20250722_224522": {
+    "question_id": "rq_refl_1_how_to_20250722_224522",
+    "question_text": "How can I better understand the mechanism behind memory integration improved significantly with structured approach?",
+    "category": "how_to",
+    "source_type": "reflection",
+    "source_id": "refl_1",
+    "priority_score": 0.8,
+    "urgency": "long_term",
+    "context": {
+      "reflection_insight": "Memory integration improved significantly with structured approach",
+      "uncertainty": "Not clear why structure helps so much"
+    },
+    "expected_insights": [
+      "Deeper understanding",
+      "Predictive ability",
+      "Pattern recognition"
+    ],
+    "exploration_methods": [
+      "reflection",
+      "observation"
+    ],
+    "timestamp": "2025-07-22T22:45:22.152855",
+    "status": "pending"
+  },
+  "rq_refl_1_when_will_20250722_224522": {
+    "question_id": "rq_refl_1_when_will_20250722_224522",
+    "question_text": "When will I be able to predict structured approaches consistently outperform ad-hoc methods reliably?",
+    "category": "when_will",
+    "source_type": "reflection",
+    "source_id": "refl_1",
+    "priority_score": 0.8,
+    "urgency": "long_term",
+    "context": {
+      "reflection_insight": "Memory integration improved significantly with structured approach",
+      "uncertainty": "Not clear why structure helps so much"
+    },
+    "expected_insights": [
+      "Deeper understanding",
+      "Predictive ability",
+      "Pattern recognition"
+    ],
+    "exploration_methods": [
+      "reflection",
+      "observation"
+    ],
+    "timestamp": "2025-07-22T22:45:22.152864",
+    "status": "pending"
+  },
+  "rq_refl_1_why_not_20250722_224522": {
+    "question_id": "rq_refl_1_why_not_20250722_224522",
+    "question_text": "Why haven't I noticed not clear why structure helps so much before?",
+    "category": "why_not",
+    "source_type": "reflection",
+    "source_id": "refl_1",
+    "priority_score": 0.8,
+    "urgency": "long_term",
+    "context": {
+      "reflection_insight": "Memory integration improved significantly with structured approach",
+      "uncertainty": "Not clear why structure helps so much"
+    },
+    "expected_insights": [
+      "Deeper understanding",
+      "Predictive ability",
+      "Pattern recognition"
+    ],
+    "exploration_methods": [
+      "reflection",
+      "observation"
+    ],
+    "timestamp": "2025-07-22T22:45:22.152870",
+    "status": "pending"
+  },
+  "rq_refl_2_deep_why_20250722_224522": {
+    "question_id": "rq_refl_2_deep_why_20250722_224522",
+    "question_text": "Why does gradual improvement in interaction quality occur so consistently?",
+    "category": "deep_why",
+    "source_type": "reflection",
+    "source_id": "refl_2",
+    "priority_score": 0.8,
+    "urgency": "long_term",
+    "context": {
+      "reflection_insight": "User communication patterns are becoming more nuanced",
+      "uncertainty": "Haven't identified the specific improvements"
+    },
+    "expected_insights": [
+      "Deeper understanding",
+      "Predictive ability",
+      "Pattern recognition"
+    ],
+    "exploration_methods": [
+      "reflection",
+      "observation"
+    ],
+    "timestamp": "2025-07-22T22:45:22.152878",
+    "status": "pending"
+  },
+  "rq_refl_2_how_to_20250722_224522": {
+    "question_id": "rq_refl_2_how_to_20250722_224522",
+    "question_text": "How can I better understand the mechanism behind user communication patterns are becoming more nuanced?",
+    "category": "how_to",
+    "source_type": "reflection",
+    "source_id": "refl_2",
+    "priority_score": 0.8,
+    "urgency": "long_term",
+    "context": {
+      "reflection_insight": "User communication patterns are becoming more nuanced",
+      "uncertainty": "Haven't identified the specific improvements"
+    },
+    "expected_insights": [
+      "Deeper understanding",
+      "Predictive ability",
+      "Pattern recognition"
+    ],
+    "exploration_methods": [
+      "reflection",
+      "observation"
+    ],
+    "timestamp": "2025-07-22T22:45:22.152884",
+    "status": "pending"
+  },
+  "rq_refl_2_when_will_20250722_224522": {
+    "question_id": "rq_refl_2_when_will_20250722_224522",
+    "question_text": "When will I be able to predict gradual improvement in interaction quality reliably?",
+    "category": "when_will",
+    "source_type": "reflection",
+    "source_id": "refl_2",
+    "priority_score": 0.8,
+    "urgency": "long_term",
+    "context": {
+      "reflection_insight": "User communication patterns are becoming more nuanced",
+      "uncertainty": "Haven't identified the specific improvements"
+    },
+    "expected_insights": [
+      "Deeper understanding",
+      "Predictive ability",
+      "Pattern recognition"
+    ],
+    "exploration_methods": [
+      "reflection",
+      "observation"
+    ],
+    "timestamp": "2025-07-22T22:45:22.152889",
+    "status": "pending"
+  },
+  "rq_refl_2_why_not_20250722_224522": {
+    "question_id": "rq_refl_2_why_not_20250722_224522",
+    "question_text": "Why haven't I noticed haven't identified the specific improvements before?",
+    "category": "why_not",
+    "source_type": "reflection",
+    "source_id": "refl_2",
+    "priority_score": 0.8,
+    "urgency": "long_term",
+    "context": {
+      "reflection_insight": "User communication patterns are becoming more nuanced",
+      "uncertainty": "Haven't identified the specific improvements"
+    },
+    "expected_insights": [
+      "Deeper understanding",
+      "Predictive ability",
+      "Pattern recognition"
+    ],
+    "exploration_methods": [
+      "reflection",
+      "observation"
+    ],
+    "timestamp": "2025-07-22T22:45:22.152894",
+    "status": "pending"
+  }
+}

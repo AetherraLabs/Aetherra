@@ -1,0 +1,107 @@
+{
+  "cont_temporal_20250722_224522_0": {
+    "contradiction_id": "cont_temporal_20250722_224522_0",
+    "contradiction_type": "temporal",
+    "title": "Plugin optimization approach changed",
+    "description": "Previously believed manual optimization was best, now using automated approaches",
+    "confidence_score": 0.8,
+    "severity": "medium",
+    "evidence_for": [
+      {
+        "content": "Manual optimization gives more control",
+        "timestamp": "2024-01-15"
+      }
+    ],
+    "evidence_against": [
+      {
+        "content": "Automated optimization shows better results",
+        "timestamp": "2024-01-20"
+      }
+    ],
+    "context_factors": [
+      "temporal_evolution",
+      "learning_context",
+      "user_interaction"
+    ],
+    "potential_causes": [
+      "perspective_change",
+      "new_information",
+      "context_shift"
+    ],
+    "resolution_strategies": [],
+    "first_detected": "2025-07-22T22:45:22.183540",
+    "last_updated": "2025-07-22T22:45:22.183543",
+    "resolution_status": "open",
+    "resolution_notes": ""
+  },
+  "cont_behavioral_20250722_224522_1": {
+    "contradiction_id": "cont_behavioral_20250722_224522_1",
+    "contradiction_type": "behavioral",
+    "title": "Learning preference inconsistency",
+    "description": "States preference for structured learning but engages more with exploratory approaches",
+    "confidence_score": 0.75,
+    "severity": "low",
+    "evidence_for": [
+      {
+        "content": "I prefer structured learning approaches",
+        "timestamp": "2024-01-10"
+      }
+    ],
+    "evidence_against": [
+      {
+        "content": "Showed high engagement with exploratory learning",
+        "timestamp": "2024-01-18"
+      }
+    ],
+    "context_factors": [
+      "temporal_evolution",
+      "learning_context",
+      "user_interaction"
+    ],
+    "potential_causes": [
+      "perspective_change",
+      "new_information",
+      "context_shift"
+    ],
+    "resolution_strategies": [],
+    "first_detected": "2025-07-22T22:45:22.183557",
+    "last_updated": "2025-07-22T22:45:22.183558",
+    "resolution_status": "open",
+    "resolution_notes": ""
+  },
+  "cont_logical_20250722_224522_2": {
+    "contradiction_id": "cont_logical_20250722_224522_2",
+    "contradiction_type": "logical",
+    "title": "Memory efficiency contradiction",
+    "description": "Claims memory system is efficient while also noting frequent optimization needs",
+    "confidence_score": 0.9,
+    "severity": "high",
+    "evidence_for": [
+      {
+        "content": "Memory system works efficiently",
+        "timestamp": "2024-01-12"
+      }
+    ],
+    "evidence_against": [
+      {
+        "content": "Need frequent memory optimizations",
+        "timestamp": "2024-01-19"
+      }
+    ],
+    "context_factors": [
+      "temporal_evolution",
+      "learning_context",
+      "user_interaction"
+    ],
+    "potential_causes": [
+      "perspective_change",
+      "new_information",
+      "context_shift"
+    ],
+    "resolution_strategies": [],
+    "first_detected": "2025-07-22T22:45:22.183566",
+    "last_updated": "2025-07-22T22:45:22.183568",
+    "resolution_status": "open",
+    "resolution_notes": ""
+  }
+}

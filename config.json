@@ -11,5 +11,27 @@
     },
     "plugins": {
         "optional_gui": true
+    },
+    "intelligence": {
+        "default_provider": "openai",
+        "temperature": 0.7,
+        "max_tokens": 2000,
+        "memory_integration": true,
+        "enable_emotional_awareness": true,
+        "enable_proactive_suggestions": true
+    },
+    "openai": {
+        "model": "gpt-4o-mini"
+    },
+    "anthropic": {
+        "model": "claude-3-5-sonnet-20241022"
+    },
+    "lyrixa_chat": {
+        "prefer_ai_response": true,
+        "fallback_to_deterministic": false,
+        "consciousness_integration_settings": {
+            "coherence_threshold": 0.7,
+            "enable_quantum_enhancement": true
+        }
     }
 }

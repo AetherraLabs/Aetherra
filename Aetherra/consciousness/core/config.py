@@ -40,6 +40,11 @@ MACRO_REFLECTION_INTERVAL: int = int(
     os.getenv("AETHERRA_MACRO_REFLECT_INTERVAL", "1200")
 )  # ~4 min at 5 Hz
 
+# Phase 4: Continuity snapshot interval (ticks between snapshots)
+CONTINUITY_SNAPSHOT_INTERVAL: int = int(
+    os.getenv("AETHERRA_CONTINUITY_SNAPSHOT_INTERVAL", "60")
+)  # ~12s at 5 Hz
+
 # QFAC integration: store episodic moments to QFAC
 ENABLE_QFAC_PERSISTENCE: bool = os.getenv("AETHERRA_QFAC_PERSISTENCE", "1") == "1"
 

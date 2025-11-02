@@ -1,0 +1,40 @@
+{
+  "metrics": {
+    "collection_interval": 1.0,
+    "retention_period": 86400,
+    "aggregation_windows": [
+      60,
+      300,
+      3600
+    ],
+    "tracked_metrics": [
+      "quantum_operations_per_second",
+      "average_recall_time",
+      "coherence_stability",
+      "error_correction_rate",
+      "memory_compression_ratio",
+      "interference_pattern_strength",
+      "classical_fallback_rate"
+    ]
+  },
+  "alerts": {
+    "coherence_degradation": {
+      "threshold": 0.6,
+      "action": "log_warning"
+    },
+    "high_error_rate": {
+      "threshold": 0.15,
+      "action": "enable_classical_fallback"
+    },
+    "performance_degradation": {
+      "threshold": 0.3,
+      "action": "performance_analysis"
+    }
+  },
+  "reports": {
+    "daily_summary": true,
+    "weekly_analysis": true,
+    "performance_trends": true,
+    "optimization_recommendations": true
+  }
+}

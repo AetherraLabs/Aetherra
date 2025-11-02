@@ -82,8 +82,19 @@ class AetherraPluginDiscovery:
         self.plugins_dir: Path = (
             Path(plugins_dir) if plugins_dir is not None else Path("Aetherra/plugins")
         ).absolute()
+        # Ensure the plugins directory exists so first-run doesn't warn and future installs have a drop-in location
+        try:
+            self.plugins_dir.mkdir(parents=True, exist_ok=True)
+        except Exception as exc:
+            logger.debug(
+                "[SCAN] Could not create plugins directory %s: %s",
+                self.plugins_dir,
+                exc,
+            )
+
         self.discovered_plugins: dict[str, PluginMetadata] = {}
-        self.hub_url = "http://localhost:3001"
+        # Respect the Hub URL chosen/started by the launcher; fallback to classic default
+        self.hub_url = os.environ.get("AETHERRA_HUB_URL", "http://localhost:3001")
 
     async def discover_all_plugins(self) -> dict[str, PluginMetadata]:
         """Discover all plugins in the plugins directory."""

@@ -371,6 +371,40 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "Run Registry Daemon (3030)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"aetherra_registry_daemon.py",
+				"--host",
+				"127.0.0.1",
+				"--port",
+				"3030"
+			],
+			"isBackground": true,
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "Run Hub (AI API 3001 via Registry)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/run_hub_ai_api.py",
+				"--port",
+				"3001",
+				"--auto-port"
+			],
+			"options": {
+				"env": {
+					"AETHERRA_REGISTRY_URL": "http://127.0.0.1:3030"
+				}
+			},
+			"isBackground": true,
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
 			"label": "Run Hub (AI API 3012)",
 			"type": "shell",
 			"command": "python",
@@ -418,6 +452,28 @@
 				"full",
 				"-v"
 			],
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": [
+				"$python"
+			]
+		},
+		{
+			"label": "Run OS (with Registry Daemon)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-u",
+				"aetherra_os_launcher.py",
+				"--mode",
+				"full",
+				"-v"
+			],
+			"options": {
+				"env": {
+					"AETHERRA_REGISTRY_URL": "http://127.0.0.1:3030"
+				}
+			},
 			"group": "build",
 			"isBackground": false,
 			"problemMatcher": [
@@ -722,6 +778,104 @@
 			],
 			"group": "build",
 			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Start Stack: Registry → Hub → OS",
+			"type": "shell",
+			"command": "echo",
+			"args": [
+				"Starting Registry + Hub + OS (via Registry)"
+			],
+			"dependsOn": [
+				"Run Registry Daemon (3030)",
+				"Run Hub (AI API 3001 via Registry)",
+				"Run OS (with Registry Daemon)"
+			],
+			"dependsOrder": "sequence",
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Pre-Pack Validation (Test Profile)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/pre_pack_validation.py",
+				"--profile",
+				"test",
+				"--verbose"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Pre-Pack Validation (Production Profile)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/pre_pack_validation.py",
+				"--profile",
+				"prod",
+				"--verbose",
+				"--output",
+				"pre_pack_validation_prod_report.json"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Pre-Pack Validation (Full Suite - PowerShell)",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"${workspaceFolder}\\tools\\run_pre_pack_validation.ps1",
+				"-Profile",
+				"prod",
+				"-SetProdFlags",
+				"-Full"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Pre-Pack: Check Endpoints (Requires Running Hub)",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"${workspaceFolder}\\tools\\run_pre_pack_validation.ps1",
+				"-CheckEndpoints"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Pre-Pack: Complete Validation + Tests",
+			"type": "shell",
+			"command": "echo",
+			"args": [
+				"Running complete pre-package validation suite"
+			],
+			"dependsOn": [
+				"Pre-Pack Validation (Production Profile)",
+				"Smoke tests (no coverage)",
+				"Verify Claims (Capabilities Tests)",
+				"Aether Verify (Strict Signatures)"
+			],
+			"dependsOrder": "sequence",
+			"group": "test",
+			"isBackground": false,
 			"problemMatcher": []
 		}
 	],

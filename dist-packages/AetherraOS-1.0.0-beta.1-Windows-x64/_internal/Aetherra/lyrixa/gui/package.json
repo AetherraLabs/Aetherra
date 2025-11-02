@@ -1,0 +1,48 @@
+{
+    "name": "@aetherra/lyrixa-gui",
+    "version": "0.1.0",
+    "private": true,
+    "description": "Modern GUI for Aetherra Lyrixa AI System",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc && vite build",
+        "preview": "vite preview",
+        "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    },
+    "dependencies": {
+        "@radix-ui/react-dialog": "^1.0.5",
+        "@radix-ui/react-progress": "^1.0.3",
+        "@radix-ui/react-slot": "^1.0.2",
+        "@radix-ui/react-tabs": "^1.0.4",
+        "@react-three/drei": "^9.92.3",
+        "@react-three/fiber": "^8.15.11",
+        "class-variance-authority": "^0.7.0",
+        "clsx": "^2.0.0",
+        "framer-motion": "^10.16.4",
+        "lucide-react": "^0.292.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "recharts": "^2.10.1",
+        "sonner": "^2.0.7",
+        "tailwind-merge": "^2.0.0",
+        "three": "^0.159.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.10.0",
+        "@types/react": "^18.2.37",
+        "@types/react-dom": "^18.2.15",
+        "@types/three": "^0.159.0",
+        "@typescript-eslint/eslint-plugin": "^6.10.0",
+        "@typescript-eslint/parser": "^6.10.0",
+        "@vitejs/plugin-react": "^4.2.0",
+        "autoprefixer": "^10.4.16",
+        "eslint": "^8.53.0",
+        "eslint-plugin-react-hooks": "^4.6.0",
+        "eslint-plugin-react-refresh": "^0.4.4",
+        "postcss": "^8.4.31",
+        "tailwindcss": "^3.3.5",
+        "typescript": "^5.2.2",
+        "vite": "^5.0.0"
+    }
+}

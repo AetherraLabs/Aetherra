@@ -58,11 +58,18 @@ class HealthCheck:
 
 
 class HealthCheckEngine:
-    def __init__(self, policy: PolicyEngine, hub_base_url: str = "http://127.0.0.1:3001"):
+    def __init__(
+        self,
+        policy: PolicyEngine,
+        hub_base_url: str = "http://127.0.0.1:3001",
+        self_trust: Optional[Any] = None,
+    ):
         self.policy = policy
         self.actuator = Actuator(CAP_REG, policy)
         self.last_results: Dict[str, Dict[str, Any]] = {}
         self.hub = hub_base_url.rstrip("/")
+        # Phase 3: Optional self-trust layer for consciousness integration
+        self.self_trust = self_trust
 
     # -----------------------------
     # Probes (safe, fast, defensive)
@@ -232,8 +239,41 @@ class HealthCheckEngine:
         except Exception as e:
             result["status"] = "error"
             result["error"] = str(e)
+
+        # Phase 3: Update self-trust layer if available
+        if self.self_trust:
+            # Map check name to subsystem (simple mapping strategy)
+            subsystem = self._map_check_to_subsystem(check.name)
+            if subsystem:
+                self.self_trust.observe(subsystem, result["status"])
+
         self.last_results[check.name] = result
         return result
+
+    def _map_check_to_subsystem(self, check_name: str) -> Optional[str]:
+        """Map health check name to subsystem name for self-trust tracking.
+
+        Args:
+            check_name: Health check name (e.g., "chat_system", "memory_engine")
+
+        Returns:
+            Subsystem name or None if no mapping
+        """
+        # Simple heuristic mapping
+        if "chat" in check_name:
+            return "chat"
+        elif "perception" in check_name or "event" in check_name:
+            return "perception"
+        elif "memory" in check_name:
+            return "memory"
+        elif "plugin" in check_name:
+            return "plugins"
+        elif "policy" in check_name:
+            return "policy"
+        elif "disk" in check_name:
+            return "disk"
+        # Add more mappings as needed
+        return None
 
 
 # -----------------------------

@@ -80,7 +80,7 @@ const QualiaBar: React.FC<{ label: string; value: number; min?: number; max?: nu
     value,
     min = 0,
     max = 1,
-    color = "emerald"
+    color: _color = "emerald" // Prefixed with _ to indicate intentionally unused
 }) => {
     // Normalize value to 0-100 range for display
     const normalized = ((value - min) / (max - min)) * 100;
@@ -236,8 +236,8 @@ export const ConsciousnessMonitor: React.FC = () => {
                             <div
                                 key={idx}
                                 className={`p-3 rounded-xl border transition ${intent.blocked
-                                        ? 'bg-amber-900/10 border-amber-800/40'
-                                        : 'bg-[#111113] border-[#1e1e21]'
+                                    ? 'bg-amber-900/10 border-amber-800/40'
+                                    : 'bg-[#111113] border-[#1e1e21]'
                                     }`}
                             >
                                 <div className="flex items-start justify-between gap-2">
@@ -269,12 +269,12 @@ export const ConsciousnessMonitor: React.FC = () => {
             <Section title="Consciousness Narrative" icon={BookOpen}>
                 {narrative.length > 0 ? (
                     <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                        {narrative.slice().reverse().map((moment, idx) => (
+                        {narrative.slice().reverse().map((moment) => (
                             <div
                                 key={moment.tick_id}
                                 className={`p-3 rounded-xl border transition ${moment.significant
-                                        ? 'bg-emerald-900/10 border-emerald-800/40'
-                                        : 'bg-[#111113] border-[#1e1e21]'
+                                    ? 'bg-emerald-900/10 border-emerald-800/40'
+                                    : 'bg-[#111113] border-[#1e1e21]'
                                     }`}
                             >
                                 <div className="flex items-start gap-3">

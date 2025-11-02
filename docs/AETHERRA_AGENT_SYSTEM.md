@@ -1,6 +1,6 @@
 # Aetherra Agent System
 
-Updated: 2025-08-27
+Updated: 2025-11-01
 
 This document describes the Aetherra Agent System: the orchestrator and agent components responsible for coordinating specialized AI agents to execute tasks. It mirrors the structure of other system docs and reflects the current codebase.
 
@@ -71,6 +71,108 @@ Planner enhancements (planned):
 - Dynamic agent selection: choose agents using context (memory, past success rate, specialization)
 - Fallback routing: if agent A fails, route to agent B with equivalent capabilities
 
+#### Automatic Orchestration Flow
+
+The orchestrator runs a background loop that automatically discovers and assigns tasks to agents:
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                   ORCHESTRATION LOOP (1 second)                  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+                    ┌─────────────────┐
+                    │  Query Tasks    │
+                    │  (status=PENDING)│
+                    └─────────────────┘
+                              │
+                              ▼
+                    ┌─────────────────┐
+                    │  Any pending?   │───No──▶ Sleep 1s ──┐
+                    └─────────────────┘                     │
+                              │ Yes                         │
+                              ▼                             │
+                    ┌─────────────────┐                     │
+                    │ Query Agents    │                     │
+                    │(status=AVAILABLE)│                    │
+                    └─────────────────┘                     │
+                              │                             │
+                              ▼                             │
+                    ┌─────────────────┐                     │
+                    │ Any available?  │───No──▶ Continue   │
+                    └─────────────────┘                     │
+                              │ Yes                         │
+                              ▼                             │
+                    ┌─────────────────┐                     │
+                    │  For each task: │                     │
+                    │ Score all agents│                     │
+                    │  by capability  │                     │
+                    └─────────────────┘                     │
+                              │                             │
+                              ▼                             │
+                    ┌─────────────────┐                     │
+                    │ Capability Match│                     │
+                    │  cap_score * 10 │                     │
+                    │ + perf_score    │                     │
+                    └─────────────────┘                     │
+                              │                             │
+                              ▼                             │
+                    ┌─────────────────┐                     │
+                    │ Best agent found│───No──▶ Continue   │
+                    │   (score > 0)?  │                     │
+                    └─────────────────┘                     │
+                              │ Yes                         │
+                              ▼                             │
+                    ┌─────────────────┐                     │
+                    │  Assign Task    │                     │
+                    │ • Set ASSIGNED  │                     │
+                    │ • Set BUSY      │                     │
+                    │ • Update times  │                     │
+                    └─────────────────┘                     │
+                              │                             │
+                              ▼                             │
+                    ┌─────────────────┐                     │
+                    │ Start Execution │                     │
+                    │  (asyncio.Task) │                     │
+                    └─────────────────┘                     │
+                              │                             │
+                              ▼                             │
+                    ┌─────────────────┐                     │
+                    │ Agent runs task │                     │
+                    │  in background  │                     │
+                    └─────────────────┘                     │
+                              │                             │
+                              ▼                             │
+                    ┌─────────────────┐                     │
+                    │On completion:   │                     │
+                    │• Set COMPLETED  │                     │
+                    │  or FAILED      │                     │
+                    │• Set AVAILABLE  │                     │
+                    │• Update metrics │                     │
+                    └─────────────────┘                     │
+                              │                             │
+                              └─────────────────────────────┘
+```
+
+**Key points:**
+
+- **Automatic**: No manual triggers needed; loop runs continuously every 1 second
+- **Capability-based**: Agents scored by capability match (exact/partial/none) × 10 + performance rate
+- **Status-driven**: Tasks transition PENDING → ASSIGNED → RUNNING → COMPLETED/FAILED
+- **Agent states**: AVAILABLE (ready), BUSY (working), IDLE (inactive)
+- **Performance tracking**: Success rate and latency influence future assignments
+- **Concurrent execution**: Multiple tasks can run simultaneously across different agents
+- **Graceful handling**: Failed tasks marked FAILED; agents return to AVAILABLE state
+
+**Agent Fabric Integration:**
+
+The orchestrator discovers agents through the Agent Fabric registry:
+
+- 11 agents currently registered (Planner, Retriever, BugHunter, MemoryAnalyzer, Toolsmith, EthicsGuard, Summarizer, Executor, Ops, etc.)
+- Each agent declares capabilities (e.g., `["planning", "task_decomposition"]`)
+- Orchestrator matches task requirements to agent capabilities
+- Tasks submitted via API or Engine automatically enter the queue
+
 ### 4) Coordination patterns
 
 - Single-agent direct execution (default)
@@ -89,6 +191,7 @@ Planner enhancements (planned):
   - `{ task_id: str }`
 - Task status (output):
   - `{ task_id: str, status: "pending"|"running"|"failed"|"completed", progress?: number, result?: dict, error?: string, updated_at: iso8601 }`
+    (line broken for readability)
 - Agent registration (input):
   - `{ id: str, capabilities: string[], description?: string, policy?: dict }`
 - Agent execution (result):
@@ -195,15 +298,16 @@ Establish a concrete evaluation harness to drive continuous improvement:
 - Meta-agent role that evaluates agents and recommends retraining/fine-tuning
 - Regression tracking with thresholds; flag performance drops for investigation
 
-### 14) Interfaces (implemented, opt-in)
+### 14) Interfaces (implemented, enabled by default for dev)
 
-The Agents API is implemented in the Hub and disabled by default. Enable via env flags and token guards.
+The Agents API is implemented in the Hub and **enabled by default** for development profiles. Production deployments should use token guards.
 
 Endpoints:
 
-- `GET /api/agents` — orchestrator summary
+- `GET /api/agents` — orchestrator summary (total agents, pending tasks, active agents, available capabilities)
 - `GET /api/agents/metrics` — orchestrator metrics snapshot
-- `POST /api/tasks` — submit task
+- `POST /api/tasks` — submit task (returns task_id)
+- `GET /api/tasks` — **list recent task history** (supports `?limit=N` and `?include_completed=1`, returns tasks with `performed_at` and `duration_secs`)
 - `GET /api/tasks/{id}` — task status/results
 - `POST /api/tasks/{id}/stream` — SSE stream of task progress
 - `POST /api/agents/evaluate` — run a lightweight evaluation harness
@@ -211,10 +315,12 @@ Endpoints:
 
 Environment flags:
 
-- `AETHERRA_AGENTS_API_ENABLED=1`
-- `AETHERRA_AGENTS_API_REQUIRE_TOKEN=1` and `AETHERRA_AGENTS_API_TOKEN=<token>` (recommended)
+- `AETHERRA_AGENTS_API_ENABLED=1` (default enabled for dev; use `=0` to disable)
+- `AETHERRA_AGENTS_API_REQUIRE_TOKEN=1` and `AETHERRA_AGENTS_API_TOKEN=<token>` (recommended for production)
 - `AETHERRA_AGENTS_API_STREAM=1` to enable SSE for task updates
 - `AETHERRA_AGENTS_STREAM_POLL_MS=200` (optional poll interval)
+
+**Note**: Agents API is enabled by default in dev mode to support the Lyrixa UI's Agents tab, which displays live task history.
 
 Prometheus:
 
@@ -276,4 +382,3 @@ Headers: X-Aetherra-Token: <token>
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
-

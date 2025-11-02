@@ -1,0 +1,21 @@
+{
+    "id": "workflow_builder",
+    "name": "Workflow Builder",
+    "version": "1.0.0",
+    "ui_entry": "index.html",
+    "permissions": [
+        "storage:read",
+        "workflow:edit"
+    ],
+    "size_budget_kb": 2048,
+    "timeout_ms": 15000,
+    "sandbox": true,
+    "zones": [
+        {
+            "id": "workflow_builder.main",
+            "zone_type": "right_plugin",
+            "title": "Workflow Builder",
+            "components": []
+        }
+    ]
+}

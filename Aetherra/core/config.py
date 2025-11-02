@@ -10,6 +10,7 @@ Global configuration settings and constants for the Aetherra platform.
 
 # Standard library imports
 import os
+import sys
 from pathlib import Path
 from typing import Any, Dict
 
@@ -20,8 +21,14 @@ class Config:
     # Version information
     VERSION = "2.0.0"
 
-    # Paths
-    PROJECT_ROOT = Path(__file__).parent.parent
+    # Paths - Handle PyInstaller frozen environment
+    if getattr(sys, "frozen", False):
+        # Running in PyInstaller bundle - use application directory
+        PROJECT_ROOT = Path(sys.executable).parent
+    else:
+        # Running in normal Python environment
+        PROJECT_ROOT = Path(__file__).parent.parent
+
     DATA_DIR = PROJECT_ROOT / "data"
     PLUGINS_DIR = PROJECT_ROOT / "plugins"
 
@@ -71,11 +78,7 @@ class Config:
     @classmethod
     def to_dict(cls) -> Dict[str, Any]:
         """Convert configuration to dictionary"""
-        return {
-            k: v
-            for k, v in cls.__dict__.items()
-            if not k.startswith("_") and not callable(v)
-        }
+        return {k: v for k, v in cls.__dict__.items() if not k.startswith("_") and not callable(v)}
 
 
 # Environment-based configuration loading
@@ -83,6 +86,6 @@ Config.from_env("default_model", "AETHERRA_MODEL", Config.DEFAULT_MODEL)
 Config.from_env("max_tokens", "AETHERRA_MAX_TOKENS", Config.MAX_TOKENS)
 Config.from_env("temperature", "AETHERRA_TEMPERATURE", Config.TEMPERATURE)
 
-# Ensure data directories exist
-Config.DATA_DIR.mkdir(exist_ok=True)
-Config.PLUGINS_DIR.mkdir(exist_ok=True)
+# Ensure data directories exist (create parent directories if needed)
+Config.DATA_DIR.mkdir(parents=True, exist_ok=True)
+Config.PLUGINS_DIR.mkdir(parents=True, exist_ok=True)

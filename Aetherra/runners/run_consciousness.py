@@ -11,6 +11,7 @@ Real perception → felt experience → narrative continuity.
 
 from __future__ import annotations
 
+import os
 import platform
 import signal
 import time
@@ -82,7 +83,17 @@ def main() -> None:
     if config.SAFETY_ENVELOPE_ENABLED and config.AUTONOMY_MODE != "observe":
         print(f"🛡️  Safety envelope enabled (mode: {config.AUTONOMY_MODE})")
         policy = PolicyEngine(mode=config.AUTONOMY_MODE)
-        safety_envelope = Actuator(REGISTRY, policy)
+        # Optional dry-run capability registry for side-effect-free execution
+        if os.getenv("AETHERRA_DRY_RUN_CAPS", "0") == "1":
+            try:
+                from Aetherra.safety_envelope.dry_run_registry import DryRunCapabilityRegistry
+
+                safety_envelope = Actuator(DryRunCapabilityRegistry(REGISTRY), policy)
+                print("🧪 Using Dry-Run Capability Registry (no side effects)")
+            except Exception:
+                safety_envelope = Actuator(REGISTRY, policy)
+        else:
+            safety_envelope = Actuator(REGISTRY, policy)
     else:
         print("👁️  Observation mode only (no actions)")
 
@@ -102,7 +113,10 @@ def main() -> None:
     # Health Checks: boot-time sweep + periodic maintenance
     # ------------------------------------------------------------
     h_policy = PolicyEngine(mode=config.AUTONOMY_MODE)
-    hce = HealthCheckEngine(h_policy, hub_base_url="http://127.0.0.1:3001")
+    # Phase 3: Wire self-trust layer to health checks
+    hce = HealthCheckEngine(
+        h_policy, hub_base_url="http://127.0.0.1:3001", self_trust=core.self_trust
+    )
     checks = build_default_checks(hce)
 
     print()

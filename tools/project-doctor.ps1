@@ -3,6 +3,10 @@ $GLOBAL_LAST_ERROR = 0
 $PY_DIRS = "Aetherra"
 $FRONTEND_DIR = "frontend"
 
+# Force UTF-8 encoding to handle Unicode/emojis in service names
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$env:PYTHONIOENCODING = "utf-8"
+
 # Modes: --check, --fix (default), --guarded-fix; optional --security-deep, --fast, --timeout <sec>
 $MODE = "fix"
 $SECURITY_DEEP = $false
@@ -69,25 +73,31 @@ function Invoke-CommandWithTimeout {
 }
 
 function Run-RuffCheck {
+  if ($FAST) { Write-Host "[doctor][info] Fast mode: skipping ruff format/check"; return }
   if (Get-Command ruff -ErrorAction SilentlyContinue) {
     Write-Host "[doctor] Ruff format --check"
-    Invoke-CommandWithTimeout -FilePath "ruff" -Arguments @("format","--check",".") -TimeoutSec $([Math]::Min($TIMEOUT_SEC,180)) | Out-Null
+    Invoke-CommandWithTimeout -FilePath "ruff" -Arguments @("format","--check","Aetherra",".\\*.py") -TimeoutSec $([Math]::Min($TIMEOUT_SEC,180)) | Out-Null
     Write-Host "[doctor] Ruff check"
-    Invoke-CommandWithTimeout -FilePath "ruff" -Arguments @("check",".") -TimeoutSec $([Math]::Min($TIMEOUT_SEC,300)) | Out-Null
+    Invoke-CommandWithTimeout -FilePath "ruff" -Arguments @("check","Aetherra",".\\*.py") -TimeoutSec $([Math]::Min($TIMEOUT_SEC,300)) | Out-Null
   } else { Write-Host "[doctor][warn] ruff not found; skipping format/lint" }
 }
 
 function Run-RuffFix {
+  if ($FAST) { Write-Host "[doctor][info] Fast mode: skipping ruff format/fix"; return }
   if (Get-Command ruff -ErrorAction SilentlyContinue) {
     Write-Host "[doctor] Ruff format & fix"
-    Invoke-CommandWithTimeout -FilePath "ruff" -Arguments @("format",".") -TimeoutSec $([Math]::Min($TIMEOUT_SEC,180)) | Out-Null
-    Invoke-CommandWithTimeout -FilePath "ruff" -Arguments @("check",".","--fix") -TimeoutSec $([Math]::Min($TIMEOUT_SEC,300)) | Out-Null
+    Invoke-CommandWithTimeout -FilePath "ruff" -Arguments @("format","Aetherra",".\\*.py") -TimeoutSec $([Math]::Min($TIMEOUT_SEC,180)) | Out-Null
+    Invoke-CommandWithTimeout -FilePath "ruff" -Arguments @("check","Aetherra",".\\*.py","--fix") -TimeoutSec $([Math]::Min($TIMEOUT_SEC,300)) | Out-Null
   } else { Write-Host "[doctor][warn] ruff not found; skipping format/lint" }
 }
 
 function Run-TypesAndTests {
   Write-Host "[doctor] MyPy (strict-ish)"
-  if (Get-Command mypy -ErrorAction SilentlyContinue) { Invoke-CommandWithTimeout -FilePath "mypy" -Arguments @($PY_DIRS) -TimeoutSec $([Math]::Min($TIMEOUT_SEC,300)) | Out-Null } else { Write-Host "[doctor][warn] mypy not found; skipping" }
+  if ($FAST) {
+    Write-Host "[doctor][info] Fast mode: skipping mypy"
+  } elseif (Get-Command mypy -ErrorAction SilentlyContinue) {
+    Invoke-CommandWithTimeout -FilePath "mypy" -Arguments @("--no-incremental",$PY_DIRS) -TimeoutSec $([Math]::Min($TIMEOUT_SEC,300)) | Out-Null
+  } else { Write-Host "[doctor][warn] mypy not found; skipping" }
 
   Write-Host "[doctor] Pyright (optional)"
   if (-not $FAST -and (Get-Command pyright -ErrorAction SilentlyContinue)) { Invoke-CommandWithTimeout -FilePath "pyright" -Arguments @() -TimeoutSec $([Math]::Min($TIMEOUT_SEC,300)) | Out-Null } else { Write-Host "[doctor][info] pyright not installed or fast mode" }
@@ -105,17 +115,21 @@ function Run-TypesAndTests {
   } else { Write-Host "[doctor][warn] python not found; skipping smoke" }
 
   # 2) Capabilities slice (faster than full test run)
-  if (Get-Command python -ErrorAction SilentlyContinue) {
-    Write-Host "[doctor] PyTest (capabilities slice)"
-    $env:AETHERRA_QUIET = "1"
-    $pytestArgs = @("-m","pytest","-q","-o","addopts=","tests/capabilities")
-    $rc2 = Invoke-CommandWithTimeout -FilePath "python" -Arguments $pytestArgs -TimeoutSec $([Math]::Min($TIMEOUT_SEC,600))
-    if ($rc2 -ne 0) {
-      Write-Host "[doctor][error] Capabilities tests failed"
-      $script:GLOBAL_LAST_ERROR = $rc2
+  if (-not $FAST) {
+    if (Get-Command python -ErrorAction SilentlyContinue) {
+      Write-Host "[doctor] PyTest (capabilities slice)"
+      $env:AETHERRA_QUIET = "1"
+      $pytestArgs = @("-m","pytest","-q","-o","addopts=","tests/capabilities")
+      $rc2 = Invoke-CommandWithTimeout -FilePath "python" -Arguments $pytestArgs -TimeoutSec $([Math]::Min($TIMEOUT_SEC,600))
+      if ($rc2 -ne 0) {
+        Write-Host "[doctor][error] Capabilities tests failed"
+        $script:GLOBAL_LAST_ERROR = $rc2
+      }
+    } else {
+      Write-Host "[doctor][warn] python not found; skipping tests"
     }
   } else {
-    Write-Host "[doctor][warn] python not found; skipping tests"
+    Write-Host "[doctor][info] Fast mode: skipping pytest capabilities slice"
   }
 }
 
@@ -163,9 +177,9 @@ function Run-Frontend {
     Write-Host "[doctor] Frontend: lint & format"
     if (-not $FAST -and (Get-Command npm -ErrorAction SilentlyContinue)) {
       Push-Location $FRONTEND_DIR
-      $null = Invoke-CommandWithTimeout -FilePath "npm" -Arguments @("run","lint","--silent") -TimeoutSec [Math]::Min($TIMEOUT_SEC,300)
-      $null = Invoke-CommandWithTimeout -FilePath "npm" -Arguments @("run","format","--silent") -TimeoutSec [Math]::Min($TIMEOUT_SEC,180)
-      $null = Invoke-CommandWithTimeout -FilePath "npm" -Arguments @("run","typecheck","--silent") -TimeoutSec [Math]::Min($TIMEOUT_SEC,300)
+      $null = Invoke-CommandWithTimeout -FilePath "npm" -Arguments @("run","lint","--silent") -TimeoutSec $([Math]::Min($TIMEOUT_SEC,300))
+      $null = Invoke-CommandWithTimeout -FilePath "npm" -Arguments @("run","format","--silent") -TimeoutSec $([Math]::Min($TIMEOUT_SEC,180))
+      $null = Invoke-CommandWithTimeout -FilePath "npm" -Arguments @("run","typecheck","--silent") -TimeoutSec $([Math]::Min($TIMEOUT_SEC,300))
       Pop-Location
     } else { Write-Host "[doctor][warn] npm not found or fast mode; skipping frontend checks" }
   }
@@ -195,7 +209,7 @@ switch ($MODE) {
     Run-RuffFix
 
     if (Get-Command pytest -ErrorAction SilentlyContinue) {
-      $null = Invoke-CommandWithTimeout -FilePath "pytest" -Arguments @("-q","--maxfail=1","--disable-warnings") -TimeoutSec [Math]::Min($TIMEOUT_SEC,600)
+      $null = Invoke-CommandWithTimeout -FilePath "pytest" -Arguments @("-q","--maxfail=1","--disable-warnings") -TimeoutSec $([Math]::Min($TIMEOUT_SEC,600))
       if ($GLOBAL_LAST_ERROR -ne 0) {
         if (Get-Command git -ErrorAction SilentlyContinue) { Write-Host "[doctor] Tests failed; reverting changes via git reset --hard"; git reset --hard }
         exit $GLOBAL_LAST_ERROR

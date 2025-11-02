@@ -15,8 +15,6 @@ This is THE script that transforms Aetherra from code into a living AI OS.
 # Standard library imports
 import argparse
 import asyncio
-
-# Configure logging with UTF-8 support for Windows
 import codecs
 import contextlib
 import logging
@@ -26,6 +24,41 @@ import sys
 import time
 import traceback
 from typing import Any
+
+# Early .env loader: ensure API keys and config from .env are available at startup
+try:
+    _testing = str(os.environ.get("TESTING", "")).strip().lower() in ("true", "1")
+    _skip = os.environ.get("AETHERRA_SKIP_DOTENV", "0") == "1"
+    if not _testing and not _skip:
+        try:
+            # Prefer python-dotenv if available
+            from dotenv import find_dotenv, load_dotenv  # type: ignore
+
+            # Use find_dotenv to locate the project root .env reliably
+            _env_path = find_dotenv(usecwd=True)
+            load_dotenv(dotenv_path=_env_path or None, override=False)
+        except Exception:
+            # Fallback: light manual parser for .env at project root
+            try:
+                _root_env = os.path.join(os.getcwd(), ".env")
+                if os.path.exists(_root_env):
+                    with open(_root_env, encoding="utf-8", errors="ignore") as _f:
+                        for _line in _f:
+                            _line = _line.strip()
+                            if not _line or _line.startswith("#") or "=" not in _line:
+                                continue
+                            _k, _v = _line.split("=", 1)
+                            os.environ.setdefault(_k.strip(), _v.strip())
+            except Exception:
+                pass
+except Exception:
+    # Never block launcher on env loading issues
+    pass
+
+# [DEV] Auto-configure shared registry for development
+# This ensures Hub and OS use the same registry without requiring env vars
+if "AETHERRA_REGISTRY_URL" not in os.environ:
+    os.environ["AETHERRA_REGISTRY_URL"] = "http://127.0.0.1:3030"
 
 # Aetherra imports
 # Import Aetherra components (must be before any runtime code per lint)
@@ -41,10 +74,8 @@ CORE_AVAILABLE = True
 # Set up UTF-8 encoding for Windows terminals
 if os.name == "nt":  # Windows
     # Configure stdout to handle UTF-8 (safe fallback)
-    try:
+    with contextlib.suppress(Exception):
         sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer)
-    except Exception:
-        pass
 
 
 # Configure logging with error handling for Unicode characters
@@ -265,10 +296,8 @@ class LyrixaChatAdapter:
 
     async def start(self):
         # Initialize underlying service and start heartbeat
-        try:
+        with contextlib.suppress(Exception):
             await self.impl.initialize()
-        except Exception:
-            pass
         self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
 
     async def handle_message(self, message_type, data):
@@ -284,7 +313,7 @@ class LyrixaChatAdapter:
                 # Aetherra imports
                 from Aetherra.lyrixa.chat.lyrixa_chat_service import ChatOptions
             except Exception:
-                ChatOptions = None  # type: ignore
+                ChatOptions = None  # type: ignore  # noqa: N806
 
             opts = None
             if ChatOptions is not None:
@@ -329,10 +358,8 @@ class LyrixaChatAdapter:
 
     async def shutdown(self):
         if self._heartbeat_task:
-            try:
+            with contextlib.suppress(Exception):
                 self._heartbeat_task.cancel()
-            except Exception:
-                pass
 
 
 class AetherraOSLauncher:
@@ -388,6 +415,26 @@ class AetherraOSLauncher:
 
             # Apply logging mode (quiet or custom level) ASAP
             self._apply_logging_mode(cfg)
+
+            # Default disclosure posture: Free/Observation Layer unless explicitly overridden
+            try:
+                if os.environ.get("AETHERRA_DISCLOSURE_TIER") in (None, ""):
+                    os.environ["AETHERRA_DISCLOSURE_TIER"] = "free"
+                tier = os.environ.get("AETHERRA_DISCLOSURE_TIER", "free").lower()
+                if tier == "free":
+                    logger.info(
+                        "[POLICY] Disclosure tier: FREE (Observation Layer — metadata only)"
+                    )
+                elif tier == "reflect":
+                    logger.info(
+                        "[POLICY] Disclosure tier: REFLECTION (structured descriptions, no raw patches)"
+                    )
+                else:
+                    logger.info(
+                        "[POLICY] Disclosure tier: INTEGRATION (full capability)"
+                    )
+            except Exception as _pol_exc:
+                logger.debug("[POLICY] Disclosure tier init skipped: %s", _pol_exc)
 
             # Phase 1: Initialize Service Registry
             await self._initialize_service_registry()
@@ -780,6 +827,9 @@ class AetherraOSLauncher:
         # Load homeostasis system for autonomous stability control
         await self._load_homeostasis_system(system_config)
 
+        # Load Interactive Lyrixa (reactive expressions + emotion system)
+        await self._load_interactive_lyrixa(system_config)
+
         # Initialize HMR Controller (opt-in) near end of Phase 2, before kernel starts accepting tasks
         try:
             hmr_enabled = bool(
@@ -894,10 +944,8 @@ class AetherraOSLauncher:
                     return {"error": "unknown_message"}
 
                 async def shutdown(self):
-                    try:
+                    with contextlib.suppress(Exception):
                         await self.impl.stop_improvement_cycle()
-                    except Exception:
-                        pass
 
             sie_adapter = SelfImprovementAdapter(sie)
             self.systems["self_improvement"] = sie_adapter
@@ -1238,6 +1286,25 @@ class AetherraOSLauncher:
             engine_impl = await core_engine.boot()
             engine_adapter = EngineAdapter(engine_impl)
             self.systems["aetherra"] = engine_adapter
+
+            # Wire memory system to engine if memory system was loaded first
+            # registry_client.get_storm_metrics() expects: eng.memory_system.engine._storm_engine
+            # So we need to wrap the memory engine to expose it via .engine attribute
+            if "memory" in self.systems and hasattr(self.systems["memory"], "impl"):
+                memory_impl = self.systems[
+                    "memory"
+                ].impl  # MemoryAdapter stores implementation in .impl
+                if memory_impl is not None:
+                    # Create wrapper that exposes memory engine via .engine attribute
+                    class _MemorySystemWrapper:
+                        def __init__(self, engine):
+                            self.engine = engine  # registry client looks for .engine._storm_engine
+
+                    engine_impl.memory_system = _MemorySystemWrapper(memory_impl)
+                    logger.info(
+                        "[ENGINE] Wired AetherraMemoryEngineAdvanced to engine.memory_system"
+                    )
+
             await register_service(
                 "aetherra_engine",
                 engine_impl,
@@ -1494,9 +1561,11 @@ class AetherraOSLauncher:
                     f"[CONSCIOUSNESS] Overall Consciousness Level: {consciousness_level:.1%}"
                 )
 
-            except ImportError as e:
+            except Exception as e:
+                # Treat any failure during imports/initialization (including FileNotFoundError
+                # from optional deps like qiskit) as "not available" rather than a hard crash.
                 logger.warning(
-                    f"[WARN] Phase 8 consciousness engines not available: {e}"
+                    f"[WARN] Phase 7/8 consciousness engines not available: {e}"
                 )
                 if no_fake_policy:
                     logger.info(
@@ -1522,6 +1591,7 @@ class AetherraOSLauncher:
                     )
 
         except ImportError as e:
+            # Quantum engine import missing; treat as optional system not available
             logger.warning(f"[WARN] Quantum consciousness systems not available: {e}")
             if no_fake_policy:
                 logger.info(
@@ -1553,9 +1623,26 @@ class AetherraOSLauncher:
                     metadata={"type": "mock", "version": "8.3"},
                 )
 
-        except Exception as e:
-            logger.error(f"[ERROR] Failed to load consciousness systems: {e}")
-            raise
+        except Exception as phase7_8_error:
+            # Final defensive catch: do not crash the OS because optional consciousness systems failed.
+            logger.error(
+                f"[ERROR] Failed to load consciousness systems: {phase7_8_error}"
+            )
+            # Do not re-raise here; allow the OS to continue running without these systems
+
+        # ===== ALWAYS Load Phase 1 ConsciousnessCore (ThinkStream UI data) =====
+        # This runs regardless of Phase 7/8 status since it's the foundation for UI visualization
+        try:
+            logger.info("[CONSCIOUSNESS] Starting Phase 1 ConsciousnessCore...")
+            await self._start_consciousness_core()
+            logger.info("[OK] Phase 1 ConsciousnessCore initialized successfully")
+        except Exception as phase1_error:
+            logger.error(
+                f"[ERROR] Phase 1 ConsciousnessCore failed to start: {phase1_error}"
+            )
+            import traceback
+
+            traceback.print_exc()
 
     async def _load_lyrixa_chat_service(self, config: dict[str, Any]):
         """💬 Load the Lyrixa Chat Service and register it for messaging."""
@@ -1591,6 +1678,42 @@ class AetherraOSLauncher:
             logger.info("[OK] Lyrixa Chat Service online")
         except Exception as e:
             logger.warning(f"[WARN] Lyrixa Chat Service unavailable: {e}")
+
+    async def _load_interactive_lyrixa(self, config: dict[str, Any]):
+        """🌟 Load Interactive Lyrixa (reactive expressions + emotion system)."""
+        try:
+            logger.info("[SYS] Loading Interactive Lyrixa System...")
+
+            # Aetherra imports
+            from Aetherra.lyrixa.interactive import initialize_interactive_system
+
+            # Requires Event Bus (loaded earlier in sequence)
+            if not hasattr(self, "event_bus") or self.event_bus is None:
+                logger.warning("[Interactive Lyrixa] Event Bus not available, skipping")
+                return
+
+            # Initialize with event bus and service registry
+            interactive_config = config.get("interactive_lyrixa", {})
+            interactive_config.setdefault("sample_interval", 5.0)
+
+            interactive_system = await initialize_interactive_system(
+                event_bus=self.event_bus,
+                service_registry=self.service_registry,
+                config=interactive_config,
+            )
+
+            self.systems["interactive_lyrixa"] = interactive_system
+
+            # Register with service registry
+            if self.service_registry and CORE_AVAILABLE:
+                await self.service_registry.update_service_status(
+                    "interactive_lyrixa", ServiceStatus.HEALTHY
+                )
+
+            logger.info("✅ Interactive Lyrixa System loaded successfully")
+
+        except Exception as e:
+            logger.error(f"❌ Failed to load Interactive Lyrixa: {e}", exc_info=True)
 
     async def _init_quantum_consciousness(self, quantum_engine):
         """Initialize quantum consciousness with proper parameters."""
@@ -1680,6 +1803,138 @@ class AetherraOSLauncher:
         except Exception as e:
             logger.warning(f"[WARN] Transcendence level error: {e}")
             return 0.8
+
+    async def _start_consciousness_core(self):
+        """Start Phase 1 ConsciousnessCore with ThinkStream for UI visualization.
+
+        This is the primary consciousness system that feeds real-time data to the
+        Consciousness tab in the Lyrixa GUI via the /api/consciousness/state endpoint.
+        """
+        try:
+            import platform
+
+            from Aetherra.consciousness.core import ConsciousnessCore
+            from Aetherra.consciousness.core import config as consciousness_config
+            from Aetherra.perception_bus.bus import PerceptionBus
+
+            logger.info("[CONSCIOUSNESS] Initializing Phase 1 ConsciousnessCore...")
+
+            # Create perception bus for real-time OS events
+            bus = PerceptionBus(maxlen=consciousness_config.MAX_WORKING_MEMORY)
+
+            # Start OS adapters based on platform
+            if platform.system() == "Windows":
+                logger.info("[CONSCIOUSNESS] Starting Windows perception adapters...")
+                from Aetherra.perception_bus.adapters.windows import (
+                    WindowsDiskAdapter,
+                    WindowsEventLogAdapter,
+                    WindowsPerfAdapter,
+                    WindowsProcAdapter,
+                    WindowsServiceAdapter,
+                )
+
+                # Start adapters in background
+                WindowsProcAdapter(bus).start()
+                WindowsDiskAdapter(bus).start()
+                WindowsEventLogAdapter(bus).start()
+                WindowsPerfAdapter(bus).start()
+                WindowsServiceAdapter(bus).start()
+
+            elif platform.system() == "Linux":
+                logger.info("[CONSCIOUSNESS] Starting Linux perception adapters...")
+                from Aetherra.perception_bus.adapters.linux import (
+                    LinuxDiskAdapter,
+                    LinuxFSAdapter,
+                    LinuxJournalAdapter,
+                    LinuxProcAdapter,
+                    LinuxServiceAdapter,
+                )
+
+                LinuxProcAdapter(bus).start()
+                LinuxDiskAdapter(bus).start()
+                LinuxJournalAdapter(bus).start()
+                LinuxFSAdapter(bus, watch_paths=["/etc", "/var/log"]).start()
+                LinuxServiceAdapter(bus).start()
+            else:
+                logger.warning(
+                    f"[CONSCIOUSNESS] No adapters for platform: {platform.system()}, running in limited mode"
+                )
+
+            # Initialize ConsciousnessCore
+            core = ConsciousnessCore(bus, safety_envelope=None, memory_engine=None)
+
+            # Wire ThinkStream to Hub API for UI visualization
+            hub_url = "http://localhost:3001"
+            try:
+                core.ui.register_hub_api(hub_url)
+                logger.info(
+                    f"[CONSCIOUSNESS] ThinkStream wired to Hub API ({hub_url}/api/consciousness/update)"
+                )
+            except Exception as e:
+                logger.warning(
+                    f"[CONSCIOUSNESS] Could not wire ThinkStream to Hub: {e}"
+                )
+
+            # Store reference and register service
+            self.systems["consciousness_core"] = core
+            self.systems["perception_bus"] = bus
+
+            await register_service(
+                "consciousness_core",
+                core,
+                metadata={
+                    "type": "consciousness",
+                    "version": "1.0",
+                    "phase": "phase1_core",
+                    "ui_enabled": True,
+                },
+            )
+
+            # Start consciousness tick loop in background
+            asyncio.create_task(self._consciousness_tick_loop(core))
+
+            logger.info("[OK] Phase 1 ConsciousnessCore online with ThinkStream")
+
+        except Exception as e:
+            logger.error(f"[ERROR] Failed to start Phase 1 ConsciousnessCore: {e}")
+            import traceback
+
+            traceback.print_exc()
+            raise
+
+    async def _consciousness_tick_loop(self, core):
+        """Run the consciousness tick loop continuously.
+
+        Args:
+            core: ConsciousnessCore instance
+        """
+        try:
+            from Aetherra.consciousness.core import config as consciousness_config
+
+            tick_interval = 1.0 / consciousness_config.TICK_HZ
+            logger.info(
+                f"[CONSCIOUSNESS] Starting tick loop at {consciousness_config.TICK_HZ} Hz"
+            )
+
+            while True:
+                tick_start = time.time()
+
+                # Run consciousness tick
+                core.tick()
+
+                # Adaptive sleep to maintain tick rate
+                elapsed = time.time() - tick_start
+                sleep_time = max(0.001, tick_interval - elapsed)
+                await asyncio.sleep(sleep_time)
+
+        except asyncio.CancelledError:
+            logger.info("[CONSCIOUSNESS] Tick loop cancelled")
+            raise
+        except Exception as e:
+            logger.error(f"[CONSCIOUSNESS] Tick loop error: {e}")
+            import traceback
+
+            traceback.print_exc()
 
     async def _load_scheduler(self, config: dict[str, Any]):
         """[SCHED] Load the task scheduler."""
@@ -1986,7 +2241,7 @@ class AetherraOSLauncher:
                 try:
                     # Prefer launching Lyrixa via its own launcher when needed
                     # Aetherra imports
-                    from Aetherra.lyrixa.gui import main_window  # noqa: F401
+                    from Aetherra.lyrixa.gui import main_window  # noqa: F401, F811
 
                     logger.info(
                         "[INFO] GUI modules available. GUI launch is controlled by Lyrixa launcher."
@@ -2580,6 +2835,19 @@ class AetherraOSLauncher:
         logger.info("[SCHED] Task scheduler: Running")
         logger.info("=" * 60)
 
+        # Display user-friendly access information
+        # Prefer the advertised Hub URL from environment (set during Hub load)
+        # Fallback to classic default 3001 if unset.
+        hub_url = os.environ.get("AETHERRA_HUB_URL", "http://localhost:3001")
+        logger.info("")
+        logger.info("🌐 ACCESS POINTS:")
+        logger.info(f"   Lyrixa UI:  {hub_url}")
+        logger.info(f"   API:        {hub_url}/api/*")
+        logger.info("")
+        logger.info("💡 TIP: Keep this window open to keep Aetherra OS running")
+        logger.info("🛑 Press Ctrl+C to shutdown gracefully")
+        logger.info("=" * 60)
+
         # Optionally launch a lightweight monitor window (separate process)
         try:
             if os.getenv("AETHERRA_KEEP_MONITOR", "0") == "1":
@@ -2740,10 +3008,8 @@ class AetherraOSLauncher:
 
         # Stop self-improvement telemetry loop first
         if self._improvement_telemetry_task:
-            try:
+            with contextlib.suppress(Exception):
                 self._improvement_telemetry_task.cancel()
-            except Exception:
-                pass
             self._improvement_telemetry_task = None
 
         # Shutdown individual systems

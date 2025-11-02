@@ -32,41 +32,19 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
+from Aetherra.lyrixa.chat.lyrixa_chat_service import ChatOptions, LyrixaChatService
+
+
 @pytest.mark.asyncio
-async def test_advanced_chat_backend_selected():
-    # Aetherra imports
-    from Aetherra.lyrixa.lyrixa_basic import LyrixaBasicAssistant
-
-    assistant = LyrixaBasicAssistant()
-    ok = await assistant.initialize()
-    assert ok, "LyrixaBasicAssistant failed to initialize (OS/hub not ready?)"
-
-    ai_chat = assistant.ai_chat_system
-    assert ai_chat is not None, "AI chat system not initialized"
-
-    # Heuristic: advanced wrapper defines attribute _svc after init
-    is_advanced = hasattr(ai_chat, "_svc") and getattr(ai_chat, "_svc") is not None
-
-    if not is_advanced:
-        pytest.skip(
-            "Advanced LyrixaChatService backend not active; environment forced fallback"
-        )
-
-    # Smoke send without asserting semantic content (network/model may be rate limited)
-    try:
-        resp = await ai_chat.send_message("hello")  # type: ignore[attr-defined]
-    except Exception as e:  # pragma: no cover - environment/network issues
-        pytest.skip(f"Chat send skipped due to transient error: {e}")
-
-    # Accept either ChatResponse-like object with text or plain string
-    text_attr = getattr(resp, "text", None)
-    output_text = (
-        text_attr
-        if isinstance(text_attr, str)
-        else (resp if isinstance(resp, str) else None)
-    )
-    assert output_text, "No chat text produced by advanced backend"
-    assert len(output_text) < 5000, "Response unexpectedly large (possible runaway)"
+async def test_lyrixa_chat_service_responds():
+    svc = LyrixaChatService()
+    await svc.initialize()
+    opts = ChatOptions(user_id="test", session_id="test-session")
+    resp = await svc.chat("hello", opts)
+    assert hasattr(resp, "text")
+    assert isinstance(resp.text, str)
+    assert resp.text.strip() != ""
+    assert len(resp.text) < 5000
 
 
 def test_model_alias_normalization():

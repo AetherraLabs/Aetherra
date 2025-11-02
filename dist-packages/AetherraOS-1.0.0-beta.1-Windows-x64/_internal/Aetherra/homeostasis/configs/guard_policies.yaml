@@ -1,0 +1,21 @@
+# Guard policies for Self-Incorporation and Homeostasis
+# SLO-style thresholds and breach actions
+
+slos:
+  integration_velocity:
+    metric: "integrations_per_hour"
+    threshold: 5
+    window_sec: 3600
+    breach_action: "alert_and_degrade"
+
+  actuator_frequency:
+    metric: "actuations_per_component_per_minute"
+    threshold: 1
+    window_sec: 60
+    breach_action: "trigger_maintenance"
+
+  rollback_cascade:
+    metric: "rollbacks_per_hour"
+    threshold: 3
+    window_sec: 3600
+    breach_action: "auto_rollback"

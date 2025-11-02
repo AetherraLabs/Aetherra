@@ -1,0 +1,104 @@
+{
+  "strat_cont_temporal_20250722_224522_0_0": {
+    "strategy_id": "strat_cont_temporal_20250722_224522_0_0",
+    "contradiction_id": "cont_temporal_20250722_224522_0",
+    "strategy_type": "temporal_evolution",
+    "description": "Acknowledge perspective evolution over time",
+    "steps": [
+      "1. Document learning journey and context changes",
+      "2. Validate resolution effectiveness",
+      "3. Update memory with clarified understanding",
+      "4. Monitor for similar contradictions"
+    ],
+    "expected_outcome": "Resolved contradiction with clear understanding",
+    "confidence": 0.86,
+    "estimated_effort": "30-60 minutes",
+    "priority": "medium",
+    "timestamp": "2025-07-22T22:45:22.159876"
+  },
+  "strat_cont_temporal_20250722_224522_0_1": {
+    "strategy_id": "strat_cont_temporal_20250722_224522_0_1",
+    "contradiction_id": "cont_temporal_20250722_224522_0",
+    "strategy_type": "evidence_gathering",
+    "description": "Gather more recent evidence",
+    "steps": [
+      "1. Collect current examples to validate new perspective",
+      "2. Validate resolution effectiveness",
+      "3. Update memory with clarified understanding",
+      "4. Monitor for similar contradictions"
+    ],
+    "expected_outcome": "Resolved contradiction with clear understanding",
+    "confidence": 0.86,
+    "estimated_effort": "30-60 minutes",
+    "priority": "medium",
+    "timestamp": "2025-07-22T22:45:22.159888"
+  },
+  "strat_cont_behavioral_20250722_224522_1_0": {
+    "strategy_id": "strat_cont_behavioral_20250722_224522_1_0",
+    "contradiction_id": "cont_behavioral_20250722_224522_1",
+    "strategy_type": "context_separation",
+    "description": "Separate behavioral contexts",
+    "steps": [
+      "1. Identify when different behaviors are appropriate",
+      "2. Validate resolution effectiveness",
+      "3. Update memory with clarified understanding",
+      "4. Monitor for similar contradictions"
+    ],
+    "expected_outcome": "Resolved contradiction with clear understanding",
+    "confidence": 0.85,
+    "estimated_effort": "30-60 minutes",
+    "priority": "medium",
+    "timestamp": "2025-07-22T22:45:22.161415"
+  },
+  "strat_cont_behavioral_20250722_224522_1_1": {
+    "strategy_id": "strat_cont_behavioral_20250722_224522_1_1",
+    "contradiction_id": "cont_behavioral_20250722_224522_1",
+    "strategy_type": "preference_analysis",
+    "description": "Analyze preference evolution",
+    "steps": [
+      "1. Track how preferences change with experience",
+      "2. Validate resolution effectiveness",
+      "3. Update memory with clarified understanding",
+      "4. Monitor for similar contradictions"
+    ],
+    "expected_outcome": "Resolved contradiction with clear understanding",
+    "confidence": 0.85,
+    "estimated_effort": "30-60 minutes",
+    "priority": "medium",
+    "timestamp": "2025-07-22T22:45:22.161422"
+  },
+  "strat_cont_logical_20250722_224522_2_0": {
+    "strategy_id": "strat_cont_logical_20250722_224522_2_0",
+    "contradiction_id": "cont_logical_20250722_224522_2",
+    "strategy_type": "clarification",
+    "description": "Clarify the apparent contradiction",
+    "steps": [
+      "1. Define precise contexts where each view applies",
+      "2. Validate resolution effectiveness",
+      "3. Update memory with clarified understanding",
+      "4. Monitor for similar contradictions"
+    ],
+    "expected_outcome": "Resolved contradiction with clear understanding",
+    "confidence": 0.88,
+    "estimated_effort": "30-60 minutes",
+    "priority": "medium",
+    "timestamp": "2025-07-22T22:45:22.162712"
+  },
+  "strat_cont_logical_20250722_224522_2_1": {
+    "strategy_id": "strat_cont_logical_20250722_224522_2_1",
+    "contradiction_id": "cont_logical_20250722_224522_2",
+    "strategy_type": "evidence_gathering",
+    "description": "Analyze supporting evidence",
+    "steps": [
+      "1. Examine evidence quality and relevance",
+      "2. Validate resolution effectiveness",
+      "3. Update memory with clarified understanding",
+      "4. Monitor for similar contradictions"
+    ],
+    "expected_outcome": "Resolved contradiction with clear understanding",
+    "confidence": 0.88,
+    "estimated_effort": "30-60 minutes",
+    "priority": "medium",
+    "timestamp": "2025-07-22T22:45:22.162719"
+  }
+}

@@ -28,6 +28,15 @@ import time
 
 
 def main() -> int:
+    # Ensure UTF-8 stdio to avoid Windows charmap errors when dependencies print emojis
+    try:
+        os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        if hasattr(sys.stderr, "reconfigure"):
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
     p = argparse.ArgumentParser()
     p.add_argument("--port", type=int, default=3001)
     p.add_argument(

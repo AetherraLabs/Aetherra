@@ -1,0 +1,23 @@
+{
+    "system": {
+        "name": "Aetherra v2 Clean Architecture",
+        "version": "2.0.0",
+        "description": "Clean, integrated Aetherra-Lyrixa system"
+    },
+    "web_interface": {
+        "host": "127.0.0.1",
+        "port": 8686,
+        "enabled": true,
+        "legacy_integration": true
+    },
+    "integration": {
+        "bridge_enabled": true,
+        "memory_sync": true,
+        "event_system": true
+    },
+    "migration": {
+        "preserve_databases": true,
+        "backup_original": true,
+        "gradual_migration": true
+    }
+}

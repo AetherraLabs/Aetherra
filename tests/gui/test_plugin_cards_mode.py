@@ -52,9 +52,9 @@ def test_plugin_cards_population_and_install_state():
             return True
 
     # Aetherra imports
-    from Aetherra.lyrixa.lyrixa_basic_gui import LyrixaBasicWindow
+    from Aetherra.lyrixa.gui.main_window import LyrixaHybridWindow
 
-    window = LyrixaBasicWindow(ai_chat=None, hub_connector=MockHubConnector())
+    window = LyrixaHybridWindow()
 
     # After init, plugin_cards should have two entries (async worker may not finish instantly).
     # We manually trigger refresh completion by directly calling update with mock data.

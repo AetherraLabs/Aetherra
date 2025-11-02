@@ -10,19 +10,21 @@ FastAPI-based REST API for executing and managing .aether scripts.
 Provides endpoints for running scripts, monitoring job status, and system health.
 """
 
-# Standard library imports
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Optional
 
-# Third party imports
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
-# Local imports
+from .approvals import ApprovalStore
 from .job_controller import job_controller
 from .models import (
+    ApprovalDecisionRequest,
+    ApprovalListResponse,
+    ApprovalRecordModel,
+    ApprovalRequest,
     CancelResponse,
     ErrorResponse,
     HealthResponse,
@@ -52,6 +54,7 @@ app.add_middleware(
 
 # Store server start time for uptime calculation
 server_start_time = time.time()
+approval_store = ApprovalStore()
 
 
 @app.get("/", response_model=dict)
@@ -100,23 +103,21 @@ async def run_script(request: RunRequest):
     - **context**: Optional execution context
     """
     try:
-        job_id = job_controller.run_script(
-            request.script_name, request.parameters, request.context
-        )
+        job_id = job_controller.run_script(request.script_name, request.parameters, request.context)
 
         return RunResponse(
             job_id=job_id,
             status="started",
             script_name=request.script_name,
-            started_at=datetime.now(timezone.utc),
+            started_at=datetime.now(UTC),
         )
 
-    except FileNotFoundError as e:
-        raise HTTPException(status_code=404, detail=f"Script not found: {str(e)}")
-    except Exception as e:
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"Script not found: {str(exc)}") from exc
+    except Exception as exc:
         raise HTTPException(
-            status_code=500, detail=f"Failed to start script execution: {str(e)}"
-        )
+            status_code=500, detail=f"Failed to start script execution: {str(exc)}"
+        ) from exc
 
 
 @app.get("/status/{job_id}", response_model=StatusResponse)
@@ -158,7 +159,7 @@ async def cancel_job(job_id: str):
         job_id=job_id,
         status="cancelled",
         message="Job cancelled successfully",
-        cancelled_at=datetime.now(timezone.utc),
+        cancelled_at=datetime.now(UTC),
     )
 
 
@@ -168,9 +169,7 @@ async def list_jobs(
         None,
         description="Filter by status (pending, running, completed, failed, cancelled)",
     ),
-    limit: Optional[int] = Query(
-        50, description="Maximum number of jobs to return", le=1000
-    ),
+    limit: Optional[int] = Query(50, description="Maximum number of jobs to return", le=1000),
 ):
     """
     List jobs with optional filtering
@@ -184,8 +183,8 @@ async def list_jobs(
 
         return JobListResponse(jobs=jobs, total=len(jobs))
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to list jobs: {str(e)}")
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to list jobs: {str(exc)}") from exc
 
 
 @app.get("/scripts", response_model=dict)
@@ -197,8 +196,8 @@ async def list_available_scripts():
             "scripts": stats.get("available_scripts", []),
             "count": len(stats.get("available_scripts", [])),
         }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to list scripts: {str(e)}")
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to list scripts: {str(exc)}") from exc
 
 
 @app.get("/stats", response_model=dict)
@@ -207,10 +206,10 @@ async def get_system_statistics():
     try:
         stats = job_controller.get_system_stats()
         return stats
-    except Exception as e:
+    except Exception as exc:
         raise HTTPException(
-            status_code=500, detail=f"Failed to get statistics: {str(e)}"
-        )
+            status_code=500, detail=f"Failed to get statistics: {str(exc)}"
+        ) from exc
 
 
 @app.delete("/jobs/cleanup", response_model=dict)
@@ -222,8 +221,124 @@ async def cleanup_old_jobs():
             "message": f"Cleaned up {cleaned_count} old jobs",
             "cleaned_count": cleaned_count,
         }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to cleanup jobs: {str(e)}")
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to cleanup jobs: {str(exc)}") from exc
+
+
+# ===============================
+# Approvals Endpoints (Phase 5)
+# ===============================
+
+
+@app.get("/approvals", response_model=ApprovalListResponse)
+async def list_approvals(
+    status: Optional[str] = Query(
+        None, description="Filter by status: pending|approved|denied|revoked"
+    ),
+):
+    try:
+        records = approval_store.list(status)
+        models = [ApprovalRecordModel(**r.__dict__) for r in records]
+        return ApprovalListResponse(approvals=models, total=len(models))
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to list approvals: {str(exc)}"
+        ) from exc
+
+
+@app.get("/approvals/{rec_id}", response_model=ApprovalRecordModel)
+async def get_approval(rec_id: str):
+    rec = approval_store.get(rec_id)
+    if not rec:
+        raise HTTPException(status_code=404, detail="Approval not found")
+    return ApprovalRecordModel(**rec.__dict__)
+
+
+@app.post("/approvals/request", response_model=ApprovalRecordModel)
+async def request_approval(req: ApprovalRequest):
+    try:
+        rec = approval_store.request(
+            intent_goal=req.intent_goal,
+            risk=req.risk,
+            requested_by=req.requested_by,
+            reason=req.reason,
+            diff_preview=req.diff_preview,
+        )
+        return ApprovalRecordModel(**rec.__dict__)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to request approval: {str(exc)}"
+        ) from exc
+
+
+@app.post("/approvals/{rec_id}/approve", response_model=dict)
+async def approve(rec_id: str, body: ApprovalDecisionRequest):
+    ok = approval_store.approve(rec_id, approver=body.approver, reason=body.reason or "")
+    if not ok:
+        raise HTTPException(
+            status_code=400, detail="Cannot approve record; ensure it exists and is pending"
+        )
+    return {"status": "approved", "id": rec_id}
+
+
+@app.post("/approvals/{rec_id}/deny", response_model=dict)
+async def deny(rec_id: str, body: ApprovalDecisionRequest):
+    ok = approval_store.deny(rec_id, approver=body.approver, reason=body.reason or "")
+    if not ok:
+        raise HTTPException(
+            status_code=400, detail="Cannot deny record; ensure it exists and is pending"
+        )
+    return {"status": "denied", "id": rec_id}
+
+
+@app.post("/approvals/{rec_id}/revoke", response_model=dict)
+async def revoke(rec_id: str, body: ApprovalDecisionRequest):
+    ok = approval_store.revoke(rec_id, reason=body.reason or "")
+    if not ok:
+        raise HTTPException(
+            status_code=400, detail="Cannot revoke record; ensure it exists and is pending/approved"
+        )
+    return {"status": "revoked", "id": rec_id}
+
+
+@app.get("/approvals/ui", response_class=HTMLResponse)
+async def approvals_ui():
+    # Minimal HTML UI (inline) for quick operator review
+    return HTMLResponse(
+        content=(
+            """
+<!doctype html>
+<html>
+<head>
+  <meta charset=\"utf-8\"><title>Aetherra Approvals</title>
+  <style>body{font-family:system-ui,Segoe UI,Arial;margin:20px;}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:8px}th{background:#f5f5f5;text-align:left}button{margin-right:6px}</style>
+  <script>
+    async function load(){
+      const res = await fetch('/approvals?status=pending');
+      const data = await res.json();
+      const tbody = document.getElementById('rows');
+      tbody.innerHTML = '';
+      (data.approvals||[]).forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${r.id}</td><td>${r.intent_goal}</td><td>${r.risk}</td><td>${r.requested_by}</td><td>${r.reason}</td>`+
+          `<td><button onclick=approve('${r.id}')>Approve</button><button onclick=deny('${r.id}')>Deny</button></td>`;
+        tbody.appendChild(tr);
+      });
+    }
+    async function approve(id){ await fetch(`/approvals/${id}/approve`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({approver:'owner',reason:'Approved via UI'})}); load(); }
+    async function deny(id){ await fetch(`/approvals/${id}/deny`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({approver:'owner',reason:'Denied via UI'})}); load(); }
+    window.onload=load;
+  </script>
+</head>
+<body>
+  <h1>Approvals (Pending)</h1>
+  <table><thead><tr><th>ID</th><th>Goal</th><th>Risk</th><th>Requested By</th><th>Reason</th><th>Action</th></tr></thead>
+    <tbody id=\"rows\"></tbody>
+  </table>
+</body></html>
+"""
+        )
+    )
 
 
 # Exception handlers
@@ -278,6 +393,4 @@ if __name__ == "__main__":
     import uvicorn
 
     # Run the server
-    uvicorn.run(
-        "aether_server:app", host="0.0.0.0", port=8000, reload=True, log_level="info"
-    )
+    uvicorn.run("aether_server:app", host="0.0.0.0", port=8000, reload=True, log_level="info")

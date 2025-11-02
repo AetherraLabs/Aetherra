@@ -17,6 +17,12 @@ from flask.typing import ResponseReturnValue
 # Local imports
 from ..services.registry_client import get_service
 
+# Aetherra imports
+try:
+    from Aetherra.core import disclosure_policy as DP  # type: ignore
+except Exception:  # pragma: no cover - defensive import fallback
+    DP = None  # type: ignore
+
 logger = logging.getLogger(__name__)
 
 bp = Blueprint("self_incorporation", __name__, url_prefix="/api/selfinc")
@@ -46,6 +52,8 @@ def get_status() -> ResponseReturnValue:
         loop = asyncio.get_event_loop()
         status = loop.run_until_complete(selfinc_service.get_status())
 
+        if DP and DP.is_free():
+            status = DP.redact_payload(status)
         return jsonify(status)
     except Exception as e:
         logger.error(f"[SELFINC] Status error: {e}")
@@ -75,6 +83,8 @@ def trigger_scan() -> ResponseReturnValue:
         loop = asyncio.get_event_loop()
         result = loop.run_until_complete(selfinc_service.trigger_scan(root_filter))
 
+        if DP and DP.is_free():
+            result = DP.redact_payload(result)
         return jsonify(result)
     except Exception as e:
         logger.error(f"[SELFINC] Scan error: {e}")
@@ -93,6 +103,11 @@ def apply_plan() -> ResponseReturnValue:
         data = request.get_json() or {}
         dry_run = data.get("dry_run", False)
 
+        # Disclosure policy: block integration in free tier; allow reflective dry-run with redaction
+        if DP and DP.is_free():
+            if not dry_run:
+                return jsonify(DP.deny_message("apply_plan")), 403
+
         # Standard library imports
         import asyncio
 
@@ -101,6 +116,8 @@ def apply_plan() -> ResponseReturnValue:
             selfinc_service.trigger_integrate(dry_run=dry_run)
         )
 
+        if DP and DP.is_free():
+            result = DP.redact_payload(result)
         return jsonify(result)
     except Exception as e:
         logger.error(f"[SELFINC] Apply error: {e}")
@@ -120,6 +137,10 @@ def rollback() -> ResponseReturnValue:
         selfinc_service = get_service("self_incorporation")
         if not selfinc_service:
             return jsonify({"error": "Self-incorporation service not available"}), 503
+
+        # Disclosure policy: rollback implies integration capability; block in free tier
+        if DP and DP.is_free():
+            return jsonify(DP.deny_message("rollback")), 403
 
         # Standard library imports
         import asyncio
@@ -369,21 +390,30 @@ def evaluate_ethics() -> ResponseReturnValue:
                 conn.close()
         except Exception as e:  # pragma: no cover
             logger.debug(f"[SELFINC][ETHICS] Failed to append evaluation audit: {e}")
-        return jsonify(
-            {
+        resp = {
+            "trace_id": trace_id,
+            "overall_score": ethics_score.overall_score,
+            "utilitarian_score": ethics_score.utilitarian_score,
+            "deontological_score": ethics_score.deontological_score,
+            "virtue_score": ethics_score.virtue_score,
+            "care_score": ethics_score.care_score,
+            "confidence": ethics_score.confidence,
+            "risk_level": risk_level,
+            "reasoning": ethics_score.reasoning,
+            "risk_factors": ethics_score.risk_factors,
+            "ethical_benefits": ethics_score.ethical_benefits,
+        }
+        if DP and DP.is_free():
+            # Limit to safe observables in free tier
+            resp = {
                 "trace_id": trace_id,
                 "overall_score": ethics_score.overall_score,
-                "utilitarian_score": ethics_score.utilitarian_score,
-                "deontological_score": ethics_score.deontological_score,
-                "virtue_score": ethics_score.virtue_score,
-                "care_score": ethics_score.care_score,
                 "confidence": ethics_score.confidence,
                 "risk_level": risk_level,
-                "reasoning": ethics_score.reasoning,
-                "risk_factors": ethics_score.risk_factors,
-                "ethical_benefits": ethics_score.ethical_benefits,
+                "disclosure_tier": "free",
+                "message": "Detailed ethical reasoning available in higher tiers",
             }
-        )
+        return jsonify(resp)
     except Exception as e:  # pragma: no cover
         logger.error(f"[SELFINC] Ethics evaluation error: {e}")
         return jsonify({"error": str(e)}), 500
@@ -444,19 +474,21 @@ def get_ethics_audit(trace_id: str) -> ResponseReturnValue:
                 404,
             )
 
-        return jsonify(
-            {
-                "trace_id": trace_id,
-                "status": record.get("status"),
-                "action": record.get("action"),
-                "plan_id": record.get("plan_id"),
-                "timestamp": record.get("timestamp"),
-                "ethics_overall": record.get("ethics_overall"),
-                "risk_level": record.get("risk_level"),
-                "result": record.get("result"),
-                "target": record.get("target"),
-            }
-        )
+        resp = {
+            "trace_id": trace_id,
+            "status": record.get("status"),
+            "action": record.get("action"),
+            "plan_id": record.get("plan_id"),
+            "timestamp": record.get("timestamp"),
+            "ethics_overall": record.get("ethics_overall"),
+            "risk_level": record.get("risk_level"),
+            "result": record.get("result"),
+            "target": record.get("target"),
+        }
+
+        if DP and DP.is_free():
+            resp = DP.redact_payload(resp)
+        return jsonify(resp)
 
     except Exception as e:
         logger.error(f"[SELFINC] Ethics audit error: {e}")

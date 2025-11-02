@@ -2,7 +2,7 @@
 
 Root: D:\Aetherra Project
 Files found: 39
-Profile: test
+Profile: prod
 
 ## Discovered .aether Files
 - D:\Aetherra Project\Aetherra\aetherra_core\system\agent_diagnostics.aether

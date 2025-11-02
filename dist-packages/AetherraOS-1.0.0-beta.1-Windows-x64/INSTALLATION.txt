@@ -1,0 +1,97 @@
+﻿AETHERRA AI OPERATING SYSTEM
+Installation Guide - Version 1.0.0-beta.1
+=====================================
+
+SYSTEM REQUIREMENTS
+-------------------
+- Windows 10/11 (64-bit)
+- 4 GB RAM minimum (8 GB recommended)
+- 2 GB free disk space
+- Internet connection for AI features
+
+INSTALLATION STEPS
+------------------
+1. Extract this ENTIRE FOLDER to a location of your choice
+   (DO NOT extract just the .exe file!)
+
+2. Double-click START_AETHERRA.bat to launch
+   OR run AetherraOS.exe directly
+
+3. IMPORTANT: Keep the console window open!
+   The system runs in this window. Closing it will stop Aetherra OS.
+
+4. First launch will initialize the system (takes 30-60 seconds)
+
+5. Access the system:
+   - Hub API: http://localhost:3012
+   - Lyrixa UI: http://localhost:5173 (if frontend is running separately)
+
+QUICK START
+-----------
+**Easiest way:** Double-click START_AETHERRA.bat
+
+**Alternative:** Open Command Prompt in this folder and run:
+  AetherraOS.exe --mode full --gui
+
+USAGE
+-----
+Launch modes:
+  AetherraOS.exe --mode full       Full AI Operating System (default)
+  AetherraOS.exe --mode minimal    Minimal systems only
+  AetherraOS.exe --mode test       Test mode with mocks
+
+Options:
+  --gui           Enable GUI interface
+  --no-gui        Disable GUI (terminal only)
+  --verbose       Verbose logging
+  --boot-menu     Show interactive boot menu
+  --help          Show all options
+
+IMPORTANT NOTES
+---------------
+* DO NOT close the console window while using Aetherra OS
+* The console window shows system status and logs
+* Press Ctrl+C in the console to shutdown gracefully
+* Keep the _internal folder with the .exe - they must stay together!
+
+CONFIGURATION
+-------------
+- Configuration file: config.json
+- Environment template: .env.example
+- Copy .env.example to .env and configure as needed
+
+TROUBLESHOOTING
+---------------
+1. If the executable doesn't start:
+   - Run as Administrator
+   - Check Windows Defender / Antivirus settings
+   - Ensure all files were extracted
+
+2. For GUI issues:
+   - Try running with --no-gui flag first
+   - Check graphics drivers are up to date
+
+3. For AI features:
+   - Configure API keys in .env file
+   - Check internet connectivity
+
+DOCUMENTATION
+-------------
+See included documentation files:
+- README.md - Project overview
+- CHANGELOG.md - Version history
+- PRE_PACK_VALIDATION_GUIDE.md - System validation
+- PRE_PACK_QUICK_REFERENCE.md - Quick reference
+
+SUPPORT
+-------
+GitHub: https://github.com/AetherraLabs/Aetherra
+Issues: https://github.com/AetherraLabs/Aetherra/issues
+
+LICENSE
+-------
+See LICENSE file for licensing information.
+
+COPYRIGHT
+---------
+Copyright (c) 2024-2025 Aetherra Labs

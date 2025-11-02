@@ -8,10 +8,17 @@ from __future__ import annotations
 
 # Standard library imports
 import time
-from typing import Any, Dict, Mapping, Tuple
+from collections.abc import Mapping
+from typing import Any
 
 # Local imports
 from ..utils.http import run_coro_blocking
+
+# Aetherra imports
+try:  # Centralized disclosure policy (optional at import time)
+    from Aetherra.core import disclosure_policy as dp  # type: ignore
+except Exception:  # pragma: no cover - defensive import fallback
+    dp = None  # type: ignore
 from .metrics_accum import chat_metrics
 from .security import policy_snapshot, safety_precheck
 from .tokenizer import count_tokens
@@ -53,7 +60,7 @@ def _registry_call(
         return None
 
 
-def handle_chat(payload: Dict[str, Any]) -> Tuple[Dict[str, Any], int, Dict[str, str]]:
+def handle_chat(payload: dict[str, Any]) -> tuple[dict[str, Any], int, dict[str, str]]:
     t0 = time.time()
     message = str(payload.get("message") or payload.get("content") or "")
     allow_edits = bool(payload.get("allow_edits", False))
@@ -120,6 +127,7 @@ def handle_chat(payload: Dict[str, Any]) -> Tuple[Dict[str, Any], int, Dict[str,
             "text": OFFLINE_TEXT,
             "suggestions": [],
             "applied_changes": [],
+            "identity": {"name": "Lyrixa", "title": "Lyrixa AI Assistant"},
             "persona": {"name": "Lyrixa", "title": "Lyrixa AI Assistant"},
             "awareness": {"note": "service offline; awareness limited"},
             "edit_plan": [],
@@ -152,42 +160,34 @@ def handle_chat(payload: Dict[str, Any]) -> Tuple[Dict[str, Any], int, Dict[str,
             name = "Lyrixa"
             title = "Lyrixa AI Assistant"
             about = None
+
+            # Safely extract name, title, about from identity dict-like object
             try:
-                name = str(
-                    getattr(
-                        ident,
-                        "get",
-                        lambda k, d=None: ident[k]
-                        if isinstance(ident, dict) and k in ident
-                        else d,
-                    )("name")
-                    or name
-                )
+                if isinstance(ident, dict):
+                    name = str(ident.get("name") or name)
+                elif hasattr(ident, "get"):
+                    val = ident.get("name")
+                    if val:
+                        name = str(val)
             except Exception:
                 pass
+
             try:
-                title = str(
-                    getattr(
-                        ident,
-                        "get",
-                        lambda k, d=None: ident[k]
-                        if isinstance(ident, dict) and k in ident
-                        else d,
-                    )("title")
-                    or title
-                )
+                if isinstance(ident, dict):
+                    title = str(ident.get("title") or title)
+                elif hasattr(ident, "get"):
+                    val = ident.get("title")
+                    if val:
+                        title = str(val)
             except Exception:
                 pass
+
             try:
-                about = getattr(
-                    ident,
-                    "get",
-                    lambda k, d=None: ident[k]
-                    if isinstance(ident, dict) and k in ident
-                    else d,
-                )("about")
+                if isinstance(ident, dict) or hasattr(ident, "get"):
+                    about = ident.get("about")
             except Exception:
                 about = None
+
             persona = {"name": name, "title": title}
             if about:
                 persona["about"] = about
@@ -210,7 +210,15 @@ def handle_chat(payload: Dict[str, Any]) -> Tuple[Dict[str, Any], int, Dict[str,
         result["confidence"] = 0.5  # type: ignore[index]
     result["trace_id"] = trace_id  # type: ignore[index]
 
-    # Output stats
+    # Apply disclosure controls for Free tier without breaking schema
+    # Never fail response due to redaction errors
+    from contextlib import suppress
+
+    with suppress(Exception):
+        if dp and getattr(dp, "is_free", None) and dp.is_free():
+            _apply_free_tier_redaction_inplace(result)
+
+    # Output stats (after potential redaction)
     out_text = str(result.get("text") or "")
     chat_metrics.add_output_stats(out_text, count_tokens(out_text))
 
@@ -234,7 +242,7 @@ def _gen_trace_id() -> str:
     return uuid.uuid4().hex
 
 
-def _std_headers(trace_id: str, policy=None) -> Dict[str, str]:
+def _std_headers(trace_id: str, policy=None) -> dict[str, str]:
     # Standard library imports
     import json
 
@@ -244,3 +252,86 @@ def _std_headers(trace_id: str, policy=None) -> Dict[str, str]:
         "X-Aetherra-Chat-Version": "2",
         "X-Aetherra-Policy": json.dumps(pol),
     }
+
+
+def _apply_free_tier_redaction_inplace(result: dict[str, Any]) -> None:
+    """Redact potentially sensitive content while preserving the expected schema.
+
+    Rules:
+    - Keep `text` as a string; strip/replace code fences and diff-like blocks.
+    - Truncate excessively long text with a notice.
+    - Summarize lists (suggestions, edit_plan, applied_changes) to metadata-safe items,
+      preserving counts and basic titles/actions if present.
+    - Add disclosure markers.
+    """
+    # Standard library imports
+    import re
+
+    # Redact code/diff blocks in text while keeping a human-readable message
+    text = str(result.get("text") or "")
+    if text:
+        redactions = 0
+
+        # Remove fenced code blocks ```...```
+        def _strip_code(m):
+            nonlocal redactions
+            redactions += 1
+            lang = (m.group(1) or "").strip()
+            return f"[code block redacted{f' ({lang})' if lang else ''}]"
+
+        text = re.sub(r"```([a-zA-Z0-9_+-]*)\n[\s\S]*?```", _strip_code, text)
+        # Remove diff-like hunks
+        if re.search(r"^@@ .* @@|^\+\+\+ |^--- ", text, re.M):
+            redactions += 1
+            text = re.sub(r"^@@ .* @@.*$", "[diff hunk redacted]", text, flags=re.M)
+            text = re.sub(
+                r"^(\+\+\+|---) .*$", "[diff header redacted]", text, flags=re.M
+            )
+            text = re.sub(r"^[+-].*$", "[diff line redacted]", text, flags=re.M)
+        # Truncate very long text
+        max_len = 1200
+        if len(text) > max_len:
+            text = text[:max_len] + " … [truncated for free tier]"
+        if redactions > 0:
+            note = "\n[Free tier: some content redacted]"
+            if not text.endswith(note):
+                text = text + note
+        result["text"] = text
+
+    # Summarize list fields
+    def _summarize_items(items):
+        safe = []
+        for it in items[:10]:  # cap length for safety
+            if isinstance(it, dict):
+                entry = {}
+                # Preserve high-level hints if present; drop code/diff details
+                for k in ("title", "action", "file", "path"):
+                    if k in it:
+                        try:
+                            entry[k] = str(it[k])
+                        except Exception:
+                            pass
+                entry.setdefault("summary", "details available in higher tiers")
+                safe.append(entry)
+            else:
+                safe.append({"summary": "details available in higher tiers"})
+        return safe
+
+    for key in ("suggestions", "edit_plan", "applied_changes"):
+        if isinstance(result.get(key), list):
+            orig = result.get(key) or []
+            result[key] = _summarize_items(orig)
+
+    # Ensure edit_plan mirrors suggestions length-wise for schema expectations
+    if isinstance(result.get("suggestions"), list):
+        if not isinstance(result.get("edit_plan"), list) or (
+            len(result.get("edit_plan") or []) != len(result.get("suggestions") or [])
+        ):
+            result["edit_plan"] = list(result.get("suggestions") or [])
+
+    # Add disclosure marker
+    result.setdefault("disclosure_tier", "free")
+    result.setdefault(
+        "awareness",
+        {"note": "Observation Layer active: code and patches redacted"},
+    )

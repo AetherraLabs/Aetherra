@@ -82,6 +82,7 @@ def apply_proposal() -> ResponseReturnValue:
                             "ok": True,
                             "proposal_id": proposal_id,
                             "applied": True,
+                            "restart_required": False,
                             "method": "selfinc",
                             "selfinc_result": si_res,
                         }
@@ -94,13 +95,14 @@ def apply_proposal() -> ResponseReturnValue:
                             "ok": False,
                             "proposal_id": proposal_id,
                             "applied": False,
+                            "restart_required": False,
                             "method": "selfinc",
                             "error": si_res.get("reason")
                             if isinstance(si_res, dict)
                             else "selfinc_failed",
                             "selfinc_result": si_res,
                         }
-                    ), 502
+                    ), 400
 
         # 2) Fallback or explicit HMR path
         if method in ("auto", "hmr"):
@@ -117,6 +119,7 @@ def apply_proposal() -> ResponseReturnValue:
                         "ok": True,
                         "proposal_id": proposal_id,
                         "applied": False,
+                        "restart_required": True,
                         "method": "manual",
                         "message": "Proposal approved, requires manual application or restart",
                     }
@@ -130,9 +133,10 @@ def apply_proposal() -> ResponseReturnValue:
                         "ok": True,
                         "proposal_id": proposal_id,
                         "applied": False,
+                        "restart_required": True,
                         "warning": "HMR not available",
                     }
-                ), 503
+                )
 
             loop = asyncio.get_event_loop()
             try:
@@ -158,6 +162,7 @@ def apply_proposal() -> ResponseReturnValue:
                             "ok": True,
                             "proposal_id": proposal_id,
                             "applied": True,
+                            "restart_required": False,
                             "method": "hmr",
                             "hmr_result": result,
                         }
@@ -169,11 +174,12 @@ def apply_proposal() -> ResponseReturnValue:
                         "ok": False,
                         "proposal_id": proposal_id,
                         "applied": False,
+                        "restart_required": True,
                         "method": "hmr",
                         "error": (result or {}).get("error", "hmr_failed"),
                         "hmr_result": result,
                     }
-                ), 500
+                ), 400
 
             except Exception as exc:
                 logger.error(f"[SELFIMPROVE] HMR exception for {proposal_id}: {exc}")
@@ -182,10 +188,11 @@ def apply_proposal() -> ResponseReturnValue:
                         "ok": False,
                         "proposal_id": proposal_id,
                         "applied": False,
+                        "restart_required": True,
                         "method": "hmr",
                         "error": f"HMR exception: {str(exc)}",
                     }
-                ), 500
+                ), 400
 
         # 3) Manual apply fallback
         logger.info(f"[SELFIMPROVE] Proposal {proposal_id} marked for manual apply")
@@ -194,6 +201,7 @@ def apply_proposal() -> ResponseReturnValue:
                 "ok": True,
                 "proposal_id": proposal_id,
                 "applied": False,
+                "restart_required": True,
                 "method": "manual",
                 "message": "Proposal approved, requires manual application or restart",
             }
@@ -302,6 +310,7 @@ def _apply_single_proposal(data: dict) -> dict:
                     "proposal_id": proposal_id,
                     "ok": True,
                     "applied": True,
+                    "restart_required": False,
                     "method": "selfinc",
                     "selfinc_result": si_res,
                 }
@@ -311,6 +320,7 @@ def _apply_single_proposal(data: dict) -> dict:
                     "proposal_id": proposal_id,
                     "ok": False,
                     "applied": False,
+                    "restart_required": False,
                     "method": "selfinc",
                     "error": si_res.get("reason")
                     if isinstance(si_res, dict)
@@ -327,6 +337,7 @@ def _apply_single_proposal(data: dict) -> dict:
                 "proposal_id": proposal_id,
                 "ok": True,
                 "applied": False,
+                "restart_required": True,
                 "method": "manual",
                 "message": "Proposal approved, requires manual application or restart",
             }
@@ -337,6 +348,7 @@ def _apply_single_proposal(data: dict) -> dict:
                 "proposal_id": proposal_id,
                 "ok": True,
                 "applied": False,
+                "restart_required": True,
                 "warning": "HMR not available",
             }
 
@@ -359,6 +371,7 @@ def _apply_single_proposal(data: dict) -> dict:
                     "proposal_id": proposal_id,
                     "ok": True,
                     "applied": True,
+                    "restart_required": False,
                     "method": "hmr",
                     "hmr_result": result,
                 }
@@ -366,6 +379,7 @@ def _apply_single_proposal(data: dict) -> dict:
                 "proposal_id": proposal_id,
                 "ok": False,
                 "applied": False,
+                "restart_required": True,
                 "method": "hmr",
                 "error": (result or {}).get("error", "hmr_failed"),
                 "hmr_result": result,
@@ -375,6 +389,7 @@ def _apply_single_proposal(data: dict) -> dict:
                 "proposal_id": proposal_id,
                 "ok": False,
                 "applied": False,
+                "restart_required": True,
                 "method": "hmr",
                 "error": f"HMR exception: {str(exc)}",
             }
@@ -384,5 +399,6 @@ def _apply_single_proposal(data: dict) -> dict:
         "proposal_id": proposal_id,
         "ok": True,
         "applied": False,
+        "restart_required": True,
         "method": "manual",
     }

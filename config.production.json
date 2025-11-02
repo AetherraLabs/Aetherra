@@ -1,0 +1,17 @@
+﻿{
+    "logging":  {
+                    "level":  "INFO"
+                },
+    "version":  "1.0.0-beta.1",
+    "profile":  "production",
+    "build_date":  "2025-10-31 19:12:15",
+    "features":  {
+                     "trainer_enabled":  false,
+                     "qfac_mode":  "disabled",
+                     "hmr_enabled":  false,
+                     "storm_enabled":  false
+                 },
+    "safety":  {
+                   "enforce_prod_defaults":  true
+               }
+}

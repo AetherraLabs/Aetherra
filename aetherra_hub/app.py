@@ -31,6 +31,7 @@ from .blueprints import (  # pylint: disable=unused-import
     ai_stream,
     chat,
     consciousness,  # consciousness state API
+    frontend,  # static file serving for Lyrixa UI
     health,
     homeostasis,  # new
     keb,
@@ -42,6 +43,7 @@ from .blueprints import (  # pylint: disable=unused-import
     openapi,
     peers,  # federation stub
     plugins,
+    policy,
     qfac_admin,
     quantum,  # new
     scripts,  # new
@@ -73,6 +75,7 @@ BLUEPRINTS = [
     consciousness.bp,  # Consciousness state API
     agents.bp,
     chat.bp,
+    policy.bp,
     ai_ask.bp,
     ai_stream.bp,
     quantum.bp,
@@ -84,6 +87,8 @@ BLUEPRINTS = [
     self_improvement.bp,
     scripts.bp,
     security.bp,
+    # Frontend MUST be last - catches all remaining routes for SPA
+    frontend.bp,
 ]
 
 

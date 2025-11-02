@@ -16,11 +16,12 @@ import asyncio
 import logging
 import os
 import time
+from collections.abc import Callable
 from contextlib import suppress
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -44,10 +45,10 @@ class ServiceInfo:
     status: ServiceStatus = ServiceStatus.STARTING
     registered_at: datetime = field(default_factory=datetime.now)
     last_heartbeat: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(
+    metadata: dict[str, Any] = field(
         default_factory=dict
     )  # may include 'self_heartbeat': bool
-    dependencies: List[str] = field(default_factory=list)
+    dependencies: list[str] = field(default_factory=list)
 
 
 class AetherraServiceRegistry:
@@ -59,8 +60,8 @@ class AetherraServiceRegistry:
     """
 
     def __init__(self):
-        self._services: Dict[str, ServiceInfo] = {}
-        self._event_handlers: Dict[str, List[Callable]] = {}
+        self._services: dict[str, ServiceInfo] = {}
+        self._event_handlers: dict[str, list[Callable]] = {}
         self._running = False
         self._heartbeat_task = None
         # Heartbeat + staleness configuration
@@ -83,7 +84,7 @@ class AetherraServiceRegistry:
             self._stale_sec = self._heartbeat_interval_sec * 3
         # Canonical naming with legacy alias support
         # Legacy names map to professional canonical names
-        self._legacy_alias_map: Dict[str, str] = {
+        self._legacy_alias_map: dict[str, str] = {
             "quantum_consciousness": "quantum_cognition",
             "cosmic_consciousness": "universal_cognition",
             "beyond_transcendence": "meta_cognition",
@@ -106,7 +107,7 @@ class AetherraServiceRegistry:
             )
         except Exception:
             self._no_handler_rate_sec = 0
-        self._no_handler_last_log: Dict[str, float] = {}
+        self._no_handler_last_log: dict[str, float] = {}
 
     def _canonical(self, name: str) -> str:
         try:
@@ -179,8 +180,8 @@ class AetherraServiceRegistry:
         self,
         name: str,
         instance: Any,
-        metadata: Optional[Dict[str, Any]] = None,
-        dependencies: Optional[List[str]] = None,
+        metadata: dict[str, Any] | None = None,
+        dependencies: list[str] | None = None,
     ) -> bool:
         """
         [REGISTER] Register a service with the registry.
@@ -219,6 +220,22 @@ class AetherraServiceRegistry:
                 service_info.status = ServiceStatus.HEALTHY
 
             logger.info(f"[OK] Service '{cname}' registered successfully")
+
+            # Forward to shared registry daemon if configured
+            try:
+                # Aetherra imports
+                from aetherra_registry_client import http_register_service
+
+                # Extract endpoints from metadata if present
+                endpoints = md.get("endpoints", {})
+                http_register_service(
+                    cname,
+                    status=service_info.status.value,
+                    metadata=md,
+                    endpoints=endpoints if isinstance(endpoints, dict) else {},
+                )
+            except Exception:
+                pass  # Shared registry is optional
 
             # Broadcast registration event
             await self._broadcast_event(
@@ -273,7 +290,7 @@ class AetherraServiceRegistry:
             logger.error(f"[ERROR] Failed to unregister service '{name}': {e}")
             return False
 
-    def get_service(self, name: str) -> Optional[Any]:
+    def get_service(self, name: str) -> Any | None:
         """
         [GET] Get a service instance by name.
 
@@ -288,7 +305,7 @@ class AetherraServiceRegistry:
             return service_info.instance
         return None
 
-    def get_service_info(self, name: str) -> Optional[ServiceInfo]:
+    def get_service_info(self, name: str) -> ServiceInfo | None:
         """
         [INFO] Get service information by name.
 
@@ -301,8 +318,8 @@ class AetherraServiceRegistry:
         return self._services.get(self._canonical(name))
 
     def list_services(
-        self, status_filter: Optional[ServiceStatus] = None
-    ) -> Dict[str, ServiceInfo]:
+        self, status_filter: ServiceStatus | None = None
+    ) -> dict[str, ServiceInfo]:
         """
         [LIST] List all registered services.
 
@@ -321,7 +338,7 @@ class AetherraServiceRegistry:
         return self._services.copy()
 
     async def update_service_status(
-        self, name: str, status: ServiceStatus, metadata: Optional[Dict] = None
+        self, name: str, status: ServiceStatus, metadata: dict | None = None
     ):
         """
         [STATUS] Update service status and metadata.
@@ -423,20 +440,19 @@ class AetherraServiceRegistry:
             if hasattr(service, "handle_message"):
                 await service.handle_message(message_type, data)
                 return True
-            elif hasattr(service, "on_message"):
+            if hasattr(service, "on_message"):
                 await service.on_message(message_type, data)
                 return True
-            else:
-                # Centralized no-handler logging
-                self._log_no_handler(target_service)
-                return False
+            # Centralized no-handler logging
+            self._log_no_handler(target_service)
+            return False
 
         except Exception as e:
             logger.error(f"[ERROR] Failed to send message to '{target_service}': {e}")
             return False
 
     async def broadcast_message(
-        self, message_type: str, data: Any, exclude: Optional[List[str]] = None
+        self, message_type: str, data: Any, exclude: list[str] | None = None
     ):
         """
         [BROADCAST] Broadcast a message to all services.
@@ -494,7 +510,7 @@ class AetherraServiceRegistry:
             except ValueError:
                 logger.warning(f"[WARN] Handler not found for event '{event_type}'")
 
-    async def _broadcast_event(self, event_type: str, event_data: Dict[str, Any]):
+    async def _broadcast_event(self, event_type: str, event_data: dict[str, Any]):
         """[BROADCAST] Broadcast an event to all subscribers."""
         if event_type not in self._event_handlers:
             return
@@ -567,7 +583,7 @@ class AetherraServiceRegistry:
             ):
                 await self.update_service_status(service_name, ServiceStatus.DEGRADED)
 
-    def get_registry_status(self) -> Dict[str, Any]:
+    def get_registry_status(self) -> dict[str, Any]:
         """[STATUS] Get overall registry status."""
         service_count_by_status = {}
         for status in ServiceStatus:
@@ -593,7 +609,7 @@ class AetherraServiceRegistry:
 
 
 # Global service registry instance
-_service_registry: Optional[AetherraServiceRegistry] = None
+_service_registry: AetherraServiceRegistry | None = None
 
 
 async def get_service_registry() -> AetherraServiceRegistry:
@@ -611,7 +627,7 @@ async def register_service(name: str, instance: Any, **kwargs) -> bool:
     return await registry.register_service(name, instance, **kwargs)
 
 
-async def get_service(name: str) -> Optional[Any]:
+async def get_service(name: str) -> Any | None:
     """[GET] Get a service from the global registry."""
     registry = await get_service_registry()
     return registry.get_service(name)

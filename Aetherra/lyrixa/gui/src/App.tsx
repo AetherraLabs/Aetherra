@@ -438,7 +438,7 @@ export default function App() {
     const [streaming, setStreaming] = useState(false);
     const [openCmd, setOpenCmd] = useState(false);
     const { ping } = useUISound();
-    const [autoApprove, setAutoApprove] = useState(false);
+    const [_autoApprove, setAutoApprove] = useState(false);
     const [policy, setPolicy] = useState<any>(null);
     const [openActuatorDialog, setOpenActuatorDialog] = useState(false);
     const [actuatorForm, setActuatorForm] = useState({ action_type: '', target_service: '', parameters: '{}', priority: 'medium' });
@@ -446,6 +446,7 @@ export default function App() {
     const kernelStatus = useApiPoll<any>("/api/kernel/status", 5000);
     const kernelMetrics = useApiPoll<any>("/api/kernel/metrics", 7000);
     const agentsInfo = useApiPoll<any>("/api/agents", 8000);
+    const tasksHistory = useApiPoll<any>("/api/tasks?limit=25&include_completed=1", 7000);
     const memoryStatus = useApiPoll<any>("/api/memory/status", 8000);
     const maintenance = useApiPoll<any>("/api/maintenance/status", 12000);
     const homeostasis = useApiPoll<any>("/api/homeostasis/status", 8000);
@@ -525,7 +526,49 @@ export default function App() {
         { id: "SI-204", title: "Promote memory QFAC rank to 48", risk: 0.18, impact: "performance", desc: "Increase TT-rank cap during night cycle to reduce loss.", diff: "memory.qfac.tt_rank = 48", status: "pending", hmr_target: "memory_adapter", hmr_source: "Aetherra.adapters.memory_adapter" },
         { id: "SI-315", title: "Add ReviewerAgent to default chains", risk: 0.09, impact: "quality", desc: "Insert reviewer after coder in PluginChainer.", diff: "chain: coder -> reviewer -> tester", status: "pending", hmr_target: "plugin_chainer", hmr_source: "Aetherra.agents.plugin_chainer" },
     ]);
-    const approveSuggestion = (id: string) => setSuggestions((arr) => arr.map((s) => (s.id === id ? { ...s, status: "approved" } : s)));
+    const approveSuggestion = async (id: string) => {
+        // Optimistically mark approved in UI
+        setSuggestions((arr) => arr.map((s) => (s.id === id ? { ...s, status: "approved" } : s)));
+
+        try {
+            const target = suggestions.find((s) => s.id === id);
+            // Use raw fetch so we can inspect non-2xx responses (e.g., 503 HMR unavailable)
+            const res = await fetch('/api/selfimprove/apply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({
+                    proposal_id: id,
+                    method: 'auto',
+                    hmr_target: target?.hmr_target,
+                    hmr_source: target?.hmr_source,
+                })
+            });
+            let body: any = null;
+            try { body = await res.json(); } catch { body = null; }
+
+            if (body?.ok && body?.applied) {
+                // Mark as applied if backend applied it (via selfinc or HMR)
+                setSuggestions((arr) => arr.map((s) => (s.id === id ? { ...s, status: "applied", restart_required: Boolean(body?.restart_required) } : s)));
+                toast.success(`[Self-Improve] Proposal ${id} applied (${body.method || 'auto'})`);
+                return;
+            }
+
+            // If not applied but approved/accepted on backend, mark as restart-required and keep in Pending panel
+            if (body && body.ok === true) {
+                const rr = body?.restart_required === undefined ? true : Boolean(body.restart_required);
+                setSuggestions((arr) => arr.map((s) => (s.id === id ? { ...s, status: "pending", restart_required: rr } : s)));
+                toast.info(`[Self-Improve] Proposal ${id} approved — OS Restart Required`);
+                return;
+            }
+
+            // Fallthrough: hard failure
+            const errMsg = body?.error || `apply_failed (HTTP ${res.status})`;
+            toast.error(`[Self-Improve] Apply failed for ${id}: ${errMsg}`);
+        } catch (err: any) {
+            // Network/other error — leave as approved for potential batch apply, but note HMR
+            toast.error(`[Self-Improve] Error applying ${id}: ${err?.message || 'network error'}`);
+        }
+    };
     const denySuggestion = (id: string) => setSuggestions((arr) => arr.map((s) => (s.id === id ? { ...s, status: "denied" } : s)));
     const applyApproved = async () => {
         const approved = suggestions.filter((s) => s.status === "approved");
@@ -547,20 +590,26 @@ export default function App() {
             });
 
             if (result.ok) {
-                // Mark as applied only if backend confirmed
+                // Mark hot-applied; annotate restart-required for the rest
                 const appliedIds = new Set(
-                    result.results
-                        ?.filter((r: any) => r.ok && r.applied)
-                        .map((r: any) => r.proposal_id) || []
+                    (result.results || [])
+                        .filter((r: any) => r?.ok && r?.applied)
+                        .map((r: any) => r.proposal_id)
+                );
+                const restartIds = new Map<string, boolean>(
+                    (result.results || [])
+                        .filter((r: any) => r && r.ok && !r.applied)
+                        .map((r: any) => [r.proposal_id, Boolean(r.restart_required ?? true)])
                 );
 
-                setSuggestions((arr) =>
-                    arr.map((s) =>
-                        appliedIds.has(s.id) ? { ...s, status: "applied" } : s
-                    )
-                );
+                setSuggestions((arr) => arr.map((s) => {
+                    if (appliedIds.has(s.id)) return { ...s, status: 'applied', restart_required: false };
+                    if (restartIds.has(s.id)) return { ...s, status: 'pending', restart_required: restartIds.get(s.id) };
+                    return s;
+                }));
 
-                toast.success(`[Self-Improve] Applied ${appliedIds.size}/${approved.length} proposals via HMR`);
+                const rrCount = Array.from(restartIds.values()).filter(Boolean).length;
+                toast.success(`[Self-Improve] Applied ${appliedIds.size}/${approved.length} via HMR. ${rrCount || 0} require OS restart.`);
             } else {
                 console.error('[Self-Improve] Batch apply failed:', result);
             }
@@ -1095,6 +1144,48 @@ export default function App() {
                                     <pre className="p-3 rounded-xl bg-[#0e0e10] border border-[#1e1e21] text-xs whitespace-pre-wrap overflow-auto max-h-48">{agentsInfo.data ? JSON.stringify(agentsInfo.data, null, 2) : (agentsInfo.error ? `error: ${agentsInfo.error}` : 'loading…')}</pre>
                                 </Section>
                             </div>
+                            <div className="mt-4">
+                                <Section title="Task History" icon={ListChecks}>
+                                    {tasksHistory.error ? (
+                                        <div className="text-xs text-gray-500">{`Error loading tasks: ${tasksHistory.error}`}</div>
+                                    ) : Array.isArray(tasksHistory.data?.tasks) && tasksHistory.data.tasks.length > 0 ? (
+                                        <div className="space-y-2 max-h-[360px] overflow-y-auto">
+                                            {tasksHistory.data.tasks.map((t: any, idx: number) => {
+                                                const ts = t.performed_at ? new Date(t.performed_at) : (t.completed_at ? new Date(t.completed_at) : (t.started_at ? new Date(t.started_at) : (t.created_at ? new Date(t.created_at) : null)));
+                                                const when = ts ? ts.toLocaleString() : '—';
+                                                const status = String(t.status || '').toLowerCase();
+                                                const statusColor = status === 'completed' ? 'emerald' : status === 'failed' ? 'red' : status === 'running' ? 'blue' : 'gray';
+                                                const dur = (typeof t.duration_secs === 'number' && isFinite(t.duration_secs)) ? `${Math.max(0, Math.round(t.duration_secs))}s` : '';
+                                                return (
+                                                    <div key={t.task_id ?? idx} className="flex items-start gap-3 p-2 rounded-lg bg-[#0e0e10] border border-[#1e1e21] hover:border-emerald-800/30 transition">
+                                                        <div className={`p-1.5 rounded-lg bg-${statusColor}-900/20 border border-${statusColor}-800/40`}>
+                                                            <Bot className={`w-3 h-3 text-${statusColor}-400`} />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <span className="text-sm text-white font-medium truncate max-w-[40ch]" title={t.name}>{t.name || t.task_id}</span>
+                                                                {t.assigned_agent && (
+                                                                    <Badge className="bg-emerald-900/30 text-emerald-300 border-emerald-800/40" title={t.assigned_agent}>
+                                                                        {t.assigned_agent}
+                                                                    </Badge>
+                                                                )}
+                                                                <Badge className={`bg-${statusColor}-900/30 text-${statusColor}-300 border-${statusColor}-800/40`}>
+                                                                    {status || 'unknown'}
+                                                                </Badge>
+                                                                {dur && <span className="text-[10px] text-gray-500">{dur}</span>}
+                                                            </div>
+                                                            <div className="text-xs text-gray-500 mt-1">{when}</div>
+                                                            {t.description && <div className="text-xs text-gray-400 mt-1 truncate" title={t.description}>{t.description}</div>}
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <div className="text-xs text-gray-500">No recent tasks.</div>
+                                    )}
+                                </Section>
+                            </div>
                         </Section>
                     )}
                     {route === "kernel" && (
@@ -1244,6 +1335,17 @@ export default function App() {
                                     icon={Gauge}
                                 />
                             </div>
+                            {!Boolean(kernelMetrics.data?.hmr?.enabled) && (
+                                <div className="mt-4 p-3 rounded-xl bg-amber-900/20 border border-amber-800/40">
+                                    <div className="flex items-start gap-2 text-amber-200 text-xs">
+                                        <AlertTriangle className="w-4 h-4 mt-0.5" />
+                                        <div>
+                                            <div className="font-semibold mb-0.5">Hot Module Reload (HMR) is disabled</div>
+                                            <div>Approved proposals will be marked "OS Restart Required" and remain pending until restart. Enable HMR in your OS launcher to hot-apply changes.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                             <div className="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
                                 <Section title="Proposal Breakdown" icon={ListChecks}>
                                     {maintenance.data?.self_improvement?.available ? (
@@ -1358,6 +1460,11 @@ export default function App() {
                                                                         'bg-purple-900/30 text-purple-300 border border-purple-800/40'
                                                                     }`}>{sugg.impact}</span>
                                                                 <span className="text-xs text-gray-400">Risk: {(sugg.risk * 100).toFixed(0)}%</span>
+                                                                {sugg.restart_required && (
+                                                                    <Badge className="bg-amber-900/30 text-amber-300 border-amber-800/40" title="This change will take effect after OS restart">
+                                                                        OS Restart Required
+                                                                    </Badge>
+                                                                )}
                                                             </div>
                                                             <h4 className="text-sm font-medium text-white mb-1">{sugg.title}</h4>
                                                             <p className="text-xs text-gray-400 mb-2">{sugg.desc}</p>
@@ -1396,10 +1503,19 @@ export default function App() {
                                                         applyApproved();
                                                         ping();
                                                     }}
-                                                    className="w-full px-4 py-2 text-sm rounded-lg bg-emerald-600/30 hover:bg-emerald-600/40 border border-emerald-600/50 text-emerald-200 font-medium transition-colors"
+                                                    className={`w-full px-4 py-2 text-sm rounded-lg border font-medium transition-colors ${!Boolean(kernelMetrics.data?.hmr?.enabled)
+                                                        ? 'bg-gray-800/40 border-gray-700/60 text-gray-400 cursor-not-allowed'
+                                                        : 'bg-emerald-600/30 hover:bg-emerald-600/40 border-emerald-600/50 text-emerald-200'}`}
+                                                    disabled={!Boolean(kernelMetrics.data?.hmr?.enabled)}
+                                                    title={!Boolean(kernelMetrics.data?.hmr?.enabled) ? 'Enable HMR to apply approved proposals without restart' : 'Apply approved proposals via HMR'}
                                                 >
                                                     Apply {suggestions.filter((s) => s.status === "approved").length} Approved Proposal{suggestions.filter((s) => s.status === "approved").length !== 1 ? 's' : ''} (HMR)
                                                 </button>
+                                                {!Boolean(kernelMetrics.data?.hmr?.enabled) && (
+                                                    <div className="text-[10px] text-amber-300 mt-2">
+                                                        HMR is disabled. Approved proposals will be marked "OS Restart Required" and remain pending until restart.
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </Section>

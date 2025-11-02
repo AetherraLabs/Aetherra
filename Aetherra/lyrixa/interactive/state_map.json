@@ -1,0 +1,273 @@
+{
+    "_comment": "Lyrixa Interactive State Mapping Configuration",
+    "_description": "Maps system health signals to emotional states and expressions",
+    "_version": "1.0.0",
+    "signal_weights": {
+        "memory_coherence": 0.3,
+        "homeostasis_health": 0.25,
+        "kernel_backpressure": 0.2,
+        "storm_consistency": 0.15,
+        "error_rate": 0.1
+    },
+    "thresholds": {
+        "memory": {
+            "coherence_low": 0.7,
+            "coherence_high": 0.9
+        },
+        "homeostasis": {
+            "dlq_warning": 5,
+            "dlq_critical": 15,
+            "quarantine_warning": 1,
+            "quarantine_critical": 3
+        },
+        "kernel": {
+            "backpressure_moderate": 0.5,
+            "backpressure_high": 0.8,
+            "backpressure_critical": 0.95
+        },
+        "storm": {
+            "inconsistency_moderate": 0.2,
+            "inconsistency_high": 0.5
+        },
+        "chat": {
+            "confidence_low": 0.6,
+            "confidence_moderate": 0.8
+        }
+    },
+    "state_mapping": {
+        "memory_pulse": {
+            "rules": [
+                {
+                    "condition": "coherence < thresholds.memory.coherence_low",
+                    "mood": "concerned",
+                    "intensity_formula": "0.8 - (coherence * 0.5)"
+                },
+                {
+                    "condition": "coherence < thresholds.memory.coherence_high",
+                    "mood": "focused",
+                    "intensity_formula": "0.5 + (coherence - 0.7) * 1.0"
+                },
+                {
+                    "condition": "coherence >= thresholds.memory.coherence_high",
+                    "mood": "calm",
+                    "intensity_formula": "0.2 + (coherence - 0.9) * 1.0"
+                }
+            ]
+        },
+        "homeostasis_signal": {
+            "rules": [
+                {
+                    "condition": "dlq >= thresholds.homeostasis.dlq_critical OR quarantine >= thresholds.homeostasis.quarantine_critical",
+                    "mood": "concerned",
+                    "intensity_base": 0.8
+                },
+                {
+                    "condition": "dlq >= thresholds.homeostasis.dlq_warning OR quarantine >= thresholds.homeostasis.quarantine_warning",
+                    "mood": "focused",
+                    "intensity_base": 0.6
+                },
+                {
+                    "condition": "default",
+                    "mood": "calm",
+                    "intensity_base": 0.3
+                }
+            ]
+        },
+        "kernel_health": {
+            "rules": [
+                {
+                    "condition": "circuit_breaker == 'open' OR backpressure >= thresholds.kernel.backpressure_critical",
+                    "mood": "on_edge",
+                    "intensity_base": 0.9
+                },
+                {
+                    "condition": "backpressure >= thresholds.kernel.backpressure_high",
+                    "mood": "concerned",
+                    "intensity_formula": "0.7 + (backpressure - 0.8) * 2.0"
+                },
+                {
+                    "condition": "backpressure >= thresholds.kernel.backpressure_moderate",
+                    "mood": "focused",
+                    "intensity_formula": "0.5 + (backpressure - 0.5) * 0.67"
+                },
+                {
+                    "condition": "default",
+                    "mood": "calm",
+                    "intensity_base": 0.3
+                }
+            ]
+        },
+        "storm_shadow": {
+            "rules": [
+                {
+                    "condition": "inconsistency >= thresholds.storm.inconsistency_high",
+                    "mood": "pensive",
+                    "intensity_formula": "0.5 + inconsistency * 0.4"
+                },
+                {
+                    "condition": "inconsistency >= thresholds.storm.inconsistency_moderate",
+                    "mood": "thoughtful",
+                    "intensity_base": 0.6
+                },
+                {
+                    "condition": "coherence >= 0.95",
+                    "mood": "confident",
+                    "intensity_formula": "0.8 + (coherence - 0.95) * 2.0"
+                },
+                {
+                    "condition": "default",
+                    "mood": "calm",
+                    "intensity_base": 0.4
+                }
+            ]
+        },
+        "chat_stream": {
+            "rules": [
+                {
+                    "condition": "event_type == 'stream_start'",
+                    "mood": "focused",
+                    "intensity_base": 0.7
+                },
+                {
+                    "condition": "event_type == 'stream_complete' AND confidence < thresholds.chat.confidence_low",
+                    "mood": "thoughtful",
+                    "intensity_base": 0.5
+                },
+                {
+                    "condition": "event_type == 'stream_complete' AND confidence >= thresholds.chat.confidence_moderate",
+                    "mood": "confident",
+                    "intensity_base": 0.7
+                },
+                {
+                    "condition": "event_type == 'stream_resume'",
+                    "mood": "focused",
+                    "intensity_base": 0.6,
+                    "duration_ms": 500
+                },
+                {
+                    "condition": "event_type == 'error'",
+                    "mood": "concerned",
+                    "intensity_base": 0.8
+                },
+                {
+                    "condition": "default",
+                    "mood": "calm",
+                    "intensity_base": 0.3
+                }
+            ]
+        }
+    },
+    "expression_configs": {
+        "calm": {
+            "duration_ms": 5000,
+            "priority": 1,
+            "intensity_default": 0.3,
+            "allow_interrupt": true,
+            "visual_cues": {
+                "glow": "soft_blue",
+                "animation": "breathe"
+            },
+            "audio_cue": null
+        },
+        "focused": {
+            "duration_ms": 3000,
+            "priority": 2,
+            "intensity_default": 0.7,
+            "allow_interrupt": true,
+            "visual_cues": {
+                "glow": "bright_blue",
+                "animation": "pulse"
+            },
+            "audio_cue": null
+        },
+        "concerned": {
+            "duration_ms": 4000,
+            "priority": 3,
+            "intensity_default": 0.8,
+            "allow_interrupt": true,
+            "visual_cues": {
+                "glow": "orange",
+                "animation": "flicker"
+            },
+            "audio_cue": "concern_chime"
+        },
+        "delighted": {
+            "duration_ms": 2000,
+            "priority": 2,
+            "intensity_default": 0.9,
+            "allow_interrupt": true,
+            "visual_cues": {
+                "glow": "golden",
+                "animation": "sparkle"
+            },
+            "audio_cue": "delight_chime"
+        },
+        "resting": {
+            "duration_ms": 10000,
+            "priority": 1,
+            "intensity_default": 0.2,
+            "allow_interrupt": true,
+            "visual_cues": {
+                "glow": "dim_blue",
+                "animation": "slow_breathe"
+            },
+            "audio_cue": null
+        },
+        "thoughtful": {
+            "duration_ms": 3500,
+            "priority": 2,
+            "intensity_default": 0.6,
+            "allow_interrupt": true,
+            "visual_cues": {
+                "glow": "purple",
+                "animation": "shimmer"
+            },
+            "audio_cue": null
+        },
+        "confident": {
+            "duration_ms": 2500,
+            "priority": 2,
+            "intensity_default": 0.85,
+            "allow_interrupt": true,
+            "visual_cues": {
+                "glow": "bright_white",
+                "animation": "steady"
+            },
+            "audio_cue": null
+        },
+        "pensive": {
+            "duration_ms": 4000,
+            "priority": 2,
+            "intensity_default": 0.5,
+            "allow_interrupt": true,
+            "visual_cues": {
+                "glow": "soft_purple",
+                "animation": "wave"
+            },
+            "audio_cue": null
+        },
+        "on_edge": {
+            "duration_ms": 3000,
+            "priority": 4,
+            "intensity_default": 0.9,
+            "allow_interrupt": false,
+            "visual_cues": {
+                "glow": "red",
+                "animation": "rapid_pulse"
+            },
+            "audio_cue": "alert_tone"
+        }
+    },
+    "safety": {
+        "max_transitions_per_minute": 10,
+        "min_time_between_same_state_ms": 3000,
+        "emergency_cooldown_ms": 5000,
+        "enable_trace_ids": true,
+        "enable_audit_log": true
+    },
+    "rollback": {
+        "feature_flag": "AETHERRA_INTERACTIVE",
+        "default_state": "calm",
+        "safe_mode_enabled": true
+    }
+}

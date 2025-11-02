@@ -26,9 +26,9 @@ def test_theme_or_fallback_applied():
     app = QApplication.instance() or QApplication([])
 
     # Aetherra imports
-    from Aetherra.lyrixa.lyrixa_basic_gui import LyrixaBasicWindow  # import after env
+    from Aetherra.lyrixa.gui.main_window import LyrixaHybridWindow
 
-    window = LyrixaBasicWindow(ai_chat=None, hub_connector=None, service_registry=None)
+    window = LyrixaHybridWindow()
     # Even if theme load fails, fallback stylesheet should be set
     ss = window.styleSheet()
     assert isinstance(ss, str)

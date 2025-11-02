@@ -14,7 +14,8 @@ bp = Blueprint("agents", __name__)
 
 
 def _authz_enabled() -> bool:
-    return os.environ.get("AETHERRA_AGENTS_API_ENABLED", "0") == "1"
+    # Enable by default for development (set to "0" to explicitly disable)
+    return os.environ.get("AETHERRA_AGENTS_API_ENABLED", "1") == "1"
 
 
 def _require_token() -> bool:
@@ -62,3 +63,92 @@ def list_agents():
             "orchestrator": _orchestrator_status(),
         }
     )
+
+
+@bp.post("/api/tasks")
+def submit_task():
+    """Submit a task to the agent orchestrator."""
+    # Check if agents API is enabled
+    if not _authz_enabled():
+        return jsonify({"ok": False, "error": "agents_api_disabled"}), 400
+
+    # Optional token check
+    if _require_token():
+        got = request.headers.get("X-Aetherra-Token", "").strip()
+        if not got or got != _expected_token():
+            return jsonify({"error": "forbidden"}), 403
+
+    # Get task data from request
+    payload = request.get_json(silent=True) or {}
+
+    # Validate required fields
+    name = payload.get("name", "").strip()
+    description = payload.get("description", "").strip()
+
+    if not name:
+        return jsonify({"ok": False, "error": "missing_name"}), 400
+
+    # Submit task via registry client
+    task_id = registry_client.submit_agent_task(
+        name=name,
+        description=description,
+        required_capabilities=payload.get("required_capabilities", []),
+        input_data=payload.get("input_data", {}),
+        priority=payload.get("priority", "normal"),
+        max_execution_time=payload.get("max_execution_time", 300),
+    )
+
+    if not task_id:
+        return jsonify({"ok": False, "error": "task_submission_failed"}), 500
+
+    return jsonify({"ok": True, "task_id": task_id}), 200
+
+
+@bp.get("/api/tasks")
+def list_tasks():
+    """Get a list of recent tasks."""
+    # Check if agents API is enabled
+    if not _authz_enabled():
+        return jsonify({"ok": False, "error": "agents_api_disabled"}), 400
+
+    # Optional token check
+    if _require_token():
+        got = request.headers.get("X-Aetherra-Token", "").strip()
+        if not got or got != _expected_token():
+            return jsonify({"error": "forbidden"}), 403
+
+    # Get query parameters
+    limit = request.args.get("limit", 50, type=int)
+    include_completed = request.args.get("include_completed", "true").lower() == "true"
+
+    # Clamp limit to reasonable range
+    limit = max(1, min(limit, 200))
+
+    # Get task list via registry client
+    tasks = registry_client.get_agent_task_list(
+        limit=limit, include_completed=include_completed
+    )
+
+    return jsonify({"ok": True, "tasks": tasks, "count": len(tasks)}), 200
+
+
+@bp.get("/api/tasks/<task_id>")
+def get_task_status(task_id: str):
+    """Get the status of a specific task."""
+    # Check if agents API is enabled
+    if not _authz_enabled():
+        return jsonify({"ok": False, "error": "agents_api_disabled"}), 400
+
+    # Optional token check
+    if _require_token():
+        got = request.headers.get("X-Aetherra-Token", "").strip()
+        if not got or got != _expected_token():
+            return jsonify({"error": "forbidden"}), 403
+
+    # Get task status via registry client
+    status = registry_client.get_agent_task_status(task_id)
+
+    if not status:
+        return jsonify({"ok": False, "error": "task_not_found"}), 404
+
+    return jsonify({"ok": True, "task": status}), 200

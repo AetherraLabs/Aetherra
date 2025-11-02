@@ -11,7 +11,7 @@ Pydantic models defining request/response schemas for the API endpoints.
 
 # Standard library imports
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 # Third party imports
 from pydantic import BaseModel, Field
@@ -24,9 +24,7 @@ class RunRequest(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(
         None, description="Optional parameters to pass to the script"
     )
-    context: Optional[Dict[str, Any]] = Field(
-        None, description="Optional execution context"
-    )
+    context: Optional[Dict[str, Any]] = Field(None, description="Optional execution context")
 
     class Config:
         json_schema_extra = {
@@ -66,9 +64,7 @@ class StatusResponse(BaseModel):
         ...,
         description="Current status: pending, running, completed, failed, cancelled",
     )
-    output: Optional[Dict[str, Any]] = Field(
-        None, description="Script execution output/results"
-    )
+    output: Optional[Dict[str, Any]] = Field(None, description="Script execution output/results")
     error: Optional[str] = Field(None, description="Error message if job failed")
     started_at: Optional[datetime] = Field(None, description="When the job was started")
     completed_at: Optional[datetime] = Field(None, description="When the job completed")
@@ -154,9 +150,7 @@ class ErrorResponse(BaseModel):
 
     error: str = Field(..., description="Error type")
     message: str = Field(..., description="Error description")
-    details: Optional[Dict[str, Any]] = Field(
-        None, description="Additional error details"
-    )
+    details: Optional[Dict[str, Any]] = Field(None, description="Additional error details")
 
     class Config:
         json_schema_extra = {
@@ -166,3 +160,42 @@ class ErrorResponse(BaseModel):
                 "details": {"script_name": "nonexistent.aether"},
             }
         }
+
+
+# ===============================
+# Approvals Models (Phase 5)
+# ===============================
+
+
+class ApprovalRequest(BaseModel):
+    intent_goal: str = Field(..., description="Intent goal requesting approval")
+    risk: str = Field(..., description="Risk level: low|medium|high")
+    requested_by: str = Field(..., description="Requester id")
+    reason: str = Field(..., description="Why approval is requested")
+    diff_preview: Optional[Dict[str, Any]] = Field(
+        None, description="Suggested policy diff preview"
+    )
+
+
+class ApprovalDecisionRequest(BaseModel):
+    approver: str = Field(..., description="Approver identity")
+    reason: Optional[str] = Field(None, description="Optional decision rationale")
+
+
+class ApprovalRecordModel(BaseModel):
+    id: str
+    intent_goal: str
+    risk: str
+    requested_by: str
+    reason: str
+    status: str
+    created_ts: float
+    decided_ts: Optional[float] = None
+    approver: Optional[str] = None
+    decision_reason: Optional[str] = None
+    diff_preview: Optional[Dict[str, Any]] = None
+
+
+class ApprovalListResponse(BaseModel):
+    approvals: List[ApprovalRecordModel] = Field(..., description="List of approval records")
+    total: int = Field(..., description="Total approvals returned")

@@ -13,6 +13,8 @@ The Maintenance System is composed of three integrated subsystems working in har
 
 Together, these systems form a complete autonomous loop that ensures Aetherra remains stable, performant, and continuously evolving.
 
+**For detailed Self-Improvement API documentation**, see [AETHERRA_SELF_IMPROVEMENT_API.md](./AETHERRA_SELF_IMPROVEMENT_API.md).
+
 ## Architecture overview
 
 The Maintenance System operates as a closed-loop autonomous control system with three primary layers:

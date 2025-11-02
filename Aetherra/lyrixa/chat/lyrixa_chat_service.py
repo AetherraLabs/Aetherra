@@ -116,6 +116,15 @@ try:
 except Exception:
     ProactiveConsciousness = None  # type: ignore
 
+# Awareness layer: context analysis and system monitoring
+try:
+    # Aetherra imports
+    from Aetherra.lyrixa.awareness.context_analyzer import ContextAnalyzer
+    from Aetherra.lyrixa.awareness.system_monitor import SystemMonitor
+except Exception:
+    ContextAnalyzer = None  # type: ignore
+    SystemMonitor = None  # type: ignore
+
 
 IDENTITY = {
     "name": "Lyrixa",
@@ -179,6 +188,9 @@ class LyrixaChatService:
         self._coherence_threshold: float = 0.7
         self._self_improver = None
         self._proactive_monitor = None
+        # Awareness layer: context analysis and system monitoring
+        self._context_analyzer = ContextAnalyzer if ContextAnalyzer else None
+        self._system_monitor = None  # Initialized after registry available
         # Metrics cache (auto-wired via Service Registry broadcasts)
         self._kernel_metrics: dict[str, Any] | None = None
         self._kernel_metrics_ts: float | None = None
@@ -230,6 +242,9 @@ class LyrixaChatService:
         if get_service_registry:
             try:
                 self.registry = await get_service_registry()
+                # Initialize system monitor once registry is available
+                if self.registry and SystemMonitor:
+                    self._system_monitor = SystemMonitor(self.registry)
             except Exception:
                 self.registry = None
         # Warm up intelligence if available (always attempt; degrade gracefully)
@@ -408,6 +423,31 @@ class LyrixaChatService:
         interaction_id = str(uuid.uuid4())
         awareness = await self._workspace_awareness(summary_only=True)
         awareness["interaction_id"] = interaction_id
+
+        # NEW: Context analysis and system awareness
+        contextual_intent = None
+        system_status = None
+        with contextlib.suppress(Exception):
+            if self._context_analyzer and self.registry:
+                # Analyze message for intent and relevant systems
+                available_services = {}
+                try:
+                    reg_status = self.registry.get_registry_status()
+                    available_services = reg_status.get("services", {})
+                except Exception:
+                    pass
+                contextual_intent = self._context_analyzer.analyze(message, available_services)
+                awareness["contextual_intent"] = {
+                    "primary": contextual_intent.primary_intent,
+                    "confidence": contextual_intent.confidence,
+                    "relevant_systems": contextual_intent.relevant_systems,
+                }
+
+            if self._system_monitor:
+                # Get current system status
+                system_status = await self._system_monitor.build_awareness_context()
+                awareness["system_status"] = system_status
+
         # Enrich awareness with a small consciousness snapshot
         with contextlib.suppress(Exception):
             snap = self._conscious_snapshot()
@@ -902,6 +942,20 @@ class LyrixaChatService:
         m = message.lower().strip()
         if any(k in m for k in ["who are you", "what are you", "who is lyrixa", "what is lyrixa"]):
             return True
+        # Creator/origin questions should be answered deterministically to avoid model hallucinations
+        if any(
+            k in m
+            for k in [
+                "who created you",
+                "who made you",
+                "who built you",
+                "your creator",
+                "who is your creator",
+                "who designed you",
+                "who developed you",
+            ]
+        ):
+            return True
         if "aetherra" in m and any(
             kw in m
             for kw in [
@@ -1034,6 +1088,19 @@ class LyrixaChatService:
         m = message.lower().strip()
         if self._is_ownership_query(m):
             return "I don't have a record of ownership."
+        if any(
+            k in m
+            for k in [
+                "who created you",
+                "who made you",
+                "who built you",
+                "your creator",
+                "who is your creator",
+                "who designed you",
+                "who developed you",
+            ]
+        ):
+            return "I'm Lyrixa, created by Aetherra Labs, the team behind the Aetherra AI Operating System."
         if any(k in m for k in ["who are you", "what are you", "who is lyrixa", "what is lyrixa"]):
             return f"I'm {IDENTITY['name']} — {IDENTITY['title']}. {IDENTITY['about']}"
         if any(k in m for k in ["what is aetherra", "aetherra os", "aetherra"]):
