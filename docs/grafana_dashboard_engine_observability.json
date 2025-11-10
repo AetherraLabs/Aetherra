@@ -1,236 +1,334 @@
 {
-  "dashboard": {
-    "title": "Aetherra Engine Observability",
-    "tags": ["aetherra", "engine", "performance"],
-    "timezone": "browser",
-    "schemaVersion": 16,
-    "version": 0,
-    "refresh": "30s",
-    "panels": [
-      {
-        "id": 1,
-        "title": "Message Processing Latency (p50, p95, p99)",
-        "type": "graph",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
-        "targets": [
-          {
-            "expr": "histogram_quantile(0.50, rate(aetherra_engine_message_latency_ms_bucket[5m]))",
-            "legendFormat": "p50",
-            "refId": "A"
-          },
-          {
-            "expr": "histogram_quantile(0.95, rate(aetherra_engine_message_latency_ms_bucket[5m]))",
-            "legendFormat": "p95",
-            "refId": "B"
-          },
-          {
-            "expr": "histogram_quantile(0.99, rate(aetherra_engine_message_latency_ms_bucket[5m]))",
-            "legendFormat": "p99",
-            "refId": "C"
-          }
+    "dashboard": {
+        "title": "Aetherra Engine Observability",
+        "tags": [
+            "aetherra",
+            "engine",
+            "performance"
         ],
-        "yaxes": [
-          {
-            "format": "ms",
-            "label": "Latency"
-          }
-        ],
-        "alert": {
-          "name": "High Message Latency p95",
-          "message": "Message processing p95 latency exceeded 2000ms",
-          "conditions": [
+        "timezone": "browser",
+        "schemaVersion": 16,
+        "version": 0,
+        "refresh": "30s",
+        "panels": [
             {
-              "evaluator": {"params": [2000], "type": "gt"},
-              "operator": {"type": "and"},
-              "query": {"params": ["B", "5m", "now"]},
-              "reducer": {"params": [], "type": "avg"},
-              "type": "query"
-            }
-          ],
-          "frequency": "60s",
-          "handler": 1,
-          "noDataState": "no_data",
-          "executionErrorState": "alerting"
-        }
-      },
-      {
-        "id": 2,
-        "title": "Memory Recall Latency (p50, p95, p99)",
-        "type": "graph",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
-        "targets": [
-          {
-            "expr": "histogram_quantile(0.50, rate(aetherra_engine_recall_latency_ms_bucket[5m]))",
-            "legendFormat": "p50",
-            "refId": "A"
-          },
-          {
-            "expr": "histogram_quantile(0.95, rate(aetherra_engine_recall_latency_ms_bucket[5m]))",
-            "legendFormat": "p95",
-            "refId": "B"
-          },
-          {
-            "expr": "histogram_quantile(0.99, rate(aetherra_engine_recall_latency_ms_bucket[5m]))",
-            "legendFormat": "p99",
-            "refId": "C"
-          }
-        ],
-        "yaxes": [
-          {
-            "format": "ms",
-            "label": "Latency"
-          }
-        ],
-        "alert": {
-          "name": "High Recall Latency p95",
-          "message": "Memory recall p95 latency exceeded 500ms",
-          "conditions": [
+                "id": 1,
+                "title": "Message Processing Latency (p50, p95, p99)",
+                "type": "graph",
+                "gridPos": {
+                    "h": 8,
+                    "w": 12,
+                    "x": 0,
+                    "y": 0
+                },
+                "targets": [
+                    {
+                        "expr": "histogram_quantile(0.50, rate(aetherra_engine_message_latency_ms_bucket[5m]))",
+                        "legendFormat": "p50",
+                        "refId": "A"
+                    },
+                    {
+                        "expr": "histogram_quantile(0.95, rate(aetherra_engine_message_latency_ms_bucket[5m]))",
+                        "legendFormat": "p95",
+                        "refId": "B"
+                    },
+                    {
+                        "expr": "histogram_quantile(0.99, rate(aetherra_engine_message_latency_ms_bucket[5m]))",
+                        "legendFormat": "p99",
+                        "refId": "C"
+                    }
+                ],
+                "yaxes": [
+                    {
+                        "format": "ms",
+                        "label": "Latency"
+                    }
+                ],
+                "alert": {
+                    "name": "High Message Latency p95",
+                    "message": "Message processing p95 latency exceeded 2000ms",
+                    "conditions": [
+                        {
+                            "evaluator": {
+                                "params": [
+                                    2000
+                                ],
+                                "type": "gt"
+                            },
+                            "operator": {
+                                "type": "and"
+                            },
+                            "query": {
+                                "params": [
+                                    "B",
+                                    "5m",
+                                    "now"
+                                ]
+                            },
+                            "reducer": {
+                                "params": [],
+                                "type": "avg"
+                            },
+                            "type": "query"
+                        }
+                    ],
+                    "frequency": "60s",
+                    "handler": 1,
+                    "noDataState": "no_data",
+                    "executionErrorState": "alerting"
+                }
+            },
             {
-              "evaluator": {"params": [500], "type": "gt"},
-              "operator": {"type": "and"},
-              "query": {"params": ["B", "5m", "now"]},
-              "reducer": {"params": [], "type": "avg"},
-              "type": "query"
-            }
-          ],
-          "frequency": "60s",
-          "handler": 1,
-          "noDataState": "no_data",
-          "executionErrorState": "alerting"
-        }
-      },
-      {
-        "id": 3,
-        "title": "Memory Recall Success Rate",
-        "type": "graph",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
-        "targets": [
-          {
-            "expr": "rate(aetherra_engine_recall_success_total[5m]) / (rate(aetherra_engine_recall_success_total[5m]) + rate(aetherra_engine_recall_failure_total[5m]))",
-            "legendFormat": "Success Rate",
-            "refId": "A"
-          },
-          {
-            "expr": "rate(aetherra_engine_recall_failure_total[5m]) / (rate(aetherra_engine_recall_success_total[5m]) + rate(aetherra_engine_recall_failure_total[5m]))",
-            "legendFormat": "Failure Rate",
-            "refId": "B"
-          }
-        ],
-        "yaxes": [
-          {
-            "format": "percentunit",
-            "label": "Rate",
-            "max": 1,
-            "min": 0
-          }
-        ],
-        "alert": {
-          "name": "High Recall Failure Rate",
-          "message": "Memory recall failure rate exceeded 5%",
-          "conditions": [
+                "id": 2,
+                "title": "Memory Recall Latency (p50, p95, p99)",
+                "type": "graph",
+                "gridPos": {
+                    "h": 8,
+                    "w": 12,
+                    "x": 12,
+                    "y": 0
+                },
+                "targets": [
+                    {
+                        "expr": "histogram_quantile(0.50, rate(aetherra_engine_recall_latency_ms_bucket[5m]))",
+                        "legendFormat": "p50",
+                        "refId": "A"
+                    },
+                    {
+                        "expr": "histogram_quantile(0.95, rate(aetherra_engine_recall_latency_ms_bucket[5m]))",
+                        "legendFormat": "p95",
+                        "refId": "B"
+                    },
+                    {
+                        "expr": "histogram_quantile(0.99, rate(aetherra_engine_recall_latency_ms_bucket[5m]))",
+                        "legendFormat": "p99",
+                        "refId": "C"
+                    }
+                ],
+                "yaxes": [
+                    {
+                        "format": "ms",
+                        "label": "Latency"
+                    }
+                ],
+                "alert": {
+                    "name": "High Recall Latency p95",
+                    "message": "Memory recall p95 latency exceeded 500ms",
+                    "conditions": [
+                        {
+                            "evaluator": {
+                                "params": [
+                                    500
+                                ],
+                                "type": "gt"
+                            },
+                            "operator": {
+                                "type": "and"
+                            },
+                            "query": {
+                                "params": [
+                                    "B",
+                                    "5m",
+                                    "now"
+                                ]
+                            },
+                            "reducer": {
+                                "params": [],
+                                "type": "avg"
+                            },
+                            "type": "query"
+                        }
+                    ],
+                    "frequency": "60s",
+                    "handler": 1,
+                    "noDataState": "no_data",
+                    "executionErrorState": "alerting"
+                }
+            },
             {
-              "evaluator": {"params": [0.05], "type": "gt"},
-              "operator": {"type": "and"},
-              "query": {"params": ["B", "5m", "now"]},
-              "reducer": {"params": [], "type": "avg"},
-              "type": "query"
-            }
-          ],
-          "frequency": "60s",
-          "handler": 1,
-          "noDataState": "no_data",
-          "executionErrorState": "alerting"
-        }
-      },
-      {
-        "id": 4,
-        "title": "STORM Canary: Comparisons & Divergences",
-        "type": "graph",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
-        "targets": [
-          {
-            "expr": "rate(aetherra_engine_storm_canary_comparisons_total[5m])",
-            "legendFormat": "Comparisons/sec",
-            "refId": "A"
-          },
-          {
-            "expr": "rate(aetherra_engine_storm_canary_divergences_total[5m])",
-            "legendFormat": "Divergences/sec",
-            "refId": "B"
-          },
-          {
-            "expr": "rate(aetherra_engine_storm_canary_divergences_total[5m]) / rate(aetherra_engine_storm_canary_comparisons_total[5m])",
-            "legendFormat": "Divergence Rate",
-            "refId": "C"
-          }
-        ],
-        "yaxes": [
-          {
-            "format": "short",
-            "label": "Rate"
-          }
-        ],
-        "alert": {
-          "name": "High STORM Divergence Rate",
-          "message": "STORM canary divergence rate exceeded 20%",
-          "conditions": [
+                "id": 3,
+                "title": "Memory Recall Success Rate",
+                "type": "graph",
+                "gridPos": {
+                    "h": 8,
+                    "w": 12,
+                    "x": 0,
+                    "y": 8
+                },
+                "targets": [
+                    {
+                        "expr": "rate(aetherra_engine_recall_success_total[5m]) / (rate(aetherra_engine_recall_success_total[5m]) + rate(aetherra_engine_recall_failure_total[5m]))",
+                        "legendFormat": "Success Rate",
+                        "refId": "A"
+                    },
+                    {
+                        "expr": "rate(aetherra_engine_recall_failure_total[5m]) / (rate(aetherra_engine_recall_success_total[5m]) + rate(aetherra_engine_recall_failure_total[5m]))",
+                        "legendFormat": "Failure Rate",
+                        "refId": "B"
+                    }
+                ],
+                "yaxes": [
+                    {
+                        "format": "percentunit",
+                        "label": "Rate",
+                        "max": 1,
+                        "min": 0
+                    }
+                ],
+                "alert": {
+                    "name": "High Recall Failure Rate",
+                    "message": "Memory recall failure rate exceeded 5%",
+                    "conditions": [
+                        {
+                            "evaluator": {
+                                "params": [
+                                    0.05
+                                ],
+                                "type": "gt"
+                            },
+                            "operator": {
+                                "type": "and"
+                            },
+                            "query": {
+                                "params": [
+                                    "B",
+                                    "5m",
+                                    "now"
+                                ]
+                            },
+                            "reducer": {
+                                "params": [],
+                                "type": "avg"
+                            },
+                            "type": "query"
+                        }
+                    ],
+                    "frequency": "60s",
+                    "handler": 1,
+                    "noDataState": "no_data",
+                    "executionErrorState": "alerting"
+                }
+            },
             {
-              "evaluator": {"params": [0.2], "type": "gt"},
-              "operator": {"type": "and"},
-              "query": {"params": ["C", "5m", "now"]},
-              "reducer": {"params": [], "type": "avg"},
-              "type": "query"
+                "id": 4,
+                "title": "STORM Canary: Comparisons & Divergences",
+                "type": "graph",
+                "gridPos": {
+                    "h": 8,
+                    "w": 12,
+                    "x": 12,
+                    "y": 8
+                },
+                "targets": [
+                    {
+                        "expr": "rate(aetherra_engine_storm_canary_comparisons_total[5m])",
+                        "legendFormat": "Comparisons/sec",
+                        "refId": "A"
+                    },
+                    {
+                        "expr": "rate(aetherra_engine_storm_canary_divergences_total[5m])",
+                        "legendFormat": "Divergences/sec",
+                        "refId": "B"
+                    },
+                    {
+                        "expr": "rate(aetherra_engine_storm_canary_divergences_total[5m]) / rate(aetherra_engine_storm_canary_comparisons_total[5m])",
+                        "legendFormat": "Divergence Rate",
+                        "refId": "C"
+                    }
+                ],
+                "yaxes": [
+                    {
+                        "format": "short",
+                        "label": "Rate"
+                    }
+                ],
+                "alert": {
+                    "name": "High STORM Divergence Rate",
+                    "message": "STORM canary divergence rate exceeded 20%",
+                    "conditions": [
+                        {
+                            "evaluator": {
+                                "params": [
+                                    0.2
+                                ],
+                                "type": "gt"
+                            },
+                            "operator": {
+                                "type": "and"
+                            },
+                            "query": {
+                                "params": [
+                                    "C",
+                                    "5m",
+                                    "now"
+                                ]
+                            },
+                            "reducer": {
+                                "params": [],
+                                "type": "avg"
+                            },
+                            "type": "query"
+                        }
+                    ],
+                    "frequency": "60s",
+                    "handler": 1,
+                    "noDataState": "no_data",
+                    "executionErrorState": "alerting"
+                }
+            },
+            {
+                "id": 5,
+                "title": "Message Processing Throughput",
+                "type": "graph",
+                "gridPos": {
+                    "h": 8,
+                    "w": 12,
+                    "x": 0,
+                    "y": 16
+                },
+                "targets": [
+                    {
+                        "expr": "rate(aetherra_engine_message_latency_ms_count[5m])",
+                        "legendFormat": "Messages/sec",
+                        "refId": "A"
+                    }
+                ],
+                "yaxes": [
+                    {
+                        "format": "ops",
+                        "label": "Throughput"
+                    }
+                ]
+            },
+            {
+                "id": 6,
+                "title": "STORM Shadow Recall Latency (p50, p95)",
+                "type": "graph",
+                "gridPos": {
+                    "h": 8,
+                    "w": 12,
+                    "x": 12,
+                    "y": 16
+                },
+                "targets": [
+                    {
+                        "expr": "histogram_quantile(0.50, rate(aetherra_engine_storm_canary_shadow_latency_ms_bucket[5m]))",
+                        "legendFormat": "p50",
+                        "refId": "A"
+                    },
+                    {
+                        "expr": "histogram_quantile(0.95, rate(aetherra_engine_storm_canary_shadow_latency_ms_bucket[5m]))",
+                        "legendFormat": "p95",
+                        "refId": "B"
+                    }
+                ],
+                "yaxes": [
+                    {
+                        "format": "ms",
+                        "label": "Shadow Latency"
+                    }
+                ]
             }
-          ],
-          "frequency": "60s",
-          "handler": 1,
-          "noDataState": "no_data",
-          "executionErrorState": "alerting"
-        }
-      },
-      {
-        "id": 5,
-        "title": "Message Processing Throughput",
-        "type": "graph",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
-        "targets": [
-          {
-            "expr": "rate(aetherra_engine_message_latency_ms_count[5m])",
-            "legendFormat": "Messages/sec",
-            "refId": "A"
-          }
-        ],
-        "yaxes": [
-          {
-            "format": "ops",
-            "label": "Throughput"
-          }
         ]
-      },
-      {
-        "id": 6,
-        "title": "STORM Shadow Recall Latency (p50, p95)",
-        "type": "graph",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
-        "targets": [
-          {
-            "expr": "histogram_quantile(0.50, rate(aetherra_engine_storm_canary_shadow_latency_ms_bucket[5m]))",
-            "legendFormat": "p50",
-            "refId": "A"
-          },
-          {
-            "expr": "histogram_quantile(0.95, rate(aetherra_engine_storm_canary_shadow_latency_ms_bucket[5m]))",
-            "legendFormat": "p95",
-            "refId": "B"
-          }
-        ],
-        "yaxes": [
-          {
-            "format": "ms",
-            "label": "Shadow Latency"
-          }
-        ]
-      }
-    ]
-  }
+    }
 }
