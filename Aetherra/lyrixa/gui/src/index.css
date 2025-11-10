@@ -59,3 +59,109 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* Interactive Lyrixa Emotion Display */
+.emotion-display {
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    border: 2px solid var(--border);
+    background: var(--card);
+    transition: all 0.3s ease;
+}
+
+.emotion-display h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--foreground);
+}
+
+.emotion-display.error {
+    border-color: hsl(var(--destructive));
+}
+
+.emotion-display .error-message {
+    color: hsl(var(--destructive));
+    margin: 0.5rem 0;
+}
+
+.emotion-display .hint {
+    color: var(--muted-foreground);
+    font-size: 0.9rem;
+    margin: 0.5rem 0 0 0;
+}
+
+.emotion-main {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.emotion-emoji {
+    font-size: 3rem;
+    line-height: 1;
+}
+
+.emotion-text {
+    flex: 1;
+}
+
+.emotion-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.expression-name {
+    font-size: 0.95rem;
+    color: var(--muted-foreground);
+    text-transform: capitalize;
+}
+
+.emotion-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--border);
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.detail-label {
+    color: var(--muted-foreground);
+    font-weight: 500;
+}
+
+.detail-value {
+    color: var(--foreground);
+}
+
+.detail-item.message-preview {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+}
+
+.detail-item.message-preview .detail-value {
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--muted-foreground);
+}
+
+.last-update {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--muted-foreground);
+    text-align: right;
+}

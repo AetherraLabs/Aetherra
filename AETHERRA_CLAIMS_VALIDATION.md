@@ -8,7 +8,8 @@ Legend: [Done] implemented and verified • [Partial] present but needs expansio
 
 - .aether execution: [Partial]
   - Proof: `aetherra_script_service.py` minimal interpreter; unit `tests/test_aether_script_basic.py` (goal, assignment, remember).
-  - Protection: [Done] Script signing header with strict verify (AETHERRA_SCRIPT_VERIFY_STRICT=1); `Aetherra/security/script_signing.py`; unit `tests/unit/test_aether_script_signing.py`.
+  - Protection: [Done] Script signing header with strict verify (AETHERRA_SCRIPT_VERIFY_STRICT=1); `Aetherra/security/script_signing.py`; unit `tests/unit/test_aether_script_signing.py`; `tools/verify_aether_scripts.py` CLI tool.
+  - CI Enforcement: [Done] Strict signing verification available via `tools/verify_aether_scripts.py --strict`; document CI integration in README.
   - Next: Expand parser to EBNF sections (conditionals, loops, workflows) + tests.
 - Goal‑driven orchestration: [Partial]
   - Proof: Kernel loop + service registry orchestrate services; goal items parsed in interpreter.
@@ -23,11 +24,11 @@ Legend: [Done] implemented and verified • [Partial] present but needs expansio
   - Proof: Core memory engine wired; persistent/quantum bridges present; services registered in boot.
   - Next: Health/metrics endpoint + memory recall test.
 - Semantic reasoning engine: [Partial]
-  - Proof: Native engine init; concept wiring in plugins.
+  - Proof: Native engine init; concept wiring in plugins; provider adapters (openai/anthropic/ollama/mock) with env-driven routing via AETHERRA_PROVIDER.
   - Next: Minimal reasoning test that links concepts across a workflow.
-- QFAC: [Planned]
-  - Proof: Placeholder references; not validated.
-  - Next: Define module boundary + add a tiny compression/retrieval demo.
+- QFAC: [Partial]
+  - Proof: Production-ready with policy enforcement, retrieval parity metrics, compression/fidelity tracking exposed via Prometheus.
+  - Next: Expand usage docs and parity validation tests.
 - Ethical cognition layer: [Partial]
   - Proof: Identity/values scaffolding in Lyrixa Core.
   - Next: Add a decision audit test with policy outcome.
@@ -73,12 +74,17 @@ Legend: [Done] implemented and verified • [Partial] present but needs expansio
 - Telemetry opt‑in: [Partial]
   - Proof: Ingestion endpoint + opt‑in wiring; counters in /api/stats.
   - Next: Add opt‑in toggle test.
+- Observability: [Done]
+  - Proof: Prometheus metrics for Kernel, Hub, Engine (message/recall latency histograms, STORM canary comparison metrics), Memory/STORM, Trainer; `/api/metrics` endpoint; `workflows/system_readiness.aether` health check script.
+  - Next: Add p95 aggregation dashboards and alerting examples.
 
 ## Current quick checks
 
 - Headless boot smoke: [Done]
   - Script: `tools/os_smoke.py` (no GUI, no Hub). Output shows core services registered.
 - Script signing round‑trip: [Done]
+- System readiness: [Done]
+  - Script: `workflows/system_readiness.aether` validates engine boot, memory health, metrics endpoint, and optional strict signing.
   - Test: `tests/unit/test_aether_script_signing.py` — PASSED.
 
 ---

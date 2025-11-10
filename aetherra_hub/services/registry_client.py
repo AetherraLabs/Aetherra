@@ -581,6 +581,55 @@ def get_storm_metrics() -> dict[str, Any]:
     return {"enabled": False}
 
 
+def get_storm_status() -> dict[str, Any]:
+    """Fetch STORM engine status (config/state) from memory system.
+
+    Returns dict with keys like:
+    - enabled: bool
+    - shadow_mode: bool
+    - backends: dict[str, bool]
+    - selected_backend: str
+    - exact_ot_active: bool
+    - tt_rank_cap: int
+    - k_coarse: int
+    - last_recall: dict
+
+    If unavailable, returns an empty dict.
+    """
+    try:
+
+        async def _go() -> Any:
+            reg = await _get_registry_async()
+            info = reg.get_service_info("aetherra_engine")
+            if not info or not info.instance:
+                return None
+            eng = info.instance
+            ms = getattr(eng, "memory_system", None)
+            if ms is None:
+                return None
+            engine = getattr(ms, "engine", None)
+            if engine is None:
+                return None
+            storm_engine = getattr(engine, "_storm_engine", None)
+            if storm_engine is None:
+                return None
+            if hasattr(storm_engine, "status"):
+                try:
+                    st = storm_engine.status()
+                    if isinstance(st, dict):
+                        return st
+                except Exception as exc:  # pragma: no cover
+                    logger.debug("storm status() failed: %s", exc)
+            return None
+
+        r = _run_coro(_go())
+        if isinstance(r, dict):
+            return r
+    except Exception as exc:
+        logger.debug("get_storm_status error: %s", exc)
+    return {}
+
+
 def _generic_service_call(service_name: str, attr: str) -> dict[str, Any]:
     async def _go() -> Any:
         reg = await _get_registry_async()

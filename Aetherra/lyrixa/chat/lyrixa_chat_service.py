@@ -646,6 +646,10 @@ class LyrixaChatService:
                 self._post_interaction_learning(message, str(reply), awareness, path_used)
             )
 
+        # Trigger Interactive Lyrixa emotion based on conversation context
+        with contextlib.suppress(Exception):
+            await self._trigger_conversation_emotion(message, reply, path_used, awareness)
+
         return ChatResponse(
             text=reply,
             suggestions=suggestions,
@@ -713,6 +717,84 @@ class LyrixaChatService:
         except Exception:
             # Best-effort only; never block chat
             pass
+
+    async def _trigger_conversation_emotion(
+        self, message: str, reply: str, path_used: str, awareness: dict[str, Any]
+    ) -> None:
+        """
+        Trigger Interactive Lyrixa emotion based on conversation context.
+        Maps conversation characteristics to emotional states.
+        """
+        try:
+            from aetherra_event_bus import get_event_bus
+
+            from lyrixa.interactive import get_interactive_system
+
+            interactive = get_interactive_system()
+            if not interactive:
+                return
+
+            # Analyze conversation to determine appropriate emotion
+            emotion = self._analyze_conversation_emotion(message, reply, path_used, awareness)
+
+            # Publish emotion trigger event via event bus if registry available
+            if self.registry:
+                event_bus = await get_event_bus(self.registry)
+                if event_bus:
+                    await event_bus.publish(
+                        "interactive.emotion.trigger",
+                        {
+                            "emotion": emotion,
+                            "trigger_source": "conversation",
+                            "message_preview": message[:100],
+                            "path_used": path_used,
+                            "timestamp": awareness.get("timestamp"),
+                        },
+                    )
+        except Exception:
+            # Best-effort only; never block chat
+            pass
+
+    def _analyze_conversation_emotion(
+        self, message: str, reply: str, path_used: str, awareness: dict[str, Any]
+    ) -> str:
+        """
+        Analyze conversation context and determine appropriate emotion.
+        Returns emotion name suitable for Interactive Lyrixa system.
+        """
+        # Default emotion
+        emotion = "calm"
+
+        # Extract confidence from awareness
+        cb = (awareness or {}).get("confidence_breakdown", {}) or {}
+        confidence = float(cb.get("overall", 0.6) or 0.6)
+
+        # Analyze message sentiment and intent
+        message_lower = message.lower()
+
+        # Excited emotions: greetings, discoveries, achievements
+        if any(
+            word in message_lower for word in ["hello", "hi", "wow", "amazing", "great", "awesome"]
+        ):
+            emotion = "excited"
+        # Curious emotions: questions, explorations
+        elif "?" in message or any(
+            word in message_lower for word in ["what", "why", "how", "explain"]
+        ):
+            emotion = "curious"
+        # Focused emotions: complex tasks, code analysis
+        elif any(
+            word in message_lower for word in ["analyze", "debug", "fix", "implement", "refactor"]
+        ):
+            emotion = "focused"
+        # Thoughtful emotions: high confidence, consciousness engaged
+        elif confidence > 0.8 and path_used in ["orchestrator", "intelligence"]:
+            emotion = "thoughtful"
+        # Calm default for general conversation
+        else:
+            emotion = "calm"
+
+        return emotion
 
     def _conscious_snapshot(self) -> dict[str, Any] | None:
         try:

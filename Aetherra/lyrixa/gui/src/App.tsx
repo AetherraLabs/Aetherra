@@ -57,6 +57,7 @@ import {
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Toaster, toast } from "sonner";
 import ConsciousnessMonitor from "./components/ConsciousnessMonitor";
+import EmotionDisplay from "./components/EmotionDisplay";
 import { useApiPoll } from "./lib/api";
 import { chat as sendChat } from "./lib/chat";
 
@@ -777,7 +778,14 @@ export default function App() {
                 <main className="col-span-12 lg:col-span-9 xl:col-span-10 space-y-6">
                     {route === "dashboard" && (
                         <div className="space-y-6">
-                            <HoloHero />
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                <div className="lg:col-span-2">
+                                    <HoloHero />
+                                </div>
+                                <div>
+                                    <EmotionDisplay hubUrl={settingsConfig.api.backendUrl} refreshInterval={3000} />
+                                </div>
+                            </div>
 
                             {/* Key System Metrics */}
                             <Section title="System Status" icon={Gauge}>

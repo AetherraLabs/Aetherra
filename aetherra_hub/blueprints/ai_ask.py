@@ -20,7 +20,9 @@ def ai_ask_post():
         return jsonify({"error": "disabled"}), 501
     require_token = os.environ.get("AETHERRA_AI_API_REQUIRE_TOKEN", "0") == "1"
     if require_token:
-        expected = os.environ.get("AETHERRA_AI_API_TOKEN", "")
+        expected = os.environ.get("AETHERRA_AI_API_TOKEN") or os.environ.get(
+            "AETHERRA_HUB_CONTROL_TOKEN", ""
+        )
         provided = request.headers.get("X-Aetherra-Token", "")
         if not expected or provided != expected:
             # Increment invalid token counter when a token is provided but incorrect

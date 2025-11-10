@@ -34,6 +34,7 @@ from .blueprints import (  # pylint: disable=unused-import
     frontend,  # static file serving for Lyrixa UI
     health,
     homeostasis,  # new
+    interactive,  # Interactive Lyrixa emotions & expressions
     keb,
     kernel,
     klm,
@@ -73,6 +74,7 @@ BLUEPRINTS = [
     maintenance.bp,
     homeostasis.bp,
     consciousness.bp,  # Consciousness state API
+    interactive.bp,  # Interactive Lyrixa emotions & expressions
     agents.bp,
     chat.bp,
     policy.bp,

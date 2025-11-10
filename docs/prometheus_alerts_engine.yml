@@ -1,0 +1,153 @@
+groups:
+  - name: aetherra_engine_slos
+    interval: 60s
+    rules:
+      # Message Processing Latency SLO
+      - alert: AetherraMessageLatencyP95High
+        expr: histogram_quantile(0.95, rate(aetherra_engine_message_latency_ms_bucket[5m])) > 2000
+        for: 5m
+        labels:
+          severity: warning
+          component: engine
+          slo: latency
+        annotations:
+          summary: "High message processing latency (p95 > 2000ms)"
+          description: "Message processing p95 latency is {{ $value }}ms (threshold: 2000ms). This may indicate performance degradation in the reasoning engine or memory recall path."
+          runbook_url: "https://docs.aetherra.dev/runbooks/high-message-latency"
+
+      - alert: AetherraMessageLatencyP95Critical
+        expr: histogram_quantile(0.95, rate(aetherra_engine_message_latency_ms_bucket[5m])) > 5000
+        for: 2m
+        labels:
+          severity: critical
+          component: engine
+          slo: latency
+        annotations:
+          summary: "Critical message processing latency (p95 > 5000ms)"
+          description: "Message processing p95 latency is {{ $value }}ms (critical threshold: 5000ms). Immediate investigation required."
+          runbook_url: "https://docs.aetherra.dev/runbooks/high-message-latency"
+
+      # Memory Recall Latency SLO
+      - alert: AetherraRecallLatencyP95High
+        expr: histogram_quantile(0.95, rate(aetherra_engine_recall_latency_ms_bucket[5m])) > 500
+        for: 5m
+        labels:
+          severity: warning
+          component: memory
+          slo: latency
+        annotations:
+          summary: "High memory recall latency (p95 > 500ms)"
+          description: "Memory recall p95 latency is {{ $value }}ms (threshold: 500ms). This may indicate memory system performance issues or quantum backend degradation."
+          runbook_url: "https://docs.aetherra.dev/runbooks/high-recall-latency"
+
+      - alert: AetherraRecallLatencyP95Critical
+        expr: histogram_quantile(0.95, rate(aetherra_engine_recall_latency_ms_bucket[5m])) > 1000
+        for: 2m
+        labels:
+          severity: critical
+          component: memory
+          slo: latency
+        annotations:
+          summary: "Critical memory recall latency (p95 > 1000ms)"
+          description: "Memory recall p95 latency is {{ $value }}ms (critical threshold: 1000ms). Immediate investigation required."
+          runbook_url: "https://docs.aetherra.dev/runbooks/high-recall-latency"
+
+      # Memory Recall Success Rate SLO
+      - alert: AetherraRecallFailureRateHigh
+        expr: |
+          (
+            rate(aetherra_engine_recall_failure_total[5m])
+            /
+            (rate(aetherra_engine_recall_success_total[5m]) + rate(aetherra_engine_recall_failure_total[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          component: memory
+          slo: availability
+        annotations:
+          summary: "High memory recall failure rate (> 5%)"
+          description: "Memory recall failure rate is {{ $value | humanizePercentage }} (threshold: 5%). This may indicate memory system instability or quantum backend errors."
+          runbook_url: "https://docs.aetherra.dev/runbooks/high-recall-failures"
+
+      - alert: AetherraRecallFailureRateCritical
+        expr: |
+          (
+            rate(aetherra_engine_recall_failure_total[5m])
+            /
+            (rate(aetherra_engine_recall_success_total[5m]) + rate(aetherra_engine_recall_failure_total[5m]))
+          ) > 0.10
+        for: 2m
+        labels:
+          severity: critical
+          component: memory
+          slo: availability
+        annotations:
+          summary: "Critical memory recall failure rate (> 10%)"
+          description: "Memory recall failure rate is {{ $value | humanizePercentage }} (critical threshold: 10%). Immediate investigation required."
+          runbook_url: "https://docs.aetherra.dev/runbooks/high-recall-failures"
+
+      # STORM Canary Divergence SLO
+      - alert: AetherraSTORMDivergenceRateHigh
+        expr: |
+          (
+            rate(aetherra_engine_storm_canary_divergences_total[5m])
+            /
+            rate(aetherra_engine_storm_canary_comparisons_total[5m])
+          ) > 0.20
+        for: 10m
+        labels:
+          severity: warning
+          component: storm
+          slo: consistency
+        annotations:
+          summary: "High STORM canary divergence rate (> 20%)"
+          description: "STORM canary divergence rate is {{ $value | humanizePercentage }} (threshold: 20%). This may indicate memory consistency issues between primary and quantum memory paths."
+          runbook_url: "https://docs.aetherra.dev/runbooks/storm-divergence"
+
+      - alert: AetherraSTORMDivergenceSpike
+        expr: |
+          (
+            rate(aetherra_engine_storm_canary_divergences_total[2m])
+            /
+            rate(aetherra_engine_storm_canary_comparisons_total[2m])
+          ) > 0.50
+        for: 2m
+        labels:
+          severity: critical
+          component: storm
+          slo: consistency
+        annotations:
+          summary: "Critical STORM canary divergence spike (> 50%)"
+          description: "STORM canary divergence rate is {{ $value | humanizePercentage }} (critical threshold: 50%). Immediate investigation required - possible memory backend corruption."
+          runbook_url: "https://docs.aetherra.dev/runbooks/storm-divergence"
+
+      # Message Throughput Monitoring
+      - alert: AetherraMessageThroughputLow
+        expr: rate(aetherra_engine_message_latency_ms_count[5m]) < 0.01
+        for: 10m
+        labels:
+          severity: info
+          component: engine
+        annotations:
+          summary: "Low message processing throughput (< 0.01 msg/sec)"
+          description: "Message processing throughput is {{ $value }} msg/sec. This may indicate low user activity or engine starvation."
+          runbook_url: "https://docs.aetherra.dev/runbooks/low-throughput"
+
+      # STORM Shadow Recall Latency
+      - alert: AetherraSTORMShadowLatencyHigh
+        expr: |
+          (
+            rate(aetherra_engine_storm_canary_shadow_latency_ms_sum[5m])
+            /
+            rate(aetherra_engine_storm_canary_shadow_latency_count[5m])
+          ) > 1000
+        for: 5m
+        labels:
+          severity: warning
+          component: storm
+          slo: latency
+        annotations:
+          summary: "High STORM shadow recall latency (avg > 1000ms)"
+          description: "STORM shadow recall average latency is {{ $value }}ms (threshold: 1000ms). This may indicate quantum memory backend performance degradation."
+          runbook_url: "https://docs.aetherra.dev/runbooks/storm-shadow-latency"

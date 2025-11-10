@@ -1,0 +1,167 @@
+{
+    "$schema": "https://aetherra.dev/schemas/config.v3.json",
+    "profile": "staging",
+    "description": "Staging autonomy configuration - SUGGEST mode with full observability",
+    "consciousness": {
+        "enabled": true,
+        "autonomy_mode": "suggest",
+        "safety_envelope_enabled": true,
+        "tick_hz": 1,
+        "qfac_enabled": true,
+        "qfac_narrative_persistence": true,
+        "perception_bus_enabled": true,
+        "think_stream_enabled": true
+    },
+    "maintenance": {
+        "enabled": true,
+        "24_7_mode": true,
+        "homeostasis": {
+            "enabled": true,
+            "mode": "active_limited",
+            "pid_tuning": {
+                "kp": 0.5,
+                "ki": 0.1,
+                "kd": 0.05
+            },
+            "cooldown_seconds": 60,
+            "max_actions_per_hour": 10
+        },
+        "self_improvement": {
+            "enabled": true,
+            "hmr_enabled": true,
+            "require_approval": true,
+            "max_proposals_per_cycle": 5
+        },
+        "self_incorporation": {
+            "enabled": true,
+            "discovery_mode": "safe",
+            "integration_gating": true,
+            "test_before_integrate": true
+        }
+    },
+    "agents": {
+        "api_enabled": true,
+        "require_token": true,
+        "orchestrator": {
+            "enabled": true,
+            "tick_hz": 1,
+            "capability_routing": true,
+            "track_record_weighting": true,
+            "max_concurrent_tasks": 10,
+            "task_timeout_seconds": 300
+        }
+    },
+    "coding_autopilot": {
+        "enabled": true,
+        "spec_to_tests_gate": true,
+        "mandatory_test_pass": true,
+        "stages": [
+            "plan",
+            "patch",
+            "verify",
+            "sign",
+            "ship"
+        ],
+        "require_lint": true,
+        "require_signature": true
+    },
+    "memory": {
+        "engine": "sqlite",
+        "qfac_enabled": true,
+        "storm": {
+            "enabled": true,
+            "mode": "shadow",
+            "promote_threshold": 0.85
+        },
+        "backup_interval_hours": 1
+    },
+    "hub": {
+        "api_enabled": true,
+        "require_token": true,
+        "rate_limiting": {
+            "enabled": true,
+            "requests_per_minute": 60,
+            "burst": 10
+        },
+        "audit_logging": true,
+        "cors_strict": false,
+        "endpoints": {
+            "ai_ask": true,
+            "ai_stream": true,
+            "agents": true,
+            "tasks": true,
+            "selfimprove": true,
+            "interactive": true
+        }
+    },
+    "security": {
+        "mode": "standard",
+        "network_policy": {
+            "strict": false,
+            "allowlist": [
+                "localhost",
+                "127.0.0.1",
+                "*.aetherra.dev"
+            ]
+        },
+        "capabilities": {
+            "require_approval": [
+                "network:external",
+                "file:write_system",
+                "exec:shell"
+            ],
+            "deny": []
+        },
+        "tokens": {
+            "rotation_days": 30,
+            "min_entropy": 128
+        }
+    },
+    "autopilot": {
+        "opt_in_required": true,
+        "eligibility_thresholds": {
+            "min_self_trust": 0.6,
+            "min_snci": 0.5,
+            "min_recent_success": 0.8,
+            "action_window_size": 50
+        },
+        "promotion_conditions": {
+            "uptime_hours": 24,
+            "successful_cycles": 100,
+            "zero_critical_failures": true
+        }
+    },
+    "observability": {
+        "metrics_export": true,
+        "prometheus_enabled": true,
+        "think_stream_ui": true,
+        "dashboard_enabled": true,
+        "alert_thresholds": {
+            "consciousness_coherence_min": 0.7,
+            "homeostasis_stability_min": 0.8,
+            "agent_success_rate_min": 0.7,
+            "memory_recall_latency_max_ms": 200
+        }
+    },
+    "backup": {
+        "strategy": "3-2-1",
+        "schedule": {
+            "memory_db": "hourly",
+            "configs": "daily",
+            "plugins": "daily",
+            "scripts": "daily"
+        },
+        "retention": {
+            "hourly": 24,
+            "daily": 7,
+            "weekly": 4
+        },
+        "offsite_enabled": false
+    },
+    "logging": {
+        "level": "DEBUG",
+        "structured": true,
+        "include_trace_id": true,
+        "sensitive_fields_redacted": true
+    }
+}

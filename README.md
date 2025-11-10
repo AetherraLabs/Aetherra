@@ -676,8 +676,11 @@ pytest tests/capabilities/test_ownership_memory.py
 
 - No-regression coverage gate (13.80% baseline)
 - Spec→Tests gate enabled in CI
-- Static verification for .aether scripts
+- Static verification for .aether scripts with `tools/verify_aether_scripts.py --strict`
 - Enhanced test reliability across all subsystems
+- System readiness checks via `workflows/system_readiness.aether`
+
+See [AETHERRA_CLAIMS_VALIDATION.md](AETHERRA_CLAIMS_VALIDATION.md) for detailed capability status and proof points.
 
 ---
 

@@ -1175,6 +1175,127 @@ def build_all_metrics_lines() -> list[str]:  # core builder used by blueprint
     # Trainer metrics
     lines.extend(_trainer_metrics_lines())
 
+    # Engine metrics (message/recall latency, STORM canary)
+    try:
+        from Aetherra.aetherra_core.engine.aetherra_engine import (
+            aetherra_engine,  # type: ignore
+        )
+
+        eng_snap = aetherra_engine.get_engine_metrics_snapshot()
+        if eng_snap:
+            # Message latency histogram + aggregates
+            lines.append(
+                "# HELP aetherra_engine_message_latency_ms_sum Cumulative message processing latency (ms)"
+            )
+            lines.append("# TYPE aetherra_engine_message_latency_ms_sum counter")
+            lines.append(
+                f"aetherra_engine_message_latency_ms_sum {_num(eng_snap.get('message_latency_sum_ms', 0))}"
+            )
+            lines.append(
+                "# HELP aetherra_engine_message_latency_count Number of message latency observations"
+            )
+            lines.append("# TYPE aetherra_engine_message_latency_count counter")
+            lines.append(
+                f"aetherra_engine_message_latency_count {_num(eng_snap.get('message_latency_count', 0))}"
+            )
+            lines.append(
+                "# HELP aetherra_engine_message_latency_ms_bucket Message latency histogram buckets"
+            )
+            lines.append("# TYPE aetherra_engine_message_latency_ms_bucket histogram")
+            hist = eng_snap.get("message_latency_hist") or {}
+            cum = 0
+            for b in (50, 100, 250, 500, 1000, 2000, 5000):
+                cum += int(hist.get(b, 0))
+                lines.append(
+                    f'aetherra_engine_message_latency_ms_bucket{{le="{b}"}} {cum}'
+                )
+            lines.append(
+                f'aetherra_engine_message_latency_ms_bucket{{le="+Inf"}} {cum}'
+            )
+            # Recall latency histogram + aggregates
+            lines.append(
+                "# HELP aetherra_engine_recall_latency_ms_sum Cumulative recall latency (ms)"
+            )
+            lines.append("# TYPE aetherra_engine_recall_latency_ms_sum counter")
+            lines.append(
+                f"aetherra_engine_recall_latency_ms_sum {_num(eng_snap.get('recall_latency_sum_ms', 0))}"
+            )
+            lines.append(
+                "# HELP aetherra_engine_recall_latency_count Number of recall latency observations"
+            )
+            lines.append("# TYPE aetherra_engine_recall_latency_count counter")
+            lines.append(
+                f"aetherra_engine_recall_latency_count {_num(eng_snap.get('recall_latency_count', 0))}"
+            )
+            lines.append(
+                "# HELP aetherra_engine_recall_latency_ms_bucket Recall latency histogram buckets"
+            )
+            lines.append("# TYPE aetherra_engine_recall_latency_ms_bucket histogram")
+            rhist = eng_snap.get("recall_latency_hist") or {}
+            rcum = 0
+            for b in (10, 20, 50, 100, 200, 500, 1000):
+                rcum += int(rhist.get(b, 0))
+                lines.append(
+                    f'aetherra_engine_recall_latency_ms_bucket{{le="{b}"}} {rcum}'
+                )
+            lines.append(
+                f'aetherra_engine_recall_latency_ms_bucket{{le="+Inf"}} {rcum}'
+            )
+            # Recall success/failure counters
+            lines.append(
+                "# HELP aetherra_engine_recall_success_total Total successful recall operations"
+            )
+            lines.append("# TYPE aetherra_engine_recall_success_total counter")
+            lines.append(
+                f"aetherra_engine_recall_success_total {_num(eng_snap.get('recall_success_total', 0))}"
+            )
+            lines.append(
+                "# HELP aetherra_engine_recall_failure_total Total failed recall operations"
+            )
+            lines.append("# TYPE aetherra_engine_recall_failure_total counter")
+            lines.append(
+                f"aetherra_engine_recall_failure_total {_num(eng_snap.get('recall_failure_total', 0))}"
+            )
+            # STORM canary metrics
+            lines.append(
+                "# HELP aetherra_engine_storm_canary_comparisons_total Total shadow recall comparisons"
+            )
+            lines.append(
+                "# TYPE aetherra_engine_storm_canary_comparisons_total counter"
+            )
+            lines.append(
+                f"aetherra_engine_storm_canary_comparisons_total {_num(eng_snap.get('storm_canary_comparisons_total', 0))}"
+            )
+            lines.append(
+                "# HELP aetherra_engine_storm_canary_divergences_total Total divergences detected between recall methods"
+            )
+            lines.append(
+                "# TYPE aetherra_engine_storm_canary_divergences_total counter"
+            )
+            lines.append(
+                f"aetherra_engine_storm_canary_divergences_total {_num(eng_snap.get('storm_canary_divergences_total', 0))}"
+            )
+            lines.append(
+                "# HELP aetherra_engine_storm_canary_shadow_latency_ms_sum Cumulative shadow recall latency (ms)"
+            )
+            lines.append(
+                "# TYPE aetherra_engine_storm_canary_shadow_latency_ms_sum counter"
+            )
+            lines.append(
+                f"aetherra_engine_storm_canary_shadow_latency_ms_sum {_num(eng_snap.get('storm_canary_shadow_latency_sum_ms', 0))}"
+            )
+            lines.append(
+                "# HELP aetherra_engine_storm_canary_shadow_latency_count Number of shadow recall latency observations"
+            )
+            lines.append(
+                "# TYPE aetherra_engine_storm_canary_shadow_latency_count counter"
+            )
+            lines.append(
+                f"aetherra_engine_storm_canary_shadow_latency_count {_num(eng_snap.get('storm_canary_shadow_latency_count', 0))}"
+            )
+    except Exception:
+        logger.debug("metrics: engine metrics export failed", exc_info=True)
+
     # Timestamp
     lines.append(
         f"aetherra_hub_export_timestamp_seconds {int(datetime.utcnow().timestamp())}"

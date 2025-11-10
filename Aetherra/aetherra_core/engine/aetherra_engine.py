@@ -17,6 +17,7 @@ import os
 import time
 import traceback
 from datetime import datetime
+from threading import Lock
 from typing import Any, Dict, List, Optional
 
 # Try to import components with graceful fallbacks
@@ -231,6 +232,41 @@ class AetherraEngine:
         self._last_llm_info = {}
 
         logger.info("Aetherra Engine initialized")
+
+        # Engine metrics (lightweight, in-process)
+        self._metrics_lock = Lock()
+        # Message latency histogram (ms)
+        self._msg_latency_hist: Dict[int, int] = {
+            50: 0,
+            100: 0,
+            250: 0,
+            500: 0,
+            1000: 0,
+            2000: 0,
+            5000: 0,
+        }
+        self._msg_latency_sum_ms: float = 0.0
+        self._msg_latency_count: int = 0
+        # Recall latency histogram (ms)
+        self._recall_latency_hist: Dict[int, int] = {
+            10: 0,
+            20: 0,
+            50: 0,
+            100: 0,
+            200: 0,
+            500: 0,
+            1000: 0,
+        }
+        self._recall_latency_sum_ms: float = 0.0
+        self._recall_latency_count: int = 0
+        # Recall success/failure counters
+        self._recall_success_total: int = 0
+        self._recall_failure_total: int = 0
+        # STORM canary (shadow) metrics
+        self._storm_canary_comparisons: int = 0
+        self._storm_canary_divergences: int = 0
+        self._storm_canary_shadow_latency_sum_ms: float = 0.0
+        self._storm_canary_shadow_latency_count: int = 0
 
     async def initialize(self):
         """Initialize the Aetherra engine and all subsystems"""
@@ -546,6 +582,11 @@ class AetherraEngine:
                 bucket = "classical"
             dt_recall_ms = (datetime.now() - t_recall0).total_seconds() * 1000.0
             self._record_ab_metric(bucket, dt_recall_ms)
+            # Observe recall latency (success path)
+            try:
+                self._observe_recall_latency(dt_recall_ms, success=True)
+            except Exception:
+                pass
 
             # Tool-like callback for memory recall
             try:
@@ -591,6 +632,55 @@ class AetherraEngine:
             else:
                 self.session_metrics["rag_misses"] += 1
 
+            # Optional STORM canary / shadow recall sampling (best-effort)
+            try:
+                pct_raw = os.getenv("AETHERRA_STORM_CANARY_PCT", "0").strip()
+                pct = int(pct_raw) if pct_raw.isdigit() else 0
+                if 0 < pct <= 100:
+                    import random as _rand
+
+                    if _rand.randint(1, 100) <= pct:
+                        shadow_bucket = "quantum" if bucket == "classical" else "classical"
+                        t_shadow0 = datetime.now()
+                        shadow_hits: List[Any] = []
+                        try:
+                            if (
+                                shadow_bucket == "quantum"
+                                and await self._ensure_persistent_memory()
+                            ):
+                                pm = self._persistent_memory
+                                raw_shadow = await pm.retrieve(
+                                    safe_message, limit=8, memory_type="conversation"
+                                )
+                                shadow_hits = [r for r in (raw_shadow or []) if isinstance(r, dict)]
+                            else:
+                                shadow_hits = await self.memory_system.recall_memories(
+                                    query_text=safe_message, limit=8, memory_type="conversation"
+                                )
+
+                            # Compare simple top-id equality (if both present)
+                            def _get_id(x):
+                                try:
+                                    if isinstance(x, dict):
+                                        return x.get("id")
+                                    return getattr(x, "id", None)
+                                except Exception:
+                                    return None
+
+                            top_a = _get_id(relevant_memories[0]) if relevant_memories else None
+                            top_b = _get_id(shadow_hits[0]) if shadow_hits else None
+                            with self._metrics_lock:
+                                self._storm_canary_comparisons += 1
+                                if top_a and top_b and top_a != top_b:
+                                    self._storm_canary_divergences += 1
+                                shadow_dt_ms = (datetime.now() - t_shadow0).total_seconds() * 1000.0
+                                self._storm_canary_shadow_latency_sum_ms += shadow_dt_ms
+                                self._storm_canary_shadow_latency_count += 1
+                        except Exception:
+                            pass
+            except Exception:
+                pass
+
             # Perform reasoning about the message
             reasoning_context = {
                 "query": f"How should I respond to: {safe_message}",
@@ -616,62 +706,101 @@ class AetherraEngine:
             # Generate response using a real LLM when available
             raw_response: str
             used_llm = False
+            # Provider router (Wave A): if AETHERRA_INTELLIGENCE_PROVIDER set, prefer provider adapters
             try:
-                await self._ensure_llm_selection()
-                if self._llm_manager and self._llm_selected:
-                    # Build a compact prompt including top evidence (RAG-lite)
-                    evidence_snippets = []
-                    for ev in (evidence or [])[:3]:
-                        try:
-                            c = ev.get("content") if isinstance(ev, dict) else None
-                            if c:
-                                evidence_snippets.append(str(c)[:500])
-                        except Exception:
-                            pass
-                    evtxt = "\n\n".join(f"- {s}" for s in evidence_snippets)
-                    base_prompt = (
-                        f"User: {safe_message}\n\n"
-                        + (f"Context:\n{evtxt}\n\n" if evtxt else "")
-                        + "Be concise and helpful."
-                    )
-                    # Prefer async path; add diagnostic snapshot
+                prov_name = os.environ.get("AETHERRA_INTELLIGENCE_PROVIDER", "").strip()
+            except Exception:
+                prov_name = ""
+            try:
+                if prov_name:
                     try:
-                        raw_response = await self._llm_manager.generate_response(base_prompt)
-                        used_llm = True
-                        try:
-                            mi = (
-                                self._llm_manager.get_current_model_info()
-                                if hasattr(self._llm_manager, "get_current_model_info")
-                                else None
-                            )
-                            self._last_llm_info = {
-                                "event": "ok",
-                                "model": mi,
-                            }
-                        except Exception:
-                            pass
-                    except Exception as _llm_err:
-                        # Capture error and fall back
-                        try:
-                            mi = (
-                                self._llm_manager.get_current_model_info()
-                                if hasattr(self._llm_manager, "get_current_model_info")
-                                else None
-                            )
-                        except Exception:
-                            mi = None
-                        self._last_llm_info = {
-                            "event": "error",
-                            "model": mi,
-                            "error": str(_llm_err),
-                        }
-                        logger.warning(
-                            f"[LLM] generation failed; falling back: {type(_llm_err).__name__}: {_llm_err}"
+                        # Local imports
+                        from ..cognitive.reasoning_providers import call_provider  # type: ignore
+
+                        # Build a compact prompt including top evidence (RAG-lite)
+                        evidence_snippets = []
+                        for ev in (evidence or [])[:3]:
+                            try:
+                                c = ev.get("content") if isinstance(ev, dict) else None
+                                if c:
+                                    evidence_snippets.append(str(c)[:300])
+                            except Exception:
+                                pass
+                        evtxt = "\n\n".join(f"- {s}" for s in evidence_snippets)
+                        base_prompt = (
+                            f"User: {safe_message}\n\n"
+                            + (f"Context:\n{evtxt}\n\n" if evtxt else "")
+                            + "Be concise and helpful."
                         )
-                        logger.debug("[LLM] traceback:\n" + traceback.format_exc())
+                        pr = await call_provider(
+                            base_prompt, evidence=evidence, provider_name=prov_name
+                        )
+                        raw_response = pr.text or ""
+                        used_llm = True
+                        self._last_llm_info = {
+                            "event": "ok",
+                            "provider": pr.provider,
+                            "model": pr.model,
+                        }
+                    except Exception as _prov_err:
+                        logger.debug(f"[LLM] provider adapter failed: {_prov_err}")
                         raise
                 else:
-                    raise RuntimeError("llm_not_ready")
+                    await self._ensure_llm_selection()
+                    if self._llm_manager and self._llm_selected:
+                        # Build a compact prompt including top evidence (RAG-lite)
+                        evidence_snippets = []
+                        for ev in (evidence or [])[:3]:
+                            try:
+                                c = ev.get("content") if isinstance(ev, dict) else None
+                                if c:
+                                    evidence_snippets.append(str(c)[:500])
+                            except Exception:
+                                pass
+                        evtxt = "\n\n".join(f"- {s}" for s in evidence_snippets)
+                        base_prompt = (
+                            f"User: {safe_message}\n\n"
+                            + (f"Context:\n{evtxt}\n\n" if evtxt else "")
+                            + "Be concise and helpful."
+                        )
+                        # Prefer async path; add diagnostic snapshot
+                        try:
+                            raw_response = await self._llm_manager.generate_response(base_prompt)
+                            used_llm = True
+                            try:
+                                mi = (
+                                    self._llm_manager.get_current_model_info()
+                                    if hasattr(self._llm_manager, "get_current_model_info")
+                                    else None
+                                )
+                                self._last_llm_info = {
+                                    "event": "ok",
+                                    "model": mi,
+                                }
+                            except Exception:
+                                pass
+                        except Exception as _llm_err:
+                            # Capture error and fall back
+                            try:
+                                mi = (
+                                    self._llm_manager.get_current_model_info()
+                                    if hasattr(self._llm_manager, "get_current_model_info")
+                                    else None
+                                )
+                            except Exception:
+                                mi = None
+                            self._last_llm_info = {
+                                "event": "error",
+                                "model": mi,
+                                "error": str(_llm_err),
+                            }
+                            logger.warning(
+                                f"[LLM] generation failed; falling back: {type(_llm_err).__name__}: {_llm_err}"
+                            )
+                            logger.debug("[LLM] traceback:\n" + traceback.format_exc())
+                            raise
+                    else:
+                        raise RuntimeError("llm_not_ready")
             except Exception:
                 # Fallback to placeholder generator if LLM not available
                 raw_response = self._generate_response(
@@ -787,6 +916,7 @@ class AetherraEngine:
                 "confidence_details": conf_struct,
                 "memory_id": memory_id,
                 "relevant_memories_count": len(relevant_memories),
+                "evidence": evidence,  # surfaced for hub responses/stream (redacted by policy when needed)
                 "timestamp": datetime.now().isoformat(),
                 "ab_bucket": bucket,
                 "llm": {
@@ -1179,6 +1309,66 @@ class AetherraEngine:
         except Exception as e:
             logger.debug(f"[REFLECT] Night reflection failed: {e}")
             return {"status": "error"}
+
+    # --------- Engine metrics helpers ---------
+    def _observe_message_latency(self, ms: float):
+        try:
+            if ms <= 0:
+                return
+            with self._metrics_lock:
+                self._msg_latency_sum_ms += ms
+                self._msg_latency_count += 1
+                for b in (50, 100, 250, 500, 1000, 2000, 5000):
+                    if ms <= b:
+                        self._msg_latency_hist[b] = int(self._msg_latency_hist.get(b, 0)) + 1
+                        break
+                else:
+                    self._msg_latency_hist[5000] = int(self._msg_latency_hist.get(5000, 0)) + 1
+        except Exception:
+            pass
+
+    def _observe_recall_latency(self, ms: float, success: bool):
+        try:
+            if ms <= 0:
+                return
+            with self._metrics_lock:
+                self._recall_latency_sum_ms += ms
+                self._recall_latency_count += 1
+                for b in (10, 20, 50, 100, 200, 500, 1000):
+                    if ms <= b:
+                        self._recall_latency_hist[b] = int(self._recall_latency_hist.get(b, 0)) + 1
+                        break
+                else:
+                    self._recall_latency_hist[1000] = (
+                        int(self._recall_latency_hist.get(1000, 0)) + 1
+                    )
+                if success:
+                    self._recall_success_total += 1
+                else:
+                    self._recall_failure_total += 1
+        except Exception:
+            pass
+
+    def get_engine_metrics_snapshot(self) -> Dict[str, Any]:
+        """Return a snapshot of engine metrics for export."""
+        try:
+            with self._metrics_lock:
+                return {
+                    "message_latency_sum_ms": self._msg_latency_sum_ms,
+                    "message_latency_count": self._msg_latency_count,
+                    "message_latency_hist": dict(self._msg_latency_hist),
+                    "recall_latency_sum_ms": self._recall_latency_sum_ms,
+                    "recall_latency_count": self._recall_latency_count,
+                    "recall_latency_hist": dict(self._recall_latency_hist),
+                    "recall_success_total": self._recall_success_total,
+                    "recall_failure_total": self._recall_failure_total,
+                    "storm_canary_comparisons_total": self._storm_canary_comparisons,
+                    "storm_canary_divergences_total": self._storm_canary_divergences,
+                    "storm_canary_shadow_latency_sum_ms": self._storm_canary_shadow_latency_sum_ms,
+                    "storm_canary_shadow_latency_count": self._storm_canary_shadow_latency_count,
+                }
+        except Exception:
+            return {}
 
     # --------- Agent Evaluation Harness (lightweight) ---------
     async def run_agent_evaluation(self, plan: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:

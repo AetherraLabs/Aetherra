@@ -1,0 +1,181 @@
+{
+    "profile": "production",
+    "description": "Production autonomy configuration - AUTO mode with maximum safety",
+    "consciousness": {
+        "enabled": true,
+        "autonomy_mode": "auto",
+        "safety_envelope_enabled": true,
+        "tick_hz": 1,
+        "qfac_enabled": true,
+        "qfac_narrative_persistence": true,
+        "perception_bus_enabled": true,
+        "think_stream_enabled": true
+    },
+    "maintenance": {
+        "enabled": true,
+        "24_7_mode": true,
+        "homeostasis": {
+            "enabled": true,
+            "mode": "active",
+            "pid_tuning": {
+                "kp": 0.4,
+                "ki": 0.08,
+                "kd": 0.04
+            },
+            "cooldown_seconds": 120,
+            "max_actions_per_hour": 5
+        },
+        "self_improvement": {
+            "enabled": true,
+            "hmr_enabled": true,
+            "require_approval": false,
+            "max_proposals_per_cycle": 3,
+            "auto_apply_threshold": 0.9
+        },
+        "self_incorporation": {
+            "enabled": true,
+            "discovery_mode": "safe",
+            "integration_gating": true,
+            "test_before_integrate": true,
+            "require_review": false
+        }
+    },
+    "agents": {
+        "api_enabled": true,
+        "require_token": true,
+        "orchestrator": {
+            "enabled": true,
+            "tick_hz": 1,
+            "capability_routing": true,
+            "track_record_weighting": true,
+            "max_concurrent_tasks": 20,
+            "task_timeout_seconds": 600
+        }
+    },
+    "coding_autopilot": {
+        "enabled": true,
+        "spec_to_tests_gate": true,
+        "mandatory_test_pass": true,
+        "stages": [
+            "plan",
+            "patch",
+            "verify",
+            "sign",
+            "ship"
+        ],
+        "require_lint": true,
+        "require_signature": true,
+        "allow_self_edit": true,
+        "max_changes_per_hour": 5
+    },
+    "memory": {
+        "engine": "sqlite",
+        "qfac_enabled": true,
+        "storm": {
+            "enabled": true,
+            "mode": "active",
+            "fallback_to_shadow_on_error": true
+        },
+        "backup_interval_hours": 1
+    },
+    "hub": {
+        "api_enabled": true,
+        "require_token": true,
+        "rate_limiting": {
+            "enabled": true,
+            "requests_per_minute": 120,
+            "burst": 20
+        },
+        "audit_logging": true,
+        "cors_strict": true,
+        "tls_enabled": true,
+        "endpoints": {
+            "ai_ask": true,
+            "ai_stream": true,
+            "agents": true,
+            "tasks": true,
+            "selfimprove": true,
+            "interactive": true
+        }
+    },
+    "security": {
+        "mode": "strict",
+        "network_policy": {
+            "strict": true,
+            "allowlist": [
+                "localhost",
+                "127.0.0.1",
+                "api.aetherra.dev"
+            ]
+        },
+        "capabilities": {
+            "require_approval": [
+                "network:external",
+                "file:write_system",
+                "exec:shell"
+            ],
+            "deny": [
+                "file:delete_system",
+                "exec:privileged"
+            ]
+        },
+        "tokens": {
+            "rotation_days": 14,
+            "min_entropy": 256
+        }
+    },
+    "autopilot": {
+        "opt_in_required": false,
+        "eligibility_thresholds": {
+            "min_self_trust": 0.7,
+            "min_snci": 0.6,
+            "min_recent_success": 0.85,
+            "action_window_size": 100
+        },
+        "safety_checks": {
+            "pre_action_validation": true,
+            "post_action_verification": true,
+            "rollback_on_failure": true
+        }
+    },
+    "observability": {
+        "metrics_export": true,
+        "prometheus_enabled": true,
+        "think_stream_ui": true,
+        "dashboard_enabled": true,
+        "alert_thresholds": {
+            "consciousness_coherence_min": 0.75,
+            "homeostasis_stability_min": 0.85,
+            "agent_success_rate_min": 0.75,
+            "memory_recall_latency_max_ms": 150
+        },
+        "pagerduty_integration": false,
+        "slack_alerts": false
+    },
+    "backup": {
+        "strategy": "3-2-1",
+        "schedule": {
+            "memory_db": "hourly",
+            "configs": "daily",
+            "plugins": "daily",
+            "scripts": "daily",
+            "full_system": "weekly"
+        },
+        "retention": {
+            "hourly": 48,
+            "daily": 14,
+            "weekly": 8,
+            "monthly": 12
+        },
+        "offsite_enabled": true,
+        "offsite_provider": "s3_compatible",
+        "verify_backups": true
+    },
+    "logging": {
+        "level": "INFO",
+        "structured": true,
+        "include_trace_id": true,
+        "sensitive_fields_redacted": true,
+        "retention_days": 30
+    }
+}

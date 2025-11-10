@@ -24,17 +24,28 @@ def memory_status():
     Best-effort via service registry; falls back to disabled status.
     """
     try:
-        # Get STORM metrics from registry client
+        # Get STORM metrics and status from registry client
         storm_metrics = registry_client.get_storm_metrics()
+        storm_status = registry_client.get_storm_status() or {}
 
         # Build response with STORM status
-        enabled = bool(storm_metrics.get("enabled", False))
+        enabled = bool(
+            storm_metrics.get("enabled", False) or storm_status.get("enabled", False)
+        )
         status: dict[str, Any] = {"ok": True, "enabled": enabled}
 
         # If STORM enabled, include all metrics and provide backward-compatible 'storm' key
         if enabled:
             # Flatten metrics at top-level for current UI
             status.update(storm_metrics)
+            # Merge selected config/status fields used by UI (e.g., shadow_mode)
+            if isinstance(storm_status, dict) and storm_status:
+                # Mirror a few useful fields at the top-level for convenience
+                for k in ("shadow_mode", "selected_backend", "tt_rank_cap", "k_coarse"):
+                    if k in storm_status:
+                        status[k] = storm_status[k]
+                # Provide nested object for more advanced consumers
+                status.setdefault("storm_status", {}).update(storm_status)
             # Back-compat for consumers expecting a nested 'storm' object (e.g., OS post-boot probe)
             status["storm"] = dict(storm_metrics)
 
