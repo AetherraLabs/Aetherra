@@ -1,0 +1,542 @@
+{
+    "dashboard": {
+        "title": "Aetherra Wave A - Production Observability",
+        "uid": "aetherra-wave-a",
+        "timezone": "browser",
+        "schemaVersion": 38,
+        "version": 1,
+        "refresh": "30s",
+        "time": {
+            "from": "now-1h",
+            "to": "now"
+        },
+        "panels": [
+            {
+                "id": 1,
+                "title": "Request Latency (p50/p95/p99)",
+                "type": "graph",
+                "gridPos": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 12,
+                    "h": 8
+                },
+                "targets": [
+                    {
+                        "expr": "histogram_quantile(0.50, rate(aetherra_request_duration_seconds_bucket[5m]))",
+                        "legendFormat": "p50 latency",
+                        "refId": "A"
+                    },
+                    {
+                        "expr": "histogram_quantile(0.95, rate(aetherra_request_duration_seconds_bucket[5m]))",
+                        "legendFormat": "p95 latency",
+                        "refId": "B"
+                    },
+                    {
+                        "expr": "histogram_quantile(0.99, rate(aetherra_request_duration_seconds_bucket[5m]))",
+                        "legendFormat": "p99 latency",
+                        "refId": "C"
+                    }
+                ],
+                "yaxes": [
+                    {
+                        "format": "s",
+                        "label": "Latency"
+                    },
+                    {
+                        "show": false
+                    }
+                ],
+                "alert": {
+                    "conditions": [
+                        {
+                            "evaluator": {
+                                "params": [
+                                    0.5
+                                ],
+                                "type": "gt"
+                            },
+                            "operator": {
+                                "type": "and"
+                            },
+                            "query": {
+                                "params": [
+                                    "B",
+                                    "5m",
+                                    "now"
+                                ]
+                            },
+                            "reducer": {
+                                "params": [],
+                                "type": "avg"
+                            },
+                            "type": "query"
+                        }
+                    ],
+                    "frequency": "60s",
+                    "handler": 1,
+                    "name": "High p95 Latency Alert",
+                    "notifications": []
+                }
+            },
+            {
+                "id": 2,
+                "title": "Memory Query RTT (p95)",
+                "type": "graph",
+                "gridPos": {
+                    "x": 12,
+                    "y": 0,
+                    "w": 12,
+                    "h": 8
+                },
+                "targets": [
+                    {
+                        "expr": "histogram_quantile(0.95, rate(aetherra_memory_query_duration_bucket[5m])) * 1000",
+                        "legendFormat": "p95 memory RTT (ms)",
+                        "refId": "A"
+                    },
+                    {
+                        "expr": "50",
+                        "legendFormat": "Target (50ms)",
+                        "refId": "B"
+                    },
+                    {
+                        "expr": "120",
+                        "legendFormat": "Max acceptable (120ms)",
+                        "refId": "C"
+                    }
+                ],
+                "yaxes": [
+                    {
+                        "format": "ms",
+                        "label": "RTT"
+                    },
+                    {
+                        "show": false
+                    }
+                ],
+                "thresholds": [
+                    {
+                        "value": 50,
+                        "colorMode": "custom",
+                        "op": "gt",
+                        "fill": false,
+                        "line": true,
+                        "fillColor": "rgba(255, 152, 0, 0.2)",
+                        "lineColor": "rgb(255, 152, 0)"
+                    },
+                    {
+                        "value": 120,
+                        "colorMode": "custom",
+                        "op": "gt",
+                        "fill": true,
+                        "line": true,
+                        "fillColor": "rgba(244, 67, 54, 0.2)",
+                        "lineColor": "rgb(244, 67, 54)"
+                    }
+                ]
+            },
+            {
+                "id": 3,
+                "title": "Kernel Cycle Time",
+                "type": "graph",
+                "gridPos": {
+                    "x": 0,
+                    "y": 8,
+                    "w": 12,
+                    "h": 8
+                },
+                "targets": [
+                    {
+                        "expr": "histogram_quantile(0.95, rate(aetherra_kernel_cycle_time_ms_bucket[5m]))",
+                        "legendFormat": "p95 kernel cycle",
+                        "refId": "A"
+                    },
+                    {
+                        "expr": "histogram_quantile(0.50, rate(aetherra_kernel_cycle_time_ms_bucket[5m]))",
+                        "legendFormat": "p50 kernel cycle",
+                        "refId": "B"
+                    }
+                ],
+                "yaxes": [
+                    {
+                        "format": "ms",
+                        "label": "Cycle Time"
+                    },
+                    {
+                        "show": false
+                    }
+                ]
+            },
+            {
+                "id": 4,
+                "title": "Chat API Throughput & Errors",
+                "type": "graph",
+                "gridPos": {
+                    "x": 12,
+                    "y": 8,
+                    "w": 12,
+                    "h": 8
+                },
+                "targets": [
+                    {
+                        "expr": "rate(aetherra_chat_requests_total[5m])",
+                        "legendFormat": "requests/sec",
+                        "refId": "A"
+                    },
+                    {
+                        "expr": "rate(aetherra_chat_fallback_mock_total[5m])",
+                        "legendFormat": "fallback mock/sec",
+                        "refId": "B"
+                    }
+                ],
+                "yaxes": [
+                    {
+                        "format": "reqps",
+                        "label": "Rate"
+                    },
+                    {
+                        "show": false
+                    }
+                ]
+            },
+            {
+                "id": 5,
+                "title": "STORM Recall Performance",
+                "type": "stat",
+                "gridPos": {
+                    "x": 0,
+                    "y": 16,
+                    "w": 6,
+                    "h": 4
+                },
+                "targets": [
+                    {
+                        "expr": "aetherra_storm_recall_latency_ms_p95",
+                        "refId": "A"
+                    }
+                ],
+                "options": {
+                    "graphMode": "area",
+                    "colorMode": "value",
+                    "textMode": "value_and_name"
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "unit": "ms",
+                        "thresholds": {
+                            "mode": "absolute",
+                            "steps": [
+                                {
+                                    "value": 0,
+                                    "color": "green"
+                                },
+                                {
+                                    "value": 400,
+                                    "color": "yellow"
+                                },
+                                {
+                                    "value": 500,
+                                    "color": "red"
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "id": 6,
+                "title": "STORM Shadow Agreement Rate",
+                "type": "gauge",
+                "gridPos": {
+                    "x": 6,
+                    "y": 16,
+                    "w": 6,
+                    "h": 4
+                },
+                "targets": [
+                    {
+                        "expr": "aetherra_storm_shadow_agreement_rate",
+                        "refId": "A"
+                    }
+                ],
+                "options": {
+                    "showThresholdLabels": true,
+                    "showThresholdMarkers": true
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "unit": "percentunit",
+                        "min": 0,
+                        "max": 1,
+                        "thresholds": {
+                            "mode": "absolute",
+                            "steps": [
+                                {
+                                    "value": 0,
+                                    "color": "red"
+                                },
+                                {
+                                    "value": 0.7,
+                                    "color": "yellow"
+                                },
+                                {
+                                    "value": 0.85,
+                                    "color": "green"
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "id": 7,
+                "title": "Agent Health",
+                "type": "table",
+                "gridPos": {
+                    "x": 12,
+                    "y": 16,
+                    "w": 12,
+                    "h": 8
+                },
+                "targets": [
+                    {
+                        "expr": "aetherra_agent_uptime_pct",
+                        "format": "table",
+                        "instant": true,
+                        "refId": "A"
+                    },
+                    {
+                        "expr": "aetherra_agent_avg_latency_ms",
+                        "format": "table",
+                        "instant": true,
+                        "refId": "B"
+                    },
+                    {
+                        "expr": "aetherra_agent_success_rate",
+                        "format": "table",
+                        "instant": true,
+                        "refId": "C"
+                    }
+                ],
+                "transformations": [
+                    {
+                        "id": "merge",
+                        "options": {}
+                    },
+                    {
+                        "id": "organize",
+                        "options": {
+                            "excludeByName": {
+                                "Time": true
+                            },
+                            "indexByName": {
+                                "agent": 0,
+                                "Value #A": 1,
+                                "Value #B": 2,
+                                "Value #C": 3
+                            },
+                            "renameByName": {
+                                "agent": "Agent",
+                                "Value #A": "Uptime %",
+                                "Value #B": "Avg Latency (ms)",
+                                "Value #C": "Success Rate"
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "id": 8,
+                "title": "HMR Operations",
+                "type": "graph",
+                "gridPos": {
+                    "x": 0,
+                    "y": 20,
+                    "w": 12,
+                    "h": 8
+                },
+                "targets": [
+                    {
+                        "expr": "rate(aetherra_hmr_attempts_total[5m])",
+                        "legendFormat": "attempts/sec",
+                        "refId": "A"
+                    },
+                    {
+                        "expr": "rate(aetherra_hmr_successes_total[5m])",
+                        "legendFormat": "successes/sec",
+                        "refId": "B"
+                    },
+                    {
+                        "expr": "rate(aetherra_hmr_rollbacks_total[5m])",
+                        "legendFormat": "rollbacks/sec",
+                        "refId": "C"
+                    }
+                ],
+                "yaxes": [
+                    {
+                        "format": "ops",
+                        "label": "Operations"
+                    },
+                    {
+                        "show": false
+                    }
+                ]
+            },
+            {
+                "id": 9,
+                "title": "System Health Score",
+                "type": "gauge",
+                "gridPos": {
+                    "x": 0,
+                    "y": 28,
+                    "w": 12,
+                    "h": 6
+                },
+                "targets": [
+                    {
+                        "expr": "(1 - (rate(aetherra_api_errors_total[5m]) / rate(aetherra_api_requests_total[5m]))) * (aetherra_homeostasis_status == 1)",
+                        "refId": "A"
+                    }
+                ],
+                "options": {
+                    "showThresholdLabels": true,
+                    "showThresholdMarkers": true
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "unit": "percentunit",
+                        "min": 0,
+                        "max": 1,
+                        "thresholds": {
+                            "mode": "absolute",
+                            "steps": [
+                                {
+                                    "value": 0,
+                                    "color": "red"
+                                },
+                                {
+                                    "value": 0.95,
+                                    "color": "yellow"
+                                },
+                                {
+                                    "value": 0.99,
+                                    "color": "green"
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "id": 10,
+                "title": "Tool Success Rate (Reasoning Engine)",
+                "type": "stat",
+                "gridPos": {
+                    "x": 12,
+                    "y": 28,
+                    "w": 6,
+                    "h": 6
+                },
+                "targets": [
+                    {
+                        "expr": "rate(aetherra_provider_calls_total{status=\"ok\"}[5m]) / rate(aetherra_provider_calls_total[5m])",
+                        "refId": "A"
+                    }
+                ],
+                "options": {
+                    "graphMode": "area",
+                    "colorMode": "value"
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "unit": "percentunit",
+                        "thresholds": {
+                            "mode": "absolute",
+                            "steps": [
+                                {
+                                    "value": 0,
+                                    "color": "red"
+                                },
+                                {
+                                    "value": 0.85,
+                                    "color": "yellow"
+                                },
+                                {
+                                    "value": 0.95,
+                                    "color": "green"
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "id": 11,
+                "title": "Retrieval Hit Rate",
+                "type": "stat",
+                "gridPos": {
+                    "x": 18,
+                    "y": 28,
+                    "w": 6,
+                    "h": 6
+                },
+                "targets": [
+                    {
+                        "expr": "sum(rate(aetherra_memory_events_total{type=\"hit\"}[5m])) / sum(rate(aetherra_memory_events_total[5m]))",
+                        "refId": "A"
+                    }
+                ],
+                "options": {
+                    "graphMode": "area",
+                    "colorMode": "value"
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "unit": "percentunit",
+                        "thresholds": {
+                            "mode": "absolute",
+                            "steps": [
+                                {
+                                    "value": 0,
+                                    "color": "red"
+                                },
+                                {
+                                    "value": 0.6,
+                                    "color": "yellow"
+                                },
+                                {
+                                    "value": 0.8,
+                                    "color": "green"
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ],
+        "templating": {
+            "list": [
+                {
+                    "name": "datasource",
+                    "type": "datasource",
+                    "query": "prometheus"
+                }
+            ]
+        },
+        "annotations": {
+            "list": [
+                {
+                    "datasource": "${datasource}",
+                    "enable": true,
+                    "expr": "ALERTS{alertstate=\"firing\",alertname=~\"Aetherra.*\"}",
+                    "name": "Aetherra Alerts",
+                    "step": "60s",
+                    "tagKeys": "alertname",
+                    "textFormat": "{{ alertname }}: {{ annotations.summary }}",
+                    "titleFormat": "Alert"
+                }
+            ]
+        }
+    }
+}

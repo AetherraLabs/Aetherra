@@ -1,8 +1,8 @@
 # .aether Verification Report
 
 Root: D:\Aetherra Project
-Files found: 62
-Profile: test
+Files found: 65
+Profile: prod
 
 ## Discovered .aether Files
 - D:\Aetherra Project\Aetherra\aetherra_core\system\agent_diagnostics.aether
@@ -57,6 +57,8 @@ Profile: test
 - D:\Aetherra Project\lyrixa_system_check.aether
 - D:\Aetherra Project\self_organizer.aether
 - D:\Aetherra Project\test_ai_os.aether
+- D:\Aetherra Project\workflows\batch_processing_loop.aether
+- D:\Aetherra Project\workflows\health_check_conditional.aether
 - D:\Aetherra Project\workflows\hello_plugin_demo.aether
 - D:\Aetherra Project\workflows\ingest_safe_generated.aether
 - D:\Aetherra Project\workflows\knowledge_import.aether
@@ -64,6 +66,7 @@ Profile: test
 - D:\Aetherra Project\workflows\on_error_chain_demo.aether
 - D:\Aetherra Project\workflows\parallel_workflow_demo.aether
 - D:\Aetherra Project\workflows\plugin_chain_demo.aether
+- D:\Aetherra Project\workflows\plugin_chain_workflow.aether
 - D:\Aetherra Project\workflows\storm_demo.aether
 - D:\Aetherra Project\workflows\system_readiness.aether
 - D:\Aetherra Project\workflows\teach_lyrixa.aether
@@ -121,6 +124,8 @@ Profile: test
 - D:\Aetherra Project\lyrixa_system_check.aether: OK
 - D:\Aetherra Project\self_organizer.aether: OK
 - D:\Aetherra Project\test_ai_os.aether: OK
+- D:\Aetherra Project\workflows\batch_processing_loop.aether: FAIL (signature mismatch)
+- D:\Aetherra Project\workflows\health_check_conditional.aether: FAIL (signature mismatch)
 - D:\Aetherra Project\workflows\hello_plugin_demo.aether: OK
 - D:\Aetherra Project\workflows\ingest_safe_generated.aether: FAIL (missing signature header)
 - D:\Aetherra Project\workflows\knowledge_import.aether: FAIL (missing signature header)
@@ -128,6 +133,7 @@ Profile: test
 - D:\Aetherra Project\workflows\on_error_chain_demo.aether: OK
 - D:\Aetherra Project\workflows\parallel_workflow_demo.aether: OK
 - D:\Aetherra Project\workflows\plugin_chain_demo.aether: OK
+- D:\Aetherra Project\workflows\plugin_chain_workflow.aether: FAIL (signature mismatch)
 - D:\Aetherra Project\workflows\storm_demo.aether: FAIL (missing signature header)
 - D:\Aetherra Project\workflows\system_readiness.aether: OK
 - D:\Aetherra Project\workflows\teach_lyrixa.aether: FAIL (missing signature header)
@@ -195,6 +201,8 @@ Top risky files:
 - D:\Aetherra Project\lyrixa_system_check.aether: score=0 findings=0
 - D:\Aetherra Project\self_organizer.aether: score=0 findings=0
 - D:\Aetherra Project\test_ai_os.aether: score=0 findings=0
+- D:\Aetherra Project\workflows\batch_processing_loop.aether: score=0 findings=0
+- D:\Aetherra Project\workflows\health_check_conditional.aether: score=0 findings=0
 - D:\Aetherra Project\workflows\hello_plugin_demo.aether: score=0 findings=0
 - D:\Aetherra Project\workflows\ingest_safe_generated.aether: score=0 findings=0
 - D:\Aetherra Project\workflows\knowledge_import.aether: score=0 findings=0
@@ -202,5 +210,6 @@ Top risky files:
 - D:\Aetherra Project\workflows\on_error_chain_demo.aether: score=0 findings=0
 - D:\Aetherra Project\workflows\parallel_workflow_demo.aether: score=0 findings=0
 - D:\Aetherra Project\workflows\plugin_chain_demo.aether: score=0 findings=0
+- D:\Aetherra Project\workflows\plugin_chain_workflow.aether: score=0 findings=0
 - D:\Aetherra Project\workflows\storm_demo.aether: score=0 findings=0
 - D:\Aetherra Project\workflows\teach_lyrixa.aether: score=0 findings=0

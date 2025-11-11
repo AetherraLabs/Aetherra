@@ -558,8 +558,18 @@ class ExpressionManager:
         new_state = event.state
 
         if old_state == new_state:
-            # Refresh the current state
+            # Refresh the current state and re-fire enter hooks to acknowledge explicit request
             self.state_entered_at = time.time()
+            for hook in self.enter_hooks[new_state]:
+                try:
+                    if asyncio.iscoroutinefunction(hook):
+                        await hook(new_state)
+                    else:
+                        hook(new_state)
+                except Exception as e:
+                    logger.error(f"Error in enter hook for {new_state}: {e}")
+            # Also publish an event to keep downstream in sync
+            await self._publish_expression_event(event)
             return
 
         # Call exit hooks for old state

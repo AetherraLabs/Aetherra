@@ -21,14 +21,23 @@ def load_env_file():
 
     for env_file in possible_paths:
         if os.path.exists(env_file):
-            print(f"🔍 Loading .env file from: {env_file}")
+            try:
+                print(f"[ENV] Loading .env file from: {env_file}")
+            except UnicodeEncodeError:
+                # Fallback for terminals that don't support emojis
+                print(f"Loading .env file from: {env_file}")
+
             with open(env_file) as f:
                 for line in f:
                     line = line.strip()
                     if line and not line.startswith("#") and "=" in line:
                         key, value = line.split("=", 1)
                         os.environ[key.strip()] = value.strip()
-            print("✅ Environment variables loaded from .env file")
+
+            try:
+                print("[ENV] Environment variables loaded from .env file")
+            except UnicodeEncodeError:
+                print("Environment variables loaded from .env file")
             return
 
     print("⚠️ No .env file found in expected locations")
@@ -112,10 +121,7 @@ def ask_ai(prompt, temperature=0.2, debug_mode=False, model=None):
             except Exception as model_error:
                 if debug_mode:
                     print(f"❌ Model {current_model} failed: {model_error}")
-                if (
-                    "model" in str(model_error).lower()
-                    and "not" in str(model_error).lower()
-                ):
+                if "model" in str(model_error).lower() and "not" in str(model_error).lower():
                     continue  # Try next model
                 else:
                     raise model_error  # Different error, don't retry
@@ -204,9 +210,7 @@ Provide concrete, actionable suggestions."""
     return ask_ai(prompt)
 
 
-def provide_adaptive_suggestions(
-    context, recent_memories, available_tags, function_names
-):
+def provide_adaptive_suggestions(context, recent_memories, available_tags, function_names):
     """AI-powered adaptive suggestions based on current context"""
     adaptive_context = f"""
 Current Context: {context}
@@ -246,9 +250,7 @@ def auto_tag_content(summary):
 
 def suggest_next_actions(summary):
     """Suggest next Aetherra actions based on learned content"""
-    prompt = (
-        f"Based on this summary, suggest useful Aetherra to execute next:\n{summary}"
-    )
+    prompt = f"Based on this summary, suggest useful Aetherra to execute next:\n{summary}"
     return ask_ai(prompt)
 
 

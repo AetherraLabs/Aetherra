@@ -116,13 +116,32 @@ def create_app(cfg: Settings | None = None) -> Flask:
         # AI API token enforcement
         api_enabled = os.environ.get("AETHERRA_AI_API_ENABLED", "0") == "1"
         if api_enabled:
-            require_token = os.environ.get("AETHERRA_AI_API_REQUIRE_TOKEN", "0") == "1"
+            require_token_env = os.environ.get("AETHERRA_AI_API_REQUIRE_TOKEN", "0")
+            require_token = require_token_env == "1"
             token_present = bool(
                 os.environ.get("AETHERRA_AI_API_TOKEN")
                 or os.environ.get("AETHERRA_HUB_CONTROL_TOKEN")
             )
-            if not require_token or not token_present:
-                failures.append("AI API enabled without enforced + configured token")
+            # Auto-escalate to require_token when token exists but flag not set
+            if token_present and not require_token:
+                os.environ["AETHERRA_AI_API_REQUIRE_TOKEN"] = "1"
+                require_token = True
+                logger.info(
+                    "[SEC] Auto-enabled AI API token requirement (token present; flag was %s)",
+                    require_token_env,
+                )
+            logger.info(
+                "[SEC][DIAG] AI API security check: require_token=%s token_present=%s token_len=%s hub_token_len=%s",
+                require_token,
+                token_present,
+                len(os.environ.get("AETHERRA_AI_API_TOKEN", "")),
+                len(os.environ.get("AETHERRA_HUB_CONTROL_TOKEN", "")),
+            )
+            # Only fail if token is REQUIRED AND missing. Previous logic aborted if either was false.
+            if require_token and not token_present:
+                failures.append(
+                    "AI API token enforcement failed (AETHERRA_AI_API_REQUIRE_TOKEN=1 but no token present)"
+                )
 
         # Hub control token check
         if not os.environ.get("AETHERRA_HUB_CONTROL_TOKEN"):

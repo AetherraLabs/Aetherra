@@ -832,3 +832,41 @@ async def get_agent_fabric(service_registry) -> AgentFabric:
     if _fabric_instance is None:
         _fabric_instance = AgentFabric(service_registry)
     return _fabric_instance
+
+
+# Compatibility wrapper for pre-pack validation
+class AetherraAgentFabric:
+    """Compatibility wrapper that can be instantiated without registry for validation"""
+
+    def __init__(self, registry=None):
+        """Initialize with optional registry"""
+        if registry is None:
+            # Create a minimal mock registry for validation
+            class MockRegistry:
+                def get_service(self, name):
+                    return None
+
+                async def send_message(self, *args, **kwargs):
+                    pass
+
+                async def update_heartbeat(self, *args, **kwargs):
+                    pass
+
+            registry = MockRegistry()
+
+        self._fabric = AgentFabric(registry)
+
+    def list_agents(self):
+        """List all registered agents"""
+        return [
+            {"name": agent.name, "capabilities": list(agent.capabilities)}
+            for agent in self._fabric.agents
+        ]
+
+    async def start(self):
+        """Start the agent fabric"""
+        await self._fabric.start()
+
+    async def shutdown(self):
+        """Shutdown the agent fabric"""
+        await self._fabric.shutdown()

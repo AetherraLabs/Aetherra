@@ -1,0 +1,236 @@
+# Aetherra Wave A - Production Alert Rules
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
+groups:
+  - name: aetherra_wave_a_slos
+    interval: 30s
+    rules:
+      # A1: Engine Reasoning SLOs
+      - alert: AetherraHighProviderLatency
+        expr: histogram_quantile(0.95, rate(aetherra_provider_latency_seconds_bucket[5m])) > 2.0
+        for: 5m
+        labels:
+          severity: warning
+          component: reasoning_engine
+          wave: a1
+        annotations:
+          summary: "Reasoning provider p95 latency exceeds 2s"
+          description: "Provider {{ $labels.provider }} p95 latency is {{ $value | humanizeDuration }}. SLO target: <2s"
+          runbook_url: "https://docs.aetherra.dev/troubleshooting/high-latency"
+
+      - alert: AetherraLowToolSuccessRate
+        expr: rate(aetherra_provider_calls_total{status="ok"}[10m]) / rate(aetherra_provider_calls_total[10m]) < 0.85
+        for: 10m
+        labels:
+          severity: critical
+          component: reasoning_engine
+          wave: a1
+        annotations:
+          summary: "Tool success rate below 85% threshold"
+          description: "Provider {{ $labels.provider }} success rate: {{ $value | humanizePercentage }}. SLO minimum: 85%"
+          runbook_url: "https://docs.aetherra.dev/troubleshooting/tool-failures"
+
+      # A2: RAG/Memory SLOs
+      - alert: AetherraHighMemoryRTT
+        expr: histogram_quantile(0.95, rate(aetherra_memory_query_duration_bucket[5m])) * 1000 > 120
+        for: 5m
+        labels:
+          severity: warning
+          component: memory_rag
+          wave: a2
+        annotations:
+          summary: "Memory query p95 RTT exceeds 120ms"
+          description: "Memory RTT p95: {{ $value | humanize }}ms. Max acceptable: 120ms, target: 50ms"
+          runbook_url: "https://docs.aetherra.dev/troubleshooting/memory-latency"
+
+      - alert: AetherraLowRetrievalHitRate
+        expr: sum(rate(aetherra_memory_events_total{type="hit"}[10m])) / sum(rate(aetherra_memory_events_total[10m])) < 0.5
+        for: 10m
+        labels:
+          severity: warning
+          component: memory_rag
+          wave: a2
+        annotations:
+          summary: "Memory retrieval hit rate below 50%"
+          description: "Hit rate: {{ $value | humanizePercentage }}. Consider cache warming or query optimization"
+          runbook_url: "https://docs.aetherra.dev/troubleshooting/low-hit-rate"
+
+      - alert: AetherraSTORMHighInconsistency
+        expr: aetherra_storm_sheaf_inconsistency > 0.3
+        for: 5m
+        labels:
+          severity: warning
+          component: storm
+          wave: a2
+        annotations:
+          summary: "STORM sheaf inconsistency exceeds 0.3 threshold"
+          description: "Inconsistency score: {{ $value }}. May indicate degraded memory coherence"
+          runbook_url: "https://docs.aetherra.dev/troubleshooting/storm-inconsistency"
+
+      # A3: System Observability Alerts
+      - alert: AetherraHighKernelCycleTime
+        expr: histogram_quantile(0.95, rate(aetherra_kernel_cycle_time_ms_bucket[5m])) > 500
+        for: 5m
+        labels:
+          severity: warning
+          component: kernel
+          wave: a3
+        annotations:
+          summary: "Kernel cycle time p95 exceeds 500ms"
+          description: "Kernel p95 cycle: {{ $value | humanize }}ms. May indicate task queue backpressure"
+          runbook_url: "https://docs.aetherra.dev/troubleshooting/kernel-latency"
+
+      - alert: AetherraHighChatLatency
+        expr: histogram_quantile(0.95, rate(aetherra_chat_latency_ms_bucket[5m])) > 500
+        for: 5m
+        labels:
+          severity: warning
+          component: chat_api
+          wave: a3
+        annotations:
+          summary: "Chat API p95 latency exceeds 500ms"
+          description: "Chat latency p95: {{ $value | humanize }}ms. SLO target: <500ms"
+          runbook_url: "https://docs.aetherra.dev/troubleshooting/chat-latency"
+
+      - alert: AetherraHighErrorRate
+        expr: rate(aetherra_api_errors_total[5m]) / rate(aetherra_api_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          component: api
+          wave: a3
+        annotations:
+          summary: "API error rate exceeds 5%"
+          description: "Error rate: {{ $value | humanizePercentage }}. Endpoint: {{ $labels.endpoint }}"
+          runbook_url: "https://docs.aetherra.dev/troubleshooting/high-error-rate"
+
+      - alert: AetherraQueueBackpressure
+        expr: aetherra_kernel_task_queue_size > 100
+        for: 2m
+        labels:
+          severity: warning
+          component: kernel
+          wave: a3
+        annotations:
+          summary: "Kernel task queue shows backpressure"
+          description: "Queue size: {{ $value }}. May lead to latency spikes"
+          runbook_url: "https://docs.aetherra.dev/troubleshooting/queue-backpressure"
+
+      # A4: Security Baseline Alerts
+      - alert: AetherraUnsignedScriptExecution
+        expr: increase(aetherra_script_verify_failures_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: security
+          wave: a4
+        annotations:
+          summary: "Unsigned or invalid script execution attempted"
+          description: "{{ $value }} unsigned script executions blocked in last 5m"
+          runbook_url: "https://docs.aetherra.dev/security/script-signing"
+
+      - alert: AetherraInvalidTokenAttempts
+        expr: rate(aetherra_auth_invalid_token_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: security
+          wave: a4
+        annotations:
+          summary: "High rate of invalid authentication attempts"
+          description: "{{ $value }} invalid tokens/sec. Possible brute force attack"
+          runbook_url: "https://docs.aetherra.dev/security/auth-failures"
+
+      - alert: AetherraNetworkPolicyViolation
+        expr: increase(aetherra_network_policy_denied_total[5m]) > 5
+        for: 1m
+        labels:
+          severity: warning
+          component: security
+          wave: a4
+        annotations:
+          summary: "Network policy violations detected"
+          description: "{{ $value }} denied connections in 5m. Check allowlist configuration"
+          runbook_url: "https://docs.aetherra.dev/security/network-policy"
+
+      # A5: HMR & Homeostasis Alerts
+      - alert: AetherraHighHMRRollbackRate
+        expr: rate(aetherra_hmr_rollbacks_total[10m]) / rate(aetherra_hmr_attempts_total[10m]) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+          component: hmr
+          wave: a5
+        annotations:
+          summary: "HMR rollback rate exceeds 20%"
+          description: "Rollback rate: {{ $value | humanizePercentage }}. Target: {{ $labels.target }}"
+          runbook_url: "https://docs.aetherra.dev/troubleshooting/hmr-rollbacks"
+
+      - alert: AetherraHomeostasisInactive
+        expr: aetherra_homeostasis_status != 1
+        for: 2m
+        labels:
+          severity: critical
+          component: homeostasis
+          wave: a5
+        annotations:
+          summary: "Homeostasis system not active"
+          description: "Homeostasis status: {{ $value }}. Expected: 1 (active)"
+          runbook_url: "https://docs.aetherra.dev/troubleshooting/homeostasis"
+
+      - alert: AetherraSetpointViolation
+        expr: |
+          (aetherra_plugin_load_success_rate < 0.85) or
+          (histogram_quantile(0.95, rate(aetherra_memory_query_duration_bucket[5m])) * 1000 > 120) or
+          (histogram_quantile(0.95, rate(aetherra_orchestrator_task_latency_ms_bucket[5m])) > 250)
+        for: 10m
+        labels:
+          severity: warning
+          component: homeostasis
+          wave: a5
+        annotations:
+          summary: "System operating outside acceptable setpoint bounds"
+          description: "One or more metrics violate homeostasis setpoints for 10+ minutes"
+          runbook_url: "https://docs.aetherra.dev/homeostasis/setpoint-violations"
+
+      # Composite SLO: Overall system health
+      - alert: AetherraSystemUnhealthy
+        expr: |
+          (1 - (rate(aetherra_api_errors_total[5m]) / rate(aetherra_api_requests_total[5m]))) < 0.95
+        for: 10m
+        labels:
+          severity: critical
+          component: system
+          wave: all
+        annotations:
+          summary: "Overall system health below 95% availability SLO"
+          description: "System availability: {{ $value | humanizePercentage }}. SLO: 99.9%"
+          runbook_url: "https://docs.aetherra.dev/troubleshooting/system-health"
+
+  # Recording rules for efficient queries
+  - name: aetherra_wave_a_recordings
+    interval: 30s
+    rules:
+      - record: aetherra:sli:availability:5m
+        expr: |
+          sum(rate(aetherra_api_requests_total{status!~"5.."}[5m]))
+          / sum(rate(aetherra_api_requests_total[5m]))
+
+      - record: aetherra:sli:latency_p95:5m
+        expr: histogram_quantile(0.95, rate(aetherra_request_duration_seconds_bucket[5m]))
+
+      - record: aetherra:sli:error_rate:5m
+        expr: |
+          rate(aetherra_api_errors_total[5m])
+          / rate(aetherra_api_requests_total[5m])
+
+      - record: aetherra:reasoning:tool_success:10m
+        expr: |
+          rate(aetherra_provider_calls_total{status="ok"}[10m])
+          / rate(aetherra_provider_calls_total[10m])
+
+      - record: aetherra:memory:hit_rate:10m
+        expr: |
+          sum(rate(aetherra_memory_events_total{type="hit"}[10m]))
+          / sum(rate(aetherra_memory_events_total[10m]))

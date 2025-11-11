@@ -528,6 +528,72 @@ class AetherraOSLauncher:
         self.service_registry = await get_service_registry()
         logger.info("[OK] Service Registry online")
 
+        # Best-effort: If a local Registry Daemon is configured but not running, start it automatically
+        try:
+            reg_url = os.environ.get("AETHERRA_REGISTRY_URL", "").strip()
+            if reg_url:
+                from urllib.parse import urlparse
+
+                parsed = urlparse(reg_url)
+                host = parsed.hostname or "127.0.0.1"
+                port = parsed.port or 3030
+
+                async def _daemon_reachable() -> bool:
+                    try:
+                        import aiohttp  # type: ignore
+
+                        timeout = aiohttp.ClientTimeout(total=1.5)
+                        async with (
+                            aiohttp.ClientSession(timeout=timeout) as session,
+                            session.get(
+                                f"http://{host}:{port}/api/registry/status"
+                            ) as r,
+                        ):
+                            return r.status == 200
+                    except Exception:
+                        return False
+
+                if host in ("127.0.0.1", "localhost") and not await _daemon_reachable():
+                    logger.info(
+                        "[REGISTRY_DAEMON] Auto-starting local Registry Daemon at %s:%s",
+                        host,
+                        port,
+                    )
+                    try:
+                        # Spawn background daemon process
+                        script = os.path.join(
+                            os.getcwd(), "aetherra_registry_daemon.py"
+                        )
+                        proc = await asyncio.create_subprocess_exec(
+                            sys.executable,
+                            script,
+                            "--host",
+                            host,
+                            "--port",
+                            str(port),
+                            stdout=asyncio.subprocess.DEVNULL,
+                            stderr=asyncio.subprocess.DEVNULL,
+                        )
+
+                        # Wait briefly for readiness
+                        for _ in range(10):  # ~2s total
+                            if await _daemon_reachable():
+                                logger.info(
+                                    "[REGISTRY_DAEMON] Online at %s:%s", host, port
+                                )
+                                break
+                            await asyncio.sleep(0.2)
+                        # Keep a weak reference for cleanup if ever needed
+                        self.systems["registry_daemon_proc"] = proc
+                    except Exception as _rd_exc:
+                        logger.debug(
+                            "[REGISTRY_DAEMON] Auto-start failed (continuing with in-process registry): %s",
+                            _rd_exc,
+                        )
+        except Exception:
+            # Never block launcher on auxiliary daemon startup
+            pass
+
         # Ultra-early QFAC stub registration (pre-Phase 2) so tests with very tight timeouts
         # can observe the optional service even if later phases run long when the full suite
         # is executing. Safe to run multiple times; later Phase 2 logic will reconcile.
@@ -1863,8 +1929,8 @@ class AetherraOSLauncher:
             # Initialize ConsciousnessCore
             core = ConsciousnessCore(bus, safety_envelope=None, memory_engine=None)
 
-            # Wire ThinkStream to Hub API for UI visualization
-            hub_url = "http://localhost:3001"
+            # Wire ThinkStream to Hub API for UI visualization (follow chosen Hub URL)
+            hub_url = os.environ.get("AETHERRA_HUB_URL", "http://localhost:3001")
             try:
                 core.ui.register_hub_api(hub_url)
                 logger.info(
@@ -2025,6 +2091,13 @@ class AetherraOSLauncher:
                     def is_running(self) -> bool:
                         return True
 
+                # Persist runtime hub URL/port for external tools
+                try:
+                    with open("hub_runtime_url.txt", "w", encoding="utf-8") as f:
+                        f.write(desired_url)
+                except Exception:
+                    pass
+
                 remote_hub = _RemoteHub(desired_url)
                 self.systems["aetherra_hub"] = remote_hub
                 await register_service(
@@ -2099,6 +2172,12 @@ class AetherraOSLauncher:
                     # Expose chosen URL to environment for downstream consumers
                     hub_url = f"http://localhost:{chosen_port}"
                     os.environ["AETHERRA_HUB_URL"] = hub_url
+                    # Persist runtime hub URL/port for external tools
+                    try:
+                        with open("hub_runtime_url.txt", "w", encoding="utf-8") as f:
+                            f.write(hub_url)
+                    except Exception:
+                        pass
 
                     # Optionally wait briefly for /health
                     try:

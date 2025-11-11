@@ -54,19 +54,25 @@ class PrePackValidator:
         # Enable validation modes
         os.environ["AETHERRA_VALIDATION_MODE"] = "1"
 
-        self.log(f"🔧 Environment configured for profile: {self.profile}")
+        self.log(f"Environment configured for profile: {self.profile}")
 
     def log(self, message: str, level: str = "INFO"):
         """Log with timestamp"""
         timestamp = datetime.now().strftime("%H:%M:%S")
         prefix = {
-            "INFO": "ℹ️",
-            "PASS": "✅",
-            "FAIL": "❌",
-            "WARN": "⚠️",
-            "SKIP": "⏭️",
+            "INFO": "[i]",
+            "PASS": "[+]",
+            "FAIL": "[-]",
+            "WARN": "[!]",
+            "SKIP": "[>]",
         }.get(level, "•")
-        print(f"[{timestamp}] {prefix} {message}")
+        # Use ASCII-safe output to avoid encoding issues
+        try:
+            print(f"[{timestamp}] {prefix} {message}")
+        except UnicodeEncodeError:
+            # Fallback for terminals that don't support Unicode
+            safe_message = message.encode("ascii", "replace").decode("ascii")
+            print(f"[{timestamp}] {prefix} {safe_message}")
 
     def add_result(
         self,

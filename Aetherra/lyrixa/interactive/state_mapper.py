@@ -115,17 +115,24 @@ class StateMapper:
             # Parse condition
             if "<" in condition:
                 threshold_key = condition.split("<")[1].strip()
+                # Support dotted paths like thresholds.memory.coherence_low
+                if "." in threshold_key:
+                    threshold_key = threshold_key.split(".")[-1]
                 if coherence_score < thresholds[threshold_key]:
                     intensity = self._evaluate_intensity_formula(
-                        rule["intensity_formula"], {"coherence_score": coherence_score}
+                        rule.get("intensity_formula", rule.get("intensity_base", "0.5")),
+                        {"coherence_score": coherence_score, "coherence": coherence_score},
                     )
                     return (mood, intensity)
 
             elif ">" in condition:
                 threshold_key = condition.split(">")[1].strip()
+                if "." in threshold_key:
+                    threshold_key = threshold_key.split(".")[-1]
                 if coherence_score > thresholds[threshold_key]:
                     intensity = self._evaluate_intensity_formula(
-                        rule["intensity_formula"], {"coherence_score": coherence_score}
+                        rule.get("intensity_formula", rule.get("intensity_base", "0.5")),
+                        {"coherence_score": coherence_score, "coherence": coherence_score},
                     )
                     return (mood, intensity)
 
@@ -134,9 +141,14 @@ class StateMapper:
                 parts = condition.split()
                 low_key = parts[2]
                 high_key = parts[4]
+                if "." in low_key:
+                    low_key = low_key.split(".")[-1]
+                if "." in high_key:
+                    high_key = high_key.split(".")[-1]
                 if thresholds[low_key] <= coherence_score < thresholds[high_key]:
                     intensity = self._evaluate_intensity_formula(
-                        rule["intensity_formula"], {"coherence_score": coherence_score}
+                        rule.get("intensity_formula", rule.get("intensity_base", "0.5")),
+                        {"coherence_score": coherence_score, "coherence": coherence_score},
                     )
                     return (mood, intensity)
 
@@ -157,7 +169,6 @@ class StateMapper:
         Returns:
             Tuple of (mood, intensity)
         """
-        rules = self.state_mapping["homeostasis_signal"]["rules"]
         thresholds = self.thresholds["homeostasis"]
 
         concern_score = 0.0
@@ -180,20 +191,11 @@ class StateMapper:
         elif drops_total > 10:
             concern_score += 0.1
 
-        # Map concern_score to mood using rules
-        for rule in rules:
-            condition = rule["condition"]
-            mood = rule["mood"]
-
-            if ">" in condition:
-                threshold = float(condition.split(">")[1].strip())
-                if concern_score > threshold:
-                    intensity = self._evaluate_intensity_formula(
-                        rule["intensity_formula"], {"concern_score": concern_score}
-                    )
-                    return (mood, intensity)
-
-        # Default fallback
+        # Simple mapping by concern score
+        if concern_score >= 0.7:
+            return ("concerned", min(1.0, 0.6 + concern_score))
+        if concern_score >= 0.3:
+            return ("focused", min(1.0, 0.4 + concern_score))
         return ("calm", 0.3)
 
     def map_kernel_health(
@@ -215,32 +217,54 @@ class StateMapper:
         rules = self.state_mapping["kernel_health"]["rules"]
         thresholds = self.thresholds["kernel"]
 
-        # Evaluate rules in priority order
+        # Evaluate rules in priority order adapting JSON condition format
         for rule in rules:
             condition = rule["condition"]
             mood = rule["mood"]
 
-            # Check circuit breaker conditions
-            if (
-                "circuit_breaker_state" in condition
-                and circuit_breaker_state == "open"
-                and "open" in condition
-            ):
-                return (mood, 0.9)
+            normalized = condition.replace('"', "'")
 
-            # Check backpressure conditions
-            if "backpressure_ratio" in condition and ">=" in condition:
-                threshold_key = condition.split(">=")[1].strip()
-                if backpressure_ratio >= thresholds[threshold_key]:
-                    intensity = self._evaluate_intensity_formula(
-                        rule["intensity_formula"],
-                        {"backpressure_ratio": backpressure_ratio},
-                    )
+            # Circuit breaker open OR expression
+            if (
+                "circuit_breaker" in normalized
+                and "open" in normalized
+                and circuit_breaker_state == "open"
+            ):
+                return (mood, rule.get("intensity_base", 0.9))
+
+            # Backpressure conditions (JSON uses 'backpressure >= thresholds.kernel.backpressure_high')
+            if "backpressure" in normalized and ">=" in normalized:
+                threshold_key = normalized.split(">=")[1].strip()
+                # remove possible OR tail
+                if " OR" in threshold_key:
+                    threshold_key = threshold_key.split(" OR")[0].strip()
+                if "." in threshold_key:
+                    threshold_key = threshold_key.split(".")[-1]
+                if backpressure_ratio >= thresholds.get(threshold_key, 1.0):
+                    intensity_formula = rule.get("intensity_formula")
+                    if intensity_formula:
+                        intensity = self._evaluate_intensity_formula(
+                            intensity_formula,
+                            {
+                                "backpressure_ratio": backpressure_ratio,
+                                "backpressure": backpressure_ratio,
+                            },
+                        )
+                    else:
+                        intensity = float(rule.get("intensity_base", 0.7))
                     return (mood, intensity)
 
-            # Check burst drops
-            if "drops_burst" in condition and drops_burst > 10:
-                return (mood, 0.6)
+            # Combined circuit breaker OR backpressure critical condition
+            if (
+                "backpressure" in normalized
+                and "critical" in normalized
+                and backpressure_ratio >= thresholds.get("backpressure_critical", 0.95)
+            ):
+                return (mood, float(rule.get("intensity_base", 0.9)))
+
+            # Default rule
+            if normalized.strip() == "default":
+                return (mood, float(rule.get("intensity_base", 0.3)))
 
         # Default fallback
         return ("calm", 0.3)
@@ -268,6 +292,8 @@ class StateMapper:
 
             if "sheaf_inconsistency" in condition and ">=" in condition:
                 threshold_key = condition.split(">=")[1].strip()
+                if "." in threshold_key:
+                    threshold_key = threshold_key.split(".")[-1]
                 if sheaf_inconsistency >= thresholds[threshold_key]:
                     intensity = self._evaluate_intensity_formula(
                         rule["intensity_formula"],
@@ -275,11 +301,14 @@ class StateMapper:
                     )
                     return (mood, intensity)
 
-            if "coherence_score" in condition and ">=" in condition:
+            if "coherence" in condition and ">=" in condition:
                 threshold_key = condition.split(">=")[1].strip()
+                if "." in threshold_key:
+                    threshold_key = threshold_key.split(".")[-1]
                 if coherence_score >= thresholds[threshold_key]:
                     intensity = self._evaluate_intensity_formula(
-                        rule["intensity_formula"], {"coherence_score": coherence_score}
+                        rule["intensity_formula"],
+                        {"coherence_score": coherence_score, "coherence": coherence_score},
                     )
                     return (mood, intensity)
 
@@ -310,6 +339,8 @@ class StateMapper:
                 if event_type == "stream_complete" and "confidence" in condition:
                     if "<" in condition:
                         threshold_key = condition.split("<")[1].strip().split()[0]
+                        if "." in threshold_key:
+                            threshold_key = threshold_key.split(".")[-1]
                         if confidence < thresholds[threshold_key]:
                             return (mood, 0.5)
                     elif "between" in condition:
@@ -317,17 +348,32 @@ class StateMapper:
                         parts = condition.split()
                         low_key = parts[parts.index("between") + 1]
                         high_key = parts[parts.index("and") + 1]
+                        if "." in low_key:
+                            low_key = low_key.split(".")[-1]
+                        if "." in high_key:
+                            high_key = high_key.split(".")[-1]
                         if thresholds[low_key] <= confidence < thresholds[high_key]:
                             return (mood, 0.5)
                     elif ">=" in condition:
                         threshold_key = condition.split(">=")[1].strip()
+                        if "." in threshold_key:
+                            threshold_key = threshold_key.split(".")[-1]
                         if confidence >= thresholds[threshold_key]:
                             return (mood, 0.7)
                 else:
                     # Simple event match (no confidence check)
-                    if condition.strip() == f'event_type == "{event_type}"':
-                        intensity_str = rule.get("intensity_formula", "0.7")
-                        intensity = float(intensity_str) if isinstance(intensity_str, str) else 0.7
+                    normalized = condition.strip().replace('"', "'")
+                    if normalized == f"event_type == '{event_type}'":
+                        intensity_val = rule.get(
+                            "intensity_formula", rule.get("intensity_base", 0.7)
+                        )
+                        if isinstance(intensity_val, str):
+                            try:
+                                intensity = float(intensity_val)
+                            except Exception:
+                                intensity = 0.7
+                        else:
+                            intensity = float(intensity_val)
                         return (mood, intensity)
 
         # Default fallback

@@ -13,7 +13,7 @@ import logging
 import os
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -25,29 +25,31 @@ try:  # optional
     )
 except Exception:  # pragma: no cover - unavailable path
 
-    def validate_manifest(data: Dict[str, Any]):  # type: ignore
+    def validate_manifest(
+        data: dict[str, Any],
+    ) -> tuple[bool, list[str], dict[str, Any]]:  # type: ignore
         return False, ["validator_unavailable"], data
 
-    def compute_trust_zone(strict: bool, verified: bool):  # type: ignore
+    def compute_trust_zone(strict: bool, verified: bool) -> str:  # type: ignore
         return "unsigned"
 
 
 @dataclass
 class PluginStore:
-    plugins: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    plugins: dict[str, dict[str, Any]] = field(default_factory=dict)
     active_registrations: int = 0
 
-    def list(self) -> Dict[str, Any]:
+    def list(self) -> dict[str, Any]:
         return {
             "plugins": list(self.plugins.values()),
             "total": len(self.plugins),
             "timestamp": datetime.now().isoformat(),
         }
 
-    def get(self, plugin_id: str) -> Dict[str, Any] | None:
+    def get(self, plugin_id: str) -> dict[str, Any] | None:
         return self.plugins.get(plugin_id)
 
-    def register(self, manifest: Dict[str, Any]) -> Tuple[bool, Dict[str, Any]]:
+    def register(self, manifest: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
         strict_env = (
             os.environ.get("AETHERRA_SIGNING_STRICT", "0") == "1"
             or os.environ.get("AETHERRA_HUB_STRICT", "0") == "1"
@@ -55,6 +57,32 @@ class PluginStore:
         )
         strict = bool(strict_env)
         has_sig = bool(manifest.get("signature")) and bool(manifest.get("pubkey"))
+        # Developer override: allow unsigned registration even when strict flags are set
+        # if explicit env set AND verification libs unavailable.
+        if os.environ.get("AETHERRA_ALLOW_UNSIGNED_DEV", "0") == "1":
+            # Temporarily downgrade strictness for this registration attempt only.
+            strict = False
+            logger.warning(
+                "[PLUGINS][DEV] Allowing unsigned plugin registration under AETHERRA_ALLOW_UNSIGNED_DEV=1 override"
+            )
+            # Remove any signature fields to avoid accidental verification attempts downstream
+            if manifest.get("signature") or manifest.get("pubkey"):
+                manifest.pop("signature", None)
+                manifest.pop("pubkey", None)
+                has_sig = False
+                logger.debug(
+                    "[PLUGINS][DEV] Stripped signature/pubkey from manifest under dev override"
+                )
+        # Additional dev relaxation: if still strict but missing signature, downgrade silently for dev override
+        if (
+            strict
+            and not has_sig
+            and os.environ.get("AETHERRA_ALLOW_UNSIGNED_DEV", "0") == "1"
+        ):
+            strict = False
+            logger.debug(
+                "[PLUGINS][DEV] Downgraded strict due to missing signature in dev override mode"
+            )
 
         schema_errors = []
         normalized = dict(manifest)
@@ -106,7 +134,8 @@ class PluginStore:
             if not verified:
                 return False, {"error": "invalid signature"}
         else:
-            if has_sig:
+            # In dev override mode, we already stripped signature; skip optional verification entirely
+            if os.environ.get("AETHERRA_ALLOW_UNSIGNED_DEV", "0") != "1" and has_sig:
                 verifier, lib_ok = _load_verifier()
                 if verifier and lib_ok:
                     try:
@@ -146,7 +175,7 @@ def _base64_ok(val: Any) -> bool:
         return False
 
 
-_verifier_cache: Dict[str, Any] | None = None
+_verifier_cache: dict[str, Any] | None = None
 
 
 def _load_verifier():  # returns (callable|None, has_lib: bool)

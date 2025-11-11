@@ -362,19 +362,31 @@ class InteractiveSystem:
             "stats": self.stats,
         }
 
+        components: Dict[str, Any] = {}
+
         if self.interactive_loop:
-            status["interactive_loop"] = {
+            # Provide live stats reference for tests expecting updates after sleep
+            loop_status = {
                 "running": self.interactive_loop.running,
                 "current_emotion": self.interactive_loop.get_current_emotion(),
-                "stats": self.interactive_loop.get_stats(),
+                "stats": self.interactive_loop.stats,  # direct reference
             }
+            status["interactive_loop"] = loop_status
+            components["interactive_loop"] = loop_status
+            # Back-compat field expected by smoke tests
+            status["emotion_stats"] = self.interactive_loop.stats  # direct reference
 
         if self.expression_manager:
-            status["expression_manager"] = {
+            expr_status = {
                 "running": self.expression_manager.running,
                 "current_expression": self.expression_manager.get_current_expression(),
                 "stats": self.expression_manager.get_stats(),
             }
+            status["expression_manager"] = expr_status
+            components["expression_manager"] = expr_status
+
+        if components:
+            status["components"] = components
 
         return status
 

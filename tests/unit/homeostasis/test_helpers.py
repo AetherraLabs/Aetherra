@@ -21,12 +21,24 @@ from unittest.mock import AsyncMock, Mock
 # Test imports
 import pytest
 
-from ..homeostasis_actuators import ActuatorResult, HomeostasisActuators
-from ..homeostasis_core import ControllerMode, HomeostasisController
+from Aetherra.homeostasis.homeostasis_actuators import (  # type: ignore
+    ActuatorResult,
+    HomeostasisActuators,
+)
+from Aetherra.homeostasis.homeostasis_core import (  # type: ignore
+    ControllerMode,
+    HomeostasisController,
+)
 
 # Aetherra imports
-from ..stability_metrics import MetricSnapshot, StabilityMetrics
-from ..system_supervisor import SystemRunlevel, SystemSupervisor
+from Aetherra.homeostasis.stability_metrics import (  # type: ignore
+    MetricSnapshot,
+    StabilityMetrics,
+)
+from Aetherra.homeostasis.system_supervisor import (  # type: ignore
+    SystemRunlevel,
+    SystemSupervisor,
+)
 
 
 class MockServiceRegistry:
@@ -167,7 +179,10 @@ class TestUtils:
     @staticmethod
     def create_test_action(action_type: str = "test_action", success: bool = True):
         """Create a test control action."""
-        from ..homeostasis_core import ActionPriority, ControlAction
+        from Aetherra.homeostasis.homeostasis_core import (  # type: ignore
+            ActionPriority,
+            ControlAction,
+        )
 
         return ControlAction(
             action_type=action_type,
@@ -207,7 +222,9 @@ class TestUtils:
 
 async def setup_test_homeostasis_system():
     """Set up a complete homeostasis system for integration tests."""
-    from ..homeostasis_integration import HomeostasisOrchestrator
+    from Aetherra.homeostasis.homeostasis_integration import (
+        HomeostasisOrchestrator,  # type: ignore
+    )
 
     orchestrator = HomeostasisOrchestrator()
 
