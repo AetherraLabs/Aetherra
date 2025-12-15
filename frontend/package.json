@@ -13,14 +13,14 @@
         "@react-three/drei": "^10.7.7",
         "@react-three/fiber": "^9.4.2",
         "framer-motion": "^12.23.25",
-        "react": "^19.2.1",
-        "react-dom": "^19.2.1",
+        "react": "^19.2.3",
+        "react-dom": "^19.2.3",
         "react-router-dom": "^7.10.1",
         "three": "^0.181.2",
         "zustand": "^5.0.9"
     },
     "devDependencies": {
         "@vitejs/plugin-react": "^5.1.2",
-        "vite": "^7.2.7"
+        "vite": "^7.3.0"
     }
 }
