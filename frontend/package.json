@@ -13,8 +13,8 @@
         "@react-three/drei": "^10.7.7",
         "@react-three/fiber": "^9.5.0",
         "framer-motion": "^12.29.2",
-        "react": "^19.2.3",
-        "react-dom": "^19.2.3",
+        "react": "^19.2.4",
+        "react-dom": "^19.2.4",
         "react-router-dom": "^7.13.0",
         "three": "^0.182.0",
         "zustand": "^5.0.10"
