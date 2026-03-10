@@ -26,10 +26,12 @@ from __future__ import annotations
 # Standard library imports
 import json
 import os
+import re
 import subprocess
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 # Local imports
 from . import audit, ops_engine, safety
@@ -80,28 +82,291 @@ class CommitResult:
     diagnostics: list[str] = field(default_factory=list)
 
 
+@dataclass
+class ParsedIntent:
+    """Structured representation of a natural-language coding intent."""
+
+    raw_intent: str
+    intent_type: str
+    target_name: str
+    entities: list[str] = field(default_factory=list)
+    requirements: list[str] = field(default_factory=list)
+    constraints: list[str] = field(default_factory=list)
+    dependencies: list[str] = field(default_factory=list)
+    complexity: str = "medium"
+
+
+@dataclass
+class CodeGenStep:
+    """Single code-generation step in a structured plan."""
+
+    name: str
+    description: str
+    output_type: str = "code"
+
+
+@dataclass
+class CodeGenerationPlan:
+    """Plan generated from a parsed intent."""
+
+    parsed_intent: ParsedIntent
+    steps: list[CodeGenStep]
+    estimated_effort: str
+    target_file: str
+    test_file: str
+
+
+@dataclass
+class GeneratedCode:
+    """Output of the code generation workflow."""
+
+    source_code: str
+    test_code: str
+    docs: str
+
+
+class IntentParser:
+    """Pattern-based parser that extracts entities and constraints from intent text."""
+
+    _FUNC_PATTERNS = [
+        re.compile(r"\bfunction\s+(?:to\s+)?([a-zA-Z_][a-zA-Z0-9_]*)", re.IGNORECASE),
+        re.compile(r"\bmethod\s+(?:to\s+)?([a-zA-Z_][a-zA-Z0-9_]*)", re.IGNORECASE),
+    ]
+    _CLASS_PATTERNS = [
+        re.compile(r"\bclass\s+([A-Z][a-zA-Z0-9_]*)", re.IGNORECASE),
+        re.compile(r"\bbuild\s+(?:a\s+)?class\s+([A-Z][a-zA-Z0-9_]*)", re.IGNORECASE),
+    ]
+
+    def parse(self, intent: str) -> ParsedIntent:
+        text = (intent or "").strip()
+        lowered = text.lower()
+
+        intent_type = "module"
+        target_name = "generated_artifact"
+        entities: list[str] = []
+        requirements: list[str] = []
+        constraints: list[str] = []
+        dependencies: list[str] = []
+
+        for pat in self._FUNC_PATTERNS:
+            m = pat.search(text)
+            if m:
+                intent_type = "function"
+                target_name = m.group(1)
+                entities.append("function")
+                break
+
+        if intent_type == "module":
+            for pat in self._CLASS_PATTERNS:
+                m = pat.search(text)
+                if m:
+                    intent_type = "class"
+                    target_name = m.group(1)
+                    entities.append("class")
+                    break
+
+        if "recursive" in lowered:
+            constraints.append("recursive")
+            requirements.append("base case")
+        if "async" in lowered:
+            constraints.append("async")
+        if "error handling" in lowered or "handle errors" in lowered:
+            requirements.append("error handling")
+        if "docstring" in lowered or "document" in lowered:
+            requirements.append("docstring")
+        if "test" in lowered:
+            requirements.append("tests")
+
+        if "flask" in lowered:
+            dependencies.append("flask")
+        if "fastapi" in lowered:
+            dependencies.append("fastapi")
+        if "pandas" in lowered:
+            dependencies.append("pandas")
+
+        if any(k in lowered for k in ["simple", "small", "quick"]):
+            complexity = "low"
+        elif any(k in lowered for k in ["enterprise", "distributed", "scalable", "complex"]):
+            complexity = "high"
+        else:
+            complexity = "medium"
+
+        if intent_type == "module" and "api" in lowered:
+            entities.append("api")
+            target_name = "api_module"
+
+        return ParsedIntent(
+            raw_intent=text,
+            intent_type=intent_type,
+            target_name=target_name,
+            entities=entities,
+            requirements=requirements,
+            constraints=constraints,
+            dependencies=dependencies,
+            complexity=complexity,
+        )
+
+
+class PlanGenerator:
+    """Generates structured build plans from ParsedIntent objects."""
+
+    def generate(
+        self, parsed_intent: ParsedIntent, scope: list[str] | None = None
+    ) -> CodeGenerationPlan:
+        target_file = scope[0] if scope else f"generated/{parsed_intent.target_name}.py"
+        test_file = self._derive_test_file(target_file)
+
+        steps = [
+            CodeGenStep("skeleton", "Generate code skeleton", "code"),
+            CodeGenStep("logic", "Add business logic", "code"),
+            CodeGenStep("errors", "Add error handling", "code"),
+            CodeGenStep("docs", "Add documentation", "docs"),
+            CodeGenStep("tests", "Generate unit tests", "tests"),
+        ]
+
+        if parsed_intent.complexity == "low":
+            effort = "1-2h"
+        elif parsed_intent.complexity == "high":
+            effort = "6-10h"
+        else:
+            effort = "3-5h"
+
+        return CodeGenerationPlan(
+            parsed_intent=parsed_intent,
+            steps=steps,
+            estimated_effort=effort,
+            target_file=target_file,
+            test_file=test_file,
+        )
+
+    @staticmethod
+    def _derive_test_file(target_file: str) -> str:
+        p = Path(target_file)
+        stem = p.stem or "generated"
+        return str(Path("tests") / "unit" / f"test_{stem}.py")
+
+
+class CodeGenerationWorkflow:
+    """Step-based workflow that generates runnable source code and tests."""
+
+    def execute(self, plan: CodeGenerationPlan) -> GeneratedCode:
+        code = self._generate_skeleton(plan.parsed_intent)
+        code = self._add_logic(code, plan.parsed_intent)
+        code = self._add_error_handling(code)
+        docs = self._generate_docs(plan.parsed_intent)
+        tests = self._generate_tests(plan.parsed_intent)
+        return GeneratedCode(source_code=code, test_code=tests, docs=docs)
+
+    def _generate_skeleton(self, parsed: ParsedIntent) -> str:
+        if parsed.intent_type == "class":
+            class_name = parsed.target_name[:1].upper() + parsed.target_name[1:]
+            return (
+                f"class {class_name}:\n"
+                f"    \"\"\"Auto-generated class for intent: {parsed.raw_intent}\"\"\"\n"
+                "\n"
+                "    def __init__(self):\n"
+                "        self._ready = True\n"
+            )
+        fn = parsed.target_name
+        if "async" in parsed.constraints:
+            return (
+                f"async def {fn}(value):\n"
+                f"    \"\"\"Auto-generated function for intent: {parsed.raw_intent}\"\"\"\n"
+                "    return value\n"
+            )
+        return (
+            f"def {fn}(value):\n"
+            f"    \"\"\"Auto-generated function for intent: {parsed.raw_intent}\"\"\"\n"
+            "    return value\n"
+        )
+
+    def _add_logic(self, skeleton: str, parsed: ParsedIntent) -> str:
+        code = skeleton
+        if parsed.intent_type == "function" and "factorial" in parsed.target_name.lower():
+            code = code.replace(
+                "    return value\n",
+                "    if value < 0:\n"
+                "        raise ValueError('value must be >= 0')\n"
+                "    if value <= 1:\n"
+                "        return 1\n"
+                "    return value * factorial(value - 1)\n",
+            )
+        return code
+
+    def _add_error_handling(self, code: str) -> str:
+        if "raise ValueError" in code:
+            return code
+        if "def " in code and "return value" in code:
+            return code.replace(
+                "    return value\n",
+                "    if value is None:\n"
+                "        raise ValueError('value is required')\n"
+                "    return value\n",
+            )
+        return code
+
+    def _generate_docs(self, parsed: ParsedIntent) -> str:
+        return (
+            f"Intent type: {parsed.intent_type}\n"
+            f"Target: {parsed.target_name}\n"
+            f"Requirements: {', '.join(parsed.requirements) if parsed.requirements else 'none'}\n"
+            f"Constraints: {', '.join(parsed.constraints) if parsed.constraints else 'none'}\n"
+            f"Dependencies: {', '.join(parsed.dependencies) if parsed.dependencies else 'none'}\n"
+        )
+
+    def _generate_tests(self, parsed: ParsedIntent) -> str:
+        fn = parsed.target_name
+        if parsed.intent_type == "class":
+            class_name = parsed.target_name[:1].upper() + parsed.target_name[1:]
+            return (
+                f"from generated.{parsed.target_name.lower()} import {class_name}\n\n"
+                "def test_class_initializes():\n"
+                f"    obj = {class_name}()\n"
+                "    assert obj._ready is True\n"
+            )
+        return (
+            f"from generated.{fn} import {fn}\n\n"
+            f"def test_{fn}_basic():\n"
+            f"    assert {fn}(1) == 1\n"
+        )
+
+
 # ------------- Orchestrator ----------------
 class CodeOrchestrator:
     def __init__(self, repo_root: str | Path = ".") -> None:
         self.repo_root = Path(repo_root).resolve()
         self._plan: PlanResult | None = None
+        self._parsed_intent: ParsedIntent | None = None
+        self._codegen_plan: CodeGenerationPlan | None = None
         self.mode = os.getenv("AETHERRA_MODE", "assist")
         self._rollback_store = self.repo_root / ".aetherra" / "rollback"
         self._rollback_store.mkdir(parents=True, exist_ok=True)
+        self.intent_parser = IntentParser()
+        self.plan_generator = PlanGenerator()
+        self.codegen_workflow = CodeGenerationWorkflow()
 
     # ---- Public API ----
     def plan(self, intent: str, scope: list[str] | None = None) -> PlanResult:
-        # Simple heuristic: every listed scope file becomes one step
+        self._parsed_intent = self.intent_parser.parse(intent)
+        self._codegen_plan = self.plan_generator.generate(self._parsed_intent, scope)
+
         steps: list[PlanStep] = []
-        files = scope or []
-        if not files:
-            # Fallback: user wants to generate tests for next commit (demo)
-            files = ["tests/"]
-        for f in files:
-            steps.append(PlanStep(description=f"Edit or create {f}", target_files=[f]))
+        for s in self._codegen_plan.steps:
+            steps.append(
+                PlanStep(
+                    description=f"{s.name}: {s.description}",
+                    target_files=[self._codegen_plan.target_file],
+                )
+            )
         self._plan = PlanResult(intent=intent, steps=steps, created_at=time.time())
         audit.record_event(
-            "plan", {"intent": intent, "steps": [s.description for s in steps]}
+            "plan",
+            {
+                "intent": intent,
+                "intent_type": self._parsed_intent.intent_type,
+                "target": self._parsed_intent.target_name,
+                "steps": [s.description for s in steps],
+            },
         )
         return self._plan
 
@@ -111,16 +376,21 @@ class CodeOrchestrator:
         if step_index < 0 or step_index >= len(self._plan.steps):
             raise IndexError("step_index out of range")
         step = self._plan.steps[step_index]
-        # Placeholder: generate a comment header if file exists, else create file with TODO
-        target = Path(step.target_files[0])
+        if not self._codegen_plan or not self._parsed_intent:
+            raise RuntimeError("No structured generation plan available")
+
+        generated = self.codegen_workflow.execute(self._codegen_plan)
+        target = Path(self._codegen_plan.target_file)
         if target.exists():
             diff = ops_engine.build_comment_insertion_diff(
-                target, f"Generated by Lyrixa for intent: {self._plan.intent}"
+                target,
+                (
+                    f"Generated update for intent: {self._plan.intent}; "
+                    f"step={step.description}; effort={self._codegen_plan.estimated_effort}"
+                ),
             )
         else:
-            diff = ops_engine.build_new_file_diff(
-                target, f"# TODO: implement for intent: {self._plan.intent}\n"
-            )
+            diff = ops_engine.build_new_file_diff(target, generated.source_code + "\n")
         summary = f"Proposed patch touching {target}"
         audit.record_event("generate", {"step": step_index, "target": str(target)})
         lvl, changed = ops_engine.classify_risk(diff)
