@@ -265,6 +265,55 @@ def get_orchestrator_status() -> dict[str, Any] | None:
         return None
 
 
+def get_registered_agents() -> list[dict[str, Any]]:
+    """Return list of registered agents from the orchestrator.
+
+    Each entry is a dict with keys: agent_id, type, status, capabilities, description.
+    Returns empty list if orchestrator is unavailable.
+    """
+    try:
+
+        async def _go() -> list[dict[str, Any]]:
+            reg = await _get_registry_async()
+            info = reg.get_service_info("aetherra_engine")
+            if not info or not info.instance:
+                return []
+            eng = info.instance
+            orch = getattr(eng, "agent_orchestrator", None)
+            if not orch:
+                return []
+            agents_dict = getattr(orch, "agents", None) or {}
+            if not isinstance(agents_dict, dict):
+                return []
+            result = []
+            for agent_id, agent in agents_dict.items():
+                raw_caps = getattr(agent, "capabilities", None) or []
+                if isinstance(raw_caps, set):
+                    cap_list = sorted(raw_caps)
+                elif hasattr(raw_caps, "__iter__") and not isinstance(raw_caps, str):
+                    cap_list = list(raw_caps)
+                else:
+                    cap_list = [str(raw_caps)] if raw_caps else []
+                raw_status = getattr(agent, "status", None)
+                status_str = raw_status.value if hasattr(raw_status, "value") else str(raw_status or "unknown")
+                raw_type = getattr(agent, "agent_type", None) or getattr(agent, "type", None)
+                type_str = raw_type.value if hasattr(raw_type, "value") else str(raw_type or "unknown")
+                result.append({
+                    "agent_id": str(agent_id),
+                    "type": type_str,
+                    "status": status_str,
+                    "capabilities": cap_list,
+                    "description": str(getattr(agent, "description", "")),
+                })
+            return result
+
+        r = _run_coro(_go())
+        return r if isinstance(r, list) else []
+    except Exception as exc:
+        logger.debug("get_registered_agents error: %s", exc)
+        return []
+
+
 def submit_agent_task(
     name: str,
     description: str,

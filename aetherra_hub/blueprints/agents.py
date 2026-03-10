@@ -54,15 +54,70 @@ def list_agents():
         got = request.headers.get("X-Aetherra-Token", "").strip()
         if not got or got != _expected_token():
             return jsonify({"error": "forbidden"}), 403
-    # Happy path: surface orchestrator status basics
+    # Fetch registered agents from orchestrator
+    agents = registry_client.get_registered_agents()
+    # Optional capability filter: ?capability=data-processing
+    cap_filter = request.args.get("capability", "").strip().lower()
+    if cap_filter and agents:
+        agents = [
+            a for a in agents
+            if any(cap_filter in str(c).lower() for c in a.get("capabilities", []))
+        ]
+    # Optional status filter: ?status=idle
+    status_filter = request.args.get("status", "").strip().lower()
+    if status_filter and agents:
+        agents = [
+            a for a in agents
+            if str(a.get("status", "")).lower() == status_filter
+        ]
     return jsonify(
         {
             "ok": True,
             "enabled": True,
-            "agents": [],  # TODO: populate when agent registry is exposed
+            "agents": agents,
+            "count": len(agents),
             "orchestrator": _orchestrator_status(),
         }
     )
+
+
+@bp.get("/api/agents/<agent_id>")
+def get_agent(agent_id: str):
+    """Get details for a specific agent."""
+    if not _authz_enabled():
+        return jsonify({"ok": False, "error": "agents_api_disabled"}), 400
+    if _require_token():
+        got = request.headers.get("X-Aetherra-Token", "").strip()
+        if not got or got != _expected_token():
+            return jsonify({"error": "forbidden"}), 403
+    agents = registry_client.get_registered_agents()
+    match = next((a for a in agents if str(a.get("agent_id", "")) == agent_id), None)
+    if not match:
+        return jsonify({"ok": False, "error": "agent_not_found"}), 404
+    return jsonify({"ok": True, "agent": match}), 200
+
+
+@bp.get("/api/agents/<agent_id>/status")
+def get_agent_status(agent_id: str):
+    """Get health/status for a specific agent."""
+    if not _authz_enabled():
+        return jsonify({"ok": False, "error": "agents_api_disabled"}), 400
+    if _require_token():
+        got = request.headers.get("X-Aetherra-Token", "").strip()
+        if not got or got != _expected_token():
+            return jsonify({"error": "forbidden"}), 403
+    agents = registry_client.get_registered_agents()
+    match = next((a for a in agents if str(a.get("agent_id", "")) == agent_id), None)
+    if not match:
+        return jsonify({"ok": False, "error": "agent_not_found"}), 404
+    return jsonify(
+        {
+            "ok": True,
+            "agent_id": agent_id,
+            "status": match.get("status", "unknown"),
+            "capabilities": match.get("capabilities", []),
+        }
+    ), 200
 
 
 @bp.post("/api/tasks")

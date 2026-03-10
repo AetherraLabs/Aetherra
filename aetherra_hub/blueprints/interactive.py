@@ -10,6 +10,7 @@ Endpoints:
 from __future__ import annotations
 
 import logging
+import os
 
 from flask import Blueprint, Response, jsonify, request
 
@@ -173,6 +174,22 @@ def get_metrics() -> tuple[Response, int]:
         ), 500
 
 
+def _check_admin_auth() -> tuple[Response, int] | None:
+    """Check admin API key. Returns error response if denied, None if allowed.
+
+    Set AETHERRA_ADMIN_KEY env var to require authentication. If not set,
+    the endpoint is unrestricted (dev/local mode).
+    """
+    admin_key = os.environ.get("AETHERRA_ADMIN_KEY", "").strip()
+    if not admin_key:
+        # No key configured – dev mode, allow all
+        return None
+    provided = request.headers.get("X-Aetherra-Admin-Key", "").strip()
+    if not provided or provided != admin_key:
+        return jsonify({"error": "forbidden", "message": "Admin authentication required"}), 403
+    return None
+
+
 @bp.route("/trigger", methods=["POST"])
 def trigger_emotion() -> tuple[Response, int]:
     """
@@ -185,7 +202,9 @@ def trigger_emotion() -> tuple[Response, int]:
         "duration": 5.0        # seconds (optional)
     }
     """
-    # TODO: Add admin authentication check
+    auth_err = _check_admin_auth()
+    if auth_err is not None:
+        return auth_err
 
     interactive_sys = _get_interactive_system()
 
