@@ -333,6 +333,7 @@ warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = false
 strict_equality = true
+exclude = ["archive/", ".venv/", "build/", "dist/", "demos/", "dist-packages/", "experiments/"]
 
 [[tool.mypy.overrides]]
 module = ["tests.*"]

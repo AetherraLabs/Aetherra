@@ -66,13 +66,13 @@ _sie_cls = None
 # IntrospectionController
 try:
     # Aetherra imports
-    from Aetherra.aetherra_core.reflection.introspection_controller import (  # type: ignore; noqa: F401
+    from Aetherra.aetherra_core.reflection.introspection_controller import (  # type: ignore
         IntrospectionController as _ic_cls,
     )
 except Exception:
     try:
         # Aetherra imports
-        from Aetherra.core.engine.introspection_controller import (  # type: ignore; noqa: F401
+        from Aetherra.core.engine.introspection_controller import (  # type: ignore
             IntrospectionController as _ic_cls,
         )
     except Exception:
@@ -81,19 +81,19 @@ except Exception:
 # ReasoningEngine / ReasoningContext
 try:
     # Aetherra imports
-    from Aetherra.aetherra_core.cognitive.reasoning_engine import (  # noqa: F401
+    from Aetherra.aetherra_core.cognitive.reasoning_engine import (  # type: ignore
         ReasoningContext as _rc_cls,
     )
-    from Aetherra.aetherra_core.cognitive.reasoning_engine import (  # type: ignore; noqa: F401
+    from Aetherra.aetherra_core.cognitive.reasoning_engine import (  # type: ignore
         ReasoningEngine as _re_cls,
     )
 except Exception:
     try:
         # Aetherra imports
-        from Aetherra.core.engine.reasoning_engine import (  # noqa: F401
+        from Aetherra.core.engine.reasoning_engine import (  # type: ignore
             ReasoningContext as _rc_cls,
         )
-        from Aetherra.core.engine.reasoning_engine import (  # type: ignore; noqa: F401
+        from Aetherra.core.engine.reasoning_engine import (  # type: ignore
             ReasoningEngine as _re_cls,
         )
     except Exception:
@@ -103,13 +103,13 @@ except Exception:
 # SelfImprovementEngine
 try:
     # Aetherra imports
-    from Aetherra.aetherra_core.engine.self_improvement_engine import (  # type: ignore; noqa: F401
+    from Aetherra.aetherra_core.engine.self_improvement_engine import (  # type: ignore
         SelfImprovementEngine as _sie_cls,
     )
 except Exception:
     try:
         # Aetherra imports
-        from Aetherra.core.self_improvement_engine import (  # type: ignore; noqa: F401
+        from Aetherra.core.self_improvement_engine import (  # type: ignore
             SelfImprovementEngine as _sie_cls,
         )
     except Exception:
