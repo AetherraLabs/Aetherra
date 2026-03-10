@@ -3,11 +3,10 @@ import os
 import sys
 from collections import OrderedDict
 from dataclasses import astuple, dataclass
-from typing import Any, NamedTuple, Optional
-from typing_extensions import Self
+from typing import Any, NamedTuple, Self
 
 import torch
-from torch import nan, nn, UntypedStorage
+from torch import UntypedStorage, nan, nn
 from torch._guards import active_fake_mode
 from torch._subclasses.fake_tensor import FakeTensorMode
 from torch.distributed._tools.common_utils import get_untyped_storages
@@ -21,7 +20,6 @@ from torch.testing._internal.composite_compliance import (
 from torch.utils._python_dispatch import TorchDispatchMode
 from torch.utils._pytree import tree_flatten
 from torch.utils.checkpoint import SAC_IGNORED_OPS
-
 
 __all__ = ["SACEstimator", "SACStats", "MSPS", "SACTradeOffStats", "SACGreedyOrderMeta"]
 aten = torch.ops.aten
@@ -264,14 +262,13 @@ class SACEstimator(TorchDispatchMode):
         assert mod_fqn is not None
         if mod_fqn in self._leaf_modules:
             return
-        else:
-            self.sac_mod_stats[mod_fqn] = self._get_sac_stats(
-                data=self._sac_mod_metadata[mod_fqn].sac_metadata,
-                force_store_random=self._sac_mod_metadata[mod_fqn].force_store_random,
-            )
-            self.sac_mod_greedy_order_meta[mod_fqn] = self._get_greedy_order_meta(
-                self.sac_mod_stats[mod_fqn]
-            )
+        self.sac_mod_stats[mod_fqn] = self._get_sac_stats(
+            data=self._sac_mod_metadata[mod_fqn].sac_metadata,
+            force_store_random=self._sac_mod_metadata[mod_fqn].force_store_random,
+        )
+        self.sac_mod_greedy_order_meta[mod_fqn] = self._get_greedy_order_meta(
+            self.sac_mod_stats[mod_fqn]
+        )
 
     def _get_force_store_random(self, inputs: Any) -> bool:
         flat_inputs, _ = tree_flatten(inputs)
@@ -710,7 +707,7 @@ class SACEstimator(TorchDispatchMode):
                 str(i in sac_stats.view_like_ops),
                 str(i in sac_stats.rand_ops),
                 str(i in sac_stats.saved_autograd_ops),
-                str(op_parent.get(i, None)),
+                str(op_parent.get(i)),
             ]
             table_data.append(row)
         # Define headers
@@ -776,9 +773,9 @@ class SACEstimator(TorchDispatchMode):
         def append_row(
             op_indices: set[int],
             func_names: set[str],
-            msps: Optional[float] = None,
-            stored: Optional[bool] = False,
-            recomputed: Optional[bool] = False,
+            msps: float | None = None,
+            stored: bool | None = False,
+            recomputed: bool | None = False,
         ) -> None:
             row = [
                 str(op_indices),

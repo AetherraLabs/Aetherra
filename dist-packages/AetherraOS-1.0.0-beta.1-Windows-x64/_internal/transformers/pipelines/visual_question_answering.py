@@ -1,9 +1,8 @@
-from typing import List, Optional, Union
+from typing import Union
 
 from ..generation import GenerationConfig
 from ..utils import add_end_docstrings, is_torch_available, is_vision_available, logging
 from .base import Pipeline, build_pipeline_init_args
-
 
 if is_vision_available():
     from PIL import Image
@@ -11,13 +10,17 @@ if is_vision_available():
     from ..image_utils import load_image
 
 if is_torch_available():
-    from ..models.auto.modeling_auto import MODEL_FOR_VISUAL_QUESTION_ANSWERING_MAPPING_NAMES
+    from ..models.auto.modeling_auto import (
+        MODEL_FOR_VISUAL_QUESTION_ANSWERING_MAPPING_NAMES,
+    )
     from .pt_utils import KeyDataset
 
 logger = logging.get_logger(__name__)
 
 
-@add_end_docstrings(build_pipeline_init_args(has_tokenizer=True, has_image_processor=True))
+@add_end_docstrings(
+    build_pipeline_init_args(has_tokenizer=True, has_image_processor=True)
+)
 class VisualQuestionAnsweringPipeline(Pipeline):
     """
     Visual Question Answering pipeline using a `AutoModelForVisualQuestionAnswering`. This pipeline is currently only
@@ -67,7 +70,9 @@ class VisualQuestionAnsweringPipeline(Pipeline):
         super().__init__(*args, **kwargs)
         self.check_model_type(MODEL_FOR_VISUAL_QUESTION_ANSWERING_MAPPING_NAMES)
 
-    def _sanitize_parameters(self, top_k=None, padding=None, truncation=None, timeout=None, **kwargs):
+    def _sanitize_parameters(
+        self, top_k=None, padding=None, truncation=None, timeout=None, **kwargs
+    ):
         preprocess_params, postprocess_params = {}, {}
         if padding is not None:
             preprocess_params["padding"] = padding
@@ -89,8 +94,8 @@ class VisualQuestionAnsweringPipeline(Pipeline):
 
     def __call__(
         self,
-        image: Union["Image.Image", str, List["Image.Image"], List[str], "KeyDataset"],
-        question: Optional[Union[str, List[str]]] = None,
+        image: Union["Image.Image", str, list["Image.Image"], list[str], "KeyDataset"],
+        question: str | list[str] | None = None,
         **kwargs,
     ):
         r"""
@@ -139,8 +144,12 @@ class VisualQuestionAnsweringPipeline(Pipeline):
             - **score** (`int`) -- The score attributed by the model for that label.
         """
         is_dataset = isinstance(image, KeyDataset)
-        is_image_batch = isinstance(image, list) and all(isinstance(item, (Image.Image, str)) for item in image)
-        is_question_batch = isinstance(question, list) and all(isinstance(item, str) for item in question)
+        is_image_batch = isinstance(image, list) and all(
+            isinstance(item, (Image.Image, str)) for item in image
+        )
+        is_question_batch = isinstance(question, list) and all(
+            isinstance(item, str) for item in question
+        )
 
         if isinstance(image, (Image.Image, str)) and isinstance(question, str):
             inputs = {"image": image, "question": question}
@@ -173,7 +182,9 @@ class VisualQuestionAnsweringPipeline(Pipeline):
             padding=padding,
             truncation=truncation,
         )
-        image_features = self.image_processor(images=image, return_tensors=self.framework)
+        image_features = self.image_processor(
+            images=image, return_tensors=self.framework
+        )
         if self.framework == "pt":
             image_features = image_features.to(self.torch_dtype)
         model_inputs.update(image_features)
@@ -193,19 +204,25 @@ class VisualQuestionAnsweringPipeline(Pipeline):
     def postprocess(self, model_outputs, top_k=5):
         if self.model.can_generate():
             return [
-                {"answer": self.tokenizer.decode(output_ids, skip_special_tokens=True).strip()}
+                {
+                    "answer": self.tokenizer.decode(
+                        output_ids, skip_special_tokens=True
+                    ).strip()
+                }
                 for output_ids in model_outputs
             ]
+        if top_k > self.model.config.num_labels:
+            top_k = self.model.config.num_labels
+
+        if self.framework == "pt":
+            probs = model_outputs.logits.sigmoid()[0]
+            scores, ids = probs.topk(top_k)
         else:
-            if top_k > self.model.config.num_labels:
-                top_k = self.model.config.num_labels
+            raise ValueError(f"Unsupported framework: {self.framework}")
 
-            if self.framework == "pt":
-                probs = model_outputs.logits.sigmoid()[0]
-                scores, ids = probs.topk(top_k)
-            else:
-                raise ValueError(f"Unsupported framework: {self.framework}")
-
-            scores = scores.tolist()
-            ids = ids.tolist()
-            return [{"score": score, "answer": self.model.config.id2label[_id]} for score, _id in zip(scores, ids)]
+        scores = scores.tolist()
+        ids = ids.tolist()
+        return [
+            {"score": score, "answer": self.model.config.id2label[_id]}
+            for score, _id in zip(scores, ids, strict=False)
+        ]

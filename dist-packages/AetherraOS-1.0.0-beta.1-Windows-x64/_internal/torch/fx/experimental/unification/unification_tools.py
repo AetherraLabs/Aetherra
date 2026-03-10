@@ -4,7 +4,6 @@ import operator
 from collections.abc import Mapping
 from functools import reduce
 
-
 __all__ = [
     "merge",
     "merge_with",
@@ -96,7 +95,7 @@ def valmap(func, d, factory=dict):
         itemmap
     """
     rv = factory()
-    rv.update(zip(d.keys(), map(func, d.values())))
+    rv.update(zip(d.keys(), map(func, d.values()), strict=False))
     return rv
 
 
@@ -112,7 +111,7 @@ def keymap(func, d, factory=dict):
         itemmap
     """
     rv = factory()
-    rv.update(zip(map(func, d.keys()), d.values()))
+    rv.update(zip(map(func, d.keys()), d.values(), strict=False))
     return rv
 
 
@@ -361,12 +360,10 @@ def getter(index):
         if len(index) == 1:
             index = index[0]
             return lambda x: (x[index],)
-        elif index:
+        if index:
             return operator.itemgetter(*index)
-        else:
-            return lambda x: ()
-    else:
-        return operator.itemgetter(index)
+        return lambda x: ()
+    return operator.itemgetter(index)
 
 
 def groupby(key, seq):

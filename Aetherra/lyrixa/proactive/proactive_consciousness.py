@@ -43,9 +43,7 @@ class ProactiveConsciousness:
         service_registry=None,
     ):
         self._config = config or {}
-        self._bridge = (
-            bridge if bridge else (QuantumChatBridge() if QuantumChatBridge else None)
-        )
+        self._bridge = bridge if bridge else (QuantumChatBridge() if QuantumChatBridge else None)
         self._event_bus = None
         self._service_registry = service_registry
         self._monitor_task: Optional[asyncio.Task] = None
@@ -68,9 +66,7 @@ class ProactiveConsciousness:
                 await self._event_bus.subscribe(
                     "terminal.command.executed", "proactive_consciousness"
                 )
-                await self._event_bus.subscribe(
-                    "test.run.completed", "proactive_consciousness"
-                )
+                await self._event_bus.subscribe("test.run.completed", "proactive_consciousness")
             except Exception:
                 self._event_bus = None  # Degrade gracefully
 
@@ -166,7 +162,7 @@ class ProactiveConsciousness:
         """
         Suggests optimizations based on (simulated) usage patterns.
         """
-        # This is a placeholder. A real implementation would analyze logs
+        # This is a baseline implementation. A full implementation would analyze logs
         # or memory patterns.
         return [
             {
@@ -192,9 +188,7 @@ class ProactiveConsciousness:
         suggestions = []
 
         # Check for recent test runs
-        test_events = [
-            e for e in self._recent_events if e.get("topic") == "test.run.completed"
-        ]
+        test_events = [e for e in self._recent_events if e.get("topic") == "test.run.completed"]
         if test_events:
             last_test = test_events[-1]
             status = last_test.get("data", {}).get("status", "unknown")

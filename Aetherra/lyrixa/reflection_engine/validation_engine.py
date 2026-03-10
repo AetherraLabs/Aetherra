@@ -153,9 +153,7 @@ class PersonalityReflectionSystem:
         effectiveness_analysis = self._analyze_effectiveness(critique_data)
 
         # Identify conversation elements
-        conversation_elements = self._identify_conversation_elements(
-            user_input, response
-        )
+        conversation_elements = self._identify_conversation_elements(user_input, response)
 
         return {
             "style_analysis": style_analysis,
@@ -180,16 +178,12 @@ class PersonalityReflectionSystem:
             "moreover",
             "additionally",
         ]
-        formal_score = sum(
-            1 for indicator in formal_indicators if indicator in response_lower
-        )
+        formal_score = sum(1 for indicator in formal_indicators if indicator in response_lower)
         styles_detected["formal"] = min(1.0, formal_score / 3)
 
         # Casual style indicators
         casual_indicators = ["hey", "yeah", "cool", "awesome", "gonna", "wanna", "!"]
-        casual_score = sum(
-            1 for indicator in casual_indicators if indicator in response_lower
-        )
+        casual_score = sum(1 for indicator in casual_indicators if indicator in response_lower)
         styles_detected["casual"] = min(1.0, casual_score / 3)
 
         # Technical style indicators
@@ -256,9 +250,7 @@ class PersonalityReflectionSystem:
             "artistic",
             "inspiring",
         ]
-        creative_score = sum(
-            1 for indicator in creative_indicators if indicator in response_lower
-        )
+        creative_score = sum(1 for indicator in creative_indicators if indicator in response_lower)
         styles_detected["creative"] = min(1.0, creative_score / 2)
 
         # Determine dominant style
@@ -325,12 +317,8 @@ class PersonalityReflectionSystem:
         }
 
         for trait, indicators in trait_indicators.items():
-            expression_count = sum(
-                1 for indicator in indicators if indicator in response_lower
-            )
-            trait_expressions[trait.name.lower()] = min(
-                1.0, expression_count / len(indicators)
-            )
+            expression_count = sum(1 for indicator in indicators if indicator in response_lower)
+            trait_expressions[trait.name.lower()] = min(1.0, expression_count / len(indicators))
 
         # Compare with current trait levels
         current_traits = lyrixa_personality.get_personality_summary()["trait_levels"]
@@ -347,25 +335,19 @@ class PersonalityReflectionSystem:
             "average_alignment": statistics.mean(trait_alignment.values())
             if trait_alignment
             else 0.5,
-            "strongest_trait_expressed": max(
-                trait_expressions.items(), key=lambda x: x[1]
-            )
+            "strongest_trait_expressed": max(trait_expressions.items(), key=lambda x: x[1])
             if trait_expressions
             else ("none", 0.0),
         }
 
-    def _analyze_emotional_resonance(
-        self, user_input: str, response: str
-    ) -> Dict[str, Any]:
+    def _analyze_emotional_resonance(self, user_input: str, response: str) -> Dict[str, Any]:
         """Analyze how well the response resonates with the user's emotional state"""
 
         # Detect user emotion
         user_emotion = detect_user_emotion(user_input)
 
         # Analyze response emotion
-        response_emotion = detect_user_emotion(
-            response
-        )  # Can be reused for response analysis
+        response_emotion = detect_user_emotion(response)  # Can be reused for response analysis
 
         # Calculate emotional alignment
         user_primary = user_emotion.get("primary_emotion", "neutral")
@@ -392,9 +374,7 @@ class PersonalityReflectionSystem:
             "compatible_response": response_primary in compatible_emotions,
         }
 
-    def _analyze_effectiveness(
-        self, critique_data: Optional[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    def _analyze_effectiveness(self, critique_data: Optional[Dict[str, Any]]) -> Dict[str, Any]:
         """Analyze interaction effectiveness based on critique data"""
 
         if not critique_data:
@@ -432,9 +412,7 @@ class PersonalityReflectionSystem:
             "critique_available": True,
         }
 
-    def _identify_conversation_elements(
-        self, user_input: str, response: str
-    ) -> Dict[str, Any]:
+    def _identify_conversation_elements(self, user_input: str, response: str) -> Dict[str, Any]:
         """Identify key elements of the conversation"""
 
         user_lower = user_input.lower()
@@ -443,27 +421,21 @@ class PersonalityReflectionSystem:
         elements = {
             "question_asked": "?" in user_input,
             "question_answered": any(
-                word in response_lower
-                for word in ["yes", "no", "here's", "the answer", "i think"]
+                word in response_lower for word in ["yes", "no", "here's", "the answer", "i think"]
             ),
             "follow_up_question": "?" in response,
             "acknowledgment": any(
-                word in response_lower
-                for word in ["i understand", "i see", "that makes sense"]
+                word in response_lower for word in ["i understand", "i see", "that makes sense"]
             ),
             "personal_reference": any(
                 word in response_lower for word in ["i", "me", "my", "myself"]
             ),
-            "user_reference": any(
-                word in response_lower for word in ["you", "your", "yourself"]
-            ),
+            "user_reference": any(word in response_lower for word in ["you", "your", "yourself"]),
             "emotional_expression": any(
-                word in response_lower
-                for word in ["feel", "emotion", "excited", "frustrated"]
+                word in response_lower for word in ["feel", "emotion", "excited", "frustrated"]
             ),
             "code_discussion": any(
-                word in user_lower
-                for word in ["code", "function", "class", "programming"]
+                word in user_lower for word in ["code", "function", "class", "programming"]
             ),
             "help_request": any(
                 word in user_lower for word in ["help", "assist", "support", "guide"]
@@ -519,11 +491,7 @@ class PersonalityReflectionSystem:
         # Update conversation element patterns
         elements = interaction_analysis["conversation_elements"]
         for element, present in elements.items():
-            if (
-                present
-                and element != "engagement_score"
-                and element != "conversation_type"
-            ):
+            if present and element != "engagement_score" and element != "conversation_type":
                 self.communication_patterns[f"element_{element}"] += 1
 
         # Update conversation type patterns
@@ -534,9 +502,7 @@ class PersonalityReflectionSystem:
         alpha = 0.1  # Learning rate for style tracking
         for style, score in style_analysis["styles_detected"].items():
             current_value = self.communication_styles[style]
-            self.communication_styles[style] = (
-                1 - alpha
-            ) * current_value + alpha * score
+            self.communication_styles[style] = (1 - alpha) * current_value + alpha * score
 
     def _should_reflect(self) -> bool:
         """Determine if reflection should be triggered"""
@@ -614,9 +580,7 @@ class PersonalityReflectionSystem:
         pattern_insights = await self._reflect_on_patterns(recent_history)
         effectiveness_insights = await self._reflect_on_effectiveness(recent_history)
         evolution_insights = await self._reflect_on_evolution()
-        adaptation_insights = await self._plan_adaptations(
-            pattern_insights, effectiveness_insights
-        )
+        adaptation_insights = await self._plan_adaptations(pattern_insights, effectiveness_insights)
 
         reflection_result = {
             "reflection_type": "comprehensive",
@@ -653,9 +617,7 @@ class PersonalityReflectionSystem:
 
         return reflection_result
 
-    async def _reflect_on_patterns(
-        self, recent_history: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    async def _reflect_on_patterns(self, recent_history: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Reflect on communication patterns in recent interactions"""
 
         # Analyze style usage patterns
@@ -666,14 +628,10 @@ class PersonalityReflectionSystem:
                 style_usage[style].append(score)
 
         # Calculate average style usage
-        avg_style_usage = {
-            style: statistics.mean(scores) for style, scores in style_usage.items()
-        }
+        avg_style_usage = {style: statistics.mean(scores) for style, scores in style_usage.items()}
 
         # Identify dominant patterns
-        dominant_styles = sorted(
-            avg_style_usage.items(), key=lambda x: x[1], reverse=True
-        )[:3]
+        dominant_styles = sorted(avg_style_usage.items(), key=lambda x: x[1], reverse=True)[:3]
 
         # Analyze trait expression consistency
         trait_consistency = self._analyze_trait_consistency(recent_history)
@@ -689,16 +647,12 @@ class PersonalityReflectionSystem:
 
         # Generate insights
         if dominant_styles[0][1] > 0.4:
-            key_patterns.append(
-                f"Consistently using {dominant_styles[0][0]} communication style"
-            )
+            key_patterns.append(f"Consistently using {dominant_styles[0][0]} communication style")
 
         if trait_consistency["most_consistent"]:
             trait_name, consistency = trait_consistency["most_consistent"]
             if consistency > 0.7:
-                key_patterns.append(
-                    f"Strong consistency in {trait_name} trait expression"
-                )
+                key_patterns.append(f"Strong consistency in {trait_name} trait expression")
 
         most_common_conv_type = max(conv_type_counts.items(), key=lambda x: x[1])
         if most_common_conv_type[1] > len(recent_history) * 0.4:
@@ -713,9 +667,7 @@ class PersonalityReflectionSystem:
             "pattern_strength": len(key_patterns) / 5.0,  # Normalize to 0-1
         }
 
-    def _analyze_trait_consistency(
-        self, recent_history: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    def _analyze_trait_consistency(self, recent_history: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Analyze consistency of trait expression"""
 
         trait_scores = defaultdict(list)
@@ -730,22 +682,16 @@ class PersonalityReflectionSystem:
         for trait, scores in trait_scores.items():
             if len(scores) > 1:
                 std_dev = statistics.stdev(scores)
-                consistency = max(
-                    0.0, 1.0 - std_dev
-                )  # Higher consistency = lower std dev
+                consistency = max(0.0, 1.0 - std_dev)  # Higher consistency = lower std dev
                 trait_consistency[trait] = consistency
             else:
                 trait_consistency[trait] = 1.0
 
         most_consistent = (
-            max(trait_consistency.items(), key=lambda x: x[1])
-            if trait_consistency
-            else None
+            max(trait_consistency.items(), key=lambda x: x[1]) if trait_consistency else None
         )
         least_consistent = (
-            min(trait_consistency.items(), key=lambda x: x[1])
-            if trait_consistency
-            else None
+            min(trait_consistency.items(), key=lambda x: x[1]) if trait_consistency else None
         )
 
         return {
@@ -770,9 +716,7 @@ class PersonalityReflectionSystem:
             effectiveness_analysis = interaction["analysis"]["effectiveness_analysis"]
 
             if effectiveness_analysis["critique_available"]:
-                effectiveness_scores.append(
-                    effectiveness_analysis["overall_effectiveness"]
-                )
+                effectiveness_scores.append(effectiveness_analysis["overall_effectiveness"])
                 quality_scores.append(effectiveness_analysis["quality_score"])
 
                 for area in effectiveness_analysis.get("improvement_areas", []):
@@ -828,9 +772,7 @@ class PersonalityReflectionSystem:
             return "insufficient_data"
 
         recent_avg = statistics.mean(scores[-3:])
-        earlier_avg = (
-            statistics.mean(scores[:-3]) if len(scores) > 3 else statistics.mean(scores)
-        )
+        earlier_avg = statistics.mean(scores[:-3]) if len(scores) > 3 else statistics.mean(scores)
 
         diff = recent_avg - earlier_avg
 
@@ -847,9 +789,7 @@ class PersonalityReflectionSystem:
             return 1.0
 
         std_dev = statistics.stdev(scores)
-        stability = max(
-            0.0, 1.0 - std_dev
-        )  # Higher stability = lower standard deviation
+        stability = max(0.0, 1.0 - std_dev)  # Higher stability = lower standard deviation
         return stability
 
     async def _reflect_on_evolution(self) -> Dict[str, Any]:
@@ -865,9 +805,9 @@ class PersonalityReflectionSystem:
 
             # Keep only recent history
             if len(self.trait_evolution_history[trait_name]) > 50:
-                self.trait_evolution_history[trait_name] = self.trait_evolution_history[
-                    trait_name
-                ][-25:]
+                self.trait_evolution_history[trait_name] = self.trait_evolution_history[trait_name][
+                    -25:
+                ]
 
         evolution_insights = []
         trait_changes = {}
@@ -892,26 +832,18 @@ class PersonalityReflectionSystem:
             most_decreased = min(trait_changes.items(), key=lambda x: x[1])
 
             if most_increased[1] > 0.05:
-                evolution_insights.append(
-                    f"Strongest growth in {most_increased[0]} trait"
-                )
+                evolution_insights.append(f"Strongest growth in {most_increased[0]} trait")
 
             if most_decreased[1] < -0.05:
-                evolution_insights.append(
-                    f"Notable decline in {most_decreased[0]} trait"
-                )
+                evolution_insights.append(f"Notable decline in {most_decreased[0]} trait")
 
         return {
             "evolution_insights": evolution_insights,
             "trait_changes": trait_changes,
-            "total_evolution_magnitude": sum(
-                abs(change) for change in trait_changes.values()
-            )
+            "total_evolution_magnitude": sum(abs(change) for change in trait_changes.values())
             if trait_changes
             else 0.0,
-            "growth_traits": [
-                trait for trait, change in trait_changes.items() if change > 0.02
-            ],
+            "growth_traits": [trait for trait, change in trait_changes.items() if change > 0.02],
             "declining_traits": [
                 trait for trait, change in trait_changes.items() if change < -0.02
             ],
@@ -987,9 +919,7 @@ class PersonalityReflectionSystem:
             "reasoning": [adaptation["reason"] for adaptation in adaptations],
         }
 
-    async def _apply_adaptations(
-        self, adaptation_plan: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def _apply_adaptations(self, adaptation_plan: Dict[str, Any]) -> Dict[str, Any]:
         """Apply the planned personality adaptations"""
 
         adaptations = adaptation_plan["adaptations"]
@@ -1031,16 +961,12 @@ class PersonalityReflectionSystem:
             "failed_count": len(failed_adaptations),
             "applied_adaptations": applied_adaptations,
             "failed_adaptations": failed_adaptations,
-            "success_rate": len(applied_adaptations) / len(adaptations)
-            if adaptations
-            else 0.0,
+            "success_rate": len(applied_adaptations) / len(adaptations) if adaptations else 0.0,
         }
 
         if applied_adaptations:
             print(f"🎭 Applied {len(applied_adaptations)} personality adaptations")
-            self.self_awareness_metrics["style_improvements"] += len(
-                applied_adaptations
-            )
+            self.self_awareness_metrics["style_improvements"] += len(applied_adaptations)
 
         return result
 
@@ -1089,9 +1015,7 @@ class PersonalityReflectionSystem:
 
             if dominant_style in style_trait_map:
                 trait_to_adjust, adjustment = style_trait_map[dominant_style]
-                success = await self._apply_trait_adjustment(
-                    trait_to_adjust, adjustment
-                )
+                success = await self._apply_trait_adjustment(trait_to_adjust, adjustment)
                 return success
 
             return False
@@ -1109,9 +1033,7 @@ class PersonalityReflectionSystem:
         reflection_score = min(1.0, metrics["reflection_count"] / 20.0)
 
         # Success rate score
-        total_adaptations = (
-            metrics["successful_adaptations"] + metrics["failed_adaptations"]
-        )
+        total_adaptations = metrics["successful_adaptations"] + metrics["failed_adaptations"]
         success_rate = metrics["successful_adaptations"] / max(total_adaptations, 1)
 
         # Pattern recognition score
@@ -1138,9 +1060,7 @@ class PersonalityReflectionSystem:
             "total_interactions_processed": self.interaction_count,
             "reflections_performed": self.self_awareness_metrics["reflection_count"],
             "self_awareness_level": self._calculate_self_awareness_level(),
-            "successful_adaptations": self.self_awareness_metrics[
-                "successful_adaptations"
-            ],
+            "successful_adaptations": self.self_awareness_metrics["successful_adaptations"],
             "current_communication_styles": dict(self.communication_styles),
             "most_common_patterns": dict(
                 sorted(
@@ -1151,10 +1071,7 @@ class PersonalityReflectionSystem:
             ),
             "recent_reflection": self.last_reflection_time.isoformat(),
             "next_reflection_trigger": self.interaction_count
-            + (
-                self.reflection_frequency
-                - (self.interaction_count % self.reflection_frequency)
-            ),
+            + (self.reflection_frequency - (self.interaction_count % self.reflection_frequency)),
         }
 
 

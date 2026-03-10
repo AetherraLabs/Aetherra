@@ -2,12 +2,11 @@
 import copy
 import warnings
 from collections import defaultdict
-from typing import Any, Optional
+from typing import Any
 
 import torch
 from torch import nn
 from torch.ao.pruning.sparsifier.utils import fqn_to_module, module_to_fqn
-
 
 __all__ = ["ActivationSparsifier"]
 
@@ -247,7 +246,7 @@ class ActivationSparsifier:
         # or sparsify_hook()
         self.data_groups[name]["hook_state"] = "aggregate"  # aggregate hook is attached
 
-    def get_mask(self, name: Optional[str] = None, layer: Optional[nn.Module] = None):
+    def get_mask(self, name: str | None = None, layer: nn.Module | None = None):
         """
         Returns mask associated to the layer.
 
@@ -334,20 +333,17 @@ class ActivationSparsifier:
             if features is None:
                 # apply to all the features
                 return input_data * mask
-            else:
-                # apply per feature, feature_dim
-                for feature_idx in range(0, len(features)):
-                    feature = (
-                        torch.Tensor([features[feature_idx]])
-                        .long()
-                        .to(input_data.device)
-                    )
-                    sparsified = (
-                        torch.index_select(input_data, feature_dim, feature)
-                        * mask[feature_idx]
-                    )
-                    input_data.index_copy_(feature_dim, feature, sparsified)
-                return input_data
+            # apply per feature, feature_dim
+            for feature_idx in range(0, len(features)):
+                feature = (
+                    torch.Tensor([features[feature_idx]]).long().to(input_data.device)
+                )
+                sparsified = (
+                    torch.index_select(input_data, feature_dim, feature)
+                    * mask[feature_idx]
+                )
+                input_data.index_copy_(feature_dim, feature, sparsified)
+            return input_data
 
         return hook
 

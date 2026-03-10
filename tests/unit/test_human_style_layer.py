@@ -10,7 +10,7 @@ def test_human_style_default_enabled(tmp_path, monkeypatch):
     monkeypatch.delenv("AETHERRA_STYLE_ENABLED", raising=False)
     monkeypatch.setenv("AETHERRA_STYLE_SEED", "7")
     hs_mod = importlib.import_module("Aetherra.aetherra_core.conversation.human_style")
-    HumanStyle = getattr(hs_mod, "HumanStyle")
+    HumanStyle = hs_mod.HumanStyle
     styler = HumanStyle()
     out, markers = styler.enhance(
         user_message="I'm a bit confused about setup",
@@ -30,7 +30,7 @@ def test_human_style_env_toggles(monkeypatch):
     monkeypatch.setenv("AETHERRA_STYLE_SEED", "9")
 
     hs_mod = importlib.import_module("Aetherra.aetherra_core.conversation.human_style")
-    HumanStyle = getattr(hs_mod, "HumanStyle")
+    HumanStyle = hs_mod.HumanStyle
     styler = HumanStyle()
     out, markers = styler.enhance(
         user_message="Hello",

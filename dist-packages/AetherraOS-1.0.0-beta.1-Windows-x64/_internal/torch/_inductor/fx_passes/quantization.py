@@ -13,20 +13,20 @@ from torch.fx.experimental.symbolic_shapes import has_free_symbols
 from torch.fx.node import map_arg
 
 from .. import config
-from ..lowering import lowerings as L, require_channels_last
+from ..lowering import lowerings as L
+from ..lowering import require_channels_last
 from ..pattern_matcher import (
     Arg,
     CallFunction,
-    filter_nodes,
     KeywordArg,
     ListOf,
     Match,
+    filter_nodes,
     stable_topological_sort,
 )
 from ..utils import pad_listlike
 from .freezing_patterns import register_freezing_graph_pattern
 from .post_grad import register_lowering_pattern
-
 
 aten = torch.ops.aten
 prims = torch.ops.prims
@@ -86,8 +86,7 @@ def _may_generate_pattern_with_dtype_convert(
             dtype,
             _users=users,
         )
-    else:
-        return pattern
+    return pattern
 
 
 def _may_generate_pattern_with_reshape(pattern, reshape_size=Arg(), with_reshape=True):
@@ -97,8 +96,7 @@ def _may_generate_pattern_with_reshape(pattern, reshape_size=Arg(), with_reshape
             pattern,
             reshape_size,
         )
-    else:
-        return pattern
+    return pattern
 
 
 def _generate_linear_t_pattern(
@@ -348,10 +346,9 @@ def _check_node_kwarg_arg_value(check_node, kwarg_name, args_index, expected_val
     if kwarg_name in check_node.kwargs:
         actual_value = check_node.kwargs[kwarg_name]
         return actual_value == expected_value
-    else:
-        assert len(check_node.args) >= (args_index + 1)
-        actual_value = check_node.args[args_index]
-        return actual_value == expected_value
+    assert len(check_node.args) >= (args_index + 1)
+    actual_value = check_node.args[args_index]
+    return actual_value == expected_value
 
 
 def _is_valid_quantized_conv_optimization_pattern():
@@ -1495,11 +1492,10 @@ def _register_dequant_promotion_pass(pattern, pass_number, dtype=torch.float32):
             ]:
                 # For a dequant pattern, we expect the start node is a dequantize_per_tensor node
                 return _node
-            else:
-                assert len(_node.args) >= 1, (
-                    "In in dequant pattern, each node should have more than 1 arg."
-                )
-                return _find_first_node_in_dequant_pattern(_node.args[0])
+            assert len(_node.args) >= 1, (
+                "In in dequant pattern, each node should have more than 1 arg."
+            )
+            return _find_first_node_in_dequant_pattern(_node.args[0])
 
         dequant_pattern_start_node = _find_first_node_in_dequant_pattern(
             dequant_pattern_end_node
@@ -2126,8 +2122,7 @@ def _generate_dequant_bmm_node_pattern(
                 _dequant_bmm_pattern,
                 KeywordArg("b"),
             )
-        else:
-            return _dequant_bmm_pattern
+        return _dequant_bmm_pattern
 
     return _generate_pattern_with_output_add(dequant_bmm_pattern, with_bias)
 
@@ -2146,13 +2141,12 @@ def _generate_qlinear_weight_prepack_patterns(
             with_bias,
             is_tensor_overload,
         )
-    else:
-        return _generate_dequant_linear_node_pattern(
-            dequantize_per_channel_weight_pattern,
-            dtype,
-            input_dim_exceeds_two,
-            is_tensor_overload,
-        )
+    return _generate_dequant_linear_node_pattern(
+        dequantize_per_channel_weight_pattern,
+        dtype,
+        input_dim_exceeds_two,
+        is_tensor_overload,
+    )
 
 
 def _generate_linear_dynamic_fp16_pattern(
@@ -2676,7 +2670,7 @@ def _register_smooth_quant_int_mm_pattern():
             pass_number=pass_number,
         )
         def _int_mm_weight_prepack(match: Match, *args, **kwargs):
-            bias = kwargs.get("bias", None)
+            bias = kwargs.get("bias")
             x = kwargs["a"]
             weight = kwargs["b"]
             dtype = kwargs["dtype"]
@@ -2743,7 +2737,7 @@ def _register_smooth_quant_int_mm_pattern():
                 else:
                     # onednn.qlinear does not support per-channel quantization of x
                     # so in this case, we have to apply x scale and add bias ourselves after qlinear
-                    in_shape = kwargs.get("in_shape", None)
+                    in_shape = kwargs.get("in_shape")
                     if in_shape is None:
                         x_reshaped = x
                     else:
@@ -2775,8 +2769,8 @@ def _register_smooth_quant_int_mm_pattern():
 
                     # Add bias and reshape
                     has_outer_reshape = (
-                        kwargs.get("out_shape_with_bias", None) is not None
-                        or kwargs.get("out_shape_no_bias", None) is not None
+                        kwargs.get("out_shape_with_bias") is not None
+                        or kwargs.get("out_shape_no_bias") is not None
                     )
 
                     if has_outer_reshape:
@@ -3306,6 +3300,8 @@ def _register_qlinear_post_op_fusion_pass(
 def _register_qlinear_unary_fusion():
     from .mkldnn_fusion import (
         _gelu_fusion_1 as _gelu_fusion_erf,
+    )
+    from .mkldnn_fusion import (
         _gelu_fusion_2 as _gelu_fusion_tanh,
     )
 
@@ -3878,8 +3874,7 @@ def quant_lift_up(graph_module: torch.fx.GraphModule):
                     def maybe_replace_node(n: torch.fx.Node) -> torch.fx.Node:
                         if n == input_node_of_quant:
                             return input_node
-                        else:
-                            return n
+                        return n
 
                     new_args = map_arg(new_quant_node.args, maybe_replace_node)
                     new_kwargs = map_arg(new_quant_node.kwargs, maybe_replace_node)

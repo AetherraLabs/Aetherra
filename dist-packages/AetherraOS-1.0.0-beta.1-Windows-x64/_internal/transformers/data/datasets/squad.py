@@ -16,7 +16,6 @@ import os
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Union
 
 import torch
 from filelock import FileLock
@@ -25,8 +24,12 @@ from torch.utils.data import Dataset
 from ...models.auto.modeling_auto import MODEL_FOR_QUESTION_ANSWERING_MAPPING
 from ...tokenization_utils import PreTrainedTokenizer
 from ...utils import check_torch_load_is_safe, logging
-from ..processors.squad import SquadFeatures, SquadV1Processor, SquadV2Processor, squad_convert_examples_to_features
-
+from ..processors.squad import (
+    SquadFeatures,
+    SquadV1Processor,
+    SquadV2Processor,
+    squad_convert_examples_to_features,
+)
 
 logger = logging.get_logger(__name__)
 
@@ -41,10 +44,14 @@ class SquadDataTrainingArguments:
     """
 
     model_type: str = field(
-        default=None, metadata={"help": "Model type selected in the list: " + ", ".join(MODEL_TYPES)}
+        default=None,
+        metadata={"help": "Model type selected in the list: " + ", ".join(MODEL_TYPES)},
     )
     data_dir: str = field(
-        default=None, metadata={"help": "The input data dir. Should contain the .json files for the SQuAD task."}
+        default=None,
+        metadata={
+            "help": "The input data dir. Should contain the .json files for the SQuAD task."
+        },
     )
     max_seq_length: int = field(
         default=128,
@@ -57,7 +64,9 @@ class SquadDataTrainingArguments:
     )
     doc_stride: int = field(
         default=128,
-        metadata={"help": "When splitting up a long document into chunks, how much stride to take between chunks."},
+        metadata={
+            "help": "When splitting up a long document into chunks, how much stride to take between chunks."
+        },
     )
     max_query_length: int = field(
         default=64,
@@ -78,16 +87,26 @@ class SquadDataTrainingArguments:
         },
     )
     overwrite_cache: bool = field(
-        default=False, metadata={"help": "Overwrite the cached training and evaluation sets"}
+        default=False,
+        metadata={"help": "Overwrite the cached training and evaluation sets"},
     )
     version_2_with_negative: bool = field(
-        default=False, metadata={"help": "If true, the SQuAD examples contain some that do not have an answer."}
+        default=False,
+        metadata={
+            "help": "If true, the SQuAD examples contain some that do not have an answer."
+        },
     )
     null_score_diff_threshold: float = field(
-        default=0.0, metadata={"help": "If null_score - best_non_null is greater than the threshold predict null."}
+        default=0.0,
+        metadata={
+            "help": "If null_score - best_non_null is greater than the threshold predict null."
+        },
     )
     n_best_size: int = field(
-        default=20, metadata={"help": "If null_score - best_non_null is greater than the threshold predict null."}
+        default=20,
+        metadata={
+            "help": "If null_score - best_non_null is greater than the threshold predict null."
+        },
     )
     lang_id: int = field(
         default=0,
@@ -98,7 +117,10 @@ class SquadDataTrainingArguments:
             )
         },
     )
-    threads: int = field(default=1, metadata={"help": "multiple threads for converting example to features"})
+    threads: int = field(
+        default=1,
+        metadata={"help": "multiple threads for converting example to features"},
+    )
 
 
 class Split(Enum):
@@ -112,7 +134,7 @@ class SquadDataset(Dataset):
     """
 
     args: SquadDataTrainingArguments
-    features: List[SquadFeatures]
+    features: list[SquadFeatures]
     mode: Split
     is_language_sensitive: bool
 
@@ -120,15 +142,17 @@ class SquadDataset(Dataset):
         self,
         args: SquadDataTrainingArguments,
         tokenizer: PreTrainedTokenizer,
-        limit_length: Optional[int] = None,
-        mode: Union[str, Split] = Split.train,
-        is_language_sensitive: Optional[bool] = False,
-        cache_dir: Optional[str] = None,
-        dataset_format: Optional[str] = "pt",
+        limit_length: int | None = None,
+        mode: str | Split = Split.train,
+        is_language_sensitive: bool | None = False,
+        cache_dir: str | None = None,
+        dataset_format: str | None = "pt",
     ):
         self.args = args
         self.is_language_sensitive = is_language_sensitive
-        self.processor = SquadV2Processor() if args.version_2_with_negative else SquadV1Processor()
+        self.processor = (
+            SquadV2Processor() if args.version_2_with_negative else SquadV1Processor()
+        )
         if isinstance(mode, str):
             try:
                 mode = Split[mode]
@@ -157,7 +181,8 @@ class SquadDataset(Dataset):
                 self.dataset = self.old_features.get("dataset", None)
                 self.examples = self.old_features.get("examples", None)
                 logger.info(
-                    f"Loading features from cached file {cached_features_file} [took %.3f s]", time.time() - start
+                    f"Loading features from cached file {cached_features_file} [took %.3f s]",
+                    time.time() - start,
                 )
 
                 if self.dataset is None or self.examples is None:
@@ -184,7 +209,11 @@ class SquadDataset(Dataset):
 
                 start = time.time()
                 torch.save(
-                    {"features": self.features, "dataset": self.dataset, "examples": self.examples},
+                    {
+                        "features": self.features,
+                        "dataset": self.dataset,
+                        "examples": self.examples,
+                    },
                     cached_features_file,
                 )
                 # ^ This seems to take a lot of time so I want to investigate why and how we can improve.
@@ -195,7 +224,7 @@ class SquadDataset(Dataset):
     def __len__(self):
         return len(self.features)
 
-    def __getitem__(self, i) -> Dict[str, torch.Tensor]:
+    def __getitem__(self, i) -> dict[str, torch.Tensor]:
         # Convert to Tensors and build dataset
         feature = self.features[i]
 
@@ -220,11 +249,20 @@ class SquadDataset(Dataset):
             if self.args.version_2_with_negative:
                 inputs.update({"is_impossible": is_impossible})
             if self.is_language_sensitive:
-                inputs.update({"langs": (torch.ones(input_ids.shape, dtype=torch.int64) * self.args.lang_id)})
+                inputs.update(
+                    {
+                        "langs": (
+                            torch.ones(input_ids.shape, dtype=torch.int64)
+                            * self.args.lang_id
+                        )
+                    }
+                )
 
         if self.mode == Split.train:
             start_positions = torch.tensor(feature.start_position, dtype=torch.long)
             end_positions = torch.tensor(feature.end_position, dtype=torch.long)
-            inputs.update({"start_positions": start_positions, "end_positions": end_positions})
+            inputs.update(
+                {"start_positions": start_positions, "end_positions": end_positions}
+            )
 
         return inputs

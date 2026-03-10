@@ -17,7 +17,6 @@ from ._common_operator_config_utils import (
 )
 from .backend_config import BackendConfig, DTypeConfig
 
-
 __all__ = [
     "get_test_only_legacy_native_backend_config",
     "default_op_quint8_dtype_config",

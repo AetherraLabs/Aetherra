@@ -1,17 +1,16 @@
 # mypy: allow-untyped-defs
 """Defines bias subclasses that work with scaled_dot_product_attention"""
 
-from enum import auto, IntEnum
-from typing import Optional
+from enum import IntEnum, auto
 from warnings import warn
 
 import torch
 import torch.nn.functional as F
 from torch.backends.cuda import (
+    SDPAParams,
     can_use_efficient_attention,
     can_use_flash_attention,
     is_flash_attention_available,
-    SDPAParams,
 )
 from torch.nn.attention import _raise_kernel_warnings
 from torch.nn.attention._utils import (
@@ -20,7 +19,6 @@ from torch.nn.attention._utils import (
     _postprocess_flash_output,
     _validate_sdpa_input,
 )
-
 
 __all__ = ["causal_upper_left", "causal_lower_right", "CausalVariant", "CausalBias"]
 
@@ -153,7 +151,7 @@ class CausalBias(torch.Tensor):
             diagonal=diagonal_offset,
         )
 
-    def _materialize(self, device: Optional[torch.device] = None) -> torch.Tensor:
+    def _materialize(self, device: torch.device | None = None) -> torch.Tensor:
         """
         Materializes the causal bias into a tensor form.
 
@@ -170,7 +168,7 @@ class CausalBias(torch.Tensor):
             device = torch.device("cpu")
         if self.variant == CausalVariant.UPPER_LEFT:
             return self._upper_left(device)
-        elif self.variant == CausalVariant.LOWER_RIGHT:
+        if self.variant == CausalVariant.LOWER_RIGHT:
             return self._lower_right(device)
 
     @staticmethod
@@ -181,7 +179,7 @@ class CausalBias(torch.Tensor):
         attn_mask: "CausalBias",
         dropout_p: float = 0.0,
         is_causal: bool = False,
-        scale: Optional[float] = None,
+        scale: float | None = None,
         enable_gqa: bool = False,
     ) -> torch.Tensor:
         r"""
@@ -225,7 +223,7 @@ class CausalBias(torch.Tensor):
                 scale=scale,
                 enable_gqa=enable_gqa,
             )
-        elif attn_mask.variant == CausalVariant.LOWER_RIGHT:
+        if attn_mask.variant == CausalVariant.LOWER_RIGHT:
             _validate_sdpa_input(query, key, value, None, dropout_p, is_causal, scale)
             sdpa_params = SDPAParams(
                 query, key, value, None, dropout_p, is_causal, enable_gqa
@@ -267,23 +265,21 @@ class CausalBias(torch.Tensor):
                     scale=scale,
                     seqlen_k=None,
                 )[0].transpose(1, 2)
-            else:
-                _raise_kernel_warnings(sdpa_params)
-                # We cant use efficient attention the only support for lower right is via materialization
-                return F.scaled_dot_product_attention(
-                    query,
-                    key,
-                    value,
-                    attn_mask=attn_mask._materialize(query.device),
-                    dropout_p=dropout_p,
-                    is_causal=False,
-                    scale=scale,
-                    enable_gqa=enable_gqa,
-                )
-        else:
-            raise ValueError(
-                f"CausalBias.variant must be a CausalVariant type, but found: {attn_mask.variant}"
+            _raise_kernel_warnings(sdpa_params)
+            # We cant use efficient attention the only support for lower right is via materialization
+            return F.scaled_dot_product_attention(
+                query,
+                key,
+                value,
+                attn_mask=attn_mask._materialize(query.device),
+                dropout_p=dropout_p,
+                is_causal=False,
+                scale=scale,
+                enable_gqa=enable_gqa,
             )
+        raise ValueError(
+            f"CausalBias.variant must be a CausalVariant type, but found: {attn_mask.variant}"
+        )
 
     @classmethod
     def __torch_function__(cls, func, types, args=(), kwargs=None):

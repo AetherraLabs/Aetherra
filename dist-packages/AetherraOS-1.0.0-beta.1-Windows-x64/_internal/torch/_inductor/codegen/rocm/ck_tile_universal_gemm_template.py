@@ -15,7 +15,6 @@ from torch.utils._ordered_set import OrderedSet
 
 from ...utils import IndentedBuffer
 
-
 log = logging.getLogger(__name__)
 
 
@@ -28,10 +27,9 @@ def is_static_int(number):
 def torch_layout_to_ck_layout(torch_layout):
     if torch_layout.stride[-1] == 1:
         return "Row"
-    elif torch_layout.stride[-2] == 1:
+    if torch_layout.stride[-2] == 1:
         return "Col"
-    else:
-        return None
+    return None
 
 
 @dataclass
@@ -441,7 +439,7 @@ class CKTileGemmTemplate(CKTileTemplate):
         if op.layout_a == "Row":
             # handle in kBatch check
             return True
-        elif op.layout_a == "Col":
+        if op.layout_a == "Col":
             if not check(M, op.tile_m, op.m_is_padded):
                 return False
         else:
@@ -685,7 +683,7 @@ class CKTileGemmTemplate(CKTileTemplate):
                                                                           TransposeC>;
             using GemmEpilogue = ck_tile::DefaultGemm2DEpilogue<EpilogueProblem>;
         """
-            elif epilogue_type == "CShuffle":
+            if epilogue_type == "CShuffle":
                 return r"""
             constexpr auto kMemoryOperation = ck_tile::memory_operation_enum::set;
             using EpilogueProblem = ck_tile::CShuffleEpilogueProblem<ADataType,
@@ -706,8 +704,7 @@ class CKTileGemmTemplate(CKTileTemplate):
 
             using GemmEpilogue = ck_tile::CShuffleEpilogue<EpilogueProblem>;
         """
-            else:
-                raise AssertionError("Epilogue must be set")
+            raise AssertionError("Epilogue must be set")
 
         def render_pipeline(pipeline_type):
             return rf"""
@@ -738,12 +735,12 @@ class CKTileGemmTemplate(CKTileTemplate):
         """
         The primary entry point for the code rendering process used in this template.
         """
-        epilogue_nodes = kwargs.get("epilogue_nodes", None)
-        assert epilogue_nodes is None or 0 == len(epilogue_nodes)
-        template_buffer_node = kwargs.get("template_buffer_node", None)
+        epilogue_nodes = kwargs.get("epilogue_nodes")
+        assert epilogue_nodes is None or len(epilogue_nodes) == 0
+        template_buffer_node = kwargs.get("template_buffer_node")
         if template_buffer_node is not None:
             self.output_node = template_buffer_node
-        assert 2 == len(self.input_nodes)
+        assert len(self.input_nodes) == 2
         X, W = self.input_nodes
         Y = self.output_node
 
@@ -803,7 +800,7 @@ class CKTileGemmTemplate(CKTileTemplate):
                         pipeline=pipeline_type,
                     ),
                 )
-            elif pipeline_type == "Mem":
+            if pipeline_type == "Mem":
                 return self._template_from_string(dispatch_template).render(
                     rendered_with_hot_loop="dispatch_memory_pipeline_hot_loop<kPrefetchStages>(tail_num, dispatch);",
                     rendered_without_hot_loop=self._template_from_string(
@@ -814,7 +811,7 @@ class CKTileGemmTemplate(CKTileTemplate):
                         pipeline=pipeline_type,
                     ),
                 )
-            elif pipeline_type == "CompV4":
+            if pipeline_type == "CompV4":
                 return self._template_from_string(dispatch_template).render(
                     rendered_with_hot_loop=self._template_from_string(
                         switch_tailnum_template
@@ -831,8 +828,7 @@ class CKTileGemmTemplate(CKTileTemplate):
                         pipeline=pipeline_type,
                     ),
                 )
-            else:
-                raise AssertionError(f"Pipeline {pipeline_type} is not supported")
+            raise AssertionError(f"Pipeline {pipeline_type} is not supported")
 
         return self._template_from_string(self.gemm_template).render(
             headers=self.header().getvalue(),

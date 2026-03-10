@@ -4,7 +4,7 @@ from __future__ import annotations
 import itertools
 import logging
 import weakref
-from typing import Any, Optional
+from typing import Any
 
 import torch
 import torch.utils._pytree as pytree
@@ -17,7 +17,6 @@ from torch._inductor.fx_passes.freezing_patterns import freezing_passes
 from torch._inductor.fx_passes.post_grad import view_to_reshape
 
 from . import config
-
 
 aten = torch.ops.aten
 prims = torch.ops.prims
@@ -54,7 +53,9 @@ def replace_params_with_constants(
 
     static_indices_new = []
     static_indices_offset = 0
-    for i, (real_input, node) in enumerate(zip(flat_params, fake_inp_nodes)):
+    for i, (real_input, node) in enumerate(
+        zip(flat_params, fake_inp_nodes, strict=False)
+    ):
         if i in mutated_inps or i in aliased_input_args:
             preserved_arg_indices.append(i)
             if i in fw_metadata.static_input_indices:
@@ -145,7 +146,7 @@ class ErasedTensor(torch.Tensor):
     def __new__(cls, elem, name, owning_mod):
         return super().__new__(cls, elem.to(device="meta"))
 
-    def __init__(self, elem, name: Optional[str], mod) -> None:
+    def __init__(self, elem, name: str | None, mod) -> None:
         self.erased_name = name
         self.owning_mod_ref = weakref.ref(mod)
 

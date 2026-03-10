@@ -6,7 +6,6 @@ from torch.distributed.device_mesh import _mesh_resources
 from torch.distributed.tensor import DeviceMesh
 from torch.distributed.tensor.placement_types import Placement
 
-
 try:
     from torch._dynamo.external_utils import is_compiling as is_torchdynamo_compiling
 except Exception:

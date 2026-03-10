@@ -2,8 +2,9 @@
 import copy
 import inspect
 import itertools
-import typing_extensions
 import warnings
+
+import typing_extensions
 
 import torch
 import torch.ao.nn.quantized as nnq
@@ -36,7 +37,6 @@ from .utils import (
     get_qparam_dict,
     has_no_children_ignoring_parametrizations,
 )
-
 
 __all__ = [
     "get_default_custom_config_dict",
@@ -239,7 +239,7 @@ def _add_observer_(
         # TODO remove Dropout special after codebase stable
         if type_before_parametrizations(child) in [nn.Dropout]:
             continue
-        elif issubclass(
+        if issubclass(
             type_before_parametrizations(child), (nnq.FloatFunctional, nnq.QFunctional)
         ):
             if needs_observation(child):

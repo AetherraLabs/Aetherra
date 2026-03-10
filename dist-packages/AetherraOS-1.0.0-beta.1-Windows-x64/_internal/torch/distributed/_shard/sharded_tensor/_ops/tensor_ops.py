@@ -4,13 +4,12 @@ import copy
 import torch
 from torch.distributed._shard.common_op_utils import _register_default_op
 from torch.distributed._shard.sharded_tensor import (
-    _sharded_op_impl,
     Shard,
     ShardedTensor,
+    _sharded_op_impl,
 )
 
 from ._common import _register_sharded_op_on_local_shards
-
 
 # Tensor properties access
 _register_default_op(torch.Tensor.shape.__get__, _sharded_op_impl)  # type: ignore[attr-defined]
@@ -141,12 +140,16 @@ def sharded_inplace_copy(types, args, kwargs, pg):
     self_st = args[0]
     new_st = args[1]
     nonblocking = kwargs.get("non_blocking", False)
-    for local_shard, new_shard in zip(self_st.local_shards(), new_st.local_shards()):
+    for local_shard, new_shard in zip(
+        self_st.local_shards(), new_st.local_shards(), strict=False
+    ):
         if local_shard.metadata != new_shard.metadata:
             raise RuntimeError(
                 "inplace copy can only happen between two ShardedTensor with same metadata!"
             )
-    for local_shard, new_shard in zip(self_st.local_shards(), new_st.local_shards()):
+    for local_shard, new_shard in zip(
+        self_st.local_shards(), new_st.local_shards(), strict=False
+    ):
         local_shard.tensor.copy_(new_shard.tensor, nonblocking)
 
     return self_st

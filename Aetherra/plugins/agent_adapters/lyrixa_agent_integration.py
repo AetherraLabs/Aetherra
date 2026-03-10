@@ -99,9 +99,7 @@ class LyrixaAgentInterface:
     - Agent lifecycle management
     """
 
-    def __init__(
-        self, workspace_path: str, agent_config: Optional[Dict[str, Any]] = None
-    ):
+    def __init__(self, workspace_path: str, agent_config: Optional[Dict[str, Any]] = None):
         """
         Initialize Lyrixa Agent Interface
 
@@ -378,9 +376,7 @@ class LyrixaAgentInterface:
             }
 
             # Send delegation
-            result = await self.communicate_with_agent(
-                target_agent_id, delegation_message
-            )
+            result = await self.communicate_with_agent(target_agent_id, delegation_message)
 
             logger.info(f"🤝 Task delegated: {delegation_id} to {target_agent_id}")
             return {
@@ -408,9 +404,7 @@ class LyrixaAgentInterface:
                             return agent_id
 
             # Return first available agent if no specific match
-            other_agents = [
-                aid for aid in self.active_agents.keys() if aid != self.agent_id
-            ]
+            other_agents = [aid for aid in self.active_agents.keys() if aid != self.agent_id]
             if other_agents:
                 return other_agents[0]
 

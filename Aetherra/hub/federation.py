@@ -48,9 +48,7 @@ class Peer:
 class FederationManager:
     """Simple peer registry and federated catalog cache."""
 
-    def __init__(
-        self, self_url: str = "http://localhost:3001", peers: Optional[List[str]] = None
-    ):
+    def __init__(self, self_url: str = "http://localhost:3001", peers: Optional[List[str]] = None):
         self.self_url = self_url.rstrip("/")
         self._peers: Dict[str, Peer] = {
             p.rstrip("/"): Peer(url=p.rstrip("/")) for p in (peers or [])

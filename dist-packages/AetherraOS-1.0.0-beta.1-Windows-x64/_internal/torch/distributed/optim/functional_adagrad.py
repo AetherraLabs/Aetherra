@@ -1,5 +1,4 @@
 # mypy: allow-untyped-defs
-from typing import Optional
 
 import torch
 import torch.optim._functional as F
@@ -7,7 +6,6 @@ from torch import Tensor
 from torch.distributed.optim._deprecation_warning import (
     _scripted_functional_optimizer_deprecation_warning,
 )
-
 
 __all__: list[str] = []
 
@@ -70,7 +68,7 @@ class _FunctionalAdagrad:
                 "step": torch.tensor(0.0),
             }
 
-    def step(self, gradients: list[Optional[Tensor]]):
+    def step(self, gradients: list[Tensor | None]):
         params = self.param_group["params"]
         params_with_grad = []
         grads = []
@@ -85,7 +83,7 @@ class _FunctionalAdagrad:
             )
 
         has_sparse_grad, has_complex = False, False
-        for param, gradient in zip(self.param_group["params"], gradients):
+        for param, gradient in zip(self.param_group["params"], gradients, strict=False):
             if gradient is not None:
                 has_sparse_grad |= gradient.is_sparse
                 has_complex |= torch.is_complex(param)

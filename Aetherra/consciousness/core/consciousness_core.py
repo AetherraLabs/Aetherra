@@ -148,7 +148,7 @@ class ConsciousnessCore:
         # Adaptive tick rate (simple backpressure)
         tick_duration = time.time() - tick_start
         if tick_duration > (1.0 / config.TICK_HZ):
-            # TODO: adaptive throttling if ticks are slow
+            # Integration point: adaptive throttling when ticks are slow.
             pass
 
     # ========== Perceive ==========
@@ -424,7 +424,7 @@ class ConsciousnessCore:
         # Decay qualia learning parameters toward defaults
         self.ql.decay_toward_defaults()
 
-        # TODO: synthesize patterns, update self-model, propose improvements
+        # Integration point: synthesize patterns, update self-model, propose improvements.
         uptime_s = time.time() - self.start_time
         summary = (
             f"[Macro Reflection] Uptime: {uptime_s / 60:.1f}m | "

@@ -1,15 +1,13 @@
 # mypy: allow-untyped-defs
 import contextlib
-from typing import Optional
 
 import torch
 from torch.fx.graph_module import GraphModule
 
-
 _EMPTY_NN_MODULE_STACK_KEY = "_empty_nn_module_stack_from_metadata_hook"
 
 
-def _node_metadata_hook(node: torch.fx.Node, stack_trace: Optional[str] = None) -> None:
+def _node_metadata_hook(node: torch.fx.Node, stack_trace: str | None = None) -> None:
     """
     Hook for adding the appropriate metadata to nodes that are created during a
     pass using graph.create_node. An example of how to use it:

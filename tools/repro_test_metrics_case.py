@@ -1,7 +1,6 @@
 # Standard library imports
 import os
 import re
-import time
 
 # Third party imports
 import requests

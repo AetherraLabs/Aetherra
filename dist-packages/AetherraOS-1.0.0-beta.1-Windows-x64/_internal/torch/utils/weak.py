@@ -3,13 +3,11 @@ from __future__ import annotations
 
 import collections.abc as _collections_abc
 import weakref
-
 from _weakrefset import _IterationGuard  # type: ignore[attr-defined]
 from collections.abc import Mapping, MutableMapping
 from weakref import ref
 
 from torch import Tensor
-
 
 WeakRef = ref
 

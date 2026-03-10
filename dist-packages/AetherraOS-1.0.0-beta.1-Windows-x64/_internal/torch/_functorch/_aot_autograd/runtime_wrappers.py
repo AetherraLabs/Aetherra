@@ -6,30 +6,32 @@ This module defines runtime wrappers, which, based on previous analysis attempts
 3. handle functionalized randomness
 4. deduplicate inputs and consolidate views into their bases (see input_output_analysis)
 """
+
 import builtins
 import collections
 import contextlib
 import copy
 import itertools
 import pprint
+from collections.abc import Callable
 from contextlib import AbstractContextManager, nullcontext
 from dataclasses import dataclass, field
 from functools import wraps
-from typing import Any, Callable, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any
 
 import torch
 import torch.utils.dlpack
 from torch import Tensor
 from torch._dynamo import config as dynamo_config
-from torch._dynamo.callback import callback_handler, CallbackTrigger
+from torch._dynamo.callback import CallbackTrigger, callback_handler
 from torch._dynamo.utils import CompileEventLogger, dynamo_timed, get_metrics_context
 from torch._guards import (
-    compile_context,
     CompileContext,
-    detect_fake_mode,
     DuplicateInputs,
-    tracing,
     TracingContext,
+    compile_context,
+    detect_fake_mode,
+    tracing,
 )
 from torch._prims_common import CUDARngStateHelper
 from torch._subclasses import FakeTensor
@@ -70,7 +72,6 @@ from .utils import (
     partial_flatten_asdict,
     strict_zip,
 )
-
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -318,9 +319,7 @@ def _create_runtime_wrapper(
             for info in runtime_metadata.output_info
         )
 
-    def record_runtime_wrapper_prologue_enter() -> (
-        Optional[AbstractContextManager[None]]
-    ):
+    def record_runtime_wrapper_prologue_enter() -> AbstractContextManager[None] | None:
         if (
             torch.autograd.profiler._is_profiler_enabled
             and dynamo_config.record_runtime_overhead
@@ -333,7 +332,7 @@ def _create_runtime_wrapper(
         return None
 
     def record_runtime_wrapper_prologue_exit(
-        cm: Optional[AbstractContextManager[None]],
+        cm: AbstractContextManager[None] | None,
     ) -> None:
         if cm is not None:
             cm.__exit__(None, None, None)
@@ -478,7 +477,7 @@ def _create_runtime_wrapper(
             assert len(fw_outs) == expect_num_outputs
             ret_outs = [
                 handler(orig_inputs, fw_outs, out)
-                for out, handler in builtins.zip(fw_outs, output_handlers)
+                for out, handler in builtins.zip(fw_outs, output_handlers, strict=False)
             ]
         else:
             ret_outs = fw_outs
@@ -572,8 +571,7 @@ class FunctionalizedRngRuntimeWrapper(CompilerWrapper):
             if self.return_new_outs:
                 user_outs = outs[:offset_index] + outs[offset_index + 1 :]
                 return user_outs
-            else:
-                return outs
+            return outs
 
         return outs
 
@@ -584,7 +582,7 @@ class FakifiedOutWrapper(CompilerWrapper):
     # TracingContext.fwd_output_strides
     # Generated from actually doing compile
     # NB: an entry is None if it's not a Tensor
-    fwd_output_strides: Optional[list[Optional[list[int]]]] = None
+    fwd_output_strides: list[list[int] | None] | None = None
     needs_post_compile: bool = True
 
     def pre_compile(
@@ -670,9 +668,9 @@ class FakifiedOutWrapper(CompilerWrapper):
 @dataclass
 class AOTDispatchSubclassWrapper(CompilerWrapper):
     trace_joint: bool
-    fw_only: Optional[Callable]  # Not cached, only used in pre_compile
-    maybe_subclass_meta: Optional[SubclassMeta]
-    num_fw_outs_saved_for_bw: Optional[int]
+    fw_only: Callable | None  # Not cached, only used in pre_compile
+    maybe_subclass_meta: SubclassMeta | None
+    num_fw_outs_saved_for_bw: int | None
 
     def pre_compile(
         self,
@@ -950,9 +948,9 @@ class AOTDedupeWrapper(CompilerWrapper):
             keep_arg_mask.append(True)
             add_dupe_map.append(j)
             j += 1
-        assert (
-            len(add_dupe_map) == duped_arg_len
-        ), f"Expects add_dupe_map to have length {duped_arg_len} but got {len(add_dupe_map)}"
+        assert len(add_dupe_map) == duped_arg_len, (
+            f"Expects add_dupe_map to have length {duped_arg_len} but got {len(add_dupe_map)}"
+        )
 
         self.keep_arg_mask = keep_arg_mask
         self.add_dupe_map = add_dupe_map
@@ -996,9 +994,9 @@ class AOTDedupeWrapper(CompilerWrapper):
                 keep_input_mutations=fw_metadata.keep_input_mutations,
                 is_train=fw_metadata.is_train,
             )(*deduped_flat_args)
-            assert (
-                ref_fw_metadata == updated_fw_metadata
-            ), f"ref_metadata={str(ref_fw_metadata)}, actual_metadata={str(updated_fw_metadata)}"
+            assert ref_fw_metadata == updated_fw_metadata, (
+                f"ref_metadata={str(ref_fw_metadata)}, actual_metadata={str(updated_fw_metadata)}"
+            )
 
         return wrapped_flat_fn, deduped_flat_args, updated_fw_metadata
 
@@ -1172,8 +1170,7 @@ class AOTSyntheticBaseWrapper(CompilerWrapper):
             ]
             if len(aliased_args_with_metadata_mutations) > 0:
                 return *(flat_fn(*unpacked_args)), *aliased_args_with_metadata_mutations
-            else:
-                return flat_fn(*unpacked_args)
+            return flat_fn(*unpacked_args)
 
         if config.debug_assert:
             ref_fw_metadata = run_functionalized_fw_and_collect_metadata(
@@ -1317,7 +1314,7 @@ def merge_view_inputs(
     *,
     # The autograd case currently has more restrictions than the inference case.
     is_inference: bool,
-) -> tuple[list[Any], Optional[list[Union[int, tuple[int, torch.Tensor]]]]]:
+) -> tuple[list[Any], list[int | tuple[int, torch.Tensor]] | None]:
     def _are_differentiable_views(view1, view2):
         if view1 is view2:
             return True
@@ -1356,7 +1353,7 @@ def merge_view_inputs(
     # - another int (corresponding to the index in the argument list of the element from the outer calling convention)
     # - idx, view_tensor, where we can generate the new output with view_tensor._view_func(old_args[idx])
     #   idx corresponds to which synthetic base from the outer calling context to view
-    inner_calling_convention_meta: dict[int, Union[int, tuple[int, torch.Tensor]]] = {}
+    inner_calling_convention_meta: dict[int, int | tuple[int, torch.Tensor]] = {}
     for aliased_input_indices in storage_ref_to_idx.values():
         if len(aliased_input_indices) <= 1 or not any(
             # We only care about mutations that affect all aliases,
@@ -1397,14 +1394,14 @@ def merge_view_inputs(
             # The "inputs that are aliased but have different differentiable bases" case
             # is more complicated and hopefully pretty rare. Not currently handled.
             if not is_inference:
-                assert _are_differentiable_views(
-                    view1, view2
-                ), "aot_autograd() does not yet handle non-differentiable view input mutations."
+                assert _are_differentiable_views(view1, view2), (
+                    "aot_autograd() does not yet handle non-differentiable view input mutations."
+                )
             # Regenerating views when reinterpreting complex / real tensors seems non-trivial,
             # not handling for now
-            assert _same_dtype_views(
-                view1, view2
-            ), "aot_autograd() does not yet handle input mutations on views with different dtypes."
+            assert _same_dtype_views(view1, view2), (
+                "aot_autograd() does not yet handle input mutations on views with different dtypes."
+            )
         non_none_bases = [
             fwd_inputs[i]._base
             for i in aliased_input_indices
@@ -1451,13 +1448,13 @@ def merge_view_inputs(
             # Case where all of the aliases require gradients, and have the same _base.
             synthetic_base = non_none_bases[0]
             for other_base in non_none_bases[1:]:
-                assert (
-                    other_base is synthetic_base
-                ), "aot_autograd() does not yet handle non-differentiable view input mutations."
+                assert other_base is synthetic_base, (
+                    "aot_autograd() does not yet handle non-differentiable view input mutations."
+                )
             for alias in aliases_with_none_bases:
-                assert (
-                    alias is synthetic_base
-                ), "aot_autograd() does not yet handle non-differentiable view input mutations."
+                assert alias is synthetic_base, (
+                    "aot_autograd() does not yet handle non-differentiable view input mutations."
+                )
         base_args.append(synthetic_base)
         for curr_view_idx in aliased_input_indices:
             curr_view = fwd_inputs[curr_view_idx]
@@ -1469,48 +1466,47 @@ def merge_view_inputs(
         assert len(other_args) == len(fwd_inputs)
         # If no synthetic bases are necessary, just return the original inputs.
         return fwd_inputs, None
-    else:
-        from torch.fx.experimental.symbolic_shapes import SymIntEqByExpr
+    from torch.fx.experimental.symbolic_shapes import SymIntEqByExpr
 
-        def make_hashable(arg):
-            if isinstance(arg, torch.SymInt):
-                # Since only nested SymInt objects can be hashed, we wrap them with
-                # SymIntEqByExpr, which is a hashable wrapper of SymInts.
-                return SymIntEqByExpr(arg)
-            return arg
+    def make_hashable(arg):
+        if isinstance(arg, torch.SymInt):
+            # Since only nested SymInt objects can be hashed, we wrap them with
+            # SymIntEqByExpr, which is a hashable wrapper of SymInts.
+            return SymIntEqByExpr(arg)
+        return arg
 
-        # Otherwise, return:
-        # (1) The new args according to the updated calling convention: (synthetic_bases, other_args)
-        # (2) Metadata telling functionalization how to generate the inner argument list given the outer calling convention.
-        #     We post-process it into a list, where meta[i] tells you info about the i'th argument in the inner calling convention.
-        args_to_functionalization = base_args + other_args
+    # Otherwise, return:
+    # (1) The new args according to the updated calling convention: (synthetic_bases, other_args)
+    # (2) Metadata telling functionalization how to generate the inner argument list given the outer calling convention.
+    #     We post-process it into a list, where meta[i] tells you info about the i'th argument in the inner calling convention.
+    args_to_functionalization = base_args + other_args
 
-        # Map each argument into its old index.
-        # There may be some repeated arguments, so we collect their indices in a list.
-        arg_to_old_idx_map = collections.defaultdict(list)
-        for i, arg in enumerate(fwd_inputs):
-            arg_to_old_idx_map[make_hashable(arg)].append(i)
-        # Reverse the list of each argument, so that we can easily pop them one-after-the-other in order.
-        for hashable_arg in arg_to_old_idx_map:
-            arg_to_old_idx_map[hashable_arg] = list(
-                reversed(arg_to_old_idx_map[hashable_arg])
-            )
+    # Map each argument into its old index.
+    # There may be some repeated arguments, so we collect their indices in a list.
+    arg_to_old_idx_map = collections.defaultdict(list)
+    for i, arg in enumerate(fwd_inputs):
+        arg_to_old_idx_map[make_hashable(arg)].append(i)
+    # Reverse the list of each argument, so that we can easily pop them one-after-the-other in order.
+    for hashable_arg in arg_to_old_idx_map:
+        arg_to_old_idx_map[hashable_arg] = list(
+            reversed(arg_to_old_idx_map[hashable_arg])
+        )
 
-        for i, other_arg in enumerate(other_args):
-            new_idx = len(base_args) + i
-            old_idx = arg_to_old_idx_map[make_hashable(other_arg)].pop()
-            inner_calling_convention_meta[old_idx] = new_idx
+    for i, other_arg in enumerate(other_args):
+        new_idx = len(base_args) + i
+        old_idx = arg_to_old_idx_map[make_hashable(other_arg)].pop()
+        inner_calling_convention_meta[old_idx] = new_idx
 
-        # post process into a list
-        post_processed_calling_convention_meta: list[
-            Union[int, tuple[int, torch.Tensor]]
-        ] = [-1 for _ in range(len(inner_calling_convention_meta))]
-        for k, v in inner_calling_convention_meta.items():
-            post_processed_calling_convention_meta[k] = v
-        # Quick assert: every argument in the inner calling convention should be accounted for.
-        for x in post_processed_calling_convention_meta:
-            assert x != -1
-        return args_to_functionalization, post_processed_calling_convention_meta
+    # post process into a list
+    post_processed_calling_convention_meta: list[int | tuple[int, torch.Tensor]] = [
+        -1 for _ in range(len(inner_calling_convention_meta))
+    ]
+    for k, v in inner_calling_convention_meta.items():
+        post_processed_calling_convention_meta[k] = v
+    # Quick assert: every argument in the inner calling convention should be accounted for.
+    for x in post_processed_calling_convention_meta:
+        assert x != -1
+    return args_to_functionalization, post_processed_calling_convention_meta
 
 
 # Note: [Backward graph lazy lowering]
@@ -1524,8 +1520,8 @@ def merge_view_inputs(
 class AutogradLazyBackwardCompileInfo:
     bw_module: Callable
     placeholder_list: list[Any]
-    saved_context: Optional[TracingContext]
-    saved_compile_context: Optional[CompileContext]
+    saved_context: TracingContext | None
+    saved_compile_context: CompileContext | None
 
 
 # On an AOT Autograd cache hit, we already have a lowered backward, so there is usually
@@ -1888,7 +1884,7 @@ def _disable_saved_tensors_hooks():
 # No need to make it into an actual CompilerWrapper because it doesn't fit the abstract as cleanly
 class AOTDispatchAutograd:
     @staticmethod
-    def process_runtime_tangent(x, meta: Union[PlainTensorMeta, SubclassCreationMeta]):
+    def process_runtime_tangent(x, meta: PlainTensorMeta | SubclassCreationMeta):
         if not isinstance(x, torch.Tensor):
             return x, [x]
 
@@ -1897,7 +1893,7 @@ class AOTDispatchAutograd:
             x = coerce_to_expected_memory_format(x, meta.memory_format)
             return x, [x]
 
-        expected_type: Optional[type] = torch.Tensor
+        expected_type: type | None = torch.Tensor
         expected_meta = None
         if isinstance(meta, SubclassCreationMeta):
             expected_type = meta.original_subclass_type
@@ -1979,21 +1975,18 @@ To fix this, your tensor subclass must implement the dunder method __force_to_sa
     def post_compile(
         compiled_fw_func,  # fw_module after compilation + wrappers
         compiled_bw_func,  # bw_module after compilation + wrappers
-        maybe_subclass_meta: Optional[SubclassMeta],
+        maybe_subclass_meta: SubclassMeta | None,
         num_symints_saved_for_bw_: int,
         backward_state_indices: list[int],
         disable_amp: bool,
         indices_of_inps_to_detach: list[int],
-        lazy_backward_info: Optional[
-            Union[
-                AutogradLazyBackwardCompileInfo,
-                CachedAutogradLazyBackwardCompileInfo,
-            ]
-        ],
+        lazy_backward_info: AutogradLazyBackwardCompileInfo
+        | CachedAutogradLazyBackwardCompileInfo
+        | None,
         aot_config: AOTConfig,
         *,
         fw_metadata: ViewAndMutationMeta,  # runtime metadata
-        try_save_cache_entry: Optional[Callable],  # Save cache entry after compilation
+        try_save_cache_entry: Callable | None,  # Save cache entry after compilation
     ):
         # For additional context see Note [CUDA Graph Safe RNG Functionalization]
         # Each pair forward, backward rng states must be equal prior to its invocation on any
@@ -2027,7 +2020,7 @@ To fix this, your tensor subclass must implement the dunder method __force_to_sa
             compiled_fw = compiled_fw_func
             compiled_bw = compiled_bw_func
             metadata: ViewAndMutationMeta = fw_metadata  # type: ignore[assignment]
-            maybe_subclass_metadata: Optional[SubclassMeta] = maybe_subclass_meta
+            maybe_subclass_metadata: SubclassMeta | None = maybe_subclass_meta
             num_symints_saved_for_bw = num_symints_saved_for_bw_
             _aot_id = aot_config.aot_id
             _lazy_backward_info = lazy_backward_info
@@ -2255,8 +2248,7 @@ To fix this, your tensor subclass must implement the dunder method __force_to_sa
                 if needs_grad:
                     # double backward
                     return CompiledFunction._double_backward(ctx, impl_fn, all_args)
-                else:
-                    return impl_fn()
+                return impl_fn()
 
             @staticmethod
             def _double_backward(ctx, impl_fn, all_args):
@@ -2286,9 +2278,9 @@ To fix this, your tensor subclass must implement the dunder method __force_to_sa
             @staticmethod
             def _backward_impl(ctx, all_args):
                 # compiled autograd reimplements this function at proxy_call_aot_backward
-                assert (
-                    not backward_state_indices
-                ), "BackwardState requires CompiledAutograd"
+                assert not backward_state_indices, (
+                    "BackwardState requires CompiledAutograd"
+                )
                 ctx.maybe_clear_saved_tensors()
 
                 saved_tensors_use_once = (
@@ -2396,7 +2388,7 @@ To fix this, your tensor subclass must implement the dunder method __force_to_sa
 
 @dataclass
 class DebugAssertWrapper(CompilerWrapper):
-    flat_requires_grad: list[Optional[bool]] = field(default_factory=list)
+    flat_requires_grad: list[bool | None] = field(default_factory=list)
 
     def post_compile(
         self,
@@ -2469,7 +2461,7 @@ def post_compile(
 
 def make_runtime_safe(
     fw_metadata: ViewAndMutationMeta,
-    maybe_subclass_meta: Optional[SubclassMeta],
+    maybe_subclass_meta: SubclassMeta | None,
 ):
     """
     Calls make_runtime_safe on all ViewAndMutationMetas.

@@ -19,10 +19,8 @@ import importlib.metadata
 import operator
 import re
 import sys
-from typing import Optional
 
 from packaging import version
-
 
 ops = {
     "<": operator.lt,
@@ -46,7 +44,7 @@ def _compare_versions(op, got_ver, want_ver, requirement, pkg, hint):
         )
 
 
-def require_version(requirement: str, hint: Optional[str] = None) -> None:
+def require_version(requirement: str, hint: str | None = None) -> None:
     """
     Perform a runtime check of the dependency versions, using the exact same syntax used by pip.
 
@@ -88,7 +86,9 @@ def require_version(requirement: str, hint: Optional[str] = None) -> None:
             op, want_ver = match[0]
             wanted[op] = want_ver
             if op not in ops:
-                raise ValueError(f"{requirement}: need one of {list(ops.keys())}, but got {op}")
+                raise ValueError(
+                    f"{requirement}: need one of {list(ops.keys())}, but got {op}"
+                )
 
     # special case
     if pkg == "python":

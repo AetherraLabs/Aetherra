@@ -31,7 +31,9 @@ def apply_input_props_using_example(graph: Graph, example_input: list[Any]) -> N
             "Number of inputs in graph does not match number of inputs in the example"
         )
 
-    for i, (graph_i, example_i) in enumerate(zip(graph_inputs, example_input)):
+    for i, (graph_i, example_i) in enumerate(
+        zip(graph_inputs, example_input, strict=False)
+    ):
         if example_i is None:
             continue  # Skip the type check
 

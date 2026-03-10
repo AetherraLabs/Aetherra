@@ -1,6 +1,5 @@
 # mypy: allow-untyped-defs
 import functools
-from typing import Optional
 
 import torch
 import torch.utils._pytree as pytree
@@ -21,12 +20,12 @@ from .lowering import (
     view,
 )
 from .select_algorithm import (
-    autotune_select_algorithm,
     ChoiceCaller,
     ExternKernelChoice,
+    autotune_select_algorithm,
 )
 from .utils import use_aten_gemm_kernels, use_cpp_gemm_template
-from .virtualized import ops, OpsValue, V
+from .virtualized import OpsValue, V, ops
 
 
 def create_int8_compensation(
@@ -35,7 +34,7 @@ def create_int8_compensation(
     x_scale: ir.TensorBox,
     x_zp: ir.TensorBox,
     w_scale: ir.TensorBox,
-) -> tuple[bool, ir.TensorBox, Optional[ir.TensorBox]]:
+) -> tuple[bool, ir.TensorBox, ir.TensorBox | None]:
     use_int8_fast_compensation_path = False
     weight_compens = None
     x_w_scale = None
@@ -79,10 +78,10 @@ def codegen_int8_gemm_template_compensation(
     use_int8_fast_compensation_path: bool,
     input: OpsValue,
     _weight_compo: OpsValue,
-    _x_scale: Optional[OpsValue],
-    _x_zp: Optional[OpsValue],
-    _w_scale: Optional[OpsValue],
-    _x_w_scale: Optional[OpsValue],
+    _x_scale: OpsValue | None,
+    _x_zp: OpsValue | None,
+    _w_scale: OpsValue | None,
+    _x_w_scale: OpsValue | None,
 ) -> OpsValue:
     if use_int8_fast_compensation_path:
         temp = ops.sub(
@@ -1296,7 +1295,7 @@ def register_onednn_fusion_ops():
                 x: TensorBox,
                 packed_w: TensorBox,
                 orig_w: TensorBox,
-                b: Optional[TensorBox],
+                b: TensorBox | None,
                 batch_size,
                 *,
                 layout=None,

@@ -9,7 +9,7 @@ Replace with real implementations when available in the new modular structure.
 
 class PluginManager:
     def __init__(self):
-        pass
+        self.plugins = {}
 
 
 class MemoryAwarePluginRouter:

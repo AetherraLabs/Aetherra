@@ -6,7 +6,6 @@ from functools import wraps
 
 from torch.ao.pruning.sparsifier.base_sparsifier import BaseSparsifier
 
-
 __all__ = ["BaseScheduler"]
 
 
@@ -151,7 +150,7 @@ class BaseScheduler:
             self.last_epoch += 1
             values = self.get_sl()
 
-        for i, data in enumerate(zip(self.sparsifier.groups, values)):
+        for i, data in enumerate(zip(self.sparsifier.groups, values, strict=False)):
             param_group, sl = data
             param_group["sparsity_level"] = sl
             self.print_sl(self.verbose, i, sl, epoch)
@@ -164,7 +163,6 @@ class BaseScheduler:
         n = len(self.sparsifier.groups)
         if not isinstance(var, (list, tuple)):
             return [var] * n
-        else:
-            if len(var) != n:
-                raise ValueError(f"Expected variable of length {n}, but got {len(var)}")
-            return list(var)  # We want the result to be in a list, not tuple
+        if len(var) != n:
+            raise ValueError(f"Expected variable of length {n}, but got {len(var)}")
+        return list(var)  # We want the result to be in a list, not tuple

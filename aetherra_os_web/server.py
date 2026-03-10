@@ -17,7 +17,7 @@ import random
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 # Third party imports
 import psutil
@@ -62,7 +62,7 @@ templates = Jinja2Templates(directory=templates_dir)
 # WebSocket connection manager
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: List[WebSocket] = []
+        self.active_connections: list[WebSocket] = []
         self.system_data = {}
         self.neural_data = {}
 
@@ -83,7 +83,7 @@ class ConnectionManager:
             # Silently ignore send errors (client likely disconnected)
             pass
 
-    async def broadcast(self, message: Dict[str, Any]):
+    async def broadcast(self, message: dict[str, Any]):
         """Broadcast message to all connected clients"""
         if not self.active_connections:
             return
@@ -115,7 +115,7 @@ class SystemMonitor:
         self.neural_activity = {}
         self.start_time = time.time()
 
-    def get_system_metrics(self) -> Dict[str, Any]:
+    def get_system_metrics(self) -> dict[str, Any]:
         """Get current system metrics"""
         try:
             # CPU metrics
@@ -186,7 +186,7 @@ class SystemMonitor:
             logger.error(f"Error getting system metrics: {e}")
             return {}
 
-    def get_neural_activity(self) -> Dict[str, Any]:
+    def get_neural_activity(self) -> dict[str, Any]:
         """Get neural network activity reflecting actual Aetherra engine state"""
         nodes = []
         connections = []
@@ -264,7 +264,7 @@ class SystemMonitor:
             "data_throughput": random.uniform(10, 100),  # MB/s
         }
 
-    async def get_aetherra_status(self) -> Dict[str, Any]:
+    async def get_aetherra_status(self) -> dict[str, Any]:
         """Get Aetherra engine status if available"""
         if not AETHERRA_AVAILABLE or aetherra_engine is None:
             return {

@@ -5,12 +5,11 @@ from torch.distributed.checkpoint.metadata import STATE_DICT_TYPE
 from . import _version
 from ._traverse import (
     OBJ_PATH,
-    set_element,
     STATE_DICT_ITEM,
+    set_element,
     traverse_state_dict,
     traverse_state_dict_v_2_3,
 )
-
 
 """
 TODO:

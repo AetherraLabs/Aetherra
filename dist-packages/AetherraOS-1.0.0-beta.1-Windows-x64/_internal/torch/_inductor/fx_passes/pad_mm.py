@@ -2,8 +2,8 @@ import functools
 import itertools
 import operator
 import typing
-from collections.abc import Sequence
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable, Sequence
+from typing import Any
 
 import torch
 import torch._inductor.runtime.runtime_utils
@@ -26,14 +26,13 @@ from torch.utils._mode_utils import no_dispatch
 
 from ...utils._triton import has_triton
 from ..pattern_matcher import (
-    fwd_only,
-    gen_register_replacement,
-    joint_fwd_bwd,
     Match,
     ReplaceFn,
     SearchFn,
+    fwd_only,
+    gen_register_replacement,
+    joint_fwd_bwd,
 )
-
 
 aten = torch.ops.aten
 
@@ -69,10 +68,9 @@ def get_alignment_size(x: Tensor) -> int:
 def get_alignment_size_dtype(dtype: torch.dtype) -> int:
     if dtype == torch.float16 or dtype == torch.half or dtype == torch.bfloat16:
         return 8
-    elif dtype == torch.float32 or dtype == torch.float:
+    if dtype == torch.float32 or dtype == torch.float:
         return 4
-    else:
-        return 0
+    return 0
 
 
 def check_device(a: Tensor, b: Tensor) -> bool:
@@ -83,12 +81,10 @@ def check_dtype(a: Tensor, b: Tensor) -> bool:
     return a.is_floating_point() and b.is_floating_point()
 
 
-def should_pad_common(
-    mat1: Tensor, mat2: Tensor, input: Optional[Tensor] = None
-) -> bool:
+def should_pad_common(mat1: Tensor, mat2: Tensor, input: Tensor | None = None) -> bool:
     # It's fine we have symbolic shapes or strides as long as they
     # have hints. Later, we will make sure we only pad non-symbolic dimensions.
-    def valid_shape_and_stride(t: Optional[Tensor]) -> bool:
+    def valid_shape_and_stride(t: Tensor | None) -> bool:
         if t is None:
             return True
 
@@ -96,7 +92,7 @@ def should_pad_common(
         for x in t.size():
             if isinstance(x, int):
                 continue
-            elif utils.is_symbolic(x):
+            if utils.is_symbolic(x):
                 if not x.node.has_hint():
                     return False
                 symbolic_cnt += 1
@@ -118,7 +114,7 @@ def should_pad_common(
     )
 
 
-def get_padded_length(x: Union[int, torch.SymInt], alignment_size: int) -> int:
+def get_padded_length(x: int | torch.SymInt, alignment_size: int) -> int:
     # we don't pad x if it is symbolic
     if isinstance(x, torch.SymInt) or alignment_size == 0 or x % alignment_size == 0:
         return 0
@@ -151,7 +147,7 @@ def should_pad_addmm(match: Match) -> bool:
 
 
 def pad_addmm(
-    input: Optional[Tensor],
+    input: Tensor | None,
     mat1: Tensor,
     mat2: Tensor,
     m_padded_length: int,
@@ -193,7 +189,7 @@ def pad_addmm(
 
 
 def addmm_replace(
-    input: Optional[Tensor],
+    input: Tensor | None,
     mat1: Tensor,
     mat2: Tensor,
     beta: float = 1.0,
@@ -273,7 +269,7 @@ def should_pad_bench_key(
     mat1: Tensor,
     mat2: Tensor,
     op: torch._ops.OpOverloadPacket,
-    input: Optional[Tensor] = None,
+    input: Tensor | None = None,
     is_base_time_key: bool = False,
 ) -> str:
     def tensor_key(t: Tensor) -> tuple[torch.Size, tuple[int, ...], torch.dtype]:
@@ -283,7 +279,7 @@ def should_pad_bench_key(
         None if mat1.dtype != torch.float32 else torch.backends.cuda.matmul.allow_tf32
     )
 
-    def fmt_pad(name: str) -> Optional[str]:
+    def fmt_pad(name: str) -> str | None:
         if is_base_time_key:
             return None
         return f"exclude_pad:{should_exclude_padding_time(match, name)}"
@@ -380,7 +376,7 @@ def should_pad_mm_bf16(dtype: torch.dtype, M: int, N: int, K: int) -> bool:
         and K > M
         and K > N
         and N % 2 == 1
-        and K >= large_k_threshold_to_pad
+        and large_k_threshold_to_pad <= K
         and torch.cuda.get_device_capability() < (9, 0)
     ):  # doesn't repro on h100s:
         return True
@@ -409,7 +405,7 @@ def _should_pad_bench(
     mat1: Tensor,
     mat2: Tensor,
     op: torch._ops.OpOverloadPacket,
-    input: Optional[Tensor] = None,
+    input: Tensor | None = None,
 ) -> bool:
     do_bench = get_do_bench()
 
@@ -437,7 +433,7 @@ def _should_pad_bench(
             return False
 
         def realize_symbols(
-            ds: Union[torch.Size, tuple[torch.SymInt, ...]],
+            ds: torch.Size | tuple[torch.SymInt, ...],
         ) -> list[int]:
             return [d if isinstance(d, int) else d.node.hint for d in ds]
 
@@ -477,12 +473,15 @@ def _should_pad_bench(
                 size_hints = realize_symbols(t.size())
                 stride_hint = realize_symbols(t.stride())
                 real_size = (
-                    sum((d - 1) * s for d, s in zip(size_hints, stride_hint)) + 1
+                    sum(
+                        (d - 1) * s
+                        for d, s in zip(size_hints, stride_hint, strict=False)
+                    )
+                    + 1
                 )
                 real_t = torch.randn(real_size, dtype=t.dtype, device=t.device)
                 return torch.as_strided(real_t, size_hints, stride_hint)
-            else:
-                return torch.randn_like(t)
+            return torch.randn_like(t)
 
         mat1 = realize_tensor(mat1)
         mat2 = realize_tensor(mat2)
@@ -667,13 +666,13 @@ def run_autoheuristic(
     ori_time: float,
     ori_time_key: str,
     key: str,
-) -> Optional[bool]:
+) -> bool | None:
     def feedback_fn(
         choice: str,
-    ) -> Optional[float]:
+    ) -> float | None:
         if choice == orig_choice:
             return do_bench(orig_bench_fn)
-        elif choice == pad_choice:
+        if choice == pad_choice:
             return do_bench(pad_bench_fn)
         return None
 
@@ -705,7 +704,7 @@ def run_autoheuristic(
     )
     choice = autoheuristic.get_choice()
     choice2should_pad = {orig_choice: False, pad_choice: True, "autotune": None}
-    ah_should_pad = choice2should_pad.get(choice, None)
+    ah_should_pad = choice2should_pad.get(choice)
 
     if torch._inductor.config.collect_autoheuristic(name):
         ah_ori_time = autoheuristic.get_collected_feedback(orig_choice)
@@ -741,8 +740,7 @@ def pad_mat1(
         if is_bmm:
             pad_arg.extend((0, 0))
         return aten.constant_pad_nd(mat1, pad_arg)
-    else:
-        return mat1
+    return mat1
 
 
 def pad_mat2(
@@ -754,8 +752,7 @@ def pad_mat2(
         if is_bmm:
             pad_arg.extend((0, 0))
         return aten.constant_pad_nd(mat2, pad_arg)
-    else:
-        return mat2
+    return mat2
 
 
 def pad_mm(

@@ -14,7 +14,6 @@ from typing import Any
 
 from .api import RequestQueue, TimerClient, TimerRequest, TimerServer
 
-
 __all__ = ["LocalTimerClient", "MultiprocessingRequestQueue", "LocalTimerServer"]
 
 logger = logging.getLogger(__name__)

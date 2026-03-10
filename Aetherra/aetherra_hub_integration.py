@@ -69,9 +69,7 @@ class AetherraHubClient:
     async def connect(self):
         """Establish connection to the Hub"""
         try:
-            self.session = aiohttp.ClientSession(
-                timeout=aiohttp.ClientTimeout(total=self.timeout)
-            )
+            self.session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self.timeout))
 
             # Test connection
             await self.health_check()
@@ -118,9 +116,7 @@ class AetherraHubClient:
             ) as response:
                 if response.status == 200:
                     results = await response.json()
-                    logger.info(
-                        f"🔍 Found {results.get('total', 0)} plugins matching '{query}'"
-                    )
+                    logger.info(f"🔍 Found {results.get('total', 0)} plugins matching '{query}'")
                     return results
                 else:
                     logger.error(f"❌ Plugin search failed: {response.status}")
@@ -140,17 +136,13 @@ class AetherraHubClient:
             await self.connect()
 
         try:
-            async with self.session.get(
-                f"{self.api_base}/plugins/featured"
-            ) as response:
+            async with self.session.get(f"{self.api_base}/plugins/featured") as response:
                 if response.status == 200:
                     featured = await response.json()
                     logger.info(f"⭐ Retrieved {len(featured)} featured plugins")
                     return featured
                 else:
-                    logger.error(
-                        f"❌ Featured plugins request failed: {response.status}"
-                    )
+                    logger.error(f"❌ Featured plugins request failed: {response.status}")
                     return []
 
         except Exception as e:
@@ -163,9 +155,7 @@ class AetherraHubClient:
             await self.connect()
 
         try:
-            async with self.session.get(
-                f"{self.api_base}/plugins/{plugin_id}"
-            ) as response:
+            async with self.session.get(f"{self.api_base}/plugins/{plugin_id}") as response:
                 if response.status == 200:
                     details = await response.json()
                     logger.info(f"📦 Retrieved details for plugin '{plugin_id}'")
@@ -181,9 +171,7 @@ class AetherraHubClient:
             logger.error(f"❌ Plugin details error: {e}")
             return None
 
-    async def download_plugin(
-        self, plugin_id: str, version: str = "latest"
-    ) -> Optional[bytes]:
+    async def download_plugin(self, plugin_id: str, version: str = "latest") -> Optional[bytes]:
         """Download a plugin package from the Hub"""
         if not self.connected:
             await self.connect()
@@ -196,9 +184,7 @@ class AetherraHubClient:
             async with self.session.get(download_url) as response:
                 if response.status == 200:
                     content = await response.read()
-                    logger.info(
-                        f"📥 Downloaded plugin '{plugin_id}' ({len(content)} bytes)"
-                    )
+                    logger.info(f"📥 Downloaded plugin '{plugin_id}' ({len(content)} bytes)")
                     return content
                 else:
                     logger.error(f"❌ Plugin download failed: {response.status}")
@@ -214,9 +200,7 @@ class AetherraHubClient:
             await self.connect()
 
         try:
-            async with self.session.get(
-                f"{self.api_base}/plugins/categories"
-            ) as response:
+            async with self.session.get(f"{self.api_base}/plugins/categories") as response:
                 if response.status == 200:
                     categories = await response.json()
                     return categories.get("categories", [])
@@ -388,9 +372,7 @@ class AetherraHubIntegration:
     async def get_featured_plugins(self) -> List[Dict[str, Any]]:
         """Get featured plugins (from cache or Hub)"""
         if self.hub_plugins_cache:
-            featured = [
-                p for p in self.hub_plugins_cache.values() if p.get("featured", False)
-            ]
+            featured = [p for p in self.hub_plugins_cache.values() if p.get("featured", False)]
             if featured:
                 return featured
 
@@ -525,9 +507,7 @@ class AetherraHubIntegration:
             "hub_url": self.hub_url,
             "local_plugins": len(self.local_plugins),
             "hub_plugins_cached": len(self.hub_plugins_cache),
-            "last_sync": self.last_sync_time.isoformat()
-            if self.last_sync_time
-            else None,
+            "last_sync": self.last_sync_time.isoformat() if self.last_sync_time else None,
         }
 
     async def shutdown(self):
@@ -550,9 +530,7 @@ async def get_hub_integration(
     return integration
 
 
-async def search_plugins(
-    query: str = "", category: Optional[str] = None
-) -> Dict[str, Any]:
+async def search_plugins(query: str = "", category: Optional[str] = None) -> Dict[str, Any]:
     """Quick plugin search function"""
     async with AetherraHubClient() as client:
         filters = {"category": category} if category else {}
@@ -581,9 +559,7 @@ if __name__ == "__main__":
 
                 # Test search
                 results = await integration.search_hub_plugins("memory")
-                print(
-                    f"Search results: {len(results.get('plugins', []))} plugins found"
-                )
+                print(f"Search results: {len(results.get('plugins', []))} plugins found")
 
         finally:
             await integration.shutdown()

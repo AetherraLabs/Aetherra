@@ -17,7 +17,6 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List
 
 
 @dataclass
@@ -25,9 +24,9 @@ class ValidationResult:
     """Result of directory validation"""
 
     is_valid: bool
-    errors: List[str]
-    warnings: List[str]
-    suggestions: List[str]
+    errors: list[str]
+    warnings: list[str]
+    suggestions: list[str]
     file_path: str
     recommended_location: str = ""
 
@@ -72,7 +71,7 @@ class AetherraDirectoryValidator:
             "misplaced_files": [],
         }
 
-    def _define_aetherra_patterns(self) -> List[ArchitecturalRule]:
+    def _define_aetherra_patterns(self) -> list[ArchitecturalRule]:
         """Define patterns that should be in Aetherra OS core"""
         return [
             ArchitecturalRule(
@@ -119,7 +118,7 @@ class AetherraDirectoryValidator:
             ),
         ]
 
-    def _define_lyrixa_patterns(self) -> List[ArchitecturalRule]:
+    def _define_lyrixa_patterns(self) -> list[ArchitecturalRule]:
         """Define patterns that should be in Lyrixa interface"""
         return [
             ArchitecturalRule(
@@ -159,7 +158,7 @@ class AetherraDirectoryValidator:
             ),
         ]
 
-    def _define_forbidden_patterns(self) -> List[tuple[str, str]]:
+    def _define_forbidden_patterns(self) -> list[tuple[str, str]]:
         """Define patterns that should never appear together"""
         return [
             ("aetherra_core imports lyrixa", "Core AI should not depend on interface"),
@@ -174,7 +173,7 @@ class AetherraDirectoryValidator:
             ),
         ]
 
-    def classify_file(self, file_path: Path) -> tuple[bool, bool, List[str]]:
+    def classify_file(self, file_path: Path) -> tuple[bool, bool, list[str]]:
         """
         Classify whether a file should be in Aetherra or Lyrixa
 
@@ -292,7 +291,7 @@ class AetherraDirectoryValidator:
             recommended_location=recommended_location,
         )
 
-    def scan_directory(self, directory: Path = None) -> Dict:
+    def scan_directory(self, directory: Path = None) -> dict:
         """Scan directory structure and validate all files"""
         if directory is None:
             directory = self.aetherra_root
@@ -426,7 +425,7 @@ class AetherraDirectoryValidator:
 
         return "\n".join(report)
 
-    def fix_misplaced_files(self, dry_run: bool = True) -> List[str]:
+    def fix_misplaced_files(self, dry_run: bool = True) -> list[str]:
         """Generate commands to fix misplaced files"""
         commands = []
 

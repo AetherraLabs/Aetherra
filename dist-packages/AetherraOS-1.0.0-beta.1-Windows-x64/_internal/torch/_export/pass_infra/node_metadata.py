@@ -1,6 +1,5 @@
 from typing import Any
 
-
 NodeMetadataValue = Any
 
 

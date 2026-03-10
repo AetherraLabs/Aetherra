@@ -18,7 +18,7 @@ import json
 import sqlite3
 import time
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 
 class MetaMemoryNode:
@@ -33,7 +33,7 @@ class MetaMemoryNode:
         content: str,
         meta_type: str,
         confidence: float = 0.8,
-        connections: List[str] = None,
+        connections: list[str] = None,
     ):
         self.node_id = node_id
         self.content = content
@@ -44,7 +44,7 @@ class MetaMemoryNode:
         self.last_accessed = time.time()
         self.access_count = 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "node_id": self.node_id,
             "content": self.content,
@@ -57,7 +57,7 @@ class MetaMemoryNode:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "MetaMemoryNode":
+    def from_dict(cls, data: dict[str, Any]) -> "MetaMemoryNode":
         node = cls(
             data["node_id"],
             data["content"],
@@ -142,7 +142,7 @@ class MetaMemoryIndex:
         conn.commit()
         conn.close()
 
-    def retrieve_by_type(self, meta_type: str) -> List[MetaMemoryNode]:
+    def retrieve_by_type(self, meta_type: str) -> list[MetaMemoryNode]:
         """Retrieve all nodes of a specific meta-type."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -174,7 +174,7 @@ class MetaMemoryIndex:
 
         return nodes
 
-    def search_content(self, query: str) -> List[MetaMemoryNode]:
+    def search_content(self, query: str) -> list[MetaMemoryNode]:
         """Search for nodes containing specific content."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -264,7 +264,7 @@ class MetaMemoryEnhancementSystem:
         for node in baseline_nodes:
             self.index.store_node(node)
 
-    def enhance_self_knowledge(self, domain: str) -> Dict[str, Any]:
+    def enhance_self_knowledge(self, domain: str) -> dict[str, Any]:
         """
         Enhance self-knowledge in a specific domain through deep introspection.
         """
@@ -272,16 +272,15 @@ class MetaMemoryEnhancementSystem:
 
         if domain == "capabilities":
             return self._enhance_capability_knowledge()
-        elif domain == "limitations":
+        if domain == "limitations":
             return self._enhance_limitation_knowledge()
-        elif domain == "patterns":
+        if domain == "patterns":
             return self._enhance_pattern_knowledge()
-        elif domain == "goals":
+        if domain == "goals":
             return self._enhance_goal_knowledge()
-        else:
-            return {"error": f"Unknown domain: {domain}"}
+        return {"error": f"Unknown domain: {domain}"}
 
-    def _enhance_capability_knowledge(self) -> Dict[str, Any]:
+    def _enhance_capability_knowledge(self) -> dict[str, Any]:
         """Enhance knowledge about system capabilities."""
         capabilities = [
             "Advanced natural language understanding and generation",
@@ -312,7 +311,7 @@ class MetaMemoryEnhancementSystem:
             "nodes": enhanced_nodes,
         }
 
-    def _enhance_limitation_knowledge(self) -> Dict[str, Any]:
+    def _enhance_limitation_knowledge(self) -> dict[str, Any]:
         """Enhance knowledge about system limitations."""
         limitations = [
             "Real-time learning requires careful integration with existing knowledge",
@@ -339,7 +338,7 @@ class MetaMemoryEnhancementSystem:
             "nodes": enhanced_nodes,
         }
 
-    def _enhance_pattern_knowledge(self) -> Dict[str, Any]:
+    def _enhance_pattern_knowledge(self) -> dict[str, Any]:
         """Enhance knowledge about cognitive patterns."""
         patterns = [
             "Iterative refinement through feedback loops",
@@ -364,7 +363,7 @@ class MetaMemoryEnhancementSystem:
             "nodes": enhanced_nodes,
         }
 
-    def _enhance_goal_knowledge(self) -> Dict[str, Any]:
+    def _enhance_goal_knowledge(self) -> dict[str, Any]:
         """Enhance knowledge about system goals and objectives."""
         goals = [
             "Maximize user value through intelligent assistance",
@@ -420,7 +419,7 @@ class MetaMemoryEnhancementSystem:
 
         return coverage
 
-    def generate_meta_cognitive_summary(self) -> Dict[str, Any]:
+    def generate_meta_cognitive_summary(self) -> dict[str, Any]:
         """Generate a comprehensive summary of meta-cognitive capabilities."""
         coverage = self.get_meta_memory_coverage()
 

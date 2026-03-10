@@ -3,9 +3,8 @@ import dataclasses
 import itertools
 import logging
 import re
-from collections.abc import Iterable, Sequence
-from typing import Any, Callable, Optional, TypeVar, Union
-from typing_extensions import Self
+from collections.abc import Callable, Iterable, Sequence
+from typing import Any, Self, TypeVar
 from unittest.mock import patch
 
 import sympy
@@ -14,19 +13,18 @@ import torch
 from torch.fx.experimental.symbolic_shapes import free_symbols, free_unbacked_symbols
 from torch.utils._ordered_set import OrderedSet
 
-from ..utils._sympy.symbol import make_symbol, SymT
+from ..utils._sympy.symbol import SymT, make_symbol
 from .codegen.common import index_prevent_reordering
 from .ops_handler import DefaultHandler
 from .utils import (
+    VarRanges,
     get_dtype_size,
     reduction_num_outputs,
     sympy_index_symbol,
     sympy_str,
     sympy_subs,
-    VarRanges,
 )
 from .virtualized import ReductionType, V
-
 
 T = TypeVar("T")
 
@@ -68,7 +66,7 @@ class MemoryDep(Dep):
     index: sympy.Expr
     var_names: tuple[sympy.Symbol, ...]
     size: tuple[sympy.Expr, ...]
-    mode: Optional[str] = None
+    mode: str | None = None
 
     def __repr__(self) -> str:
         maybe_mode = ""
@@ -80,7 +78,7 @@ class MemoryDep(Dep):
     def num_vars(self) -> int:
         return len(self.var_names)
 
-    def decide_loop_order_to_match(self, other: "MemoryDep") -> Optional[list[int]]:
+    def decide_loop_order_to_match(self, other: "MemoryDep") -> list[int] | None:
         """
         Can return None if not able to decide loop orders.
         """
@@ -190,6 +188,7 @@ class MemoryDep(Dep):
             zip(
                 new_reordered_var_names,
                 reindex([add_var(x) for x in new_simplified_sizes]),
+                strict=False,
             )
         )
         new_index = sympy_subs(sympy.expand(self.index), replacement)  # type: ignore[arg-type] # next PR
@@ -202,7 +201,7 @@ class MemoryDep(Dep):
     @property
     def ranges(self) -> dict[sympy.Symbol, sympy.Expr]:
         """{c0: 128, c1: 512, ...}"""
-        return dict(zip(self.var_names, self.size))
+        return dict(zip(self.var_names, self.size, strict=False))
 
     def simplify_with_ranges(self) -> "MemoryDep":
         return MemoryDep(
@@ -219,7 +218,7 @@ class MemoryDep(Dep):
         else:
             vars: OrderedSet[sympy.Basic] = OrderedSet(self.index.free_symbols)
             numel = sympy.S.One
-            for var, size in zip(self.var_names, self.size):
+            for var, size in zip(self.var_names, self.size, strict=False):
                 if var in vars:
                     numel = numel * size
         return numel  # type: ignore[return-value]
@@ -292,7 +291,7 @@ class MemoryDep(Dep):
 @dataclasses.dataclass(frozen=True)
 class StarDep(Dep):
     name: str
-    mode: Optional[str] = None
+    mode: str | None = None
 
     # depends on the entire buffer
     @property
@@ -377,8 +376,8 @@ class ReadWrites:
     reads: OrderedSet[Dep]
     writes: OrderedSet[Dep]
     index_exprs: OrderedSet[IndexExprDep]
-    range_vars: Optional[list[sympy.Expr]] = None
-    var_ranges: Optional[VarRanges] = None
+    range_vars: list[sympy.Expr] | None = None
+    var_ranges: VarRanges | None = None
 
     def rename(self, renames: dict[str, str]) -> "ReadWrites":
         return ReadWrites(
@@ -389,7 +388,7 @@ class ReadWrites:
             self.var_ranges,
         )
 
-    def with_read(self, dep: Union[Dep, OrderedSet[Dep]]) -> "ReadWrites":
+    def with_read(self, dep: Dep | OrderedSet[Dep]) -> "ReadWrites":
         assert isinstance(dep, (WeakDep, StarDep, OrderedSet))
         if not isinstance(dep, OrderedSet):
             dep = OrderedSet([dep])
@@ -452,7 +451,7 @@ class _RecordLoadStoreInner(V.MockHandler):  # type: ignore[name-defined]
 
     @staticmethod
     def drop_unused_symbols(
-        index: Union[int, sympy.Expr],
+        index: int | sympy.Expr,
         var_names: list[sympy.Expr],
         sizes: list[sympy.Expr],
     ) -> None:
@@ -486,7 +485,9 @@ class _RecordLoadStoreInner(V.MockHandler):  # type: ignore[name-defined]
         # assign new variables each dimension to deal with numbering mismatches
         # d0, d1, d2 could become d0, d2 -- which won't match d0, d1
         new_vars, add_var = var_builder(canonicalization_prefix())
-        replacement = dict(zip(index_vars, reindex([add_var(x) for x in new_sizes])))
+        replacement = dict(
+            zip(index_vars, reindex([add_var(x) for x in new_sizes]), strict=False)
+        )
         index = sympy_subs(sympy.expand(index), replacement)
 
         new_vars = [*new_vars.keys()]
@@ -499,7 +500,11 @@ class _RecordLoadStoreInner(V.MockHandler):  # type: ignore[name-defined]
     ) -> tuple[sympy.Expr, tuple[sympy.Symbol, ...], tuple[sympy.Expr, ...]]:
         if not self._should_normalize:
             sizes = [V.graph.sizevars.simplify(x) for x in self._var_ranges.values()]
-            var_names = [k for k, v in zip(self._var_ranges.keys(), sizes) if v != 1]
+            var_names = [
+                k
+                for k, v in zip(self._var_ranges.keys(), sizes, strict=False)
+                if v != 1
+            ]
             sizes = [v for v in sizes if v != 1]
 
             self.drop_unused_symbols(index, var_names, sizes)
@@ -522,7 +527,7 @@ class _RecordLoadStoreInner(V.MockHandler):  # type: ignore[name-defined]
         return self.load(name, sympy.Integer(index))
 
     def store(
-        self, name: str, index: sympy.Expr, value: str, mode: Optional[str] = None
+        self, name: str, index: sympy.Expr, value: str, mode: str | None = None
     ) -> str:
         self._writes.add(MemoryDep(name, *self.canonicalize(index), mode=mode))
         return f"store({name}, {sympy_str(index)}, {value}, {mode})"
@@ -530,7 +535,7 @@ class _RecordLoadStoreInner(V.MockHandler):  # type: ignore[name-defined]
     def store_reduction(self, name: str, index: sympy.Expr, value: str) -> str:
         return self.store(name, index, f"store_reduction({value})")
 
-    def index_expr(self, index: sympy.Expr, dtype: Optional[torch.dtype]) -> str:
+    def index_expr(self, index: sympy.Expr, dtype: torch.dtype | None) -> str:
         self._index_exprs.add(IndexExprDep(*self.canonicalize(index)))
         return f"index_expr({sympy_str(index)}, {dtype})"
 
@@ -541,8 +546,8 @@ class _RecordLoadStoreInner(V.MockHandler):  # type: ignore[name-defined]
         boundary_indices: T,
         indexing_dtype: torch.dtype,
         right: bool,
-        sorter: Optional[tuple[str, sympy.Expr]] = None,
-        sorter_indices: Optional[T] = None,
+        sorter: tuple[str, sympy.Expr] | None = None,
+        sorter_indices: T | None = None,
     ) -> None:
         """Records the names of the buffers that bucketize will read from."""
         self._reads.add(StarDep(boundaries[0]))
@@ -680,7 +685,7 @@ def extract_loop_body_with_args(
 
 def extract_input_node_reduction_ranges(
     input_node: "torch._inductor.ir.IRNode",
-) -> tuple[Optional[list[sympy.Expr]], Optional[list[sympy.Expr]]]:
+) -> tuple[list[sympy.Expr] | None, list[sympy.Expr] | None]:
     """
     Returns the size and reduction size of all inputs, if the sizes and reduction_sizes (if exist) are all the same.
     It's possible that a node has multiple inputs, some are Reduction nodes and others are Pointwise nodes.
@@ -690,8 +695,8 @@ def extract_input_node_reduction_ranges(
 
     from .ir import ComputedBuffer, ExternKernel, Loops
 
-    size: Optional[list[sympy.Expr]]
-    reduction_size: Optional[list[sympy.Expr]]
+    size: list[sympy.Expr] | None
+    reduction_size: list[sympy.Expr] | None
 
     if isinstance(input_node.get_defining_op(), ComputedBuffer):
         # Input node has already been realized. Return its size and reduction_size.
@@ -699,8 +704,7 @@ def extract_input_node_reduction_ranges(
         reduction_size = [*input_node.get_reduction_size()]
         if len(reduction_size) > 0:
             return (size, reduction_size)
-        else:
-            return (None, None)
+        return (None, None)
 
     if not isinstance(input_node.data.data, Loops):  # type: ignore[attr-defined]
         # Other IRNodes do not have reduction_ranges.
@@ -710,8 +714,8 @@ def extract_input_node_reduction_ranges(
     # The current method still uses reduction ranges from the dependent realized node, which is not ideal.
     # Is there a way to check whether there are permutations in between?
     reads = input_node.get_reads()
-    reduction_size: Optional[list[sympy.Expr]] = None
-    size: Optional[list[sympy.Expr]] = None
+    reduction_size: list[sympy.Expr] | None = None
+    size: list[sympy.Expr] | None = None
     while reduction_size is None and len(reads) > 0:
         seen: OrderedSet[str] = OrderedSet()
         new_reads: list[Dep] = []
@@ -740,8 +744,7 @@ def extract_input_node_reduction_ranges(
                 new_reads.extend(op.get_reads())
         if reads == new_reads:
             return (size, reduction_size)
-        else:
-            reads = OrderedSet(new_reads)
+        reads = OrderedSet(new_reads)
     return (size, reduction_size)
 
 
@@ -765,7 +768,7 @@ class FreeSymbolsOpsHandler(DefaultHandler):
     def indirect_indexing(
         self,
         index_var: Any,
-        size: Union[int, sympy.Expr],
+        size: int | sympy.Expr,
         check: bool = True,
         wrap_neg: bool = True,
     ) -> sympy.Symbol:
@@ -791,8 +794,8 @@ class FreeSymbolsOpsHandler(DefaultHandler):
         dtype: torch.dtype,
         src_dtype: torch.dtype,
         reduction_type: ReductionType,
-        value: Union[None, tuple[None, ...]],
-    ) -> Union[None, tuple[None, ...]]:
+        value: None | tuple[None, ...],
+    ) -> None | tuple[None, ...]:
         num_values = reduction_num_outputs(reduction_type)
         return (None,) * num_values if num_values > 1 else None
 
@@ -805,7 +808,7 @@ class FreeSymbolsOpsHandler(DefaultHandler):
 def extract_free_symbols(
     fn: Callable[..., Any],
     index: Sequence[sympy.Expr],
-    rindex: Optional[Sequence[sympy.Expr]] = None,
+    rindex: Sequence[sympy.Expr] | None = None,
     unbacked_only: bool = True,
 ) -> OrderedSet[sympy.Symbol]:
     from .ir import FlexibleLayout

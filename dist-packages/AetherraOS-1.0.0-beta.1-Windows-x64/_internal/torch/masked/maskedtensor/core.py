@@ -3,11 +3,11 @@
 
 import warnings
 from typing import Any
+
 from typing_extensions import TypeIs
 
 import torch
 from torch.overrides import get_default_nowrap_functions
-
 
 __all__ = [
     "MaskedTensor",
@@ -48,7 +48,7 @@ def _tensors_match(a, b, exact=True, rtol=1e-05, atol=1e-08):
         return _tensors_match(a.values(), b.values(), exact) and _tensors_match(
             a.indices(), b.indices(), exact
         )
-    elif a.layout == b.layout == torch.sparse_csr:
+    if a.layout == b.layout == torch.sparse_csr:
         return (
             _tensors_match(a.crow_indices(), b.crow_indices(), exact)
             and _tensors_match(a.col_indices(), b.col_indices(), exact)
@@ -71,16 +71,15 @@ def _map_mt_args_kwargs(args, kwargs, map_fn):
     def _helper(a, map_fn):
         if is_masked_tensor(a):
             return map_fn(a)
-        elif torch.is_tensor(a):
+        if torch.is_tensor(a):
             return a
-        elif isinstance(a, list):
+        if isinstance(a, list):
             a_impl, _ = _map_mt_args_kwargs(a, {}, map_fn)
             return a_impl
-        elif isinstance(a, tuple):
+        if isinstance(a, tuple):
             a_impl, _ = _map_mt_args_kwargs(a, {}, map_fn)
             return tuple(a_impl)
-        else:
-            return a
+        return a
 
     if kwargs is None:
         kwargs = {}
@@ -95,9 +94,13 @@ def _map_mt_args_kwargs(args, kwargs, map_fn):
 
 def _wrap_result(result_data, result_mask):
     if isinstance(result_data, list):
-        return [_wrap_result(r, m) for (r, m) in zip(result_data, result_mask)]
+        return [
+            _wrap_result(r, m) for (r, m) in zip(result_data, result_mask, strict=False)
+        ]
     if isinstance(result_data, tuple):
-        return tuple(_wrap_result(r, m) for (r, m) in zip(result_data, result_mask))
+        return tuple(
+            _wrap_result(r, m) for (r, m) in zip(result_data, result_mask, strict=False)
+        )
     if torch.is_tensor(result_data):
         return MaskedTensor(result_data, result_mask)
     # Expect result_data and result_mask to be Tensors only
@@ -113,18 +116,23 @@ def _masked_tensor_str(data, mask, formatter):
             formatter.format(d.item()) if isinstance(d.item(), float) else str(d.item())
             for d in data
         ]
-        max_len = max(8 if x[1] else len(x[0]) for x in zip(formatted_elements, ~mask))
+        max_len = max(
+            8 if x[1] else len(x[0])
+            for x in zip(formatted_elements, ~mask, strict=False)
+        )
         return (
             "["
             + ", ".join(
                 [
                     "--".rjust(max_len) if m else e
-                    for (e, m) in zip(formatted_elements, ~mask)
+                    for (e, m) in zip(formatted_elements, ~mask, strict=False)
                 ]
             )
             + "]"
         )
-    sub_strings = [_masked_tensor_str(d, m, formatter) for (d, m) in zip(data, mask)]
+    sub_strings = [
+        _masked_tensor_str(d, m, formatter) for (d, m) in zip(data, mask, strict=False)
+    ]
     sub_strings = ["\n".join(["  " + si for si in s.split("\n")]) for s in sub_strings]
     return "[\n" + ",\n".join(sub_strings) + "\n]"
 
@@ -296,8 +304,7 @@ class MaskedTensor(torch.Tensor):
             ret = func(*args, **kwargs)
             if func in get_default_nowrap_functions():
                 return ret
-            else:
-                return torch._tensor._convert(ret, cls)
+            return torch._tensor._convert(ret, cls)
 
     @classmethod
     def unary(cls, fn, data, mask):

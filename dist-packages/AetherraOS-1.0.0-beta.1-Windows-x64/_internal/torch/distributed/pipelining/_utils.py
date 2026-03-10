@@ -2,11 +2,9 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates
 import logging
 from dataclasses import dataclass
-from typing import Union
 
 import torch
 from torch import fx
-
 
 logger = logging.getLogger(__name__)
 
@@ -23,9 +21,8 @@ def flatten_args_detach(args):
             val = a.detach().requires_grad_(a.requires_grad)
             flat_detached_args.append(val)
             return val
-        else:
-            flat_detached_args.append(a)
-            return a
+        flat_detached_args.append(a)
+        return a
 
     new_args = fx.node.map_aggregate(
         args,
@@ -75,8 +72,8 @@ def validate_tensor_metadata(desc, expected, given):
 
 def validate_tensors_metadata(
     desc,
-    expected_tensors: Union[list[torch.Tensor], tuple[torch.Tensor, ...]],
-    actual_tensors: Union[list[torch.Tensor], tuple[torch.Tensor, ...]],
+    expected_tensors: list[torch.Tensor] | tuple[torch.Tensor, ...],
+    actual_tensors: list[torch.Tensor] | tuple[torch.Tensor, ...],
 ):
     if len(expected_tensors) != len(actual_tensors):
         raise PipeliningShapeError(

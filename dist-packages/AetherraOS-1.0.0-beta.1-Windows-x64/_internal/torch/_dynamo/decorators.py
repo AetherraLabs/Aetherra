@@ -8,8 +8,10 @@ This module provides decorators and utilities for controlling TorchDynamo's beha
 import functools
 import inspect
 import weakref
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Optional, TYPE_CHECKING, TypeVar, Union
+from typing import TYPE_CHECKING, Any, TypeVar
+
 from typing_extensions import ParamSpec
 
 import torch
@@ -19,11 +21,11 @@ from torch.utils._python_dispatch import is_traceable_wrapper_subclass
 from . import trace_rules, variables
 from .comptime import comptime
 from .eval_frame import (
-    _set_stance,
     DisableContext,
     DynamoStance,
-    innermost_fn,
     RunOnlyContext,
+    _set_stance,
+    innermost_fn,
     skip_code,
 )
 from .exc import IncorrectUsage
@@ -33,7 +35,6 @@ from .external_utils import (
     is_compiling,
 )
 from .utils import is_function
-
 
 if TYPE_CHECKING:
     from types import FunctionType
@@ -85,21 +86,20 @@ def disable(fn=None, recursive=True, *, reason=None, wrapping=True):
             assert callable(fn)
             return DisableContext(msg=reason, wrapping=wrapping)(fn)
         return DisableContext(msg=reason, wrapping=wrapping)
-    else:
 
-        def wrap(fn):
-            fn = innermost_fn(fn)
-            assert callable(fn)
+    def wrap(fn):
+        fn = innermost_fn(fn)
+        assert callable(fn)
 
-            nonrecursive_disable_wrapper = get_nonrecursive_disable_wrapper(fn)
-            nonrecursive_disable_wrapper._torchdynamo_disable = True  # type: ignore[attr-defined]
-            nonrecursive_disable_wrapper._torchdynamo_disable_msg = reason  # type: ignore[attr-defined]
-            nonrecursive_disable_wrapper._torchdynamo_orig_callable = fn  # type: ignore[attr-defined]
-            return nonrecursive_disable_wrapper
+        nonrecursive_disable_wrapper = get_nonrecursive_disable_wrapper(fn)
+        nonrecursive_disable_wrapper._torchdynamo_disable = True  # type: ignore[attr-defined]
+        nonrecursive_disable_wrapper._torchdynamo_disable_msg = reason  # type: ignore[attr-defined]
+        nonrecursive_disable_wrapper._torchdynamo_orig_callable = fn  # type: ignore[attr-defined]
+        return nonrecursive_disable_wrapper
 
-        if fn is None:
-            return wrap
-        return wrap(fn)
+    if fn is None:
+        return wrap
+    return wrap(fn)
 
 
 _nonrecursive_disable_wrapper_code = disable(lambda: None, recursive=False).__code__  # type: ignore[attr-defined]
@@ -692,7 +692,7 @@ def mark_static(t, index=None):
                 comptime.force_static(s)
         else:
             comptime.force_static(t.size(index))
-        return
+        return None
 
     if is_traceable_wrapper_subclass(t):
         # default behavior: mirror mark_static() on all inner tensors with same dim as t
@@ -813,7 +813,6 @@ _allowed_config_patches = (
 
 from . import config
 
-
 for name in _allowed_config_patches:
     assert hasattr(config, name), "nonexistent config"
 del config
@@ -836,7 +835,7 @@ def _patch_dynamo_config_check(changes: dict[str, Any]):
 # Unlike config.patch, we also need to accept tuple as input in order to
 # deal with context manager reconstruction.
 def patch_dynamo_config(
-    arg1: Optional[Union[str, dict[str, Any], tuple[tuple[str, Any], ...]]] = None,
+    arg1: str | dict[str, Any] | tuple[tuple[str, Any], ...] | None = None,
     arg2: Any = None,
     **kwargs: Any,
 ) -> DynamoConfigPatchProxy:

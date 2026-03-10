@@ -10,15 +10,13 @@ Fixes relative import issues in Aetherra plugins by converting them to absolute 
 This resolves the "attempted relative import with no known parent package" errors.
 """
 
-
 # Standard library imports
 import re
 import sys
 from pathlib import Path
-from typing import List
 
 
-def get_plugins_with_import_errors() -> List[Path]:
+def get_plugins_with_import_errors() -> list[Path]:
     """Get list of plugin files that have relative import errors."""
     project_root = Path(__file__).parent
     plugins_dir = project_root / "Aetherra" / "plugins"
@@ -55,25 +53,23 @@ def fix_relative_imports(file_path: Path) -> bool:
                 # Parent directory imports
                 if "core.enhanced_memory" in relative_path:
                     return "from Aetherra.aetherra_core.memory.enhanced_memory import"
-                elif "kernel.plugin_manager" in relative_path:
+                if "kernel.plugin_manager" in relative_path:
                     return "from Aetherra.aetherra_core.plugins.plugin_manager import"
-                elif "core." in relative_path:
+                if "core." in relative_path:
                     module_name = relative_path.replace("..core.", "")
                     return f"from Aetherra.aetherra_core.{module_name} import"
-                else:
-                    # Generic parent import - try to map to Aetherra structure
-                    clean_path = relative_path.lstrip(".")
-                    return f"from Aetherra.aetherra_core.{clean_path} import"
+                # Generic parent import - try to map to Aetherra structure
+                clean_path = relative_path.lstrip(".")
+                return f"from Aetherra.aetherra_core.{clean_path} import"
 
-            elif relative_path.startswith("."):
+            if relative_path.startswith("."):
                 # Same directory imports
                 if "agent_base" in relative_path:
                     return "from Aetherra.plugins.agent_adapters.agent_base import"
-                else:
-                    # Generic same directory import
-                    clean_path = relative_path.lstrip(".")
-                    parent_dir = file_path.parent.name
-                    return f"from Aetherra.plugins.{parent_dir}.{clean_path} import"
+                # Generic same directory import
+                clean_path = relative_path.lstrip(".")
+                parent_dir = file_path.parent.name
+                return f"from Aetherra.plugins.{parent_dir}.{clean_path} import"
 
             # If we can't determine the mapping, leave it unchanged
             return match.group(0)
@@ -108,9 +104,8 @@ except ImportError:
             file_path.write_text(new_content, encoding="utf-8")
             print(f"✅ Fixed imports in {file_path.name}")
             return True
-        else:
-            print(f"ℹ️  No changes needed in {file_path.name}")
-            return False
+        print(f"ℹ️  No changes needed in {file_path.name}")
+        return False
 
     except Exception as e:
         print(f"❌ Error fixing {file_path.name}: {e}")

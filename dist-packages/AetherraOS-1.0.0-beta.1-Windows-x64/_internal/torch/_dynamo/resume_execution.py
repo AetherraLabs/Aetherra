@@ -19,21 +19,20 @@ import copy
 import dataclasses
 import sys
 import types
-from typing import Any, cast, Optional
+from typing import Any, cast
 
 from .bytecode_transformation import (
+    Instruction,
     bytecode_from_template,
     create_call_function,
     create_instruction,
     create_jump_absolute,
     create_load_const,
-    Instruction,
     overwrite_instruction,
     transform_code_object,
     unique_id,
 )
 from .utils import ExactWeakKeyDictionary
-
 
 # taken from code.h in cpython
 CO_OPTIMIZED = 0x0001
@@ -105,7 +104,7 @@ def _try_except_tf_mode_template(dummy, stack_var_name):
 @dataclasses.dataclass(frozen=True)
 class ReenterWith:
     stack_index: int
-    target_values: Optional[tuple[Any, ...]] = None
+    target_values: tuple[Any, ...] | None = None
 
     def try_except_torch_function_mode(self, code_options, cleanup: list[Instruction]):
         """
@@ -238,7 +237,7 @@ class ResumeFunctionMetadata:
         default_factory=list
     )
     # map from new block target offsets to original block target offsets
-    block_target_offset_remap: Optional[dict[int, int]] = None
+    block_target_offset_remap: dict[int, int] | None = None
 
 
 def _filter_iter(l1, l2, cond):
@@ -499,7 +498,9 @@ class ContinueExecutionCache:
             # match the functions starting at the last instruction as we have added a prefix
             (new_target,) = (
                 i2
-                for i1, i2 in zip(reversed(instructions), reversed(meta.instructions))
+                for i1, i2 in zip(
+                    reversed(instructions), reversed(meta.instructions), strict=False
+                )
                 if i1 is target
             )
             assert target.opcode == new_target.opcode
@@ -534,7 +535,9 @@ class ContinueExecutionCache:
 
                     # offsets into prefix
                     for inst, o in zip(
-                        prefix_blocks, meta.prefix_block_target_offset_remap
+                        prefix_blocks,
+                        meta.prefix_block_target_offset_remap,
+                        strict=False,
                     ):
                         block_target_offset_remap[cast(int, inst.offset)] = o
 
@@ -550,11 +553,15 @@ class ContinueExecutionCache:
                         instructions, old_inst_offsets, lambda inst, o: inst.offset == o
                     )
                     new_targets = _filter_iter(
-                        zip(reversed(instructions), reversed(meta.instructions)),
+                        zip(
+                            reversed(instructions),
+                            reversed(meta.instructions),
+                            strict=False,
+                        ),
                         targets,
                         lambda v1, v2: v1[0] is v2,
                     )
-                    for new, old in zip(new_targets, targets):
+                    for new, old in zip(new_targets, targets, strict=False):
                         block_target_offset_remap[old.offset] = new[1].offset
 
                 transform_code_object(code, remap_block_offsets)

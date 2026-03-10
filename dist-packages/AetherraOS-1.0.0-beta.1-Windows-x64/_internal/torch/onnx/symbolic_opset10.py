@@ -18,11 +18,12 @@ from torch.onnx import (
     _type_utils,
     errors,
     symbolic_helper,
+)
+from torch.onnx import (
     symbolic_opset9 as opset9,
 )
 from torch.onnx._globals import GLOBALS
 from torch.onnx._internal import jit_utils, registration
-
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -81,16 +82,14 @@ _onnx_symbolic = functools.partial(registration.onnx_symbolic, opset=10)
 def div(g: jit_utils.GraphContext, self, other, *args):
     if len(args) == 0:
         return opset9.true_divide(g, self, other)
-    else:
-        return _div_rounding_mode(g, self, other, *args)
+    return _div_rounding_mode(g, self, other, *args)
 
 
 @symbolic_helper.parse_args("v", "v", "s")
 def _div_rounding_mode(g: jit_utils.GraphContext, self, other, rounding_mode):
     if rounding_mode == "floor":
         return _floor_divide(g, self, other)
-    else:
-        return opset9._div_rounding_mode(g, self, other, rounding_mode)
+    return opset9._div_rounding_mode(g, self, other, rounding_mode)
 
 
 @_onnx_symbolic("aten::_floor_divide")
@@ -98,20 +97,19 @@ def _floor_divide(g: jit_utils.GraphContext, self, other):
     if symbolic_helper._is_fp(self) or symbolic_helper._is_fp(other):
         out = opset9.true_divide(g, self, other)
         return g.op("Floor", out)
-    else:
-        # Integer division does trunction rounding
-        div = g.op("Div", self, other)
-        # Division is negative if: self < 0 != other < 0
-        zero = g.op("Constant", value_t=torch.tensor(0, dtype=torch.int64))
-        negative = g.op("Xor", g.op("Less", self, zero), g.op("Less", other, zero))
+    # Integer division does trunction rounding
+    div = g.op("Div", self, other)
+    # Division is negative if: self < 0 != other < 0
+    zero = g.op("Constant", value_t=torch.tensor(0, dtype=torch.int64))
+    negative = g.op("Xor", g.op("Less", self, zero), g.op("Less", other, zero))
 
-        # For negative numbers with self % other != 0, subtract 1 to round down instead of up
-        mod = g.op("Mod", self, other, fmod_i=0)
-        fixup_mask = g.op("And", negative, g.op("Not", g.op("Equal", mod, zero)))
+    # For negative numbers with self % other != 0, subtract 1 to round down instead of up
+    mod = g.op("Mod", self, other, fmod_i=0)
+    fixup_mask = g.op("And", negative, g.op("Not", g.op("Equal", mod, zero)))
 
-        one = g.op("Constant", value_t=torch.tensor(1, dtype=torch.int64))
-        fixup = g.op("Sub", div, one)
-        return g.op("Where", fixup_mask, fixup, div)
+    one = g.op("Constant", value_t=torch.tensor(1, dtype=torch.int64))
+    fixup = g.op("Sub", div, one)
+    return g.op("Where", fixup_mask, fixup, div)
 
 
 @_onnx_symbolic("aten::sort")
@@ -339,17 +337,16 @@ def _max_pool(name: str, expand_size: int, return_indices: bool):
                 ([0] * expand_size),
                 ([2 + i for i in range(expand_size)]),
             )
-        else:
-            return _aten_max_pool_onnx(
-                g,
-                input,
-                kernel_shape,
-                strides,
-                pads,
-                dilations,
-                ceil_mode,
-                expand_size + 1,
-            )
+        return _aten_max_pool_onnx(
+            g,
+            input,
+            kernel_shape,
+            strides,
+            pads,
+            dilations,
+            ceil_mode,
+            expand_size + 1,
+        )
 
     return symbolic_fn
 
@@ -668,11 +665,10 @@ def embedding_bag(
         # aten::embedding_bag returns a tuple of 4 elements: output, offset2bag, bag_size, max_indices.
         # But the last three outputs are not used in torch.nn.EmbeddingBag or torch.nn.functional.embedding_bag.
         return output, None, None, None
-    else:
-        return symbolic_helper._onnx_unsupported(
-            "embedding_bag with unknown shape of offsets for opset 10 is not supported. "
-            "please use opset 11 or higher."
-        )
+    return symbolic_helper._onnx_unsupported(
+        "embedding_bag with unknown shape of offsets for opset 10 is not supported. "
+        "please use opset 11 or higher."
+    )
 
 
 @_onnx_symbolic("aten::fake_quantize_per_tensor_affine")

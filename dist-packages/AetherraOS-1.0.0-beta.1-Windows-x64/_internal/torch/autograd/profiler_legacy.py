@@ -1,26 +1,26 @@
 # mypy: allow-untyped-defs
 import itertools
 import warnings
+
 from typing_extensions import deprecated
 
 import torch
 import torch.cuda
 from torch.autograd import (
-    _disable_profiler_legacy,
-    _enable_profiler_legacy,
     DeviceType,
     ProfilerConfig,
     ProfilerState,
+    _disable_profiler_legacy,
+    _enable_profiler_legacy,
 )
 from torch.autograd.profiler_util import (
+    MEMORY_EVENT_NAME,
+    EventList,
+    FunctionEvent,
     _filter_name,
     _filter_stack_entry,
     _rewrite_name,
-    EventList,
-    FunctionEvent,
-    MEMORY_EVENT_NAME,
 )
-
 
 __all__ = ["profile"]
 
@@ -83,7 +83,7 @@ class profile:
 
     def __enter__(self):
         if not self.enabled:
-            return
+            return None
         if self.entered:
             raise RuntimeError("Profiler context manager is not reentrant")
         self.entered = True
@@ -95,7 +95,7 @@ class profile:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if not self.enabled:
-            return
+            return None
         if self.use_cuda:
             torch.cuda.synchronize()
 
@@ -281,9 +281,9 @@ def _parse_legacy_records(thread_records):
                 num_open_handles_cpu = len(cpu_memory_allocs)
                 num_open_handles_cuda = len(cuda_memory_allocs)
                 assert num_open_handles_cpu == num_open_handles_cuda
-                for handle in cpu_memory_allocs.keys():
+                for handle in cpu_memory_allocs:
                     cpu_memory_allocs[handle] += record.cpu_memory_usage()
-                for handle in cuda_memory_allocs.keys():
+                for handle in cuda_memory_allocs:
                     cuda_memory_allocs[handle] += record.cuda_memory_usage()
                 if num_open_handles_cpu == 0:
                     # output event as a top-level memory event

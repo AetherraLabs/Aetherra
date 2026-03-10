@@ -1,20 +1,21 @@
+from collections.abc import Callable
 from copy import deepcopy
-from enum import auto, Enum
+from enum import Enum, auto
 from functools import partial, wraps
-from typing import Any, Callable, NamedTuple, Optional, TypeVar, Union
+from typing import Any, NamedTuple, TypeVar
+
 from typing_extensions import ParamSpec, TypeVarTuple, Unpack
 
 import torch
 import torch.distributed._tools.fake_collectives
 from torch import nn, optim
 from torch._guards import active_fake_mode
-from torch.distributed._tools.mem_tracker import _RefType, _State, MemTracker
+from torch.distributed._tools.mem_tracker import MemTracker, _RefType, _State
 from torch.distributed.fsdp import FSDPModule
 from torch.distributed.fsdp._fully_shard._fsdp_param_group import FSDPParamGroup
 from torch.utils._python_dispatch import TorchDispatchMode
 from torch.utils._pytree import tree_map_only
 from torch.utils.weak import WeakIdKeyDictionary, weakref
-
 
 _TOTAL_KEY = "Total"
 
@@ -157,7 +158,7 @@ class FSDPMemTracker(MemTracker):
     def __init__(
         self,
         mod: torch.nn.Module,
-        optm: Optional[torch.optim.Optimizer] = None,
+        optm: torch.optim.Optimizer | None = None,
     ) -> None:
         super().__init__()
         assert isinstance(mod, FSDPModule), "FSDPMemTracker only supports FSDP modules"
@@ -471,7 +472,7 @@ class FSDPMemTracker(MemTracker):
         tree_map_only(torch.Tensor, _track_inputs, inputs)
 
     def track_external(
-        self, *external: Union[nn.Module, optim.Optimizer, torch.Tensor]
+        self, *external: nn.Module | optim.Optimizer | torch.Tensor
     ) -> None:
         """This is no-op for ``FSDPMemTracker``"""
 

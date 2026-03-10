@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import functools
 import operator
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 
@@ -13,7 +13,6 @@ from torch._inductor.runtime.cache_dir_utils import (  # noqa: F401
     default_cache_dir,
     triton_cache_dir,
 )
-
 
 if TYPE_CHECKING:
     from collections.abc import Hashable

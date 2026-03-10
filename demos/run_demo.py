@@ -21,7 +21,7 @@ import argparse
 import json
 import os
 import sys
-from typing import Any, Dict
+from typing import Any
 
 try:
     # Third party imports
@@ -35,13 +35,13 @@ PORT = int(os.environ.get("AETHERRA_WEB_PORT", "3001") or 3001)
 BASE = f"http://{HOST}:{PORT}"
 
 
-def _get(url: str) -> Dict[str, Any]:
+def _get(url: str) -> dict[str, Any]:
     r = requests.get(url, timeout=10)
     r.raise_for_status()
     return r.json()
 
 
-def _post(url: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+def _post(url: str, payload: dict[str, Any]) -> dict[str, Any]:
     r = requests.post(url, json=payload, timeout=15)
     r.raise_for_status()
     return r.json()

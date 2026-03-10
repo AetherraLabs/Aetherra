@@ -2,11 +2,11 @@
 import copy
 import itertools
 import logging
-from typing import Callable, Optional, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from .hints import TRITON_MAX_BLOCK
 from .runtime_utils import red_text, triton_config_to_hashable
-
 
 if TYPE_CHECKING:
     from .triton_compat import triton
@@ -18,12 +18,11 @@ log = logging.getLogger(__name__)
 def get_field(config, name):
     if name == "num_warps":
         return config.num_warps
-    elif name == "num_stages":
+    if name == "num_stages":
         return config.num_stages
-    elif name == "waves_per_eu":
+    if name == "waves_per_eu":
         return config.kwargs.get(name, int(8 // config.num_warps))
-    else:
-        return config.kwargs.get(name, None)
+    return config.kwargs.get(name, None)
 
 
 def set_field(config, name, value):
@@ -127,13 +126,10 @@ class CoordescTuner:
             if name == "num_stages":
                 if inc:
                     return cur_val + 1
-                else:
-                    return cur_val - 1
-            else:
-                if inc:
-                    return cur_val * 2
-                else:
-                    return cur_val // 2
+                return cur_val - 1
+            if inc:
+                return cur_val * 2
+            return cur_val // 2
 
         out = []
         # increment loop
@@ -192,7 +188,7 @@ class CoordescTuner:
         for choice in choices:
             assert len(choice) == len(effective_fields)
             candidate_config = copy.deepcopy(best_config)
-            for new_val, field in zip(choice, effective_fields):
+            for new_val, field in zip(choice, effective_fields, strict=False):
                 set_field(candidate_config, field, new_val)
             cmp_res, candidate_timing = self.compare_config(
                 func, candidate_config, best_config, best_timing
@@ -234,7 +230,7 @@ class CoordescTuner:
         self,
         func: Callable[["triton.Config"], float],
         baseline_config: "triton.Config",
-        baseline_timing: Optional[float] = None,
+        baseline_timing: float | None = None,
     ) -> "triton.Config":
         if baseline_timing is None:
             baseline_timing = self.call_func(func, baseline_config)

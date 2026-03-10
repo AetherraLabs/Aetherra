@@ -12,10 +12,9 @@ import collections
 import contextlib
 import copy
 import re
-from typing import Callable, Optional, Union
+from collections.abc import Callable
 
 import torch
-
 
 np_str_obj_array_pattern = re.compile(r"[SaUO]")
 
@@ -56,7 +55,7 @@ def default_convert(data):
     elem_type = type(data)
     if isinstance(data, torch.Tensor):
         return data
-    elif (
+    if (
         elem_type.__module__ == "numpy"
         and elem_type.__name__ != "str_"
         and elem_type.__name__ != "string_"
@@ -68,7 +67,7 @@ def default_convert(data):
         ):
             return data
         return torch.as_tensor(data)
-    elif isinstance(data, collections.abc.Mapping):
+    if isinstance(data, collections.abc.Mapping):
         try:
             if isinstance(data, collections.abc.MutableMapping):
                 # The mapping type may have extra properties, so we can't just
@@ -77,8 +76,7 @@ def default_convert(data):
                 clone = copy.copy(data)
                 clone.update({key: default_convert(data[key]) for key in data})
                 return clone
-            else:
-                return elem_type({key: default_convert(data[key]) for key in data})
+            return elem_type({key: default_convert(data[key]) for key in data})
         except TypeError:
             # The mapping type may not support `copy()` / `update(mapping)`
             # or `__init__(iterable)`.
@@ -99,8 +97,7 @@ def default_convert(data):
                 for i, d in enumerate(data):
                     clone[i] = default_convert(d)
                 return clone
-            else:
-                return elem_type([default_convert(d) for d in data])
+            return elem_type([default_convert(d) for d in data])
         except TypeError:
             # The sequence type may not support `copy()` / `__setitem__(index, item)`
             # or `__init__(iterable)` (e.g., `range`).
@@ -118,7 +115,7 @@ default_collate_err_msg_format = (
 def collate(
     batch,
     *,
-    collate_fn_map: Optional[dict[Union[type, tuple[type, ...]], Callable]] = None,
+    collate_fn_map: dict[type | tuple[type, ...], Callable] | None = None,
 ):
     r"""
     General collate function that handles collection type of element within each batch.
@@ -176,15 +173,12 @@ def collate(
                     }
                 )
                 return clone
-            else:
-                return elem_type(
-                    {
-                        key: collate(
-                            [d[key] for d in batch], collate_fn_map=collate_fn_map
-                        )
-                        for key in elem
-                    }
-                )
+            return elem_type(
+                {
+                    key: collate([d[key] for d in batch], collate_fn_map=collate_fn_map)
+                    for key in elem
+                }
+            )
         except TypeError:
             # The mapping type may not support `copy()` / `update(mapping)`
             # or `__init__(iterable)`.
@@ -196,7 +190,7 @@ def collate(
         return elem_type(
             *(
                 collate(samples, collate_fn_map=collate_fn_map)
-                for samples in zip(*batch)
+                for samples in zip(*batch, strict=False)
             )
         )
     elif isinstance(elem, collections.abc.Sequence):
@@ -205,37 +199,37 @@ def collate(
         elem_size = len(next(it))
         if not all(len(elem) == elem_size for elem in it):
             raise RuntimeError("each element in list of batch should be of equal size")
-        transposed = list(zip(*batch))  # It may be accessed twice, so we use a list.
+        transposed = list(
+            zip(*batch, strict=False)
+        )  # It may be accessed twice, so we use a list.
 
         if isinstance(elem, tuple):
             return [
                 collate(samples, collate_fn_map=collate_fn_map)
                 for samples in transposed
             ]  # Backwards compatibility.
-        else:
-            try:
-                if isinstance(elem, collections.abc.MutableSequence):
-                    # The sequence type may have extra properties, so we can't just
-                    # use `type(data)(...)` to create the new sequence.
-                    # Create a clone and update it if the sequence type is mutable.
-                    clone = copy.copy(elem)  # type: ignore[arg-type]
-                    for i, samples in enumerate(transposed):
-                        clone[i] = collate(samples, collate_fn_map=collate_fn_map)
-                    return clone
-                else:
-                    return elem_type(
-                        [
-                            collate(samples, collate_fn_map=collate_fn_map)
-                            for samples in transposed
-                        ]
-                    )
-            except TypeError:
-                # The sequence type may not support `copy()` / `__setitem__(index, item)`
-                # or `__init__(iterable)` (e.g., `range`).
-                return [
+        try:
+            if isinstance(elem, collections.abc.MutableSequence):
+                # The sequence type may have extra properties, so we can't just
+                # use `type(data)(...)` to create the new sequence.
+                # Create a clone and update it if the sequence type is mutable.
+                clone = copy.copy(elem)  # type: ignore[arg-type]
+                for i, samples in enumerate(transposed):
+                    clone[i] = collate(samples, collate_fn_map=collate_fn_map)
+                return clone
+            return elem_type(
+                [
                     collate(samples, collate_fn_map=collate_fn_map)
                     for samples in transposed
                 ]
+            )
+        except TypeError:
+            # The sequence type may not support `copy()` / `__setitem__(index, item)`
+            # or `__init__(iterable)` (e.g., `range`).
+            return [
+                collate(samples, collate_fn_map=collate_fn_map)
+                for samples in transposed
+            ]
 
     raise TypeError(default_collate_err_msg_format.format(elem_type))
 
@@ -243,7 +237,7 @@ def collate(
 def collate_tensor_fn(
     batch,
     *,
-    collate_fn_map: Optional[dict[Union[type, tuple[type, ...]], Callable]] = None,
+    collate_fn_map: dict[type | tuple[type, ...], Callable] | None = None,
 ):
     elem = batch[0]
     out = None
@@ -275,7 +269,7 @@ def collate_tensor_fn(
 def collate_numpy_array_fn(
     batch,
     *,
-    collate_fn_map: Optional[dict[Union[type, tuple[type, ...]], Callable]] = None,
+    collate_fn_map: dict[type | tuple[type, ...], Callable] | None = None,
 ):
     elem = batch[0]
     # array of string classes and object
@@ -288,7 +282,7 @@ def collate_numpy_array_fn(
 def collate_numpy_scalar_fn(
     batch,
     *,
-    collate_fn_map: Optional[dict[Union[type, tuple[type, ...]], Callable]] = None,
+    collate_fn_map: dict[type | tuple[type, ...], Callable] | None = None,
 ):
     return torch.as_tensor(batch)
 
@@ -296,7 +290,7 @@ def collate_numpy_scalar_fn(
 def collate_float_fn(
     batch,
     *,
-    collate_fn_map: Optional[dict[Union[type, tuple[type, ...]], Callable]] = None,
+    collate_fn_map: dict[type | tuple[type, ...], Callable] | None = None,
 ):
     return torch.tensor(batch, dtype=torch.float64)
 
@@ -304,7 +298,7 @@ def collate_float_fn(
 def collate_int_fn(
     batch,
     *,
-    collate_fn_map: Optional[dict[Union[type, tuple[type, ...]], Callable]] = None,
+    collate_fn_map: dict[type | tuple[type, ...], Callable] | None = None,
 ):
     return torch.tensor(batch)
 
@@ -312,12 +306,12 @@ def collate_int_fn(
 def collate_str_fn(
     batch,
     *,
-    collate_fn_map: Optional[dict[Union[type, tuple[type, ...]], Callable]] = None,
+    collate_fn_map: dict[type | tuple[type, ...], Callable] | None = None,
 ):
     return batch
 
 
-default_collate_fn_map: dict[Union[type, tuple[type, ...]], Callable] = {
+default_collate_fn_map: dict[type | tuple[type, ...], Callable] = {
     torch.Tensor: collate_tensor_fn
 }
 with contextlib.suppress(ImportError):

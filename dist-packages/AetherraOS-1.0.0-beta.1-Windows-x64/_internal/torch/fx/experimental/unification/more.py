@@ -51,8 +51,7 @@ def reify_object(o, s):
     """
     if hasattr(o, "__slots__"):
         return _reify_object_slots(o, s)
-    else:
-        return _reify_object_dict(o, s)
+    return _reify_object_dict(o, s)
 
 
 def _reify_object_dict(o, s):
@@ -69,11 +68,10 @@ def _reify_object_slots(o, s):
     new_attrs = reify(attrs, s)
     if attrs == new_attrs:
         return o
-    else:
-        newobj = object.__new__(type(o))
-        for slot, attr in zip(o.__slots__, new_attrs):
-            setattr(newobj, slot, attr)
-        return newobj
+    newobj = object.__new__(type(o))
+    for slot, attr in zip(o.__slots__, new_attrs, strict=False):
+        setattr(newobj, slot, attr)
+    return newobj
 
 
 @dispatch(slice, dict)
@@ -112,8 +110,7 @@ def unify_object(u, v, s):
             [getattr(v, slot) for slot in v.__slots__],
             s,
         )
-    else:
-        return unify(u.__dict__, v.__dict__, s)
+    return unify(u.__dict__, v.__dict__, s)
 
 
 @dispatch(slice, slice, dict)

@@ -6,15 +6,14 @@ from typing import Any
 import sympy
 
 import torch
-from torch._inductor.select_algorithm import realize_inputs, SymbolicGridFn
+from torch._inductor.select_algorithm import SymbolicGridFn, realize_inputs
 from torch._inductor.utils import sympy_product
 from torch._inductor.virtualized import V
 
 from .. import config as inductor_config
 from ..codegen.wrapper import PythonWrapperCodegen
-from ..ir import _IntLike, Layout, TensorBox
-from ..utils import get_num_sms, TMA_DESCRIPTOR_SIZE
-
+from ..ir import Layout, TensorBox, _IntLike
+from ..utils import TMA_DESCRIPTOR_SIZE, get_num_sms
 
 log = logging.getLogger(__name__)
 
@@ -157,7 +156,7 @@ def mm_args(
         *b2, n, k2 = mat2.get_size()
     else:
         *b2, k2, n = mat2.get_size()
-    b = [V.graph.sizevars.guard_equals(a, b) for a, b in zip(b1, b2)]
+    b = [V.graph.sizevars.guard_equals(a, b) for a, b in zip(b1, b2, strict=False)]
     if use_4x2_dim:
         k2 = k2 * 2
     k = V.graph.sizevars.guard_equals(k1, k2)
@@ -228,8 +227,7 @@ def scale_mm_epilogue():
         mul_acc = V.ops.mul(acc, mul_scales)
         if bias is not None:
             return V.ops.add(mul_acc, bias)
-        else:
-            return mul_acc
+        return mul_acc
 
     return epilogue
 
@@ -294,7 +292,7 @@ def is_batch_stride_largest(mat1, mat2, layout) -> bool:
     """
     sizes = [mat1.get_size(), mat2.get_size(), layout.size]
     strides = [mat1.get_stride(), mat2.get_stride(), layout.stride]
-    for size, stride in zip(sizes, strides):
+    for size, stride in zip(sizes, strides, strict=False):
         assert len(size) == len(stride) == 3, "Expect 3D tensors"
         if stride[0] != sympy_product(size[1:]):
             return False

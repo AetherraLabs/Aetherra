@@ -8,7 +8,6 @@ from torch.distributed.tensor._op_schema import (
 )
 from torch.distributed.tensor._ops.utils import is_tensor_partial, register_op_strategy
 
-
 aten = torch.ops.aten
 
 

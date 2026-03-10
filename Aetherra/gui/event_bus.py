@@ -37,8 +37,7 @@ logger = logging.getLogger(__name__)
 
 
 class _ConnectableSignal(Protocol):
-    def connect(self, slot: Callable[..., Any]) -> Any:
-        ...
+    def connect(self, slot: Callable[..., Any]) -> Any: ...
 
 
 class EventPriority(Enum):
@@ -365,9 +364,7 @@ class EventFactory:
         )
 
     @staticmethod
-    def plugin_error(
-        plugin_id: str, error: str, source: str = "plugin_manager"
-    ) -> PluginEvent:
+    def plugin_error(plugin_id: str, error: str, source: str = "plugin_manager") -> PluginEvent:
         """Create a plugin error event."""
         return PluginEvent(
             id=str(uuid4()),

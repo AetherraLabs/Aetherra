@@ -6,7 +6,6 @@ import torch
 
 from .._utils import _dummy_type
 
-
 if not hasattr(torch._C, "_CudaStreamBase"):
     # Define dummy base classes
     torch._C.__dict__["_CUDAGraph"] = _dummy_type("_CUDAGraph")
@@ -307,7 +306,7 @@ def make_graphed_callables(
 
     flatten_sample_args = []
 
-    for c, args in zip(callables, sample_args):
+    for c, args in zip(callables, sample_args, strict=False):
         if isinstance(c, torch.nn.Module):
             assert (
                 len(c._backward_hooks) == 0
@@ -352,7 +351,7 @@ def make_graphed_callables(
     torch.cuda.synchronize()
     with torch.cuda.stream(torch.cuda.Stream()):
         for func, args, static_input_surface in zip(
-            callables, sample_args, per_callable_static_input_surfaces
+            callables, sample_args, per_callable_static_input_surfaces, strict=False
         ):
             grad_inputs, outputs, outputs_grad = None, None, None
             for _ in range(num_warmup_iters):
@@ -382,7 +381,7 @@ def make_graphed_callables(
     # Capture forward graphs
     per_callable_static_outputs = []
     per_callable_output_unflatten_spec = []
-    for func, args, fwd_graph in zip(callables, sample_args, fwd_graphs):
+    for func, args, fwd_graph in zip(callables, sample_args, fwd_graphs, strict=False):
         with torch.cuda.graph(fwd_graph, pool=mempool):
             outputs = func(*args)
 
@@ -397,6 +396,7 @@ def make_graphed_callables(
         reversed(per_callable_static_input_surfaces),
         reversed(per_callable_static_outputs),
         reversed(bwd_graphs),
+        strict=False,
     ):
         # For now, assumes all static_outputs require grad
         # assert all(o.requires_grad for o in static_outputs), "Outputs of graphed callables must require grad."
@@ -463,7 +463,7 @@ def make_graphed_callables(
             @torch.autograd.function.once_differentiable
             def backward(ctx, *grads):
                 assert len(grads) == len(static_grad_outputs)
-                for g, grad in zip(static_grad_outputs, grads):
+                for g, grad in zip(static_grad_outputs, grads, strict=False):
                     if g is not None:
                         # don't copy if autograd gods have been kind and the
                         # incoming grad is already in the right place
@@ -510,12 +510,13 @@ def make_graphed_callables(
                     # run the graph, otherwise run the original forward method
                     if func.training == graph_training_state:
                         return graphed(*user_args)
-                    else:
-                        return orig_fwd(*user_args)
+                    return orig_fwd(*user_args)
 
                 return new_fwd
 
-            func.forward = make_graphed_forward(func, func.training, graphed, func.forward)  # type: ignore[assignment]
+            func.forward = make_graphed_forward(
+                func, func.training, graphed, func.forward
+            )  # type: ignore[assignment]
             ret.append(func)
         else:
             ret.append(graphed)

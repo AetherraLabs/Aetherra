@@ -1,7 +1,8 @@
 # mypy: allow-untyped-defs
 import os
 import threading
-from queue import Empty as EmptyQueue, Queue
+from queue import Empty as EmptyQueue
+from queue import Queue
 
 from torch._lazy.device_context import get_device_context
 

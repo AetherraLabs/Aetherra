@@ -44,7 +44,7 @@ class AdapterBase:
 
     def start(self) -> None:
         """Start background data collection (override in subclass)."""
-        raise NotImplementedError(f"{self.name}.start() not implemented")
+        raise RuntimeError(f"{self.name}.start() is not implemented for this adapter")
 
     def stop(self) -> None:
         """Stop background collection (override if needed)."""

@@ -22,9 +22,7 @@ from .schemas.affect_snapshot import AffectSnapshot
 
 # Workspace not directly needed yet; reserved for future bias injection
 
-AFFECT_WINDOW_SEC = int(
-    os.getenv("AETHERRA_AFFECT_WINDOW_SEC", "900")
-)  # 15 min default
+AFFECT_WINDOW_SEC = int(os.getenv("AETHERRA_AFFECT_WINDOW_SEC", "900"))  # 15 min default
 
 
 class AffectEngine:

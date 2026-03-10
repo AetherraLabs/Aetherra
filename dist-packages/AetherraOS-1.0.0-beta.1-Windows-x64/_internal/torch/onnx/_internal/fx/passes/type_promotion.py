@@ -6,7 +6,8 @@ import abc
 import dataclasses
 import inspect
 import logging
-from typing import Any, Callable, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 import torch
 import torch._dispatch.python
@@ -16,14 +17,18 @@ import torch.fx.traceback as fx_traceback
 from torch import _prims_common, _refs
 from torch._prims_common import (
     ELEMENTWISE_TYPE_PROMOTION_KIND,
+)
+from torch._prims_common import (
     wrappers as _prims_common_wrappers,
 )
-from torch._refs import linalg as _linalg_refs, nn as _nn_refs, special as _special_refs
+from torch._refs import linalg as _linalg_refs
+from torch._refs import nn as _nn_refs
+from torch._refs import special as _special_refs
 from torch._refs.nn import functional as _functional_refs
 from torch.fx.experimental import proxy_tensor
-from torch.onnx._internal.fx import _pass, type_utils as fx_type_utils
+from torch.onnx._internal.fx import _pass
+from torch.onnx._internal.fx import type_utils as fx_type_utils
 from torch.utils import _python_dispatch, _pytree
-
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -227,7 +232,7 @@ class DivElementwiseTypePromotionRule(ElementwiseTypePromotionRule):
     def preview_type_promotion(
         self, args: tuple, kwargs: dict
     ) -> TypePromotionSnapshot:
-        rounding_mode = kwargs.get("rounding_mode", None)
+        rounding_mode = kwargs.get("rounding_mode")
         if rounding_mode is None:
             # true_divide
             self.promotion_kind = (
@@ -285,7 +290,7 @@ class ReductionTypePromotionRule(TypePromotionRule):
         )
         arg = args[0]
         assert isinstance(arg, torch.Tensor), f"{type(arg)=} is not torch.Tensor"
-        dtype: torch.dtype | None = kwargs.get("dtype", None)
+        dtype: torch.dtype | None = kwargs.get("dtype")
 
         computation_dtype, result_dtype = _prims_common.reduction_dtypes(
             arg, self.promotion_kind, dtype
@@ -349,7 +354,7 @@ class SumLikeReductionTypePromotionRule(ReductionTypePromotionRule):
         )
         arg = args[0]
         assert isinstance(arg, torch.Tensor), f"{type(arg)=} is not torch.Tensor"
-        dtype: torch.dtype | None = kwargs.get("dtype", None)
+        dtype: torch.dtype | None = kwargs.get("dtype")
         # The below logic is copied from `torch/_refs/__init__.py` reduction ops impl.
         if dtype is None:
             if _prims_common.is_boolean_dtype(
@@ -1473,7 +1478,7 @@ class _TypePromotionInterpreter(torch.fx.Interpreter):
                         )
                 logger.info("Argument %s is not promoted. Already %s.", fx_arg, dtype)
                 return fx_arg
-            elif fx_type_utils.is_torch_symbolic_type(arg_val):
+            if fx_type_utils.is_torch_symbolic_type(arg_val):
                 arg_type = type(arg_val)
                 equivalent_dtype = fx_type_utils.from_scalar_type_to_torch_dtype(
                     arg_type

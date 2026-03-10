@@ -4,7 +4,7 @@ import itertools
 import logging
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 from unittest.mock import patch
 
 from ...autotune_process import TensorMeta
@@ -16,7 +16,6 @@ from .rocm_benchmark_request import ROCmBenchmarkRequest
 from .rocm_kernel import ROCmTemplateCaller, ROCmTemplateKernel
 from .rocm_template_buffer import ROCmTemplateBuffer
 from .rocm_utils import DTYPE_TO_ROCM_TYPE
-
 
 log = logging.getLogger(__name__)
 
@@ -37,7 +36,7 @@ class ROCmTemplate(KernelTemplate):
         name: str,
         input_nodes: list[Buffer],
         layout: Layout,
-        input_reorder: Optional[list[int]] = None,
+        input_reorder: list[int] | None = None,
     ) -> None:
         """
 
@@ -122,7 +121,7 @@ class ROCmTemplate(KernelTemplate):
 
         def make_kernel_render(
             template_node: ROCmTemplateBuffer,
-            epilogue_nodes: Optional[Sequence[IRNode]] = None,
+            epilogue_nodes: Sequence[IRNode] | None = None,
         ):
             kernel = ROCmTemplateKernel(
                 kernel_name="KERNEL_NAME",

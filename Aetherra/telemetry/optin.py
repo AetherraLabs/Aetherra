@@ -110,9 +110,7 @@ class Telemetry:
             "event": event,
             "ts": int(time.time()),
             "props": {
-                k: v
-                for k, v in (props or {}).items()
-                if k not in ("content", "prompt", "message")
+                k: v for k, v in (props or {}).items() if k not in ("content", "prompt", "message")
             },
         }
         # Optional DP: add Laplace noise to numeric properties and drop IDs

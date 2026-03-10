@@ -18,18 +18,16 @@ from __future__ import annotations
 
 # Standard library imports
 import datetime as _dt
-import io
 import os
 import re
 import sys
-from typing import Dict, List
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 DOCS_DIR = os.path.join(ROOT, "docs")
 OUT_FILE = os.path.join(DOCS_DIR, "SYSTEM_INDEX.md")
 
 
-DOCS: List[tuple[str, str]] = [
+DOCS: list[tuple[str, str]] = [
     ("Aether Script Language System", "Aether_Script_Language_System.md"),
     ("Aetherra Kernel System", "AETHERRA_KERNEL_SYSTEM.md"),
     (
@@ -46,7 +44,7 @@ DOCS: List[tuple[str, str]] = [
 ]
 
 
-FALLBACK_PURPOSE: Dict[str, str] = {
+FALLBACK_PURPOSE: dict[str, str] = {
     "Aether Script Language System": "Grammar, execution rules, policies, and signing/verification for `.aether`.",
     "Aetherra Kernel System": "Kernel runtime loop, service registry, launcher phases, control-plane, backpressure, metrics.",
     "Aetherra Artificial Intelligence System": "AetherraEngine (reasoning, memory integration, task execution), developer AI APIs, evaluation hooks.",
@@ -60,19 +58,19 @@ FALLBACK_PURPOSE: Dict[str, str] = {
 }
 
 # Optional phases and dependencies hints. Fill in as known; omitted items render nothing.
-PHASES: Dict[str, str] = {
+PHASES: dict[str, str] = {
     # Example: "2/4" → shown as "(Phase 2 of 4)"
     # Provide one as requested example:
     "Aetherra Memory System": "2/4",
 }
 
-DEPENDENCIES: Dict[str, str] = {
+DEPENDENCIES: dict[str, str] = {
     "Aetherra Kernel System": "required by all",
     "Aetherra Memory System": "required by Lyrixa, AI System, Agents",
     "Aetherra Security System": "hooks into Kernel and Memory",
 }
 
-FOUNDATIONAL_FILES: List[tuple[str, List[str]]] = [
+FOUNDATIONAL_FILES: list[tuple[str, list[str]]] = [
     (
         "Aetherra Manifesto",
         [
@@ -106,8 +104,8 @@ def _rel_from_docs(abs_path: str) -> str:
     return os.path.relpath(abs_path, DOCS_DIR).replace("\\", "/")
 
 
-def find_foundational_docs() -> List[tuple[str, str]]:
-    found: List[tuple[str, str]] = []
+def find_foundational_docs() -> list[tuple[str, str]]:
+    found: list[tuple[str, str]] = []
     for title, candidates in FOUNDATIONAL_FILES:
         for p in candidates:
             if os.path.exists(p):
@@ -118,7 +116,7 @@ def find_foundational_docs() -> List[tuple[str, str]]:
 
 def _read_text(path: str) -> str:
     try:
-        with io.open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             return f.read()
     except Exception:
         return ""
@@ -174,7 +172,7 @@ def extract_status(text: str) -> tuple[str, str]:
 
 def generate() -> str:
     today = _dt.date.today().isoformat()
-    lines: List[str] = []
+    lines: list[str] = []
     lines.append("# Aetherra System Index")
     lines.append("")
     lines.append(f"Last updated: {today}")
@@ -245,10 +243,10 @@ def generate() -> str:
     return "\n".join(lines)
 
 
-def main(argv: List[str]) -> int:
+def main(argv: list[str]) -> int:
     out = generate()
     os.makedirs(DOCS_DIR, exist_ok=True)
-    with io.open(OUT_FILE, "w", encoding="utf-8", newline="\n") as f:
+    with open(OUT_FILE, "w", encoding="utf-8", newline="\n") as f:
         f.write(out)
     print(f"[OK] Wrote {OUT_FILE}")
     return 0

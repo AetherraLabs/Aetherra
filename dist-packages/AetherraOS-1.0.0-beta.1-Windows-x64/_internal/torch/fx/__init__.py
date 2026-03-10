@@ -88,17 +88,16 @@ from torch.fx import immutable_collections
 from torch.fx._symbolic_trace import (  # noqa: F401
     PH,
     ProxyableClassMeta,
-    symbolic_trace,
     Tracer,
+    symbolic_trace,
     wrap,
 )
 from torch.fx.graph import CodeGen, Graph  # noqa: F401
 from torch.fx.graph_module import GraphModule
 from torch.fx.interpreter import Interpreter, Transformer
-from torch.fx.node import has_side_effect, map_arg, Node
+from torch.fx.node import Node, has_side_effect, map_arg
 from torch.fx.proxy import Proxy
 from torch.fx.subgraph_rewriter import replace_pattern
-
 
 __all__ = [
     "symbolic_trace",

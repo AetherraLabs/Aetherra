@@ -16,7 +16,6 @@ from .api import (
 )
 from .metadata import ShardMetadata  # noqa: F401
 
-
 if TYPE_CHECKING:
     from torch.distributed._shard.sharding_spec import ShardingSpec
 else:

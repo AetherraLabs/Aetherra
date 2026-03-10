@@ -2,7 +2,8 @@
 # mypy: allow-untyped-defs
 import os
 import warnings
-from typing import Any, cast, Optional, Union
+from typing import Any, cast
+
 from typing_extensions import deprecated
 
 import torch
@@ -17,7 +18,6 @@ from .planner import LoadPlan, LoadPlanner
 from .storage import StorageReader
 from .utils import _api_bc_check, _DistWrapper, _profile
 
-
 __all__ = ["load_state_dict", "load"]
 
 
@@ -29,10 +29,10 @@ __all__ = ["load_state_dict", "load"]
 def load_state_dict(
     state_dict: dict[str, Any],
     storage_reader: StorageReader,
-    process_group: Optional[dist.ProcessGroup] = None,
+    process_group: dist.ProcessGroup | None = None,
     coordinator_rank: int = 0,
     no_dist: bool = False,
-    planner: Optional[LoadPlanner] = None,
+    planner: LoadPlanner | None = None,
 ) -> None:
     """This method is deprecated. Please switch to 'load'."""
     storage_reader.reset()
@@ -53,10 +53,10 @@ def load_state_dict(
 def load(
     state_dict: dict[str, Any],
     *,
-    checkpoint_id: Union[str, os.PathLike, None] = None,
-    storage_reader: Optional[StorageReader] = None,
-    planner: Optional[LoadPlanner] = None,
-    process_group: Optional[dist.ProcessGroup] = None,
+    checkpoint_id: str | os.PathLike | None = None,
+    storage_reader: StorageReader | None = None,
+    planner: LoadPlanner | None = None,
+    process_group: dist.ProcessGroup | None = None,
     no_dist: bool = False,
 ) -> None:
     """
@@ -197,10 +197,10 @@ def load(
 def _load_state_dict(
     state_dict: dict[str, Any],
     storage_reader: StorageReader,
-    process_group: Optional[dist.ProcessGroup] = None,
+    process_group: dist.ProcessGroup | None = None,
     coordinator_rank: int = 0,
     no_dist: bool = False,
-    planner: Optional[LoadPlanner] = None,
+    planner: LoadPlanner | None = None,
 ) -> None:
     torch._C._log_api_usage_once("torch.distributed.checkpoint.load_state_dict")
 
@@ -240,17 +240,17 @@ def _load_state_dict(
         all_reads = storage_reader.read_data(final_local_plan, planner)
 
         all_reads.wait()
-        return None
+        return
 
     _ = distW.all_gather("read", read_data)
 
 
 def _load_state_dict_from_keys(
-    keys: Optional[Union[set[str], str]] = None,
+    keys: set[str] | str | None = None,
     *,
-    checkpoint_id: Union[str, os.PathLike, None] = None,
-    storage_reader: Optional[StorageReader] = None,
-    process_group: Optional[dist.ProcessGroup] = None,
+    checkpoint_id: str | os.PathLike | None = None,
+    storage_reader: StorageReader | None = None,
+    process_group: dist.ProcessGroup | None = None,
 ) -> dict[str, Any]:
     """
     Load only the specified keys from the checkpoint, if no keys are specified, the entire

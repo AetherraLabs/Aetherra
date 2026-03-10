@@ -2,7 +2,6 @@
 
 from .core import MaskedTensor
 
-
 __all__ = [
     "as_masked_tensor",
     "masked_tensor",

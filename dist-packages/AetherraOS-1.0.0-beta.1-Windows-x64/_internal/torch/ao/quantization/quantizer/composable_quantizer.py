@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 
 from .quantizer import QuantizationAnnotation, Quantizer
 
-
 if TYPE_CHECKING:
     import torch
     from torch.fx import Node
@@ -57,8 +56,7 @@ class ComposableQuantizer(Quantizer):
                     raise RuntimeError(
                         f"Quantizer {quantizer.__class__.__name__} has changed annotations on node {n}"
                     )
-                else:
-                    self._graph_annotations[n] = n.meta["quantization_annotation"]
+                self._graph_annotations[n] = n.meta["quantization_annotation"]
             else:
                 if n in self._graph_annotations:
                     raise RuntimeError(

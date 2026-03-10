@@ -6,10 +6,10 @@ import logging
 import types
 import weakref
 from abc import ABC, abstractmethod
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from dataclasses import dataclass
-from enum import auto, Enum
-from typing import Any, Callable, Optional, Protocol, Union
+from enum import Enum, auto
+from typing import Any, Protocol
 
 import torch
 import torch.distributed as dist
@@ -17,10 +17,9 @@ import torch.distributed._functional_collectives as ft_c
 import torch.nn.functional as F
 from torch import nn
 from torch.distributed.device_mesh import DeviceMesh
-from torch.distributed.tensor import distribute_module, DTensor, Replicate, Shard
+from torch.distributed.tensor import DTensor, Replicate, Shard, distribute_module
 from torch.distributed.tensor.parallel.style import ParallelStyle
 from torch.overrides import TorchFunctionMode
-
 
 __all__ = ["context_parallel", "set_rotate_method"]
 
@@ -78,8 +77,7 @@ def _is_causal_behavior(
     source_rank = (rank - i) % world_size
     if source_rank < rank or _cp_options.enable_load_balance:
         return _CausalBehavior.NOT_IS_CAUSAL
-    else:
-        return _CausalBehavior.SKIP
+    return _CausalBehavior.SKIP
 
 
 def _maybe_wait(tensor: torch.Tensor) -> torch.Tensor:
@@ -122,8 +120,8 @@ class _SDPAMerger:
 
     def __init__(self, convert_to_f32: bool, seq_dim: int):
         self._seq_dim = seq_dim
-        self._out: Optional[torch.Tensor] = None
-        self._lse: Optional[torch.Tensor] = None
+        self._out: torch.Tensor | None = None
+        self._lse: torch.Tensor | None = None
         self._convert_to_f32 = convert_to_f32
         self._out_dtype = torch.float32
         self._lse_dtype = torch.float32
@@ -202,7 +200,7 @@ def _scaled_dot_product_ring_flash_attention(
     is_causal: bool = False,
     return_debug_mask: bool = False,
     *,
-    scale: Optional[float] = None,
+    scale: float | None = None,
 ) -> tuple[torch.Tensor, ...]:
     if return_debug_mask:
         raise NotImplementedError("return_debug_mask is not supported yet")
@@ -226,12 +224,12 @@ def _scaled_dot_product_ring_efficient_attention(
     query: torch.Tensor,
     key: torch.Tensor,
     value: torch.Tensor,
-    attn_bias: Optional[torch.Tensor] = None,
+    attn_bias: torch.Tensor | None = None,
     compute_log_sumexp: bool = True,
     dropout_p: float = 0.0,
     is_causal: bool = False,
     *,
-    scale: Optional[float] = None,
+    scale: float | None = None,
 ) -> tuple[torch.Tensor, ...]:
     if attn_bias is not None:
         raise NotImplementedError("attn_bias is not supported yet")
@@ -261,13 +259,13 @@ def _scaled_dot_product_ring_cudnn_attention(
     query: torch.Tensor,
     key: torch.Tensor,
     value: torch.Tensor,
-    attn_bias: Optional[torch.Tensor] = None,
+    attn_bias: torch.Tensor | None = None,
     compute_log_sumexp: bool = True,
     dropout_p: float = 0.0,
     is_causal: bool = False,
     return_debug_mask: bool = False,
     *,
-    scale: Optional[float] = None,
+    scale: float | None = None,
 ) -> tuple[torch.Tensor, ...]:
     if attn_bias is not None:
         raise NotImplementedError("attn_bias is not supported yet")
@@ -320,7 +318,7 @@ class _AllToAllRotater(_RingRotater):
     def __init__(self, pg: dist.ProcessGroup, seq_dim: int) -> None:
         self._pg = pg
         self._seq_dim = seq_dim
-        self._buffer: Optional[torch.Tensor] = None
+        self._buffer: torch.Tensor | None = None
 
     def exchange_buffers(self, curr_buffer: torch.Tensor) -> None:
         curr_buffer = curr_buffer.contiguous()
@@ -342,7 +340,7 @@ class _AllGatherRotater(_RingRotater):
     def __init__(self, pg: dist.ProcessGroup, seq_dim: int) -> None:
         self._pg = pg
         self._seq_dim = seq_dim
-        self._aggregated_buffer: Optional[torch.Tensor] = None
+        self._aggregated_buffer: torch.Tensor | None = None
         self._idx = 0
 
     def exchange_buffers(self, curr_buffer: torch.Tensor) -> None:
@@ -363,17 +361,16 @@ class _AllGatherRotater(_RingRotater):
 
 
 def _create_rotater(
-    pg: dist.ProcessGroup, seq_dim: int, method: Optional[_RotateMethod] = None
+    pg: dist.ProcessGroup, seq_dim: int, method: _RotateMethod | None = None
 ) -> _RingRotater:
     if method is None:
         method = _cp_options.rotate_method
 
     if method == _RotateMethod.ALL_TO_ALL:
         return _AllToAllRotater(pg, seq_dim)
-    elif method == _RotateMethod.ALL_GATHER:
+    if method == _RotateMethod.ALL_GATHER:
         return _AllGatherRotater(pg, seq_dim)
-    else:
-        raise NotImplementedError(f"Unkonwn method {method}")
+    raise NotImplementedError(f"Unkonwn method {method}")
 
 
 def _ring_rotate(
@@ -481,7 +478,7 @@ def _templated_ring_attention(
         raise RuntimeError("Load balancing requires `is_causal=True`.")
 
     if isinstance(mesh, dist.ProcessGroup):
-        pg: Union[dist.ProcessGroup, list[dist.ProcessGroup]] = mesh
+        pg: dist.ProcessGroup | list[dist.ProcessGroup] = mesh
     else:
         pg = mesh.get_group()
     assert isinstance(pg, dist.ProcessGroup), "process group must be single dimension"
@@ -835,7 +832,7 @@ def _scaled_dot_product_ring_flash_attention_backward(
     philox_seed: torch.Tensor,
     philox_offset: torch.Tensor,
     *,
-    scale: Optional[float] = None,
+    scale: float | None = None,
 ) -> tuple[torch.Tensor, ...]:
     seq_dim = 2
     return _templated_ring_attention_backward(
@@ -876,7 +873,7 @@ def _scaled_dot_product_ring_efficient_attention_backward(
     grad_input_mask: tuple[bool, ...],
     is_causal: bool = False,
     *,
-    scale: Optional[float] = None,
+    scale: float | None = None,
 ) -> tuple[torch.Tensor, ...]:
     seq_dim = 2
     return _templated_ring_attention_backward(
@@ -918,7 +915,7 @@ def _scaled_dot_product_ring_cudnn_attention_backward(
     dropout_p: float,
     is_causal: bool,
     *,
-    scale: Optional[float] = None,
+    scale: float | None = None,
 ) -> tuple[torch.Tensor, ...]:
     seq_dim = 2
     return _templated_ring_attention_backward(
@@ -962,8 +959,8 @@ def _distribute_function(
     fn: Callable,
     fn_module: types.ModuleType,
     device_mesh: DeviceMesh,
-    input_fn: Optional[Callable] = None,
-    output_fn: Optional[Callable] = None,
+    input_fn: Callable | None = None,
+    output_fn: Callable | None = None,
 ) -> None:
     """
     ``distribute_function`` is an experimental API that allows users to "distribute"
@@ -993,7 +990,7 @@ def _distribute_function(
     """
 
     def wrapper(
-        target_fn: Callable, input_fn: Optional[Callable], output_fn: Optional[Callable]
+        target_fn: Callable, input_fn: Callable | None, output_fn: Callable | None
     ) -> Callable:
         def inner_fn(*args: tuple[Any, ...], **kwargs: dict[str, Any]) -> Any:
             if input_fn is not None:
@@ -1081,9 +1078,9 @@ class _AttentionContextParallel(ParallelStyle):
     def _input_fn(
         cls,
         module: nn.Module,
-        inputs: tuple[Union[torch.Tensor, int, float], ...],
+        inputs: tuple[torch.Tensor | int | float, ...],
         device_mesh: DeviceMesh,
-    ) -> tuple[Union[torch.Tensor, int, float], ...]:
+    ) -> tuple[torch.Tensor | int | float, ...]:
         # TODO(d4l3k); this should be Shard(2), need to fix Linear layer rules
         placement = [Replicate()]
 
@@ -1115,11 +1112,9 @@ class _AttentionContextParallel(ParallelStyle):
     def _output_fn(
         cls,
         module: nn.Module,
-        outputs: Union[torch.Tensor, tuple[Union[torch.Tensor, int, float], ...]],
+        outputs: torch.Tensor | tuple[torch.Tensor | int | float, ...],
         device_mesh: DeviceMesh,
-    ) -> Union[
-        Union[torch.Tensor, int, float], tuple[Union[torch.Tensor, int, float], ...]
-    ]:
+    ) -> torch.Tensor | int | float | tuple[torch.Tensor | int | float, ...]:
         cls._CONTEXT_MANAGERS[module].__exit__(None, None, None)
         del cls._CONTEXT_MANAGERS[module]
 
@@ -1162,7 +1157,7 @@ def _context_parallel(seq_dim: int, mesh: DeviceMesh) -> Generator[None, None, N
             all_args.append(arg)
 
         new_args = tuple(all_args[0 : len(args)])
-        new_kwargs = dict(zip(kwargs.keys(), all_args[len(args) :]))
+        new_kwargs = dict(zip(kwargs.keys(), all_args[len(args) :], strict=False))
         return new_args, new_kwargs
 
     def attention_output_fn(mesh: DeviceMesh, outputs: Any) -> Any:
@@ -1181,8 +1176,8 @@ def _context_parallel(seq_dim: int, mesh: DeviceMesh) -> Generator[None, None, N
             self,
             fn: Callable,
             device_mesh: DeviceMesh,
-            input_fn: Optional[Callable] = None,
-            output_fn: Optional[Callable] = None,
+            input_fn: Callable | None = None,
+            output_fn: Callable | None = None,
         ):
             self._device_mesh = device_mesh
             self._input_fn = input_fn
@@ -1194,7 +1189,7 @@ def _context_parallel(seq_dim: int, mesh: DeviceMesh) -> Generator[None, None, N
             func: Callable,
             types: Any,
             args: tuple[Any, ...] = (),
-            kwargs: Optional[dict[str, Any]] = None,
+            kwargs: dict[str, Any] | None = None,
         ) -> Any:
             kwargs = kwargs or {}
 
@@ -1331,7 +1326,7 @@ def _context_parallel_buffers(
         if _cp_options.enable_load_balance
         else _SequentialSharder
     )
-    for buffer, seq_dim in zip(buffers, buffer_seq_dims):
+    for buffer, seq_dim in zip(buffers, buffer_seq_dims, strict=False):
         new_buffers.append(sharder.shard(buffer, mesh, seq_dim))
 
     return new_buffers
@@ -1342,9 +1337,9 @@ def _context_parallel_buffers(
 def context_parallel(
     mesh: DeviceMesh,
     *,
-    buffers: Optional[list[torch.Tensor]] = None,
-    buffer_seq_dims: Optional[list[int]] = None,
-    no_restore_buffers: Optional[set[torch.Tensor]] = None,
+    buffers: list[torch.Tensor] | None = None,
+    buffer_seq_dims: list[int] | None = None,
+    no_restore_buffers: set[torch.Tensor] | None = None,
 ) -> Generator[None, None, None]:
     """
 
@@ -1391,7 +1386,7 @@ def context_parallel(
 
     original_buffers = [None if b in no_restore_buffers else b.clone() for b in buffers]
     chunks = _context_parallel_buffers(mesh, buffers, buffer_seq_dims)
-    for buffer, chunk in zip(buffers, chunks):
+    for buffer, chunk in zip(buffers, chunks, strict=False):
         chunk = chunk.clone()
         buffer.resize_(chunk.shape)
         buffer.copy_(chunk)
@@ -1399,7 +1394,7 @@ def context_parallel(
     with _context_parallel(seq_dim=2, mesh=mesh):
         yield
 
-    for buffer, original_buffer in zip(buffers, original_buffers):
+    for buffer, original_buffer in zip(buffers, original_buffers, strict=False):
         if original_buffer is not None:
             buffer.resize_(original_buffer.shape)
             buffer.copy_(original_buffer)
@@ -1428,7 +1423,9 @@ def context_parallel_unshard(
         if _cp_options.enable_load_balance
         else _SequentialSharder
     )
-    return [sharder.unshard(b, mesh, dim) for b, dim in zip(buffers, seq_dims)]
+    return [
+        sharder.unshard(b, mesh, dim) for b, dim in zip(buffers, seq_dims, strict=False)
+    ]
 
 
 def set_rotate_method(rotate_method: str) -> None:

@@ -34,7 +34,7 @@ import json
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 # Aetherra imports
 from Aetherra.aetherra_core.memory.memory_core import LyrixaMemorySystem
@@ -45,8 +45,8 @@ from aetherra_service_registry import AetherraServiceRegistry, ServiceStatus
 class ServiceSnapshot:
     name: str
     status: str
-    dependencies: List[str]
-    metadata: Dict[str, Any]
+    dependencies: list[str]
+    metadata: dict[str, Any]
     registered_at: str
     last_heartbeat: str
 
@@ -63,18 +63,18 @@ class MemorySample:
 @dataclass
 class MemorySnapshot:
     total: int
-    by_type: Dict[str, int]
-    sample: List[MemorySample]
+    by_type: dict[str, int]
+    sample: list[MemorySample]
 
 
 @dataclass
 class RuntimeSnapshot:
     created_at: str
-    services: List[ServiceSnapshot]
+    services: list[ServiceSnapshot]
     memory: MemorySnapshot
     schema_version: int = 1
 
-    def to_dict(self) -> Dict[str, Any]:  # pragma: no cover - simple serialization
+    def to_dict(self) -> dict[str, Any]:  # pragma: no cover - simple serialization
         return asdict(self)
 
 
@@ -84,7 +84,7 @@ async def create_snapshot(
     sample_limit: int = 10,
 ) -> RuntimeSnapshot:
     # Capture services
-    services: List[ServiceSnapshot] = []
+    services: list[ServiceSnapshot] = []
     for name, info in registry.list_services().items():
         services.append(
             ServiceSnapshot(
@@ -99,7 +99,7 @@ async def create_snapshot(
 
     # Capture memory stats + sample
     stats = await memory.get_memory_stats()
-    sample: List[MemorySample] = []
+    sample: list[MemorySample] = []
     # naive sample: last N inserted by created_at desc
     try:
         cur = memory.ensure_connection().cursor()

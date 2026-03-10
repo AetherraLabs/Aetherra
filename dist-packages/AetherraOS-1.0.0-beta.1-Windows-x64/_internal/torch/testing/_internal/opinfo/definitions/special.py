@@ -33,7 +33,6 @@ from torch.testing._internal.opinfo.utils import (
     np_unary_ufunc_integer_promotion_wrapper,
 )
 
-
 if TEST_SCIPY:
     import scipy.special
 

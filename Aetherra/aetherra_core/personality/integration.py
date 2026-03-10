@@ -72,9 +72,7 @@ class PersonalityIntegration:
             context={
                 "emotion_analysis": emotion_analysis,
                 "conversation_context": conversation_context,
-                "response_type": self._determine_response_type(
-                    original_response, user_input
-                ),
+                "response_type": self._determine_response_type(original_response, user_input),
             },
         )
 
@@ -128,15 +126,13 @@ class PersonalityIntegration:
 
         # Technical/coding response
         if any(
-            word in response_lower
-            for word in ["code", "function", "class", "variable", "syntax"]
+            word in response_lower for word in ["code", "function", "class", "variable", "syntax"]
         ):
             return "technical"
 
         # Explanation response
         elif any(
-            word in response_lower
-            for word in ["because", "explanation", "understand", "reason"]
+            word in response_lower for word in ["because", "explanation", "understand", "reason"]
         ):
             return "explanation"
 
@@ -145,15 +141,11 @@ class PersonalityIntegration:
             return "guidance"
 
         # Problem-solving response
-        elif any(
-            word in user_lower for word in ["problem", "issue", "error", "bug", "fix"]
-        ):
+        elif any(word in user_lower for word in ["problem", "issue", "error", "bug", "fix"]):
             return "problem_solving"
 
         # Creative/exploratory response
-        elif any(
-            word in user_lower for word in ["idea", "creative", "explore", "imagine"]
-        ):
+        elif any(word in user_lower for word in ["idea", "creative", "explore", "imagine"]):
             return "creative"
 
         else:
@@ -199,18 +191,14 @@ class PersonalityIntegration:
         try:
             # Increase empathy for frustrated users
             if emotion_analysis.get("primary_emotion") == "frustration":
-                current_empathy = lyrixa_personality.base_traits[
-                    PersonalityTrait.EMPATHY
-                ]
+                current_empathy = lyrixa_personality.base_traits[PersonalityTrait.EMPATHY]
                 lyrixa_personality.base_traits[PersonalityTrait.EMPATHY] = min(
                     1.0, current_empathy + 0.05
                 )
 
             # Increase enthusiasm for excited users
             elif emotion_analysis.get("primary_emotion") == "excitement":
-                current_enthusiasm = lyrixa_personality.base_traits[
-                    PersonalityTrait.ENTHUSIASM
-                ]
+                current_enthusiasm = lyrixa_personality.base_traits[PersonalityTrait.ENTHUSIASM]
                 lyrixa_personality.base_traits[PersonalityTrait.ENTHUSIASM] = min(
                     1.0, current_enthusiasm + 0.03
                 )
@@ -248,12 +236,8 @@ class PersonalityIntegration:
 
     async def test_integration(self) -> Dict[str, Any]:
         """Test the personality integration with sample data"""
-        test_user_input = (
-            "I'm having trouble understanding this code and it's really frustrating!"
-        )
-        test_original_response = (
-            "Let me help you understand the code structure and functionality."
-        )
+        test_user_input = "I'm having trouble understanding this code and it's really frustrating!"
+        test_original_response = "Let me help you understand the code structure and functionality."
 
         try:
             enhanced_response = await self.enhance_conversation_response(
@@ -266,9 +250,7 @@ class PersonalityIntegration:
                 "test_status": "passed",
                 "original_response": test_original_response,
                 "enhanced_response": enhanced_response["text"],
-                "emotion_detected": enhanced_response["personality_data"][
-                    "emotion_detected"
-                ],
+                "emotion_detected": enhanced_response["personality_data"]["emotion_detected"],
                 "quality_score": enhanced_response["quality_metrics"]["overall_score"]
                 if enhanced_response["quality_metrics"]
                 else None,

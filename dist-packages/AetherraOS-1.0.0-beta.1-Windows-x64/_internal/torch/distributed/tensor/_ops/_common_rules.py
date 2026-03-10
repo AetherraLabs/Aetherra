@@ -1,6 +1,6 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates
 import string
-from typing import cast, Optional
+from typing import cast
 
 import torch
 from torch.distributed.tensor._dtensor_spec import DTensorSpec, TensorMeta
@@ -21,7 +21,7 @@ def _gen_reshard_suggestions(
     pending_sum: list[int],
 ) -> OutputSharding:
     suggested_arg_specs: list[DTensorSpec] = []
-    for input_dim, input_spec in zip(input_dims, input_specs):
+    for input_dim, input_spec in zip(input_dims, input_specs, strict=False):
         dim_map = [dim_to_sharding[dim] for dim in input_dim]
         suggested_arg_specs.append(
             DTensorSpec.from_dim_map(
@@ -44,7 +44,7 @@ def einop_rule(
     op_schema: OpSchema,
     *,
     linearity: bool = False,
-    enforce_sharding: Optional[dict[str, int]] = None,
+    enforce_sharding: dict[str, int] | None = None,
 ) -> OutputSharding:
     """
     Propagate the sharding of inputs to output for ops whose data moves according to einsum notation.
@@ -89,15 +89,13 @@ def einop_rule(
                 nonlocal needs_reshard
                 needs_reshard = True
                 return a if a != -1 else b
-            else:
-                # TODO: further merge the sharding properly (i.e. reshard one input to replicate)
-                raise RuntimeError(
-                    f"{equation}: dim {dim} sharded two different ways: {a} and {b}"
-                )
-        else:
-            return a
+            # TODO: further merge the sharding properly (i.e. reshard one input to replicate)
+            raise RuntimeError(
+                f"{equation}: dim {dim} sharded two different ways: {a} and {b}"
+            )
+        return a
 
-    for input_dim, input_spec in zip(input_dims, input_specs):
+    for input_dim, input_spec in zip(input_dims, input_specs, strict=False):
         # deal with partial sums
         input_sums = input_spec.sums
         for sum_dim in input_sums:
@@ -107,7 +105,9 @@ def einop_rule(
             # dimension with the occurrence from each input
             pending_sums_counter[sum_dim] = pending_sums_counter.get(sum_dim, 0) + 1
 
-        for idx, (dim, mesh_dim) in enumerate(zip(input_dim, input_spec.dim_map)):
+        for idx, (dim, mesh_dim) in enumerate(
+            zip(input_dim, input_spec.dim_map, strict=False)
+        ):
             if enforce_sharding and dim in enforce_sharding:
                 if enforce_sharding[dim] != mesh_dim:
                     needs_reshard = True
@@ -141,14 +141,13 @@ def einop_rule(
         return _gen_reshard_suggestions(
             op_schema, input_dims, input_specs, dim_to_sharding, []
         )
-    else:
-        # It's a op that support linearity, but not all input arguments are partial
-        # we fail the sharding propagation with suggestion to make all inputs be
-        # partial on the corresponding mesh dim (all inputs should be partial for
-        # the mesh dims in order to execute locally and delay the sum reduction)
-        for value in pending_sums_counter.values():
-            if value != len(input_specs):
-                needs_reshard = True
+    # It's a op that support linearity, but not all input arguments are partial
+    # we fail the sharding propagation with suggestion to make all inputs be
+    # partial on the corresponding mesh dim (all inputs should be partial for
+    # the mesh dims in order to execute locally and delay the sum reduction)
+    for value in pending_sums_counter.values():
+        if value != len(input_specs):
+            needs_reshard = True
 
     for mesh_dim, dims in seen_shardings.items():
         if len(dims) > 1:
@@ -160,7 +159,7 @@ def einop_rule(
             costs = []
             for d in dims:
                 cost = 0
-                for input_dim, input_spec in zip(input_dims, input_specs):
+                for input_dim, input_spec in zip(input_dims, input_specs, strict=False):
                     if (
                         d in input_dim
                         and input_spec.dim_map[input_dim.index(d)] == mesh_dim
@@ -268,10 +267,10 @@ def pointwise_rule(op_schema: OpSchema, linearity: bool = False) -> OutputShardi
     enforce_sharding: dict[str, int] = {}
     if op_schema.is_inplace_op():
         follow_spec = op_schema.args_spec[0]
-        enforce_sharding.update(zip(out_dimchars, follow_spec.dim_map))
+        enforce_sharding.update(zip(out_dimchars, follow_spec.dim_map, strict=False))
     elif op_schema.is_out_variant_op():
         follow_spec = cast(DTensorSpec, op_schema.kwargs_schema["out"])
-        enforce_sharding.update(zip(out_dimchars, follow_spec.dim_map))
+        enforce_sharding.update(zip(out_dimchars, follow_spec.dim_map, strict=False))
 
     return einop_rule(
         fmt,

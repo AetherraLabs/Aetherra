@@ -28,7 +28,7 @@ the function call as is in the graph, and only when we Dynamo through the backwa
 compiled autograd do we inline into the function.
 """
 
-from typing import Any, Optional
+from typing import Any
 
 import torch
 import torch.utils._pytree as pytree
@@ -41,7 +41,6 @@ from torch.fx.experimental.proxy_tensor import ProxyTorchDispatchMode, track_ten
 from torch.overrides import TorchFunctionMode
 from torch.utils._python_dispatch import _get_current_dispatch_mode
 from torch.utils._pytree import tree_map_only
-
 
 Tensor = torch.Tensor
 
@@ -75,7 +74,7 @@ if not torch._running_with_deploy():
         """The batching rule is special in that it returns a tensor that is not batched"""
         indices_indims = indims[1]
         expanded_indices = []
-        for idx, idx_indim in zip(indices, indices_indims):
+        for idx, idx_indim in zip(indices, indices_indims, strict=False):
             # The index is not a being batched, we should unsqueeze and expand to val
             if idx_indim is None:
                 expanded_indices.append(idx.expand(value.shape))
@@ -133,7 +132,7 @@ class TransformGetItemToIndex(TorchFunctionMode):
         func: OpOverload,
         types: tuple[torch._C._TensorMeta, ...],
         args: tuple[object, ...] = (),
-        kwargs: Optional[dict[str, object]] = None,
+        kwargs: dict[str, object] | None = None,
     ) -> object:
         if func == torch.Tensor.__getitem__:
             index_args = pytree.tree_leaves(args[1])
@@ -175,7 +174,7 @@ def _assert_meta(
 def inner_trace(
     mode: ProxyTorchDispatchMode,
     *args: Any,
-    bw_state: Optional[BackwardState] = None,
+    bw_state: BackwardState | None = None,
     **kwargs: Any,
 ) -> Any:
     def self_invoke(*args: Any, **dyn_kwargs: Any) -> Any:

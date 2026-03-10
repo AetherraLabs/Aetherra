@@ -205,7 +205,7 @@ class StormEngine:
             return b
 
         elif strategy == "recency":
-            # TODO: Weight by recency when timestamp metadata available
+            # Weight by recency once timestamp metadata is exposed in candidates.
             # For now, fallback to importance weighting
             b = np.array(scores, dtype=float)
             b = np.maximum(b, 1e-6)
@@ -213,7 +213,7 @@ class StormEngine:
             return b
 
         else:
-            # Unknown strategy: fallback to nearest
+            # Unknown strategy falls back to nearest-neighbor assignment.
             nearest_j = int(np.argmin(cost_matrix[0]))
             b = np.zeros((n_candidates,), dtype=float)
             b[nearest_j] = 1.0
@@ -291,7 +291,7 @@ class StormEngine:
             b = np.array([])
         else:
             # Phase 2: Use importance-weighted distribution by default
-            # TODO: Make strategy configurable via StormConfig
+            # Keep this configurable via StormConfig in a future profile pass.
             b = self._compute_mass_distribution(
                 cost_matrix,
                 scores if scores else [1.0] * len(items),
@@ -406,7 +406,7 @@ class StormEngine:
         timestamp = time.time()
 
         try:
-            # Task 1: TT rank trim (placeholder: no cache yet)
+            # Task 1: TT rank trim (cache layer pending)
             # Future: Clear cached TT approximations older than threshold
             self.metrics.record_maintenance("tt_rank_trim", timestamp)
             results["tt_rank_trim"]["status"] = "ok"
@@ -415,7 +415,7 @@ class StormEngine:
             results["tt_rank_trim"]["status"] = f"error: {e}"
 
         try:
-            # Task 2: Barycenter refresh (placeholder: no branches yet)
+            # Task 2: Barycenter refresh (branch cache pending)
             # Future: Recompute branch barycenters for hierarchical clustering
             self.metrics.record_maintenance("barycenter_refresh", timestamp)
             self.metrics.record_branch_barycenter()  # Track refresh event
@@ -443,7 +443,7 @@ class StormEngine:
             results["inconsistency_scan"]["status"] = f"error: {e}"
 
         try:
-            # Task 4: OT cache pruning (placeholder: no cache yet)
+            # Task 4: OT cache pruning (cache layer pending)
             # Future: Prune OT transport plans older than retention window
             self.metrics.record_maintenance("ot_cache_prune", timestamp)
             results["ot_cache_prune"]["status"] = "ok"

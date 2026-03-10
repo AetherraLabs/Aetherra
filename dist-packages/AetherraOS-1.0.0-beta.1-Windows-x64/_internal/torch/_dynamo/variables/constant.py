@@ -19,7 +19,6 @@ from ..exc import raise_observed_exception, unimplemented_v2
 from ..utils import cmp_name_to_op_mapping, common_constant_types, istype, np
 from .base import VariableTracker
 
-
 if TYPE_CHECKING:
     from torch._dynamo.symbolic_convert import InstructionTranslator
 
@@ -43,16 +42,16 @@ class ConstantVariable(VariableTracker):
         NOTE: the caller must install the proper guards if needed; most often
         the guard will be `CONSTANT_MATCH`.
         """
-        source = kwargs.get("source", None)
+        source = kwargs.get("source")
 
         # Routing for supported collection literals.
         if isinstance(value, set):
             items = [ConstantVariable.create(x) for x in value]
             return variables.SetVariable(items, **kwargs)
-        elif isinstance(value, frozenset):
+        if isinstance(value, frozenset):
             items = [ConstantVariable.create(x) for x in value]
             return variables.FrozensetVariable(items, **kwargs)
-        elif isinstance(value, (list, tuple)):
+        if isinstance(value, (list, tuple)):
             items = []
             for i, x in enumerate(value):
                 item_source = GetItemSource(source, i) if source else None
@@ -144,7 +143,7 @@ its type to `common_constant_types`.
             return variables.BuiltinVariable(str.format).call_function(
                 tx, [self, *args], kwargs
             )
-        elif name == "join" and istype(self.value, str):
+        if name == "join" and istype(self.value, str):
             assert len(args) == 1 and len(kwargs) == 0
             arg_unpacked = args[0].force_unpack_var_sequence(tx)
             try:
@@ -189,24 +188,23 @@ its type to `common_constant_types`.
                         "call_function", op, (self.value, add_target), {}
                     )
                     return SymNodeVariable.create(tx, proxy, add_target)
-                else:
-                    try:
-                        return ConstantVariable.create(op(self.value, add_target))
-                    except Exception as e:
-                        raise_observed_exception(
-                            type(e), tx, args=list(map(ConstantVariable.create, e.args))
-                        )
+                try:
+                    return ConstantVariable.create(op(self.value, add_target))
+                except Exception as e:
+                    raise_observed_exception(
+                        type(e), tx, args=list(map(ConstantVariable.create, e.args))
+                    )
         elif isinstance(self.value, bytes) and name == "decode":
             method = getattr(self.value, name)
             return ConstantVariable.create(method(*const_args, **const_kwargs))
 
         if name == "__len__" and not (args or kwargs):
             return ConstantVariable.create(len(self.value))
-        elif name == "__round__" and len(args) == 1 and args[0].is_python_constant():
+        if name == "__round__" and len(args) == 1 and args[0].is_python_constant():
             return ConstantVariable.create(
                 round(self.value, args[0].as_python_constant())
             )
-        elif name == "__contains__" and len(args) == 1 and args[0].is_python_constant():
+        if name == "__contains__" and len(args) == 1 and args[0].is_python_constant():
             assert not kwargs
             search = args[0].as_python_constant()
             result = search in self.value

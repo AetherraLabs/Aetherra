@@ -9,7 +9,7 @@ from __future__ import annotations
 # Standard library imports
 import re
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any
 
 __all__ = [
     "PluginValidationError",
@@ -45,7 +45,7 @@ _SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z\-.]+)?$")
 
 @dataclass(frozen=True)
 class ValidationResult:
-    registry_record: Dict[str, Any]
+    registry_record: dict[str, Any]
 
 
 def _require(cond: bool, msg: str) -> None:
@@ -59,7 +59,7 @@ def _deny_html(text: str, field: str) -> None:
 
 
 def validate_and_register_plugin(
-    payload: Dict[str, Any],
+    payload: dict[str, Any],
     *,
     require_signature: bool = False,
     max_description_len: int = 2000,
@@ -94,7 +94,7 @@ def validate_and_register_plugin(
     allowed_extra = {"homepage", "repo", "author", "license"}
     extras = {k: v for k, v in payload.items() if k in allowed_extra}
 
-    record: Dict[str, Any] = {
+    record: dict[str, Any] = {
         "name": name,
         "version": version,
         "display_name": display_name,

@@ -1,9 +1,9 @@
 # mypy: allow-untyped-defs
-from collections import OrderedDict, OrderedDict as OrdDict
+from collections import OrderedDict
+from collections import OrderedDict as OrdDict
 from typing import Any
 
 import torch
-
 
 # try to import tablate
 got_tabulate = True
@@ -434,7 +434,7 @@ class ModelReportVisualizer:
         # see if we got tabulate
         if not got_tabulate:
             print("Make sure to install tabulate and try again.")
-            return None
+            return
 
         # get the table dict and the specific tables of interest
         table_dict = self.generate_filtered_tables(feature_filter, module_fqn_filter)
@@ -597,7 +597,7 @@ class ModelReportVisualizer:
         # checks if we have matplotlib and let's user know to install it if don't
         if not got_matplotlib:
             print("make sure to install matplotlib and try again.")
-            return None
+            return
 
         # get the x and y data and if per channel
         x_data, y_data, data_per_channel = self._get_plottable_data(
@@ -670,7 +670,7 @@ class ModelReportVisualizer:
         # checks if we have matplotlib and let's user know to install it if don't
         if not got_matplotlib:
             print("make sure to install matplotlib and try again.")
-            return None
+            return
 
         # get the x and y data and if per channel
         _x_data, y_data, data_per_channel = self._get_plottable_data(

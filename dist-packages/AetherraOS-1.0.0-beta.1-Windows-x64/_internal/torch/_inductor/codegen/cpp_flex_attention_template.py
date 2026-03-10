@@ -2,7 +2,6 @@
 import contextlib
 import logging
 import re
-from typing import Optional
 from unittest.mock import patch
 
 import sympy
@@ -18,7 +17,6 @@ from ..utils import parallel_num_threads
 from ..virtualized import V
 from .cpp_template import CppTemplate
 from .cpp_utils import GemmBlocking
-
 
 log = logging.getLogger(__name__)
 
@@ -812,7 +810,7 @@ class CppFlexAttentionTemplate(CppTemplate):
         assert isinstance(subgraph_buffer, ir.ComputedBuffer)
         subgraph_buffer_data = subgraph_buffer.data
         from ..loop_body import LoopBody
-        from ..utils import sympy_index_symbol_with_prefix, SymT
+        from ..utils import SymT, sympy_index_symbol_with_prefix
         from ..virtualized import V
         from .cpp import CppKernelProxy, KernelGroup
 
@@ -955,8 +953,8 @@ class CppFlexAttentionTemplate(CppTemplate):
     def render(  # type: ignore[override,return]
         self,
         kernel,
-        template_buffer_node: Optional[ir.CppTemplateBuffer] = None,
-        epilogue_nodes: Optional[list[ir.IRNode]] = None,
+        template_buffer_node: ir.CppTemplateBuffer | None = None,
+        epilogue_nodes: list[ir.IRNode] | None = None,
         **kwargs,
     ) -> str:
         if epilogue_nodes is not None and epilogue_nodes != []:

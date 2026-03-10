@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 import sympy
 
@@ -14,9 +14,9 @@ class CppWrapperMps(CppWrapperGpu):
     @staticmethod
     def create(
         is_subgraph: bool,
-        subgraph_name: Optional[str],
-        parent_wrapper: Optional[PythonWrapperCodegen],
-        partition_signatures: Optional[GraphPartitionSignature] = None,
+        subgraph_name: str | None,
+        parent_wrapper: PythonWrapperCodegen | None,
+        partition_signatures: GraphPartitionSignature | None = None,
     ) -> "CppWrapperMps":
         return CppWrapperMps()
 
@@ -24,7 +24,7 @@ class CppWrapperMps(CppWrapperGpu):
         self,
         kernel_name: str,
         call_args: list[str],
-        arg_types: Optional[list[type]] = None,
+        arg_types: list[type] | None = None,
         **kwargs: dict[str, Any],
     ) -> None:
         """
@@ -44,7 +44,9 @@ class CppWrapperMps(CppWrapperGpu):
         assert arg_types is not None
 
         new_args = []
-        for idx, (arg, arg_type) in enumerate(zip(call_args[:-2], arg_types[:-2])):
+        for idx, (arg, arg_type) in enumerate(
+            zip(call_args[:-2], arg_types[:-2], strict=False)
+        ):
             if isinstance(arg_type, torch.dtype):
                 new_args.append(
                     f"aoti_torch_mps_set_arg_tensor({kernel_name}_handle, {idx}, {arg});\n"
@@ -61,7 +63,7 @@ class CppWrapperMps(CppWrapperGpu):
         threads, group_size = call_args[-2], call_args[-1]
         if threads is None:
             raise NotImplementedError("No threads or group_size provided")
-        elif group_size is None:
+        if group_size is None:
             new_args.append(f"{kernel_name}->dispatch({threads});\n")
         else:
             new_args.append(f"{kernel_name}->dispatch({threads}, {group_size});\n")

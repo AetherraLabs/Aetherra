@@ -33,7 +33,6 @@ import sys
 import time
 import urllib.request
 from pathlib import Path
-from typing import Dict, List
 
 
 def _exists(path: str) -> bool:
@@ -48,7 +47,7 @@ def _try_import(name: str) -> tuple[bool, str | None]:
         return False, str(e)
 
 
-def check_kernel() -> Dict:
+def check_kernel() -> dict:
     files = [
         "aetherra_kernel_loop.py",
         "aetherra_service_registry.py",
@@ -65,14 +64,14 @@ def check_kernel() -> Dict:
     }
 
 
-def check_engine() -> Dict:
+def check_engine() -> dict:
     # Prefer modern engine module path; fall back to legacy markers
     candidates = [
         ("Aetherra.aetherra_core.engine.aetherra_engine", True),
         ("aetherra_core_analyzer", False),
     ]
     ok_any = False
-    errors: List[str] = []
+    errors: list[str] = []
     for mod, required in candidates:
         ok, err = _try_import(mod)
         if ok:
@@ -86,14 +85,14 @@ def check_engine() -> Dict:
     }
 
 
-def check_agents() -> Dict:
+def check_agents() -> dict:
     # Support both orchestrator and OS-level Agent Fabric
     canonical = "Aetherra.aetherra_core.agents.agent_orchestrator"
     shim = "Aetherra.aetherra_core.orchestration.agent_orchestrator"
     mods = [canonical, "aetherra_agent_fabric", shim]
     ok = False
-    errors: List[str] = []
-    found: List[str] = []
+    errors: list[str] = []
+    found: list[str] = []
     for m in mods:
         good, err = _try_import(m)
         if good:
@@ -111,14 +110,14 @@ def check_agents() -> Dict:
     }
 
 
-def check_memory() -> Dict:
+def check_memory() -> dict:
     mods = [
         "Aetherra.aetherra_core.memory.quantum_memory_integration",
         "Aetherra.aetherra_core.memory.lyrixa_memory_engine",
         "Aetherra.aetherra_core.memory.quantum_memory_engine",
     ]
     ok_any = False
-    errors: List[str] = []
+    errors: list[str] = []
     for m in mods:
         ok, err = _try_import(m)
         if ok:
@@ -132,7 +131,7 @@ def check_memory() -> Dict:
     }
 
 
-def check_chat() -> Dict:
+def check_chat() -> dict:
     """Validate hub compatibility layer + Lyrixa chat service.
 
     The monolithic aetherra_hub_server.py file is deprecated; we now rely on
@@ -142,7 +141,7 @@ def check_chat() -> Dict:
     compat_ok, compat_err = _try_import("aetherra_hub.compat")
     chat_ok, chat_err = _try_import("Aetherra.lyrixa.chat.lyrixa_chat_service")
     ok = compat_ok and chat_ok
-    errors: List[str] = []
+    errors: list[str] = []
     if not compat_ok:
         errors.append(f"compat import failed: {compat_err}")
     if not chat_ok:
@@ -155,14 +154,14 @@ def check_chat() -> Dict:
     }
 
 
-def check_security() -> Dict:
+def check_security() -> dict:
     mods = [
         "Aetherra.security.plugin_signing",
         "Aetherra.security.sandbox",
         "Aetherra.security.prompt_defense",
     ]
     ok_all = True
-    errors: List[str] = []
+    errors: list[str] = []
     for m in mods:
         ok, err = _try_import(m)
         if not ok:
@@ -175,7 +174,7 @@ def check_security() -> Dict:
     }
 
 
-def check_docs_alignment() -> Dict:
+def check_docs_alignment() -> dict:
     ok = _exists("docs/aetherra_os_architecture_map_v_1.md")
     return {
         "ok": ok,
@@ -184,7 +183,7 @@ def check_docs_alignment() -> Dict:
     }
 
 
-def check_env_flags() -> Dict:
+def check_env_flags() -> dict:
     flags = [
         "AETHERRA_PROFILE",
         "AETHERRA_QFAC_MODE",
@@ -207,7 +206,7 @@ def _find_free_port() -> int:
         return int(s.getsockname()[1])
 
 
-def check_hub_minimal_api_probe(port: int | None = None, timeout: float = 1.5) -> Dict:
+def check_hub_minimal_api_probe(port: int | None = None, timeout: float = 1.5) -> dict:
     try:
         # Aetherra imports
         from aetherra_hub.compat import AetherraHubServer  # updated to compat layer
@@ -218,7 +217,7 @@ def check_hub_minimal_api_probe(port: int | None = None, timeout: float = 1.5) -
             "notes": "Flask or dependencies may be missing; install to enable probe",
         }
 
-    errors: List[str] = []
+    errors: list[str] = []
     p = port or _find_free_port()
     server = AetherraHubServer(p)
     started = bool(server.start_server())
@@ -270,7 +269,7 @@ def check_hub_minimal_api_probe(port: int | None = None, timeout: float = 1.5) -
     }
 
 
-def check_capability_policies_and_deny_defaults() -> Dict:
+def check_capability_policies_and_deny_defaults() -> dict:
     """Instantiate AgentFabric with a stub registry and verify policies.
 
     - Executor denied in headless/safe, allowed in full
@@ -299,9 +298,9 @@ def check_capability_policies_and_deny_defaults() -> Dict:
         async def update_heartbeat(self, *args, **kwargs):
             return None
 
-    def _run_and_check(env: Dict[str, str]) -> Dict[str, bool | str]:
+    def _run_and_check(env: dict[str, str]) -> dict[str, bool | str]:
         # Snapshot and apply env
-        saved = {k: os.environ.get(k) for k in env.keys()}
+        saved = {k: os.environ.get(k) for k in env}
         try:
             for k, v in env.items():
                 if v is None:
@@ -376,7 +375,7 @@ def check_capability_policies_and_deny_defaults() -> Dict:
     }
 
 
-def check_hmr_env_behavior() -> Dict:
+def check_hmr_env_behavior() -> dict:
     saved = {
         k: os.environ.get(k)
         for k in (
@@ -426,7 +425,7 @@ def check_hmr_env_behavior() -> Dict:
                 os.environ[k] = v
 
 
-def main(argv: List[str]) -> int:
+def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description="Verify Architecture Map alignment")
     ap.add_argument("--strict", action="store_true", help="Exit non-zero on any FAIL")
     ap.add_argument(

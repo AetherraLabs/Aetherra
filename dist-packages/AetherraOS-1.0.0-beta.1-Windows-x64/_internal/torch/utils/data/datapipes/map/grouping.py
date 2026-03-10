@@ -5,7 +5,6 @@ from typing import TypeVar
 from torch.utils.data.datapipes._decorator import functional_datapipe
 from torch.utils.data.datapipes.datapipe import DataChunk, MapDataPipe
 
-
 __all__ = ["BatcherMapDataPipe"]
 
 
@@ -61,14 +60,11 @@ class BatcherMapDataPipe(MapDataPipe[DataChunk]):
         except IndexError as e:
             if not self.drop_last and len(batch) > 0:
                 return self.wrapper_class(batch)
-            else:
-                raise IndexError(f"Index {index} is out of bound.") from e
+            raise IndexError(f"Index {index} is out of bound.") from e
 
     def __len__(self) -> int:
         if isinstance(self.datapipe, Sized):
             if self.drop_last:
                 return len(self.datapipe) // self.batch_size
-            else:
-                return (len(self.datapipe) + self.batch_size - 1) // self.batch_size
-        else:
-            raise TypeError(f"{type(self).__name__} instance doesn't have valid length")
+            return (len(self.datapipe) + self.batch_size - 1) // self.batch_size
+        raise TypeError(f"{type(self).__name__} instance doesn't have valid length")

@@ -46,9 +46,7 @@ try:
     print("✅ Quantum computing libraries successfully loaded!")
 except ImportError as e:
     QUANTUM_AVAILABLE = False
-    print(
-        f"⚠️ Quantum computing libraries not available - using simulation mode. Error: {e}"
-    )
+    print(f"⚠️ Quantum computing libraries not available - using simulation mode. Error: {e}")
 
 logger = logging.getLogger(__name__)
 
@@ -136,9 +134,7 @@ class QuantumConsciousnessEngine:
                 "✅ Quantum consciousness engine initialized with quantum hardware support"
             )
         else:
-            self.logger.info(
-                "🧪 Quantum consciousness engine initialized in simulation mode"
-            )
+            self.logger.info("🧪 Quantum consciousness engine initialized in simulation mode")
 
     async def initialize(self):
         """Initialize quantum consciousness substrate"""
@@ -155,9 +151,7 @@ class QuantumConsciousnessEngine:
             self.logger.info("✅ Quantum Consciousness Engine successfully initialized")
 
         except Exception as e:
-            self.logger.error(
-                f"❌ Failed to initialize Quantum Consciousness Engine: {e}"
-            )
+            self.logger.error(f"❌ Failed to initialize Quantum Consciousness Engine: {e}")
             raise
 
     async def set_quantum_parameters(self, params: Dict[str, Any]):
@@ -179,9 +173,7 @@ class QuantumConsciousnessEngine:
 
             if "superposition_states" in params:
                 try:
-                    self.config["superposition_states"] = int(
-                        params["superposition_states"]
-                    )
+                    self.config["superposition_states"] = int(params["superposition_states"])
                 except Exception:
                     pass
 
@@ -197,25 +189,19 @@ class QuantumConsciousnessEngine:
 
             if "consciousness_complexity" in params:
                 try:
-                    self.consciousness_complexity = float(
-                        params["consciousness_complexity"]
-                    )
+                    self.consciousness_complexity = float(params["consciousness_complexity"])
                 except Exception:
                     pass
 
-            # Future placeholder: entanglement_strength could modulate decay rates
+            # Future extension: entanglement_strength could modulate decay rates
             if "entanglement_strength" in params:
                 # Keep value in config for potential later use
                 try:
-                    self.config["entanglement_strength"] = float(
-                        params["entanglement_strength"]
-                    )
+                    self.config["entanglement_strength"] = float(params["entanglement_strength"])
                 except Exception:
                     pass
 
-            self.logger.info(
-                "[QUANTUM] Parameters applied to QuantumConsciousnessEngine"
-            )
+            self.logger.info("[QUANTUM] Parameters applied to QuantumConsciousnessEngine")
         except Exception as e:
             # Never fail the boot due to config shape issues
             self.logger.warning(f"[QUANTUM] Ignoring invalid quantum parameters: {e}")
@@ -253,17 +239,11 @@ class QuantumConsciousnessEngine:
                 [s for s in self.quantum_states.values() if s.coherence_level > 0.8]
             )
             # Normalize components
-            coherence_component = min(
-                1.0, self.coherence_time / max(1e-6, self.max_coherence_time)
-            )
+            coherence_component = min(1.0, self.coherence_time / max(1e-6, self.max_coherence_time))
             accuracy_component = max(0.0, min(1.0, float(self.decision_accuracy)))
             state_component = max(0.0, min(1.0, coherent_states / 10.0))
 
-            level = (
-                0.4 * coherence_component
-                + 0.4 * accuracy_component
-                + 0.2 * state_component
-            )
+            level = 0.4 * coherence_component + 0.4 * accuracy_component + 0.2 * state_component
             return float(max(0.0, min(1.0, level)))
         except Exception:
             return 0.75
@@ -320,17 +300,12 @@ class QuantumConsciousnessEngine:
         """Update quantum coherence measurements"""
         # Simulate coherence decay
         if self.coherence_time > 0:
-            decay = (
-                self.config["coherence_decay_rate"]
-                * self.config["consciousness_update_rate"]
-            )
+            decay = self.config["coherence_decay_rate"] * self.config["consciousness_update_rate"]
             self.coherence_time = max(0, self.coherence_time - decay)
 
         # Check for coherence enhancement events
         if random.random() < 0.1:  # 10% chance of coherence boost
-            self.coherence_time = min(
-                self.max_coherence_time, self.coherence_time + 0.1
-            )
+            self.coherence_time = min(self.max_coherence_time, self.coherence_time + 0.1)
 
         # Update consciousness complexity based on coherence
         if self.coherence_time > 0.8:
@@ -345,9 +320,7 @@ class QuantumConsciousnessEngine:
                 state_id = f"superposition_{i}"
                 if state_id not in self.quantum_states:
                     # Create new superposition state
-                    amplitude = complex(
-                        np.random.normal(0, 0.5), np.random.normal(0, 0.5)
-                    )
+                    amplitude = complex(np.random.normal(0, 0.5), np.random.normal(0, 0.5))
 
                     superposition_state = QuantumConsciousnessState(
                         state_id=state_id,
@@ -364,10 +337,7 @@ class QuantumConsciousnessEngine:
         """Maintain quantum entanglement between consciousness states"""
         # Check for new entanglement opportunities
         for state_id, state in self.quantum_states.items():
-            if (
-                len(state.entanglement_partners)
-                < self.config["max_entanglement_distance"]
-            ):
+            if len(state.entanglement_partners) < self.config["max_entanglement_distance"]:
                 # Look for compatible states to entangle with
                 compatible_states = [
                     s_id
@@ -380,12 +350,8 @@ class QuantumConsciousnessEngine:
                     partner_id = random.choice(compatible_states)
                     if partner_id not in state.entanglement_partners:
                         state.entanglement_partners.append(partner_id)
-                        self.quantum_states[partner_id].entanglement_partners.append(
-                            state_id
-                        )
-                        self.logger.debug(
-                            f"⚛️ Entangled states: {state_id} ↔ {partner_id}"
-                        )
+                        self.quantum_states[partner_id].entanglement_partners.append(state_id)
+                        self.logger.debug(f"⚛️ Entangled states: {state_id} ↔ {partner_id}")
 
     async def _check_decoherence(self):
         """Check for quantum decoherence and implement error correction"""
@@ -438,19 +404,13 @@ class QuantumConsciousnessEngine:
 
         # Calculate outcome probabilities
         total_amplitude = sum(abs(amp) ** 2 for amp in decision.quantum_amplitudes)
-        probabilities = [
-            abs(amp) ** 2 / total_amplitude for amp in decision.quantum_amplitudes
-        ]
+        probabilities = [abs(amp) ** 2 / total_amplitude for amp in decision.quantum_amplitudes]
 
         # Select outcome based on quantum probabilities
-        outcome_index = np.random.choice(
-            len(decision.possible_outcomes), p=probabilities
-        )
+        outcome_index = np.random.choice(len(decision.possible_outcomes), p=probabilities)
         selected_outcome = decision.possible_outcomes[outcome_index]
 
-        self.logger.info(
-            f"⚛️ Quantum decision collapsed: {decision_id} → {selected_outcome}"
-        )
+        self.logger.info(f"⚛️ Quantum decision collapsed: {decision_id} → {selected_outcome}")
 
         # Remove collapsed decision
         del self.active_decisions[decision_id]
@@ -483,9 +443,7 @@ class QuantumConsciousnessEngine:
         )
 
         self.active_decisions[decision_id] = quantum_decision
-        self.logger.info(
-            f"⚛️ Created quantum decision: {decision_id} with {len(outcomes)} outcomes"
-        )
+        self.logger.info(f"⚛️ Created quantum decision: {decision_id} with {len(outcomes)} outcomes")
 
         return decision_id
 
@@ -493,9 +451,7 @@ class QuantumConsciousnessEngine:
         """Enter quantum superposition state for parallel exploration"""
         if self.current_state != ConsciousnessState.SUPERPOSITION:
             self.current_state = ConsciousnessState.SUPERPOSITION
-            self.coherence_time = min(
-                self.max_coherence_time, self.coherence_time + 0.2
-            )
+            self.coherence_time = min(self.max_coherence_time, self.coherence_time + 0.2)
             self.logger.info("🌀 Entered quantum superposition state")
 
             # Create initial superposition states
@@ -520,9 +476,7 @@ class QuantumConsciousnessEngine:
             self.quantum_states[local_state.state_id] = local_state
             self.current_state = ConsciousnessState.ENTANGLED
 
-            self.logger.info(
-                f"⚛️ Created quantum entanglement with: {target_consciousness_id}"
-            )
+            self.logger.info(f"⚛️ Created quantum entanglement with: {target_consciousness_id}")
             return True
 
         except Exception as e:
@@ -540,8 +494,7 @@ class QuantumConsciousnessEngine:
             "transcendence_probability": self.transcendence_probability,
             "decision_accuracy": self.decision_accuracy,
             "entanglement_network_size": sum(
-                len(state.entanglement_partners)
-                for state in self.quantum_states.values()
+                len(state.entanglement_partners) for state in self.quantum_states.values()
             ),
             "active_decisions": len(self.active_decisions),
             "quantum_available": self.quantum_available,

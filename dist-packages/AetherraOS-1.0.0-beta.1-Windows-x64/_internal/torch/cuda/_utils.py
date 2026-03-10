@@ -1,6 +1,6 @@
 import ctypes
 import sys
-from typing import Any, Optional, Union
+from typing import Any
 
 import torch
 
@@ -12,8 +12,8 @@ from torch._utils import _get_device_index as _torch_get_device_index
 def _get_cuda_library() -> ctypes.CDLL:
     if sys.platform == "win32":
         return ctypes.CDLL("nvcuda.dll")
-    else:  # Unix-based systems
-        return ctypes.CDLL("libcuda.so.1")
+    # Unix-based systems
+    return ctypes.CDLL("libcuda.so.1")
 
 
 # Helper: check CUDA errors
@@ -34,17 +34,16 @@ def _get_nvrtc_library() -> ctypes.CDLL:
     # which should be compatible with PyTorch's version
     if sys.platform == "win32":
         return ctypes.CDLL("nvrtc64_120_0.dll")
-    else:
-        return ctypes.CDLL("libnvrtc.so")
+    return ctypes.CDLL("libnvrtc.so")
 
 
 def _nvrtc_compile(
     kernel_source: str,
     kernel_name: str,
-    compute_capability: Optional[str] = None,
+    compute_capability: str | None = None,
     header_code: str = "",
-    cuda_include_dirs: Optional[list] = None,
-    nvcc_options: Optional[list] = None,
+    cuda_include_dirs: list | None = None,
+    nvcc_options: list | None = None,
 ) -> bytes:
     """
     Compiles a CUDA kernel using NVRTC and returns the PTX code.
@@ -204,9 +203,9 @@ class _CudaKernel:
         self,
         grid: tuple[int, int, int] = (1, 1, 1),
         block: tuple[int, int, int] = (1, 1, 1),
-        args: Optional[list] = None,
+        args: list | None = None,
         shared_mem: int = 0,
-        stream: Optional[Any] = None,
+        stream: Any | None = None,
     ) -> None:
         """
         Call the compiled CUDA kernel
@@ -284,8 +283,8 @@ class _CudaKernel:
 
 
 def _cuda_load_module(
-    ptx: Union[str, bytes], kernel_names: Optional[list[str]] = None
-) -> Union[_CudaModule, dict[str, "_CudaKernel"]]:
+    ptx: str | bytes, kernel_names: list[str] | None = None
+) -> _CudaModule | dict[str, "_CudaKernel"]:
     """
     Loads a CUDA module from PTX code and returns a module object that can access kernels.
 

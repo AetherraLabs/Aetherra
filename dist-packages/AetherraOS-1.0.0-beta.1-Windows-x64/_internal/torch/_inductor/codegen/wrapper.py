@@ -12,8 +12,9 @@ import operator
 import random
 import re
 import tempfile
+from collections.abc import Callable
 from itertools import chain, count
-from typing import Any, Callable, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Union
 
 import sympy
 from sympy import Expr
@@ -30,13 +31,13 @@ from torch.fx.experimental.symbolic_shapes import (
     CallMethodKey,
     ConvertIntKey,
     DivideByKey,
-    resolve_unbacked_bindings,
     SymTypes,
+    resolve_unbacked_bindings,
 )
 from torch.fx.node import _get_qualified_name
 from torch.utils._ordered_set import OrderedSet
 from torch.utils._sympy.singleton_int import SingletonInt
-from torch.utils._sympy.symbol import symbol_is_type, SymT
+from torch.utils._sympy.symbol import SymT, symbol_is_type
 
 from .. import async_compile, config, ir
 from ..codecache import output_code_log
@@ -44,12 +45,12 @@ from ..ir import IRNode, ReinterpretView
 from ..runtime import triton_heuristics
 from ..runtime.hints import DeviceProperties
 from ..utils import (
-    cache_on_self,
     DelayReplaceLine,
-    get_benchmark_name,
     IndentedBuffer,
-    is_codegen_graph_partition_subgraph,
     LineContext,
+    cache_on_self,
+    get_benchmark_name,
+    is_codegen_graph_partition_subgraph,
     set_kernel_post_grad_provenance_tracing,
     sympy_product,
     sympy_str,
@@ -67,7 +68,6 @@ from .common import (
 )
 from .cpp_utils import cexpr
 from .triton_utils import config_of, should_unwrap_unspec_arg, signature_to_meta
-
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, Sequence
@@ -136,7 +136,7 @@ def can_match_buffer_size(input_buf: BufferLike, output_buf: BufferLike):
 # TODO: Move to a well known place
 TritonMetaParams = dict[str, int]
 TritonGrid = Union[
-    tuple[Union[int, sympy.Expr], ...], Callable[[TritonMetaParams], tuple[int, ...]]
+    tuple[int | sympy.Expr, ...], Callable[[TritonMetaParams], tuple[int, ...]]
 ]
 
 
@@ -144,17 +144,17 @@ def user_defined_kernel_grid_fn_code(
     name: str,
     configs: list[triton.Config],  # type: ignore[name-defined]
     grids: list[TritonGrid],
-    wrapper: Optional[PythonWrapperCodegen] = None,
-    original_fxnode_name: Optional[str] = None,
+    wrapper: PythonWrapperCodegen | None = None,
+    original_fxnode_name: str | None = None,
 ) -> tuple[str, str]:
     output = IndentedBuffer()
 
-    def _convert_to_sympy_expr(item: Union[int, sympy.Expr]) -> sympy.Expr:
+    def _convert_to_sympy_expr(item: int | sympy.Expr) -> sympy.Expr:
         return item if isinstance(item, sympy.Expr) else sympy.Integer(item)
 
     def determine_grid(
         grid: TritonGrid,
-        example_grid: Optional[TritonGrid] = None,
+        example_grid: TritonGrid | None = None,
     ):
         """
         This function return a tuple of two values: the first one is for the real grid
@@ -183,7 +183,7 @@ def user_defined_kernel_grid_fn_code(
             ),
         )
 
-    def writeline(line: str, example_grid: Optional[str] = None):
+    def writeline(line: str, example_grid: str | None = None):
         output.writeline(line)
         if (
             wrapper
@@ -222,7 +222,7 @@ def user_defined_kernel_grid_fn_code(
             # maybe we'll need to restrict the supported cases to identical kwarg
             # names in all autotuning configs.
             for grid, c, example_grid in sorted(
-                zip(grids, configs, example_grids),
+                zip(grids, configs, example_grids, strict=False),
                 key=lambda x: len(x[1].kwargs),
                 reverse=True,
             ):
@@ -402,7 +402,7 @@ class ExitSubgraphLine(WrapperLine):
 @dataclasses.dataclass
 class EnterDeviceContextManagerLine(WrapperLine):
     device_idx: int
-    last_seen_device_guard_index: Optional[int]
+    last_seen_device_guard_index: int | None
 
     def codegen(self, code: IndentedBuffer) -> None:
         if V.graph.cpp_wrapper:
@@ -496,7 +496,7 @@ class ExternKernelOutLine(WrapperLine):
 @dataclasses.dataclass
 class FreeLine(WrapperLine):
     wrapper: PythonWrapperCodegen
-    node: Union[BufferLike, ir.TorchBindObject]
+    node: BufferLike | ir.TorchBindObject
 
     def codegen(self, code: IndentedBuffer) -> None:
         assert self.node.get_name() not in V.graph.removed_buffers
@@ -543,9 +543,9 @@ class KernelDefinitionLine(WrapperLine):
     wrapper: PythonWrapperCodegen
     kernel_name: str
     kernel_body: str
-    metadata: Optional[str] = None
+    metadata: str | None = None
     gpu: bool = True
-    cpp_definition: Optional[str] = None
+    cpp_definition: str | None = None
 
     def codegen(self, code: IndentedBuffer) -> None:
         self.wrapper._define_kernel_helper(
@@ -760,10 +760,7 @@ class CommBufferAllocateLine(CommBufferLine):
                 f'group_name="{group_name}", '
                 f"alloc_id={random.randint(0, 2**64 - 1)})"
             )
-        else:
-            raise NotImplementedError(
-                f"Unsupported comm buffer type: {comm_buffer_type}"
-            )
+        raise NotImplementedError(f"Unsupported comm buffer type: {comm_buffer_type}")
 
     def codegen_fx(self, converter: FxConverter) -> FxConversionFunc:
         return converter._generate_comm_buffer_allocate
@@ -796,18 +793,16 @@ class MultiOutputLine(WrapperLine):
                 itype, i = indices[0]
                 if issubclass(itype, list):
                     return codegen_list_tuple_access(f"{basename}[{i}]", indices[1:])
-                elif issubclass(itype, tuple):
+                if issubclass(itype, tuple):
                     # cpp wrapper code needs to use std::get<> to access a tuple
                     tuple_access = self.wrapper.codegen_tuple_access(
                         basename, self.result_name, str(i)
                     )
                     return codegen_list_tuple_access(tuple_access, indices[1:])
-                elif issubclass(itype, dict):
+                if issubclass(itype, dict):
                     return codegen_list_tuple_access(f"{basename}['{i}']", indices[1:])
-                else:
-                    raise AssertionError("non supported index type: ", itype)
-            else:
-                return basename
+                raise AssertionError("non supported index type: ", itype)
+            return basename
 
         value = codegen_list_tuple_access(self.arg_name, self.indices)
         code.writeline(
@@ -846,7 +841,7 @@ class PythonWrapperCodegen(CodeGen):
         super().__init__()
         self._names_iter: Iterator[int] = count()
         self.args_to_buffers: dict[
-            str, Union[None, ir.TensorBox, ir.Buffer, ir.TorchBindObject]
+            str, None | ir.TensorBox | ir.Buffer | ir.TorchBindObject
         ] = {}
         self.imports = IndentedBuffer()
         self.header = IndentedBuffer()
@@ -874,7 +869,7 @@ class PythonWrapperCodegen(CodeGen):
         self.none_str = "None"
         self.move_begin = "std::move(" if V.graph.cpp_wrapper else ""
         self.move_end = ")" if V.graph.cpp_wrapper else ""
-        self.last_seen_device_guard_index: Optional[int] = None
+        self.last_seen_device_guard_index: int | None = None
         self.supports_intermediate_hooks = True
         self.user_defined_kernel_cache: dict[tuple[Any, ...], tuple[str, Any]] = {}
         self.unbacked_symbol_decls: OrderedSet[str] = (
@@ -940,9 +935,9 @@ class PythonWrapperCodegen(CodeGen):
     @staticmethod
     def create(
         is_subgraph: bool,
-        subgraph_name: Optional[str],
-        parent_wrapper: Optional[PythonWrapperCodegen],
-        partition_signatures: Optional[ir.GraphPartitionSignature] = None,
+        subgraph_name: str | None,
+        parent_wrapper: PythonWrapperCodegen | None,
+        partition_signatures: ir.GraphPartitionSignature | None = None,
     ):
         if is_subgraph:
             assert subgraph_name is not None
@@ -1092,7 +1087,7 @@ class PythonWrapperCodegen(CodeGen):
 
     def get_graph_inputs(
         self,
-    ) -> dict[str, Union[ir.TensorBox, ir.TorchBindObject, sympy.Expr]]:
+    ) -> dict[str, ir.TensorBox | ir.TorchBindObject | sympy.Expr]:
         return V.graph.graph_inputs
 
     def get_graph_outputs(self) -> list[IRNode]:
@@ -1350,7 +1345,7 @@ class PythonWrapperCodegen(CodeGen):
         self,
         kernel: str,
         out: str,
-        out_view: Optional[str],
+        out_view: str | None,
         args: list[str],
         device: str,
     ) -> None:
@@ -1401,9 +1396,8 @@ class PythonWrapperCodegen(CodeGen):
             return self._generate_tma_descriptor_call_experimental(
                 desc, apply_size_hints
             )
-        else:
-            assert isinstance(desc, ir.TMADescriptorStable)
-            return self._generate_tma_descriptor_call_stable(desc, apply_size_hints)
+        assert isinstance(desc, ir.TMADescriptorStable)
+        return self._generate_tma_descriptor_call_stable(desc, apply_size_hints)
 
     def generate_tma_descriptor(self, desc):
         call = self._generate_tma_descriptor_call(desc)
@@ -1439,7 +1433,7 @@ class PythonWrapperCodegen(CodeGen):
         buf_name: str,
         python_kernel_name: str,
         get_args: Callable[[], Sequence[str]],
-        op_overload: Union[torch._ops.OpOverload, torch._ops.HigherOrderOperator],
+        op_overload: torch._ops.OpOverload | torch._ops.HigherOrderOperator,
         raw_args: Sequence[Any],
         outputs: Sequence[ir.Buffer],
     ) -> None:
@@ -1452,8 +1446,7 @@ class PythonWrapperCodegen(CodeGen):
     def get_wrapper_call_indent(self) -> int:
         if config.graph_partition:
             return 2
-        else:
-            return 1
+        return 1
 
     @contextlib.contextmanager
     def set_writeline(self, new: Callable[..., None]) -> Iterator[Callable[..., None]]:
@@ -1669,9 +1662,9 @@ class PythonWrapperCodegen(CodeGen):
                 if isinstance(stride, sympy.Symbol) and stride not in bound_vars:
                     code.writeline(f"{stride} = {strideof(name)}[{dim}]")
                     bound_vars.add(stride)
-        elif isinstance(value, ir.TorchBindObject):
-            return
-        elif isinstance(value, ir.GeneratorState):
+        elif isinstance(value, ir.TorchBindObject) or isinstance(
+            value, ir.GeneratorState
+        ):
             return
         else:
             if torch._inductor.config.graph_partition:
@@ -1783,18 +1776,13 @@ class PythonWrapperCodegen(CodeGen):
         ):
             if dtype is not None and dtype != data.dtype:
                 return f"aten.view.dtype({data.get_name()}, {dtype})"
-            else:
-                return f"{data.get_name()}"
-        else:
-            size = self.codegen_python_shape_tuple(size)
-            stride = self.codegen_python_shape_tuple(stride)
-            offset = self.codegen_sizevar(offset)
-            if dtype is not None and dtype != data.dtype:
-                return f"aten.view.dtype(reinterpret_tensor({data.get_name()}, {size}, {stride}, {offset}), {dtype})"
-            else:
-                return (
-                    f"reinterpret_tensor({data.get_name()}, {size}, {stride}, {offset})"
-                )
+            return f"{data.get_name()}"
+        size = self.codegen_python_shape_tuple(size)
+        stride = self.codegen_python_shape_tuple(stride)
+        offset = self.codegen_sizevar(offset)
+        if dtype is not None and dtype != data.dtype:
+            return f"aten.view.dtype(reinterpret_tensor({data.get_name()}, {size}, {stride}, {offset}), {dtype})"
+        return f"reinterpret_tensor({data.get_name()}, {size}, {stride}, {offset})"
 
     def codegen_device_copy(self, src, dst, non_blocking: bool):
         self.writeline(f"{dst}.copy_({src}, {non_blocking})")
@@ -1940,9 +1928,9 @@ class PythonWrapperCodegen(CodeGen):
         self,
         kernel_name: str,
         kernel_body: str,
-        metadata: Optional[str] = None,
+        metadata: str | None = None,
         gpu: bool = True,
-        cpp_definition: Optional[str] = None,
+        cpp_definition: str | None = None,
     ):
         self.writeline(
             KernelDefinitionLine(
@@ -1957,7 +1945,7 @@ class PythonWrapperCodegen(CodeGen):
 
     @staticmethod
     def _format_kernel_definition(
-        kernel_name: str, kernel_body: str, metadata: Optional[str] = None
+        kernel_name: str, kernel_body: str, metadata: str | None = None
     ):
         metadata_comment = f"{metadata}\n" if metadata else ""
         body = f"\n\n{metadata_comment}{kernel_name} = {kernel_body}"
@@ -1967,9 +1955,9 @@ class PythonWrapperCodegen(CodeGen):
         self,
         kernel_name: str,
         kernel_body: str,
-        metadata: Optional[str] = None,
+        metadata: str | None = None,
         gpu: bool = True,
-        cpp_definition: Optional[str] = None,
+        cpp_definition: str | None = None,
     ):
         if config.triton.autotune_at_compile_time:
             # Skip inserting comments for the autotune block as they may contain cpp style comments
@@ -1996,12 +1984,12 @@ class PythonWrapperCodegen(CodeGen):
         kwargs,
         restore_value_args,
         reset_to_zero_args,
-        grids: list[list[Union[int, sympy.Expr]]],
+        grids: list[list[int | sympy.Expr]],
     ):
         from ..runtime.triton_heuristics import (
-            config_to_dict,
             FixedGrid,
             PrecomputedGrid,
+            config_to_dict,
         )
         from .common import (
             ConstexprArg,
@@ -2010,7 +1998,7 @@ class PythonWrapperCodegen(CodeGen):
             TensorArg,
             TMADescriptorArg,
         )
-        from .triton import gen_common_triton_imports, TritonKernel
+        from .triton import TritonKernel, gen_common_triton_imports
 
         original_name = kernel.__name__
         signature: list[KernelArgType] = []
@@ -2157,7 +2145,7 @@ class PythonWrapperCodegen(CodeGen):
             extra_launcher_call_args = [*map(sympy.sympify, grids[0])]
         else:
 
-            def rename_sizes_for_launcher(expr: Union[int, sympy.Expr]) -> sympy.Expr:
+            def rename_sizes_for_launcher(expr: int | sympy.Expr) -> sympy.Expr:
                 if isinstance(expr, sympy.Expr):
                     symbols = [*expr.free_symbols]
                     if not symbols:
@@ -2179,7 +2167,9 @@ class PythonWrapperCodegen(CodeGen):
             assert grids and len(grids) == len(configs)
             precomputed_grids = []
             for grid, cfg in sorted(
-                zip(grids, configs), key=lambda x: len(x[1].kwargs), reverse=True
+                zip(grids, configs, strict=False),
+                key=lambda x: len(x[1].kwargs),
+                reverse=True,
             ):
                 precomputed_grids.append(
                     {
@@ -2256,7 +2246,7 @@ class PythonWrapperCodegen(CodeGen):
         self.user_defined_kernel_cache[cache_key] = (name, triton_meta)
         return name, triton_meta, extra_launcher_call_args
 
-    def generate_numel_expr(self, kernel_name: str, tree, suffix: Optional[str] = None):
+    def generate_numel_expr(self, kernel_name: str, tree, suffix: str | None = None):
         expr = f"{kernel_name}_{tree.prefix}numel"
         if suffix is not None:
             expr += f"_{suffix}"
@@ -2380,10 +2370,9 @@ class PythonWrapperCodegen(CodeGen):
             if isinstance(arg, str):
                 # dynamo wraps unspec variable as 0d CPU tensor, need convert to scalar
                 return arg + ".item()" if should_unwrap_unspec_arg(arg) else arg
-            elif isinstance(arg, (int, float, bool, SymbolicCallArg)):
+            if isinstance(arg, (int, float, bool, SymbolicCallArg)):
                 return str(arg)
-            else:
-                return pexpr(V.graph.sizevars.simplify(arg))
+            return pexpr(V.graph.sizevars.simplify(arg))
 
         return [wrap_arg(arg) for arg in call_args]
 
@@ -2446,7 +2435,7 @@ class PythonWrapperCodegen(CodeGen):
                 self.kernel_autotune_calls.writeline(f"{buf_name} = {value}")
 
             return buf_name
-        elif issubclass(arg_type, sympy.Basic) or isinstance(arg, SymbolicCallArg):
+        if issubclass(arg_type, sympy.Basic) or isinstance(arg, SymbolicCallArg):
             # arg is a symbol or symbolic expression
             if isinstance(arg, str):
                 if arg in self._meta_vars:
@@ -2465,20 +2454,18 @@ class PythonWrapperCodegen(CodeGen):
                 )
             )
 
-        elif isinstance(arg, (str, int, float, bool)):
+        if isinstance(arg, (str, int, float, bool)):
             return str(arg)
-        elif isinstance(arg, list):
+        if isinstance(arg, list):
             return f"[{', '.join(self.generate_example_arg_value(a, type(a)) for a in arg)}]"
-        else:
-            raise NotImplementedError(f"Unsupported type {type(arg)}")
+        raise NotImplementedError(f"Unsupported type {type(arg)}")
 
     def _grid_dim_str(self, grid_per_dim):
         if isinstance(grid_per_dim, list):
             return (
                 "[" + ", ".join(self._grid_dim_str(item) for item in grid_per_dim) + "]"
             )
-        else:
-            return pexpr(grid_per_dim)
+        return pexpr(grid_per_dim)
 
     def generate_kernel_call(
         self,
@@ -2598,7 +2585,9 @@ class PythonWrapperCodegen(CodeGen):
                 if target_arg in reused_args:
                     return True
 
-                for i, (raw_key, raw_arg) in enumerate(zip(raw_keys, raw_args)):
+                for i, (raw_key, raw_arg) in enumerate(
+                    zip(raw_keys, raw_args, strict=False)
+                ):
                     if i == idx or not isinstance(raw_arg, IRNode):
                         continue
 
@@ -2635,14 +2624,14 @@ class PythonWrapperCodegen(CodeGen):
 
             reused_args = {}
             for i, (arg, arg_type, raw_key, raw_arg) in enumerate(
-                zip(call_args, arg_types, raw_keys, raw_args)
+                zip(call_args, arg_types, raw_keys, raw_args, strict=False)
             ):
                 key = None
                 if isinstance(arg, str) and "=" in str(arg):
                     # arg may be passed in a kwarg style, and then we need to extract its value
                     key, arg = arg.split("=")
 
-                triton_input: Optional[str] = None
+                triton_input: str | None = None
                 if autotune_args and raw_key in autotune_args:
                     triton_input = self.get_autotuning_input_name(  # type: ignore[attr-defined]
                         autotune_args[raw_key]
@@ -2713,9 +2702,9 @@ class PythonWrapperCodegen(CodeGen):
 
         if isinstance(s, SymTypes):
             return pexpr(s.node.expr)
-        elif isinstance(s, sympy.Expr):
+        if isinstance(s, sympy.Expr):
             return pexpr(s)
-        elif isinstance(s, (tuple, list)):
+        if isinstance(s, (tuple, list)):
 
             @dataclasses.dataclass
             class Shim:
@@ -2728,16 +2717,15 @@ class PythonWrapperCodegen(CodeGen):
             return repr(
                 type(s)(Shim(PythonWrapperCodegen.val_to_arg_str(self, a)) for a in s)
             )
-        elif isinstance(s, torch._ops.OpOverload):
+        if isinstance(s, torch._ops.OpOverload):
             return _get_qualified_name(s)
-        elif isinstance(s, (ir.Buffer, ir.MutableBox, ReinterpretView)):
+        if isinstance(s, (ir.Buffer, ir.MutableBox, ReinterpretView)):
             return s.codegen_reference()
-        elif has_triton_package() and isinstance(s, triton.language.dtype):  # type: ignore[possibly-undefined]
+        if has_triton_package() and isinstance(s, triton.language.dtype):  # type: ignore[possibly-undefined]
             return repr(s)
-        elif isinstance(s, ir.GeneratorState):
+        if isinstance(s, ir.GeneratorState):
             return s.codegen_reference()
-        else:
-            return repr(s)
+        return repr(s)
 
     # The following methods are for memory management
     def make_buffer_allocation(self, buffer: BufferLike):
@@ -2788,7 +2776,7 @@ class PythonWrapperCodegen(CodeGen):
     def make_tensor_alias(self, new_name, old_name, comment=""):
         return f"{self.declare}{new_name} = {old_name}{self.ending}  {self.comment} {comment}"
 
-    def make_buffer_free(self, buffer: Union[BufferLike, ir.TorchBindObject]):
+    def make_buffer_free(self, buffer: BufferLike | ir.TorchBindObject):
         return f"del {buffer.get_name()}"
 
     def make_free_by_names(self, names_to_del: list[str]):
@@ -2919,16 +2907,15 @@ class PythonWrapperCodegen(CodeGen):
         name = str(symbol)
         if name in self.unbacked_symbol_decls:
             return name
-        else:
-            # When in CppWrapperCpu, we should only generate the declaration once
-            self.unbacked_symbol_decls.add(name)
-            return self.declare + name
+        # When in CppWrapperCpu, we should only generate the declaration once
+        self.unbacked_symbol_decls.add(name)
+        return self.declare + name
 
     def codegen_unbacked_symbol_defs_for_outputs(
         self,
         output_name: str,
         outputs: Any,
-        unbacked_bindings: Optional[dict[sympy.Symbol, pytree.KeyPath]],
+        unbacked_bindings: dict[sympy.Symbol, pytree.KeyPath] | None,
     ) -> None:
         unbacked_bindings = resolve_unbacked_bindings(
             V.graph.sizevars.shape_env, unbacked_bindings
@@ -2959,20 +2946,19 @@ class PythonWrapperCodegen(CodeGen):
                     return go(
                         f"{expr}.{keypath[0].name}({keypath[1].idx})", keypath[2:]
                     )
-                elif isinstance(keypath[0], CallMethodKey):
+                if isinstance(keypath[0], CallMethodKey):
                     return go(f"{expr}.{keypath[0].name}()", keypath[1:])
-                elif isinstance(keypath[0], pytree.SequenceKey):
+                if isinstance(keypath[0], pytree.SequenceKey):
                     return (
                         go(f"std::get<{keypath[0].idx}>({expr})", keypath[1:])
                         if V.graph.cpp_wrapper
                         else go(f"{expr}[{keypath[0].idx}]", keypath[1:])
                     )
-                elif isinstance(keypath[0], DivideByKey):
+                if isinstance(keypath[0], DivideByKey):
                     # TODO: need to assert divisibility
                     # TODO: this is invalid C++ codegen
                     return go(f"{expr}.__floordiv__({keypath[0].divisor})", keypath[1:])
-                else:
-                    raise AssertionError(f"unrecognized keypath {keypath}")
+                raise AssertionError(f"unrecognized keypath {keypath}")
 
             # `go_outer` manages the top-level logic for generating the final expression.
             # It handles special cases for C++ code generation and adjusts
@@ -2994,11 +2980,9 @@ class PythonWrapperCodegen(CodeGen):
                             if isinstance(out, ir.MultiOutput) and len(out.indices) != 0
                             else keypath,
                         )
-                    else:
-                        assert isinstance(keypath[0], pytree.SequenceKey)
-                        return go(outputs[keypath[0].idx].get_name(), keypath[1:])
-                else:
-                    return go(output_name, keypath)
+                    assert isinstance(keypath[0], pytree.SequenceKey)
+                    return go(outputs[keypath[0].idx].get_name(), keypath[1:])
+                return go(output_name, keypath)
 
             self.writeline(
                 f"{self.codegen_unbacked_symbol_decl(s)} = {go_outer()}{self.ending}"
@@ -3021,7 +3005,7 @@ class PythonWrapperCodegen(CodeGen):
         def _codegen_subgraph_prefix():
             assert len(subgraph.graph.graph_inputs) == len(outer_inputs)
             for inner_input, outer_input in zip(
-                subgraph.graph.graph_inputs, outer_inputs
+                subgraph.graph.graph_inputs, outer_inputs, strict=False
             ):
                 self.writeline(
                     f"{self.declare}{inner_input} = {outer_input}{self.ending}"
@@ -3030,7 +3014,7 @@ class PythonWrapperCodegen(CodeGen):
         def _codegen_subgraph_suffix():
             assert len(subgraph.graph.graph_outputs) == len(outer_outputs)
             for inner_output, outer_output in zip(
-                subgraph.graph.graph_outputs, outer_outputs
+                subgraph.graph.graph_outputs, outer_outputs, strict=False
             ):
                 self.writeline(
                     f"{outer_output} = {inner_output.codegen_reference()}{self.ending}"
@@ -3310,7 +3294,7 @@ class SubgraphPythonWrapperCodegen(PythonWrapperCodegen):
         self,
         subgraph_name: str,
         parent_wrapper: PythonWrapperCodegen,
-        partition_signatures: Optional[ir.GraphPartitionSignature] = None,
+        partition_signatures: ir.GraphPartitionSignature | None = None,
     ):
         # It is necessary to set the subgraph_name before calling super __init__
         # because __init__ calls set_launcher_fn_name
@@ -3358,7 +3342,7 @@ class SubgraphPythonWrapperCodegen(PythonWrapperCodegen):
 
     def get_graph_inputs(
         self,
-    ) -> dict[str, Union[ir.TensorBox, ir.TorchBindObject, sympy.Expr]]:
+    ) -> dict[str, ir.TensorBox | ir.TorchBindObject | sympy.Expr]:
         if signature := self.partition_signatures:
             inputs = signature.input_nodes | {
                 str(s): s for s in signature.symbol_inputs

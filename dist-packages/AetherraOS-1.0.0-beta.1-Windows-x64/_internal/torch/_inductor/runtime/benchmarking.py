@@ -1,15 +1,16 @@
 import inspect
 import time
+from collections.abc import Callable
 from functools import cached_property, wraps
 from itertools import chain
 from statistics import median
-from typing import Any, Callable
-from typing_extensions import Concatenate, ParamSpec, Self, TypeVar
+from typing import Any, Concatenate, Self
+
+from typing_extensions import ParamSpec, TypeVar
 
 import torch
 from torch._dynamo.utils import counters, dynamo_timed
 from torch._inductor.config import use_experimental_benchmarker
-
 
 logger = torch._logging.getArtifactLogger(__name__, "benchmarking")
 use_experimental_benchmarker = (
@@ -168,7 +169,7 @@ class TritonBenchmarker(Benchmarker):
                 del kwargs[kwarg]
         if "quantiles" in kwargs:
             return self.triton_do_bench(_callable, **kwargs)[0]
-        elif "return_mode" in kwargs:
+        if "return_mode" in kwargs:
             return self.triton_do_bench(_callable, **kwargs)
         return self.triton_do_bench(_callable, **kwargs, return_mode="median")
 

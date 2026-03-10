@@ -7,11 +7,11 @@ import re
 import subprocess
 import sys
 import warnings
-from typing import Any, Callable, Union
+from collections.abc import Callable
+from typing import Any
 
 import torch
 from torch._inductor import config
-
 
 _IS_WINDOWS = sys.platform == "win32"
 
@@ -89,7 +89,7 @@ cdll.LoadLibrary("__lib_path__")
         return hash(str(self))
 
     def check_build(self, code: str) -> bool:
-        from torch._inductor.codecache import get_lock_dir, LOCK_TIMEOUT, write
+        from torch._inductor.codecache import LOCK_TIMEOUT, get_lock_dir, write
         from torch._inductor.cpp_builder import (
             CppBuilder,
             CppTorchOptions,
@@ -349,7 +349,7 @@ supported_vec_isa_list = [
 
 
 def get_isa_from_cpu_capability(
-    capability: Union[str, None],
+    capability: str | None,
     vec_isa_list: list[VecISA],
     invalid_vec_isa: InvalidVecISA,
 ):
@@ -363,7 +363,7 @@ def get_isa_from_cpu_capability(
         "avx2": "avx2",
         "avx512": "avx512",
     }
-    if capability in capability_to_isa_str.keys():
+    if capability in capability_to_isa_str:
         isa_str = capability_to_isa_str[capability]
         if isa_str == "INVALID_VEC_ISA":
             return invalid_vec_isa

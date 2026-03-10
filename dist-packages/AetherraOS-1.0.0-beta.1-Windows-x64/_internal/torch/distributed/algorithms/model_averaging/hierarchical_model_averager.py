@@ -4,13 +4,11 @@ import logging
 import warnings
 from collections import OrderedDict
 from collections.abc import Iterable
-from typing import Union
 
 import torch
 import torch.distributed as dist
 import torch.distributed.algorithms.model_averaging.averagers as averagers
 import torch.distributed.algorithms.model_averaging.utils as utils
-
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +106,7 @@ class HierarchicalModelAverager(averagers.ModelAverager):
             raise ValueError(
                 "The minimum period in arg ``period_group_size_dict`` must be a positive value."
             )
-        elif self._periods[-1] == 1:
+        if self._periods[-1] == 1:
             warnings.warn(
                 "When the maximum period in arg ``period_group_size_dict`` is 1, "
                 "no need to use model averaging because the communication cost "
@@ -159,9 +157,7 @@ class HierarchicalModelAverager(averagers.ModelAverager):
 
     def average_parameters(
         self,
-        params: Union[
-            Iterable[torch.nn.Parameter], Iterable[dict[str, torch.nn.Parameter]]
-        ],
+        params: Iterable[torch.nn.Parameter] | Iterable[dict[str, torch.nn.Parameter]],
     ):
         """
         Averages parameters or parameter groups of an optimizer.

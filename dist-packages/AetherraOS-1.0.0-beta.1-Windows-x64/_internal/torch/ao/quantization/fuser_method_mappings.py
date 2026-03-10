@@ -1,11 +1,11 @@
 # mypy: allow-untyped-defs
 import itertools
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable
+from typing import Any
 
 import torch.ao.nn.intrinsic as nni
 import torch.nn as nn
-from torch.ao.quantization.utils import get_combined_dict, MatchAllNode, Pattern
-
+from torch.ao.quantization.utils import MatchAllNode, Pattern, get_combined_dict
 
 __all__ = [
     "fuse_conv_bn",
@@ -55,10 +55,8 @@ def fuse_conv_bn(is_qat, conv, bn):
         fused_module_class = fused_module_class_map.get((type(conv)), None)
         if fused_module_class is not None:
             return fused_module_class(conv, bn)
-        else:
-            raise NotImplementedError(f"Cannot fuse train modules: {(conv, bn)}")
-    else:
-        return nn.utils.fuse_conv_bn_eval(conv, bn)
+        raise NotImplementedError(f"Cannot fuse train modules: {(conv, bn)}")
+    return nn.utils.fuse_conv_bn_eval(conv, bn)
 
 
 def fuse_conv_bn_relu(is_qat, conv, bn, relu):
@@ -83,7 +81,7 @@ def fuse_conv_bn_relu(is_qat, conv, bn, relu):
     assert conv.training == bn.training == relu.training, (
         "Conv and BN both must be in the same mode (train or eval)."
     )
-    fused_module: Optional[type[nn.Sequential]] = None
+    fused_module: type[nn.Sequential] | None = None
     if is_qat:
         map_to_fused_module_train = {
             nn.Conv1d: nni.ConvBnReLU1d,
@@ -100,20 +98,17 @@ def fuse_conv_bn_relu(is_qat, conv, bn, relu):
         fused_module = map_to_fused_module_train.get(type(conv), None)
         if fused_module is not None:
             return fused_module(conv, bn, relu)
-        else:
-            raise NotImplementedError(f"Cannot fuse train modules: {(conv, bn, relu)}")
-    else:
-        map_to_fused_module_eval = {
-            nn.Conv1d: nni.ConvReLU1d,
-            nn.Conv2d: nni.ConvReLU2d,
-            nn.Conv3d: nni.ConvReLU3d,
-        }
-        fused_module = map_to_fused_module_eval.get(type(conv), None)
-        if fused_module is not None:
-            fused_conv = nn.utils.fusion.fuse_conv_bn_eval(conv, bn)
-            return fused_module(fused_conv, relu)
-        else:
-            raise NotImplementedError(f"Cannot fuse eval modules: {(conv, bn, relu)}")
+        raise NotImplementedError(f"Cannot fuse train modules: {(conv, bn, relu)}")
+    map_to_fused_module_eval = {
+        nn.Conv1d: nni.ConvReLU1d,
+        nn.Conv2d: nni.ConvReLU2d,
+        nn.Conv3d: nni.ConvReLU3d,
+    }
+    fused_module = map_to_fused_module_eval.get(type(conv), None)
+    if fused_module is not None:
+        fused_conv = nn.utils.fusion.fuse_conv_bn_eval(conv, bn)
+        return fused_module(fused_conv, relu)
+    raise NotImplementedError(f"Cannot fuse eval modules: {(conv, bn, relu)}")
 
 
 def fuse_linear_bn(is_qat, linear, bn):
@@ -146,8 +141,7 @@ def fuse_linear_bn(is_qat, linear, bn):
             "Only support fusing BatchNorm1d with tracking_running_stats set to True"
         )
         return nni.LinearBn1d(linear, bn)
-    else:
-        return nn.utils.fusion.fuse_linear_bn_eval(linear, bn)
+    return nn.utils.fusion.fuse_linear_bn_eval(linear, bn)
 
 
 def fuse_convtranspose_bn(is_qat, convt, bn):
@@ -174,8 +168,7 @@ def fuse_convtranspose_bn(is_qat, convt, bn):
         raise Exception(  # noqa: TRY002
             "Fusing ConvTranspose+BatchNorm not yet supported in QAT."
         )
-    else:
-        return nn.utils.fusion.fuse_conv_bn_eval(convt, bn, transpose=True)
+    return nn.utils.fusion.fuse_conv_bn_eval(convt, bn, transpose=True)
 
 
 def _sequential_wrapper2(sequential):
@@ -191,7 +184,7 @@ def _sequential_wrapper2(sequential):
     return fuser_method
 
 
-_DEFAULT_OP_LIST_TO_FUSER_METHOD: dict[tuple, Union[nn.Sequential, Callable]] = {
+_DEFAULT_OP_LIST_TO_FUSER_METHOD: dict[tuple, nn.Sequential | Callable] = {
     (nn.Conv1d, nn.BatchNorm1d): fuse_conv_bn,
     (nn.Conv1d, nn.BatchNorm1d, nn.ReLU): fuse_conv_bn_relu,
     (nn.Conv2d, nn.BatchNorm2d): fuse_conv_bn,
@@ -275,7 +268,7 @@ def _get_valid_patterns(op_pattern):
 
 def get_fuser_method_new(
     op_pattern: Pattern,
-    fuser_method_mapping: dict[Pattern, Union[nn.Sequential, Callable]],
+    fuser_method_mapping: dict[Pattern, nn.Sequential | Callable],
 ):
     """Get fuser method.
 
@@ -285,7 +278,7 @@ def get_fuser_method_new(
     op_patterns = _get_valid_patterns(op_pattern)
     fuser_method = None
     for op_pattern in op_patterns:
-        fuser_method = fuser_method_mapping.get(op_pattern, None)
+        fuser_method = fuser_method_mapping.get(op_pattern)
         if fuser_method is not None:
             break
     assert fuser_method is not None, f"did not find fuser method for: {op_pattern} "

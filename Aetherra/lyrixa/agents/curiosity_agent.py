@@ -32,7 +32,7 @@ class CuriosityAgent:
 
     def generate_questions(self, context: Dict[str, Any]) -> List[str]:
         """Generate curious questions based on context"""
-        # Placeholder implementation
+        # Baseline implementation
         return [
             "What patterns emerge from this data?",
             "How does this relate to previous experiences?",
@@ -41,7 +41,7 @@ class CuriosityAgent:
 
     def identify_knowledge_gaps(self, domain: str) -> List[Dict[str, Any]]:
         """Identify areas where more knowledge is needed"""
-        # Placeholder implementation
+        # Baseline implementation
         return []
 
     def explore_topic(self, topic: str) -> Dict[str, Any]:

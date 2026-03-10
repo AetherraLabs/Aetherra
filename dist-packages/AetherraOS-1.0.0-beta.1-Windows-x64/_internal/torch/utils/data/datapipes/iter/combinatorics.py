@@ -1,13 +1,12 @@
 # mypy: allow-untyped-defs
 import random
 from collections.abc import Iterator, Sized
-from typing import Optional, TypeVar
+from typing import TypeVar
 
 import torch
 from torch.utils.data.datapipes._decorator import functional_datapipe
 from torch.utils.data.datapipes.datapipe import IterDataPipe
 from torch.utils.data.sampler import Sampler, SequentialSampler
-
 
 __all__ = [
     "SamplerIterDataPipe",
@@ -35,18 +34,20 @@ class SamplerIterDataPipe(IterDataPipe[_T_co]):
         self,
         datapipe: IterDataPipe,
         sampler: type[Sampler] = SequentialSampler,
-        sampler_args: Optional[tuple] = None,
-        sampler_kwargs: Optional[dict] = None,
+        sampler_args: tuple | None = None,
+        sampler_kwargs: dict | None = None,
     ) -> None:
-        assert isinstance(
-            datapipe, Sized
-        ), "Sampler class requires input datapipe implemented `__len__`"
+        assert isinstance(datapipe, Sized), (
+            "Sampler class requires input datapipe implemented `__len__`"
+        )
         super().__init__()
         self.datapipe = datapipe
         self.sampler_args = () if sampler_args is None else sampler_args
         self.sampler_kwargs = {} if sampler_kwargs is None else sampler_kwargs
         # https://github.com/python/mypy/pull/9629 will solve
-        self.sampler = sampler(*self.sampler_args, data_source=self.datapipe, **self.sampler_kwargs)  # type: ignore[misc]
+        self.sampler = sampler(
+            *self.sampler_args, data_source=self.datapipe, **self.sampler_kwargs
+        )  # type: ignore[misc]
 
     def __iter__(self) -> Iterator[_T_co]:
         return iter(self.sampler)
@@ -97,7 +98,7 @@ class ShufflerIterDataPipe(IterDataPipe[_T_co]):
     buffer_size: int
     _buffer: list[_T_co]
     _enabled: bool
-    _seed: Optional[int]
+    _seed: int | None
     _rng: random.Random
 
     def __init__(

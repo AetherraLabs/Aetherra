@@ -7,7 +7,6 @@ from .unification_tools import assoc  # type: ignore[import]
 from .utils import transitive_get as walk
 from .variable import isvar
 
-
 __all__ = ["reify", "unify"]
 
 ###############
@@ -81,7 +80,7 @@ seq = tuple, list, Iterator
 def _unify(u, v, s):
     if len(u) != len(v):
         return False
-    for uu, vv in zip(u, v):  # avoiding recursion
+    for uu, vv in zip(u, v, strict=False):  # avoiding recursion
         s = unify(uu, vv, s)
         if s is False:
             return False

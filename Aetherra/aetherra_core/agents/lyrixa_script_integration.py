@@ -97,9 +97,7 @@ class LyrixaScriptIntegration:
 
         return self.script_router.get_script_categories()
 
-    def execute_script(
-        self, script_name: str, parameters: Dict[str, Any] = None
-    ) -> str:
+    def execute_script(self, script_name: str, parameters: Dict[str, Any] = None) -> str:
         """Execute a script with given parameters"""
         if not self.initialized:
             return "❌ Script system not initialized."

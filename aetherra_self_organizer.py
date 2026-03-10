@@ -22,7 +22,7 @@ import sqlite3
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 # Configure logging
 logging.basicConfig(
@@ -40,17 +40,17 @@ class FileMetadata:
     size: int
     last_modified: float
     content_hash: str
-    dependencies: List[str]
-    exports: List[str]
-    imports: List[str]
-    classes: List[str]
-    functions: List[str]
-    plugins: List[str]
+    dependencies: list[str]
+    exports: list[str]
+    imports: list[str]
+    classes: list[str]
+    functions: list[str]
+    plugins: list[str]
     purpose: str
     risk_level: str
     usage_score: float
     is_orphaned: bool
-    suggested_location: Optional[str]
+    suggested_location: str | None
 
 
 @dataclass
@@ -58,12 +58,12 @@ class SystemAnalysis:
     """Overall system analysis results."""
 
     total_files: int
-    orphaned_files: List[str]
-    duplicate_logic: List[tuple[str, str]]
-    broken_imports: List[str]
-    optimization_suggestions: List[Dict[str, Any]]
-    critical_files: List[str]
-    refactor_recommendations: List[Dict[str, Any]]
+    orphaned_files: list[str]
+    duplicate_logic: list[tuple[str, str]]
+    broken_imports: list[str]
+    optimization_suggestions: list[dict[str, Any]]
+    critical_files: list[str]
+    refactor_recommendations: list[dict[str, Any]]
 
 
 class AetherraFileIntelligence:
@@ -102,9 +102,9 @@ class AetherraFileIntelligence:
 
         # Initialize databases and indices
         self._init_database()
-        self.file_registry: Dict[str, FileMetadata] = {}
-        self.dependency_graph: Dict[str, Set[str]] = {}
-        self.plugin_mapping: Dict[str, Set[str]] = {}
+        self.file_registry: dict[str, FileMetadata] = {}
+        self.dependency_graph: dict[str, set[str]] = {}
+        self.plugin_mapping: dict[str, set[str]] = {}
 
     def _init_database(self):
         """Initialize the file manifest database."""
@@ -146,7 +146,7 @@ class AetherraFileIntelligence:
             """
             )
 
-    def scan_project_files(self) -> Dict[str, FileMetadata]:
+    def scan_project_files(self) -> dict[str, FileMetadata]:
         """
         📂 Recursively scan entire Aetherra project directory
         Build comprehensive file registry with metadata.
@@ -366,7 +366,7 @@ class AetherraFileIntelligence:
                 matching_files = self._find_dependency_files(dep)
                 self.dependency_graph[file_path].update(matching_files)
 
-    def _find_dependency_files(self, dependency: str) -> Set[str]:
+    def _find_dependency_files(self, dependency: str) -> set[str]:
         """Find actual file paths for a given dependency."""
         matching_files = set()
 
@@ -385,7 +385,7 @@ class AetherraFileIntelligence:
 
         return matching_files
 
-    def detect_orphaned_modules(self) -> List[str]:
+    def detect_orphaned_modules(self) -> list[str]:
         """🧩 Identify orphaned modules not linked to anything."""
         orphaned = []
 
@@ -411,7 +411,7 @@ class AetherraFileIntelligence:
 
         return orphaned
 
-    def detect_duplicate_logic(self) -> List[tuple[str, str, float]]:
+    def detect_duplicate_logic(self) -> list[tuple[str, str, float]]:
         """Identify modules with similar/duplicate logic."""
         duplicates = []
 
@@ -448,7 +448,7 @@ class AetherraFileIntelligence:
 
         return intersection / union if union > 0 else 0.0
 
-    def suggest_optimal_structure(self) -> List[Dict[str, Any]]:
+    def suggest_optimal_structure(self) -> list[dict[str, Any]]:
         """🛠️ Generate suggestions for optimal file organization."""
         suggestions = []
 
@@ -483,7 +483,7 @@ class AetherraFileIntelligence:
 
         return suggestions
 
-    def _suggest_directory(self, metadata: FileMetadata) -> Optional[str]:
+    def _suggest_directory(self, metadata: FileMetadata) -> str | None:
         """Suggest optimal directory for a file based on its purpose."""
         purpose_mapping = {
             "Plugin system": "plugins",
@@ -521,7 +521,7 @@ class AetherraFileIntelligence:
 
         return analysis
 
-    def _detect_broken_imports(self) -> List[str]:
+    def _detect_broken_imports(self) -> list[str]:
         """Detect files with broken import statements."""
         broken = []
 
@@ -548,7 +548,7 @@ class AetherraFileIntelligence:
         matching_files = self._find_dependency_files(dependency)
         return len(matching_files) > 0
 
-    def _identify_critical_files(self) -> List[str]:
+    def _identify_critical_files(self) -> list[str]:
         """Identify files critical to system operation."""
         critical = []
 
@@ -567,7 +567,7 @@ class AetherraFileIntelligence:
 
         return list(set(critical))
 
-    def _generate_refactor_recommendations(self) -> List[Dict[str, Any]]:
+    def _generate_refactor_recommendations(self) -> list[dict[str, Any]]:
         """Generate high-impact refactoring recommendations."""
         recommendations = []
 
@@ -683,8 +683,8 @@ remember analysis_results as "system_health_{datetime.now().strftime("%Y%m%d_%H%
             json.dump(index_data, f, indent=2)
 
     def execute_safe_optimization(
-        self, suggestions: List[Dict[str, Any]], dry_run: bool = True
-    ) -> Dict[str, Any]:
+        self, suggestions: list[dict[str, Any]], dry_run: bool = True
+    ) -> dict[str, Any]:
         """🛡️ Execute optimization suggestions with safety checks."""
         results = {"executed": [], "skipped": [], "errors": [], "dry_run": dry_run}
 
@@ -719,20 +719,20 @@ remember analysis_results as "system_health_{datetime.now().strftime("%Y%m%d_%H%
 
         return results
 
-    def _execute_suggestion(self, suggestion: Dict[str, Any]) -> bool:
+    def _execute_suggestion(self, suggestion: dict[str, Any]) -> bool:
         """Execute a specific optimization suggestion."""
         suggestion_type = suggestion["type"]
 
         if suggestion_type == "relocate":
             return self._execute_relocation(suggestion)
-        elif suggestion_type == "merge_files":
+        if suggestion_type == "merge_files":
             return self._execute_merge(suggestion)
-        elif suggestion_type == "archive_file":
+        if suggestion_type == "archive_file":
             return self._execute_archive(suggestion)
 
         return False
 
-    def _execute_relocation(self, suggestion: Dict[str, Any]) -> bool:
+    def _execute_relocation(self, suggestion: dict[str, Any]) -> bool:
         """Execute file relocation."""
         source = suggestion["file"]
         target_dir = suggestion["suggested_location"]
@@ -753,14 +753,14 @@ remember analysis_results as "system_health_{datetime.now().strftime("%Y%m%d_%H%
             logger.error(f"Failed to relocate {source}: {e}")
             return False
 
-    def _execute_merge(self, suggestion: Dict[str, Any]) -> bool:
+    def _execute_merge(self, suggestion: dict[str, Any]) -> bool:
         """Execute file merge operation."""
         # This is a complex operation that would require careful analysis
         # For now, just log the suggestion
         logger.info(f"Merge suggestion logged: {suggestion['files']}")
         return True
 
-    def _execute_archive(self, suggestion: Dict[str, Any]) -> bool:
+    def _execute_archive(self, suggestion: dict[str, Any]) -> bool:
         """Execute file archival."""
         file_path = Path(suggestion["file"])
         archive_dir = self.project_root / "archived"

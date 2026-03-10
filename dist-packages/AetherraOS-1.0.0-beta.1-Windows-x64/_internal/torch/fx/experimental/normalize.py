@@ -1,12 +1,13 @@
 # mypy: allow-untyped-defs
 import operator
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 import torch
 import torch.fx
 import torch.fx as fx
 from torch.fx import Proxy, Transformer
-from torch.fx.node import Argument, map_aggregate, Node, Target
+from torch.fx.node import Argument, Node, Target, map_aggregate
 from torch.fx.operator_schemas import (
     create_type_hint,
     normalize_function,
@@ -68,8 +69,8 @@ class NormalizeArgs(Transformer):
         target: Target,
         args: tuple[Argument, ...],
         kwargs: dict[str, Any],
-        arg_types: Optional[tuple[Any, ...]] = None,
-        kwarg_types: Optional[dict[str, Any]] = None,
+        arg_types: tuple[Any, ...] | None = None,
+        kwarg_types: dict[str, Any] | None = None,
     ):
         assert callable(target)
         new_args_and_kwargs = normalize_function(
@@ -85,8 +86,7 @@ class NormalizeArgs(Transformer):
             return self.tracer.create_proxy(
                 "call_function", target, new_args, new_kwargs
             )
-        else:
-            return super().call_function(target, args, kwargs)
+        return super().call_function(target, args, kwargs)
 
     def call_module(
         self, target: Target, args: tuple[Argument, ...], kwargs: dict[str, Any]
@@ -102,8 +102,7 @@ class NormalizeArgs(Transformer):
         if new_args_and_kwargs:
             new_args, new_kwargs = new_args_and_kwargs
             return super().call_module(target, new_args, new_kwargs)
-        else:
-            return super().call_module(target, args, kwargs)
+        return super().call_module(target, args, kwargs)
 
 
 class NormalizeOperators(AnnotateTypesWithSchema):

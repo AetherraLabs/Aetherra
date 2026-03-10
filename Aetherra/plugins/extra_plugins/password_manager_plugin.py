@@ -19,7 +19,6 @@ Features:
 import base64
 import json
 import logging
-import os
 import secrets
 import string
 from dataclasses import asdict, dataclass
@@ -216,7 +215,7 @@ class PasswordManager:
 
     def restore_vault(self, backup_path: str) -> Optional[Vault]:
         try:
-            with open(backup_path, "r", encoding="utf-8") as f:
+            with open(backup_path, encoding="utf-8") as f:
                 data = json.load(f)
             vault = Vault(
                 id=data["id"],
@@ -261,7 +260,5 @@ if __name__ == "__main__":
     manager = PasswordManager()
     vault = manager.create_vault("Personal Vault", "user1")
     pw = manager.generate_password()
-    cred = manager.add_credential(
-        vault.id, "user1", pw, "masterpw", url="https://example.com"
-    )
+    cred = manager.add_credential(vault.id, "user1", pw, "masterpw", url="https://example.com")
     print(json.dumps(manager.report(), indent=2, default=str))

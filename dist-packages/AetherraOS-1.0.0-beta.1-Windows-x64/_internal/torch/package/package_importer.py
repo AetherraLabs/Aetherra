@@ -8,9 +8,9 @@ import linecache
 import os
 import sys
 import types
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from contextlib import contextmanager
-from typing import Any, Callable, cast, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, cast
 from weakref import WeakValueDictionary
 
 import torch
@@ -25,11 +25,10 @@ from ._importlib import (
     _resolve_name,
     _sanity_check,
 )
-from ._mangling import demangle, PackageMangler
+from ._mangling import PackageMangler, demangle
 from ._package_unpickler import PackageUnpickler
-from .file_structure_representation import _create_directory_from_file_list, Directory
+from .file_structure_representation import Directory, _create_directory_from_file_list
 from .importer import Importer
-
 
 if TYPE_CHECKING:
     from .glob_group import GlobPattern
@@ -85,7 +84,7 @@ class PackageImporter(Importer):
 
     def __init__(
         self,
-        file_or_buffer: Union[FileLike, torch._C.PyTorchFileReader],
+        file_or_buffer: FileLike | torch._C.PyTorchFileReader,
         module_allowed: Callable[[str], bool] = lambda module_name: True,
     ):
         """Open ``file_or_buffer`` for importing. This checks that the imported package only requires modules
@@ -270,7 +269,7 @@ class PackageImporter(Importer):
                 return torch.storage.TypedStorage(
                     wrap_storage=storage._untyped_storage, dtype=dtype, _internal=True
                 )
-            elif typename == "reduce_package":
+            if typename == "reduce_package":
                 # to fix BC breaking change, objects on this load path
                 # will be loaded multiple times erroneously
                 if len(data) == 2:
@@ -280,8 +279,7 @@ class PackageImporter(Importer):
                 if reduce_id not in loaded_reduces:
                     loaded_reduces[reduce_id] = func(self, *args)
                 return loaded_reduces[reduce_id]
-            else:
-                f"Unknown typename for persistent_load, expected 'storage' or 'reduce_package' but got '{typename}'"
+            f"Unknown typename for persistent_load, expected 'storage' or 'reduce_package' but got '{typename}'"
 
         # Load the data (which may in turn use `persistent_load` to load tensors)
         data_file = io.BytesIO(self.zip_reader.get_record(pickle_file))
@@ -362,7 +360,7 @@ class PackageImporter(Importer):
         )
 
     def _make_module(
-        self, name: str, filename: Optional[str], is_package: bool, parent: str
+        self, name: str, filename: str | None, is_package: bool, parent: str
     ):
         mangled_filename = self._mangler.mangle(filename) if filename else None
         spec = importlib.machinery.ModuleSpec(
@@ -423,7 +421,9 @@ class PackageImporter(Importer):
                         module.__dict__.setdefault(old_name, new_name)
 
                 return module
-        return self._make_module(name, cur.source_file, isinstance(cur, _PackageNode), parent)  # type: ignore[attr-defined]
+        return self._make_module(
+            name, cur.source_file, isinstance(cur, _PackageNode), parent
+        )  # type: ignore[attr-defined]
 
     def _compile_source(self, fullpath: str, mangled_filename: str):
         source = self.zip_reader.get_record(fullpath)
@@ -564,7 +564,7 @@ class PackageImporter(Importer):
                     raise TypeError(
                         f"Item in {where} must be str, not {type(x).__name__}"
                     )
-                elif x == "*":
+                if x == "*":
                     if not recursive and hasattr(module, "__all__"):
                         self._handle_fromlist(module, module.__all__, recursive=True)
                 elif not hasattr(module, x):
@@ -595,18 +595,16 @@ class PackageImporter(Importer):
             # that 'name' may be relative.
             if level == 0:
                 return self._gcd_import(name.partition(".")[0])
-            elif not name:
+            if not name:
                 return module
-            else:
-                # Figure out where to slice the module's name up to the first dot
-                # in 'name'.
-                cut_off = len(name) - len(name.partition(".")[0])
-                # Slice end needs to be positive to alleviate need to special-case
-                # when ``'.' not in name``.
-                module_name = demangle(module.__name__)
-                return self.modules[module_name[: len(module_name) - cut_off]]
-        else:
-            return self._handle_fromlist(module, fromlist)
+            # Figure out where to slice the module's name up to the first dot
+            # in 'name'.
+            cut_off = len(name) - len(name.partition(".")[0])
+            # Slice end needs to be positive to alleviate need to special-case
+            # when ``'.' not in name``.
+            module_name = demangle(module.__name__)
+            return self.modules[module_name[: len(module_name) - cut_off]]
+        return self._handle_fromlist(module, fromlist)
 
     def _get_package(self, package):
         """Take a package name or module object and return the module.
@@ -617,14 +615,11 @@ class PackageImporter(Importer):
         if hasattr(package, "__spec__"):
             if package.__spec__.submodule_search_locations is None:
                 raise TypeError(f"{package.__spec__.name!r} is not a package")
-            else:
-                return package
-        else:
-            module = self.import_module(package)
-            if module.__spec__.submodule_search_locations is None:
-                raise TypeError(f"{package!r} is not a package")
-            else:
-                return module
+            return package
+        module = self.import_module(package)
+        if module.__spec__.submodule_search_locations is None:
+            raise TypeError(f"{package!r} is not a package")
+        return module
 
     def _zipfile_path(self, package, resource=None):
         package = self._get_package(package)
@@ -633,12 +628,9 @@ class PackageImporter(Importer):
         if resource is not None:
             resource = _normalize_path(resource)
             return f"{name.replace('.', '/')}/{resource}"
-        else:
-            return f"{name.replace('.', '/')}"
+        return f"{name.replace('.', '/')}"
 
-    def _get_or_create_package(
-        self, atoms: list[str]
-    ) -> "Union[_PackageNode, _ExternNode]":
+    def _get_or_create_package(self, atoms: list[str]) -> "_PackageNode | _ExternNode":
         cur = self.root
         for i, atom in enumerate(atoms):
             node = cur.children.get(atom, None)
@@ -694,7 +686,7 @@ class _PathNode:
 
 
 class _PackageNode(_PathNode):
-    def __init__(self, source_file: Optional[str]):
+    def __init__(self, source_file: str | None):
         self.source_file = source_file
         self.children: dict[str, _PathNode] = {}
 

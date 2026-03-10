@@ -2,7 +2,7 @@
 
 
 import operator
-from typing import Callable
+from collections.abc import Callable
 
 import sympy
 
@@ -12,7 +12,6 @@ from torch.fx.experimental.symbolic_shapes import free_unbacked_symbols
 from torch.multiprocessing.reductions import StorageWeakRef
 from torch.utils import _pytree as pytree
 from torch.utils._pytree import tree_flatten
-
 
 aten = torch.ops.aten
 
@@ -158,9 +157,8 @@ def fx_graph_cse(fx_g: torch.fx.graph.Graph):
                 if same_mutation_regions(n, duplicate_n_prev):
                     env[n] = duplicate_n_prev
                     continue
-                else:
-                    # any futures duplicates should replace with n, not duplicate_n_prev
-                    overwrite_due_to_mutation = True
+                # any futures duplicates should replace with n, not duplicate_n_prev
+                overwrite_due_to_mutation = True
 
             new_node = new_graph.node_copy(n, lambda x: env[x])
             env[n] = new_node

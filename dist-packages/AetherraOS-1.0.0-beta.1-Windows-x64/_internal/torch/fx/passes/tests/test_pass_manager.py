@@ -1,8 +1,8 @@
 import unittest
 
 from ..pass_manager import (
-    inplace_wrapper,
     PassManager,
+    inplace_wrapper,
     these_before_those_pass_constraint,
     this_before_that_pass_constraint,
 )

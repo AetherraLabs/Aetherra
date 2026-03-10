@@ -21,7 +21,6 @@ from torch.jit.frontend import (
 )
 from torch.nn import Module
 
-
 ScriptMethodStub = collections.namedtuple(
     "ScriptMethodStub", ("resolution_callback", "def_", "original_method")
 )
@@ -136,7 +135,7 @@ _constant_types = (
 def _get_valid_constant(attr, v, owner_type):
     if isinstance(v, _constant_types):
         return v
-    elif isinstance(v, (tuple, list)):
+    if isinstance(v, (tuple, list)):
         return tuple(_get_valid_constant(attr, x, owner_type) for x in v)
     constants = ", ".join(torch.typename(typ) for typ in _constant_types)
     raise TypeError(
@@ -758,7 +757,7 @@ def get_overload_annotations(mod, jit_ignored_properties):
                 )
 
             names = [name + "__" + str(i) for i in range(len(method_overloads))]
-            overloads[item] = list(zip(names, method_overloads))
+            overloads[item] = list(zip(names, method_overloads, strict=False))
 
     return overloads
 

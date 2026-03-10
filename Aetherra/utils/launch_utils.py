@@ -44,9 +44,7 @@ def run_self_improvement_api():
     """Start the enhanced API server in the background"""
     try:
         # Get the project root directory
-        project_root = Path(
-            __file__
-        ).parent.parent.parent  # Go up from utils to Aetherra Project
+        project_root = Path(__file__).parent.parent.parent  # Go up from utils to Aetherra Project
         api_script = project_root / "run_self_improvement_api.py"
 
         if api_script.exists():
@@ -67,9 +65,7 @@ def run_self_improvement_api():
                     [sys.executable, str(api_script)],
                     stdout=log,
                     stderr=subprocess.STDOUT,
-                    creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
-                    if os.name == "nt"
-                    else 0,
+                    creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
                     cwd=str(project_root),  # Set working directory
                 )
 

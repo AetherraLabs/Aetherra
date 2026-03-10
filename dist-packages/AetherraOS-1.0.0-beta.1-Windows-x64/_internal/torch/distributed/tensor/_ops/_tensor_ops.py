@@ -1,7 +1,7 @@
 # mypy: allow-untyped-defs
 # Copyright (c) Meta Platforms, Inc. and affiliates
 from collections.abc import Sequence, Sized
-from typing import cast, Optional
+from typing import cast
 
 import torch
 from torch.distributed.tensor._dtensor_spec import DTensorSpec
@@ -33,7 +33,6 @@ from torch.distributed.tensor.placement_types import (
     Replicate,
     Shard,
 )
-
 
 aten = torch.ops.aten
 
@@ -567,25 +566,22 @@ def _derive_follow_placements_from_tuple_strategy(
             if new_placement.is_shard():
                 # follow new placement
                 return new_placement
-            elif new_placement.is_partial():
+            if new_placement.is_partial():
                 # different partial types, we can't merge and have to replicate all here
                 return Replicate()
-            else:
-                # follow partial
-                return cur_placement
-        elif cur_placement.is_shard():
+            # follow partial
+            return cur_placement
+        if cur_placement.is_shard():
             if new_placement.is_shard():
                 # cur/new placement are different sharding (i.e. different shard dim)
                 # currently fallback to replicate all args
                 return Replicate()
-            else:
-                # for partial/replicate, follow the current shard placement
-                return cur_placement
-        else:
-            # current replicate, just follow new placement
-            return new_placement
+            # for partial/replicate, follow the current shard placement
+            return cur_placement
+        # current replicate, just follow new placement
+        return new_placement
 
-    follow_placements: Optional[list[Placement]] = None
+    follow_placements: list[Placement] | None = None
     mesh = tuple_strategy.child_mesh(0)
     for arg_strategy in tuple_strategy.childs:
         assert isinstance(arg_strategy, OpStrategy)
@@ -705,7 +701,7 @@ def prop_index_select(op_schema: OpSchema) -> OutputSharding:
     assert isinstance(dim, int)
     assert isinstance(indices_spec, DTensorSpec)
 
-    all_indices_spec: list[Optional[DTensorSpec]] = [
+    all_indices_spec: list[DTensorSpec | None] = [
         indices_spec if dim == i else None for i in range(values_spec.ndim)
     ]
 
@@ -750,7 +746,7 @@ def prop_index(op_schema: OpSchema) -> OutputSharding:
     values_spec, multi_indices_spec = op_schema.args_schema
     assert isinstance(values_spec, DTensorSpec)
     assert isinstance(multi_indices_spec, list)
-    multi_indices_spec = cast(list[Optional[DTensorSpec]], multi_indices_spec)
+    multi_indices_spec = cast(list[DTensorSpec | None], multi_indices_spec)
     valid_indices_spec: list[tuple[int, DTensorSpec]] = [
         (i, a) for i, a in enumerate(multi_indices_spec) if a is not None
     ]
@@ -785,7 +781,7 @@ def prop_index(op_schema: OpSchema) -> OutputSharding:
 
     need_reshard_on_values = tuple(
         (isinstance(vp, Shard) and (vp.dim in lookup_dims or isinstance(ip, Shard)))
-        for vp, ip in zip(values_spec.placements, indices_spec.placements)
+        for vp, ip in zip(values_spec.placements, indices_spec.placements, strict=False)
     )
 
     if not need_reshard_on_indices and not any(need_reshard_on_values):
@@ -793,7 +789,9 @@ def prop_index(op_schema: OpSchema) -> OutputSharding:
 
         all_dims_consecutive = all(
             b[0] - a[0] == 1
-            for b, a in zip(valid_indices_spec[1:], valid_indices_spec[:-1])
+            for b, a in zip(
+                valid_indices_spec[1:], valid_indices_spec[:-1], strict=False
+            )
         )
         if all_dims_consecutive:
             # if all index vectors are consecutives, insert at the dimension of the first index
@@ -819,7 +817,9 @@ def prop_index(op_schema: OpSchema) -> OutputSharding:
 
         value_placements = tuple(
             place(vp, ip)
-            for vp, ip in zip(values_spec.placements, indices_spec.placements)
+            for vp, ip in zip(
+                values_spec.placements, indices_spec.placements, strict=False
+            )
         )
         result = OutputSharding(
             output_spec=DTensorSpec(
@@ -828,28 +828,27 @@ def prop_index(op_schema: OpSchema) -> OutputSharding:
             )
         )
         return result
-    else:
-        result = OutputSharding(
-            output_spec=None,
-            redistribute_schema=OpSchema(
-                op=op_schema.op,
-                args_schema=(
-                    DTensorSpec(
-                        mesh=values_spec.mesh,
-                        placements=tuple(
-                            [
-                                Replicate() if need_reshard_on_values[i] else v
-                                for i, v in enumerate(values_spec.placements)
-                            ]
-                        ),
-                        tensor_meta=values_spec.tensor_meta,
+    result = OutputSharding(
+        output_spec=None,
+        redistribute_schema=OpSchema(
+            op=op_schema.op,
+            args_schema=(
+                DTensorSpec(
+                    mesh=values_spec.mesh,
+                    placements=tuple(
+                        [
+                            Replicate() if need_reshard_on_values[i] else v
+                            for i, v in enumerate(values_spec.placements)
+                        ]
                     ),
-                    multi_indices_spec,
+                    tensor_meta=values_spec.tensor_meta,
                 ),
-                kwargs_schema=op_schema.kwargs_schema,
+                multi_indices_spec,
             ),
-        )
-        return result
+            kwargs_schema=op_schema.kwargs_schema,
+        ),
+    )
+    return result
 
 
 @register_op_strategy(

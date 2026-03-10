@@ -7,7 +7,6 @@ which are exportable to ONNX.
 # flake8: noqa: B950
 from __future__ import annotations
 
-
 __all__ = [
     "aten_decompositions",
     "symbolic",
@@ -17,11 +16,11 @@ __all__ = [
 ]
 
 
-from typing import Callable, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import torch
 from torch.onnx.ops import _impl, _symbolic_impl
-
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

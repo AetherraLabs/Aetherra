@@ -22,18 +22,30 @@ import platform
 import sys
 import textwrap
 import threading
+from collections.abc import Callable as _Callable
+from typing import (
+    TYPE_CHECKING,
+)
 from typing import (
     Any as _Any,
-    Callable as _Callable,
-    get_origin as _get_origin,
+)
+from typing import (
     Optional as _Optional,
-    overload as _overload,
-    TYPE_CHECKING,
+)
+from typing import (
     TypeVar as _TypeVar,
+)
+from typing import (
     Union as _Union,
 )
-from typing_extensions import ParamSpec as _ParamSpec
+from typing import (
+    get_origin as _get_origin,
+)
+from typing import (
+    overload as _overload,
+)
 
+from typing_extensions import ParamSpec as _ParamSpec
 
 if TYPE_CHECKING:
     from .types import Device, IntLikeType
@@ -48,17 +60,18 @@ def _running_with_deploy() -> builtins.bool:
 
 from torch._utils import (
     _functionalize_sync as _sync,
+)
+from torch._utils import (
     _import_dotted_name,
     classproperty,
 )
 from torch._utils_internal import (
+    USE_GLOBAL_DEPS,
+    USE_RTLD_GLOBAL_WITH_LIBTORCH,
     get_file_path,
     prepare_multiprocessing_environment,
     profiler_allow_cudagraph_cupti_lazy_reinit_cuda12,
-    USE_GLOBAL_DEPS,
-    USE_RTLD_GLOBAL_WITH_LIBTORCH,
 )
-
 
 # TODO(torch_deploy) figure out how to freeze version.py in fbcode build
 if _running_with_deploy():
@@ -259,7 +272,7 @@ if sys.platform == "win32":
                         f' Error loading "{dll}" or one of its dependencies.'
                     )
                     raise err
-                elif res is not None:
+                if res is not None:
                     is_loaded = True
             if not is_loaded:
                 if not path_patched:
@@ -483,20 +496,19 @@ class SymInt:
         # determine the output type of this operation
         if other >= 0:
             return self.__pow_by_natural__(other)
-        else:
-            # Mercifully, when the exponent is negative, Python just promotes
-            # to doubles and does a float pow:
-            #
-            #   if (Py_SIZE(b) < 0 && c == NULL) {
-            #       /* if exponent is negative and there's no modulus:
-            #              return a float.  This works because we know
-            #              that this calls float_pow() which converts its
-            #              arguments to double. */
-            #       Py_DECREF(a);
-            #       Py_DECREF(b);
-            #       return PyFloat_Type.tp_as_number->nb_power(v, w, x);
-            #   }
-            return sym_float(self).__pow__(sym_float(other))
+        # Mercifully, when the exponent is negative, Python just promotes
+        # to doubles and does a float pow:
+        #
+        #   if (Py_SIZE(b) < 0 && c == NULL) {
+        #       /* if exponent is negative and there's no modulus:
+        #              return a float.  This works because we know
+        #              that this calls float_pow() which converts its
+        #              arguments to double. */
+        #       Py_DECREF(a);
+        #       Py_DECREF(b);
+        #       return PyFloat_Type.tp_as_number->nb_power(v, w, x);
+        #   }
+        return sym_float(self).__pow__(sym_float(other))
 
     def __rpow__(self, other):
         if isinstance(other, (builtins.float, SymFloat)):
@@ -505,8 +517,7 @@ class SymInt:
             return NotImplemented
         if self >= 0:  # self is exponent
             return self.__rpow_by_natural__(other)
-        else:
-            return sym_float(self).__rpow__(sym_float(other))
+        return sym_float(self).__rpow__(sym_float(other))
 
     def __eq__(self, other: object) -> builtins.bool:
         raise TypeError("type stub not overridden")
@@ -589,14 +600,13 @@ class SymInt:
     def __hash__(self) -> builtins.int:
         if self.node.is_nested_int():
             return hash(self.node.nested_int())
-        else:
-            # We could support constant SymInts as well, but not doing it for now
-            raise TypeError("unhashable type: non-nested SymInt")
-            # TODO: Force specialization
-            # This can't be done because the TypeError here is load bearing
-            # for einops
-            # https://github.com/arogozhnikov/einops/blob/6181e1e95dc58c00a3143c1726da1c6ee0463164/einops/einops.py#L237
-            # return hash(builtins.int(self))
+        # We could support constant SymInts as well, but not doing it for now
+        raise TypeError("unhashable type: non-nested SymInt")
+        # TODO: Force specialization
+        # This can't be done because the TypeError here is load bearing
+        # for einops
+        # https://github.com/arogozhnikov/einops/blob/6181e1e95dc58c00a3143c1726da1c6ee0463164/einops/einops.py#L237
+        # return hash(builtins.int(self))
 
     def as_integer_ratio(self) -> tuple["SymInt", builtins.int]:
         """Represent this int as an exact integer ratio"""
@@ -795,9 +805,8 @@ class SymBool:
     def __hash__(self):
         if self.node.is_constant():
             return hash(self.node.bool_())
-        else:
-            # Force specialization
-            return hash(builtins.bool(self))
+        # Force specialization
+        return hash(builtins.bool(self))
 
 
 def sym_not(a):
@@ -827,7 +836,7 @@ def sym_float(a):
         return overrides.handle_torch_function(sym_float, (a,), a)
     if isinstance(a, SymFloat):
         return a
-    elif hasattr(a, "__sym_float__"):
+    if hasattr(a, "__sym_float__"):
         return a.__sym_float__()
     return builtins.float(a)  # type: ignore[operator]
 
@@ -842,7 +851,7 @@ def sym_int(a):
         return overrides.handle_torch_function(sym_int, (a,), a)
     if isinstance(a, SymInt):
         return a
-    elif isinstance(a, SymFloat):
+    if isinstance(a, SymFloat):
         return math.trunc(a)
     return builtins.int(a)  # type: ignore[operator]
 
@@ -858,7 +867,7 @@ def sym_max(a, b):
         return overrides.handle_torch_function(sym_max, (a, b), a, b)
     if isinstance(a, (SymInt, SymFloat)):
         return a.__sym_max__(b)
-    elif isinstance(b, (SymInt, SymFloat)):
+    if isinstance(b, (SymInt, SymFloat)):
         # Due to promotion semantics, this is operator is commutative:
         # max(1, 1.0) === max(1.0, 1) === 1.0
         return b.__sym_max__(a)
@@ -870,8 +879,7 @@ def sym_max(a, b):
     assert isinstance(b, all_types), type(b)
     if isinstance(a, float_types) or isinstance(b, float_types):
         return builtins.float(builtins.max(a, b))  # type: ignore[call-overload]
-    else:
-        return builtins.max(a, b)  # type: ignore[call-overload]
+    return builtins.max(a, b)  # type: ignore[call-overload]
 
 
 def __all_and_float_types() -> tuple[tuple[type, ...], tuple[type, ...]]:
@@ -898,7 +906,7 @@ def sym_min(a, b):
         return overrides.handle_torch_function(sym_min, (a, b), a, b)
     if isinstance(a, (SymInt, SymFloat)):
         return a.__sym_min__(b)
-    elif isinstance(b, (SymInt, SymFloat)):
+    if isinstance(b, (SymInt, SymFloat)):
         return b.__sym_min__(a)
 
     all_types, float_types = __all_and_float_types()
@@ -907,8 +915,7 @@ def sym_min(a, b):
     assert isinstance(b, all_types), type(b)
     if isinstance(a, float_types) or isinstance(b, float_types):
         return builtins.float(builtins.min(a, b))  # type: ignore[call-overload]
-    else:
-        return builtins.min(a, b)  # type: ignore[call-overload]
+    return builtins.min(a, b)  # type: ignore[call-overload]
 
 
 def sym_sum(args):
@@ -1020,7 +1027,6 @@ except ImportError:
 # The torch._C submodule is already loaded via `from torch._C import *` above
 # Make an explicit reference to the _C submodule to appease linters
 from torch import _C as _C
-
 
 __name, __obj = "", None
 for __name in dir(_C):
@@ -1147,10 +1153,9 @@ def get_default_device() -> "torch.device":
     def _get_device_with_index(device):
         if device.index is not None:
             return device
-        else:
-            # TODO: Call like get_device_index() method corresponding to
-            # each device type
-            return torch.tensor([]).device
+        # TODO: Call like get_device_index() method corresponding to
+        # each device type
+        return torch.tensor([]).device
 
     # Get device from any active DeviceContext.
     device_mode = next(
@@ -1167,8 +1172,7 @@ def get_default_device() -> "torch.device":
     if hasattr(_GLOBAL_DEVICE_CONTEXT, "device_context"):
         device = _GLOBAL_DEVICE_CONTEXT.device_context.device
         return _get_device_with_index(device)
-    else:
-        return torch.device("cpu")
+    return torch.device("cpu")
 
 
 def set_default_device(device: "Device") -> None:
@@ -1233,7 +1237,7 @@ def set_default_device(device: "Device") -> None:
     _GLOBAL_DEVICE_CONTEXT.device_context = device_context
 
 
-def set_default_tensor_type(t: _Union[type["torch.Tensor"], str], /) -> None:
+def set_default_tensor_type(t: type["torch.Tensor"] | str, /) -> None:
     r"""
     .. warning::
 
@@ -1474,7 +1478,7 @@ def is_deterministic_algorithms_warn_only_enabled() -> builtins.bool:
     return _C._get_deterministic_algorithms_warn_only()
 
 
-def set_deterministic_debug_mode(debug_mode: _Union[builtins.int, str]) -> None:
+def set_deterministic_debug_mode(debug_mode: builtins.int | str) -> None:
     r"""Sets the debug mode for deterministic operations.
 
     .. note:: This is an alternative interface for
@@ -1527,10 +1531,8 @@ def get_deterministic_debug_mode() -> builtins.int:
     if _C._get_deterministic_algorithms():
         if _C._get_deterministic_algorithms_warn_only():
             return 1
-        else:
-            return 2
-    else:
-        return 0
+        return 2
+    return 0
 
 
 def get_float32_matmul_precision() -> str:
@@ -1636,7 +1638,7 @@ def is_warn_always_enabled() -> builtins.bool:
 
 def _check_with(
     error_type,
-    cond: _Union[builtins.bool, SymBool],
+    cond: builtins.bool | SymBool,
     message: _Callable[[], str],
 ):  # noqa: F811
     if not isinstance(cond, (builtins.bool, SymBool)):
@@ -1825,7 +1827,6 @@ def _check_tensor_all(cond, message=None):  # noqa: F811
 # NumPy consistency (https://numpy.org/devdocs/reference/constants.html)
 from math import e, inf, nan, pi
 
-
 newaxis: None = None
 
 __all__.extend(["e", "pi", "nan", "inf", "newaxis"])
@@ -1834,16 +1835,15 @@ __all__.extend(["e", "pi", "nan", "inf", "newaxis"])
 # Define Storage and Tensor classes
 ################################################################################
 
-from torch._tensor import Tensor  # usort: skip
-
 # needs to be after torch.Tensor is defined to avoid circular dependencies
 from torch import storage as storage  # usort: skip
+from torch._tensor import Tensor  # usort: skip
 from torch.storage import (
+    TypedStorage,
+    UntypedStorage,
     _LegacyStorage,
     _StorageBase,
     _warn_typed_storage_removal,
-    TypedStorage,
-    UntypedStorage,
 )
 
 
@@ -2036,7 +2036,7 @@ class QUInt2x4Storage(_LegacyStorage):
         return torch.quint2x4
 
 
-_storage_classes: set[type[_Union[TypedStorage, UntypedStorage]]] = {
+_storage_classes: set[type[TypedStorage | UntypedStorage]] = {
     UntypedStorage,
     DoubleStorage,
     FloatStorage,
@@ -2062,12 +2062,13 @@ _storage_classes: set[type[_Union[TypedStorage, UntypedStorage]]] = {
 _tensor_classes: set[type["torch.Tensor"]] = set()
 
 # If you edit these imports, please update torch/__init__.py.in as well
-from torch import amp as amp, random as random, serialization as serialization
+from torch import amp as amp
+from torch import random as random
+from torch import serialization as serialization
 from torch._tensor_str import set_printoptions
-from torch.amp import autocast, GradScaler
+from torch.amp import GradScaler, autocast
 from torch.random import get_rng_state, initial_seed, manual_seed, seed, set_rng_state
 from torch.serialization import load, save
-
 
 ################################################################################
 # Initialize extension
@@ -2130,7 +2131,6 @@ del __name, __obj
 
 import torch
 
-
 __all__.extend(
     name for name in dir(torch) if isinstance(getattr(torch, name), torch.dtype)
 )
@@ -2140,14 +2140,13 @@ __all__.extend(
 ################################################################################
 
 # needs to be before from torch.functional import * to avoid circular dependencies
-from torch._compile import _disable_dynamo  # usort: skip
-
 ################################################################################
 # Import interface functions defined in Python
 ################################################################################
-
 # needs to be after the above ATen bindings so we can overwrite from Python side
-from torch import _VF as _VF, functional as functional  # usort: skip
+from torch import _VF as _VF  # usort: skip
+from torch import functional as functional
+from torch._compile import _disable_dynamo  # usort: skip
 from torch.functional import *  # usort: skip # noqa: F403
 
 ################################################################################
@@ -2183,63 +2182,120 @@ def _assert(condition, message):
 # side effect of adding to the imported module's members for other users.
 
 # needs to be before import torch.nn as nn to avoid circular dependencies
-from torch.autograd import (  # usort: skip
-    enable_grad as enable_grad,
-    inference_mode as inference_mode,
-    no_grad as no_grad,
-    set_grad_enabled as set_grad_enabled,
-)
-
-from torch import (
-    __config__ as __config__,
-    __future__ as __future__,
-    _awaits as _awaits,
-    accelerator as accelerator,
-    autograd as autograd,
-    backends as backends,
-    cpu as cpu,
-    cuda as cuda,
-    distributed as distributed,
-    distributions as distributions,
-    fft as fft,
-    futures as futures,
-    hub as hub,
-    jit as jit,
-    linalg as linalg,
-    mps as mps,
-    mtia as mtia,
-    multiprocessing as multiprocessing,
-    nested as nested,
-    nn as nn,
-    optim as optim,
-    overrides as overrides,
-    profiler as profiler,
-    sparse as sparse,
-    special as special,
-    testing as testing,
-    types as types,
-    utils as utils,
-    xpu as xpu,
-)
-from torch.signal import windows as windows
-
-
-# Quantized, sparse, AO, etc. should be last to get imported, as nothing
-# is expected to depend on them.
-from torch import ao as ao  # usort: skip
-
 # nn.quant* depends on ao -- so should be after those.
 import torch.nn.intrinsic
 import torch.nn.qat
 import torch.nn.quantizable
 import torch.nn.quantized
+from torch import (
+    __config__ as __config__,
+)
+from torch import (
+    __future__ as __future__,
+)
+from torch import (
+    _awaits as _awaits,
+)
+from torch import (
+    accelerator as accelerator,
+)
 
+# Quantized, sparse, AO, etc. should be last to get imported, as nothing
+# is expected to depend on them.
+from torch import ao as ao  # usort: skip
+from torch import (
+    autograd as autograd,
+)
+from torch import (
+    backends as backends,
+)
+from torch import (
+    cpu as cpu,
+)
+from torch import (
+    cuda as cuda,
+)
+from torch import (
+    distributed as distributed,
+)
+from torch import (
+    distributions as distributions,
+)
+from torch import (
+    fft as fft,
+)
+from torch import (
+    futures as futures,
+)
+from torch import (
+    hub as hub,
+)
+from torch import (
+    jit as jit,
+)
+from torch import (
+    linalg as linalg,
+)
+from torch import (
+    mps as mps,
+)
+from torch import (
+    mtia as mtia,
+)
+from torch import (
+    multiprocessing as multiprocessing,
+)
+from torch import (
+    nested as nested,
+)
+from torch import (
+    nn as nn,
+)
+from torch import (
+    optim as optim,
+)
+from torch import (
+    overrides as overrides,
+)
+from torch import (
+    profiler as profiler,
+)
+from torch import (
+    sparse as sparse,
+)
+from torch import (
+    special as special,
+)
+from torch import (
+    testing as testing,
+)
+from torch import (
+    types as types,
+)
+from torch import (
+    utils as utils,
+)
+from torch import (
+    xpu as xpu,
+)
+from torch.autograd import (  # usort: skip
+    enable_grad as enable_grad,
+)
+from torch.autograd import (
+    inference_mode as inference_mode,
+)
+from torch.autograd import (
+    no_grad as no_grad,
+)
+from torch.autograd import (
+    set_grad_enabled as set_grad_enabled,
+)
+from torch.signal import windows as windows
 
 _C._init_names(list(_storage_classes))
 
 # attach docstrings to torch and tensor functions
 from torch import _size_docs, _storage_docs, _tensor_docs, _torch_docs
-
 
 del _torch_docs, _tensor_docs, _storage_docs, _size_docs
 
@@ -2249,12 +2305,12 @@ def compiled_with_cxx11_abi() -> builtins.bool:
     return True
 
 
-from torch import _library as _library, _ops as _ops
-
+from torch import _library as _library
+from torch import _ops as _ops
+from torch._classes import classes as classes  # usort: skip
 
 # Import the ops and classes "namespace"
 from torch._ops import ops as ops  # usort: skip
-from torch._classes import classes as classes  # usort: skip
 
 sys.modules.setdefault(f"{__name__}.ops", ops)
 sys.modules.setdefault(f"{__name__}.classes", classes)
@@ -2274,14 +2330,12 @@ legacy_contiguous_format = contiguous_format  # defined by _C._initExtension()
 # Register fork handler to initialize OpenMP in child processes (see gh-28389)
 from torch.multiprocessing._atfork import register_after_fork
 
-
 register_after_fork(torch.get_num_threads)
 del register_after_fork
 
 # Import tools that require fully imported torch (for applying
 # torch.jit.script as a decorator, for instance):
 from torch._lobpcg import lobpcg as lobpcg
-
 
 # These were previously defined in native_functions.yaml and appeared on the
 # `torch` namespace, but we moved them to c10 dispatch to facilitate custom
@@ -2297,6 +2351,8 @@ from torch import masked as masked
 # Import removed ops with error message about removal
 from torch._linalg_utils import (  # type: ignore[misc]
     _symeig as symeig,
+)
+from torch._linalg_utils import (
     eig,
     lstsq,
     matrix_rank,
@@ -2341,13 +2397,13 @@ class _TorchCompileInductorWrapper:
             and self.dynamic == other.dynamic
         )
 
-    def apply_mode(self, mode: _Optional[str]):
+    def apply_mode(self, mode: str | None):
         if mode and mode != "default":
             from torch._inductor import list_mode_options
 
             self.apply_options(list_mode_options(mode, self.dynamic))
 
-    def apply_options(self, options: _Optional[dict[str, _Any]]):
+    def apply_options(self, options: dict[str, _Any] | None):
         if not options:
             return
 
@@ -2438,12 +2494,10 @@ def compile(
     model: _Callable[_InputT, _RetT],
     *,
     fullgraph: builtins.bool = False,
-    dynamic: _Optional[builtins.bool] = None,
-    backend: _Union[str, _Callable] = "inductor",
-    mode: _Union[str, None] = None,
-    options: _Optional[
-        dict[str, _Union[str, builtins.int, builtins.bool, _Callable]]
-    ] = None,
+    dynamic: builtins.bool | None = None,
+    backend: str | _Callable = "inductor",
+    mode: str | None = None,
+    options: dict[str, str | builtins.int | builtins.bool | _Callable] | None = None,
     disable: builtins.bool = False,
 ) -> _Callable[_InputT, _RetT]: ...
 
@@ -2453,31 +2507,27 @@ def compile(
     model: None = None,
     *,
     fullgraph: builtins.bool = False,
-    dynamic: _Optional[builtins.bool] = None,
-    backend: _Union[str, _Callable] = "inductor",
-    mode: _Union[str, None] = None,
-    options: _Optional[
-        dict[str, _Union[str, builtins.int, builtins.bool, _Callable]]
-    ] = None,
+    dynamic: builtins.bool | None = None,
+    backend: str | _Callable = "inductor",
+    mode: str | None = None,
+    options: dict[str, str | builtins.int | builtins.bool | _Callable] | None = None,
     disable: builtins.bool = False,
 ) -> _Callable[[_Callable[_InputT, _RetT]], _Callable[_InputT, _RetT]]: ...
 
 
 def compile(
-    model: _Optional[_Callable[_InputT, _RetT]] = None,
+    model: _Callable[_InputT, _RetT] | None = None,
     *,
     fullgraph: builtins.bool = False,
-    dynamic: _Optional[builtins.bool] = None,
-    backend: _Union[str, _Callable] = "inductor",
-    mode: _Union[str, None] = None,
-    options: _Optional[
-        dict[str, _Union[str, builtins.int, builtins.bool, _Callable]]
-    ] = None,
+    dynamic: builtins.bool | None = None,
+    backend: str | _Callable = "inductor",
+    mode: str | None = None,
+    options: dict[str, str | builtins.int | builtins.bool | _Callable] | None = None,
     disable: builtins.bool = False,
-) -> _Union[
-    _Callable[[_Callable[_InputT, _RetT]], _Callable[_InputT, _RetT]],
-    _Callable[_InputT, _RetT],
-]:
+) -> (
+    _Callable[[_Callable[_InputT, _RetT]], _Callable[_InputT, _RetT]]
+    | _Callable[_InputT, _RetT]
+):
     """
     Optimizes given model/function using TorchDynamo and specified backend.
     If you are compiling an :class:`torch.nn.Module`, you can also use :meth:`torch.nn.Module.compile`
@@ -2576,7 +2626,7 @@ def compile(
     _C._log_api_usage_once("torch.compile")
     if sys.version_info >= (3, 14):
         raise RuntimeError("torch.compile is not supported on Python 3.14+")
-    elif sysconfig.get_config_var("Py_GIL_DISABLED") == 1 and sys.version_info < (
+    if sysconfig.get_config_var("Py_GIL_DISABLED") == 1 and sys.version_info < (
         3,
         13,
         3,
@@ -2656,13 +2706,19 @@ def _register_device_module(device_type, module):
 
 from torch import (
     export as export,
+)
+from torch import (
     func as func,
+)
+from torch import (
     library as library,
+)
+from torch import (
     return_types as return_types,
 )
-from torch._higher_order_ops import cond as cond, while_loop as while_loop
+from torch._higher_order_ops import cond as cond
+from torch._higher_order_ops import while_loop as while_loop
 from torch.func import vmap as vmap
-
 
 if not TYPE_CHECKING:
     from torch import _meta_registrations
@@ -2676,7 +2732,6 @@ if "TORCH_CUDA_SANITIZER" in os.environ:
 # Populate magic methods on SymInt and SymFloat
 import torch.fx.experimental.sym_node
 from torch import fx as fx
-
 
 # Register MPS specific decomps
 torch.backends.mps._init()
@@ -2712,8 +2767,14 @@ if TYPE_CHECKING:
     # imported in user code.
     from torch import (
         _dynamo as _dynamo,
+    )
+    from torch import (
         _inductor as _inductor,
+    )
+    from torch import (
         _subclasses as _subclasses,
+    )
+    from torch import (
         onnx as onnx,
     )
 
@@ -2746,7 +2807,7 @@ else:
 
 
 @functools.cache
-def get_device_module(device: _Optional[_Union[torch.device, str]] = None):
+def get_device_module(device: torch.device | str | None = None):
     """
     Returns the module associated with a given device(e.g., torch.device('cuda'), "mtia:0", "xpu", ...).
     If no device is given, return the module for the current accelerator or CPU if none is present.
@@ -2772,8 +2833,8 @@ def get_device_module(device: _Optional[_Union[torch.device, str]] = None):
 
 def _constrain_as_size(
     symbol,
-    min: _Optional[builtins.int] = None,
-    max: _Optional[builtins.int] = None,
+    min: builtins.int | None = None,
+    max: builtins.int | None = None,
 ):
     """
     This indicates that a given int is size-like, and can be used in any context where a size is expected.
@@ -2797,7 +2858,6 @@ def _constrain_as_size(
 
 
 from torch import _logging
-
 
 _logging._init_logs()
 
@@ -2853,10 +2913,9 @@ def _as_tensor_fullprec(t):
     ty = type(t)
     if ty is builtins.float:
         return torch.as_tensor(t, dtype=torch.float64)
-    elif ty is builtins.int:
+    if ty is builtins.int:
         return torch.as_tensor(t, dtype=torch.int64)
-    else:
-        return torch.as_tensor(t)
+    return torch.as_tensor(t)
 
 
 # `_import_device_backends` should be kept at the end to ensure

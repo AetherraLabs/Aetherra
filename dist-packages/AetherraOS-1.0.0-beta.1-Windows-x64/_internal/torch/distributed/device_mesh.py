@@ -7,12 +7,11 @@ import threading
 import warnings
 from functools import reduce
 from itertools import chain
-from typing import Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Union
 
 import torch
 from torch.distributed import is_available
 from torch.utils._typing_utils import not_none
-
 
 __all__ = ["init_device_mesh", "DeviceMesh"]
 
@@ -40,6 +39,7 @@ if not is_available():
 else:
     from torch._C._distributed_c10d import Backend as C10dBackend
     from torch.distributed.distributed_c10d import (
+        ProcessGroup,
         _get_default_group,
         _resolve_process_group,
         get_backend,
@@ -49,7 +49,6 @@ else:
         init_process_group,
         is_initialized,
         new_group,
-        ProcessGroup,
         split_group,
     )
 
@@ -69,7 +68,7 @@ else:
             self.mesh_stack: list[DeviceMesh] = []
             self.child_to_root_mapping: dict[DeviceMesh, DeviceMesh] = {}
             self.mesh_dim_group_options: dict[
-                int, tuple[str, Optional[C10dBackend.Options]]
+                int, tuple[str, C10dBackend.Options | None]
             ] = {}
             self.root_to_flatten_mapping: dict[DeviceMesh, dict[str, DeviceMesh]] = {}
             # Record flatten mesh name to its mesh dim index in root mesh.
@@ -108,7 +107,9 @@ else:
             # keep track of the number of dims that have been flattened so we can get the correct slice_dim_idx in the
             # flattened mesh tensor.
             num_dims_flatten = 0
-            for mesh_dim_indices, mesh_dim_name in zip(submesh_dims, submesh_dim_names):
+            for mesh_dim_indices, mesh_dim_name in zip(
+                submesh_dims, submesh_dim_names, strict=False
+            ):
                 # Currently, this only allows slicing out a contiguous flattened dim.
                 # TODO: we need to handle reconstructing a non-contiguous flattened dim.
                 if len(mesh_dim_indices) > 1:
@@ -162,7 +163,7 @@ else:
             return res_submesh
 
         def create_flatten_mesh(
-            self, device_mesh: "DeviceMesh", mesh_dim_name: Optional[str] = None
+            self, device_mesh: "DeviceMesh", mesh_dim_name: str | None = None
         ) -> "DeviceMesh":
             root_mesh = _mesh_resources.get_root_mesh(device_mesh)
 
@@ -238,7 +239,7 @@ else:
             root_mesh = self.child_to_root_mapping.get(device_mesh, None)
             return device_mesh if not root_mesh else root_mesh
 
-        def get_root_mesh_dim(self, device_mesh: "DeviceMesh") -> Optional[int]:
+        def get_root_mesh_dim(self, device_mesh: "DeviceMesh") -> int | None:
             """
             Returns the index of the mesh dim in the root mesh.
             The device_mesh passed in needs to be sliced out from the root mesh
@@ -285,7 +286,7 @@ else:
             self,
             dim: int,
             backend: str,
-            pg_options: Optional[C10dBackend.Options] = None,
+            pg_options: C10dBackend.Options | None = None,
         ) -> None:
             self.mesh_dim_group_options[dim] = (backend, pg_options)
 
@@ -428,14 +429,14 @@ else:
 
         device_type: str
         mesh: torch.Tensor
-        mesh_dim_names: Optional[tuple[str, ...]]
+        mesh_dim_names: tuple[str, ...] | None
 
         def __init__(
             self,
             device_type: str,
             mesh: Union[torch.Tensor, "ArrayLike"],
             *,
-            mesh_dim_names: Optional[tuple[str, ...]] = None,
+            mesh_dim_names: tuple[str, ...] | None = None,
             _init_backend: bool = True,
         ) -> None:
             self.device_type = device_type
@@ -468,7 +469,7 @@ else:
                 # calculate the coordinates of the current global rank on the mesh
                 rank_coords = (self.mesh == get_rank()).nonzero()
                 assert rank_coords.size(0) in (0, 1)
-                self._coordinate_on_dim: Optional[list[int]] = (
+                self._coordinate_on_dim: list[int] | None = (
                     rank_coords[0].tolist() if rank_coords.size(0) > 0 else None
                 )
 
@@ -662,18 +663,15 @@ else:
                 return False
             if id(self) == id(other):
                 return True
-            else:
-                return (
-                    self._flatten_mesh_list == other._flatten_mesh_list
-                    and self.mesh.shape == other.mesh.shape
-                    and self.device_type == other.device_type
-                    and self.mesh_dim_names == other.mesh_dim_names
-                    and self._thread_id == other._thread_id
-                )
+            return (
+                self._flatten_mesh_list == other._flatten_mesh_list
+                and self.mesh.shape == other.mesh.shape
+                and self.device_type == other.device_type
+                and self.mesh_dim_names == other.mesh_dim_names
+                and self._thread_id == other._thread_id
+            )
 
-        def __getitem__(
-            self, mesh_dim_names: Union[str, tuple[str, ...]]
-        ) -> "DeviceMesh":
+        def __getitem__(self, mesh_dim_names: str | tuple[str, ...]) -> "DeviceMesh":
             """
             Slice the current DeviceMesh based on the mesh_dim_names given to create a submesh.
             The submesh created consists of the dimensions and the communicators indicated by
@@ -726,26 +724,23 @@ else:
 
             if mesh_dim_names == self.mesh_dim_names:
                 return self
-            else:
-                slice_mesh_dims = _mesh_resources._get_slice_mesh_dims(
-                    self, mesh_dim_names
+            slice_mesh_dims = _mesh_resources._get_slice_mesh_dims(self, mesh_dim_names)
+            # When using FakeTensorMode to trace the model, `create_sub_mesh()` will
+            # fail as it will require a real tensor to manipulate.
+            # `unset_fake_temporarily()` will allow us to materialize the tensors
+            # within `_mesh_resources`, which should not affect modling.
+            #
+            # Note that this should be orthogonal to torch.compile(). But whether
+            # we can compile device_mesh `slicing` (no graph break) is not verified
+            # yet and need a follow-up,
+            # TODO: compiler + device_mesh slicing.
+            with torch._subclasses.fake_tensor.unset_fake_temporarily():
+                submesh = _mesh_resources.create_sub_mesh(
+                    self, mesh_dim_names, slice_mesh_dims
                 )
-                # When using FakeTensorMode to trace the model, `create_sub_mesh()` will
-                # fail as it will require a real tensor to manipulate.
-                # `unset_fake_temporarily()` will allow us to materialize the tensors
-                # within `_mesh_resources`, which should not affect modling.
-                #
-                # Note that this should be orthogonal to torch.compile(). But whether
-                # we can compile device_mesh `slicing` (no graph break) is not verified
-                # yet and need a follow-up,
-                # TODO: compiler + device_mesh slicing.
-                with torch._subclasses.fake_tensor.unset_fake_temporarily():
-                    submesh = _mesh_resources.create_sub_mesh(
-                        self, mesh_dim_names, slice_mesh_dims
-                    )
-                return submesh
+            return submesh
 
-        def get_group(self, mesh_dim: Optional[Union[int, str]] = None) -> ProcessGroup:
+        def get_group(self, mesh_dim: int | str | None = None) -> ProcessGroup:
             """
             Returns the single ProcessGroup specified by mesh_dim, or, if mesh_dim is not specified and the
             DeviceMesh is 1-dimensional, returns the only ProcessGroup in the mesh.
@@ -781,14 +776,13 @@ else:
                     mesh_dim  # type: ignore[index]
                 ]._dim_group_names[0]
                 return not_none(_resolve_process_group(dim_group_name))
-            else:
-                mesh_dim = (
-                    _mesh_resources.get_mesh_dim_by_name(self, mesh_dim)
-                    if isinstance(mesh_dim, str)
-                    else mesh_dim
-                )
-                assert isinstance(mesh_dim, int)
-                return not_none(_resolve_process_group(self._dim_group_names[mesh_dim]))
+            mesh_dim = (
+                _mesh_resources.get_mesh_dim_by_name(self, mesh_dim)
+                if isinstance(mesh_dim, str)
+                else mesh_dim
+            )
+            assert isinstance(mesh_dim, int)
+            return not_none(_resolve_process_group(self._dim_group_names[mesh_dim]))
 
         def get_all_groups(self) -> list[ProcessGroup]:
             """
@@ -801,11 +795,11 @@ else:
 
         @staticmethod
         def from_group(
-            group: Union[ProcessGroup, list[ProcessGroup]],
+            group: ProcessGroup | list[ProcessGroup],
             device_type: str,
-            mesh: Optional[Union[torch.Tensor, "ArrayLike"]] = None,
+            mesh: Union[torch.Tensor, "ArrayLike"] | None = None,
             *,
-            mesh_dim_names: Optional[tuple[str, ...]] = None,
+            mesh_dim_names: tuple[str, ...] | None = None,
         ) -> "DeviceMesh":
             """
             Constructs a :class:`DeviceMesh` with ``device_type`` from an
@@ -890,7 +884,7 @@ else:
             device_mesh._dim_group_names = [group.group_name for group in groups]
             return device_mesh
 
-        def size(self, mesh_dim: Optional[int] = None) -> int:
+        def size(self, mesh_dim: int | None = None) -> int:
             return self.mesh.numel() if mesh_dim is None else self.mesh.size(mesh_dim)
 
         @property
@@ -907,7 +901,7 @@ else:
             """
             return get_rank()
 
-        def get_local_rank(self, mesh_dim: Optional[Union[int, str]] = None) -> int:
+        def get_local_rank(self, mesh_dim: int | str | None = None) -> int:
             """
             Returns the local rank of the given mesh_dim of the DeviceMesh.
 
@@ -941,7 +935,7 @@ else:
                     f"Found the DeviceMesh have {self.mesh.ndim} dimensions",
                     "Optional kwarg `mesh_dim` needs to be specified when device_mesh.ndim > 1.",
                 )
-            elif mesh_dim is None:
+            if mesh_dim is None:
                 mesh_dim = 0
 
             mesh_dim_group = not_none(self.get_group(mesh_dim))
@@ -950,14 +944,14 @@ else:
             )
             return not_none(get_rank(mesh_dim_group))
 
-        def get_coordinate(self) -> Optional[list[int]]:
+        def get_coordinate(self) -> list[int] | None:
             """
             Return the relative indices of this rank relative to all
             dimensions of the mesh. If this rank is not part of the mesh, return None.
             """
             return self._coordinate_on_dim if self._coordinate_on_dim else None
 
-        def _flatten(self, mesh_dim_name: Optional[str] = None) -> "DeviceMesh":
+        def _flatten(self, mesh_dim_name: str | None = None) -> "DeviceMesh":
             """
             Returns a 1D DeviceMesh by flattening the current DeviceMesh.
 
@@ -981,7 +975,7 @@ else:
         device_type: str,
         mesh_shape: tuple[int, ...],
         *,
-        mesh_dim_names: Optional[tuple[str, ...]] = None,
+        mesh_dim_names: tuple[str, ...] | None = None,
     ) -> DeviceMesh:
         """
         Initializes a `DeviceMesh` based on `device_type`, `mesh_shape`, and `mesh_dim_names` parameters.

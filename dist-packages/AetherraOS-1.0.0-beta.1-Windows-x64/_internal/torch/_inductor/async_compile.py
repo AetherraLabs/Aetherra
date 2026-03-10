@@ -8,11 +8,12 @@ import logging
 import multiprocessing
 import os
 import sys
+from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
 from concurrent.futures.process import BrokenProcessPool
 from functools import partial
 from time import time, time_ns
-from typing import Any, Callable, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch._dynamo.device_interface import get_registered_device_interfaces
@@ -24,8 +25,6 @@ from torch._dynamo.utils import (
 )
 from torch._inductor import config
 from torch._inductor.codecache import (
-    _load_triton_kernel_from_source,
-    code_hash,
     CodeCacheFuture,
     CppCodeCache,
     CppPythonBindingsCodeCache,
@@ -34,6 +33,8 @@ from torch._inductor.codecache import (
     LambdaFuture,
     ROCmCodeCache,
     StaticAutotunerFuture,
+    _load_triton_kernel_from_source,
+    code_hash,
     torch_key,
 )
 from torch._inductor.compile_worker.subproc_pool import AnyPool, SubprocPool
@@ -51,20 +52,19 @@ from torch.hub import _Faketqdm, tqdm
 from torch.utils._ordered_set import OrderedSet
 from torch.utils._triton import has_triton_package
 
-
 if TYPE_CHECKING:
     from torch._inductor.runtime.hints import HalideMeta
     from torch._inductor.runtime.triton_heuristics import CachingAutotuner
 
 # timing metrics for time spent in the compilation
 _cumulative_compile_time = 0.0
-_t0: Optional[float] = None
+_t0: float | None = None
 
 kernel_code_log = torch._logging.getArtifactLogger(__name__, "kernel_code")
 
 log = logging.getLogger(__name__)
 
-_triton_kernel_metrics: Optional[dict[str, dict[str, Any]]] = None
+_triton_kernel_metrics: dict[str, dict[str, Any]] | None = None
 
 
 def pre_fork_setup():
@@ -202,7 +202,7 @@ class CompiledTritonKernels:
         CompiledTritonKernels._cache[key] = future
 
     @staticmethod
-    def get(kernel_src: str) -> Optional[CodeCacheFuture]:
+    def get(kernel_src: str) -> CodeCacheFuture | None:
         key = CompiledTritonKernels.key(kernel_src)
         return CompiledTritonKernels._cache.get(key, None)
 
@@ -346,8 +346,7 @@ class AsyncCompile:
                 future.reload_kernel_from_src = reload_kernel_in_parent
             if is_parallel:
                 return future
-            else:
-                return future.result()
+            return future.result()
 
         # Cache miss
         if is_parallel:
@@ -389,30 +388,29 @@ class AsyncCompile:
             future = LambdaFuture(get_result, future=task)
             CompiledTritonKernels.save(source_code, future)
             return future
-        else:
-            with dynamo_timed(
-                "async_compile.precompile",
-                log_pt2_compile_event=True,
-                dynamo_compile_column_us="triton_compile_time_us",
-                log_waitcounter=True,
-                waitcounter_name_override="compile_triton",
-            ):
-                start_ns = time_ns()
-                _set_triton_ptxas_path()
-                kernel = load_kernel()
-                kernel.set_compile_info(compile_id, is_backward)
-                kernel.precompile(
-                    warm_cache_only=False,
-                    static_triton_bundle_key=CompiledTritonKernels.key(source_code),
-                )
-                elapsed_us = (time_ns() - start_ns) // 1000
-                get_metrics_context().add_top_n(
-                    "triton_kernel_compile_times_us", kernel_name, elapsed_us
-                )
-                info = kernel.autotune_cache_info or {}
-                info["compile_time_us"] = elapsed_us
-                _add_triton_kernel_info(kernel_name, info)
-                return kernel
+        with dynamo_timed(
+            "async_compile.precompile",
+            log_pt2_compile_event=True,
+            dynamo_compile_column_us="triton_compile_time_us",
+            log_waitcounter=True,
+            waitcounter_name_override="compile_triton",
+        ):
+            start_ns = time_ns()
+            _set_triton_ptxas_path()
+            kernel = load_kernel()
+            kernel.set_compile_info(compile_id, is_backward)
+            kernel.precompile(
+                warm_cache_only=False,
+                static_triton_bundle_key=CompiledTritonKernels.key(source_code),
+            )
+            elapsed_us = (time_ns() - start_ns) // 1000
+            get_metrics_context().add_top_n(
+                "triton_kernel_compile_times_us", kernel_name, elapsed_us
+            )
+            info = kernel.autotune_cache_info or {}
+            info["compile_time_us"] = elapsed_us
+            _add_triton_kernel_info(kernel_name, info)
+            return kernel
 
     def multi_kernel(self, *args, **kwargs) -> Any:
         from torch._inductor.codegen.multi_kernel import MultiKernelCall
@@ -424,19 +422,17 @@ class AsyncCompile:
         kernel_code_log.info("CPP Kernel:\n%s", source_code)
         if get_compile_threads() <= 1:
             return CppCodeCache.load(source_code).kernel
-        else:
-            get_result = CppCodeCache.load_async(source_code, submit_fn=self.submit)
-            return LambdaFuture(lambda: get_result().kernel)
+        get_result = CppCodeCache.load_async(source_code, submit_fn=self.submit)
+        return LambdaFuture(lambda: get_result().kernel)
 
     def cpp_pybinding(self, argtypes: list[str], source_code: str):
         kernel_code_log.info("CPP+Bindings Kernel:\n%s", source_code)
         if get_compile_threads() <= 1:
             return CppPythonBindingsCodeCache.load_pybinding(argtypes, source_code)
-        else:
-            get_result = CppPythonBindingsCodeCache.load_pybinding_async(
-                argtypes, source_code, submit_fn=self.submit
-            )
-            return LambdaFuture(get_result)
+        get_result = CppPythonBindingsCodeCache.load_pybinding_async(
+            argtypes, source_code, submit_fn=self.submit
+        )
+        return LambdaFuture(get_result)
 
     def cuda(self, source_code, dst_file_ext, aot_compile=False):
         kernel_code_log.info("CUDA Kernel:\n%s", source_code)
@@ -473,11 +469,10 @@ class AsyncCompile:
         kernel_code_log.info("Halide Kernel:\n%r\n%s", meta, source_code)
         if get_compile_threads() <= 1:
             return HalideCodeCache.generate_halide(meta, source_code)
-        else:
-            get_result = HalideCodeCache.generate_halide_async(
-                meta, source_code, submit_fn=self.submit
-            )
-            return LambdaFuture(get_result)
+        get_result = HalideCodeCache.generate_halide_async(
+            meta, source_code, submit_fn=self.submit
+        )
+        return LambdaFuture(get_result)
 
     def wait(self, scope: dict[str, Any]) -> None:
         if get_compile_threads() > 1:

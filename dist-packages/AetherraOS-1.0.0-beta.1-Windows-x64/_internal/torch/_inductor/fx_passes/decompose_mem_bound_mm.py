@@ -10,7 +10,6 @@ from .. import config
 from ..pattern_matcher import Arg, CallFunction, Match, register_graph_pattern
 from .split_cat import construct_pattern_matcher_pass
 
-
 aten = torch.ops.aten
 log = logging.getLogger(__name__)
 
@@ -56,7 +55,7 @@ def should_decompose_bmm(mat1, mat2) -> bool:
         ) + (mat2.shape[2] < max_other_dimension_decomposition) < 2:
             return False
         return True
-    elif check_device(mat1, mat2, device="cpu"):
+    if check_device(mat1, mat2, device="cpu"):
         if mat1.shape[0] == 1 and mat2.shape[0] == 1:
             return True
     return False

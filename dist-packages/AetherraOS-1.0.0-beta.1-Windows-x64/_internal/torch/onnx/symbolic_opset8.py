@@ -36,9 +36,9 @@ import warnings
 
 import torch
 from torch._C import _onnx as _C_onnx
-from torch.onnx import _type_utils, errors, symbolic_helper, symbolic_opset9 as opset9
+from torch.onnx import _type_utils, errors, symbolic_helper
+from torch.onnx import symbolic_opset9 as opset9
 from torch.onnx._internal import jit_utils, registration
-
 
 _onnx_symbolic = functools.partial(registration.onnx_symbolic, opset=8)
 
@@ -212,8 +212,7 @@ def bmm(g: jit_utils.GraphContext, self, other):
     if symbolic_helper._try_get_scalar_type(self):
         old_type, self, other = _try_cast_integer_to_float(g, self, other)
         return _cast_to_type(g, g.op("MatMul", self, other), old_type)
-    else:
-        return g.op("MatMul", self, other)
+    return g.op("MatMul", self, other)
 
 
 @_onnx_symbolic("aten::matmul")
@@ -233,8 +232,7 @@ def prelu(g: jit_utils.GraphContext, self, weight):
     if symbolic_helper._try_get_scalar_type(self):
         old_type, self, weight = _try_cast_integer_to_float(g, self, weight)
         return _cast_to_type(g, g.op("PRelu", self, weight), old_type)
-    else:
-        return g.op("PRelu", self, weight)
+    return g.op("PRelu", self, weight)
 
 
 @_onnx_symbolic("aten::mm")
@@ -280,15 +278,14 @@ def addmm(g: jit_utils.GraphContext, self, mat1, mat2, beta, alpha):
             ),
             old_type,
         )
-    else:
-        return g.op(
-            "Gemm",
-            mat1,
-            mat2,
-            self,
-            beta_f=symbolic_helper._scalar(beta),
-            alpha_f=symbolic_helper._scalar(alpha),
-        )
+    return g.op(
+        "Gemm",
+        mat1,
+        mat2,
+        self,
+        beta_f=symbolic_helper._scalar(beta),
+        alpha_f=symbolic_helper._scalar(alpha),
+    )
 
 
 @_onnx_symbolic("aten::flatten")
@@ -306,16 +303,14 @@ def flatten(g: jit_utils.GraphContext, input, start_dim, end_dim):
             return _cast_to_type(
                 g, g.op("Flatten", input, axis_i=start_dim_i), old_type
             )
-        else:
-            return g.op("Flatten", input, axis_i=start_dim_i)
+        return g.op("Flatten", input, axis_i=start_dim_i)
     if start_dim_i == 0 and end_dim_i == dim - 2:
         if symbolic_helper._try_get_scalar_type(input):
             old_type, input = _try_cast_integer_to_float(g, input)
             return _cast_to_type(
                 g, g.op("Flatten", input, axis_i=end_dim_i + 1), old_type
             )
-        else:
-            return g.op("Flatten", input, axis_i=end_dim_i + 1)
+        return g.op("Flatten", input, axis_i=end_dim_i + 1)
 
     return opset9.flatten(g, input, start_dim, end_dim)
 
@@ -334,14 +329,13 @@ def _constant_fill(g: jit_utils.GraphContext, sizes, dtype: int, const_value):
             value_f=const_value,
         )
         return g.op("Cast", result, to_i=scalar_type.onnx_type())
-    else:
-        return g.op(
-            "ConstantFill",
-            sizes,
-            dtype_i=scalar_type.onnx_type(),
-            input_as_shape_i=1,
-            value_f=const_value,
-        )
+    return g.op(
+        "ConstantFill",
+        sizes,
+        dtype_i=scalar_type.onnx_type(),
+        input_as_shape_i=1,
+        value_f=const_value,
+    )
 
 
 @_onnx_symbolic("aten::empty")
@@ -423,9 +417,8 @@ def full(
     if symbolic_helper._is_value(const_value):
         tmp = zeros(g, sizes, dtype, layout, device)
         return opset9.add(g, tmp, value, g.op("Constant", value_t=torch.tensor(1)))
-    else:
-        dtype = symbolic_helper._get_const(dtype, "i", "dtype")
-        return _constant_fill(g, sizes, dtype, const_value)
+    dtype = symbolic_helper._get_const(dtype, "i", "dtype")
+    return _constant_fill(g, sizes, dtype, const_value)
 
 
 @_onnx_symbolic("aten::full_like")

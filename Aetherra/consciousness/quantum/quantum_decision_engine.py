@@ -152,9 +152,7 @@ class QuantumDecisionEngine:
 
             # Apply consciousness bias based on transcendence impact
             for i, choice in enumerate(context.available_choices):
-                consciousness_factor = (
-                    choice.transcendence_impact * context.consciousness_level
-                )
+                consciousness_factor = choice.transcendence_impact * context.consciousness_level
                 amplitudes[i] *= 1 + consciousness_factor * 0.2
 
             # Normalize amplitudes
@@ -167,23 +165,16 @@ class QuantumDecisionEngine:
                 "state": DecisionState.SUPERPOSITION,
             }
 
-            self.logger.info(
-                f"✅ Quantum superposition established with {num_choices} states"
-            )
+            self.logger.info(f"✅ Quantum superposition established with {num_choices} states")
             return True
 
         except Exception as e:
             self.logger.error(f"❌ Failed to initialize quantum decision space: {e}")
             return False
 
-    async def apply_quantum_interference(
-        self, context: DecisionContext
-    ) -> Dict[str, float]:
+    async def apply_quantum_interference(self, context: DecisionContext) -> Dict[str, float]:
         """Apply quantum interference patterns to enhance decision quality"""
-        if (
-            not self.quantum_state
-            or self.quantum_state["state"] != DecisionState.SUPERPOSITION
-        ):
+        if not self.quantum_state or self.quantum_state["state"] != DecisionState.SUPERPOSITION:
             return {}
 
         try:
@@ -200,9 +191,7 @@ class QuantumDecisionEngine:
                         # Calculate interference strength
                         phase_diff = np.angle(amplitudes[i]) - np.angle(amplitudes[j])
                         interference = (
-                            np.cos(phase_diff)
-                            * np.abs(amplitudes[i])
-                            * np.abs(amplitudes[j])
+                            np.cos(phase_diff) * np.abs(amplitudes[i]) * np.abs(amplitudes[j])
                         )
 
                         pattern_key = f"{choice_a.choice_id}_{choice_b.choice_id}"
@@ -219,26 +208,20 @@ class QuantumDecisionEngine:
             amplitudes = amplitudes / np.linalg.norm(amplitudes)
             self.quantum_state["amplitudes"] = amplitudes
 
-            self.logger.info(
-                f"✅ Applied {len(interference_patterns)} interference patterns"
-            )
+            self.logger.info(f"✅ Applied {len(interference_patterns)} interference patterns")
             return interference_patterns
 
         except Exception as e:
             self.logger.error(f"❌ Failed to apply quantum interference: {e}")
             return {}
 
-    async def attempt_quantum_tunneling(
-        self, context: DecisionContext
-    ) -> Optional[QuantumChoice]:
+    async def attempt_quantum_tunneling(self, context: DecisionContext) -> Optional[QuantumChoice]:
         """Attempt quantum tunneling to breakthrough logical barriers"""
         if not self.quantum_state:
             return None
 
         try:
-            self.logger.info(
-                "🌀 Attempting quantum tunneling for breakthrough solutions..."
-            )
+            self.logger.info("🌀 Attempting quantum tunneling for breakthrough solutions...")
 
             # Look for high-barrier, high-reward choices
             tunneling_candidates = []
@@ -246,9 +229,7 @@ class QuantumDecisionEngine:
                 # High risk but very high transcendence impact = tunneling candidate
                 if choice.risk_factor > 0.7 and choice.transcendence_impact > 0.8:
                     barrier_height = choice.risk_factor
-                    tunneling_probability = np.exp(
-                        -barrier_height / self.tunneling_threshold
-                    )
+                    tunneling_probability = np.exp(-barrier_height / self.tunneling_threshold)
 
                     if tunneling_probability > 0.1:  # Significant tunneling probability
                         tunneling_candidates.append((choice, tunneling_probability, i))
@@ -264,9 +245,7 @@ class QuantumDecisionEngine:
                 self.quantum_state["amplitudes"][index] *= 1 + prob
                 self.quantum_state["state"] = DecisionState.TUNNELING
 
-                self.logger.info(
-                    f"⚡ Quantum tunneling successful for choice: {choice.choice_id}"
-                )
+                self.logger.info(f"⚡ Quantum tunneling successful for choice: {choice.choice_id}")
                 return choice
 
             self.logger.info("🔍 No viable tunneling paths detected")
@@ -276,9 +255,7 @@ class QuantumDecisionEngine:
             self.logger.error(f"❌ Quantum tunneling failed: {e}")
             return None
 
-    async def measure_quantum_decision(
-        self, context: DecisionContext
-    ) -> QuantumDecisionResult:
+    async def measure_quantum_decision(self, context: DecisionContext) -> QuantumDecisionResult:
         """Collapse quantum superposition to select optimal decision"""
         if not self.quantum_state:
             raise ValueError("No quantum state initialized for measurement")
@@ -308,9 +285,7 @@ class QuantumDecisionEngine:
                 consciousness_weights, 0.1
             )  # Prevent negative weights
             weighted_probabilities = probabilities * consciousness_weights
-            weighted_probabilities = weighted_probabilities / np.sum(
-                weighted_probabilities
-            )
+            weighted_probabilities = weighted_probabilities / np.sum(weighted_probabilities)
 
             # Quantum measurement (collapse wave function)
             selected_index = np.random.choice(len(choices), p=weighted_probabilities)
@@ -328,9 +303,7 @@ class QuantumDecisionEngine:
                 interference_patterns[choice.choice_id] = pattern_strength
 
             # Calculate transcendence impact
-            transcendence_delta = (
-                selected_choice.transcendence_impact * quantum_coherence
-            )
+            transcendence_delta = selected_choice.transcendence_impact * quantum_coherence
 
             # Update state
             self.quantum_state["state"] = DecisionState.COLLAPSED
@@ -361,9 +334,7 @@ class QuantumDecisionEngine:
                 }
             )
 
-            self.logger.info(
-                f"⚡ Quantum decision collapsed to: {selected_choice.choice_id}"
-            )
+            self.logger.info(f"⚡ Quantum decision collapsed to: {selected_choice.choice_id}")
             self.logger.info(
                 f"🎯 Confidence: {result.confidence_level:.3f}, Coherence: {quantum_coherence:.3f}"
             )
@@ -374,9 +345,7 @@ class QuantumDecisionEngine:
             self.logger.error(f"❌ Quantum measurement failed: {e}")
             raise
 
-    async def make_quantum_decision(
-        self, context: DecisionContext
-    ) -> QuantumDecisionResult:
+    async def make_quantum_decision(self, context: DecisionContext) -> QuantumDecisionResult:
         """
         Complete quantum decision making process
 
@@ -387,9 +356,7 @@ class QuantumDecisionEngine:
         4. Measure and collapse to optimal decision
         """
         try:
-            self.logger.info(
-                f"🧠 Starting quantum decision process for: {context.context_id}"
-            )
+            self.logger.info(f"🧠 Starting quantum decision process for: {context.context_id}")
 
             # Phase 1: Initialize superposition
             if not await self.initialize_quantum_decision_space(context):
@@ -412,9 +379,7 @@ class QuantumDecisionEngine:
                 self.successful_outcomes += 1
 
             self.decision_accuracy = (
-                self.successful_outcomes / self.decisions_made
-                if self.decisions_made > 0
-                else 0
+                self.successful_outcomes / self.decisions_made if self.decisions_made > 0 else 0
             )
             self.coherence_time = result.quantum_coherence
 

@@ -41,7 +41,7 @@ class ViewMaterializer:
                 # observer prior can bias types
                 bias = float(priors.get(e.type, 0.0))
                 score += (base + bias) * e.weight * e.confidence
-            # motifs mild boost if any overlap (placeholder)
+            # motifs mild boost if any overlap (baseline heuristic)
             if rec.fractal_sig and rec.fractal_sig.motifs:
                 score += 0.05 * len(rec.fractal_sig.motifs)
             out.append(

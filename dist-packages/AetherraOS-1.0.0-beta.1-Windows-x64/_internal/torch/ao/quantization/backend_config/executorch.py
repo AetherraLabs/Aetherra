@@ -27,7 +27,6 @@ from .qnnpack import (
     qnnpack_weighted_op_qint8_symmetric_dtype_config,
 )
 
-
 __all__ = [
     "get_executorch_backend_config",
 ]

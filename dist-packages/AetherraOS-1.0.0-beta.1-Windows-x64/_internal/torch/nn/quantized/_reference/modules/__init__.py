@@ -18,9 +18,8 @@ from torch.ao.nn.quantized.reference.modules.conv import (
     ConvTranspose3d,
 )
 from torch.ao.nn.quantized.reference.modules.linear import Linear
-from torch.ao.nn.quantized.reference.modules.rnn import GRUCell, LSTM, LSTMCell, RNNCell
+from torch.ao.nn.quantized.reference.modules.rnn import LSTM, GRUCell, LSTMCell, RNNCell
 from torch.ao.nn.quantized.reference.modules.sparse import Embedding, EmbeddingBag
-
 
 __all__ = [
     "Linear",

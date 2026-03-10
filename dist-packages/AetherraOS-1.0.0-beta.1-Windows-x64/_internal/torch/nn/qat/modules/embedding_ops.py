@@ -10,5 +10,4 @@ while adding an import statement here.
 
 from torch.ao.nn.qat.modules.embedding_ops import Embedding, EmbeddingBag
 
-
 __all__ = ["Embedding", "EmbeddingBag"]

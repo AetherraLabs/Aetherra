@@ -69,7 +69,6 @@ object.
 from torch.distributions import constraints, transforms
 from torch.types import _Number
 
-
 __all__ = [
     "ConstraintRegistry",
     "biject_to",

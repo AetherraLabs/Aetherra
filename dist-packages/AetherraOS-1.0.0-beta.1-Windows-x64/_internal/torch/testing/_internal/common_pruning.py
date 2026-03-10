@@ -1,19 +1,23 @@
 # Owner(s): ["module: unknown"]
 
 from typing import Any
-from torch.ao.pruning import BaseSparsifier
+
 import torch
 import torch.nn.functional as F
 from torch import nn
+from torch.ao.pruning import BaseSparsifier
+
 
 class ImplementedSparsifier(BaseSparsifier):
     def __init__(self, **kwargs: dict[str, Any]) -> None:
         super().__init__(defaults=kwargs)
 
-    def update_mask(self, module: nn.Module, tensor_name: str, **kwargs: dict[str, Any]) -> None:
+    def update_mask(
+        self, module: nn.Module, tensor_name: str, **kwargs: dict[str, Any]
+    ) -> None:
         module.parametrizations.weight[0].mask[0] = 0  # type: ignore[index, union-attr]
-        linear_state = self.state['linear1.weight']
-        linear_state['step_count'] = linear_state.get('step_count', 0) + 1
+        linear_state = self.state["linear1.weight"]
+        linear_state["step_count"] = linear_state.get("step_count", 0) + 1
 
 
 class MockSparseLinear(nn.Linear):
@@ -22,12 +26,11 @@ class MockSparseLinear(nn.Linear):
     It is the same as a normal Linear layer, except with a different type, as
     well as an additional from_dense method.
     """
+
     @classmethod
-    def from_dense(cls, mod: nn.Linear) -> 'MockSparseLinear':
-        """
-        """
-        linear = cls(mod.in_features,
-                     mod.out_features)
+    def from_dense(cls, mod: nn.Linear) -> "MockSparseLinear":
+        """ """
+        linear = cls(mod.in_features, mod.out_features)
         return linear
 
 

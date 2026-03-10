@@ -1,15 +1,14 @@
 # mypy: allow-untyped-defs
 import inspect
 import logging
+from collections.abc import Callable
 from functools import wraps
 from queue import Queue
-from typing import Callable
 
 import torch.nn as nn
 from torch.fx._compatibility import compatibility
 from torch.fx.graph_module import GraphModule
 from torch.fx.passes.infra.pass_base import PassResult
-
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
@@ -40,7 +39,7 @@ def pass_result_wrapper(fn: Callable) -> Callable:
             return PassResult(gm, True)
         if isinstance(res, PassResult):
             return res
-        elif isinstance(res, nn.Module):
+        if isinstance(res, nn.Module):
             return PassResult(res, True)
 
     if not inspect.isfunction(fn):

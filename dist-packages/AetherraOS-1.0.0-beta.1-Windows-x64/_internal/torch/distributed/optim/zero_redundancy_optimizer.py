@@ -11,15 +11,15 @@ import enum
 import inspect
 import io
 import logging
+from collections.abc import Callable
 from itertools import chain
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 import torch
 import torch.distributed as dist
 from torch.distributed.algorithms.join import Join, Joinable, JoinHook
 from torch.distributed.optim.utils import functional_optim_map
 from torch.optim import Optimizer
-
 
 __all__ = ["ZeroRedundancyOptimizer"]
 
@@ -167,7 +167,7 @@ class _DDPBucketAssignment:
             raise ValueError("Empty bucket assignment")
         # DDP guarantees all parameters in the bucket have the same device
         self.device: torch.device = self.parameters[0].device
-        self.tensor: Optional[torch.Tensor] = None
+        self.tensor: torch.Tensor | None = None
 
 
 class _OverlapStatus(enum.IntEnum):
@@ -246,7 +246,7 @@ class _OverlapInfo:
         # Group Ranks
         self.assigned_ranks_per_bucket: list[set[int]] = []
         self.num_bucket_assignments: int = 0
-        self.total_size: Optional[int] = None
+        self.total_size: int | None = None
 
         # Modified per iteration
         self.broadcast_handles: list[Any] = []
@@ -371,7 +371,7 @@ class ZeroRedundancyOptimizer(Optimizer, Joinable):
         self,
         params,
         optimizer_class: type[Optimizer],
-        process_group: Optional[Any] = None,
+        process_group: Any | None = None,
         parameters_as_bucket_view: bool = False,
         overlap_with_ddp: bool = False,
         **defaults: Any,
@@ -639,7 +639,7 @@ class ZeroRedundancyOptimizer(Optimizer, Joinable):
 
     def _partition_parameters(
         self,
-        params_per_rank: Optional[list[list[torch.Tensor]]] = None,
+        params_per_rank: list[list[torch.Tensor]] | None = None,
     ) -> list[list[dict]]:
         r"""
         Partitions parameters across distributed data parallel ranks.
@@ -855,7 +855,7 @@ class ZeroRedundancyOptimizer(Optimizer, Joinable):
     def _get_min_index(
         self,
         values: list[int],
-        disallowed_indices: Optional[set[int]] = None,
+        disallowed_indices: set[int] | None = None,
     ) -> int:
         r"""
         Return ``values.index(min(values))``, except only uses one pass.
@@ -1015,10 +1015,10 @@ class ZeroRedundancyOptimizer(Optimizer, Joinable):
 
     def _local_step(
         self,
-        gradients: Optional[list[Optional[torch.Tensor]]] = None,
-        closure: Optional[Callable[[], float]] = None,
+        gradients: list[torch.Tensor | None] | None = None,
+        closure: Callable[[], float] | None = None,
         **kwargs: Any,
-    ) -> Optional[float]:
+    ) -> float | None:
         r"""
         Perform a single optimizer step without syncing parameters across ranks.
 
@@ -1089,9 +1089,9 @@ class ZeroRedundancyOptimizer(Optimizer, Joinable):
 
     def step(
         self,
-        closure: Optional[Callable[[], float]] = None,
+        closure: Callable[[], float] | None = None,
         **kwargs: Any,
-    ) -> Optional[float]:
+    ) -> float | None:
         r"""
         Perform a single optimizer step and syncs parameters across all ranks.
 
@@ -1226,7 +1226,7 @@ class ZeroRedundancyOptimizer(Optimizer, Joinable):
             )
 
             for local_param_group, global_param_group in zip(
-                local_param_groups, global_param_groups
+                local_param_groups, global_param_groups, strict=False
             ):
                 # `local_param_group` stores local indices, while
                 # `global_param_group` stores the tensors directly
@@ -1237,7 +1237,7 @@ class ZeroRedundancyOptimizer(Optimizer, Joinable):
                     "Mismatch between number of local and global parameters in parameter group"
                 )
                 for local_param_index, global_param in zip(
-                    local_param_indices, global_params
+                    local_param_indices, global_params, strict=False
                 ):
                     # Update the global parameter state, if any
                     if local_param_index in local_state_dict["state"]:
@@ -1271,7 +1271,9 @@ class ZeroRedundancyOptimizer(Optimizer, Joinable):
         assert len(src_param_groups) == len(dst_param_groups), (
             "Mismatch between number of source and destination parameter groups"
         )
-        for src_param_group, dst_param_group in zip(src_param_groups, dst_param_groups):
+        for src_param_group, dst_param_group in zip(
+            src_param_groups, dst_param_groups, strict=False
+        ):
             # Sync all attributes except the parameters
             for attr in filter(lambda x: x != "params", src_param_group.keys()):
                 dst_param_group[attr] = src_param_group[attr]
@@ -1381,7 +1383,7 @@ class ZeroRedundancyOptimizer(Optimizer, Joinable):
     def _verify_and_init_params(
         self,
         params: Any,
-    ) -> Union[list[torch.Tensor], list[dict]]:
+    ) -> list[torch.Tensor] | list[dict]:
         r"""
         Verify the type of ``params`` and initializes ``self._all_params`` as a :class:`list` of all parameters.
 
@@ -1631,27 +1633,24 @@ class ZeroRedundancyOptimizer(Optimizer, Joinable):
                     f"Passing in a functional optimizer {optimizer_class} "
                     "when `overlap_with_ddp=False`"
                 )
-            else:
-                return optimizer_class
-        else:
-            if optimizer_class in functional_optims:
-                # Already a functional optimizer
-                return optimizer_class
-            elif optimizer_class in functional_optim_map:
-                # Translate the passed-in optimizer class to its functional
-                # equivalent if `overlap_with_ddp=True`
-                optim_constructor = functional_optim_map[optimizer_class]
-                logger.info(
-                    "Using the functional optimizer %s "
-                    "instead of %s since "
-                    "`overlap_with_ddp=True`",
-                    optim_constructor,
-                    optimizer_class,
-                )
-                return optim_constructor
-            else:
-                raise ValueError(
-                    "Using `ddp_with_overlap=True` requires using a "
-                    "functional optimizer, but there is no supported functional "
-                    f"optimizer equivalent for {optimizer_class}"
-                )
+            return optimizer_class
+        if optimizer_class in functional_optims:
+            # Already a functional optimizer
+            return optimizer_class
+        if optimizer_class in functional_optim_map:
+            # Translate the passed-in optimizer class to its functional
+            # equivalent if `overlap_with_ddp=True`
+            optim_constructor = functional_optim_map[optimizer_class]
+            logger.info(
+                "Using the functional optimizer %s "
+                "instead of %s since "
+                "`overlap_with_ddp=True`",
+                optim_constructor,
+                optimizer_class,
+            )
+            return optim_constructor
+        raise ValueError(
+            "Using `ddp_with_overlap=True` requires using a "
+            "functional optimizer, but there is no supported functional "
+            f"optimizer equivalent for {optimizer_class}"
+        )

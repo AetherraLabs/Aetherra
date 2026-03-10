@@ -22,7 +22,7 @@ import asyncio
 import json
 import os
 import sys
-from typing import Any, Dict
+from typing import Any
 
 
 async def run_pipeline(topic: str) -> int:
@@ -47,7 +47,7 @@ async def run_pipeline(topic: str) -> int:
 
     print(f"[RUN] agent.pipeline goal: {topic}")
     try:
-        result: Dict[str, Any] = await fabric.handle_message(
+        result: dict[str, Any] = await fabric.handle_message(
             "agent.pipeline", {"goal": topic}
         )
     except Exception as e:

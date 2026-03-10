@@ -1,5 +1,4 @@
 # mypy: allow-untyped-defs
-from typing import Optional, Union
 
 import torch
 
@@ -22,14 +21,14 @@ class _remote_device:
                     and "cuda:1", just represent local devices.
     """
 
-    def __init__(self, remote_device: Union[str, torch.device]):
+    def __init__(self, remote_device: str | torch.device):
         PARSE_ERROR = (
             f"Could not parse remote_device: {remote_device}. The valid format is "
             "'<workername>/<device>' or 'rank:<rank>/<device>' or '<device>'"
         )
         self._worker_name = None
         self._rank = None
-        self._device: Optional[Union[str, int, torch.device]] = None
+        self._device: str | int | torch.device | None = None
 
         if isinstance(remote_device, torch.device):
             self._device = remote_device
@@ -78,11 +77,11 @@ class _remote_device:
         except Exception:
             return False
 
-    def worker_name(self) -> Optional[str]:
+    def worker_name(self) -> str | None:
         """Return the name of remote worker representing the remote device and ``None`` if no worker name is available."""
         return self._worker_name
 
-    def rank(self) -> Optional[int]:
+    def rank(self) -> int | None:
         """
         Returns the rank of remote worker representing the remote device.
         Returns ``None`` if no rank is available.
@@ -97,17 +96,14 @@ class _remote_device:
         if self._device is not None:
             if self._worker_name is not None:
                 return f"{self._worker_name}/{self._device}"
-            elif self._rank is not None:
+            if self._rank is not None:
                 return f"rank:{self._rank}/{self._device}"
-            else:
-                return str(self._device)
-        else:
-            if self._worker_name is not None:
-                return f"{self._worker_name}"
-            elif self._rank is not None:
-                return f"{self._rank}"
-            else:
-                raise RuntimeError("Invalid state!")
+            return str(self._device)
+        if self._worker_name is not None:
+            return f"{self._worker_name}"
+        if self._rank is not None:
+            return f"{self._rank}"
+        raise RuntimeError("Invalid state!")
 
     def __eq__(self, other):
         return isinstance(other, _remote_device) and (

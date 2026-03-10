@@ -1,7 +1,7 @@
 import functools
 import pickle
-from collections.abc import Iterable, Iterator
-from typing import Callable, Optional, TypeVar
+from collections.abc import Callable, Iterable, Iterator
+from typing import TypeVar
 
 from torch.utils._import_utils import import_dill
 from torch.utils.data.datapipes._hook_iterator import _SnapshotState
@@ -12,7 +12,6 @@ from torch.utils.data.datapipes.utils.common import (
     _map_deprecated_functional_names,
 )
 from torch.utils.data.dataset import Dataset, IterableDataset
-
 
 dill = import_dill()
 HAS_DILL = dill is not None
@@ -121,14 +120,14 @@ class IterDataPipe(IterableDataset[_T_co], metaclass=_IterDataPipeMeta):
     """
 
     functions: dict[str, Callable] = {}
-    reduce_ex_hook: Optional[Callable] = None
-    getstate_hook: Optional[Callable] = None
-    str_hook: Optional[Callable] = None
-    repr_hook: Optional[Callable] = None
-    _valid_iterator_id: Optional[int] = None
+    reduce_ex_hook: Callable | None = None
+    getstate_hook: Callable | None = None
+    str_hook: Callable | None = None
+    repr_hook: Callable | None = None
+    _valid_iterator_id: int | None = None
     _number_of_samples_yielded: int = 0
     _snapshot_state: _SnapshotState = _SnapshotState.NotStarted
-    _fast_forward_iterator: Optional[Iterator] = None
+    _fast_forward_iterator: Iterator | None = None
 
     def __iter__(self) -> Iterator[_T_co]:
         return self
@@ -142,10 +141,9 @@ class IterDataPipe(IterableDataset[_T_co], metaclass=_IterDataPipeMeta):
             function = functools.partial(f, self)
             functools.update_wrapper(wrapper=function, wrapped=f, assigned=("__doc__",))
             return function
-        else:
-            raise AttributeError(
-                f"'{self.__class__.__name__}' object has no attribute '{attribute_name}"
-            )
+        raise AttributeError(
+            f"'{self.__class__.__name__}' object has no attribute '{attribute_name}"
+        )
 
     @classmethod
     def register_function(cls, function_name, function):
@@ -276,10 +274,10 @@ class MapDataPipe(Dataset[_T_co], metaclass=_DataPipeMeta):
     """
 
     functions: dict[str, Callable] = {}
-    reduce_ex_hook: Optional[Callable] = None
-    getstate_hook: Optional[Callable] = None
-    str_hook: Optional[Callable] = None
-    repr_hook: Optional[Callable] = None
+    reduce_ex_hook: Callable | None = None
+    getstate_hook: Callable | None = None
+    str_hook: Callable | None = None
+    repr_hook: Callable | None = None
 
     def __getattr__(self, attribute_name):
         if attribute_name in MapDataPipe.functions:
@@ -290,10 +288,9 @@ class MapDataPipe(Dataset[_T_co], metaclass=_DataPipeMeta):
             function = functools.partial(f, self)
             functools.update_wrapper(wrapper=function, wrapped=f, assigned=("__doc__",))
             return function
-        else:
-            raise AttributeError(
-                f"'{self.__class__.__name__}' object has no attribute '{attribute_name}"
-            )
+        raise AttributeError(
+            f"'{self.__class__.__name__}' object has no attribute '{attribute_name}"
+        )
 
     @classmethod
     def register_function(cls, function_name, function):
@@ -400,7 +397,7 @@ class _DataPipeSerializationWrapper:
 class _IterDataPipeSerializationWrapper(_DataPipeSerializationWrapper, IterDataPipe):
     def __init__(self, datapipe: IterDataPipe[_T_co]):
         super().__init__(datapipe)
-        self._datapipe_iter: Optional[Iterator[_T_co]] = None
+        self._datapipe_iter: Iterator[_T_co] | None = None
 
     def __iter__(self) -> "_IterDataPipeSerializationWrapper":
         self._datapipe_iter = iter(self._datapipe)

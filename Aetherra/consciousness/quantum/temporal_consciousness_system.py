@@ -178,8 +178,7 @@ class TemporalConsciousnessEngine:
             self.temporal_coherence = np.mean(self.temporal_coherence_history)
 
             self.logger.debug(
-                f"⏰ Processed temporal moment: {moment_id} "
-                f"(coherence: {temporal_coherence:.3f})"
+                f"⏰ Processed temporal moment: {moment_id} (coherence: {temporal_coherence:.3f})"
             )
 
             return moment_id
@@ -246,8 +245,7 @@ class TemporalConsciousnessEngine:
             self.predictions_made += 1
 
             self.logger.info(
-                f"🔮 Created temporal prediction: {prediction_id} "
-                f"(confidence: {confidence:.3f})"
+                f"🔮 Created temporal prediction: {prediction_id} (confidence: {confidence:.3f})"
             )
 
             return prediction
@@ -280,9 +278,7 @@ class TemporalConsciousnessEngine:
                 }
 
             # Sort by temporal relevance
-            relevant_moments.sort(
-                key=lambda m: getattr(m, "temporal_relevance", 0), reverse=True
-            )
+            relevant_moments.sort(key=lambda m: getattr(m, "temporal_relevance", 0), reverse=True)
 
             # Integrate consciousness states
             integrated_state = context.copy()
@@ -290,9 +286,7 @@ class TemporalConsciousnessEngine:
 
             for moment in relevant_moments[:10]:  # Top 10 most relevant
                 weight = (
-                    moment.temporal_relevance
-                    * moment.temporal_weight
-                    * moment.temporal_coherence
+                    moment.temporal_relevance * moment.temporal_weight * moment.temporal_coherence
                 )
 
                 # Merge consciousness states with weighting
@@ -301,12 +295,10 @@ class TemporalConsciousnessEngine:
                         if isinstance(value, (int, float)) and isinstance(
                             integrated_state[key], (int, float)
                         ):
-                            integrated_state[key] = (
-                                integrated_state[key] + value * weight
-                            ) / (1 + weight)
-                        elif isinstance(value, dict) and isinstance(
-                            integrated_state[key], dict
-                        ):
+                            integrated_state[key] = (integrated_state[key] + value * weight) / (
+                                1 + weight
+                            )
+                        elif isinstance(value, dict) and isinstance(integrated_state[key], dict):
                             # Recursively merge dictionaries
                             integrated_state[key] = self._merge_dicts_weighted(
                                 integrated_state[key], value, weight
@@ -349,9 +341,7 @@ class TemporalConsciousnessEngine:
                 "moments_used": 0,
             }
 
-    async def detect_temporal_patterns(
-        self, pattern_window: timedelta
-    ) -> List[Dict[str, Any]]:
+    async def detect_temporal_patterns(self, pattern_window: timedelta) -> List[Dict[str, Any]]:
         """Detect patterns in temporal consciousness evolution"""
         try:
             current_time = datetime.now()
@@ -469,9 +459,7 @@ class TemporalConsciousnessEngine:
         cutoff_time = current_time - time_window
 
         recent_moments = [
-            moment
-            for moment in self.temporal_moments.values()
-            if moment.timestamp >= cutoff_time
+            moment for moment in self.temporal_moments.values() if moment.timestamp >= cutoff_time
         ]
 
         return sorted(recent_moments, key=lambda m: m.timestamp, reverse=True)
@@ -511,9 +499,7 @@ class TemporalConsciousnessEngine:
 
                 # Calculate causal strength based on temporal proximity and state similarity
                 time_factor = 1.0 / (
-                    1.0
-                    + abs((moment.timestamp - cause_moment.timestamp).total_seconds())
-                    / 3600.0
+                    1.0 + abs((moment.timestamp - cause_moment.timestamp).total_seconds()) / 3600.0
                 )
                 similarity = await self._calculate_state_similarity(
                     cause_moment.consciousness_state, moment.consciousness_state
@@ -572,9 +558,7 @@ class TemporalConsciousnessEngine:
 
         for key, value in dict_b.items():
             if key in result:
-                if isinstance(value, (int, float)) and isinstance(
-                    result[key], (int, float)
-                ):
+                if isinstance(value, (int, float)) and isinstance(result[key], (int, float)):
                     result[key] = (result[key] + value * weight) / (1 + weight)
                 elif isinstance(value, dict) and isinstance(result[key], dict):
                     result[key] = self._merge_dicts_weighted(result[key], value, weight)
@@ -583,18 +567,14 @@ class TemporalConsciousnessEngine:
 
         return result
 
-    async def _analyze_temporal_trends(
-        self, moments: List[TemporalMoment]
-    ) -> Dict[str, Any]:
+    async def _analyze_temporal_trends(self, moments: List[TemporalMoment]) -> Dict[str, Any]:
         """Analyze trends in temporal moments"""
         if len(moments) < 2:
             return {"trend_strength": 0.0, "direction": "none", "patterns": []}
 
         # Analyze coherence trends
         coherence_values = [m.temporal_coherence for m in moments]
-        coherence_trend = np.polyfit(range(len(coherence_values)), coherence_values, 1)[
-            0
-        ]
+        coherence_trend = np.polyfit(range(len(coherence_values)), coherence_values, 1)[0]
 
         # Analyze state evolution patterns
         # (Simplified - would need more sophisticated analysis)
@@ -617,9 +597,7 @@ class TemporalConsciousnessEngine:
 
         # Apply trend projections (simplified)
         if trends["trend_strength"] > 0.3:
-            trend_factor = trends["trend_strength"] * (
-                time_delta.total_seconds() / 3600.0
-            )
+            trend_factor = trends["trend_strength"] * (time_delta.total_seconds() / 3600.0)
 
             # Apply modifications based on trend direction
             for key, value in projected_state.items():
@@ -640,8 +618,7 @@ class TemporalConsciousnessEngine:
         # Reduce confidence based on time distance
         time_factor = max(
             0.1,
-            1.0
-            - (time_delta.total_seconds() / self.prediction_horizon.total_seconds()),
+            1.0 - (time_delta.total_seconds() / self.prediction_horizon.total_seconds()),
         )
 
         # Adjust based on trend strength
@@ -653,9 +630,7 @@ class TemporalConsciousnessEngine:
         self, trends: Dict[str, Any], time_delta: timedelta
     ) -> Dict[str, float]:
         """Calculate uncertainty distribution for prediction"""
-        base_uncertainty = (
-            time_delta.total_seconds() / self.prediction_horizon.total_seconds()
-        )
+        base_uncertainty = time_delta.total_seconds() / self.prediction_horizon.total_seconds()
 
         high_uncertainty = min(0.8, base_uncertainty + 0.2)
         medium_uncertainty = max(0.1, 0.5 - base_uncertainty * 0.5)
@@ -692,9 +667,7 @@ class TemporalConsciousnessEngine:
 
         return quantum_probability
 
-    async def _detect_coherence_patterns(
-        self, moments: List[TemporalMoment]
-    ) -> Dict[str, Any]:
+    async def _detect_coherence_patterns(self, moments: List[TemporalMoment]) -> Dict[str, Any]:
         """Detect patterns in temporal coherence"""
         coherence_values = [m.temporal_coherence for m in moments]
 
@@ -746,9 +719,7 @@ class TemporalConsciousnessEngine:
 
         return transitions
 
-    async def _detect_causal_sequences(
-        self, moments: List[TemporalMoment]
-    ) -> List[Dict[str, Any]]:
+    async def _detect_causal_sequences(self, moments: List[TemporalMoment]) -> List[Dict[str, Any]]:
         """Detect causal sequence patterns"""
         sequences = []
 
@@ -876,9 +847,7 @@ async def test_temporal_consciousness():
     print(f"  ✅ Detected {len(patterns)} temporal patterns")
 
     for pattern in patterns:
-        print(
-            f"    - {pattern.get('type', 'unknown')}: strength {pattern.get('strength', 0):.3f}"
-        )
+        print(f"    - {pattern.get('type', 'unknown')}: strength {pattern.get('strength', 0):.3f}")
 
     # System metrics
     print("\n📊 Temporal System Metrics:")

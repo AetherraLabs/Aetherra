@@ -1,9 +1,9 @@
 # mypy: allow-untyped-defs
+from tensorboard.compat.proto.attr_value_pb2 import AttrValue
 from tensorboard.compat.proto.graph_pb2 import GraphDef
 from tensorboard.compat.proto.node_def_pb2 import NodeDef
-from tensorboard.compat.proto.versions_pb2 import VersionDef
-from tensorboard.compat.proto.attr_value_pb2 import AttrValue
 from tensorboard.compat.proto.tensor_shape_pb2 import TensorShapeProto
+from tensorboard.compat.proto.versions_pb2 import VersionDef
 
 
 def load_onnx_graph(fname):
@@ -41,7 +41,9 @@ def parse(graph):
         )
 
     for node in graph.node:
-        _attr = [" = ".join([str(f[1]) for f in s.ListFields()]) for s in node.attribute]
+        _attr = [
+            " = ".join([str(f[1]) for f in s.ListFields()]) for s in node.attribute
+        ]
         attr = ", ".join(_attr).encode(encoding="utf_8")
         print(node.output[0])
         nodes.append(

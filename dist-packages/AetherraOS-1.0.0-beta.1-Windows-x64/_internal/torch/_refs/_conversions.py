@@ -8,7 +8,6 @@ from torch._prims_common import TensorLikeType
 from torch._prims_common.wrappers import out_wrapper
 from torch._refs import _broadcast_shapes
 
-
 # Data conversion references.
 #
 # Note: this module breaks the usual _refs to torch naming scheme where

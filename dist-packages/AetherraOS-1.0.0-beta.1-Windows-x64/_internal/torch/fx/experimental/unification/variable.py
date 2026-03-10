@@ -4,7 +4,6 @@ from contextlib import contextmanager
 from .dispatch import dispatch
 from .utils import hashable
 
-
 _global_logic_variables = set()  # type: ignore[var-annotated]
 _glv = _global_logic_variables
 
@@ -55,7 +54,7 @@ isvar
 
 @dispatch(object)  # type: ignore[no-redef]
 def isvar(o):
-    return not not _glv and hashable(o) and o in _glv
+    return bool(_glv) and hashable(o) and o in _glv
 
 
 @contextmanager

@@ -11,9 +11,8 @@ import abc
 import time
 from collections import namedtuple
 from functools import wraps
-from typing import Optional
-from typing_extensions import deprecated
 
+from typing_extensions import deprecated
 
 __all__ = [
     "MetricsConfig",
@@ -37,7 +36,7 @@ MetricData = namedtuple("MetricData", ["timestamp", "group_name", "name", "value
 class MetricsConfig:
     __slots__ = ["params"]
 
-    def __init__(self, params: Optional[dict[str, str]] = None):
+    def __init__(self, params: dict[str, str] | None = None):
         self.params = params
         if self.params is None:
             self.params = {}
@@ -77,7 +76,7 @@ _default_metrics_handler: MetricHandler = NullMetricHandler()
 
 
 # pyre-fixme[9]: group has type `str`; used as `None`.
-def configure(handler: MetricHandler, group: Optional[str] = None):
+def configure(handler: MetricHandler, group: str | None = None):
     if group is None:
         global _default_metrics_handler
         # pyre-fixme[9]: _default_metrics_handler has type `NullMetricHandler`; used
@@ -102,10 +101,8 @@ def _get_metric_name(fn):
         module = fn.__module__
         if module:
             return module.split(".")[-1] + "." + split[0]
-        else:
-            return split[0]
-    else:
-        return qualname
+        return split[0]
+    return qualname
 
 
 def prof(fn=None, group: str = "torchelastic"):
@@ -148,8 +145,7 @@ def prof(fn=None, group: str = "torchelastic"):
 
     if fn:
         return wrap(fn)
-    else:
-        return wrap
+    return wrap
 
 
 @deprecated("Deprecated, use `@prof` instead", category=FutureWarning)

@@ -82,19 +82,13 @@ class PluginManager:
             if extra_context:
                 context.update(extra_context)
             if event == "load_attempt":
-                self.analytics.record_plugin_action(
-                    plugin_name, "load_attempt", context
-                )
+                self.analytics.record_plugin_action(plugin_name, "load_attempt", context)
             elif event == "load_success":
-                self.analytics.record_plugin_action(
-                    plugin_name, "load_success", context
-                )
+                self.analytics.record_plugin_action(plugin_name, "load_success", context)
             elif event == "unload":
                 self.analytics.record_plugin_action(plugin_name, "unload", context)
             elif event == "execute_start":
-                self.analytics.record_plugin_action(
-                    plugin_name, "execute_start", context
-                )
+                self.analytics.record_plugin_action(plugin_name, "execute_start", context)
             elif event == "execute_end":
                 self.analytics.record_plugin_action(plugin_name, "execute_end", context)
             elif event == "load_error":
@@ -313,9 +307,7 @@ class PluginManager:
                     try:
                         result = run_with_timeout_fn(_invoke, timeout_sec=timeout_sec)  # type: ignore[call-arg]
                     except Exception as _e_timeout:
-                        if TimeBudgetExceededCls and isinstance(
-                            _e_timeout, TimeBudgetExceededCls
-                        ):
+                        if TimeBudgetExceededCls and isinstance(_e_timeout, TimeBudgetExceededCls):
                             _record_timeout()
                         raise
                 else:

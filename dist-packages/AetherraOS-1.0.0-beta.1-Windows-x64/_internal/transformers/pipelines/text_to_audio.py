@@ -11,12 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.from typing import List, Union
-from typing import List, Union
 
 from ..generation import GenerationConfig
 from ..utils import is_torch_available
 from .base import Pipeline
-
 
 if is_torch_available():
     import torch
@@ -95,7 +93,9 @@ class TextToAudioPipeline(Pipeline):
         self.vocoder = None
         if self.model.__class__ in MODEL_FOR_TEXT_TO_SPECTROGRAM_MAPPING.values():
             self.vocoder = (
-                SpeechT5HifiGan.from_pretrained(DEFAULT_VOCODER_ID).to(self.model.device)
+                SpeechT5HifiGan.from_pretrained(DEFAULT_VOCODER_ID).to(
+                    self.model.device
+                )
                 if vocoder is None
                 else vocoder
             )
@@ -124,7 +124,9 @@ class TextToAudioPipeline(Pipeline):
         if self.model.config.model_type == "bark":
             # bark Tokenizer is called with BarkProcessor which uses those kwargs
             new_kwargs = {
-                "max_length": self.generation_config.semantic_config.get("max_input_semantic_length", 256),
+                "max_length": self.generation_config.semantic_config.get(
+                    "max_input_semantic_length", 256
+                ),
                 "add_special_tokens": False,
                 "return_attention_mask": True,
                 "return_token_type_ids": False,
@@ -148,7 +150,9 @@ class TextToAudioPipeline(Pipeline):
 
         if self.model.can_generate():
             # we expect some kwargs to be additional tensors which need to be on the right device
-            generate_kwargs = self._ensure_tensor_on_device(generate_kwargs, device=self.device)
+            generate_kwargs = self._ensure_tensor_on_device(
+                generate_kwargs, device=self.device
+            )
 
             # User-defined `generation_config` passed to the pipeline call take precedence
             if "generation_config" not in generate_kwargs:
@@ -173,7 +177,7 @@ class TextToAudioPipeline(Pipeline):
 
         return output
 
-    def __call__(self, text_inputs: Union[str, List[str]], **forward_params):
+    def __call__(self, text_inputs: str | list[str], **forward_params):
         """
         Generates speech/audio from the inputs. See the [`TextToAudioPipeline`] documentation for more information.
 

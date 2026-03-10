@@ -28,11 +28,10 @@ from torch._dynamo import disable
 from torch._dynamo.exc import TensorifyScalarRestartAnalysis
 from torch._dynamo.utils import counters, defake, flatten_graph_inputs
 from torch._functorch.aot_autograd import (
-    aot_module_simplified,
     SerializableAOTDispatchCompiler,
+    aot_module_simplified,
 )
 from torch.utils._python_dispatch import _disable_current_modes
-
 
 log = logging.getLogger(__name__)
 
@@ -94,6 +93,7 @@ class AotAutograd:
         )
 
         from functorch.compile import nop
+
         from torch._inductor.debug import enable_aot_logging
 
         # debug asserts slow down compile time noticeably,

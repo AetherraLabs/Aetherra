@@ -26,14 +26,15 @@ from typing import (  # noqa: UP035, F401  # (Dict, List, Tuple) imported by tor
     Dict,
     Final,
     ForwardRef,
-    get_args,
-    get_origin,
     List,
     Optional,
     Tuple,
     TypeVar,
     Union,
+    get_args,
+    get_origin,
 )
+
 from typing_extensions import ParamSpec
 
 import torch
@@ -44,17 +45,17 @@ import torch
 import torch.distributed.rpc
 import torch.package._mangling as package_mangling
 from torch._awaits import _Await
-from torch._C import _Await as CAwait, Future as CFuture
+from torch._C import Future as CFuture
+from torch._C import _Await as CAwait
 from torch._sources import fake_range, get_source_lines_and_file, parse_def
 from torch.futures import Future
-
 
 _P = ParamSpec("_P")
 _R = TypeVar("_R")
 
 IS_PY310_PLUS: Final[bool] = sys.version_info >= (3, 10)
 
-BuiltinUnionType: Union[type, tuple[type, ...]]
+BuiltinUnionType: type | tuple[type, ...]
 if sys.version_info >= (3, 10):
     # NOTE: IS_PY310_PLUS doesn't work with mypy.
     # cf. https://mypy.readthedocs.io/en/stable/common_issues.html#python-version-and-system-platform-checks
@@ -225,8 +226,7 @@ def createResolutionCallbackFromEnv(lookup_base):
             base, remaining_pieces = qualified_name.split(".", maxsplit=1)
             module_value = getattr(module, base)
             return lookupInModule(remaining_pieces, module_value)
-        else:
-            return getattr(module, qualified_name)
+        return getattr(module, qualified_name)
 
     def parseNestedExpr(expr, module) -> tuple[Any, int]:
         i = 0
@@ -253,8 +253,7 @@ def createResolutionCallbackFromEnv(lookup_base):
             i += part_len
         if len(parts) > 1:
             return base[tuple(parts)], i + 1
-        else:
-            return base[parts[0]], i + 1
+        return base[parts[0]], i + 1
 
     def parseExpr(expr, module):
         try:
@@ -319,9 +318,9 @@ def createResolutionCallbackFromFrame(frames_up: int = 0):
         def __getattr__(self, key):
             if key in f_locals:
                 return f_locals[key]
-            elif key in f_globals:
+            if key in f_globals:
                 return f_globals[key]
-            elif key in dir(builtins):
+            if key in dir(builtins):
                 return getattr(builtins, key)
 
     return createResolutionCallbackFromEnv(env())
@@ -398,9 +397,9 @@ def createResolutionCallbackFromClosure(fn):
         def __getattr__(self, key):
             if key in closure:
                 return closure[key]
-            elif hasattr(typing, key):
+            if hasattr(typing, key):
                 return getattr(typing, key)
-            elif hasattr(builtins, key):
+            if hasattr(builtins, key):
                 return getattr(builtins, key)
             return None
 
@@ -466,15 +465,15 @@ def get_annotation_str(annotation):
     """
     if isinstance(annotation, ast.Name):
         return annotation.id
-    elif isinstance(annotation, ast.Attribute):
+    if isinstance(annotation, ast.Attribute):
         return ".".join([get_annotation_str(annotation.value), annotation.attr])
-    elif isinstance(annotation, ast.Subscript):
+    if isinstance(annotation, ast.Subscript):
         # In Python3.9+ subscript indicies are not wrapped in ast.Index
         subscript_slice = annotation.slice
         return f"{get_annotation_str(annotation.value)}[{get_annotation_str(subscript_slice)}]"
-    elif isinstance(annotation, ast.Tuple):
+    if isinstance(annotation, ast.Tuple):
         return ",".join([get_annotation_str(elt) for elt in annotation.elts])
-    elif isinstance(annotation, ast.Constant):
+    if isinstance(annotation, ast.Constant):
         return f"{annotation.value}"
 
     # If an AST node is not handled here, it's probably handled in ScriptTypeParser.
@@ -593,8 +592,7 @@ def createResolutionCallbackForClassMethods(cls):
     def lookup_in_class(key):
         if key in captures:
             return captures[key]
-        else:
-            return getattr(builtins, key, None)
+        return getattr(builtins, key, None)
 
     return lookup_in_class
 
@@ -623,8 +621,7 @@ def boolean_dispatch(
 
         if dispatch_flag:
             return if_true(*args, **kwargs)
-        else:
-            return if_false(*args, **kwargs)
+        return if_false(*args, **kwargs)
 
     if if_true.__doc__ is None and if_false.__doc__ is not None:
         doc = if_false.__doc__
@@ -1081,13 +1078,13 @@ def _overload_method(func):
     _check_overload_body(func)
     qual_name = _qualified_name(func)
     global _overloaded_methods
-    class_name_map = _overloaded_methods.get(qual_name, None)
+    class_name_map = _overloaded_methods.get(qual_name)
     if class_name_map is None:
         class_name_map = {}
         _overloaded_methods[qual_name] = class_name_map
 
     class_name, line_no = get_class_name_lineno(func)
-    method_overloads = class_name_map.get(class_name, None)
+    method_overloads = class_name_map.get(class_name)
     if method_overloads is None:
         method_overloads = []
         class_name_map[class_name] = method_overloads
@@ -1109,7 +1106,7 @@ def _get_overloaded_methods(method, mod_class):
     if not hasattr(method, "__name__"):
         return None
     qual_name = _qualified_name(method)
-    class_name_map = _overloaded_methods.get(qual_name, None)
+    class_name_map = _overloaded_methods.get(qual_name)
     if class_name_map is None:
         return None
     overloads = class_name_map.get(mod_class.__name__, None)
@@ -1240,7 +1237,7 @@ def _try_get_dispatched_fn(fn):
 
 def _get_named_tuple_properties(
     obj,
-    loc: Optional[torch._C._jit_tree_views.SourceRange] = None,
+    loc: torch._C._jit_tree_views.SourceRange | None = None,
     rcb=None,
 ):
     if loc is None:
@@ -1404,7 +1401,7 @@ def container_checker(obj, target_type) -> bool:
     check_args_exist(target_type)
     if origin_type is None:
         return False
-    elif origin_type is list or origin_type is typing.List:  # noqa: UP006
+    if origin_type is list or origin_type is typing.List:  # noqa: UP006
         check_empty_containers(obj)
         if not isinstance(obj, list):
             return False
@@ -1418,7 +1415,7 @@ def container_checker(obj, target_type) -> bool:
             elif not isinstance(el, arg_type):
                 return False
         return True
-    elif origin_type is typing.Dict or origin_type is dict:  # noqa: UP006
+    if origin_type is typing.Dict or origin_type is dict:  # noqa: UP006
         check_empty_containers(obj)
         if not isinstance(obj, dict):
             return False
@@ -1435,14 +1432,14 @@ def container_checker(obj, target_type) -> bool:
             elif not isinstance(val, val_type):
                 return False
         return True
-    elif origin_type is typing.Tuple or origin_type is tuple:  # noqa: UP006
+    if origin_type is typing.Tuple or origin_type is tuple:  # noqa: UP006
         check_empty_containers(obj)
         if not isinstance(obj, tuple):
             return False
         arg_types = get_args(target_type)
         if len(obj) != len(arg_types):
             return False
-        for el, el_type in zip(obj, arg_types):
+        for el, el_type in zip(obj, arg_types, strict=False):
             el_origin = get_origin(el_type)
             if el_origin:
                 if not container_checker(el, el_type):
@@ -1450,7 +1447,7 @@ def container_checker(obj, target_type) -> bool:
             elif not isinstance(el, el_type):
                 return False
         return True
-    elif origin_type is Union or issubclass(
+    if origin_type is Union or issubclass(
         origin_type, BuiltinUnionType
     ):  # also handles Optional
         if obj is None:  # check before recursion because None is always fine
@@ -1460,7 +1457,7 @@ def container_checker(obj, target_type) -> bool:
             t_origin = get_origin(t)
             if t_origin:
                 return container_checker(obj, t)
-            elif isinstance(obj, t):
+            if isinstance(obj, t):
                 return True
     return False
 
@@ -1533,13 +1530,12 @@ def _extract_tensors(obj):
     return tensors
 
 
-def _get_model_id(obj) -> Optional[str]:
+def _get_model_id(obj) -> str | None:
     if isinstance(obj, torch.jit.ScriptModule):
         return str(obj._c._type())
-    elif isinstance(obj, torch.jit.ScriptFunction):
+    if isinstance(obj, torch.jit.ScriptFunction):
         return obj.qualified_name
-    else:
-        return None
+    return None
 
 
 # In Python-3.11+ typed enums (i.e. IntEnum for example) retain number of base class methods in subclass

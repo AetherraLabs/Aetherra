@@ -1,11 +1,12 @@
 # mypy: allow-untyped-defs
 import math
+
 import numpy as np
-from ._convert_np import make_np
-from ._utils import make_grid
 from tensorboard.compat import tf
 from tensorboard.plugins.projector.projector_config_pb2 import EmbeddingInfo
 
+from ._convert_np import make_np
+from ._utils import make_grid
 
 _HAS_GFILE_JOIN = hasattr(tf.io.gfile, "join")
 
@@ -16,18 +17,17 @@ def _gfile_join(a, b):
     # We need to try both because `tf` may point to either the stub or the real TF.
     if _HAS_GFILE_JOIN:
         return tf.io.gfile.join(a, b)
-    else:
-        fs = tf.io.gfile.get_filesystem(a)
-        return fs.join(a, b)
+    fs = tf.io.gfile.get_filesystem(a)
+    return fs.join(a, b)
 
 
 def make_tsv(metadata, save_path, metadata_header=None):
     if not metadata_header:
         metadata = [str(x) for x in metadata]
     else:
-        assert len(metadata_header) == len(
-            metadata[0]
-        ), "len of header must be equal to the number of columns in metadata"
+        assert len(metadata_header) == len(metadata[0]), (
+            "len of header must be equal to the number of columns in metadata"
+        )
         metadata = ["\t".join(str(e) for e in l) for l in [metadata_header] + metadata]
 
     metadata_bytes = tf.compat.as_bytes("\n".join(metadata) + "\n")
@@ -37,8 +37,9 @@ def make_tsv(metadata, save_path, metadata_header=None):
 
 # https://github.com/tensorflow/tensorboard/issues/44 image label will be squared
 def make_sprite(label_img, save_path):
-    from PIL import Image
     from io import BytesIO
+
+    from PIL import Image
 
     # this ensures the sprite image has correct dimension as described in
     # https://www.tensorflow.org/get_started/embedding_viz

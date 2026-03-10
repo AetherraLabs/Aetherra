@@ -22,9 +22,7 @@ from typing import Dict, List, Optional
 
 def get_importance_score(fragment):
     """Helper function to handle attribute compatibility between different MemoryFragment versions"""
-    return getattr(
-        fragment, "importance_score", getattr(fragment, "confidence_score", 0.5)
-    )
+    return getattr(fragment, "importance_score", getattr(fragment, "confidence_score", 0.5))
 
 
 try:
@@ -272,9 +270,7 @@ Write as a deep psychological reflection on emotional growth and development."""
     ) -> tuple[MemoryNarrative, EmotionalArc]:
         """Generate emotional evolution narrative with arc analysis"""
         if not fragments:
-            return self._empty_narrative("emotional_arc"), EmotionalArc(
-                [], [], [], [], "stable"
-            )
+            return self._empty_narrative("emotional_arc"), EmotionalArc([], [], [], [], "stable")
 
         # Build emotional timeline
         emotional_arc = self._build_emotional_arc(fragments)
@@ -417,9 +413,7 @@ This represents part of my evolving understanding and capability development.
         """Analyze plugin interaction patterns"""
         plugin_data = {
             "total_interactions": len(plugin_fragments),
-            "success_rate": sum(
-                1 for f in plugin_fragments if get_importance_score(f) > 0.5
-            )
+            "success_rate": sum(1 for f in plugin_fragments if get_importance_score(f) > 0.5)
             / len(plugin_fragments),
             "common_patterns": [],
             "learning_progression": [],
@@ -448,9 +442,7 @@ This represents part of my evolving understanding and capability development.
 
         for fragment in sorted(fragments, key=lambda f: f.created_at):
             timeline.append(fragment.created_at)
-            emotions.append(
-                getattr(fragment, "emotional_valence", "neutral") or "neutral"
-            )
+            emotions.append(getattr(fragment, "emotional_valence", "neutral") or "neutral")
             intensity.append(get_importance_score(fragment))
 
             # Simple transition detection
@@ -486,6 +478,7 @@ This represents part of my evolving understanding and capability development.
                     [t.strftime("%Y-%m-%d %H:%M") for t in arc.timeline],
                     arc.emotions,
                     arc.intensity,
+                    strict=False,
                 )
             ),
             "major_transitions": arc.transitions,
@@ -497,9 +490,7 @@ This represents part of my evolving understanding and capability development.
                     "intensity": get_importance_score(f),
                     "trigger": str(f.content)[:100],
                 }
-                for f in sorted(
-                    fragments, key=lambda x: get_importance_score(x), reverse=True
-                )[:5]
+                for f in sorted(fragments, key=lambda x: get_importance_score(x), reverse=True)[:5]
             ],
         }
 
@@ -513,10 +504,7 @@ This represents part of my evolving understanding and capability development.
         coherence = min(1.0, len(narrative.split(".")) / 10)  # Sentence complexity
         emotional_depth = (
             0.8
-            if any(
-                word in narrative.lower()
-                for word in ["feel", "emotion", "growth", "learn"]
-            )
+            if any(word in narrative.lower() for word in ["feel", "emotion", "growth", "learn"])
             else 0.5
         )
         insight_richness = (

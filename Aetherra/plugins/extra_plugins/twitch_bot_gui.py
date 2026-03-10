@@ -418,7 +418,7 @@ class TwitchBotGUI(QMainWindow):
 
         layout.addWidget(stats_group)
 
-        # Activity chart placeholder
+        # Activity chart baseline
         activity_group = QGroupBox("Activity Chart")
         activity_layout = QVBoxLayout(activity_group)
 

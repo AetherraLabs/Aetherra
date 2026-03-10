@@ -1,13 +1,14 @@
 # mypy: allow-untyped-defs
 from __future__ import annotations
 
-from typing import Any, Callable, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
+
 from typing_extensions import Protocol, runtime_checkable
 
 import torch
 import torch.export as torch_export
 from torch.utils import _pytree as pytree
-
 
 if TYPE_CHECKING:
     import inspect

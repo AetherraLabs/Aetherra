@@ -25,7 +25,7 @@ import time
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -49,10 +49,10 @@ class SharedServiceInfo:
     status: str = "starting"
     registered_at: float = field(default_factory=time.time)
     last_heartbeat: float = field(default_factory=time.time)
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    dependencies: List[str] = field(default_factory=list)
-    socket_path: Optional[str] = None
-    port: Optional[int] = None
+    metadata: dict[str, Any] = field(default_factory=dict)
+    dependencies: list[str] = field(default_factory=list)
+    socket_path: str | None = None
+    port: int | None = None
 
 
 class AetherraSharedServiceRegistry:
@@ -63,7 +63,7 @@ class AetherraSharedServiceRegistry:
     using shared memory, sockets, and filesystem-based discovery.
     """
 
-    def __init__(self, registry_dir: Optional[str] = None):
+    def __init__(self, registry_dir: str | None = None):
         self.registry_dir = (
             Path(registry_dir or tempfile.gettempdir()) / "aetherra_registry"
         )
@@ -237,9 +237,9 @@ class AetherraSharedServiceRegistry:
                     ["tasklist", "/FI", f"PID eq {pid}"], capture_output=True, text=True
                 )
                 return str(pid) in result.stdout
-            else:  # Unix-like
-                os.kill(pid, 0)
-                return True
+            # Unix-like
+            os.kill(pid, 0)
+            return True
         except (OSError, Exception):
             return False
 
@@ -294,26 +294,25 @@ class AetherraSharedServiceRegistry:
                     await self._save_services()
                     logger.info(f"[UNREGISTER] Service '{name}' unregistered")
                     return True
-                else:
-                    logger.warning(
-                        f"[WARN] Cannot unregister service '{name}' from different process"
-                    )
-                    return False
+                logger.warning(
+                    f"[WARN] Cannot unregister service '{name}' from different process"
+                )
+                return False
             return False
 
         except Exception as e:
             logger.error(f"[ERROR] Failed to unregister service '{name}': {e}")
             return False
 
-    def get_service(self, name: str) -> Optional[Any]:
+    def get_service(self, name: str) -> Any | None:
         """Get a service instance (local only)."""
         return self.local_services.get(name)
 
-    def get_service_info(self, name: str) -> Optional[SharedServiceInfo]:
+    def get_service_info(self, name: str) -> SharedServiceInfo | None:
         """Get service information (can be from any process)."""
         return self.services.get(name)
 
-    def list_services(self) -> Dict[str, SharedServiceInfo]:
+    def list_services(self) -> dict[str, SharedServiceInfo]:
         """List all registered services."""
         return self.services.copy()
 
@@ -334,7 +333,7 @@ class AetherraSharedServiceRegistry:
                 service_info.last_heartbeat = time.time()
                 await self._save_services()
 
-    def get_registry_status(self) -> Dict[str, Any]:
+    def get_registry_status(self) -> dict[str, Any]:
         """Get comprehensive registry status."""
         current_time = time.time()
 
@@ -374,7 +373,7 @@ class AetherraSharedServiceRegistry:
 
 
 # Global shared registry instance
-_shared_registry: Optional[AetherraSharedServiceRegistry] = None
+_shared_registry: AetherraSharedServiceRegistry | None = None
 
 
 async def get_shared_service_registry() -> AetherraSharedServiceRegistry:
@@ -392,13 +391,13 @@ async def register_shared_service(name: str, instance: Any, **kwargs) -> bool:
     return await registry.register_service(name, instance, **kwargs)
 
 
-async def get_shared_service(name: str) -> Optional[Any]:
+async def get_shared_service(name: str) -> Any | None:
     """Get a service from the shared registry (local instances only)."""
     registry = await get_shared_service_registry()
     return registry.get_service(name)
 
 
-async def get_shared_service_info(name: str) -> Optional[SharedServiceInfo]:
+async def get_shared_service_info(name: str) -> SharedServiceInfo | None:
     """Get service information from the shared registry."""
     registry = await get_shared_service_registry()
     return registry.get_service_info(name)

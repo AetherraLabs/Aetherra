@@ -1,33 +1,33 @@
 # mypy: allow-untyped-defs
 from abc import ABC, abstractmethod
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import torch
 import torch.ao.nn.qat as nnqat
 import torch.nn as nn
 from torch.ao.quantization.fake_quantize import FakeQuantize
 from torch.ao.quantization.fx._equalize import (
-    default_equalization_qconfig,
     EqualizationQConfig,
+    default_equalization_qconfig,
 )
 from torch.ao.quantization.fx._model_report.model_report_observer import (
     ModelReportObserver,
 )
 from torch.ao.quantization.fx.graph_module import GraphModule
 from torch.ao.quantization.observer import (
+    ObserverBase,
     _is_activation_post_process,
     default_dynamic_quant_observer,
     default_observer,
     default_per_channel_weight_observer,
     default_weight_observer,
-    ObserverBase,
 )
 from torch.ao.quantization.qconfig import (
+    QConfig,
     _assert_valid_qconfig,
     default_qconfig,
-    QConfig,
 )
-
 
 # Names for observer insert keys
 DETECTOR_TARGET_NODE_KEY = "target_node"
@@ -198,11 +198,10 @@ class DetectorBase(ABC):
         parent_fqn_sep_index = target_fqn.rfind(".")
         if parent_fqn_sep_index == -1:
             raise ValueError("passed in target_fqn not found in graph's targets.")
-        else:
-            # recursively call it with parent fqn
-            return self._get_targeting_node(
-                prepared_fx_model, target_fqn[:parent_fqn_sep_index]
-            )
+        # recursively call it with parent fqn
+        return self._get_targeting_node(
+            prepared_fx_model, target_fqn[:parent_fqn_sep_index]
+        )
 
     @abstractmethod
     def generate_detector_report(self, model) -> tuple[str, dict[str, Any]]:
@@ -605,12 +604,11 @@ class DynamicStaticDetector(DetectorBase):
         # this is check for observer insertion
         if insert:
             return supported
-        else:
-            # this is for report gen and we also need to check if it contains observers
-            has_obs = hasattr(module, self.DEFAULT_PRE_OBSERVER_NAME) and hasattr(
-                module, self.DEFAULT_POST_OBSERVER_NAME
-            )
-            return supported and has_obs
+        # this is for report gen and we also need to check if it contains observers
+        has_obs = hasattr(module, self.DEFAULT_PRE_OBSERVER_NAME) and hasattr(
+            module, self.DEFAULT_POST_OBSERVER_NAME
+        )
+        return supported and has_obs
 
     def _generate_dict_info(self, model: GraphModule) -> dict[str, Any]:
         r"""
@@ -901,10 +899,9 @@ class InputWeightEqualizationDetector(DetectorBase):
         # this is check for observer insertion
         if insert:
             return is_supported_type
-        else:
-            # this is for report gen and we also need to check if it contains observers
-            has_obs = hasattr(module, self.DEFAULT_PRE_OBSERVER_NAME)
-            return is_supported_type and has_obs
+        # this is for report gen and we also need to check if it contains observers
+        has_obs = hasattr(module, self.DEFAULT_PRE_OBSERVER_NAME)
+        return is_supported_type and has_obs
 
     def get_qconfig_info(self, model) -> dict[str, DetectorQConfigInfo]:
         r"""Returns the DetectorQConfigInfo for each module_fqn relevant

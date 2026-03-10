@@ -17,8 +17,11 @@ import operator
 import time
 import traceback
 from collections import defaultdict
+from collections.abc import Callable
 from contextlib import nullcontext
-from typing import Any, Callable, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+
+from torchgen.utils import dataclass_repr
 
 import torch
 import torch.utils._pytree as pytree
@@ -37,7 +40,6 @@ from torch.fx.passes._tensorify_python_scalars import tensorify_python_scalars
 from torch.multiprocessing.reductions import StorageWeakRef
 from torch.types import py_sym_types
 from torch.utils._python_dispatch import is_traceable_wrapper_subclass
-from torchgen.utils import dataclass_repr
 
 from .. import config
 from .autograd_cache import (
@@ -61,10 +63,10 @@ from .runtime_wrappers import (
     EffectTokensWrapper,
     FakifiedOutWrapper,
     FunctionalizedRngRuntimeWrapper,
+    RuntimeWrapper,
     make_runtime_safe,
     post_compile,
     pre_compile,
-    RuntimeWrapper,
 )
 from .schemas import AOTConfig, MutationType, ViewAndMutationMeta
 from .subclass_utils import compute_inner_mutated_inp_indices_from_subclass_meta
@@ -76,7 +78,6 @@ from .utils import (
     strict_zip,
     unlift_tokens,
 )
-
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -333,9 +334,9 @@ def aot_dispatch_base(
 
 
 def collect_fw_donated_buffer_idxs(
-    fw_ins: list[Optional[FakeTensor]],
-    user_fw_outs: list[Optional[FakeTensor]],
-    bw_outs: list[Optional[FakeTensor]],
+    fw_ins: list[FakeTensor | None],
+    user_fw_outs: list[FakeTensor | None],
+    bw_outs: list[FakeTensor | None],
     saved_tensors: list[FakeTensor],
 ) -> list[int]:
     """
@@ -430,13 +431,13 @@ class InvokeSubgraphHopGraphs:
 
     # To avoid re-partitioning subgraphs
     partitioning_done: bool = False
-    old_num_fw_outputs: Optional[int] = None
-    old_num_fw_inputs: Optional[int] = None
+    old_num_fw_outputs: int | None = None
+    old_num_fw_inputs: int | None = None
 
-    new_fw_hop_gm: Optional[torch.fx.GraphModule] = None
-    new_bw_hop_gm: Optional[torch.fx.GraphModule] = None
-    new_num_sym_nodes: Optional[int] = None
-    new_num_saved_nodes: Optional[int] = None
+    new_fw_hop_gm: torch.fx.GraphModule | None = None
+    new_bw_hop_gm: torch.fx.GraphModule | None = None
+    new_num_sym_nodes: int | None = None
+    new_num_saved_nodes: int | None = None
 
 
 def run_joint_graph_passes_on_hops(
@@ -785,7 +786,7 @@ def maybe_log_graph(
     graph_name,
     aot_config,
     structured_log_prefix_fn,
-    out_structured_logs: Optional[list[str]] = None,
+    out_structured_logs: list[str] | None = None,
 ):
     if not aot_config.enable_log:
         return
@@ -823,9 +824,9 @@ def create_wrap_fn(fn, args):
     from .functional_utils import from_fun, has_data_mutation, to_fun
 
     def assert_no_mutation(t):
-        assert not has_data_mutation(
-            t
-        ), "Saved tensors hooks with inputs mutations are not allowed"
+        assert not has_data_mutation(t), (
+            "Saved tensors hooks with inputs mutations are not allowed"
+        )
 
     @wraps(fn)
     def _wrapper(*args):
@@ -1110,9 +1111,11 @@ def maybe_inline_graph_saved_tensors_hooks(
                     # Inserting packed sym scalars before first saved tensor input.
                     # Inserting packed tensors before last saved tensor input.
                     # Saved tensor inputs between them will be removed.
-                    with bw_g.inserting_before(
-                        bw_g_inputs[0]
-                    ) if is_sym else bw_g.inserting_before(bw_g_input):
+                    with (
+                        bw_g.inserting_before(bw_g_inputs[0])
+                        if is_sym
+                        else bw_g.inserting_before(bw_g_input)
+                    ):
                         new_n = bw_g.placeholder(new_node_name)
                         assert new_n.name == new_node_name
                     new_n.meta = copy.copy(out_n.meta)
@@ -1755,7 +1758,7 @@ def aot_dispatch_autograd(
 
     make_runtime_safe(fw_metadata, maybe_subclass_meta)
 
-    try_save_cache_entry: Optional[Callable] = None
+    try_save_cache_entry: Callable | None = None
 
     if aot_config.cache_info is not None:
         forward_time_taken_ns = time.time_ns() - aot_config.cache_info.start_time_ns
@@ -1782,9 +1785,9 @@ def aot_dispatch_autograd(
                 # update backward_time_taken_ns to be more inclusive
                 backward_time_taken_ns = getattr(compiled_bw_func, "_time_taken_ns", 0)
 
-                aot_forward_graph_str: Optional[str] = fw_module_str
-                aot_backward_graph_str: Optional[str] = bw_module_str
-                aot_joint_graph_str: Optional[str] = joint_graph_str
+                aot_forward_graph_str: str | None = fw_module_str
+                aot_backward_graph_str: str | None = bw_module_str
+                aot_joint_graph_str: str | None = joint_graph_str
                 guards_expr = AOTAutogradCache.generate_guards_expression(cache_info)
 
                 entry = AOTAutogradCache.make_entry(
@@ -1829,7 +1832,7 @@ def aot_dispatch_autograd(
     )
 
     if config.debug_assert:
-        flat_requires_grad: list[Optional[bool]] = [
+        flat_requires_grad: list[bool | None] = [
             a.requires_grad if isinstance(a, Tensor) else None for a in flat_args
         ]
         compiled_fn = DebugAssertWrapper(

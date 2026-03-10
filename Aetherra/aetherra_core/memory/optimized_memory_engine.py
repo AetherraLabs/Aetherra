@@ -17,12 +17,8 @@ class OptimizedLyrixaMemoryEngine:
     def __init__(self, *args, **kwargs):
         self.engine = QuantumEnhancedMemoryEngine()
 
-    def store(
-        self, memory_entry: Dict[str, Any], context: Optional[Dict[str, Any]] = None
-    ) -> bool:
+    def store(self, memory_entry: Dict[str, Any], context: Optional[Dict[str, Any]] = None) -> bool:
         return self.engine.store(memory_entry, context)
 
-    def retrieve(
-        self, query: str, context: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+    def retrieve(self, query: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         return self.engine.retrieve(query, context)

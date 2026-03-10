@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2020 The HuggingFace Inc. team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,11 +23,16 @@ import os
 import re
 import warnings
 from collections import UserDict
-from collections.abc import Mapping, Sized
+from collections.abc import Callable, Mapping, Sequence, Sized
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, NamedTuple, Optional, Sequence, Tuple, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    NamedTuple,
+    Union,
+)
 
 import numpy as np
 from packaging import version
@@ -70,7 +74,6 @@ from .utils import (
 from .utils.chat_template_utils import render_jinja_template
 from .utils.import_utils import PROTOBUF_IMPORT_ERROR
 
-
 if TYPE_CHECKING:
     if is_torch_available():
         import torch
@@ -85,8 +88,7 @@ def import_protobuf_decode_error(error_message=""):
         from google.protobuf.message import DecodeError
 
         return DecodeError
-    else:
-        raise ImportError(PROTOBUF_IMPORT_ERROR.format(error_message))
+    raise ImportError(PROTOBUF_IMPORT_ERROR.format(error_message))
 
 
 if is_tokenizers_available():
@@ -105,7 +107,13 @@ else:
         """
 
         def __init__(
-            self, content: str, single_word=False, lstrip=False, rstrip=False, special=False, normalized=None
+            self,
+            content: str,
+            single_word=False,
+            lstrip=False,
+            rstrip=False,
+            special=False,
+            normalized=None,
         ):
             self.content = content
             self.single_word = single_word
@@ -129,19 +137,25 @@ else:
 
 logger = logging.get_logger(__name__)
 
-VERY_LARGE_INTEGER = int(1e30)  # This is used to set the max input length for a model with infinite size input
-LARGE_INTEGER = int(1e20)  # This is used when we need something big but slightly smaller than VERY_LARGE_INTEGER
+VERY_LARGE_INTEGER = int(
+    1e30
+)  # This is used to set the max input length for a model with infinite size input
+LARGE_INTEGER = int(
+    1e20
+)  # This is used when we need something big but slightly smaller than VERY_LARGE_INTEGER
 
 # Define type aliases and NamedTuples
 TextInput = str
-PreTokenizedInput = List[str]
-EncodedInput = List[int]
-TextInputPair = Tuple[str, str]
-PreTokenizedInputPair = Tuple[List[str], List[str]]
-EncodedInputPair = Tuple[List[int], List[int]]
+PreTokenizedInput = list[str]
+EncodedInput = list[int]
+TextInputPair = tuple[str, str]
+PreTokenizedInputPair = tuple[list[str], list[str]]
+EncodedInputPair = tuple[list[int], list[int]]
 
 # Define type aliases for text-related non-text modalities
-AudioInput = Union["np.ndarray", "torch.Tensor", List["np.ndarray"], List["torch.Tensor"]]
+AudioInput = Union[
+    "np.ndarray", "torch.Tensor", list["np.ndarray"], list["torch.Tensor"]
+]
 
 # Slow tokenizers used to be saved in three separated files
 SPECIAL_TOKENS_MAP_FILE = "special_tokens_map.json"
@@ -221,11 +235,11 @@ class BatchEncoding(UserDict):
 
     def __init__(
         self,
-        data: Optional[Dict[str, Any]] = None,
-        encoding: Optional[Union[EncodingFast, Sequence[EncodingFast]]] = None,
-        tensor_type: Union[None, str, TensorType] = None,
+        data: dict[str, Any] | None = None,
+        encoding: EncodingFast | Sequence[EncodingFast] | None = None,
+        tensor_type: None | str | TensorType = None,
         prepend_batch_axis: bool = False,
-        n_sequences: Optional[int] = None,
+        n_sequences: int | None = None,
     ):
         super().__init__(data)
 
@@ -239,10 +253,12 @@ class BatchEncoding(UserDict):
 
         self._n_sequences = n_sequences
 
-        self.convert_to_tensors(tensor_type=tensor_type, prepend_batch_axis=prepend_batch_axis)
+        self.convert_to_tensors(
+            tensor_type=tensor_type, prepend_batch_axis=prepend_batch_axis
+        )
 
     @property
-    def n_sequences(self) -> Optional[int]:
+    def n_sequences(self) -> int | None:
         """
         `Optional[int]`: The number of sequences used to generate each sample from the batch encoded in this
         [`BatchEncoding`]. Currently can be one of `None` (unknown), `1` (a single sentence) or `2` (a pair of
@@ -258,7 +274,7 @@ class BatchEncoding(UserDict):
         """
         return self._encodings is not None
 
-    def __getitem__(self, item: Union[int, str]) -> Union[Any, EncodingFast]:
+    def __getitem__(self, item: int | str) -> Any | EncodingFast:
         """
         If the key is a string, returns the value of the dict associated to `key` ('input_ids', 'attention_mask',
         etc.).
@@ -270,15 +286,14 @@ class BatchEncoding(UserDict):
         """
         if isinstance(item, str):
             return self.data[item]
-        elif self._encodings is not None:
+        if self._encodings is not None:
             return self._encodings[item]
-        elif isinstance(item, slice):
+        if isinstance(item, slice):
             return {key: self.data[key][item] for key in self.data.keys()}
-        else:
-            raise KeyError(
-                "Invalid key. Only three types of key are available: "
-                "(1) string, (2) integers for backend Encoding, and (3) slices for data subsetting."
-            )
+        raise KeyError(
+            "Invalid key. Only three types of key are available: "
+            "(1) string, (2) integers for backend Encoding, and (3) slices for data subsetting."
+        )
 
     def __getattr__(self, item: str):
         try:
@@ -310,14 +325,14 @@ class BatchEncoding(UserDict):
     # provided by HuggingFace tokenizers library.
 
     @property
-    def encodings(self) -> Optional[List[EncodingFast]]:
+    def encodings(self) -> list[EncodingFast] | None:
         """
         `Optional[List[tokenizers.Encoding]]`: The list all encodings from the tokenization process. Returns `None` if
         the input was tokenized through Python (i.e., not a fast) tokenizer.
         """
         return self._encodings
 
-    def tokens(self, batch_index: int = 0) -> List[str]:
+    def tokens(self, batch_index: int = 0) -> list[str]:
         """
         Return the list of tokens (sub-parts of the input strings after word/subword splitting and before conversion to
         integer indices) at a given batch index (only works for the output of a fast tokenizer).
@@ -335,7 +350,7 @@ class BatchEncoding(UserDict):
             )
         return self._encodings[batch_index].tokens
 
-    def sequence_ids(self, batch_index: int = 0) -> List[Optional[int]]:
+    def sequence_ids(self, batch_index: int = 0) -> list[int | None]:
         """
         Return a list mapping the tokens to the id of their original sentences:
 
@@ -359,7 +374,7 @@ class BatchEncoding(UserDict):
             )
         return self._encodings[batch_index].sequence_ids
 
-    def words(self, batch_index: int = 0) -> List[Optional[int]]:
+    def words(self, batch_index: int = 0) -> list[int | None]:
         """
         Return a list mapping the tokens to their actual word in the initial sentence for a fast tokenizer.
 
@@ -383,7 +398,7 @@ class BatchEncoding(UserDict):
         )
         return self.word_ids(batch_index)
 
-    def word_ids(self, batch_index: int = 0) -> List[Optional[int]]:
+    def word_ids(self, batch_index: int = 0) -> list[int | None]:
         """
         Return a list mapping the tokens to their actual word in the initial sentence for a fast tokenizer.
 
@@ -402,7 +417,9 @@ class BatchEncoding(UserDict):
             )
         return self._encodings[batch_index].word_ids
 
-    def token_to_sequence(self, batch_or_token_index: int, token_index: Optional[int] = None) -> int:
+    def token_to_sequence(
+        self, batch_or_token_index: int, token_index: int | None = None
+    ) -> int:
         """
         Get the index of the sequence represented by the given token. In the general use case, this method returns `0`
         for a single sequence or the first sequence of a pair, and `1` for the second sequence of a pair
@@ -429,7 +446,9 @@ class BatchEncoding(UserDict):
         """
 
         if not self._encodings:
-            raise ValueError("token_to_sequence() is not available when using Python based tokenizers")
+            raise ValueError(
+                "token_to_sequence() is not available when using Python based tokenizers"
+            )
         if token_index is not None:
             batch_index = batch_or_token_index
         else:
@@ -441,7 +460,9 @@ class BatchEncoding(UserDict):
             token_index = self._seq_len + token_index
         return self._encodings[batch_index].token_to_sequence(token_index)
 
-    def token_to_word(self, batch_or_token_index: int, token_index: Optional[int] = None) -> int:
+    def token_to_word(
+        self, batch_or_token_index: int, token_index: int | None = None
+    ) -> int:
         """
         Get the index of the word corresponding (i.e. comprising) to an encoded token in a sequence of the batch.
 
@@ -467,7 +488,9 @@ class BatchEncoding(UserDict):
         """
 
         if not self._encodings:
-            raise ValueError("token_to_word() is not available when using Python based tokenizers")
+            raise ValueError(
+                "token_to_word() is not available when using Python based tokenizers"
+            )
         if token_index is not None:
             batch_index = batch_or_token_index
         else:
@@ -480,8 +503,11 @@ class BatchEncoding(UserDict):
         return self._encodings[batch_index].token_to_word(token_index)
 
     def word_to_tokens(
-        self, batch_or_word_index: int, word_index: Optional[int] = None, sequence_index: int = 0
-    ) -> Optional[TokenSpan]:
+        self,
+        batch_or_word_index: int,
+        word_index: int | None = None,
+        sequence_index: int = 0,
+    ) -> TokenSpan | None:
         """
         Get the encoded token span corresponding to a word in a sequence of the batch.
 
@@ -519,7 +545,9 @@ class BatchEncoding(UserDict):
         """
 
         if not self._encodings:
-            raise ValueError("word_to_tokens() is not available when using Python based tokenizers")
+            raise ValueError(
+                "word_to_tokens() is not available when using Python based tokenizers"
+            )
         if word_index is not None:
             batch_index = batch_or_word_index
         else:
@@ -532,7 +560,9 @@ class BatchEncoding(UserDict):
         span = self._encodings[batch_index].word_to_tokens(word_index, sequence_index)
         return TokenSpan(*span) if span is not None else None
 
-    def token_to_chars(self, batch_or_token_index: int, token_index: Optional[int] = None) -> Optional[CharSpan]:
+    def token_to_chars(
+        self, batch_or_token_index: int, token_index: int | None = None
+    ) -> CharSpan | None:
         """
         Get the character span corresponding to an encoded token in a sequence of the batch.
 
@@ -561,7 +591,9 @@ class BatchEncoding(UserDict):
         """
 
         if not self._encodings:
-            raise ValueError("token_to_chars() is not available when using Python based tokenizers")
+            raise ValueError(
+                "token_to_chars() is not available when using Python based tokenizers"
+            )
         if token_index is not None:
             batch_index = batch_or_token_index
         else:
@@ -572,7 +604,10 @@ class BatchEncoding(UserDict):
         return CharSpan(*span_indices) if span_indices is not None else None
 
     def char_to_token(
-        self, batch_or_char_index: int, char_index: Optional[int] = None, sequence_index: int = 0
+        self,
+        batch_or_char_index: int,
+        char_index: int | None = None,
+        sequence_index: int = 0,
     ) -> int:
         """
         Get the index of the token in the encoded output comprising a character in the original string for a sequence
@@ -605,7 +640,9 @@ class BatchEncoding(UserDict):
         """
 
         if not self._encodings:
-            raise ValueError("char_to_token() is not available when using Python based tokenizers")
+            raise ValueError(
+                "char_to_token() is not available when using Python based tokenizers"
+            )
         if char_index is not None:
             batch_index = batch_or_char_index
         else:
@@ -614,7 +651,10 @@ class BatchEncoding(UserDict):
         return self._encodings[batch_index].char_to_token(char_index, sequence_index)
 
     def word_to_chars(
-        self, batch_or_word_index: int, word_index: Optional[int] = None, sequence_index: int = 0
+        self,
+        batch_or_word_index: int,
+        word_index: int | None = None,
+        sequence_index: int = 0,
     ) -> CharSpan:
         """
         Get the character span in the original string corresponding to given word in a sequence of the batch.
@@ -650,15 +690,24 @@ class BatchEncoding(UserDict):
         """
 
         if not self._encodings:
-            raise ValueError("word_to_chars() is not available when using Python based tokenizers")
+            raise ValueError(
+                "word_to_chars() is not available when using Python based tokenizers"
+            )
         if word_index is not None:
             batch_index = batch_or_word_index
         else:
             batch_index = 0
             word_index = batch_or_word_index
-        return CharSpan(*(self._encodings[batch_index].word_to_chars(word_index, sequence_index)))
+        return CharSpan(
+            *(self._encodings[batch_index].word_to_chars(word_index, sequence_index))
+        )
 
-    def char_to_word(self, batch_or_char_index: int, char_index: Optional[int] = None, sequence_index: int = 0) -> int:
+    def char_to_word(
+        self,
+        batch_or_char_index: int,
+        char_index: int | None = None,
+        sequence_index: int = 0,
+    ) -> int:
         """
         Get the word in the original string corresponding to a character in the original string of a sequence of the
         batch.
@@ -689,7 +738,9 @@ class BatchEncoding(UserDict):
         """
 
         if not self._encodings:
-            raise ValueError("char_to_word() is not available when using Python based tokenizers")
+            raise ValueError(
+                "char_to_word() is not available when using Python based tokenizers"
+            )
         if char_index is not None:
             batch_index = batch_or_char_index
         else:
@@ -698,7 +749,9 @@ class BatchEncoding(UserDict):
         return self._encodings[batch_index].char_to_word(char_index, sequence_index)
 
     def convert_to_tensors(
-        self, tensor_type: Optional[Union[str, TensorType]] = None, prepend_batch_axis: bool = False
+        self,
+        tensor_type: str | TensorType | None = None,
+        prepend_batch_axis: bool = False,
     ):
         """
         Convert the inner content to tensors.
@@ -729,7 +782,9 @@ class BatchEncoding(UserDict):
             is_tensor = tf.is_tensor
         elif tensor_type == TensorType.PYTORCH:
             if not is_torch_available():
-                raise ImportError("Unable to convert output to PyTorch tensors format, PyTorch is not installed.")
+                raise ImportError(
+                    "Unable to convert output to PyTorch tensors format, PyTorch is not installed."
+                )
             import torch
 
             is_tensor = torch.is_tensor
@@ -741,7 +796,9 @@ class BatchEncoding(UserDict):
 
         elif tensor_type == TensorType.JAX:
             if not is_flax_available():
-                raise ImportError("Unable to convert output to JAX tensors format, JAX is not installed.")
+                raise ImportError(
+                    "Unable to convert output to JAX tensors format, JAX is not installed."
+                )
             import jax.numpy as jnp  # noqa: F811
 
             as_tensor = jnp.array
@@ -749,7 +806,9 @@ class BatchEncoding(UserDict):
 
         elif tensor_type == TensorType.MLX:
             if not is_mlx_available():
-                raise ImportError("Unable to convert output to MLX tensors format, MLX is not installed.")
+                raise ImportError(
+                    "Unable to convert output to MLX tensors format, MLX is not installed."
+                )
             import mlx.core as mx
 
             as_tensor = mx.array
@@ -759,11 +818,15 @@ class BatchEncoding(UserDict):
         else:
 
             def as_tensor(value, dtype=None):
-                if isinstance(value, (list, tuple)) and isinstance(value[0], (list, tuple, np.ndarray)):
+                if isinstance(value, (list, tuple)) and isinstance(
+                    value[0], (list, tuple, np.ndarray)
+                ):
                     value_lens = [len(val) for val in value]
                     if len(set(value_lens)) > 1 and dtype is None:
                         # we have a ragged list so handle explicitly
-                        value = as_tensor([np.asarray(val) for val in value], dtype=object)
+                        value = as_tensor(
+                            [np.asarray(val) for val in value], dtype=object
+                        )
                 return np.asarray(value, dtype=dtype)
 
             is_tensor = is_numpy_array
@@ -800,7 +863,9 @@ class BatchEncoding(UserDict):
 
         return self
 
-    def to(self, device: Union[str, "torch.device"], *, non_blocking: bool = False) -> "BatchEncoding":
+    def to(
+        self, device: Union[str, "torch.device"], *, non_blocking: bool = False
+    ) -> "BatchEncoding":
         """
         Send all values to device by calling `v.to(device, non_blocking=non_blocking)` (PyTorch only).
 
@@ -817,13 +882,21 @@ class BatchEncoding(UserDict):
         # This check catches things like APEX blindly calling "to" on all inputs to a module
         # Otherwise it passes the casts down and casts the LongTensor containing the token idxs
         # into a HalfTensor
-        if isinstance(device, str) or is_torch_device(device) or isinstance(device, int):
+        if (
+            isinstance(device, str)
+            or is_torch_device(device)
+            or isinstance(device, int)
+        ):
             self.data = {
-                k: v.to(device=device, non_blocking=non_blocking) if isinstance(v, torch.Tensor) else v
+                k: v.to(device=device, non_blocking=non_blocking)
+                if isinstance(v, torch.Tensor)
+                else v
                 for k, v in self.data.items()
             }
         else:
-            logger.warning(f"Attempting to cast a BatchEncoding to type {str(device)}. This is not supported.")
+            logger.warning(
+                f"Attempting to cast a BatchEncoding to type {str(device)}. This is not supported."
+            )
         return self
 
 
@@ -870,7 +943,9 @@ class SpecialTokensMixin:
         self._pad_token_type_id = 0
         self.verbose = verbose
         self._special_tokens_map = dict.fromkeys(self.SPECIAL_TOKENS_ATTRIBUTES)
-        self._special_tokens_map["additional_special_tokens"] = []  # for BC where it defaults to empty list
+        self._special_tokens_map[
+            "additional_special_tokens"
+        ] = []  # for BC where it defaults to empty list
 
         # We directly set the hidden value to allow initialization with special tokens
         # which are not yet in the vocabulary. Necessary for serialization/de-serialization
@@ -881,7 +956,9 @@ class SpecialTokensMixin:
                 continue
             if key in self.SPECIAL_TOKENS_ATTRIBUTES:
                 if key == "additional_special_tokens":
-                    assert isinstance(value, (list, tuple)), f"Value {value} is not a list or tuple"
+                    assert isinstance(value, (list, tuple)), (
+                        f"Value {value} is not a list or tuple"
+                    )
                     assert all(isinstance(t, (str, AddedToken)) for t in value), (
                         "One of the tokens is not a string or an AddedToken"
                     )
@@ -889,19 +966,23 @@ class SpecialTokensMixin:
                 elif isinstance(value, (str, AddedToken)):
                     setattr(self, key, value)
                 else:
-                    raise TypeError(f"Special token {key} has to be either str or AddedToken but got: {type(value)}")
+                    raise TypeError(
+                        f"Special token {key} has to be either str or AddedToken but got: {type(value)}"
+                    )
 
     def sanitize_special_tokens(self) -> int:
         """
         The `sanitize_special_tokens` is now deprecated kept for backward compatibility and will be removed in
         transformers v5.
         """
-        logger.warning_once("The `sanitize_special_tokens` will be removed in transformers v5.")
+        logger.warning_once(
+            "The `sanitize_special_tokens` will be removed in transformers v5."
+        )
         return self.add_tokens(self.all_special_tokens_extended, special_tokens=True)
 
     def add_special_tokens(
         self,
-        special_tokens_dict: Dict[str, Union[str, AddedToken, Sequence[Union[str, AddedToken]]]],
+        special_tokens_dict: dict[str, str | AddedToken | Sequence[str | AddedToken]],
         replace_additional_special_tokens=True,
     ) -> int:
         """
@@ -964,13 +1045,17 @@ class SpecialTokensMixin:
 
         added_tokens = []
         for key, value in special_tokens_dict.items():
-            assert key in self.SPECIAL_TOKENS_ATTRIBUTES, f"Key {key} is not a special token"
+            assert key in self.SPECIAL_TOKENS_ATTRIBUTES, (
+                f"Key {key} is not a special token"
+            )
 
             if self.verbose:
                 logger.info(f"Assigning {value} to the {key} key of the tokenizer")
 
             if key == "additional_special_tokens":
-                assert isinstance(value, (list, tuple)) and all(isinstance(t, (str, AddedToken)) for t in value), (
+                assert isinstance(value, (list, tuple)) and all(
+                    isinstance(t, (str, AddedToken)) for t in value
+                ), (
                     f"Tokens {value} for key {key} should all be str or AddedToken instances"
                 )
 
@@ -978,8 +1063,17 @@ class SpecialTokensMixin:
                 for token in value:
                     if isinstance(token, str):
                         # for legacy purpose we default to stripping. `test_add_tokens_tokenizer` depends on this
-                        token = AddedToken(token, rstrip=False, lstrip=False, normalized=False, special=True)
-                    if not replace_additional_special_tokens and str(token) in self.additional_special_tokens:
+                        token = AddedToken(
+                            token,
+                            rstrip=False,
+                            lstrip=False,
+                            normalized=False,
+                            special=True,
+                        )
+                    if (
+                        not replace_additional_special_tokens
+                        and str(token) in self.additional_special_tokens
+                    ):
                         continue
                     to_add.append(token)
                 if replace_additional_special_tokens and len(to_add) > 0:
@@ -990,10 +1084,18 @@ class SpecialTokensMixin:
 
             else:
                 if not isinstance(value, (str, AddedToken)):
-                    raise ValueError(f"Token {value} for key {key} should be a str or an AddedToken instance")
+                    raise ValueError(
+                        f"Token {value} for key {key} should be a str or an AddedToken instance"
+                    )
                 if isinstance(value, (str)):
                     # for legacy purpose we default to stripping. `False` depends on this
-                    value = AddedToken(value, rstrip=False, lstrip=False, normalized=False, special=True)
+                    value = AddedToken(
+                        value,
+                        rstrip=False,
+                        lstrip=False,
+                        normalized=False,
+                        special=True,
+                    )
                 if isinstance(value, AddedToken):
                     setattr(self, key, value)
                 if value not in added_tokens:
@@ -1004,7 +1106,9 @@ class SpecialTokensMixin:
         return added_tokens
 
     def add_tokens(
-        self, new_tokens: Union[str, AddedToken, Sequence[Union[str, AddedToken]]], special_tokens: bool = False
+        self,
+        new_tokens: str | AddedToken | Sequence[str | AddedToken],
+        special_tokens: bool = False,
     ) -> int:
         """
         Add a list of new tokens to the tokenizer class. If the new tokens are not in the vocabulary, they are added to
@@ -1052,7 +1156,11 @@ class SpecialTokensMixin:
 
         return self._add_tokens(new_tokens, special_tokens=special_tokens)
 
-    def _add_tokens(self, new_tokens: Union[List[str], List[AddedToken]], special_tokens: bool = False) -> int:
+    def _add_tokens(
+        self,
+        new_tokens: list[str] | list[AddedToken],
+        special_tokens: bool = False,
+    ) -> int:
         raise NotImplementedError
 
     @property
@@ -1069,7 +1177,8 @@ class SpecialTokensMixin:
             key_without_id = key[:-3] if not key.endswith("_ids") else key[:-4]
 
         if self.__dict__.get("_special_tokens_map", None) is not None and any(
-            name in self.__dict__["_special_tokens_map"] for name in [key, key_without_id]
+            name in self.__dict__["_special_tokens_map"]
+            for name in [key, key_without_id]
         ):
             if key_is_special_id:
                 if value is not None:
@@ -1080,7 +1189,11 @@ class SpecialTokensMixin:
                     )
                 key = key_without_id
 
-            if key != "additional_special_tokens" and not isinstance(value, (str, AddedToken)) and value is not None:
+            if (
+                key != "additional_special_tokens"
+                and not isinstance(value, (str, AddedToken))
+                and value is not None
+            ):
                 raise ValueError(f"Cannot set a non-string value as the {key}")
             self._special_tokens_map[key] = value
         else:
@@ -1093,7 +1206,8 @@ class SpecialTokensMixin:
             key_without_id = key[:-3] if not key.endswith("_ids") else key[:-4]
 
         if self.__dict__.get("_special_tokens_map", None) is not None and any(
-            name in self.__dict__["_special_tokens_map"] for name in [key, key_without_id]
+            name in self.__dict__["_special_tokens_map"]
+            for name in [key, key_without_id]
         ):
             _special_tokens_map = self.__dict__["_special_tokens_map"]
             if not key_is_special_id:
@@ -1102,18 +1216,24 @@ class SpecialTokensMixin:
                         logger.error(f"Using {key}, but it is not set yet.")
                     return None
                 value = _special_tokens_map[key]
-                return str(value) if key != "additional_special_tokens" else [str(tok) for tok in value]
-            else:
-                attr_as_tokens = getattr(self, key_without_id)
-                return self.convert_tokens_to_ids(attr_as_tokens) if attr_as_tokens is not None else None
+                return (
+                    str(value)
+                    if key != "additional_special_tokens"
+                    else [str(tok) for tok in value]
+                )
+            attr_as_tokens = getattr(self, key_without_id)
+            return (
+                self.convert_tokens_to_ids(attr_as_tokens)
+                if attr_as_tokens is not None
+                else None
+            )
 
         if key not in self.__dict__:
             raise AttributeError(f"{self.__class__.__name__} has no attribute {key}")
-        else:
-            return super().__getattr__(key)
+        return super().__getattr__(key)
 
     @property
-    def special_tokens_map(self) -> Dict[str, Union[str, List[str]]]:
+    def special_tokens_map(self) -> dict[str, str | list[str]]:
         """
         `Dict[str, Union[str, List[str]]]`: A dictionary mapping special token class attributes (`cls_token`,
         `unk_token`, etc.) to their values (`'<unk>'`, `'<cls>'`, etc.).
@@ -1128,7 +1248,9 @@ class SpecialTokensMixin:
         return set_attr
 
     @property
-    def special_tokens_map_extended(self) -> Dict[str, Union[str, AddedToken, List[Union[str, AddedToken]]]]:
+    def special_tokens_map_extended(
+        self,
+    ) -> dict[str, str | AddedToken | list[str | AddedToken]]:
         """
         `Dict[str, Union[str, tokenizers.AddedToken, List[Union[str, tokenizers.AddedToken]]]]`: A dictionary mapping
         special token class attributes (`cls_token`, `unk_token`, etc.) to their values (`'<unk>'`, `'<cls>'`, etc.).
@@ -1144,7 +1266,7 @@ class SpecialTokensMixin:
         return set_attr
 
     @property
-    def all_special_tokens_extended(self) -> List[Union[str, AddedToken]]:
+    def all_special_tokens_extended(self) -> list[str | AddedToken]:
         """
         `List[Union[str, tokenizers.AddedToken]]`: All the special tokens (`'<unk>'`, `'<cls>'`, etc.), the order has
         nothing to do with the index of each tokens. If you want to know the correct indices, check
@@ -1165,7 +1287,7 @@ class SpecialTokensMixin:
         return all_tokens
 
     @property
-    def all_special_tokens(self) -> List[str]:
+    def all_special_tokens(self) -> list[str]:
         """
         `List[str]`: A list of the unique special tokens (`'<unk>'`, `'<cls>'`, ..., etc.).
 
@@ -1175,7 +1297,7 @@ class SpecialTokensMixin:
         return all_toks
 
     @property
-    def all_special_ids(self) -> List[int]:
+    def all_special_ids(self) -> list[int]:
         """
         `List[int]`: List the ids of the special tokens(`'<unk>'`, `'<cls>'`, etc.) mapped to class attributes.
         """
@@ -1183,19 +1305,23 @@ class SpecialTokensMixin:
         all_ids = self.convert_tokens_to_ids(all_toks)
         return all_ids
 
-    def _set_model_specific_special_tokens(self, special_tokens: List[str]):
+    def _set_model_specific_special_tokens(self, special_tokens: list[str]):
         """
         Adds new special tokens to the "SPECIAL_TOKENS_ATTRIBUTES" list which will be part
         of "self.special_tokens" and saved as a special token in tokenizer's config.
         This allows us to dynamically add new model-type specific tokens after initializing the tokenizer.
         For example: if the model tokenizers is multimodal, we can support special image or audio tokens.
         """
-        self.SPECIAL_TOKENS_ATTRIBUTES = self.SPECIAL_TOKENS_ATTRIBUTES + list(special_tokens.keys())
+        self.SPECIAL_TOKENS_ATTRIBUTES = self.SPECIAL_TOKENS_ATTRIBUTES + list(
+            special_tokens.keys()
+        )
         for key, value in special_tokens.items():
             if isinstance(value, (str, AddedToken)):
                 self._special_tokens_map[key] = value
             else:
-                raise TypeError(f"Special token {key} has to be either str or AddedToken but got: {type(value)}")
+                raise TypeError(
+                    f"Special token {key} has to be either str or AddedToken but got: {type(value)}"
+                )
 
 
 ENCODE_KWARGS_DOCSTRING = r"""
@@ -1391,13 +1517,13 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
     Handles shared (mostly boiler plate) methods for those two classes.
     """
 
-    vocab_files_names: Dict[str, str] = {}
-    pretrained_vocab_files_map: Dict[str, Dict[str, str]] = {}
-    _auto_class: Optional[str] = None
+    vocab_files_names: dict[str, str] = {}
+    pretrained_vocab_files_map: dict[str, dict[str, str]] = {}
+    _auto_class: str | None = None
 
     # first name has to correspond to main model input name
     # to make sure `tokenizer.pad(...)` works correctly
-    model_input_names: List[str] = ["input_ids", "token_type_ids", "attention_mask"]
+    model_input_names: list[str] = ["input_ids", "token_type_ids", "attention_mask"]
     padding_side: str = "right"
     truncation_side: str = "right"
     slow_tokenizer_class = None
@@ -1407,7 +1533,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         self.init_inputs = ()
         for key in kwargs:
             if hasattr(self, key) and callable(getattr(self, key)):
-                raise AttributeError(f"{key} conflicts with the method {key} in {self.__class__.__name__}")
+                raise AttributeError(
+                    f"{key} conflicts with the method {key} in {self.__class__.__name__}"
+                )
 
         self.init_kwargs = copy.deepcopy(kwargs)
         self.name_or_path = kwargs.pop("name_or_path", "")
@@ -1415,7 +1543,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
 
         # For backward compatibility we fallback to set model_max_length from max_len if provided
         model_max_length = kwargs.pop("model_max_length", kwargs.pop("max_len", None))
-        self.model_max_length = model_max_length if model_max_length is not None else VERY_LARGE_INTEGER
+        self.model_max_length = (
+            model_max_length if model_max_length is not None else VERY_LARGE_INTEGER
+        )
 
         # Padding and truncation side are right by default and overridden in subclasses. If specified in the kwargs, it
         # is changed.
@@ -1434,7 +1564,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         self.model_input_names = kwargs.pop("model_input_names", self.model_input_names)
 
         # By default, cleaning tokenization spaces for both fast and slow tokenizers
-        self.clean_up_tokenization_spaces = kwargs.pop("clean_up_tokenization_spaces", False)
+        self.clean_up_tokenization_spaces = kwargs.pop(
+            "clean_up_tokenization_spaces", False
+        )
 
         # By default, do not split special tokens for both fast and slow tokenizers
         self.split_special_tokens = kwargs.pop("split_special_tokens", False)
@@ -1447,12 +1579,17 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         if isinstance(self.chat_template, (list, tuple)):
             # Chat templates are stored as lists of dicts with fixed key names,
             # we reconstruct that into a single dict while loading them.
-            self.chat_template = {template["name"]: template["template"] for template in self.chat_template}
+            self.chat_template = {
+                template["name"]: template["template"]
+                for template in self.chat_template
+            }
 
         super().__init__(**kwargs)
 
         self.extra_special_tokens = kwargs.pop("extra_special_tokens", {})
-        self._set_model_specific_special_tokens(special_tokens=self.extra_special_tokens)
+        self._set_model_specific_special_tokens(
+            special_tokens=self.extra_special_tokens
+        )
 
     @property
     def max_len_single_sentence(self) -> int:
@@ -1471,7 +1608,10 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
     @max_len_single_sentence.setter
     def max_len_single_sentence(self, value) -> int:
         # For backward compatibility, allow to try to setup 'max_len_single_sentence'.
-        if value == self.model_max_length - self.num_special_tokens_to_add(pair=False) and self.verbose:
+        if (
+            value == self.model_max_length - self.num_special_tokens_to_add(pair=False)
+            and self.verbose
+        ):
             if not self.deprecation_warnings.get("max_len_single_sentence", False):
                 logger.warning(
                     "Setting 'max_len_single_sentence' is now deprecated. This value is automatically set up."
@@ -1485,25 +1625,32 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
     @max_len_sentences_pair.setter
     def max_len_sentences_pair(self, value) -> int:
         # For backward compatibility, allow to try to setup 'max_len_sentences_pair'.
-        if value == self.model_max_length - self.num_special_tokens_to_add(pair=True) and self.verbose:
+        if (
+            value == self.model_max_length - self.num_special_tokens_to_add(pair=True)
+            and self.verbose
+        ):
             if not self.deprecation_warnings.get("max_len_sentences_pair", False):
                 logger.warning(
                     "Setting 'max_len_sentences_pair' is now deprecated. This value is automatically set up."
                 )
             self.deprecation_warnings["max_len_sentences_pair"] = True
         else:
-            raise ValueError("Setting 'max_len_sentences_pair' is now deprecated. This value is automatically set up.")
+            raise ValueError(
+                "Setting 'max_len_sentences_pair' is now deprecated. This value is automatically set up."
+            )
 
     def _set_processor_class(self, processor_class: str):
         """Sets processor class as an attribute."""
         self._processor_class = processor_class
 
     @property
-    def added_tokens_decoder(self) -> Dict[int, AddedToken]:
+    def added_tokens_decoder(self) -> dict[int, AddedToken]:
         raise NotImplementedError()
 
     def __repr__(self) -> str:
-        added_tokens_decoder_rep = "\n\t".join([f"{k}: {v.__repr__()}," for k, v in self.added_tokens_decoder.items()])
+        added_tokens_decoder_rep = "\n\t".join(
+            [f"{k}: {v.__repr__()}," for k, v in self.added_tokens_decoder.items()]
+        )
         return (
             f"{self.__class__.__name__}(name_or_path='{self.name_or_path}',"
             f" vocab_size={self.vocab_size}, model_max_length={self.model_max_length}, is_fast={self.is_fast},"
@@ -1515,7 +1662,7 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
     def __len__(self) -> int:
         raise NotImplementedError()
 
-    def get_vocab(self) -> Dict[str, int]:
+    def get_vocab(self) -> dict[str, int]:
         """
         Returns the vocabulary as a dictionary of token to index.
 
@@ -1529,22 +1676,22 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
 
     def apply_chat_template(
         self,
-        conversation: Union[List[Dict[str, str]], List[List[Dict[str, str]]]],
-        tools: Optional[List[Union[Dict, Callable]]] = None,
-        documents: Optional[List[Dict[str, str]]] = None,
-        chat_template: Optional[str] = None,
+        conversation: list[dict[str, str]] | list[list[dict[str, str]]],
+        tools: list[dict | Callable] | None = None,
+        documents: list[dict[str, str]] | None = None,
+        chat_template: str | None = None,
         add_generation_prompt: bool = False,
         continue_final_message: bool = False,
         tokenize: bool = True,
-        padding: Union[bool, str, PaddingStrategy] = False,
+        padding: bool | str | PaddingStrategy = False,
         truncation: bool = False,
-        max_length: Optional[int] = None,
-        return_tensors: Optional[Union[str, TensorType]] = None,
+        max_length: int | None = None,
+        return_tensors: str | TensorType | None = None,
         return_dict: bool = False,
         return_assistant_tokens_mask: bool = False,
-        tokenizer_kwargs: Optional[Dict[str, Any]] = None,
+        tokenizer_kwargs: dict[str, Any] | None = None,
         **kwargs,
-    ) -> Union[str, List[int], List[str], List[List[int]], BatchEncoding]:
+    ) -> str | list[int] | list[str] | list[list[int]] | BatchEncoding:
         """
         Converts a list of dictionaries with `"role"` and `"content"` keys to a list of token
         ids. This method is intended for use with chat models, and will read the tokenizer's chat_template attribute to
@@ -1624,7 +1771,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
             )
 
         if return_assistant_tokens_mask and not return_dict:
-            raise ValueError("`return_assistant_tokens_mask=True` is incompatible with `return_dict=False`")
+            raise ValueError(
+                "`return_assistant_tokens_mask=True` is incompatible with `return_dict=False`"
+            )
 
         if tokenizer_kwargs is None:
             tokenizer_kwargs = {}
@@ -1632,7 +1781,8 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         chat_template = self.get_chat_template(chat_template, tools)
 
         if isinstance(conversation, (list, tuple)) and (
-            isinstance(conversation[0], (list, tuple)) or hasattr(conversation[0], "messages")
+            isinstance(conversation[0], (list, tuple))
+            or hasattr(conversation[0], "messages")
         ):
             conversations = conversation
             is_batched = True
@@ -1646,9 +1796,14 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                     "continue_final_message and add_generation_prompt are not compatible. Use continue_final_message when you want the model to continue the final message, and add_generation_prompt when you want to add a header that will prompt it to start a new assistant message instead."
                 )
             if return_assistant_tokens_mask:
-                raise ValueError("continue_final_message is not compatible with return_assistant_tokens_mask.")
+                raise ValueError(
+                    "continue_final_message is not compatible with return_assistant_tokens_mask."
+                )
 
-        template_kwargs = {**self.special_tokens_map, **kwargs}  # kwargs overwrite special tokens if both are present
+        template_kwargs = {
+            **self.special_tokens_map,
+            **kwargs,
+        }  # kwargs overwrite special tokens if both are present
         rendered_chat, generation_indices = render_jinja_template(
             conversations=conversations,
             tools=tools,
@@ -1682,13 +1837,19 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                         input_ids = [out["input_ids"]]
                     for i in range(len(input_ids)):
                         current_mask = [0] * len(input_ids[i])
-                        for assistant_start_char, assistant_end_char in generation_indices[i]:
+                        for (
+                            assistant_start_char,
+                            assistant_end_char,
+                        ) in generation_indices[i]:
                             start_token = out.char_to_token(i, assistant_start_char)
                             end_token = out.char_to_token(i, assistant_end_char - 1)
                             if start_token is None:
                                 # start_token is out of bounds maybe due to truncation.
                                 break
-                            for token_id in range(start_token, end_token + 1 if end_token else len(input_ids[i])):
+                            for token_id in range(
+                                start_token,
+                                end_token + 1 if end_token else len(input_ids[i]),
+                            ):
                                 current_mask[token_id] = 1
                         assistant_masks.append(current_mask)
 
@@ -1701,12 +1862,12 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                         out.convert_to_tensors(tensor_type=return_tensors)
 
                 return out
-            else:
-                return out["input_ids"]
-        else:
-            return rendered_chat
+            return out["input_ids"]
+        return rendered_chat
 
-    def get_chat_template(self, chat_template: Optional[str] = None, tools: Optional[List[Dict]] = None) -> str:
+    def get_chat_template(
+        self, chat_template: str | None = None, tools: list[dict] | None = None
+    ) -> str:
         """
         Retrieve the chat template string used for tokenizing chat messages. This template is used
         internally by the `apply_chat_template` method and can also be used externally to retrieve the model's chat
@@ -1763,12 +1924,12 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
     @classmethod
     def from_pretrained(
         cls,
-        pretrained_model_name_or_path: Union[str, os.PathLike],
+        pretrained_model_name_or_path: str | os.PathLike,
         *init_inputs,
-        cache_dir: Optional[Union[str, os.PathLike]] = None,
+        cache_dir: str | os.PathLike | None = None,
         force_download: bool = False,
         local_files_only: bool = False,
-        token: Optional[Union[str, bool]] = None,
+        token: str | bool | None = None,
         revision: str = "main",
         trust_remote_code=False,
         **kwargs,
@@ -1858,7 +2019,7 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         from_pipeline = kwargs.pop("_from_pipeline", None)
         from_auto_class = kwargs.pop("_from_auto", False)
         commit_hash = kwargs.pop("_commit_hash", None)
-        gguf_file = kwargs.get("gguf_file", None)
+        gguf_file = kwargs.get("gguf_file")
 
         if use_auth_token is not None:
             warnings.warn(
@@ -1871,7 +2032,11 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                 )
             token = use_auth_token
 
-        user_agent = {"file_type": "tokenizer", "from_auto_class": from_auto_class, "is_fast": "Fast" in cls.__name__}
+        user_agent = {
+            "file_type": "tokenizer",
+            "from_auto_class": from_auto_class,
+            "is_fast": "Fast" in cls.__name__,
+        }
         if from_pipeline is not None:
             user_agent["using_pipeline"] = from_pipeline
 
@@ -1885,7 +2050,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
 
         is_local = os.path.isdir(pretrained_model_name_or_path)
         single_file_id = None
-        if os.path.isfile(pretrained_model_name_or_path) or is_remote_url(pretrained_model_name_or_path):
+        if os.path.isfile(pretrained_model_name_or_path) or is_remote_url(
+            pretrained_model_name_or_path
+        ):
             if len(cls.vocab_files_names) > 1 and not gguf_file:
                 raise ValueError(
                     f"Calling {cls.__name__}.from_pretrained() with the path to a single file or url is not "
@@ -1952,15 +2119,21 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                         with open(resolved_config_file, encoding="utf-8") as reader:
                             tokenizer_config = json.load(reader)
                             if "fast_tokenizer_files" in tokenizer_config:
-                                fast_tokenizer_file = get_fast_tokenizer_file(tokenizer_config["fast_tokenizer_files"])
+                                fast_tokenizer_file = get_fast_tokenizer_file(
+                                    tokenizer_config["fast_tokenizer_files"]
+                                )
                     vocab_files["tokenizer_file"] = fast_tokenizer_file
 
                     # This block looks for any extra chat template files
                     if is_local:
-                        template_dir = Path(pretrained_model_name_or_path, CHAT_TEMPLATE_DIR)
+                        template_dir = Path(
+                            pretrained_model_name_or_path, CHAT_TEMPLATE_DIR
+                        )
                         if template_dir.is_dir():
                             for template_file in template_dir.glob("*.jinja"):
-                                template_name = template_file.name.removesuffix(".jinja")
+                                template_name = template_file.name.removesuffix(
+                                    ".jinja"
+                                )
                                 vocab_files[f"chat_template_{template_name}"] = (
                                     f"{CHAT_TEMPLATE_DIR}/{template_file.name}"
                                 )
@@ -1971,7 +2144,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                             revision=revision,
                             cache_dir=cache_dir,
                         ):
-                            vocab_files[f"chat_template_{template}"] = f"{CHAT_TEMPLATE_DIR}/{template}.jinja"
+                            vocab_files[f"chat_template_{template}"] = (
+                                f"{CHAT_TEMPLATE_DIR}/{template}.jinja"
+                            )
 
         # Get files from url, cache, or disk depending on the case
         resolved_vocab_files = {}
@@ -1982,7 +2157,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                 if os.path.isfile(file_path):
                     resolved_vocab_files[file_id] = file_path
                 elif is_remote_url(file_path):
-                    resolved_vocab_files[file_id] = download_url(file_path, proxies=proxies)
+                    resolved_vocab_files[file_id] = download_url(
+                        file_path, proxies=proxies
+                    )
             else:
                 try:
                     resolved_vocab_files[file_id] = cached_file(
@@ -2011,7 +2188,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                         f"Otherwise, make sure '{pretrained_model_name_or_path}' is the correct path to a directory "
                         f"containing all relevant files for a {cls.__name__} tokenizer."
                     )
-                commit_hash = extract_commit_hash(resolved_vocab_files[file_id], commit_hash)
+                commit_hash = extract_commit_hash(
+                    resolved_vocab_files[file_id], commit_hash
+                )
 
         for file_id, file_path in vocab_files.items():
             if file_id not in resolved_vocab_files:
@@ -2020,7 +2199,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
             if is_local:
                 logger.info(f"loading file {file_path}")
             else:
-                logger.info(f"loading file {file_path} from cache at {resolved_vocab_files[file_id]}")
+                logger.info(
+                    f"loading file {file_path} from cache at {resolved_vocab_files[file_id]}"
+                )
 
         return cls._from_pretrained(
             resolved_vocab_files,
@@ -2054,12 +2235,18 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         # We instantiate fast tokenizers based on a slow tokenizer if we don't have access to the tokenizer.json
         # file or if `from_slow` is set to True.
         from_slow = kwargs.get("from_slow", False)
-        gguf_file = kwargs.get("gguf_file", None)
-        has_tokenizer_file = resolved_vocab_files.get("tokenizer_file", None) is not None
+        gguf_file = kwargs.get("gguf_file")
+        has_tokenizer_file = (
+            resolved_vocab_files.get("tokenizer_file", None) is not None
+        )
 
         # If one passes a GGUF file path to `gguf_file` there is no need for this check as the tokenizer will be
         # loaded directly from the GGUF file.
-        if (from_slow or not has_tokenizer_file) and cls.slow_tokenizer_class is not None and not gguf_file:
+        if (
+            (from_slow or not has_tokenizer_file)
+            and cls.slow_tokenizer_class is not None
+            and not gguf_file
+        ):
             slow_tokenizer = (cls.slow_tokenizer_class)._from_pretrained(
                 copy.deepcopy(resolved_vocab_files),
                 pretrained_model_name_or_path,
@@ -2078,7 +2265,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         # Did we saved some inputs and kwargs to reload ?
         tokenizer_config_file = resolved_vocab_files.pop("tokenizer_config_file", None)
         if tokenizer_config_file is not None:
-            with open(tokenizer_config_file, encoding="utf-8") as tokenizer_config_handle:
+            with open(
+                tokenizer_config_file, encoding="utf-8"
+            ) as tokenizer_config_handle:
                 init_kwargs = json.load(tokenizer_config_handle)
             # First attempt. We get tokenizer_class from tokenizer_config to check mismatch between tokenizers.
             config_tokenizer_class = init_kwargs.get("tokenizer_class")
@@ -2095,7 +2284,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         # If independent chat template file(s) exist, they take priority over template entries in the tokenizer config
         chat_templates = {}
         chat_template_file = resolved_vocab_files.pop("chat_template_file", None)
-        extra_chat_templates = [key for key in resolved_vocab_files if key.startswith("chat_template_")]
+        extra_chat_templates = [
+            key for key in resolved_vocab_files if key.startswith("chat_template_")
+        ]
         if chat_template_file is not None:
             with open(chat_template_file) as chat_template_handle:
                 chat_templates["default"] = chat_template_handle.read()
@@ -2148,7 +2339,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
             if config_tokenizer_class is None:
                 # Third attempt. If we have not yet found the original type of the tokenizer,
                 # we are loading we see if we can infer it from the type of the configuration file
-                from .models.auto.tokenization_auto import TOKENIZER_MAPPING_NAMES  # tests_ignore
+                from .models.auto.tokenization_auto import (
+                    TOKENIZER_MAPPING_NAMES,
+                )  # tests_ignore
 
                 if hasattr(config, "model_type"):
                     model_type = config.model_type
@@ -2161,14 +2354,16 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                             break
 
                 if model_type is not None:
-                    config_tokenizer_class, config_tokenizer_class_fast = TOKENIZER_MAPPING_NAMES.get(
-                        model_type, (None, None)
+                    config_tokenizer_class, config_tokenizer_class_fast = (
+                        TOKENIZER_MAPPING_NAMES.get(model_type, (None, None))
                     )
                     if config_tokenizer_class is None:
                         config_tokenizer_class = config_tokenizer_class_fast
 
         if config_tokenizer_class is not None:
-            if cls.__name__.replace("Fast", "") != config_tokenizer_class.replace("Fast", ""):
+            if cls.__name__.replace("Fast", "") != config_tokenizer_class.replace(
+                "Fast", ""
+            ):
                 logger.warning(
                     "The tokenizer class you load from this checkpoint is not the same type as the class this"
                     " function is called from. It may result in unexpected tokenization. \nThe tokenizer class you"
@@ -2181,7 +2376,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
 
         # Merge resolved_vocab_files arguments in init_kwargs.
         added_tokens_file = resolved_vocab_files.pop("added_tokens_file", None)
-        special_tokens_map_file = resolved_vocab_files.pop("special_tokens_map_file", None)
+        special_tokens_map_file = resolved_vocab_files.pop(
+            "special_tokens_map_file", None
+        )
         for args_name, file_path in resolved_vocab_files.items():
             if args_name not in init_kwargs:
                 init_kwargs[args_name] = file_path
@@ -2192,8 +2389,8 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         init_kwargs["name_or_path"] = pretrained_model_name_or_path
 
         #### Handle tokenizer serialization of added and special tokens
-        added_tokens_decoder: Dict[int, AddedToken] = {}
-        added_tokens_map: Dict[str, AddedToken] = {}
+        added_tokens_decoder: dict[int, AddedToken] = {}
+        added_tokens_map: dict[str, AddedToken] = {}
         # if we have info on the slow added tokens
         if "added_tokens_decoder" in init_kwargs:
             for idx, token in init_kwargs["added_tokens_decoder"].items():
@@ -2209,7 +2406,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         else:
             # begin legacy: read the added_tokens_file and update kwargs with special_tokens_map if modified
             if special_tokens_map_file is not None:
-                with open(special_tokens_map_file, encoding="utf-8") as special_tokens_map_handle:
+                with open(
+                    special_tokens_map_file, encoding="utf-8"
+                ) as special_tokens_map_handle:
                     special_tokens_map = json.load(special_tokens_map_handle)
                     for key, value in special_tokens_map.items():
                         if key in kwargs and kwargs[key]:
@@ -2219,8 +2418,12 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                         if isinstance(value, dict):
                             value["special"] = True
                             value = AddedToken(**value)
-                        elif key == "additional_special_tokens" and isinstance(value, list):
-                            additional_special_tokens = init_kwargs.pop("additional_special_tokens", []) or []
+                        elif key == "additional_special_tokens" and isinstance(
+                            value, list
+                        ):
+                            additional_special_tokens = (
+                                init_kwargs.pop("additional_special_tokens", []) or []
+                            )
                             for token in value:
                                 if isinstance(token, dict):
                                     token["special"] = True
@@ -2247,7 +2450,11 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                     # if index not in added_tokens_decoder and str_token not in added_tokens_map:
                     special = str_token in special_tokens
                     added_tokens_decoder[index] = AddedToken(
-                        str_token, rstrip=False, lstrip=False, normalized=not special, special=special
+                        str_token,
+                        rstrip=False,
+                        lstrip=False,
+                        normalized=not special,
+                        special=special,
                     )
                     added_tokens_map[str(token)] = added_tokens_decoder[index]
 
@@ -2261,7 +2468,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                 for serialized_tokens in added_tokens:
                     idx = serialized_tokens.pop("id")
                     added_tokens_decoder[idx] = AddedToken(**serialized_tokens)
-                    added_tokens_map[str(added_tokens_decoder[idx])] = added_tokens_decoder[idx]
+                    added_tokens_map[str(added_tokens_decoder[idx])] = (
+                        added_tokens_decoder[idx]
+                    )
             # end legacy
 
         # Passing AddedTokens and not strings to the class to prevent it from casting the string to a different AddedToken
@@ -2271,7 +2480,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         for key in cls.SPECIAL_TOKENS_ATTRIBUTES & init_kwargs.keys():
             if added_tokens_map != {} and init_kwargs[key] is not None:
                 if key != "additional_special_tokens":
-                    init_kwargs[key] = added_tokens_map.get(str(init_kwargs[key]), init_kwargs[key])
+                    init_kwargs[key] = added_tokens_map.get(
+                        str(init_kwargs[key]), init_kwargs[key]
+                    )
 
         # Instantiate the tokenizer.
         try:
@@ -2295,7 +2506,10 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                 "Please check that the provided vocabulary is accessible and not corrupted."
             )
 
-        if added_tokens_decoder != {} and max(list(added_tokens_decoder.keys())[-1], 0) > tokenizer.vocab_size:
+        if (
+            added_tokens_decoder != {}
+            and max(list(added_tokens_decoder.keys())[-1], 0) > tokenizer.vocab_size
+        ):
             logger.info(
                 "Special tokens have been added in the vocabulary, make sure the associated word embeddings are"
                 " fine-tuned or trained."
@@ -2303,7 +2517,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         return tokenizer
 
     @staticmethod
-    def _eventually_correct_t5_max_length(pretrained_model_name_or_path, max_model_length, init_max_model_length):
+    def _eventually_correct_t5_max_length(
+        pretrained_model_name_or_path, max_model_length, init_max_model_length
+    ):
         # This method should be deleted in Transformers v5
         # Its only purpose is to potentially throw a warning
         # that incorrectly defined max lengths of T5's tokenizer are used
@@ -2311,7 +2527,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         return max_model_length
 
     @classmethod
-    def convert_added_tokens(cls, obj: Union[AddedToken, Any], save=False, add_type_field=True):
+    def convert_added_tokens(
+        cls, obj: AddedToken | Any, save=False, add_type_field=True
+    ):
         if isinstance(obj, dict) and "__type" in obj and obj["__type"] == "AddedToken":
             obj.pop("__type")
             return AddedToken(**obj)
@@ -2323,17 +2541,23 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                 # Don't save "special" for previous tokenizers
                 obj.pop("special")
             return obj
-        elif isinstance(obj, (list, tuple)):
-            return [cls.convert_added_tokens(o, save=save, add_type_field=add_type_field) for o in obj]
-        elif isinstance(obj, dict):
-            return {k: cls.convert_added_tokens(v, save=save, add_type_field=add_type_field) for k, v in obj.items()}
+        if isinstance(obj, (list, tuple)):
+            return [
+                cls.convert_added_tokens(o, save=save, add_type_field=add_type_field)
+                for o in obj
+            ]
+        if isinstance(obj, dict):
+            return {
+                k: cls.convert_added_tokens(v, save=save, add_type_field=add_type_field)
+                for k, v in obj.items()
+            }
         return obj
 
     def save_chat_templates(
         self,
-        save_directory: Union[str, os.PathLike],
+        save_directory: str | os.PathLike,
         tokenizer_config: dict,
-        filename_prefix: Optional[str],
+        filename_prefix: str | None,
         save_jinja_files: bool,
     ):
         """
@@ -2342,10 +2566,12 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         writes the templates to the tokenizer config in the correct format.
         """
         chat_template_file = os.path.join(
-            save_directory, (filename_prefix + "-" if filename_prefix else "") + CHAT_TEMPLATE_FILE
+            save_directory,
+            (filename_prefix + "-" if filename_prefix else "") + CHAT_TEMPLATE_FILE,
         )
         chat_template_dir = os.path.join(
-            save_directory, (filename_prefix + "-" if filename_prefix else "") + CHAT_TEMPLATE_DIR
+            save_directory,
+            (filename_prefix + "-" if filename_prefix else "") + CHAT_TEMPLATE_DIR,
         )
 
         saved_raw_chat_template_files = []
@@ -2356,7 +2582,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
             logger.info(f"chat template saved in {chat_template_file}")
             saved_raw_chat_template_files.append(chat_template_file)
             if "chat_template" in tokenizer_config:
-                tokenizer_config.pop("chat_template")  # To ensure it doesn't somehow end up in the config too
+                tokenizer_config.pop(
+                    "chat_template"
+                )  # To ensure it doesn't somehow end up in the config too
         elif save_jinja_files and isinstance(self.chat_template, dict):
             # New format for multiple templates is to save the default as chat_template.jinja
             # and the other templates in the chat_templates/ directory
@@ -2368,17 +2596,23 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                     saved_raw_chat_template_files.append(chat_template_file)
                 else:
                     Path(chat_template_dir).mkdir(exist_ok=True)
-                    template_filepath = os.path.join(chat_template_dir, f"{template_name}.jinja")
+                    template_filepath = os.path.join(
+                        chat_template_dir, f"{template_name}.jinja"
+                    )
                     with open(template_filepath, "w", encoding="utf-8") as f:
                         f.write(template)
                     logger.info(f"chat template saved in {template_filepath}")
                     saved_raw_chat_template_files.append(template_filepath)
             if "chat_template" in tokenizer_config:
-                tokenizer_config.pop("chat_template")  # To ensure it doesn't somehow end up in the config too
+                tokenizer_config.pop(
+                    "chat_template"
+                )  # To ensure it doesn't somehow end up in the config too
         elif isinstance(self.chat_template, dict):
             # Legacy format for multiple templates:
             # chat template dicts are saved to the config as lists of dicts with fixed key names.
-            tokenizer_config["chat_template"] = [{"name": k, "template": v} for k, v in self.chat_template.items()]
+            tokenizer_config["chat_template"] = [
+                {"name": k, "template": v} for k, v in self.chat_template.items()
+            ]
         elif self.chat_template is not None:
             # Legacy format for single templates: Just make them a key in tokenizer_config.json
             tokenizer_config["chat_template"] = self.chat_template
@@ -2386,12 +2620,12 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
 
     def save_pretrained(
         self,
-        save_directory: Union[str, os.PathLike],
-        legacy_format: Optional[bool] = None,
-        filename_prefix: Optional[str] = None,
+        save_directory: str | os.PathLike,
+        legacy_format: bool | None = None,
+        filename_prefix: str | None = None,
         push_to_hub: bool = False,
         **kwargs,
-    ) -> Tuple[str]:
+    ) -> tuple[str]:
         """
         Save the full tokenizer state.
 
@@ -2434,15 +2668,17 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                 "The `use_auth_token` argument is deprecated and will be removed in v5 of Transformers. Please use `token` instead.",
                 FutureWarning,
             )
-            if kwargs.get("token", None) is not None:
+            if kwargs.get("token") is not None:
                 raise ValueError(
                     "`token` and `use_auth_token` are both specified. Please set only the argument `token`."
                 )
             kwargs["token"] = use_auth_token
 
         if os.path.isfile(save_directory):
-            logger.error(f"Provided path ({save_directory}) should be a directory, not a file")
-            return
+            logger.error(
+                f"Provided path ({save_directory}) should be a directory, not a file"
+            )
+            return None
 
         os.makedirs(save_directory, exist_ok=True)
 
@@ -2453,10 +2689,13 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
             files_timestamps = self._get_files_timestamps(save_directory)
 
         special_tokens_map_file = os.path.join(
-            save_directory, (filename_prefix + "-" if filename_prefix else "") + SPECIAL_TOKENS_MAP_FILE
+            save_directory,
+            (filename_prefix + "-" if filename_prefix else "")
+            + SPECIAL_TOKENS_MAP_FILE,
         )
         tokenizer_config_file = os.path.join(
-            save_directory, (filename_prefix + "-" if filename_prefix else "") + TOKENIZER_CONFIG_FILE
+            save_directory,
+            (filename_prefix + "-" if filename_prefix else "") + TOKENIZER_CONFIG_FILE,
         )
 
         tokenizer_config = copy.deepcopy(self.init_kwargs)
@@ -2487,7 +2726,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
             tokenizer_config.pop(file_id, None)
 
         # no typefields, this way old fast and slow can load it
-        tokenizer_config = self.convert_added_tokens(tokenizer_config, add_type_field=True, save=True)
+        tokenizer_config = self.convert_added_tokens(
+            tokenizer_config, add_type_field=True, save=True
+        )
 
         # Process added tokens separately: allows previous versions to ignore it!
         added_tokens = {}
@@ -2498,7 +2739,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         # Add tokenizer class to the tokenizer config to be able to reload it with from_pretrained
         tokenizer_class = self.__class__.__name__
         # Remove the Fast at the end if we can save the slow tokenizer
-        if tokenizer_class.endswith("Fast") and getattr(self, "can_save_slow_tokenizer", False):
+        if tokenizer_class.endswith("Fast") and getattr(
+            self, "can_save_slow_tokenizer", False
+        ):
             tokenizer_class = tokenizer_class[:-4]
         tokenizer_config["tokenizer_class"] = tokenizer_class
         if getattr(self, "_auto_map", None) is not None:
@@ -2520,20 +2763,34 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
             tokenizer_config.pop("device_map")
 
         with open(tokenizer_config_file, "w", encoding="utf-8") as f:
-            out_str = json.dumps(tokenizer_config, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+            out_str = (
+                json.dumps(
+                    tokenizer_config, indent=2, sort_keys=True, ensure_ascii=False
+                )
+                + "\n"
+            )
             f.write(out_str)
         logger.info(f"tokenizer config file saved in {tokenizer_config_file}")
 
         # Sanitize AddedTokens in special_tokens_map
 
         # kept for forward compatibility, will be removed in transoformers 5. Typefields are not saved for FC, special should not be save either
-        write_dict = self.convert_added_tokens(self.special_tokens_map_extended, save=True, add_type_field=False)
+        write_dict = self.convert_added_tokens(
+            self.special_tokens_map_extended, save=True, add_type_field=False
+        )
         with open(special_tokens_map_file, "w", encoding="utf-8") as f:
-            out_str = json.dumps(write_dict, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+            out_str = (
+                json.dumps(write_dict, indent=2, sort_keys=True, ensure_ascii=False)
+                + "\n"
+            )
             f.write(out_str)
         logger.info(f"Special tokens file saved in {special_tokens_map_file}")
 
-        file_names = (tokenizer_config_file, special_tokens_map_file, *saved_raw_chat_template_files)
+        file_names = (
+            tokenizer_config_file,
+            special_tokens_map_file,
+            *saved_raw_chat_template_files,
+        )
 
         save_files = self._save_pretrained(
             save_directory=save_directory,
@@ -2555,11 +2812,11 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
 
     def _save_pretrained(
         self,
-        save_directory: Union[str, os.PathLike],
-        file_names: Tuple[str],
-        legacy_format: Optional[bool] = None,
-        filename_prefix: Optional[str] = None,
-    ) -> Tuple[str]:
+        save_directory: str | os.PathLike,
+        file_names: tuple[str],
+        legacy_format: bool | None = None,
+        filename_prefix: str | None = None,
+    ) -> tuple[str]:
         """
         Save a tokenizer using the slow-tokenizer/legacy format: vocabulary + added tokens.
 
@@ -2574,21 +2831,35 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         save_directory = str(save_directory)
 
         added_tokens_file = os.path.join(
-            save_directory, (filename_prefix + "-" if filename_prefix else "") + ADDED_TOKENS_FILE
+            save_directory,
+            (filename_prefix + "-" if filename_prefix else "") + ADDED_TOKENS_FILE,
         )
         # the new get_added_vocab() also returns special tokens and tokens that have an index < vocab_size
-        added_vocab = {tok: index for tok, index in self.added_tokens_encoder.items() if index >= self.vocab_size}
+        added_vocab = {
+            tok: index
+            for tok, index in self.added_tokens_encoder.items()
+            if index >= self.vocab_size
+        }
         if added_vocab:
             with open(added_tokens_file, "w", encoding="utf-8") as f:
-                out_str = json.dumps(added_vocab, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+                out_str = (
+                    json.dumps(
+                        added_vocab, indent=2, sort_keys=True, ensure_ascii=False
+                    )
+                    + "\n"
+                )
                 f.write(out_str)
                 logger.info(f"added tokens file saved in {added_tokens_file}")
 
-        vocab_files = self.save_vocabulary(save_directory, filename_prefix=filename_prefix)
+        vocab_files = self.save_vocabulary(
+            save_directory, filename_prefix=filename_prefix
+        )
 
         return file_names + vocab_files + (added_tokens_file,)
 
-    def save_vocabulary(self, save_directory: str, filename_prefix: Optional[str] = None) -> Tuple[str]:
+    def save_vocabulary(
+        self, save_directory: str, filename_prefix: str | None = None
+    ) -> tuple[str]:
         """
         Save only the vocabulary of the tokenizer (vocabulary + added tokens).
 
@@ -2606,7 +2877,13 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         """
         raise NotImplementedError
 
-    def tokenize(self, text: str, pair: Optional[str] = None, add_special_tokens: bool = False, **kwargs) -> List[str]:
+    def tokenize(
+        self,
+        text: str,
+        pair: str | None = None,
+        add_special_tokens: bool = False,
+        **kwargs,
+    ) -> list[str]:
         """
         Converts a string into a sequence of tokens, replacing unknown tokens with the `unk_token`.
 
@@ -2638,17 +2915,17 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
     )
     def encode(
         self,
-        text: Union[TextInput, PreTokenizedInput, EncodedInput],
-        text_pair: Optional[Union[TextInput, PreTokenizedInput, EncodedInput]] = None,
+        text: TextInput | PreTokenizedInput | EncodedInput,
+        text_pair: TextInput | PreTokenizedInput | EncodedInput | None = None,
         add_special_tokens: bool = True,
-        padding: Union[bool, str, PaddingStrategy] = False,
-        truncation: Union[bool, str, TruncationStrategy, None] = None,
-        max_length: Optional[int] = None,
+        padding: bool | str | PaddingStrategy = False,
+        truncation: bool | str | TruncationStrategy | None = None,
+        max_length: int | None = None,
         stride: int = 0,
-        padding_side: Optional[str] = None,
-        return_tensors: Optional[Union[str, TensorType]] = None,
+        padding_side: str | None = None,
+        return_tensors: str | TensorType | None = None,
         **kwargs,
-    ) -> List[int]:
+    ) -> list[int]:
         """
         Converts a string to a sequence of ids (integer), using the tokenizer and vocabulary.
 
@@ -2683,7 +2960,13 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         raise NotImplementedError
 
     def _get_padding_truncation_strategies(
-        self, padding=False, truncation=None, max_length=None, pad_to_multiple_of=None, verbose=True, **kwargs
+        self,
+        padding=False,
+        truncation=None,
+        max_length=None,
+        pad_to_multiple_of=None,
+        verbose=True,
+        **kwargs,
     ):
         """
         Find the correct padding/truncation strategy
@@ -2693,7 +2976,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         # If you only set max_length, it activates truncation for max_length
         if max_length is not None and padding is False and truncation is None:
             if verbose:
-                if not self.deprecation_warnings.get("Truncation-not-explicitly-activated", False):
+                if not self.deprecation_warnings.get(
+                    "Truncation-not-explicitly-activated", False
+                ):
                     logger.warning(
                         "Truncation was not explicitly activated but `max_length` is provided a specific value, please"
                         " use `truncation=True` to explicitly truncate examples to max length. Defaulting to"
@@ -2709,13 +2994,17 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
             if padding is True:
                 if verbose:
                     if max_length is not None and (
-                        truncation is None or truncation is False or truncation == "do_not_truncate"
+                        truncation is None
+                        or truncation is False
+                        or truncation == "do_not_truncate"
                     ):
                         warnings.warn(
                             "`max_length` is ignored when `padding`=`True` and there is no truncation strategy. "
                             "To pad to max length, use `padding='max_length'`."
                         )
-                padding_strategy = PaddingStrategy.LONGEST  # Default to pad to the longest sequence in the batch
+                padding_strategy = (
+                    PaddingStrategy.LONGEST
+                )  # Default to pad to the longest sequence in the batch
             elif not isinstance(padding, PaddingStrategy):
                 padding_strategy = PaddingStrategy(padding)
             elif isinstance(padding, PaddingStrategy):
@@ -2741,7 +3030,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
             if padding_strategy == PaddingStrategy.MAX_LENGTH:
                 if self.model_max_length > LARGE_INTEGER:
                     if verbose:
-                        if not self.deprecation_warnings.get("Asking-to-pad-to-max_length", False):
+                        if not self.deprecation_warnings.get(
+                            "Asking-to-pad-to-max_length", False
+                        ):
                             logger.warning(
                                 "Asking to pad to max_length but no maximum length is provided and the model has no"
                                 " predefined maximum length. Default to no padding."
@@ -2754,18 +3045,24 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
             if truncation_strategy != TruncationStrategy.DO_NOT_TRUNCATE:
                 if self.model_max_length > LARGE_INTEGER:
                     if verbose:
-                        if not self.deprecation_warnings.get("Asking-to-truncate-to-max_length", False):
+                        if not self.deprecation_warnings.get(
+                            "Asking-to-truncate-to-max_length", False
+                        ):
                             logger.warning(
                                 "Asking to truncate to max_length but no maximum length is provided and the model has"
                                 " no predefined maximum length. Default to no truncation."
                             )
-                        self.deprecation_warnings["Asking-to-truncate-to-max_length"] = True
+                        self.deprecation_warnings[
+                            "Asking-to-truncate-to-max_length"
+                        ] = True
                     truncation_strategy = TruncationStrategy.DO_NOT_TRUNCATE
                 else:
                     max_length = self.model_max_length
 
         # Test if we have a padding token
-        if padding_strategy != PaddingStrategy.DO_NOT_PAD and (self.pad_token is None or self.pad_token_id < 0):
+        if padding_strategy != PaddingStrategy.DO_NOT_PAD and (
+            self.pad_token is None or self.pad_token_id < 0
+        ):
             raise ValueError(
                 "Asking to pad but the tokenizer does not have a padding token. "
                 "Please select a token to use as `pad_token` `(tokenizer.pad_token = tokenizer.eos_token e.g.)` "
@@ -2787,26 +3084,42 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
 
         return padding_strategy, truncation_strategy, max_length, kwargs
 
-    @add_end_docstrings(ENCODE_KWARGS_DOCSTRING, ENCODE_PLUS_ADDITIONAL_KWARGS_DOCSTRING)
+    @add_end_docstrings(
+        ENCODE_KWARGS_DOCSTRING, ENCODE_PLUS_ADDITIONAL_KWARGS_DOCSTRING
+    )
     def __call__(
         self,
-        text: Union[TextInput, PreTokenizedInput, List[TextInput], List[PreTokenizedInput], None] = None,
-        text_pair: Optional[Union[TextInput, PreTokenizedInput, List[TextInput], List[PreTokenizedInput]]] = None,
-        text_target: Union[TextInput, PreTokenizedInput, List[TextInput], List[PreTokenizedInput], None] = None,
-        text_pair_target: Optional[
-            Union[TextInput, PreTokenizedInput, List[TextInput], List[PreTokenizedInput]]
-        ] = None,
+        text: TextInput
+        | PreTokenizedInput
+        | list[TextInput]
+        | list[PreTokenizedInput]
+        | None = None,
+        text_pair: TextInput
+        | PreTokenizedInput
+        | list[TextInput]
+        | list[PreTokenizedInput]
+        | None = None,
+        text_target: TextInput
+        | PreTokenizedInput
+        | list[TextInput]
+        | list[PreTokenizedInput]
+        | None = None,
+        text_pair_target: TextInput
+        | PreTokenizedInput
+        | list[TextInput]
+        | list[PreTokenizedInput]
+        | None = None,
         add_special_tokens: bool = True,
-        padding: Union[bool, str, PaddingStrategy] = False,
-        truncation: Union[bool, str, TruncationStrategy, None] = None,
-        max_length: Optional[int] = None,
+        padding: bool | str | PaddingStrategy = False,
+        truncation: bool | str | TruncationStrategy | None = None,
+        max_length: int | None = None,
         stride: int = 0,
         is_split_into_words: bool = False,
-        pad_to_multiple_of: Optional[int] = None,
-        padding_side: Optional[str] = None,
-        return_tensors: Optional[Union[str, TensorType]] = None,
-        return_token_type_ids: Optional[bool] = None,
-        return_attention_mask: Optional[bool] = None,
+        pad_to_multiple_of: int | None = None,
+        padding_side: str | None = None,
+        return_tensors: str | TensorType | None = None,
+        return_token_type_ids: bool | None = None,
+        return_attention_mask: bool | None = None,
         return_overflowing_tokens: bool = False,
         return_special_tokens_mask: bool = False,
         return_offsets_mapping: bool = False,
@@ -2853,7 +3166,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
             "return_special_tokens_mask": return_special_tokens_mask,
             "return_offsets_mapping": return_offsets_mapping,
             "return_length": return_length,
-            "split_special_tokens": kwargs.pop("split_special_tokens", self.split_special_tokens),
+            "split_special_tokens": kwargs.pop(
+                "split_special_tokens", self.split_special_tokens
+            ),
             "verbose": verbose,
         }
         all_kwargs.update(kwargs)
@@ -2867,33 +3182,38 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
             encodings = self._call_one(text=text, text_pair=text_pair, **all_kwargs)
         if text_target is not None:
             self._switch_to_target_mode()
-            target_encodings = self._call_one(text=text_target, text_pair=text_pair_target, **all_kwargs)
+            target_encodings = self._call_one(
+                text=text_target, text_pair=text_pair_target, **all_kwargs
+            )
         # Leave back tokenizer in input mode
         self._switch_to_input_mode()
 
         if text_target is None:
             return encodings
-        elif text is None:
+        if text is None:
             return target_encodings
-        else:
-            encodings["labels"] = target_encodings["input_ids"]
-            return encodings
+        encodings["labels"] = target_encodings["input_ids"]
+        return encodings
 
     def _call_one(
         self,
-        text: Union[TextInput, PreTokenizedInput, List[TextInput], List[PreTokenizedInput]],
-        text_pair: Optional[Union[TextInput, PreTokenizedInput, List[TextInput], List[PreTokenizedInput]]] = None,
+        text: TextInput | PreTokenizedInput | list[TextInput] | list[PreTokenizedInput],
+        text_pair: TextInput
+        | PreTokenizedInput
+        | list[TextInput]
+        | list[PreTokenizedInput]
+        | None = None,
         add_special_tokens: bool = True,
-        padding: Union[bool, str, PaddingStrategy] = False,
-        truncation: Union[bool, str, TruncationStrategy, None] = None,
-        max_length: Optional[int] = None,
+        padding: bool | str | PaddingStrategy = False,
+        truncation: bool | str | TruncationStrategy | None = None,
+        max_length: int | None = None,
         stride: int = 0,
         is_split_into_words: bool = False,
-        pad_to_multiple_of: Optional[int] = None,
-        padding_side: Optional[str] = None,
-        return_tensors: Optional[Union[str, TensorType]] = None,
-        return_token_type_ids: Optional[bool] = None,
-        return_attention_mask: Optional[bool] = None,
+        pad_to_multiple_of: int | None = None,
+        padding_side: str | None = None,
+        return_tensors: str | TensorType | None = None,
+        return_token_type_ids: bool | None = None,
+        return_attention_mask: bool | None = None,
         return_overflowing_tokens: bool = False,
         return_special_tokens_mask: bool = False,
         return_offsets_mapping: bool = False,
@@ -2907,21 +3227,19 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
             if isinstance(t, str):
                 # Strings are fine
                 return True
-            elif isinstance(t, (list, tuple)):
+            if isinstance(t, (list, tuple)):
                 # List are fine as long as they are...
                 if len(t) == 0:
                     # ... empty
                     return True
-                elif isinstance(t[0], str):
+                if isinstance(t[0], str):
                     # ... list of strings
                     return True
-                elif isinstance(t[0], (list, tuple)):
+                if isinstance(t[0], (list, tuple)):
                     # ... list with an empty list or with a list of strings
                     return len(t[0]) == 0 or isinstance(t[0][0], str)
-                else:
-                    return False
-            else:
                 return False
+            return False
 
         if not _is_valid_text_input(text):
             raise ValueError(
@@ -2936,7 +3254,11 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
             )
 
         if is_split_into_words:
-            is_batched = isinstance(text, (list, tuple)) and text and isinstance(text[0], (list, tuple))
+            is_batched = (
+                isinstance(text, (list, tuple))
+                and text
+                and isinstance(text[0], (list, tuple))
+            )
         else:
             is_batched = isinstance(text, (list, tuple))
 
@@ -2951,7 +3273,11 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                     f"batch length of `text`: {len(text)} does not match batch length of `text_pair`:"
                     f" {len(text_pair)}."
                 )
-            batch_text_or_text_pairs = list(zip(text, text_pair)) if text_pair is not None else text
+            batch_text_or_text_pairs = (
+                list(zip(text, text_pair, strict=False))
+                if text_pair is not None
+                else text
+            )
             return self.batch_encode_plus(
                 batch_text_or_text_pairs=batch_text_or_text_pairs,
                 add_special_tokens=add_special_tokens,
@@ -2973,46 +3299,47 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                 split_special_tokens=split_special_tokens,
                 **kwargs,
             )
-        else:
-            return self.encode_plus(
-                text=text,
-                text_pair=text_pair,
-                add_special_tokens=add_special_tokens,
-                padding=padding,
-                truncation=truncation,
-                max_length=max_length,
-                stride=stride,
-                is_split_into_words=is_split_into_words,
-                pad_to_multiple_of=pad_to_multiple_of,
-                padding_side=padding_side,
-                return_tensors=return_tensors,
-                return_token_type_ids=return_token_type_ids,
-                return_attention_mask=return_attention_mask,
-                return_overflowing_tokens=return_overflowing_tokens,
-                return_special_tokens_mask=return_special_tokens_mask,
-                return_offsets_mapping=return_offsets_mapping,
-                return_length=return_length,
-                verbose=verbose,
-                split_special_tokens=split_special_tokens,
-                **kwargs,
-            )
+        return self.encode_plus(
+            text=text,
+            text_pair=text_pair,
+            add_special_tokens=add_special_tokens,
+            padding=padding,
+            truncation=truncation,
+            max_length=max_length,
+            stride=stride,
+            is_split_into_words=is_split_into_words,
+            pad_to_multiple_of=pad_to_multiple_of,
+            padding_side=padding_side,
+            return_tensors=return_tensors,
+            return_token_type_ids=return_token_type_ids,
+            return_attention_mask=return_attention_mask,
+            return_overflowing_tokens=return_overflowing_tokens,
+            return_special_tokens_mask=return_special_tokens_mask,
+            return_offsets_mapping=return_offsets_mapping,
+            return_length=return_length,
+            verbose=verbose,
+            split_special_tokens=split_special_tokens,
+            **kwargs,
+        )
 
-    @add_end_docstrings(ENCODE_KWARGS_DOCSTRING, ENCODE_PLUS_ADDITIONAL_KWARGS_DOCSTRING)
+    @add_end_docstrings(
+        ENCODE_KWARGS_DOCSTRING, ENCODE_PLUS_ADDITIONAL_KWARGS_DOCSTRING
+    )
     def encode_plus(
         self,
-        text: Union[TextInput, PreTokenizedInput, EncodedInput],
-        text_pair: Optional[Union[TextInput, PreTokenizedInput, EncodedInput]] = None,
+        text: TextInput | PreTokenizedInput | EncodedInput,
+        text_pair: TextInput | PreTokenizedInput | EncodedInput | None = None,
         add_special_tokens: bool = True,
-        padding: Union[bool, str, PaddingStrategy] = False,
-        truncation: Union[bool, str, TruncationStrategy, None] = None,
-        max_length: Optional[int] = None,
+        padding: bool | str | PaddingStrategy = False,
+        truncation: bool | str | TruncationStrategy | None = None,
+        max_length: int | None = None,
         stride: int = 0,
         is_split_into_words: bool = False,
-        pad_to_multiple_of: Optional[int] = None,
-        padding_side: Optional[str] = None,
-        return_tensors: Optional[Union[str, TensorType]] = None,
-        return_token_type_ids: Optional[bool] = None,
-        return_attention_mask: Optional[bool] = None,
+        pad_to_multiple_of: int | None = None,
+        padding_side: str | None = None,
+        return_tensors: str | TensorType | None = None,
+        return_token_type_ids: bool | None = None,
+        return_attention_mask: bool | None = None,
         return_overflowing_tokens: bool = False,
         return_special_tokens_mask: bool = False,
         return_offsets_mapping: bool = False,
@@ -3040,13 +3367,15 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                 method).
         """
 
-        padding_strategy, truncation_strategy, max_length, kwargs = self._get_padding_truncation_strategies(
-            padding=padding,
-            truncation=truncation,
-            max_length=max_length,
-            pad_to_multiple_of=pad_to_multiple_of,
-            verbose=verbose,
-            **kwargs,
+        padding_strategy, truncation_strategy, max_length, kwargs = (
+            self._get_padding_truncation_strategies(
+                padding=padding,
+                truncation=truncation,
+                max_length=max_length,
+                pad_to_multiple_of=pad_to_multiple_of,
+                verbose=verbose,
+                **kwargs,
+            )
         )
 
         return self._encode_plus(
@@ -3068,25 +3397,27 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
             return_offsets_mapping=return_offsets_mapping,
             return_length=return_length,
             verbose=verbose,
-            split_special_tokens=kwargs.pop("split_special_tokens", self.split_special_tokens),
+            split_special_tokens=kwargs.pop(
+                "split_special_tokens", self.split_special_tokens
+            ),
             **kwargs,
         )
 
     def _encode_plus(
         self,
-        text: Union[TextInput, PreTokenizedInput, EncodedInput],
-        text_pair: Optional[Union[TextInput, PreTokenizedInput, EncodedInput]] = None,
+        text: TextInput | PreTokenizedInput | EncodedInput,
+        text_pair: TextInput | PreTokenizedInput | EncodedInput | None = None,
         add_special_tokens: bool = True,
         padding_strategy: PaddingStrategy = PaddingStrategy.DO_NOT_PAD,
         truncation_strategy: TruncationStrategy = TruncationStrategy.DO_NOT_TRUNCATE,
-        max_length: Optional[int] = None,
+        max_length: int | None = None,
         stride: int = 0,
         is_split_into_words: bool = False,
-        pad_to_multiple_of: Optional[int] = None,
-        padding_side: Optional[str] = None,
-        return_tensors: Optional[Union[str, TensorType]] = None,
-        return_token_type_ids: Optional[bool] = None,
-        return_attention_mask: Optional[bool] = None,
+        pad_to_multiple_of: int | None = None,
+        padding_side: str | None = None,
+        return_tensors: str | TensorType | None = None,
+        return_token_type_ids: bool | None = None,
+        return_attention_mask: bool | None = None,
         return_overflowing_tokens: bool = False,
         return_special_tokens_mask: bool = False,
         return_offsets_mapping: bool = False,
@@ -3097,28 +3428,28 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
     ) -> BatchEncoding:
         raise NotImplementedError
 
-    @add_end_docstrings(ENCODE_KWARGS_DOCSTRING, ENCODE_PLUS_ADDITIONAL_KWARGS_DOCSTRING)
+    @add_end_docstrings(
+        ENCODE_KWARGS_DOCSTRING, ENCODE_PLUS_ADDITIONAL_KWARGS_DOCSTRING
+    )
     def batch_encode_plus(
         self,
-        batch_text_or_text_pairs: Union[
-            List[TextInput],
-            List[TextInputPair],
-            List[PreTokenizedInput],
-            List[PreTokenizedInputPair],
-            List[EncodedInput],
-            List[EncodedInputPair],
-        ],
+        batch_text_or_text_pairs: list[TextInput]
+        | list[TextInputPair]
+        | list[PreTokenizedInput]
+        | list[PreTokenizedInputPair]
+        | list[EncodedInput]
+        | list[EncodedInputPair],
         add_special_tokens: bool = True,
-        padding: Union[bool, str, PaddingStrategy] = False,
-        truncation: Union[bool, str, TruncationStrategy, None] = None,
-        max_length: Optional[int] = None,
+        padding: bool | str | PaddingStrategy = False,
+        truncation: bool | str | TruncationStrategy | None = None,
+        max_length: int | None = None,
         stride: int = 0,
         is_split_into_words: bool = False,
-        pad_to_multiple_of: Optional[int] = None,
-        padding_side: Optional[str] = None,
-        return_tensors: Optional[Union[str, TensorType]] = None,
-        return_token_type_ids: Optional[bool] = None,
-        return_attention_mask: Optional[bool] = None,
+        pad_to_multiple_of: int | None = None,
+        padding_side: str | None = None,
+        return_tensors: str | TensorType | None = None,
+        return_token_type_ids: bool | None = None,
+        return_attention_mask: bool | None = None,
         return_overflowing_tokens: bool = False,
         return_special_tokens_mask: bool = False,
         return_offsets_mapping: bool = False,
@@ -3144,13 +3475,15 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         """
 
         # Backward compatibility for 'truncation_strategy', 'pad_to_max_length'
-        padding_strategy, truncation_strategy, max_length, kwargs = self._get_padding_truncation_strategies(
-            padding=padding,
-            truncation=truncation,
-            max_length=max_length,
-            pad_to_multiple_of=pad_to_multiple_of,
-            verbose=verbose,
-            **kwargs,
+        padding_strategy, truncation_strategy, max_length, kwargs = (
+            self._get_padding_truncation_strategies(
+                padding=padding,
+                truncation=truncation,
+                max_length=max_length,
+                pad_to_multiple_of=pad_to_multiple_of,
+                verbose=verbose,
+                **kwargs,
+            )
         )
 
         return self._batch_encode_plus(
@@ -3177,25 +3510,23 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
 
     def _batch_encode_plus(
         self,
-        batch_text_or_text_pairs: Union[
-            List[TextInput],
-            List[TextInputPair],
-            List[PreTokenizedInput],
-            List[PreTokenizedInputPair],
-            List[EncodedInput],
-            List[EncodedInputPair],
-        ],
+        batch_text_or_text_pairs: list[TextInput]
+        | list[TextInputPair]
+        | list[PreTokenizedInput]
+        | list[PreTokenizedInputPair]
+        | list[EncodedInput]
+        | list[EncodedInputPair],
         add_special_tokens: bool = True,
         padding_strategy: PaddingStrategy = PaddingStrategy.DO_NOT_PAD,
         truncation_strategy: TruncationStrategy = TruncationStrategy.DO_NOT_TRUNCATE,
-        max_length: Optional[int] = None,
+        max_length: int | None = None,
         stride: int = 0,
         is_split_into_words: bool = False,
-        pad_to_multiple_of: Optional[int] = None,
-        padding_side: Optional[str] = None,
-        return_tensors: Optional[Union[str, TensorType]] = None,
-        return_token_type_ids: Optional[bool] = None,
-        return_attention_mask: Optional[bool] = None,
+        pad_to_multiple_of: int | None = None,
+        padding_side: str | None = None,
+        return_tensors: str | TensorType | None = None,
+        return_token_type_ids: bool | None = None,
+        return_attention_mask: bool | None = None,
         return_overflowing_tokens: bool = False,
         return_special_tokens_mask: bool = False,
         return_offsets_mapping: bool = False,
@@ -3208,19 +3539,17 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
 
     def pad(
         self,
-        encoded_inputs: Union[
-            BatchEncoding,
-            List[BatchEncoding],
-            Dict[str, EncodedInput],
-            Dict[str, List[EncodedInput]],
-            List[Dict[str, EncodedInput]],
-        ],
-        padding: Union[bool, str, PaddingStrategy] = True,
-        max_length: Optional[int] = None,
-        pad_to_multiple_of: Optional[int] = None,
-        padding_side: Optional[str] = None,
-        return_attention_mask: Optional[bool] = None,
-        return_tensors: Optional[Union[str, TensorType]] = None,
+        encoded_inputs: BatchEncoding
+        | list[BatchEncoding]
+        | dict[str, EncodedInput]
+        | dict[str, list[EncodedInput]]
+        | list[dict[str, EncodedInput]],
+        padding: bool | str | PaddingStrategy = True,
+        max_length: int | None = None,
+        pad_to_multiple_of: int | None = None,
+        padding_side: str | None = None,
+        return_attention_mask: bool | None = None,
+        return_tensors: str | TensorType | None = None,
         verbose: bool = True,
     ) -> BatchEncoding:
         """
@@ -3285,7 +3614,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                 Whether or not to print more information and warnings.
         """
         if self.__class__.__name__.endswith("Fast"):
-            if not self.deprecation_warnings.get("Asking-to-pad-a-fast-tokenizer", False):
+            if not self.deprecation_warnings.get(
+                "Asking-to-pad-a-fast-tokenizer", False
+            ):
                 logger.warning_advice(
                     f"You're using a {self.__class__.__name__} tokenizer. Please note that with a fast tokenizer,"
                     " using the `__call__` method is faster than using a method to encode the text followed by a call"
@@ -3295,8 +3626,13 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
 
         # If we have a list of dicts, let's convert it in a dict of lists
         # We do this to allow using this method as a collate_fn function in PyTorch Dataloader
-        if isinstance(encoded_inputs, (list, tuple)) and isinstance(encoded_inputs[0], Mapping):
-            encoded_inputs = {key: [example[key] for example in encoded_inputs] for key in encoded_inputs[0].keys()}
+        if isinstance(encoded_inputs, (list, tuple)) and isinstance(
+            encoded_inputs[0], Mapping
+        ):
+            encoded_inputs = {
+                key: [example[key] for example in encoded_inputs]
+                for key in encoded_inputs[0].keys()
+            }
 
         # The model's main input name, usually `input_ids`, has been passed for padding
         if self.model_input_names[0] not in encoded_inputs:
@@ -3307,7 +3643,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
 
         required_input = encoded_inputs[self.model_input_names[0]]
 
-        if required_input is None or (isinstance(required_input, Sized) and len(required_input) == 0):
+        if required_input is None or (
+            isinstance(required_input, Sized) and len(required_input) == 0
+        ):
             if return_attention_mask:
                 encoded_inputs["attention_mask"] = []
             return encoded_inputs
@@ -3386,8 +3724,8 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         return BatchEncoding(batch_outputs, tensor_type=return_tensors)
 
     def create_token_type_ids_from_sequences(
-        self, token_ids_0: List[int], token_ids_1: Optional[List[int]] = None
-    ) -> List[int]:
+        self, token_ids_0: list[int], token_ids_1: list[int] | None = None
+    ) -> list[int]:
         """
         Create the token type IDs corresponding to the sequences passed. [What are token type
         IDs?](../glossary#token-type-ids)
@@ -3406,8 +3744,8 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         return [0] * len(token_ids_0) + [1] * len(token_ids_1)
 
     def build_inputs_with_special_tokens(
-        self, token_ids_0: List[int], token_ids_1: Optional[List[int]] = None
-    ) -> List[int]:
+        self, token_ids_0: list[int], token_ids_1: list[int] | None = None
+    ) -> list[int]:
         """
         Build model inputs from a sequence or a pair of sequence for sequence classification tasks by concatenating and
         adding special tokens.
@@ -3425,21 +3763,23 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
             return token_ids_0
         return token_ids_0 + token_ids_1
 
-    @add_end_docstrings(ENCODE_KWARGS_DOCSTRING, ENCODE_PLUS_ADDITIONAL_KWARGS_DOCSTRING)
+    @add_end_docstrings(
+        ENCODE_KWARGS_DOCSTRING, ENCODE_PLUS_ADDITIONAL_KWARGS_DOCSTRING
+    )
     def prepare_for_model(
         self,
-        ids: List[int],
-        pair_ids: Optional[List[int]] = None,
+        ids: list[int],
+        pair_ids: list[int] | None = None,
         add_special_tokens: bool = True,
-        padding: Union[bool, str, PaddingStrategy] = False,
-        truncation: Union[bool, str, TruncationStrategy, None] = None,
-        max_length: Optional[int] = None,
+        padding: bool | str | PaddingStrategy = False,
+        truncation: bool | str | TruncationStrategy | None = None,
+        max_length: int | None = None,
         stride: int = 0,
-        pad_to_multiple_of: Optional[int] = None,
-        padding_side: Optional[str] = None,
-        return_tensors: Optional[Union[str, TensorType]] = None,
-        return_token_type_ids: Optional[bool] = None,
-        return_attention_mask: Optional[bool] = None,
+        pad_to_multiple_of: int | None = None,
+        padding_side: str | None = None,
+        return_tensors: str | TensorType | None = None,
+        return_token_type_ids: bool | None = None,
+        return_attention_mask: bool | None = None,
         return_overflowing_tokens: bool = False,
         return_special_tokens_mask: bool = False,
         return_offsets_mapping: bool = False,
@@ -3465,13 +3805,15 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         """
 
         # Backward compatibility for 'truncation_strategy', 'pad_to_max_length'
-        padding_strategy, truncation_strategy, max_length, kwargs = self._get_padding_truncation_strategies(
-            padding=padding,
-            truncation=truncation,
-            max_length=max_length,
-            pad_to_multiple_of=pad_to_multiple_of,
-            verbose=verbose,
-            **kwargs,
+        padding_strategy, truncation_strategy, max_length, kwargs = (
+            self._get_padding_truncation_strategies(
+                padding=padding,
+                truncation=truncation,
+                max_length=max_length,
+                pad_to_multiple_of=pad_to_multiple_of,
+                verbose=verbose,
+                **kwargs,
+            )
         )
 
         pair = bool(pair_ids is not None)
@@ -3505,11 +3847,19 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         encoded_inputs = {}
 
         # Compute the total size of the returned encodings
-        total_len = len_ids + len_pair_ids + (self.num_special_tokens_to_add(pair=pair) if add_special_tokens else 0)
+        total_len = (
+            len_ids
+            + len_pair_ids
+            + (self.num_special_tokens_to_add(pair=pair) if add_special_tokens else 0)
+        )
 
         # Truncation: Handle max sequence length
         overflowing_tokens = []
-        if truncation_strategy != TruncationStrategy.DO_NOT_TRUNCATE and max_length and total_len > max_length:
+        if (
+            truncation_strategy != TruncationStrategy.DO_NOT_TRUNCATE
+            and max_length
+            and total_len > max_length
+        ):
             ids, pair_ids, overflowing_tokens = self.truncate_sequences(
                 ids,
                 pair_ids=pair_ids,
@@ -3536,12 +3886,16 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
             encoded_inputs["token_type_ids"] = token_type_ids
         if return_special_tokens_mask:
             if add_special_tokens:
-                encoded_inputs["special_tokens_mask"] = self.get_special_tokens_mask(ids, pair_ids)
+                encoded_inputs["special_tokens_mask"] = self.get_special_tokens_mask(
+                    ids, pair_ids
+                )
             else:
                 encoded_inputs["special_tokens_mask"] = [0] * len(sequence)
 
         # Check lengths
-        self._eventual_warn_about_too_long_sequence(encoded_inputs["input_ids"], max_length, verbose)
+        self._eventual_warn_about_too_long_sequence(
+            encoded_inputs["input_ids"], max_length, verbose
+        )
 
         # Padding
         if padding_strategy != PaddingStrategy.DO_NOT_PAD or return_attention_mask:
@@ -3558,19 +3912,21 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
             encoded_inputs["length"] = len(encoded_inputs["input_ids"])
 
         batch_outputs = BatchEncoding(
-            encoded_inputs, tensor_type=return_tensors, prepend_batch_axis=prepend_batch_axis
+            encoded_inputs,
+            tensor_type=return_tensors,
+            prepend_batch_axis=prepend_batch_axis,
         )
 
         return batch_outputs
 
     def truncate_sequences(
         self,
-        ids: List[int],
-        pair_ids: Optional[List[int]] = None,
+        ids: list[int],
+        pair_ids: list[int] | None = None,
         num_tokens_to_remove: int = 0,
-        truncation_strategy: Union[str, TruncationStrategy] = "longest_first",
+        truncation_strategy: str | TruncationStrategy = "longest_first",
         stride: int = 0,
-    ) -> Tuple[List[int], List[int], List[int]]:
+    ) -> tuple[list[int], list[int], list[int]]:
         """
         Truncates a sequence pair in-place following the strategy.
 
@@ -3626,7 +3982,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                     overflowing_tokens = ids[-window_len:]
                     ids = ids[:-num_tokens_to_remove]
                 else:
-                    raise ValueError(f"invalid truncation strategy: {self.truncation_side}, use 'left' or 'right'.")
+                    raise ValueError(
+                        f"invalid truncation strategy: {self.truncation_side}, use 'left' or 'right'."
+                    )
 
             else:
                 error_msg = (
@@ -3659,14 +4017,21 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
 
             if self.truncation_side == "right":
                 ids = ids[:-ids_to_move] if ids_to_move > 0 else ids
-                pair_ids = pair_ids[:-pair_ids_to_move] if pair_ids is not None and pair_ids_to_move > 0 else pair_ids
+                pair_ids = (
+                    pair_ids[:-pair_ids_to_move]
+                    if pair_ids is not None and pair_ids_to_move > 0
+                    else pair_ids
+                )
             elif self.truncation_side == "left":
                 ids = ids[ids_to_move:]
                 pair_ids = pair_ids[pair_ids_to_move:] if pair_ids is not None else None
             else:
                 raise ValueError(f"invalid truncation strategy:{self.truncation_side}")
 
-        elif truncation_strategy == TruncationStrategy.ONLY_SECOND and pair_ids is not None:
+        elif (
+            truncation_strategy == TruncationStrategy.ONLY_SECOND
+            and pair_ids is not None
+        ):
             if len(pair_ids) > num_tokens_to_remove:
                 window_len = min(len(pair_ids), stride + num_tokens_to_remove)
                 if self.truncation_side == "right":
@@ -3676,7 +4041,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                     overflowing_tokens = pair_ids[:window_len]
                     pair_ids = pair_ids[num_tokens_to_remove:]
                 else:
-                    raise ValueError(f"invalid truncation strategy:{self.truncation_side}")
+                    raise ValueError(
+                        f"invalid truncation strategy:{self.truncation_side}"
+                    )
             else:
                 logger.error(
                     f"We need to remove {num_tokens_to_remove} to truncate the input "
@@ -3689,12 +4056,12 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
 
     def _pad(
         self,
-        encoded_inputs: Union[Dict[str, EncodedInput], BatchEncoding],
-        max_length: Optional[int] = None,
+        encoded_inputs: dict[str, EncodedInput] | BatchEncoding,
+        max_length: int | None = None,
         padding_strategy: PaddingStrategy = PaddingStrategy.DO_NOT_PAD,
-        pad_to_multiple_of: Optional[int] = None,
-        padding_side: Optional[str] = None,
-        return_attention_mask: Optional[bool] = None,
+        pad_to_multiple_of: int | None = None,
+        padding_side: str | None = None,
+        return_attention_mask: bool | None = None,
     ) -> dict:
         """
         Pad encoded inputs (on left/right and up to predefined length or max length in the batch)
@@ -3731,10 +4098,17 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         if padding_strategy == PaddingStrategy.LONGEST:
             max_length = len(required_input)
 
-        if max_length is not None and pad_to_multiple_of is not None and (max_length % pad_to_multiple_of != 0):
+        if (
+            max_length is not None
+            and pad_to_multiple_of is not None
+            and (max_length % pad_to_multiple_of != 0)
+        ):
             max_length = ((max_length // pad_to_multiple_of) + 1) * pad_to_multiple_of
 
-        needs_to_be_padded = padding_strategy != PaddingStrategy.DO_NOT_PAD and len(required_input) != max_length
+        needs_to_be_padded = (
+            padding_strategy != PaddingStrategy.DO_NOT_PAD
+            and len(required_input) != max_length
+        )
 
         # Initialize attention mask if not present.
         if return_attention_mask and "attention_mask" not in encoded_inputs:
@@ -3742,34 +4116,49 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
 
         if needs_to_be_padded:
             difference = max_length - len(required_input)
-            padding_side = padding_side if padding_side is not None else self.padding_side
+            padding_side = (
+                padding_side if padding_side is not None else self.padding_side
+            )
 
             if padding_side == "right":
                 if return_attention_mask:
-                    encoded_inputs["attention_mask"] = encoded_inputs["attention_mask"] + [0] * difference
+                    encoded_inputs["attention_mask"] = (
+                        encoded_inputs["attention_mask"] + [0] * difference
+                    )
                 if "token_type_ids" in encoded_inputs:
                     encoded_inputs["token_type_ids"] = (
-                        encoded_inputs["token_type_ids"] + [self.pad_token_type_id] * difference
+                        encoded_inputs["token_type_ids"]
+                        + [self.pad_token_type_id] * difference
                     )
                 if "special_tokens_mask" in encoded_inputs:
-                    encoded_inputs["special_tokens_mask"] = encoded_inputs["special_tokens_mask"] + [1] * difference
-                encoded_inputs[self.model_input_names[0]] = required_input + [self.pad_token_id] * difference
+                    encoded_inputs["special_tokens_mask"] = (
+                        encoded_inputs["special_tokens_mask"] + [1] * difference
+                    )
+                encoded_inputs[self.model_input_names[0]] = (
+                    required_input + [self.pad_token_id] * difference
+                )
             elif padding_side == "left":
                 if return_attention_mask:
-                    encoded_inputs["attention_mask"] = [0] * difference + encoded_inputs["attention_mask"]
+                    encoded_inputs["attention_mask"] = [
+                        0
+                    ] * difference + encoded_inputs["attention_mask"]
                 if "token_type_ids" in encoded_inputs:
-                    encoded_inputs["token_type_ids"] = [self.pad_token_type_id] * difference + encoded_inputs[
-                        "token_type_ids"
-                    ]
+                    encoded_inputs["token_type_ids"] = [
+                        self.pad_token_type_id
+                    ] * difference + encoded_inputs["token_type_ids"]
                 if "special_tokens_mask" in encoded_inputs:
-                    encoded_inputs["special_tokens_mask"] = [1] * difference + encoded_inputs["special_tokens_mask"]
-                encoded_inputs[self.model_input_names[0]] = [self.pad_token_id] * difference + required_input
+                    encoded_inputs["special_tokens_mask"] = [
+                        1
+                    ] * difference + encoded_inputs["special_tokens_mask"]
+                encoded_inputs[self.model_input_names[0]] = [
+                    self.pad_token_id
+                ] * difference + required_input
             else:
                 raise ValueError(f"Invalid padding strategy:{padding_side}")
 
         return encoded_inputs
 
-    def convert_tokens_to_string(self, tokens: List[str]) -> str:
+    def convert_tokens_to_string(self, tokens: list[str]) -> str:
         """
         Converts a sequence of tokens in a single string. The most simple way to do it is `" ".join(tokens)` but we
         often want to remove sub-word tokenization artifacts at the same time.
@@ -3784,11 +4173,13 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
 
     def batch_decode(
         self,
-        sequences: Union[List[int], List[List[int]], "np.ndarray", "torch.Tensor", "tf.Tensor"],
+        sequences: Union[
+            list[int], list[list[int]], "np.ndarray", "torch.Tensor", "tf.Tensor"
+        ],
         skip_special_tokens: bool = False,
-        clean_up_tokenization_spaces: Optional[bool] = None,
+        clean_up_tokenization_spaces: bool | None = None,
         **kwargs,
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Convert a list of lists of token ids into a list of strings by calling decode.
 
@@ -3818,9 +4209,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
 
     def decode(
         self,
-        token_ids: Union[int, List[int], "np.ndarray", "torch.Tensor", "tf.Tensor"],
+        token_ids: Union[int, list[int], "np.ndarray", "torch.Tensor", "tf.Tensor"],
         skip_special_tokens: bool = False,
-        clean_up_tokenization_spaces: Optional[bool] = None,
+        clean_up_tokenization_spaces: bool | None = None,
         **kwargs,
     ) -> str:
         """
@@ -3855,16 +4246,19 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
 
     def _decode(
         self,
-        token_ids: Union[int, List[int]],
+        token_ids: int | list[int],
         skip_special_tokens: bool = False,
-        clean_up_tokenization_spaces: Optional[bool] = None,
+        clean_up_tokenization_spaces: bool | None = None,
         **kwargs,
     ) -> str:
         raise NotImplementedError
 
     def get_special_tokens_mask(
-        self, token_ids_0: List[int], token_ids_1: Optional[List[int]] = None, already_has_special_tokens: bool = False
-    ) -> List[int]:
+        self,
+        token_ids_0: list[int],
+        token_ids_1: list[int] | None = None,
+        already_has_special_tokens: bool = False,
+    ) -> list[int]:
         """
         Retrieves sequence ids from a token list that has no special tokens added. This method is called when adding
         special tokens using the tokenizer `prepare_for_model` or `encode_plus` methods.
@@ -3889,7 +4283,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
 
         all_special_ids = self.all_special_ids  # cache the property
 
-        special_tokens_mask = [1 if token in all_special_ids else 0 for token in token_ids_0]
+        special_tokens_mask = [
+            1 if token in all_special_ids else 0 for token in token_ids_0
+        ]
 
         return special_tokens_mask
 
@@ -3918,7 +4314,9 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
         )
         return out_string
 
-    def _eventual_warn_about_too_long_sequence(self, ids: List[int], max_length: Optional[int], verbose: bool):
+    def _eventual_warn_about_too_long_sequence(
+        self, ids: list[int], max_length: int | None, verbose: bool
+    ):
         """
         Depending on the input and internal state we might trigger a warning about a sequence that is too long for its
         corresponding model
@@ -3929,14 +4327,23 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
             verbose (`bool`): Whether or not to print more information and warnings.
 
         """
-        if max_length is None and len(ids) > self.model_max_length and verbose and self.model_max_length != 0:
-            if not self.deprecation_warnings.get("sequence-length-is-longer-than-the-specified-maximum", False):
+        if (
+            max_length is None
+            and len(ids) > self.model_max_length
+            and verbose
+            and self.model_max_length != 0
+        ):
+            if not self.deprecation_warnings.get(
+                "sequence-length-is-longer-than-the-specified-maximum", False
+            ):
                 logger.warning(
                     "Token indices sequence length is longer than the specified maximum sequence length "
                     f"for this model ({len(ids)} > {self.model_max_length}). Running this sequence through the model "
                     "will result in indexing errors"
                 )
-            self.deprecation_warnings["sequence-length-is-longer-than-the-specified-maximum"] = True
+            self.deprecation_warnings[
+                "sequence-length-is-longer-than-the-specified-maximum"
+            ] = True
 
     def _switch_to_input_mode(self):
         """
@@ -3995,12 +4402,12 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
 
     def prepare_seq2seq_batch(
         self,
-        src_texts: List[str],
-        tgt_texts: Optional[List[str]] = None,
-        max_length: Optional[int] = None,
-        max_target_length: Optional[int] = None,
+        src_texts: list[str],
+        tgt_texts: list[str] | None = None,
+        max_length: int | None = None,
+        max_target_length: int | None = None,
         padding: str = "longest",
-        return_tensors: Optional[str] = None,
+        return_tensors: str | None = None,
         truncation: bool = True,
         **kwargs,
     ) -> BatchEncoding:
@@ -4116,7 +4523,7 @@ For a more complete example, see the implementation of `prepare_seq2seq_batch`.
         return model_inputs
 
 
-def get_fast_tokenizer_file(tokenization_files: List[str]) -> str:
+def get_fast_tokenizer_file(tokenization_files: list[str]) -> str:
     """
     Get the tokenization file to use for this version of transformers.
 
@@ -4150,6 +4557,10 @@ def get_fast_tokenizer_file(tokenization_files: List[str]) -> str:
 # To update the docstring, we need to copy the method, otherwise we change the original docstring.
 PreTrainedTokenizerBase.push_to_hub = copy_func(PreTrainedTokenizerBase.push_to_hub)
 if PreTrainedTokenizerBase.push_to_hub.__doc__ is not None:
-    PreTrainedTokenizerBase.push_to_hub.__doc__ = PreTrainedTokenizerBase.push_to_hub.__doc__.format(
-        object="tokenizer", object_class="AutoTokenizer", object_files="tokenizer files"
+    PreTrainedTokenizerBase.push_to_hub.__doc__ = (
+        PreTrainedTokenizerBase.push_to_hub.__doc__.format(
+            object="tokenizer",
+            object_class="AutoTokenizer",
+            object_files="tokenizer files",
+        )
     )

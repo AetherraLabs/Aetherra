@@ -179,16 +179,15 @@ environment variable interface programmatically since the settings become fixed.
 Use the C++ or Python APIs instead.
 
 """
+
 import concurrent.futures
 import glob
 import multiprocessing as mp
 import os
 import shutil
 import warnings
-from typing import Optional
 
 import torch
-
 
 __all__ = [
     "enable",
@@ -314,7 +313,7 @@ def write_file_on_exit(val: bool) -> None:
     torch._C._cuda_tunableop_write_file_on_exit(val)  # type: ignore[attr-defined]
 
 
-def write_file(filename: Optional[str] = None) -> bool:
+def write_file(filename: str | None = None) -> bool:
     r"""Write results to a CSV file.
 
     If :attr:`filename` is not given, ``get_filename()`` is called.
@@ -324,7 +323,7 @@ def write_file(filename: Optional[str] = None) -> bool:
     return torch._C._cuda_tunableop_write_file(filename)  # type: ignore[attr-defined]
 
 
-def read_file(filename: Optional[str] = None) -> bool:
+def read_file(filename: str | None = None) -> bool:
     r"""Read results from a TunableOp CSV file.
 
     If :attr:`filename` is not given, ``get_filename()`` is called.
@@ -448,7 +447,7 @@ def _create_matrices(
     transB: bool,
     dtypeA: torch.dtype,
     deviceid: str,
-    dtypeB: Optional[torch.dtype] = None,
+    dtypeB: torch.dtype | None = None,
     randn: bool = True,
     subMatrix: bool = False,
 ) -> tuple[torch.Tensor, torch.Tensor]:
@@ -480,30 +479,29 @@ def _create_matrices(
         subA = matA[:k, :m].t() if transA else matA[:m, :k]
         subB = matB[:n, :k].t() if transB else matB[:k, :n]
         return subA, subB
+    if randn:
+        matA = (
+            torch.rand(k, m, dtype=dtypeA, device=deviceid).t()
+            if transA
+            else torch.rand(m, k, dtype=dtypeA, device=deviceid)
+        )
+        matB = (
+            torch.rand(n, k, dtype=dtypeB, device=deviceid).t()
+            if transB
+            else torch.rand(k, n, dtype=dtypeB, device=deviceid)
+        )
     else:
-        if randn:
-            matA = (
-                torch.rand(k, m, dtype=dtypeA, device=deviceid).t()
-                if transA
-                else torch.rand(m, k, dtype=dtypeA, device=deviceid)
-            )
-            matB = (
-                torch.rand(n, k, dtype=dtypeB, device=deviceid).t()
-                if transB
-                else torch.rand(k, n, dtype=dtypeB, device=deviceid)
-            )
-        else:
-            matA = (
-                torch.full((k, m), fillA, dtype=dtypeA, device=deviceid).t()
-                if transA
-                else torch.full((m, k), fillA, dtype=dtypeA, device=deviceid)
-            )
-            matB = (
-                torch.full((n, k), fillB, dtype=dtypeB, device=deviceid).t()
-                if transB
-                else torch.full((k, n), fillB, dtype=dtypeB, device=deviceid)
-            )
-        return matA, matB
+        matA = (
+            torch.full((k, m), fillA, dtype=dtypeA, device=deviceid).t()
+            if transA
+            else torch.full((m, k), fillA, dtype=dtypeA, device=deviceid)
+        )
+        matB = (
+            torch.full((n, k), fillB, dtype=dtypeB, device=deviceid).t()
+            if transB
+            else torch.full((k, n), fillB, dtype=dtypeB, device=deviceid)
+        )
+    return matA, matB
 
 
 def _create_batch_matrices(
@@ -538,20 +536,19 @@ def _create_batch_matrices(
         subA = matA[:b, :k, :m].transpose(1, 2) if transA else matA[:b, :m, :k]
         subB = matB[:b, :n, :k].transpose(1, 2) if transB else matB[:b, :k, :n]
         return subA, subB
-    else:
-        matA = (
-            torch.rand(b, k, m, dtype=dtype, device=deviceid)
-            if transA
-            else torch.rand(b, m, k, dtype=dtype, device=deviceid)
-        )
-        matB = (
-            torch.rand(b, n, k, dtype=dtype, device=deviceid)
-            if transB
-            else torch.rand(b, k, n, dtype=dtype, device=deviceid)
-        )
-        matA = matA.transpose(1, 2) if transA else matA
-        matB = matB.transpose(1, 2) if transB else matB
-        return matA, matB
+    matA = (
+        torch.rand(b, k, m, dtype=dtype, device=deviceid)
+        if transA
+        else torch.rand(b, m, k, dtype=dtype, device=deviceid)
+    )
+    matB = (
+        torch.rand(b, n, k, dtype=dtype, device=deviceid)
+        if transB
+        else torch.rand(b, k, n, dtype=dtype, device=deviceid)
+    )
+    matA = matA.transpose(1, 2) if transA else matA
+    matB = matB.transpose(1, 2) if transB else matB
+    return matA, matB
 
 
 def _process_single_offline_gemm(untuned_gemm_line: str, gpu_id: int) -> None:
@@ -632,9 +629,7 @@ def _process_single_offline_gemm(untuned_gemm_line: str, gpu_id: int) -> None:
     if op_sig == "GemmTunableOp":
         # Warnings for unsupported cases:
         if m == 1 or n == 1 or k == 1:
-            if (not transA) and (not transB):
-                pass  # case is supported
-            elif transA and n == 1:
+            if (not transA) and (not transB) or transA and n == 1:
                 pass  # case is supported
             else:
                 warnings.warn(

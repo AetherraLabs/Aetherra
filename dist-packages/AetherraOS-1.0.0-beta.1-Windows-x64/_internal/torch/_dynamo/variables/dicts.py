@@ -26,7 +26,7 @@ import inspect
 import operator
 import types
 from collections.abc import Hashable as py_Hashable
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from torch._subclasses.fake_tensor import is_fake
 
@@ -45,7 +45,6 @@ from ..utils import (
 )
 from .base import ValueMutationNew, VariableTracker
 from .constant import ConstantVariable
-
 
 if TYPE_CHECKING:
     from torch._dynamo.codegen import PyCodegen
@@ -96,36 +95,35 @@ def is_hashable(x):
         # Most VT's should have one.
         # It'd be nice if at some point we could assert that they all have one
         return x.as_proxy().node.meta.get("example_value") is not None
-    elif isinstance(x, variables.TupleVariable):
+    if isinstance(x, variables.TupleVariable):
         return all(is_hashable(e) for e in x.items)
-    elif (
+    if (
         isinstance(x, variables.UserDefinedObjectVariable)
         and not was_instancecheck_override(x.value)
         and inspect.getattr_static(x.value, "__hash__") is int.__hash__
         and isinstance(x.value, int)
     ):
         return isinstance(x.value, py_Hashable)
-    else:
-        return isinstance(
-            x,
-            (
-                variables.BuiltinVariable,
-                variables.SymNodeVariable,
-                variables.ConstantVariable,
-                variables.EnumVariable,
-                variables.UserDefinedClassVariable,
-                variables.UserFunctionVariable,
-                variables.SkipFunctionVariable,
-                variables.misc.NumpyVariable,
-                variables.NNModuleVariable,
-                variables.UnspecializedNNModuleVariable,
-                variables.MethodWrapperVariable,
-                variables.TorchInGraphFunctionVariable,
-                variables.TypingVariable,
-                variables.FunctoolsPartialVariable,
-                variables.WeakRefVariable,
-            ),
-        )
+    return isinstance(
+        x,
+        (
+            variables.BuiltinVariable,
+            variables.SymNodeVariable,
+            variables.ConstantVariable,
+            variables.EnumVariable,
+            variables.UserDefinedClassVariable,
+            variables.UserFunctionVariable,
+            variables.SkipFunctionVariable,
+            variables.misc.NumpyVariable,
+            variables.NNModuleVariable,
+            variables.UnspecializedNNModuleVariable,
+            variables.MethodWrapperVariable,
+            variables.TorchInGraphFunctionVariable,
+            variables.TypingVariable,
+            variables.FunctoolsPartialVariable,
+            variables.WeakRefVariable,
+        ),
+    )
 
 
 class ConstDictVariable(VariableTracker):
@@ -163,9 +161,9 @@ class ConstDictVariable(VariableTracker):
             elif isinstance(self.vt, variables.TupleVariable):
                 Hashable = ConstDictVariable._HashableTracker
                 x = tuple(Hashable(e).underlying_value for e in self.vt.items)
-            elif isinstance(self.vt, variables.NNModuleVariable):
-                return self.vt.value
-            elif isinstance(self.vt, variables.UnspecializedNNModuleVariable):
+            elif isinstance(self.vt, variables.NNModuleVariable) or isinstance(
+                self.vt, variables.UnspecializedNNModuleVariable
+            ):
                 return self.vt.value
             elif isinstance(self.vt, variables.UserFunctionVariable):
                 return self.vt.get_function()
@@ -190,15 +188,14 @@ class ConstDictVariable(VariableTracker):
             # TODO: Put this in utils and share it between variables/builtin.py and here
             if type(a) != type(b):
                 return False
-            elif isinstance(a, tuple):
+            if isinstance(a, tuple):
                 Hashable = ConstDictVariable._HashableTracker
                 return len(a) == len(b) and all(
-                    Hashable._eq_impl(u, v) for u, v in zip(a, b)
+                    Hashable._eq_impl(u, v) for u, v in zip(a, b, strict=False)
                 )
-            elif is_fake(a):
+            if is_fake(a):
                 return a is b
-            else:
-                return a == b
+            return a == b
 
         def __eq__(self, other: "ConstDictVariable._HashableTracker") -> bool:
             Hashable = ConstDictVariable._HashableTracker
@@ -438,39 +435,39 @@ class ConstDictVariable(VariableTracker):
             tx.output.side_effects.mutation(self)
             self.items.update(temp_dict_vt.items)
             return ConstantVariable.create(None)
-        elif name == "__getitem__":
+        if name == "__getitem__":
             # Key guarding - Nothing to do. LazyVT for value will take care.
             assert len(args) == 1
             return self.getitem_const_raise_exception_if_absent(tx, args[0])
-        elif name == "items":
+        if name == "items":
             assert not (args or kwargs)
             self.install_dict_keys_match_guard()
             if self.source:
                 tx.output.guard_on_key_order.add(self.source)
             return DictItemsVariable(self)
-        elif name == "keys":
+        if name == "keys":
             self.install_dict_keys_match_guard()
             if self.source:
                 tx.output.guard_on_key_order.add(self.source)
             assert not (args or kwargs)
             return DictKeysVariable(self)
-        elif name == "values":
+        if name == "values":
             self.install_dict_keys_match_guard()
             if self.source:
                 tx.output.guard_on_key_order.add(self.source)
             assert not (args or kwargs)
             return DictValuesVariable(self)
-        elif name == "copy":
+        if name == "copy":
             self.install_dict_keys_match_guard()
             assert not (args or kwargs)
             return self.clone(
                 items=self.items.copy(), mutation_type=ValueMutationNew(), source=None
             )
-        elif name == "__len__":
+        if name == "__len__":
             assert not (args or kwargs)
             self.install_dict_keys_match_guard()
             return ConstantVariable.create(len(self.items))
-        elif name == "__setitem__" and self.is_mutable():
+        if name == "__setitem__" and self.is_mutable():
             if not arg_hashable:
                 raise_unhashable(args[0])
 
@@ -479,31 +476,30 @@ class ConstDictVariable(VariableTracker):
             tx.output.side_effects.mutation(self)
             self.items[Hashable(args[0])] = args[1]
             return ConstantVariable.create(None)
-        elif name == "__delitem__" and arg_hashable and self.is_mutable():
+        if name == "__delitem__" and arg_hashable and self.is_mutable():
             self.install_dict_keys_match_guard()
             self.should_reconstruct_all = True
             tx.output.side_effects.mutation(self)
             self.items.__delitem__(Hashable(args[0]))
             return ConstantVariable.create(None)
-        elif name in ("pop", "get") and len(args) in (1, 2) and args[0] not in self:
+        if name in ("pop", "get") and len(args) in (1, 2) and args[0] not in self:
             # missing item, return the default value. Install no DICT_CONTAINS guard.
             self.install_dict_contains_guard(tx, args)
             if len(args) == 1:
                 if name == "pop":
                     raise_observed_exception(KeyError, tx)
                 return ConstantVariable(None)
-            else:
-                return args[1]
-        elif name == "pop" and arg_hashable and self.is_mutable():
+            return args[1]
+        if name == "pop" and arg_hashable and self.is_mutable():
             self.should_reconstruct_all = True
             tx.output.side_effects.mutation(self)
             return self.items.pop(Hashable(args[0]))
-        elif name == "clear":
+        if name == "clear":
             self.should_reconstruct_all = True
             tx.output.side_effects.mutation(self)
             self.items.clear()
             return ConstantVariable.create(None)
-        elif name == "update" and self.is_mutable():
+        if name == "update" and self.is_mutable():
             # In general, this call looks like `a.update(b, x=1, y=2, ...)`.
             # Either `b` or the kwargs is omittable, but not both.
             self.install_dict_keys_match_guard()
@@ -528,34 +524,32 @@ class ConstDictVariable(VariableTracker):
                     }
                     self.items.update(kwargs)
                 return ConstantVariable.create(None)
-            else:
-                return super().call_method(tx, name, args, kwargs)
-        elif name in ("get", "__getattr__") and args[0] in self:
+            return super().call_method(tx, name, args, kwargs)
+        if name in ("get", "__getattr__") and args[0] in self:
             # Key guarding - Nothing to do.
             return self.getitem_const(tx, args[0])
-        elif name == "__contains__" and len(args) == 1:
+        if name == "__contains__" and len(args) == 1:
             if not arg_hashable:
                 raise_unhashable(args[0])
 
             self.install_dict_contains_guard(tx, args)
             contains = args[0] in self
             return ConstantVariable.create(contains)
-        elif name == "setdefault" and arg_hashable and self.is_mutable():
+        if name == "setdefault" and arg_hashable and self.is_mutable():
             self.install_dict_keys_match_guard()
             assert not kwargs
             assert len(args) <= 2
             value = self.maybe_getitem_const(args[0])
             if value is not None:
                 return value
+            if len(args) == 1:
+                x = ConstantVariable.create(None)
             else:
-                if len(args) == 1:
-                    x = ConstantVariable.create(None)
-                else:
-                    x = args[1]
-                tx.output.side_effects.mutation(self)
-                self.items[Hashable(args[0])] = x
-                return x
-        elif name == "move_to_end":
+                x = args[1]
+            tx.output.side_effects.mutation(self)
+            self.items[Hashable(args[0])] = x
+            return x
+        if name == "move_to_end":
             self.install_dict_keys_match_guard()
             assert not kwargs and len(args) == 1
             tx.output.side_effects.mutation(self)
@@ -564,7 +558,7 @@ class ConstDictVariable(VariableTracker):
             self.items.pop(key)
             self.items[key] = val
             return ConstantVariable.create(None)
-        elif name == "__or__":
+        if name == "__or__":
             assert len(args) == 1
             if not isinstance(args[0], ConstDictVariable):
                 raise TypeError(
@@ -581,8 +575,7 @@ class ConstDictVariable(VariableTracker):
             args[0].install_dict_keys_match_guard()
             new_dict_vt.items.update(args[0].items)
             return new_dict_vt
-        else:
-            return super().call_method(tx, name, args, kwargs)
+        return super().call_method(tx, name, args, kwargs)
 
     def unpack_var_sequence(self, tx):
         self.install_dict_keys_match_guard()
@@ -713,8 +706,7 @@ class DefaultDictVariable(ConstDictVariable):
     def is_supported_arg(arg):
         if isinstance(arg, variables.BuiltinVariable):
             return arg.fn in (list, tuple, dict, set)
-        else:
-            return isinstance(arg, variables.functions.BaseUserFunctionVariable)
+        return isinstance(arg, variables.functions.BaseUserFunctionVariable)
 
     def call_method(
         self,
@@ -728,17 +720,12 @@ class DefaultDictVariable(ConstDictVariable):
 
             if args[0] in self:
                 return self.getitem_const(tx, args[0])
-            else:
-                if self.default_factory is None:
-                    raise KeyError(f"{args[0]}")
-                else:
-                    default_var = self.default_factory.call_function(tx, [], {})
-                    super().call_method(
-                        tx, "__setitem__", (args[0], default_var), kwargs
-                    )
-                    return default_var
-        else:
-            return super().call_method(tx, name, args, kwargs)
+            if self.default_factory is None:
+                raise KeyError(f"{args[0]}")
+            default_var = self.default_factory.call_function(tx, [], {})
+            super().call_method(tx, "__setitem__", (args[0], default_var), kwargs)
+            return default_var
+        return super().call_method(tx, name, args, kwargs)
 
     def reconstruct(self, codegen):
         # emit `defaultdict(default_factory, new_dict)`
@@ -772,8 +759,7 @@ class SetVariable(ConstDictVariable):
     def debug_repr(self):
         if not self.items:
             return "set()"
-        else:
-            return "{" + ",".join(k.vt.debug_repr() for k in self.items.keys()) + "}"
+        return "{" + ",".join(k.vt.debug_repr() for k in self.items.keys()) + "}"
 
     @property
     def set_items(self):
@@ -811,7 +797,7 @@ class SetVariable(ConstDictVariable):
             self.items.clear()
             self.items.update(temp_set_vt.items)
             return ConstantVariable.create(None)
-        elif name == "add":
+        if name == "add":
             assert not kwargs
             if len(args) != 1:
                 raise_args_mismatch(tx, name)
@@ -890,8 +876,7 @@ class SetVariable(ConstDictVariable):
             assert len(args) == 1
             if args[0] in self:
                 return super().call_method(tx, "pop", args, kwargs)
-            else:
-                return ConstantVariable.create(value=None)
+            return ConstantVariable.create(value=None)
         elif name in ("issubset", "issuperset"):
             op = {
                 "issubset": operator.le,
@@ -928,8 +913,7 @@ class FrozensetVariable(SetVariable):
     def debug_repr(self):
         if not self.items:
             return "frozenset()"
-        else:
-            return "{" + ",".join(k.vt.debug_repr() for k in self.items.keys()) + "}"
+        return "{" + ",".join(k.vt.debug_repr() for k in self.items.keys()) + "}"
 
     @property
     def set_items(self):
@@ -961,7 +945,7 @@ class FrozensetVariable(SetVariable):
     ) -> "VariableTracker":
         if name in ["add", "pop", "update", "remove", "discard", "clear"]:
             raise RuntimeError(f"Illegal call_method {name} on a frozenset")
-        elif name == "__init__":
+        if name == "__init__":
             # frozenset is immutable. Calling __init__ again shouldn't have any effect
             # In[1]: s = frozenset([1, 2])
             #
@@ -984,12 +968,11 @@ class DictKeySetVariable(SetVariable):
     def debug_repr(self):
         if not self.items:
             return "dict_keys([])"
-        else:
-            return (
-                "dict_keys(["
-                + ",".join(k.vt.debug_repr() for k in self.items.keys())
-                + "])"
-            )
+        return (
+            "dict_keys(["
+            + ",".join(k.vt.debug_repr() for k in self.items.keys())
+            + "])"
+        )
 
     @property
     def set_items(self):
@@ -1022,7 +1005,7 @@ class DictViewVariable(VariableTracker):
     This is an "abstract" class. Subclasses will override kv and the items method
     """
 
-    kv: Optional[str] = None
+    kv: str | None = None
 
     def __init__(self, dv_dict: ConstDictVariable, **kwargs) -> None:
         super().__init__(**kwargs)

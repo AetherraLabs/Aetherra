@@ -34,11 +34,7 @@ def count_files():
 
     for root, dirs, files in os.walk("."):
         # Skip excluded directories
-        dirs[:] = [
-            d
-            for d in dirs
-            if not any(pattern in d.lower() for pattern in exclude_patterns)
-        ]
+        dirs[:] = [d for d in dirs if not any(pattern in d.lower() for pattern in exclude_patterns)]
 
         for file in files:
             if file.endswith(".py"):

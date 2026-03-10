@@ -38,9 +38,7 @@ def analyze_file(path: Path) -> List[RiskFinding]:
     for i, line in enumerate(text.splitlines(), start=1):
         for rx, kind in RISKY_PATTERNS:
             if rx.search(line):
-                findings.append(
-                    RiskFinding(kind=kind, line=i, snippet=line.strip()[:200])
-                )
+                findings.append(RiskFinding(kind=kind, line=i, snippet=line.strip()[:200]))
     return findings
 
 

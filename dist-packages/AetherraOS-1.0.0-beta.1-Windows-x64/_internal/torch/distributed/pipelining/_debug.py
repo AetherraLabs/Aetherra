@@ -10,8 +10,7 @@ def friendly_debug_info(v: object) -> Argument:
     """
     if isinstance(v, torch.Tensor):
         return f"Tensor({v.shape}, grad={v.requires_grad}, dtype={v.dtype})"
-    else:
-        return str(v)
+    return str(v)
 
 
 def map_debug_info(a: Argument) -> Argument:

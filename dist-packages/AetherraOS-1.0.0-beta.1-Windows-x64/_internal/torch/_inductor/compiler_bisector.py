@@ -6,11 +6,10 @@ import os
 import shutil
 import sys
 import tempfile
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable, Optional
 
 from torch._inductor.runtime.cache_dir_utils import cache_dir
-
 
 # Set the subdirectory name
 SUBDIR_NAME = "bisect"
@@ -80,7 +79,7 @@ def reset_counters() -> None:
 
 
 @functools.cache
-def get_env_val(env_str: str) -> Optional[str]:
+def get_env_val(env_str: str) -> str | None:
     return os.environ.get(env_str, None)
 
 
@@ -94,9 +93,9 @@ class BisectionResult:
     """
 
     backend: str
-    subsystem: Optional[str] = None
-    bisect_number: Optional[int] = None
-    debug_info: Optional[str] = None
+    subsystem: str | None = None
+    bisect_number: int | None = None
+    debug_info: str | None = None
 
 
 class CompilerBisector:
@@ -118,7 +117,7 @@ class CompilerBisector:
 
     bisection_enabled: bool = False
 
-    in_process_cache: Optional[str] = None
+    in_process_cache: str | None = None
 
     @classmethod
     def get_dir(cls) -> str:
@@ -181,7 +180,7 @@ class CompilerBisector:
         cls.write_lines_to_file(file_path, lines)
 
     @classmethod
-    def get_backend(cls) -> Optional[str]:
+    def get_backend(cls) -> str | None:
         """
         Returns the active backend, if any
         """
@@ -196,7 +195,7 @@ class CompilerBisector:
         return None
 
     @classmethod
-    def get_subsystem(cls) -> Optional[str]:
+    def get_subsystem(cls) -> str | None:
         """
         Returns the active subsystem, if any
         """
@@ -217,7 +216,7 @@ class CompilerBisector:
         return next(obj for obj in BACKENDS[backend_name] if obj.name == subsystem_name)
 
     @classmethod
-    def get_run_state(cls, backend_name: str, subsystem_name: str) -> Optional[str]:
+    def get_run_state(cls, backend_name: str, subsystem_name: str) -> str | None:
         """
         Returns the current stage of bisecting, if Any
         """
@@ -269,7 +268,7 @@ class CompilerBisector:
         cls.write_lines_to_file(file_path, lines)
 
     @classmethod
-    def get_config_change(cls, config_name: str) -> Optional[dict[str, object]]:
+    def get_config_change(cls, config_name: str) -> dict[str, object] | None:
         backend = cls.get_backend()
         subsystem = cls.get_subsystem()
 
@@ -312,7 +311,7 @@ class CompilerBisector:
         cls,
         backend: str,
         subsystem: str,
-        debug_info: Optional[Callable[[], str]] = None,
+        debug_info: Callable[[], str] | None = None,
     ) -> bool:
         if not cls.bisection_enabled:
             return False
@@ -331,7 +330,7 @@ class CompilerBisector:
         if run_state == "test_disable":
             # First run, disable completely
             return True
-        elif run_state == "find_max_bounds":
+        if run_state == "find_max_bounds":
             # Second run, update bisection range and return True to enable the subsystem
             cls.update_bisect_range(
                 backend,
@@ -340,28 +339,27 @@ class CompilerBisector:
                 cls.get_system_counter(subsystem, increment=True),
             )
             return False
-        else:
-            assert run_state == "bisect"
-            # If the environment variable is not set, use the bisection range midpoint
-            low, high = cls.get_bisect_range(backend, subsystem)
-            # if high - low <= 2:
-            midpoint = (low + high) // 2
-            call_counter = cls.get_system_counter(subsystem)
+        assert run_state == "bisect"
+        # If the environment variable is not set, use the bisection range midpoint
+        low, high = cls.get_bisect_range(backend, subsystem)
+        # if high - low <= 2:
+        midpoint = (low + high) // 2
+        call_counter = cls.get_system_counter(subsystem)
 
-            if (
-                call_counter >= low
-                and call_counter <= high
-                and (low - high) <= 2
-                and debug_info is not None
-            ):
-                call_counter_debug_info[call_counter] = debug_info()
+        if (
+            call_counter >= low
+            and call_counter <= high
+            and (low - high) <= 2
+            and debug_info is not None
+        ):
+            call_counter_debug_info[call_counter] = debug_info()
 
-            return call_counter > midpoint
+        return call_counter > midpoint
 
     @classmethod
     def advance_subsystem(
         cls, curr_backend: str, curr_subsystem: Subsystem
-    ) -> Optional[Subsystem]:
+    ) -> Subsystem | None:
         """
         Tries to move to the next subsystem within the current system.
         """
@@ -382,14 +380,13 @@ class CompilerBisector:
                 f"Moving to the next subsystem: {curr_backend} - {next_subsystem.name}"
             )
             return next_subsystem
-        else:
-            print(
-                f"All subsystems in {curr_backend} have been checked. The issue is not in this system."
-            )
-            return None
+        print(
+            f"All subsystems in {curr_backend} have been checked. The issue is not in this system."
+        )
+        return None
 
     @classmethod
-    def advance_backend(cls, curr_backend: str) -> Optional[str]:
+    def advance_backend(cls, curr_backend: str) -> str | None:
         """
         Tries Move to the next backend.
         """
@@ -400,8 +397,7 @@ class CompilerBisector:
             cls.update_bisect_status(curr_backend, "")
             print(f"Moving to the next system: {curr_backend}")
             return curr_backend
-        else:
-            return None
+        return None
 
     @classmethod
     def process_subsystem(
@@ -443,10 +439,9 @@ class CompilerBisector:
                     raise RuntimeError(
                         f"Function succeeded with 'find_max_bounds' status for {curr_backend} - {curr_subsystem.name}."
                     )
-                else:
-                    _, high = cls.get_bisect_range(curr_backend, curr_subsystem.name)
-                    print(f"Upper bound of {high} found for {curr_backend}.")
-                    cls.update_run_state(curr_backend, curr_subsystem, "bisect")
+                _, high = cls.get_bisect_range(curr_backend, curr_subsystem.name)
+                print(f"Upper bound of {high} found for {curr_backend}.")
+                cls.update_run_state(curr_backend, curr_subsystem, "bisect")
             elif run_state == "bisect":
                 low, high = cls.get_bisect_range(curr_backend, curr_subsystem.name)
                 midpoint = (low + high) // 2
@@ -484,7 +479,7 @@ class CompilerBisector:
     @classmethod
     def do_bisect(
         cls, fn: Callable[[], bool], cli_interface: bool = False
-    ) -> Optional[BisectionResult]:
+    ) -> BisectionResult | None:
         """
         Run fn repeatedly attempting to bisect torch.compile. fn should return True on success and False on failure.
         """
@@ -549,7 +544,7 @@ class CompilerBisector:
                         curr_backend,
                         curr_subsystem.name,
                         low,
-                        call_counter_debug_info.get(low, None),
+                        call_counter_debug_info.get(low),
                     )
 
                 next_subsystem = cls.advance_subsystem(curr_backend, curr_subsystem)

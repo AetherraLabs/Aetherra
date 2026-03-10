@@ -8,7 +8,6 @@ from torch.utils._ordered_set import OrderedSet
 
 from ..pattern_matcher import fwd_only, register_replacement
 
-
 aten = torch.ops.aten
 
 

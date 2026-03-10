@@ -2,9 +2,9 @@
 import os
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Union
-from typing_extensions import deprecated
+from typing import Any
 
+from typing_extensions import deprecated
 
 try:
     from torchgen.api.python import format_function_signature
@@ -75,7 +75,7 @@ def find_file_paths(dir_paths: list[str], files_to_exclude: set[str]) -> set[str
     paths: set[str] = set()
     for dir_path in dir_paths:
         all_files = os.listdir(dir_path)
-        python_files = {fname for fname in all_files if ".py" == fname[-3:]}
+        python_files = {fname for fname in all_files if fname[-3:] == ".py"}
         filter_files = {
             fname for fname in python_files if fname not in files_to_exclude
         }
@@ -214,7 +214,7 @@ def process_signature(line: str) -> list[str]:
         tokens[i] = token.strip(" ")
         if token == "cls":
             tokens[i] = "self"
-        elif i > 0 and ("self" == tokens[i - 1]) and (tokens[i][0] != "*"):
+        elif i > 0 and (tokens[i - 1] == "self") and (tokens[i][0] != "*"):
             # Remove the datapipe after 'self' or 'cls' unless it has '*'
             tokens[i] = ""
         elif "Callable =" in token:  # Remove default argument if it is a function
@@ -225,7 +225,7 @@ def process_signature(line: str) -> list[str]:
 
 
 def get_method_definitions(
-    file_path: Union[str, list[str]],
+    file_path: str | list[str],
     files_to_exclude: set[str],
     deprecated_files: set[str],
     default_output_type: str,

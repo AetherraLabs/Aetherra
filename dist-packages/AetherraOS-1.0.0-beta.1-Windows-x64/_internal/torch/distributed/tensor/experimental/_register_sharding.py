@@ -1,8 +1,7 @@
 # mypy: allow-untyped-defs
 # Copyright (c) Meta Platforms, Inc. and affiliates
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from functools import partial
-from typing import Callable, Union
 
 import torch
 from torch._ops import OpOverload
@@ -17,11 +16,10 @@ from torch.distributed.tensor._op_schema import (
 )
 from torch.distributed.tensor._ops.utils import expand_to_full_mesh_op_strategy
 
-
 __all__ = ["register_sharding"]
 
 
-def register_sharding(op: Union[OpOverload, list[OpOverload]]):
+def register_sharding(op: OpOverload | list[OpOverload]):
     """
     :meth:`register_sharding` is an experimental API that allows users to register sharding
     strategies for an operator when the tensor inputs and outputs are DTensor.
@@ -76,10 +74,9 @@ def register_sharding(op: Union[OpOverload, list[OpOverload]]):
             if isinstance(strategy, OpStrategy):
                 # take the output spec from the first strategy
                 return strategy.strategies[0].output_spec
-            elif isinstance(strategy, TupleStrategy):
+            if isinstance(strategy, TupleStrategy):
                 return tuple(strategy_to_spec(s) for s in strategy.childs)
-            else:
-                return strategy
+            return strategy
 
         mesh = op_schema.get_mesh_from_args()
 

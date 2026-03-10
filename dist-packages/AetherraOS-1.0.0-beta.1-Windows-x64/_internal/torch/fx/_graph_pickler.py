@@ -3,8 +3,10 @@ import importlib
 import io
 import pickle
 from abc import abstractmethod
-from typing import Any, Callable, NewType, Optional, TypeVar, Union
-from typing_extensions import override, Self
+from collections.abc import Callable
+from typing import Any, NewType, Self, TypeVar
+
+from typing_extensions import override
 
 import torch
 import torch.utils._pytree as pytree
@@ -18,7 +20,6 @@ from torch._subclasses.meta_utils import (
 from torch.fx.experimental.sym_node import SymNode
 from torch.fx.experimental.symbolic_shapes import ShapeEnv
 from torch.utils._mode_utils import no_dispatch
-
 
 _SymNodeT = TypeVar("_SymNodeT", torch.SymInt, torch.SymFloat)
 
@@ -41,7 +42,7 @@ def _ops_filter_safe(name: str) -> bool:
 class Options:
     # A filter for which ops will cause the pickler to raise a
     # BypassFxGraphCache exception. If None then all ops are allowed.
-    ops_filter: Optional[Callable[[str], bool]] = _ops_filter_safe
+    ops_filter: Callable[[str], bool] | None = _ops_filter_safe
 
 
 class GraphPickler(pickle.Pickler):
@@ -50,7 +51,7 @@ class GraphPickler(pickle.Pickler):
     GraphModule.
     """
 
-    def __init__(self, file: io.BytesIO, options: Optional[Options] = None) -> None:
+    def __init__(self, file: io.BytesIO, options: Options | None = None) -> None:
         super().__init__(file)
         self.options = options or Options()
 
@@ -87,35 +88,33 @@ class GraphPickler(pickle.Pickler):
         # *PickleData classes for details on pickling that particular type.
         if isinstance(obj, FakeTensor):
             return _TensorPickleData.reduce_helper(self, obj)
-        elif isinstance(obj, torch.fx.GraphModule):
+        if isinstance(obj, torch.fx.GraphModule):
             return _GraphModulePickleData.reduce_helper(self, obj)
-        elif isinstance(obj, (torch._ops.OperatorBase, torch._ops.OpOverloadPacket)):
+        if isinstance(obj, (torch._ops.OperatorBase, torch._ops.OpOverloadPacket)):
             return _OpPickleData.reduce_helper(self, obj)
-        elif isinstance(obj, ShapeEnv):
+        if isinstance(obj, ShapeEnv):
             return _ShapeEnvPickleData.reduce_helper(self, obj)
-        elif isinstance(obj, torch.SymInt):
+        if isinstance(obj, torch.SymInt):
             return _SymNodePickleData.reduce_helper(self, obj)
-        elif isinstance(obj, torch._guards.TracingContext):
+        if isinstance(obj, torch._guards.TracingContext):
             return _TracingContextPickleData.reduce_helper(self, obj)
-        else:
-            # We should never get a raw Node!
-            assert not isinstance(obj, torch.fx.Node)
-            if reduce := _TorchNumpyPickleData.reduce_helper(self, obj):
-                return reduce
+        # We should never get a raw Node!
+        assert not isinstance(obj, torch.fx.Node)
+        if reduce := _TorchNumpyPickleData.reduce_helper(self, obj):
+            return reduce
 
-            # returning `NotImplemented` causes pickle to revert to the default
-            # behavior for this object.
-            return NotImplemented
+        # returning `NotImplemented` causes pickle to revert to the default
+        # behavior for this object.
+        return NotImplemented
 
     @override
-    def persistent_id(self, obj: object) -> Optional[str]:
+    def persistent_id(self, obj: object) -> str | None:
         if obj is self._unpickle_state:
             return "unpickle_state"
-        else:
-            return None
+        return None
 
     @classmethod
-    def dumps(cls, obj: object, options: Optional[Options] = None) -> bytes:
+    def dumps(cls, obj: object, options: Options | None = None) -> bytes:
         """
         Pickle an object.
         """
@@ -155,8 +154,7 @@ class _GraphUnpickler(pickle.Unpickler):
     def persistent_load(self, pid: object) -> object:
         if pid == "unpickle_state":
             return self._unpickle_state
-        else:
-            raise pickle.UnpicklingError("Invalid persistent ID")
+        raise pickle.UnpicklingError("Invalid persistent ID")
 
 
 class _ShapeEnvPickleData:
@@ -202,8 +200,7 @@ class _SymNodePickleData:
         args = (cls(obj.node), pickler._unpickle_state)
         if isinstance(obj, torch.SymInt):
             return _SymNodePickleData.unpickle_sym_int, args
-        else:
-            raise NotImplementedError(f"Unhandled SymNode type {type(obj)}")
+        raise NotImplementedError(f"Unhandled SymNode type {type(obj)}")
 
     def __init__(self, node: SymNode) -> None:
         self.expr = node._expr
@@ -265,7 +262,7 @@ class _TensorPickleData:
         )
 
         def with_fake(
-            make_meta_t: Callable[[], torch.Tensor], device: Union[torch.device, str]
+            make_meta_t: Callable[[], torch.Tensor], device: torch.device | str
         ) -> FakeTensor:
             with no_dispatch():
                 return FakeTensor(
@@ -287,15 +284,15 @@ class _TorchNumpyPickleData:
     @classmethod
     def reduce_helper(
         cls, pickler: GraphPickler, obj: object
-    ) -> Optional[
+    ) -> (
         tuple[
             Callable[[Self, _UnpickleState], object], tuple[Self, _UnpickleStateToken]
         ]
-    ]:
+        | None
+    ):
         if data := cls.from_object(obj):
             return (cls.unpickle, (data, pickler._unpickle_state))
-        else:
-            return None
+        return None
 
     def __init__(self, mod: str, name: str) -> None:
         self.mod = mod
@@ -306,7 +303,7 @@ class _TorchNumpyPickleData:
         return torch._dynamo.variables.misc.get_np_to_tnp_map()[np]
 
     @classmethod
-    def from_object(cls, tnp: object) -> Optional[Self]:
+    def from_object(cls, tnp: object) -> Self | None:
         if not callable(tnp):
             return None
 
@@ -413,24 +410,21 @@ class _OpPickleData:
         name = torch.fx.Node._pretty_print_target(op)
         if isinstance(op, torch._ops.OpOverload):
             return cls._pickle_op(name, _OpOverloadPickleData, options)
-        elif isinstance(op, torch._ops.OpOverloadPacket):
+        if isinstance(op, torch._ops.OpOverloadPacket):
             return cls._pickle_op(name, _OpOverloadPacketPickleData, options)
-        elif name.startswith(("builtins.", "math.", "torch.")):
+        if name.startswith(("builtins.", "math.", "torch.")):
             root, detail = name.split(".", 1)
             return _OpBuiltinPickleData(root, detail)
-        elif name.startswith("operator."):
+        if name.startswith("operator."):
             _, detail = name.split(".", 1)
             return _OpOperatorPickleData(detail)
-        else:
-            # TODO: raise a BypassFxGraphCache so we will just bypass this one...
-            raise NotImplementedError(f"TARGET: {type(op)} {op} {name}")
+        # TODO: raise a BypassFxGraphCache so we will just bypass this one...
+        raise NotImplementedError(f"TARGET: {type(op)} {op} {name}")
 
     @staticmethod
     def _pickle_op(
         name: str,
-        datacls: Union[
-            type["_OpOverloadPickleData"], type["_OpOverloadPacketPickleData"]
-        ],
+        datacls: type["_OpOverloadPickleData"] | type["_OpOverloadPacketPickleData"],
         options: Options,
     ) -> "_OpPickleData":
         if (ops_filter := options.ops_filter) and not ops_filter(name):
@@ -452,8 +446,7 @@ class _OpPickleData:
             mod, rest = name.split(".", 1)
             root = globals()[mod]
             return cls._getattr_by_name(root, rest)
-        else:
-            return globals()[name]
+        return globals()[name]
 
     @staticmethod
     def _getattr_by_name(root: object, name: str) -> object:
@@ -502,14 +495,13 @@ class _OpBuiltinPickleData(_OpPickleData):
     def unpickle(self, unpickle_state: _UnpickleState) -> object:
         if self.root == "builtins":
             return __builtins__.get(self.name)  # type: ignore[attr-defined]
-        elif self.root == "math":
+        if self.root == "math":
             import math
 
             return self._getattr_by_name(math, self.name)
-        elif self.root == "torch":
+        if self.root == "torch":
             return self._getattr_by_name(torch, self.name)
-        else:
-            raise NotImplementedError
+        raise NotImplementedError
 
 
 class _OpOperatorPickleData(_OpPickleData):

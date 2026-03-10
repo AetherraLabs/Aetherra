@@ -26,7 +26,7 @@ def iso_home(monkeypatch, tmp_path):
     monkeypatch.setenv("AETHERRA_PROFILE", "prod")
     monkeypatch.delenv("AETHERRA_KEYS_MASTER", raising=False)
     monkeypatch.delenv("AETHERRA_KEYS_ALLOW_PLAINTEXT", raising=False)
-    yield
+    return
 
 
 def _keys_file():

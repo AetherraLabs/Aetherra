@@ -1,5 +1,4 @@
 # mypy: allow-untyped-defs
-from typing import Optional
 
 import torch.fx
 from torch._subclasses.fake_tensor import FakeTensor, FakeTensorMode
@@ -8,7 +7,6 @@ from torch.fx._compatibility import compatibility
 from torch.fx.experimental.proxy_tensor import py_sym_types, snapshot_fake
 from torch.fx.node import map_aggregate
 from torch.utils._ordered_set import OrderedSet
-
 
 __all__ = ["FakeTensorProp"]
 
@@ -29,7 +27,7 @@ class FakeTensorProp(torch.fx.Interpreter):
     """
 
     def __init__(
-        self, module: torch.fx.GraphModule, mode: Optional[FakeTensorMode] = None
+        self, module: torch.fx.GraphModule, mode: FakeTensorMode | None = None
     ):
         super().__init__(module)
         if mode is None:
@@ -78,14 +76,13 @@ class FakeTensorProp(torch.fx.Interpreter):
         def extract_val(obj):
             if isinstance(obj, FakeTensor):
                 return snapshot_fake(obj)
-            elif isinstance(obj, torch.Tensor):
+            if isinstance(obj, torch.Tensor):
                 # TODO: How is it possible that we get a non fake tensor?  We
                 # should be running under the mode...
                 return snapshot_fake(self._mode.from_tensor(obj, static_shapes=True))
-            elif isinstance(obj, py_sym_types):
+            if isinstance(obj, py_sym_types):
                 return obj
-            else:
-                return None
+            return None
 
         meta = map_aggregate(result, extract_val)
         if meta is not None:

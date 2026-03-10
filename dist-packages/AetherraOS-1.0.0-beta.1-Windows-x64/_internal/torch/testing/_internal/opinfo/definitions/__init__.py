@@ -9,7 +9,6 @@ from torch.testing._internal.opinfo.definitions import (
     special,
 )
 
-
 # Operator database
 op_db: list[OpInfo] = [
     *fft.op_db,

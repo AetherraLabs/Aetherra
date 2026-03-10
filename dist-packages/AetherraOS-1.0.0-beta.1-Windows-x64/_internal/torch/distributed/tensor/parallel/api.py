@@ -1,24 +1,22 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates
 import warnings
 from fnmatch import fnmatch
-from typing import Optional, Union
 
 import torch
 import torch.nn as nn
-from torch.distributed.device_mesh import _mesh_resources, DeviceMesh
+from torch.distributed.device_mesh import DeviceMesh, _mesh_resources
 from torch.distributed.tensor.parallel._utils import _validate_tp_mesh_dim
 from torch.distributed.tensor.parallel.style import ParallelStyle
-
 
 __all__ = ["parallelize_module"]
 
 
 def parallelize_module(  # type: ignore[return]
     module: nn.Module,
-    device_mesh: Optional[DeviceMesh] = None,
-    parallelize_plan: Optional[Union[ParallelStyle, dict[str, ParallelStyle]]] = None,
+    device_mesh: DeviceMesh | None = None,
+    parallelize_plan: ParallelStyle | dict[str, ParallelStyle] | None = None,
     *,
-    src_data_rank: Optional[int] = 0,
+    src_data_rank: int | None = 0,
 ) -> nn.Module:
     """
     Apply Tensor Parallelism in PyTorch by parallelizing modules or sub-modules based on a user-specified plan.
@@ -86,7 +84,7 @@ def parallelize_module(  # type: ignore[return]
     if isinstance(parallelize_plan, ParallelStyle):
         parallelize_plan.src_data_rank = src_data_rank
         return parallelize_plan._apply(module, device_mesh)
-    elif isinstance(parallelize_plan, dict):
+    if isinstance(parallelize_plan, dict):
         for module_path, parallelize_style in parallelize_plan.items():
             path_splits = module_path.split(".")
             if len(path_splits) == 0:
@@ -122,8 +120,7 @@ def parallelize_module(  # type: ignore[return]
                             src_data_rank=src_data_rank,
                         )
         return module
-    else:
-        raise TypeError(  # pyre-ignore[7]
-            "Expect Union[ParallelStyle, Dict[str, ParallelStyle]] for"
-            f" parallelize_plan, {type(parallelize_plan)} found!"
-        )
+    raise TypeError(  # pyre-ignore[7]
+        "Expect Union[ParallelStyle, Dict[str, ParallelStyle]] for"
+        f" parallelize_plan, {type(parallelize_plan)} found!"
+    )

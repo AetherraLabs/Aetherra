@@ -3,9 +3,9 @@
 
 # Standard library imports
 # core/plugin_manager.py
+import importlib.util
 import os
 import re
-import importlib.util
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional
@@ -45,12 +45,8 @@ class PluginIntent:
     """Plugin intent declaration for assistant discovery"""
 
     purpose: str  # What the plugin is used for (e.g., "optimization", "analysis")
-    triggers: List[str] = field(
-        default_factory=list
-    )  # Keywords that should trigger this plugin
-    scenarios: List[str] = field(
-        default_factory=list
-    )  # Use cases where this plugin applies
+    triggers: List[str] = field(default_factory=list)  # Keywords that should trigger this plugin
+    scenarios: List[str] = field(default_factory=list)  # Use cases where this plugin applies
     ai_description: str = ""  # AI-friendly description for LLM understanding
     example_usage: str = ""  # Example of how to use this plugin
     confidence_boost: float = 1.0  # Multiplier for relevance scoring
@@ -392,9 +388,7 @@ def discover_plugins_by_intent(
                     "score": score,
                     "metadata": metadata.to_dict(),
                     "intent": intent.to_dict(),
-                    "reason": _generate_relevance_reason(
-                        query, intent, metadata, score
-                    ),
+                    "reason": _generate_relevance_reason(query, intent, metadata, score),
                 }
             )
 
@@ -486,9 +480,7 @@ def get_ai_plugin_recommendations(
             f"with relevance score {top_plugin['score']:.1f}"
         )
     else:
-        recommendations[
-            "summary"
-        ] = "No plugins found matching the specified goal or context."
+        recommendations["summary"] = "No plugins found matching the specified goal or context."
 
     return recommendations
 

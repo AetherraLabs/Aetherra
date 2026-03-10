@@ -6,33 +6,31 @@ import re
 import sys
 import traceback
 import weakref
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import (
-    Any,
-    Callable,
-    Literal,
-    Optional,
-    overload,
     TYPE_CHECKING,
+    Any,
+    Literal,
     TypeVar,
     Union,
+    overload,
 )
-from typing_extensions import deprecated, ParamSpec
+
+from typing_extensions import ParamSpec, deprecated
 
 import torch
 import torch._library as _library
 from torch._library.custom_ops import (
+    CustomOpDef,
     _cast,
     _maybe_get_opdef,
     custom_op,
-    CustomOpDef,
     device_types_t,
 )
 from torch._library.infer_schema import infer_schema  # noqa: F401
 from torch._library.triton import triton_op, wrap_triton
 from torch._ops import OpOverload
 from torch.types import _dtype
-
 
 __all__ = [
     "Library",
@@ -108,7 +106,7 @@ class Library:
 
         frame = traceback.extract_stack(limit=3)[0]
         filename, lineno = frame.filename, frame.lineno
-        self.m: Optional[Any] = torch._C._dispatch_library(
+        self.m: Any | None = torch._C._dispatch_library(
             kind, ns, dispatch_key, filename, lineno
         )
         self.ns = ns
@@ -158,7 +156,7 @@ class Library:
         """
         if torch._running_with_deploy():
             _library.utils.warn_deploy()
-            return
+            return None
 
         # This is added because we also want to disallow PURE_FUNCTION alias analysis which is a valid
         # AliasAnalysis type in C++
@@ -581,20 +579,20 @@ def _(lib: Library, schema, alias_analysis=""):
 @overload
 def impl(
     qualname: str,
-    types: Union[str, Sequence[str]],
+    types: str | Sequence[str],
     func: Literal[None] = None,
     *,
-    lib: Optional[Library] = None,
+    lib: Library | None = None,
 ) -> Callable[[Callable[..., object]], None]: ...
 
 
 @overload
 def impl(
     qualname: str,
-    types: Union[str, Sequence[str]],
+    types: str | Sequence[str],
     func: Callable[..., object],
     *,
-    lib: Optional[Library] = None,
+    lib: Library | None = None,
 ) -> None: ...
 
 
@@ -610,10 +608,10 @@ def impl(
 @functools.singledispatch
 def impl(
     qualname: str,
-    types: Union[str, Sequence[str]],
-    func: Optional[Callable[_P, _T]] = None,
+    types: str | Sequence[str],
+    func: Callable[_P, _T] | None = None,
     *,
-    lib: Optional[Library] = None,
+    lib: Library | None = None,
 ) -> object:
     """Register an implementation for a device type for this operator.
 
@@ -693,10 +691,10 @@ if not TYPE_CHECKING:
 @overload
 def _impl(
     qualname: str,
-    types: Union[str, Sequence[str]],
+    types: str | Sequence[str],
     func: Literal[None] = None,
     *,
-    lib: Optional[Library] = None,
+    lib: Library | None = None,
     disable_dynamo: bool = False,
 ) -> Callable[[Callable[..., object]], None]: ...
 
@@ -704,22 +702,22 @@ def _impl(
 @overload
 def _impl(
     qualname: str,
-    types: Union[str, Sequence[str]],
+    types: str | Sequence[str],
     func: Callable[..., object],
     *,
-    lib: Optional[Library] = None,
+    lib: Library | None = None,
     disable_dynamo: bool = False,
 ) -> None: ...
 
 
 def _impl(
     qualname: str,
-    types: Union[str, Sequence[str]],
-    func: Optional[Callable[..., object]] = None,
+    types: str | Sequence[str],
+    func: Callable[..., object] | None = None,
     *,
-    lib: Optional[Library] = None,
+    lib: Library | None = None,
     disable_dynamo: bool = False,
-) -> Optional[Callable[[Callable[..., object]], None]]:
+) -> Callable[[Callable[..., object]], None] | None:
     # See impl()
     if isinstance(types, str):
         types = (types,)
@@ -759,9 +757,8 @@ def _impl(
 
     if func is None:
         return register_
-    else:
-        register_(func)
-        return None
+    register_(func)
+    return None
 
 
 def _device_type_to_key(device_type: str) -> str:
@@ -796,10 +793,10 @@ _op_identifier = Union[
 def register_kernel(
     op: _op_identifier,
     device_types: device_types_t,
-    func: Optional[Callable] = None,
+    func: Callable | None = None,
     /,
     *,
-    lib: Optional[Library] = None,
+    lib: Library | None = None,
 ):
     """Register an implementation for a device type for this operator.
 
@@ -867,7 +864,7 @@ def register_autocast(
     cast_inputs: _dtype,
     /,
     *,
-    lib: Optional[Library] = None,
+    lib: Library | None = None,
 ):
     r"""Register an autocast dispatch rule for this custom op.
 
@@ -937,17 +934,16 @@ def register_autocast(
 
     if device_type == "cuda":
         return lib.impl(opname, kernel, "AutocastCUDA", with_keyset=True)
-    else:
-        # device_type is "cpu"
-        return lib.impl(opname, kernel, "AutocastCPU", with_keyset=True)
+    # device_type is "cpu"
+    return lib.impl(opname, kernel, "AutocastCPU", with_keyset=True)
 
 
 def register_fake(
     op: _op_identifier,
-    func: Optional[Callable] = None,
+    func: Callable | None = None,
     /,
     *,
-    lib: Optional[Library] = None,
+    lib: Library | None = None,
     _stacklevel: int = 1,
     allow_override: bool = False,
 ):
@@ -1053,8 +1049,7 @@ def register_fake(
     if opdef is not None:
         if func is None:
             return opdef.register_fake
-        else:
-            return opdef.register_fake(func)
+        return opdef.register_fake(func)
     assert isinstance(op, str)
 
     stacklevel = _stacklevel
@@ -1073,9 +1068,8 @@ def register_fake(
 
     if func is None:
         return register
-    else:
-        stacklevel += 1
-        return register(func)
+    stacklevel += 1
+    return register(func)
 
 
 def register_autograd(
@@ -1083,7 +1077,7 @@ def register_autograd(
     backward: Callable,
     /,
     *,
-    setup_context: Optional[Callable] = None,
+    setup_context: Callable | None = None,
     lib=None,
 ) -> None:
     r"""Register a backward formula for this custom op.
@@ -1211,10 +1205,10 @@ def register_autograd(
 def register_torch_dispatch(
     op: _op_identifier,
     torch_dispatch_class: Any,
-    func: Optional[Callable] = None,
+    func: Callable | None = None,
     /,
     *,
-    lib: Optional[Library] = None,
+    lib: Library | None = None,
 ):
     r"""Registers a torch_dispatch rule for the given operator and ``torch_dispatch_class``.
 
@@ -1285,13 +1279,12 @@ def register_torch_dispatch(
 
     if func is None:
         return register
-    else:
-        return register(func)
+    return register(func)
 
 
 def register_vmap(
     op: _op_identifier,
-    func: Optional[Callable] = None,
+    func: Callable | None = None,
     /,
     *,
     lib=None,
@@ -1415,8 +1408,7 @@ def register_vmap(
 
     if func is None:
         return register
-    else:
-        return register(func)
+    return register(func)
 
 
 # If the op was defined in C++, then we want to make sure there was an
@@ -1491,11 +1483,11 @@ _OPCHECK_DEFAULT_UTILS = (
 
 
 def opcheck(
-    op: Union[torch._ops.OpOverload, torch._ops.OpOverloadPacket, CustomOpDef],
+    op: torch._ops.OpOverload | torch._ops.OpOverloadPacket | CustomOpDef,
     args: tuple[Any, ...],
-    kwargs: Optional[dict[str, Any]] = None,
+    kwargs: dict[str, Any] | None = None,
     *,
-    test_utils: Union[str, Sequence[str]] = _OPCHECK_DEFAULT_UTILS,
+    test_utils: str | Sequence[str] = _OPCHECK_DEFAULT_UTILS,
     raise_exception: bool = True,
     atol=None,
     rtol=None,

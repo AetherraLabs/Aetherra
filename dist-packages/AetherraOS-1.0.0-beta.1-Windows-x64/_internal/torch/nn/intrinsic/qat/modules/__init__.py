@@ -14,7 +14,6 @@ from torch.nn.intrinsic.qat.modules.conv_fused import (
 from torch.nn.intrinsic.qat.modules.linear_fused import LinearBn1d
 from torch.nn.intrinsic.qat.modules.linear_relu import LinearReLU
 
-
 __all__ = [
     "LinearReLU",
     "LinearBn1d",

@@ -12,5 +12,4 @@ def is_from_package(obj: Any) -> bool:
     """
     if type(obj) == ModuleType:
         return is_mangled(obj.__name__)
-    else:
-        return is_mangled(type(obj).__module__)
+    return is_mangled(type(obj).__module__)

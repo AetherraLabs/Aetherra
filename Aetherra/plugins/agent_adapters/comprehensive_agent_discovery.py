@@ -84,9 +84,7 @@ class ComprehensiveAgentDiscovery:
         all_py_files = []
         for pattern in ["**/*.py"]:
             for file_path in self.project_root.glob(pattern):
-                if "Aetherra_v2" not in str(file_path) and "__pycache__" not in str(
-                    file_path
-                ):
+                if "Aetherra_v2" not in str(file_path) and "__pycache__" not in str(file_path):
                     all_py_files.append(file_path)
 
         print(f"📊 Found {len(all_py_files)} Python files to analyze")
@@ -224,9 +222,7 @@ class ComprehensiveAgentDiscovery:
                 }
             )
 
-    def _analyze_content_patterns(
-        self, content, content_lower, file_path, rel_path, agents_found
-    ):
+    def _analyze_content_patterns(self, content, content_lower, file_path, rel_path, agents_found):
         """Analyze content for specific agent patterns"""
 
         # Look for AI model usage
@@ -264,9 +260,7 @@ class ComprehensiveAgentDiscovery:
         ]
 
         cognitive_matches = [p for p in cognitive_patterns if p in content_lower]
-        if (
-            len(cognitive_matches) >= 2
-        ):  # Multiple cognitive terms suggest cognitive component
+        if len(cognitive_matches) >= 2:  # Multiple cognitive terms suggest cognitive component
             agents_found["cognitive_components"].append(
                 {
                     "file": str(rel_path),
@@ -312,9 +306,7 @@ class ComprehensiveAgentDiscovery:
             "task_manager",
         ]
 
-        orchestration_matches = [
-            p for p in orchestration_patterns if p in content_lower
-        ]
+        orchestration_matches = [p for p in orchestration_patterns if p in content_lower]
         if orchestration_matches:
             agents_found["orchestrators"].append(
                 {
@@ -333,11 +325,9 @@ class ComprehensiveAgentDiscovery:
 
         for category, agents in agents_found.items():
             if agents:
-                print(
-                    f"\n🔸 {category.upper().replace('_', ' ')} ({len(agents)} found):"
-                )
+                print(f"\n🔸 {category.upper().replace('_', ' ')} ({len(agents)} found):")
                 for i, agent in enumerate(agents[:5]):  # Show first 5
-                    print(f"   {i+1}. {agent['file']}")
+                    print(f"   {i + 1}. {agent['file']}")
                     if "class" in agent:
                         print(f"      Class: {agent['class']}")
                     if "function" in agent:
@@ -362,8 +352,7 @@ class ComprehensiveAgentDiscovery:
         # Critical: Explicit agents and main classes
         for agent in agents_found["explicit_agents"]:
             if not any(
-                test_term in agent["file"].lower()
-                for test_term in ["test", "demo", "example"]
+                test_term in agent["file"].lower() for test_term in ["test", "demo", "example"]
             ):
                 priority_agents["critical"].append(
                     {
@@ -376,8 +365,7 @@ class ComprehensiveAgentDiscovery:
         for agent in agents_found["class_based_agents"]:
             if agent["type"] in ["inheritance_match", "method_pattern_match"]:
                 if not any(
-                    test_term in agent["file"].lower()
-                    for test_term in ["test", "demo", "example"]
+                    test_term in agent["file"].lower() for test_term in ["test", "demo", "example"]
                 ):
                     priority_agents["critical"].append(
                         {
@@ -390,8 +378,7 @@ class ComprehensiveAgentDiscovery:
         # High: AI handlers and cognitive components
         for agent in agents_found["ai_handlers"]:
             if not any(
-                test_term in agent["file"].lower()
-                for test_term in ["test", "demo", "example"]
+                test_term in agent["file"].lower() for test_term in ["test", "demo", "example"]
             ):
                 priority_agents["high"].append(
                     {
@@ -432,10 +419,7 @@ class ComprehensiveAgentDiscovery:
 
         # Low: Test/demo agents and functional agents
         for agent in agents_found["explicit_agents"]:
-            if any(
-                test_term in agent["file"].lower()
-                for test_term in ["test", "demo", "example"]
-            ):
+            if any(test_term in agent["file"].lower() for test_term in ["test", "demo", "example"]):
                 priority_agents["low"].append(
                     {**agent, "category": "test_agent", "reason": "Test or demo agent"}
                 )
@@ -454,7 +438,7 @@ class ComprehensiveAgentDiscovery:
             if agents:
                 print(f"\n🔸 {priority.upper()} PRIORITY ({len(agents)} agents):")
                 for i, agent in enumerate(agents[:3]):  # Show first 3
-                    print(f"   {i+1}. {agent['file']}")
+                    print(f"   {i + 1}. {agent['file']}")
                     print(f"      Category: {agent['category']}")
                     print(f"      Reason: {agent['reason']}")
 
@@ -474,35 +458,25 @@ class ComprehensiveAgentDiscovery:
                 "description": "Critical agents - must be migrated first",
             },
             "phase_2_ai_handlers": {
-                "agents": [
-                    a for a in priority_agents["high"] if a["category"] == "ai_handler"
-                ],
+                "agents": [a for a in priority_agents["high"] if a["category"] == "ai_handler"],
                 "target_dir": "lyrixa/interfaces",
                 "description": "AI model handlers and interfaces",
             },
             "phase_3_cognitive": {
                 "agents": [
-                    a
-                    for a in priority_agents["high"]
-                    if a["category"] == "cognitive_component"
+                    a for a in priority_agents["high"] if a["category"] == "cognitive_component"
                 ],
                 "target_dir": "lyrixa/cognitive",
                 "description": "Cognitive architecture components",
             },
             "phase_4_orchestration": {
-                "agents": [
-                    a
-                    for a in priority_agents["medium"]
-                    if a["category"] == "orchestrator"
-                ],
+                "agents": [a for a in priority_agents["medium"] if a["category"] == "orchestrator"],
                 "target_dir": "lyrixa/agents/orchestration",
                 "description": "Agent orchestration systems",
             },
             "phase_5_personality": {
                 "agents": [
-                    a
-                    for a in priority_agents["medium"]
-                    if a["category"] == "personality_system"
+                    a for a in priority_agents["medium"] if a["category"] == "personality_system"
                 ],
                 "target_dir": "lyrixa/personality",
                 "description": "Personality and behavior systems",

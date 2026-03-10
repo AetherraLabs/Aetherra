@@ -11,17 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any
 
 from .base import HfQuantizer
-
 
 if TYPE_CHECKING:
     from ..modeling_utils import PreTrainedModel
 
-from ..utils import is_accelerate_available, is_eetq_available, is_torch_available, logging
+from ..utils import (
+    is_accelerate_available,
+    is_eetq_available,
+    is_torch_available,
+    logging,
+)
 from .quantizers_utils import get_module_from_name
-
 
 if is_torch_available():
     import torch
@@ -64,11 +67,12 @@ class EetqHfQuantizer(HfQuantizer):
                     "You are using a version of EETQ that is incompatible with the current transformers version. "
                     "Either downgrade transformers to <= v4.46.3 or, if available, upgrade EETQ to > v1.0.0."
                 ) from exc
-            else:
-                raise
+            raise
 
         if not is_accelerate_available():
-            raise ImportError("Loading an EETQ quantized model requires accelerate (`pip install accelerate`)")
+            raise ImportError(
+                "Loading an EETQ quantized model requires accelerate (`pip install accelerate`)"
+            )
 
         if kwargs.get("from_tf", False) or kwargs.get("from_flax", False):
             raise ValueError(
@@ -79,14 +83,16 @@ class EetqHfQuantizer(HfQuantizer):
         if not torch.cuda.is_available():
             raise RuntimeError("No GPU found. A GPU is needed for quantization.")
 
-        device_map = kwargs.get("device_map", None)
+        device_map = kwargs.get("device_map")
         if device_map is None:
             logger.warning_once(
                 "You have loaded an EETQ model on CPU and have a CUDA device available, make sure to set "
                 "your model on a GPU device in order to run your model."
             )
         elif device_map is not None:
-            if isinstance(device_map, dict) and ("cpu" in device_map.values() or "disk" in device_map.values()):
+            if isinstance(device_map, dict) and (
+                "cpu" in device_map.values() or "disk" in device_map.values()
+            ):
                 raise ValueError(
                     "You are attempting to load an EETQ model with a device_map that contains a CPU or disk device."
                     " This is not supported. Please remove the CPU or disk device from the device_map."
@@ -103,7 +109,9 @@ class EetqHfQuantizer(HfQuantizer):
                 torch_dtype,
             )
         elif torch_dtype != torch.float16:
-            logger.info("We suggest you to set `torch_dtype=torch.float16` for better efficiency with EETQ.")
+            logger.info(
+                "We suggest you to set `torch_dtype=torch.float16` for better efficiency with EETQ."
+            )
         return torch_dtype
 
     def check_quantized_param(
@@ -111,7 +119,7 @@ class EetqHfQuantizer(HfQuantizer):
         model: "PreTrainedModel",
         param_value: "torch.Tensor",
         param_name: str,
-        state_dict: Dict[str, Any],
+        state_dict: dict[str, Any],
         **kwargs,
     ):
         from eetq import EetqLinear
@@ -121,12 +129,15 @@ class EetqHfQuantizer(HfQuantizer):
         if isinstance(module, EetqLinear):
             if self.pre_quantized or tensor_name == "bias":
                 if tensor_name == "weight" and param_value.dtype != torch.int8:
-                    raise ValueError("Expect quantized weights but got an unquantized weight")
+                    raise ValueError(
+                        "Expect quantized weights but got an unquantized weight"
+                    )
                 return False
-            else:
-                if tensor_name == "weight_scale":
-                    raise ValueError("Expect unquantized weights but got a quantized weight_scale")
-                return True
+            if tensor_name == "weight_scale":
+                raise ValueError(
+                    "Expect unquantized weights but got a quantized weight_scale"
+                )
+            return True
         return False
 
     def create_quantized_param(
@@ -135,8 +146,8 @@ class EetqHfQuantizer(HfQuantizer):
         param_value: "torch.Tensor",
         param_name: str,
         target_device: "torch.device",
-        state_dict: Dict[str, Any],
-        unexpected_keys: Optional[List[str]] = None,
+        state_dict: dict[str, Any],
+        unexpected_keys: list[str] | None = None,
     ):
         """
         quantizes weights into qweight and weight_scales
@@ -155,7 +166,7 @@ class EetqHfQuantizer(HfQuantizer):
     def _process_model_before_weight_loading(
         self,
         model: "PreTrainedModel",
-        keep_in_fp32_modules: Optional[List[str]] = None,
+        keep_in_fp32_modules: list[str] | None = None,
         **kwargs,
     ):
         from ..integrations import replace_with_eetq_linear

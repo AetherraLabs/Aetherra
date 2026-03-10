@@ -5,7 +5,6 @@ import random
 
 from torch._inductor.virtualized import V
 
-
 try:
     import ck4inductor  # type: ignore[import]
 except ImportError:
@@ -29,7 +28,6 @@ from torch._inductor.codegen.rocm.ck_template import CKTemplate
 from torch._inductor.codegen.rocm.rocm_kernel import ROCmTemplateKernel
 from torch._inductor.utils import IndentedBuffer
 
-
 log = logging.getLogger(__name__)
 
 
@@ -40,38 +38,34 @@ def torch_layout_to_ck_layouts(torch_layout):
         # when input or output is NCHW
         # NB: torch.conv2d result is always NCHW
         return ["NGCHW", "GKCYX", "NGKHW"]
-    elif V.graph.sizevars.statically_known_equals(torch_layout.stride[-3], 1):
+    if V.graph.sizevars.statically_known_equals(torch_layout.stride[-3], 1):
         # when input or output or weight is channels-last
         return ["NHWGC", "GKYXC", "NHWGK"]
-    else:
-        return None
+    return None
 
 
 def torch_layout_to_ck_input_layout(torch_layout):
     if V.graph.sizevars.statically_known_equals(torch_layout.stride[-1], 1):
         return "NGCHW"
-    elif V.graph.sizevars.statically_known_equals(torch_layout.stride[-3], 1):
+    if V.graph.sizevars.statically_known_equals(torch_layout.stride[-3], 1):
         return "NHWGC"
-    else:
-        return None
+    return None
 
 
 def torch_layout_to_ck_weight_layout(torch_layout):
     if V.graph.sizevars.statically_known_equals(torch_layout.stride[-1], 1):
         return "GKCYX"
-    elif V.graph.sizevars.statically_known_equals(torch_layout.stride[-3], 1):
+    if V.graph.sizevars.statically_known_equals(torch_layout.stride[-3], 1):
         return "GKYXC"
-    else:
-        return None
+    return None
 
 
 def torch_layout_to_ck_output_layout(torch_layout):
     if V.graph.sizevars.statically_known_equals(torch_layout.stride[-1], 1):
         return "NGKHW"
-    elif V.graph.sizevars.statically_known_equals(torch_layout.stride[-3], 1):
+    if V.graph.sizevars.statically_known_equals(torch_layout.stride[-3], 1):
         return "NHWGK"
-    else:
-        return None
+    return None
 
 
 class CKGroupedConvFwdTemplate(CKTemplate):
@@ -522,12 +516,12 @@ class CKGroupedConvFwdTemplate(CKTemplate):
         op: "CKGroupedConvFwdOp",  # type: ignore[name-defined]
         **kwargs,
     ) -> str:
-        template_buffer_node = kwargs.get("template_buffer_node", None)
+        template_buffer_node = kwargs.get("template_buffer_node")
         if template_buffer_node is not None:
             self.output_node = template_buffer_node
         X, W = self.input_nodes[0], self.input_nodes[1]
         Y = self.output_node
-        Bias = self.input_nodes[2] if 3 == len(self.input_nodes) else None
+        Bias = self.input_nodes[2] if len(self.input_nodes) == 3 else None
 
         op = copy.deepcopy(op)
 

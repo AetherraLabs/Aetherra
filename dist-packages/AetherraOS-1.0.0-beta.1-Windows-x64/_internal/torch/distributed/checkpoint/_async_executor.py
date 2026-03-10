@@ -3,7 +3,6 @@
 import abc
 import os
 from concurrent.futures import Future
-from typing import Optional, Union
 
 import torch.distributed as dist
 from torch.distributed.checkpoint.metadata import STATE_DICT_TYPE
@@ -17,10 +16,10 @@ class _AsyncCheckpointExecutor(abc.ABC):
         self,
         staged_state_dict: STATE_DICT_TYPE,
         *,
-        checkpoint_id: Union[str, os.PathLike, None] = None,
-        storage_writer: Optional[StorageWriter] = None,
-        planner: Optional[SavePlanner] = None,
-        process_group: Optional[dist.ProcessGroup] = None,
+        checkpoint_id: str | os.PathLike | None = None,
+        storage_writer: StorageWriter | None = None,
+        planner: SavePlanner | None = None,
+        process_group: dist.ProcessGroup | None = None,
     ) -> Future:
         """
         Execute the checkpoint save request asynchronously.

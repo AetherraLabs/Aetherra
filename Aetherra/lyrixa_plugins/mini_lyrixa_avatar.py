@@ -16,8 +16,11 @@ from PySide6.QtCore import (  # noqa: F401 (optional runtime import)
     Qt,
     QTimer,
 )
-from PySide6.QtGui import QBrush  # noqa: F401 (optional runtime import)
-from PySide6.QtGui import QColor, QPainter
+from PySide6.QtGui import (
+    QBrush,  # noqa: F401 (optional runtime import)
+    QColor,
+    QPainter,
+)
 from PySide6.QtWidgets import QWidget
 
 
@@ -94,9 +97,7 @@ class MiniLyrixaAvatar(QWidget):
 
         # Dynamic expansion based on reasoning intensity
         self.expansion_factor = 0.8 + (
-            0.4
-            * self.reasoning_intensity
-            * (1 + 0.3 * math.sin(self.phase * self.pulse_speed))
+            0.4 * self.reasoning_intensity * (1 + 0.3 * math.sin(self.phase * self.pulse_speed))
         )
 
         # Draw outer energy rings (based on coherence)
@@ -121,9 +122,7 @@ class MiniLyrixaAvatar(QWidget):
 
             # Alpha based on coherence and pulse
             alpha = 0.1 + (
-                0.2
-                * self.coherence_level
-                * (1 + 0.5 * math.sin(self.phase * 2 + i * 0.8))
+                0.2 * self.coherence_level * (1 + 0.5 * math.sin(self.phase * 2 + i * 0.8))
             )
 
             color = QColor(base_color)
@@ -212,7 +211,8 @@ class MiniLyrixaAvatar(QWidget):
     def start_expansion_animation(self):
         """Animate expansion during deep reasoning"""
         # This could be enhanced with QPropertyAnimation for smoother effects
-        pass
+        self.is_expanded = True
+        self.update()
 
     def set_emotional_state(self, emotion):
         """Change emotional state"""

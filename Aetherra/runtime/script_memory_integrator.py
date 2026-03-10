@@ -176,12 +176,8 @@ class ScriptMemoryIntegrator:
             category = profile.get("category", "unknown")
             complexity = profile.get("complexity", "unknown")
 
-            insights["by_category"][category] = (
-                insights["by_category"].get(category, 0) + 1
-            )
-            insights["by_complexity"][complexity] = (
-                insights["by_complexity"].get(complexity, 0) + 1
-            )
+            insights["by_category"][category] = insights["by_category"].get(category, 0) + 1
+            insights["by_complexity"][complexity] = insights["by_complexity"].get(complexity, 0) + 1
 
         # Get usage statistics if memory system is available
         if self.memory_system:
@@ -191,29 +187,19 @@ class ScriptMemoryIntegrator:
                 successful_executions = sum(
                     1 for entry in usage_history if entry.get("success", False)
                 )
-                insights["success_rate"] = (
-                    successful_executions / len(usage_history) * 100
-                )
+                insights["success_rate"] = successful_executions / len(usage_history) * 100
 
-                execution_times = [
-                    entry.get("execution_time", 0) for entry in usage_history
-                ]
-                insights["average_execution_time"] = sum(execution_times) / len(
-                    execution_times
-                )
+                execution_times = [entry.get("execution_time", 0) for entry in usage_history]
+                insights["average_execution_time"] = sum(execution_times) / len(execution_times)
 
                 # Count script usage frequency
                 script_usage_count = {}
                 for entry in usage_history:
                     script_name = entry.get("script_name", "unknown")
-                    script_usage_count[script_name] = (
-                        script_usage_count.get(script_name, 0) + 1
-                    )
+                    script_usage_count[script_name] = script_usage_count.get(script_name, 0) + 1
 
                 # Sort by usage frequency
-                sorted_usage = sorted(
-                    script_usage_count.items(), key=lambda x: x[1], reverse=True
-                )
+                sorted_usage = sorted(script_usage_count.items(), key=lambda x: x[1], reverse=True)
                 insights["most_used_scripts"] = sorted_usage[:5]
                 insights["least_used_scripts"] = sorted_usage[-5:]
 

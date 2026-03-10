@@ -278,9 +278,7 @@ class MemoryCompressionAnalyzer:
         print(f"   🏷️ Memory type: {memory_type}")
 
         # Calculate compression metrics
-        score = self.metrics.calculate_comprehensive_score(
-            memory_data, fragment_id, access_history
-        )
+        score = self.metrics.calculate_comprehensive_score(memory_data, fragment_id, access_history)
 
         # Select optimal compression schema
         optimal_schema = await self._select_optimal_schema(memory_type, score)
@@ -300,9 +298,7 @@ class MemoryCompressionAnalyzer:
         """
         Get compression recommendations for multiple memory fragments
         """
-        print(
-            f"📊 Generating compression recommendations for {len(memory_fragments)} fragments"
-        )
+        print(f"📊 Generating compression recommendations for {len(memory_fragments)} fragments")
 
         recommendations = {
             "fragments": [],
@@ -326,9 +322,7 @@ class MemoryCompressionAnalyzer:
             access_history = fragment.get("access_history", [])
 
             # Analyze fragment
-            score = await self.analyze_memory_fragment(
-                memory_data, fragment_id, access_history
-            )
+            score = await self.analyze_memory_fragment(memory_data, fragment_id, access_history)
 
             # Classify memory type
             memory_type = self.type_classifier.classify(memory_data)
@@ -346,9 +340,7 @@ class MemoryCompressionAnalyzer:
 
             # Update summaries
             recommendations["summary"]["total_original_size"] += score.original_size
-            recommendations["summary"][
-                "estimated_compressed_size"
-            ] += score.compressed_size
+            recommendations["summary"]["estimated_compressed_size"] += score.compressed_size
 
             # Track distributions
             fidelity_counts[score.fidelity_level.value] = (
@@ -367,9 +359,9 @@ class MemoryCompressionAnalyzer:
         recommendations["summary"]["memory_type_distribution"] = type_counts
 
         # Generate global recommendations
-        recommendations["summary"][
-            "recommendations"
-        ] = await self._generate_global_recommendations(recommendations["fragments"])
+        recommendations["summary"]["recommendations"] = await self._generate_global_recommendations(
+            recommendations["fragments"]
+        )
 
         return recommendations
 
@@ -395,24 +387,16 @@ class MemoryCompressionAnalyzer:
             type_data = [p for p in performance_data if p["memory_type"] == memory_type]
             if type_data:
                 performance_by_type[memory_type] = {
-                    "avg_compression_ratio": sum(
-                        p["compression_ratio"] for p in type_data
-                    )
+                    "avg_compression_ratio": sum(p["compression_ratio"] for p in type_data)
                     / len(type_data),
-                    "avg_compression_time": sum(
-                        p["compression_time"] for p in type_data
-                    )
+                    "avg_compression_time": sum(p["compression_time"] for p in type_data)
                     / len(type_data),
                     "sample_count": len(type_data),
-                    "fidelity_distribution": self._calculate_fidelity_distribution(
-                        type_data
-                    ),
+                    "fidelity_distribution": self._calculate_fidelity_distribution(type_data),
                 }
 
         # Identify performance issues
-        performance_issues = await self._identify_performance_issues(
-            performance_by_type
-        )
+        performance_issues = await self._identify_performance_issues(performance_by_type)
 
         # Generate optimization suggestions
         optimization_suggestions = await self._generate_optimization_suggestions(
@@ -427,9 +411,7 @@ class MemoryCompressionAnalyzer:
             "overall_health": self._calculate_overall_health(performance_by_type),
         }
 
-    async def _get_cached_analysis(
-        self, fragment_id: str
-    ) -> Optional[CompressionScore]:
+    async def _get_cached_analysis(self, fragment_id: str) -> Optional[CompressionScore]:
         """Get cached compression analysis if recent enough"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -595,9 +577,7 @@ class MemoryCompressionAnalyzer:
 
     def _calculate_compression_priority(self, score: CompressionScore) -> float:
         """Calculate compression priority (0-1, higher = more urgent)"""
-        size_factor = min(
-            score.original_size / 10000, 1.0
-        )  # Larger files = higher priority
+        size_factor = min(score.original_size / 10000, 1.0)  # Larger files = higher priority
         ratio_factor = min(
             score.compression_ratio / 20.0, 1.0
         )  # Better compression = higher priority
@@ -607,17 +587,13 @@ class MemoryCompressionAnalyzer:
 
         return size_factor * 0.4 + ratio_factor * 0.4 + access_factor * 0.2
 
-    async def _generate_global_recommendations(
-        self, fragments: List[Dict[str, Any]]
-    ) -> List[str]:
+    async def _generate_global_recommendations(self, fragments: List[Dict[str, Any]]) -> List[str]:
         """Generate global compression recommendations"""
         recommendations = []
 
         # Analyze compression potential
         total_original = sum(f["compression_score"]["original_size"] for f in fragments)
-        total_compressed = sum(
-            f["compression_score"]["compressed_size"] for f in fragments
-        )
+        total_compressed = sum(f["compression_score"]["compressed_size"] for f in fragments)
 
         if total_original > 0:
             overall_ratio = total_original / total_compressed
@@ -631,15 +607,11 @@ class MemoryCompressionAnalyzer:
                     "Good compression potential - standard compression recommended"
                 )
             else:
-                recommendations.append(
-                    "Limited compression potential - use conservative settings"
-                )
+                recommendations.append("Limited compression potential - use conservative settings")
 
         # Check fidelity concerns
         degraded_count = sum(
-            1
-            for f in fragments
-            if f["compression_score"]["fidelity_level"] == "degraded"
+            1 for f in fragments if f["compression_score"]["fidelity_level"] == "degraded"
         )
         if degraded_count > len(fragments) * 0.1:
             recommendations.append(
@@ -687,9 +659,7 @@ class MemoryCompressionAnalyzer:
 
         return performance_data
 
-    def _calculate_fidelity_distribution(
-        self, data: List[Dict[str, Any]]
-    ) -> Dict[str, int]:
+    def _calculate_fidelity_distribution(self, data: List[Dict[str, Any]]) -> Dict[str, int]:
         """Calculate distribution of fidelity levels"""
         distribution = {}
         for item in data:
@@ -697,9 +667,7 @@ class MemoryCompressionAnalyzer:
             distribution[fidelity] = distribution.get(fidelity, 0) + 1
         return distribution
 
-    async def _identify_performance_issues(
-        self, performance_by_type: Dict[str, Any]
-    ) -> List[str]:
+    async def _identify_performance_issues(self, performance_by_type: Dict[str, Any]) -> List[str]:
         """Identify performance issues"""
         issues = []
 
@@ -726,13 +694,9 @@ class MemoryCompressionAnalyzer:
             suggestions.append(
                 "Consider adjusting compression schemas for underperforming memory types"
             )
-            suggestions.append(
-                "Monitor access patterns to optimize compression strategies"
-            )
+            suggestions.append("Monitor access patterns to optimize compression strategies")
         else:
-            suggestions.append(
-                "Compression performance is optimal - maintain current settings"
-            )
+            suggestions.append("Compression performance is optimal - maintain current settings")
 
         return suggestions
 
@@ -771,17 +735,11 @@ class MemoryTypeClassifier:
         text_lower = text.lower()
 
         # Check for conversation patterns
-        if any(
-            pattern in text_lower
-            for pattern in ["user:", "assistant:", "human:", "ai:"]
-        ):
+        if any(pattern in text_lower for pattern in ["user:", "assistant:", "human:", "ai:"]):
             return MemoryType.CONVERSATION
 
         # Check for narrative patterns
-        if any(
-            pattern in text_lower
-            for pattern in ["once upon", "story", "narrative", "chapter"]
-        ):
+        if any(pattern in text_lower for pattern in ["once upon", "story", "narrative", "chapter"]):
             return MemoryType.NARRATIVE
 
         # Default to text
@@ -890,9 +848,7 @@ async def demo_compression_analyzer():
     print("\n📊 Comprehensive Compression Recommendations:")
     recommendations = await analyzer.get_compression_recommendations(test_fragments)
 
-    print(
-        f"   📈 Total original size: {recommendations['summary']['total_original_size']} bytes"
-    )
+    print(f"   📈 Total original size: {recommendations['summary']['total_original_size']} bytes")
     print(
         f"   📉 Estimated compressed: {recommendations['summary']['estimated_compressed_size']} bytes"
     )
@@ -901,9 +857,7 @@ async def demo_compression_analyzer():
     )
 
     print("\n   🎭 Memory type distribution:")
-    for mem_type, count in recommendations["summary"][
-        "memory_type_distribution"
-    ].items():
+    for mem_type, count in recommendations["summary"]["memory_type_distribution"].items():
         print(f"      • {mem_type}: {count}")
 
     print("\n   🎪 Fidelity distribution:")
@@ -915,9 +869,7 @@ async def demo_compression_analyzer():
     performance = await analyzer.monitor_compression_performance()
     print(f"   🏥 Overall health: {performance['overall_health']:.1%}")
     print(f"   ⚠️ Issues detected: {len(performance['performance_issues'])}")
-    print(
-        f"   💡 Optimization suggestions: {len(performance['optimization_suggestions'])}"
-    )
+    print(f"   💡 Optimization suggestions: {len(performance['optimization_suggestions'])}")
 
 
 if __name__ == "__main__":

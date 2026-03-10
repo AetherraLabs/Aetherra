@@ -6,7 +6,6 @@ from torch.fx import Graph, GraphModule, Node
 from torch.fx.passes.infra.pass_base import PassBase, PassResult
 from torch.utils._pytree import tree_flatten
 
-
 aten = torch.ops.aten
 
 

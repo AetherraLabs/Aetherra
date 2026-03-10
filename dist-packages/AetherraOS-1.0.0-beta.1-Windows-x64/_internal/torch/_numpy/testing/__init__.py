@@ -1,6 +1,8 @@
 # mypy: ignore-errors
 
 from .utils import (
+    HAS_REFCOUNT,
+    IS_WASM,
     _gen_alignment_data,
     assert_,
     assert_allclose,
@@ -11,8 +13,6 @@ from .utils import (
     assert_equal,
     assert_raises_regex,
     assert_warns,
-    HAS_REFCOUNT,
-    IS_WASM,
     suppress_warnings,
 )
 

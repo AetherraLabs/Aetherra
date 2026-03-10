@@ -1,5 +1,4 @@
 # mypy: allow-untyped-defs
-from typing import Optional
 
 import torch
 import torch.nn.functional as F
@@ -9,7 +8,6 @@ from .expanded_weights_utils import (
     unpack_expanded_weight_or_tensor,
 )
 
-
 THRESHOLD = 32
 
 
@@ -18,9 +16,8 @@ def conv_picker(func, conv1dOpt, conv2dOpt, conv3dOpt):
         return conv1dOpt
     if func == F.conv2d:
         return conv2dOpt
-    else:
-        assert func == F.conv3d
-        return conv3dOpt
+    assert func == F.conv3d
+    return conv3dOpt
 
 
 def conv_args_and_kwargs(kwarg_names, expanded_args_and_kwargs):
@@ -28,7 +25,7 @@ def conv_args_and_kwargs(kwarg_names, expanded_args_and_kwargs):
     kwargs = expanded_args_and_kwargs[
         len(expanded_args_and_kwargs) - len(kwarg_names) :
     ]
-    kwargs = dict(zip(kwarg_names, kwargs))
+    kwargs = dict(zip(kwarg_names, kwargs, strict=False))
 
     return conv_normalizer(*args, **kwargs)
 
@@ -54,11 +51,8 @@ def conv_normalizer(
 def conv_input_for_string_padding(func, padding_style, input, dilation, kernel_size):
     if padding_style == "valid":
         return input
-    else:
-        padding = int_padding_for_string_padding(
-            func, padding_style, dilation, kernel_size
-        )
-        return F.pad(input, padding)
+    padding = int_padding_for_string_padding(func, padding_style, dilation, kernel_size)
+    return F.pad(input, padding)
 
 
 def int_padding_for_string_padding(func, padding_style, dilation, kernel_size):
@@ -71,12 +65,11 @@ def int_padding_for_string_padding(func, padding_style, dilation, kernel_size):
         for i in range(conv_picker(func, 0, 1, 2), -1, -1):
             padding += conv_padding_for_same(get_dilation(i), kernel_size[i])
         return padding
-    elif padding_style == "valid":
+    if padding_style == "valid":
         return conv_picker(func, 2, 4, 6) * (0,)
-    else:
-        raise RuntimeError(
-            f"got padding type of {padding_style}, only accept 'same' or 'valid'"
-        )
+    raise RuntimeError(
+        f"got padding type of {padding_style}, only accept 'same' or 'valid'"
+    )
 
 
 def conv_padding_for_same(dilation, kernel_size):
@@ -99,24 +92,22 @@ def conv_backward(func, ctx, grad_output):
                 batch_size,
                 func,
             )
-        else:
-            return conv_unfold_weight_grad_sample(
-                ctx.input,
-                grad_output,
-                weight_shape,
-                kernel_size,
-                stride,
-                padding,
-                dilation,
-                groups,
-                func,
-            )
+        return conv_unfold_weight_grad_sample(
+            ctx.input,
+            grad_output,
+            weight_shape,
+            kernel_size,
+            stride,
+            padding,
+            dilation,
+            groups,
+            func,
+        )
 
     def expand(param):
         if isinstance(param, int):
             return conv_picker(func, (param,), (param, param), (param, param, param))
-        else:
-            return param
+        return param
 
     def calc_total_padding(func, was_same, padding, dilation, kernel_size):
         if was_same:
@@ -129,8 +120,7 @@ def conv_backward(func, ctx, grad_output):
                 for i in range(len(all_padding) - 1, -1, -2)
             )
             return total_padding
-        else:
-            return tuple(2 * pad for pad in padding)
+        return tuple(2 * pad for pad in padding)
 
     weight_shape = ctx.weight.shape
     stride, padding, dilation, groups = (
@@ -143,7 +133,7 @@ def conv_backward(func, ctx, grad_output):
     kernel_size = [weight_shape[i] for i in range(2, conv_picker(func, 3, 4, 5))]
 
     batch_size = ctx.batch_size
-    results: list[Optional[torch.Tensor]] = []
+    results: list[torch.Tensor | None] = []
     results.append(None)  # for kwarg names
     results.append(None)  # for op reference
 

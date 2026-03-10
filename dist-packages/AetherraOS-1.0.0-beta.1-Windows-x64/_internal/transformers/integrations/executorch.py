@@ -11,7 +11,6 @@
 # specific language governing permissions and limitations under the License.
 
 import logging
-from typing import Optional
 
 import torch
 
@@ -19,10 +18,12 @@ from transformers.generation.configuration_utils import GenerationConfig
 
 from ..utils.import_utils import is_torch_available
 
-
 if is_torch_available():
     from transformers import HybridCache, PreTrainedModel, StaticCache
-    from transformers.pytorch_utils import is_torch_greater_or_equal, is_torch_greater_or_equal_than_2_3
+    from transformers.pytorch_utils import (
+        is_torch_greater_or_equal,
+        is_torch_greater_or_equal_than_2_3,
+    )
 
 
 class TorchExportableModuleForDecoderOnlyLM(torch.nn.Module):
@@ -57,11 +58,15 @@ class TorchExportableModuleForDecoderOnlyLM(torch.nn.Module):
         if not hasattr(model.config, "cache_implementation"):
             # If `cache_implementation` is not specified explicitly in the config, `DynamicCache` will
             # be used by default, so export will use `StaticCache` by default.
-            logging.info("Using `StaticCache` for export as `cache_implementation` is not specified in the config.")
+            logging.info(
+                "Using `StaticCache` for export as `cache_implementation` is not specified in the config."
+            )
             self.model = TorchExportableModuleWithStaticCache(model)
         else:
             if model.config.cache_implementation == "hybrid":
-                self.model = TorchExportableModuleWithHybridCache(model, max_batch_size, max_cache_len)
+                self.model = TorchExportableModuleWithHybridCache(
+                    model, max_batch_size, max_cache_len
+                )
             else:
                 raise ValueError(
                     f"Unsupported cache implementation: {model.config.cache_implementation}. "
@@ -87,10 +92,10 @@ class TorchExportableModuleForDecoderOnlyLM(torch.nn.Module):
 
     def export(
         self,
-        input_ids: Optional[torch.Tensor] = None,
-        cache_position: Optional[torch.Tensor] = None,
-        dynamic_shapes: Optional[dict] = None,
-        strict: Optional[bool] = None,
+        input_ids: torch.Tensor | None = None,
+        cache_position: torch.Tensor | None = None,
+        dynamic_shapes: dict | None = None,
+        strict: bool | None = None,
     ) -> torch.export.ExportedProgram:
         """
         Export the wrapped module using `torch.export`.
@@ -105,8 +110,16 @@ class TorchExportableModuleForDecoderOnlyLM(torch.nn.Module):
             strict(`Optional[bool]`):
                 Flag to instruct `torch.export` to use `torchdynamo`.
         """
-        example_input_ids = input_ids if input_ids is not None else torch.tensor([[1]], dtype=torch.long)
-        example_cache_position = cache_position if cache_position is not None else torch.tensor([0], dtype=torch.long)
+        example_input_ids = (
+            input_ids
+            if input_ids is not None
+            else torch.tensor([[1]], dtype=torch.long)
+        )
+        example_cache_position = (
+            cache_position
+            if cache_position is not None
+            else torch.tensor([0], dtype=torch.long)
+        )
 
         return torch.export.export(
             self.model,
@@ -159,7 +172,9 @@ class TorchExportableModuleForDecoderOnlyLM(torch.nn.Module):
         for i in range(input_ids.shape[1]):
             # Process one token at a time
             curr_input_ids = input_ids[:, i : i + 1]
-            curr_cache_position = torch.tensor([curr_position], dtype=torch.long, device=device)
+            curr_cache_position = torch.tensor(
+                [curr_position], dtype=torch.long, device=device
+            )
 
             # Forward pass
             _ = exported_module(curr_input_ids, curr_cache_position)
@@ -169,7 +184,9 @@ class TorchExportableModuleForDecoderOnlyLM(torch.nn.Module):
         for _ in range(max_new_tokens):
             # Get the last token as input
             curr_input_ids = generated_ids[:, -1:]
-            curr_cache_position = torch.tensor([curr_position], dtype=torch.long, device=device)
+            curr_cache_position = torch.tensor(
+                [curr_position], dtype=torch.long, device=device
+            )
 
             # Forward pass to get next token logits
             outputs = exported_module(curr_input_ids, curr_cache_position)
@@ -184,22 +201,30 @@ class TorchExportableModuleForDecoderOnlyLM(torch.nn.Module):
 
                 # Apply top-k filtering
                 if top_k > 0:
-                    indices_to_remove = logits < torch.topk(logits, top_k)[0][..., -1, None]
+                    indices_to_remove = (
+                        logits < torch.topk(logits, top_k)[0][..., -1, None]
+                    )
                     logits[indices_to_remove] = float("-inf")
 
                 # Apply top-p (nucleus) filtering
                 if top_p < 1.0:
                     sorted_logits, sorted_indices = torch.sort(logits, descending=True)
-                    cumulative_probs = torch.cumsum(torch.softmax(sorted_logits, dim=-1), dim=-1)
+                    cumulative_probs = torch.cumsum(
+                        torch.softmax(sorted_logits, dim=-1), dim=-1
+                    )
 
                     # Remove tokens with cumulative probability above the threshold
                     sorted_indices_to_remove = cumulative_probs > top_p
                     # Shift the indices to the right to keep also the first token above the threshold
-                    sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
+                    sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[
+                        ..., :-1
+                    ].clone()
                     sorted_indices_to_remove[..., 0] = 0
 
                     # Scatter sorted tensors to original indexing
-                    indices_to_remove = sorted_indices_to_remove.scatter(-1, sorted_indices, sorted_indices_to_remove)
+                    indices_to_remove = sorted_indices_to_remove.scatter(
+                        -1, sorted_indices, sorted_indices_to_remove
+                    )
                     logits[indices_to_remove] = float("-inf")
 
                 # Sample from the filtered distribution
@@ -278,10 +303,16 @@ class TorchExportableModuleWithStaticCache(torch.nn.Module):
             dtype=self.model.dtype,
         )
         for i in range(len(self.static_cache.key_cache)):
-            self.register_buffer(f"key_cache_{i}", self.static_cache.key_cache[i], persistent=False)
-            self.register_buffer(f"value_cache_{i}", self.static_cache.value_cache[i], persistent=False)
+            self.register_buffer(
+                f"key_cache_{i}", self.static_cache.key_cache[i], persistent=False
+            )
+            self.register_buffer(
+                f"value_cache_{i}", self.static_cache.value_cache[i], persistent=False
+            )
 
-        self.is_causal = any("CausalLM" in arch for arch in self.model.config.architectures)
+        self.is_causal = any(
+            "CausalLM" in arch for arch in self.model.config.architectures
+        )
         if self.is_causal:
             causal_mask = torch.tril(
                 torch.ones(
@@ -330,7 +361,9 @@ class TorchExportableModuleWithStaticCache(torch.nn.Module):
 
     @staticmethod
     def generate(
-        exported_program: torch.export.ExportedProgram, prompt_token_ids: torch.Tensor, max_new_tokens: int
+        exported_program: torch.export.ExportedProgram,
+        prompt_token_ids: torch.Tensor,
+        max_new_tokens: int,
     ) -> torch.Tensor:
         """
         Generate a sequence of tokens using an exported program.
@@ -427,8 +460,12 @@ class TorchExportableModuleWithHybridCache(torch.nn.Module):
 
         # Register all key and value cache tensors as buffers
         for i in range(len(self.cache.key_cache)):
-            self.register_buffer(f"key_cache_{i}", self.cache.key_cache[i], persistent=False)
-            self.register_buffer(f"value_cache_{i}", self.cache.value_cache[i], persistent=False)
+            self.register_buffer(
+                f"key_cache_{i}", self.cache.key_cache[i], persistent=False
+            )
+            self.register_buffer(
+                f"value_cache_{i}", self.cache.value_cache[i], persistent=False
+            )
 
     def forward(
         self,
@@ -451,7 +488,9 @@ class TorchExportableModuleWithHybridCache(torch.nn.Module):
         position_ids = cache_position.unsqueeze(0).expand(batch_size, -1)
 
         # Create attention mask (always ones for token-by-token generation)
-        attention_mask = torch.ones((batch_size, seq_len), dtype=torch.long, device=input_ids.device)
+        attention_mask = torch.ones(
+            (batch_size, seq_len), dtype=torch.long, device=input_ids.device
+        )
 
         # Forward pass with the model
         outputs = self.model(
@@ -469,10 +508,10 @@ class TorchExportableModuleWithHybridCache(torch.nn.Module):
 
 def convert_and_export_with_cache(
     model: PreTrainedModel,
-    example_input_ids: Optional[torch.Tensor] = None,
-    example_cache_position: Optional[torch.Tensor] = None,
-    dynamic_shapes: Optional[dict] = None,
-    strict: Optional[bool] = None,
+    example_input_ids: torch.Tensor | None = None,
+    example_cache_position: torch.Tensor | None = None,
+    dynamic_shapes: dict | None = None,
+    strict: bool | None = None,
 ):
     """
     Convert a `PreTrainedModel` into an exportable module and export it using `torch.export`,
@@ -496,10 +535,14 @@ def convert_and_export_with_cache(
     with torch.no_grad():
         # TODO: The default inputs only work for text models. We need to add support for vision/audio models.
         example_input_ids = (
-            example_input_ids if example_input_ids is not None else torch.tensor([[1]], dtype=torch.long)
+            example_input_ids
+            if example_input_ids is not None
+            else torch.tensor([[1]], dtype=torch.long)
         )
         example_cache_position = (
-            example_cache_position if example_cache_position is not None else torch.tensor([0], dtype=torch.long)
+            example_cache_position
+            if example_cache_position is not None
+            else torch.tensor([0], dtype=torch.long)
         )
 
         if is_torch_greater_or_equal("2.6.0"):
@@ -516,7 +559,9 @@ def convert_and_export_with_cache(
                     "Dynamic shapes spec will be ignored by convert_and_export_with_cache for torch < 2.6.0."
                 )
             if strict is not None:
-                logging.warning("The strict flag will be ignored by convert_and_export_with_cache for torch < 2.6.0.")
+                logging.warning(
+                    "The strict flag will be ignored by convert_and_export_with_cache for torch < 2.6.0."
+                )
             # We have to keep this path for BC.
             #
             # Due to issue https://github.com/pytorch/pytorch/issues/128394, we need to switch to use an internal
@@ -571,8 +616,12 @@ class Seq2SeqLMDecoderExportableModuleWithStaticCache(torch.nn.Module):
 
         # Register cache buffers to make them exportable
         for i in range(len(self.static_cache.key_cache)):
-            self.register_buffer(f"key_cache_{i}", self.static_cache.key_cache[i], persistent=False)
-            self.register_buffer(f"value_cache_{i}", self.static_cache.value_cache[i], persistent=False)
+            self.register_buffer(
+                f"key_cache_{i}", self.static_cache.key_cache[i], persistent=False
+            )
+            self.register_buffer(
+                f"value_cache_{i}", self.static_cache.value_cache[i], persistent=False
+            )
 
     def forward(self, decoder_input_ids, encoder_hidden_states, cache_position):
         # Get outputs from decoder
@@ -592,7 +641,12 @@ class Seq2SeqLMDecoderExportableModuleWithStaticCache(torch.nn.Module):
 
 class Seq2SeqLMExportableModule(torch.nn.Module):
     def __init__(
-        self, model, batch_size=1, max_hidden_seq_length=4096, cache_implementation="static", max_cache_length=1024
+        self,
+        model,
+        batch_size=1,
+        max_hidden_seq_length=4096,
+        cache_implementation="static",
+        max_cache_length=1024,
     ):
         super().__init__()
 
@@ -613,15 +667,22 @@ class Seq2SeqLMExportableModule(torch.nn.Module):
         self.exported_decoder = None
 
     def _export_encoder(self, encoder_input_ids):
-        wrapped_encoder = Seq2SeqLMEncoderExportableModule(self.encoder).to("cpu").eval()
+        wrapped_encoder = (
+            Seq2SeqLMEncoderExportableModule(self.encoder).to("cpu").eval()
+        )
 
         # Define dynamic sequence length for encoder
-        seq_len_dim = torch.export.Dim("encoder_seq_length", max=self.max_hidden_seq_length)
+        seq_len_dim = torch.export.Dim(
+            "encoder_seq_length", max=self.max_hidden_seq_length
+        )
 
         # Export the encoder
         with torch.no_grad():
             exported_encoder = torch.export.export(
-                wrapped_encoder, (encoder_input_ids,), dynamic_shapes={"input_ids": {1: seq_len_dim}}, strict=True
+                wrapped_encoder,
+                (encoder_input_ids,),
+                dynamic_shapes={"input_ids": {1: seq_len_dim}},
+                strict=True,
             )
 
         return exported_encoder
@@ -638,7 +699,9 @@ class Seq2SeqLMExportableModule(torch.nn.Module):
         )
 
         # Define dynamic dimension for encoder output sequence length
-        encoder_seq_len_dim = torch.export.Dim("encoder_hidden_seq_length", max=self.max_hidden_seq_length)
+        encoder_seq_len_dim = torch.export.Dim(
+            "encoder_hidden_seq_length", max=self.max_hidden_seq_length
+        )
 
         # Export the decoder
         with torch.no_grad():
@@ -655,24 +718,45 @@ class Seq2SeqLMExportableModule(torch.nn.Module):
 
         return exported_decoder
 
-    def export(self, encoder_input_ids=None, decoder_input_ids=None, encoder_hidden_states=None, cache_position=None):
+    def export(
+        self,
+        encoder_input_ids=None,
+        decoder_input_ids=None,
+        encoder_hidden_states=None,
+        cache_position=None,
+    ):
         example_encoder_input_ids = (
-            encoder_input_ids if encoder_input_ids is not None else torch.ones((1, 10), dtype=torch.long)
+            encoder_input_ids
+            if encoder_input_ids is not None
+            else torch.ones((1, 10), dtype=torch.long)
         )
         example_decoder_input_ids = (
-            decoder_input_ids if decoder_input_ids is not None else torch.tensor([[0]], dtype=torch.long)
+            decoder_input_ids
+            if decoder_input_ids is not None
+            else torch.tensor([[0]], dtype=torch.long)
         )  # Start token
-        example_cache_position = cache_position if cache_position is not None else torch.tensor([0], dtype=torch.long)
+        example_cache_position = (
+            cache_position
+            if cache_position is not None
+            else torch.tensor([0], dtype=torch.long)
+        )
         example_encoder_hidden_states = (
             encoder_hidden_states
             if encoder_hidden_states is not None
             else torch.zeros(
-                (self.generation_config.cache_config.batch_size, 10, self.config.d_model), dtype=torch.float32
+                (
+                    self.generation_config.cache_config.batch_size,
+                    10,
+                    self.config.d_model,
+                ),
+                dtype=torch.float32,
             )
         )
         self.exported_encoder = self._export_encoder(example_encoder_input_ids)
         self.exported_decoder = self._export_decoder(
-            example_decoder_input_ids, example_encoder_hidden_states, example_cache_position
+            example_decoder_input_ids,
+            example_encoder_hidden_states,
+            example_cache_position,
         )
 
         # Return self to allow chaining
@@ -691,7 +775,9 @@ class Seq2SeqLMExportableModule(torch.nn.Module):
             for i in range(max_new_tokens - 1):
                 # Run decoder for next token prediction
                 logits = self.exported_decoder.module()(
-                    decoder_input_ids, encoder_output, torch.tensor([i], dtype=torch.long)
+                    decoder_input_ids,
+                    encoder_output,
+                    torch.tensor([i], dtype=torch.long),
                 )
 
                 # Get next token

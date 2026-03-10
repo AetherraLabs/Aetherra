@@ -1,6 +1,7 @@
 # mypy: allow-untyped-defs
 
-from typing import Callable, Optional, Union
+from collections.abc import Callable
+from typing import Optional, Union
 
 import torch
 from torch import Tensor
@@ -10,16 +11,20 @@ from .fuse_modules import fuse_modules, fuse_modules_qat  # noqa: F403
 from .fuser_method_mappings import *  # noqa: F403
 from .observer import *  # noqa: F403
 from .pt2e._numeric_debugger import (  # noqa: F401
-    compare_results,
     CUSTOM_KEY,
+    NUMERIC_DEBUG_HANDLE_KEY,
+    compare_results,
     extract_results_from_loggers,
     generate_numeric_debug_handle,
-    NUMERIC_DEBUG_HANDLE_KEY,
     prepare_for_propagation_comparison,
 )
 from .pt2e.export_utils import (
     _allow_exported_model_train_eval as allow_exported_model_train_eval,
+)
+from .pt2e.export_utils import (
     _move_exported_model_to_eval as move_exported_model_to_eval,
+)
+from .pt2e.export_utils import (
     _move_exported_model_to_train as move_exported_model_to_train,
 )
 from .qconfig import *  # noqa: F403
@@ -29,7 +34,6 @@ from .quantization_mappings import *  # noqa: F403 # type: ignore[no-redef]
 from .quantize import *  # noqa: F403
 from .quantize_jit import *  # noqa: F403
 from .stubs import *  # noqa: F403
-
 
 # ensure __module__ is set correctly for public APIs
 ObserverOrFakeQuantize = Union[ObserverBase, FakeQuantizeBase]
@@ -207,10 +211,10 @@ class _DerivedObserverOrFakeQuantize(ObserverBase):
         derive_qparams_fn: Callable[
             [list[ObserverOrFakeQuantize]], tuple[Tensor, Tensor]
         ],
-        quant_min: Optional[int] = None,
-        quant_max: Optional[int] = None,
-        qscheme: Optional[torch.qscheme] = None,
-        ch_axis: Optional[int] = None,
+        quant_min: int | None = None,
+        quant_max: int | None = None,
+        qscheme: torch.qscheme | None = None,
+        ch_axis: int | None = None,
     ):
         super().__init__(dtype)
         self.obs_or_fqs = obs_or_fqs

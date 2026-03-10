@@ -18,4 +18,4 @@ def enable_consciousness(monkeypatch):
     ]:
         if mod_name in sys.modules:
             importlib.reload(sys.modules[mod_name])
-    yield
+    return

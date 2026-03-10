@@ -8,9 +8,8 @@ import logging
 import operator
 import threading
 from collections import defaultdict
-from collections.abc import Sequence
-from typing import Any, Callable, Optional, TYPE_CHECKING, Union
-from typing_extensions import Never
+from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING, Any, Never, Optional, Union
 
 import sympy
 
@@ -22,17 +21,18 @@ from torch._ops import HigherOrderOperator
 from torch._prims_common import clone_preserve_strides
 from torch._subclasses.fake_tensor import FakeTensorMode
 from torch.fx.experimental.proxy_tensor import (
-    disable_proxy_modes_tracing,
     ProxyTorchDispatchMode,
+    disable_proxy_modes_tracing,
     track_tensor_tree,
 )
 from torch.fx.experimental.symbolic_shapes import guard_scalar
 from torch.types import IntLikeType
 
-
 if TYPE_CHECKING:
     from triton._C.libtriton.ir import (
         module as TritonIRModule,
+    )
+    from triton._C.libtriton.ir import (
         operation as TritonIROperation,
     )
 
@@ -44,12 +44,13 @@ if TYPE_CHECKING:
     from torch.utils._triton import has_triton
 
     TritonMetaParamsType = dict[str, int]
-    TritonGridTupleType = tuple[Union[int, sympy.Expr, SymInt], ...]
+    TritonGridTupleType = tuple[int | sympy.Expr | SymInt, ...]
     TritonGridCallableType = Callable[[TritonMetaParamsType], tuple[int, ...]]
     TritonGridType = Union[TritonGridTupleType, TritonGridCallableType]
 
     if has_triton():
-        from triton.runtime.autotuner import Autotuner, Config as TritonConfig
+        from triton.runtime.autotuner import Autotuner
+        from triton.runtime.autotuner import Config as TritonConfig
         from triton.runtime.jit import JITFunction
     else:
 
@@ -93,8 +94,8 @@ def create_tma_experimental_metadata(
 
 
 def maybe_unpack_tma_experimental_metadata(
-    tma_meta: Union[TMAExperimentalMetadata, TMAStableMetadata]
-) -> Optional[tuple[list[IntLikeType], list[IntLikeType], IntLikeType]]:
+    tma_meta: TMAExperimentalMetadata | TMAStableMetadata,
+) -> tuple[list[IntLikeType], list[IntLikeType], IntLikeType] | None:
     if not tma_meta or len(tma_meta) != 2:
         return None
     if tma_meta[0] == "experimental":
@@ -109,8 +110,8 @@ def create_tma_stable_metadata(
 
 
 def maybe_unpack_tma_stable_metadata(
-    tma_meta: Union[TMAExperimentalMetadata, TMAStableMetadata]
-) -> Optional[tuple[list[IntLikeType]]]:
+    tma_meta: TMAExperimentalMetadata | TMAStableMetadata,
+) -> tuple[list[IntLikeType]] | None:
     if not tma_meta or len(tma_meta) != 2:
         return None
     if tma_meta[0] == "stable":
@@ -130,7 +131,7 @@ def maybe_unpack_tma_stable_metadata(
 # These are stored as raw tuples (instead of classes) for ease of serialization.
 TMADescriptorMetadata = dict[
     str,  # kernel parameter name
-    Union[TMAExperimentalMetadata, TMAStableMetadata],
+    TMAExperimentalMetadata | TMAStableMetadata,
 ]
 
 
@@ -210,11 +211,11 @@ class Intermediate:
 @dataclasses.dataclass(frozen=True)
 class Op:
     name: str
-    fn_call_name: Optional[str]
-    args: list[Union[Param, Intermediate]]
+    fn_call_name: str | None
+    args: list[Param | Intermediate]
     ret: Intermediate = dataclasses.field(repr=False)
     # used for scf.yield: see [Note: scf.yield fix-up]
-    sub_idx: Optional[int] = None
+    sub_idx: int | None = None
     # used for tt.elementwise_inline_asm
     # `is_pure = True` assumes the asm block has no side-effects
     is_pure: bool = False
@@ -242,9 +243,9 @@ def generate_ttir(
     from triton.runtime.jit import JITFunction
 
     from torch._inductor.utils import (
+        TritonAttrsDescriptorVersion,
         get_triton_attrs_descriptor_version,
         triton_version_uses_attrs_dict,
-        TritonAttrsDescriptorVersion,
     )
     from torch.utils._triton import has_triton_tensor_descriptor_host_tma
 
@@ -357,7 +358,7 @@ def generate_ttir(
         # This code basically copies JITFunction.run() logic to get the attrs to construct an ASTSource.
         if triton_version == TritonAttrsDescriptorVersion.V1_COMPILER:
             return kernel._get_config(*args)
-        elif triton_version in {
+        if triton_version in {
             TritonAttrsDescriptorVersion.V2_BACKENDS,
             TritonAttrsDescriptorVersion.V3_BACKENDS_TUPLE,
         }:
@@ -366,53 +367,50 @@ def generate_ttir(
             target = triton.runtime.driver.active.get_current_target()
             backend_ = triton.compiler.compiler.make_backend(target)
             return backend_.get_attrs_descriptor(args, kernel.params)
-        else:
-            assert (
-                get_triton_attrs_descriptor_version()
-                == TritonAttrsDescriptorVersion.V4_DICT
-            )
-            # specialize_impl switched to create_specialize_impl in https://github.com/triton-lang/triton/pull/6099
-            if hasattr(triton.runtime.jit, "create_specialize_impl"):
-                try:
-                    # Latest versions of Triton take specialize_extra as an arg to create_specialize_impl
-                    specialize_impl = triton.runtime.jit.create_specialize_impl(
-                        specialize_extra=backend.get_arg_specialization
-                    )
-                except TypeError:  # Unknown arg `specialize_extra`
-                    # Older versions of Triton take specialize_extra as an arg to specialize_impl
-                    specialize_impl = functools.partial(
-                        triton.runtime.jit.create_specialize_impl(),
-                        specialize_extra=backend.get_arg_specialization,
-                    )
-            else:
-                from triton.runtime.jit import specialize_impl as specialize_impl_orig
-
+        assert (
+            get_triton_attrs_descriptor_version()
+            == TritonAttrsDescriptorVersion.V4_DICT
+        )
+        # specialize_impl switched to create_specialize_impl in https://github.com/triton-lang/triton/pull/6099
+        if hasattr(triton.runtime.jit, "create_specialize_impl"):
+            try:
+                # Latest versions of Triton take specialize_extra as an arg to create_specialize_impl
+                specialize_impl = triton.runtime.jit.create_specialize_impl(
+                    specialize_extra=backend.get_arg_specialization
+                )
+            except TypeError:  # Unknown arg `specialize_extra`
+                # Older versions of Triton take specialize_extra as an arg to specialize_impl
                 specialize_impl = functools.partial(
-                    specialize_impl_orig,
+                    triton.runtime.jit.create_specialize_impl(),
                     specialize_extra=backend.get_arg_specialization,
                 )
+        else:
+            from triton.runtime.jit import specialize_impl as specialize_impl_orig
 
-            from triton._utils import find_paths_if, get_iterable_path
+            specialize_impl = functools.partial(
+                specialize_impl_orig,
+                specialize_extra=backend.get_arg_specialization,
+            )
 
-            # logic is copied from: binder = create_function_from_signature(self.signature, self.params, backend)
-            attrvals = []
-            for arg, kp in zip(args, kernel.params):
-                if kp.is_constexpr:
-                    attrvals.append(arg)
-                else:
-                    spec = specialize_impl(
-                        arg,
-                        is_const=kp.is_const,
-                        specialize_value=not kp.do_not_specialize,
-                        align=not kp.do_not_specialize_on_alignment,
-                    )
-                    attrvals.append(spec[1])
+        from triton._utils import find_paths_if, get_iterable_path
 
-            attrs = find_paths_if(attrvals, lambda _, x: isinstance(x, str))
-            attrs = {
-                k: backend.parse_attr(get_iterable_path(attrvals, k)) for k in attrs
-            }
-            return attrs
+        # logic is copied from: binder = create_function_from_signature(self.signature, self.params, backend)
+        attrvals = []
+        for arg, kp in zip(args, kernel.params, strict=False):
+            if kp.is_constexpr:
+                attrvals.append(arg)
+            else:
+                spec = specialize_impl(
+                    arg,
+                    is_const=kp.is_const,
+                    specialize_value=not kp.do_not_specialize,
+                    align=not kp.do_not_specialize_on_alignment,
+                )
+                attrvals.append(spec[1])
+
+        attrs = find_paths_if(attrvals, lambda _, x: isinstance(x, str))
+        attrs = {k: backend.parse_attr(get_iterable_path(attrvals, k)) for k in attrs}
+        return attrs
 
     specialization = _get_specialization(ordered_args.values())
     constants = {
@@ -488,7 +486,7 @@ def ttir_to_functions(
     )
     region_id_to_block_ids: dict[int, list[int]] = defaultdict(list)
     block_id_to_block_arg_ids: dict[int, list[int]] = {}
-    replacements: dict[int, Union[Intermediate, Param]] = {}
+    replacements: dict[int, Intermediate | Param] = {}
     reindex_map: dict[int, int] = {}
     next_fake_intermediate = 0
 
@@ -681,7 +679,7 @@ def ttir_to_functions(
 
                     for return_op in return_ops:
                         for i, (scf_result, yield_arg) in enumerate(
-                            zip(scf_results, return_op.args)
+                            zip(scf_results, return_op.args, strict=False)
                         ):
                             sub_yield_op = Op(
                                 return_op.name,
@@ -704,7 +702,7 @@ def ttir_to_functions(
             callee = None
             if name == "tt.call":
                 callee = op.get_flat_symbol_ref_attr("callee")
-            args: list[Union[Param, Intermediate]] = [
+            args: list[Param | Intermediate] = [
                 Intermediate(operand) for operand in operand_ids
             ]
             block_ops = op_stack[parent_block_id]
@@ -759,7 +757,7 @@ class MemoizeWithCycleCheck:
 @MemoizeWithCycleCheck
 def get_tma_stores(
     functions: dict[str, dict[Intermediate, list[Op]]], fn_name: str
-) -> set[Union[Intermediate, Param]]:
+) -> set[Intermediate | Param]:
     """
     Identifies all intermediates and parameters that are written to by a
     `tt.experimental_descriptor_store`. It tracks only the specific values
@@ -784,7 +782,7 @@ def get_tma_stores(
     function will also be marked.
     """
 
-    result: set[Union[Intermediate, Param]] = set()
+    result: set[Intermediate | Param] = set()
 
     ops = functions[fn_name]
     for op_list in ops.values():
@@ -836,7 +834,7 @@ def analyze_kernel_mutations(
     # Ops that we want to bail out on
     UNKNOWN_OPS = {"tt.elementwise_inline_asm"}
 
-    stack: list[Union[Param, Intermediate]] = []
+    stack: list[Param | Intermediate] = []
     visited = set()
     ops = functions[fn_name]
     tma_stores = get_tma_stores(functions, fn_name)
@@ -873,7 +871,11 @@ def analyze_kernel_mutations(
                 mutations = analyze_kernel_mutations(
                     functions, op.fn_call_name, len(op.args)
                 )
-                stack.extend(arg for arg, mutated in zip(op.args, mutations) if mutated)
+                stack.extend(
+                    arg
+                    for arg, mutated in zip(op.args, mutations, strict=False)
+                    if mutated
+                )
             else:
                 stack.extend(op.args[idx] for idx in MUTATION_OPS.get(op.name, []))
 
@@ -1098,7 +1100,7 @@ def triton_kernel_wrapper_mutation_fake_tensor_mode(
     kwargs: dict[str, Any],
 ) -> None:
     with mode:
-        return None
+        return
 
 
 @triton_kernel_wrapper_mutation.py_impl(DispatchKey.Meta)
@@ -1117,12 +1119,13 @@ def trace_triton_kernel_wrapper(
     proxy_mode: ProxyTorchDispatchMode,
     func_overload: Callable[..., Any],
     node_args: dict[str, Any],
-) -> Optional[dict[str, Any]]:
+) -> dict[str, Any] | None:
     with disable_proxy_modes_tracing():
         out = func_overload(**node_args)
 
     proxy_args = pytree.tree_map(
-        proxy_mode.tracer.unwrap_proxy, node_args  # type: ignore[union-attr]
+        proxy_mode.tracer.unwrap_proxy,
+        node_args,  # type: ignore[union-attr]
     )
     out_proxy = proxy_mode.tracer.create_proxy(
         "call_function",
@@ -1158,7 +1161,7 @@ def triton_kernel_wrapper_mutation_proxy_torch_dispatch_mode(
         },
     )
 
-    return None
+    return
 
 
 def get_mutated_tensors(
@@ -1213,7 +1216,7 @@ def triton_kernel_wrapper_mutation_functionalize(
         ctx.mark_mutation_hidden_from_autograd(input_arg)
         ctx.commit_update(input_arg)
         ctx.sync(input_arg)
-    return None
+    return
 
 
 @triton_kernel_wrapper_functional.py_impl(DispatchKey.CompositeExplicitAutograd)
@@ -1376,16 +1379,14 @@ class TritonHOPifier:
         grid,
         meta,
         tx,
-    ) -> Union[tuple[Union[int, sympy.Expr, SymInt], ...], tuple["Proxy", ...]]:
+    ) -> tuple[int | sympy.Expr | SymInt, ...] | tuple["Proxy", ...]:
         raise NotImplementedError("abstract method")
 
     def wrap_user_defined_obj(
         self,
         user_obj: Any,
         tx: Optional["InstructionTranslator"],
-        variable: Optional[
-            Union["TritonKernelVariable", "TraceableTritonKernelWrapper"]
-        ],
+        variable: Union["TritonKernelVariable", "TraceableTritonKernelWrapper"] | None,
         name: str,
     ) -> Any:
         raise NotImplementedError("abstract method")
@@ -1396,9 +1397,7 @@ class TritonHOPifier:
         args: list,
         kwargs: dict,
         tx: Optional["InstructionTranslator"],
-        variable: Optional[
-            Union["TritonKernelVariable", "TraceableTritonKernelWrapper"]
-        ],
+        variable: Union["TritonKernelVariable", "TraceableTritonKernelWrapper"] | None,
     ) -> Any:
         raise NotImplementedError("abstract method")
 
@@ -1413,8 +1412,8 @@ class TritonHOPifier:
     @staticmethod
     def do_prune_configs(  # type: ignore[no-untyped-def]
         autotuner: "TritonAutotunerType",
-        early_config_prune: Optional[Callable],
-        perf_model: Optional[Callable],
+        early_config_prune: Callable | None,
+        perf_model: Callable | None,
         top_k: float,
         configs: list,
         named_args: dict,
@@ -1466,14 +1465,14 @@ class TritonHOPifier:
 
     def check_grid(  # type: ignore[no-untyped-def]
         self, grid
-    ) -> Union[tuple[Union[int, sympy.Expr, SymInt], ...], tuple["Proxy", ...]]:
+    ) -> tuple[int | sympy.Expr | SymInt, ...] | tuple["Proxy", ...]:
         raise NotImplementedError("abstract method")
 
     def init_variable(
         self,
         variable: Union["TraceableTritonKernelWrapper", "TritonKernelVariable"],
         kernel: "TritonKernelType",
-        kernel_idx: Optional[int],
+        kernel_idx: int | None,
         grid: Optional["TritonGridType"],
     ) -> None:
         from triton.runtime.autotuner import Autotuner
@@ -1590,7 +1589,7 @@ class TritonHOPifier:
         tx: Optional["InstructionTranslator"],
     ) -> Optional["ConstantVariable"]:
         from triton import JITFunction
-        from triton.runtime.autotuner import autotune, Autotuner, Config, Heuristics
+        from triton.runtime.autotuner import Autotuner, Config, Heuristics, autotune
 
         # Check if num_ctas is in kwargs
         if "num_ctas" in kwargs:
@@ -1635,7 +1634,7 @@ class TritonHOPifier:
             # Copy the configs, we are going to be modifying them
             new_configs = copy.deepcopy(variable.kernel.configs)
 
-            named_args = dict(zip(variable.kernel.arg_names, args))
+            named_args = dict(zip(variable.kernel.arg_names, args, strict=False))
 
             # Iterate through all of the heuristics wrappers that come after the autotune wrapper
             iter_kernel = variable.kernel.fn
@@ -1660,9 +1659,9 @@ class TritonHOPifier:
 
                         # Update the kwargs in each config
                         # maybe_unpack_heuristic_result raises unsupported if the value is non-constant
-                        new_configs[config_idx].__dict__["kwargs"][
-                            kwarg_key
-                        ] = self.maybe_unpack_heuristic_result(heuristic_result)
+                        new_configs[config_idx].__dict__["kwargs"][kwarg_key] = (
+                            self.maybe_unpack_heuristic_result(heuristic_result)
+                        )
 
                 iter_kernel = iter_kernel.fn
             assert isinstance(iter_kernel, JITFunction)
@@ -1742,9 +1741,9 @@ class TritonHOPifier:
                 for config in new_configs:
                     for name in special_param_names:
                         if name not in config.__dict__["kwargs"]:
-                            assert (
-                                name in config.__dict__
-                            ), f"{name} must be in autotuning configs to be used as a kernel parameter"
+                            assert name in config.__dict__, (
+                                f"{name} must be in autotuning configs to be used as a kernel parameter"
+                            )
                             config.__dict__["kwargs"][name] = config.__dict__[name]
                             updated = True
 
@@ -1772,7 +1771,7 @@ class TritonHOPifier:
             or variable.kernel.early_config_prune != default_early_config_prune
         ):
             # Prune the configs
-            named_args = dict(zip(variable.kernel.arg_names, args))
+            named_args = dict(zip(variable.kernel.arg_names, args, strict=False))
 
             # The source information is important here so the guards are installed correctly
 
@@ -1823,7 +1822,10 @@ class TritonHOPifier:
 
         # Both for grid's meta as well as for the kernel, we need combined
         # args and kwargs combined and normalized
-        combined_args_raw = {**dict(zip(variable.kernel.arg_names, args)), **kwargs}
+        combined_args_raw = {
+            **dict(zip(variable.kernel.arg_names, args, strict=False)),
+            **kwargs,
+        }
 
         # precompute the grid for the kernel
         configs = (
@@ -1902,7 +1904,7 @@ class TracingTritonHOPifier(TritonHOPifier):
         grid: "TritonGridCallableType",
         meta: "TritonMetaParamsType",
         tx: None,
-    ) -> tuple[Union[int, sympy.Expr, SymInt], ...]:
+    ) -> tuple[int | sympy.Expr | SymInt, ...]:
         assert tx is None
         assert isinstance(meta, dict)
         assert callable(grid)
@@ -1912,9 +1914,7 @@ class TracingTritonHOPifier(TritonHOPifier):
         self,
         user_obj: Any,
         tx: Optional["InstructionTranslator"],
-        variable: Optional[
-            Union["TritonKernelVariable", "TraceableTritonKernelWrapper"]
-        ],
+        variable: Union["TritonKernelVariable", "TraceableTritonKernelWrapper"] | None,
         name: str,
     ) -> Any:
         assert tx is None
@@ -1926,9 +1926,7 @@ class TracingTritonHOPifier(TritonHOPifier):
         args: list,
         kwargs: dict,
         tx: Optional["InstructionTranslator"],
-        variable: Optional[
-            Union["TritonKernelVariable", "TraceableTritonKernelWrapper"]
-        ],
+        variable: Union["TritonKernelVariable", "TraceableTritonKernelWrapper"] | None,
     ) -> Any:
         assert isinstance(args, list)
         assert isinstance(kwargs, dict)
@@ -1947,7 +1945,7 @@ class TracingTritonHOPifier(TritonHOPifier):
     def check_grid(
         self,
         grid: "TritonGridType",
-    ) -> tuple[Union[int, sympy.Expr, SymInt], ...]:
+    ) -> tuple[int | sympy.Expr | SymInt, ...]:
         if not isinstance(grid, collections.abc.Sequence):
             raise RuntimeError(
                 "wrap_triton can only handle grids that resolve to Sequence[int]."
@@ -2005,13 +2003,13 @@ tracing_triton_hopifier_singleton = TracingTritonHOPifier()
 
 class TraceableTritonKernelWrapper:
     kernel: "TritonKernelType"
-    kernel_idx: Optional[int]
+    kernel_idx: int | None
     grid: Optional["TritonGridType"]
 
     def __init__(
         self,
         kernel: "TritonKernelType",
-        kernel_idx: Optional[int],
+        kernel_idx: int | None,
         grid: Optional["TritonGridType"],
     ) -> None:
         self.kernel = None
@@ -2027,9 +2025,8 @@ class TraceableTritonKernelWrapper:
 
         if is_wrap_triton_enabled():
             return tracing_triton_hopifier_singleton.call_run(self, args, kwargs, None)
-        else:
-            assert self.kernel is not None
-            return self.kernel.run(*args, **kwargs)
+        assert self.kernel is not None
+        return self.kernel.run(*args, **kwargs)
 
     def __call__(self, *args: Sequence[Any], **kwargs: dict[str, Any]) -> Any:
         from torch._library.triton import is_wrap_triton_enabled
@@ -2038,9 +2035,8 @@ class TraceableTritonKernelWrapper:
             return tracing_triton_hopifier_singleton.call_triton_kernel(
                 self, args, kwargs, None
             )
-        else:
-            assert self.kernel is not None
-            return self.kernel[self.grid](*args, **kwargs)
+        assert self.kernel is not None
+        return self.kernel[self.grid](*args, **kwargs)
 
     def specialize_symbolic(self, arg: Sequence[Any]) -> Any:
         import torch

@@ -9,20 +9,19 @@ import torch._refs as refs
 import torch._refs.linalg as linalg
 from torch import Tensor
 from torch._prims_common import (
-    check_fp_or_complex,
-    check_is_matrix,
+    ELEMENTWISE_TYPE_PROMOTION_KIND,
     Dim,
     DimsType,
-    ELEMENTWISE_TYPE_PROMOTION_KIND,
     IntLike,
     TensorLikeType,
+    check_fp_or_complex,
+    check_is_matrix,
 )
 from torch._prims_common.wrappers import (
     _maybe_convert_to_dtype,
     elementwise_type_promotion_wrapper,
     out_wrapper,
 )
-
 
 __all__ = [
     "diagonal",
@@ -36,7 +35,7 @@ __all__ = [
 ]
 
 
-def _check_norm_dtype(dtype: Optional[torch.dtype], x_dtype: torch.dtype, fn_name: str):
+def _check_norm_dtype(dtype: torch.dtype | None, x_dtype: torch.dtype, fn_name: str):
     """
     Checks related to the dtype kwarg in `linalg.*norm` functions
     """
@@ -98,7 +97,7 @@ def diagonal(
 
 
 def _check_vector_norm_args(
-    x: TensorLikeType, ord: Union[float, int] = 2, dim: Optional[DimsType] = None
+    x: TensorLikeType, ord: float | int = 2, dim: DimsType | None = None
 ):
     from torch.fx.experimental.symbolic_shapes import sym_or
 
@@ -129,11 +128,11 @@ def _check_vector_norm_args(
 @out_wrapper(exact_dtype=True)
 def vector_norm(
     x: TensorLikeType,
-    ord: Union[float, int] = 2,
-    dim: Optional[DimsType] = None,
+    ord: float | int = 2,
+    dim: DimsType | None = None,
     keepdim: bool = False,
     *,
-    dtype: Optional[torch.dtype] = None,
+    dtype: torch.dtype | None = None,
 ) -> Tensor:
     from torch.fx.experimental.symbolic_shapes import guard_or_false
 
@@ -155,39 +154,37 @@ def vector_norm(
     # Implementation
     if ord == 0.0:
         return torch.sum(torch.ne(x, 0.0), dim=dim, keepdim=keepdim, dtype=result_dtype)
-    elif ord == float("inf"):
+    if ord == float("inf"):
         return to_result_dtype(torch.amax(torch.abs(x), dim=dim, keepdim=keepdim))  # type: ignore[return-value,arg-type]
-    elif ord == float("-inf"):
+    if ord == float("-inf"):
         return to_result_dtype(torch.amin(torch.abs(x), dim=dim, keepdim=keepdim))  # type: ignore[return-value,arg-type]
-    else:
-        # From here on the computation dtype is important as the reduction is non-trivial
-        x = _maybe_convert_to_dtype(x, computation_dtype)  # type: ignore[assignment]
-        reduce_sum = partial(torch.sum, dim=dim, keepdim=keepdim)
+    # From here on the computation dtype is important as the reduction is non-trivial
+    x = _maybe_convert_to_dtype(x, computation_dtype)  # type: ignore[assignment]
+    reduce_sum = partial(torch.sum, dim=dim, keepdim=keepdim)
 
-        is_ord_even = ord % 2 == 0 if isinstance(ord, IntLike) else ord % 2.0 == 0.0
-        if dim == []:
-            dim = None
+    is_ord_even = ord % 2 == 0 if isinstance(ord, IntLike) else ord % 2.0 == 0.0
+    if dim == []:
+        dim = None
 
-        if (dim is None and x.numel() == 1) or (
-            dim is not None
-            and (x.ndim > 0 and all(guard_or_false(x.shape[d] == 1) for d in dim))
-        ):
-            if x.ndim > 64:
-                raise RuntimeError(
-                    f"Received a tensor with {x.ndim} dimensions, but only tensors with up to 64 dims are supported!"
-                )
-            x = torch.abs(x)
-            if keepdim or x.ndim == 0:
-                return to_result_dtype(x).contiguous()
-            elif dim is None:
-                return x.flatten()[0]
-            else:
-                new_shape = [s for d, s in enumerate(x.shape) if d not in dim]
-                return to_result_dtype(x.view(new_shape)).contiguous()
+    if (dim is None and x.numel() == 1) or (
+        dim is not None
+        and (x.ndim > 0 and all(guard_or_false(x.shape[d] == 1) for d in dim))
+    ):
+        if x.ndim > 64:
+            raise RuntimeError(
+                f"Received a tensor with {x.ndim} dimensions, but only tensors with up to 64 dims are supported!"
+            )
+        x = torch.abs(x)
+        if keepdim or x.ndim == 0:
+            return to_result_dtype(x).contiguous()
+        if dim is None:
+            return x.flatten()[0]
+        new_shape = [s for d, s in enumerate(x.shape) if d not in dim]
+        return to_result_dtype(x.view(new_shape)).contiguous()
 
-        if not (is_ord_even and utils.is_float_dtype(x.dtype)):
-            x = torch.abs(x)
-        return to_result_dtype(torch.pow(reduce_sum(torch.pow(x, ord)), 1.0 / ord))  # type: ignore[return-value]
+    if not (is_ord_even and utils.is_float_dtype(x.dtype)):
+        x = torch.abs(x)
+    return to_result_dtype(torch.pow(reduce_sum(torch.pow(x, ord)), 1.0 / ord))  # type: ignore[return-value]
 
 
 def _backshift_permutation(dim0, dim1, ndim):
@@ -207,11 +204,11 @@ def _inverse_permutation(perm):
 @out_wrapper(exact_dtype=True)
 def matrix_norm(
     A: TensorLikeType,
-    ord: Union[float, str] = "fro",
+    ord: float | str = "fro",
     dim: DimsType = (-2, -1),
     keepdim: bool = False,
     *,
-    dtype: Optional[torch.dtype] = None,
+    dtype: torch.dtype | None = None,
 ) -> TensorLikeType:
     # shape
     check_is_matrix(A, "linalg.matrix_norm")
@@ -242,58 +239,55 @@ def matrix_norm(
 
         if ord == "fro":
             return vector_norm(A, 2, dim, keepdim, dtype=dtype)
-        else:  # ord == "nuc"
-            if dtype is not None:
-                A = _maybe_convert_to_dtype(A, dtype)  # type: ignore[assignment]
-            perm = _backshift_permutation(dim[0], dim[1], A.ndim)
-            result = torch.sum(svdvals(prims.transpose(A, perm)), -1, keepdim)
-            if keepdim:
-                inv_perm = _inverse_permutation(perm)
-                result = prims.transpose(torch.unsqueeze(result, -1), inv_perm)
-            return result
-    else:
-        # ord
-        abs_ord = abs(ord)
-        torch._check(
-            abs_ord in (2, 1, float("inf")),
-            lambda: "linalg.matrix_norm: Order {ord} not supported.",
-        )
-        # dtype
-        check_fp_or_complex(
-            A.dtype, "linalg.matrix_norm", allow_low_precision_dtypes=ord != 2
-        )
+        # ord == "nuc"
+        if dtype is not None:
+            A = _maybe_convert_to_dtype(A, dtype)  # type: ignore[assignment]
+        perm = _backshift_permutation(dim[0], dim[1], A.ndim)
+        result = torch.sum(svdvals(prims.transpose(A, perm)), -1, keepdim)
+        if keepdim:
+            inv_perm = _inverse_permutation(perm)
+            result = prims.transpose(torch.unsqueeze(result, -1), inv_perm)
+        return result
+    # ord
+    abs_ord = abs(ord)
+    torch._check(
+        abs_ord in (2, 1, float("inf")),
+        lambda: "linalg.matrix_norm: Order {ord} not supported.",
+    )
+    # dtype
+    check_fp_or_complex(
+        A.dtype, "linalg.matrix_norm", allow_low_precision_dtypes=ord != 2
+    )
 
-        max_min = partial(torch.amax if ord > 0.0 else torch.amin, keepdim=keepdim)
+    max_min = partial(torch.amax if ord > 0.0 else torch.amin, keepdim=keepdim)
 
-        if abs_ord == 2.0:
-            if dtype is not None:
-                A = _maybe_convert_to_dtype(A, dtype)  # type: ignore[assignment]
-            perm = _backshift_permutation(dim[0], dim[1], A.ndim)
-            result = max_min(svdvals(prims.transpose(A, perm)), dim=-1)
-            if keepdim:
-                inv_perm = _inverse_permutation(perm)
-                result = prims.transpose(torch.unsqueeze(result, -1), inv_perm)
-            return result
-        else:  # 1, -1, inf, -inf
-            dim0, dim1 = dim
-            if abs_ord == float("inf"):
-                dim0, dim1 = dim1, dim0
-            if not keepdim and (dim0 < dim1):
-                dim1 -= 1
-            return max_min(
-                vector_norm(A, 1.0, dim=dim0, keepdim=keepdim, dtype=dtype), dim1
-            )
+    if abs_ord == 2.0:
+        if dtype is not None:
+            A = _maybe_convert_to_dtype(A, dtype)  # type: ignore[assignment]
+        perm = _backshift_permutation(dim[0], dim[1], A.ndim)
+        result = max_min(svdvals(prims.transpose(A, perm)), dim=-1)
+        if keepdim:
+            inv_perm = _inverse_permutation(perm)
+            result = prims.transpose(torch.unsqueeze(result, -1), inv_perm)
+        return result
+    # 1, -1, inf, -inf
+    dim0, dim1 = dim
+    if abs_ord == float("inf"):
+        dim0, dim1 = dim1, dim0
+    if not keepdim and (dim0 < dim1):
+        dim1 -= 1
+    return max_min(vector_norm(A, 1.0, dim=dim0, keepdim=keepdim, dtype=dtype), dim1)
 
 
 # CompositeImplicitAutograd
 @out_wrapper(exact_dtype=True)
 def norm(
     A: TensorLikeType,
-    ord: Optional[Union[float, str]] = None,
-    dim: Optional[DimsType] = None,
+    ord: float | str | None = None,
+    dim: DimsType | None = None,
     keepdim: bool = False,
     *,
-    dtype: Optional[torch.dtype] = None,
+    dtype: torch.dtype | None = None,
 ) -> TensorLikeType:
     if dim is not None:
         if isinstance(dim, Dim):
@@ -314,10 +308,9 @@ def norm(
         if dim is None:
             dim = (0, 1)
         return matrix_norm(A, ord, dim, keepdim, dtype=dtype)
-    else:
-        if ord is None:
-            ord = 2.0
-        return vector_norm(A, ord, dim, keepdim, dtype=dtype)  # type: ignore[arg-type]
+    if ord is None:
+        ord = 2.0
+    return vector_norm(A, ord, dim, keepdim, dtype=dtype)  # type: ignore[arg-type]
 
 
 # CompositeImplicitAutograd

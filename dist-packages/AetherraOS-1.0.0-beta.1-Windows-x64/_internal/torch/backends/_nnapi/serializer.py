@@ -6,10 +6,9 @@ import logging
 import operator
 import struct
 import sys
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
 import torch
-
 
 # TODO: Add type annotations
 # TODO: Check tensor types for ops
@@ -251,12 +250,10 @@ def broadcast_shapes(shape1, shape2):
             "Non-equal-rank broadcast is not supported yet."
         )  # noqa: TRY002
     ret = []
-    for d1, d2 in zip(s1, s2):
+    for d1, d2 in zip(s1, s2, strict=False):
         if d1 == 1:
             ret.append(d2)
-        elif d2 == 1:
-            ret.append(d1)
-        elif d1 == d2:
+        elif d2 == 1 or d1 == d2:
             ret.append(d1)
         else:
             raise Exception(  # noqa: TRY002
@@ -573,25 +570,24 @@ class _NnapiSerializer:
         shape_code = "".join(shape_parts)
         if oper.op_type == NNAPI_OperandCode.TENSOR_FLOAT32:
             return f"torch.zeros({shape_code}, dtype=torch.float32)"
-        elif oper.op_type == NNAPI_OperandCode.TENSOR_INT32:
+        if oper.op_type == NNAPI_OperandCode.TENSOR_INT32:
             return f"torch.zeros({shape_code}, dtype=torch.int32)"
-        elif oper.op_type == NNAPI_OperandCode.TENSOR_QUANT8_ASYMM:
+        if oper.op_type == NNAPI_OperandCode.TENSOR_QUANT8_ASYMM:
             return (
                 f"torch.quantize_per_tensor("
                 f"torch.zeros(1), scale={oper.scale}, zero_point={oper.zero_point}, dtype=torch.quint8)"
                 f".expand({shape_code}).contiguous()"
             )
-        elif oper.op_type in (
+        if oper.op_type in (
             NNAPI_OperandCode.TENSOR_QUANT16_ASYMM,
             NNAPI_OperandCode.TENSOR_QUANT16_SYMM,
         ):
             if self.use_int16_for_qint16:
                 return f"torch.zeros({shape_code}, dtype=torch.int16)"
-            else:
-                raise Exception(  # noqa: TRY002
-                    "`int16` isn't supported. If you're trying to represent NNAPI"
-                    " qint16 with Pytorch int16, set `use_int16_for_qint16 = True`"
-                )
+            raise Exception(  # noqa: TRY002
+                "`int16` isn't supported. If you're trying to represent NNAPI"
+                " qint16 with Pytorch int16, set `use_int16_for_qint16 = True`"
+            )
 
         raise Exception(  # noqa: TRY002
             f"Unsupported output operand type: {oper.op_type}"
@@ -711,7 +707,7 @@ class _NnapiSerializer:
         self.add_constant_value(self_jitval, self_jitval.type(), model)
 
         for arg_idx, (input_value, input_tensor) in enumerate(
-            zip(list(model.graph.inputs())[1:], inputs)
+            zip(list(model.graph.inputs())[1:], inputs, strict=False)
         ):
             op_id = self.add_tensor_operand_for_input(
                 arg_idx, input_value, input_tensor
@@ -816,7 +812,9 @@ class _NnapiSerializer:
         serialized_values = []
         serialized_value_data = []
         assert len(self.values) == len(self.value_data)
-        for (op_index, source_type), data in zip(self.values, self.value_data):
+        for (op_index, source_type), data in zip(
+            self.values, self.value_data, strict=False
+        ):
             source_length = len(data)
 
             # Pad with 0 bytes out to a multiple of 4 for alignment.
@@ -943,8 +941,8 @@ class _NnapiSerializer:
         assert node.outputsSize() == 1
         output = node.outputsAt(0)
         ctype = output.type()
-        const_vals: Optional[list] = []
-        tensors: Optional[list] = []
+        const_vals: list | None = []
+        tensors: list | None = []
         for inp in node.inputs():
             if const_vals is not None and inp in self.constants:
                 _, val = self.get_constant_value(inp)
@@ -1390,7 +1388,9 @@ class _NnapiSerializer:
             out_oper = out_oper._replace(scale=scale, zero_point=zp)
 
         out_id = self.add_tensor_operand(node.outputsAt(0), out_oper)
-        for idx, (d0, d1) in enumerate(zip(in0_oper.shape, in1_oper.shape)):
+        for idx, (d0, d1) in enumerate(
+            zip(in0_oper.shape, in1_oper.shape, strict=False)
+        ):
             if d0 == 1 and d1 == 0:
                 self.forward_operand_shape(out_id, idx, in1_id, idx)
             elif d0 == 0 and d1 == 1:
@@ -1688,7 +1688,7 @@ class _NnapiSerializer:
 
         if size_ctype.kind() != "NoneType" and scale_ctype.kind() != "NoneType":
             raise Exception("Size and scale cannot both be non-None.")  # noqa: TRY002
-        elif size_ctype.kind() != "NoneType":
+        if size_ctype.kind() != "NoneType":
             assert size_ctype.kind() == "ListType"
             assert size_ctype.getElementType().kind() == "IntType"
             assert scale_ctype.kind() == "NoneType"
@@ -1900,8 +1900,7 @@ class _NnapiSerializer:
             bias_id = self.add_tensor_operand_for_weight(nnapi_bias_tensor)
             bias_oper = self.operands[bias_id]
             return bias_id, bias_oper
-        else:
-            return self.get_tensor_operand_for_weight(jit_bias)
+        return self.get_tensor_operand_for_weight(jit_bias)
 
     def add_conv2d(self, node):
         assert node.inputsSize() == 7

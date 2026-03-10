@@ -90,7 +90,7 @@ class QFACStore:
         return results[:top_k]
 
     def rewrite_budgeted(self, *, budget_tokens: int = 0) -> int:
-        # Placeholder: no rewrites yet; returns 0 to indicate no-op
+        # Baseline: no rewrites yet; returns 0 to indicate no-op
         return 0
 
 

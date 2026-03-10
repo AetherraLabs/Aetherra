@@ -4,12 +4,11 @@ import torch
 import torch.utils._pytree as pytree
 from torch.export.exported_program import ExportedProgram
 
-
 __all__ = ["move_to_device_pass"]
 
 
 def move_to_device_pass(
-    ep: ExportedProgram, location: Union[torch.device, str, dict[str, str]]
+    ep: ExportedProgram, location: torch.device | str | dict[str, str]
 ) -> ExportedProgram:
     """
     Move the exported program to the given device.
@@ -27,15 +26,13 @@ def move_to_device_pass(
 
     def _get_new_device(
         curr_device: torch.device,
-        location: Union[torch.device, str, dict[str, str]],
+        location: torch.device | str | dict[str, str],
     ) -> str:
         if isinstance(location, dict):
             if str(curr_device) in location.keys():
                 return location[str(curr_device)]
-            else:
-                return str(curr_device)
-        else:
-            return str(location)
+            return str(curr_device)
+        return str(location)
 
     # move all the state_dict
     for k, v in ep.state_dict.items():

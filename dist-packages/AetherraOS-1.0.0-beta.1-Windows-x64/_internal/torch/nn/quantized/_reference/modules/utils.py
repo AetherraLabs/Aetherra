@@ -10,9 +10,9 @@ while adding an import statement here.
 """
 
 from torch.ao.nn.quantized.reference.modules.utils import (
+    ReferenceQuantizedModule,
     _get_weight_qparam_keys,
     _quantize_and_dequantize_weight,
     _quantize_weight,
     _save_weight_qparams,
-    ReferenceQuantizedModule,
 )

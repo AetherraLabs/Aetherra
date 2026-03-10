@@ -2,8 +2,8 @@
 # mypy: allow-untyped-defs
 import functools
 import logging
-from collections.abc import Sequence
-from typing import Any, Callable, Optional, TYPE_CHECKING
+from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING, Any
 
 import torch
 import torch.nn as nn
@@ -21,13 +21,12 @@ from torch.utils._pytree import tree_flatten
 
 from ._fsdp_api import MixedPrecisionPolicy
 from ._fsdp_common import (
+    TrainingState,
     _cast_fp_tensor,
     compiled_autograd_enabled,
     detect_compiled_autograd,
-    TrainingState,
 )
 from ._fsdp_param_group import FSDPCommContext, FSDPParamGroup
-
 
 if TYPE_CHECKING:
     from ._fsdp_param import FSDPParam
@@ -45,14 +44,14 @@ class FSDPStateContext:
         # Iteration's forward root runs the once-per-forward logic; this root
         # may not be the overall root set by lazy initialization in cases where
         # only a submodule runs forward (e.g. encoder-only for eval)
-        self.iter_forward_root: Optional[FSDPState] = None
+        self.iter_forward_root: FSDPState | None = None
         # Final callback should only be queued once per backward
         self.post_backward_final_callback_queued: bool = False
         # Whether to finalize backward in this backward's final callback
         self.is_last_backward: bool = True
         # Optional user-provided event recorded after optimizer for the
         # all-gather streams to wait on in the root pre-forward
-        self.post_optim_event: Optional[torch.Event] = None
+        self.post_optim_event: torch.Event | None = None
 
 
 def disable_if_config_true(func):
@@ -64,8 +63,7 @@ def disable_if_config_true(func):
                 recursive=True,
                 reason="skipping FSDP hooks since torch._dynamo.config.skip_fsdp_hooks is set",
             )(*args, **kwargs)
-        else:
-            return func(*args, **kwargs)
+        return func(*args, **kwargs)
 
     return fsdp_hook_wrapper
 
@@ -73,8 +71,8 @@ def disable_if_config_true(func):
 class FSDPState(_State):
     def __init__(self) -> None:
         super().__init__()
-        self._fsdp_param_group: Optional[FSDPParamGroup] = None
-        self._is_root: Optional[bool] = None  # root set during lazy init
+        self._fsdp_param_group: FSDPParamGroup | None = None
+        self._is_root: bool | None = None  # root set during lazy init
         self._state_ctx = FSDPStateContext()
         self._comm_ctx = FSDPCommContext()
         self._training_state: TrainingState = TrainingState.IDLE
@@ -83,7 +81,7 @@ class FSDPState(_State):
         self._modules_to_run_forward: set[nn.Module] = set()
         # ``False`` when user set reshard_after_forward
         # through ``fully_shard`` or ``set_reshard_after_forward``
-        self._auto_reshard_after_forward: Optional[bool] = True
+        self._auto_reshard_after_forward: bool | None = True
 
     # Define a separate init since `__init__` is called in the contract
     def init(
@@ -351,7 +349,7 @@ class FSDPState(_State):
         )
 
 
-def _get_module_fsdp_state(module: nn.Module) -> Optional[FSDPState]:
+def _get_module_fsdp_state(module: nn.Module) -> FSDPState | None:
     state = _get_module_state(module)
     if isinstance(state, FSDPState):
         return state

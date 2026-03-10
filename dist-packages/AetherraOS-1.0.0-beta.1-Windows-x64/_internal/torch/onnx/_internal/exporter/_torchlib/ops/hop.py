@@ -9,7 +9,6 @@ from torch.onnx._internal._lazy_import import onnxscript_ir as ir
 from torch.onnx._internal.exporter import _core
 from torch.onnx._internal.exporter._torchlib._torchlib_registry import onnx_impl
 
-
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
@@ -76,9 +75,9 @@ def higher_order_cond(
 
     # ONNX Runtime complains about duplicate output names if we don't rename them.
     # But the doesn't seem to be an actual violation of SSA form without renaming.
-    for func_out, out in zip(true_func.outputs, then_node.outputs):
+    for func_out, out in zip(true_func.outputs, then_node.outputs, strict=False):
         out.name = f"{func_out.name}_{true_func.name}"
-    for func_out, out in zip(false_func.outputs, else_node.outputs):
+    for func_out, out in zip(false_func.outputs, else_node.outputs, strict=False):
         out.name = f"{func_out.name}_{false_func.name}"
 
     return call_op(
@@ -136,7 +135,7 @@ def higher_order_scan(
 
     # ONNX Runtime complains about duplicate output names if we don't rename them.
     # But the doesn't seem to be an actual violation of SSA form without renaming.
-    for func_out, out in zip(body_func.outputs, body_node.outputs):
+    for func_out, out in zip(body_func.outputs, body_node.outputs, strict=False):
         out.name = f"{func_out.name}_{body_func.name}"
 
     n_outputs = len(body_func.outputs) - len(scan_inits)

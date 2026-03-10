@@ -67,9 +67,7 @@ class MemoryAdapterImpl:
                             cursor = conn.cursor()
 
                             # Get all tables
-                            cursor.execute(
-                                "SELECT name FROM sqlite_master WHERE type='table';"
-                            )
+                            cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
                             tables = cursor.fetchall()
 
                             db_entries = 0
@@ -390,9 +388,7 @@ def main():
         print(f"  📊 Total entries: {summary['total_entries']}")
 
         for category, info in summary["categories"].items():
-            print(
-                f"  📂 {category}: {info['databases']} databases, {info['entries']} entries"
-            )
+            print(f"  📂 {category}: {info['databases']} databases, {info['entries']} entries")
 
     adapter.close_all_connections()
     print("\n✅ Memory adapter test complete!")

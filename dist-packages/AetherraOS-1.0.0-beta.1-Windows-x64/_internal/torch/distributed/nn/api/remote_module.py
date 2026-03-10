@@ -4,20 +4,18 @@ import collections
 import io
 import sys
 import types
-from collections.abc import Iterator, Mapping
-from typing import Any, Callable, Optional, TypeVar, Union
-from typing_extensions import Self
+from collections.abc import Callable, Iterator, Mapping
+from typing import Any, Self, TypeVar, Union
 
 import torch
 import torch.distributed.rpc as rpc
-from torch import device, dtype, nn, Tensor
+from torch import Tensor, device, dtype, nn
 from torch.distributed import _remote_device
 from torch.distributed.nn.jit import instantiator
 from torch.distributed.rpc.internal import _internal_rpc_pickler
 from torch.nn import Module
 from torch.nn.parameter import Parameter
 from torch.utils.hooks import RemovableHandle
-
 
 __all__ = ["RemoteModule"]
 
@@ -122,8 +120,8 @@ class _RemoteModule(nn.Module):
         self,
         remote_device: str,
         module_cls: type[nn.Module],
-        args: Optional[tuple] = None,
-        kwargs: Optional[dict[str, Any]] = None,
+        args: tuple | None = None,
+        kwargs: dict[str, Any] | None = None,
         _module_interface_cls: Any = None,
     ):
         """
@@ -310,32 +308,32 @@ class _RemoteModule(nn.Module):
         )
 
     def register_buffer(
-        self, name: str, tensor: Optional[Tensor], persistent: bool = True
+        self, name: str, tensor: Tensor | None, persistent: bool = True
     ) -> None:
         _raise_not_supported(self.register_buffer.__name__)
 
-    def register_parameter(self, name: str, param: Optional[Parameter]) -> None:
+    def register_parameter(self, name: str, param: Parameter | None) -> None:
         _raise_not_supported(self.register_parameter.__name__)
 
-    def add_module(self, name: str, module: Optional[Module]) -> None:
+    def add_module(self, name: str, module: Module | None) -> None:
         _raise_not_supported(self.add_module.__name__)
 
     def apply(self, fn: Callable[[Module], None]) -> Self:  # type: ignore[return]
         _raise_not_supported(self.apply.__name__)
 
-    def cuda(self, device: Optional[Union[int, device]] = None) -> Self:  # type: ignore[return]
+    def cuda(self, device: int | device | None = None) -> Self:  # type: ignore[return]
         _raise_not_supported(self.cuda.__name__)
 
-    def ipu(self, device: Optional[Union[int, device]] = None) -> Self:  # type: ignore[return]
+    def ipu(self, device: int | device | None = None) -> Self:  # type: ignore[return]
         _raise_not_supported(self.ipu.__name__)
 
-    def xpu(self, device: Optional[Union[int, device]] = None) -> Self:  # type: ignore[return]
+    def xpu(self, device: int | device | None = None) -> Self:  # type: ignore[return]
         _raise_not_supported(self.xpu.__name__)
 
     def cpu(self) -> Self:  # type: ignore[return]
         _raise_not_supported(self.cpu.__name__)
 
-    def type(self, dst_type: Union[dtype, str]) -> Self:  # type: ignore[return]
+    def type(self, dst_type: dtype | str) -> Self:  # type: ignore[return]
         _raise_not_supported(self.type.__name__)
 
     def float(self) -> Self:  # type: ignore[return]
@@ -354,18 +352,15 @@ class _RemoteModule(nn.Module):
         _raise_not_supported(self.to.__name__)
 
     def register_backward_hook(  # type: ignore[return]
-        self, hook: Callable[[Module, _grad_t, _grad_t], Union[None, _grad_t]]
+        self, hook: Callable[[Module, _grad_t, _grad_t], None | _grad_t]
     ) -> RemovableHandle:
         _raise_not_supported(self.register_backward_hook.__name__)
 
     def register_forward_pre_hook(  # type: ignore[return]
         self,
-        hook: Union[
-            Callable[[T, tuple[Any, ...]], Optional[Any]],
-            Callable[
-                [T, tuple[Any, ...], dict[str, Any]],
-                Optional[tuple[Any, dict[str, Any]]],
-            ],
+        hook: Callable[[T, tuple[Any, ...]], Any | None]
+        | Callable[
+            [T, tuple[Any, ...], dict[str, Any]], tuple[Any, dict[str, Any]] | None
         ],
         prepend: bool = False,
         with_kwargs: bool = False,
@@ -374,10 +369,8 @@ class _RemoteModule(nn.Module):
 
     def register_forward_hook(  # type: ignore[return, override]
         self,
-        hook: Union[
-            Callable[[T, tuple[Any, ...], Any], Optional[Any]],
-            Callable[[T, tuple[Any, ...], dict[str, Any], Any], Optional[Any]],
-        ],
+        hook: Callable[[T, tuple[Any, ...], Any], Any | None]
+        | Callable[[T, tuple[Any, ...], dict[str, Any], Any], Any | None],
         prepend: bool = False,
         with_kwargs: bool = False,
     ) -> RemovableHandle:
@@ -423,7 +416,7 @@ class _RemoteModule(nn.Module):
 
     def named_modules(
         self,
-        memo: Optional[set[Module]] = None,
+        memo: set[Module] | None = None,
         prefix: str = "",
         remove_duplicate: bool = True,
     ):
@@ -674,8 +667,8 @@ class RemoteModule(_RemoteModule):
         self,
         remote_device: str,
         module_cls: type[nn.Module],
-        args: Optional[tuple] = None,
-        kwargs: Optional[dict[str, Any]] = None,
+        args: tuple | None = None,
+        kwargs: dict[str, Any] | None = None,
     ):
         super().__init__(remote_device, module_cls, args, kwargs)
 

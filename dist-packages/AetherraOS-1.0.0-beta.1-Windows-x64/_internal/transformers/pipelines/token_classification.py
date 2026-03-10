@@ -1,6 +1,5 @@
 import types
 import warnings
-from typing import List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -13,11 +12,12 @@ from ..utils import (
 )
 from .base import ArgumentHandler, ChunkPipeline, Dataset, build_pipeline_init_args
 
-
 if is_tf_available():
     import tensorflow as tf
 
-    from ..models.auto.modeling_tf_auto import TF_MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING_NAMES
+    from ..models.auto.modeling_tf_auto import (
+        TF_MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING_NAMES,
+    )
 if is_torch_available():
     import torch
 
@@ -29,24 +29,32 @@ class TokenClassificationArgumentHandler(ArgumentHandler):
     Handles arguments for token classification.
     """
 
-    def __call__(self, inputs: Union[str, List[str]], **kwargs):
+    def __call__(self, inputs: str | list[str], **kwargs):
         if inputs is not None and isinstance(inputs, (list, tuple)) and len(inputs) > 0:
             inputs = list(inputs)
             batch_size = len(inputs)
         elif isinstance(inputs, str):
             inputs = [inputs]
             batch_size = 1
-        elif Dataset is not None and isinstance(inputs, Dataset) or isinstance(inputs, types.GeneratorType):
+        elif (
+            Dataset is not None
+            and isinstance(inputs, Dataset)
+            or isinstance(inputs, types.GeneratorType)
+        ):
             return inputs, None
         else:
             raise ValueError("At least one input is required.")
 
         offset_mapping = kwargs.get("offset_mapping")
         if offset_mapping:
-            if isinstance(offset_mapping, list) and isinstance(offset_mapping[0], tuple):
+            if isinstance(offset_mapping, list) and isinstance(
+                offset_mapping[0], tuple
+            ):
                 offset_mapping = [offset_mapping]
             if len(offset_mapping) != batch_size:
-                raise ValueError("offset_mapping should have the same batch size as the input")
+                raise ValueError(
+                    "offset_mapping should have the same batch size as the input"
+                )
         return inputs, offset_mapping
 
 
@@ -133,7 +141,9 @@ class TokenClassificationPipeline(ChunkPipeline):
 
     default_input_names = "sequences"
 
-    def __init__(self, args_parser=TokenClassificationArgumentHandler(), *args, **kwargs):
+    def __init__(
+        self, args_parser=TokenClassificationArgumentHandler(), *args, **kwargs
+    ):
         super().__init__(*args, **kwargs)
         self.check_model_type(
             TF_MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING_NAMES
@@ -147,11 +157,11 @@ class TokenClassificationPipeline(ChunkPipeline):
     def _sanitize_parameters(
         self,
         ignore_labels=None,
-        grouped_entities: Optional[bool] = None,
-        ignore_subwords: Optional[bool] = None,
-        aggregation_strategy: Optional[AggregationStrategy] = None,
-        offset_mapping: Optional[List[Tuple[int, int]]] = None,
-        stride: Optional[int] = None,
+        grouped_entities: bool | None = None,
+        ignore_subwords: bool | None = None,
+        aggregation_strategy: AggregationStrategy | None = None,
+        offset_mapping: list[tuple[int, int]] | None = None,
+        stride: int | None = None,
     ):
         preprocess_params = {}
         if offset_mapping is not None:
@@ -182,7 +192,11 @@ class TokenClassificationPipeline(ChunkPipeline):
                 aggregation_strategy = AggregationStrategy[aggregation_strategy.upper()]
             if (
                 aggregation_strategy
-                in {AggregationStrategy.FIRST, AggregationStrategy.MAX, AggregationStrategy.AVERAGE}
+                in {
+                    AggregationStrategy.FIRST,
+                    AggregationStrategy.MAX,
+                    AggregationStrategy.AVERAGE,
+                }
                 and not self.tokenizer.is_fast
             ):
                 raise ValueError(
@@ -202,22 +216,21 @@ class TokenClassificationPipeline(ChunkPipeline):
                     "`stride` was provided to process all the text but `aggregation_strategy="
                     f'"{aggregation_strategy}"`, please select another one instead.'
                 )
+            if self.tokenizer.is_fast:
+                tokenizer_params = {
+                    "return_overflowing_tokens": True,
+                    "padding": True,
+                    "stride": stride,
+                }
+                preprocess_params["tokenizer_params"] = tokenizer_params
             else:
-                if self.tokenizer.is_fast:
-                    tokenizer_params = {
-                        "return_overflowing_tokens": True,
-                        "padding": True,
-                        "stride": stride,
-                    }
-                    preprocess_params["tokenizer_params"] = tokenizer_params
-                else:
-                    raise ValueError(
-                        "`stride` was provided to process all the text but you're using a slow tokenizer."
-                        " Please use a fast tokenizer."
-                    )
+                raise ValueError(
+                    "`stride` was provided to process all the text but you're using a slow tokenizer."
+                    " Please use a fast tokenizer."
+                )
         return preprocess_params, {}, postprocess_params
 
-    def __call__(self, inputs: Union[str, List[str]], **kwargs):
+    def __call__(self, inputs: str | list[str], **kwargs):
         """
         Classify each token of the text(s) given as inputs.
 
@@ -251,7 +264,11 @@ class TokenClassificationPipeline(ChunkPipeline):
 
     def preprocess(self, sentence, offset_mapping=None, **preprocess_params):
         tokenizer_params = preprocess_params.pop("tokenizer_params", {})
-        truncation = True if self.tokenizer.model_max_length and self.tokenizer.model_max_length > 0 else False
+        truncation = (
+            True
+            if self.tokenizer.model_max_length and self.tokenizer.model_max_length > 0
+            else False
+        )
         inputs = self.tokenizer(
             sentence,
             return_tensors=self.framework,
@@ -296,12 +313,20 @@ class TokenClassificationPipeline(ChunkPipeline):
             **model_inputs,
         }
 
-    def postprocess(self, all_outputs, aggregation_strategy=AggregationStrategy.NONE, ignore_labels=None):
+    def postprocess(
+        self,
+        all_outputs,
+        aggregation_strategy=AggregationStrategy.NONE,
+        ignore_labels=None,
+    ):
         if ignore_labels is None:
             ignore_labels = ["O"]
         all_entities = []
         for model_outputs in all_outputs:
-            if self.framework == "pt" and model_outputs["logits"][0].dtype in (torch.bfloat16, torch.float16):
+            if self.framework == "pt" and model_outputs["logits"][0].dtype in (
+                torch.bfloat16,
+                torch.float16,
+            ):
                 logits = model_outputs["logits"][0].to(torch.float32).numpy()
             else:
                 logits = model_outputs["logits"][0].numpy()
@@ -309,7 +334,9 @@ class TokenClassificationPipeline(ChunkPipeline):
             sentence = all_outputs[0]["sentence"]
             input_ids = model_outputs["input_ids"][0]
             offset_mapping = (
-                model_outputs["offset_mapping"][0] if model_outputs["offset_mapping"] is not None else None
+                model_outputs["offset_mapping"][0]
+                if model_outputs["offset_mapping"] is not None
+                else None
             )
             special_tokens_mask = model_outputs["special_tokens_mask"][0].numpy()
 
@@ -319,10 +346,17 @@ class TokenClassificationPipeline(ChunkPipeline):
 
             if self.framework == "tf":
                 input_ids = input_ids.numpy()
-                offset_mapping = offset_mapping.numpy() if offset_mapping is not None else None
+                offset_mapping = (
+                    offset_mapping.numpy() if offset_mapping is not None else None
+                )
 
             pre_entities = self.gather_pre_entities(
-                sentence, input_ids, scores, offset_mapping, special_tokens_mask, aggregation_strategy
+                sentence,
+                input_ids,
+                scores,
+                offset_mapping,
+                special_tokens_mask,
+                aggregation_strategy,
             )
             grouped_entities = self.aggregate(pre_entities, aggregation_strategy)
             # Filter anything that is in self.ignore_labels
@@ -348,9 +382,10 @@ class TokenClassificationPipeline(ChunkPipeline):
             if previous_entity["start"] <= entity["start"] < previous_entity["end"]:
                 current_length = entity["end"] - entity["start"]
                 previous_length = previous_entity["end"] - previous_entity["start"]
-                if current_length > previous_length:
-                    previous_entity = entity
-                elif current_length == previous_length and entity["score"] > previous_entity["score"]:
+                if current_length > previous_length or (
+                    current_length == previous_length
+                    and entity["score"] > previous_entity["score"]
+                ):
                     previous_entity = entity
             else:
                 aggregated_entities.append(previous_entity)
@@ -363,10 +398,10 @@ class TokenClassificationPipeline(ChunkPipeline):
         sentence: str,
         input_ids: np.ndarray,
         scores: np.ndarray,
-        offset_mapping: Optional[List[Tuple[int, int]]],
+        offset_mapping: list[tuple[int, int]] | None,
         special_tokens_mask: np.ndarray,
         aggregation_strategy: AggregationStrategy,
-    ) -> List[dict]:
+    ) -> list[dict]:
         """Fuse various numpy arrays into dicts with all the information needed for aggregation"""
         pre_entities = []
         for idx, token_scores in enumerate(scores):
@@ -399,7 +434,10 @@ class TokenClassificationPipeline(ChunkPipeline):
                             "Tokenizer does not support real words, using fallback heuristic",
                             UserWarning,
                         )
-                    is_subword = start_ind > 0 and " " not in sentence[start_ind - 1 : start_ind + 1]
+                    is_subword = (
+                        start_ind > 0
+                        and " " not in sentence[start_ind - 1 : start_ind + 1]
+                    )
 
                 if int(input_ids[idx]) == self.tokenizer.unk_token_id:
                     word = word_ref
@@ -420,8 +458,13 @@ class TokenClassificationPipeline(ChunkPipeline):
             pre_entities.append(pre_entity)
         return pre_entities
 
-    def aggregate(self, pre_entities: List[dict], aggregation_strategy: AggregationStrategy) -> List[dict]:
-        if aggregation_strategy in {AggregationStrategy.NONE, AggregationStrategy.SIMPLE}:
+    def aggregate(
+        self, pre_entities: list[dict], aggregation_strategy: AggregationStrategy
+    ) -> list[dict]:
+        if aggregation_strategy in {
+            AggregationStrategy.NONE,
+            AggregationStrategy.SIMPLE,
+        }:
             entities = []
             for pre_entity in pre_entities:
                 entity_idx = pre_entity["scores"].argmax()
@@ -442,8 +485,12 @@ class TokenClassificationPipeline(ChunkPipeline):
             return entities
         return self.group_entities(entities)
 
-    def aggregate_word(self, entities: List[dict], aggregation_strategy: AggregationStrategy) -> dict:
-        word = self.tokenizer.convert_tokens_to_string([entity["word"] for entity in entities])
+    def aggregate_word(
+        self, entities: list[dict], aggregation_strategy: AggregationStrategy
+    ) -> dict:
+        word = self.tokenizer.convert_tokens_to_string(
+            [entity["word"] for entity in entities]
+        )
         if aggregation_strategy == AggregationStrategy.FIRST:
             scores = entities[0]["scores"]
             idx = scores.argmax()
@@ -472,7 +519,9 @@ class TokenClassificationPipeline(ChunkPipeline):
         }
         return new_entity
 
-    def aggregate_words(self, entities: List[dict], aggregation_strategy: AggregationStrategy) -> List[dict]:
+    def aggregate_words(
+        self, entities: list[dict], aggregation_strategy: AggregationStrategy
+    ) -> list[dict]:
         """
         Override tokens from a given word that disagree to force agreement on word boundaries.
 
@@ -483,7 +532,9 @@ class TokenClassificationPipeline(ChunkPipeline):
             AggregationStrategy.NONE,
             AggregationStrategy.SIMPLE,
         }:
-            raise ValueError("NONE and SIMPLE strategies are invalid for word aggregation")
+            raise ValueError(
+                "NONE and SIMPLE strategies are invalid for word aggregation"
+            )
 
         word_entities = []
         word_group = None
@@ -493,14 +544,16 @@ class TokenClassificationPipeline(ChunkPipeline):
             elif entity["is_subword"]:
                 word_group.append(entity)
             else:
-                word_entities.append(self.aggregate_word(word_group, aggregation_strategy))
+                word_entities.append(
+                    self.aggregate_word(word_group, aggregation_strategy)
+                )
                 word_group = [entity]
         # Last item
         if word_group is not None:
             word_entities.append(self.aggregate_word(word_group, aggregation_strategy))
         return word_entities
 
-    def group_sub_entities(self, entities: List[dict]) -> dict:
+    def group_sub_entities(self, entities: list[dict]) -> dict:
         """
         Group together the adjacent tokens with the same entity predicted.
 
@@ -521,7 +574,7 @@ class TokenClassificationPipeline(ChunkPipeline):
         }
         return entity_group
 
-    def get_tag(self, entity_name: str) -> Tuple[str, str]:
+    def get_tag(self, entity_name: str) -> tuple[str, str]:
         if entity_name.startswith("B-"):
             bi = "B"
             tag = entity_name[2:]
@@ -535,7 +588,7 @@ class TokenClassificationPipeline(ChunkPipeline):
             tag = entity_name
         return bi, tag
 
-    def group_entities(self, entities: List[dict]) -> List[dict]:
+    def group_entities(self, entities: list[dict]) -> list[dict]:
         """
         Find and group together the adjacent tokens with the same entity predicted.
 

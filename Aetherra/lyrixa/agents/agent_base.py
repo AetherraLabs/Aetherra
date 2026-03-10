@@ -9,7 +9,6 @@ Base class for all Lyrixa agents providing core functionality
 and interface contracts.
 """
 
-
 # Standard library imports
 import uuid
 from datetime import datetime

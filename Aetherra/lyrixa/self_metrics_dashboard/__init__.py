@@ -62,17 +62,13 @@ class SelfMetricsDashboard:
         if metric_name not in self.metrics_data:
             self.metrics_data[metric_name] = []
 
-        self.metrics_data[metric_name].append(
-            {"value": value, "timestamp": timestamp.isoformat()}
-        )
+        self.metrics_data[metric_name].append({"value": value, "timestamp": timestamp.isoformat()})
 
         # Keep only recent metrics (last 1000 entries)
         if len(self.metrics_data[metric_name]) > 1000:
             self.metrics_data[metric_name] = self.metrics_data[metric_name][-1000:]
 
-    def get_metric_history(
-        self, metric_name: str, limit: int = 100
-    ) -> List[Dict[str, Any]]:
+    def get_metric_history(self, metric_name: str, limit: int = 100) -> List[Dict[str, Any]]:
         """
         Get history for a specific metric.
 

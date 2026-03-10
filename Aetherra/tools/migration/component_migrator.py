@@ -39,9 +39,7 @@ class ComponentMigrator:
                 if target_file:
                     self._migrate_file(source_file, target_file)
                 else:
-                    logger.warning(
-                        f"⚠️  Could not determine target for: {component_path}"
-                    )
+                    logger.warning(f"⚠️  Could not determine target for: {component_path}")
             else:
                 logger.warning(f"⚠️  Source file not found: {component_path}")
 

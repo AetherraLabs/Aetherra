@@ -29,17 +29,17 @@ import dataclasses
 import functools
 import logging
 from importlib import import_module
-from typing import Any, Optional
+from typing import Any
+
+from functorch.compile import min_cut_rematerialization_partition
 
 import torch
-from functorch.compile import min_cut_rematerialization_partition
 from torch import _guards
 from torch._functorch import config as functorch_config
 from torch._functorch.compilers import ts_compile
 
 from .common import aot_autograd
 from .registry import register_debug_backend as register_backend
-
 
 log = logging.getLogger(__name__)
 
@@ -163,11 +163,10 @@ def ignore_builtins(op: torch._ops.OpOverload) -> bool:
 def get_nop_func():
     if not torch._functorch.config.fake_tensor_crossref:
         return boxed_nop
-    elif torch._functorch.config.fake_tensor_crossref == "all":
+    if torch._functorch.config.fake_tensor_crossref == "all":
         return fake_crossref_boxed_nop
-    else:
-        assert torch._functorch.config.fake_tensor_crossref == "custom_ops"
-        return functools.partial(fake_crossref_boxed_nop, ignore_op_fn=ignore_builtins)
+    assert torch._functorch.config.fake_tensor_crossref == "custom_ops"
+    return functools.partial(fake_crossref_boxed_nop, ignore_op_fn=ignore_builtins)
 
 
 # Useful for debugging purpose
@@ -353,9 +352,9 @@ class ExplainOutput:
         Any
     ]  # Type is GraphCompileReason but doesn't matter for this purpose
     op_count: int
-    ops_per_graph: Optional[list[torch.fx.Node]] = None
-    out_guards: Optional[list[_guards.Guard]] = None
-    compile_times: Optional[str] = None
+    ops_per_graph: list[torch.fx.Node] | None = None
+    out_guards: list[_guards.Guard] | None = None
+    compile_times: str | None = None
 
     def __str__(self) -> str:
         output = f"Graph Count: {self.graph_count}\n"

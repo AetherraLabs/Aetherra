@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 # mypy: allow-untyped-defs
-import sys
-import pickle
-import struct
-import pprint
-import zipfile
 import fnmatch
-from typing import Any, IO
+import pickle
+import pprint
+import struct
+import sys
+import zipfile
+from typing import IO, Any
 
 __all__ = ["FakeObject", "FakeClass", "DumpUnpickler", "main"]
+
 
 class FakeObject:
     def __init__(self, module, name, args):
@@ -38,7 +39,9 @@ class FakeObject:
             stream.write(f"{obj.module}.{obj.name}()(state=\n")
             indent += printer._indent_per_level
             stream.write(" " * indent)
-            printer._format(obj.state, stream, indent, allowance + 1, context, level + 1)
+            printer._format(
+                obj.state, stream, indent, allowance + 1, context, level + 1
+            )
             stream.write(")")
             return
         raise Exception("Need to implement")  # noqa: TRY002
@@ -61,12 +64,7 @@ class FakeClass:
 
 
 class DumpUnpickler(pickle._Unpickler):  # type: ignore[name-defined]
-    def __init__(
-            self,
-            file,
-            *,
-            catch_invalid_utf8=False,
-            **kwargs):
+    def __init__(self, file, *, catch_invalid_utf8=False, **kwargs):
         super().__init__(file, **kwargs)
         self.catch_invalid_utf8 = catch_invalid_utf8
 
@@ -83,7 +81,7 @@ class DumpUnpickler(pickle._Unpickler):  # type: ignore[name-defined]
     # for strings that catches the decode exception and replaces it with
     # a sentinel object.
     def load_binunicode(self):
-        strlen, = struct.unpack("<I", self.read(4))  # type: ignore[attr-defined]
+        (strlen,) = struct.unpack("<I", self.read(4))  # type: ignore[attr-defined]
         if strlen > sys.maxsize:
             raise Exception("String too long.")  # noqa: TRY002
         str_bytes = self.read(strlen)  # type: ignore[attr-defined]
@@ -95,6 +93,7 @@ class DumpUnpickler(pickle._Unpickler):  # type: ignore[name-defined]
                 raise
             obj = FakeObject("builtin", "UnicodeDecodeError", (str(exn),))
         self.append(obj)  # type: ignore[attr-defined]
+
     dispatch[pickle.BINUNICODE[0]] = load_binunicode  # type: ignore[assignment]
 
     @classmethod
@@ -138,7 +137,9 @@ def main(argv, output_stream=None):
                         found = True
                         break
                 if not found:
-                    raise Exception(f"Could not find member matching {mname} in {zfname}")  # noqa: TRY002
+                    raise Exception(
+                        f"Could not find member matching {mname} in {zfname}"
+                    )  # noqa: TRY002
 
 
 if __name__ == "__main__":

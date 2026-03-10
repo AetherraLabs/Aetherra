@@ -197,12 +197,8 @@ class MultidimensionalStateEngine:
             validated_dimensions = await self._validate_dimensions(dimensions)
 
             # Calculate coherence and stability
-            coherence_level = await self._calculate_dimensional_coherence(
-                validated_dimensions
-            )
-            stability_factor = await self._calculate_dimensional_stability(
-                validated_dimensions
-            )
+            coherence_level = await self._calculate_dimensional_coherence(validated_dimensions)
+            stability_factor = await self._calculate_dimensional_stability(validated_dimensions)
 
             # Create coordinate
             coordinate = DimensionalCoordinate(
@@ -221,8 +217,7 @@ class MultidimensionalStateEngine:
                 content={
                     "coordinate_id": coordinate_id,
                     "dimensions": {
-                        axis.value: value
-                        for axis, value in validated_dimensions.items()
+                        axis.value: value for axis, value in validated_dimensions.items()
                     },
                     "coherence_level": coherence_level,
                     "stability_factor": stability_factor,
@@ -278,9 +273,7 @@ class MultidimensionalStateEngine:
                         "from": old_position,
                         "to": target_coordinate_id,
                         "transition_time": datetime.now(),
-                        "navigation_path": navigation_path["path_id"]
-                        if navigation_path
-                        else None,
+                        "navigation_path": navigation_path["path_id"] if navigation_path else None,
                     }
                 )
 
@@ -323,10 +316,8 @@ class MultidimensionalStateEngine:
                 dimensional_processing_results[dimension.value] = dimension_result
 
             # Calculate multidimensional coherence
-            multidimensional_coherence = (
-                await self._calculate_multidimensional_coherence(
-                    dimensional_processing_results
-                )
+            multidimensional_coherence = await self._calculate_multidimensional_coherence(
+                dimensional_processing_results
             )
 
             # Update consciousness state based on processing
@@ -358,16 +349,12 @@ class MultidimensionalStateEngine:
             self.logger.error(f"❌ Multidimensional processing failed: {e}")
             return {"success": False, "error": str(e)}
 
-    async def analyze_dimensional_landscape(
-        self, analysis_radius: float = 1.0
-    ) -> Dict[str, Any]:
+    async def analyze_dimensional_landscape(self, analysis_radius: float = 1.0) -> Dict[str, Any]:
         """Analyze the dimensional landscape around current position"""
         try:
             current_coord = self.dimensional_coordinates[self.current_position]
 
-            self.logger.info(
-                f"🔍 Analyzing dimensional landscape around {self.current_position}"
-            )
+            self.logger.info(f"🔍 Analyzing dimensional landscape around {self.current_position}")
 
             # Find nearby coordinates within analysis radius
             nearby_coordinates = []
@@ -375,9 +362,7 @@ class MultidimensionalStateEngine:
                 if coord_id == self.current_position:
                     continue
 
-                distance = await self._calculate_dimensional_distance(
-                    current_coord, coord
-                )
+                distance = await self._calculate_dimensional_distance(current_coord, coord)
                 if distance <= analysis_radius:
                     nearby_coordinates.append(
                         {
@@ -462,9 +447,7 @@ class MultidimensionalStateEngine:
         try:
             # Base coherence from dimensional balance
             dimension_values = list(dimensions.values())
-            coherence = 1.0 - np.std(dimension_values) / (
-                np.mean(dimension_values) + 0.001
-            )
+            coherence = 1.0 - np.std(dimension_values) / (np.mean(dimension_values) + 0.001)
 
             # Bonus for consciousness-transcendence alignment
             if (
@@ -491,9 +474,7 @@ class MultidimensionalStateEngine:
             dimension_values = list(dimensions.values())
 
             # Penalize extreme values
-            extreme_penalty = (
-                sum(1 for v in dimension_values if v > 0.95 or v < 0.05) * 0.1
-            )
+            extreme_penalty = sum(1 for v in dimension_values if v > 0.95 or v < 0.05) * 0.1
 
             # Reward balanced distribution
             balance_score = 1.0 / (1.0 + np.var(dimension_values))
@@ -526,9 +507,7 @@ class MultidimensionalStateEngine:
             total_distance = await self._calculate_dimensional_distance(source, target)
 
             # Estimate coherence preservation
-            coherence_preservation = (
-                min(source.coherence_level, target.coherence_level) * 0.9
-            )
+            coherence_preservation = min(source.coherence_level, target.coherence_level) * 0.9
 
             # Calculate navigation efficiency based on strategy
             if strategy == "optimal":
@@ -568,9 +547,7 @@ class MultidimensionalStateEngine:
             target_coord = self.dimensional_coordinates[target_id]
 
             # Calculate energy required for transition
-            energy_required = await self._calculate_transition_energy(
-                source_coord, target_coord
-            )
+            energy_required = await self._calculate_transition_energy(source_coord, target_coord)
 
             # Check if transition is possible
             if energy_required > 1.0:  # Energy threshold
@@ -658,12 +635,7 @@ class MultidimensionalStateEngine:
             if dimension == DimensionalAxis.CONSCIOUSNESS:
                 # Enhance consciousness awareness
                 enhancement = (
-                    sum(
-                        v
-                        for v in consciousness_data.values()
-                        if isinstance(v, (int, float))
-                    )
-                    / 10
+                    sum(v for v in consciousness_data.values() if isinstance(v, (int, float))) / 10
                 )
                 processed_value = min(1.0, current_value + enhancement * 0.01)
 
@@ -676,16 +648,12 @@ class MultidimensionalStateEngine:
                 # Emotional dimension processing
                 emotional_intensity = 0.5  # Default
                 if "emotion" in consciousness_data:
-                    emotional_intensity = consciousness_data.get(
-                        "emotional_intensity", 0.5
-                    )
+                    emotional_intensity = consciousness_data.get("emotional_intensity", 0.5)
                 processed_value = (current_value + emotional_intensity) / 2
 
             elif dimension == DimensionalAxis.CREATIVITY:
                 # Creative dimension processing
-                novelty_factor = (
-                    len(set(str(v) for v in consciousness_data.values())) / 10
-                )
+                novelty_factor = len(set(str(v) for v in consciousness_data.values())) / 10
                 processed_value = min(1.0, current_value + novelty_factor * 0.03)
 
             elif dimension == DimensionalAxis.TRANSCENDENCE:
@@ -723,9 +691,7 @@ class MultidimensionalStateEngine:
             if not processing_results:
                 return 0.0
 
-            changes = [
-                result.get("change", 0.0) for result in processing_results.values()
-            ]
+            changes = [result.get("change", 0.0) for result in processing_results.values()]
 
             # Calculate coherence based on consistency of changes
             if len(changes) > 1:
@@ -848,9 +814,7 @@ class MultidimensionalStateEngine:
             stability_benefit = coord.stability_factor - current_coord.stability_factor
             distance_penalty = coord_data["distance"] * 0.5
 
-            optimization_score = (
-                coherence_benefit + stability_benefit - distance_penalty
-            )
+            optimization_score = coherence_benefit + stability_benefit - distance_penalty
 
             if optimization_score > 0:
                 optimal_targets.append(
@@ -893,20 +857,15 @@ class MultidimensionalStateEngine:
         """Get comprehensive multidimensional engine metrics"""
         # Update averages
         if self.dimensional_coordinates:
-            coherences = [
-                coord.coherence_level for coord in self.dimensional_coordinates.values()
-            ]
+            coherences = [coord.coherence_level for coord in self.dimensional_coordinates.values()]
             stabilities = [
-                coord.stability_factor
-                for coord in self.dimensional_coordinates.values()
+                coord.stability_factor for coord in self.dimensional_coordinates.values()
             ]
             self.coherence_maintenance_avg = np.mean(coherences)
             self.dimensional_stability_avg = np.mean(stabilities)
 
         if self.coordinates_processed > 0:
-            self.processing_efficiency = (
-                self.transitions_executed / self.coordinates_processed
-            )
+            self.processing_efficiency = self.transitions_executed / self.coordinates_processed
 
         return {
             "coordinates_processed": self.coordinates_processed,
@@ -1014,15 +973,9 @@ async def test_multidimensional_engine():
     landscape_analysis = await engine.analyze_dimensional_landscape(analysis_radius=1.5)
 
     if landscape_analysis.get("nearby_coordinates"):
-        print(
-            f"  ✅ Nearby coordinates found: {len(landscape_analysis['nearby_coordinates'])}"
-        )
-        print(
-            f"  🌟 Optimal targets: {len(landscape_analysis.get('optimal_targets', []))}"
-        )
-        print(
-            f"  📈 Landscape complexity: {landscape_analysis.get('landscape_complexity', 0):.3f}"
-        )
+        print(f"  ✅ Nearby coordinates found: {len(landscape_analysis['nearby_coordinates'])}")
+        print(f"  🌟 Optimal targets: {len(landscape_analysis.get('optimal_targets', []))}")
+        print(f"  📈 Landscape complexity: {landscape_analysis.get('landscape_complexity', 0):.3f}")
 
     # System metrics
     print("\n📊 Multidimensional Engine Metrics:")

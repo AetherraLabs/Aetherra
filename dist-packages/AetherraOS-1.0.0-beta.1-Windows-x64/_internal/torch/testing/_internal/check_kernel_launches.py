@@ -34,15 +34,14 @@ exclude_files: list[str] = []
 # determine if a launch check is present.
 
 # Finds potential starts of kernel launches
-kernel_launch_start = re.compile(
-    r"^.*<<<[^>]+>>>\s*\(", flags=re.MULTILINE
-)
+kernel_launch_start = re.compile(r"^.*<<<[^>]+>>>\s*\(", flags=re.MULTILINE)
 
 # This pattern should start at the character after the final paren of the
 # kernel launch. It returns a match if the launch check is not the next statement
 has_check = re.compile(
     r"\s*;(?![^;}]*C10_CUDA_KERNEL_LAUNCH_CHECK\(\);)", flags=re.MULTILINE
 )
+
 
 def find_matching_paren(s: str, startpos: int) -> int:
     """Given a string "prefix (unknown number of characters) suffix"
@@ -51,9 +50,9 @@ def find_matching_paren(s: str, startpos: int) -> int:
     """
     opening = 0
     for i, c in enumerate(s[startpos:]):
-        if c == '(':
+        if c == "(":
             opening += 1
-        elif c == ')':
+        elif c == ")":
             opening -= 1
             if opening == 0:
                 return startpos + i + 1
@@ -84,17 +83,20 @@ def check_code_for_cuda_kernel_launches(code, filename=None):
 
     # We break the code apart and put it back together to add
     # helpful line numberings for identifying problem areas
-    code = enumerate(code.split("\n"))                             # Split by line breaks
+    code = enumerate(code.split("\n"))  # Split by line breaks
     code = [f"{lineno}: {linecode}" for lineno, linecode in code]  # Number the lines
-    code = '\n'.join(code)                                         # Put it back together
+    code = "\n".join(code)  # Put it back together
 
     num_launches_without_checks = 0
     for m in kernel_launch_start.finditer(code):
         end_paren = find_matching_paren(code, m.end() - 1)
         if has_check.match(code, end_paren):
             num_launches_without_checks += 1
-            context = code[m.start():end_paren + 1]
-            print(f"Missing C10_CUDA_KERNEL_LAUNCH_CHECK in '{filename}'. Context:\n{context}", file=sys.stderr)
+            context = code[m.start() : end_paren + 1]
+            print(
+                f"Missing C10_CUDA_KERNEL_LAUNCH_CHECK in '{filename}'. Context:\n{context}",
+                file=sys.stderr,
+            )
 
     return num_launches_without_checks
 
@@ -133,7 +135,9 @@ def check_cuda_kernel_launches():
     for root, dirnames, filenames in os.walk(torch_dir):
         # `$BASE/build` and `$BASE/torch/include` are generated
         # so we don't want to flag their contents
-        if root == os.path.join(torch_dir, "build") or root == os.path.join(torch_dir, "torch/include"):
+        if root == os.path.join(torch_dir, "build") or root == os.path.join(
+            torch_dir, "torch/include"
+        ):
             # Curtail search by modifying dirnames and filenames in place
             # Yes, this is the way to do this, see `help(os.walk)`
             dirnames[:] = []
@@ -147,9 +151,11 @@ def check_cuda_kernel_launches():
                 files_without_checks.append(filename)
 
     if kernels_without_checks > 0:
-        count_str = f"Found {kernels_without_checks} instances in " \
-                    f"{len(files_without_checks)} files where kernel " \
-                    "launches didn't have checks."
+        count_str = (
+            f"Found {kernels_without_checks} instances in "
+            f"{len(files_without_checks)} files where kernel "
+            "launches didn't have checks."
+        )
         print(count_str, file=sys.stderr)
         print("Files without checks:", file=sys.stderr)
         for x in files_without_checks:

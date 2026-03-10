@@ -62,10 +62,12 @@ except Exception:
         return None
 
     class TimeBudgetExceeded(Exception):  # type: ignore
-        pass
+        def __init__(self, message: str = "Time budget exceeded"):
+            super().__init__(message)
 
     class MemoryBudgetExceeded(Exception):  # type: ignore
-        pass
+        def __init__(self, message: str = "Memory budget exceeded"):
+            super().__init__(message)
 
 
 class PluginState:
@@ -132,19 +134,13 @@ class PluginManager:
             if extra_context:
                 context.update(extra_context)
             if event == "load_attempt":
-                self.analytics.record_plugin_action(
-                    plugin_name, "load_attempt", context
-                )
+                self.analytics.record_plugin_action(plugin_name, "load_attempt", context)
             elif event == "load_success":
-                self.analytics.record_plugin_action(
-                    plugin_name, "load_success", context
-                )
+                self.analytics.record_plugin_action(plugin_name, "load_success", context)
             elif event == "unload":
                 self.analytics.record_plugin_action(plugin_name, "unload", context)
             elif event == "execute_start":
-                self.analytics.record_plugin_action(
-                    plugin_name, "execute_start", context
-                )
+                self.analytics.record_plugin_action(plugin_name, "execute_start", context)
             elif event == "execute_end":
                 self.analytics.record_plugin_action(plugin_name, "execute_end", context)
             elif event == "load_error":
@@ -331,9 +327,7 @@ class PluginManager:
 
             # Quotas
             try:
-                max_runtime = float(
-                    os.environ.get("AETHERRA_PLUGIN_MAX_RUNTIME_SEC", "5")
-                )
+                max_runtime = float(os.environ.get("AETHERRA_PLUGIN_MAX_RUNTIME_SEC", "5"))
             except Exception:
                 max_runtime = 5.0
             max_mb = None

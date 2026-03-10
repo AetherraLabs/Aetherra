@@ -10,7 +10,6 @@ from torch.ao.nn.qat.modules.embedding_ops import Embedding, EmbeddingBag
 from torch.ao.nn.qat.modules.linear import Linear
 from torch.nn.qat.modules import conv, embedding_ops, linear
 
-
 __all__ = [
     "Linear",
     "Conv1d",

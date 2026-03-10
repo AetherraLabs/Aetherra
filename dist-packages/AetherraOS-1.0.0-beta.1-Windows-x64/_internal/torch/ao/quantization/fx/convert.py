@@ -3,7 +3,8 @@
 import copy
 import operator
 import warnings
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable
+from typing import Any
 
 import torch
 from torch.ao.quantization import CUSTOM_KEY, NUMERIC_DEBUG_HANDLE_KEY
@@ -18,7 +19,7 @@ from torch.ao.quantization.backend_config.utils import (
     get_root_module_to_quantized_reference_module,
 )
 from torch.ao.quantization.observer import _is_activation_post_process
-from torch.ao.quantization.qconfig import qconfig_equals, QConfigAny
+from torch.ao.quantization.qconfig import QConfigAny, qconfig_equals
 from torch.ao.quantization.qconfig_mapping import QConfigMapping
 from torch.ao.quantization.quant_type import QuantType
 from torch.ao.quantization.quantize import _remove_qconfig
@@ -60,7 +61,6 @@ from .utils import (
     graph_module_from_producer_nodes,
     node_arg_is_weight,
 )
-
 
 __all__ = [
     "convert",
@@ -156,7 +156,7 @@ def _replace_observer_with_quantize_dequantize_node_decomposed(
 
         # 1. extract information for inserting q/dq node from activation_post_process
         node_type = "call_function"
-        quantize_op: Optional[Callable] = None
+        quantize_op: Callable | None = None
         scale, zero_point = activation_post_process.calculate_qparams()  # type: ignore[attr-defined, operator]
         if is_per_channel(activation_post_process.qscheme):  # type: ignore[attr-defined]
             ch_axis = int(activation_post_process.ch_axis)  # type: ignore[attr-defined, arg-type]
@@ -414,7 +414,7 @@ def _replace_observer_with_quantize_dequantize_node(
         # 1. extract the information from activation_post_process module for generating
         # the quantize and dequantize operator
         node_type = "call_function"
-        quantize_op: Optional[Callable] = None
+        quantize_op: Callable | None = None
         scale, zero_point = activation_post_process.calculate_qparams()  # type: ignore[attr-defined, operator]
         if is_per_channel(activation_post_process.qscheme):  # type: ignore[attr-defined]
             ch_axis = int(activation_post_process.ch_axis)  # type: ignore[attr-defined, arg-type]
@@ -655,7 +655,7 @@ def _insert_dequantize_node(node: Node, graph: Graph) -> None:
 
 def _maybe_get_observer_for_node(
     node: Node, modules: dict[str, torch.nn.Module]
-) -> Optional[torch.nn.Module]:
+) -> torch.nn.Module | None:
     """
     If the node is observed, return the observer
     instance. Otherwise, return None.
@@ -673,7 +673,7 @@ def convert_standalone_module(
     modules: dict[str, torch.nn.Module],
     model: torch.fx.GraphModule,
     is_reference: bool,
-    backend_config: Optional[BackendConfig],
+    backend_config: BackendConfig | None,
 ) -> None:
     """Converts a observed standalone module to a quantized standalone module by calling
     the fx convert api, currently using the same `is_reference` flag as parent, but we may
@@ -986,11 +986,11 @@ def convert_custom_module(
 def convert(
     model: GraphModule,
     is_reference: bool = False,
-    convert_custom_config: Union[ConvertCustomConfig, dict[str, Any], None] = None,
+    convert_custom_config: ConvertCustomConfig | dict[str, Any] | None = None,
     is_standalone_module: bool = False,
     _remove_qconfig_flag: bool = True,
-    qconfig_mapping: Union[QConfigMapping, dict[str, Any], None] = None,
-    backend_config: Union[BackendConfig, dict[str, Any], None] = None,
+    qconfig_mapping: QConfigMapping | dict[str, Any] | None = None,
+    backend_config: BackendConfig | dict[str, Any] | None = None,
     is_decomposed: bool = False,
     keep_original_weights: bool = False,
 ) -> GraphModule:

@@ -5,9 +5,10 @@ from __future__ import annotations
 import multiprocessing
 import os
 import warnings
-from typing import Any, Callable, TypeVar, TypeVarTuple, Union, Unpack
-from typing_extensions import ParamSpec
+from collections.abc import Callable
+from typing import Any, TypeVar, TypeVarTuple, Unpack
 
+from typing_extensions import ParamSpec
 
 _P = ParamSpec("_P")
 _R = TypeVar("_R")
@@ -18,7 +19,7 @@ _IS_WINDOWS = os.name == "nt"
 
 def _call_function_and_return_exception(
     func: Callable[[Unpack[_Ts]], _R], args: tuple[Unpack[_Ts]], kwargs: dict[str, Any]
-) -> Union[_R, Exception]:
+) -> _R | Exception:
     """Call function and return a exception if there is one."""
 
     try:

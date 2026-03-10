@@ -2,7 +2,6 @@ from collections.abc import Sequence
 
 import torch.fx as fx
 
-
 __all__ = ["set_trace"]
 
 

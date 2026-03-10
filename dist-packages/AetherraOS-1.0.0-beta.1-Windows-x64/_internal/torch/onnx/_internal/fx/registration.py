@@ -5,7 +5,6 @@ from __future__ import annotations
 import dataclasses
 from typing import TYPE_CHECKING
 
-
 # We can only import onnx from this module in a type-checking context to ensure that
 # 'import torch.onnx' continues to work without having 'onnx' installed. We fully
 # 'import onnx' inside of dynamo_export (by way of _assert_dependencies).

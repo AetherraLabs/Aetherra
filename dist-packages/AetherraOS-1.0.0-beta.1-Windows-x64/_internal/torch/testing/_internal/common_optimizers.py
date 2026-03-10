@@ -6,26 +6,26 @@ import sys
 import unittest
 from copy import deepcopy
 from enum import Enum
-from typing import Any, Union
+from typing import Any
 
 import torch
 from torch import Tensor
 from torch.nn import Parameter
 from torch.optim import (
+    ASGD,
+    LBFGS,
+    SGD,
     Adadelta,
     Adafactor,
     Adagrad,
     Adam,
     Adamax,
     AdamW,
-    ASGD,
-    LBFGS,
     NAdam,
     Optimizer,
     RAdam,
     RMSprop,
     Rprop,
-    SGD,
     SparseAdam,
 )
 from torch.optim.lr_scheduler import (
@@ -39,11 +39,11 @@ from torch.optim.lr_scheduler import (
 from torch.testing._internal.common_device_type import tol, toleranceOverride
 from torch.testing._internal.common_methods_invocations import DecorateInfo
 from torch.testing._internal.common_utils import (
+    TEST_WITH_TORCHDYNAMO,
     _TestParametrizer,
     skipIfMPS,
     skipIfTorchDynamo,
     skipIfXpu,
-    TEST_WITH_TORCHDYNAMO,
 )
 from torch.utils._foreach_utils import _get_foreach_kernels_supported_devices
 
@@ -55,9 +55,7 @@ class OptimizerInput:
 
     def __init__(
         self,
-        params: Union[
-            list[Parameter], list[Tensor], dict[Any, Any], list[dict[str, Any]]
-        ],
+        params: list[Parameter] | list[Tensor] | dict[Any, Any] | list[dict[str, Any]],
         kwargs: dict[str, Any],
         desc: str = "",
     ):
@@ -307,8 +305,7 @@ def get_error_inputs_for_all_optims(device, dtype):
                 "cannot add param group with names to the optimizer",
             ),
         ]
-    else:
-        return []
+    return []
 
 
 # ------------------------------------------------------------------------------------------
@@ -1246,7 +1243,7 @@ def optim_error_inputs_func_sparseadam(device, dtype):
     return error_inputs
 
 
-def _get_device_type(device: Union[str, torch.device]) -> str:
+def _get_device_type(device: str | torch.device) -> str:
     # Returns the device type as a string, e.g., "cpu" or "cuda"
     if isinstance(device, torch.device):
         device = str(device.type)
@@ -1268,9 +1265,9 @@ def _get_optim_inputs_including_global_cliquey_kwargs(
     trivial. That said, we sometimes want to test for all possible configs on an
     optimizer including all supported flags, so this helper returns all optim inputs.
     """
-    assert all(
-        x in ["foreach", "fused", "differentiable"] for x in skip
-    ), "skip must be a subset of ['foreach', 'fused', 'differentiable']"
+    assert all(x in ["foreach", "fused", "differentiable"] for x in skip), (
+        "skip must be a subset of ['foreach', 'fused', 'differentiable']"
+    )
 
     optim_inputs = optim_info.optim_inputs_func(device)
 

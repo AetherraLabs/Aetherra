@@ -9,11 +9,10 @@ from warnings import warn
 import torch.backends.cuda
 from torch._C import _SDPBackend as SDPBackend
 from torch.backends.cuda import (
+    SDPAParams,
     can_use_efficient_attention,
     can_use_flash_attention,
-    SDPAParams,
 )
-
 
 __all__: list[str] = ["SDPBackend", "sdpa_kernel", "WARN_FOR_UNFUSED_KERNELS"]
 
@@ -102,9 +101,7 @@ def _sdpa_kernel(backends: Iterable, set_priority: bool = False):
 
 
 @contextlib.contextmanager
-def sdpa_kernel(
-    backends: Union[list[SDPBackend], SDPBackend], set_priority: bool = False
-):
+def sdpa_kernel(backends: list[SDPBackend] | SDPBackend, set_priority: bool = False):
     r"""
     Context manager to select which backend to use for scaled dot product attention.
 

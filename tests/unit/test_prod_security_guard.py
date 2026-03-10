@@ -42,9 +42,10 @@ def test_prod_guard_aborts_on_missing(missing_vars, monkeypatch):
         # restore for next iteration inside param group
         for var in missing_vars:
             # re-add secure baseline except ones not under test
-            if var == "AETHERRA_AI_API_REQUIRE_TOKEN":
-                monkeypatch.setenv(var, "1")
-            elif var == "AETHERRA_AI_API_ENABLED":
+            if (
+                var == "AETHERRA_AI_API_REQUIRE_TOKEN"
+                or var == "AETHERRA_AI_API_ENABLED"
+            ):
                 monkeypatch.setenv(var, "1")
             else:
                 monkeypatch.setenv(var, "1")

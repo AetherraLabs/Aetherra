@@ -9,8 +9,7 @@ import os
 import signal
 import subprocess
 import sys
-from typing import Any, Optional
-
+from typing import Any
 
 __all__ = ["SubprocessHandler"]
 
@@ -21,8 +20,7 @@ def _get_default_signal() -> signal.Signals:
     """Get the default termination signal. SIGTERM for unix, CTRL_C_EVENT for windows."""
     if IS_WINDOWS:
         return signal.CTRL_C_EVENT  # type: ignore[attr-defined] # noqa: F821
-    else:
-        return signal.SIGTERM
+    return signal.SIGTERM
 
 
 class SubprocessHandler:
@@ -36,8 +34,8 @@ class SubprocessHandler:
         entrypoint: str,
         args: tuple,
         env: dict[str, str],
-        stdout: Optional[str],
-        stderr: Optional[str],
+        stdout: str | None,
+        stderr: str | None,
         local_rank_id: int,
     ):
         self._stdout = open(stdout, "w") if stdout else None
@@ -65,7 +63,7 @@ class SubprocessHandler:
             **kwargs,
         )
 
-    def close(self, death_sig: Optional[signal.Signals] = None) -> None:
+    def close(self, death_sig: signal.Signals | None = None) -> None:
         if not death_sig:
             death_sig = _get_default_signal()
         if IS_WINDOWS:

@@ -1,7 +1,6 @@
-from typing import Callable
+from collections.abc import Callable
 
 from torch._utils import CallbackRegistry
-
 
 EventCreationCallbacks: "CallbackRegistry[int]" = CallbackRegistry("XPU event creation")
 EventDeletionCallbacks: "CallbackRegistry[int]" = CallbackRegistry("XPU event deletion")

@@ -3,7 +3,8 @@
 import contextlib
 import logging
 import warnings
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable
+from typing import Any
 
 import torch
 import torch._subclasses.functional_tensor
@@ -29,15 +30,14 @@ from torch._higher_order_ops.utils import (
 from torch._ops import HigherOrderOperator
 from torch._subclasses.fake_tensor import FakeTensor, FakeTensorMode
 from torch.fx.experimental.proxy_tensor import (
+    ProxyTorchDispatchMode,
     _temp_remove_metadata_torch_function_mode,
     _temp_remove_pre_dispatch_torch_function_mode,
-    ProxyTorchDispatchMode,
     track_tensor_tree,
 )
 from torch.utils._python_dispatch import _get_current_dispatch_mode
 
 from .utils import clone_outputs_aliasing_inputs
-
 
 log = logging.getLogger(__name__)
 
@@ -61,10 +61,10 @@ cond_op = CondOp()
 
 @exposed_in("torch")
 def cond(
-    pred: Union[bool, int, float, torch.Tensor],
+    pred: bool | int | float | torch.Tensor,
     true_fn: Callable,
     false_fn: Callable,
-    operands: Union[tuple, list] = (),
+    operands: tuple | list = (),
 ) -> Any:
     r"""
     Conditionally applies `true_fn` or `false_fn`.
@@ -149,8 +149,7 @@ def cond(
         # This is the eager case. We can just run the true or false branch.
         if pred:
             return true_fn(*operands)
-        else:
-            return false_fn(*operands)
+        return false_fn(*operands)
 
     def _validate_input(pred, true_fn, false_fn, operands):
         if not isinstance(pred, (bool, torch.Tensor, torch.SymBool)):
@@ -182,7 +181,11 @@ def cond(
     def _cond_op_wrapper(*args, **kwargs):
         return cond_op(*args, **kwargs)
 
-    with _set_compilation_env(), torch._dynamo.utils.disable_cache_limit(), _temp_remove_pre_dispatch_torch_function_mode():
+    with (
+        _set_compilation_env(),
+        torch._dynamo.utils.disable_cache_limit(),
+        _temp_remove_pre_dispatch_torch_function_mode(),
+    ):
         with _temp_remove_metadata_torch_function_mode() as metadata_mode:
             if metadata_mode:
                 backend = make_eager_backend_with_torch_function_mode(metadata_mode)
@@ -241,16 +244,16 @@ def create_bw_fn(fn: Callable, args: tuple[Any]) -> Callable:
                 if isinstance(arg, torch.Tensor) and grad is None
                 else maybe_clone(grad)
             )
-            for grad, arg in zip(grad_args, primals)
+            for grad, arg in zip(grad_args, primals, strict=False)
         ]
 
     return flat_fn
 
 
 def trace_cond(proxy_mode, func_overload, pred, true_fn, false_fn, operands):
-    assert isinstance(
-        operands, (list, tuple)
-    ), f"Cond operands must be a list or tuple of tensors and SymInts {operands}"
+    assert isinstance(operands, (list, tuple)), (
+        f"Cond operands must be a list or tuple of tensors and SymInts {operands}"
+    )
 
     true_graph = reenter_make_fx(true_fn)(*operands)
     false_graph = reenter_make_fx(false_fn)(*operands)
@@ -297,15 +300,14 @@ def trace_cond(proxy_mode, func_overload, pred, true_fn, false_fn, operands):
 
 @cond_op.py_impl(DispatchKey.CompositeExplicitAutograd)
 def cond_op_dense(pred, true_fn, false_fn, operands):
-    assert all(
-        isinstance(o, (torch.Tensor, int)) for o in operands
-    ), f"Dense implementation operands must be a list of tensors and ints {operands}"
+    assert all(isinstance(o, (torch.Tensor, int)) for o in operands), (
+        f"Dense implementation operands must be a list of tensors and ints {operands}"
+    )
     mode = _get_current_dispatch_mode()
     assert mode is None, "Mode should never be enabled for CPU/CUDA key"
     if pred:
         return true_fn(*operands)
-    else:
-        return false_fn(*operands)
+    return false_fn(*operands)
 
 
 class CondAutogradOp(torch.autograd.Function):
@@ -403,7 +405,7 @@ def cond_fake_tensor_mode(mode, pred, true_fn, false_fn, operands):
             )
 
     merged_outs = []
-    for true_out, false_out in zip(flat_true_outs, flat_false_outs):
+    for true_out, false_out in zip(flat_true_outs, flat_false_outs, strict=False):
         merged_outs.append(_merge_output(true_out, false_out, mode))
     return pytree.tree_unflatten(merged_outs, true_out_spec)
 
@@ -427,13 +429,13 @@ def check_tensor_meta_match(
 
 
 def _merge_output(
-    a: Optional[Union[torch.Tensor, int]],
-    b: Optional[Union[torch.Tensor, int]],
+    a: torch.Tensor | int | None,
+    b: torch.Tensor | int | None,
     mode: FakeTensorMode,
 ):
     from torch.fx.experimental.symbolic_shapes import (
-        has_free_unbacked_symbols,
         SymIntEqByExpr,
+        has_free_unbacked_symbols,
     )
 
     if a is None or b is None:
@@ -498,15 +500,14 @@ def _merge_output(
         u2 has range [5, 8]
         u3 has range [5, 7]
     """
-    merged_size: list[Union[int, torch.SymInt]] = []
+    merged_size: list[int | torch.SymInt] = []
 
-    def _has_unbacked_symbols(s: Union[int, torch.SymInt]) -> bool:
+    def _has_unbacked_symbols(s: int | torch.SymInt) -> bool:
         if isinstance(s, int):
             return False
-        else:
-            return has_free_unbacked_symbols(s.node.expr)
+        return has_free_unbacked_symbols(s.node.expr)
 
-    for s0, s1 in zip(a.size(), b.size()):
+    for s0, s1 in zip(a.size(), b.size(), strict=False):
         # If there are unbacked symbols leaked out of true_branch or false_branch
         # we need to merge them with a new unbacked symbol and track in parent graph.
         if (
@@ -575,25 +576,25 @@ def _merge_output(
         b_ex_size: torch.Size,
         a_ex_stride: tuple[int, ...],
         b_ex_stride: tuple[int, ...],
-        merged_size: list[Union[int, torch.SymInt]],
-    ) -> list[Union[int, torch.SymInt]]:
+        merged_size: list[int | torch.SymInt],
+    ) -> list[int | torch.SymInt]:
         from torch._inductor.ir import get_stride_order
 
         a_sorted_stride_idx = get_stride_order(a_ex_stride, mode.shape_env)
         b_sorted_stride_idx = get_stride_order(b_ex_stride, mode.shape_env)
 
-        a_stride_li: list[Optional[tuple[Union[int, torch.SymInt], int]]] = [
-            None
-        ] * len(a_ex_stride)
-        b_stride_li: list[Optional[tuple[Union[int, torch.SymInt], int]]] = [
-            None
-        ] * len(b_ex_stride)
+        a_stride_li: list[tuple[int | torch.SymInt, int] | None] = [None] * len(
+            a_ex_stride
+        )
+        b_stride_li: list[tuple[int | torch.SymInt, int] | None] = [None] * len(
+            b_ex_stride
+        )
         for i, idx in enumerate(a_sorted_stride_idx):
             a_stride_li[idx] = (a_ex_stride[i], -i)
         for i, idx in enumerate(b_sorted_stride_idx):
             b_stride_li[idx] = (b_ex_stride[i], -i)
 
-        for a_pair, b_pair in zip(a_stride_li, b_stride_li):
+        for a_pair, b_pair in zip(a_stride_li, b_stride_li, strict=False):
             assert a_pair is not None and b_pair is not None
             _, a_idx = a_pair
             _, b_idx = b_pair
@@ -606,15 +607,15 @@ def _merge_output(
                     f"Consider using contiguous() to make the two branches have the same contiguousness."
                 )
 
-        def _maybe_expr(s: Union[int, torch.SymInt]):
+        def _maybe_expr(s: int | torch.SymInt):
             if isinstance(s, int):
                 return s
             return s.node.expr
 
-        a_stride_expr: dict[Any, Union[int, torch.SymInt]] = {}
-        b_stride_expr: dict[Any, Union[int, torch.SymInt]] = {}
-        merged_strides: list[Union[int, torch.SymInt]] = [None] * len(a_ex_stride)  # type: ignore[list-item]
-        for a_pair, b_pair in zip(a_stride_li, b_stride_li):
+        a_stride_expr: dict[Any, int | torch.SymInt] = {}
+        b_stride_expr: dict[Any, int | torch.SymInt] = {}
+        merged_strides: list[int | torch.SymInt] = [None] * len(a_ex_stride)  # type: ignore[list-item]
+        for a_pair, b_pair in zip(a_stride_li, b_stride_li, strict=False):
             assert a_pair is not None and b_pair is not None
             a_val, neg_i = a_pair
             b_val, _ = b_pair
@@ -627,9 +628,9 @@ def _merge_output(
 
             if _maybe_expr(a_val) in a_stride_expr:
                 a_expr = a_stride_expr[_maybe_expr(a_val)]
-                assert (
-                    b_stride_expr[_maybe_expr(b_val)] == a_expr
-                ), f"a_stride_expr:{a_stride_expr}, b_stride_expr:{b_stride_expr}"
+                assert b_stride_expr[_maybe_expr(b_val)] == a_expr, (
+                    f"a_stride_expr:{a_stride_expr}, b_stride_expr:{b_stride_expr}"
+                )
                 merged_strides[i] = a_expr
             else:
                 if a_val == 1:
@@ -653,7 +654,7 @@ def _merge_output(
             b_stride_expr[_maybe_expr(b_val * b_ex_size[i])] = nxt_merged_stride_expr
         return merged_strides
 
-    merged_stride: list[Union[int, torch.SymInt]] = _bound_stride(
+    merged_stride: list[int | torch.SymInt] = _bound_stride(
         a.size(), b.size(), a.stride(), b.stride(), merged_size
     )
 
@@ -686,12 +687,12 @@ def cond_func(ctx, pred, true_fn, false_fn, inputs):
 
 @cond_op.py_impl(torch._C._functorch.TransformType.Vmap)
 def cond_batch_rule(interpreter, pred, true_fn, false_fn, inputs):
-    assert isinstance(
-        inputs, (list, tuple)
-    ), "Cond inputs must be a list or tuple of tensors"
-    assert all(
-        isinstance(i, torch.Tensor) for i in inputs
-    ), "Cond inputs must be a list of tensors"
+    assert isinstance(inputs, (list, tuple)), (
+        "Cond inputs must be a list or tuple of tensors"
+    )
+    assert all(isinstance(i, torch.Tensor) for i in inputs), (
+        "Cond inputs must be a list of tensors"
+    )
 
     pred_is_batched = isinstance(pred, torch.Tensor) and is_batchedtensor(pred)
     pred_ = get_unwrapped(pred) if pred_is_batched else pred
@@ -701,7 +702,8 @@ def cond_batch_rule(interpreter, pred, true_fn, false_fn, inputs):
         *[
             (get_unwrapped(t), maybe_get_bdim(t)) if is_batchedtensor(t) else (t, None)
             for t in inputs
-        ]
+        ],
+        strict=False,
     )
 
     if pred_is_batched:

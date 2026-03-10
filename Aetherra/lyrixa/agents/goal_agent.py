@@ -206,9 +206,7 @@ class GoalAgent(AgentBase):
                 "goal_id": goal_id,
                 "achievements": achievements,
                 "achievement_score": self._calculate_achievement_score(achievements),
-                "recommendations": self._get_achievement_recommendations(
-                    goal, achievements
-                ),
+                "recommendations": self._get_achievement_recommendations(goal, achievements),
                 "agent_id": self.agent_id,
             }
         else:
@@ -253,12 +251,8 @@ class GoalAgent(AgentBase):
         milestones[milestone_index]["updated_at"] = datetime.now().isoformat()
 
         # Recalculate progress based on completed milestones
-        completed_milestones = sum(
-            1 for m in milestones if m.get("status") == "completed"
-        )
-        goal["progress"] = (
-            (completed_milestones / len(milestones)) * 100 if milestones else 0
-        )
+        completed_milestones = sum(1 for m in milestones if m.get("status") == "completed")
+        goal["progress"] = (completed_milestones / len(milestones)) * 100 if milestones else 0
 
         return {
             "success": True,
@@ -393,9 +387,7 @@ class GoalAgent(AgentBase):
         # Find next incomplete milestone
         for i, milestone in enumerate(milestones):
             if milestone.get("status") != "completed":
-                return [
-                    f"Complete milestone: {milestone.get('title', f'Milestone {i + 1}')}"
-                ]
+                return [f"Complete milestone: {milestone.get('title', f'Milestone {i + 1}')}"]
 
         # If all milestones complete, final steps
         if goal.get("progress", 0) < 100:
@@ -512,27 +504,19 @@ class GoalAgent(AgentBase):
         recommendations = []
 
         if not achievements:
-            recommendations.append(
-                "Focus on completing first milestone to build momentum"
-            )
+            recommendations.append("Focus on completing first milestone to build momentum")
 
         progress = goal.get("progress", 0)
         if progress < 25:
-            recommendations.append(
-                "Break down next steps into smaller, actionable tasks"
-            )
+            recommendations.append("Break down next steps into smaller, actionable tasks")
         elif progress < 75:
             recommendations.append("Maintain current pace and focus on consistency")
         else:
-            recommendations.append(
-                "Final push - complete remaining tasks to achieve goal"
-            )
+            recommendations.append("Final push - complete remaining tasks to achieve goal")
 
         return recommendations
 
-    def _get_milestone_summary(
-        self, milestones: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    def _get_milestone_summary(self, milestones: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Get summary of milestone status."""
         total = len(milestones)
         completed = sum(1 for m in milestones if m.get("status") == "completed")

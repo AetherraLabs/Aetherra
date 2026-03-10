@@ -6,10 +6,10 @@ import os
 import sys
 import time
 import warnings
+from collections.abc import Callable
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Callable, TYPE_CHECKING
-
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from torch._inductor.runtime.triton_heuristics import CachingAutotuner

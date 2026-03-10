@@ -4,16 +4,15 @@
 from __future__ import annotations
 
 import functools
+from collections.abc import Callable
 from typing import (
-    Any,
-    Callable,
-    cast,
-    NoReturn,
-    Optional,
-    overload,
     TYPE_CHECKING,
-    Union,
+    Any,
+    NoReturn,
+    cast,
+    overload,
 )
+
 from typing_extensions import deprecated
 
 import torch
@@ -32,8 +31,7 @@ from ._fsdp_init import (
     _move_states_to_device,
 )
 from ._fsdp_param_group import FSDPParamGroup
-from ._fsdp_state import _get_module_fsdp_state, FSDPState
-
+from ._fsdp_state import FSDPState, _get_module_fsdp_state
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -55,12 +53,12 @@ cls_to_fsdp_cls: dict[type, type] = {}
 def fully_shard(
     module: nn.Module,
     *,
-    mesh: Optional[DeviceMesh] = ...,
-    reshard_after_forward: Union[bool, int] = ...,
-    shard_placement_fn: Optional[Callable[[nn.Parameter], Optional[Shard]]] = ...,
+    mesh: DeviceMesh | None = ...,
+    reshard_after_forward: bool | int = ...,
+    shard_placement_fn: Callable[[nn.Parameter], Shard | None] | None = ...,
     mp_policy: MixedPrecisionPolicy = ...,
     offload_policy: OffloadPolicy = ...,
-    ignored_params: Optional[set[nn.Parameter]] = ...,
+    ignored_params: set[nn.Parameter] | None = ...,
 ) -> FSDPModule: ...
 
 
@@ -68,12 +66,12 @@ def fully_shard(
 def fully_shard(
     module: list[nn.Module],
     *,
-    mesh: Optional[DeviceMesh] = ...,
-    reshard_after_forward: Union[bool, int] = ...,
-    shard_placement_fn: Optional[Callable[[nn.Parameter], Optional[Shard]]] = ...,
+    mesh: DeviceMesh | None = ...,
+    reshard_after_forward: bool | int = ...,
+    shard_placement_fn: Callable[[nn.Parameter], Shard | None] | None = ...,
     mp_policy: MixedPrecisionPolicy = ...,
     offload_policy: OffloadPolicy = ...,
-    ignored_params: Optional[set[nn.Parameter]] = ...,
+    ignored_params: set[nn.Parameter] | None = ...,
 ) -> list[FSDPModule]: ...
 
 
@@ -86,12 +84,12 @@ def fully_shard(
 def fully_shard(
     module,
     *,
-    mesh: Optional[DeviceMesh] = None,
-    reshard_after_forward: Optional[Union[bool, int]] = None,
-    shard_placement_fn: Optional[Callable[[nn.Parameter], Optional[Shard]]] = None,
+    mesh: DeviceMesh | None = None,
+    reshard_after_forward: bool | int | None = None,
+    shard_placement_fn: Callable[[nn.Parameter], Shard | None] | None = None,
     mp_policy: MixedPrecisionPolicy = MixedPrecisionPolicy(),
     offload_policy: OffloadPolicy = OffloadPolicy(),
-    ignored_params: Optional[set[nn.Parameter]] = None,
+    ignored_params: set[nn.Parameter] | None = None,
 ):
     """
     Apply fully sharded data parallelism (FSDP) to ``module``, where FSDP
@@ -193,7 +191,7 @@ def fully_shard(
     mesh = mesh or _init_default_fully_shard_mesh()
     if mesh.ndim not in (1, 2):
         raise ValueError(f"fully_shard expects a 1D or 2D DeviceMesh but got {mesh}")
-    elif mesh.ndim == 1:
+    if mesh.ndim == 1:
         mesh_info = FSDPMeshInfo(mesh, shard_mesh_dim=0)
     else:
         if mesh.mesh_dim_names is None:
@@ -241,7 +239,7 @@ def fully_shard(
     # Place FSDP leftmost for highest priority in the method resolution order
     for module in modules:
         cls = module.__class__
-        new_cls = cls_to_fsdp_cls.get(cls, None)
+        new_cls = cls_to_fsdp_cls.get(cls)
         if not new_cls:
             dct = {"__deepcopy__": _unimplemented_deepcopy}
             new_cls = type(f"FSDP{cls.__name__}", (FSDPModule, cls), dct)
@@ -279,7 +277,7 @@ class FSDPModule:
         if fsdp_param_group := state._fsdp_param_group:
             fsdp_param_group.reshard()
 
-    def unshard(self, async_op: bool = False) -> Optional[UnshardHandle]:
+    def unshard(self, async_op: bool = False) -> UnshardHandle | None:
         """
         Unshards the module's parameters by allocating memory and all-gathering
         the parameters. This method is *not* recursive. The unshard follows the
@@ -459,7 +457,7 @@ class FSDPModule:
         self,
         hook: Callable[[torch.Tensor], None],
         *,
-        stream: Optional[torch.cuda.Stream] = None,
+        stream: torch.cuda.Stream | None = None,
     ):
         """
         Args:
@@ -618,7 +616,7 @@ class UnshardHandle:
 
 
 class _UnshardHandleImpl(UnshardHandle):
-    def __init__(self, fsdp_param_group: Optional[FSDPParamGroup]):
+    def __init__(self, fsdp_param_group: FSDPParamGroup | None):
         self._fsdp_param_group = fsdp_param_group
 
     def wait(self):

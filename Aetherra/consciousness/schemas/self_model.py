@@ -32,32 +32,22 @@ class CapabilityDescriptor(BaseModel):
 
 
 class ResourceProfile(BaseModel):
-    cpu_load: Optional[float] = Field(
-        None, ge=0.0, le=100.0, description="Approximate CPU load %"
-    )
-    memory_used_mb: Optional[float] = Field(
-        None, ge=0.0, description="Resident memory in MB"
-    )
+    cpu_load: Optional[float] = Field(None, ge=0.0, le=100.0, description="Approximate CPU load %")
+    memory_used_mb: Optional[float] = Field(None, ge=0.0, description="Resident memory in MB")
     open_file_descriptors: Optional[int] = Field(
         None, ge=0, description="Current open file descriptors if available"
     )
-    processes: Optional[int] = Field(
-        None, ge=0, description="Number of relevant processes/agents"
-    )
+    processes: Optional[int] = Field(None, ge=0, description="Number of relevant processes/agents")
 
 
 class IdentityProfile(BaseModel):
     system_id: str = Field(..., description="Stable unique system identifier")
-    version: str = Field(
-        ..., description="System software version or git describe output"
-    )
+    version: str = Field(..., description="System software version or git describe output")
     deployment_tier: str = Field(..., description="Deployment tier: dev/test/beta/prod")
 
 
 class SelfModel(BaseModel):
-    model_version: int = Field(
-        SELF_MODEL_VERSION, description="Schema version for migrations"
-    )
+    model_version: int = Field(SELF_MODEL_VERSION, description="Schema version for migrations")
     updated_at: datetime = Field(
         default_factory=datetime.utcnow, description="Last updated timestamp (UTC)"
     )

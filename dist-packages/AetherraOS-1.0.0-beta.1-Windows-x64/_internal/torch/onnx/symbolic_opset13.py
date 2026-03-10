@@ -12,12 +12,15 @@ from torch.onnx import (
     _type_utils,
     errors,
     symbolic_helper,
-    symbolic_opset11 as opset11,
-    symbolic_opset9 as opset9,
     utils,
 )
+from torch.onnx import (
+    symbolic_opset9 as opset9,
+)
+from torch.onnx import (
+    symbolic_opset11 as opset11,
+)
 from torch.onnx._internal import jit_utils, registration
-
 
 _onnx_symbolic = functools.partial(registration.onnx_symbolic, opset=13)
 
@@ -246,30 +249,30 @@ def tensor_split(
 
         return g.op("SequenceInsert", loop_out, last_slice)
 
-    else:  # scalar tensor
-        dim_size = symbolic_helper._size_helper(g, self, axis)
-        min_split_size = g.op("Div", dim_size, indices_or_sections)
-        min_split_size_plus_1 = g.op(
-            "Add",
-            min_split_size,
-            const_1,
-        )
-        num_splits_one_extra = g.op("Mod", dim_size, indices_or_sections)
-        splits = g.op("Tile", min_split_size_plus_1, num_splits_one_extra)
-        leftover = g.op(
-            "Tile",
-            min_split_size,
-            g.op(
-                "Sub",
-                opset11.unsqueeze(g, indices_or_sections, 0),
-                num_splits_one_extra,
-            ),
-        )
+    # scalar tensor
+    dim_size = symbolic_helper._size_helper(g, self, axis)
+    min_split_size = g.op("Div", dim_size, indices_or_sections)
+    min_split_size_plus_1 = g.op(
+        "Add",
+        min_split_size,
+        const_1,
+    )
+    num_splits_one_extra = g.op("Mod", dim_size, indices_or_sections)
+    splits = g.op("Tile", min_split_size_plus_1, num_splits_one_extra)
+    leftover = g.op(
+        "Tile",
+        min_split_size,
+        g.op(
+            "Sub",
+            opset11.unsqueeze(g, indices_or_sections, 0),
+            num_splits_one_extra,
+        ),
+    )
 
-        splits = g.op("Concat", splits, leftover, axis_i=0)
-        if _outputs is None:
-            return g.op("SplitToSequence", self, splits, axis_i=dim)
-        return g.op("Split", self, splits, axis_i=dim, outputs=_outputs)
+    splits = g.op("Concat", splits, leftover, axis_i=0)
+    if _outputs is None:
+        return g.op("SplitToSequence", self, splits, axis_i=dim)
+    return g.op("Split", self, splits, axis_i=dim, outputs=_outputs)
 
 
 @_onnx_symbolic("aten::unbind")
@@ -393,9 +396,8 @@ def _reduce_op_symbolic(onnx_op_name):
         if dim is None:
             # all-reduce path
             return symbolic_helper._handle_reduce_dim_none(g, self, onnx_op_name)
-        else:
-            keepdim = symbolic_helper._get_const(keepdim, "i", "keepdim")
-            return g.op(onnx_op_name, self, dim, keepdims_i=keepdim)
+        keepdim = symbolic_helper._get_const(keepdim, "i", "keepdim")
+        return g.op(onnx_op_name, self, dim, keepdims_i=keepdim)
 
     return symbolic
 

@@ -9,11 +9,9 @@ import sys
 import tempfile
 import time
 import warnings
-from concurrent.futures import as_completed, ThreadPoolExecutor
-from typing import Optional
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from . import _prctl_pr_set_pdeathsig  # type: ignore[attr-defined]
-
 
 ENV_VAR_PARALLEL_START = "TORCH_MP_PARALLEL_START"
 
@@ -66,7 +64,7 @@ class ProcessExitedException(ProcessException):
         error_index: int,
         error_pid: int,
         exit_code: int,
-        signal_name: Optional[str] = None,
+        signal_name: str | None = None,
     ):
         super().__init__(msg, error_index, error_pid)
         self.exit_code = exit_code
@@ -117,9 +115,7 @@ class ProcessContext:
             time_to_wait = max(0, end - time.monotonic())
             process.join(time_to_wait)
 
-    def join(
-        self, timeout: Optional[float] = None, grace_period: Optional[float] = None
-    ):
+    def join(self, timeout: float | None = None, grace_period: float | None = None):
         r"""Join one or more processes within spawn context.
 
         Attempt to join one or more processes in this spawn context.
@@ -200,13 +196,12 @@ class ProcessContext:
                     exit_code=exitcode,
                     signal_name=name,
                 )
-            else:
-                raise ProcessExitedException(
-                    f"process {error_index:d} terminated with exit code {exitcode:d}",
-                    error_index=error_index,
-                    error_pid=failed_process.pid,
-                    exit_code=exitcode,
-                )
+            raise ProcessExitedException(
+                f"process {error_index:d} terminated with exit code {exitcode:d}",
+                error_index=error_index,
+                error_pid=failed_process.pid,
+                exit_code=exitcode,
+            )
 
         with open(self.error_files[error_index], "rb") as fh:
             original_trace = pickle.load(fh)

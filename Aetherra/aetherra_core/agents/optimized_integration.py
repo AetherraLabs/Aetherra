@@ -46,7 +46,8 @@ def integrate_memory_optimizations(memory_engine_path: str):
             """Fallback minimal stub used when real engine isn't importable."""
 
             def __init__(self, *args, **kwargs):  # noqa: D401, ANN001, D401
-                pass
+                self._fallback_args = args
+                self._fallback_kwargs = kwargs
 
     # Create enhanced version with optimizations
     class OptimizedLyrixaMemoryEngine(LyrixaMemoryEngine):
@@ -167,9 +168,7 @@ def integrate_memory_optimizations(memory_engine_path: str):
                 "cache_performance": perf_stats["cache_performance"],
                 "optimization_layers": {
                     "cache_hits": perf_stats["retrieval_metrics"]["cache_hits"],
-                    "precomputed_hits": perf_stats["retrieval_metrics"][
-                        "precomputed_hits"
-                    ],
+                    "precomputed_hits": perf_stats["retrieval_metrics"]["precomputed_hits"],
                     "fast_path_used": perf_stats["retrieval_metrics"]["fast_path_used"],
                     "full_pipeline_fallback": perf_stats["retrieval_metrics"][
                         "optimization_breakdown"
@@ -192,17 +191,13 @@ def _generate_optimization_recommendations(perf_stats: Dict[str, Any]) -> List[s
         recommendations.append("Consider increasing cache size for better hit rates")
 
     if avg_time > 90:
-        recommendations.append(
-            "Performance target not met - investigate query patterns"
-        )
+        recommendations.append("Performance target not met - investigate query patterns")
 
     if perf_stats["retrieval_metrics"]["optimization_breakdown"]["full_pipeline"] > 0.7:
         recommendations.append("High fallback rate - tune fast path thresholds")
 
     if not recommendations:
-        recommendations.append(
-            "All optimization targets achieved - system performing optimally"
-        )
+        recommendations.append("All optimization targets achieved - system performing optimally")
 
     return recommendations
 
@@ -218,9 +213,7 @@ async def test_optimized_integration():
         # Create test memory engine (simplified for testing)
 
         # Create optimized engine using the class defined above
-        OptimizedEngine = integrate_memory_optimizations(
-            ""
-        )  # Empty path for local test
+        OptimizedEngine = integrate_memory_optimizations("")  # Empty path for local test
         engine = OptimizedEngine()
 
         # Test queries

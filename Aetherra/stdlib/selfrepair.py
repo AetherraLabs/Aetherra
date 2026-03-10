@@ -61,9 +61,7 @@ class SelfRepairPlugin:
         if "unexpected eof" in message or "was never closed" in message:
             return "Check for missing closing parentheses, brackets, or quotes"
         elif "invalid syntax" in message:
-            return (
-                "Review syntax around the indicated line for typos or missing operators"
-            )
+            return "Review syntax around the indicated line for typos or missing operators"
         elif "indentation" in message:
             return "Fix indentation - ensure consistent use of spaces or tabs"
         elif "unexpected indent" in message:
@@ -130,9 +128,7 @@ class SelfRepairPlugin:
             )
 
         if "except:" in code_content and "except Exception:" not in code_content:
-            suggestions.append(
-                "Use specific exception types instead of bare except clauses"
-            )
+            suggestions.append("Use specific exception types instead of bare except clauses")
 
         if re.search(r"def \w+\([^)]*\):\s*$", code_content, re.MULTILINE):
             suggestions.append("Add docstrings to functions for better documentation")
@@ -210,8 +206,7 @@ class SelfRepairPlugin:
         """Determine if an issue can be automatically fixed"""
         auto_fixable_types = ["spacing", "import", "simple_syntax"]
         return any(
-            fix_type in issue.get("suggestion", "").lower()
-            for fix_type in auto_fixable_types
+            fix_type in issue.get("suggestion", "").lower() for fix_type in auto_fixable_types
         )
 
     def _calculate_confidence(self, issues):
@@ -222,9 +217,7 @@ class SelfRepairPlugin:
         total_confidence = sum(issue.get("confidence", 50) for issue in issues)
         return total_confidence / len(issues)
 
-    def execute_action(
-        self, action, memory_system=None, target="unknown", code_content=""
-    ):
+    def execute_action(self, action, memory_system=None, target="unknown", code_content=""):
         """Execute self-repair actions for AetherraCode"""
         if action == "detect_errors":
             errors = self.detect_syntax_errors(code_content)

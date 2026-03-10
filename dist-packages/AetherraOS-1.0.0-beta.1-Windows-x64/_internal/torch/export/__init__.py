@@ -7,9 +7,9 @@ import sys
 import typing
 import warnings
 import zipfile
-from collections.abc import Iterator
-from enum import auto, Enum
-from typing import Any, Callable, Optional, TYPE_CHECKING, Union
+from collections.abc import Callable, Iterator
+from enum import Enum, auto
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import torch
 import torch.utils._pytree as pytree
@@ -23,7 +23,6 @@ from torch.utils._pytree import (
     ToDumpableContextFn,
     UnflattenFunc,
 )
-
 
 if TYPE_CHECKING:
     # Import the following modules during type checking to enable code intelligence features,
@@ -59,26 +58,25 @@ __all__ = [
 import torch.export.custom_ops
 
 from .decomp_utils import CustomDecompTable
-from .dynamic_shapes import AdditionalInputs, Constraint, Dim, dims, ShapesCollection
+from .dynamic_shapes import AdditionalInputs, Constraint, Dim, ShapesCollection, dims
 from .exported_program import (
-    default_decompositions,
     ExportedProgram,
     ModuleCallEntry,
     ModuleCallSignature,
+    default_decompositions,
 )
 from .graph_signature import ExportBackwardSignature, ExportGraphSignature
-from .unflatten import FlatArgsAdapter, unflatten, UnflattenedModule
+from .unflatten import FlatArgsAdapter, UnflattenedModule, unflatten
 
-
-PassType = Callable[[torch.fx.GraphModule], Optional[PassResult]]
+PassType = Callable[[torch.fx.GraphModule], PassResult | None]
 
 
 def export_for_training(
     mod: torch.nn.Module,
     args: tuple[Any, ...],
-    kwargs: Optional[dict[str, Any]] = None,
+    kwargs: dict[str, Any] | None = None,
     *,
-    dynamic_shapes: Optional[Union[dict[str, Any], tuple[Any], list[Any]]] = None,
+    dynamic_shapes: dict[str, Any] | tuple[Any] | list[Any] | None = None,
     strict: bool = False,
     preserve_module_call_signature: tuple[str, ...] = (),
 ) -> ExportedProgram:
@@ -175,9 +173,9 @@ def export_for_training(
 def export(
     mod: torch.nn.Module,
     args: tuple[Any, ...],
-    kwargs: Optional[dict[str, Any]] = None,
+    kwargs: dict[str, Any] | None = None,
     *,
-    dynamic_shapes: Optional[Union[dict[str, Any], tuple[Any], list[Any]]] = None,
+    dynamic_shapes: dict[str, Any] | tuple[Any] | list[Any] | None = None,
     strict: bool = False,
     preserve_module_call_signature: tuple[str, ...] = (),
 ) -> ExportedProgram:
@@ -302,18 +300,19 @@ def export(
 
         # For errors that we know can be caught by draft-export, add the message
         # to ask users to try out draft-export
-        if isinstance(
-            e,
-            (
-                torch.fx.experimental.symbolic_shapes.GuardOnDataDependentSymNode,
-                torch._subclasses.fake_tensor.UnsupportedOperatorException,
-                torch._dynamo.exc.UserError,
-                torch.fx.experimental.symbolic_shapes.ConstraintViolationError,
-            ),
+        if (
+            isinstance(
+                e,
+                (
+                    torch.fx.experimental.symbolic_shapes.GuardOnDataDependentSymNode,
+                    torch._subclasses.fake_tensor.UnsupportedOperatorException,
+                    torch._dynamo.exc.UserError,
+                    torch.fx.experimental.symbolic_shapes.ConstraintViolationError,
+                ),
+            )
+            or isinstance(e, RuntimeError)
+            and "no fake impl registered" in str(e)
         ):
-            new_msg = str(e) + "\n\n" + draft_export_msg
-            e.args = (new_msg,)
-        elif isinstance(e, RuntimeError) and "no fake impl registered" in str(e):
             new_msg = str(e) + "\n\n" + draft_export_msg
             e.args = (new_msg,)
         raise e
@@ -326,8 +325,8 @@ def save(
     ep: ExportedProgram,
     f: FileLike,
     *,
-    extra_files: Optional[dict[str, Any]] = None,
-    opset_version: Optional[dict[str, int]] = None,
+    extra_files: dict[str, Any] | None = None,
+    opset_version: dict[str, int] | None = None,
     pickle_protocol: int = DEFAULT_PICKLE_PROTOCOL,
 ) -> None:
     """
@@ -397,8 +396,8 @@ def save(
 def load(
     f: FileLike,
     *,
-    extra_files: Optional[dict[str, Any]] = None,
-    expected_opset_version: Optional[dict[str, int]] = None,
+    extra_files: dict[str, Any] | None = None,
+    expected_opset_version: dict[str, int] | None = None,
 ) -> ExportedProgram:
     """
 
@@ -448,7 +447,7 @@ def load(
 
     extra_files = extra_files or {}
 
-    from torch.export.pt2_archive._package import load_pt2, PT2ArchiveContents
+    from torch.export.pt2_archive._package import PT2ArchiveContents, load_pt2
 
     try:
         pt2_contents = load_pt2(
@@ -484,14 +483,14 @@ def load(
                 f"schema version {SCHEMA_VERSION}."
             )
 
-        from torch._export.serde.serialize import deserialize, SerializedArtifact
+        from torch._export.serde.serialize import SerializedArtifact, deserialize
 
         # Load serialized_ep and serialized_state_dict from the zip file
 
-        serialized_exported_program: Optional[bytes] = None
-        serialized_state_dict: Optional[bytes] = None
-        serialized_constants: Optional[bytes] = None
-        serialized_example_inputs: Optional[bytes] = None
+        serialized_exported_program: bytes | None = None
+        serialized_state_dict: bytes | None = None
+        serialized_constants: bytes | None = None
+        serialized_example_inputs: bytes | None = None
 
         for file_info in zipf.infolist():
             file_content = zipf.read(file_info.filename)
@@ -534,9 +533,9 @@ def load(
 def draft_export(
     mod: torch.nn.Module,
     args: tuple[Any, ...],
-    kwargs: Optional[dict[str, Any]] = None,
+    kwargs: dict[str, Any] | None = None,
     *,
-    dynamic_shapes: Optional[Union[dict[str, Any], tuple[Any], list[Any]]] = None,
+    dynamic_shapes: dict[str, Any] | tuple[Any] | list[Any] | None = None,
     preserve_module_call_signature: tuple[str, ...] = (),
     strict: bool = False,
 ) -> ExportedProgram:
@@ -560,7 +559,7 @@ def draft_export(
 def register_dataclass(
     cls: type[Any],
     *,
-    serialized_type_name: Optional[str] = None,
+    serialized_type_name: str | None = None,
 ) -> None:
     """
     Registers a dataclass as a valid input/output type for :func:`torch.export.export`.

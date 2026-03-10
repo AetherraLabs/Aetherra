@@ -4,9 +4,9 @@ import torch
 import torch.distributed.tensor._ops  # force import all built-in dtensor ops
 from torch.distributed.device_mesh import DeviceMesh, init_device_mesh  # noqa: F401
 from torch.distributed.tensor._api import (
+    DTensor,
     distribute_module,
     distribute_tensor,
-    DTensor,
     empty,
     full,
     ones,
@@ -27,7 +27,6 @@ from torch.utils._foreach_utils import (
     _foreach_supported_types as _util_foreach_supported_types,
 )
 
-
 # All public APIs from dtensor package
 __all__ = [
     "DTensor",
@@ -46,8 +45,8 @@ __all__ = [
 ]
 
 # For weights_only torch.load
-from ._dtensor_spec import DTensorSpec as _DTensorSpec, TensorMeta as _TensorMeta
-
+from ._dtensor_spec import DTensorSpec as _DTensorSpec
+from ._dtensor_spec import TensorMeta as _TensorMeta
 
 torch.serialization.add_safe_globals(
     [

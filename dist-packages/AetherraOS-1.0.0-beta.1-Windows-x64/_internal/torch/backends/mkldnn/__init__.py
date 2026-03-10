@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
 import torch
-from torch.backends import __allow_nonbracketed_mutation, ContextProp, PropModule
+from torch.backends import ContextProp, PropModule, __allow_nonbracketed_mutation
 
 
 def is_available():
@@ -52,11 +52,11 @@ class verbose:
 
     def __enter__(self):
         if self.level == VERBOSE_OFF:
-            return
+            return None
         st = torch._C._verbose.mkldnn_set_verbose(self.level)
-        assert (
-            st
-        ), "Failed to set MKLDNN into verbose mode. Please consider to disable this verbose scope."
+        assert st, (
+            "Failed to set MKLDNN into verbose mode. Please consider to disable this verbose scope."
+        )
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

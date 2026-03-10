@@ -5,7 +5,6 @@ from typing import Any
 
 import torch
 
-
 __all__ = [
     "set_module_weight",
     "set_module_bias",
@@ -49,22 +48,19 @@ def set_module_bias(module, bias) -> None:
 def has_bias(module) -> bool:
     if type(module) in _supported_types:
         return module.bias is not None
-    else:
-        return module[0].bias is not None
+    return module[0].bias is not None
 
 
 def get_module_weight(module):
     if type(module) in _supported_types:
         return module.weight
-    else:
-        return module[0].weight
+    return module[0].weight
 
 
 def get_module_bias(module):
     if type(module) in _supported_types:
         return module.bias
-    else:
-        return module[0].bias
+    return module[0].bias
 
 
 def max_over_ndim(input, axis_list, keepdim=False):
@@ -189,7 +185,7 @@ def expand_groups_in_paired_modules_list(paired_modules_list):
     for group in paired_modules_list:
         if len(group) == 1:
             raise ValueError("Group must have at least two modules")
-        elif len(group) == 2:
+        if len(group) == 2:
             new_list.append(group)
         elif len(group) > 2:
             new_list.extend([group[i], group[i + 1]] for i in range(len(group) - 1))

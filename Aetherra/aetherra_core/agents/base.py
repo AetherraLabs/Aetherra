@@ -5,6 +5,7 @@
 # core/interpreter.py
 import ast
 import difflib
+import json
 import os
 import re
 import shutil
@@ -130,13 +131,29 @@ except ImportError:
                 return 0
 
             def save_to_file(self):
-                pass
+                try:
+                    with open(self.store_file, "w", encoding="utf-8") as f:
+                        json.dump(self.memory, f, ensure_ascii=False, indent=2)
+                    return True
+                except Exception:
+                    return False
 
             def load_from_file(self):
-                pass
+                if not os.path.exists(self.store_file):
+                    self.memory = []
+                    return False
+                try:
+                    with open(self.store_file, encoding="utf-8") as f:
+                        data = json.load(f)
+                    self.memory = data if isinstance(data, list) else []
+                    return True
+                except Exception:
+                    self.memory = []
+                    return False
 
             def clear(self):
-                pass
+                self.memory = []
+                return True
 
         class AetherraFunctions:
             def __init__(self):
@@ -230,7 +247,7 @@ except ImportError:
 
         class BlockExecutor:
             def __init__(self, *args):
-                pass
+                self.args = args
 
             def execute_block(self, block, executor):
                 return "Demo block executed"
@@ -241,11 +258,28 @@ except ImportError:
                 self.auto_apply_enabled = False
 
             def debug(self, msg):
-                # print(f"Debug: {msg}")
-                pass
+                self.error_history.append(
+                    {
+                        "type": "debug",
+                        "message": str(msg),
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                )
+                if len(self.error_history) > 500:
+                    self.error_history = self.error_history[-500:]
 
             def detect_and_store_error(self, error, context, filename=None):
-                pass
+                self.error_history.append(
+                    {
+                        "type": "error",
+                        "error": str(error),
+                        "context": context,
+                        "filename": filename,
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                )
+                if len(self.error_history) > 500:
+                    self.error_history = self.error_history[-500:]
 
             def suggest_fix(self, error_info):
                 return {"fix": "Demo fix", "confidence": 0, "risk": "unknown"}
@@ -257,8 +291,11 @@ except ImportError:
                 self.auto_apply_enabled = enabled
 
             def show_debug_status(self):
-                # print("Debug system: demo mode")
-                pass
+                return {
+                    "mode": "demo",
+                    "auto_apply_enabled": self.auto_apply_enabled,
+                    "errors_recorded": len(self.error_history),
+                }
 
 
 # Fallback functions with exact signatures to match imports
@@ -308,9 +345,7 @@ class AetherraInterpreter:
         self.meta_plugins = MetaPluginSystem(
             self.memory, self, self.goal_system
         )  # Meta-plugin system
-        self.block_executor = BlockExecutor(
-            self.memory, self.functions
-        )  # Block execution engine
+        self.block_executor = BlockExecutor(self.memory, self.functions)  # Block execution engine
 
         # Self-editing capabilities
         self.loaded_files = {}  # Store loaded file contents
@@ -674,8 +709,7 @@ class AetherraInterpreter:
                 confidence = int(parts[3]) if len(parts) > 3 else 80
                 self.debug_system.set_auto_apply(enabled, confidence)
             else:
-                # print("Usage: set auto_debug on/off [confidence_threshold]")
-                pass
+                return "Usage: set auto_debug on/off [confidence_threshold]"
 
         elif line.startswith("suggest fix"):
             # Handle manual fix suggestion
@@ -689,9 +723,7 @@ class AetherraInterpreter:
                 ]
                 if matching_errors:
                     fix_suggestion = self.debug_system.suggest_fix(matching_errors[-1])
-                    print(
-                        f"🤖 [Fix Suggestion] {fix_suggestion.get('fix', 'No fix available')}"
-                    )
+                    print(f"🤖 [Fix Suggestion] {fix_suggestion.get('fix', 'No fix available')}")
                     print(f"📊 Confidence: {fix_suggestion.get('confidence', 0)}%")
                     print(f"⚠️ Risk: {fix_suggestion.get('risk', 'unknown')}")
                     self._last_fix_suggestion = fix_suggestion
@@ -722,9 +754,7 @@ class AetherraInterpreter:
     def _handle_remember(self, line):
         """Handle remember() command with support for both syntaxes"""
         # First try the new tagged syntax: remember("content") as "tag"
-        tagged_match = re.search(
-            r'remember\s*\(["\'](.*?)["\']\)\s+as\s+["\'](.*?)["\']', line
-        )
+        tagged_match = re.search(r'remember\s*\(["\'](.*?)["\']\)\s+as\s+["\'](.*?)["\']', line)
         if tagged_match:
             content = tagged_match.group(1)
             tag = tagged_match.group(2).strip()
@@ -739,11 +769,7 @@ class AetherraInterpreter:
         )
         if function_match:
             content = function_match.group(1)
-            tags = (
-                function_match.group(2).split(",")
-                if function_match.group(2)
-                else ["general"]
-            )
+            tags = function_match.group(2).split(",") if function_match.group(2) else ["general"]
             tags = [tag.strip() for tag in tags]
 
             self.memory.remember(content, tags=tags)
@@ -782,9 +808,7 @@ class AetherraInterpreter:
                 filter_desc.append(f"tags: {', '.join(tags)}")
             if category:
                 filter_desc.append(f"category: {category}")
-            filter_text = (
-                f" (filtered by {', '.join(filter_desc)})" if filter_desc else ""
-            )
+            filter_text = f" (filtered by {', '.join(filter_desc)})" if filter_desc else ""
 
             result = f"[Recall{filter_text}] Found {len(memories)} memories:\n"
             for i, memory in enumerate(memories, 1):
@@ -815,9 +839,7 @@ class AetherraInterpreter:
 
     def _handle_function_define(self, line):
         """Handle function definition"""
-        match = re.search(
-            r"define\s+(\w+)\s*\((.*?)\)\s*\{\s*(.*?)\s*\}", line, re.DOTALL
-        )
+        match = re.search(r"define\s+(\w+)\s*\((.*?)\)\s*\{\s*(.*?)\s*\}", line, re.DOTALL)
         if match:
             func_name = match.group(1)
             params = [p.strip() for p in match.group(2).split(",") if p.strip()]
@@ -825,23 +847,19 @@ class AetherraInterpreter:
 
             return self.functions.define_function(func_name, params, commands)
         else:
-            return "[Function] Invalid syntax. Use: define function_name(param1, param2) { commands }"
+            return (
+                "[Function] Invalid syntax. Use: define function_name(param1, param2) { commands }"
+            )
 
     def _handle_function_call(self, line):
         """Handle function call"""
         match = re.search(r"call\s+(\w+)\s*\((.*?)\)", line)
         if match:
             func_name = match.group(1)
-            args = [
-                arg.strip().strip("\"'")
-                for arg in match.group(2).split(",")
-                if arg.strip()
-            ]
+            args = [arg.strip().strip("\"'") for arg in match.group(2).split(",") if arg.strip()]
 
             # Use lambda to pass execute method as callback
-            result = self.functions.call_function(
-                func_name, args, lambda cmd: self.execute(cmd)
-            )
+            result = self.functions.call_function(func_name, args, lambda cmd: self.execute(cmd))
             return result
         else:
             return "[Function] Invalid syntax. Use: call function_name(arg1, arg2)"
@@ -859,9 +877,7 @@ class AetherraInterpreter:
 
             memories = self.memory.recall(tags=tags, category=category)
             if memories:
-                filter_desc = (
-                    f"tags: {', '.join(tags)}" if tags else f"category: {category}"
-                )
+                filter_desc = f"tags: {', '.join(tags)}" if tags else f"category: {category}"
                 reflection = reflect_on_memories(memories, filter_desc)
                 return f"[AI Reflection] {reflection}"
             else:
@@ -880,12 +896,8 @@ class AetherraInterpreter:
             # Enhanced learning with auto-tagging
             tags = auto_tag_content(summary)
 
-            self.memory.remember(
-                f"Learned from {file}: {summary}", tags=tags, category="learning"
-            )
-            result = (
-                f"[Learned] Summary stored to memory with tags: {', '.join(tags)}\n"
-            )
+            self.memory.remember(f"Learned from {file}: {summary}", tags=tags, category="learning")
+            result = f"[Learned] Summary stored to memory with tags: {', '.join(tags)}\n"
 
             # Auto-suggest AetherraCode based on learning
             suggestion = suggest_next_actions(summary)
@@ -898,18 +910,14 @@ class AetherraInterpreter:
         """Handle optimization requests"""
         goal = line.split("optimize for")[-1].strip().strip('"')
         context = "\n".join(self.memory.recall())
-        result = ask_ai(
-            f"Optimize this system for {goal} using what it knows:\n{context}"
-        )
+        result = ask_ai(f"Optimize this system for {goal} using what it knows:\n{context}")
         return f"[Optimization] {result}"
 
     def _handle_suggest_fix(self, line):
         """Handle fix suggestions"""
         context = "\n".join(self.memory.recall())
         issue = line.split("suggest fix for")[-1].strip().strip('"')
-        suggestion = ask_ai(
-            f"Suggest a fix for this issue: {issue}\nContext: {context}"
-        )
+        suggestion = ask_ai(f"Suggest a fix for this issue: {issue}\nContext: {context}")
         return f"[Fix Suggestion] {suggestion}"
 
     def _handle_assistant(self, line):
@@ -1057,17 +1065,13 @@ Answer this: {query}"""
         filename = line.split("analyze")[-1].strip().strip('"')
 
         if filename not in self.loaded_files:
-            return (
-                f"[Analyze] File not loaded: {filename}. Use 'load {filename}' first."
-            )
+            return f"[Analyze] File not loaded: {filename}. Use 'load {filename}' first."
 
         content = self.loaded_files[filename]
 
         # Get relevant memories for context
         memories = self.memory.recall(tags=["code_analysis", "patterns", "bugs"])
-        memory_context = "\n".join(
-            [m["text"] for m in memories[-5:]]
-        )  # Recent relevant memories
+        memory_context = "\n".join([m["text"] for m in memories[-5:]])  # Recent relevant memories
 
         # Use AI to perform deep code analysis
         # Third party imports
@@ -1101,9 +1105,7 @@ Answer this: {query}"""
         target = " ".join(parts[1:]) if len(parts) > 1 else "general improvements"
 
         if filename not in self.loaded_files:
-            return (
-                f"[Refactor] File not loaded: {filename}. Use 'load {filename}' first."
-            )
+            return f"[Refactor] File not loaded: {filename}. Use 'load {filename}' first."
 
         content = self.loaded_files[filename]
 
@@ -1115,15 +1117,11 @@ Answer this: {query}"""
         # Third party imports
         from core.ai_runtime import justify_refactoring, suggest_refactoring
 
-        refactor_suggestion = suggest_refactoring(
-            content, filename, target, memory_context
-        )
+        refactor_suggestion = suggest_refactoring(content, filename, target, memory_context)
         justification = justify_refactoring(content, target, memory_context)
 
         # Get memory-driven justification from agent
-        agent_justification = self.agent.justify_self_editing(
-            filename, f"Refactoring for {target}"
-        )
+        agent_justification = self.agent.justify_self_editing(filename, f"Refactoring for {target}")
 
         # Store as pending fix for review
         fix_id = f"{filename}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -1411,9 +1409,7 @@ Answer this: {query}"""
         result = f"[Pattern Detection] Found {len(patterns['phrases'])} recurring patterns:\n"
 
         # Sort by frequency
-        sorted_patterns = sorted(
-            patterns["phrases"].items(), key=lambda x: x[1], reverse=True
-        )
+        sorted_patterns = sorted(patterns["phrases"].items(), key=lambda x: x[1], reverse=True)
 
         for phrase, count in sorted_patterns[:10]:  # Show top 10
             result += f"  • '{phrase}' ({count} times)\n"
@@ -1476,9 +1472,7 @@ Answer this: {query}"""
             return True
 
         # Check AetherraCode blocks
-        if any(
-            stripped_line.startswith(starter) for starter in aetherra_block_starters
-        ):
+        if any(stripped_line.startswith(starter) for starter in aetherra_block_starters):
             return True
 
         # Check for function definition with colon
@@ -1504,13 +1498,13 @@ Answer this: {query}"""
 
         elif stripped_line.startswith("if "):
             self.block_type = "conditional"
-            return "🔀 Started conditional block\n   ⚡ Enter conditional logic, use 'end' to complete"
+            return (
+                "🔀 Started conditional block\n   ⚡ Enter conditional logic, use 'end' to complete"
+            )
 
         elif stripped_line.startswith("for "):
             self.block_type = "for_loop"
-            return (
-                "🔄 Started for loop block\n   🔃 Enter loop body, use 'end' to complete"
-            )
+            return "🔄 Started for loop block\n   🔃 Enter loop body, use 'end' to complete"
 
         elif stripped_line.startswith("while "):
             self.block_type = "while_loop"
@@ -1526,7 +1520,9 @@ Answer this: {query}"""
 
         elif stripped_line.startswith("simulate "):
             self.block_type = "simulation"
-            return "🎮 Started simulation block\n   🔬 Enter simulation steps, use 'end' to complete"
+            return (
+                "🎮 Started simulation block\n   🔬 Enter simulation steps, use 'end' to complete"
+            )
 
         else:
             self.block_type = "generic"
@@ -1581,9 +1577,7 @@ Answer this: {query}"""
                 return self._execute_aetherra_block()
             else:
                 # Use the block executor for standard blocks
-                result = self.block_executor.execute_block(
-                    self.block_buffer, self.execute
-                )
+                result = self.block_executor.execute_block(self.block_buffer, self.execute)
                 self._reset_block_state()
                 return result
 
@@ -1624,7 +1618,9 @@ Answer this: {query}"""
         response += f"   📝 Function: {func_name}\n"
         response += f"   [TOOL] Parameters: {params if params else 'none'}\n"
         response += f"   📄 Body: {len(body)} statements\n"
-        response += f"   ✅ Ready to call with: call {func_name}({', '.join(['arg'] * len(params))})"
+        response += (
+            f"   ✅ Ready to call with: call {func_name}({', '.join(['arg'] * len(params))})"
+        )
 
         return response
 
@@ -1759,9 +1755,7 @@ Answer this: {query}"""
 
         except Exception as e:
             print(f"❌ [Load Error] {e}")
-            self.debug_system.detect_and_store_error(
-                e, f"Loading file: {filename}", filename
-            )
+            self.debug_system.detect_and_store_error(e, f"Loading file: {filename}", filename)
 
 
 # Backward compatibility alias

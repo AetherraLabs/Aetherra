@@ -3,7 +3,6 @@ import inspect
 
 from .dispatcher import Dispatcher, MethodDispatcher
 
-
 global_namespace = {}  # type: ignore[var-annotated]
 
 __all__ = ["dispatch", "ismethod"]
@@ -79,6 +78,5 @@ def ismethod(func):
     if hasattr(inspect, "signature"):
         signature = inspect.signature(func)
         return signature.parameters.get("self", None) is not None
-    else:
-        spec = inspect.getfullargspec(func)  # type: ignore[union-attr, assignment]
-        return spec and spec.args and spec.args[0] == "self"
+    spec = inspect.getfullargspec(func)  # type: ignore[union-attr, assignment]
+    return spec and spec.args and spec.args[0] == "self"

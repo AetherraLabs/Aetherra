@@ -6,16 +6,16 @@ from typing import NamedTuple
 import torch
 from torch.fx.experimental.partitioner_utils import (
     Device,
-    get_extra_size_of,
-    get_latency_of_partitioned_graph,
-    get_partition_to_latency_mapping,
     NodeLatency,
     Partition,
     PartitionerConfig,
     PartitionMode,
+    get_extra_size_of,
+    get_latency_of_partitioned_graph,
+    get_partition_to_latency_mapping,
 )
 from torch.fx.graph_module import GraphModule
-from torch.fx.node import map_arg, Node
+from torch.fx.node import Node, map_arg
 from torch.fx.passes.graph_manipulation import get_size_of_all_nodes
 from torch.fx.passes.split_module import split_module
 
@@ -280,10 +280,9 @@ def check_dependency(partition):
         for child in p.children:
             if child == partition:
                 return True
-            else:
-                if child not in visited:
-                    visited.add(child)
-                    queue.append(child)
+            if child not in visited:
+                visited.add(child)
+                queue.append(child)
     return False
 
 
@@ -780,10 +779,9 @@ class Partitioner:
                     + str(partition.partition_id)
                     + "(embedding partition) and non embedding partitions can not fit into one device"
                 )
-            else:
-                # Add logical device to the partition
-                partition.logical_device_ids = [self.devices[i].logical_id]
-                occupied_devices.append(self.devices[i].logical_id)
+            # Add logical device to the partition
+            partition.logical_device_ids = [self.devices[i].logical_id]
+            occupied_devices.append(self.devices[i].logical_id)
         # Add logical devices to the non_embedding_partitions
         for partition in non_embedding_partitions:
             partition.logical_device_ids = occupied_devices

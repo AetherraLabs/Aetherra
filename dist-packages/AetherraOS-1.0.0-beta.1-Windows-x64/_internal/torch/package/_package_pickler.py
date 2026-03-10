@@ -1,15 +1,15 @@
 # mypy: allow-untyped-defs
 from pickle import (  # type: ignore[attr-defined]
-    _compat_pickle,
-    _extension_registry,
-    _getattribute,
-    _Pickler,
     EXT1,
     EXT2,
     EXT4,
     GLOBAL,
-    PicklingError,
     STACK_GLOBAL,
+    PicklingError,
+    _compat_pickle,
+    _extension_registry,
+    _getattribute,
+    _Pickler,
 )
 from struct import pack
 from types import FunctionType
@@ -125,5 +125,4 @@ def create_pickler(data_buf, importer, protocol=4):
         # if we are using the normal import library system, then
         # we can use the C implementation of pickle which is faster
         return _PyTorchLegacyPickler(data_buf, protocol=protocol)
-    else:
-        return PackagePickler(importer, data_buf, protocol=protocol)
+    return PackagePickler(importer, data_buf, protocol=protocol)

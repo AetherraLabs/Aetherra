@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, cast, NamedTuple, Optional
+from typing import Any, NamedTuple, cast
 
 import torch
 from torch.distributed.device_mesh import DeviceMesh
@@ -27,12 +27,12 @@ class DTensorSpec:
     placements: tuple[Placement, ...]
 
     # tensor meta will only be set during sharding propagation
-    tensor_meta: Optional[TensorMeta] = None
+    tensor_meta: TensorMeta | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.placements, tuple):
             self.placements = tuple(self.placements)
-        self._hash: Optional[int] = None
+        self._hash: int | None = None
 
     def __setattr__(self, attr: str, value: Any) -> None:
         super().__setattr__(attr, value)
@@ -211,7 +211,7 @@ class DTensorSpec:
         mesh: DeviceMesh,
         dim_map: list[int],
         sums: list[int],
-        tensor_meta: Optional[TensorMeta] = None,
+        tensor_meta: TensorMeta | None = None,
     ) -> "DTensorSpec":
         """
         Construct a DTensorSpec from dim_map list and pending sum.
@@ -242,7 +242,7 @@ class DTensorSpec:
                     raise RuntimeError(
                         f"DeviceMesh dimension cann't be mapped to two dimension of the same tensor: {i} and {placement.dim}"
                     )
-                elif placement.is_partial():
+                if placement.is_partial():
                     raise RuntimeError(
                         f"DeviceMesh dimension {m} cannot be both shard and partial!"
                     )
@@ -263,7 +263,7 @@ class DTensorSpec:
         return any(placement.is_shard() for placement in self.placements)
 
     def shallow_copy_with_tensor_meta(
-        self, tensor_meta: Optional[TensorMeta]
+        self, tensor_meta: TensorMeta | None
     ) -> "DTensorSpec":
         """
         Shallow copy the DTensorSpec with a new tensor_meta.

@@ -7,7 +7,6 @@ import typing
 
 import torch
 
-
 log = logging.getLogger(__name__)
 
 
@@ -37,30 +36,36 @@ QueueEmptyError = torch._C._DistQueueEmptyError
 
 if is_available():
     from torch._C._distributed_c10d import (
+        _DEFAULT_FIRST_BUCKET_BYTES,
+        BuiltinCommHookType,
+        DebugLevel,
+        FileStore,
+        GradBucket,
+        Logger,
+        PrefixStore,
+        Reducer,
+        Store,
+        TCPStore,
         _broadcast_coalesced,
         _compute_bucket_assignment_by_size,
         _ControlCollectives,
-        _DEFAULT_FIRST_BUCKET_BYTES,
         _make_nccl_premul_sum,
         _register_builtin_comm_hook,
         _register_comm_hook,
         _StoreCollectives,
         _test_python_store,
         _verify_params_across_processes,
-        Backend as _Backend,
-        BuiltinCommHookType,
-        DebugLevel,
-        FileStore,
         get_debug_level,
-        GradBucket,
-        Logger,
-        PrefixStore,
-        ProcessGroup as ProcessGroup,
-        Reducer,
         set_debug_level,
         set_debug_level_from_env,
-        Store,
-        TCPStore,
+    )
+    from torch._C._distributed_c10d import (
+        Backend as _Backend,
+    )
+    from torch._C._distributed_c10d import (
+        ProcessGroup as ProcessGroup,
+    )
+    from torch._C._distributed_c10d import (
         Work as _Work,
     )
 

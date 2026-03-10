@@ -8,12 +8,13 @@ import logging
 import sys
 
 from .api import (
-    rendezvous_handler_registry as handler_registry,
     RendezvousHandler,
     RendezvousParameters,
 )
+from .api import (
+    rendezvous_handler_registry as handler_registry,
+)
 from .dynamic_rendezvous import create_handler
-
 
 if sys.version_info < (3, 10):
     from importlib_metadata import entry_points

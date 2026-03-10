@@ -10,7 +10,6 @@ from torch.ao.quantization.pt2e.utils import (
 from torch.fx.node import map_arg
 from torch.fx.passes.infra.pass_base import PassBase, PassResult
 
-
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
 
@@ -41,8 +40,7 @@ def _maybe_duplicate_dq(
         def maybe_replace_node(n: torch.fx.Node) -> torch.fx.Node:
             if n == dq_node:
                 return new_node
-            else:
-                return n
+            return n
 
         new_args = map_arg(user.args, maybe_replace_node)
         new_kwargs = map_arg(user.kwargs, maybe_replace_node)

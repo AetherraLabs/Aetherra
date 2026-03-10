@@ -10,7 +10,6 @@ This module integrates all Aetherra AI OS Intelligence Stack components
 into Lyrixa, providing real-time awareness and system orchestration.
 """
 
-
 # Standard library imports
 import logging
 import sys
@@ -71,9 +70,7 @@ class LyrixaIntelligenceStack:
         """Get current system status"""
         return {
             "intelligence_stack": "operational",
-            "conversation_manager": "available"
-            if self.conversation_manager
-            else "unavailable",
+            "conversation_manager": "available" if self.conversation_manager else "unavailable",
             "memory_engine": "available" if self.memory_engine else "unavailable",
             "timestamp": datetime.now().isoformat(),
         }

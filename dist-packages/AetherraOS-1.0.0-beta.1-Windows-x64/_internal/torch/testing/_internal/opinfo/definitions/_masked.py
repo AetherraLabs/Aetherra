@@ -19,14 +19,14 @@ from torch.testing._internal.common_dtype import (
 )
 from torch.testing._internal.opinfo.core import (
     DecorateInfo,
-    gradcheck_wrapper_masked_operation,
-    gradcheck_wrapper_masked_pointwise_operation,
     M,
     OpInfo,
     ReductionOpInfo,
     S,
-    sample_inputs_reduction,
     SampleInput,
+    gradcheck_wrapper_masked_operation,
+    gradcheck_wrapper_masked_pointwise_operation,
+    sample_inputs_reduction,
 )
 from torch.testing._internal.opinfo.utils import prod_numpy, reference_reduction_numpy
 
@@ -102,8 +102,9 @@ def sample_inputs_masked_reduction(op_info, device, dtype, requires_grad, **kwar
         for mask in _generate_masked_op_mask(
             sample_input.input.shape, device, **kwargs
         ):
-            sample_input_args, sample_input_kwargs = sample_input.args, dict(
-                mask=mask, **sample_input.kwargs
+            sample_input_args, sample_input_kwargs = (
+                sample_input.args,
+                dict(mask=mask, **sample_input.kwargs),
             )
             yield SampleInput(
                 sample_input.input.detach().requires_grad_(requires_grad),
@@ -224,8 +225,9 @@ def sample_inputs_masked_norm(op_info, device, dtype, requires_grad, **kwargs):
             op_info, device, dtype, requires_grad, **kwargs
         ):
             sample_input_args, sample_input_kwargs = (
-                ord,
-            ) + sample_input.args, sample_input.kwargs.copy()
+                (ord,) + sample_input.args,
+                sample_input.kwargs.copy(),
+            )
             yield SampleInput(
                 sample_input.input.clone().requires_grad_(requires_grad),
                 args=sample_input_args,
@@ -276,8 +278,9 @@ def sample_inputs_masked_std_var(op_info, device, dtype, requires_grad, **kwargs
             for mask in _generate_masked_op_mask(
                 sample_input.input.shape, device, **kwargs
             ):
-                sample_input_args, sample_input_kwargs = sample_input.args, dict(
-                    mask=mask, **sample_input.kwargs
+                sample_input_args, sample_input_kwargs = (
+                    sample_input.args,
+                    dict(mask=mask, **sample_input.kwargs),
                 )
                 yield SampleInput(
                     sample_input.input.detach().requires_grad_(requires_grad),
@@ -364,8 +367,9 @@ def sample_inputs_masked_cumops(op_info, device, dtype, requires_grad, **kwargs)
         ):
             if type(mask) != torch.Tensor:
                 continue
-            sample_input_args, sample_input_kwargs = sample_input.args, dict(
-                mask=mask, **sample_input.kwargs
+            sample_input_args, sample_input_kwargs = (
+                sample_input.args,
+                dict(mask=mask, **sample_input.kwargs),
             )
             if "keepdim" in sample_input_kwargs:
                 sample_input_kwargs.pop("keepdim")
@@ -398,9 +402,9 @@ def sample_inputs_masked_logaddexp(op_info, device, dtype, requires_grad, **kwar
         make_tensor, dtype=dtype, device=device, requires_grad=requires_grad
     )
     for shape, input_masks, other_masks in zip(
-        shapes, input_mask_lists, other_mask_lists
+        shapes, input_mask_lists, other_mask_lists, strict=False
     ):
-        for input_mask, other_mask in zip(input_masks, other_masks):
+        for input_mask, other_mask in zip(input_masks, other_masks, strict=False):
             yield SampleInput(
                 make_arg(shape),
                 make_arg(shape),

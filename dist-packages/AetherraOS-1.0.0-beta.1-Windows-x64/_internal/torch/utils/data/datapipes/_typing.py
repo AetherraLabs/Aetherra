@@ -15,17 +15,17 @@ from collections.abc import Iterator
 
 # TODO: Use TypeAlias when Python 3.6 is deprecated
 from typing import (  # type: ignore[attr-defined]
+    Any,
+    ForwardRef,
+    Generic,
+    TypeVar,
+    Union,
     _eval_type,
     _GenericAlias,
     _tp_cache,
     _type_check,
     _type_repr,
-    Any,
-    ForwardRef,
-    Generic,
     get_type_hints,
-    TypeVar,
-    Union,
 )
 
 from torch.utils.data.datapipes._hook_iterator import _SnapshotState, hook_iterator
@@ -184,7 +184,7 @@ def _issubtype_with_constraints(variant, constraints, recursive=True):
                         and len(v_args) == len(c_args)
                         and all(
                             issubtype(v_arg, c_arg)
-                            for v_arg, c_arg in zip(v_args, c_args)
+                            for v_arg, c_arg in zip(v_args, c_args, strict=False)
                         )
                     ):
                         return True
@@ -207,13 +207,13 @@ def issubinstance(data, data_type):
             return True
         if len(dt_args) != len(data):
             return False
-        return all(issubinstance(d, t) for d, t in zip(data, dt_args))
-    elif isinstance(data, (list, set)):
+        return all(issubinstance(d, t) for d, t in zip(data, dt_args, strict=False))
+    if isinstance(data, (list, set)):
         if dt_args is None or len(dt_args) == 0:
             return True
         t = dt_args[0]
         return all(issubinstance(d, t) for d in data)
-    elif isinstance(data, dict):
+    if isinstance(data, dict):
         if dt_args is None or len(dt_args) == 0:
             return True
         kt, vt = dt_args

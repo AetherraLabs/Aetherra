@@ -13,7 +13,9 @@ import inspect
 import re
 import typing
 import warnings
-from typing import Any, Callable, cast
+from collections.abc import Callable
+from typing import Any, cast
+
 from typing_extensions import deprecated
 
 import torch
@@ -24,7 +26,6 @@ from torch import _C
 from torch.onnx import _constants, errors, symbolic_helper  # noqa: F401
 from torch.onnx._globals import GLOBALS
 from torch.onnx._internal import jit_utils, onnx_proto_utils, registration
-
 
 if typing.TYPE_CHECKING:
     from collections.abc import Collection, Mapping, Sequence
@@ -538,7 +539,7 @@ def export(
         autograd_inlining=autograd_inlining,
     )
 
-    return None
+    return
 
 
 def _is_constant_tensor_list(node):
@@ -699,7 +700,7 @@ def warn_on_static_input_change(input_states):
     configuration use. we detect here if these inputs are modified, and if so we warn
     the user that the changes won't take effect in the traced ONNX graph.
     """
-    for input, traced_input in zip(input_states[0], input_states[1]):
+    for input, traced_input in zip(input_states[0], input_states[1], strict=False):
         if isinstance(input, dict):
             if list(input.keys()) != list(traced_input.keys()):
                 warning = (
@@ -890,7 +891,7 @@ def _trace_and_get_graph_from_model(model, args):
 
 def _get_param_count_list(method_graph, args_params):
     param_count_list = []
-    for input_, arg_params_ in zip(method_graph.inputs(), args_params):
+    for input_, arg_params_ in zip(method_graph.inputs(), args_params, strict=False):
         if "PackedParams" in str(input_.type()):
             in_vars, _ = torch.jit._flatten(arg_params_)
             param_count_list.append(len(in_vars))
@@ -978,7 +979,7 @@ def _create_jit_graph(
 def _get_named_param_dict(graph, params):
     input_and_param_names = [val.debugName() for val in graph.inputs()]
     param_names = input_and_param_names[len(input_and_param_names) - len(params) :]
-    _params_dict = dict(zip(param_names, params))
+    _params_dict = dict(zip(param_names, params, strict=False))
     return _params_dict
 
 
@@ -1022,8 +1023,7 @@ def unpack_quantized_tensor(value, cast_onnx_accepted=True):
         q_value = q_value_dequantize / q_scale + q_zero_point
         q_value = q_value.to(dtype=_qtype_vtype_map[value.dtype])
         return q_value, q_scale, q_zero_point
-    else:
-        return (value,)
+    return (value,)
 
 
 def _pre_trace_quant_model(model, args):
@@ -1310,12 +1310,11 @@ def _setup_trace_module_map(
         def _find_typename(v):
             if isinstance(v, type):
                 return torch.typename(v)
-            else:
-                raise RuntimeError(
-                    "Only type of the `nn.Module` should be "
-                    "passed in the set for argument `export_modules_as_functions`. "
-                    f"Got `{type(v).__name__}`."
-                )
+            raise RuntimeError(
+                "Only type of the `nn.Module` should be "
+                "passed in the set for argument `export_modules_as_functions`. "
+                f"Got `{type(v).__name__}`."
+            )
 
         module_typenames = {_find_typename(v) for v in export_modules_as_functions}
     else:
@@ -1567,7 +1566,7 @@ def _set_input_and_output_names(graph, input_names, output_names):
 
         # Mark if the output node DebugName is set before.
         output_node_set = set()
-        for i, (name, node) in enumerate(zip(name_list, node_list)):
+        for i, (name, node) in enumerate(zip(name_list, node_list, strict=False)):
             # Duplicated output node, insert onnx::Identity to avoid setting the same DebugName after setDebugName().
             if descriptor == "output":
                 if node in output_node_set:
@@ -1746,7 +1745,7 @@ def _run_symbolic_function(
     except RuntimeError:
         if operator_export_type == _C_onnx.OperatorExportTypes.ONNX_FALLTHROUGH:
             return None
-        elif operator_export_type == _C_onnx.OperatorExportTypes.ONNX_ATEN_FALLBACK:
+        if operator_export_type == _C_onnx.OperatorExportTypes.ONNX_ATEN_FALLBACK:
             # Emit ATen op for non-Caffe2 builds when `operator_export_type==ONNX_ATEN_FALLBACK`
             attrs = {
                 k + "_" + node.kindOf(k)[0]: symbolic_helper._node_get(node, k)

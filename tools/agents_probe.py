@@ -25,7 +25,7 @@ import argparse
 import asyncio
 import json
 import sys
-from typing import Any, Dict
+from typing import Any
 
 
 async def main(argv):
@@ -108,7 +108,7 @@ async def main(argv):
     # Optional run
     if args.run:
         name, payload_text = args.run
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "agent": f"agent.{name}",
             "text": payload_text,
             "goal": payload_text,

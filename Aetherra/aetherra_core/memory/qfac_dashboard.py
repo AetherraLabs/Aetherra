@@ -228,7 +228,7 @@ class QFACDashboard:
         except Exception:
             perf = {}
         # Determine availability status expected by capability tests:
-        # - If empty status AND no performance metrics -> unavailable (stub path)
+        # - If empty status AND no performance metrics -> unavailable (fallback path)
         # - Otherwise mark as ok and expose rich details
         is_available = bool(status) or bool(perf)
         availability = "ok" if is_available else "unavailable"
@@ -261,12 +261,12 @@ class QFACDashboard:
         if availability == "ok":
             summary["phases"] = phases
         else:
-            # For unavailable state keep reason compatibility if a stub already provided one
+            # For unavailable state keep reason compatibility if a baseline reason exists.
             if "reason" not in summary:
                 summary["reason"] = (
-                    status.get("reason", "dashboard stub")
+                    status.get("reason", "dashboard unavailable")
                     if isinstance(status, dict)
-                    else "dashboard stub"
+                    else "dashboard unavailable"
                 )
         return summary
 

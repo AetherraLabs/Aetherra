@@ -184,9 +184,7 @@ class AgentIntegrationAdapter:
         agents = []
 
         if not self.aetherra_agents_path.exists():
-            logger.warning(
-                f"Aetherra agents path not found: {self.aetherra_agents_path}"
-            )
+            logger.warning(f"Aetherra agents path not found: {self.aetherra_agents_path}")
             return agents
 
         for agent_file in self.aetherra_agents_path.glob("*.py"):
@@ -194,9 +192,7 @@ class AgentIntegrationAdapter:
                 continue
 
             try:
-                agent_info = await self._analyze_agent_file(
-                    agent_file, AgentType.AETHERRA_CORE
-                )
+                agent_info = await self._analyze_agent_file(agent_file, AgentType.AETHERRA_CORE)
                 if agent_info:
                     agents.append(agent_info)
             except Exception as e:
@@ -209,9 +205,7 @@ class AgentIntegrationAdapter:
         agents = []
 
         if not self.lyrixa_intelligence_path.exists():
-            logger.warning(
-                f"Lyrixa intelligence path not found: {self.lyrixa_intelligence_path}"
-            )
+            logger.warning(f"Lyrixa intelligence path not found: {self.lyrixa_intelligence_path}")
             return agents
 
         for agent_file in self.lyrixa_intelligence_path.glob("*.py"):
@@ -219,9 +213,7 @@ class AgentIntegrationAdapter:
                 continue
 
             try:
-                agent_info = await self._analyze_agent_file(
-                    agent_file, AgentType.LYRIXA_CORE
-                )
+                agent_info = await self._analyze_agent_file(agent_file, AgentType.LYRIXA_CORE)
                 if agent_info:
                     agents.append(agent_info)
             except Exception as e:
@@ -242,9 +234,7 @@ class AgentIntegrationAdapter:
                     continue
 
                 try:
-                    agent_info = await self._analyze_agent_file(
-                        agent_file, AgentType.PLUGIN
-                    )
+                    agent_info = await self._analyze_agent_file(agent_file, AgentType.PLUGIN)
                     if agent_info:
                         agents.append(agent_info)
                 except Exception as e:
@@ -396,8 +386,7 @@ class AgentIntegrationAdapter:
         filtered_methods = [
             method
             for method in methods
-            if not method.startswith("_")
-            and method not in ["__init__", "__str__", "__repr__"]
+            if not method.startswith("_") and method not in ["__init__", "__str__", "__repr__"]
         ]
 
         return filtered_methods[:10]  # Limit to first 10 methods
@@ -408,16 +397,13 @@ class AgentIntegrationAdapter:
         import re
 
         # Find import statements
-        imports = re.findall(r"from\s+(\w+)", content) + re.findall(
-            r"import\s+(\w+)", content
-        )
+        imports = re.findall(r"from\s+(\w+)", content) + re.findall(r"import\s+(\w+)", content)
 
         # Filter to relevant dependencies
         relevant_deps = [
             dep
             for dep in imports
-            if dep
-            in ["asyncio", "logging", "json", "aetherra", "lyrixa", "consciousness"]
+            if dep in ["asyncio", "logging", "json", "aetherra", "lyrixa", "consciousness"]
         ]
 
         return list(set(relevant_deps))
@@ -460,9 +446,7 @@ class AgentIntegrationAdapter:
             result = AgentIntegrationResult(
                 agent_id=agent_id,
                 status=IntegrationStatus.ANALYZING,
-                capabilities=[
-                    AgentCapability(cap) for cap in agent_info.get("capabilities", [])
-                ],
+                capabilities=[AgentCapability(cap) for cap in agent_info.get("capabilities", [])],
                 integration_time=datetime.now(),
                 metadata=agent_info,
             )
@@ -545,9 +529,7 @@ class AgentIntegrationAdapter:
             collaboration_rating=0.0,  # Will be updated based on interactions
         )
 
-    async def _test_agent_integration(
-        self, agent_id: str, agent_info: Dict[str, Any]
-    ) -> bool:
+    async def _test_agent_integration(self, agent_id: str, agent_info: Dict[str, Any]) -> bool:
         """Test if agent integration is working correctly."""
         try:
             # Basic validation tests
@@ -627,9 +609,7 @@ class AgentIntegrationAdapter:
                 agent_id = agent.get("id", "")
 
                 # Check if this is a priority agent
-                is_priority = any(
-                    priority in agent_id.lower() for priority in priority_agents
-                )
+                is_priority = any(priority in agent_id.lower() for priority in priority_agents)
 
                 if is_priority:
                     logger.info(f"🔗 Integrating priority agent: {agent_id}")
@@ -639,20 +619,14 @@ class AgentIntegrationAdapter:
                     # Brief pause between integrations
                     await asyncio.sleep(0.1)
 
-        success_count = sum(
-            1 for r in results.values() if r.status == IntegrationStatus.INTEGRATED
-        )
-        logger.info(
-            f"✅ Priority integration complete: {success_count}/{len(results)} successful"
-        )
+        success_count = sum(1 for r in results.values() if r.status == IntegrationStatus.INTEGRATED)
+        logger.info(f"✅ Priority integration complete: {success_count}/{len(results)} successful")
 
         return results
 
     async def get_integration_status(self) -> Dict[str, Any]:
         """Get comprehensive integration status report."""
-        discovered_count = sum(
-            len(agents) for agents in self.discovered_agents.values()
-        )
+        discovered_count = sum(len(agents) for agents in self.discovered_agents.values())
         integrated_count = sum(
             1
             for result in self.integration_results.values()
@@ -671,8 +645,7 @@ class AgentIntegrationAdapter:
             "active_integrations": len(self.active_integrations),
             "success_rate": integrated_count / max(len(self.integration_results), 1),
             "by_category": {
-                category: len(agents)
-                for category, agents in self.discovered_agents.items()
+                category: len(agents) for category, agents in self.discovered_agents.items()
             },
             "integration_results": {
                 agent_id: {
@@ -696,9 +669,7 @@ async def get_integration_adapter(
     global _integration_adapter
 
     if _integration_adapter is None:
-        _integration_adapter = AgentIntegrationAdapter(
-            consciousness_bridge, agent_registry
-        )
+        _integration_adapter = AgentIntegrationAdapter(consciousness_bridge, agent_registry)
 
     return _integration_adapter
 

@@ -3,7 +3,6 @@ from typing import Optional
 
 import torch
 
-
 __all__ = [
     "version",
     "is_available",
@@ -15,8 +14,8 @@ try:
 except ImportError:
     _cusparselt = None  # type: ignore[assignment]
 
-__cusparselt_version: Optional[int] = None
-__MAX_ALG_ID: Optional[int] = None
+__cusparselt_version: int | None = None
+__MAX_ALG_ID: int | None = None
 
 if _cusparselt is not None:
 
@@ -39,7 +38,7 @@ else:
         return False
 
 
-def version() -> Optional[int]:
+def version() -> int | None:
     """Return the version of cuSPARSELt"""
     if not _init():
         return None
@@ -51,7 +50,7 @@ def is_available() -> bool:
     return torch._C._has_cusparselt
 
 
-def get_max_alg_id() -> Optional[int]:
+def get_max_alg_id() -> int | None:
     if not _init():
         return None
     return __MAX_ALG_ID

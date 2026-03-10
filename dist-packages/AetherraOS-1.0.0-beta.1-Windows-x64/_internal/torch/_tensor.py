@@ -4,9 +4,10 @@ import enum
 import functools
 import warnings
 from collections import OrderedDict
+from collections.abc import Callable
 from copy import deepcopy
 from numbers import Number
-from typing import Any, Callable, cast, Optional, Union
+from typing import Any, Union, cast
 
 import torch
 import torch._C as _C
@@ -172,10 +173,10 @@ class Tensor(torch._C.TensorBase):
                 new_storage = self._typed_storage()._deepcopy(memo)
                 if self.is_quantized:
                     # quantizer_params can be different type based on torch attribute
-                    quantizer_params: Union[
-                        tuple[torch.qscheme, float, int],
-                        tuple[torch.qscheme, Tensor, Tensor, int],
-                    ]
+                    quantizer_params: (
+                        tuple[torch.qscheme, float, int]
+                        | tuple[torch.qscheme, Tensor, Tensor, int]
+                    )
                     if self.qscheme() == torch.per_tensor_affine:
                         quantizer_params = (
                             self.qscheme(),
@@ -385,9 +386,9 @@ class Tensor(torch._C.TensorBase):
                     "Cannot serialize qtensor under skip_data context manager, file an issue if you need this feature"
                 )
             # quantizer_params can be different type based on torch attribute
-            quantizer_params: Union[
-                tuple[torch.qscheme, float, int], tuple[Any, Tensor, Tensor, int]
-            ]
+            quantizer_params: (
+                tuple[torch.qscheme, float, int] | tuple[Any, Tensor, Tensor, int]
+            )
             if self.qscheme() == torch.per_tensor_affine:
                 quantizer_params = (
                     torch.per_tensor_affine,
@@ -427,7 +428,7 @@ class Tensor(torch._C.TensorBase):
                 backward_hooks,
             )
             return (torch._utils._rebuild_qtensor, args_qtensor)
-        elif self.is_sparse:
+        if self.is_sparse:
             if self.layout == torch.sparse_coo:
                 args_sparse = (
                     self.layout,
@@ -438,7 +439,7 @@ class Tensor(torch._C.TensorBase):
                     f"sparse tensor __reduce_ex__ for layout `{self.layout}`"
                 )
             return (torch._utils._rebuild_sparse_tensor, args_sparse)
-        elif self.layout in {
+        if self.layout in {
             torch.sparse_csr,
             torch.sparse_csc,
             torch.sparse_bsr,
@@ -464,7 +465,7 @@ class Tensor(torch._C.TensorBase):
                 ),
             )
             return (torch._utils._rebuild_sparse_tensor, args_sparse_compressed)
-        elif self.is_nested:
+        if self.is_nested:
             if skip_data:
                 raise RuntimeError(
                     "Cannot serialize nested tensor under skip_data context manager, file an issue if you need this feature"
@@ -479,7 +480,7 @@ class Tensor(torch._C.TensorBase):
                 self._nested_tensor_storage_offsets(),
             )
             return (torch._utils._rebuild_nested_tensor, args_nested)
-        elif (
+        if (
             type(self) is not torch.Tensor
             and type(self).__torch_dispatch__ is not torch.Tensor.__torch_dispatch__
             and (
@@ -489,19 +490,7 @@ class Tensor(torch._C.TensorBase):
                     and self.data_ptr() == 0
                 )
             )
-        ):
-            arg_wrapper_subclass = (
-                type(self),
-                self.dtype,
-                tuple(self.size()),
-                self.stride(),
-                self.storage_offset(),
-                self.layout,
-                self.device,
-                self.requires_grad,
-            )
-            return (torch._utils._rebuild_wrapper_subclass, arg_wrapper_subclass)
-        elif (
+        ) or (
             type(self) is not torch.Tensor
             and type(self).__torch_dispatch__ is not torch.Tensor.__torch_dispatch__
             and (
@@ -520,47 +509,46 @@ class Tensor(torch._C.TensorBase):
                 self.requires_grad,
             )
             return (torch._utils._rebuild_wrapper_subclass, arg_wrapper_subclass)
+        v3_dtypes = torch.storage._new_dtypes()
+        if self.dtype in v3_dtypes:
+            rebuild_func = torch._utils._rebuild_tensor_v3
+            storage = self.untyped_storage()
         else:
-            v3_dtypes = torch.storage._new_dtypes()
-            if self.dtype in v3_dtypes:
-                rebuild_func = torch._utils._rebuild_tensor_v3
-                storage = self.untyped_storage()
-            else:
-                # TODO: Once we decide to break serialization FC, no longer
-                # need to wrap with TypedStorage
-                rebuild_func = torch._utils._rebuild_tensor_v2  # type: ignore[assignment]
-                storage = torch.storage.TypedStorage(
-                    wrap_storage=self._typed_storage()._untyped_storage,
-                    dtype=self.dtype,
-                    _internal=True,
-                )  # type: ignore[assignment]
+            # TODO: Once we decide to break serialization FC, no longer
+            # need to wrap with TypedStorage
+            rebuild_func = torch._utils._rebuild_tensor_v2  # type: ignore[assignment]
+            storage = torch.storage.TypedStorage(
+                wrap_storage=self._typed_storage()._untyped_storage,
+                dtype=self.dtype,
+                _internal=True,
+            )  # type: ignore[assignment]
 
-            # TODO: remove hasattr, it's a hack to support versions of torch that
-            # don't have _subclasses
-            if (
-                hasattr(torch, "_subclasses")
-                and isinstance(self, torch._subclasses.fake_tensor.FakeTensor)
-                and skip_data
-            ):
-                storage._fake_device = self.device
+        # TODO: remove hasattr, it's a hack to support versions of torch that
+        # don't have _subclasses
+        if (
+            hasattr(torch, "_subclasses")
+            and isinstance(self, torch._subclasses.fake_tensor.FakeTensor)
+            and skip_data
+        ):
+            storage._fake_device = self.device
 
-            args = (
-                storage,
-                self.storage_offset(),
-                tuple(self.size()),
-                self.stride(),
-                self.requires_grad,
-                backward_hooks,
-            )  # previously was self._backward_hooks
+        args = (
+            storage,
+            self.storage_offset(),
+            tuple(self.size()),
+            self.stride(),
+            self.requires_grad,
+            backward_hooks,
+        )  # previously was self._backward_hooks
 
-            if isinstance(storage, torch.storage.UntypedStorage):
-                args = args + (self.dtype,)  # type: ignore[assignment]
+        if isinstance(storage, torch.storage.UntypedStorage):
+            args = args + (self.dtype,)  # type: ignore[assignment]
 
-            metadata = torch._utils.get_tensor_metadata(self)
-            if metadata:
-                args = args + (metadata,)  # type: ignore[assignment]
+        metadata = torch._utils.get_tensor_metadata(self)
+        if metadata:
+            args = args + (metadata,)  # type: ignore[assignment]
 
-            return (rebuild_func, args)
+        return (rebuild_func, args)
 
     def __setstate__(self, state):
         if has_torch_function_unary(self):
@@ -572,8 +560,8 @@ class Tensor(torch._C.TensorBase):
         if len(state) == 4:
             # legacy serialization of Tensor
             self.set_(*state)
-            return
-        elif len(state) == 5:
+            return None
+        if len(state) == 5:
             # legacy serialization of Variable
             self.data = state[0]
             state = (state[3], state[4], state[2])
@@ -866,8 +854,7 @@ class Tensor(torch._C.TensorBase):
 
         if assign:
             return other.detach()
-        else:
-            return self.copy_(other).detach()
+        return self.copy_(other).detach()
 
     def __reversed__(self):
         r"""Reverses the tensor along dimension 0."""
@@ -875,12 +862,11 @@ class Tensor(torch._C.TensorBase):
             return handle_torch_function(Tensor.__reversed__, (self,), self)
         if self.dim() == 0:
             return self
-        else:
-            return self.flip(0)
+        return self.flip(0)
 
     def norm(
         self,
-        p: Optional[Union[float, str]] = "fro",
+        p: float | str | None = "fro",
         dim=None,
         keepdim=False,
         dtype=None,
@@ -925,21 +911,20 @@ class Tensor(torch._C.TensorBase):
         )
         if get_infos:
             return LU, pivots, infos
-        else:
-            return LU, pivots
+        return LU, pivots
 
     def stft(
         self,
         n_fft: int,
-        hop_length: Optional[int] = None,
-        win_length: Optional[int] = None,
-        window: "Optional[Tensor]" = None,
+        hop_length: int | None = None,
+        win_length: int | None = None,
+        window: "Tensor | None" = None,
         center: bool = True,
         pad_mode: str = "reflect",
         normalized: bool = False,
-        onesided: Optional[bool] = None,
-        return_complex: Optional[bool] = None,
-        align_to_window: Optional[bool] = None,
+        onesided: bool | None = None,
+        return_complex: bool | None = None,
+        align_to_window: bool | None = None,
     ):
         r"""See :func:`torch.stft`
 
@@ -980,13 +965,13 @@ class Tensor(torch._C.TensorBase):
     def istft(
         self,
         n_fft: int,
-        hop_length: Optional[int] = None,
-        win_length: Optional[int] = None,
-        window: "Optional[Tensor]" = None,
+        hop_length: int | None = None,
+        win_length: int | None = None,
+        window: "Tensor | None" = None,
         center: bool = True,
         normalized: bool = False,
-        onesided: Optional[bool] = None,
-        length: Optional[int] = None,
+        onesided: bool | None = None,
+        length: int | None = None,
         return_complex: bool = False,
     ):
         r"""See :func:`torch.istft`"""
@@ -1048,8 +1033,7 @@ class Tensor(torch._C.TensorBase):
 
         if isinstance(split_size, (int, torch.SymInt)):
             return torch._VF.split(self, split_size, dim)  # type: ignore[attr-defined]
-        else:
-            return torch._VF.split_with_sizes(self, split_size, dim)
+        return torch._VF.split_with_sizes(self, split_size, dim)
 
     def unique(self, sorted=True, return_inverse=False, return_counts=False, dim=None):
         r"""Returns the unique elements of the input tensor.
@@ -1224,8 +1208,7 @@ class Tensor(torch._C.TensorBase):
             return handle_torch_function(Tensor.__array__, (self,), self, dtype=dtype)
         if dtype is None:
             return self.numpy()
-        else:
-            return self.numpy().astype(dtype, copy=False)
+        return self.numpy().astype(dtype, copy=False)
 
     # Wrap Numpy array again in a suitable tensor when done, to support e.g.
     # `numpy.sin(tensor) -> tensor` or `numpy.greater(tensor, 0) -> ByteTensor`
@@ -1429,8 +1412,7 @@ class Tensor(torch._C.TensorBase):
         ):
             names, sizes = unzip_namedshape(sizes)
             return super().unflatten(dim, sizes, names)
-        else:
-            return super().unflatten(dim, sizes)
+        return super().unflatten(dim, sizes)
 
     def rename_(self, *names, **rename_map):
         """In-place version of :meth:`~Tensor.rename`."""
@@ -1502,9 +1484,7 @@ class Tensor(torch._C.TensorBase):
         """
         return self.to_sparse()
 
-    def dim_order(
-        self, *, ambiguity_check: Union[bool, list[torch.memory_format]] = False
-    ):
+    def dim_order(self, *, ambiguity_check: bool | list[torch.memory_format] = False):
         """
         dim_order(ambiguity_check=False) -> tuple
 
@@ -1606,7 +1586,8 @@ class Tensor(torch._C.TensorBase):
 
             # Check if there are any duplicate strides
             has_duplicate_strides = any(
-                earlier == later for earlier, later in zip(strides, strides[1:])
+                earlier == later
+                for earlier, later in zip(strides, strides[1:], strict=False)
             )
 
             # Check if there are any singleton dimensions
@@ -1641,8 +1622,7 @@ class Tensor(torch._C.TensorBase):
         # See Note [rename_ / rename API]
         if inplace:
             return super().rename_(names)
-        else:
-            return super().rename(names)
+        return super().rename(names)
 
     @classmethod
     def __torch_function__(cls, func, types, args=(), kwargs=None):
@@ -1669,8 +1649,7 @@ class Tensor(torch._C.TensorBase):
             ret = func(*args, **kwargs)
             if func in get_default_nowrap_functions():
                 return ret
-            else:
-                return _convert(ret, cls)
+            return _convert(ret, cls)
 
     __torch_dispatch__ = _C._disabled_torch_dispatch_impl
 
@@ -1713,14 +1692,17 @@ class Tensor(torch._C.TensorBase):
             # Stream pointers in CUDA/ROCm are uniquely numbered and can
             # be retrieved from their integer value.
             raise TypeError("stream must be ``int`` or ``none``")
-        elif stream is not None and stream != -1:
+        if stream is not None and stream != -1:
             if self.device.type == "cuda":
                 # NB: This logic handles the special case values for default
                 # streams and must be kept in sync with from_dlpack in
                 # torch/utils/dlpack.py
-                if stream == 1 and torch.version.hip is None:
-                    stream = torch.cuda.default_stream()
-                elif stream == 0 and torch.version.hip is not None:
+                if (
+                    stream == 1
+                    and torch.version.hip is None
+                    or stream == 0
+                    and torch.version.hip is not None
+                ):
                     stream = torch.cuda.default_stream()
                 else:
                     stream = torch.cuda.ExternalStream(stream)

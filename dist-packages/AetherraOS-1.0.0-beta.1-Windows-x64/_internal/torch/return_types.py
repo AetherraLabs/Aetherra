@@ -1,8 +1,7 @@
 import inspect
 
 import torch
-from torch.utils._pytree import register_pytree_node, SequenceKey
-
+from torch.utils._pytree import SequenceKey, register_pytree_node
 
 __all__ = ["pytree_register_structseq", "all_return_types"]
 

@@ -31,12 +31,12 @@ class EnabledProxy:
             return default
         if value.lower() in {"1", "true", "yes"}:
             return True
-        elif value.lower() in {"0", "false", "no"}:
+        if value.lower() in {"0", "false", "no"}:
             return False
         if value == "1v":
             print(true_message)
             return True
-        elif value == "0v":
+        if value == "0v":
             print(false_message)
             return False
         raise ValueError(f"Unknown setting of {name}. Try using 0 or 1.")
@@ -76,11 +76,11 @@ def _get_script_class(python_class):
     override = getattr(python_class, "_jit_override_qualname", None)
     if override is not None:
         python_class = _get_python_class(override)
-    return _script_classes.get(python_class, None)
+    return _script_classes.get(python_class)
 
 
 def _get_python_class(qualified_name):
-    return _name_to_pyclass.get(qualified_name, None)
+    return _name_to_pyclass.get(qualified_name)
 
 
 def _clear_class_state():
@@ -104,8 +104,7 @@ def _try_get_jit_cached_overloads(key):
     qual_names = _jit_function_overload_caching.get(key, None)
     if qual_names:
         return [_python_cu.find_function(qual_name) for qual_name in qual_names]
-    else:
-        return None
+    return None
 
 
 def _set_jit_overload_cache(key, compiled_fns):
@@ -118,8 +117,7 @@ def _try_get_jit_cached_function(key):
     qual_name = _jit_caching_layer.get(key, None)
     if qual_name:
         return _python_cu.find_function(qual_name)
-    else:
-        return None
+    return None
 
 
 def _set_jit_function_cache(key, value):

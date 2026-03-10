@@ -26,7 +26,6 @@ from .functional_sgd import _FunctionalSGD
 from .named_optimizer import _NamedOptimizer
 from .utils import as_functional_optim
 
-
 # DistributedOptimizer imports torch.distributed.rpc names, so gate availability
 # based on RPC being available.
 if hasattr(torch._C, "_rpc_init"):
@@ -34,7 +33,6 @@ if hasattr(torch._C, "_rpc_init"):
 
 from .post_localSGD_optimizer import PostLocalSGDOptimizer
 from .zero_redundancy_optimizer import ZeroRedundancyOptimizer
-
 
 __all__ = [
     "as_functional_optim",

@@ -1,14 +1,15 @@
 import copy
 import operator
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 import torch
 from torch.ao.quantization import (
-    default_weight_fake_quant,
-    default_weight_observer,
     FakeQuantizeBase,
     QConfig,
     QConfigMapping,
+    default_weight_fake_quant,
+    default_weight_observer,
 )
 from torch.ao.quantization.backend_config import BackendConfig
 from torch.ao.quantization.observer import _PartialWrapper
@@ -19,12 +20,12 @@ from torch.ao.quantization.quantize_fx import convert_to_reference_fx, prepare_f
 def _get_lstm_with_individually_observed_parts(
     float_lstm: torch.nn.LSTM,
     example_inputs: tuple[Any, ...],
-    backend_config: Optional[BackendConfig] = None,
-    linear_output_obs_ctr: Optional[_PartialWrapper] = None,
-    sigmoid_obs_ctr: Optional[_PartialWrapper] = None,
-    tanh_obs_ctr: Optional[_PartialWrapper] = None,
-    cell_state_obs_ctr: Optional[_PartialWrapper] = None,
-    hidden_state_obs_ctr: Optional[_PartialWrapper] = None,
+    backend_config: BackendConfig | None = None,
+    linear_output_obs_ctr: _PartialWrapper | None = None,
+    sigmoid_obs_ctr: _PartialWrapper | None = None,
+    tanh_obs_ctr: _PartialWrapper | None = None,
+    cell_state_obs_ctr: _PartialWrapper | None = None,
+    hidden_state_obs_ctr: _PartialWrapper | None = None,
     split_gates: bool = False,
 ) -> torch.ao.nn.quantizable.LSTM:
     """
@@ -134,7 +135,7 @@ def _get_lstm_with_individually_observed_parts(
         add_count = 0
         mul_count = 0
         for node in cell.graph.nodes:
-            op_index: Optional[tuple[Callable, int]] = None  # e.g. (torch.add, 1)
+            op_index: tuple[Callable, int] | None = None  # e.g. (torch.add, 1)
             if node.target == torch.add:
                 op_index = (torch.add, add_count)
                 add_count += 1
@@ -161,7 +162,7 @@ def _get_lstm_with_individually_observed_parts(
 
 def _get_reference_quantized_lstm_module(
     observed_lstm: torch.ao.nn.quantizable.LSTM,
-    backend_config: Optional[BackendConfig] = None,
+    backend_config: BackendConfig | None = None,
 ) -> torch.ao.nn.quantized.LSTM:
     """
     Return a `torch.ao.nn.quantized.LSTM` created from a `torch.ao.nn.quantizable.LSTM`

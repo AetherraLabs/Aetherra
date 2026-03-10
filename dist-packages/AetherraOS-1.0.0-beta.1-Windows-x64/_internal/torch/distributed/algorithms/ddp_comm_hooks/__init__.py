@@ -6,12 +6,19 @@ import torch.distributed as dist
 
 from . import (
     debugging_hooks as debugging,
+)
+from . import (
     default_hooks as default,
+)
+from . import (
     optimizer_overlap_hooks as optimizer_overlap,
+)
+from . import (
     powerSGD_hook as powerSGD,
+)
+from . import (
     quantization_hooks as quantization,
 )
-
 
 __all__ = ["DDPCommHookType", "register_ddp_comm_hook"]
 

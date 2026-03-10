@@ -7,11 +7,11 @@ import logging
 import traceback
 import warnings
 import weakref
-from collections.abc import Generator, Iterable
-from enum import auto, Enum
+from collections.abc import Callable, Generator, Iterable
+from enum import Enum, auto
 from functools import partial
 from itertools import chain
-from typing import Any, Callable, cast, no_type_check, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional, cast, no_type_check
 
 import torch
 import torch.distributed as dist
@@ -32,7 +32,6 @@ from .api import (
     StateDictConfig,
     StateDictType,
 )
-
 
 if TYPE_CHECKING:
     from torch.distributed.device_mesh import DeviceMesh
@@ -83,7 +82,7 @@ class _FSDPDeviceHandle:
         """
         if device.type == "cuda":
             return cast(_FSDPDeviceHandle, torch.cuda)
-        elif device.type == "mtia":
+        if device.type == "mtia":
             return cast(_FSDPDeviceHandle, torch.mtia)
         return cls(device)
 
@@ -112,10 +111,10 @@ class _FSDPState(_State):
         self._ignored_params: set[nn.Parameter] = set()
         # Buffer names are cleaned (without wrapper prefixes)
         self._ignored_buffer_names: set[str] = set()
-        self.process_group: Optional[dist.ProcessGroup] = None
+        self.process_group: dist.ProcessGroup | None = None
         self.rank: int = -1
         self.world_size: int = -1
-        self._device_mesh: Optional[DeviceMesh] = None
+        self._device_mesh: DeviceMesh | None = None
         self.sharding_strategy = ShardingStrategy.FULL_SHARD
         self._use_orig_params: bool = False
         self.training_state = TrainingState.IDLE
@@ -123,17 +122,17 @@ class _FSDPState(_State):
         self._state_dict_type: StateDictType = StateDictType.FULL_STATE_DICT
         self._state_dict_config: StateDictConfig = FullStateDictConfig()
         self._optim_state_dict_config: OptimStateDictConfig = FullOptimStateDictConfig()
-        self._is_root: Optional[bool] = None
-        self._handle: Optional[flat_param_file.FlatParamHandle] = None
+        self._is_root: bool | None = None
+        self._handle: flat_param_file.FlatParamHandle | None = None
         self._fully_sharded_module_to_handle: dict[
-            nn.Module, Optional[flat_param_file.FlatParamHandle]
+            nn.Module, flat_param_file.FlatParamHandle | None
         ] = {}
-        self.compute_device: Optional[torch.device] = None
+        self.compute_device: torch.device | None = None
         self._gradient_predivide_factor: int = 0
         self._gradient_postdivide_factor: int = 0
-        self._comm_hook: Optional[Callable] = None
-        self._comm_hook_state: Optional[Any] = None
-        self._unshard_event: Optional[torch.Event] = None
+        self._comm_hook: Callable | None = None
+        self._comm_hook_state: Any | None = None
+        self._unshard_event: torch.Event | None = None
         # Abstract device handle for fsdp compute device. For now,
         # the compute device must implement cuda semantics used by fsdp
         self._device_handle: _FSDPDeviceHandle = _UninitializedDeviceHandle()
@@ -141,10 +140,10 @@ class _FSDPState(_State):
         # Save these static lists to avoid the repeated tree traversals
         self._all_fsdp_states: list[_FSDPState] = []
         self._all_handles: list[flat_param_file.FlatParamHandle] = []
-        self._fsdp_extension: Optional[FSDPExtensions] = None
+        self._fsdp_extension: FSDPExtensions | None = None
 
 
-def _get_module_fsdp_state(module: nn.Module) -> Optional[_FSDPState]:
+def _get_module_fsdp_state(module: nn.Module) -> _FSDPState | None:
     state = _get_module_state(module)
     if state is None or not isinstance(state, _FSDPState):
         return None
@@ -153,7 +152,7 @@ def _get_module_fsdp_state(module: nn.Module) -> Optional[_FSDPState]:
 
 def _get_module_fsdp_state_if_fully_sharded_module(
     module: nn.Module,
-) -> Optional[_FSDPState]:
+) -> _FSDPState | None:
     state = _get_module_fsdp_state(module)
     if state is None:
         return None
@@ -206,9 +205,8 @@ def _module_handle(state: _FSDPState, module: nn.Module) -> Optional["FlatParamH
             f"Expects a fully sharded module but got {module} on rank {state.rank}"
         )
         return state._fully_sharded_module_to_handle[module]
-    else:
-        # NOTE: This assumes `module` is a `FullyShardedDataParallel` instance.
-        return module._handle
+    # NOTE: This assumes `module` is a `FullyShardedDataParallel` instance.
+    return module._handle
 
 
 @no_type_check
@@ -367,7 +365,7 @@ def _log_post_backward_hook(
 @no_type_check
 def _get_handle_fqns_from_root(
     state: _FSDPState, handle: "FlatParamHandle"
-) -> Optional[list[str]]:
+) -> list[str] | None:
     if handle is None:
         return None
     param_to_fqn = state._exec_order_data.param_to_fqn
@@ -380,7 +378,7 @@ def _apply_to_modules(
     root_module: torch.nn.Module,
     module_fn: Callable,
     return_fn: Callable,
-    filter_fqns: Optional[list[str]] = None,
+    filter_fqns: list[str] | None = None,
     *args,
     **kwargs,
 ):
@@ -418,9 +416,7 @@ def _apply_to_modules(
                     if (
                         submodule_name == "_fsdp_wrapped_module"
                         or submodule_name == "_dmp_wrapped_module"
-                    ):
-                        new_prefix = prefix
-                    elif submodule_name == "module":
+                    ) or submodule_name == "module":
                         new_prefix = prefix
             f(submodule, new_prefix, new_tree_level, *args, **kwargs)
 
@@ -541,6 +537,5 @@ def _no_dispatch_record_stream(tensor: torch.Tensor, stream: torch.Stream) -> No
         # a better version of this would just be to check if there are any modes before disabling dispatch.
         # TODO(voz): Extend a dynamo util to answer the above, unify the codepaths here.
         tensor.record_stream(stream)
-    else:
-        with no_dispatch():
-            tensor.record_stream(stream)
+    with no_dispatch():
+        tensor.record_stream(stream)

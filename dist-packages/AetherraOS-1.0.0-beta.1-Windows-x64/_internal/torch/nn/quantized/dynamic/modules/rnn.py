@@ -10,16 +10,15 @@ while adding an import statement here.
 
 from torch.ao.nn.quantized.dynamic.modules.rnn import (
     GRU,
-    GRUCell,
     LSTM,
+    GRUCell,
     LSTMCell,
-    pack_weight_bias,
     PackedParameter,
     RNNBase,
     RNNCell,
     RNNCellBase,
+    pack_weight_bias,
 )
-
 
 __all__ = [
     "pack_weight_bias",

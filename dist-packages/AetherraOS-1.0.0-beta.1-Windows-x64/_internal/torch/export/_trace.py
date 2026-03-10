@@ -8,8 +8,9 @@ import re
 import sys
 import time
 import warnings
+from collections.abc import Callable
 from contextlib import contextmanager, nullcontext
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 import torch
 import torch._dynamo
@@ -33,8 +34,8 @@ from torch._export.non_strict_utils import (
 )
 from torch._export.passes.collect_tracepoints_pass import CollectTracepointsPass
 from torch._export.passes.lift_constants_pass import (
-    _materialize_and_lift_constants,
     ConstantAttrMap,
+    _materialize_and_lift_constants,
 )
 from torch._export.utils import (
     _collect_param_buffer_metadata,
@@ -65,7 +66,7 @@ from torch._functorch.aot_autograd import (
     _detect_attribute_assignment,
     aot_export_module,
 )
-from torch._guards import detect_fake_mode, tracing, TracingContext
+from torch._guards import TracingContext, detect_fake_mode, tracing
 from torch._library.fake_class_registry import FakeScriptObject
 from torch._logging import dtrace_structured
 from torch._subclasses.fake_tensor import FakeTensorMode
@@ -81,16 +82,16 @@ from torch.export.dynamic_shapes import (
 from torch.export.exported_program import OutputKind
 from torch.fx._symbolic_trace import _ConstantAttributeType
 from torch.fx.experimental.proxy_tensor import (
+    PreDispatchTorchFunctionMode,
     get_proxy_slot,
     make_fx,
-    PreDispatchTorchFunctionMode,
     track_tensor_tree,
 )
 from torch.fx.experimental.symbolic_shapes import (
     ConstraintViolationError,
-    free_unbacked_symbols,
     GuardOnDataDependentSymNode,
     ShapeEnv,
+    free_unbacked_symbols,
 )
 from torch.fx.graph import _PyTreeCodeGen, _PyTreeInfo
 from torch.utils._pytree import TreeSpec
@@ -99,14 +100,13 @@ from torch.utils._sympy.value_ranges import ValueRangeError
 from ._safeguard import AutogradStateOpsFailSafeguard
 from ._wrapper_utils import _WrapperModule
 from .exported_program import (
-    _disable_prexisiting_fake_mode,
     ExportedProgram,
     InputKind,
     ModuleCallEntry,
     ModuleCallSignature,
+    _disable_prexisiting_fake_mode,
 )
-from .graph_signature import _convert_to_export_graph_signature, ExportGraphSignature
-
+from .graph_signature import ExportGraphSignature, _convert_to_export_graph_signature
 
 log = logging.getLogger(__name__)
 
@@ -241,8 +241,7 @@ def detect_shape_env(inputs: Any = None):
                 f"shape env from {desc2} {i2} allocated at:\n{m.stack}"
             )
         return shape_env
-    else:
-        return None
+    return None
 
 
 def _extract_fake_inputs(gm, args, kwargs):
@@ -415,7 +414,7 @@ def _preserve_requires_grad_pass(
     placeholders = [node for node in gm.graph.nodes if node.op == "placeholder"]
     assert len(sig.input_specs) == len(placeholders)
     i = 0
-    for node, spec in zip(placeholders, sig.input_specs):
+    for node, spec in zip(placeholders, sig.input_specs, strict=False):
         if spec.kind in (
             InputKind.PARAMETER,
             InputKind.BUFFER,
@@ -486,7 +485,7 @@ def _replace_unbacked_bindings(gm: torch.fx.GraphModule) -> None:
     """
     from torch._export.utils import _get_shape_env_from_gm
     from torch.fx.experimental.symbolic_shapes import _free_unbacked_symbols_with_path
-    from torch.utils._sympy.symbol import symbol_is_type, SymT
+    from torch.utils._sympy.symbol import SymT, symbol_is_type
 
     if (shape_env := _get_shape_env_from_gm(gm)) is None:
         return
@@ -553,7 +552,7 @@ def _produce_aten_artifact(
     )
     set_missing_meta_vals(gm, flat_fake_args, total_non_user_inputs)
 
-    export_graph_signature: Optional[ExportGraphSignature]
+    export_graph_signature: ExportGraphSignature | None
     export_graph_signature = _convert_to_export_graph_signature(
         graph_signature, gm, _get_non_persistent_buffers(mod)
     )
@@ -713,7 +712,7 @@ def _make_module_call_graph(
     in_spec: TreeSpec,
     out_spec: TreeSpec,
     module_call_signatures: dict[str, ModuleCallSignature],
-    forward_arg_names: Optional[list[str]] = None,
+    forward_arg_names: list[str] | None = None,
 ) -> list[ModuleCallEntry]:
     original = [
         ModuleCallEntry(fqn=fqn, signature=module_call_signatures.get(fqn))
@@ -738,8 +737,8 @@ def _make_module_call_graph(
 def _export_to_torch_ir(
     f: Callable,
     args: tuple[Any, ...],
-    kwargs: Optional[dict[str, Any]] = None,
-    dynamic_shapes: Optional[Union[dict[str, Any], tuple[Any], list[Any]]] = None,
+    kwargs: dict[str, Any] | None = None,
+    dynamic_shapes: dict[str, Any] | tuple[Any] | list[Any] | None = None,
     *,
     preserve_module_call_signature: tuple[str, ...] = (),
     disable_constraint_solver: bool = False,
@@ -930,7 +929,7 @@ def _export_to_aten_ir(
 def _get_forward_arg_names(
     mod: torch.nn.Module,
     args: tuple[Any, ...],
-    kwargs: Optional[dict[str, Any]] = None,
+    kwargs: dict[str, Any] | None = None,
 ) -> list[str]:
     """
     Gets the argument names to forward that are used, for restoring the
@@ -1117,8 +1116,8 @@ def get_ep_stats(ep: ExportedProgram) -> dict[str, Any]:
     return {"op_count": op_count, "op_set": op_set}
 
 
-_EXPORT_FLAGS: Optional[set[str]] = None
-_EXPORT_MODULE_HIERARCHY: Optional[dict[str, str]] = None
+_EXPORT_FLAGS: set[str] | None = None
+_EXPORT_MODULE_HIERARCHY: dict[str, str] | None = None
 
 
 def _log_export_wrapper(fn):
@@ -1227,7 +1226,7 @@ def _get_module_call_graph(
     export_artifact: ExportArtifact,
     preserve_module_call_signature: tuple[str, ...],
     strict_mode_export: bool,
-    forward_arg_names: Optional[list[str]] = None,
+    forward_arg_names: list[str] | None = None,
 ) -> tuple[torch.fx.GraphModule, list[ModuleCallEntry]]:
     """
     In-place modify the graph module in export_artifact, remove _export_tracepoint nodes and
@@ -1370,7 +1369,7 @@ def _convert_ts_to_export_experimental(traced_callable, args, kwargs=None):
                 _is_torch_jit_trace=True,
             ).module()
 
-        elif isinstance(traced_callable, torch.ScriptMethod) and isinstance(
+        if isinstance(traced_callable, torch.ScriptMethod) and isinstance(
             traced_callable.owner(),  # type: ignore[operator]
             (torch._C.ScriptModule, torch.nn.Module),
         ):
@@ -1397,7 +1396,7 @@ def _strict_export(
     mod: torch.nn.Module,
     args: tuple[Any, ...],
     kwargs: dict[str, Any],
-    dynamic_shapes: Optional[Union[dict[str, Any], tuple[Any], list[Any]]],
+    dynamic_shapes: dict[str, Any] | tuple[Any] | list[Any] | None,
     preserve_module_call_signature: tuple[str, ...],
     orig_in_spec: TreeSpec,
     allow_complex_guards_as_runtime_asserts: bool,
@@ -1739,9 +1738,15 @@ def _export_to_aten_ir_make_fx(
             buffers=list(named_buffers),
             user_inputs=input_names[params_len:],
             user_outputs=output_names,
-            inputs_to_parameters=dict(zip(input_names[0:param_len], named_parameters)),
+            inputs_to_parameters=dict(
+                zip(input_names[0:param_len], named_parameters, strict=False)
+            ),
             inputs_to_buffers=dict(
-                zip(input_names[param_len : param_len + buffer_len], named_buffers)
+                zip(
+                    input_names[param_len : param_len + buffer_len],
+                    named_buffers,
+                    strict=False,
+                )
             ),
             buffers_to_mutate={},
             user_inputs_to_mutate={},
@@ -1836,7 +1841,7 @@ def _non_strict_export(
     mod: torch.nn.Module,
     args: tuple[Any, ...],
     kwargs: dict[str, Any],
-    dynamic_shapes: Optional[Union[dict[str, Any], tuple[Any], list[Any]]],
+    dynamic_shapes: dict[str, Any] | tuple[Any] | list[Any] | None,
     preserve_module_call_signature: tuple[str, ...],
     orig_in_spec: TreeSpec,
     allow_complex_guards_as_runtime_asserts: bool,
@@ -1847,8 +1852,8 @@ def _non_strict_export(
     _to_aten_func can either be `_export_to_aten_ir_make_fx` or `_export_to_aten_ir`
     """
 
-    out_spec: Optional[TreeSpec] = None
-    in_spec: Optional[TreeSpec] = None
+    out_spec: TreeSpec | None = None
+    in_spec: TreeSpec | None = None
 
     module_call_specs: dict[str, dict[str, pytree.TreeSpec]] = {}
 
@@ -2012,8 +2017,8 @@ def _non_strict_export(
 def _export_for_training(
     mod: torch.nn.Module,
     args: tuple[Any, ...],
-    kwargs: Optional[dict[str, Any]] = None,
-    dynamic_shapes: Optional[Union[dict[str, Any], tuple[Any], list[Any]]] = None,
+    kwargs: dict[str, Any] | None = None,
+    dynamic_shapes: dict[str, Any] | tuple[Any] | list[Any] | None = None,
     *,
     strict: bool = True,
     preserve_module_call_signature: tuple[str, ...] = (),
@@ -2098,8 +2103,8 @@ def _export_for_training(
 def _export(
     mod: torch.nn.Module,
     args: tuple[Any, ...],
-    kwargs: Optional[dict[str, Any]] = None,
-    dynamic_shapes: Optional[Union[dict[str, Any], tuple[Any], list[Any]]] = None,
+    kwargs: dict[str, Any] | None = None,
+    dynamic_shapes: dict[str, Any] | tuple[Any] | list[Any] | None = None,
     *,
     strict: bool = True,
     preserve_module_call_signature: tuple[str, ...] = (),

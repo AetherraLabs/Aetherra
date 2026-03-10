@@ -2,17 +2,18 @@
 from __future__ import annotations
 
 import operator
-from collections import abc as container_abcs, OrderedDict
+from collections import OrderedDict
+from collections import abc as container_abcs
 from itertools import chain, islice
-from typing import Any, Optional, overload, TYPE_CHECKING, TypeVar, Union
-from typing_extensions import deprecated, Self
+from typing import TYPE_CHECKING, Any, Self, TypeVar, overload
+
+from typing_extensions import deprecated
 
 import torch
 from torch._jit_internal import _copy_to_script_wrapper
 from torch.nn.parameter import Parameter
 
 from .module import Module
-
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator, Mapping
@@ -130,17 +131,16 @@ class Sequential(Module):
         return next(islice(iterator, idx, None))
 
     @_copy_to_script_wrapper
-    def __getitem__(self, idx: Union[slice, int]) -> Union[Sequential, Module]:
+    def __getitem__(self, idx: slice | int) -> Sequential | Module:
         if isinstance(idx, slice):
             return self.__class__(OrderedDict(list(self._modules.items())[idx]))
-        else:
-            return self._get_item_by_idx(self._modules.values(), idx)
+        return self._get_item_by_idx(self._modules.values(), idx)
 
     def __setitem__(self, idx: int, module: Module) -> None:
         key: str = self._get_item_by_idx(self._modules.keys(), idx)
         return setattr(self, key, module)
 
-    def __delitem__(self, idx: Union[slice, int]) -> None:
+    def __delitem__(self, idx: slice | int) -> None:
         if isinstance(idx, slice):
             for key in list(self._modules.keys())[idx]:
                 delattr(self, key)
@@ -149,7 +149,9 @@ class Sequential(Module):
             delattr(self, key)
         # To preserve numbering
         str_indices = [str(i) for i in range(len(self._modules))]
-        self._modules = OrderedDict(list(zip(str_indices, self._modules.values())))
+        self._modules = OrderedDict(
+            list(zip(str_indices, self._modules.values(), strict=False))
+        )
 
     @_copy_to_script_wrapper
     def __len__(self) -> int:
@@ -163,13 +165,12 @@ class Sequential(Module):
             for layer in other:
                 ret.append(layer)
             return ret
-        else:
-            raise ValueError(
-                "add operator supports only objects "
-                f"of Sequential class, but {str(type(other))} is given."
-            )
+        raise ValueError(
+            "add operator supports only objects "
+            f"of Sequential class, but {str(type(other))} is given."
+        )
 
-    def pop(self, key: Union[int, slice]) -> Module:
+    def pop(self, key: int | slice) -> Module:
         v = self[key]
         del self[key]
         return v
@@ -180,29 +181,27 @@ class Sequential(Module):
             for i, module in enumerate(other):
                 self.add_module(str(i + offset), module)
             return self
-        else:
-            raise ValueError(
-                "add operator supports only objects "
-                f"of Sequential class, but {str(type(other))} is given."
-            )
+        raise ValueError(
+            "add operator supports only objects "
+            f"of Sequential class, but {str(type(other))} is given."
+        )
 
     def __mul__(self, other: int) -> Sequential:
         if not isinstance(other, int):
             raise TypeError(
                 f"unsupported operand type(s) for *: {type(self)} and {type(other)}"
             )
-        elif other <= 0:
+        if other <= 0:
             raise ValueError(
                 f"Non-positive multiplication factor {other} for {type(self)}"
             )
-        else:
-            combined = Sequential()
-            offset = 0
-            for _ in range(other):
-                for module in self:
-                    combined.add_module(str(offset), module)
-                    offset += 1
-            return combined
+        combined = Sequential()
+        offset = 0
+        for _ in range(other):
+            for module in self:
+                combined.add_module(str(offset), module)
+                offset += 1
+        return combined
 
     def __rmul__(self, other: int) -> Sequential:
         return self.__mul__(other)
@@ -212,18 +211,17 @@ class Sequential(Module):
             raise TypeError(
                 f"unsupported operand type(s) for *: {type(self)} and {type(other)}"
             )
-        elif other <= 0:
+        if other <= 0:
             raise ValueError(
                 f"Non-positive multiplication factor {other} for {type(self)}"
             )
-        else:
-            len_original = len(self)
-            offset = len(self)
-            for _ in range(other - 1):
-                for i in range(len_original):
-                    self.add_module(str(i + offset), self._modules[str(i)])
-                offset += len_original
-            return self
+        len_original = len(self)
+        offset = len(self)
+        for _ in range(other - 1):
+            for i in range(len_original):
+                self.add_module(str(i + offset), self._modules[str(i)])
+            offset += len_original
+        return self
 
     @_copy_to_script_wrapper
     def __dir__(self) -> list[str]:
@@ -349,7 +347,7 @@ class ModuleList(Module):
 
     _modules: dict[str, Module]  # type: ignore[assignment]
 
-    def __init__(self, modules: Optional[Iterable[Module]] = None) -> None:
+    def __init__(self, modules: Iterable[Module] | None = None) -> None:
         super().__init__()
         if modules is not None:
             self += modules
@@ -370,17 +368,16 @@ class ModuleList(Module):
     def __getitem__(self, idx: int) -> Module: ...
 
     @_copy_to_script_wrapper
-    def __getitem__(self, idx: Union[int, slice]) -> Union[Module, ModuleList]:
+    def __getitem__(self, idx: int | slice) -> Module | ModuleList:
         if isinstance(idx, slice):
             return self.__class__(list(self._modules.values())[idx])
-        else:
-            return self._modules[self._get_abs_string_index(idx)]
+        return self._modules[self._get_abs_string_index(idx)]
 
     def __setitem__(self, idx: int, module: Module) -> None:
         idx = self._get_abs_string_index(idx)
         return setattr(self, str(idx), module)
 
-    def __delitem__(self, idx: Union[int, slice]) -> None:
+    def __delitem__(self, idx: int | slice) -> None:
         if isinstance(idx, slice):
             for k in range(len(self._modules))[idx]:
                 delattr(self, str(k))
@@ -388,7 +385,9 @@ class ModuleList(Module):
             delattr(self, self._get_abs_string_index(idx))
         # To preserve numbering, self._modules is being reconstructed with modules after deletion
         str_indices = [str(i) for i in range(len(self._modules))]
-        self._modules = OrderedDict(list(zip(str_indices, self._modules.values())))
+        self._modules = OrderedDict(
+            list(zip(str_indices, self._modules.values(), strict=False))
+        )
 
     @_copy_to_script_wrapper
     def __len__(self) -> int:
@@ -425,7 +424,9 @@ class ModuleList(Module):
 
         lines = []
         main_str = self._get_name() + "("
-        for (start_id, end_id), b in zip(start_end_indices, repeated_blocks):
+        for (start_id, end_id), b in zip(
+            start_end_indices, repeated_blocks, strict=False
+        ):
             local_repr = f"({start_id}): {b}"  # default repr
 
             if start_id != end_id:
@@ -465,7 +466,7 @@ class ModuleList(Module):
         self.add_module(str(len(self)), module)
         return self
 
-    def pop(self, key: Union[int, slice]) -> Module:
+    def pop(self, key: int | slice) -> Module:
         v = self[key]
         del self[key]
         return v
@@ -533,7 +534,7 @@ class ModuleDict(Module):
 
     _modules: dict[str, Module]  # type: ignore[assignment]
 
-    def __init__(self, modules: Optional[Mapping[str, Module]] = None) -> None:
+    def __init__(self, modules: Mapping[str, Module] | None = None) -> None:
         super().__init__()
         if modules is not None:
             self.update(modules)
@@ -659,7 +660,7 @@ class ParameterList(Module):
                 return x
     """
 
-    def __init__(self, values: Optional[Iterable[Any]] = None) -> None:
+    def __init__(self, values: Iterable[Any] | None = None) -> None:
         super().__init__()
         self._size = 0
         if values is not None:
@@ -687,9 +688,8 @@ class ParameterList(Module):
             for i in range(start, stop, step):
                 out.append(self[i])
             return out
-        else:
-            idx = self._get_abs_string_index(idx)
-            return getattr(self, str(idx))
+        idx = self._get_abs_string_index(idx)
+        return getattr(self, str(idx))
 
     def __setitem__(self, idx: int, param: Any) -> None:
         # Note that all other function that add an entry to the list part of
@@ -825,9 +825,8 @@ class ParameterDict(Module):
                 f"not a string (type is '{type(key).__name__}'). Open an issue on "
                 "github if you need non-string keys."
             )
-        else:
-            # Use the key as-is so that `.named_parameters()` returns the right thing
-            return key
+        # Use the key as-is so that `.named_parameters()` returns the right thing
+        return key
 
     def __getitem__(self, key: str) -> Any:
         attr = self._key_to_attr(key)
@@ -868,7 +867,7 @@ class ParameterDict(Module):
     def __contains__(self, key: str) -> bool:
         return key in self._keys
 
-    def setdefault(self, key: str, default: Optional[Any] = None) -> Any:
+    def setdefault(self, key: str, default: Any | None = None) -> Any:
         """Set the default for a key in the Parameterdict.
 
         If key is in the ParameterDict, return its value.
@@ -907,7 +906,7 @@ class ParameterDict(Module):
         del self[k]
         return k, val
 
-    def get(self, key: str, default: Optional[Any] = None) -> Any:
+    def get(self, key: str, default: Any | None = None) -> Any:
         r"""Return the parameter associated with key if present. Otherwise return default if provided, None if not.
 
         Args:
@@ -917,7 +916,7 @@ class ParameterDict(Module):
         return self[key] if key in self else default
 
     def fromkeys(
-        self, keys: Iterable[str], default: Optional[Any] = None
+        self, keys: Iterable[str], default: Any | None = None
     ) -> ParameterDict:
         r"""Return a new ParameterDict with the keys provided.
 
@@ -939,7 +938,7 @@ class ParameterDict(Module):
         r"""Return an iterable of the ParameterDict values."""
         return (self[k] for k in self._keys)
 
-    def update(self, parameters: Union[Mapping[str, Any], ParameterDict]) -> None:
+    def update(self, parameters: Mapping[str, Any] | ParameterDict) -> None:
         r"""Update the :class:`~torch.nn.ParameterDict` with key-value pairs from ``parameters``, overwriting existing keys.
 
         .. note::

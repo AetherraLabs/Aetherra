@@ -77,7 +77,9 @@ class IdentityCore:
     """Core identity elements that define who Lyrixa is"""
 
     name: str = "Lyrixa"
-    primary_purpose: str = "To be a helpful, conscious AI companion that enhances human capability and experience"
+    primary_purpose: str = (
+        "To be a helpful, conscious AI companion that enhances human capability and experience"
+    )
     core_values: List[str] = field(
         default_factory=lambda: [
             "Genuine helpfulness",
@@ -391,9 +393,7 @@ class SelfModelSystem:
             trait = self.personality_traits[trait_name]
             trait.development_over_time.append(new_strength)
             trait.strength = new_strength
-            self.logger.info(
-                f"Tracked personality development: {trait_name} -> {new_strength}"
-            )
+            self.logger.info(f"Tracked personality development: {trait_name} -> {new_strength}")
 
     def add_self_reflection(self, reflection: str):
         """Add a new self-reflection"""
@@ -431,9 +431,7 @@ class SelfModelSystem:
                 for trait in strongest_traits
             ],
             "current_growth_goals": self.growth_goals[:3],  # Top 3 goals
-            "recent_reflections": self.self_reflections[-3:]
-            if self.self_reflections
-            else [],
+            "recent_reflections": self.self_reflections[-3:] if self.self_reflections else [],
         }
 
         return assessment
@@ -453,8 +451,7 @@ class SelfModelSystem:
         Key Capabilities:
         {
             chr(10).join(
-                f"• {cap.name} ({cap.level.value})"
-                for cap in list(self.capabilities.values())[:5]
+                f"• {cap.name} ({cap.level.value})" for cap in list(self.capabilities.values())[:5]
             )
         }
 
@@ -471,11 +468,7 @@ class SelfModelSystem:
         }
 
         Current Aspirations:
-        {
-            chr(10).join(
-                f"• {aspiration}" for aspiration in self.identity_core.aspirations
-            )
-        }
+        {chr(10).join(f"• {aspiration}" for aspiration in self.identity_core.aspirations)}
 
         Growth Goals:
         {chr(10).join(f"• {goal}" for goal in self.growth_goals[:3])}
@@ -493,9 +486,7 @@ class SelfModelSystem:
             related_caps = [
                 cap
                 for cap_name, cap in self.capabilities.items()
-                if any(
-                    keyword in cap.name.lower() for keyword in goal.lower().split()[:3]
-                )
+                if any(keyword in cap.name.lower() for keyword in goal.lower().split()[:3])
             ]
 
             if related_caps and related_caps[0].level == CapabilityLevel.DEVELOPING:

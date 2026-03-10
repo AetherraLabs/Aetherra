@@ -7,8 +7,9 @@ import math
 import os
 import sys
 import textwrap
+from collections.abc import Callable
 from itertools import chain, count
-from typing import Any, Callable, Optional, Protocol, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Protocol
 
 import sympy
 
@@ -19,14 +20,14 @@ import torch._ops
 from torch._inductor.runtime.runtime_utils import dynamo_timed
 from torch.fx.experimental.symbolic_shapes import ConvertIntKey, DivideByKey, SymTypes
 from torch.utils._ordered_set import OrderedSet
-from torch.utils._sympy.symbol import symbol_is_type, SymT
+from torch.utils._sympy.symbol import SymT, symbol_is_type
 
 from .. import config, ir
-from ..utils import _align, DeferredLineBase, LineContext, normalize_name
+from ..utils import DeferredLineBase, LineContext, _align, normalize_name
 from ..virtualized import V
 from .aoti_hipify_utils import maybe_hipify_code_wrapper
-from .common import get_device_op_overrides, IndentedBuffer, Kernel
-from .cpp_utils import cexpr, DEVICE_TO_ATEN, DEVICE_TO_INT, DTYPE_TO_ATEN, DTYPE_TO_CPP
+from .common import IndentedBuffer, Kernel, get_device_op_overrides
+from .cpp_utils import DEVICE_TO_ATEN, DEVICE_TO_INT, DTYPE_TO_ATEN, DTYPE_TO_CPP, cexpr
 from .wrapper import (
     EnterSubgraphLine,
     ExitSubgraphLine,
@@ -34,18 +35,17 @@ from .wrapper import (
     SymbolicCallArg,
 )
 
-
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from ..graph import GraphLowering
 
     # At most, the list nesting can go one layer deep.
-    _OUTPUT_ARGS_TYPE = list[Union[Optional[str], list[Optional[str]]]]
+    _OUTPUT_ARGS_TYPE = list[str | None | list[str | None]]
 
 
 class HasWriteLine(Protocol):
-    def writeline(self, line: Union[LineContext, DeferredLineBase, str]) -> None: ...
+    def writeline(self, line: LineContext | DeferredLineBase | str) -> None: ...
 
 
 class CppWrapperCpu(PythonWrapperCodegen):
@@ -89,9 +89,9 @@ class CppWrapperCpu(PythonWrapperCodegen):
     @staticmethod
     def create(
         is_subgraph: bool,
-        subgraph_name: Optional[str],
-        parent_wrapper: Optional[PythonWrapperCodegen],
-        partition_signatures: Optional[ir.GraphPartitionSignature] = None,
+        subgraph_name: str | None,
+        parent_wrapper: PythonWrapperCodegen | None,
+        partition_signatures: ir.GraphPartitionSignature | None = None,
     ):
         # TODO - support subgraph codegen by lifting functions. Check the
         # comment at CppWrapperCpu `codegen_subgraph` function.
@@ -290,7 +290,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
             return f"{name}_stride"
 
         def codegen_symbol(
-            sym_or_exp: Union[sympy.Symbol, sympy.Expr],
+            sym_or_exp: sympy.Symbol | sympy.Expr,
             base_name: str,
             name_fn: Callable[[str], str],
             dim: int,
@@ -914,7 +914,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
 
         with self.prefix.indent():
             # This is a mapping to the index of constant folding graph's output
-            const_index_mapping: list[Optional[tuple[int, str]]] = [None] * len(
+            const_index_mapping: list[tuple[int, str] | None] = [None] * len(
                 V.graph.const_output_index
             )
             for idx, (name, _) in enumerate(V.graph.constants.items()):
@@ -989,9 +989,9 @@ class CppWrapperCpu(PythonWrapperCodegen):
         self,
         kernel_name: str,
         kernel_body: str,
-        metadata: Optional[str] = None,
+        metadata: str | None = None,
         gpu: bool = False,
-        cpp_definition: Optional[str] = None,
+        cpp_definition: str | None = None,
     ):
         if cpp_definition is not None:
             self.header.splice(cpp_definition)
@@ -1202,7 +1202,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
         args: list[str],
         device: str,
         *,
-        debug_args: Optional[list[str]] = None,
+        debug_args: list[str] | None = None,
     ) -> None:
         """debug_args kwarg allows CppWrapperCpuArrayRef to pass in wrapped arguments in
         place of args while preserving debug printer output."""
@@ -1309,7 +1309,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
         self,
         kernel: str,
         out: str,
-        out_view: Optional[str],
+        out_view: str | None,
         args: list[str],
         device: str,
     ) -> None:
@@ -1745,7 +1745,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
         assert len(subgraph.graph.graph_inputs) == len(outer_inputs)
 
         for (inner_input, inner_input_val), outer_input in zip(
-            subgraph.graph.graph_inputs.items(), outer_inputs
+            subgraph.graph.graph_inputs.items(), outer_inputs, strict=False
         ):
             if not isinstance(inner_input_val, ir.TensorBox):
                 continue
@@ -1763,7 +1763,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
 
     def codegen_subgraph_suffix(self, subgraph, outer_inputs, outer_outputs):
         for inner_output, outer_output in zip(
-            subgraph.graph.graph_outputs, outer_outputs
+            subgraph.graph.graph_outputs, outer_outputs, strict=False
         ):
             src = inner_output.codegen_reference()
             if not isinstance(inner_output, ir.ShapeAsConstantBuffer):
@@ -1852,7 +1852,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
             self.writeline(f"RAIIAtenTensorHandle {cond_result_name};")
 
         cond_outer_inputs = []
-        for inp, out in zip(outer_carried_inputs, while_loop.outputs):
+        for inp, out in zip(outer_carried_inputs, while_loop.outputs, strict=False):
             # in ABI-compatible mode, the carried inputs are codegened
             # as buffers outside the while loop and set to the initial
             # values. at the end of each while_loop iteration, they
@@ -1896,7 +1896,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
 
     def generate_extern_kernel_args_decl_if_needed(
         self,
-        op_overload: Union[torch._ops.OpOverload, torch._ops.HigherOrderOperator],
+        op_overload: torch._ops.OpOverload | torch._ops.HigherOrderOperator,
         raw_args: Sequence[Any],
         output_args: _OUTPUT_ARGS_TYPE,
         raw_outputs: Sequence[ir.Buffer],
@@ -2001,7 +2001,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
                     f"Fall through arguments must be one of static_arg_types, got {type(arg_type)}"
                 )
 
-        for arg, arg_type in zip(raw_args, arg_types):
+        for arg, arg_type in zip(raw_args, arg_types, strict=False):
             if arg is not None:
                 if isinstance(arg_type, torch.OptionalType):
                     fill_args(arg, arg_type.getElementType())
@@ -2034,20 +2034,20 @@ class CppWrapperCpu(PythonWrapperCodegen):
                 return_type, (torch.TensorType, torch.NoneType, torch.IntType)
             ):
                 pass
-            elif isinstance(return_type, torch.OptionalType):
-                assert isinstance(return_type.getElementType(), torch.TensorType)
-            elif isinstance(return_type, torch.ListType):
+            elif isinstance(return_type, torch.OptionalType) or isinstance(
+                return_type, torch.ListType
+            ):
                 assert isinstance(return_type.getElementType(), torch.TensorType)
             else:
                 raise NotImplementedError(
                     f"return type {return_type} is not yet supported."
                 )
 
-        for output_arg, raw_output_arg in zip(output_args, raw_outputs):  # type: ignore[arg-type]
+        for output_arg, raw_output_arg in zip(output_args, raw_outputs, strict=False):  # type: ignore[arg-type]
             # None output is supported, but Optional return types are not yet supported
             if output_arg is None:
                 continue
-            elif isinstance(raw_output_arg, int):
+            if isinstance(raw_output_arg, int):
                 new_int_args.append(str(raw_output_arg))
             elif isinstance(output_arg, list):
                 for out in output_arg:
@@ -2098,7 +2098,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
         buf_name: str,
         python_kernel_name: str,
         get_args: Callable[[], Sequence[str]],
-        op_overload: Union[torch._ops.OpOverload, torch._ops.HigherOrderOperator],
+        op_overload: torch._ops.OpOverload | torch._ops.HigherOrderOperator,
         raw_args: Sequence[Any],
         outputs: Sequence[ir.Buffer],
     ) -> None:
@@ -2106,8 +2106,8 @@ class CppWrapperCpu(PythonWrapperCodegen):
         different code paths for AOT Inductor vs cpp_wrapper Inductor mode."""
 
         def extract_output_name(
-            out: Optional[Union[ir.Buffer, Sequence[ir.Buffer]]],
-        ) -> Union[Optional[str], _OUTPUT_ARGS_TYPE]:
+            out: ir.Buffer | Sequence[ir.Buffer] | None,
+        ) -> str | None | _OUTPUT_ARGS_TYPE:
             if out is None:
                 return None
             if isinstance(out, (ir.MultiOutput, ir._CollectiveKernel)):
@@ -2227,12 +2227,11 @@ if (!custom_op_wrapper) {
         assert isinstance(val, float)
         if val == float("inf"):
             return "std::numeric_limits<double>::infinity()"
-        elif val == float("-inf"):
+        if val == float("-inf"):
             return "-std::numeric_limits<double>::infinity()"
-        elif math.isnan(val):
+        if math.isnan(val):
             return "std::numeric_limits<double>::quiet_NaN()"
-        else:
-            return f"{val}"
+        return f"{val}"
 
     def generate_py_arg(self, py_args_var, idx, raw_arg, arg_type):
         def generate_py_arg_inner(lines, raw_arg, arg_type):
@@ -2262,7 +2261,7 @@ if (!custom_op_wrapper) {
                 # Py_None is a singleton, so we have to explicitly incref it here
                 lines.append("Py_INCREF(Py_None);\n")
                 return "Py_None"
-            elif isinstance(arg_type, torch.TensorType):
+            if isinstance(arg_type, torch.TensorType):
                 # In some cases, scalar arguments may be passed in place of tensors.
                 if not hasattr(raw_arg, "codegen_reference"):
                     return handle_scalar(raw_arg)
@@ -2274,43 +2273,42 @@ if (!custom_op_wrapper) {
                     raw_arg.codegen_reference(), lines
                 )
                 return f"PyCapsule_New(reinterpret_cast<void*>({base_handle}.get()), NULL, NULL)"
-            elif isinstance(arg_type, torch.OptionalType):
+            if isinstance(arg_type, torch.OptionalType):
                 return generate_py_arg_inner(lines, raw_arg, arg_type.getElementType())
-            elif isinstance(arg_type, torch.IntType):
+            if isinstance(arg_type, torch.IntType):
                 # int
                 return f"PyLong_FromLongLong({raw_arg})"
-            elif isinstance(arg_type, torch.SymIntType):
+            if isinstance(arg_type, torch.SymIntType):
                 # SymInt
                 expr = (
                     raw_arg.node.expr if isinstance(raw_arg, torch.SymInt) else raw_arg
                 )
                 return f"PyLong_FromLongLong({cexpr(expr)})"
-            elif isinstance(arg_type, torch.FloatType):
+            if isinstance(arg_type, torch.FloatType):
                 return f"PyFloat_FromDouble({self.generate_float_value(raw_arg)})"
-            elif isinstance(arg_type, torch.BoolType):
+            if isinstance(arg_type, torch.BoolType):
                 return f"PyBool_FromLong({1 if raw_arg else 0})"
-            elif isinstance(arg_type, torch.StringType):
+            if isinstance(arg_type, torch.StringType):
                 return f'PyUnicode_FromString("{raw_arg}")'
-            elif isinstance(arg_type, torch.NumberType):
+            if isinstance(arg_type, torch.NumberType):
                 # Union[bool, int, float, complex]
                 # torch/_prims_common/__init__.py
                 return handle_scalar(raw_arg)
-            elif isinstance(raw_arg, torch.device):
+            if isinstance(raw_arg, torch.device):
                 device_str, device_index = self.codegen_device(raw_arg).split(", ")
                 return f"THPDevice_New(c10::Device(static_cast<c10::DeviceType>({device_str}), {device_index}))"
-            elif isinstance(raw_arg, torch.dtype):
+            if isinstance(raw_arg, torch.dtype):
                 return f"Py_NewRef(torch::getTHPDtype(static_cast<c10::ScalarType>({self.codegen_dtype(raw_arg)})))"
-            elif isinstance(raw_arg, torch.layout):
+            if isinstance(raw_arg, torch.layout):
                 return f"Py_NewRef(torch::getTHPLayout(static_cast<c10::Layout>({self.codegen_layout(raw_arg)})))"
-            elif isinstance(raw_arg, torch.memory_format):
+            if isinstance(raw_arg, torch.memory_format):
                 return (
                     "Py_NewRef(torch::utils::getTHPMemoryFormat(static_cast<c10::MemoryFormat>("
                     f"{self.codegen_memory_format(raw_arg)})))"
                 )
-            else:
-                raise NotImplementedError(
-                    f"arg type {arg_type} is not yet supported by custom_op_wrapper"
-                )
+            raise NotImplementedError(
+                f"arg type {arg_type} is not yet supported by custom_op_wrapper"
+            )
 
         lines = []
         if isinstance(arg_type, torch.ListType):
@@ -2335,7 +2333,7 @@ if (!custom_op_wrapper) {
         self,
         get_args: Callable[[], Sequence[str]],
         op_overload: torch._ops.OpOverload,
-        output_args: Sequence[Optional[str]],
+        output_args: Sequence[str | None],
         raw_outputs: Sequence[ir.Buffer],
     ) -> None:
         """Generate fallback kernel calls with runtime (non-AOT) dispatch.  This can
@@ -2347,7 +2345,9 @@ if (!custom_op_wrapper) {
         if raw_outputs:
             declarations_before_scope = [
                 f"RAIIAtenTensorHandle {output_arg};"
-                for output_arg, raw_output_arg in zip(output_args, raw_outputs)  # type: ignore[arg-type]
+                for output_arg, raw_output_arg in zip(
+                    output_args, raw_outputs, strict=False
+                )  # type: ignore[arg-type]
                 if output_arg is not None
                 and not isinstance(raw_output_arg, ir.MutationOutput)
             ]
@@ -2417,7 +2417,9 @@ if (!custom_op_wrapper) {
             codegen_args = get_args()
             ivalue_args = (
                 parse_arg(a.type, c)
-                for a, c in zip(op_overload._schema.arguments, codegen_args)
+                for a, c in zip(
+                    op_overload._schema.arguments, codegen_args, strict=False
+                )
             )
             array_len = max(len(codegen_args), len(output_args))
             dispatch_lines.writeline(
@@ -2453,7 +2455,7 @@ if (!custom_op_wrapper) {
         python_kernel_name: str,
         op_overload: torch._ops.OpOverload,
         raw_args: Sequence[Any],
-        output_args: Sequence[Optional[str]],
+        output_args: Sequence[str | None],
         raw_outputs: Sequence[ir.Buffer],
     ) -> None:
         """Generate fallback kernel calls with runtime (non-AOT) dispatch.  This can
@@ -2478,7 +2480,7 @@ if (!custom_op_wrapper) {
         )
 
         for idx, (raw_arg, schema_arg) in enumerate(
-            zip(raw_args, op_overload._schema.arguments)
+            zip(raw_args, op_overload._schema.arguments, strict=False)
         ):
             lines += self.generate_py_arg(
                 py_args_var, idx + 1, raw_arg, schema_arg.real_type
@@ -2510,7 +2512,9 @@ if (!custom_op_wrapper) {
         if raw_outputs:
             declarations_before_scope = [
                 f"RAIIAtenTensorHandle {output_arg};"
-                for output_arg, raw_output_arg in zip(output_args, raw_outputs)  # type: ignore[arg-type]
+                for output_arg, raw_output_arg in zip(
+                    output_args, raw_outputs, strict=False
+                )  # type: ignore[arg-type]
                 if output_arg is not None
                 and not isinstance(raw_output_arg, ir.MutationOutput)
             ]
@@ -2527,7 +2531,7 @@ if (!custom_op_wrapper) {
 
     def generate_fallback_kernel_with_runtime_lookup_aot(
         self,
-        op_overload: Union[torch._ops.OpOverload, torch._ops.HigherOrderOperator],
+        op_overload: torch._ops.OpOverload | torch._ops.HigherOrderOperator,
         raw_args: Sequence[Any],
         output_args: _OUTPUT_ARGS_TYPE,
         raw_outputs: Sequence[ir.Buffer],
@@ -2569,67 +2573,62 @@ if (!custom_op_wrapper) {
     def c_type_for_prim_type(self, val, type_) -> str:
         if isinstance(type_, torch.OptionalType):
             return f"{self.c_type_for_prim_type(val, type_.getElementType())}*"
-        elif isinstance(type_, torch.TensorType):
+        if isinstance(type_, torch.TensorType):
             return "AtenTensorHandle"
-        elif isinstance(type_, (torch.IntType, torch.SymIntType)):
+        if isinstance(type_, (torch.IntType, torch.SymIntType)):
             return "int64_t"
-        elif isinstance(
+        if isinstance(
             type_, (torch.BoolType, torch.SymBoolType, torch.EnumType)
         ) or repr(type_) in ("Layout", "MemoryFormat", "ScalarType"):
             return "int32_t"
-        elif isinstance(type_, torch.FloatType):
+        if isinstance(type_, torch.FloatType):
             return "double"
-        elif isinstance(type_, torch.NumberType):
+        if isinstance(type_, torch.NumberType):
             if isinstance(val, bool):
                 return "int32_t"
-            elif isinstance(val, (int, float)):
+            if isinstance(val, (int, float)):
                 return "double"
-            elif val is None:
+            if val is None:
                 # This could happen when val is an optional value
                 return "double"
-            else:
-                raise AssertionError(
-                    f"Unexpected type in c_type_for_prim_type: {type_=}"
-                )
-        elif isinstance(type_, torch.StringType):
-            return "const char*"
-        else:
             raise AssertionError(f"Unexpected type in c_type_for_prim_type: {type_=}")
+        if isinstance(type_, torch.StringType):
+            return "const char*"
+        raise AssertionError(f"Unexpected type in c_type_for_prim_type: {type_=}")
 
     def val_to_arg_str_for_prim_type(self, val, type_) -> str:
         # TODO: not using type_ as the first step of refactoring. Will update this later.
         if isinstance(val, bool):
             return "1" if val else "0"
-        elif isinstance(val, int):
+        if isinstance(val, int):
             # uint64_t is long on Linux, but long long on MacOS and Windows
             return f"{val}LL" if sys.platform in ["darwin", "win32"] else f"{val}L"
-        elif isinstance(val, complex):
+        if isinstance(val, complex):
             return f"c10::complex<double>{{ {self.generate_float_value(val.real)}, {self.generate_float_value(val.imag)} }}"
-        elif isinstance(val, str):
+        if isinstance(val, str):
             return f'"{val}"'
-        elif isinstance(
+        if isinstance(
             val, (ir.Buffer, ir.ReinterpretView, ir.StorageBox, ir.TensorBox)
         ):
             return val.codegen_reference()
-        elif isinstance(val, torch.device):
+        if isinstance(val, torch.device):
             return self.codegen_device(val)
-        elif isinstance(val, torch.dtype):
+        if isinstance(val, torch.dtype):
             return self.codegen_dtype(val)
-        elif isinstance(val, torch.layout):
+        if isinstance(val, torch.layout):
             return self.codegen_layout(val)
-        elif isinstance(val, torch.memory_format):
+        if isinstance(val, torch.memory_format):
             return self.codegen_memory_format(val)
-        elif isinstance(val, float):
+        if isinstance(val, float):
             return self.generate_float_value(val)
-        elif isinstance(val, (list, tuple)):
+        if isinstance(val, (list, tuple)):
             # FIXME: This happens because type_ is not always properly set to torch.ListType
             return f"{{{', '.join(self.val_to_arg_str(x, None) for x in val)}}}"
-        elif isinstance(val, SymTypes):
+        if isinstance(val, SymTypes):
             return cexpr(val.node.expr)
-        elif isinstance(val, sympy.Expr):
+        if isinstance(val, sympy.Expr):
             return cexpr(val)
-        else:
-            return repr(val)
+        return repr(val)
 
     def val_to_arg_str(self, val, type_=None) -> str:
         if val is None:
@@ -2721,7 +2720,7 @@ if (!custom_op_wrapper) {
         return self.val_to_arg_str_for_prim_type(val, type_)
 
     def create_tmp_raii_handle_var_if_needed(
-        self, handle: str, writer: Optional[Union[HasWriteLine, list[str]]] = None
+        self, handle: str, writer: HasWriteLine | list[str] | None = None
     ) -> str:
         """If the input handle is an rvalue RAII tensor, creates an lvalue variable for
         it in writer.  Returns a variable name that can be used to access handle."""

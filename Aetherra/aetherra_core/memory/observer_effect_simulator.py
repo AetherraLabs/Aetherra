@@ -328,9 +328,7 @@ class ObserverEffectSimulator:
 
         return memory_view
 
-    async def _get_or_create_memory_view(
-        self, memory_node_id: str
-    ) -> LayeredMemoryView:
+    async def _get_or_create_memory_view(self, memory_node_id: str) -> LayeredMemoryView:
         """Get existing memory view or create new layered view"""
         if memory_node_id in self.memory_states:
             return self.memory_states[memory_node_id]
@@ -338,9 +336,7 @@ class ObserverEffectSimulator:
         # Try to load from database
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT * FROM layered_memory_views WHERE node_id = ?", (memory_node_id,)
-        )
+        cursor.execute("SELECT * FROM layered_memory_views WHERE node_id = ?", (memory_node_id,))
         row = cursor.fetchone()
         conn.close()
 
@@ -394,14 +390,10 @@ class ObserverEffectSimulator:
             last_accessed=row[9],
         )
 
-    async def _create_layered_view(
-        self, fractal_node: FractalNode
-    ) -> LayeredMemoryView:
+    async def _create_layered_view(self, fractal_node: FractalNode) -> LayeredMemoryView:
         """Create layered memory view from fractal node"""
         # Reconstruct full memory
-        full_memory = await self.fractal_encoder.reconstruct_memory(
-            fractal_node.node_id
-        )
+        full_memory = await self.fractal_encoder.reconstruct_memory(fractal_node.node_id)
 
         # Create surface layer (summary + emotional tags)
         surface_layer = await self._extract_surface_layer(full_memory, fractal_node)
@@ -442,9 +434,7 @@ class ObserverEffectSimulator:
             "pattern_count": len(fractal_node.pattern_refs),
         }
 
-    async def _extract_core_layer(
-        self, memory: Any, fractal_node: FractalNode
-    ) -> Dict[str, Any]:
+    async def _extract_core_layer(self, memory: Any, fractal_node: FractalNode) -> Dict[str, Any]:
         """Extract core layer: compressed raw data"""
         return {
             "compressed_content": await self._compress_content(memory),
@@ -508,9 +498,7 @@ class ObserverEffectSimulator:
             if len(words) <= 10:
                 return content_str
 
-            return (
-                f"{' '.join(words[:3])}...{' '.join(words[-3:])} [{len(words)} words]"
-            )
+            return f"{' '.join(words[:3])}...{' '.join(words[-3:])} [{len(words)} words]"
 
     async def _calculate_collapse_strength(
         self,
@@ -546,9 +534,7 @@ class ObserverEffectSimulator:
             elif context.get("intent") == "quick_lookup":
                 context_modifier = 0.5
 
-        collapse_strength = (
-            layer_strength * frequency_modifier * time_modifier * context_modifier
-        )
+        collapse_strength = layer_strength * frequency_modifier * time_modifier * context_modifier
 
         # Clamp to valid range
         return max(0.0, min(1.0, collapse_strength))
@@ -571,15 +557,11 @@ class ObserverEffectSimulator:
         if collapse_strength > observer_profile.collapse_threshold:
             # Strong access - memory becomes sharper
             fidelity_change = observer_profile.sharpening_factor * collapse_strength
-            memory_view.current_fidelity = min(
-                1.0, memory_view.current_fidelity + fidelity_change
-            )
+            memory_view.current_fidelity = min(1.0, memory_view.current_fidelity + fidelity_change)
         else:
             # Weak access - slight degradation
             fidelity_change = -observer_profile.decay_factor * (1.0 - collapse_strength)
-            memory_view.current_fidelity = max(
-                0.1, memory_view.current_fidelity + fidelity_change
-            )
+            memory_view.current_fidelity = max(0.1, memory_view.current_fidelity + fidelity_change)
 
         # Modify content based on access layer and fidelity
         if access_layer == AccessLayer.DEEP and memory_view.current_fidelity > 0.8:
@@ -646,9 +628,7 @@ class ObserverEffectSimulator:
         conn.commit()
         conn.close()
 
-    async def _update_meta_memory(
-        self, memory_node_id: str, access_record: MemoryAccess
-    ):
+    async def _update_meta_memory(self, memory_node_id: str, access_record: MemoryAccess):
         """Update meta-memory tracking"""
         meta_memory = await self._get_or_create_meta_memory(memory_node_id)
 
@@ -660,9 +640,7 @@ class ObserverEffectSimulator:
         if observer_id not in meta_memory.observer_influence_map:
             meta_memory.observer_influence_map[observer_id] = 0.0
 
-        meta_memory.observer_influence_map[
-            observer_id
-        ] += access_record.collapse_strength
+        meta_memory.observer_influence_map[observer_id] += access_record.collapse_strength
 
         # Calculate cognitive drift
         if len(meta_memory.access_pattern) > 1:
@@ -789,9 +767,7 @@ class ObserverEffectSimulator:
             "SELECT AVG(fidelity_after - fidelity_before) as avg_drift FROM memory_accesses"
         )
         drift_result = cursor.fetchone()
-        avg_fidelity_drift = (
-            drift_result[0] if drift_result and drift_result[0] else 0.0
-        )
+        avg_fidelity_drift = drift_result[0] if drift_result and drift_result[0] else 0.0
 
         # Most accessed memories
         cursor.execute(
@@ -811,8 +787,7 @@ class ObserverEffectSimulator:
             },
             "average_fidelity_drift": avg_fidelity_drift,
             "most_accessed_memories": [
-                {"memory_id": mem_id, "access_count": count}
-                for mem_id, count in top_accessed
+                {"memory_id": mem_id, "access_count": count} for mem_id, count in top_accessed
             ],
             "total_observer_profiles": len(self.observer_profiles),
             "total_memory_views": len(self.memory_states),
@@ -833,9 +808,7 @@ class ObserverEffectSimulator:
                 decay_rate = 0.1 * (time_since_access / threshold_seconds)
                 decay_amount = min(0.5, decay_rate)  # Max 50% decay
 
-                memory_view.current_fidelity = max(
-                    0.1, memory_view.current_fidelity - decay_amount
-                )
+                memory_view.current_fidelity = max(0.1, memory_view.current_fidelity - decay_amount)
                 await self._update_memory_view(memory_view)
                 decay_count += 1
 

@@ -27,8 +27,7 @@ class Conj(Constraint):
     def __eq__(self, other):
         if isinstance(other, Conj):
             return self.conjucts == other.conjucts and self.conjucts == other.conjucts
-        else:
-            return False
+        return False
 
     def __repr__(self):
         return f"And({self.conjucts})"
@@ -46,8 +45,7 @@ class Disj(Constraint):
             return (
                 self.disjuncts == other.disjuncts and self.disjuncts == other.disjuncts
             )
-        else:
-            return False
+        return False
 
     def __repr__(self):
         return f"Or({self.disjuncts})"
@@ -63,8 +61,7 @@ class Prod(Constraint):
     def __eq__(self, other):
         if isinstance(other, Prod):
             return self.products == other.products and self.products == other.products
-        else:
-            return False
+        return False
 
     def __repr__(self):
         return f"Product({self.products})"
@@ -120,8 +117,7 @@ class BinaryConstraint(Constraint):
             return (
                 self.lhs == other.lhs and self.rhs == other.rhs and self.op == other.op
             )
-        else:
-            return False
+        return False
 
     def __repr__(self):
         return f"({self.lhs} {self.op} {self.rhs})"
@@ -182,8 +178,7 @@ class TGreatestUpperBound(Constraint):
                 and self.rhs1 == other.rhs1
                 and self.rhs2 == other.rhs2
             )
-        else:
-            return False
+        return False
 
 
 class DGreatestUpperBound(Constraint):
@@ -215,8 +210,7 @@ class DGreatestUpperBound(Constraint):
                 and self.rhs1 == other.rhs1
                 and self.rhs2 == other.rhs2
             )
-        else:
-            return False
+        return False
 
 
 class CanReshape(Constraint):
@@ -238,8 +232,7 @@ class CanReshape(Constraint):
     def __eq__(self, other):
         if isinstance(other, CanReshape):
             return self.src == other.src and self.target == other.target
-        else:
-            return False
+        return False
 
 
 class IndexSelect(Constraint):
@@ -281,8 +274,7 @@ class IndexSelect(Constraint):
                 and self.output == other.output
                 and self.input_var == other.input_var
             )
-        else:
-            return False
+        return False
 
 
 class Transpose(Constraint):
@@ -324,8 +316,7 @@ class Transpose(Constraint):
                 and self.output == other.output
                 and self.input_var == other.input_var
             )
-        else:
-            return False
+        return False
 
 
 class GetItem(Constraint):
@@ -355,8 +346,7 @@ class GetItem(Constraint):
                 and self.index == other.index
                 and self.input_var == other.input_var
             )
-        else:
-            return False
+        return False
 
 
 class GetItemTensor(Constraint):
@@ -388,8 +378,7 @@ class GetItemTensor(Constraint):
                 and self.index_tuple == other.index_tuple
                 and self.input_var == other.input_var
             )
-        else:
-            return False
+        return False
 
 
 class CalcConv(Constraint):
@@ -440,8 +429,7 @@ class CalcConv(Constraint):
                 and self.dilation == other.dilation
                 and self.matching_constraint == other.matching_constraint
             )
-        else:
-            return False
+        return False
 
 
 class CalcMaxPool(Constraint):
@@ -488,8 +476,7 @@ class CalcMaxPool(Constraint):
                 and self.dilation == other.dilation
                 and self.matching_constraint == other.matching_constraint
             )
-        else:
-            return False
+        return False
 
 
 class ApplyBroadcasting(Constraint):
@@ -513,8 +500,7 @@ class ApplyBroadcasting(Constraint):
                 and self.input1 == other.input1
                 and self.input2 == other.input2
             )
-        else:
-            return False
+        return False
 
     def __repr__(self):
         return (
@@ -555,8 +541,7 @@ class CalcProduct(Constraint):
                 and self.flattened == other.flattened
             )
 
-        else:
-            return False
+        return False
 
     def __repr__(self):
         return f"{self.flattened} = CalcProduct({self.start}, {self.end}, {self.dims_to_flatten})"
@@ -579,8 +564,7 @@ class TVar:
     def __eq__(self, other):
         if isinstance(other, TVar):
             return self.tvar == other.tvar
-        else:
-            return False
+        return False
 
 
 class DVar:
@@ -600,8 +584,7 @@ class DVar:
     def __eq__(self, other):
         if isinstance(other, DVar):
             return self.c == other.c
-        else:
-            return False
+        return False
 
 
 class BVar:
@@ -621,22 +604,19 @@ class BVar:
     def __eq__(self, other):
         if isinstance(other, BVar):
             return self.c == other.c
-        else:
-            return False
+        return False
 
 
 def is_algebraic_expression(constraint):
     if isinstance(constraint, BinConstraintD):
         return constraint.op in [op_add, op_sub, op_div, op_mul, op_mod]
-    else:
-        return isinstance(constraint, Prod)
+    return isinstance(constraint, Prod)
 
 
 def is_bool_expr(constraint):
     if isinstance(constraint, BinConstraintD):
         return constraint.op in [op_gt, op_lt, op_neq, op_eq]
-    else:
-        return isinstance(constraint, (BVar, Conj, Disj))
+    return isinstance(constraint, (BVar, Conj, Disj))
 
 
 def is_dim(d):

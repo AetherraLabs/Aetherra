@@ -1,5 +1,5 @@
 # mypy: allow-untyped-defs
-from typing import Any, Optional, Union
+from typing import Any
 
 import torch
 from torch._subclasses import FakeTensor
@@ -24,7 +24,6 @@ from torch.ao.quantization.quantizer import (
 )
 from torch.fx import Graph, GraphModule, Node
 from torch.fx.node import Argument
-
 
 # TODO: make pt2e folder private?
 __all__ = [
@@ -216,7 +215,7 @@ def _get_edge_or_node_to_group_id(
     # means the observer of key should be shared with observer with value, by default it will
     # be shared with itself
     shared_with_map: dict[EdgeOrNode, EdgeOrNode] = {
-        k: k for k in edge_or_node_to_qspec.keys()
+        k: k for k in edge_or_node_to_qspec
     }
     for edge_or_node, qspec in edge_or_node_to_qspec.items():
         if isinstance(edge_or_node, torch.fx.Node):
@@ -278,7 +277,7 @@ def _get_edge_or_node_to_group_id(
     # now that we get the sharing relations between all edges and nodes, we can assingn group ids
     cur_group_id = 0
     edge_or_node_to_group_id: dict[EdgeOrNode, int] = {}
-    for edge_or_node in shared_with_map.keys():
+    for edge_or_node in shared_with_map:
         root = _find_root_edge_or_node(edge_or_node, shared_with_map)
         if root not in edge_or_node_to_group_id:
             edge_or_node_to_group_id[root] = cur_group_id
@@ -312,7 +311,7 @@ def _get_obs_or_fq_map(
 
 
 def _maybe_insert_input_observer_for_arg_or_kwarg(
-    node: Union[Node, Any],
+    node: Node | Any,
     arg: Argument,
     qconfig: QConfigAny,
     model: torch.nn.Module,
@@ -363,7 +362,7 @@ def _maybe_insert_input_observer_for_arg_or_kwarg(
     if input_edge_obs_or_fq is None:
         return new_arg
 
-    arg_as_output_obs_or_fq = obs_or_fq_map.get(original_arg, None)
+    arg_as_output_obs_or_fq = obs_or_fq_map.get(original_arg)
     # the arg is observed as the output and is using the same instance as the input_edge
     # we'll reuse the inserted observer/fake_quant
     if arg_as_output_obs_or_fq is not None and id(arg_as_output_obs_or_fq) == id(
@@ -452,7 +451,7 @@ def _maybe_insert_output_observer_for_node(
     graph: Graph,
     obs_or_fq_map: dict[EdgeOrNode, ObserverOrFakeQuantize],
     is_qat: bool,
-) -> Optional[Node]:
+) -> Node | None:
     if node in obs_or_fq_map:
         output_act_obs_or_fq = obs_or_fq_map[node]
         new_output = _insert_obs_or_fq(

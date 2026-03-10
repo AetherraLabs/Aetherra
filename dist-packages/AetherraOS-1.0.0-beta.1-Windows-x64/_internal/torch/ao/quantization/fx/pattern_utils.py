@@ -7,7 +7,6 @@ from torch.ao.quantization.fake_quantize import FixedQParamsFakeQuantize
 from torch.ao.quantization.observer import ObserverBase
 from torch.ao.quantization.utils import Pattern
 
-
 __all__ = [
     "get_default_fusion_patterns",
     "get_default_quant_patterns",
@@ -68,8 +67,7 @@ def get_default_output_activation_post_process_map(
 ) -> dict[Pattern, ObserverBase]:
     if is_training:
         return copy.copy(_DEFAULT_OUTPUT_FAKE_QUANTIZE_MAP)
-    else:
-        return copy.copy(_DEFAULT_OUTPUT_OBSERVER_MAP)
+    return copy.copy(_DEFAULT_OUTPUT_OBSERVER_MAP)
 
 
 # Example use of register pattern function:

@@ -24,21 +24,19 @@ SymPy expressions yet, despite sympy.Min and sympy.Max existing.
 import itertools
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Literal, Optional, overload, Union
-from typing_extensions import TypeAlias
+from typing import Any, Literal, TypeAlias, Union, overload
 
 import sympy
 
 import torch
 from torch._prims_common import dtype_to_type, is_integer_dtype
 from torch.utils._sympy.functions import FloorDiv, ModularIndexing, Where
-from torch.utils._sympy.value_ranges import bound_sympy, ValueRanges
+from torch.utils._sympy.value_ranges import ValueRanges, bound_sympy
 
 from .ops_handler import DefaultHandler
 from .sizevars import statically_known_true
 from .utils import generate_assert
 from .virtualized import V
-
 
 _ExprType = Union[sympy.Expr, float, int, bool]
 
@@ -81,18 +79,18 @@ class SymPyOps:
         return value
 
     @staticmethod
-    def constant(value: Union[int, float, bool], dtype: torch.dtype) -> TypedExpr:
+    def constant(value: int | float | bool, dtype: torch.dtype) -> TypedExpr:
         return TypedExpr(value, dtype)
 
     @staticmethod
-    def index_expr(value: Union[sympy.Expr, int], dtype: torch.dtype) -> TypedExpr:
+    def index_expr(value: sympy.Expr | int, dtype: torch.dtype) -> TypedExpr:
         return TypedExpr(value, dtype)
 
     @staticmethod
     def to_dtype(
         value: TypedExpr,
         dtype: torch.dtype,
-        src_dtype: Optional[torch.dtype] = None,
+        src_dtype: torch.dtype | None = None,
         use_compute_types: bool = False,
     ) -> TypedExpr:
         return TypedExpr(value.expr, dtype)
@@ -133,7 +131,7 @@ class SymPyOps:
         return TypedExpr(FloorDiv(x.expr, y.expr), result_type)
 
     @staticmethod
-    def mod(x: TypedExpr, y: TypedExpr) -> Optional[TypedExpr]:
+    def mod(x: TypedExpr, y: TypedExpr) -> TypedExpr | None:
         result_type = torch.promote_types(x.dtype, y.dtype)
         if not is_integer_dtype(result_type):
             return NotImplemented
@@ -142,7 +140,7 @@ class SymPyOps:
         return TypedExpr(result_expr, result_type)
 
     @staticmethod
-    def remainder(x: TypedExpr, y: TypedExpr) -> Optional[TypedExpr]:
+    def remainder(x: TypedExpr, y: TypedExpr) -> TypedExpr | None:
         result_type = torch.promote_types(x.dtype, y.dtype)
         if not is_integer_dtype(result_type):
             return NotImplemented
@@ -185,7 +183,7 @@ class IndexPropVar:
         )
 
 
-IndexPropResult: TypeAlias = Union[IndexPropVar, tuple["IndexPropResult", ...]]
+IndexPropResult: TypeAlias = IndexPropVar | tuple["IndexPropResult", ...]
 
 
 class IndexPropagation(DefaultHandler):
@@ -217,7 +215,7 @@ class IndexPropagation(DefaultHandler):
 
         axioms = []
         for x, s in iter_ranges.items():
-            axioms.append(0 <= x)
+            axioms.append(x >= 0)
             axioms.append(x < s)
         self.axioms = tuple(axioms) + self.shape_env.get_axioms()
 
@@ -228,7 +226,7 @@ class IndexPropagation(DefaultHandler):
             return self._inner.constant(val, dtype)
         return self._inner.index_expr(expr, dtype)
 
-    def unwrap(self, a: Union[Any, IndexPropVar]) -> Any:
+    def unwrap(self, a: Any | IndexPropVar) -> Any:
         if isinstance(a, (list, tuple)):
             return tuple(self.unwrap(v) for v in a)
 
@@ -271,7 +269,7 @@ class IndexPropagation(DefaultHandler):
         self, name: str, args: Sequence[Any], kwargs: dict[str, Any]
     ) -> IndexPropResult:
         # Build a new SymPy expression from this ops call
-        def unwrap(a: Union[Any, IndexPropVar]) -> Any:
+        def unwrap(a: Any | IndexPropVar) -> Any:
             if not isinstance(a, IndexPropVar):
                 return a
             return a.value
@@ -326,7 +324,7 @@ class IndexPropagation(DefaultHandler):
 
     def indirect_indexing(
         self,
-        index: Union[Any, IndexPropVar],
+        index: Any | IndexPropVar,
         size: Any,
         check: bool = True,
         wrap_neg=True,
@@ -342,15 +340,14 @@ class IndexPropagation(DefaultHandler):
             # TODO Perhaps move this logic to the simplify indexing pass
             def wrap_expr(expr):
                 # Positive, negative, mixed
-                if self.statically_true(0 <= expr):
+                if self.statically_true(expr >= 0):
                     return expr
-                elif self.statically_true(expr < 0):
+                if self.statically_true(expr < 0):
                     return expr + size
-                else:
-                    return Where(expr < 0, expr + size, expr)
+                return Where(expr < 0, expr + size, expr)
 
             # Sometimes it's easier to prove 0 <= expr than the weaker -size <= expr
-            can_prove_lower = self.statically_true(0 <= expr) or self.statically_true(
+            can_prove_lower = self.statically_true(expr >= 0) or self.statically_true(
                 -size <= expr
             )
             can_prove_upper = self.statically_true(expr < size)

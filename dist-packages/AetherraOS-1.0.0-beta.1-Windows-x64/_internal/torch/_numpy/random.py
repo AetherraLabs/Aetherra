@@ -7,17 +7,16 @@ NumPy has strict guarantees on reproducibility etc; here we don't give any.
 Q: default dtype is float64 in numpy
 
 """
+
 from __future__ import annotations
 
 import functools
 from math import sqrt
-from typing import Optional
 
 import torch
 
 from . import _dtypes_impl, _util
-from ._normalizations import array_or_scalar, ArrayLike, normalizer
-
+from ._normalizations import ArrayLike, array_or_scalar, normalizer
 
 __all__ = [
     "seed",
@@ -46,29 +45,28 @@ def deco_stream(func):
     def inner(*args, **kwds):
         if not use_numpy_random():
             return func(*args, **kwds)
-        else:
-            import numpy
+        import numpy
 
-            from ._ndarray import ndarray
+        from ._ndarray import ndarray
 
-            f = getattr(numpy.random, func.__name__)
+        f = getattr(numpy.random, func.__name__)
 
-            # numpy funcs accept numpy ndarrays, unwrap
-            args = tuple(
-                arg.tensor.numpy() if isinstance(arg, ndarray) else arg for arg in args
-            )
-            kwds = {
-                key: val.tensor.numpy() if isinstance(val, ndarray) else val
-                for key, val in kwds.items()
-            }
+        # numpy funcs accept numpy ndarrays, unwrap
+        args = tuple(
+            arg.tensor.numpy() if isinstance(arg, ndarray) else arg for arg in args
+        )
+        kwds = {
+            key: val.tensor.numpy() if isinstance(val, ndarray) else val
+            for key, val in kwds.items()
+        }
 
-            value = f(*args, **kwds)
+        value = f(*args, **kwds)
 
-            # `value` can be either numpy.ndarray or python scalar (or None)
-            if isinstance(value, numpy.ndarray):
-                value = ndarray(torch.as_tensor(value))
+        # `value` can be either numpy.ndarray or python scalar (or None)
+        if isinstance(value, numpy.ndarray):
+            value = ndarray(torch.as_tensor(value))
 
-            return value
+        return value
 
     return inner
 
@@ -154,7 +152,7 @@ def randint(low, high=None, size=None):
 
 @deco_stream
 @normalizer
-def choice(a: ArrayLike, size=None, replace=True, p: Optional[ArrayLike] = None):
+def choice(a: ArrayLike, size=None, replace=True, p: ArrayLike | None = None):
     # https://stackoverflow.com/questions/59461811/random-choice-with-pytorch
     if a.numel() == 1:
         a = torch.arange(a)

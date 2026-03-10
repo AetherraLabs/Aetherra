@@ -15,7 +15,6 @@ from .backend_config import (
     ObservationType,
 )
 
-
 __all__ = [
     "get_tensorrt_backend_config",
     "get_tensorrt_backend_config_dict",

@@ -6,9 +6,8 @@ Blueprint updates counters; metrics exporter reads them.
 from __future__ import annotations
 
 # Standard library imports
-from typing import Dict, List
 
-plugin_metrics: Dict[str, int] = {
+plugin_metrics: dict[str, int] = {
     "registrations_total": 0,
     "duplicates_total": 0,
     "validation_errors_total": 0,
@@ -18,7 +17,7 @@ plugin_metrics: Dict[str, int] = {
 
 # Latency histogram buckets (ms) cumulative counts
 _latency_buckets = [5, 10, 25, 50, 100, 250, 500, 1000]
-plugin_latency_hist: Dict[int, int] = {b: 0 for b in _latency_buckets}
+plugin_latency_hist: dict[int, int] = dict.fromkeys(_latency_buckets, 0)
 plugin_latency_inf: int = 0
 
 _METRIC_HELP = {
@@ -44,8 +43,8 @@ def observe_registration_latency(ms: float):  # called by blueprint optionally
         plugin_latency_inf += 1
 
 
-def as_prometheus_lines(prefix: str = "aetherra_plugins") -> List[str]:
-    lines: List[str] = []
+def as_prometheus_lines(prefix: str = "aetherra_plugins") -> list[str]:
+    lines: list[str] = []
     for k, v in plugin_metrics.items():
         help_text = _METRIC_HELP.get(k)
         if help_text:

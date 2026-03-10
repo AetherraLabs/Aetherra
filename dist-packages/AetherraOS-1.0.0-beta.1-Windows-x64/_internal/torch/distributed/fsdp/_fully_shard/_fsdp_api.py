@@ -1,6 +1,5 @@
 # mypy: allow-untyped-defs
 from dataclasses import dataclass
-from typing import Optional
 
 import torch
 
@@ -41,9 +40,9 @@ class MixedPrecisionPolicy:
             forward's floating-point input tensors to ``param_dtype`` or not.
     """
 
-    param_dtype: Optional[torch.dtype] = None
-    reduce_dtype: Optional[torch.dtype] = None
-    output_dtype: Optional[torch.dtype] = None
+    param_dtype: torch.dtype | None = None
+    reduce_dtype: torch.dtype | None = None
+    output_dtype: torch.dtype | None = None
     cast_forward_inputs: bool = True
 
 

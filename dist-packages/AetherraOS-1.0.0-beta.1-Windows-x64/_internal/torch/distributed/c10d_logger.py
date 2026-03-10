@@ -9,14 +9,15 @@
 
 import functools
 import logging
-from typing import Any, Callable, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar
+
 from typing_extensions import ParamSpec
 
 import torch
 import torch.distributed as dist
 from torch.distributed.logging_handlers import _log_handlers
 from torch.monitor import _WaitCounter
-
 
 __all__: list[str] = []
 

@@ -72,9 +72,7 @@ class DetectedContradiction:
     # Metadata
     first_detected: str
     last_updated: str
-    resolution_status: str = (
-        "open"  # "open", "investigating", "resolved", "false_positive"
-    )
+    resolution_status: str = "open"  # "open", "investigating", "resolved", "false_positive"
     resolution_notes: str = ""
 
 
@@ -135,9 +133,7 @@ class ContradictionDetectionAgent(AgentBase):
         # Load existing data
         self._load_persistence_data()
 
-        self.log(
-            "⚔️ ContradictionDetectionAgent initialized with multi-type conflict detection"
-        )
+        self.log("⚔️ ContradictionDetectionAgent initialized with multi-type conflict detection")
 
     def _initialize_memory_components(self):
         """Initialize memory system components"""
@@ -161,21 +157,13 @@ class ContradictionDetectionAgent(AgentBase):
             input_lower = input_text.lower()
 
             # Handle different contradiction detection commands
-            if (
-                "detect contradictions" in input_lower
-                or "find conflicts" in input_lower
-            ):
+            if "detect contradictions" in input_lower or "find conflicts" in input_lower:
                 result = await self._handle_contradiction_detection(context)
             elif "analyze consistency" in input_lower:
                 result = await self._handle_consistency_analysis(context)
             elif "resolve contradiction" in input_lower:
-                result = await self._handle_contradiction_resolution(
-                    input_text, context
-                )
-            elif (
-                "contradiction status" in input_lower
-                or "conflict status" in input_lower
-            ):
+                result = await self._handle_contradiction_resolution(input_text, context)
+            elif "contradiction status" in input_lower or "conflict status" in input_lower:
                 result = await self._handle_status_request(context)
             elif "generate strategies" in input_lower:
                 result = await self._handle_strategy_generation(input_text, context)
@@ -199,18 +187,14 @@ class ContradictionDetectionAgent(AgentBase):
                 metadata={"error": str(e)},
             )
 
-    async def _handle_contradiction_detection(
-        self, context: Dict[str, Any]
-    ) -> AgentResponse:
+    async def _handle_contradiction_detection(self, context: Dict[str, Any]) -> AgentResponse:
         """Handle contradiction detection requests"""
         timeframe_hours = context.get("timeframe_hours", 72)
         contradiction_types = context.get("types", list(ContradictionType))
 
         self.log(f"⚔️ Detecting contradictions in the last {timeframe_hours} hours")
 
-        contradictions = await self.detect_contradictions(
-            timeframe_hours, contradiction_types
-        )
+        contradictions = await self.detect_contradictions(timeframe_hours, contradiction_types)
 
         if not contradictions:
             return AgentResponse(
@@ -242,18 +226,14 @@ class ContradictionDetectionAgent(AgentBase):
             agent_name=self.name,
             metadata={
                 "contradictions_found": len(contradictions),
-                "types_detected": list(
-                    set(c.contradiction_type.value for c in contradictions)
-                ),
+                "types_detected": list(set(c.contradiction_type.value for c in contradictions)),
                 "high_severity_count": len(
                     [c for c in contradictions if c.severity in ["high", "critical"]]
                 ),
             },
         )
 
-    async def _handle_consistency_analysis(
-        self, context: Dict[str, Any]
-    ) -> AgentResponse:
+    async def _handle_consistency_analysis(self, context: Dict[str, Any]) -> AgentResponse:
         """Handle consistency pattern analysis"""
         self.log("🔍 Analyzing consistency patterns in memory")
 
@@ -286,9 +266,7 @@ class ContradictionDetectionAgent(AgentBase):
         """Handle contradiction resolution requests"""
         # Extract contradiction ID from input
         if "contradiction_id:" in input_text:
-            contradiction_id = (
-                input_text.split("contradiction_id:")[1].strip().split()[0]
-            )
+            contradiction_id = input_text.split("contradiction_id:")[1].strip().split()[0]
 
             if contradiction_id in self.detected_contradictions:
                 contradiction = self.detected_contradictions[contradiction_id]
@@ -347,9 +325,7 @@ class ContradictionDetectionAgent(AgentBase):
     ) -> AgentResponse:
         """Handle strategy generation for all open contradictions"""
         open_contradictions = [
-            c
-            for c in self.detected_contradictions.values()
-            if c.resolution_status == "open"
+            c for c in self.detected_contradictions.values() if c.resolution_status == "open"
         ]
 
         if not open_contradictions:
@@ -408,9 +384,7 @@ class ContradictionDetectionAgent(AgentBase):
     ) -> AgentResponse:
         """Handle validation of contradiction resolutions"""
         if "contradiction_id:" in input_text:
-            contradiction_id = (
-                input_text.split("contradiction_id:")[1].strip().split()[0]
-            )
+            contradiction_id = input_text.split("contradiction_id:")[1].strip().split()[0]
 
             if contradiction_id in self.detected_contradictions:
                 contradiction = self.detected_contradictions[contradiction_id]
@@ -610,9 +584,7 @@ class ContradictionDetectionAgent(AgentBase):
 
             # Analyze concept cluster divergence if available
             if concept_cluster:
-                conflict_data[
-                    "cluster_analysis"
-                ] = await self._analyze_cluster_divergence(
+                conflict_data["cluster_analysis"] = await self._analyze_cluster_divergence(
                     concept_cluster, conflict_data
                 )
 
@@ -648,9 +620,7 @@ class ContradictionDetectionAgent(AgentBase):
 
         # Save to persistence
         self._save_persistence_data()
-        self.log(
-            f"🔍 Detected {len(conflicts)} conflicts using concept cluster analysis"
-        )
+        self.log(f"🔍 Detected {len(conflicts)} conflicts using concept cluster analysis")
 
         return conflicts
 
@@ -692,36 +662,34 @@ class ContradictionDetectionAgent(AgentBase):
             conflict.resolution_notes = (
                 f"Archived outdated evidence: {resolution_analysis['justification']}"
             )
-            resolution_result[
-                "action_taken"
-            ] = "Archived conflicting evidence with lower confidence/relevance"
+            resolution_result["action_taken"] = (
+                "Archived conflicting evidence with lower confidence/relevance"
+            )
 
         elif resolution_analysis["recommendation"] == "context_separation":
             conflict.resolution_status = "resolved"
             conflict.resolution_notes = (
                 f"Context-dependent resolution: {resolution_analysis['justification']}"
             )
-            resolution_result[
-                "action_taken"
-            ] = "Separated evidence by context - both valid in different situations"
+            resolution_result["action_taken"] = (
+                "Separated evidence by context - both valid in different situations"
+            )
 
         elif resolution_analysis["recommendation"] == "temporal_evolution":
             conflict.resolution_status = "resolved"
             conflict.resolution_notes = (
                 f"Temporal evolution accepted: {resolution_analysis['justification']}"
             )
-            resolution_result[
-                "action_taken"
-            ] = "Accepted as natural evolution/learning over time"
+            resolution_result["action_taken"] = "Accepted as natural evolution/learning over time"
 
         elif resolution_analysis["recommendation"] == "requires_investigation":
             conflict.resolution_status = "investigating"
             conflict.resolution_notes = (
                 f"Needs further investigation: {resolution_analysis['justification']}"
             )
-            resolution_result[
-                "action_taken"
-            ] = "Marked for further investigation - insufficient evidence"
+            resolution_result["action_taken"] = (
+                "Marked for further investigation - insufficient evidence"
+            )
 
         else:
             conflict.resolution_status = "unresolved"
@@ -738,9 +706,7 @@ class ContradictionDetectionAgent(AgentBase):
 
         return resolution_result
 
-    async def log_resolution(
-        self, conflict_id: str, resolution_result: Dict[str, Any]
-    ) -> None:
+    async def log_resolution(self, conflict_id: str, resolution_result: Dict[str, Any]) -> None:
         """
         📝 log_resolution(): Store resolution trace in memory with justification.
 
@@ -816,9 +782,7 @@ class ContradictionDetectionAgent(AgentBase):
             "stability_score": 0.6,
         }
 
-    async def _analyze_conflict_resolution(
-        self, conflict: DetectedContradiction
-    ) -> Dict[str, Any]:
+    async def _analyze_conflict_resolution(self, conflict: DetectedContradiction) -> Dict[str, Any]:
         """
         Comprehensive conflict resolution analysis using confidence, context, and relevance weighting
         """
@@ -832,15 +796,10 @@ class ContradictionDetectionAgent(AgentBase):
 
         # Context relevance scoring
         context_scores = {
-            "temporal_relevance": 0.8
-            if "recent" in conflict.description.lower()
-            else 0.6,
-            "interaction_relevance": 0.9
-            if "user" in conflict.description.lower()
-            else 0.7,
+            "temporal_relevance": 0.8 if "recent" in conflict.description.lower() else 0.6,
+            "interaction_relevance": 0.9 if "user" in conflict.description.lower() else 0.7,
             "system_relevance": 0.8
-            if "plugin" in conflict.description.lower()
-            or "memory" in conflict.description.lower()
+            if "plugin" in conflict.description.lower() or "memory" in conflict.description.lower()
             else 0.5,
         }
 
@@ -860,20 +819,18 @@ class ContradictionDetectionAgent(AgentBase):
         # Determine resolution recommendation
         if evidence_against_confidence > evidence_for_confidence + 0.2:
             recommendation = "archive_outdated"
-            justification = (
-                "Recent evidence significantly more confident than historical evidence"
-            )
+            justification = "Recent evidence significantly more confident than historical evidence"
         elif (
             "user" in conflict.description.lower()
             and temporal_factors["evidence_age_difference"] == "significant"
         ):
             recommendation = "context_separation"
-            justification = "User preferences may be context-dependent - both valid in different situations"
+            justification = (
+                "User preferences may be context-dependent - both valid in different situations"
+            )
         elif conflict.contradiction_type == ContradictionType.TEMPORAL:
             recommendation = "temporal_evolution"
-            justification = (
-                "Natural evolution/learning over time - accept newer perspective"
-            )
+            justification = "Natural evolution/learning over time - accept newer perspective"
         elif abs(evidence_for_confidence - evidence_against_confidence) < 0.1:
             recommendation = "requires_investigation"
             justification = "Evidence confidence too close - need additional data"
@@ -885,9 +842,7 @@ class ContradictionDetectionAgent(AgentBase):
             "confidence_weights": {
                 "evidence_for": evidence_for_confidence,
                 "evidence_against": evidence_against_confidence,
-                "confidence_difference": abs(
-                    evidence_for_confidence - evidence_against_confidence
-                ),
+                "confidence_difference": abs(evidence_for_confidence - evidence_against_confidence),
             },
             "context_scores": context_scores,
             "temporal_factors": temporal_factors,
@@ -1152,11 +1107,7 @@ class ContradictionDetectionAgent(AgentBase):
         """Get summary of contradiction detection status"""
         total_contradictions = len(self.detected_contradictions)
         open_contradictions = len(
-            [
-                c
-                for c in self.detected_contradictions.values()
-                if c.resolution_status == "open"
-            ]
+            [c for c in self.detected_contradictions.values() if c.resolution_status == "open"]
         )
         investigating = len(
             [
@@ -1166,11 +1117,7 @@ class ContradictionDetectionAgent(AgentBase):
             ]
         )
         resolved = len(
-            [
-                c
-                for c in self.detected_contradictions.values()
-                if c.resolution_status == "resolved"
-            ]
+            [c for c in self.detected_contradictions.values() if c.resolution_status == "resolved"]
         )
         false_positives = len(
             [
@@ -1238,9 +1185,7 @@ class ContradictionDetectionAgent(AgentBase):
                         c_data["contradiction_type"] = ContradictionType(
                             c_data["contradiction_type"]
                         )
-                        self.detected_contradictions[c_id] = DetectedContradiction(
-                            **c_data
-                        )
+                        self.detected_contradictions[c_id] = DetectedContradiction(**c_data)
 
             # Load strategies
             strategies_file = self.data_dir / "resolution_strategies.json"
@@ -1274,8 +1219,7 @@ class ContradictionDetectionAgent(AgentBase):
             strategies_file = self.data_dir / "resolution_strategies.json"
             with open(strategies_file, "w") as f:
                 strategies_data = {
-                    s_id: asdict(strategy)
-                    for s_id, strategy in self.resolution_strategies.items()
+                    s_id: asdict(strategy) for s_id, strategy in self.resolution_strategies.items()
                 }
                 json.dump(strategies_data, f, indent=2)
 

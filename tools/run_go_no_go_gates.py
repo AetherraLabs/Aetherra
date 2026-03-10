@@ -232,7 +232,7 @@ async def gate3_security_strict() -> tuple[bool, dict[str, Any]]:
                 details["scripts_ok_report_override"] = True
     except Exception as _e:  # pragma: no cover - defensive
         details["report_parse_error"] = str(_e)
-    # Network strict dry-run (set strict env and attempt disallowed outbound)
+    # Network strict dry-run using an isolated env snapshot
     env["AETHERRA_NET_STRICT"] = "1"
     try:
         # Third party imports
@@ -297,44 +297,80 @@ async def gate6_agents_api() -> tuple[bool, dict[str, Any]]:
     # Aetherra imports
     from aetherra_hub.compat import AetherraHubServer
 
-    # pick a free port
-    s = socket.socket()
-    s.bind(("localhost", 0))
-    port = s.getsockname()[1]
-    s.close()
-    base = f"http://localhost:{port}"
-    server = AetherraHubServer(port)
-    server.start_server()
-    # Disabled call
-    r_disabled = requests.get(f"{base}/api/agents", timeout=3)
-    disabled_status = r_disabled.status_code
-    # Enable + token
-    os.environ["AETHERRA_AGENTS_API_ENABLED"] = "1"
-    os.environ["AETHERRA_AGENTS_API_REQUIRE_TOKEN"] = "1"
-    os.environ["AETHERRA_AGENTS_API_TOKEN"] = "dev"
-
-    # Need a mock engine registration for 200 path
-    async def _register():
-        # Aetherra imports
-        from aetherra_service_registry import get_service_registry
-
-        reg = await get_service_registry()
-
-        class _MockEng:
-            def get_system_status(self):
-                return {"agent_orchestrator": {"total_agents": 0, "pending_tasks": 0}}
-
-        await reg.register_service("aetherra_engine", _MockEng())
-
-    await _register()
-    r_enabled = requests.get(
-        f"{base}/api/agents", headers={"X-Aetherra-Token": "dev"}, timeout=3
+    env_keys = (
+        "AETHERRA_AGENTS_API_ENABLED",
+        "AETHERRA_AGENTS_API_REQUIRE_TOKEN",
+        "AETHERRA_AGENTS_API_TOKEN",
     )
-    ok = disabled_status in (403, 501) and r_enabled.status_code == 200
-    return ok, {
-        "disabled_status": disabled_status,
-        "enabled_status": r_enabled.status_code,
-    }
+    previous = {key: os.environ.get(key) for key in env_keys}
+    server = None
+    try:
+        # Disabled call: explicitly disable endpoint for this phase.
+        os.environ["AETHERRA_AGENTS_API_ENABLED"] = "0"
+        os.environ["AETHERRA_AGENTS_API_REQUIRE_TOKEN"] = "0"
+        os.environ["AETHERRA_AGENTS_API_TOKEN"] = ""
+
+        # pick a free port
+        s = socket.socket()
+        s.bind(("localhost", 0))
+        port = s.getsockname()[1]
+        s.close()
+        base = f"http://localhost:{port}"
+        server = AetherraHubServer(port)
+        server.start_server()
+
+        r_disabled = requests.get(f"{base}/api/agents", timeout=3)
+        disabled_status = r_disabled.status_code
+        disabled_body = {}
+        try:
+            disabled_body = r_disabled.json() if r_disabled.content else {}
+        except Exception:
+            disabled_body = {}
+
+        # Enable + token for the second phase. The blueprint reads env at request time.
+        os.environ["AETHERRA_AGENTS_API_ENABLED"] = "1"
+        os.environ["AETHERRA_AGENTS_API_REQUIRE_TOKEN"] = "1"
+        os.environ["AETHERRA_AGENTS_API_TOKEN"] = "dev"
+
+        # Need a mock engine registration for 200 path
+        async def _register():
+            # Aetherra imports
+            from aetherra_service_registry import get_service_registry
+
+            reg = await get_service_registry()
+
+            class _MockEng:
+                def get_system_status(self):
+                    return {
+                        "agent_orchestrator": {"total_agents": 0, "pending_tasks": 0}
+                    }
+
+            await reg.register_service("aetherra_engine", _MockEng())
+
+        await _register()
+        r_enabled = requests.get(
+            f"{base}/api/agents", headers={"X-Aetherra-Token": "dev"}, timeout=3
+        )
+        disabled_ok = (
+            disabled_status == 200 and disabled_body.get("enabled") is False
+        ) or (disabled_status in (403, 501))
+        ok = disabled_ok and r_enabled.status_code == 200
+        return ok, {
+            "disabled_status": disabled_status,
+            "disabled_enabled": disabled_body.get("enabled"),
+            "enabled_status": r_enabled.status_code,
+        }
+    finally:
+        if server is not None:
+            try:
+                server.stop_server()
+            except Exception:
+                pass
+        for key, value in previous.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
 
 
 async def gate7_quality_gates() -> tuple[bool, dict[str, Any]]:
@@ -343,7 +379,18 @@ async def gate7_quality_gates() -> tuple[bool, dict[str, Any]]:
 
     # Fast subset: run capabilities tests only (mirrors CI quick path)
     cmd = [sys.executable, "-m", "pytest", "-q", "-o", "addopts=", "tests/capabilities"]
-    p = subprocess.run(cmd, capture_output=True, text=True)
+    env = os.environ.copy()
+    env.setdefault("PYTHONIOENCODING", "utf-8")
+    # Remove gate-local overrides so capability tests run in a clean baseline.
+    for key in (
+        "AETHERRA_AGENTS_API_ENABLED",
+        "AETHERRA_AGENTS_API_REQUIRE_TOKEN",
+        "AETHERRA_AGENTS_API_TOKEN",
+        "AETHERRA_SCRIPT_VERIFY_STRICT",
+        "AETHERRA_NET_STRICT",
+    ):
+        env.pop(key, None)
+    p = subprocess.run(cmd, capture_output=True, text=True, env=env)
     tests_ok = p.returncode == 0
     details = {"tests_ok": tests_ok, "stdout_snippet": p.stdout.splitlines()[-10:]}
     # spec->tests gate (soft)

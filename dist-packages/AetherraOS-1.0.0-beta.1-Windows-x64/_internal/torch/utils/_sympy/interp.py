@@ -10,10 +10,11 @@ of a full handler, see torch.utils._sympy.value_ranges.ValueRangeAnalysis.
 
 import functools
 import logging
-from typing import Any, Union
+from typing import Any
 
 import sympy
-from sympy.logic.boolalg import Boolean as SympyBoolean, BooleanAtom
+from sympy.logic.boolalg import Boolean as SympyBoolean
+from sympy.logic.boolalg import BooleanAtom
 
 import torch
 
@@ -43,7 +44,6 @@ from .functions import (
     TruncToInt,
     Where,
 )
-
 
 log = logging.getLogger(__name__)
 
@@ -166,10 +166,9 @@ def _run_sympy_handler(analysis, args, expr, index_dtype=torch.int64):
                 acc = handler(acc, args[i])
             log.debug("%s(%s) -> %s", handler_name, args, acc)
             return acc
-        else:
-            r = handler(*args)
-            log.debug("%s(%s) -> %s", handler_name, args, r)
-            return r
+        r = handler(*args)
+        log.debug("%s(%s) -> %s", handler_name, args, r)
+        return r
     except NotImplementedError:
         raise
     except Exception:
@@ -183,7 +182,7 @@ _nil = object()
 def sympy_interp(
     analysis,
     env: dict[sympy.Symbol, Any],
-    expr: Union[sympy.Expr, SympyBoolean],
+    expr: sympy.Expr | SympyBoolean,
     *,
     index_dtype=torch.int64,
     missing_handler=None,
@@ -199,13 +198,12 @@ def sympy_interp(
 
     if dtype is not None:
         return analysis.constant(expr, dtype)
-    elif isinstance(expr, sympy.Symbol):
+    if isinstance(expr, sympy.Symbol):
         if (r := env.get(expr, _nil)) is not _nil:
             return r
-        elif missing_handler:
+        if missing_handler:
             return missing_handler(expr)
-        else:
-            raise KeyError(expr)
+        raise KeyError(expr)
 
     # Recursive case
     return _run_sympy_handler(

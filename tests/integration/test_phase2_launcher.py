@@ -9,7 +9,6 @@
 Test the updated launcher with Phase 2 Live Context Bridge capabilities.
 """
 
-
 # Standard library imports
 import sys
 from pathlib import Path

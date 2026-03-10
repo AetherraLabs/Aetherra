@@ -30,9 +30,7 @@ class EthicsCritic:
     def __init__(self):
         self.enabled = os.getenv("AETHERRA_CONSCIOUSNESS_ENABLED", "0") == "1"
 
-    def evaluate(
-        self, action_description: str
-    ) -> Tuple[str, float, list[str], Optional[str]]:
+    def evaluate(self, action_description: str) -> Tuple[str, float, list[str], Optional[str]]:
         risk = 0.0
         flags: list[str] = []
         desc_l = action_description.lower()
@@ -42,10 +40,7 @@ class EthicsCritic:
         if any(k in desc_l for k in ["delete", "remove", "destroy", "truncate"]):
             risk += 0.5
             flags.append("destructive")
-        if any(
-            k in desc_l
-            for k in ["credential", "token", "apikey", "secret", "password", "key"]
-        ):
+        if any(k in desc_l for k in ["credential", "token", "apikey", "secret", "password", "key"]):
             risk += 0.6
             flags.append("secret_access")
         # Clamp

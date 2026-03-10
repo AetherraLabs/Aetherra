@@ -1,12 +1,13 @@
 # mypy: allow-untyped-defs
 import functools
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable
+from typing import Any, Union
+
 from typing_extensions import deprecated
 
 import torch
 from torch import Tensor
 from torch.utils._pytree import _broadcast_to_and_flatten, tree_flatten, tree_unflatten
-
 
 in_dims_t = Union[int, tuple]
 out_dims_t = Union[int, tuple[int, ...]]
@@ -14,12 +15,12 @@ out_dims_t = Union[int, tuple[int, ...]]
 
 # Checks that all args-to-be-batched have the same batch dim size
 def _validate_and_get_batch_size(
-    flat_in_dims: list[Optional[int]],
+    flat_in_dims: list[int | None],
     flat_args: list,
 ) -> int:
     batch_sizes = [
         arg.size(in_dim)
-        for in_dim, arg in zip(flat_in_dims, flat_args)
+        for in_dim, arg in zip(flat_in_dims, flat_args, strict=False)
         if in_dim is not None
     ]
     if batch_sizes and any(size != batch_sizes[0] for size in batch_sizes):
@@ -30,7 +31,7 @@ def _validate_and_get_batch_size(
     return batch_sizes[0]
 
 
-def _num_outputs(batched_outputs: Union[Tensor, tuple[Tensor, ...]]) -> int:
+def _num_outputs(batched_outputs: Tensor | tuple[Tensor, ...]) -> int:
     if isinstance(batched_outputs, tuple):
         return len(batched_outputs)
     return 1
@@ -81,7 +82,7 @@ def _create_batched_inputs(
             f"has structure {args_spec}."
         )
 
-    for arg, in_dim in zip(flat_args, flat_in_dims):
+    for arg, in_dim in zip(flat_args, flat_in_dims, strict=False):
         if not isinstance(in_dim, int) and in_dim is not None:
             raise ValueError(
                 f"vmap({_get_name(func)}, in_dims={in_dims}, ...)(<inputs>): "
@@ -107,14 +108,14 @@ def _create_batched_inputs(
     # See NOTE [Ignored _remove_batch_dim, _add_batch_dim]
     batched_inputs = [
         arg if in_dim is None else torch._add_batch_dim(arg, in_dim, vmap_level)
-        for in_dim, arg in zip(flat_in_dims, flat_args)
+        for in_dim, arg in zip(flat_in_dims, flat_args, strict=False)
     ]
     return tree_unflatten(batched_inputs, args_spec), batch_size
 
 
 # Undos the batching (and any batch dimensions) associated with the `vmap_level`.
 def _unwrap_batched(
-    batched_outputs: Union[Tensor, tuple[Tensor, ...]],
+    batched_outputs: Tensor | tuple[Tensor, ...],
     out_dims: out_dims_t,
     vmap_level: int,
     batch_size: int,
@@ -142,13 +143,12 @@ def _unwrap_batched(
                 if out is not None
                 else None
             )
-            for out, out_dim in zip(batched_outputs, out_dims_as_tuple)
+            for out, out_dim in zip(batched_outputs, out_dims_as_tuple, strict=False)
         )
-    else:
-        return tuple(
-            torch._remove_batch_dim(out, vmap_level, batch_size, out_dim)
-            for out, out_dim in zip(batched_outputs, out_dims_as_tuple)
-        )
+    return tuple(
+        torch._remove_batch_dim(out, vmap_level, batch_size, out_dim)
+        for out, out_dim in zip(batched_outputs, out_dims_as_tuple, strict=False)
+    )
 
 
 # Checks that `fn` returned one or more Tensors and nothing else.

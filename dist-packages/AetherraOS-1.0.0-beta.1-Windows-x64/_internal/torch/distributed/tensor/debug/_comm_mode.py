@@ -20,7 +20,6 @@ from torch.nn.modules.module import (
 from torch.utils._python_dispatch import TorchDispatchMode
 from torch.utils._pytree import tree_flatten
 
-
 __all__ = ["CommDebugMode"]
 
 funcol_native = torch.ops._c10d_functional
@@ -506,22 +505,15 @@ class CommDebugMode(TorchDispatchMode):
                     operation_name = str(operation["name"])
 
                     # include all operations
-                    if include_trivial_ops:
-                        table = add_operations(
-                            table, operation, collective_indent, operation_indent
+                    if (
+                        include_trivial_ops
+                        or include_ops
+                        and operation_name not in trivial_ops
+                        or (
+                            include_DTensor_ops
+                            and (operation_name not in trivial_ops)
+                            and len(operation["input_shape"])
                         )
-
-                    # include all operations not in trivial operations
-                    elif include_ops and operation_name not in trivial_ops:
-                        table = add_operations(
-                            table, operation, collective_indent, operation_indent
-                        )
-
-                    # only include dTensor operations not in trivial set
-                    elif (
-                        include_DTensor_ops
-                        and (operation_name not in trivial_ops)
-                        and len(operation["input_shape"])
                     ):
                         table = add_operations(
                             table, operation, collective_indent, operation_indent

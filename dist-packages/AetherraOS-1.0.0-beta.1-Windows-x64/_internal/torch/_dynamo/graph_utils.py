@@ -1,7 +1,7 @@
 from collections import deque
 from typing import Any
 
-from torch.fx import Graph, map_arg, Node
+from torch.fx import Graph, Node, map_arg
 from torch.utils._ordered_set import OrderedSet
 
 

@@ -6,8 +6,8 @@ import functools
 import inspect
 import sys
 import warnings
-from typing import Any, Callable, cast, TypeVar
-
+from collections.abc import Callable
+from typing import Any, TypeVar, cast
 
 # Used for annotating the decorator usage of _DecoratorContextManager (e.g.,
 # 'no_grad' and 'enable_grad').

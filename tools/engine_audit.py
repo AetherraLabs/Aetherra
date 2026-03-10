@@ -17,7 +17,6 @@ import json
 import re
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Set
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "Aetherra"
@@ -27,7 +26,7 @@ SRC = ROOT / "Aetherra"
 class EngineArtifact:
     path: str
     module: str
-    class_names: List[str]
+    class_names: list[str]
     used_by_os: bool = False
     notes: str = ""
 
@@ -35,8 +34,8 @@ class EngineArtifact:
 ENGINE_NAME_RE = re.compile(r"^class\s+([A-Za-z_][A-Za-z0-9_]*)\(?.*:\s*$")
 
 
-def list_engine_files() -> List[Path]:
-    files: List[Path] = []
+def list_engine_files() -> list[Path]:
+    files: list[Path] = []
     for p in ROOT.rglob("*.py"):
         rp = p.relative_to(ROOT).as_posix()
         if (
@@ -59,12 +58,12 @@ def module_name_for(path: Path) -> str:
     return mod
 
 
-def extract_classes(path: Path) -> List[str]:
+def extract_classes(path: Path) -> list[str]:
     try:
         text = path.read_text(encoding="utf-8", errors="ignore").splitlines()
     except Exception:
         return []
-    names: List[str] = []
+    names: list[str] = []
     for line in text:
         m = ENGINE_NAME_RE.match(line.strip())
         if m:
@@ -73,7 +72,7 @@ def extract_classes(path: Path) -> List[str]:
 
 
 def gather_os_references() -> str:
-    refs: List[str] = []
+    refs: list[str] = []
     for f in [
         ROOT / "aetherra_os_launcher.py",
         ROOT / "aetherra_kernel_loop.py",
@@ -87,10 +86,10 @@ def gather_os_references() -> str:
     return "\n".join(refs)
 
 
-def build_inventory() -> List[EngineArtifact]:
+def build_inventory() -> list[EngineArtifact]:
     engine_files = list_engine_files()
     os_refs = gather_os_references()
-    inventory: List[EngineArtifact] = []
+    inventory: list[EngineArtifact] = []
     for path in engine_files:
         mod = module_name_for(path)
         classes = extract_classes(path)
@@ -107,10 +106,10 @@ def build_inventory() -> List[EngineArtifact]:
     return inventory
 
 
-def classify(inventory: List[EngineArtifact]) -> Dict[str, List[EngineArtifact]]:
-    active: List[EngineArtifact] = []
-    candidates: List[EngineArtifact] = []
-    duplicates: List[EngineArtifact] = []
+def classify(inventory: list[EngineArtifact]) -> dict[str, list[EngineArtifact]]:
+    active: list[EngineArtifact] = []
+    candidates: list[EngineArtifact] = []
+    duplicates: list[EngineArtifact] = []
 
     # Known OS-critical modules/classes
     must_have_modules = {
@@ -119,7 +118,7 @@ def classify(inventory: List[EngineArtifact]) -> Dict[str, List[EngineArtifact]]
         "Aetherra.aetherra_core.memory.QuantumEnhancedMemoryEngine.quantum_memory_engine",
         "Aetherra.consciousness.quantum.quantum_consciousness_engine",
     }
-    class_occurrences: Dict[str, List[EngineArtifact]] = {}
+    class_occurrences: dict[str, list[EngineArtifact]] = {}
 
     for art in inventory:
         for cls in art.class_names:
@@ -136,8 +135,8 @@ def classify(inventory: List[EngineArtifact]) -> Dict[str, List[EngineArtifact]]
             duplicates.extend(arts)
 
     # Deduplicate duplicate list
-    dup_set: Set[str] = set()
-    uniq_dups: List[EngineArtifact] = []
+    dup_set: set[str] = set()
+    uniq_dups: list[EngineArtifact] = []
     for a in duplicates:
         key = f"{a.module}|{a.path}"
         if key not in dup_set:
@@ -147,10 +146,10 @@ def classify(inventory: List[EngineArtifact]) -> Dict[str, List[EngineArtifact]]
     return {"active": active, "candidates": candidates, "duplicates": uniq_dups}
 
 
-def write_report(groups: Dict[str, List[EngineArtifact]]):
+def write_report(groups: dict[str, list[EngineArtifact]]):
     out_md = ROOT / "ENGINE_AUDIT_REPORT.md"
 
-    def fmt(lst: List[EngineArtifact]) -> str:
+    def fmt(lst: list[EngineArtifact]) -> str:
         lines = []
         for a in sorted(lst, key=lambda x: x.path):
             cls = ", ".join(a.class_names) or "(no classes)"

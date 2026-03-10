@@ -1,17 +1,17 @@
 # mypy: allow-untyped-defs
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Union
+from collections.abc import Callable
+from typing import Any
 
 import torch
 from torch.ao.quantization.backend_config import BackendConfig
 from torch.ao.quantization.fuser_method_mappings import get_fuser_method_new
-from torch.ao.quantization.utils import _parent_name, NodePattern, Pattern
+from torch.ao.quantization.utils import NodePattern, Pattern, _parent_name
 from torch.fx.graph import Graph, Node
 from torch.nn.utils.parametrize import type_before_parametrizations
 
 from .custom_config import FuseCustomConfig
 from .match_utils import MatchAllNode
-
 
 __all__ = [
     "DefaultFuseHandler",
@@ -42,7 +42,7 @@ class FuseHandler(ABC):
         extra_inputs: list[Any],
         matched_node_pattern: NodePattern,
         fuse_custom_config: FuseCustomConfig,
-        fuser_method_mapping: dict[Pattern, Union[torch.nn.Sequential, Callable]],
+        fuser_method_mapping: dict[Pattern, torch.nn.Sequential | Callable],
         is_qat: bool,
     ) -> Node:
         pass
@@ -61,7 +61,7 @@ class DefaultFuseHandler(FuseHandler):
         extra_inputs: list[Any],
         matched_node_pattern: NodePattern,
         fuse_custom_config: FuseCustomConfig,
-        fuser_method_mapping: dict[Pattern, Union[torch.nn.Sequential, Callable]],
+        fuser_method_mapping: dict[Pattern, torch.nn.Sequential | Callable],
         is_qat: bool,
     ) -> Node:
         assert root_node.op == "call_module", (
@@ -80,18 +80,16 @@ class DefaultFuseHandler(FuseHandler):
                 modules.append(get_modules(n))
                 modules.extend(get_modules(a) for a in args)
                 return tuple(modules)
-            else:
-                n = pattern
-                if n.op == "call_module":
-                    return named_modules[n.target]
-                elif n.op == "call_function" and n.target == torch.nn.functional.relu:
-                    relu = torch.nn.ReLU()
-                    relu.training = root_module.training
-                    return relu
-                elif n.op == "call_function" or n.op == "call_method":
-                    return n.target
-                else:
-                    return MatchAllNode
+            n = pattern
+            if n.op == "call_module":
+                return named_modules[n.target]
+            if n.op == "call_function" and n.target == torch.nn.functional.relu:
+                relu = torch.nn.ReLU()
+                relu.training = root_module.training
+                return relu
+            if n.op == "call_function" or n.op == "call_method":
+                return n.target
+            return MatchAllNode
 
         # since relu can be used multiple times, we'll need to create a relu module for each match
         matched_modules = get_modules(matched_node_pattern)

@@ -198,18 +198,14 @@ class FractalHierarchies:
             print(f"   🔄 Building level {level}...")
 
             # Create clusters for current level
-            level_clusters = await self._create_level_clusters(
-                current_level_patterns, level
-            )
+            level_clusters = await self._create_level_clusters(current_level_patterns, level)
             hierarchy[level] = level_clusters
 
             print(f"   ✅ Level {level}: {len(level_clusters)} clusters")
 
             # Prepare for next level by creating meta-patterns from clusters
             if len(level_clusters) > 1:
-                current_level_patterns = await self._create_meta_patterns(
-                    level_clusters, level
-                )
+                current_level_patterns = await self._create_meta_patterns(level_clusters, level)
                 level += 1
             else:
                 break
@@ -248,17 +244,13 @@ class FractalHierarchies:
 
         while remaining_patterns:
             # Start new cluster with highest frequency pattern
-            seed_pattern = max(
-                remaining_patterns, key=lambda p: p.frequency * p.compression_ratio
-            )
+            seed_pattern = max(remaining_patterns, key=lambda p: p.frequency * p.compression_ratio)
             cluster_patterns = [seed_pattern]
             remaining_patterns.remove(seed_pattern)
 
             # Find similar patterns for this cluster
             for pattern in remaining_patterns.copy():
-                similarity = await self._calculate_cluster_similarity(
-                    seed_pattern, pattern
-                )
+                similarity = await self._calculate_cluster_similarity(seed_pattern, pattern)
 
                 if similarity >= self.default_similarity_threshold:
                     cluster_patterns.append(pattern)
@@ -324,20 +316,16 @@ class FractalHierarchies:
         # Combine pattern types and abstraction levels
         type_signature = "_".join(sorted(p.pattern_type for p in patterns))
         level_signature = "_".join(
-            str(p.abstraction_level)
-            for p in sorted(patterns, key=lambda x: x.abstraction_level)
+            str(p.abstraction_level) for p in sorted(patterns, key=lambda x: x.abstraction_level)
         )
         frequency_signature = "_".join(
-            str(p.frequency)
-            for p in sorted(patterns, key=lambda x: x.frequency, reverse=True)
+            str(p.frequency) for p in sorted(patterns, key=lambda x: x.frequency, reverse=True)
         )
 
         combined = f"{type_signature}|{level_signature}|{frequency_signature}"
         return f"fractal_{hash(combined) % 1000000}"
 
-    async def _calculate_cluster_coherence(
-        self, patterns: List[FractalPattern]
-    ) -> float:
+    async def _calculate_cluster_coherence(self, patterns: List[FractalPattern]) -> float:
         """Calculate how coherent/consistent a cluster is"""
 
         if len(patterns) <= 1:
@@ -349,9 +337,7 @@ class FractalHierarchies:
 
         for i in range(len(patterns)):
             for j in range(i + 1, len(patterns)):
-                similarity = await self._calculate_cluster_similarity(
-                    patterns[i], patterns[j]
-                )
+                similarity = await self._calculate_cluster_similarity(patterns[i], patterns[j])
                 total_similarity += similarity
                 pairs += 1
 
@@ -467,9 +453,7 @@ class FractalHierarchies:
         conn.commit()
         conn.close()
 
-    async def _load_specific_patterns(
-        self, pattern_ids: List[str]
-    ) -> List[FractalPattern]:
+    async def _load_specific_patterns(self, pattern_ids: List[str]) -> List[FractalPattern]:
         """Load specific patterns by IDs"""
         conn = sqlite3.connect(self.encoder.db_path)
         cursor = conn.cursor()
@@ -522,17 +506,13 @@ class FractalHierarchies:
                     branching_factors.append(len(cluster.child_cluster_ids))
 
         avg_branching_factor = (
-            sum(branching_factors) / len(branching_factors)
-            if branching_factors
-            else 0.0
+            sum(branching_factors) / len(branching_factors) if branching_factors else 0.0
         )
 
         # Calculate compression efficiency
         all_compression_ratios = []
         for clusters in hierarchy.values():
-            all_compression_ratios.extend(
-                cluster.compression_ratio for cluster in clusters
-            )
+            all_compression_ratios.extend(cluster.compression_ratio for cluster in clusters)
 
         compression_efficiency = (
             sum(all_compression_ratios) / len(all_compression_ratios)
@@ -546,9 +526,7 @@ class FractalHierarchies:
             all_coherence_scores.extend(cluster.coherence_score for cluster in clusters)
 
         hierarchy_coherence = (
-            sum(all_coherence_scores) / len(all_coherence_scores)
-            if all_coherence_scores
-            else 0.0
+            sum(all_coherence_scores) / len(all_coherence_scores) if all_coherence_scores else 0.0
         )
 
         # Calculate pattern coverage (simplified - assumes all patterns are covered)
@@ -557,14 +535,10 @@ class FractalHierarchies:
         # Calculate reorganization frequency (based on temporal stability)
         all_stability_scores = []
         for clusters in hierarchy.values():
-            all_stability_scores.extend(
-                cluster.temporal_stability for cluster in clusters
-            )
+            all_stability_scores.extend(cluster.temporal_stability for cluster in clusters)
 
         avg_stability = (
-            sum(all_stability_scores) / len(all_stability_scores)
-            if all_stability_scores
-            else 1.0
+            sum(all_stability_scores) / len(all_stability_scores) if all_stability_scores else 1.0
         )
         reorganization_frequency = 1.0 - avg_stability
 
@@ -608,9 +582,7 @@ class FractalHierarchies:
         conn.commit()
         conn.close()
 
-    async def find_cluster_by_pattern(
-        self, pattern_id: str
-    ) -> Optional[FractalCluster]:
+    async def find_cluster_by_pattern(self, pattern_id: str) -> Optional[FractalCluster]:
         """Find the cluster containing a specific pattern"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -665,9 +637,7 @@ class FractalHierarchies:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute(
-            "SELECT * FROM fractal_clusters WHERE cluster_id = ?", (cluster_id,)
-        )
+        cursor.execute("SELECT * FROM fractal_clusters WHERE cluster_id = ?", (cluster_id,))
         row = cursor.fetchone()
         conn.close()
 
@@ -888,9 +858,7 @@ async def demo_fractal_hierarchies():
         test_pattern_id = unique_pattern_ids[0]
         cluster = await hierarchies.find_cluster_by_pattern(test_pattern_id)
         if cluster:
-            print(
-                f"   ✅ Pattern {test_pattern_id} found in cluster {cluster.cluster_id}"
-            )
+            print(f"   ✅ Pattern {test_pattern_id} found in cluster {cluster.cluster_id}")
 
             # Get hierarchy path
             path = await hierarchies.get_hierarchy_path(cluster.cluster_id)

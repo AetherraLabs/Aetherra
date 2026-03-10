@@ -17,7 +17,7 @@ Intended to evolve alongside HMR and the kernel event bus.
 import asyncio
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 @dataclass
@@ -25,9 +25,9 @@ class ModuleRecord:
     name: str
     version: str = ""
     status: str = "inactive"  # inactive | active | disabled | failed
-    loaded_at: Optional[datetime] = None
-    last_updated: Optional[datetime] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    loaded_at: datetime | None = None
+    last_updated: datetime | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class ModuleManager:
@@ -35,7 +35,7 @@ class ModuleManager:
 
     def __init__(self, service_registry):
         self.registry = service_registry
-        self._modules: Dict[str, ModuleRecord] = {}
+        self._modules: dict[str, ModuleRecord] = {}
         # Metrics counters (monotonic)
         self._metrics = {
             "loads_total": 0,
@@ -47,8 +47,8 @@ class ModuleManager:
 
     # ---------------- Control-plane API ----------------
     async def load_module(
-        self, name: str, spec: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        self, name: str, spec: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         async with self._lock:
             n = str(name).strip()
             if not n:
@@ -72,7 +72,7 @@ class ModuleManager:
             pass
         return {"ok": True, "module": self._to_dict(rec)}
 
-    async def unload_module(self, name: str) -> Dict[str, Any]:
+    async def unload_module(self, name: str) -> dict[str, Any]:
         async with self._lock:
             n = str(name).strip()
             rec = self._modules.get(n)
@@ -86,7 +86,7 @@ class ModuleManager:
             pass
         return {"ok": True}
 
-    async def rollback_module(self, name: str) -> Dict[str, Any]:
+    async def rollback_module(self, name: str) -> dict[str, Any]:
         """Record a logical rollback for a module (metrics-only placeholder).
 
         This simulates a rollback action in environments where a concrete
@@ -111,8 +111,8 @@ class ModuleManager:
         return {"ok": True, "module": self._to_dict(rec)}
 
     async def reload_module(
-        self, name: str, spec: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        self, name: str, spec: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         async with self._lock:
             n = str(name).strip()
             rec = self._modules.get(n)
@@ -134,7 +134,7 @@ class ModuleManager:
             pass
         return {"ok": True, "module": self._to_dict(rec)}
 
-    async def list_modules(self) -> Dict[str, Any]:
+    async def list_modules(self) -> dict[str, Any]:
         async with self._lock:
             mods = [self._to_dict(m) for m in self._modules.values()]
         return {"ok": True, "modules": mods}
@@ -158,7 +158,7 @@ class ModuleManager:
         return {"ok": False, "error": "unknown_message"}
 
     # ---------------- Observability ----------------
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         # Active modules count and per-module activity
         actives = 0
         per_mod = {}
@@ -172,7 +172,7 @@ class ModuleManager:
             "per_module_active": per_mod,
         }
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         return {
             "modules": [self._to_dict(m) for m in self._modules.values()],
             "metrics": self.get_metrics(),
@@ -183,7 +183,7 @@ class ModuleManager:
         return True
 
     # ---------------- Internals ----------------
-    async def _broadcast(self, msg_type: str, data: Dict[str, Any]):
+    async def _broadcast(self, msg_type: str, data: dict[str, Any]):
         if not self.registry:
             return
         try:
@@ -192,7 +192,7 @@ class ModuleManager:
             pass
 
     @staticmethod
-    def _to_dict(rec: ModuleRecord) -> Dict[str, Any]:
+    def _to_dict(rec: ModuleRecord) -> dict[str, Any]:
         return {
             "name": rec.name,
             "version": rec.version,
@@ -204,7 +204,7 @@ class ModuleManager:
 
 
 # Global singleton factory
-_module_manager_instance: Optional[ModuleManager] = None
+_module_manager_instance: ModuleManager | None = None
 
 
 async def get_module_manager(service_registry) -> ModuleManager:

@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import contextlib
-from typing import Callable, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import torch
 import torch._ops
@@ -11,7 +12,6 @@ from torch._subclasses import fake_tensor
 from torch.fx.experimental import proxy_tensor
 from torch.onnx._internal.fx import _pass
 from torch.onnx._internal.fx.passes import _utils
-
 
 if TYPE_CHECKING:
     from collections.abc import Mapping

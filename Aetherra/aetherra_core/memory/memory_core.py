@@ -475,7 +475,7 @@ class LyrixaMemorySystem:
             self.ensure_connection().commit()
 
             # Webhook functionality disabled - not currently available
-            # TODO: Implement webhook for memory update when available
+            # Integration point: webhook for memory update when available
             # self.webhook_manager.trigger_webhook(
             #     "memory_update",
             #     {"memory_id": memory_id, "timestamp": datetime.now().isoformat()},

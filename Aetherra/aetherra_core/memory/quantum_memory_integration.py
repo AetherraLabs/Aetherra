@@ -42,9 +42,7 @@ try:
     import sys
 
     # Add project root to path for quantum bridge import
-    project_root = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "..", "..", "..")
-    )
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
 
@@ -61,10 +59,13 @@ except ImportError as e:
     logging.warning(f"Quantum memory bridge not available: {e}")
     QUANTUM_AVAILABLE = False
 
-    # Create placeholder classes for graceful degradation
+    # Create compatibility classes for graceful degradation
     class QuantumMemoryBridge:
         def __init__(self, quantum_backend=None, max_qubits=None, *args, **kwargs):
-            pass
+            self.quantum_backend = quantum_backend
+            self.max_qubits = max_qubits
+            self._fallback_args = args
+            self._fallback_kwargs = kwargs
 
         async def encode_memory_to_quantum(
             self, memory_id, memory_data, operation_type="compression"
@@ -77,9 +78,7 @@ except ImportError as e:
 
             return Dummy()
 
-        async def run_interference_experiment(
-            self, state_a, state_b, experiment_type=None
-        ):
+        async def run_interference_experiment(self, state_a, state_b, experiment_type=None):
             class Dummy:
                 success = False
                 coherence_score = 0.0
@@ -149,9 +148,7 @@ class QuantumMemoryOperationResult(MemoryOperationResult):
     quantum_state_id: Optional[str] = None
     quantum_circuit_used: Optional[str] = None
     classical_fallback: bool = False
-    quantum_experiment_results: List[QuantumExperimentResult] = field(
-        default_factory=list
-    )
+    quantum_experiment_results: List[QuantumExperimentResult] = field(default_factory=list)
 
 
 @dataclass
@@ -176,7 +173,7 @@ class QuantumEnhancedMemoryEngine(LyrixaMemoryEngine):
         Normalize the result of encode_memory_to_quantum so the rest of the code can treat it uniformly.
         Returns an object with .success, .quantum_state, .circuit_template, .experiment_results
         """
-        # Dummy/placeholder returns a result with .success
+        # Compatibility path returns a result with .success
         if hasattr(encoding_result, "success"):
             return encoding_result
 
@@ -325,10 +322,8 @@ class QuantumEnhancedMemoryEngine(LyrixaMemoryEngine):
 
                 # Run quantum association experiments
                 if self.quantum_config.enable_interference_experiments:
-                    association_experiments = (
-                        await self._run_quantum_association_experiments(
-                            new_state=encoding_result.quantum_state, content=memory_data
-                        )
+                    association_experiments = await self._run_quantum_association_experiments(
+                        new_state=encoding_result.quantum_state, content=memory_data
                     )
                     quantum_result.quantum_experiment_results = association_experiments
 
@@ -346,9 +341,7 @@ class QuantumEnhancedMemoryEngine(LyrixaMemoryEngine):
                         association_experiments
                     )
 
-                quantum_result.message = (
-                    f"{classical_result.message} + quantum encoding successful"
-                )
+                quantum_result.message = f"{classical_result.message} + quantum encoding successful"
                 logging.info(
                     f"🌌 Quantum memory encoding completed for fragment {classical_result.fragment_id}"
                 )
@@ -357,7 +350,9 @@ class QuantumEnhancedMemoryEngine(LyrixaMemoryEngine):
                 # Quantum encoding failed, use classical fallback
                 quantum_result.classical_fallback = True
                 quantum_result.quantum_enabled = False
-                quantum_result.message = f"{classical_result.message} (quantum encoding failed, using classical)"
+                quantum_result.message = (
+                    f"{classical_result.message} (quantum encoding failed, using classical)"
+                )
                 self.quantum_operation_stats["classical_fallbacks"] += 1
                 logging.warning(
                     f"Quantum encoding failed for fragment {classical_result.fragment_id}, using classical fallback"
@@ -367,9 +362,7 @@ class QuantumEnhancedMemoryEngine(LyrixaMemoryEngine):
             # Error in quantum processing, fallback to classical
             quantum_result.classical_fallback = True
             quantum_result.quantum_enabled = False
-            quantum_result.message = (
-                f"{classical_result.message} (quantum error: {str(e)})"
-            )
+            quantum_result.message = f"{classical_result.message} (quantum error: {str(e)})"
             self.quantum_operation_stats["classical_fallbacks"] += 1
             logging.error(f"Quantum memory processing error: {e}")
 
@@ -396,9 +389,7 @@ class QuantumEnhancedMemoryEngine(LyrixaMemoryEngine):
         # Start with classical recall for baseline
         classical_results = await super().recall(
             query=query,
-            recall_strategy="hybrid"
-            if recall_strategy.startswith("quantum")
-            else recall_strategy,
+            recall_strategy="hybrid" if recall_strategy.startswith("quantum") else recall_strategy,
             limit=limit,
             time_filter=time_filter,
             concept_filter=concept_filter,
@@ -473,10 +464,8 @@ class QuantumEnhancedMemoryEngine(LyrixaMemoryEngine):
             for existing_state in existing_states:
                 try:
                     # Run quantum interference experiment
-                    interference_result = (
-                        await self.quantum_bridge.quantum_interference_experiment(
-                            [new_state, existing_state]
-                        )
+                    interference_result = await self.quantum_bridge.quantum_interference_experiment(
+                        [new_state, existing_state]
                     )
 
                     if interference_result.success:
@@ -514,10 +503,8 @@ class QuantumEnhancedMemoryEngine(LyrixaMemoryEngine):
             for state_id, quantum_state in self.quantum_states.items():
                 try:
                     # Run quantum comparison
-                    comparison_result = (
-                        await self.quantum_bridge.quantum_interference_experiment(
-                            [query_encoding.quantum_state, quantum_state]
-                        )
+                    comparison_result = await self.quantum_bridge.quantum_interference_experiment(
+                        [query_encoding.quantum_state, quantum_state]
                     )
 
                     if (
@@ -525,10 +512,8 @@ class QuantumEnhancedMemoryEngine(LyrixaMemoryEngine):
                         and comparison_result.coherence_score >= coherence_threshold
                     ):
                         # Retrieve classical memory for this quantum state
-                        retrieved_memory = (
-                            await self._retrieve_classical_memory_for_quantum_state(
-                                state_id
-                            )
+                        retrieved_memory = await self._retrieve_classical_memory_for_quantum_state(
+                            state_id
                         )
 
                         if retrieved_memory:
@@ -545,9 +530,7 @@ class QuantumEnhancedMemoryEngine(LyrixaMemoryEngine):
                             )
 
                 except Exception as e:
-                    logging.warning(
-                        f"Quantum comparison failed for state {state_id}: {e}"
-                    )
+                    logging.warning(f"Quantum comparison failed for state {state_id}: {e}")
                     continue
 
             # Sort by quantum relevance score
@@ -558,9 +541,7 @@ class QuantumEnhancedMemoryEngine(LyrixaMemoryEngine):
             logging.error(f"Quantum superposition recall error: {e}")
             return []
 
-    async def _quantum_association_recall(
-        self, query: str, limit: int
-    ) -> List[Dict[str, Any]]:
+    async def _quantum_association_recall(self, query: str, limit: int) -> List[Dict[str, Any]]:
         """Discover memory associations using quantum entanglement patterns"""
 
         associations = []
@@ -579,20 +560,16 @@ class QuantumEnhancedMemoryEngine(LyrixaMemoryEngine):
             # Test for quantum entanglement patterns
             for state_id, quantum_state in self.quantum_states.items():
                 try:
-                    entanglement_result = (
-                        await self.quantum_bridge.quantum_interference_experiment(
-                            [query_encoding.quantum_state, quantum_state]
-                        )
+                    entanglement_result = await self.quantum_bridge.quantum_interference_experiment(
+                        [query_encoding.quantum_state, quantum_state]
                     )
 
                     if (
                         entanglement_result.success
                         and entanglement_result.entanglement_strength > 0.3
                     ):
-                        retrieved_memory = (
-                            await self._retrieve_classical_memory_for_quantum_state(
-                                state_id
-                            )
+                        retrieved_memory = await self._retrieve_classical_memory_for_quantum_state(
+                            state_id
                         )
 
                         if retrieved_memory:
@@ -608,9 +585,7 @@ class QuantumEnhancedMemoryEngine(LyrixaMemoryEngine):
                             )
 
                 except Exception as e:
-                    logging.warning(
-                        f"Quantum entanglement check failed for state {state_id}: {e}"
-                    )
+                    logging.warning(f"Quantum entanglement check failed for state {state_id}: {e}")
                     continue
 
             # Sort by entanglement strength
@@ -685,9 +660,7 @@ class QuantumEnhancedMemoryEngine(LyrixaMemoryEngine):
             seen_content = set()
 
             for result in all_results:
-                content_key = str(result.get("content", ""))[
-                    :100
-                ]  # Use first 100 chars as key
+                content_key = str(result.get("content", ""))[:100]  # Use first 100 chars as key
 
                 if content_key not in seen_content:
                     seen_content.add(content_key)
@@ -785,21 +758,15 @@ class QuantumEnhancedMemoryEngine(LyrixaMemoryEngine):
 
                         # Attempt error correction if enabled
                         if self.quantum_config.quantum_error_correction:
-                            correction_result = (
-                                await self.quantum_bridge.apply_error_correction(
-                                    quantum_state, "decoherence_correction"
-                                )
+                            correction_result = await self.quantum_bridge.apply_error_correction(
+                                quantum_state, "decoherence_correction"
                             )
 
                             if correction_result.success:
                                 # Update the quantum state
-                                self.quantum_states[
-                                    state_id
-                                ] = correction_result.corrected_state
+                                self.quantum_states[state_id] = correction_result.corrected_state
                                 coherence_results["corrected_states"] += 1
-                                self.quantum_operation_stats[
-                                    "coherence_corrections"
-                                ] += 1
+                                self.quantum_operation_stats["coherence_corrections"] += 1
 
                 except Exception as e:
                     logging.warning(f"Coherence check failed for state {state_id}: {e}")
@@ -807,9 +774,7 @@ class QuantumEnhancedMemoryEngine(LyrixaMemoryEngine):
 
             # Calculate average coherence
             if self.quantum_states:
-                coherence_results["average_coherence"] = total_coherence / len(
-                    self.quantum_states
-                )
+                coherence_results["average_coherence"] = total_coherence / len(self.quantum_states)
 
             # Add recommendations
             if coherence_results["decoherent_states"] > 0:
@@ -913,25 +878,19 @@ class QuantumEnhancedMemoryEngine(LyrixaMemoryEngine):
             # 1. Run coherence check and corrections
             coherence_results = await self.check_quantum_coherence()
             maintenance_results["coherence_check"] = coherence_results
-            maintenance_results["error_corrections"] = coherence_results.get(
-                "corrected_states", 0
-            )
+            maintenance_results["error_corrections"] = coherence_results.get("corrected_states", 0)
 
             # 2. Optimize quantum states
             for state_id, quantum_state in list(self.quantum_states.items()):
                 try:
                     current_fidelity = getattr(quantum_state, "encoding_fidelity", 0.5)
                     if current_fidelity < 0.8:
-                        optimization_result = (
-                            await self.quantum_bridge.optimize_quantum_state(
-                                quantum_state, "coherence_optimization"
-                            )
+                        optimization_result = await self.quantum_bridge.optimize_quantum_state(
+                            quantum_state, "coherence_optimization"
                         )
 
                         if optimization_result.success:
-                            self.quantum_states[
-                                state_id
-                            ] = optimization_result.optimized_state
+                            self.quantum_states[state_id] = optimization_result.optimized_state
                             maintenance_results["state_optimizations"] += 1
 
                 except Exception as e:
@@ -944,9 +903,7 @@ class QuantumEnhancedMemoryEngine(LyrixaMemoryEngine):
 
             for state_id, quantum_state in self.quantum_states.items():
                 current_fidelity = getattr(quantum_state, "encoding_fidelity", 0.5)
-                creation_time = getattr(
-                    quantum_state, "creation_timestamp", datetime.now()
-                )
+                creation_time = getattr(quantum_state, "creation_timestamp", datetime.now())
                 if current_fidelity < 0.3 and creation_time < cutoff_time:
                     states_to_remove.append(state_id)
 
@@ -956,9 +913,7 @@ class QuantumEnhancedMemoryEngine(LyrixaMemoryEngine):
 
             # 4. Performance analysis
             if self.quantum_operation_stats["quantum_recalls"] > 0:
-                recall_success_rate = self.quantum_operation_stats[
-                    "quantum_recalls"
-                ] / (
+                recall_success_rate = self.quantum_operation_stats["quantum_recalls"] / (
                     self.quantum_operation_stats["quantum_recalls"]
                     + self.quantum_operation_stats["classical_fallbacks"]
                 )
@@ -1047,9 +1002,7 @@ def create_quantum_enhanced_memory_engine(
     if quantum_config is None:
         quantum_config = QuantumMemoryConfig()
 
-    engine = QuantumEnhancedMemoryEngine(
-        config=memory_config, quantum_config=quantum_config
-    )
+    engine = QuantumEnhancedMemoryEngine(config=memory_config, quantum_config=quantum_config)
 
     return engine
 
@@ -1118,9 +1071,7 @@ async def demo_quantum_memory_integration():
         for i, result in enumerate(results[:2]):
             source_icon = "🌌" if result["source"].startswith("quantum") else "📁"
             print(f"   {source_icon} {result['content'][:60]}...")
-            print(
-                f"      Relevance: {result['relevance_score']:.3f} | Source: {result['source']}"
-            )
+            print(f"      Relevance: {result['relevance_score']:.3f} | Source: {result['source']}")
 
     # Check quantum system health
     print("\n[TOOL] Quantum system health check...")
@@ -1136,9 +1087,7 @@ async def demo_quantum_memory_integration():
     # Final system status
     final_status = await engine.get_enhanced_system_status()
     print("\n📊 Final system statistics:")
-    print(
-        f"   Total operations: {final_status['hybrid_operations']['total_operations']}"
-    )
+    print(f"   Total operations: {final_status['hybrid_operations']['total_operations']}")
     print(
         f"   Quantum enhancement ratio: {final_status['hybrid_operations']['quantum_enhanced_ratio']:.2%}"
     )

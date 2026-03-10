@@ -2,8 +2,9 @@
 import functools
 import operator
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import torch
 import torch.distributed._shard.sharded_tensor.metadata as sharded_tensor_meta
@@ -16,7 +17,6 @@ from ._internals import (
     get_split_size,
     validate_non_overlapping_shards_metadata,
 )
-
 
 if TYPE_CHECKING:
     # Only include ShardedTensor when do type checking, exclude it
@@ -233,7 +233,8 @@ def _infer_sharding_spec_from_shards_metadata(shards_metadata):
         placements = [
             x
             for _, x in sorted(
-                zip(chunk_offset_list, placements), key=operator.itemgetter(0)
+                zip(chunk_offset_list, placements, strict=False),
+                key=operator.itemgetter(0),
             )
         ]
 

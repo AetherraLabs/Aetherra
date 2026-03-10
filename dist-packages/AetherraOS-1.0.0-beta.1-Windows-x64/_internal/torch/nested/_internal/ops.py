@@ -3,7 +3,6 @@ import functools
 import math
 import operator
 from typing import *  # noqa: F403
-from typing import Optional
 
 import torch
 import torch.nn.functional as F
@@ -11,7 +10,6 @@ from torch.fx.operator_schemas import normalize_function
 from torch.nested._internal.sdpa import jagged_scaled_dot_product_attention
 
 from .nested_tensor import NestedTensor
-
 
 __all__: list[Any] = []
 
@@ -50,7 +48,7 @@ def _wrap_jagged_dim(
     wrapped = canonicalize_dims(ndim, dim)
     if wrapped == ragged_dim and not allow_ragged_dim:
         raise RuntimeError(f"{op_name}(): not supported for NestedTensor on ragged dim")
-    elif wrapped == 0 and not allow_batch_dim:
+    if wrapped == 0 and not allow_batch_dim:
         raise RuntimeError(f"{op_name}(): not supported for NestedTensor on dim=0")
     ret = (
         _outer_to_inner_dim(ndim, wrapped, ragged_dim)
@@ -123,7 +121,7 @@ def check_schema(schema_str: str, func, *args, **kwargs) -> None:
         name, arg_type = named_arg_type.split(": ")
         is_optional = arg_type.endswith("?")
         normalized_arg_type = arg_type[:-1] if is_optional else arg_type
-        if normalized_arg_type not in arg_type_check_fns.keys():
+        if normalized_arg_type not in arg_type_check_fns:
             raise AssertionError(f"Unknown arg type: {normalized_arg_type}")
 
         if i >= len(args):
@@ -139,8 +137,7 @@ def check_schema(schema_str: str, func, *args, **kwargs) -> None:
         def check_fn(x, is_optional=is_optional):
             if is_optional:
                 return x is None or _check_fn(x)
-            else:
-                return _check_fn(x)
+            return _check_fn(x)
 
         if not check_fn(args[i]):
             type_to_desc = {
@@ -175,7 +172,7 @@ def raggedness_matches(nt, size):
     nt_ragged = nt._size[:end]
     size_ragged = size[:end]
     return len(nt_ragged) == len(size_ragged) and (
-        all(ns == s or s == -1 for ns, s in zip(nt_ragged, size_ragged))
+        all(ns == s or s == -1 for ns, s in zip(nt_ragged, size_ragged, strict=False))
     )
 
 
@@ -229,7 +226,7 @@ def register_func(tables, aten_ops, schema_str):
 register_jagged_func = functools.partial(register_func, JAGGED_OPS_TABLE)
 
 
-def lookup_jagged(func, *args, **kwargs) -> Optional[Callable]:
+def lookup_jagged(func, *args, **kwargs) -> Callable | None:
     dispatch_func = JAGGED_OPS_TABLE.get(func, None)
     if dispatch_func is not None:
         return dispatch_func
@@ -257,13 +254,12 @@ def lookup_jagged(func, *args, **kwargs) -> Optional[Callable]:
                 if isinstance(arg.type, torch.TensorType):
                     schema_parts.append(f"{arg.name}: jt_all")
                     break
-                else:
-                    schema_parts.append(f"{arg.name}: any")
+                schema_parts.append(f"{arg.name}: any")
             schema_parts.append("...")
             check_schema_str = ", ".join(schema_parts)
             check_schema(check_schema_str, func, *args, **kwargs)
             return functools.partial(jagged_unary_pointwise, func)
-        elif num_tensor_args == 2:
+        if num_tensor_args == 2:
             check_schema("lhs: any, rhs: any, ...", func, *args, **kwargs)
             return functools.partial(jagged_binary_pointwise, func)
 
@@ -669,7 +665,7 @@ def copy_default(func, *args, **kwargs):
                 "copy_(): expected compatible input and src shapes, but got: "
                 f"{inp.shape} and {src.shape}"
             )
-        for inp_comp, src_comp in zip(inp_comps, src_comps):
+        for inp_comp, src_comp in zip(inp_comps, src_comps, strict=False):
             inp_comp.copy_(src_comp)
 
     # AOTD allows mutations of inputs only, (not views of the inputs).
@@ -1001,11 +997,10 @@ def chunk_default(func, *args, **kwargs):
             NestedTensor(values=chunk_values[i], **(nested_kwargs[i]))
             for i in range(0, len(chunk_values))
         ]
-    else:
-        return [
-            NestedTensor(values=x, **extract_kwargs(inp))
-            for x in func(inp._values, **new_kwargs)
-        ]
+    return [
+        NestedTensor(values=x, **extract_kwargs(inp))
+        for x in func(inp._values, **new_kwargs)
+    ]
 
 
 @register_jagged_func(torch.ops.aten.unbind.int, "self: jt_all, dim: any?")
@@ -1025,7 +1020,7 @@ def unbind_int(func, *args, **kwargs):
     lengths = inp.lengths()
     ragged_idx = inp._ragged_idx
 
-    def _torch_check(_lengths: list[int], _offsets: Optional[list[int]] = None):
+    def _torch_check(_lengths: list[int], _offsets: list[int] | None = None):
         # This torch._check and torch._check_is_size are needed for torch.compile
         # symbolic shapes processing.
         # offsets and lengths are symbolic variables during compilation,
@@ -1155,7 +1150,8 @@ def matmul_default(func, *args, **kwargs):
 
     def _unbind_impl(a, b):
         return [
-            func(a_comp, b_comp) for (a_comp, b_comp) in zip(a.unbind(), b.unbind())
+            func(a_comp, b_comp)
+            for (a_comp, b_comp) in zip(a.unbind(), b.unbind(), strict=False)
         ]
 
     def _padded_impl(a, b):
@@ -1208,7 +1204,7 @@ def matmul_default(func, *args, **kwargs):
         # (B, j1, D) x (D, E) => (B, j1, E)
         # (B, j1, D, E) x (E, F) => (B, j1, D, F)
         # etc.
-        elif (
+        if (
             other.dim() == 2
             and inp.dim() > other.dim()
             and inp._ragged_idx < inp.dim() - 1
@@ -1226,7 +1222,7 @@ def matmul_default(func, *args, **kwargs):
         # (D, E) x (B, E, j1) => (B, D, j1)
         # (D, E) x (B, E, j1, F) => (B, D, j1, F)
         # etc.
-        elif inp.dim() == 2 and other.dim() > inp.dim() and other._ragged_idx >= 2:
+        if inp.dim() == 2 and other.dim() > inp.dim() and other._ragged_idx >= 2:
             return NestedTensor(
                 func(inp, other._values, **new_kwargs), **extract_kwargs(other)
             )
@@ -1239,7 +1235,7 @@ def matmul_default(func, *args, **kwargs):
             return NestedTensor(func(inp._values, other._values), **extract_kwargs(inp))
         # Support reducing over ragged with dense output:
         # (B, D, j1) x (B, j1, E) => (B, D, E)
-        elif (
+        if (
             inp.dim() == 3
             and other.dim() == 3
             and inp._ragged_idx == 2
@@ -1464,48 +1460,46 @@ def _apply_reduction(func, func_name, identity_element, *args, **kwargs):
                 # some ops return multiple things; unsqueeze all of them
                 out = tree_map(lambda o: o.unsqueeze(0), out)
             return out
-        else:
-            # invalid reduction cases: (ragged, non-batch), etc.
-            if reduce_on_non_batch:
-                raise RuntimeError(
-                    f"{func_name}(): reducing along a ragged and non-batch dimension "
-                    "is not supported for nested tensors"
-                )
-
-            # reduction cases: (ragged)
-            # convert to padded dense and reduce
-            new_kwargs.pop("dim")
-            dim_to_pass = [inp._ragged_idx] if is_dimlist else inp._ragged_idx
-            return func(
-                inp.to_padded_tensor(identity_element), dim=dim_to_pass, **new_kwargs
-            )
-    # raggedness preserved --> return nested tensor
-    else:
-        # invalid reduction cases: (batch), (batch, non-batch), etc.
-        if reduce_on_batch:
+        # invalid reduction cases: (ragged, non-batch), etc.
+        if reduce_on_non_batch:
             raise RuntimeError(
-                f"{func_name}(): reducing along the batch dimension but not "
-                "the ragged dimension is not supported for nested tensors"
+                f"{func_name}(): reducing along a ragged and non-batch dimension "
+                "is not supported for nested tensors"
             )
 
-        # reduction cases: (non-batch), (non-batch, non-batch), etc.
-        # apply sum directly on values
-        out = func(inp._values, **new_kwargs)
-        out_kwargs = extract_kwargs(inp)
-        if not new_kwargs.get("keepdim", False):
-            # dims are reduced away -> ragged_idx of output needs to be reevaluated
-            dimlist = (
-                new_kwargs["dim"]
-                if isinstance(new_kwargs["dim"], (tuple, list))
-                else [new_kwargs["dim"]]
-            )
-            for d in dimlist:
-                # adjust for all dims reduced before the ragged dim
-                if d < inp._ragged_idx - 1:
-                    out_kwargs["_ragged_idx"] -= 1
+        # reduction cases: (ragged)
+        # convert to padded dense and reduce
+        new_kwargs.pop("dim")
+        dim_to_pass = [inp._ragged_idx] if is_dimlist else inp._ragged_idx
+        return func(
+            inp.to_padded_tensor(identity_element), dim=dim_to_pass, **new_kwargs
+        )
+    # raggedness preserved --> return nested tensor
+    # invalid reduction cases: (batch), (batch, non-batch), etc.
+    if reduce_on_batch:
+        raise RuntimeError(
+            f"{func_name}(): reducing along the batch dimension but not "
+            "the ragged dimension is not supported for nested tensors"
+        )
 
-        # some ops return multiple things; wrap each of them as an NJT
-        return tree_map(lambda o: NestedTensor(o, **out_kwargs), out)
+    # reduction cases: (non-batch), (non-batch, non-batch), etc.
+    # apply sum directly on values
+    out = func(inp._values, **new_kwargs)
+    out_kwargs = extract_kwargs(inp)
+    if not new_kwargs.get("keepdim", False):
+        # dims are reduced away -> ragged_idx of output needs to be reevaluated
+        dimlist = (
+            new_kwargs["dim"]
+            if isinstance(new_kwargs["dim"], (tuple, list))
+            else [new_kwargs["dim"]]
+        )
+        for d in dimlist:
+            # adjust for all dims reduced before the ragged dim
+            if d < inp._ragged_idx - 1:
+                out_kwargs["_ragged_idx"] -= 1
+
+    # some ops return multiple things; wrap each of them as an NJT
+    return tree_map(lambda o: NestedTensor(o, **out_kwargs), out)
 
 
 @register_jagged_func(torch.ops.aten.sum.default, "self: jt_all, dtype: any?")
@@ -1653,8 +1647,7 @@ def view_default(func, *args, **kwargs):
         nonlocal inp, size
         if inner_idx == inp._ragged_idx - 1:
             return inp._values.size(inner_idx)
-        else:
-            return size[inner_idx + 1]
+        return size[inner_idx + 1]
 
     inner_size = [get_inner_size(i) for i in range(len(size) - 1)]
 
@@ -2448,7 +2441,7 @@ def masked_select_default(func, *args, **kwargs):
 
     if inp.ndim > 2:
         raise RuntimeError("masked_select only support 2-D selections currently")
-    elif inp.shape != mask.shape:
+    if inp.shape != mask.shape:
         raise RuntimeError(
             f"Mask with shape {mask.shape} is not compatible with input's shape {inp.shape}"
         )
@@ -2604,6 +2597,8 @@ def matmul_backward_default(func, *args, **kwargs):
 
 from torch._higher_order_ops.flex_attention import (
     flex_attention as flex_attention_hop,
+)
+from torch._higher_order_ops.flex_attention import (
     flex_attention_backward as flex_attention_backward_hop,
 )
 from torch.fx.graph_module import GraphModule
@@ -2682,9 +2677,7 @@ def flex_njt_backward(
     kernel_options: Dict[str, Any],
     score_mod_other_buffers: Tuple = (),
     mask_mod_other_buffers: Tuple = (),
-) -> Tuple[
-    torch.Tensor, torch.Tensor, torch.Tensor, Tuple[Optional[torch.Tensor], ...]
-]:
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, Tuple[torch.Tensor | None, ...]]:
     output = flex_attention_backward_hop(
         query.values().unsqueeze(0),
         key.values().unsqueeze(0),

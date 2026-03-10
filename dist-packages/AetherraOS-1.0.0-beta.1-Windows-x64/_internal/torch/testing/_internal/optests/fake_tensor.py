@@ -4,7 +4,7 @@ import torch._subclasses
 
 
 def is_builtin(op):
-    return op.namespace in ('aten', 'prims', 'prim')
+    return op.namespace in ("aten", "prims", "prim")
 
 
 def fake_check(op, args, kwargs):

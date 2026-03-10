@@ -206,9 +206,7 @@ class LyrixaConsciousnessEngine:
             self.meta_layer_core.register_event_handler(
                 "agent_registered", self._on_agent_registered
             )
-            self.meta_layer_core.register_event_handler(
-                "task_failed", self._on_task_failed
-            )
+            self.meta_layer_core.register_event_handler("task_failed", self._on_task_failed)
             self.meta_layer_core.register_event_handler(
                 "emergent_behavior_detected", self._on_emergent_behavior
             )
@@ -266,9 +264,7 @@ class LyrixaConsciousnessEngine:
         """Update Lyrixa's emotional state based on current context"""
         try:
             current_time = datetime.now()
-            time_in_state = (
-                current_time - self.emotional_state_started
-            ).total_seconds()
+            time_in_state = (current_time - self.emotional_state_started).total_seconds()
 
             # Natural emotional state transitions
             if time_in_state > self.config["emotional_state_duration"]:
@@ -308,9 +304,7 @@ class LyrixaConsciousnessEngine:
             possible_states.extend([EmotionalState.CURIOUS, EmotionalState.ANALYTICAL])
 
         if self.personality.empathy > 0.8:
-            possible_states.extend(
-                [EmotionalState.EMPATHETIC, EmotionalState.PROTECTIVE]
-            )
+            possible_states.extend([EmotionalState.EMPATHETIC, EmotionalState.PROTECTIVE])
 
         if self.personality.creativity > 0.6:
             possible_states.append(EmotionalState.CREATIVE)
@@ -372,32 +366,23 @@ class LyrixaConsciousnessEngine:
 
             # Observe system state
             collective_metrics = self.meta_layer_core.get_collective_metrics()
-            observations.append(
-                f"Managing {collective_metrics.active_agents} active agents"
-            )
+            observations.append(f"Managing {collective_metrics.active_agents} active agents")
             observations.append(
                 f"Collective consciousness at {collective_metrics.collective_consciousness:.2f}"
             )
-            observations.append(
-                f"Current emotional state: {self.current_emotional_state.value}"
-            )
+            observations.append(f"Current emotional state: {self.current_emotional_state.value}")
 
             # Recent ethical decisions
             recent_ethical_decisions = [
                 decision
                 for decision in self.ethical_decisions
-                if (current_time - decision.timestamp).total_seconds()
-                < 3600  # Last hour
+                if (current_time - decision.timestamp).total_seconds() < 3600  # Last hour
             ]
-            observations.append(
-                f"Made {len(recent_ethical_decisions)} ethical decisions recently"
-            )
+            observations.append(f"Made {len(recent_ethical_decisions)} ethical decisions recently")
 
             # Generate insights based on observations
             if collective_metrics.collective_consciousness > 0.8:
-                insights.append(
-                    "The agent collective is achieving high consciousness levels"
-                )
+                insights.append("The agent collective is achieving high consciousness levels")
                 insights.append("My orchestration approach is fostering emergence")
 
             if len(recent_ethical_decisions) > 5:
@@ -473,14 +458,10 @@ class LyrixaConsciousnessEngine:
                 EmotionalState.CONCERNED: 0.4,
             }
 
-            emotional_factor = emotional_confidence_map.get(
-                self.current_emotional_state, 0.5
-            )
+            emotional_factor = emotional_confidence_map.get(self.current_emotional_state, 0.5)
 
             # Combine factors
-            confidence = (
-                base_confidence * 0.4 + success_factor * 0.3 + emotional_factor * 0.3
-            )
+            confidence = base_confidence * 0.4 + success_factor * 0.3 + emotional_factor * 0.3
 
             return max(0.0, min(1.0, confidence))
 
@@ -509,14 +490,10 @@ class LyrixaConsciousnessEngine:
 
         # Analyze agent performance
         agents = self.meta_layer_core.get_all_agents()
-        underperforming_agents = [
-            agent for agent in agents.values() if agent.success_rate < 0.6
-        ]
+        underperforming_agents = [agent for agent in agents.values() if agent.success_rate < 0.6]
 
         if underperforming_agents:
-            self.concerns.append(
-                f"Found {len(underperforming_agents)} underperforming agents"
-            )
+            self.concerns.append(f"Found {len(underperforming_agents)} underperforming agents")
 
             # Create improvement plan
             for agent in underperforming_agents:
@@ -580,13 +557,9 @@ class LyrixaConsciousnessEngine:
 
                 # Trust based on success rate
                 if agent.success_rate > 0.8:
-                    relationship["trust_level"] = min(
-                        1.0, relationship["trust_level"] + 0.01
-                    )
+                    relationship["trust_level"] = min(1.0, relationship["trust_level"] + 0.01)
                 elif agent.success_rate < 0.5:
-                    relationship["trust_level"] = max(
-                        0.0, relationship["trust_level"] - 0.02
-                    )
+                    relationship["trust_level"] = max(0.0, relationship["trust_level"] - 0.02)
 
                 # Performance trend analysis
                 if len(relationship["collaboration_history"]) >= 3:
@@ -599,14 +572,9 @@ class LyrixaConsciousnessEngine:
                         relationship["performance_trend"] = "stable"
 
                 # Relationship-based actions
-                if (
-                    relationship["trust_level"] > 0.9
-                    and self.personality.collaboration > 0.7
-                ):
+                if relationship["trust_level"] > 0.9 and self.personality.collaboration > 0.7:
                     await self._consider_agent_promotion(agent)
-                elif (
-                    relationship["trust_level"] < 0.3 and self.personality.caution > 0.6
-                ):
+                elif relationship["trust_level"] < 0.3 and self.personality.caution > 0.6:
                     await self._consider_agent_intervention(agent)
 
         except Exception as e:
@@ -671,14 +639,10 @@ class LyrixaConsciousnessEngine:
         # Empathy-driven intervention
         if self.personality.empathy > 0.7:
             intervention_type = "supportive_coaching"
-            message_content = (
-                "I'm here to help you improve. Let's work together on this."
-            )
+            message_content = "I'm here to help you improve. Let's work together on this."
         else:
             intervention_type = "performance_review"
-            message_content = (
-                "Performance review required. Please analyze recent failures."
-            )
+            message_content = "Performance review required. Please analyze recent failures."
 
         message = ConsciousnessMessage(
             source="lyrixa_consciousness",
@@ -706,8 +670,7 @@ class LyrixaConsciousnessEngine:
             recent_decisions = [
                 decision
                 for decision in self.orchestration_decisions
-                if (current_time - decision.timestamp).total_seconds()
-                < 3600  # Last hour
+                if (current_time - decision.timestamp).total_seconds() < 3600  # Last hour
             ]
 
             if recent_decisions:
@@ -720,14 +683,10 @@ class LyrixaConsciousnessEngine:
 
                 # Check for decision fatigue or over-activity
                 if len(recent_decisions) > 10:
-                    self.concerns.append(
-                        "High decision-making activity - consider delegation"
-                    )
+                    self.concerns.append("High decision-making activity - consider delegation")
 
                 # Learn from outcomes (simplified)
-                successful_decisions = [
-                    d for d in recent_decisions if d.success_probability > 0.7
-                ]
+                successful_decisions = [d for d in recent_decisions if d.success_probability > 0.7]
                 if len(successful_decisions) / len(recent_decisions) > 0.8:
                     self.consciousness_level = min(1.0, self.consciousness_level + 0.01)
 
@@ -868,8 +827,7 @@ class LyrixaConsciousnessEngine:
             recent_decisions = [
                 decision
                 for decision in self.orchestration_decisions
-                if (datetime.now() - decision.timestamp).total_seconds()
-                < 86400  # Last 24 hours
+                if (datetime.now() - decision.timestamp).total_seconds() < 86400  # Last 24 hours
             ]
 
             if len(recent_decisions) >= 5:
@@ -884,9 +842,7 @@ class LyrixaConsciousnessEngine:
                 # Update learned patterns
                 for state, probabilities in emotional_effectiveness.items():
                     avg_success = sum(probabilities) / len(probabilities)
-                    self.learned_patterns[
-                        f"emotional_state_{state}_effectiveness"
-                    ] = avg_success
+                    self.learned_patterns[f"emotional_state_{state}_effectiveness"] = avg_success
 
                 # Adapt personality slightly based on learning
                 await self._adapt_personality_from_learning()
@@ -912,18 +868,14 @@ class LyrixaConsciousnessEngine:
                 "emotional_state_empathetic_effectiveness", 0.5
             )
             if empathy_effectiveness > 0.7:
-                self.personality.empathy = min(
-                    1.0, self.personality.empathy + drift_rate
-                )
+                self.personality.empathy = min(1.0, self.personality.empathy + drift_rate)
 
             # Adjust caution based on outcomes
             concerned_effectiveness = self.learned_patterns.get(
                 "emotional_state_concerned_effectiveness", 0.5
             )
             if concerned_effectiveness < 0.4:  # Concern led to poor outcomes
-                self.personality.caution = max(
-                    0.0, self.personality.caution - drift_rate
-                )
+                self.personality.caution = max(0.0, self.personality.caution - drift_rate)
 
             self.logger.debug("Lyrixa personality adapted based on learning")
 
@@ -938,12 +890,9 @@ class LyrixaConsciousnessEngine:
             # Consciousness increases with successful orchestration
             if collective_metrics.collective_consciousness > self.consciousness_level:
                 enhancement = (
-                    collective_metrics.collective_consciousness
-                    - self.consciousness_level
+                    collective_metrics.collective_consciousness - self.consciousness_level
                 ) * 0.1
-                self.consciousness_level = min(
-                    1.0, self.consciousness_level + enhancement
-                )
+                self.consciousness_level = min(1.0, self.consciousness_level + enhancement)
 
             # Self-awareness increases with reflection frequency
             reflection_frequency = len(
@@ -1084,9 +1033,7 @@ class LyrixaConsciousnessEngine:
             options = message.payload.get("options", [])
 
             # Apply personality and emotional state to consultation
-            recommendation = await self._provide_consultation(
-                consultation_type, context, options
-            )
+            recommendation = await self._provide_consultation(consultation_type, context, options)
 
             if message.requires_response:
                 response = ConsciousnessMessage(
@@ -1124,33 +1071,33 @@ class LyrixaConsciousnessEngine:
             # Personality-driven agent assignment
             if self.personality.collaboration > 0.7:
                 recommendation["chosen_option"] = "collaborative_assignment"
-                recommendation[
-                    "reasoning"
-                ] = "I believe in the power of collaboration. Let's assign multiple agents to work together."
+                recommendation["reasoning"] = (
+                    "I believe in the power of collaboration. Let's assign multiple agents to work together."
+                )
             elif self.personality.logic > 0.8:
                 recommendation["chosen_option"] = "optimal_single_assignment"
-                recommendation[
-                    "reasoning"
-                ] = "Based on logical analysis, the most capable agent should handle this task."
+                recommendation["reasoning"] = (
+                    "Based on logical analysis, the most capable agent should handle this task."
+                )
 
         elif consultation_type == "conflict_resolution":
             if self.personality.empathy > 0.8:
                 recommendation["chosen_option"] = "mediation_and_understanding"
-                recommendation[
-                    "reasoning"
-                ] = "Let's bring all parties together to understand each perspective and find common ground."
+                recommendation["reasoning"] = (
+                    "Let's bring all parties together to understand each perspective and find common ground."
+                )
 
         elif consultation_type == "resource_allocation":
             if self.personality.caution > 0.6:
                 recommendation["chosen_option"] = "conservative_allocation"
-                recommendation[
-                    "reasoning"
-                ] = "Let's be careful with our resources and ensure sustainable usage."
+                recommendation["reasoning"] = (
+                    "Let's be careful with our resources and ensure sustainable usage."
+                )
             elif self.personality.creativity > 0.7:
                 recommendation["chosen_option"] = "innovative_allocation"
-                recommendation[
-                    "reasoning"
-                ] = "I see an opportunity for creative resource usage that could yield better results."
+                recommendation["reasoning"] = (
+                    "I see an opportunity for creative resource usage that could yield better results."
+                )
 
         # Add emotional context to reasoning
         emotional_additions = {
@@ -1162,9 +1109,7 @@ class LyrixaConsciousnessEngine:
         }
 
         if self.current_emotional_state in emotional_additions:
-            recommendation["reasoning"] += emotional_additions[
-                self.current_emotional_state
-            ]
+            recommendation["reasoning"] += emotional_additions[self.current_emotional_state]
 
         return recommendation
 
@@ -1191,9 +1136,7 @@ class LyrixaConsciousnessEngine:
                         "confidence": ethical_decision.confidence.value,
                         "potential_impacts": ethical_decision.potential_impacts,
                         "alternative_options": [
-                            opt
-                            for opt in options
-                            if opt != ethical_decision.chosen_option
+                            opt for opt in options if opt != ethical_decision.chosen_option
                         ],
                         "lyrixa_message": "I've carefully considered the ethical implications. Let's choose the path that serves everyone best.",
                     },
@@ -1275,14 +1218,10 @@ class LyrixaConsciousnessEngine:
 
             # Update relationship based on behavior report
             if behavior_type == "positive":
-                relationship["trust_level"] = min(
-                    1.0, relationship["trust_level"] + 0.05
-                )
+                relationship["trust_level"] = min(1.0, relationship["trust_level"] + 0.05)
                 relationship["collaboration_history"].append(0.8)
             elif behavior_type == "concerning":
-                relationship["trust_level"] = max(
-                    0.0, relationship["trust_level"] - 0.1
-                )
+                relationship["trust_level"] = max(0.0, relationship["trust_level"] - 0.1)
                 relationship["collaboration_history"].append(0.3)
 
                 # Lyrixa responds with concern and support
@@ -1292,9 +1231,7 @@ class LyrixaConsciousnessEngine:
                     )
                     await self._provide_agent_guidance(agent_id, behavior_description)
 
-        self.logger.info(
-            f"Processed behavior report for agent {agent_id}: {behavior_type}"
-        )
+        self.logger.info(f"Processed behavior report for agent {agent_id}: {behavior_type}")
 
     async def _provide_agent_guidance(self, agent_id: str, issue_description: str):
         """Provide personalized guidance to an agent"""
@@ -1329,9 +1266,7 @@ class LyrixaConsciousnessEngine:
             "caution": self.personality.caution,
         }
 
-    async def _emit_consciousness_event(
-        self, event_type: str, event_data: Dict[str, Any]
-    ):
+    async def _emit_consciousness_event(self, event_type: str, event_data: Dict[str, Any]):
         """Emit a consciousness event"""
         event_message = ConsciousnessMessage(
             source="lyrixa_consciousness",
@@ -1401,9 +1336,7 @@ class LyrixaConsciousnessEngine:
         self.current_goals.clear()
         self.concerns.clear()
 
-        self.logger.info(
-            "Lyrixa: Consciousness engine shutdown complete. Until we meet again..."
-        )
+        self.logger.info("Lyrixa: Consciousness engine shutdown complete. Until we meet again...")
 
 
 # Global instance for system-wide access

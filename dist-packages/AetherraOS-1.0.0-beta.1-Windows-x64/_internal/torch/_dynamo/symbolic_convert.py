@@ -44,13 +44,14 @@ import traceback
 import types
 import typing
 import weakref
-from typing import Any, Callable, cast, NoReturn, Optional, TYPE_CHECKING, Union
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, NoReturn, Optional, cast
 from unittest.mock import patch
 
 import torch
 import torch._logging
 from torch._dynamo.exc import TensorifyScalarRestartAnalysis
-from torch._guards import tracing, TracingContext
+from torch._guards import TracingContext, tracing
 from torch._logging.structured import dump_file
 from torch.fx.experimental.symbolic_shapes import guard_bool
 from torch.utils._functools import cache_method
@@ -59,24 +60,26 @@ from . import (
     config,
     exc,
     graph_break_hints,
-    logging as torchdynamo_logging,
     trace_rules,
     variables,
 )
+from . import (
+    logging as torchdynamo_logging,
+)
 from .bytecode_analysis import (
-    get_indexof,
     JUMP_OPNAMES,
+    get_indexof,
     livevars_analysis,
     propagate_line_nums,
 )
 from .bytecode_transformation import (
+    Instruction,
     cleaned_instructions,
     create_call_function,
     create_instruction,
     create_jump_absolute,
     create_swap,
     get_code_keys,
-    Instruction,
     is_generator,
     unique_id,
 )
@@ -85,11 +88,11 @@ from .codegen import PyCodegen
 from .exc import (
     ArgsMismatchError,
     BackendCompilerFailed,
+    Unsupported,
     collapse_resume_frames,
     format_graph_break_message,
     get_stack_above_dynamo,
     unimplemented_v2,
-    Unsupported,
 )
 from .funcname_cache import get_funcname
 from .guards import GuardBuilder, install_guard
@@ -107,16 +110,16 @@ from .source import (
 )
 from .trace_rules import is_builtin_constant, is_forbidden
 from .utils import (
+    LazyString,
     counters,
     get_fake_value,
     get_instruction_source_311,
     get_metrics_context,
     graph_break_dup_warning_checker,
     istype,
-    LazyString,
     proxy_args_kwargs,
 )
-from .variables.base import typestr, ValueMutationNew, VariableTracker
+from .variables.base import ValueMutationNew, VariableTracker, typestr
 from .variables.builder import FrameStateSizeEntry, VariableBuilder, wrap_fx_proxy
 from .variables.builtin import BuiltinVariable
 from .variables.constant import ConstantVariable
@@ -153,7 +156,7 @@ from .variables.misc import (
     UnknownVariable,
 )
 from .variables.nn_module import NNModuleVariable
-from .variables.tensor import supported_comparison_ops, SymNodeVariable, TensorVariable
+from .variables.tensor import SymNodeVariable, TensorVariable, supported_comparison_ops
 from .variables.torch_function import (
     SymbolicTorchFunctionState,
     TorchFunctionModeVariable,
@@ -165,7 +168,6 @@ from .variables.user_defined import (
     UserDefinedExceptionObjectVariable,
     UserDefinedObjectVariable,
 )
-
 
 if TYPE_CHECKING:
     from .package import CompilePackage
@@ -209,7 +211,7 @@ class SpeculationEntry:
     instruction_pointer: int
     inst: Instruction  # for debugging only
     failed: bool = False
-    reason: Optional[GraphCompileReason] = None
+    reason: GraphCompileReason | None = None
 
     def fail_and_restart_analysis(self):
         """
@@ -308,7 +310,7 @@ class LocalState:
 class DistributedState:
     compile_pg: Any
     local_state: LocalState
-    all_states: Optional[list[LocalState]] = None
+    all_states: list[LocalState] | None = None
 
 
 class TensorifyState:
@@ -373,9 +375,7 @@ class BlockStackEntry:
     inst: Instruction
     target: Instruction
     stack_index: int
-    with_context: Optional[
-        Union[ContextWrappingVariable, GenericContextWrappingVariable]
-    ] = None
+    with_context: ContextWrappingVariable | GenericContextWrappingVariable | None = None
 
     def can_restore(self):
         return self.with_context is not None
@@ -390,8 +390,7 @@ class BlockStackEntry:
             return ReenterWith(
                 self.stack_index - 1, tuple(self.with_context.target_values)
             )
-        else:
-            return ReenterWith(self.stack_index - 1)
+        return ReenterWith(self.stack_index - 1)
 
     def exit(self, tx, is_graph_break):
         assert self.with_context is not None
@@ -641,7 +640,7 @@ def generic_jump(truth_fn: typing.Callable[[object], bool], push: bool):
             if value.is_python_constant():
                 if bool(value.as_python_constant()):
                     return self.jump(inst)
-                elif self.should_compile_partial_graph():
+                if self.should_compile_partial_graph():
                     jump_graph_break(self, inst, value)
                 else:
                     unimplemented_v2(
@@ -672,7 +671,7 @@ def generic_jump(truth_fn: typing.Callable[[object], bool], push: bool):
                     *proxy_args_kwargs((value, error_msg), {}),
                 )
                 self.jump(inst)
-                return
+                return None
 
             if isinstance(value, SymNodeVariable):
                 # if the assertion is normal shape expression.
@@ -690,7 +689,7 @@ def generic_jump(truth_fn: typing.Callable[[object], bool], push: bool):
                         hints=[*graph_break_hints.USER_ERROR],
                     )
                 self.jump(inst)
-                return
+                return None
 
             scalar_to_tensor_proxy = self.output.create_proxy(
                 "call_function", torch.scalar_tensor, *proxy_args_kwargs((value,), {})
@@ -708,7 +707,7 @@ def generic_jump(truth_fn: typing.Callable[[object], bool], push: bool):
                 *proxy_args_kwargs((scalar_to_tensor, error_msg), {}),
             )
             self.jump(inst)
-            return
+            return None
 
         if value.is_python_constant():
             # ConstDictVariable is optimized to be very lazy about insertion of
@@ -995,7 +994,7 @@ class ExceptionStack:
     #  + POP_EXCEPT := pops TOS from the *exception stack*
 
     _exc_stack: list[VariableTracker] = dataclasses.field(default_factory=list)
-    _current_exception: Optional[VariableTracker] = dataclasses.field(default=None)
+    _current_exception: VariableTracker | None = dataclasses.field(default=None)
 
     def clear_current_exception(self):
         self._current_exception = None
@@ -1079,21 +1078,21 @@ class InstructionTranslatorBase(
     symbolic_globals: dict[str, VariableTracker]
     symbolic_torch_function_state: SymbolicTorchFunctionState
     stack: list[VariableTracker]
-    instruction_pointer: Optional[int]
+    instruction_pointer: int | None
     current_instruction: Instruction
     block_stack: list[BlockStackEntry]
     lineno: int
-    kw_names: Optional[ConstantVariable]
+    kw_names: ConstantVariable | None
     accept_prefix_inst: bool
     prefix_insts: list[Instruction]
     inline_depth: int
     inconsistent_side_effects: bool
-    current_speculation: Optional[SpeculationEntry]
+    current_speculation: SpeculationEntry | None
     dispatch_table: list[Any]
     exn_vt_stack: ExceptionStack
-    exec_recorder: Optional[ExecutionRecorder]
-    strict_checks_fn: Optional[Callable[[VariableTracker], bool]]
-    start_point: Optional[int]
+    exec_recorder: ExecutionRecorder | None
+    strict_checks_fn: Callable[[VariableTracker], bool] | None
+    start_point: int | None
     is_leaf_tracer: bool
     parent: Optional["InstructionTranslatorBase"]
     debug_locals: list[tuple[VariableTracker, list[VariableTracker]]]
@@ -1206,8 +1205,7 @@ class InstructionTranslatorBase(
         """
         if config.enable_faithful_generator_behavior and is_generator(fn.get_code()):
             return self.inline_generator_function(fn, args, kwargs)
-        else:
-            return InliningInstructionTranslator.inline_call(self, fn, args, kwargs)
+        return InliningInstructionTranslator.inline_call(self, fn, args, kwargs)
 
     def get_line_of_code_header(self, lineno=None):
         if lineno is None:
@@ -1397,7 +1395,7 @@ class InstructionTranslatorBase(
                     # twice is not an issue (second stop is a no op).
                     self.output.mark_bytecode_tracing_stop()
 
-    def push(self, val: Optional[VariableTracker]):
+    def push(self, val: VariableTracker | None):
         assert val is None or isinstance(val, VariableTracker), (
             f"push expects VariableTracker, got {typestr(val)}"
         )
@@ -1506,7 +1504,7 @@ class InstructionTranslatorBase(
         if name in self.symbolic_globals:
             variable = self.output.side_effects[self.symbolic_globals[name]]
             self.push(self.output.side_effects.load_global(variable, name))
-            return
+            return None
 
         value = self.f_globals[name]
         self.push(VariableTracker.build(self, value, GlobalSource(name)))
@@ -1595,17 +1593,16 @@ class InstructionTranslatorBase(
                     stacklevel=3,
                 )
             return package
-        elif spec is not None:
+        if spec is not None:
             return spec.parent
-        else:
-            log.warning(
-                "can't resolve package from __spec__ or __package__, "
-                "falling back on __name__ and __path__",
-                stacklevel=3,
-            )
-            package = self.f_globals["__name__"]
-            if "__path__" not in self.f_globals:
-                package = package.rpartition(".")[0]
+        log.warning(
+            "can't resolve package from __spec__ or __package__, "
+            "falling back on __name__ and __path__",
+            stacklevel=3,
+        )
+        package = self.f_globals["__name__"]
+        if "__path__" not in self.f_globals:
+            package = package.rpartition(".")[0]
         return package
 
     def IMPORT_NAME(self, inst):
@@ -1686,9 +1683,8 @@ class InstructionTranslatorBase(
             )
             var_source = DictGetItemSource(builtins_source, argval)
             return VariableTracker.build(self, val, var_source)
-        else:
-            assert is_builtin_constant(val)
-            return ConstantVariable.create(value=val)
+        assert is_builtin_constant(val)
+        return ConstantVariable.create(value=val)
 
     def load_builtin(self, inst):
         self.push(self.load_builtin_from_argval(inst.argval))
@@ -2142,13 +2138,14 @@ class InstructionTranslatorBase(
                     explanation=f"`except ...` expects a non-type: {expected_type}.",
                     hints=[*graph_break_hints.USER_ERROR],
                 )
-            if self._isinstance_exception(exc_instance) and issubclass(
-                exc_instance.exc_type,  # type: ignore[attr-defined]
-                expected_type.fn,  # type: ignore[attr-defined]
-            ):
-                return True
-            elif isinstance(exc_instance, variables.BuiltinVariable) and issubclass(
-                exc_instance.fn, expected_type.fn
+            if (
+                self._isinstance_exception(exc_instance)
+                and issubclass(
+                    exc_instance.exc_type,  # type: ignore[attr-defined]
+                    expected_type.fn,  # type: ignore[attr-defined]
+                )
+                or isinstance(exc_instance, variables.BuiltinVariable)
+                and issubclass(exc_instance.fn, expected_type.fn)
             ):
                 return True
 
@@ -2235,7 +2232,7 @@ class InstructionTranslatorBase(
         assert isinstance(argnames, TupleVariable) and argnames.is_python_constant()
         argnames = argnames.as_python_constant()
         args, kwargs_list = args[: -len(argnames)], args[-len(argnames) :]
-        kwargs = dict(zip(argnames, kwargs_list))
+        kwargs = dict(zip(argnames, kwargs_list, strict=False))
         assert len(kwargs) == len(argnames)
         self.call_function(fn, args, kwargs)
 
@@ -2312,7 +2309,7 @@ class InstructionTranslatorBase(
                 [obj, ConstantVariable.create(inst.argval), val],
                 {},
             )
-            return
+            return None
         except Unsupported as e:
             if not self.should_compile_partial_graph():
                 raise
@@ -2416,7 +2413,7 @@ class InstructionTranslatorBase(
 
     def BUILD_MAP(self, inst):
         items = self.popn(inst.argval * 2)
-        d = dict(zip(items[::2], items[1::2]))
+        d = dict(zip(items[::2], items[1::2], strict=False))
         self.push(ConstDictVariable(d, mutation_type=ValueMutationNew()))
 
     def BUILD_MAP_UNPACK(self, inst):
@@ -2447,7 +2444,7 @@ class InstructionTranslatorBase(
 
         self.push(
             ConstDictVariable(
-                dict(zip(keys, values)),
+                dict(zip(keys, values, strict=False)),
                 mutation_type=ValueMutationNew(),
             )
         )
@@ -2621,9 +2618,9 @@ class InstructionTranslatorBase(
     def _convert_value(self, value, flag):
         if flag == 1:
             return BuiltinVariable(str).call_function(self, [value], {})  # type: ignore[arg-type]
-        elif flag == 2:
+        if flag == 2:
             return BuiltinVariable(repr).call_function(self, [value], {})  # type: ignore[arg-type]
-        elif flag == 3:
+        if flag == 3:
             return BuiltinVariable(ascii).call_function(self, [value], {})  # type: ignore[arg-type]
         return value
 
@@ -2892,7 +2889,7 @@ class InstructionTranslatorBase(
         if kw_names:
             args = args + contents[2 : -len(kw_names)]
             kwargs_list = contents[-len(kw_names) :]
-            kwargs = dict(zip(kw_names, kwargs_list))
+            kwargs = dict(zip(kw_names, kwargs_list, strict=False))
             assert len(kwargs) == len(kw_names)
         else:
             args = args + contents[2:]
@@ -3191,9 +3188,9 @@ class InstructionTranslatorBase(
         inline_depth: int,
         speculation_log: SpeculationLog,
         exn_vt_stack: ExceptionStack,
-        distributed_state: Optional[DistributedState],
+        distributed_state: DistributedState | None,
         # This determines whether to use the execution recorder.
-        closure: Optional[tuple[types.CellType]] = None,
+        closure: tuple[types.CellType] | None = None,
         package: Optional["CompilePackage"] = None,
     ) -> None:
         super().__init__()
@@ -3270,15 +3267,15 @@ class InstructionTranslatorBase(
 
         self.inline_depth = inline_depth
         self.inconsistent_side_effects = False
-        self._constants_cache: list[Optional[VariableTracker]] = [None] * len(
+        self._constants_cache: list[VariableTracker | None] = [None] * len(
             f_code.co_consts
         )
 
-        self.is_trace_bytecode_log_enabled: Optional[bool] = (
+        self.is_trace_bytecode_log_enabled: bool | None = (
             trace_bytecode_log.isEnabledFor(logging.DEBUG)
         )
-        self.is_trace_source_log_enabled: Optional[bool] = (
-            trace_source_log.isEnabledFor(logging.DEBUG)
+        self.is_trace_source_log_enabled: bool | None = trace_source_log.isEnabledFor(
+            logging.DEBUG
         )
         linecache.lazycache(f_code.co_filename, f_globals)
 
@@ -3314,7 +3311,7 @@ class InstructionTranslator(InstructionTranslatorBase):
         frame_state,
         speculation_log: SpeculationLog,
         exn_vt_stack: ExceptionStack,
-        distributed_state: Optional[DistributedState],
+        distributed_state: DistributedState | None,
         package: Optional["CompilePackage"],
     ) -> None:
         _step_logger()(
@@ -3428,7 +3425,7 @@ class InstructionTranslator(InstructionTranslatorBase):
 
             # Populate `symbolic_locals` with cells captured by this frame,
             # effectively implementing the `COPY_FREE_VARS` instruction.
-            for name, cell in zip(self.freevars(), closure):
+            for name, cell in zip(self.freevars(), closure, strict=False):
                 cell_source = LocalCellSource(name)
                 contents_source = LocalSource(name, is_derefed_cell_contents=True)
                 try:
@@ -3515,7 +3512,7 @@ class InstructionTranslator(InstructionTranslatorBase):
 
         if inst.opname == "RETURN_VALUE":
             return [create_instruction("RETURN_VALUE")]
-        elif inst.opname == "RETURN_CONST":
+        if inst.opname == "RETURN_CONST":
             return [create_instruction("RETURN_CONST", argval=inst.argval)]
 
         reads = livevars_analysis(self.instructions, inst)
@@ -3545,6 +3542,7 @@ class InstructionTranslator(InstructionTranslatorBase):
         for (i, _), i_orig in zip(
             all_stack_locals_metadata[0].stack_ctx_args,
             all_stack_locals_metadata[0].stack_ctx_idxes_orig,
+            strict=False,
         ):
             # Replace the current stack var with the context class
             ctx = cast(ContextWrappingVariable, self.stack[i_orig])
@@ -3688,7 +3686,7 @@ if sys.version_info >= (3, 11):
 class InliningInstructionTranslator(InstructionTranslatorBase):
     """Trace and inline a called method"""
 
-    symbolic_result: Optional[VariableTracker]
+    symbolic_result: VariableTracker | None
     parent: InstructionTranslatorBase
 
     @classmethod
@@ -3944,8 +3942,7 @@ class InliningInstructionTranslator(InstructionTranslatorBase):
                     self.generated_items,
                     mutation_type=ValueMutationNew(),
                 )
-            else:
-                return self.symbolic_result
+            return self.symbolic_result
 
     def __init__(
         self,

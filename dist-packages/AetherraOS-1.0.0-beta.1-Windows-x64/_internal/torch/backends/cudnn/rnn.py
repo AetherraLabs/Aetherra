@@ -1,7 +1,6 @@
 # mypy: allow-untyped-defs
 import torch.cuda
 
-
 try:
     from torch._C import _cudnn
 except ImportError:
@@ -13,14 +12,13 @@ except ImportError:
 def get_cudnn_mode(mode):
     if mode == "RNN_RELU":
         return int(_cudnn.RNNMode.rnn_relu)
-    elif mode == "RNN_TANH":
+    if mode == "RNN_TANH":
         return int(_cudnn.RNNMode.rnn_tanh)
-    elif mode == "LSTM":
+    if mode == "LSTM":
         return int(_cudnn.RNNMode.lstm)
-    elif mode == "GRU":
+    if mode == "GRU":
         return int(_cudnn.RNNMode.gru)
-    else:
-        raise Exception(f"Unknown mode: {mode}")  # noqa: TRY002
+    raise Exception(f"Unknown mode: {mode}")  # noqa: TRY002
 
 
 # NB: We don't actually need this class anymore (in fact, we could serialize the

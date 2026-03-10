@@ -28,7 +28,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from itertools import chain
 from logging import StreamHandler
-from typing import Any, Optional, Union
+from typing import Any
 
 import numpy as np
 import torch
@@ -47,7 +47,6 @@ from .utils import (
     logging,
 )
 
-
 if is_training_run_on_sagemaker():
     logging.add_handler(StreamHandler(sys.stdout))
 
@@ -64,11 +63,11 @@ logger = logging.get_logger(__name__)
 def get_dataloader_sampler(dataloader):
     if hasattr(dataloader, "batch_sampler") and dataloader.batch_sampler is not None:
         return get_dataloader_sampler(dataloader.batch_sampler)
-    elif hasattr(dataloader, "sampler"):
+    if hasattr(dataloader, "sampler"):
         return dataloader.sampler
 
 
-def atleast_1d(tensor_or_array: Union[torch.Tensor, np.ndarray]):
+def atleast_1d(tensor_or_array: torch.Tensor | np.ndarray):
     if isinstance(tensor_or_array, torch.Tensor):
         if hasattr(torch, "atleast_1d"):
             tensor_or_array = torch.atleast_1d(tensor_or_array)
@@ -88,7 +87,10 @@ def torch_pad_and_concatenate(tensor1, tensor2, padding_index=-100):
         return torch.cat((tensor1, tensor2), dim=0)
 
     # Let's figure out the new shape
-    new_shape = (tensor1.shape[0] + tensor2.shape[0], max(tensor1.shape[1], tensor2.shape[1])) + tensor1.shape[2:]
+    new_shape = (
+        tensor1.shape[0] + tensor2.shape[0],
+        max(tensor1.shape[1], tensor2.shape[1]),
+    ) + tensor1.shape[2:]
 
     # Now let's fill the result tensor
     result = tensor1.new_full(new_shape, padding_index)
@@ -106,7 +108,10 @@ def numpy_pad_and_concatenate(array1, array2, padding_index=-100):
         return np.concatenate((array1, array2), axis=0)
 
     # Let's figure out the new shape
-    new_shape = (array1.shape[0] + array2.shape[0], max(array1.shape[1], array2.shape[1])) + array1.shape[2:]
+    new_shape = (
+        array1.shape[0] + array2.shape[0],
+        max(array1.shape[1], array2.shape[1]),
+    ) + array1.shape[2:]
 
     # Now let's fill the result tensor
     result = np.full_like(array1, padding_index, shape=new_shape)
@@ -120,22 +125,33 @@ def nested_concat(tensors, new_tensors, padding_index=-100):
     Concat the `new_tensors` to `tensors` on the first dim and pad them on the second if needed. Works for tensors or
     nested list/tuples/dict of tensors.
     """
-    if not (isinstance(tensors, torch.Tensor) and isinstance(new_tensors, torch.Tensor)):
+    if not (
+        isinstance(tensors, torch.Tensor) and isinstance(new_tensors, torch.Tensor)
+    ):
         assert type(tensors) is type(new_tensors), (
             f"Expected `tensors` and `new_tensors` to have the same type but found {type(tensors)} and {type(new_tensors)}."
         )
     if isinstance(tensors, (list, tuple)):
-        return type(tensors)(nested_concat(t, n, padding_index=padding_index) for t, n in zip(tensors, new_tensors))
-    elif isinstance(tensors, torch.Tensor):
-        return torch_pad_and_concatenate(tensors, new_tensors, padding_index=padding_index)
-    elif isinstance(tensors, Mapping):
         return type(tensors)(
-            {k: nested_concat(t, new_tensors[k], padding_index=padding_index) for k, t in tensors.items()}
+            nested_concat(t, n, padding_index=padding_index)
+            for t, n in zip(tensors, new_tensors, strict=False)
         )
-    elif isinstance(tensors, np.ndarray):
-        return numpy_pad_and_concatenate(tensors, new_tensors, padding_index=padding_index)
-    else:
-        raise TypeError(f"Unsupported type for concatenation: got {type(tensors)}")
+    if isinstance(tensors, torch.Tensor):
+        return torch_pad_and_concatenate(
+            tensors, new_tensors, padding_index=padding_index
+        )
+    if isinstance(tensors, Mapping):
+        return type(tensors)(
+            {
+                k: nested_concat(t, new_tensors[k], padding_index=padding_index)
+                for k, t in tensors.items()
+            }
+        )
+    if isinstance(tensors, np.ndarray):
+        return numpy_pad_and_concatenate(
+            tensors, new_tensors, padding_index=padding_index
+        )
+    raise TypeError(f"Unsupported type for concatenation: got {type(tensors)}")
 
 
 def find_batch_size(tensors):
@@ -152,9 +168,7 @@ def find_batch_size(tensors):
             result = find_batch_size(value)
             if result is not None:
                 return result
-    elif isinstance(tensors, torch.Tensor):
-        return tensors.shape[0] if len(tensors.shape) >= 1 else None
-    elif isinstance(tensors, np.ndarray):
+    elif isinstance(tensors, torch.Tensor) or isinstance(tensors, np.ndarray):
         return tensors.shape[0] if len(tensors.shape) >= 1 else None
 
 
@@ -178,7 +192,7 @@ def nested_detach(tensors):
     "Detach `tensors` (even if it's a nested list/tuple/dict of tensors)."
     if isinstance(tensors, (list, tuple)):
         return type(tensors)(nested_detach(t) for t in tensors)
-    elif isinstance(tensors, Mapping):
+    if isinstance(tensors, Mapping):
         return type(tensors)({k: nested_detach(t) for k, t in tensors.items()})
     return tensors.detach() if isinstance(tensors, torch.Tensor) else tensors
 
@@ -188,24 +202,35 @@ def nested_xla_mesh_reduce(tensors, name):
         import torch_xla.core.xla_model as xm
 
         if isinstance(tensors, (list, tuple)):
-            return type(tensors)(nested_xla_mesh_reduce(t, f"{name}_{i}") for i, t in enumerate(tensors))
+            return type(tensors)(
+                nested_xla_mesh_reduce(t, f"{name}_{i}") for i, t in enumerate(tensors)
+            )
         if isinstance(tensors, Mapping):
             return type(tensors)(
-                {k: nested_xla_mesh_reduce(t, f"{name}_{i}") for i, (k, t) in enumerate(tensors.items())}
+                {
+                    k: nested_xla_mesh_reduce(t, f"{name}_{i}")
+                    for i, (k, t) in enumerate(tensors.items())
+                }
             )
 
         tensors = atleast_1d(tensors)
         return xm.mesh_reduce(name, tensors, torch.cat)
-    else:
-        raise ImportError("Torch xla must be installed to use `nested_xla_mesh_reduce`")
+    raise ImportError("Torch xla must be installed to use `nested_xla_mesh_reduce`")
 
 
-def distributed_concat(tensor: Any, num_total_examples: Optional[int] = None) -> Any:
+def distributed_concat(tensor: Any, num_total_examples: int | None = None) -> Any:
     try:
         if isinstance(tensor, (tuple, list)):
-            return type(tensor)(distributed_concat(t, num_total_examples) for t in tensor)
+            return type(tensor)(
+                distributed_concat(t, num_total_examples) for t in tensor
+            )
         if isinstance(tensor, Mapping):
-            return type(tensor)({k: distributed_concat(t, num_total_examples) for k, t in tensor.items()})
+            return type(tensor)(
+                {
+                    k: distributed_concat(t, num_total_examples)
+                    for k, t in tensor.items()
+                }
+            )
         tensor = atleast_1d(tensor).contiguous()
         output_tensors = [tensor.clone() for _ in range(dist.get_world_size())]
         dist.all_gather(output_tensors, tensor)
@@ -220,13 +245,15 @@ def distributed_concat(tensor: Any, num_total_examples: Optional[int] = None) ->
 
 
 def distributed_broadcast_scalars(
-    scalars: list[Union[int, float]],
-    num_total_examples: Optional[int] = None,
-    device: Optional[torch.device] = torch.device("cuda"),
+    scalars: list[int | float],
+    num_total_examples: int | None = None,
+    device: torch.device | None = torch.device("cuda"),
 ) -> torch.Tensor:
     try:
         tensorized_scalar = torch.tensor(scalars, device=device)
-        output_tensors = [tensorized_scalar.clone() for _ in range(dist.get_world_size())]
+        output_tensors = [
+            tensorized_scalar.clone() for _ in range(dist.get_world_size())
+        ]
         dist.all_gather(output_tensors, tensorized_scalar)
         concat = torch.cat(output_tensors, dim=0)
 
@@ -281,7 +308,11 @@ class DistributedSamplerWithLoop(DistributedSampler):
 
     def __iter__(self):
         indices = list(super().__iter__())
-        remainder = 0 if len(indices) % self.batch_size == 0 else self.batch_size - len(indices) % self.batch_size
+        remainder = (
+            0
+            if len(indices) % self.batch_size == 0
+            else self.batch_size - len(indices) % self.batch_size
+        )
         # DistributedSampler already added samples from the beginning to make the number of samples a round multiple
         # of the world size, so we skip those.
         start_remainder = 1 if self.rank < len(self.dataset) % self.num_replicas else 0
@@ -313,7 +344,9 @@ class EvalLoopContainer:
         if self.tensors is None:
             self.tensors = tensors if self.do_nested_concat else [tensors]
         elif self.do_nested_concat:
-            self.tensors = nested_concat(self.tensors, tensors, padding_index=self.padding_index)
+            self.tensors = nested_concat(
+                self.tensors, tensors, padding_index=self.padding_index
+            )
         else:
             self.tensors.append(tensors)
 
@@ -328,7 +361,9 @@ class EvalLoopContainer:
         if self.arrays is None:
             self.arrays = new_arrays
         elif self.do_nested_concat:
-            self.arrays = nested_concat(self.arrays, new_arrays, padding_index=self.padding_index)
+            self.arrays = nested_concat(
+                self.arrays, new_arrays, padding_index=self.padding_index
+            )
         else:
             self.arrays.extend(new_arrays)
 
@@ -370,7 +405,9 @@ class SequentialDistributedSampler(Sampler):
         num_samples = len(self.dataset)
         # Add extra samples to make num_samples a multiple of batch_size if passed
         if batch_size is not None:
-            self.num_samples = int(math.ceil(num_samples / (batch_size * num_replicas))) * batch_size
+            self.num_samples = (
+                int(math.ceil(num_samples / (batch_size * num_replicas))) * batch_size
+            )
         else:
             self.num_samples = int(math.ceil(num_samples / num_replicas))
         self.total_size = self.num_samples * self.num_replicas
@@ -386,7 +423,9 @@ class SequentialDistributedSampler(Sampler):
         )
 
         # subsample
-        indices = indices[self.rank * self.num_samples : (self.rank + 1) * self.num_samples]
+        indices = indices[
+            self.rank * self.num_samples : (self.rank + 1) * self.num_samples
+        ]
         assert len(indices) == self.num_samples, (
             f"Indices length {len(indices)} and sample number {self.num_samples} mismatched"
         )
@@ -400,7 +439,9 @@ class SequentialDistributedSampler(Sampler):
 def get_tpu_sampler(dataset: torch.utils.data.Dataset, batch_size: int):
     if xr.world_size() <= 1:
         return RandomSampler(dataset)
-    return DistributedSampler(dataset, num_replicas=xr.world_size(), rank=xr.global_ordinal())
+    return DistributedSampler(
+        dataset, num_replicas=xr.world_size(), rank=xr.global_ordinal()
+    )
 
 
 def nested_new_like(arrays, num_samples, padding_index=-100):
@@ -412,7 +453,11 @@ def nested_new_like(arrays, num_samples, padding_index=-100):
 
 def expand_like(arrays, new_seq_length, padding_index=-100):
     """Expand the `arrays` so that the second dimension grows to `new_seq_length`. Uses `padding_index` for padding."""
-    result = np.full_like(arrays, padding_index, shape=(arrays.shape[0], new_seq_length) + arrays.shape[2:])
+    result = np.full_like(
+        arrays,
+        padding_index,
+        shape=(arrays.shape[0], new_seq_length) + arrays.shape[2:],
+    )
     result[:, : arrays.shape[1]] = arrays
     return result
 
@@ -473,14 +518,18 @@ class DistributedTensorGatherer:
             The padding index to use if the arrays don't all have the same sequence length.
     """
 
-    def __init__(self, world_size, num_samples, make_multiple_of=None, padding_index=-100):
+    def __init__(
+        self, world_size, num_samples, make_multiple_of=None, padding_index=-100
+    ):
         warnings.warn(
             "DistributedTensorGatherer is deprecated and will be removed in v5 of Transformers.",
             FutureWarning,
         )
         self.world_size = world_size
         self.num_samples = num_samples
-        total_size = world_size if make_multiple_of is None else world_size * make_multiple_of
+        total_size = (
+            world_size if make_multiple_of is None else world_size * make_multiple_of
+        )
         self.total_samples = int(np.ceil(num_samples / total_size)) * total_size
         self.process_length = self.total_samples // world_size
         self._storage = None
@@ -495,7 +544,9 @@ class DistributedTensorGatherer:
         if arrays is None:
             return
         if self._storage is None:
-            self._storage = nested_new_like(arrays, self.total_samples, padding_index=self.padding_index)
+            self._storage = nested_new_like(
+                arrays, self.total_samples, padding_index=self.padding_index
+            )
             self._offsets = list(range(0, self.total_samples, self.process_length))
 
         slice_len, self._storage = self._nested_set_tensors(self._storage, arrays)
@@ -504,7 +555,10 @@ class DistributedTensorGatherer:
 
     def _nested_set_tensors(self, storage, arrays):
         if isinstance(arrays, (list, tuple)):
-            result = [self._nested_set_tensors(x, y) for x, y in zip(storage, arrays)]
+            result = [
+                self._nested_set_tensors(x, y)
+                for x, y in zip(storage, arrays, strict=False)
+            ]
             return result[0][0], type(arrays)(r[1] for r in result)
         assert arrays.shape[0] % self.world_size == 0, (
             f"Arrays passed should all have a first dimension multiple of {self.world_size}, found {arrays.shape[0]}."
@@ -513,14 +567,18 @@ class DistributedTensorGatherer:
         slice_len = arrays.shape[0] // self.world_size
         for i in range(self.world_size):
             if len(arrays.shape) == 1:
-                storage[self._offsets[i] : self._offsets[i] + slice_len] = arrays[i * slice_len : (i + 1) * slice_len]
+                storage[self._offsets[i] : self._offsets[i] + slice_len] = arrays[
+                    i * slice_len : (i + 1) * slice_len
+                ]
             else:
                 # Expand the array on the fly if needed.
                 if len(storage.shape) > 1 and storage.shape[1] < arrays.shape[1]:
-                    storage = expand_like(storage, arrays.shape[1], padding_index=self.padding_index)
-                storage[self._offsets[i] : self._offsets[i] + slice_len, : arrays.shape[1]] = arrays[
-                    i * slice_len : (i + 1) * slice_len
-                ]
+                    storage = expand_like(
+                        storage, arrays.shape[1], padding_index=self.padding_index
+                    )
+                storage[
+                    self._offsets[i] : self._offsets[i] + slice_len, : arrays.shape[1]
+                ] = arrays[i * slice_len : (i + 1) * slice_len]
         return slice_len, storage
 
     def finalize(self):
@@ -529,9 +587,11 @@ class DistributedTensorGatherer:
         to get each process a dataset of the same length).
         """
         if self._storage is None:
-            return
+            return None
         if self._offsets[0] != self.process_length:
-            logger.warning("Not all data has been set. Are you sure you passed all values?")
+            logger.warning(
+                "Not all data has been set. Are you sure you passed all values?"
+            )
         return nested_truncate(self._storage, self.num_samples)
 
 
@@ -551,7 +611,11 @@ class LabelSmoother:
     ignore_index: int = -100
 
     def __call__(self, model_output, labels, shift_labels=False):
-        logits = model_output["logits"] if isinstance(model_output, dict) else model_output[0]
+        logits = (
+            model_output["logits"]
+            if isinstance(model_output, dict)
+            else model_output[0]
+        )
         if shift_labels:
             logits = logits[..., :-1, :].contiguous()
             labels = labels[..., 1:].contiguous()
@@ -574,11 +638,15 @@ class LabelSmoother:
         # Take the mean over the label dimensions, then divide by the number of active elements (i.e. not-padded):
         num_active_elements = padding_mask.numel() - padding_mask.long().sum()
         nll_loss = nll_loss.sum() / num_active_elements
-        smoothed_loss = smoothed_loss.sum() / (num_active_elements * log_probs.shape[-1])
+        smoothed_loss = smoothed_loss.sum() / (
+            num_active_elements * log_probs.shape[-1]
+        )
         return (1 - self.epsilon) * nll_loss + self.epsilon * smoothed_loss
 
 
-def get_length_grouped_indices(lengths, batch_size, mega_batch_mult=None, generator=None):
+def get_length_grouped_indices(
+    lengths, batch_size, mega_batch_mult=None, generator=None
+):
     """
     Return a list of indices so that each slice of `batch_size` consecutive indices correspond to elements of similar
     lengths. To do this, the indices are:
@@ -600,15 +668,24 @@ def get_length_grouped_indices(lengths, batch_size, mega_batch_mult=None, genera
     # We need to use torch for the random part as a distributed sampler will set the random seed for torch.
     indices = torch.randperm(len(lengths), generator=generator)
     megabatch_size = mega_batch_mult * batch_size
-    megabatches = [indices[i : i + megabatch_size].tolist() for i in range(0, len(lengths), megabatch_size)]
-    megabatches = [sorted(megabatch, key=lambda i: lengths[i], reverse=True) for megabatch in megabatches]
+    megabatches = [
+        indices[i : i + megabatch_size].tolist()
+        for i in range(0, len(lengths), megabatch_size)
+    ]
+    megabatches = [
+        sorted(megabatch, key=lambda i: lengths[i], reverse=True)
+        for megabatch in megabatches
+    ]
 
     # The rest is to get the biggest batch first.
     # Since each megabatch is sorted by descending length, the longest element is the first
     megabatch_maximums = [lengths[megabatch[0]] for megabatch in megabatches]
     max_idx = torch.argmax(torch.tensor(megabatch_maximums)).item()
     # Switch to put the longest element in first position
-    megabatches[0][0], megabatches[max_idx][0] = megabatches[max_idx][0], megabatches[0][0]
+    megabatches[0][0], megabatches[max_idx][0] = (
+        megabatches[max_idx][0],
+        megabatches[0][0],
+    )
 
     return [i for megabatch in megabatches for i in megabatch]
 
@@ -622,9 +699,9 @@ class LengthGroupedSampler(Sampler):
     def __init__(
         self,
         batch_size: int,
-        dataset: Optional[Dataset] = None,
-        lengths: Optional[list[int]] = None,
-        model_input_name: Optional[str] = None,
+        dataset: Dataset | None = None,
+        lengths: list[int] | None = None,
+        model_input_name: str | None = None,
         generator=None,
     ):
         if dataset is None and lengths is None:
@@ -632,9 +709,14 @@ class LengthGroupedSampler(Sampler):
 
         self.batch_size = batch_size
         if lengths is None:
-            model_input_name = model_input_name if model_input_name is not None else "input_ids"
+            model_input_name = (
+                model_input_name if model_input_name is not None else "input_ids"
+            )
             if (
-                not (isinstance(dataset[0], dict) or isinstance(dataset[0], BatchEncoding))
+                not (
+                    isinstance(dataset[0], dict)
+                    or isinstance(dataset[0], BatchEncoding)
+                )
                 or model_input_name not in dataset[0]
             ):
                 raise ValueError(
@@ -655,7 +737,9 @@ class LengthGroupedSampler(Sampler):
         return len(self.lengths)
 
     def __iter__(self):
-        indices = get_length_grouped_indices(self.lengths, self.batch_size, generator=self.generator)
+        indices = get_length_grouped_indices(
+            self.lengths, self.batch_size, generator=self.generator
+        )
         return iter(indices)
 
 
@@ -669,13 +753,13 @@ class DistributedLengthGroupedSampler(DistributedSampler):
     def __init__(
         self,
         batch_size: int,
-        dataset: Optional[Dataset] = None,
-        num_replicas: Optional[int] = None,
-        rank: Optional[int] = None,
+        dataset: Dataset | None = None,
+        num_replicas: int | None = None,
+        rank: int | None = None,
         seed: int = 0,
         drop_last: bool = False,
-        lengths: Optional[list[int]] = None,
-        model_input_name: Optional[str] = None,
+        lengths: list[int] | None = None,
+        model_input_name: str | None = None,
     ):
         if dataset is None and lengths is None:
             raise ValueError("One of dataset and lengths must be provided.")
@@ -695,9 +779,14 @@ class DistributedLengthGroupedSampler(DistributedSampler):
         self.drop_last = drop_last
 
         if lengths is None:
-            model_input_name = model_input_name if model_input_name is not None else "input_ids"
+            model_input_name = (
+                model_input_name if model_input_name is not None else "input_ids"
+            )
             if (
-                not (isinstance(dataset[0], dict) or isinstance(dataset[0], BatchEncoding))
+                not (
+                    isinstance(dataset[0], dict)
+                    or isinstance(dataset[0], BatchEncoding)
+                )
                 or model_input_name not in dataset[0]
             ):
                 raise ValueError(
@@ -720,7 +809,9 @@ class DistributedLengthGroupedSampler(DistributedSampler):
             # Split to nearest available length that is evenly divisible.
             # This is to ensure each rank receives the same amount of data when
             # using this Sampler.
-            self.num_samples = math.ceil((len(self.lengths) - self.num_replicas) / self.num_replicas)
+            self.num_samples = math.ceil(
+                (len(self.lengths) - self.num_replicas) / self.num_replicas
+            )
         else:
             self.num_samples = math.ceil(len(self.lengths) / self.num_replicas)
         self.total_size = self.num_samples * self.num_replicas
@@ -772,7 +863,11 @@ class ShardSampler(Sampler):
 
         self.total_batch_size = total_batch_size = batch_size * num_processes
 
-        num_batches = len(dataset) // total_batch_size if drop_last else math.ceil(len(dataset) / total_batch_size)
+        num_batches = (
+            len(dataset) // total_batch_size
+            if drop_last
+            else math.ceil(len(dataset) / total_batch_size)
+        )
         self.total_num_samples = num_batches * total_batch_size
 
     def __iter__(self):
@@ -784,7 +879,11 @@ class ShardSampler(Sampler):
             indices += indices[: (self.total_num_samples - len(indices))]
 
         result = []
-        for batch_start in range(self.batch_size * self.process_index, self.total_num_samples, self.total_batch_size):
+        for batch_start in range(
+            self.batch_size * self.process_index,
+            self.total_num_samples,
+            self.total_batch_size,
+        ):
             result += indices[batch_start : batch_start + self.batch_size]
 
         return iter(result)
@@ -867,7 +966,10 @@ class IterableDatasetShard(IterableDataset):
         ):
             self.dataset.generator.manual_seed(self.seed + self.epoch)
         real_batch_size = self.batch_size * self.num_processes
-        process_slice = range(self.process_index * self.batch_size, (self.process_index + 1) * self.batch_size)
+        process_slice = range(
+            self.process_index * self.batch_size,
+            (self.process_index + 1) * self.batch_size,
+        )
 
         first_batch = None
         current_batch = []
@@ -894,9 +996,13 @@ class IterableDatasetShard(IterableDataset):
     def __len__(self):
         # Will raise an error if the underlying dataset is not sized.
         if self.drop_last:
-            return (len(self.dataset) // (self.batch_size * self.num_processes)) * self.batch_size
-        else:
-            return math.ceil(len(self.dataset) / (self.batch_size * self.num_processes)) * self.batch_size
+            return (
+                len(self.dataset) // (self.batch_size * self.num_processes)
+            ) * self.batch_size
+        return (
+            math.ceil(len(self.dataset) / (self.batch_size * self.num_processes))
+            * self.batch_size
+        )
 
 
 # In order to keep `trainer.py` compact and easy to understand, place any secondary PT Trainer
@@ -912,7 +1018,9 @@ def _get_learning_rate(self):
             last_lr = self.lr_scheduler.get_last_lr()[0]
         except AssertionError as e:
             if "need to call step" in str(e):
-                logger.warning("tried to get lr value before scheduler/optimizer started stepping, returning lr=0")
+                logger.warning(
+                    "tried to get lr value before scheduler/optimizer started stepping, returning lr=0"
+                )
                 last_lr = 0
             else:
                 raise
@@ -1117,7 +1225,9 @@ def get_model_param_count(model, trainable_only=False):
         def numel(p):
             return p.numel()
 
-    return sum(numel(p) for p in model.parameters() if not trainable_only or p.requires_grad)
+    return sum(
+        numel(p) for p in model.parameters() if not trainable_only or p.requires_grad
+    )
 
 
 def get_parameter_names(model, forbidden_layer_types, forbidden_layer_names=None):
@@ -1128,16 +1238,23 @@ def get_parameter_names(model, forbidden_layer_types, forbidden_layer_names=None
         forbidden_layer_names = []
     result = []
     for name, child in model.named_children():
-        child_params = get_parameter_names(child, forbidden_layer_types, forbidden_layer_names)
+        child_params = get_parameter_names(
+            child, forbidden_layer_types, forbidden_layer_names
+        )
         result += [
             f"{name}.{n}"
             for n in child_params
             if not isinstance(child, tuple(forbidden_layer_types))
-            and not any(forbidden in f"{name}.{n}".lower() for forbidden in forbidden_layer_names)
+            and not any(
+                forbidden in f"{name}.{n}".lower()
+                for forbidden in forbidden_layer_names
+            )
         ]
     # Add model specific parameters that are not in any child
     result += [
-        k for k in model._parameters.keys() if not any(forbidden in k.lower() for forbidden in forbidden_layer_names)
+        k
+        for k in model._parameters.keys()
+        if not any(forbidden in k.lower() for forbidden in forbidden_layer_names)
     ]
     return result
 
@@ -1153,13 +1270,12 @@ def get_module_class_from_name(module, name):
     modules_children = list(module.children())
     if module.__class__.__name__ == name:
         return module.__class__
-    elif len(modules_children) == 0:
-        return
-    else:
-        for child_module in modules_children:
-            module_class = get_module_class_from_name(child_module, name)
-            if module_class is not None:
-                return module_class
+    if len(modules_children) == 0:
+        return None
+    for child_module in modules_children:
+        module_class = get_module_class_from_name(child_module, name)
+        if module_class is not None:
+            return module_class
 
 
 def remove_dummy_checkpoint(is_main_process, output_dir, filenames):
@@ -1188,9 +1304,9 @@ if is_sagemaker_mp_enabled():
     def smp_gather(tensor):
         if isinstance(tensor, (list, tuple)):
             return type(tensor)(smp_gather(t) for t in tensor)
-        elif isinstance(tensor, dict):
+        if isinstance(tensor, dict):
             return type(tensor)({k: smp_gather(v) for k, v in tensor.items()})
-        elif not isinstance(tensor, torch.Tensor):
+        if not isinstance(tensor, torch.Tensor):
             raise TypeError(
                 f"Can't gather the values of type {type(tensor)}, only of nested list/tuple/dicts of tensors."
             )
@@ -1201,7 +1317,7 @@ if is_sagemaker_mp_enabled():
     def smp_nested_concat(tensor):
         if isinstance(tensor, (list, tuple)):
             return type(tensor)(smp_nested_concat(t) for t in tensor)
-        elif isinstance(tensor, dict):
+        if isinstance(tensor, dict):
             return type(tensor)({k: smp_nested_concat(v) for k, v in tensor.items()})
         # It doesn't seem possible to check here if `tensor` is a StepOutput because StepOutput lives in `smp.step`
         # which is also the name of the decorator so Python is confused.
@@ -1264,7 +1380,7 @@ class AcceleratorConfig:
             " in your script multiplied by the number of processes."
         },
     )
-    dispatch_batches: Optional[bool] = field(
+    dispatch_batches: bool | None = field(
         default=None,
         metadata={
             "help": "If set to `True`, the dataloader prepared by the Accelerator is only iterated through on the main process"
@@ -1290,7 +1406,7 @@ class AcceleratorConfig:
         },
     )
 
-    non_blocking: Optional[bool] = field(
+    non_blocking: bool | None = field(
         default=False,
         metadata={
             "help": "Whether to use non-blocking CUDA calls to help minimize synchronization during "
@@ -1300,7 +1416,7 @@ class AcceleratorConfig:
         },
     )
 
-    gradient_accumulation_kwargs: Optional[dict] = field(
+    gradient_accumulation_kwargs: dict | None = field(
         default=None,
         metadata={
             "help": "Additional kwargs to configure gradient accumulation, see [`accelerate.utils.GradientAccumulationPlugin`]. "
@@ -1328,7 +1444,11 @@ class AcceleratorConfig:
         with open_file(json_file, "r", encoding="utf-8") as f:
             config_dict = json.load(f)
         # Check for keys and load sensible defaults
-        extra_keys = sorted(key for key in config_dict.keys() if key not in cls.__dataclass_fields__.keys())
+        extra_keys = sorted(
+            key
+            for key in config_dict.keys()
+            if key not in cls.__dataclass_fields__.keys()
+        )
         if len(extra_keys) > 0:
             raise ValueError(
                 f"The config file at {json_file} had unknown keys ({extra_keys}), please try upgrading your `transformers`"
@@ -1362,7 +1482,7 @@ class LayerWiseDummyOptimizer(torch.optim.Optimizer):
     def zero_grad(self, set_to_none: bool = True) -> None:
         pass
 
-    def step(self, closure=None) -> Optional[float]:
+    def step(self, closure=None) -> float | None:
         pass
 
 
@@ -1387,7 +1507,8 @@ class LayerWiseDummyScheduler(LRScheduler):
         # we take each lr in the parameters if they exist, assumes the optimizer to be the `LayerWiseDummyOptimizer`
         if self.optimizer is not None:
             param_wise_lrs = [
-                [group["lr"] for group in optim.param_groups] for optim in self.optimizer.optimizer_dict.values()
+                [group["lr"] for group in optim.param_groups]
+                for optim in self.optimizer.optimizer_dict.values()
             ]
             lrs = list(chain(*param_wise_lrs))
 
@@ -1397,13 +1518,17 @@ class LayerWiseDummyScheduler(LRScheduler):
         return self.base_lrs
 
 
-def set_rng_state_for_device(device_name, device_module, checkpoint_rng_state, is_distributed):
+def set_rng_state_for_device(
+    device_name, device_module, checkpoint_rng_state, is_distributed
+):
     """Helper to set RNG state for a specific device type (CUDA, NPU, MLU, MUSA)"""
     device_state_key = device_name.lower()
     err_template = "Didn't manage to set back the RNG states of the {backend} because of the following error:\n {exception}\nThis won't yield the same results as if the training had not been interrupted."
     try:
         if is_distributed:
-            device_module.random.set_rng_state_all(checkpoint_rng_state[device_state_key])
+            device_module.random.set_rng_state_all(
+                checkpoint_rng_state[device_state_key]
+            )
         else:
             device_module.random.set_rng_state(checkpoint_rng_state[device_state_key])
     except Exception as e:

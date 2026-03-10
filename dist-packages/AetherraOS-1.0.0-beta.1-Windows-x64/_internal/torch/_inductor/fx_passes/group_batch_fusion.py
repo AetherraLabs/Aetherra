@@ -4,7 +4,7 @@ import logging
 import operator
 from collections import OrderedDict
 from collections.abc import Iterable, Iterator
-from typing import Any, Optional
+from typing import Any
 
 import torch
 from torch._dynamo.utils import counters, is_node_meta_valid
@@ -19,7 +19,6 @@ from ..pattern_matcher import (
     stable_topological_sort,
 )
 from ..utils import OPTIMUS_EXCLUDE_POST_GRAD
-
 
 try:
     # importing this will register fbgemm lowerings for inductor
@@ -125,8 +124,7 @@ def register_fusion(name: str, pre_grad=True):
 def list_group_batch_fusions(pre_grad=True) -> list[str]:
     if pre_grad:
         return list(PRE_GRAD_FUSIONS.keys())
-    else:
-        return list(POST_GRAD_FUSIONS.keys())
+    return list(POST_GRAD_FUSIONS.keys())
 
 
 def decompose_stack(graph: torch.fx.GraphModule, input_tensors: list[Any]) -> Any:
@@ -185,9 +183,7 @@ class PostGradBatchLinearFusion(BatchFusion):
             and isinstance(input_shapes[1], int)
         )
 
-    def match(
-        self, node: torch.fx.Node
-    ) -> Optional[tuple[str, int, int, int, bool, str]]:
+    def match(self, node: torch.fx.Node) -> tuple[str, int, int, int, bool, str] | None:
         if CallFunctionVarArgs(aten.mm).match(node):
             input_m, weight_m = node.args
             bias_m = None
@@ -325,7 +321,7 @@ class GroupLinearFusion(GroupFusion):
             )
         )
 
-    def match(self, node: torch.fx.Node) -> Optional[tuple[str, bool]]:
+    def match(self, node: torch.fx.Node) -> tuple[str, bool] | None:
         if CallFunctionVarArgs(aten.mm.default).match(
             node
         ) and self._mm_node_can_be_fused(node):
@@ -493,7 +489,7 @@ class BatchLinearLHSFusion(BatchFusion):
     We have a separate pass to eliminate contiguous transpose in a generic way.
     """
 
-    def match(self, node: torch.fx.Node) -> Optional[tuple[str, bool, Any]]:
+    def match(self, node: torch.fx.Node) -> tuple[str, bool, Any] | None:
         if CallFunctionVarArgs(torch.nn.functional.linear).match(
             node
         ) and is_linear_node_can_be_fused(node):

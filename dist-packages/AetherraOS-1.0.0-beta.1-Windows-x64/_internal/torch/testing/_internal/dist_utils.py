@@ -10,13 +10,13 @@ import torch.distributed.rpc as rpc
 from torch.distributed.rpc import _rref_context_get_debug_info
 from torch.testing._internal.common_utils import FILE_SCHEMA, TEST_WITH_TSAN
 
-
 if not dist.is_available():
     print("c10d not available, skipping tests", file=sys.stderr)
     sys.exit(0)
 
 
 INIT_METHOD_TEMPLATE = FILE_SCHEMA + "{file_name}"
+
 
 def dist_init(
     old_test_method=None,
@@ -66,7 +66,9 @@ def dist_init(
         if setup_rpc:
             if TEST_WITH_TSAN:
                 # TSAN runs much slower.
-                rpc_backend_options.rpc_timeout = rpc.constants.DEFAULT_RPC_TIMEOUT_SEC * 5
+                rpc_backend_options.rpc_timeout = (
+                    rpc.constants.DEFAULT_RPC_TIMEOUT_SEC * 5
+                )
                 rpc.constants.DEFAULT_SHUTDOWN_TIMEOUT = 60
 
             rpc.init_rpc(

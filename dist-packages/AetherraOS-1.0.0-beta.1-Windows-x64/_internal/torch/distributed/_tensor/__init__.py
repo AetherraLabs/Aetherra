@@ -10,7 +10,6 @@ we resolve all the BC issues.
 import sys
 from importlib import import_module
 
-
 submodules = [
     # TODO: _shards_wrapper/_utils here mainly for checkpoint BC, remove them
     "_shards_wrapper",
@@ -28,18 +27,18 @@ for submodule in submodules:
 
 from torch.distributed.tensor import (  # noqa: F401
     DeviceMesh,
+    DTensor,
+    Partial,
+    Placement,
+    Replicate,
+    Shard,
     distribute_module,
     distribute_tensor,
-    DTensor,
     empty,
     full,
     init_device_mesh,
     ones,
-    Partial,
-    Placement,
     rand,
     randn,
-    Replicate,
-    Shard,
     zeros,
 )

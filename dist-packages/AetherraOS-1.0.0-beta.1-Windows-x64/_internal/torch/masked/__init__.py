@@ -26,9 +26,8 @@ from torch.masked._ops import (
     sum,
     var,
 )
-from torch.masked.maskedtensor.core import is_masked_tensor, MaskedTensor
+from torch.masked.maskedtensor.core import MaskedTensor, is_masked_tensor
 from torch.masked.maskedtensor.creation import as_masked_tensor, masked_tensor
-
 
 __all__ = [
     "amax",

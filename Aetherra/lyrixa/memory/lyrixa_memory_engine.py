@@ -12,7 +12,6 @@ Core memory management system for the Aetherra AI OS.
 Handles various types of memory storage, retrieval, and organization.
 """
 
-
 # Standard library imports
 import uuid
 from dataclasses import dataclass
@@ -206,9 +205,7 @@ class LyrixaMemoryEngine:
 
         return results[:limit]
 
-    def get_recent_memories(
-        self, hours: int = 24, limit: int = 20
-    ) -> List[MemoryEntry]:
+    def get_recent_memories(self, hours: int = 24, limit: int = 20) -> List[MemoryEntry]:
         """
         Get recent memories from specified time period.
 
@@ -221,13 +218,9 @@ class LyrixaMemoryEngine:
         """
         cutoff_time = datetime.now() - timedelta(hours=hours)
 
-        return self.search_memories(
-            time_range=(cutoff_time, datetime.now()), limit=limit
-        )
+        return self.search_memories(time_range=(cutoff_time, datetime.now()), limit=limit)
 
-    def get_important_memories(
-        self, threshold: float = 0.7, limit: int = 50
-    ) -> List[MemoryEntry]:
+    def get_important_memories(self, threshold: float = 0.7, limit: int = 50) -> List[MemoryEntry]:
         """
         Get high-importance memories.
 
@@ -240,9 +233,7 @@ class LyrixaMemoryEngine:
         """
         return self.search_memories(importance_threshold=threshold, limit=limit)
 
-    def get_memories_by_tags(
-        self, tags: List[str], limit: int = 50
-    ) -> List[MemoryEntry]:
+    def get_memories_by_tags(self, tags: List[str], limit: int = 50) -> List[MemoryEntry]:
         """
         Get memories matching specific tags.
 
@@ -388,9 +379,7 @@ class LyrixaMemoryEngine:
         }
 
         if not memory_type or memory_type == "working":
-            export_data["working_memory"] = [
-                self._serialize_memory(m) for m in self.working_memory
-            ]
+            export_data["working_memory"] = [self._serialize_memory(m) for m in self.working_memory]
 
         if not memory_type or memory_type == "episodic":
             export_data["episodic_memory"] = [

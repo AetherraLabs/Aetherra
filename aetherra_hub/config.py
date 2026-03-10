@@ -47,7 +47,7 @@ class Settings:
 
     @staticmethod
     @lru_cache(maxsize=1)
-    def from_env() -> "Settings":  # type: ignore[name-defined]
+    def from_env() -> Settings:  # type: ignore[name-defined]
         profile = (os.environ.get("AETHERRA_PROFILE", "") or "").strip().lower()
         prod = profile in ("prod", "production")
         default_require = "1" if prod else "0"

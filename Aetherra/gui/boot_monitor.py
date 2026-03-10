@@ -7,13 +7,13 @@ from __future__ import annotations
 import os
 import sys
 import time
-from typing import Dict, Any
+from typing import Any, Dict
 
 
 def _http_get_json(url: str, timeout: float = 0.8) -> Dict[str, Any] | None:
     try:
-        from urllib.request import Request, urlopen
         import json
+        from urllib.request import Request, urlopen
 
         req = Request(url, method="GET")
         with urlopen(req, timeout=timeout) as resp:  # nosec B310 (local)
@@ -26,7 +26,14 @@ def _http_get_json(url: str, timeout: float = 0.8) -> Dict[str, Any] | None:
 def run_monitor() -> int:
     try:
         from PySide6.QtCore import QTimer
-        from PySide6.QtWidgets import QApplication, QLabel, QMainWindow, QTextEdit, QVBoxLayout, QWidget
+        from PySide6.QtWidgets import (
+            QApplication,
+            QLabel,
+            QMainWindow,
+            QTextEdit,
+            QVBoxLayout,
+            QWidget,
+        )
     except Exception:
         # Console fallback: print status periodically
         base = os.environ.get("AETHERRA_BASE_URL", "http://127.0.0.1:3001").rstrip("/")
@@ -84,11 +91,11 @@ def run_monitor() -> int:
                 lines.append(f"  Agents: {len(hub)} active")
             lines.append(f"QFAC: {'online' if qfs is not None else 'offline'} — {self.qfac}")
             if qfs:
-                st = qfs.get('system_health') or qfs.get('status')
+                st = qfs.get("system_health") or qfs.get("status")
                 lines.append(f"  Health: {st}")
             if qfp:
-                perf = qfp.get('performance') or qfp
-                total = perf.get('total_memories') if isinstance(perf, dict) else None
+                perf = qfp.get("performance") or qfp
+                total = perf.get("total_memories") if isinstance(perf, dict) else None
                 if total is not None:
                     lines.append(f"  Memories: {total}")
             self.text.setPlainText("\n".join(lines))

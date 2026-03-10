@@ -1,6 +1,6 @@
 # mypy: allow-untyped-defs
 from dataclasses import dataclass
-from typing import cast, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Union, cast
 
 import torch
 import torch.distributed as dist
@@ -15,7 +15,6 @@ from torch.distributed._shard.sharded_tensor.utils import (
 
 from ._internals import get_chunked_dim_size, get_split_size
 from .api import ShardingSpec
-
 
 if TYPE_CHECKING:
     # Only include ShardedTensor when do type checking, exclude it
@@ -53,7 +52,7 @@ class ChunkShardingSpec(ShardingSpec):
     ShardingDim = Union[int, str]
 
     dim: ShardingDim
-    placements: list[Union[torch.distributed._remote_device, str]]
+    placements: list[torch.distributed._remote_device | str]
 
     def __post_init__(self):
         self._verify_dim(self.dim)
@@ -134,7 +133,7 @@ class ChunkShardingSpec(ShardingSpec):
         local_metadata = None
 
         tensors_to_scatter = cast(
-            list[Optional[torch.Tensor]],
+            list[torch.Tensor | None],
             [None] * dist.get_world_size(process_group),
         )
 
@@ -195,7 +194,7 @@ class ChunkShardingSpec(ShardingSpec):
                 process_group, src_for_scatter
             )
 
-        tensors_to_scatter_: Optional[list[torch.Tensor]] = None
+        tensors_to_scatter_: list[torch.Tensor] | None = None
         if current_rank == src_rank:
             tensors_to_scatter_ = []
             for t in tensors_to_scatter:

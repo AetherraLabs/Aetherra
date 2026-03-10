@@ -3,6 +3,7 @@ import dataclasses
 import functools
 import types
 import typing
+
 import typing_extensions
 
 import torch
@@ -20,12 +21,12 @@ def _copy_graph_module_and_signature(
     new_graph_signature = copy.deepcopy(ep.graph_signature)
 
     # iterate over old/new graph modules
-    for old_gm, new_gm in zip(ep.graph_module.modules(), gm.modules()):  # type: ignore[union-attr]
+    for old_gm, new_gm in zip(ep.graph_module.modules(), gm.modules(), strict=False):  # type: ignore[union-attr]
         old_phs = [node for node in old_gm.graph.nodes if node.op == "placeholder"]
         new_phs = [node for node in new_gm.graph.nodes if node.op == "placeholder"]
         # iterate over placeholders
         assert len(old_phs) == len(new_phs)
-        for old_node, new_node in zip(old_phs, new_phs):
+        for old_node, new_node in zip(old_phs, new_phs, strict=False):
             new_node.name = old_node.name
 
     return gm, new_graph_signature  # type: ignore[return-value]
@@ -293,7 +294,7 @@ class _ExportPackage:
                     f"Exporter: Cannot export fallback {fn} when fallback policy is set to 'error',"
                     + "please specify an overload or adjust the fallback policy."
                 )
-            elif fallback == "once":
+            if fallback == "once":
                 if len(fallbacks) > 0:
                     raise RuntimeError(
                         f"Exporter: Cannot export {fn} more than once, "

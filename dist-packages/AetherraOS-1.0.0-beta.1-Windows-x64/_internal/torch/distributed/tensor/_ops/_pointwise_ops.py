@@ -26,7 +26,6 @@ from torch.distributed.tensor.placement_types import (
     Shard,
 )
 
-
 aten = torch.ops.aten
 # leave the remaining pointwise_ops list here for convenience,
 # Below ops are some pointwise ops that are yet to be supported,

@@ -12,6 +12,10 @@ import torch.cuda
 from torch._C import _get_privateuse1_backend_name
 from torch._C._profiler import _ExperimentalConfig
 from torch.autograd import (
+    DeviceType,
+    ProfilerActivity,
+    ProfilerConfig,
+    ProfilerState,
     _disable_profiler,
     _enable_profiler,
     _kineto_step,
@@ -19,24 +23,19 @@ from torch.autograd import (
     _ProfilerResult,
     _supported_activities,
     _toggle_collection_dynamic,
-    DeviceType,
     kineto_available,
-    ProfilerActivity,
-    ProfilerConfig,
-    ProfilerState,
 )
 from torch.autograd.profiler_util import (
+    MEMORY_EVENT_NAME,
+    OUT_OF_MEMORY_EVENT_NAME,
+    EventList,
+    FunctionEvent,
+    MemRecordsAcc,
     _filter_name,
     _filter_stack_entry,
     _rewrite_name,
-    EventList,
-    FunctionEvent,
-    MEMORY_EVENT_NAME,
-    MemRecordsAcc,
-    OUT_OF_MEMORY_EVENT_NAME,
 )
 from torch.futures import Future
-
 
 __all__ = [
     "profile",
@@ -95,6 +94,7 @@ def _run_on_profiler_stop():
 @dataclass
 class _ProfilerStats:
     "Profiler timing and stats used by developers to catch issues/regressions"
+
     profiling_window_duration_sec: float = 0
     number_of_events: int = 0
     profiler_prepare_call_duration_us: int = 0
@@ -224,12 +224,12 @@ class profile:
                 FutureWarning,
                 stacklevel=2,
             )
-            self.use_device: Optional[str] = "cuda"
+            self.use_device: str | None = "cuda"
         else:
             self.use_device = use_device
         # TODO Consider changing _function_events into data structure with size cap
-        self._function_events: Optional[EventList] = None
-        self._old_function_events: Optional[EventList] = None
+        self._function_events: EventList | None = None
+        self._old_function_events: EventList | None = None
         # Function event processing is done lazily
         self._needs_processing = False
         self.entered = False
@@ -244,16 +244,16 @@ class profile:
         if experimental_config is None:
             experimental_config = _ExperimentalConfig()
         self.experimental_config = experimental_config
-        self.kineto_results: Optional[_ProfilerResult] = None
+        self.kineto_results: _ProfilerResult | None = None
         self.profiling_start_time_ns = 0
         self.profiling_end_time_ns = 0
         self._stats = _ProfilerStats()
         self.custom_trace_id_callback = custom_trace_id_callback
         self.trace_id = ""
         if not self.use_cpu:
-            assert (
-                use_kineto
-            ), "Device-only events supported only with Kineto (use_kineto=True)"
+            assert use_kineto, (
+                "Device-only events supported only with Kineto (use_kineto=True)"
+            )
 
         if self.use_device is not None:
             VALID_DEVICE_OPTIONS = ["cuda", "xpu", "mtia", "hpu"]
@@ -290,35 +290,35 @@ class profile:
             else:
                 self.kineto_activities.add(ProfilerActivity.CUDA)
         elif self.use_device == "xpu":
-            assert (
-                use_kineto and ProfilerActivity.XPU in _supported_activities()
-            ), "Legacy XPU profiling is not supported. Requires use_kineto=True on XPU devices."
+            assert use_kineto and ProfilerActivity.XPU in _supported_activities(), (
+                "Legacy XPU profiling is not supported. Requires use_kineto=True on XPU devices."
+            )
             self.kineto_activities.add(ProfilerActivity.XPU)
         elif self.use_device == "mtia":
-            assert (
-                use_kineto and ProfilerActivity.MTIA in _supported_activities()
-            ), "Legacy MTIA profiling is not supported. Requires use_kineto=True on MTIA devices."
+            assert use_kineto and ProfilerActivity.MTIA in _supported_activities(), (
+                "Legacy MTIA profiling is not supported. Requires use_kineto=True on MTIA devices."
+            )
             self.kineto_activities.add(ProfilerActivity.MTIA)
         elif self.use_device == "hpu":
-            assert (
-                use_kineto and ProfilerActivity.HPU in _supported_activities()
-            ), "Legacy HPU profiling is not supported. Requires use_kineto=True on HPU devices."
+            assert use_kineto and ProfilerActivity.HPU in _supported_activities(), (
+                "Legacy HPU profiling is not supported. Requires use_kineto=True on HPU devices."
+            )
             self.kineto_activities.add(ProfilerActivity.HPU)
         elif self.use_device is not None and self.use_device != "privateuseone":
             if (
                 not use_kineto
                 or ProfilerActivity.PrivateUse1 not in _supported_activities()
             ):
-                assert (
-                    self.use_cpu
-                ), "Legacy custombackend profiling requires use_cpu=True"
+                assert self.use_cpu, (
+                    "Legacy custombackend profiling requires use_cpu=True"
+                )
                 self.profiler_kind = ProfilerState.KINETO_PRIVATEUSE1_FALLBACK
             else:
                 self.kineto_activities.add(ProfilerActivity.PrivateUse1)
 
-        assert (
-            len(self.kineto_activities) > 0
-        ), "No activities specified for the profiler"
+        assert len(self.kineto_activities) > 0, (
+            "No activities specified for the profiler"
+        )
 
     def default_trace_id(self):
         # Generate a UUID
@@ -349,7 +349,7 @@ class profile:
 
     def __enter__(self):
         if not self.enabled:
-            return
+            return None
         if self.entered:
             raise RuntimeError("Profiler context manager is not reentrant")
         self._prepare_trace()
@@ -374,7 +374,7 @@ class profile:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if not self.enabled:
-            return
+            return None
         if self.use_device and hasattr(torch, self.use_device):
             device_module = getattr(torch, self.use_device)
             if hasattr(device_module, "synchronize"):
@@ -761,9 +761,9 @@ class record_function(_ContextDecorator):
 
     """
 
-    def __init__(self, name: str, args: Optional[str] = None):
+    def __init__(self, name: str, args: str | None = None):
         self.name: str = name
-        self.args: Optional[str] = args
+        self.args: str | None = args
         # Whether or not we should run record function's end callbacks when exiting.
         self.run_callbacks_on_exit: bool = True
         # TODO: TorchScript ignores standard type annotation here
@@ -883,7 +883,7 @@ class emit_itt:
 
     def __enter__(self):
         if not self.enabled:
-            return
+            return None
         if self.entered:
             raise RuntimeError("ITT annotation context manager is not reentrant")
         self.entered = True
@@ -904,7 +904,7 @@ class emit_itt:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if not self.enabled:
-            return
+            return None
         _disable_profiler()
         _run_on_profiler_stop()
         return False
@@ -1002,7 +1002,7 @@ class emit_nvtx:
 
     def __enter__(self):
         if not self.enabled:
-            return
+            return None
         if self.entered:
             raise RuntimeError("NVTX annotation context manager is not reentrant")
         self.entered = True
@@ -1024,7 +1024,7 @@ class emit_nvtx:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if not self.enabled:
-            return
+            return None
         torch.cuda.synchronize()
         _disable_profiler()
         _run_on_profiler_stop()

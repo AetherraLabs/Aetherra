@@ -109,9 +109,7 @@ class PluginDiscovery:
                     "dependencies": meta.dependencies,
                     "capabilities": meta.capabilities,
                     "file_hash": meta.file_hash,
-                    "last_modified": meta.last_modified.isoformat()
-                    if meta.last_modified
-                    else None,
+                    "last_modified": meta.last_modified.isoformat() if meta.last_modified else None,
                     "discovery_time": meta.discovery_time.isoformat(),
                     "usage_count": meta.usage_count,
                     "rating": meta.rating,
@@ -142,22 +140,16 @@ class PluginDiscovery:
 
             # Parse timestamps
             if plugin_data.get("last_modified"):
-                meta.last_modified = datetime.fromisoformat(
-                    plugin_data["last_modified"]
-                )
+                meta.last_modified = datetime.fromisoformat(plugin_data["last_modified"])
             if plugin_data.get("discovery_time"):
-                meta.discovery_time = datetime.fromisoformat(
-                    plugin_data["discovery_time"]
-                )
+                meta.discovery_time = datetime.fromisoformat(plugin_data["discovery_time"])
 
             self.plugin_index[name] = meta
 
         self.categories = set(data.get("categories", []))
         self.tags = set(data.get("tags", []))
 
-    def discover_plugins(
-        self, force_refresh: bool = False
-    ) -> Dict[str, PluginMetadata]:
+    def discover_plugins(self, force_refresh: bool = False) -> Dict[str, PluginMetadata]:
         """Discover all plugins in the plugins directory."""
         if not force_refresh and self.plugin_index:
             # Check if any files have been modified
@@ -226,18 +218,14 @@ class PluginDiscovery:
 
         return discovered_plugins
 
-    def _analyze_plugin_file(
-        self, plugin_name: str, plugin_path: str
-    ) -> Optional[PluginMetadata]:
+    def _analyze_plugin_file(self, plugin_name: str, plugin_path: str) -> Optional[PluginMetadata]:
         """Analyze a plugin file to extract metadata."""
         try:
             metadata = PluginMetadata(plugin_name, plugin_path)
 
             # Calculate file hash
             metadata.file_hash = self._calculate_file_hash(plugin_path)
-            metadata.last_modified = datetime.fromtimestamp(
-                os.path.getmtime(plugin_path)
-            )
+            metadata.last_modified = datetime.fromtimestamp(os.path.getmtime(plugin_path))
 
             # Read and parse file content
             with open(plugin_path, encoding="utf-8") as f:
@@ -250,9 +238,7 @@ class PluginDiscovery:
             self._analyze_code_structure(content, metadata)
 
             # Calculate compatibility score
-            metadata.compatibility_score = self._calculate_compatibility_score(
-                content, metadata
-            )
+            metadata.compatibility_score = self._calculate_compatibility_score(content, metadata)
 
             return metadata
 
@@ -311,9 +297,12 @@ class PluginDiscovery:
             # Find the value after the equals sign
             value_part = line.split("=", 1)[1].strip()
             # Remove quotes
-            if value_part.startswith('"') and value_part.endswith('"'):
-                return value_part[1:-1]
-            elif value_part.startswith("'") and value_part.endswith("'"):
+            if (
+                value_part.startswith('"')
+                and value_part.endswith('"')
+                or value_part.startswith("'")
+                and value_part.endswith("'")
+            ):
                 return value_part[1:-1]
             return value_part
         except Exception:
@@ -355,28 +344,15 @@ class PluginDiscovery:
         content_lower = content.lower()
 
         # Category detection patterns
-        if any(
-            keyword in content_lower for keyword in ["api", "request", "http", "rest"]
-        ):
+        if any(keyword in content_lower for keyword in ["api", "request", "http", "rest"]):
             return "integration"
-        elif any(
-            keyword in content_lower
-            for keyword in ["data", "process", "analyze", "filter"]
-        ):
+        elif any(keyword in content_lower for keyword in ["data", "process", "analyze", "filter"]):
             return "data"
-        elif any(
-            keyword in content_lower
-            for keyword in ["text", "string", "parse", "format"]
-        ):
+        elif any(keyword in content_lower for keyword in ["text", "string", "parse", "format"]):
             return "text"
-        elif any(
-            keyword in content_lower for keyword in ["file", "directory", "path", "io"]
-        ):
+        elif any(keyword in content_lower for keyword in ["file", "directory", "path", "io"]):
             return "file"
-        elif any(
-            keyword in content_lower
-            for keyword in ["ui", "interface", "gui", "display"]
-        ):
+        elif any(keyword in content_lower for keyword in ["ui", "interface", "gui", "display"]):
             return "interface"
         elif any(keyword in content_lower for keyword in ["utility", "tool", "helper"]):
             return "utility"
@@ -436,9 +412,7 @@ class PluginDiscovery:
             tree = ast.parse(content)
 
             # Find functions
-            functions = [
-                node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
-            ]
+            functions = [node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
 
             capabilities = []
 
@@ -455,16 +429,11 @@ class PluginDiscovery:
                 capabilities.append("cleanup")
 
             # Check for data processing capabilities
-            if any(
-                name in method_names for name in ["process", "analyze", "transform"]
-            ):
+            if any(name in method_names for name in ["process", "analyze", "transform"]):
                 capabilities.append("data_processing")
 
             # Check for file operations
-            if any(
-                name in method_names
-                for name in ["read_file", "write_file", "process_file"]
-            ):
+            if any(name in method_names for name in ["read_file", "write_file", "process_file"]):
                 capabilities.append("file_operations")
 
             metadata.capabilities = capabilities
@@ -472,9 +441,7 @@ class PluginDiscovery:
         except Exception as e:
             print(f"Error analyzing code structure: {e}")
 
-    def _calculate_compatibility_score(
-        self, content: str, metadata: PluginMetadata
-    ) -> float:
+    def _calculate_compatibility_score(self, content: str, metadata: PluginMetadata) -> float:
         """Calculate compatibility score based on code analysis."""
         score = 100.0
 
@@ -511,9 +478,7 @@ class PluginDiscovery:
 
         return score
 
-    def search_plugins(
-        self, query: str, filters: Optional[Dict] = None
-    ) -> List[PluginMetadata]:
+    def search_plugins(self, query: str, filters: Optional[Dict] = None) -> List[PluginMetadata]:
         """Search for plugins based on query and filters."""
         # Check cache first
         cache_key = f"{query}:{json.dumps(filters or {}, sort_keys=True)}"
@@ -544,9 +509,7 @@ class PluginDiscovery:
                 continue
             if filters.get("min_rating") and metadata.rating < filters["min_rating"]:
                 continue
-            if filters.get("tags") and not any(
-                tag in metadata.tags for tag in filters["tags"]
-            ):
+            if filters.get("tags") and not any(tag in metadata.tags for tag in filters["tags"]):
                 continue
             if (
                 filters.get("min_compatibility")
@@ -568,21 +531,15 @@ class PluginDiscovery:
 
     def get_plugins_by_category(self, category: str) -> List[PluginMetadata]:
         """Get all plugins in a specific category."""
-        return [
-            meta for meta in self.plugin_index.values() if meta.category == category
-        ]
+        return [meta for meta in self.plugin_index.values() if meta.category == category]
 
     def get_plugins_by_tags(self, tags: List[str]) -> List[PluginMetadata]:
         """Get plugins that have any of the specified tags."""
         return [
-            meta
-            for meta in self.plugin_index.values()
-            if any(tag in meta.tags for tag in tags)
+            meta for meta in self.plugin_index.values() if any(tag in meta.tags for tag in tags)
         ]
 
-    def get_recommended_plugins(
-        self, context: Optional[Dict] = None
-    ) -> List[PluginMetadata]:
+    def get_recommended_plugins(self, context: Optional[Dict] = None) -> List[PluginMetadata]:
         """Get recommended plugins based on context."""
         if not self.recommendation_engine:
             # Simple recommendation based on usage and rating
@@ -594,7 +551,7 @@ class PluginDiscovery:
 
     def _setup_recommendation_engine(self):
         """Setup the recommendation engine."""
-        # Placeholder for advanced recommendation system
+        # Baseline hook for advanced recommendation system
         self.recommendation_engine = None
 
     def update_plugin_usage(self, plugin_name: str):
@@ -627,9 +584,7 @@ class PluginDiscovery:
             / len(self.plugin_index)
             if self.plugin_index
             else 0,
-            "average_compatibility": sum(
-                p.compatibility_score for p in self.plugin_index.values()
-            )
+            "average_compatibility": sum(p.compatibility_score for p in self.plugin_index.values())
             / len(self.plugin_index)
             if self.plugin_index
             else 0,

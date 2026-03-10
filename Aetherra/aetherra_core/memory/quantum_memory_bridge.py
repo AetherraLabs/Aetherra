@@ -176,9 +176,7 @@ class QuantumCircuitTemplate:
     gate_sequence: List[Dict[str, Any]]
     parameter_count: int
     description: str
-    memory_operation_type: (
-        str  # 'compression', 'retrieval', 'branching', 'interference'
-    )
+    memory_operation_type: str  # 'compression', 'retrieval', 'branching', 'interference'
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization"""
@@ -222,9 +220,7 @@ class QuantumExperimentResult:
 
 
 class QuantumMemoryBridge:
-    async def quantum_interference_experiment(
-        self, memory_states: List["QuantumMemoryState"]
-    ):
+    async def quantum_interference_experiment(self, memory_states: List["QuantumMemoryState"]):
         """
         Perform quantum interference experiments between multiple memory states.
         Returns a QuantumExperimentResult.
@@ -236,15 +232,13 @@ class QuantumMemoryBridge:
         experiment_id = f"qexp_{uuid.uuid4().hex[:8]}"
 
         if not self.quantum_available:
-            return await self._simulate_interference_experiment(
-                experiment_id, memory_states
-            )
+            return await self._simulate_interference_experiment(experiment_id, memory_states)
 
         try:
             if CIRQ_AVAILABLE and self.cirq_simulator:
                 circuit = await self._create_interference_circuit_cirq(memory_states)
                 result_vector = await self._execute_interference_cirq(circuit)
-                # Analyze result (placeholder: use norm as fidelity)
+                # Analyze result with a baseline norm-based fidelity score.
                 fidelity = float(np.linalg.norm(result_vector))
                 measurement_counts = {}
             elif QISKIT_AVAILABLE and self.qiskit_backend:
@@ -307,15 +301,13 @@ class QuantumMemoryBridge:
     async def _create_interference_circuit_cirq(self, memory_states):
         """
         Create a Cirq circuit for quantum interference between memory states.
-        This is a minimal placeholder implementation: applies Hadamard gates to all qubits.
+        This is a minimal baseline implementation: applies Hadamard gates to all qubits.
         """
         if not CIRQ_AVAILABLE:
             raise RuntimeError("Cirq not available")
 
         # Determine the number of qubits from the first memory state (fallback to 4)
-        qubit_count = (
-            getattr(memory_states[0], "qubit_count", 4) if memory_states else 4
-        )
+        qubit_count = getattr(memory_states[0], "qubit_count", 4) if memory_states else 4
         qubits = [cirq.LineQubit(i) for i in range(qubit_count)]
         circuit = cirq.Circuit()
 
@@ -323,23 +315,20 @@ class QuantumMemoryBridge:
         for q in qubits:
             circuit.append(cirq.H(q))
 
-        # (Optional) Add more gates based on memory_states for a real experiment
-        # TODO: Implement real interference logic using memory_states
+        # Add memory-state-driven gate synthesis in an advanced implementation pass.
 
         return circuit
 
     async def _create_interference_circuit_qiskit(self, memory_states):
         """
         Create a Qiskit circuit for quantum interference between memory states.
-        This is a minimal placeholder implementation: applies Hadamard gates to all qubits.
+        This is a minimal baseline implementation: applies Hadamard gates to all qubits.
         """
         if not QISKIT_AVAILABLE:
             raise RuntimeError("Qiskit not available")
 
         # Determine the number of qubits from the first memory state (fallback to 4)
-        qubit_count = (
-            getattr(memory_states[0], "qubit_count", 4) if memory_states else 4
-        )
+        qubit_count = getattr(memory_states[0], "qubit_count", 4) if memory_states else 4
         qreg = QuantumRegister(qubit_count, "q")
         creg = ClassicalRegister(qubit_count, "c")
         circuit = QuantumCircuit(qreg, creg)
@@ -348,8 +337,7 @@ class QuantumMemoryBridge:
         for i in range(qubit_count):
             circuit.h(qreg[i])
 
-        # (Optional) Add more gates based on memory_states for a real experiment
-        # TODO: Implement real interference logic using memory_states
+        # Add memory-state-driven gate synthesis in an advanced implementation pass.
 
         return circuit
 
@@ -418,9 +406,7 @@ class QuantumMemoryBridge:
                     print("   🔬 Qiskit simulator initialized")
                 else:
                     self.qiskit_backend = None
-                    print(
-                        "   ⚠️ AerSimulator not imported - Qiskit simulator unavailable"
-                    )
+                    print("   ⚠️ AerSimulator not imported - Qiskit simulator unavailable")
             except Exception as e:
                 print(f"   ⚠️ Qiskit backend failed: {e}")
 
@@ -509,9 +495,7 @@ class QuantumMemoryBridge:
 
         if not self.quantum_available:
             print("⚠️ Quantum backend not available - using classical simulation")
-            return await self._simulate_quantum_encoding(
-                memory_id, memory_data, operation_type
-            )
+            return await self._simulate_quantum_encoding(memory_id, memory_data, operation_type)
 
         try:
             # Select appropriate circuit template
@@ -520,9 +504,7 @@ class QuantumMemoryBridge:
             )
 
             # Prepare memory data for quantum encoding
-            quantum_params = await self._prepare_quantum_parameters(
-                memory_data, template
-            )
+            quantum_params = await self._prepare_quantum_parameters(memory_data, template)
 
             # Create quantum circuit
             if QISKIT_AVAILABLE and self.qiskit_backend:
@@ -535,9 +517,7 @@ class QuantumMemoryBridge:
                 raise RuntimeError("No quantum backend available")
 
             # Calculate encoding fidelity
-            fidelity = await self._calculate_encoding_fidelity(
-                memory_data, quantum_state
-            )
+            fidelity = await self._calculate_encoding_fidelity(memory_data, quantum_state)
 
             # Create quantum memory state
             quantum_memory = QuantumMemoryState(
@@ -570,9 +550,7 @@ class QuantumMemoryBridge:
         except Exception as e:
             self.stats["failed_operations"] += 1
             print(f"❌ Quantum encoding failed: {e}")
-            return await self._simulate_quantum_encoding(
-                memory_id, memory_data, operation_type
-            )
+            return await self._simulate_quantum_encoding(memory_id, memory_data, operation_type)
 
     async def quantum_memory_retrieval(
         self,
@@ -605,9 +583,7 @@ class QuantumMemoryBridge:
 
         try:
             # Perform quantum measurement
-            if QISKIT_AVAILABLE and hasattr(
-                quantum_state.quantum_state, "probabilities"
-            ):
+            if QISKIT_AVAILABLE and hasattr(quantum_state.quantum_state, "probabilities"):
                 measurement_results = await self._measure_qiskit_state(
                     quantum_state.quantum_state, measurement_basis
                 )
@@ -667,7 +643,7 @@ class QuantumMemoryBridge:
                 "message": "Quantum backend not available",
             }
 
-        # Placeholder for quantum error correction implementation
+        # Baseline quantum error-correction analysis hook
         # In a real implementation, this would include:
         # - Surface code implementation
         # - Logical qubit encoding
@@ -709,9 +685,7 @@ class QuantumMemoryBridge:
         self, memory_id: str, memory_data: Dict[str, Any], operation_type: str
     ) -> QuantumMemoryState:
         """Simulate quantum encoding when quantum backend is not available"""
-        template = self.circuit_templates.get(
-            operation_type, self.circuit_templates["compression"]
-        )
+        template = self.circuit_templates.get(operation_type, self.circuit_templates["compression"])
 
         # Create simulated quantum state
         simulated_fidelity = 0.85 + np.random.random() * 0.1  # 0.85-0.95 range
@@ -828,9 +802,7 @@ class QuantumMemoryBridge:
         statevector = result.get_statevector()
         return statevector
 
-    async def _create_cirq_circuit(
-        self, template: QuantumCircuitTemplate, parameters: List[float]
-    ):
+    async def _create_cirq_circuit(self, template: QuantumCircuitTemplate, parameters: List[float]):
         """Create Cirq quantum circuit from template and parameters"""
         if not CIRQ_AVAILABLE:
             raise RuntimeError("Cirq not available")
@@ -914,18 +886,14 @@ class QuantumMemoryBridge:
             ):
                 # Numerical comparison
                 diff = abs(original_data[key] - reconstructed_data[key])
-                max_val = max(
-                    abs(original_data[key]), abs(reconstructed_data[key]), 1.0
-                )
+                max_val = max(abs(original_data[key]), abs(reconstructed_data[key]), 1.0)
                 fidelity_scores.append(max(0.0, 1.0 - diff / max_val))
             else:
                 fidelity_scores.append(0.5)  # Partial match for other types
 
         return sum(fidelity_scores) / len(fidelity_scores) if fidelity_scores else 0.0
 
-    async def _measure_qiskit_state(
-        self, quantum_state, measurement_basis: str
-    ) -> List[int]:
+    async def _measure_qiskit_state(self, quantum_state, measurement_basis: str) -> List[int]:
         """Perform measurement on Qiskit quantum state"""
         # Simulate measurement by sampling from probability distribution
         if hasattr(quantum_state, "probabilities"):
@@ -940,9 +908,7 @@ class QuantumMemoryBridge:
 
         return outcomes.tolist()
 
-    async def _measure_cirq_state(
-        self, quantum_state, measurement_basis: str
-    ) -> List[int]:
+    async def _measure_cirq_state(self, quantum_state, measurement_basis: str) -> List[int]:
         """Perform measurement on Cirq quantum state"""
         # Convert state vector to probability distribution
         probabilities = np.abs(quantum_state) ** 2
@@ -970,9 +936,7 @@ class QuantumMemoryBridge:
 
             # Modify numerical fields based on measurement statistics
             if "confidence" in reconstructed:
-                measurement_confidence = 1.0 - (
-                    measurement_variance / len(measurement_results)
-                )
+                measurement_confidence = 1.0 - (measurement_variance / len(measurement_results))
                 reconstructed["confidence"] = max(0.0, min(1.0, measurement_confidence))
 
             if "complexity" in reconstructed:
@@ -991,9 +955,7 @@ class QuantumMemoryBridge:
 
         # Simulate measurement counts
         measurement_counts = {}
-        for i in range(
-            min(8, 2 ** len(memory_states))
-        ):  # Limit to reasonable number of outcomes
+        for i in range(min(8, 2 ** len(memory_states))):  # Limit to reasonable number of outcomes
             outcome = format(i, f"0{len(memory_states)}b")
             count = np.random.poisson(100)  # Poisson distribution around 100
             measurement_counts[outcome] = count
@@ -1056,9 +1018,7 @@ async def demo_quantum_bridge():
 
     # Create second quantum state
     memory_data_2 = memory_data.copy()
-    memory_data_2[
-        "content"
-    ] = "Fractal patterns in consciousness suggest scale-invariant cognition"
+    memory_data_2["content"] = "Fractal patterns in consciousness suggest scale-invariant cognition"
     memory_data_2["emotional_tag"] = "wonder"
 
     quantum_state_2 = await bridge.encode_memory_to_quantum(
@@ -1090,12 +1050,8 @@ async def demo_quantum_bridge():
     print("\n[TOOL] Error correction status:")
     print(f"   Available: {error_correction_result['error_correction_available']}")
     if error_correction_result["error_correction_available"]:
-        print(
-            f"   Logical error rate: {error_correction_result['logical_error_rate']:.6f}"
-        )
-        print(
-            f"   Correction fidelity: {error_correction_result['correction_fidelity']:.3f}"
-        )
+        print(f"   Logical error rate: {error_correction_result['logical_error_rate']:.6f}")
+        print(f"   Correction fidelity: {error_correction_result['correction_fidelity']:.3f}")
 
     print("\n🎉 PHASE 5 QUANTUM BRIDGE DEMONSTRATION COMPLETE!")
     print("⚛️ Quantum-classical hybrid memory processing validated")

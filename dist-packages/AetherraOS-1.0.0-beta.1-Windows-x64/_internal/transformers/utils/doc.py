@@ -59,7 +59,9 @@ def add_start_docstrings_to_model_forward(*docstr):
         correct_indentation = get_docstring_indentation_level(fn)
         current_doc = fn.__doc__ if fn.__doc__ is not None else ""
         try:
-            first_non_empty = next(line for line in current_doc.splitlines() if line.strip() != "")
+            first_non_empty = next(
+                line for line in current_doc.splitlines() if line.strip() != ""
+            )
             doc_indentation = len(first_non_empty) - len(first_non_empty.lstrip())
         except StopIteration:
             doc_indentation = correct_indentation
@@ -68,7 +70,10 @@ def add_start_docstrings_to_model_forward(*docstr):
         # In this case, the correct indentation level (class method, 2 Python levels) was respected, and we should
         # correctly reindent everything. Otherwise, the doc uses a single indentation level
         if doc_indentation == 4 + correct_indentation:
-            docs = [textwrap.indent(textwrap.dedent(doc), " " * correct_indentation) for doc in docstr]
+            docs = [
+                textwrap.indent(textwrap.dedent(doc), " " * correct_indentation)
+                for doc in docstr
+            ]
             intro = textwrap.indent(textwrap.dedent(intro), " " * correct_indentation)
 
         docstring = "".join(docs) + current_doc
@@ -136,7 +141,9 @@ def _convert_output_args_doc(output_args_doc):
     return "\n".join(blocks)
 
 
-def _prepare_output_docstrings(output_type, config_class, min_indent=None, add_intro=True):
+def _prepare_output_docstrings(
+    output_type, config_class, min_indent=None, add_intro=True
+):
     """
     Prepares the return part of the docstring using `output_type`.
     """
@@ -146,7 +153,10 @@ def _prepare_output_docstrings(output_type, config_class, min_indent=None, add_i
         # Remove the head of the docstring to keep the list of args only
         lines = output_docstring.split("\n")
         i = 0
-        while i < len(lines) and re.search(r"^\s*(Args|Parameters):\s*$", lines[i]) is None:
+        while (
+            i < len(lines)
+            and re.search(r"^\s*(Args|Parameters):\s*$", lines[i]) is None
+        ):
             i += 1
         if i < len(lines):
             params_docstring = "\n".join(lines[(i + 1) :])
@@ -160,8 +170,14 @@ def _prepare_output_docstrings(output_type, config_class, min_indent=None, add_i
     # Add the return introduction
     if add_intro:
         full_output_type = f"{output_type.__module__}.{output_type.__name__}"
-        intro = TF_RETURN_INTRODUCTION if output_type.__name__.startswith("TF") else PT_RETURN_INTRODUCTION
-        intro = intro.format(full_output_type=full_output_type, config_class=config_class)
+        intro = (
+            TF_RETURN_INTRODUCTION
+            if output_type.__name__.startswith("TF")
+            else PT_RETURN_INTRODUCTION
+        )
+        intro = intro.format(
+            full_output_type=full_output_type, config_class=config_class
+        )
     else:
         full_output_type = str(output_type)
         intro = f"\nReturns:\n    `{full_output_type}`"
@@ -966,29 +982,50 @@ MODELS_TO_PIPELINE = OrderedDict(
         ("MODEL_FOR_TEXT_TO_WAVEFORM_MAPPING_NAMES", "text-to-audio-waveform"),
         ("MODEL_FOR_SPEECH_SEQ_2_SEQ_MAPPING_NAMES", "automatic-speech-recognition"),
         ("MODEL_FOR_CTC_MAPPING_NAMES", "automatic-speech-recognition"),
-        ("MODEL_FOR_AUDIO_FRAME_CLASSIFICATION_MAPPING_NAMES", "audio-frame-classification"),
+        (
+            "MODEL_FOR_AUDIO_FRAME_CLASSIFICATION_MAPPING_NAMES",
+            "audio-frame-classification",
+        ),
         ("MODEL_FOR_AUDIO_CLASSIFICATION_MAPPING_NAMES", "audio-classification"),
         ("MODEL_FOR_AUDIO_XVECTOR_MAPPING_NAMES", "audio-xvector"),
         # Vision
         ("MODEL_FOR_IMAGE_TEXT_TO_TEXT_MAPPING_NAMES", "image-text-to-text"),
         ("MODEL_FOR_VISION_2_SEQ_MAPPING_NAMES", "image-to-text"),
-        ("MODEL_FOR_VISUAL_QUESTION_ANSWERING_MAPPING_NAMES", "visual-question-answering"),
+        (
+            "MODEL_FOR_VISUAL_QUESTION_ANSWERING_MAPPING_NAMES",
+            "visual-question-answering",
+        ),
         ("MODEL_FOR_DEPTH_ESTIMATION_MAPPING_NAMES", "depth-estimation"),
         ("MODEL_FOR_VIDEO_CLASSIFICATION_MAPPING_NAMES", "video-classification"),
-        ("MODEL_FOR_ZERO_SHOT_IMAGE_CLASSIFICATION_MAPPING_NAMES", "zero-shot-image-classification"),
+        (
+            "MODEL_FOR_ZERO_SHOT_IMAGE_CLASSIFICATION_MAPPING_NAMES",
+            "zero-shot-image-classification",
+        ),
         ("MODEL_FOR_IMAGE_CLASSIFICATION_MAPPING_NAMES", "image-classification"),
-        ("MODEL_FOR_ZERO_SHOT_OBJECT_DETECTION_MAPPING_NAMES", "zero-shot-object-detection"),
+        (
+            "MODEL_FOR_ZERO_SHOT_OBJECT_DETECTION_MAPPING_NAMES",
+            "zero-shot-object-detection",
+        ),
         ("MODEL_FOR_OBJECT_DETECTION_MAPPING_NAMES", "object-detection"),
         ("MODEL_FOR_IMAGE_SEGMENTATION_MAPPING_NAMES", "image-segmentation"),
         ("MODEL_FOR_IMAGE_TO_IMAGE_MAPPING_NAMES", "image-to-image"),
         ("MODEL_FOR_IMAGE_MAPPING_NAMES", "image-feature-extraction"),
         # Text/tokens
         ("MODEL_FOR_CAUSAL_LM_MAPPING_NAMES", "text-generation"),
-        ("MODEL_FOR_TABLE_QUESTION_ANSWERING_MAPPING_NAMES", "table-question-answering"),
-        ("MODEL_FOR_DOCUMENT_QUESTION_ANSWERING_MAPPING_NAMES", "document-question-answering"),
+        (
+            "MODEL_FOR_TABLE_QUESTION_ANSWERING_MAPPING_NAMES",
+            "table-question-answering",
+        ),
+        (
+            "MODEL_FOR_DOCUMENT_QUESTION_ANSWERING_MAPPING_NAMES",
+            "document-question-answering",
+        ),
         ("MODEL_FOR_QUESTION_ANSWERING_MAPPING_NAMES", "question-answering"),
         ("MODEL_FOR_SEQ_TO_SEQ_CAUSAL_LM_MAPPING_NAMES", "text2text-generation"),
-        ("MODEL_FOR_NEXT_SENTENCE_PREDICTION_MAPPING_NAMES", "next-sentence-prediction"),
+        (
+            "MODEL_FOR_NEXT_SENTENCE_PREDICTION_MAPPING_NAMES",
+            "next-sentence-prediction",
+        ),
         ("MODEL_FOR_MULTIPLE_CHOICE_MAPPING_NAMES", "multiple-choice"),
         ("MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING_NAMES", "text-classification"),
         ("MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING_NAMES", "token-classification"),
@@ -1496,7 +1533,10 @@ def add_code_sample_docstrings(
             "true": "{true}",  # For <Tip warning={true}> syntax that conflicts with formatting.
         }
 
-        if ("SequenceClassification" in model_class or "AudioClassification" in model_class) and modality == "audio":
+        if (
+            "SequenceClassification" in model_class
+            or "AudioClassification" in model_class
+        ) and modality == "audio":
             code_sample = sample_docstrings["AudioClassification"]
         elif "SequenceClassification" in model_class:
             code_sample = sample_docstrings["SequenceClassification"]
@@ -1506,7 +1546,10 @@ def add_code_sample_docstrings(
             code_sample = sample_docstrings["TokenClassification"]
         elif "MultipleChoice" in model_class:
             code_sample = sample_docstrings["MultipleChoice"]
-        elif "MaskedLM" in model_class or model_class in ["FlaubertWithLMHeadModel", "XLMWithLMHeadModel"]:
+        elif "MaskedLM" in model_class or model_class in [
+            "FlaubertWithLMHeadModel",
+            "XLMWithLMHeadModel",
+        ]:
             code_sample = sample_docstrings["MaskedLM"]
         elif "LMHead" in model_class or "CausalLM" in model_class:
             code_sample = sample_docstrings["LMHead"]
@@ -1533,7 +1576,11 @@ def add_code_sample_docstrings(
         if real_checkpoint is not None:
             code_sample = FAKE_MODEL_DISCLAIMER + code_sample
         func_doc = (fn.__doc__ or "") + "".join(docstr)
-        output_doc = "" if output_type is None else _prepare_output_docstrings(output_type, config_class)
+        output_doc = (
+            ""
+            if output_type is None
+            else _prepare_output_docstrings(output_type, config_class)
+        )
         built_doc = code_sample.format(**doc_kwargs)
         if revision is not None:
             if re.match(r"^refs/pr/\\d+", revision):
@@ -1542,7 +1589,8 @@ def add_code_sample_docstrings(
                     " a pull request reference on the hub like 'refs/pr/6'"
                 )
             built_doc = built_doc.replace(
-                f'from_pretrained("{checkpoint}")', f'from_pretrained("{checkpoint}", revision="{revision}")'
+                f'from_pretrained("{checkpoint}")',
+                f'from_pretrained("{checkpoint}", revision="{revision}")',
             )
 
         fn.__doc__ = func_doc + output_doc + built_doc
@@ -1560,7 +1608,9 @@ def replace_return_docstrings(output_type=None, config_class=None):
             i += 1
         if i < len(lines):
             indent = len(_get_indent(lines[i]))
-            lines[i] = _prepare_output_docstrings(output_type, config_class, min_indent=indent)
+            lines[i] = _prepare_output_docstrings(
+                output_type, config_class, min_indent=indent
+            )
             func_doc = "\n".join(lines)
         else:
             raise ValueError(
@@ -1576,7 +1626,13 @@ def replace_return_docstrings(output_type=None, config_class=None):
 def copy_func(f):
     """Returns a copy of a function f."""
     # Based on http://stackoverflow.com/a/6528148/190597 (Glenn Maynard)
-    g = types.FunctionType(f.__code__, f.__globals__, name=f.__name__, argdefs=f.__defaults__, closure=f.__closure__)
+    g = types.FunctionType(
+        f.__code__,
+        f.__globals__,
+        name=f.__name__,
+        argdefs=f.__defaults__,
+        closure=f.__closure__,
+    )
     g = functools.update_wrapper(g, f)
     g.__kwdefaults__ = f.__kwdefaults__
     return g

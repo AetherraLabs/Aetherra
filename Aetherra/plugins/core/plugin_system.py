@@ -143,8 +143,7 @@ class PluginInstance:
             # Classification guard: block restricted/secret for unsigned unless override
             allow_untrusted_secret = bool(kwargs.get("_policy_allow_untrusted_secret"))
             if (
-                getattr(self.manifest, "data_classification", "public")
-                in {"restricted", "secret"}
+                getattr(self.manifest, "data_classification", "public") in {"restricted", "secret"}
                 and current_zone == "unsigned"
                 and os.environ.get("AETHERRA_ALLOW_UNTRUSTED_SECRET", "0") != "1"
                 and not allow_untrusted_secret
@@ -176,9 +175,7 @@ class PluginInstance:
             if hasattr(self.module, "execute"):
                 self.execution_count += 1
                 # Enforce timeout and retries
-                timeout_s = (
-                    max(0, int(getattr(self.manifest, "timeout_ms", 60000))) / 1000.0
-                )
+                timeout_s = max(0, int(getattr(self.manifest, "timeout_ms", 60000))) / 1000.0
                 retries = max(0, int(getattr(self.manifest, "retries", 0)))
 
                 def _call_once():
@@ -215,9 +212,7 @@ class PluginInstance:
                     value, err = _with_timeout(_call_once, timeout_s)
                     if err is None:
                         # If plugin returns confidence, enforce min_confidence
-                        min_c = float(
-                            getattr(self.manifest, "min_confidence", 0.0) or 0.0
-                        )
+                        min_c = float(getattr(self.manifest, "min_confidence", 0.0) or 0.0)
                         if isinstance(value, dict) and "confidence" in value:
                             try:
                                 conf = float(value.get("confidence", 0.0))
@@ -282,9 +277,7 @@ class LyrixaPluginSystem:
             try:
                 with open(self.plugin_registry_file) as f:
                     data = json.load(f)
-                    print(
-                        f"📋 Loaded plugin registry with {len(data.get('plugins', []))} entries"
-                    )
+                    print(f"📋 Loaded plugin registry with {len(data.get('plugins', []))} entries")
             except Exception as e:
                 print(f"[WARN] Failed to load plugin registry: {e}")
 
@@ -315,9 +308,7 @@ class LyrixaPluginSystem:
         if SAFE_WRITE_AVAILABLE:
             success = safe_write_file(str(self.plugin_registry_file), registry_content)
             if not success:
-                print(
-                    "[WARN] Failed to safely write plugin registry, falling back to normal write"
-                )
+                print("[WARN] Failed to safely write plugin registry, falling back to normal write")
                 with open(self.plugin_registry_file, "w") as f:
                     f.write(registry_content)
         else:
@@ -338,9 +329,7 @@ class LyrixaPluginSystem:
                         plugin_instance = PluginInstance(manifest, plugin_dir)
 
                         self.installed_plugins[manifest.name] = plugin_instance
-                        print(
-                            f"   🔍 Discovered plugin: {manifest.name} v{manifest.version}"
-                        )
+                        print(f"   🔍 Discovered plugin: {manifest.name} v{manifest.version}")
 
                     except Exception as e:
                         print(f"   ❌ Failed to load plugin {plugin_dir.name}: {e}")
@@ -586,9 +575,7 @@ class LyrixaPluginSystem:
         except Exception as e:
             return {"success": False, "error": f"Deactivation failed: {str(e)}"}
 
-    def execute_plugin(
-        self, plugin_name: str, command: str, **kwargs
-    ) -> Dict[str, Any]:
+    def execute_plugin(self, plugin_name: str, command: str, **kwargs) -> Dict[str, Any]:
         """Execute a command in an active plugin"""
         if plugin_name not in self.active_plugins:
             return {"success": False, "error": f"Plugin {plugin_name} not active"}
@@ -602,9 +589,7 @@ class LyrixaPluginSystem:
                     "error": "policy_exhausted",
                     "policy": {"max_executions": max_exec},
                 }
-            self._policy_state["executions"] = (
-                int(self._policy_state.get("executions", 0)) + 1
-            )
+            self._policy_state["executions"] = int(self._policy_state.get("executions", 0)) + 1
 
         plugin = self.active_plugins[plugin_name]
         # Thread internal policy flags (do not leak external fields by default)
@@ -770,9 +755,7 @@ PLUGIN_INFO = {{
 
             # Create main.py template safely
             if SAFE_WRITE_AVAILABLE:
-                safe_write_file(
-                    str(plugin_dir / "main.py"), main_py_content, encoding="utf-8"
-                )
+                safe_write_file(str(plugin_dir / "main.py"), main_py_content, encoding="utf-8")
             else:
                 with open(plugin_dir / "main.py", "w", encoding="utf-8") as f:
                     f.write(main_py_content)
@@ -810,9 +793,7 @@ Created with Lyrixa Plugin System
 
             # Create README.md safely
             if SAFE_WRITE_AVAILABLE:
-                safe_write_file(
-                    str(plugin_dir / "README.md"), readme_content, encoding="utf-8"
-                )
+                safe_write_file(str(plugin_dir / "README.md"), readme_content, encoding="utf-8")
             else:
                 with open(plugin_dir / "README.md", "w", encoding="utf-8") as f:
                     f.write(readme_content)
@@ -862,9 +843,7 @@ Created with Lyrixa Plugin System
             if (
                 query_lower in name.lower()
                 or query_lower in plugin.manifest.description.lower()
-                or any(
-                    query_lower in cap.lower() for cap in plugin.manifest.capabilities
-                )
+                or any(query_lower in cap.lower() for cap in plugin.manifest.capabilities)
             ):
                 results.append(self.get_plugin_info(name))
 
@@ -905,9 +884,7 @@ if __name__ == "__main__":
             if result["suggestions"]["alternatives"]:
                 alt_name = result["suggestions"]["alternatives"][0]
                 print(f"\n🔄 Trying alternative name: {alt_name}")
-                result = ps.create_plugin_template(
-                    alt_name, "A simple hello world plugin"
-                )
+                result = ps.create_plugin_template(alt_name, "A simple hello world plugin")
                 if result["success"]:
                     print(f"✅ Successfully created plugin: {alt_name}")
     else:

@@ -23,11 +23,7 @@ def _tokenize(text: str) -> Iterable[str]:
     if not text:
         return []
     # Simple, deterministic tokenization
-    return [
-        t
-        for t in "".join(ch.lower() if ch.isalnum() else " " for ch in text).split()
-        if t
-    ]
+    return [t for t in "".join(ch.lower() if ch.isalnum() else " " for ch in text).split() if t]
 
 
 def _token_weight(token: str) -> float:

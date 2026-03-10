@@ -111,11 +111,9 @@ class RealAgentDiscovery:
                 for node in ast.walk(tree):
                     if isinstance(node, ast.ClassDef):
                         if self._is_likely_agent_class(node, content):
-                            self._analyze_potential_agent_class(
-                                file_path, node, content
-                            )
+                            self._analyze_potential_agent_class(file_path, node, content)
 
-            except Exception as e:
+            except Exception:
                 continue  # Skip files with parsing errors
 
     def _is_excluded_path(self, file_path: Path) -> bool:
@@ -175,12 +173,8 @@ class RealAgentDiscovery:
         ]
 
         # Check class name
-        has_agent_indicator = any(
-            indicator in class_name for indicator in agent_indicators
-        )
-        has_non_agent_pattern = any(
-            pattern in class_name for pattern in non_agent_patterns
-        )
+        has_agent_indicator = any(indicator in class_name for indicator in agent_indicators)
+        has_non_agent_pattern = any(pattern in class_name for pattern in non_agent_patterns)
 
         # If it has non-agent patterns, it's probably not an agent
         if has_non_agent_pattern and not has_agent_indicator:
@@ -242,12 +236,8 @@ class RealAgentDiscovery:
 
             for node in ast.walk(tree):
                 if isinstance(node, ast.ClassDef):
-                    agents_in_file.append(
-                        {"type": "class", "name": node.name, "line": node.lineno}
-                    )
-                elif isinstance(node, ast.FunctionDef) and node.name.startswith(
-                    "agent_"
-                ):
+                    agents_in_file.append({"type": "class", "name": node.name, "line": node.lineno})
+                elif isinstance(node, ast.FunctionDef) and node.name.startswith("agent_"):
                     agents_in_file.append(
                         {"type": "function", "name": node.name, "line": node.lineno}
                     )
@@ -265,9 +255,7 @@ class RealAgentDiscovery:
         except Exception as e:
             print(f"[WARN] Error analyzing {file_path}: {e}")
 
-    def _analyze_potential_agent_class(
-        self, file_path: Path, node: ast.ClassDef, content: str
-    ):
+    def _analyze_potential_agent_class(self, file_path: Path, node: ast.ClassDef, content: str):
         """Analyze a class that might be an agent"""
         # Get methods
         methods = []
@@ -282,9 +270,7 @@ class RealAgentDiscovery:
                 bases.append(base.id)
             elif isinstance(base, ast.Attribute):
                 bases.append(
-                    f"{base.value.id}.{base.attr}"
-                    if hasattr(base.value, "id")
-                    else str(base.attr)
+                    f"{base.value.id}.{base.attr}" if hasattr(base.value, "id") else str(base.attr)
                 )
 
         # Determine category
@@ -328,9 +314,7 @@ class RealAgentDiscovery:
             "timestamp": "20250726_real_discovery",
             "total_real_agents": len(self.real_agents),
             "categories": by_category,
-            "summary": {
-                category: len(agents) for category, agents in by_category.items()
-            },
+            "summary": {category: len(agents) for category, agents in by_category.items()},
         }
 
         # Save report
@@ -353,9 +337,7 @@ class RealAgentDiscovery:
         if self.real_agents:
             print("\n🔍 Sample Real Agents Found:")
             for i, agent in enumerate(self.real_agents[:5]):
-                print(
-                    f"  {i+1}. {agent.get('class_name', agent['file'])} ({agent['category']})"
-                )
+                print(f"  {i + 1}. {agent.get('class_name', agent['file'])} ({agent['category']})")
                 print(f"     File: {agent['file']}")
 
         return report

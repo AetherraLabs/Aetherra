@@ -222,9 +222,7 @@ class LyrixaSystemBootstrap:
 
                     details = {
                         "database_path": str(db_path),
-                        "database_size_mb": round(
-                            db_path.stat().st_size / (1024 * 1024), 2
-                        ),
+                        "database_size_mb": round(db_path.stat().st_size / (1024 * 1024), 2),
                         "memory_count": memory_count,
                         "search_functional": len(test_search) >= 0,
                         "connection_active": True,
@@ -291,8 +289,7 @@ class LyrixaSystemBootstrap:
                 active_plugins = sum(
                     1
                     for p in plugins.values()
-                    if p.get("status") == "active"
-                    or p.get("status", "").lower() == "active"
+                    if p.get("status") == "active" or p.get("status", "").lower() == "active"
                 )
 
                 # Check plugin directory
@@ -314,9 +311,7 @@ class LyrixaSystemBootstrap:
                     health_score = min(1.0, active_plugins / max(1, total_plugins))
                     recommendations = []
                     if active_plugins < total_plugins:
-                        recommendations.append(
-                            f"{total_plugins - active_plugins} plugins inactive"
-                        )
+                        recommendations.append(f"{total_plugins - active_plugins} plugins inactive")
                 else:
                     status = SystemComponentStatus.INACTIVE
                     health_score = 0.3
@@ -369,9 +364,7 @@ class LyrixaSystemBootstrap:
                 "overdue_goals": goal_stats.get("overdue_goals", 0),
                 "average_progress": goal_stats.get("average_progress", 0.0),
                 "goals_file": getattr(self.goal_system, "goals_file", "Unknown"),
-                "goals_file_exists": Path(
-                    getattr(self.goal_system, "goals_file", "")
-                ).exists(),
+                "goals_file_exists": Path(getattr(self.goal_system, "goals_file", "")).exists(),
             }
 
             total_goals = details["total_goals"]
@@ -380,17 +373,13 @@ class LyrixaSystemBootstrap:
 
             if total_goals > 0:
                 status = SystemComponentStatus.ACTIVE
-                health_score = max(
-                    0.3, (active_count - overdue_count * 0.5) / max(1, total_goals)
-                )
+                health_score = max(0.3, (active_count - overdue_count * 0.5) / max(1, total_goals))
                 recommendations = []
 
                 if overdue_count > 0:
                     recommendations.append(f"{overdue_count} goals are overdue")
                 if active_count == 0:
-                    recommendations.append(
-                        "No active goals - consider setting some objectives"
-                    )
+                    recommendations.append("No active goals - consider setting some objectives")
                 elif active_count > 10:
                     recommendations.append("Many active goals - consider prioritizing")
             else:
@@ -427,9 +416,7 @@ class LyrixaSystemBootstrap:
             # Get feedback system metrics
             performance_report = await self.feedback_system.get_performance_report()
 
-            feedback_count = performance_report["performance_metrics"][
-                "total_feedback_count"
-            ]
+            feedback_count = performance_report["performance_metrics"]["total_feedback_count"]
             response_satisfaction = performance_report["performance_metrics"][
                 "response_satisfaction"
             ]
@@ -440,8 +427,7 @@ class LyrixaSystemBootstrap:
                 "response_satisfaction": response_satisfaction,
                 "recent_improvements": improvement_count,
                 "adaptive_parameters": performance_report["adaptive_parameters"],
-                "learning_active": feedback_count
-                >= self.feedback_system.min_feedback_for_learning,
+                "learning_active": feedback_count >= self.feedback_system.min_feedback_for_learning,
             }
 
             if feedback_count > 0:
@@ -454,9 +440,7 @@ class LyrixaSystemBootstrap:
                         "Low response satisfaction - system learning from feedback"
                     )
                 if improvement_count > 0:
-                    recommendations.append(
-                        f"System made {improvement_count} recent improvements"
-                    )
+                    recommendations.append(f"System made {improvement_count} recent improvements")
             else:
                 status = SystemComponentStatus.INACTIVE
                 health_score = 0.5
@@ -568,9 +552,7 @@ class LyrixaSystemBootstrap:
 
             recommendations = []
             if active_dbs < total_dbs:
-                recommendations.append(
-                    f"{total_dbs - active_dbs} database(s) unavailable"
-                )
+                recommendations.append(f"{total_dbs - active_dbs} database(s) unavailable")
 
             return ComponentStatus(
                 name="Database Connections",
@@ -624,9 +606,7 @@ class LyrixaSystemBootstrap:
             if workspace_exists and workspace_writable:
                 if space_percent > 10:
                     status = SystemComponentStatus.ACTIVE
-                    health_score = min(
-                        1.0, space_percent / 50
-                    )  # Full health at 50%+ free space
+                    health_score = min(1.0, space_percent / 50)  # Full health at 50%+ free space
                 elif space_percent > 5:
                     status = SystemComponentStatus.DEGRADED
                     health_score = 0.5
@@ -794,9 +774,7 @@ class LyrixaSystemBootstrap:
         else:
             return StartupContextType.SESSION_CONTINUATION
 
-    async def _generate_startup_summary(
-        self, snapshot: SystemSnapshot
-    ) -> StartupSummary:
+    async def _generate_startup_summary(self, snapshot: SystemSnapshot) -> StartupSummary:
         """Generate user-friendly startup summary"""
 
         context_type = snapshot.startup_context
@@ -815,9 +793,13 @@ class LyrixaSystemBootstrap:
         # Memory summary
         memory_count = snapshot.memory_stats.get("memory_count", 0)
         if memory_count > 0:
-            memory_summary = f"I remember {memory_count} interactions and can recall our conversation history."
+            memory_summary = (
+                f"I remember {memory_count} interactions and can recall our conversation history."
+            )
         else:
-            memory_summary = "This appears to be our first interaction - I'm ready to start learning!"
+            memory_summary = (
+                "This appears to be our first interaction - I'm ready to start learning!"
+            )
 
         # Active goals
         active_goals = []
@@ -833,9 +815,7 @@ class LyrixaSystemBootstrap:
         recent_activity = []
         if self.last_session_data:
             if "recent_activity" in self.last_session_data:
-                recent_activity = self.last_session_data["recent_activity"][
-                    :3
-                ]  # Last 3 activities
+                recent_activity = self.last_session_data["recent_activity"][:3]  # Last 3 activities
 
         # Continuation suggestions
         continuation_suggestions = []
@@ -916,9 +896,7 @@ class LyrixaSystemBootstrap:
                     "component_count": len(snapshot.components),
                     "memory_count": snapshot.memory_stats.get("memory_count", 0),
                     "active_goals": snapshot.goal_stats.get("active_goals", 0),
-                    "loaded_plugins": len(
-                        snapshot.plugin_stats.get("loaded_plugins", [])
-                    ),
+                    "loaded_plugins": len(snapshot.plugin_stats.get("loaded_plugins", [])),
                     "recent_activity": [],  # Would be populated with actual recent activities
                     "startup_context": snapshot.startup_context.value,
                 },
@@ -942,13 +920,9 @@ class LyrixaSystemBootstrap:
         ]
 
         if summary.time_since_last_session:
-            message_parts.extend(
-                ["", f"⏰ **Last session:** {summary.time_since_last_session}"]
-            )
+            message_parts.extend(["", f"⏰ **Last session:** {summary.time_since_last_session}"])
 
-        message_parts.extend(
-            ["", "🧠 **Memory & Context:**", f"   {summary.memory_summary}"]
-        )
+        message_parts.extend(["", "🧠 **Memory & Context:**", f"   {summary.memory_summary}"])
 
         if summary.active_goals:
             message_parts.extend(["", "🎯 **Active Goals:**"])
@@ -990,24 +964,19 @@ class LyrixaSystemBootstrap:
                 "recommendations": component.recommendations,
             }
 
-        overall_health = sum(
-            comp.health_score for comp in self.components.values()
-        ) / len(self.components)
+        overall_health = sum(comp.health_score for comp in self.components.values()) / len(
+            self.components
+        )
 
         return {
             "overall_health": overall_health,
             "components": status_summary,
             "timestamp": datetime.now().isoformat(),
             "issues_detected": any(
-                comp.status == SystemComponentStatus.ERROR
-                for comp in self.components.values()
+                comp.status == SystemComponentStatus.ERROR for comp in self.components.values()
             ),
             "recommendations": list(
-                set(
-                    rec
-                    for comp in self.components.values()
-                    for rec in comp.recommendations
-                )
+                set(rec for comp in self.components.values() for rec in comp.recommendations)
             ),
         }
 

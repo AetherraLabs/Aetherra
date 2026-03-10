@@ -1,10 +1,10 @@
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import torch
 import torch.nn as nn
 from torch.fx._compatibility import compatibility
 from torch.fx.graph_module import GraphModule
-
 
 __all__ = [
     "default_matching",

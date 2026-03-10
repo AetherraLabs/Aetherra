@@ -1,6 +1,5 @@
 import torch
 
-
 ONNX_DTYPE_TO_TORCH_DTYPE: dict[int, torch.dtype] = {
     1: torch.float32,  # FLOAT
     2: torch.uint8,  # UINT8

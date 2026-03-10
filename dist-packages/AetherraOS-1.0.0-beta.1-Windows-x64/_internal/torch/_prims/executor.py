@@ -1,10 +1,11 @@
-from typing import Any, Callable, Optional, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar
+
 from typing_extensions import ParamSpec, TypeVarTuple, Unpack
 
 from torch._prims.context import TorchRefsMode
 from torch.fx import GraphModule
 from torch.fx.experimental.proxy_tensor import make_fx, wrapper_and_args_for_make_fx
-
 
 T = TypeVar("T")
 P = ParamSpec("P")
@@ -15,7 +16,7 @@ def execute(
     gm: GraphModule,
     *args: Unpack[Ts],
     executor: str = "aten",
-    executor_parameters: Optional[dict] = None,
+    executor_parameters: dict | None = None,
 ) -> Any:
     """
     Prototype ATen executor.

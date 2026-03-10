@@ -1,6 +1,6 @@
 # mypy: allow-untyped-defs
 from torch.fx.experimental.graph_gradual_typechecker import Refine
-from torch.fx.experimental.unification import unify, Var  # type: ignore[attr-defined]
+from torch.fx.experimental.unification import Var, unify  # type: ignore[attr-defined]
 from torch.fx.tensor_type import TensorType
 
 
@@ -63,10 +63,9 @@ def substitute_solution_one_type(mapping, t):
     if isinstance(t, Var):
         if t in mapping.keys():
             return mapping[t]
-        else:
-            return t
+        return t
 
-    elif isinstance(t, TensorType):
+    if isinstance(t, TensorType):
         new_type = []
         for typ in t.__args__:
             if typ in mapping.keys():
@@ -75,20 +74,19 @@ def substitute_solution_one_type(mapping, t):
                 new_type.append(typ)
         return TensorType(tuple(new_type))
 
-    elif isinstance(t, list):
+    if isinstance(t, list):
         new_type = []
         for typ in t:
             new_type.append(substitute_solution_one_type(mapping, typ))
         return new_type
 
-    elif isinstance(t, tuple):
+    if isinstance(t, tuple):
         new_type = []
         for typ in t:
             new_type.append(substitute_solution_one_type(mapping, typ))
         return tuple(new_type)
 
-    else:
-        return t
+    return t
 
 
 def substitute_all_types(graph, mapping):
@@ -118,7 +116,7 @@ def check_for_type_equality(g1, g2):
     We do not use graph equality but instead type
     equality.
     """
-    for n, m in zip(g1.nodes, g2.nodes):
+    for n, m in zip(g1.nodes, g2.nodes, strict=False):
         if n.type != m.type:
             return False
     return True

@@ -2,8 +2,8 @@
 import math
 import os
 from collections import defaultdict
-from typing import Any, Callable
-from typing_extensions import Self
+from collections.abc import Callable
+from typing import Any, Self
 
 import torch
 import torch.utils._pytree as pytree
@@ -14,7 +14,6 @@ from torch.distributed._tools.mod_tracker import ModTracker
 from torch.utils._mode_utils import no_dispatch
 from torch.utils._python_dispatch import TorchDispatchMode
 from torch.utils.flop_counter import flop_registry
-
 
 aten = torch.ops.aten
 
@@ -231,12 +230,10 @@ class RuntimeEstimator(TorchDispatchMode):
             if isinstance(e, torch.Tensor):
                 if id(e) in inp_impls:
                     return inp_impls[id(e)]
-                else:
-                    return cls.fake_mode.fake_tensor_converter.from_real_tensor(
-                        cls.fake_mode, e
-                    )
-            else:
-                return e
+                return cls.fake_mode.fake_tensor_converter.from_real_tensor(
+                    cls.fake_mode, e
+                )
+            return e
 
         return (pytree.tree_map(map_out, r), mean_op_time)
 

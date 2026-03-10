@@ -13,10 +13,12 @@ import tarfile
 import tempfile
 import threading
 import warnings
+from collections.abc import Callable
 from contextlib import closing, contextmanager
 from enum import Enum
-from typing import Any, Callable, cast, Generic, IO, Optional, TypeVar, Union
-from typing_extensions import TypeAlias, TypeIs
+from typing import IO, Any, Generic, TypeAlias, TypeVar, cast
+
+from typing_extensions import TypeIs
 
 import torch
 import torch._weights_only_unpickler as _weights_only_unpickler
@@ -24,7 +26,6 @@ from torch._sources import get_source_lines_and_file
 from torch._utils import _import_dotted_name
 from torch.storage import _get_dtype_from_pickle_storage_type
 from torch.types import FileLike, Storage
-
 
 __all__ = [
     "SourceChangeWarning",
@@ -65,10 +66,10 @@ MAGIC_NUMBER = 0x1950A86A20F9469CFC6C
 PROTOCOL_VERSION = 1001
 STORAGE_KEY_SEPARATOR = ","
 
-MAP_LOCATION: TypeAlias = Optional[
-    Union[Callable[[Storage, str], Storage], torch.device, str, dict[str, str]]
-]
-STORAGE: TypeAlias = Union[Storage, torch.storage.TypedStorage, torch.UntypedStorage]
+MAP_LOCATION: TypeAlias = (
+    Callable[[Storage, str], Storage] | torch.device | str | dict[str, str] | None
+)
+STORAGE: TypeAlias = Storage | torch.storage.TypedStorage | torch.UntypedStorage
 
 IS_WINDOWS = sys.platform == "win32"
 
@@ -98,7 +99,7 @@ def _default_to_weights_only(pickle_module):
 class _SerializationLocal(threading.local):
     def __init__(self):
         super().__init__()
-        self.map_location: Optional[MAP_LOCATION] = None
+        self.map_location: MAP_LOCATION | None = None
         self.skip_data: bool = False
         self.materialize_fake_tensors: bool = False
 
@@ -122,8 +123,8 @@ def mkdtemp():
 _package_registry: list[
     tuple[
         int,
-        Callable[[STORAGE], Optional[str]],
-        Callable[[STORAGE, str], Optional[STORAGE]],
+        Callable[[STORAGE], str | None],
+        Callable[[STORAGE, str], STORAGE | None],
     ]
 ] = []
 
@@ -134,7 +135,7 @@ class LoadEndianness(Enum):
     BIG = 3
 
 
-def get_default_load_endianness() -> Optional[LoadEndianness]:
+def get_default_load_endianness() -> LoadEndianness | None:
     """
     Get fallback byte order for loading files
 
@@ -196,7 +197,7 @@ def set_crc32_options(compute_crc32: bool):
     config.save.compute_crc32 = compute_crc32
 
 
-def get_default_mmap_options() -> Optional[int]:
+def get_default_mmap_options() -> int | None:
     """
     Get default mmap options for :func:`torch.load` with ``mmap=True``.
 
@@ -271,14 +272,14 @@ def clear_safe_globals() -> None:
     _weights_only_unpickler._clear_safe_globals()
 
 
-def get_safe_globals() -> list[Union[Callable, tuple[Callable, str]]]:
+def get_safe_globals() -> list[Callable | tuple[Callable, str]]:
     """
     Returns the list of user-added globals that are safe for ``weights_only`` load.
     """
     return _weights_only_unpickler._get_safe_globals()
 
 
-def add_safe_globals(safe_globals: list[Union[Callable, tuple[Callable, str]]]) -> None:
+def add_safe_globals(safe_globals: list[Callable | tuple[Callable, str]]) -> None:
     """
     Marks the given globals as safe for ``weights_only`` load. For example, functions
     added to this list can be called during unpickling, classes could be instantiated
@@ -442,8 +443,8 @@ def _is_zipfile(f) -> bool:
 
 def register_package(
     priority: int,
-    tagger: Callable[[STORAGE], Optional[str]],
-    deserializer: Callable[[STORAGE, str], Optional[STORAGE]],
+    tagger: Callable[[STORAGE], str | None],
+    deserializer: Callable[[STORAGE, str], STORAGE | None],
 ):
     """
     Registers callables for tagging and deserializing storage objects with an associated priority.
@@ -522,9 +523,8 @@ def check_module_version_greater_or_equal(
         )
         if error_if_malformed:
             raise RuntimeError(message) from e
-        else:
-            warnings.warn(message + ", but continuing assuming that requirement is met")
-            requirement_is_met = True
+        warnings.warn(message + ", but continuing assuming that requirement is met")
+        requirement_is_met = True
 
     return requirement_is_met
 
@@ -550,8 +550,7 @@ def _backend_tag(backend_name, obj):
     if obj.device.type == backend_name:
         if obj.device.index is None:
             return backend_name
-        else:
-            return backend_name + ":" + str(obj.device.index)
+        return backend_name + ":" + str(obj.device.index)
 
 
 def _cpu_deserialize(obj, location):
@@ -663,7 +662,7 @@ register_package(
 
 
 def location_tag(
-    storage: Union[Storage, torch.storage.TypedStorage, torch.UntypedStorage],
+    storage: Storage | torch.storage.TypedStorage | torch.UntypedStorage,
 ):
     for _, tagger, _ in _package_registry:
         location = tagger(storage)
@@ -717,7 +716,7 @@ def storage_to_tensor_type(storage):
     return getattr(module, storage_type.__name__.replace("Storage", "Tensor"))
 
 
-def _is_path(name_or_buffer: object) -> TypeIs[Union[str, os.PathLike]]:
+def _is_path(name_or_buffer: object) -> TypeIs[str | os.PathLike]:
     return isinstance(name_or_buffer, (str, os.PathLike))
 
 
@@ -736,7 +735,7 @@ class _opener(Generic[T]):
 
 
 class _open_file(_opener[IO[bytes]]):
-    def __init__(self, name: Union[str, os.PathLike[str]], mode: str) -> None:
+    def __init__(self, name: str | os.PathLike[str], mode: str) -> None:
         super().__init__(open(name, mode))
 
     def __exit__(self, *args):
@@ -757,17 +756,15 @@ class _open_buffer_writer(_opener[IO[bytes]]):
 def _open_file_like(name_or_buffer: FileLike, mode: str) -> _opener[IO[bytes]]:
     if _is_path(name_or_buffer):
         return _open_file(name_or_buffer, mode)
-    else:
-        if "w" in mode:
-            return _open_buffer_writer(name_or_buffer)
-        elif "r" in mode:
-            return _open_buffer_reader(name_or_buffer)
-        else:
-            raise RuntimeError(f"Expected 'r' or 'w' in mode but got {mode}")
+    if "w" in mode:
+        return _open_buffer_writer(name_or_buffer)
+    if "r" in mode:
+        return _open_buffer_reader(name_or_buffer)
+    raise RuntimeError(f"Expected 'r' or 'w' in mode but got {mode}")
 
 
 class _open_zipfile_reader(_opener[torch._C.PyTorchFileReader]):
-    def __init__(self, name_or_buffer: Union[str, IO[bytes]]) -> None:
+    def __init__(self, name_or_buffer: str | IO[bytes]) -> None:
         super().__init__(torch._C.PyTorchFileReader(name_or_buffer))
 
 
@@ -819,7 +816,7 @@ class _open_zipfile_writer_buffer(_opener[torch._C.PyTorchFileWriter]):
         self.buffer.flush()
 
 
-def _open_zipfile_writer(name_or_buffer: Union[str, IO[bytes]]) -> _opener:
+def _open_zipfile_writer(name_or_buffer: str | IO[bytes]) -> _opener:
     container: type[_opener]
     if _is_path(name_or_buffer):
         container = _open_zipfile_writer_file
@@ -994,7 +991,7 @@ def _legacy_save(obj, f, pickle_module, pickle_protocol) -> None:
     # TODO: This feature could be added in the future
     storage_dtypes: dict[int, torch.dtype] = {}
 
-    def persistent_id(obj: Any) -> Optional[tuple]:
+    def persistent_id(obj: Any) -> tuple | None:
         # FIXME: the docs say that persistent_id should only return a string
         # but torch store returns tuples. This works only in the binary protocol
         # see
@@ -1053,7 +1050,7 @@ def _legacy_save(obj, f, pickle_module, pickle_protocol) -> None:
                 else:
                     storage_dtypes[storage.data_ptr()] = storage_dtype
 
-            view_metadata: Optional[tuple[str, int, int]]
+            view_metadata: tuple[str, int, int] | None
 
             # Offset is always 0, but we keep it for backwards compatibility
             # with the old serialization format (which supported storage views)
@@ -1232,7 +1229,7 @@ def _save(
         zip_file.write_record("byteorder", sys.byteorder, len(sys.byteorder))
 
     # Write each tensor to a file named tensor/the_tensor_key in the zip archive
-    for key in serialized_storages.keys():
+    for key in serialized_storages:
         name = f"data/{key}"
         storage = serialized_storages[key]
         num_bytes = storage.nbytes()
@@ -1273,8 +1270,8 @@ def load(
     map_location: MAP_LOCATION = None,
     pickle_module: Any = None,
     *,
-    weights_only: Optional[bool] = None,
-    mmap: Optional[bool] = None,
+    weights_only: bool | None = None,
+    mmap: bool | None = None,
     **pickle_load_args: Any,
 ) -> Any:
     # Reference: https://github.com/pytorch/pytorch/issues/54354
@@ -1419,13 +1416,12 @@ def load(
         else:
             if has_import:
                 return f"Weights only load failed. {message}\n {UNSAFE_MESSAGE}\n"
-            else:
-                updated_message = f"Weights only load failed. {UNSAFE_MESSAGE}\n"
-                if not has_blocklist:
-                    updated_message += (
-                        "Please file an issue with the following so that we can make "
-                        "`weights_only=True` compatible with your use case: WeightsUnpickler error: "
-                    )
+            updated_message = f"Weights only load failed. {UNSAFE_MESSAGE}\n"
+            if not has_blocklist:
+                updated_message += (
+                    "Please file an issue with the following so that we can make "
+                    "`weights_only=True` compatible with your use case: WeightsUnpickler error: "
+                )
             updated_message += message
         return updated_message + DOCS_MESSAGE
 
@@ -1448,7 +1444,7 @@ def load(
             "Only one of `TORCH_FORCE_WEIGHTS_ONLY_LOAD` or `TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD` "
             "should be set, but both were set."
         )
-    elif force_weights_only_load:
+    if force_weights_only_load:
         weights_only = True
     elif force_no_weights_only_load:
         # TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD can only override if callsite did not explicitly set weights_only
@@ -1478,7 +1474,7 @@ def load(
 
     _check_dill_version(pickle_module)
 
-    if "encoding" not in pickle_load_args.keys():
+    if "encoding" not in pickle_load_args:
         pickle_load_args["encoding"] = "utf-8"
 
     with _open_file_like(f, "rb") as opened_file:
@@ -1728,7 +1724,7 @@ def _legacy_load(f, map_location, pickle_module, **pickle_load_args):
             if all(data[1:]):
                 _check_container_source(*data)
             return data[0]
-        elif typename == "storage":
+        if typename == "storage":
             storage_type, root_key, location, numel, view_metadata = data
             location = _maybe_decode_ascii(location)
             dtype = storage_type.dtype
@@ -1779,8 +1775,7 @@ def _legacy_load(f, map_location, pickle_module, **pickle_load_args):
             else:
                 res = typed_storage
             return res
-        else:
-            raise RuntimeError(f"Unknown saved id type: {saved_id[0]}")
+        raise RuntimeError(f"Unknown saved id type: {saved_id[0]}")
 
     _check_seekable(f)
     f_should_read_directly = _should_read_directly(f)
@@ -1832,7 +1827,7 @@ def _legacy_load(f, map_location, pickle_module, **pickle_load_args):
     return result
 
 
-def _maybe_decode_ascii(bytes_str: Union[bytes, str]) -> str:
+def _maybe_decode_ascii(bytes_str: bytes | str) -> str:
     # When using encoding='bytes' in Py3, some **internal** keys stored as
     # strings in Py2 are loaded as bytes. This function decodes them with
     # ascii encoding, one that Py3 uses by default.

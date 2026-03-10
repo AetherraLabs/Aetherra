@@ -90,8 +90,9 @@ async def shadow_recall(
     Returns:
         (baseline_result, comparison_dict)
 
-    The baseline result is always returned unchanged to ensure zero production impact.
-    Comparison dict includes agreement metrics and latency.
+    The baseline content is always returned to ensure zero production impact,
+    but successful STORM evidence metadata is merged into the baseline result so
+    shadow-mode observability and acceptance checks still see STORM signals.
     """
     start = time.time()
     comparison = {"agreed": True, "latency_ms": 0.0, "error": None}
@@ -105,11 +106,21 @@ async def shadow_recall(
         comparison = compare_results(baseline_result, storm_result)
         comparison["latency_ms"] = latency_ms
 
+        # Preserve baseline items/scores but surface STORM evidence metadata.
+        baseline_meta = dict(baseline_result.metadata or {})
+        storm_meta = dict((storm_result.metadata or {}).get("storm_meta", {}))
+        if storm_meta:
+            baseline_meta["storm_meta"] = storm_meta
+        evidence_tags = dict((storm_result.metadata or {}).get("evidence_tags", {}))
+        if evidence_tags:
+            baseline_meta["evidence_tags"] = evidence_tags
+        baseline_result.metadata = baseline_meta
+
     except Exception as e:
         # STORM failed but baseline succeeded - record error
         comparison["error"] = str(e)
         comparison["agreed"] = False
         comparison["latency_ms"] = (time.time() - start) * 1000.0
 
-    # Always return baseline unchanged
+    # Always return baseline content, optionally enriched with STORM metadata.
     return baseline_result, comparison

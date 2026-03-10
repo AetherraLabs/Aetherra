@@ -26,7 +26,6 @@ from ...utils import get_fused_kernel_name, get_kernel_metadata, sympy_product
 from ...virtualized import V
 from ..common import BackendFeature, IndentedBuffer
 
-
 log = logging.getLogger(__name__)
 
 
@@ -71,7 +70,7 @@ class CUDACPPScheduling(BaseScheduling):
                 [],
                 node2,  # type: ignore[arg-type]
             )
-        elif self.is_cuda_cpp_fused_template(node1) and isinstance(
+        if self.is_cuda_cpp_fused_template(node1) and isinstance(
             node2, BaseSchedulerNode
         ):
             assert node1.node, "node1.node should not be None"
@@ -223,10 +222,10 @@ class CUDACPPScheduling(BaseScheduling):
             if not isinstance(node, ComputedBuffer):
                 why(f"{node} is not a ComputedBuffer")
                 return False
-            elif not isinstance(node.data, Pointwise):
+            if not isinstance(node.data, Pointwise):
                 why(f"{node} is not a Pointwise op")
                 return False
-            elif not node.get_computed_buffer_name():  # type: ignore[attr-defined]
+            if not node.get_computed_buffer_name():  # type: ignore[attr-defined]
                 why(f"{node} does not have a computed buffer name")
                 return False
 
@@ -248,18 +247,18 @@ size: {cuda_template_buffer.get_size()}"
         if node_to_fuse.has_aliasing_or_mutation():
             why(f"{node_to_fuse.get_name()} has aliasing or mutation")
             return False
-        elif node_to_fuse.is_reduction():
+        if node_to_fuse.is_reduction():
             why(
                 f"{node_to_fuse.get_name()} is a reduction which is not yet supported by EVT"
             )
             return False
-        elif (
+        if (
             not config.cuda.cutlass_epilogue_fusion_enabled
             or not config.epilogue_fusion
         ):
             why("cutlass epilogue fusion is not enabled")
             return False
-        elif not cuda_template_buffer.supports_epilogue_fusion:
+        if not cuda_template_buffer.supports_epilogue_fusion:
             why("epilogue fusion is only supported for TMA-enabled gemm ops")
             return False
 
@@ -283,11 +282,11 @@ size: {cuda_template_buffer.get_size()}"
 likely due to unsupported operation: {not_implemented_op}"  # noqa: G004, B950
                 )
                 return False
-            else:  # Likely due to unsupported dtype.
-                why(
-                    f"Cannot fuse epilogue node {node_to_fuse} into {cuda_template_buffer.name}. \
+            # Likely due to unsupported dtype.
+            why(
+                f"Cannot fuse epilogue node {node_to_fuse} into {cuda_template_buffer.name}. \
 Reason: {not_implemented_op}"  # noqa: G004, B950
-                )
-                return False
+            )
+            return False
 
         return True

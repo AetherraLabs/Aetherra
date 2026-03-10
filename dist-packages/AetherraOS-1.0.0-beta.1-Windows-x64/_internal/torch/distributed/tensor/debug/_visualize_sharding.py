@@ -6,7 +6,6 @@ import numpy as np
 from torch._prims_common import ShapeType
 from torch.distributed.tensor._utils import _compute_local_shape_and_global_offset
 
-
 __all__ = ["visualize_sharding"]
 
 Color = tuple[float, float, float]

@@ -12,7 +12,7 @@ import os
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 __all__ = [
     "policy_snapshot",
@@ -21,7 +21,7 @@ __all__ = [
 ]
 
 
-def _caps_for_mode(mode: str) -> List[str]:
+def _caps_for_mode(mode: str) -> list[str]:
     mode = (mode or "standard").strip().lower()
     if mode == "strict":
         env_caps = os.environ.get("AETHERRA_CHAT_CAPS_STRICT", "").strip()
@@ -51,7 +51,7 @@ def _caps_for_mode(mode: str) -> List[str]:
     return default_caps
 
 
-def _network_policy_for_mode(mode: str) -> Dict[str, Any]:
+def _network_policy_for_mode(mode: str) -> dict[str, Any]:
     mode = (mode or "standard").strip().lower()
     env_list = os.environ.get("AETHERRA_NETWORK_ALLOWLIST", "").strip()
     if env_list:
@@ -67,7 +67,7 @@ def _network_policy_for_mode(mode: str) -> Dict[str, Any]:
     return {"allowlist": allow, "block_unknown": bool(block_unknown)}
 
 
-def policy_snapshot() -> Dict[str, Any]:
+def policy_snapshot() -> dict[str, Any]:
     try:
         mode = os.environ.get("AETHERRA_CHAT_SAFETY_MODE", "standard")
         base = {
@@ -109,7 +109,7 @@ def policy_snapshot() -> Dict[str, Any]:
 
 
 def ledger_write(
-    event: str, trace_id: str, details: Dict[str, Any]
+    event: str, trace_id: str, details: dict[str, Any]
 ):  # pragma: no cover - side effect
     try:
         if os.environ.get("AETHERRA_SECURITY_LEDGER", "1") != "1":
@@ -134,7 +134,7 @@ def ledger_write(
         pass
 
 
-def redact_text(text: str) -> Dict[str, Any]:
+def redact_text(text: str) -> dict[str, Any]:
     s = str(text or "")
     redactions = []
     patterns = [
@@ -184,7 +184,7 @@ def _host_allowed(host: str, allowlist: list[str]) -> bool:
     return False
 
 
-def safety_precheck(message: str, trace_id: str, route: str) -> Dict[str, Any]:
+def safety_precheck(message: str, trace_id: str, route: str) -> dict[str, Any]:
     policy = policy_snapshot()
     mode = str(policy.get("safety_mode") or "standard").lower()
     reasons: list[str] = []
@@ -195,8 +195,8 @@ def safety_precheck(message: str, trace_id: str, route: str) -> Dict[str, Any]:
         reasons.append("redaction:secrets")
 
     net = policy.get("network_policy") or {}
-    allowlist = list((net.get("allowlist") or [])) if isinstance(net, dict) else []
-    block_unknown = bool((net.get("block_unknown") if isinstance(net, dict) else True))
+    allowlist = list(net.get("allowlist") or []) if isinstance(net, dict) else []
+    block_unknown = bool(net.get("block_unknown") if isinstance(net, dict) else True)
     hosts = _extract_urls_hosts(msg2)
     for h in hosts:
         if not _host_allowed(h, allowlist):

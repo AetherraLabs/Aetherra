@@ -18,6 +18,7 @@ class LinearReluFunctionalChild(nn.Module):
         x = torch.nn.functional.relu(x)
         return x
 
+
 class LinearReluFunctional(nn.Module):
     def __init__(self, N):
         super().__init__()

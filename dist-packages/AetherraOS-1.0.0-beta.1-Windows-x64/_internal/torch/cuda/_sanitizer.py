@@ -22,13 +22,12 @@ import textwrap
 import traceback
 from collections.abc import Iterator
 from dataclasses import dataclass, field
-from typing import Any, Optional, TypeVar
+from typing import Any, TypeVar
 
 import torch
 import torch.cuda._gpu_trace as gpu_trace
 from torch.utils import _pytree as pytree
 from torch.utils._python_dispatch import TorchDispatchMode
-
 
 DEFAULT_STREAM_ID = 0
 
@@ -90,7 +89,7 @@ class UnsynchronizedAccessError(SynchronizationError):
     def __init__(
         self,
         data_ptr: DataPtr,
-        allocation_stack_trace: Optional[traceback.StackSummary],
+        allocation_stack_trace: traceback.StackSummary | None,
         current_access: Access,
         previous_access: Access,
     ):
@@ -161,9 +160,9 @@ class TensorInfo:
         write: the last write access to the tensor.
     """
 
-    allocation_stack_trace: Optional[traceback.StackSummary]
+    allocation_stack_trace: traceback.StackSummary | None
     reads: list[Access] = field(default_factory=list)
-    write: Optional[Access] = None
+    write: Access | None = None
 
 
 class _TensorsAccessed:
@@ -192,7 +191,7 @@ class _TensorsAccessed:
             self.delete_tensor(data_ptr)
 
     def create_tensor(
-        self, data_ptr: DataPtr, stack_trace: Optional[traceback.StackSummary]
+        self, data_ptr: DataPtr, stack_trace: traceback.StackSummary | None
     ) -> None:
         self.accesses[data_ptr] = TensorInfo(stack_trace)
 
@@ -204,10 +203,10 @@ class _TensorsAccessed:
 
     def get_allocation_stack_trace(
         self, data_ptr: DataPtr
-    ) -> Optional[traceback.StackSummary]:
+    ) -> traceback.StackSummary | None:
         return self.accesses[data_ptr].allocation_stack_trace
 
-    def get_write(self, data_ptr: DataPtr) -> Optional[Access]:
+    def get_write(self, data_ptr: DataPtr) -> Access | None:
         return self.accesses[data_ptr].write
 
     def get_reads(self, data_ptr: DataPtr) -> list[Access]:
@@ -357,7 +356,7 @@ class EventHandler:
         tensor_aliases: dict[int, list[str]],
     ) -> list[SynchronizationError]:
         def check_conflict(
-            data_ptr: DataPtr, current_access: Access, previous_access: Optional[Access]
+            data_ptr: DataPtr, current_access: Access, previous_access: Access | None
         ) -> None:
             if previous_access is None:
                 return
@@ -475,7 +474,7 @@ def zip_arguments(
     schema_args = schema.arguments[: len(args)]
     schema_kwargs = {arg.name: arg for arg in schema.arguments[len(args) :]}
 
-    yield from zip(schema_args, args)
+    yield from zip(schema_args, args, strict=False)
 
     for _, argument, value in zip_by_key(schema_kwargs, kwargs):
         yield (argument, value)
@@ -493,7 +492,7 @@ class ArgumentHandler:
         value: Any,
         is_write: bool,
         metadata_only: bool,
-        name: Optional[str] = None,
+        name: str | None = None,
         is_output: bool = False,
     ) -> None:
         if isinstance(value, torch.Tensor) and value.is_cuda:
@@ -537,7 +536,7 @@ class ArgumentHandler:
     def parse_outputs(
         self, schema: torch.FunctionSchema, outputs: Any, *, is_factory: bool
     ) -> None:
-        for res, value in zip(schema.returns, (outputs,)):
+        for res, value in zip(schema.returns, (outputs,), strict=False):
             metadata_only = is_factory or (
                 res.alias_info is not None and not res.alias_info.is_write
             )

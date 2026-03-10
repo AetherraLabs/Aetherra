@@ -4,13 +4,14 @@ from abc import ABC, abstractmethod
 from pickle import (  # type: ignore[attr-defined]
     _getattribute,
     _Pickler,
+)
+from pickle import (
     whichmodule as _pickle_whichmodule,
 )
 from types import ModuleType
-from typing import Any, Optional
+from typing import Any
 
 from ._mangling import demangle, get_mangle_prefix, is_mangled
-
 
 __all__ = ["ObjNotFoundError", "ObjMismatchError", "Importer", "OrderedImporter"]
 
@@ -53,7 +54,7 @@ class Importer(ABC):
         The contract is the same as for importlib.import_module.
         """
 
-    def get_name(self, obj: Any, name: Optional[str] = None) -> tuple[str, str]:
+    def get_name(self, obj: Any, name: str | None = None) -> tuple[str, str]:
         """Given an object, return a name that can be used to retrieve the
         object from this environment.
 
@@ -222,8 +223,7 @@ class OrderedImporter(Importer):
 
         if last_err is not None:
             raise last_err
-        else:
-            raise ModuleNotFoundError(module_name)
+        raise ModuleNotFoundError(module_name)
 
     def whichmodule(self, obj: Any, name: str) -> str:
         for importer in self._importers:

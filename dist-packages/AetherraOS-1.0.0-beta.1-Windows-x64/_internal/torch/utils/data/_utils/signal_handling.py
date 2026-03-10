@@ -45,7 +45,6 @@ from torch._C import (  # noqa: F401
 
 from . import IS_WINDOWS
 
-
 _SIGCHLD_handler_set = False
 r"""Whether SIGCHLD handler is set for DataLoader worker failures. Only one
 handler needs to be set for all DataLoaders in a process."""

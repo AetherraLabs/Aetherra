@@ -39,10 +39,11 @@ import traceback
 import types
 import warnings
 import weakref
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 from os.path import dirname, join
-from typing import Any, Callable, NamedTuple, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, NamedTuple
 from unittest.mock import patch
 
 import sympy
@@ -69,13 +70,13 @@ from torch._export.utils import _compiling_state_context
 from torch._subclasses.fake_tensor import unset_fake_temporarily
 from torch._utils_internal import justknobs_check, log_export_usage
 from torch.export.dynamic_shapes import (
+    Constraint,
     _combine_args,
     _DimHint,
     _DimHintType,
     _IntWrapper,
     _process_dynamic_shapes,
     _RelaxedConstraint,
-    Constraint,
 )
 from torch.fx import GraphModule
 from torch.fx.experimental._dynamism import (
@@ -104,7 +105,6 @@ from .exc import (
 from .hooks import Hooks
 from .mutation_guard import install_generation_tagging_init
 from .utils import common_constant_types, compile_times
-
 
 if TYPE_CHECKING:
     from torch._subclasses import fake_tensor
@@ -137,15 +137,14 @@ def _maybe_set_eval_frame(callback: DynamoCallback):
             "Dynamo disabled by Justknob: enable_compiler_set_eval_frame, skipping set_eval_frame"
         )
         return callback
-    else:
-        return set_eval_frame(callback)
+    return set_eval_frame(callback)
 
 
 @dataclass
 class DynamoStance:
     stance: str = "default"
     skip_guard_eval_unsafe: bool = False
-    backend: Union[str, Callable[..., Any], None] = None
+    backend: str | Callable[..., Any] | None = None
 
 
 _stance = DynamoStance()
@@ -168,7 +167,7 @@ def _set_stance(stance: DynamoStance) -> DynamoStance:
 
 _set_stance._dynamo_forbidden = True  # type: ignore[attr-defined]
 
-_EXAMPLE_INPUTS: Optional[dict[str, list[Any]]] = None
+_EXAMPLE_INPUTS: dict[str, list[Any]] | None = None
 
 
 def get_example_inputs(key) -> list[Any]:
@@ -189,21 +188,20 @@ def _callback_from_stance(callback):
             callback = _create_wrapped_callback(get_compiler_fn(_stance.backend))
 
         return callback
-    elif _stance.stance == "eager_then_compile":
+    if (
+        _stance.stance == "eager_then_compile"
+        or _stance.stance == "aot_eager_then_compile"
+    ):
         if callback not in (False, None):
             return _create_delayed_compile_callback(callback, _stance.stance)
         return callback
-    elif _stance.stance == "aot_eager_then_compile":
-        if callback not in (False, None):
-            return _create_delayed_compile_callback(callback, _stance.stance)
-        return callback
-    elif _stance.stance == "force_eager":
+    if _stance.stance == "force_eager":
         # disable
         return None
-    elif _stance.stance == "eager_on_recompile":
+    if _stance.stance == "eager_on_recompile":
         # run mode
         return False
-    elif _stance.stance == "fail_on_recompile":
+    if _stance.stance == "fail_on_recompile":
         if callback in (False, None):
             return callback
 
@@ -218,8 +216,7 @@ def _callback_from_stance(callback):
         fail_callback._torchdynamo_orig_callable = callback  # type: ignore[attr-defined]
 
         return fail_callback
-    else:
-        raise RuntimeError(f"invalid torch.compile stance '{_stance}'")
+    raise RuntimeError(f"invalid torch.compile stance '{_stance}'")
 
 
 def _create_wrapped_callback(compiler_fn):
@@ -255,7 +252,7 @@ def _create_delayed_compile_callback(callback, stance):
                         FrameAction.DEFAULT, FrameAction.DEFAULT
                     )
                 )
-            elif stance == "aot_eager_then_compile":
+            if stance == "aot_eager_then_compile":
                 aot_eager_fn = get_compiler_fn("aot_eager")
                 return _create_wrapped_callback(aot_eager_fn)(*args, **kwargs)
 
@@ -287,7 +284,7 @@ DONT_WRAP_FILES = {
 
 
 def _debug_get_cache_entry_list(
-    code: Union[types.CodeType, Callable[..., Any]],
+    code: types.CodeType | Callable[..., Any],
 ) -> list[CacheEntry]:
     """
     Given a code object or a callable object, retrieve the cache entries
@@ -487,10 +484,9 @@ def make_set_enable_dynamic(enable: bool):
     if enable:
         # Assume everything is dynamic by default
         return config._make_closure_patcher(assume_static_by_default=False)
-    else:
-        return config._make_closure_patcher(
-            automatic_dynamic_shapes=False, assume_static_by_default=True
-        )
+    return config._make_closure_patcher(
+        automatic_dynamic_shapes=False, assume_static_by_default=True
+    )
 
 
 # A thread local storage that serves to store information as Dynamo traces
@@ -570,7 +566,7 @@ class _TorchDynamoContext:
         assert callable(callback) or callback is False or callback is None
         self.callback: DynamoCallback = callback
         self._backend_ctx_ctor = backend_ctx_ctor
-        self.prior: Union[Unset, DynamoCallback] = unset
+        self.prior: Unset | DynamoCallback = unset
         self.first_ctx = first_ctx
         self.export = export
         self._dynamic = dynamic
@@ -707,8 +703,7 @@ class _TorchDynamoContext:
                             "Detected that you are using FX to symbolically trace "
                             "a dynamo-optimized function. This is not supported at the moment."
                         )
-                    else:
-                        return fn(*args, **kwargs)
+                    return fn(*args, **kwargs)
 
                 if is_jit_tracing():
                     raise RuntimeError(
@@ -824,9 +819,7 @@ class OptimizeContext(_TorchDynamoContext):
         export=False,
         dynamic=None,
         compiler_config=None,
-        rebuild_ctx: Optional[
-            Callable[[], Union[OptimizeContext, _NullDecorator]]
-        ] = None,
+        rebuild_ctx: Callable[[], OptimizeContext | _NullDecorator] | None = None,
         package=None,
     ) -> None:
         def on_enter():
@@ -885,7 +878,7 @@ class RunOnlyContext(_TorchDynamoContext):
 
 
 class DisableContext(_TorchDynamoContext):
-    def __init__(self, msg: Optional[str] = None, wrapping: bool = True) -> None:
+    def __init__(self, msg: str | None = None, wrapping: bool = True) -> None:
         super().__init__(callback=None)
         self.msg = msg
         self.wrapping = wrapping
@@ -999,7 +992,7 @@ class _NullDecorator(contextlib.nullcontext):  # type: ignore[type-arg]
 def check_if_dynamo_supported():
     if sys.version_info >= (3, 14):
         raise RuntimeError("Python 3.14+ not yet supported for torch.compile")
-    elif sysconfig.get_config_var("Py_GIL_DISABLED") == 1 and sys.version_info < (
+    if sysconfig.get_config_var("Py_GIL_DISABLED") == 1 and sys.version_info < (
         3,
         13,
         3,
@@ -1053,7 +1046,7 @@ def optimize(*args, **kwargs):
 
 
 def _optimize(
-    rebuild_ctx: Callable[[], Union[OptimizeContext, _NullDecorator]],
+    rebuild_ctx: Callable[[], OptimizeContext | _NullDecorator],
     backend="inductor",
     *,
     nopython=False,
@@ -1063,7 +1056,7 @@ def _optimize(
     disable=False,
     dynamic=None,
     package=None,
-) -> Union[OptimizeContext, _NullDecorator]:
+) -> OptimizeContext | _NullDecorator:
     """
     The main entrypoint of TorchDynamo.  Do graph capture and call
     backend() to optimize extracted graphs.
@@ -1212,8 +1205,7 @@ def explain(f, *extra_args, **extra_kwargs):
             stacklevel=2,
         )
         return inner(*extra_args, **extra_kwargs)
-    else:
-        return inner
+    return inner
 
 
 class FlattenInputOutputSignature(torch.fx.Transformer):
@@ -1226,7 +1218,7 @@ class FlattenInputOutputSignature(torch.fx.Transformer):
         matched_output_elements_positions: list[int],
         example_fake_inputs: list[torch.Tensor],
         flat_args_dynamic_dims: list[set[int]],
-        fake_mode: Optional[fake_tensor.FakeTensorMode] = None,
+        fake_mode: fake_tensor.FakeTensorMode | None = None,
     ) -> None:
         super().__init__(m)
 
@@ -1450,7 +1442,7 @@ def rewrite_signature(
                 )
 
     def produce_matching(debug_type, sources, candidates):
-        matched_elements_positions: list[Optional[int]] = []
+        matched_elements_positions: list[int | None] = []
         dict_of_source_vals = {}
         for i, val in enumerate(sources):
             dict_of_source_vals[id(val)] = i
@@ -1589,11 +1581,9 @@ def export(
     *extra_args,
     aten_graph: bool = False,
     pre_dispatch: bool = False,
-    decomposition_table: Optional[
-        dict[torch._ops.OpOverload, Callable[..., Any]]
-    ] = None,
+    decomposition_table: dict[torch._ops.OpOverload, Callable[..., Any]] | None = None,
     tracing_mode: str = "symbolic",
-    dynamic_shapes: Optional[Union[dict[str, Any], tuple[Any], list[Any]]] = None,
+    dynamic_shapes: dict[str, Any] | tuple[Any] | list[Any] | None = None,
     specialize_float: bool = True,
     assume_static_by_default: bool = False,
     same_signature: bool = True,
@@ -1601,7 +1591,7 @@ def export(
     prefer_deferred_runtime_asserts_over_guards: bool = False,
     allow_complex_guards_as_runtime_asserts: bool = False,
     _log_export_usage: bool = True,
-    constraints: Optional[list[Constraint]] = None,
+    constraints: list[Constraint] | None = None,
     **extra_kwargs,
 ) -> Callable[..., ExportResult]:
     """
@@ -1690,7 +1680,7 @@ def export(
         graph = None
         out_guards = None
         graph_captured_input = None
-        graph_captured_result: Optional[tuple[torch.Tensor, ...]] = None
+        graph_captured_result: tuple[torch.Tensor, ...] | None = None
         fake_mode = None
         result_traced = None
 
@@ -1766,7 +1756,7 @@ def export(
                     def fakify_with_ambient(path, t):
                         if isinstance(t, torch.Tensor):
                             return ambient_fake_mode.from_tensor(t, static_shapes=True)
-                        elif isinstance(t, _IntWrapper):
+                        if isinstance(t, _IntWrapper):
                             if (
                                 t.dynamism is not None
                                 and isinstance(t.dynamism, _DimHint)
@@ -1785,10 +1775,8 @@ def export(
                                     t.val, source, DimDynamic.DYNAMIC
                                 )
                                 return symint
-                            else:
-                                return t.val
-                        else:
-                            return t
+                            return t.val
+                        return t
 
                     fake_graph_inputs = pytree.tree_map_with_path(
                         fakify_with_ambient, graph_inputs
@@ -2003,8 +1991,7 @@ def export(
             stacklevel=2,
         )
         return inner(*extra_args, **extra_kwargs)
-    else:
-        return inner
+    return inner
 
 
 def optimize_assert(*args, **kwargs):

@@ -43,18 +43,10 @@ class QuantumResult:
 class QuantumBridge:
     def __init__(self) -> None:
         self.mode = os.environ.get("AETHERRA_QUANTUM_MODE", "simulator").strip().lower()
-        self.provider = (
-            os.environ.get("AETHERRA_QUANTUM_PROVIDER", "sim").strip() or "sim"
-        )
-        self.max_shots = int(
-            os.environ.get("AETHERRA_QUANTUM_MAX_SHOTS", "20000") or 20000
-        )
-        self.cost_budget = float(
-            os.environ.get("AETHERRA_QUANTUM_BUDGET_USD", "100") or 100.0
-        )
-        self.cache_ttl = int(
-            os.environ.get("AETHERRA_QUANTUM_CACHE_TTL_SEC", "604800") or 604800
-        )
+        self.provider = os.environ.get("AETHERRA_QUANTUM_PROVIDER", "sim").strip() or "sim"
+        self.max_shots = int(os.environ.get("AETHERRA_QUANTUM_MAX_SHOTS", "20000") or 20000)
+        self.cost_budget = float(os.environ.get("AETHERRA_QUANTUM_BUDGET_USD", "100") or 100.0)
+        self.cache_ttl = int(os.environ.get("AETHERRA_QUANTUM_CACHE_TTL_SEC", "604800") or 604800)
         # metrics/state
         self._lock = threading.Lock()
         self.jobs_total = 0
@@ -62,7 +54,7 @@ class QuantumBridge:
         self.queue_current = 0
         self.last_calibration_at = None  # ISO string
         self.cost_usd_accum = 0.0
-        self.error_rate = 0.0  # placeholder
+        self.error_rate = 0.0  # baseline
 
     # --- public API ---
     def status(self) -> Dict[str, Any]:
@@ -89,11 +81,7 @@ class QuantumBridge:
         try:
             # Simulator-only behavior for now
             shots = int(max(1, recipe.shots))
-            seed = (
-                int(recipe.seed)
-                if recipe.seed is not None
-                else self._seed_from_recipe(recipe)
-            )
+            seed = int(recipe.seed) if recipe.seed is not None else self._seed_from_recipe(recipe)
             rnd = random.Random(seed)
             # Produce a toy result: a few pseudo measurement counts that sum to shots
             outcomes = ["00", "01", "10", "11"]
@@ -105,7 +93,7 @@ class QuantumBridge:
                 # multinomial sample
                 r = rnd.random()
                 acc = 0.0
-                for o, p in zip(outcomes, probs):
+                for o, p in zip(outcomes, probs, strict=False):
                     acc += p
                     if r <= acc:
                         counts[o] += 1

@@ -9,7 +9,6 @@ from torch.ao.quantization.backend_config import (
     ObservationType,
 )
 
-
 weighted_op_quint8_dtype_config = DTypeConfig(
     input_dtype=torch.quint8,
     output_dtype=torch.quint8,

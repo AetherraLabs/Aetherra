@@ -2,12 +2,11 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates
 import logging
 import operator
-from typing import Any, Optional
+from typing import Any
 
 import torch
 from torch.fx.node import map_aggregate
 from torch.utils._pytree import tree_flatten, tree_unflatten
-
 
 __all__ = [
     "TensorChunkSpec",
@@ -160,7 +159,7 @@ def _shard_dict_of_args(
 
         sharded_arg_flat = []
 
-        for v, chunk_v in zip(flat, chunk_spec_flat):
+        for v, chunk_v in zip(flat, chunk_spec_flat, strict=False):
             if chunk_v is _Replicate or not isinstance(v, torch.Tensor):
                 sharded_arg_flat.append([v] * real_num_chunks)
             elif isinstance(chunk_v, TensorChunkSpec):
@@ -235,7 +234,7 @@ def _shard_dict_of_args(
     for chunk in chunks_flat:
         per_chunk_args = {}
         assert len(arg_specs) == len(chunk)
-        for (key, arg), arg_spec in zip(chunk.items(), arg_specs):
+        for (key, arg), arg_spec in zip(chunk.items(), arg_specs, strict=False):
             per_chunk_args[key] = tree_unflatten(arg, arg_spec)
         args_split.append(per_chunk_args)
 
@@ -244,10 +243,10 @@ def _shard_dict_of_args(
 
 def split_args_kwargs_into_chunks(
     args: tuple[Any, ...],
-    kwargs: Optional[dict[str, Any]],
+    kwargs: dict[str, Any] | None,
     chunks: int,
-    args_chunk_spec: Optional[tuple[TensorChunkSpec, ...]] = None,
-    kwargs_chunk_spec: Optional[dict[str, TensorChunkSpec]] = None,
+    args_chunk_spec: tuple[TensorChunkSpec, ...] | None = None,
+    kwargs_chunk_spec: dict[str, TensorChunkSpec] | None = None,
 ) -> tuple[list[tuple], list[dict]]:
     """
     Given a sequence of args and kwargs, split them into a number of chunks
@@ -436,7 +435,9 @@ def merge_chunks(
                 values_to_cat = []
                 chunk_start_idx = 0
                 assert len(partial_values) == len(meta_chunks)
-                for partial_value, meta_chunk in zip(partial_values, meta_chunks):
+                for partial_value, meta_chunk in zip(
+                    partial_values, meta_chunks, strict=False
+                ):
                     chunk_end_idx = chunk_start_idx + meta_chunk.size(arg.split_dim)
 
                     slice_indices = [slice(None, None, None)] * partial_value.ndim

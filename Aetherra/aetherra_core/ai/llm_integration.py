@@ -70,18 +70,14 @@ class AetherraCodeLLMIntegration:
                 return {
                     "status": "error",
                     "message": f"❌ Failed to set model '{model_name}'",
-                    "available_models": list(
-                        self.llm_manager.list_available_models().keys()
-                    ),
+                    "available_models": list(self.llm_manager.list_available_models().keys()),
                 }
 
         except Exception as e:
             return {
                 "status": "error",
                 "message": f"❌ Error setting model: {str(e)}",
-                "available_models": list(
-                    self.llm_manager.list_available_models().keys()
-                ),
+                "available_models": list(self.llm_manager.list_available_models().keys()),
             }
 
     def execute_assistant_statement(
@@ -128,9 +124,7 @@ class AetherraCodeLLMIntegration:
                 "model": self.current_model,
             }
 
-    def _build_context_prompt(
-        self, task: str, context: Optional[Dict[str, Any]] = None
-    ) -> str:
+    def _build_context_prompt(self, task: str, context: Optional[Dict[str, Any]] = None) -> str:
         """Build context-aware prompt for the LLM"""
         prompt_parts = []
 
@@ -138,9 +132,7 @@ class AetherraCodeLLMIntegration:
         prompt_parts.append(
             "You are an AI assistant integrated into AetherraCode, an AI-native programming language."
         )
-        prompt_parts.append(
-            "Provide clear, actionable responses focused on the specific task."
-        )
+        prompt_parts.append("Provide clear, actionable responses focused on the specific task.")
 
         # Add context if provided
         if context:
@@ -171,9 +163,7 @@ class AetherraCodeLLMIntegration:
             return {
                 "status": "no_model",
                 "message": "No model currently selected",
-                "available_models": list(
-                    self.llm_manager.list_available_models().keys()
-                ),
+                "available_models": list(self.llm_manager.list_available_models().keys()),
             }
 
         model_info = self.llm_manager.get_current_model_info()
@@ -267,9 +257,7 @@ class LLMPlugin:
 
             elif action == "list_models":
                 models = self.integration.list_available_models()
-                model_list = [
-                    f"{name} ({info['provider']})" for name, info in models.items()
-                ]
+                model_list = [f"{name} ({info['provider']})" for name, info in models.items()]
                 return f"Available models: {', '.join(model_list)}"
 
             elif action == "model_status":

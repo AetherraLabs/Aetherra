@@ -8,7 +8,7 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import sympy
 
@@ -21,7 +21,6 @@ from ...runtime.runtime_utils import cache_dir
 from ...virtualized import V
 from ..cpp_utils import DTYPE_TO_CPP
 from .cuda_env import get_cuda_arch, get_cuda_version
-
 
 log = logging.getLogger(__name__)
 
@@ -206,16 +205,15 @@ def _normalize_cuda_arch(arch: str) -> str:
 
     if int(arch) >= 100:
         return "100"
-    elif int(arch) >= 90:
+    if int(arch) >= 90:
         return "90"
-    elif int(arch) >= 80:
+    if int(arch) >= 80:
         return "80"
-    elif int(arch) >= 75:
+    if int(arch) >= 75:
         return "75"
-    elif int(arch) >= 70:
+    if int(arch) >= 70:
         return "70"
-    else:
-        raise NotImplementedError(f"Unsupported cuda arch: {arch}")
+    raise NotImplementedError(f"Unsupported cuda arch: {arch}")
 
 
 @dataclass
@@ -224,10 +222,10 @@ class CUTLASSArgs:
     CUTLASS args used to initialize a CUTLASS Manifest.
     """
 
-    architectures: Optional[str] = None
-    cuda_version: Optional[str] = None
-    instantiation_level: Optional[str] = None
-    operations: Optional[str] = None
+    architectures: str | None = None
+    cuda_version: str | None = None
+    instantiation_level: str | None = None
+    operations: str | None = None
 
     build_dir = ""
     curr_build_dir = ""
@@ -328,17 +326,16 @@ def torch_dtype_to_cutlass_type(
 
     if torch_dtype == torch.float:
         return cutlass_library.library.DataType.f32
-    elif torch_dtype == torch.half:
+    if torch_dtype == torch.half:
         return cutlass_library.library.DataType.f16
-    elif torch_dtype == torch.bfloat16:
+    if torch_dtype == torch.bfloat16:
         return cutlass_library.library.DataType.bf16
-    else:
-        raise NotImplementedError(f"Unsupported data type: {torch_dtype=}")
+    raise NotImplementedError(f"Unsupported data type: {torch_dtype=}")
 
 
 @functools.lru_cache(32)
 def dtype_match(
-    torch_dtype: Optional[torch.dtype],
+    torch_dtype: torch.dtype | None,
     cutlass_dtype: "cutlass_library.library.DataType",  # type: ignore[name-defined]  # noqa: F821
 ) -> bool:
     # Import cutlass python scripts.
@@ -350,25 +347,24 @@ def dtype_match(
             cutlass_dtype == cutlass_library.library.DataType.f32
             or cutlass_dtype == cutlass_library.library.DataType.tf32
         )
-    elif torch_dtype == torch.half:
+    if torch_dtype == torch.half:
         return cutlass_dtype == cutlass_library.library.DataType.f16
-    elif torch_dtype == torch.bfloat16:
+    if torch_dtype == torch.bfloat16:
         return cutlass_dtype == cutlass_library.library.DataType.bf16
-    elif torch_dtype == torch.int8:
+    if torch_dtype == torch.int8:
         return cutlass_dtype == cutlass_library.library.DataType.s8
-    elif torch_dtype == torch.uint8:
+    if torch_dtype == torch.uint8:
         return cutlass_dtype == cutlass_library.library.DataType.u8
-    elif torch_dtype == torch.int32:
+    if torch_dtype == torch.int32:
         return cutlass_dtype == cutlass_library.library.DataType.s32
-    elif torch_dtype == torch.float8_e4m3fn:
+    if torch_dtype == torch.float8_e4m3fn:
         return cutlass_dtype == cutlass_library.library.DataType.e4m3
-    else:
-        return False
+    return False
 
 
 def get_accumulator_dtype(
     input_torch_dtypes: list[torch.dtype],
-) -> Optional[torch.dtype]:
+) -> torch.dtype | None:
     """
     Given a pair of input torch dtypes, returns the inferred accumulator torch dtype.
     """
@@ -408,14 +404,13 @@ def get_alignments(torch_dtype: torch.dtype) -> list[int]:
 
     if torch_dtype in (torch.half, torch.bfloat16):
         return [8, 4, 2, 1]
-    elif torch_dtype == torch.float:
+    if torch_dtype == torch.float:
         return [4, 2, 1]
-    elif torch_dtype in (torch.uint8, torch.int8, torch.float8_e4m3fn):
+    if torch_dtype in (torch.uint8, torch.int8, torch.float8_e4m3fn):
         return [16, 8, 4, 2]
-    elif torch_dtype == torch.int32:
+    if torch_dtype == torch.int32:
         return [4, 2, 1]
-    else:
-        raise NotImplementedError(f"unsupported {torch_dtype=} for alignments")
+    raise NotImplementedError(f"unsupported {torch_dtype=} for alignments")
 
 
 def get_max_alignment(inductor_layout: Layout) -> int:

@@ -23,7 +23,7 @@ restoring state changes.
 import inspect
 import sys
 import warnings
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import torch._C
 from torch._guards import Guard
@@ -50,7 +50,6 @@ from .functions import (
     WrappedUserMethodVariable,
 )
 from .user_defined import UserDefinedObjectVariable
-
 
 if TYPE_CHECKING:
     from torch._dynamo.codegen import PyCodegen
@@ -1263,7 +1262,7 @@ class StreamVariable(VariableTracker):
                 "call_method", name, *proxy_args_kwargs([self] + args, kwargs)
             )
             return variables.ConstantVariable(None)
-        elif name == "query":
+        if name == "query":
             return wrap_fx_proxy_cls(
                 target_cls=variables.ConstantVariable,
                 tx=tx,
@@ -1271,7 +1270,7 @@ class StreamVariable(VariableTracker):
                     "call_method", name, *proxy_args_kwargs([self] + args, kwargs)
                 ),
             )
-        elif name == "record_event":
+        if name == "record_event":
             return wrap_fx_proxy_cls(
                 target_cls=EventVariable,
                 tx=tx,
@@ -1279,7 +1278,7 @@ class StreamVariable(VariableTracker):
                     "call_method", name, *proxy_args_kwargs([self] + args, kwargs)
                 ),
             )
-        elif name in cmp_name_to_op_mapping and len(args) == 1 and not kwargs:
+        if name in cmp_name_to_op_mapping and len(args) == 1 and not kwargs:
             # NB : Checking for mutation is necessary because we compare
             # constant values
             other = args[0]
@@ -1332,7 +1331,7 @@ class EventVariable(VariableTracker):
                 "call_method", name, *proxy_args_kwargs([self] + args, kwargs)
             )
             return variables.ConstantVariable(None)
-        elif name == "query":
+        if name == "query":
             return wrap_fx_proxy_cls(
                 target_cls=variables.ConstantVariable,
                 tx=tx,
@@ -1340,19 +1339,18 @@ class EventVariable(VariableTracker):
                     "call_method", name, *proxy_args_kwargs([self] + args, kwargs)
                 ),
             )
-        else:
-            method_name = (
-                f"{type(self.value).__module__}.{type(self.value).__qualname__}.{name}"
-            )
-            unimplemented_v2(
-                gb_type="Unsupported event method",
-                context=str(name),
-                explanation=f"Dynamo doesn't support tracing the {method_name} method. "
-                f"We currently support wait, record, synchronize, and query.",
-                hints=[
-                    *graph_break_hints.SUPPORTABLE,
-                ],
-            )
+        method_name = (
+            f"{type(self.value).__module__}.{type(self.value).__qualname__}.{name}"
+        )
+        unimplemented_v2(
+            gb_type="Unsupported event method",
+            context=str(name),
+            explanation=f"Dynamo doesn't support tracing the {method_name} method. "
+            f"We currently support wait, record, synchronize, and query.",
+            hints=[
+                *graph_break_hints.SUPPORTABLE,
+            ],
+        )
 
     def as_proxy(self):
         return self.proxy
@@ -1416,7 +1414,7 @@ class WithExitFunctionVariable(VariableTracker):
 
     def __init__(
         self,
-        ctx: Union[ContextWrappingVariable, GenericContextWrappingVariable],
+        ctx: ContextWrappingVariable | GenericContextWrappingVariable,
         target,
         **kwargs,
     ) -> None:

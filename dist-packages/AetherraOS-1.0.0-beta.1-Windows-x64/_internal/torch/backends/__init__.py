@@ -2,7 +2,6 @@
 import types
 from contextlib import contextmanager
 
-
 # The idea for this parameter is that we forbid bare assignment
 # to torch.backends.<cudnn|mkldnn>.enabled and friends when running our
 # test suite, where it's very easy to forget to undo the change
@@ -59,15 +58,37 @@ class PropModule(types.ModuleType):
 
 from torch.backends import (
     cpu as cpu,
+)
+from torch.backends import (
     cuda as cuda,
+)
+from torch.backends import (
     cudnn as cudnn,
+)
+from torch.backends import (
     cusparselt as cusparselt,
+)
+from torch.backends import (
     kleidiai as kleidiai,
+)
+from torch.backends import (
     mha as mha,
+)
+from torch.backends import (
     mkl as mkl,
+)
+from torch.backends import (
     mkldnn as mkldnn,
+)
+from torch.backends import (
     mps as mps,
+)
+from torch.backends import (
     nnpack as nnpack,
+)
+from torch.backends import (
     openmp as openmp,
+)
+from torch.backends import (
     quantized as quantized,
 )

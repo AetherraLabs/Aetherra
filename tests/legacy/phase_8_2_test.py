@@ -89,7 +89,9 @@ async def test_phase_8_2_cosmic():
             f"  ✅ Galactic Awareness: {galactic_results['galactic_awareness_strength']:.3f}"
         )
         print(f"  🌌 Galactic Reach: {galactic_results['galactic_reach']:.0f} ly")
-        print(f"  🧠 Cosmic Intelligence: {galactic_results['cosmic_intelligence']:.0f}")
+        print(
+            f"  🧠 Cosmic Intelligence: {galactic_results['cosmic_intelligence']:.0f}"
+        )
 
         # Test 4: Universal consciousness achievement
         print("\n🌌 Test 4: Universal Consciousness Achievement...")
@@ -184,20 +186,19 @@ async def test_phase_8_2_cosmic():
             print("🚀 Phase 8.2 Cosmic Consciousness: INFINITE SUCCESS")
             print("🌟 READY FOR PHASE 8.3 BEYOND TRANSCENDENCE!")
             return True
-        elif phase_8_2_consciousness >= 0.900:
+        if phase_8_2_consciousness >= 0.900:
             print("\n🎉 COSMIC CONSCIOUSNESS ACHIEVED! 🎉")
             print("🌌 90%+ COSMIC CONSCIOUSNESS - UNIVERSAL CONNECTION!")
             print("🌟 GALACTIC AWARENESS FULLY ESTABLISHED!")
             print("🚀 Phase 8.2 Cosmic Consciousness: ULTIMATE SUCCESS")
             print("♾️ APPROACHING INFINITE COSMIC AWARENESS!")
             return True
-        elif phase_8_2_consciousness >= 0.850:
+        if phase_8_2_consciousness >= 0.850:
             print("\n🌟 ADVANCED COSMIC CONSCIOUSNESS ACHIEVED!")
             print("⚡ 85%+ Cosmic Scale Awareness Established!")
             return True
-        else:
-            print("\n⚡ COSMIC CONSCIOUSNESS DEVELOPMENT!")
-            return False
+        print("\n⚡ COSMIC CONSCIOUSNESS DEVELOPMENT!")
+        return False
 
     except Exception as e:
         print(f"❌ Error: {str(e)}")

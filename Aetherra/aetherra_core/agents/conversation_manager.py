@@ -214,7 +214,8 @@ except ImportError:
 
     class PluginEditorController:
         def __init__(self, *args, **kwargs):
-            pass
+            self._fallback_args = args
+            self._fallback_kwargs = kwargs
 
         def __getattr__(self, name):
             return lambda *args, **kwargs: None
@@ -230,7 +231,8 @@ except ImportError:
 
     class FractalMeshCore:
         def __init__(self, *args, **kwargs):
-            pass
+            self._fallback_args = args
+            self._fallback_kwargs = kwargs
 
         def __getattr__(self, name):
             return lambda *args, **kwargs: None
@@ -246,7 +248,8 @@ except ImportError:
 
     class CoreBeliefs:
         def __init__(self, *args, **kwargs):
-            pass
+            self._fallback_args = args
+            self._fallback_kwargs = kwargs
 
         def __getattr__(self, name):
             return lambda *args, **kwargs: None
@@ -319,9 +322,7 @@ class LyrixaConversationManager:
             self.llm_manager = None
             self.current_model = "intelligent_fallback"
             self.llm_enabled = False
-            logger.warning(
-                "⚠️ LLM manager not available, using intelligent fallback responses"
-            )
+            logger.warning("⚠️ LLM manager not available, using intelligent fallback responses")
 
         # Conversation history (last 20 messages)
         self.conversation_history = []
@@ -344,9 +345,7 @@ class LyrixaConversationManager:
                 )
                 logger.info("✅ Plugin Editor Controller initialized")
             except Exception as e:
-                logger.warning(
-                    f"⚠️ Plugin Editor Controller initialization failed: {e}"
-                )
+                logger.warning(f"⚠️ Plugin Editor Controller initialization failed: {e}")
                 self.plugin_editor_controller = None
         else:
             self.plugin_editor_controller = None
@@ -364,28 +363,20 @@ class LyrixaConversationManager:
                     concepts_db_path=os.path.join(workspace_path, "concept_clusters.db")
                     if workspace_path
                     else "concept_clusters.db",
-                    timeline_db_path=os.path.join(
-                        workspace_path, "episodic_timeline.db"
-                    )
+                    timeline_db_path=os.path.join(workspace_path, "episodic_timeline.db")
                     if workspace_path
                     else "episodic_timeline.db",
                     pulse_db_path=os.path.join(workspace_path, "memory_pulse.db")
                     if workspace_path
                     else "memory_pulse.db",
-                    reflector_db_path=os.path.join(
-                        workspace_path, "memory_reflector.db"
-                    )
+                    reflector_db_path=os.path.join(workspace_path, "memory_reflector.db")
                     if workspace_path
                     else "memory_reflector.db",
                 )
                 self.integrated_memory = LyrixaMemoryEngine(memory_config)
-                logger.info(
-                    "✅ Integrated Memory Engine initialized with all subsystems"
-                )
+                logger.info("✅ Integrated Memory Engine initialized with all subsystems")
             except Exception as e:
-                logger.warning(
-                    f"⚠️ Integrated Memory Engine initialization failed: {e}"
-                )
+                logger.warning(f"⚠️ Integrated Memory Engine initialization failed: {e}")
                 self.integrated_memory = None
         else:
             self.integrated_memory = None
@@ -401,9 +392,7 @@ class LyrixaConversationManager:
                     )
                     logger.info("✅ FractalMesh Memory System initialized")
                 except Exception as e:
-                    logger.warning(
-                        f"⚠️ FractalMesh Memory System initialization failed: {e}"
-                    )
+                    logger.warning(f"⚠️ FractalMesh Memory System initialization failed: {e}")
                     self.fractal_memory = None
             else:
                 self.fractal_memory = None
@@ -435,14 +424,10 @@ class LyrixaConversationManager:
                         memory_adapter=memory_adapter,
                         concept_manager=concept_manager,
                     )
-                    logger.info(
-                        "✅ Plugin System initialized with compatible router and adapters"
-                    )
+                    logger.info("✅ Plugin System initialized with compatible router and adapters")
                 else:
                     self.plugin_router = None
-                    logger.info(
-                        "✅ Plugin System initialized (router pending adapter setup)"
-                    )
+                    logger.info("✅ Plugin System initialized (router pending adapter setup)")
 
             except Exception as e:
                 logger.warning(f"⚠️ Plugin System initialization failed: {e}")
@@ -499,9 +484,7 @@ class LyrixaConversationManager:
                     # Use mock memory for backwards compatibility
                     class MockMemory:
                         def store(self, data):
-                            logger.debug(
-                                f"Meta-reasoning trace: {data.get('type', 'unknown')}"
-                            )
+                            logger.debug(f"Meta-reasoning trace: {data.get('type', 'unknown')}")
 
                     memory_system = MockMemory()
 
@@ -527,9 +510,7 @@ class LyrixaConversationManager:
         # 🔗 Initialize Unified Cognitive Architecture Manager
         if COGNITIVE_ADAPTERS_AVAILABLE:
             try:
-                self.unified_manager = UnifiedCognitiveArchitectureManager(
-                    workspace_path
-                )
+                self.unified_manager = UnifiedCognitiveArchitectureManager(workspace_path)
 
                 # Register all cognitive systems with adapters
                 if hasattr(self, "fractal_memory") and self.fractal_memory:
@@ -540,9 +521,7 @@ class LyrixaConversationManager:
                     )
 
                 if hasattr(self, "plugin_manager") and self.plugin_manager:
-                    self.unified_manager.register_system(
-                        "plugin_system", self.plugin_manager
-                    )
+                    self.unified_manager.register_system("plugin_system", self.plugin_manager)
 
                 if hasattr(self, "validation_engine") and self.validation_engine:
                     self.unified_manager.register_system(
@@ -564,9 +543,7 @@ class LyrixaConversationManager:
                 )
 
             except Exception as e:
-                logger.warning(
-                    f"⚠️ Unified Architecture Manager initialization failed: {e}"
-                )
+                logger.warning(f"⚠️ Unified Architecture Manager initialization failed: {e}")
                 self.unified_manager = None
         else:
             self.unified_manager = None
@@ -574,15 +551,9 @@ class LyrixaConversationManager:
         # ⚖️ Initialize Ethics System
         if ETHICS_AVAILABLE:
             try:
-                self.moral_reasoning = (
-                    MoralReasoningEngine() if MoralReasoningEngine else None
-                )
-                self.bias_detector = (
-                    BiasDetectionEngine() if BiasDetectionEngine else None
-                )
-                self.value_alignment = (
-                    ValueAlignmentEngine() if ValueAlignmentEngine else None
-                )
+                self.moral_reasoning = MoralReasoningEngine() if MoralReasoningEngine else None
+                self.bias_detector = BiasDetectionEngine() if BiasDetectionEngine else None
+                self.value_alignment = ValueAlignmentEngine() if ValueAlignmentEngine else None
                 logger.info("✅ Ethics System components initialized")
             except Exception as e:
                 logger.warning(f"⚠️ Ethics System initialization failed: {e}")
@@ -608,9 +579,7 @@ class LyrixaConversationManager:
                     if hasattr(self, "moral_reasoning") and self.moral_reasoning
                     else None,
                     identity_agent=None,  # Will use default SelfModel
-                    agent_stack=self.plugin_manager
-                    if hasattr(self, "plugin_manager")
-                    else None,
+                    agent_stack=self.plugin_manager if hasattr(self, "plugin_manager") else None,
                     reflector=self.validation_engine
                     if hasattr(self, "validation_engine")
                     else None,
@@ -703,10 +672,7 @@ class LyrixaConversationManager:
         try:
             # Cache system context for 30 seconds to avoid excessive calls
             now = datetime.now()
-            if (
-                self.last_context_update
-                and (now - self.last_context_update).total_seconds() < 30
-            ):
+            if self.last_context_update and (now - self.last_context_update).total_seconds() < 30:
                 return self.system_context_cache
 
             context = {
@@ -776,13 +742,9 @@ class LyrixaConversationManager:
                         # Get plugin count and status
                         plugin_manager = self.aether_runtime.context.plugins
                         if hasattr(plugin_manager, "plugins"):
-                            if not context.get(
-                                "active_plugins"
-                            ):  # Don't override if already set
+                            if not context.get("active_plugins"):  # Don't override if already set
                                 context["active_plugins"] = len(plugin_manager.plugins)
-                                context["plugin_names"] = list(
-                                    plugin_manager.plugins.keys()
-                                )[
+                                context["plugin_names"] = list(plugin_manager.plugins.keys())[
                                     :5
                                 ]  # Top 5
                         else:
@@ -791,18 +753,14 @@ class LyrixaConversationManager:
                                 context["plugin_names"] = []
 
                     # Get memory information (legacy)
-                    if hasattr(
-                        self.aether_runtime.context, "memory"
-                    ) and not context.get("memory_entries"):
+                    if hasattr(self.aether_runtime.context, "memory") and not context.get(
+                        "memory_entries"
+                    ):
                         memory_system = self.aether_runtime.context.memory
                         if hasattr(memory_system, "get_memory_stats"):
                             memory_stats = await memory_system.get_memory_stats()
-                            context["memory_entries"] = memory_stats.get(
-                                "total_entries", 0
-                            )
-                            context["memory_categories"] = memory_stats.get(
-                                "categories", []
-                            )
+                            context["memory_entries"] = memory_stats.get("total_entries", 0)
+                            context["memory_categories"] = memory_stats.get("categories", [])
                         else:
                             context["memory_entries"] = "available"
                             context["memory_categories"] = []
@@ -980,13 +938,9 @@ class LyrixaConversationManager:
             if PROMPT_ENGINE_AVAILABLE and build_dynamic_prompt:
                 try:
                     system_prompt = build_dynamic_prompt(user_id="default_user")
-                    logger.info(
-                        "🎭 Using enhanced dynamic prompt with contextual personality"
-                    )
+                    logger.info("🎭 Using enhanced dynamic prompt with contextual personality")
                 except Exception as e:
-                    logger.warning(
-                        f"⚠️ Dynamic prompt engine failed, using fallback: {e}"
-                    )
+                    logger.warning(f"⚠️ Dynamic prompt engine failed, using fallback: {e}")
                     # Fallback to traditional method
                     messages = await self.get_conversation_messages(user_input)
                     system_prompt = messages[0]["content"]
@@ -1004,20 +958,14 @@ class LyrixaConversationManager:
             # Add conversation history for context
             conversation_messages = []
             for msg in self.conversation_history[-6:]:  # Last 6 messages for context
-                conversation_messages.append(
-                    {"role": msg["role"], "content": msg["content"]}
-                )
+                conversation_messages.append({"role": msg["role"], "content": msg["content"]})
 
             # Combine: system prompt + history + current input
-            final_messages = (
-                [enhanced_messages[0]] + conversation_messages + [enhanced_messages[1]]
-            )
+            final_messages = [enhanced_messages[0]] + conversation_messages + [enhanced_messages[1]]
 
             prompt = self.format_messages_as_prompt(final_messages)
 
-            logger.info(
-                f"💬 Generating enhanced LLM response for: {user_input[:100]}..."
-            )
+            logger.info(f"💬 Generating enhanced LLM response for: {user_input[:100]}...")
 
             # Try each model in order until one succeeds
             for model in self.preferred_models:
@@ -1029,16 +977,12 @@ class LyrixaConversationManager:
                     # Check if model is available
                     available_models = self.llm_manager.list_available_models()
                     if model not in available_models:
-                        logger.warning(
-                            f"⚠️ Model {model} not available, trying next..."
-                        )
+                        logger.warning(f"⚠️ Model {model} not available, trying next...")
                         continue
 
                     # Set the model
                     if not self.llm_manager.set_model(model):
-                        logger.warning(
-                            f"⚠️ Failed to set model {model}, trying next..."
-                        )
+                        logger.warning(f"⚠️ Failed to set model {model}, trying next...")
                         self._record_model_failure(model)
                         continue
 
@@ -1080,9 +1024,7 @@ class LyrixaConversationManager:
                             # Implementation depends on memory system availability
                             pass
                         except Exception as e:
-                            logger.debug(
-                                f"Could not store interaction for learning: {e}"
-                            )
+                            logger.debug(f"Could not store interaction for learning: {e}")
 
                     return response
 
@@ -1105,19 +1047,18 @@ class LyrixaConversationManager:
                         ]
                     ):
                         logger.error(f"💰 {model} quota/billing issue detected")
-                        self.model_failures[
-                            model
-                        ] = self.max_retries_per_model  # Immediately disable
+                        self.model_failures[model] = (
+                            self.max_retries_per_model
+                        )  # Immediately disable
 
                     # Check for authentication errors
                     elif any(
-                        keyword in error_msg
-                        for keyword in ["auth", "key", "token", "permission"]
+                        keyword in error_msg for keyword in ["auth", "key", "token", "permission"]
                     ):
                         logger.error(f"🔐 {model} authentication issue detected")
-                        self.model_failures[
-                            model
-                        ] = self.max_retries_per_model  # Immediately disable
+                        self.model_failures[model] = (
+                            self.max_retries_per_model
+                        )  # Immediately disable
 
                     # Check for model not found errors
                     elif any(
@@ -1125,9 +1066,9 @@ class LyrixaConversationManager:
                         for keyword in ["not found", "does not exist", "unavailable"]
                     ):
                         logger.error(f"❌ {model} not found or unavailable")
-                        self.model_failures[
-                            model
-                        ] = self.max_retries_per_model  # Immediately disable
+                        self.model_failures[model] = (
+                            self.max_retries_per_model
+                        )  # Immediately disable
 
                     # Continue to next model
                     continue
@@ -1458,9 +1399,7 @@ I'm here to think through this with you and provide real value, not just generic
         self.session_id = f"lyrixa_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         logger.info("🔄 Conversation history reset")
 
-    async def _store_conversation_in_memory(
-        self, user_input: str, assistant_response: str
-    ):
+    async def _store_conversation_in_memory(self, user_input: str, assistant_response: str):
         """Store conversation in FractalMesh memory system"""
         if not self.fractal_memory:
             logger.debug("📝 FractalMesh memory not available, skipping storage")
@@ -1722,8 +1661,7 @@ I'm delighted to meet you. I have full access to our system's intelligence and I
 I'm running on my advanced built-in intelligence right now, which means I can provide deep insights, complex analysis, and sophisticated problem-solving assistance. What fascinating challenge shall we explore together? 🚀"""
 
             elif any(
-                word in message_lower
-                for word in ["help", "assist", "support", "what can you do"]
+                word in message_lower for word in ["help", "assist", "support", "what can you do"]
             ):
                 response = f"""I'm absolutely here to help! 💪 Even with my built-in intelligence, I have extensive capabilities:
 
@@ -1757,8 +1695,7 @@ Managing {system_context.get("active_agents", 0)} AI agents:
 What specific challenge would you like to tackle? I'm excited to dive deep and provide real value! ⚡"""
 
             elif any(
-                phrase in message_lower
-                for phrase in ["status", "health", "how are you", "system"]
+                phrase in message_lower for phrase in ["status", "health", "how are you", "system"]
             ):
                 response = f"""System Status: Excellent! 📊 Let me give you a comprehensive overview:
 
@@ -1898,11 +1835,7 @@ What aspect of Aetherra's revolutionary capabilities would you like to explore? 
                 ]
             ):
                 failed_models = len(
-                    [
-                        k
-                        for k, v in self.model_failures.items()
-                        if v >= self.max_retries_per_model
-                    ]
+                    [k for k, v in self.model_failures.items() if v >= self.max_retries_per_model]
                 )
                 response = f"""[TOOL] **Advanced Troubleshooting Mode Activated**
 
@@ -2038,12 +1971,8 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
                         return task.result()
                     else:
                         # Don't wait too long, use intelligent fallback
-                        logger.info(
-                            "💬 Using intelligent fallback response (LLM taking too long)"
-                        )
-                        return asyncio.run(
-                            self._generate_smart_fallback_response(user_input)
-                        )
+                        logger.info("💬 Using intelligent fallback response (LLM taking too long)")
+                        return asyncio.run(self._generate_smart_fallback_response(user_input))
 
                 except RuntimeError:
                     # No event loop running, try to create one
@@ -2054,17 +1983,11 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
                         logger.info(
                             f"💬 LLM unavailable ({async_error}), using intelligent fallback"
                         )
-                        return asyncio.run(
-                            self._generate_smart_fallback_response(user_input)
-                        )
+                        return asyncio.run(self._generate_smart_fallback_response(user_input))
 
                 except Exception as llm_error:
-                    logger.info(
-                        f"💬 LLM error ({llm_error}), using intelligent fallback"
-                    )
-                    return asyncio.run(
-                        self._generate_smart_fallback_response(user_input)
-                    )
+                    logger.info(f"💬 LLM error ({llm_error}), using intelligent fallback")
+                    return asyncio.run(self._generate_smart_fallback_response(user_input))
             else:
                 # LLM not available or we're in intelligent fallback mode
                 logger.info("💬 Using intelligent fallback response")
@@ -2147,9 +2070,7 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
         has_code_block = "```" in text
 
         # Pattern 3: Plugin-related keywords
-        plugin_keywords = any(
-            pattern in text_lower for pattern in plugin_creation_patterns
-        )
+        plugin_keywords = any(pattern in text_lower for pattern in plugin_creation_patterns)
 
         # Only trigger injection if we have both intent and code
         if has_code_block and plugin_keywords:
@@ -2159,13 +2080,9 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
                 filename = self.extract_filename_guess(text, user_input)
 
                 # Attempt GUI injection
-                if self.gui_interface and hasattr(
-                    self.gui_interface, "inject_plugin_code"
-                ):
+                if self.gui_interface and hasattr(self.gui_interface, "inject_plugin_code"):
                     try:
-                        success = self.gui_interface.inject_plugin_code(
-                            plugin_code, filename
-                        )
+                        success = self.gui_interface.inject_plugin_code(plugin_code, filename)
 
                         if success:
                             logger.info(f"🎯 Code injection successful: {filename}")
@@ -2175,9 +2092,7 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
                                 # This could be enhanced with actual memory storage
                                 pass
                             except Exception as e:
-                                logger.debug(
-                                    f"Could not store plugin creation in memory: {e}"
-                                )
+                                logger.debug(f"Could not store plugin creation in memory: {e}")
 
                             # Add injection confirmation to response
                             injection_note = f"\n\n🎯 **Plugin Editor Updated**: I've injected the {filename} code into your Plugin Editor tab! You can now review, edit, save, and test the plugin."
@@ -2342,9 +2257,7 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
 
             # Fallback if no controller available
             else:
-                fallback_response = self._generate_plugin_editor_fallback(
-                    user_input, confidence
-                )
+                fallback_response = self._generate_plugin_editor_fallback(user_input, confidence)
 
                 # Add to history
                 self.add_to_conversation_history("user", user_input)
@@ -2356,9 +2269,7 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
             logger.error(f"❌ Plugin editor intent handling failed: {e}")
             return False, ""
 
-    def _generate_plugin_editor_fallback(
-        self, user_input: str, confidence: float
-    ) -> str:
+    def _generate_plugin_editor_fallback(self, user_input: str, confidence: float) -> str:
         """Generate fallback response for plugin editor intents when controller unavailable"""
         text = user_input.lower()
 
@@ -2372,10 +2283,7 @@ To load a plugin manually:
 
 Would you like me to help you with something else regarding plugins?"""
 
-        elif (
-            any(word in text for word in ["create", "generate", "make"])
-            and "plugin" in text
-        ):
+        elif any(word in text for word in ["create", "generate", "make"]) and "plugin" in text:
             return """[TOOL] I'd love to help you create a plugin! While I can't directly inject code into the Plugin Editor right now, I can help you in other ways:
 
 **Plugin Creation Options:**

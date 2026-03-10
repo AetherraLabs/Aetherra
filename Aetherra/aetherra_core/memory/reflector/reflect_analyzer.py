@@ -13,7 +13,6 @@ and self-directed memory exploration. Enables meta-cognitive capabilities.
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any
 
 # Local imports
 from ..fractal_mesh.base import ConceptCluster, MemoryFragment
@@ -76,16 +75,12 @@ class MemoryReflector:
         self, fragments: list[MemoryFragment], time_range: tuple
     ) -> list[ReflectionInsight]:
         """Reflect on memories within a specific time range"""
-        session = self._start_reflection_session(
-            "time_range_analysis", time_range=time_range
-        )
+        session = self._start_reflection_session("time_range_analysis", time_range=time_range)
         insights = []
 
         # Filter fragments to time range
         start_time, end_time = time_range
-        range_fragments = [
-            f for f in fragments if start_time <= f.created_at <= end_time
-        ]
+        range_fragments = [f for f in fragments if start_time <= f.created_at <= end_time]
 
         if not range_fragments:
             return insights
@@ -119,9 +114,7 @@ class MemoryReflector:
         insights = []
 
         # Find contradictory fragment groups
-        contradiction_groups = self._find_contradiction_groups(
-            fragments, concept_clusters
-        )
+        contradiction_groups = self._find_contradiction_groups(fragments, concept_clusters)
 
         for group in contradiction_groups:
             contradiction_insight = self._analyze_contradiction_group(group, fragments)
@@ -162,18 +155,14 @@ class MemoryReflector:
         insights.extend(co_occurrence_insights)
 
         # Analyze concept confidence trajectory
-        confidence_trajectory = self._analyze_concept_confidence(
-            target_concept, related_fragments
-        )
+        confidence_trajectory = self._analyze_concept_confidence(target_concept, related_fragments)
         if confidence_trajectory:
             insights.append(confidence_trajectory)
 
         self._complete_reflection_session(session, insights)
         return insights
 
-    def detect_blind_spots(
-        self, fragments: list[MemoryFragment]
-    ) -> list[ReflectionInsight]:
+    def detect_blind_spots(self, fragments: list[MemoryFragment]) -> list[ReflectionInsight]:
         """Detect potential blind spots in memory coverage"""
         insights = []
 
@@ -241,16 +230,12 @@ class MemoryReflector:
             for concept in fragment.symbolic_tags:
                 if concept not in concept_timeline:
                     concept_timeline[concept] = []
-                concept_timeline[concept].append(
-                    (fragment.created_at, fragment.confidence_score)
-                )
+                concept_timeline[concept].append((fragment.created_at, fragment.confidence_score))
 
         # Find evolving concepts
         for concept, timeline in concept_timeline.items():
             if len(timeline) >= self.min_pattern_occurrences:
-                evolution_insight = self._analyze_single_concept_evolution(
-                    concept, timeline
-                )
+                evolution_insight = self._analyze_single_concept_evolution(concept, timeline)
                 if evolution_insight:
                     insights.append(evolution_insight)
 
@@ -293,9 +278,7 @@ class MemoryReflector:
 
         return None
 
-    def _detect_growth_patterns(
-        self, fragments: list[MemoryFragment]
-    ) -> list[ReflectionInsight]:
+    def _detect_growth_patterns(self, fragments: list[MemoryFragment]) -> list[ReflectionInsight]:
         """Detect patterns indicating growth or learning"""
         insights = []
 
@@ -305,12 +288,8 @@ class MemoryReflector:
             confidences = [f.confidence_score for f in sorted_fragments]
 
             # Simple trend analysis
-            early_conf = sum(confidences[: len(confidences) // 3]) / (
-                len(confidences) // 3
-            )
-            late_conf = sum(confidences[-len(confidences) // 3 :]) / (
-                len(confidences) // 3
-            )
+            early_conf = sum(confidences[: len(confidences) // 3]) / (len(confidences) // 3)
+            late_conf = sum(confidences[-len(confidences) // 3 :]) / (len(confidences) // 3)
 
             growth = late_conf - early_conf
 
@@ -347,9 +326,7 @@ class MemoryReflector:
 
             # Find most problematic concepts
             problematic_concepts = [
-                (concept, count)
-                for concept, count in challenge_concepts.items()
-                if count >= 2
+                (concept, count) for concept, count in challenge_concepts.items() if count >= 2
             ]
 
             if problematic_concepts:
@@ -404,16 +381,12 @@ class MemoryReflector:
         """Get recent reflection insights"""
         cutoff = datetime.now() - timedelta(days=days)
         recent_insights = [
-            insight
-            for insight in self.insights.values()
-            if insight.discovered_at >= cutoff
+            insight for insight in self.insights.values() if insight.discovered_at >= cutoff
         ]
 
         if insight_type:
             recent_insights = [
-                insight
-                for insight in recent_insights
-                if insight.insight_type == insight_type
+                insight for insight in recent_insights if insight.insight_type == insight_type
             ]
 
         return sorted(recent_insights, key=lambda i: i.discovered_at, reverse=True)
@@ -431,18 +404,56 @@ class MemoryReflector:
 
         return list(set(recommendations))  # Remove duplicates
 
-    # Placeholder methods for full implementation
+    # Baseline methods for extended analysis
     def _find_contradiction_groups(
         self, fragments: list[MemoryFragment], concept_clusters: list[ConceptCluster]
     ) -> list[list[str]]:
         """Find groups of contradictory fragments"""
-        return []  # Placeholder
+        concept_buckets: dict[str, list[MemoryFragment]] = {}
+        for fragment in fragments:
+            for concept in getattr(fragment, "symbolic_tags", []):
+                concept_buckets.setdefault(concept, []).append(fragment)
+
+        groups: list[list[str]] = []
+        for concept, concept_frags in concept_buckets.items():
+            if len(concept_frags) < 2:
+                continue
+            confidences = [float(getattr(f, "confidence_score", 0.0) or 0.0) for f in concept_frags]
+            if max(confidences) - min(confidences) < 0.45:
+                continue
+            groups.append(
+                [f.fragment_id for f in concept_frags if concept in getattr(f, "symbolic_tags", [])]
+            )
+
+        return groups
 
     def _analyze_contradiction_group(
         self, group: list[str], fragments: list[MemoryFragment]
     ) -> ReflectionInsight | None:
         """Analyze a group of contradictory fragments"""
-        return None  # Placeholder
+        if len(group) < 2:
+            return None
+
+        by_id = {f.fragment_id: f for f in fragments}
+        members = [by_id[g] for g in group if g in by_id]
+        if len(members) < 2:
+            return None
+
+        confidences = [float(getattr(f, "confidence_score", 0.0) or 0.0) for f in members]
+        spread = max(confidences) - min(confidences)
+        if spread < self.contradiction_tolerance:
+            return None
+
+        return ReflectionInsight(
+            insight_id=str(uuid.uuid4()),
+            insight_type="contradiction",
+            description=f"Contradictory confidence signals detected across {len(members)} related memories",
+            supporting_fragments=[f.fragment_id for f in members],
+            confidence=min(spread, 1.0),
+            significance="high" if spread > 0.6 else "medium",
+            discovered_at=datetime.now(),
+            actionable_recommendation="Review related memories and reconcile conflicting interpretations",
+        )
 
     def _find_concept_fragments(
         self,
@@ -457,34 +468,156 @@ class MemoryReflector:
         self, concept: str, fragments: list[MemoryFragment]
     ) -> list[ReflectionInsight]:
         """Analyze usage patterns of a concept"""
-        return []  # Placeholder
+        if len(fragments) < self.min_pattern_occurrences:
+            return []
+
+        avg_conf = sum(float(getattr(f, "confidence_score", 0.0) or 0.0) for f in fragments) / len(
+            fragments
+        )
+        return [
+            ReflectionInsight(
+                insight_id=str(uuid.uuid4()),
+                insight_type="pattern",
+                description=f"Concept '{concept}' appears in {len(fragments)} memories with average confidence {avg_conf:.2f}",
+                supporting_fragments=[f.fragment_id for f in fragments],
+                confidence=min(avg_conf, 1.0),
+                significance="medium" if len(fragments) < 8 else "high",
+                discovered_at=datetime.now(),
+                actionable_recommendation=f"Use '{concept}' as an anchor topic for related reasoning tasks",
+            )
+        ]
 
     def _analyze_concept_co_occurrence(
         self, concept: str, fragments: list[MemoryFragment]
     ) -> list[ReflectionInsight]:
         """Analyze what concepts co-occur with the target concept"""
-        return []  # Placeholder
+        co_counts: dict[str, int] = {}
+        for fragment in fragments:
+            for tag in getattr(fragment, "symbolic_tags", []):
+                if tag == concept:
+                    continue
+                co_counts[tag] = co_counts.get(tag, 0) + 1
+
+        if not co_counts:
+            return []
+
+        best_tag, count = max(co_counts.items(), key=lambda item: item[1])
+        return [
+            ReflectionInsight(
+                insight_id=str(uuid.uuid4()),
+                insight_type="connection",
+                description=f"Concept '{concept}' frequently co-occurs with '{best_tag}' ({count} times)",
+                supporting_fragments=[
+                    f.fragment_id for f in fragments if best_tag in getattr(f, "symbolic_tags", [])
+                ],
+                confidence=min(count / max(len(fragments), 1), 1.0),
+                significance="medium",
+                discovered_at=datetime.now(),
+                actionable_recommendation=f"Explore causal or semantic links between '{concept}' and '{best_tag}'",
+            )
+        ]
 
     def _analyze_concept_confidence(
         self, concept: str, fragments: list[MemoryFragment]
     ) -> ReflectionInsight | None:
         """Analyze confidence trajectory for a concept"""
-        return None  # Placeholder
+        if len(fragments) < 3:
+            return None
 
-    def _detect_temporal_gaps(
-        self, fragments: list[MemoryFragment]
-    ) -> list[ReflectionInsight]:
+        ordered = sorted(fragments, key=lambda f: f.created_at)
+        confidences = [float(getattr(f, "confidence_score", 0.0) or 0.0) for f in ordered]
+        if not confidences:
+            return None
+
+        trend = confidences[-1] - confidences[0]
+        if abs(trend) < 0.15:
+            return None
+
+        direction = "improving" if trend > 0 else "declining"
+        return ReflectionInsight(
+            insight_id=str(uuid.uuid4()),
+            insight_type="growth" if trend > 0 else "challenge",
+            description=f"Confidence for '{concept}' is {direction} over time ({trend:+.2f})",
+            supporting_fragments=[f.fragment_id for f in ordered],
+            confidence=min(abs(trend) * 1.5, 1.0),
+            significance="medium",
+            discovered_at=datetime.now(),
+            actionable_recommendation=f"Reinforce '{concept}' learning path"
+            if trend < 0
+            else f"Build on momentum for '{concept}'",
+        )
+
+    def _detect_temporal_gaps(self, fragments: list[MemoryFragment]) -> list[ReflectionInsight]:
         """Detect temporal gaps in memory"""
-        return []  # Placeholder
+        if len(fragments) < 2:
+            return []
 
-    def _detect_concept_gaps(
-        self, fragments: list[MemoryFragment]
-    ) -> list[ReflectionInsight]:
+        ordered = sorted(fragments, key=lambda f: f.created_at)
+        largest_gap = timedelta(0)
+        gap_pair: tuple[MemoryFragment, MemoryFragment] | None = None
+        for idx in range(1, len(ordered)):
+            gap = ordered[idx].created_at - ordered[idx - 1].created_at
+            if gap > largest_gap:
+                largest_gap = gap
+                gap_pair = (ordered[idx - 1], ordered[idx])
+
+        if largest_gap < timedelta(days=2) or gap_pair is None:
+            return []
+
+        return [
+            ReflectionInsight(
+                insight_id=str(uuid.uuid4()),
+                insight_type="blind_spot",
+                description=f"Detected memory activity gap of {largest_gap.days} days",
+                supporting_fragments=[gap_pair[0].fragment_id, gap_pair[1].fragment_id],
+                confidence=0.7,
+                significance="medium",
+                discovered_at=datetime.now(),
+                actionable_recommendation="Investigate periods of low recording activity for missing context",
+            )
+        ]
+
+    def _detect_concept_gaps(self, fragments: list[MemoryFragment]) -> list[ReflectionInsight]:
         """Detect gaps in concept coverage"""
-        return []  # Placeholder
+        unique_tags = set()
+        for fragment in fragments:
+            unique_tags.update(getattr(fragment, "symbolic_tags", []))
+
+        if len(unique_tags) >= 3:
+            return []
+
+        return [
+            ReflectionInsight(
+                insight_id=str(uuid.uuid4()),
+                insight_type="blind_spot",
+                description="Concept diversity is low across recent memories",
+                supporting_fragments=[f.fragment_id for f in fragments],
+                confidence=0.6,
+                significance="medium",
+                discovered_at=datetime.now(),
+                actionable_recommendation="Broaden exploration into adjacent concept domains",
+            )
+        ]
 
     def _detect_confidence_blind_spots(
         self, fragments: list[MemoryFragment]
     ) -> list[ReflectionInsight]:
         """Detect areas with consistently low confidence"""
-        return []  # Placeholder
+        low_conf = [
+            f for f in fragments if float(getattr(f, "confidence_score", 0.0) or 0.0) < 0.35
+        ]
+        if len(low_conf) < self.min_pattern_occurrences:
+            return []
+
+        return [
+            ReflectionInsight(
+                insight_id=str(uuid.uuid4()),
+                insight_type="blind_spot",
+                description=f"Low-confidence cluster detected in {len(low_conf)} memories",
+                supporting_fragments=[f.fragment_id for f in low_conf],
+                confidence=min(len(low_conf) / max(len(fragments), 1), 1.0),
+                significance="high" if len(low_conf) > 5 else "medium",
+                discovered_at=datetime.now(),
+                actionable_recommendation="Prioritize review and reinforcement of low-confidence memories",
+            )
+        ]

@@ -135,9 +135,7 @@ def test_basic_imports() -> int:
                 getattr(module, attr_name)
             print(f"✅ {name} import - Success")
             passed += 1
-        except (
-            Exception
-        ) as e:  # noqa: BLE001 - tooling-only broad catch to report status
+        except Exception as e:  # noqa: BLE001 - tooling-only broad catch to report status
             print(f"[WARN]  {name} import - Failed: {e}")
 
     return passed

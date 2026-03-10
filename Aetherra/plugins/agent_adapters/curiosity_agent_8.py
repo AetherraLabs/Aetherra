@@ -69,9 +69,7 @@ except ImportError:
                     self.quantum_memory = QuantumMemorySystem()
 
                 def analyze(self, data):
-                    return self.quantum_memory.store(
-                        {"type": "fractal_analysis", "data": data}
-                    )
+                    return self.quantum_memory.store({"type": "fractal_analysis", "data": data})
 
             class ConceptClusterManager:
                 def __init__(self):
@@ -87,18 +85,14 @@ except ImportError:
                     self.quantum_memory = QuantumMemorySystem()
 
                 def create_timeline(self, events):
-                    return self.quantum_memory.store(
-                        {"type": "timeline", "events": events}
-                    )
+                    return self.quantum_memory.store({"type": "timeline", "events": events})
 
             class ReflectAnalyzer:
                 def __init__(self):
                     self.quantum_memory = QuantumMemorySystem()
 
                 def analyze(self, data):
-                    return self.quantum_memory.store(
-                        {"type": "reflection", "data": data}
-                    )
+                    return self.quantum_memory.store({"type": "reflection", "data": data})
 
             print("[INFO] Using quantum memory system for curiosity agent")
         except ImportError:
@@ -171,9 +165,7 @@ class CuriosityAgent:
         # Load existing data
         self._load_persistence_data()
 
-        logging.info(
-            "🔍 CuriosityAgent initialized with gap detection and question generation"
-        )
+        logging.info("🔍 CuriosityAgent initialized with gap detection and question generation")
 
     def _initialize_memory_components(self):
         """Initialize memory system components"""
@@ -190,9 +182,7 @@ class CuriosityAgent:
         except Exception as e:
             logging.warning(f"[WARN] Could not initialize memory components: {e}")
 
-    async def detect_knowledge_gaps(
-        self, timeframe_hours: int = 24
-    ) -> List[KnowledgeGap]:
+    async def detect_knowledge_gaps(self, timeframe_hours: int = 24) -> List[KnowledgeGap]:
         """
         Identify knowledge gaps using multiple analysis methods
 
@@ -282,8 +272,7 @@ class CuriosityAgent:
                         gap_id=f"conf_gap_{memory['id']}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
                         category="conceptual",
                         description=f"Low confidence understanding: {memory['content']}",
-                        confidence_score=1.0
-                        - memory["confidence"],  # Inverse of memory confidence
+                        confidence_score=1.0 - memory["confidence"],  # Inverse of memory confidence
                         priority="high" if memory["confidence"] < 0.3 else "medium",
                         related_memories=[memory["id"]],
                         questions=[
@@ -500,9 +489,7 @@ class CuriosityAgent:
                 unique_gaps.append(gap)
                 seen_descriptions.add(gap.description)
 
-        logging.info(
-            f"🔍 Deduplicated {len(gaps)} gaps to {len(unique_gaps)} unique gaps"
-        )
+        logging.info(f"🔍 Deduplicated {len(gaps)} gaps to {len(unique_gaps)} unique gaps")
         return unique_gaps
 
     def _prioritize_gaps(self, gaps: List[KnowledgeGap]) -> List[KnowledgeGap]:
@@ -532,9 +519,7 @@ class CuriosityAgent:
         logging.info(f"🔍 Prioritized {len(gaps)} gaps")
         return sorted_gaps
 
-    async def generate_curiosity_questions(
-        self, gap: KnowledgeGap
-    ) -> List[CuriosityQuestion]:
+    async def generate_curiosity_questions(self, gap: KnowledgeGap) -> List[CuriosityQuestion]:
         """
         Generate specific, actionable questions for a knowledge gap
 
@@ -555,15 +540,11 @@ class CuriosityAgent:
                 "experiential": self._generate_experiential_questions,
             }
 
-            generator = question_generators.get(
-                gap.category, self._generate_generic_questions
-            )
+            generator = question_generators.get(gap.category, self._generate_generic_questions)
             base_questions = await generator(gap)
 
             # Convert to CuriosityQuestion objects
-            for i, q_text in enumerate(
-                base_questions[: self.question_generation_limit]
-            ):
+            for i, q_text in enumerate(base_questions[: self.question_generation_limit]):
                 question = CuriosityQuestion(
                     question_id=f"{gap.gap_id}_q{i + 1}",
                     question_text=q_text,
@@ -580,9 +561,7 @@ class CuriosityAgent:
             # Save to persistence
             self._save_persistence_data()
 
-            logging.info(
-                f"🔍 Generated {len(questions)} curiosity questions for gap {gap.gap_id}"
-            )
+            logging.info(f"🔍 Generated {len(questions)} curiosity questions for gap {gap.gap_id}")
 
         except Exception as e:
             logging.error(f"❌ Error generating curiosity questions: {e}")
@@ -727,9 +706,7 @@ class CuriosityAgent:
             "experiential": "More effective decision making",
         }
 
-        return category_outcomes.get(
-            gap.category, "Reduced uncertainty in related areas"
-        )
+        return category_outcomes.get(gap.category, "Reduced uncertainty in related areas")
 
     def _similarity_score(self, text1: str, text2: str) -> float:
         """Calculate similarity between two text strings"""
@@ -820,9 +797,7 @@ class CuriosityAgent:
             "Document partial insights gained",
         ]
 
-    async def track_exploration_success(
-        self, question_id: str, outcome: Dict[str, Any]
-    ) -> float:
+    async def track_exploration_success(self, question_id: str, outcome: Dict[str, Any]) -> float:
         """
         Track the success of an exploration attempt
 
@@ -834,9 +809,7 @@ class CuriosityAgent:
             Success score (0.0 to 1.0)
         """
         if question_id not in self.curiosity_questions:
-            logging.warning(
-                f"[WARN] Question {question_id} not found for success tracking"
-            )
+            logging.warning(f"[WARN] Question {question_id} not found for success tracking")
             return 0.0
 
         question = self.curiosity_questions[question_id]
@@ -844,9 +817,7 @@ class CuriosityAgent:
         # Calculate success score based on multiple factors
         success_factors = {
             "answer_confidence": outcome.get("confidence", 0.0),
-            "insight_generation": 1.0
-            if outcome.get("insights_generated", 0) > 0
-            else 0.0,
+            "insight_generation": 1.0 if outcome.get("insights_generated", 0) > 0 else 0.0,
             "gap_reduction": outcome.get("gap_reduction", 0.0),
             "knowledge_transfer": outcome.get("transferability", 0.0),
             "completeness": outcome.get("completeness", 0.0),
@@ -861,9 +832,7 @@ class CuriosityAgent:
             "completeness": 0.15,
         }
 
-        success_score = sum(
-            success_factors[factor] * weights[factor] for factor in success_factors
-        )
+        success_score = sum(success_factors[factor] * weights[factor] for factor in success_factors)
 
         # Update question status
         if success_score >= self.exploration_success_threshold:
@@ -892,22 +861,12 @@ class CuriosityAgent:
     def get_curiosity_summary(self) -> Dict[str, Any]:
         """Get a summary of current curiosity state"""
         total_gaps = len(self.knowledge_gaps)
-        open_gaps = len(
-            [g for g in self.knowledge_gaps.values() if g.resolution_status == "open"]
-        )
+        open_gaps = len([g for g in self.knowledge_gaps.values() if g.resolution_status == "open"])
         exploring_gaps = len(
-            [
-                g
-                for g in self.knowledge_gaps.values()
-                if g.resolution_status == "exploring"
-            ]
+            [g for g in self.knowledge_gaps.values() if g.resolution_status == "exploring"]
         )
         resolved_gaps = len(
-            [
-                g
-                for g in self.knowledge_gaps.values()
-                if g.resolution_status == "resolved"
-            ]
+            [g for g in self.knowledge_gaps.values() if g.resolution_status == "resolved"]
         )
 
         total_questions = len(self.curiosity_questions)
@@ -946,16 +905,12 @@ class CuriosityAgent:
         for gap in self.knowledge_gaps.values():
             category_counts[gap.category] = category_counts.get(gap.category, 0) + 1
 
-        return sorted(
-            category_counts.keys(), key=lambda c: category_counts[c], reverse=True
-        )[:3]
+        return sorted(category_counts.keys(), key=lambda c: category_counts[c], reverse=True)[:3]
 
     def _get_recent_discoveries(self) -> List[str]:
         """Get recently resolved gaps as discoveries"""
         recent_resolved = [
-            gap
-            for gap in self.knowledge_gaps.values()
-            if gap.resolution_status == "resolved"
+            gap for gap in self.knowledge_gaps.values() if gap.resolution_status == "resolved"
         ]
 
         # Sort by timestamp and take most recent
@@ -972,8 +927,7 @@ class CuriosityAgent:
                 with open(gaps_file) as f:
                     gaps_data = json.load(f)
                     self.knowledge_gaps = {
-                        gap_id: KnowledgeGap(**gap_data)
-                        for gap_id, gap_data in gaps_data.items()
+                        gap_id: KnowledgeGap(**gap_data) for gap_id, gap_data in gaps_data.items()
                     }
 
             # Load curiosity questions
@@ -982,8 +936,7 @@ class CuriosityAgent:
                 with open(questions_file) as f:
                     questions_data = json.load(f)
                     self.curiosity_questions = {
-                        q_id: CuriosityQuestion(**q_data)
-                        for q_id, q_data in questions_data.items()
+                        q_id: CuriosityQuestion(**q_data) for q_id, q_data in questions_data.items()
                     }
 
             logging.info(
@@ -999,17 +952,14 @@ class CuriosityAgent:
             # Save knowledge gaps
             gaps_file = self.data_dir / "knowledge_gaps.json"
             with open(gaps_file, "w") as f:
-                gaps_data = {
-                    gap_id: asdict(gap) for gap_id, gap in self.knowledge_gaps.items()
-                }
+                gaps_data = {gap_id: asdict(gap) for gap_id, gap in self.knowledge_gaps.items()}
                 json.dump(gaps_data, f, indent=2)
 
             # Save curiosity questions
             questions_file = self.data_dir / "curiosity_questions.json"
             with open(questions_file, "w") as f:
                 questions_data = {
-                    q_id: asdict(question)
-                    for q_id, question in self.curiosity_questions.items()
+                    q_id: asdict(question) for q_id, question in self.curiosity_questions.items()
                 }
                 json.dump(questions_data, f, indent=2)
 

@@ -2,8 +2,7 @@
 from contextlib import contextmanager
 
 import torch
-from torch.backends import __allow_nonbracketed_mutation, ContextProp, PropModule
-
+from torch.backends import ContextProp, PropModule, __allow_nonbracketed_mutation
 
 __all__ = ["is_available", "flags", "set_flags"]
 

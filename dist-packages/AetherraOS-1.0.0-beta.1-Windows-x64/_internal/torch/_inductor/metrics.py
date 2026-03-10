@@ -5,14 +5,14 @@ import dataclasses
 import inspect
 import os
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import Callable, cast, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, cast
 
 from torch._inductor import config
 from torch._inductor.utils import get_benchmark_name
 from torch.utils._ordered_set import OrderedSet
-
 
 # Prevent circular import
 if TYPE_CHECKING:
@@ -136,9 +136,7 @@ class MetricTable:
 
     num_rows_added: int = 0
 
-    def add_row(
-        self, row_fn: Callable[[], dict[str, Optional[Union[str, float]]]]
-    ) -> None:
+    def add_row(self, row_fn: Callable[[], dict[str, str | float | None]]) -> None:
         if self.table_name not in enabled_metric_tables():
             return
 
@@ -298,7 +296,7 @@ def _parse_kernel_line_of_code(proper_kernel_fn_code: str) -> int:
     return len(proper_kernel_fn_code.splitlines())
 
 
-def _parse_size_hints(kernel_module_code: str, kernel_category: str) -> Optional[str]:
+def _parse_size_hints(kernel_module_code: str, kernel_category: str) -> str | None:
     if kernel_category == "foreach":
         # foreach kernel does not have size_hints
         return None
@@ -307,9 +305,7 @@ def _parse_size_hints(kernel_module_code: str, kernel_category: str) -> Optional
     return m.group(1)
 
 
-def _parse_reduction_hint(
-    kernel_category: str, kernel_module_code: str
-) -> Optional[str]:
+def _parse_reduction_hint(kernel_category: str, kernel_module_code: str) -> str | None:
     if kernel_category not in ("reduction", "persistent_reduction"):
         return None
     m = re.search(r"reduction_hint=ReductionHint\.(\w*),", kernel_module_code)
@@ -339,17 +335,16 @@ def _parse_proper_kernel_fn_code(kernel_fn_code: str) -> str:
     return kernel_fn_code[start_pos:]
 
 
-def _parse_numel(proper_kernel_fn_code: str, numel_arg_name: str) -> Optional[int]:
+def _parse_numel(proper_kernel_fn_code: str, numel_arg_name: str) -> int | None:
     m = re.search(f"{numel_arg_name} = ([\\d]+)", proper_kernel_fn_code)
     if m:
         return int(m.group(1))
-    else:
-        return None
+    return None
 
 
 def _parse_kernel_args_num_gb(
     kernel_fn_code: str, kernel_category: str
-) -> Optional[float]:
+) -> float | None:
     """
     inductor meta looks like:
         inductor_meta={... 'mutated_arg_names': [], 'no_x_dim': False, 'kernel_num_gb': 2.0},
@@ -357,15 +352,14 @@ def _parse_kernel_args_num_gb(
     m = re.search(r".kernel_num_gb.:\s*([0-9.]+)", kernel_fn_code)
     if m:
         return float(m.group(1))
-    else:
-        """
+    """
         There are a few cases that kernel_num_gdb field can be missing:
         1. the field will be missing if config.benchmark_kernel and
            config.profile_bandwidth are false
         2. even if config.benchmark_kernel or config.profile_bandwidth is true.
            foreach kernel does not have kernel_num_gb field in the metadata
         """
-        return None
+    return None
 
 
 def log_kernel_metadata(

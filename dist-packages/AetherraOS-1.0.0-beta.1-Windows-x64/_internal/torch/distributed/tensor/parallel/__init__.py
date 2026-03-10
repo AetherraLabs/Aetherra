@@ -11,7 +11,6 @@ from torch.distributed.tensor.parallel.style import (
     SequenceParallel,
 )
 
-
 __all__ = [
     "ColwiseParallel",
     "ParallelStyle",

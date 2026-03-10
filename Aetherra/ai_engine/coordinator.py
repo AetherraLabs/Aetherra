@@ -19,7 +19,7 @@ class AetherraAICoordinator:
         """Initialize AI coordinator"""
         self.sessions = {}
 
-        # Try to import actual AI runtime, fallback to stub mode
+        # Try to import actual AI runtime, fallback to baseline mode
         try:
             from Aetherra.core.multi_llm_manager import MultiLLMManager
 

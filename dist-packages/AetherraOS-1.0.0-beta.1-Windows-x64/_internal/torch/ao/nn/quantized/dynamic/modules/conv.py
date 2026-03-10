@@ -2,7 +2,7 @@
 r"""Dynamically quantized convolution modules."""
 
 import warnings
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 import torch
 import torch.ao.nn.quantized as nnq
@@ -13,7 +13,6 @@ from torch._ops import ops
 from torch.ao.nn.quantized.modules.conv import _reverse_repeat_padding
 from torch.nn.common_types import _size_1_t
 from torch.nn.modules.utils import _pair, _single, _triple
-
 
 __all__ = [
     "Conv1d",
@@ -49,8 +48,8 @@ class Conv1d(nnq.Conv1d):
     """
 
     _FLOAT_MODULE: ClassVar[type[nn.Conv1d]] = nn.Conv1d
-    _NNIQAT_CONV_BN_MODULE: ClassVar[Optional[type[nn.Module]]] = None
-    _NNI_CONV_RELU_MODULE: ClassVar[Optional[type[nn.Module]]] = None
+    _NNIQAT_CONV_BN_MODULE: ClassVar[type[nn.Module] | None] = None
+    _NNI_CONV_RELU_MODULE: ClassVar[type[nn.Module] | None] = None
 
     def __init__(
         self,
@@ -135,8 +134,8 @@ class Conv2d(nnq.Conv2d):
     """
 
     _FLOAT_MODULE: ClassVar[type[nn.Conv2d]] = nn.Conv2d
-    _NNIQAT_CONV_BN_MODULE: ClassVar[Optional[type[nn.Module]]] = None
-    _NNI_CONV_RELU_MODULE: ClassVar[Optional[type[nn.Module]]] = None
+    _NNIQAT_CONV_BN_MODULE: ClassVar[type[nn.Module] | None] = None
+    _NNI_CONV_RELU_MODULE: ClassVar[type[nn.Module] | None] = None
 
     def __init__(
         self,
@@ -220,8 +219,8 @@ class Conv3d(nnq.Conv3d):
     """
 
     _FLOAT_MODULE: ClassVar[type[nn.Conv3d]] = nn.Conv3d
-    _NNIQAT_CONV_BN_MODULE: ClassVar[Optional[type[nn.Module]]] = None
-    _NNI_CONV_RELU_MODULE: ClassVar[Optional[type[nn.Module]]] = None
+    _NNIQAT_CONV_BN_MODULE: ClassVar[type[nn.Module] | None] = None
+    _NNI_CONV_RELU_MODULE: ClassVar[type[nn.Module] | None] = None
 
     def __init__(
         self,

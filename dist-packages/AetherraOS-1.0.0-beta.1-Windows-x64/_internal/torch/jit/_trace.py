@@ -16,8 +16,10 @@ import inspect
 import os
 import re
 import warnings
+from collections.abc import Callable
 from enum import Enum
-from typing import Any, Callable, Optional, TypeVar
+from typing import Any, TypeVar
+
 from typing_extensions import ParamSpec
 
 import torch
@@ -28,11 +30,10 @@ from torch._jit_internal import (
     is_scripting,
 )
 from torch.autograd import function
-from torch.jit._script import _CachedForward, script, ScriptModule
+from torch.jit._script import ScriptModule, _CachedForward, script
 from torch.jit._state import _enabled, _python_cu
 from torch.nn import Module
 from torch.testing._comparison import default_tolerances
-
 
 _flatten = torch._C._jit_flatten
 _unflatten = torch._C._jit_unflatten
@@ -132,8 +133,7 @@ class ONNXTracedModule(torch.nn.Module):
             out_vars, _ = _flatten(outs)
             if len(out_vars) == 1:
                 return out_vars[0]
-            else:
-                return tuple(out_vars)
+            return tuple(out_vars)
 
         graph, _out = torch._C._create_graph_by_tracing(
             wrapper,
@@ -147,15 +147,14 @@ class ONNXTracedModule(torch.nn.Module):
             return graph, outs[0], ret_inputs[0]
         if self._return_inputs_states:
             return graph, outs[0], inputs_states[0]
-        else:
-            return graph, outs[0]
+        return graph, outs[0]
 
 
 def _clone_inputs(args):
     def clone_input(a):
         if a is None:
             return None
-        elif isinstance(a, torch.Tensor):
+        if isinstance(a, torch.Tensor):
             # TODO: figure out one liner to .clone() and set requires_grad
             v = (
                 a.detach()
@@ -165,8 +164,7 @@ def _clone_inputs(args):
             if a.grad is not None:
                 v.grad = clone_input(v.grad)
             return v
-        else:
-            return a.clone(memory_format=torch.preserve_format)
+        return a.clone(memory_format=torch.preserve_format)
 
     return function._nested_map(
         lambda x: isinstance(x, torch.Tensor), clone_input, condition_msg="tensors"
@@ -287,7 +285,7 @@ def verify(model, args, loss_fn=torch.sum, devices=None):
 
 
 def _verify_equal(xs, ys):
-    for x, y in zip(xs, ys):
+    for x, y in zip(xs, ys, strict=False):
         if x.sub(y).abs().max() > 1e-6:
             raise RuntimeError("JIT and real computation mismatch")
 
@@ -400,7 +398,7 @@ def _check_trace(
                 graph_diff_errors = "Graph diff:\n" + indent("".join(graph_diff)) + "\n"
 
                 for n_mod, n_check in zip(
-                    mod_canonicalized.nodes(), check_canonicalized.nodes()
+                    mod_canonicalized.nodes(), check_canonicalized.nodes(), strict=False
                 ):
                     if str(n_mod) != str(n_check):
                         graph_diff_errors += "First diverging operator:\n"
@@ -427,7 +425,7 @@ def _check_trace(
             tensor_compare_errors = None
             # Check Tensor-valued constant nodes
             for n_mod, n_check in zip(
-                mod_canonicalized.nodes(), check_canonicalized.nodes()
+                mod_canonicalized.nodes(), check_canonicalized.nodes(), strict=False
             ):
                 if n_mod.kind() != n_check.kind():
                     break  # Graphs have already diverged
@@ -511,7 +509,7 @@ def _check_trace(
 
         def compare_outputs(original, reference, match_what):
             all_ok = True
-            for i, (orig, ref) in enumerate(zip(original, reference)):
+            for i, (orig, ref) in enumerate(zip(original, reference, strict=False)):
                 try:
                     if orig.is_quantized:
                         orig = orig.dequantize()
@@ -544,7 +542,9 @@ def _check_trace(
                             assert getattr(orig, "is_nested", None) == getattr(
                                 ref, "is_nested", None
                             )
-                            for t_orig, t_ref in zip(orig.unbind(), ref.unbind()):
+                            for t_orig, t_ref in zip(
+                                orig.unbind(), ref.unbind(), strict=False
+                            ):
                                 torch.testing.assert_close(
                                     t_orig.double(),
                                     t_ref.double(),
@@ -618,15 +618,14 @@ def make_tuple(example_inputs):
 def make_module(mod, _module_class, _compilation_unit):
     if isinstance(mod, ScriptModule):
         return mod
-    elif torch._jit_internal.module_has_exports(mod):
+    if torch._jit_internal.module_has_exports(mod):
         infer_methods_stubs_fn = torch.jit._recursive.make_stubs_from_exported_methods
         return torch.jit._recursive.create_script_module(
             mod, infer_methods_stubs_fn, share_types=False, is_tracing=True
         )
-    else:
-        if _module_class is None:
-            _module_class = TopLevelTracedModule
-        return _module_class(mod, _compilation_unit=_compilation_unit)
+    if _module_class is None:
+        _module_class = TopLevelTracedModule
+    return _module_class(mod, _compilation_unit=_compilation_unit)
 
 
 def wrap_check_inputs(check_inputs):
@@ -642,7 +641,7 @@ def analyze_ts_result_with_export_result(export, trace):
     flat_export = pytree.tree_leaves(export)
     flat_trace = pytree.tree_leaves(trace)
 
-    for orig, loaded in zip(flat_export, flat_trace):
+    for orig, loaded in zip(flat_export, flat_trace, strict=False):
         if orig.layout != loaded.layout:
             return False
         # mkldnn is not supported for torch.allclose
@@ -654,7 +653,7 @@ def analyze_ts_result_with_export_result(export, trace):
         if isinstance(orig, torch._subclasses.FakeTensor):
             # Skip for FakeTensor.
             return True
-        elif isinstance(orig, torch.Tensor):
+        if isinstance(orig, torch.Tensor):
             if orig.dtype != loaded.dtype:
                 return False
             if not torch.allclose(orig, loaded):
@@ -1114,7 +1113,7 @@ def trace(
     return traced_func
 
 
-_trace_module_map: Optional[dict[Any, Any]] = None
+_trace_module_map: dict[Any, Any] | None = None
 
 
 def trace_module(

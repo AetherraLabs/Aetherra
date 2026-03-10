@@ -12,11 +12,10 @@ import torch
 from . import _dtypes, _dtypes_impl, _funcs, _ufuncs, _util
 from ._normalizations import (
     ArrayLike,
+    NotImplementedType,
     normalize_array_like,
     normalizer,
-    NotImplementedType,
 )
-
 
 newaxis = None
 
@@ -49,17 +48,16 @@ SHORTHAND_TO_FLAGS = {
 
 class Flags:
     def __init__(self, flag_to_value: dict):
-        assert all(k in FLAGS for k in flag_to_value.keys())  # sanity check
+        assert all(k in FLAGS for k in flag_to_value)  # sanity check
         self._flag_to_value = flag_to_value
 
     def __getattr__(self, attr: str):
         if attr.islower() and attr.upper() in FLAGS:
             return self[attr.upper()]
-        else:
-            raise AttributeError(f"No flag attribute '{attr}'")
+        raise AttributeError(f"No flag attribute '{attr}'")
 
     def __getitem__(self, key):
-        if key in SHORTHAND_TO_FLAGS.keys():
+        if key in SHORTHAND_TO_FLAGS:
             key = SHORTHAND_TO_FLAGS[key]
         if key in FLAGS:
             try:
@@ -76,10 +74,9 @@ class Flags:
             super().__setattr__(attr, value)
 
     def __setitem__(self, key, value):
-        if key in FLAGS or key in SHORTHAND_TO_FLAGS.keys():
+        if key in FLAGS or key in SHORTHAND_TO_FLAGS:
             raise NotImplementedError("Modifying flags is not implemented")
-        else:
-            raise KeyError(f"No flag key '{key}'")
+        raise KeyError(f"No flag key '{key}'")
 
 
 def create_method(fn, name=None):
@@ -438,11 +435,10 @@ class ndarray:
         # https://github.com/numpy/numpy/blob/main/numpy/_core/src/multiarray/methods.c#L702
         if args == ():
             return self.tensor.item()
-        elif len(args) == 1:
+        if len(args) == 1:
             # int argument
             return self.ravel()[args[0]]
-        else:
-            return self.__getitem__(args)
+        return self.__getitem__(args)
 
     def __getitem__(self, index):
         tensor = self.tensor

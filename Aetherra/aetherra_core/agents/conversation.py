@@ -493,32 +493,20 @@ class PersonalityProcessor:
 
     async def _learn_from_feedback(self, feedback: FeedbackData) -> None:
         """Learn and adapt from user feedback"""
-        if (
-            feedback.feedback_type == "positive"
-            and feedback.response_effectiveness > 0.7
-        ):
+        if feedback.feedback_type == "positive" and feedback.response_effectiveness > 0.7:
             # Reinforce current configuration
             print(f"✅ Positive feedback for {self.current_persona.value} persona")
 
-        elif (
-            feedback.feedback_type == "negative"
-            and feedback.response_effectiveness < 0.3
-        ):
+        elif feedback.feedback_type == "negative" and feedback.response_effectiveness < 0.3:
             # Adjust configuration based on negative feedback
-            print(
-                f"📈 Learning from negative feedback for {self.current_persona.value} persona"
-            )
+            print(f"📈 Learning from negative feedback for {self.current_persona.value} persona")
 
             # Example: If response was too formal, reduce formality
             if "too formal" in (feedback.user_comment or "").lower():
-                self.current_config.formality = max(
-                    0.0, self.current_config.formality - 0.1
-                )
+                self.current_config.formality = max(0.0, self.current_config.formality - 0.1)
 
             elif "too casual" in (feedback.user_comment or "").lower():
-                self.current_config.formality = min(
-                    1.0, self.current_config.formality + 0.1
-                )
+                self.current_config.formality = min(1.0, self.current_config.formality + 0.1)
 
     def get_personality_status(self) -> Dict[str, Any]:
         """Get current personality processor status"""
@@ -734,9 +722,7 @@ class LyrixaConversationalEngine:
         self.conversation_state.current_topic = user_analysis["topic"]
 
         # Generate contextual response
-        response = await self._generate_contextual_response(
-            user_input, user_analysis, context
-        )
+        response = await self._generate_contextual_response(user_input, user_analysis, context)
 
         # Store conversation turn
         turn_data = {
@@ -752,9 +738,7 @@ class LyrixaConversationalEngine:
 
         # Keep only recent history
         if len(self.conversation_state.context_history) > 20:
-            self.conversation_state.context_history = (
-                self.conversation_state.context_history[-20:]
-            )
+            self.conversation_state.context_history = self.conversation_state.context_history[-20:]
 
         # Store in memory system
         if self.memory_system:
@@ -882,14 +866,11 @@ class LyrixaConversationalEngine:
         }
 
         # 🧠 KNOWLEDGE RESPONDER ROUTING - Check if this is a factual/project query
-        if (
-            self.knowledge_responder
-            and self.knowledge_responder.is_factual_or_project_query(user_input)
+        if self.knowledge_responder and self.knowledge_responder.is_factual_or_project_query(
+            user_input
         ):
             try:
-                knowledge_answer = await self.knowledge_responder.answer_question(
-                    user_input
-                )
+                knowledge_answer = await self.knowledge_responder.answer_question(user_input)
                 if (
                     knowledge_answer
                     and knowledge_answer
@@ -899,9 +880,7 @@ class LyrixaConversationalEngine:
                     response["text"] = self._add_personality_to_knowledge_response(
                         knowledge_answer, personality
                     )
-                    response["adaptation_notes"].append(
-                        "Used Project Knowledge Responder"
-                    )
+                    response["adaptation_notes"].append("Used Project Knowledge Responder")
                     return response
             except Exception as e:
                 print(f"   ⚠️ Knowledge Responder error: {e}")
@@ -921,11 +900,11 @@ class LyrixaConversationalEngine:
         # Customize response based on context
         topic = user_analysis["topic"]
         if topic == "aetherra":
-            base_text = f"I love working with .aether code! {response_template.format(topic=topic)} "
-        elif topic == "coding":
             base_text = (
-                f"Let's dive into some code! {response_template.format(topic=topic)} "
+                f"I love working with .aether code! {response_template.format(topic=topic)} "
             )
+        elif topic == "coding":
+            base_text = f"Let's dive into some code! {response_template.format(topic=topic)} "
         elif user_analysis["mood"] == "frustrated":
             base_text = "I can sense you're having a tough time. Don't worry, we'll figure this out together! "
         else:
@@ -972,10 +951,7 @@ class LyrixaConversationalEngine:
             response["follow_up_questions"].append(random.choice(curiosity_questions))
 
         # Add encouragement if needed
-        if (
-            user_analysis["mood"] == "frustrated"
-            or personality.encouragement_level > 0.7
-        ):
+        if user_analysis["mood"] == "frustrated" or personality.encouragement_level > 0.7:
             encouragement = [
                 "You're doing great!",
                 "This is exactly the kind of problem I love solving!",
@@ -1060,9 +1036,7 @@ class LyrixaConversationalEngine:
                     ]
                 )
             ),
-            "conversation_health": "healthy"
-            if self.conversation_state.turn_count > 0
-            else "new",
+            "conversation_health": "healthy" if self.conversation_state.turn_count > 0 else "new",
         }
 
     async def reflect_on_conversation(self) -> Dict[str, Any]:
@@ -1086,14 +1060,10 @@ class LyrixaConversationalEngine:
                 for turn in self.conversation_state.context_history
             ]
             most_common_topic = max(set(topics), key=topics.count)
-            reflection["patterns_noticed"].append(
-                f"User is most interested in {most_common_topic}"
-            )
+            reflection["patterns_noticed"].append(f"User is most interested in {most_common_topic}")
 
         if self.conversation_state.user_mood != "neutral":
-            reflection["emotional_insights"][
-                "dominant_mood"
-            ] = self.conversation_state.user_mood
+            reflection["emotional_insights"]["dominant_mood"] = self.conversation_state.user_mood
 
         # Generate suggestions for next interaction
         reflection["next_suggestions"] = [
@@ -1104,16 +1074,11 @@ class LyrixaConversationalEngine:
 
         return reflection
 
-    def _add_personality_to_knowledge_response(
-        self, knowledge_answer: str, personality
-    ) -> str:
+    def _add_personality_to_knowledge_response(self, knowledge_answer: str, personality) -> str:
         """Add personality touches to a knowledge responder answer"""
 
         # Add personality-appropriate intro/outro based on available attributes
-        if (
-            hasattr(personality, "formality_level")
-            and personality.formality_level < 0.5
-        ):
+        if hasattr(personality, "formality_level") and personality.formality_level < 0.5:
             intros = [
                 "Here's what I know about that: ",
                 "Great question! ",
@@ -1123,10 +1088,7 @@ class LyrixaConversationalEngine:
             knowledge_answer = random.choice(intros) + knowledge_answer
 
         # Add encouraging touches based on personality
-        if (
-            hasattr(personality, "encouragement_level")
-            and personality.encouragement_level > 0.6
-        ):
+        if hasattr(personality, "encouragement_level") and personality.encouragement_level > 0.6:
             outros = [
                 " Hope this helps!",
                 " Let me know if you need more details!",
@@ -1182,42 +1144,32 @@ if __name__ == "__main__":
 
         # Test Guide persona
         engine.set_persona_mode(PersonaMode.GUIDE)
-        response = await engine.process_conversation_turn(
-            "How do I get started with .aether code?"
-        )
+        response = await engine.process_conversation_turn("How do I get started with .aether code?")
         print("👤 User: How do I get started with .aether code?")
         print(f"🎙️ Lyrixa (Guide): {response['text']}\n")
 
         # Test Developer persona
         engine.set_persona_mode(PersonaMode.DEVELOPER)
-        response = await engine.process_conversation_turn(
-            "This code is throwing errors"
-        )
+        response = await engine.process_conversation_turn("This code is throwing errors")
         print("👤 User: This code is throwing errors")
         print(f"🎙️ Lyrixa (Developer): {response['text']}\n")
 
         # Test Creative persona
         engine.set_persona_mode(PersonaMode.CREATIVE)
-        response = await engine.process_conversation_turn(
-            "I want to build something unique"
-        )
+        response = await engine.process_conversation_turn("I want to build something unique")
         print("👤 User: I want to build something unique")
         print(f"🎙️ Lyrixa (Creative): {response['text']}\n")
 
         # Test personality adjustments
         print("🎛️ Testing personality adjustments...\n")
         engine.adjust_personality_settings(warmth=0.9, humor_level=0.7, formality=0.2)
-        response = await engine.process_conversation_turn(
-            "Tell me about .aether architecture"
-        )
+        response = await engine.process_conversation_turn("Tell me about .aether architecture")
         print("👤 User: Tell me about .aether architecture")
         print(f"🎙️ Lyrixa (Adjusted): {response['text']}\n")
 
         # Test formal settings
         engine.adjust_personality_settings(warmth=0.3, humor_level=0.1, formality=0.9)
-        response = await engine.process_conversation_turn(
-            "What are best practices for coding?"
-        )
+        response = await engine.process_conversation_turn("What are best practices for coding?")
         print("👤 User: What are best practices for coding?")
         print(f"🎙️ Lyrixa (Formal): {response['text']}\n")
 

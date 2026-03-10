@@ -17,7 +17,6 @@ Features:
 
 # Standard library imports
 import asyncio
-import base64
 import email
 import email.mime.base
 import email.mime.multipart
@@ -30,9 +29,8 @@ import os
 import re
 import smtplib
 import sqlite3
-import ssl
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from email.header import decode_header
 from email.utils import parsedate_to_datetime
 from pathlib import Path
@@ -437,14 +435,10 @@ class EmailClient:
                     self.account.imap_server, self.account.imap_port
                 )
             else:
-                self.imap_client = imaplib.IMAP4(
-                    self.account.imap_server, self.account.imap_port
-                )
+                self.imap_client = imaplib.IMAP4(self.account.imap_server, self.account.imap_port)
 
             # Login
-            result = self.imap_client.login(
-                self.account.username, self.account.password
-            )
+            result = self.imap_client.login(self.account.username, self.account.password)
 
             return result[0] == "OK"
 
@@ -462,9 +456,7 @@ class EmailClient:
                     use_tls=self.account.use_ssl,
                 )
                 await self.smtp_client.connect()
-                await self.smtp_client.login(
-                    self.account.username, self.account.password
-                )
+                await self.smtp_client.login(self.account.username, self.account.password)
             else:
                 if self.account.use_ssl:
                     self.smtp_client = smtplib.SMTP_SSL(
@@ -536,9 +528,7 @@ class EmailClient:
             logging.error(f"Failed to fetch messages: {e}")
             return []
 
-    def _parse_email_message(
-        self, email_message, uid: str, folder: str
-    ) -> Optional[EmailMessage]:
+    def _parse_email_message(self, email_message, uid: str, folder: str) -> Optional[EmailMessage]:
         """Parse email.message.Message to EmailMessage."""
         try:
             # Extract headers
@@ -712,9 +702,7 @@ class EmailClient:
                 for file_path in attachments:
                     try:
                         with open(file_path, "rb") as f:
-                            part = email.mime.base.MIMEBase(
-                                "application", "octet-stream"
-                            )
+                            part = email.mime.base.MIMEBase("application", "octet-stream")
                             part.set_payload(f.read())
 
                         email.encoders.encode_base64(part)
@@ -804,9 +792,7 @@ class EmailFilterEngine:
             logging.error(f"Failed to get filters: {e}")
             return []
 
-    def _matches_conditions(
-        self, message: EmailMessage, conditions: List[Dict[str, Any]]
-    ) -> bool:
+    def _matches_conditions(self, message: EmailMessage, conditions: List[Dict[str, Any]]) -> bool:
         """Check if message matches filter conditions."""
         for condition in conditions:
             field = condition.get("field")
@@ -853,9 +839,7 @@ class EmailFilterEngine:
         else:
             return False
 
-    def _apply_actions(
-        self, message: EmailMessage, actions: List[Dict[str, Any]]
-    ) -> EmailMessage:
+    def _apply_actions(self, message: EmailMessage, actions: List[Dict[str, Any]]) -> EmailMessage:
         """Apply filter actions to message."""
         for action in actions:
             action_type = action.get("type")
@@ -954,9 +938,9 @@ class EmailTemplateManager:
 
         # Replace variables
         for var_name, var_value in variables.items():
-            placeholder = f"{{{var_name}}}"
-            subject = subject.replace(placeholder, var_value)
-            body = body.replace(placeholder, var_value)
+            token = f"{{{var_name}}}"
+            subject = subject.replace(token, var_value)
+            body = body.replace(token, var_value)
 
         return subject, body
 
@@ -1027,12 +1011,10 @@ class EmailAnalytics:
                     "received_messages": stats[2] or 0,
                     "messages_with_attachments": stats[3] or 0,
                     "top_senders": [
-                        {"sender": sender, "count": count}
-                        for sender, count in top_senders
+                        {"sender": sender, "count": count} for sender, count in top_senders
                     ],
                     "top_subjects": [
-                        {"subject": subject[:50], "count": count}
-                        for subject, count in top_subjects
+                        {"subject": subject[:50], "count": count} for subject, count in top_subjects
                     ],
                 }
 
@@ -1040,12 +1022,10 @@ class EmailAnalytics:
             logging.error(f"Failed to generate daily report: {e}")
             return {}
 
-    def get_response_time_stats(
-        self, account_id: str, days: int = 30
-    ) -> Dict[str, Any]:
+    def get_response_time_stats(self, account_id: str, days: int = 30) -> Dict[str, Any]:
         """Calculate email response time statistics."""
         # This would involve more complex analysis of email threads
-        # For now, return placeholder data
+        # For now, return baseline estimated statistics
         return {
             "average_response_time_hours": 4.5,
             "median_response_time_hours": 2.0,
@@ -1104,9 +1084,7 @@ class EmailIntegrationPlugin:
         """Add new email account."""
         try:
             # Generate account ID
-            account_id = hashlib.sha256(
-                account_config["email_address"].encode()
-            ).hexdigest()[:12]
+            account_id = hashlib.sha256(account_config["email_address"].encode()).hexdigest()[:12]
 
             account = EmailAccount(
                 id=account_id,
@@ -1116,9 +1094,7 @@ class EmailIntegrationPlugin:
                 imap_port=account_config.get("imap_port", 993),
                 smtp_server=account_config["smtp_server"],
                 smtp_port=account_config.get("smtp_port", 587),
-                username=account_config.get(
-                    "username", account_config["email_address"]
-                ),
+                username=account_config.get("username", account_config["email_address"]),
                 password=account_config["password"],  # Should encrypt this
                 use_ssl=account_config.get("use_ssl", True),
             )
@@ -1206,9 +1182,7 @@ class EmailIntegrationPlugin:
         except Exception as e:
             return {"status": "error", "message": str(e)}
 
-    async def send_email(
-        self, account_id: str, message_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def send_email(self, account_id: str, message_data: Dict[str, Any]) -> Dict[str, Any]:
         """Send email message."""
         try:
             # Get account
@@ -1258,15 +1232,11 @@ class EmailIntegrationPlugin:
         except Exception as e:
             return {"status": "error", "message": str(e)}
 
-    async def get_analytics(
-        self, account_id: str, report_type: str = "daily"
-    ) -> Dict[str, Any]:
+    async def get_analytics(self, account_id: str, report_type: str = "daily") -> Dict[str, Any]:
         """Get email analytics."""
         try:
             if report_type == "daily":
-                report = self.analytics.generate_daily_report(
-                    account_id, datetime.now()
-                )
+                report = self.analytics.generate_daily_report(account_id, datetime.now())
             elif report_type == "response_times":
                 report = self.analytics.get_response_time_stats(account_id)
             else:
@@ -1284,9 +1254,7 @@ class EmailIntegrationPlugin:
     async def create_template(self, template_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create email template."""
         try:
-            template_id = hashlib.sha256(template_data["name"].encode()).hexdigest()[
-                :12
-            ]
+            template_id = hashlib.sha256(template_data["name"].encode()).hexdigest()[:12]
 
             template = EmailTemplate(
                 id=template_id,

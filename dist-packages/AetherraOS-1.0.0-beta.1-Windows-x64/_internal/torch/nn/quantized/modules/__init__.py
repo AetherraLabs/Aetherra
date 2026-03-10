@@ -10,17 +10,17 @@ Note::
 # s.a. `from torch.nn.quantized.modules.conv import ...`.
 # No need to add them to the `__all__`.
 from torch.ao.nn.quantized.modules import (
+    DeQuantize,
+    MaxPool2d,
+    Quantize,
     activation,
     batchnorm,
     conv,
-    DeQuantize,
     dropout,
     embedding_ops,
     functional_modules,
     linear,
-    MaxPool2d,
     normalization,
-    Quantize,
     rnn,
     utils,
 )
@@ -59,7 +59,6 @@ from torch.ao.nn.quantized.modules.normalization import (
     LayerNorm,
 )
 from torch.ao.nn.quantized.modules.rnn import LSTM
-
 
 __all__ = [
     "BatchNorm2d",

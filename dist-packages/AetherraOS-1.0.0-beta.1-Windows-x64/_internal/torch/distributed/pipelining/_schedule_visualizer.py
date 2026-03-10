@@ -9,26 +9,25 @@ ops = get_schedule_ops("InterleavedZeroBubble", 4, 8)
 visualize_schedule(ops, "test.png")
 """
 
-from typing import Optional, Union
 from unittest import mock
 
 from torch.distributed.pipelining.schedules import (
+    PipelineScheduleMulti,
+    PipelineScheduleSingle,
     _Action,
     _ComputationType,
     _PipelineSchedule,
     get_schedule_class,
-    PipelineScheduleMulti,
-    PipelineScheduleSingle,
 )
 from torch.distributed.pipelining.stage import PipelineStage
 
 
 def get_schedule_ops(
-    schedule: Union[str, _PipelineSchedule],
+    schedule: str | _PipelineSchedule,
     pp_degree: int,
     num_microbatches: int,
-    num_stages_per_rank: Optional[int] = None,
-) -> list[list[Optional[_Action]]]:
+    num_stages_per_rank: int | None = None,
+) -> list[list[_Action | None]]:
     """
     Get all actions for a given schedule, pp_degree, and num_microbatches. The actions are returned in a list of lists
     where each inner list represents a rank and each element in the inner list represents an action.
@@ -102,7 +101,7 @@ action_type_to_color_mapping = {
 
 
 def visualize_schedule(
-    schedule: list[list[Optional[_Action]]], filename: Optional[str] = None
+    schedule: list[list[_Action | None]], filename: str | None = None
 ) -> None:
     """
     Visualize the schedule using matplotlib.

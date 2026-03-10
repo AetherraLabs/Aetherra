@@ -10,11 +10,9 @@ file is kept purely for backward-compatibility.
 
 from __future__ import annotations
 
-
 __all__: list[str] = []
 
 import torch
-
 
 """Get the shape of a tensor as a tensor.
 

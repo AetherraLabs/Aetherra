@@ -17,7 +17,6 @@ from torch.testing._internal.distributed.rpc.rpc_agent_test_fixture import (
     RpcAgentTestFixture,
 )
 
-
 batch_size = 20
 in_features = 100
 out_features = 30
@@ -46,7 +45,7 @@ class BatchUpdateParameterServer:
     @rpc.functions.async_execution
     def update_and_fetch_model(ps_rref, grads):
         self = ps_rref.local_value()
-        for p, g in zip(self.model.parameters(), grads):
+        for p, g in zip(self.model.parameters(), grads, strict=False):
             if p.grad is None:
                 p.grad = g
             else:

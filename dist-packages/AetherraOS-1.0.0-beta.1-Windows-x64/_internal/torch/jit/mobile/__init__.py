@@ -104,8 +104,7 @@ def _get_model_bytecode_version(f_input) -> int:
 
     if isinstance(f_input, (str, os.PathLike)):
         return torch._C._get_model_bytecode_version(os.fspath(f_input))
-    else:
-        return torch._C._get_model_bytecode_version_from_buffer(f_input.read())
+    return torch._C._get_model_bytecode_version_from_buffer(f_input.read())
 
 
 def _get_mobile_model_contained_types(f_input) -> int:
@@ -136,8 +135,7 @@ def _get_mobile_model_contained_types(f_input) -> int:
 
     if isinstance(f_input, (str, os.PathLike)):
         return torch._C._get_mobile_model_contained_types(os.fspath(f_input))
-    else:
-        return torch._C._get_mobile_model_contained_types_from_buffer(f_input.read())
+    return torch._C._get_mobile_model_contained_types_from_buffer(f_input.read())
 
 
 def _backport_for_mobile(f_input, f_output, to_version):
@@ -163,10 +161,9 @@ def _backport_for_mobile(f_input, f_output, to_version):
         return torch._C._backport_for_mobile(
             os.fspath(f_input), os.fspath(f_output), to_version
         )
-    else:
-        return torch._C._backport_for_mobile_from_buffer(
-            f_input.read(), str(f_output), to_version
-        )
+    return torch._C._backport_for_mobile_from_buffer(
+        f_input.read(), str(f_output), to_version
+    )
 
 
 def _backport_for_mobile_to_buffer(f_input, to_version):
@@ -185,10 +182,9 @@ def _backport_for_mobile_to_buffer(f_input, to_version):
 
     if isinstance(f_input, (str, os.PathLike)):
         return torch._C._backport_for_mobile_to_buffer(os.fspath(f_input), to_version)
-    else:
-        return torch._C._backport_for_mobile_from_buffer_to_buffer(
-            f_input.read(), to_version
-        )
+    return torch._C._backport_for_mobile_from_buffer_to_buffer(
+        f_input.read(), to_version
+    )
 
 
 def _get_model_ops_and_info(f_input):
@@ -228,5 +224,4 @@ def _get_model_ops_and_info(f_input):
 
     if isinstance(f_input, (str, os.PathLike)):
         return torch._C._get_model_ops_and_info(os.fspath(f_input))
-    else:
-        return torch._C._get_model_ops_and_info(f_input.read())
+    return torch._C._get_model_ops_and_info(f_input.read())

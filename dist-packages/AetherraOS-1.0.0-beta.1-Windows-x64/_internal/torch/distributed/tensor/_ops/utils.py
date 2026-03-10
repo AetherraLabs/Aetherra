@@ -3,8 +3,9 @@
 import functools
 import itertools
 import operator
-from collections.abc import Iterable, Sequence
-from typing import Callable, cast, Optional, TypeVar, Union
+from collections.abc import Callable, Iterable, Sequence
+from typing import TypeVar, cast
+
 from typing_extensions import ParamSpec
 
 import torch
@@ -28,7 +29,6 @@ from torch.distributed.tensor.placement_types import (
     Shard,
 )
 
-
 _T = TypeVar("_T")
 _P = ParamSpec("_P")
 
@@ -37,8 +37,8 @@ _P = ParamSpec("_P")
 # pyre-fixme[3]: Return type must be annotated.
 # pyre-fixme[2]: Parameter must be annotated.
 def register_prop_rule(
-    op: Union[torch._ops.OpOverload, list[torch._ops.OpOverload]],
-    schema_info: Optional[RuntimeSchemaInfo] = None,
+    op: torch._ops.OpOverload | list[torch._ops.OpOverload],
+    schema_info: RuntimeSchemaInfo | None = None,
 ) -> Callable[
     [Callable[[OpSchema], OutputSharding]], Callable[[OpSchema], OutputSharding]
 ]:
@@ -103,16 +103,15 @@ def register_op_strategy(
 
 
 def as_list(
-    x: Union[list[object], object],
+    x: list[object] | object,
     # pyre-fixme[11]: Annotation `immutable_list` is not defined as a type.
-) -> Union[list[object], torch.fx.immutable_collections.immutable_list]:  # type: ignore[valid-type]
+) -> list[object] | torch.fx.immutable_collections.immutable_list:  # type: ignore[valid-type]
     # During tracing, `aten.sum.dim_IntList` uses `immutable_list` for its args,
     # which is an object but treated as a list by the tracer. Therefore, keep
     # `immutable_list` intact here as well.
     if type(x) is list or isinstance(x, torch.fx.immutable_collections.immutable_list):
         return x
-    else:
-        return [x]
+    return [x]
 
 
 def normalize_dim(dim: int, ndim: int) -> int:
@@ -249,8 +248,8 @@ def expand_to_full_mesh_op_strategy(
 
     all_strategies = []
     for strategy_comb in strategy_combs:
-        spec_list: list[Optional[DTensorSpec]] = []
-        for specs in zip(*strategy_comb):
+        spec_list: list[DTensorSpec | None] = []
+        for specs in zip(*strategy_comb, strict=False):
             if specs[0] is not None:
                 spec_list.append(DTensorSpec(mesh, specs))
             else:
@@ -272,14 +271,16 @@ def expand_to_full_mesh_op_strategy(
         # check inputs shardable
         inputs_shardable = all(
             is_tensor_shardable(inp.shape, s)
-            for inp, s in zip(input_args_strategy, input_specs)
+            for inp, s in zip(input_args_strategy, input_specs, strict=False)
         )
 
         # only add to the all_strategies list when all inputs are shardable
         if inputs_shardable:
             redistribute_cost = [
                 generate_redistribute_costs(input_strategy, input_spec)
-                for input_strategy, input_spec in zip(input_args_strategy, input_specs)
+                for input_strategy, input_spec in zip(
+                    input_args_strategy, input_specs, strict=False
+                )
             ]
             if input_index > 1:
                 output_specs = tuple(spec_list[:input_index])

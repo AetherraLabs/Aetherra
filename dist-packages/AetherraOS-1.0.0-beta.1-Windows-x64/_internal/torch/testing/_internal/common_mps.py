@@ -1,19 +1,17 @@
 import unittest
 from collections.abc import Sequence
-from typing import Optional
 
 import torch
 
 from .common_utils import MACOS_VERSION
 from .opinfo.core import DecorateInfo, OpInfo
 
-
 if torch.backends.mps.is_available():
 
     def mps_ops_modifier(
         ops: Sequence[OpInfo],
-        device_type: Optional[str] = None,
-        xfail_exclusion: Optional[list[str]] = None,
+        device_type: str | None = None,
+        xfail_exclusion: list[str] | None = None,
     ) -> Sequence[OpInfo]:
         if xfail_exclusion is None:
             xfail_exclusion = []

@@ -6,11 +6,12 @@ from __future__ import annotations
 
 import logging
 import warnings
-from collections.abc import Mapping, Sequence
-from typing import Any, Callable, TYPE_CHECKING
+from collections.abc import Callable, Mapping, Sequence
+from typing import TYPE_CHECKING, Any
 
 import torch
-from torch.onnx._internal._lazy_import import onnxscript_apis, onnxscript_ir as ir
+from torch.onnx._internal._lazy_import import onnxscript_apis
+from torch.onnx._internal._lazy_import import onnxscript_ir as ir
 from torch.onnx._internal.exporter import (
     _constants,
     _core,
@@ -18,7 +19,6 @@ from torch.onnx._internal.exporter import (
     _onnx_program,
     _registration,
 )
-
 
 if TYPE_CHECKING:
     import os
@@ -176,8 +176,7 @@ def export_compat(
             # optimize the model, so we return it here. Users can still optimize
             # the model using the optimize() if they want.
             return onnx_program
-        else:
-            raise
+        raise
 
     if need_axis_mapping and dynamic_shapes is not None:
         onnx_program._rename_dynamic_axes(dynamic_shapes)

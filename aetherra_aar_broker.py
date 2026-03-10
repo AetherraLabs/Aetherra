@@ -22,7 +22,8 @@ from __future__ import annotations
 import asyncio
 import json
 import threading
-from typing import Any, Callable, Dict
+from collections.abc import Callable
+from typing import Any
 from wsgiref.simple_server import make_server
 
 
@@ -65,7 +66,7 @@ class _AARLoop:
 _aar = _AARLoop()
 
 
-def _json(start_response: Callable, code: str, obj: Dict[str, Any]):
+def _json(start_response: Callable, code: str, obj: dict[str, Any]):
     body = json.dumps(obj).encode("utf-8")
     start_response(
         code,
@@ -94,7 +95,7 @@ def application(environ, start_response):  # WSGI entry
             except Exception:
                 data = {}
 
-        async def call(message_type: str, payload: Dict[str, Any]):
+        async def call(message_type: str, payload: dict[str, Any]):
             # Aetherra imports
             from aetherra_service_registry import get_service_registry
 

@@ -31,10 +31,9 @@ import logging
 import sys
 import traceback
 import types
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from types import FunctionType
-from typing import Any, Callable, Optional, TYPE_CHECKING, TypeVar
-from typing_extensions import Never
+from typing import TYPE_CHECKING, Any, Never, Optional, TypeVar
 from unittest.mock import patch
 from weakref import WeakKeyDictionary
 
@@ -44,16 +43,16 @@ from torch._dynamo.exc import get_stack_above_dynamo
 from .. import config, graph_break_hints, polyfills, variables
 from ..bytecode_transformation import create_call_function, create_rot_n, is_generator
 from ..exc import (
-    get_dynamo_observed_exception,
-    handle_observed_exception,
     InfiniteGeneratorError,
     ObservedException,
     ObservedGeneratorExit,
     ObservedUserStopIteration,
-    raise_observed_exception,
     SkipFrame,
-    unimplemented_v2,
     Unsupported,
+    get_dynamo_observed_exception,
+    handle_observed_exception,
+    raise_observed_exception,
+    unimplemented_v2,
 )
 from ..guards import GuardBuilder, install_guard
 from ..source import AttrSource, ConstantSource, DefaultsSource, GetItemSource
@@ -75,7 +74,6 @@ from .base import (
     VariableTracker,
 )
 from .constant import ConstantVariable
-
 
 try:
     from torch.distributed.fsdp._fully_shard import _fsdp_param_group
@@ -128,7 +126,11 @@ class FunctionSpec:
 
         # Map positional‐default names → their index in self.defaults
         self.pos_default_map = dict(
-            zip(self.all_pos_names[-len(self.defaults) :], range(len(self.defaults)))
+            zip(
+                self.all_pos_names[-len(self.defaults) :],
+                range(len(self.defaults)),
+                strict=False,
+            )
         )
 
 
@@ -197,12 +199,11 @@ def wrap_bound_arg(tx: "InstructionTranslator", val, source=None):
     # Source propagation is best effort since not every object we encounter has a source to begin with.
     if isinstance(val, VariableTracker):
         return val
-    elif not source:
+    if not source:
         return VariableTracker.build(tx, val)
-    else:
-        # Create a lazy variable to avoid guarding on __defaults__ unless really
-        # needed.
-        return variables.LazyVariableTracker.create(val, source)
+    # Create a lazy variable to avoid guarding on __defaults__ unless really
+    # needed.
+    return variables.LazyVariableTracker.create(val, source)
 
 
 def wrap_args_kwargs(tx: "InstructionTranslator", result):
@@ -699,10 +700,10 @@ class LocalGeneratorObjectVariable(VariableTracker):
     ) -> "VariableTracker":
         if name == "__next__":
             return self.next_variable(tx)
-        elif name == "__iter__":
+        if name == "__iter__":
             # iter(gen) returns itself
             return self
-        elif name == "send":
+        if name == "send":
             # Sends a value into the generator function. Returns the next value
             # yielded by the generator, or raises StopIteration if the generator
             # exits without yielding another value
@@ -717,7 +718,7 @@ class LocalGeneratorObjectVariable(VariableTracker):
             tracer = self._get_inline_tracer(tx)
             tracer.push_many(args)
             return self.next_variable(tx)
-        elif name == "close":
+        if name == "close":
             # * Raises a GeneratorExit at the point where the generator function was paused.
             # * If the generator function catches the exception and returns a
             # value, this value is returned from close() - Python 3.13+
@@ -1164,7 +1165,7 @@ class NestedUserFunctionVariable(BaseUserFunctionVariable):
         self.kwdefaults = kwdefaults
         self.annotations = annotations
         self.closure = closure
-        self.wrapped_fn: Optional[VariableTracker] = wrapped_fn
+        self.wrapped_fn: VariableTracker | None = wrapped_fn
 
     def self_args(self):
         return []
@@ -2017,10 +2018,10 @@ class SysFunctionVariable(VariableTracker):
 
 
 from torch._higher_order_ops.triton_kernel_wrap import (
-    create_tma_experimental_metadata,
-    create_tma_stable_metadata,
     TMADescriptorMetadata,
     TritonHOPifier,
+    create_tma_experimental_metadata,
+    create_tma_stable_metadata,
 )
 
 
@@ -2041,15 +2042,14 @@ class DynamoTritonHOPifier(TritonHOPifier):
 
         if isinstance(grid, BaseListVariable):
             return grid.as_proxy()
-        else:
-            unimplemented_v2(
-                gb_type="unsupported grid type for triton hop check_grid",
-                context=f"grid type = {type(grid)}",
-                explanation="`torch.compile` only supports list-like grid for check_grid",
-                hints=[
-                    *graph_break_hints.SUPPORTABLE,
-                ],
-            )
+        unimplemented_v2(
+            gb_type="unsupported grid type for triton hop check_grid",
+            context=f"grid type = {type(grid)}",
+            explanation="`torch.compile` only supports list-like grid for check_grid",
+            hints=[
+                *graph_break_hints.SUPPORTABLE,
+            ],
+        )
 
     def call_grid(self, grid, meta, tx):
         meta = {variables.ConstantVariable.create(k): v for k, v in meta.items()}
@@ -2185,7 +2185,7 @@ dynamo_triton_hopifier_singleton = DynamoTritonHOPifier()
 class TritonKernelVariable(VariableTracker):
     grid: "TritonGridType"
     kernel: "TritonKernelType"
-    kernel_idx: Optional[int]
+    kernel_idx: int | None
     kernel_source: "AttrSource"
 
     def __init__(self, kernel, kernel_idx, grid, **kwargs) -> None:
@@ -2212,7 +2212,7 @@ class TritonKernelVariable(VariableTracker):
     ) -> "VariableTracker":
         if name == "__getitem__":
             return dynamo_triton_hopifier_singleton.call_getitem(self, args)
-        elif name == "run":
+        if name == "run":
             return dynamo_triton_hopifier_singleton.call_run(self, args, kwargs, tx)
 
         # Bail out to parent's implementation

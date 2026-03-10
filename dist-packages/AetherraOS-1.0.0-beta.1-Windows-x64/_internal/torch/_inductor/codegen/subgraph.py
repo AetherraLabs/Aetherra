@@ -1,6 +1,7 @@
 import itertools
 import logging
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import torch
 import torch._inductor.config as config
@@ -8,16 +9,15 @@ from torch._inductor import ir
 from torch._inductor.codegen.common import KernelTemplate
 from torch._inductor.ir import (
     Buffer,
+    Layout,
     get_free_symbols,
     get_symbolic_inputs,
     gm_original_output_strides,
     ir_node_to_tensor,
-    Layout,
 )
 from torch._inductor.runtime.benchmarking import benchmarker
 from torch._inductor.utils import do_bench_using_profiling
 from torch._inductor.virtualized import V
-
 
 log = logging.getLogger(__name__)
 
@@ -88,7 +88,7 @@ class SubgraphChoiceCaller(ir.ChoiceCaller):
             # Sanity check that args are same layout as example inputs
             # Only do it if there are no symbolic inputs, otherwise
             # the dynamic dim will be realized to the same size as args
-            for ar, example_inp in zip(args, self.example_inputs):
+            for ar, example_inp in zip(args, self.example_inputs, strict=False):
                 # Sanity check that args are same layout as example inputs
                 if isinstance(ar, torch.Tensor):
                     assert isinstance(example_inp, torch.Tensor)
@@ -99,7 +99,7 @@ class SubgraphChoiceCaller(ir.ChoiceCaller):
             # Sanity check that args are same layout as example inputs
             # Only do it if there are no symbolic inputs, otherwise
             # the dynamic dim will be realized to the same size as args
-            for ar, example_inp in zip(args, self.example_inputs):
+            for ar, example_inp in zip(args, self.example_inputs, strict=False):
                 # Sanity check that args are same layout as example inputs
                 if isinstance(ar, torch.Tensor):
                     assert isinstance(example_inp, torch.Tensor)

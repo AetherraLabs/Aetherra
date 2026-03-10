@@ -14,18 +14,15 @@ import sys
 import time
 import warnings
 from collections import namedtuple
+from collections.abc import Callable
 from datetime import timedelta
-from typing import Any, Callable, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any
+
 from typing_extensions import deprecated
 
 import torch
 from torch._C import _DistStoreError as DistStoreError
 from torch._C._distributed_c10d import (
-    _DistributedBackendOptions,
-    _register_process_group,
-    _resolve_process_group,
-    _unregister_all_process_groups,
-    _unregister_process_group,
     AllgatherOptions,
     AllreduceCoalescedOptions,
     AllreduceOptions,
@@ -34,7 +31,6 @@ from torch._C._distributed_c10d import (
     BroadcastOptions,
     DebugLevel,
     GatherOptions,
-    get_debug_level,
     PrefixStore,
     ProcessGroup,
     ReduceOp,
@@ -43,6 +39,12 @@ from torch._C._distributed_c10d import (
     ScatterOptions,
     Store,
     Work,
+    _DistributedBackendOptions,
+    _register_process_group,
+    _resolve_process_group,
+    _unregister_all_process_groups,
+    _unregister_process_group,
+    get_debug_level,
 )
 from torch._utils_internal import set_pytorch_distributed_envs_from_justknobs
 from torch.monitor import _WaitCounter
@@ -52,7 +54,6 @@ from torch.utils._typing_utils import not_none
 from .c10d_logger import _exception_logger, _time_logger
 from .constants import default_pg_nccl_timeout, default_pg_timeout
 from .rendezvous import register_rendezvous_handler, rendezvous  # noqa: F401
-
 
 __all__ = [
     "Backend",
@@ -184,7 +185,7 @@ except ImportError:
     _NCCL_AVAILABLE = False
 
 try:
-    from torch._C._distributed_c10d import _ProcessGroupWrapper, ProcessGroupGloo
+    from torch._C._distributed_c10d import ProcessGroupGloo, _ProcessGroupWrapper
 
     ProcessGroupGloo.__module__ = "torch.distributed.distributed_c10d"
     __all__ += ["ProcessGroupGloo"]
@@ -306,7 +307,7 @@ class Backend(str):  # noqa: SLOT000
         name,
         func,
         extended_api=False,
-        devices: Optional[Union[str, list[str]]] = None,
+        devices: str | list[str] | None = None,
     ) -> None:
         """
         Register a new backend with the given name and instantiating function.
@@ -494,10 +495,10 @@ class P2POp:
         self,
         op: Callable,
         tensor: torch.Tensor,
-        peer: Optional[int] = None,
-        group: Optional[ProcessGroup] = None,
+        peer: int | None = None,
+        group: ProcessGroup | None = None,
         tag: int = 0,
-        group_peer: Optional[int] = None,
+        group_peer: int | None = None,
     ):
         """Init."""
         self.op = op
@@ -513,10 +514,10 @@ class P2POp:
         cls,
         op: Callable,
         tensor: torch.Tensor,
-        peer: Optional[int] = None,
-        group: Optional[ProcessGroup] = None,
+        peer: int | None = None,
+        group: ProcessGroup | None = None,
         tag: int = 0,
-        group_peer: Optional[int] = None,
+        group_peer: int | None = None,
     ):
         """Create and return a new instance of the class."""
         _check_op(op)
@@ -556,9 +557,9 @@ class _CollOp:
         self,
         op: Callable,
         tensor: torch.Tensor,
-        dst_tensor: Optional[torch.Tensor] = None,
-        redop: Optional[ReduceOp] = None,
-        root: Optional[int] = None,
+        dst_tensor: torch.Tensor | None = None,
+        redop: ReduceOp | None = None,
+        root: int | None = None,
     ):
         self.op = op
         self.tensor = tensor
@@ -577,7 +578,7 @@ _pg_backend_config: dict[ProcessGroup, str] = {}
 _group_count = 0
 _tags_to_pg: dict[str, list[ProcessGroup]] = {}
 _pg_to_tag: dict[ProcessGroup, str] = {}
-_backend: Optional[str] = None
+_backend: str | None = None
 
 
 class _World:
@@ -595,7 +596,7 @@ class _World:
         self._pg_coalesce_state: dict[ProcessGroup, list[_CollOp]] = {}
 
     @property
-    def default_pg(self) -> Optional[ProcessGroup]:
+    def default_pg(self) -> ProcessGroup | None:
         """
         Process group that includes all ranks of the cluster.
 
@@ -720,11 +721,11 @@ class _WorldMeta(type):
 
     # Points to the default PG once initialized.
     @property
-    def WORLD(cls) -> Optional[ProcessGroup]:
+    def WORLD(cls) -> ProcessGroup | None:
         return _world.default_pg
 
     @WORLD.setter
-    def WORLD(cls, pg: Optional[ProcessGroup]):
+    def WORLD(cls, pg: ProcessGroup | None):
         _world.default_pg = pg
 
 
@@ -749,8 +750,7 @@ def _get_default_timeout(backend: Backend) -> timedelta:
             )
             return default_pg_timeout
         return default_pg_nccl_timeout
-    else:
-        return default_pg_timeout
+    return default_pg_timeout
 
 
 def _check_valid_timeout(timeout: Any) -> None:
@@ -761,12 +761,12 @@ def _check_valid_timeout(timeout: Any) -> None:
 
 
 # Default process group state
-_default_pg_init_method: Optional[str] = None
+_default_pg_init_method: str | None = None
 
 STORE_BASED_BARRIER_PREFIX = "store_based_barrier_key"
 
 
-def _get_object_coll_device(group: Optional[ProcessGroup] = None) -> str:
+def _get_object_coll_device(group: ProcessGroup | None = None) -> str:
     """
     .. note:: This is an internal helper and does not have backward
         compatibility, please use with caution.
@@ -803,8 +803,7 @@ def _get_object_coll_device(group: Optional[ProcessGroup] = None) -> str:
         if isinstance(group, ProcessGroupGloo):
             # RPC uses Gloo for object collectives
             return "cpu"
-        else:
-            raise ValueError(f"Expecting a ProcessGroup, but got a {type(group)}.")
+        raise ValueError(f"Expecting a ProcessGroup, but got a {type(group)}.")
 
     """
     ``group._device_types`` is a property pybind that returns the devices
@@ -816,22 +815,21 @@ def _get_object_coll_device(group: Optional[ProcessGroup] = None) -> str:
     if len(devices) == 1:
         # User fixed exactly one backend in `init_process_group`
         return devices[0].type
-    elif len(devices) == 0:
+    if len(devices) == 0:
         # No backend has been registered with this PG (maybe because no
         # collective has been run?) We pick cpu as the default and hopefully
         # this would lazily init Gloo or other available cpu backend.
         return "cpu"
-    elif torch.device("cpu") in devices:
+    if torch.device("cpu") in devices:
         # There are multiple backends in this PG and cpu is among them.
         # cpu is preferred as the object is in cpu memory. No need for device
         # copy.
         return "cpu"
-    else:
-        # No cpu in the backend list. Randomly pick the first backend
-        return devices[0].type
+    # No cpu in the backend list. Randomly pick the first backend
+    return devices[0].type
 
 
-def _get_pg_default_device(group: Optional[ProcessGroup] = None) -> torch.device:
+def _get_pg_default_device(group: ProcessGroup | None = None) -> torch.device:
     """
     .. note:: This method will be deprecated, it only stays for
         backward-compatiblity reason. Alternatives:
@@ -890,26 +888,25 @@ def _get_pg_default_device(group: Optional[ProcessGroup] = None) -> torch.device
     if len(devices) == 1:
         # User fixed exactly one backend in `init_process_group`
         return devices[0]
-    elif len(devices) == 0:
+    if len(devices) == 0:
         raise RuntimeError(
             "Default device not found, because no backend has been registered "
             "with this ProcessGroup."
         )
+    # There are multiple backends in this PG.
+    if torch.device("cpu") in devices:
+        rv = torch.device("cpu")
     else:
-        # There are multiple backends in this PG.
-        if torch.device("cpu") in devices:
-            rv = torch.device("cpu")
-        else:
-            rv = devices[0]
-        warnings.warn(
-            "Multiple backends are registered with this ProcessGroup. We cannot "
-            f"determine which one is the default. Returning {rv}. "
-            "Please consider using other APIs."
-        )
-        return rv
+        rv = devices[0]
+    warnings.warn(
+        "Multiple backends are registered with this ProcessGroup. We cannot "
+        f"determine which one is the default. Returning {rv}. "
+        "Please consider using other APIs."
+    )
+    return rv
 
 
-def _device_capability(group: Optional[ProcessGroup] = None) -> list[str]:
+def _device_capability(group: ProcessGroup | None = None) -> list[str]:
     """
     Return the device type(s) supported by ``group``.
 
@@ -993,7 +990,7 @@ def _store_based_barrier(
     )
 
 
-def _rank_not_in_group(group: Optional[ProcessGroup]) -> bool:
+def _rank_not_in_group(group: ProcessGroup | None) -> bool:
     """Check if the current process's rank is not in a given group."""
     if group is None:
         return False
@@ -1074,7 +1071,7 @@ def _get_global_rank(group, rank) -> int:
     return get_global_rank(group, rank)
 
 
-def get_process_group_ranks(group: Optional[ProcessGroup]) -> list[int]:
+def get_process_group_ranks(group: ProcessGroup | None) -> list[int]:
     """
     Get all ranks associated with ``group``.
 
@@ -1126,14 +1123,14 @@ def _check_tensor_list(param, param_name) -> None:
             f"""Invalid function argument. Expected parameter `{param_name}` of type List[torch.Tensor]
              but got {type(param)} instead."""
         )
-    elif not all(isinstance(p, torch.Tensor) for p in param):
+    if not all(isinstance(p, torch.Tensor) for p in param):
         raise TypeError(
             f"""Invalid function argument. Expected parameter `{param_name}` of type List[torch.Tensor]
              but got {type(param)} with elements of type {[type(p) for p in param]}."""
         )
 
 
-def _group_or_default_group(group: Optional[ProcessGroup] = None) -> ProcessGroup:
+def _group_or_default_group(group: ProcessGroup | None = None) -> ProcessGroup:
     if group is None or group is GroupMember.WORLD:
         group = _get_default_group()
     return group
@@ -1141,8 +1138,8 @@ def _group_or_default_group(group: Optional[ProcessGroup] = None) -> ProcessGrou
 
 def _canonicalize_group_rank(
     group: ProcessGroup,
-    global_rank: Optional[int] = None,
-    group_rank: Optional[int] = None,
+    global_rank: int | None = None,
+    group_rank: int | None = None,
     return_global: bool = False,
 ) -> int:
     """
@@ -1306,8 +1303,7 @@ def _get_default_group() -> ProcessGroup:
         )
     if TYPE_CHECKING:
         return not_none(GroupMember.WORLD)
-    else:
-        return GroupMember.WORLD
+    return GroupMember.WORLD
 
 
 def _get_default_store() -> Store:
@@ -1328,7 +1324,7 @@ def _update_default_pg(pg) -> None:
     torch._C._distributed_c10d._set_global_rank(rank)
 
 
-def get_backend_config(group: Optional[ProcessGroup] = None) -> str:
+def get_backend_config(group: ProcessGroup | None = None) -> str:
     """
     Return the backend configuration of the given process group.
 
@@ -1348,7 +1344,7 @@ def get_backend_config(group: Optional[ProcessGroup] = None) -> str:
     return str(not_none(backend_config))
 
 
-def get_backend(group: Optional[ProcessGroup] = None) -> Backend:
+def get_backend(group: ProcessGroup | None = None) -> Backend:
     """
     Return the backend of the given process group.
 
@@ -1374,7 +1370,7 @@ def get_backend(group: Optional[ProcessGroup] = None) -> Backend:
     return Backend(not_none(pg_store)[0])
 
 
-def get_default_backend_for_device(device: Union[str, torch.device]) -> str:
+def get_default_backend_for_device(device: str | torch.device) -> str:
     """
     Return the default backend for the given device.
 
@@ -1408,7 +1404,7 @@ def _get_process_group_uid(pg: ProcessGroup) -> int:
     return -1
 
 
-def _get_pg_config(group: Optional[ProcessGroup] = None) -> dict[str, Any]:
+def _get_pg_config(group: ProcessGroup | None = None) -> dict[str, Any]:
     """
     Return the pg configuration of the given process group.
 
@@ -1442,7 +1438,7 @@ def get_pg_count() -> int:
     return _world.group_count
 
 
-def get_node_local_rank(fallback_rank: Optional[int] = None) -> int:
+def get_node_local_rank(fallback_rank: int | None = None) -> int:
     """
     Return the local rank of the current process relative to the node.
 
@@ -1460,7 +1456,7 @@ def get_node_local_rank(fallback_rank: Optional[int] = None) -> int:
     """
     if "LOCAL_RANK" in os.environ:
         return int(os.environ["LOCAL_RANK"])
-    elif fallback_rank is not None:
+    if fallback_rank is not None:
         return int(fallback_rank)
     raise RuntimeError(
         "LOCAL_RANK is not in the environment. Consider passing fallback_rank to allow `get_node_local_rank` to work, "
@@ -1495,7 +1491,7 @@ def _add_ephemeral_timeout_for_all_pgs(timeout: timedelta) -> None:
                 backend._add_ephemeral_timeout(timeout)
 
 
-def _set_pg_timeout(timeout: timedelta, group: Optional[ProcessGroup] = None) -> None:
+def _set_pg_timeout(timeout: timedelta, group: ProcessGroup | None = None) -> None:
     """
     Set the timeout for the given process group when users want to use a different timeout instead of
     default values.
@@ -1528,9 +1524,12 @@ def _set_pg_timeout(timeout: timedelta, group: Optional[ProcessGroup] = None) ->
             backends.add(backend)
     if torch.device("cuda") in devices:
         backend = group._get_backend(torch.device("cuda"))
-        if is_nccl_available() and isinstance(backend, ProcessGroupNCCL):
-            backends.add(backend)  # type: ignore[arg-type]
-        elif is_gloo_available() and isinstance(backend, ProcessGroupGloo):
+        if (
+            is_nccl_available()
+            and isinstance(backend, ProcessGroupNCCL)
+            or is_gloo_available()
+            and isinstance(backend, ProcessGroupGloo)
+        ):
             backends.add(backend)  # type: ignore[arg-type]
     if len(backends) == 0:
         warnings.warn("Set timeout is now only supported for either nccl or gloo.")
@@ -1541,15 +1540,15 @@ def _set_pg_timeout(timeout: timedelta, group: Optional[ProcessGroup] = None) ->
 @_exception_logger
 @_time_logger
 def init_process_group(
-    backend: Optional[str] = None,
-    init_method: Optional[str] = None,
-    timeout: Optional[timedelta] = None,
+    backend: str | None = None,
+    init_method: str | None = None,
+    timeout: timedelta | None = None,
     world_size: int = -1,
     rank: int = -1,
-    store: Optional[Store] = None,
+    store: Store | None = None,
     group_name: str = "",
-    pg_options: Optional[Any] = None,
-    device_id: Optional[Union[torch.device, int]] = None,
+    pg_options: Any | None = None,
+    device_id: torch.device | int | None = None,
 ) -> None:
     """
     Initialize the default distributed process group.
@@ -2142,7 +2141,7 @@ def _new_process_group_helper(
     return pg, prefix_store
 
 
-def destroy_process_group(group: Optional[ProcessGroup] = None):
+def destroy_process_group(group: ProcessGroup | None = None):
     """
     Destroy a given process group, and deinitialize the distributed package.
 
@@ -2229,7 +2228,7 @@ def destroy_process_group(group: Optional[ProcessGroup] = None):
         _unregister_process_group(pg.group_name)
 
 
-def _abort_process_group(group: Optional[ProcessGroup] = None):
+def _abort_process_group(group: ProcessGroup | None = None):
     """
     Abort a given process group. If group.WORLD (i.e. `None`) is given, all
     process groups including the default one will be aborted.
@@ -2319,7 +2318,7 @@ def _abort_process_group(group: Optional[ProcessGroup] = None):
         _unregister_process_group(pg.group_name)
 
 
-def get_rank(group: Optional[ProcessGroup] = None) -> int:
+def get_rank(group: ProcessGroup | None = None) -> int:
     """
     Return the rank of the current process in the provided ``group``, default otherwise.
 
@@ -2346,7 +2345,7 @@ def get_rank(group: Optional[ProcessGroup] = None) -> int:
     return get_group_rank(group, default_pg.rank())
 
 
-def get_world_size(group: Optional[ProcessGroup] = None) -> int:
+def get_world_size(group: ProcessGroup | None = None) -> int:
     """
     Return the number of processes in the current process group.
 
@@ -2367,11 +2366,11 @@ def get_world_size(group: Optional[ProcessGroup] = None) -> int:
 
 def isend(
     tensor: torch.Tensor,
-    dst: Optional[int] = None,
-    group: Optional[ProcessGroup] = None,
+    dst: int | None = None,
+    group: ProcessGroup | None = None,
     tag: int = 0,
-    group_dst: Optional[int] = None,
-) -> Optional[Work]:
+    group_dst: int | None = None,
+) -> Work | None:
     """
     Send a tensor asynchronously.
 
@@ -2412,11 +2411,11 @@ def isend(
 
 def irecv(
     tensor: torch.Tensor,
-    src: Optional[int] = None,
-    group: Optional[ProcessGroup] = None,
+    src: int | None = None,
+    group: ProcessGroup | None = None,
     tag: int = 0,
-    group_src: Optional[int] = None,
-) -> Optional[Work]:
+    group_src: int | None = None,
+) -> Work | None:
     """
     Receives a tensor asynchronously.
 
@@ -2450,18 +2449,17 @@ def irecv(
     group = _group_or_default_group(group)
     if src is None and group_src is None:
         return group.recv_anysource([tensor], tag)
-    else:
-        group_src = _canonicalize_group_rank(group, src, group_src)
-        return group.recv([tensor], group_src, tag)
+    group_src = _canonicalize_group_rank(group, src, group_src)
+    return group.recv([tensor], group_src, tag)
 
 
 @_exception_logger
 def send(
     tensor: torch.Tensor,
-    dst: Optional[int] = None,
-    group: Optional[ProcessGroup] = None,
+    dst: int | None = None,
+    group: ProcessGroup | None = None,
     tag: int = 0,
-    group_dst: Optional[int] = None,
+    group_dst: int | None = None,
 ) -> None:
     """
     Send a tensor synchronously.
@@ -2490,10 +2488,10 @@ def send(
 @_exception_logger
 def recv(
     tensor: torch.Tensor,
-    src: Optional[int] = None,
-    group: Optional[ProcessGroup] = None,
+    src: int | None = None,
+    group: ProcessGroup | None = None,
     tag: int = 0,
-    group_src: Optional[int] = None,
+    group_src: int | None = None,
 ) -> int:
     """
     Receives a tensor synchronously.
@@ -2545,7 +2543,7 @@ class _CoalescingManager:
     def __init__(self) -> None:
         self.works: list[Work] = []
 
-    def append(self, work: Optional[Work] = None):
+    def append(self, work: Work | None = None):
         if work:
             self.works.append(work)
 
@@ -2556,8 +2554,8 @@ class _CoalescingManager:
 
 @contextlib.contextmanager
 def _coalescing_manager(
-    group: Optional[ProcessGroup] = None,
-    device: Optional[torch.device] = None,
+    group: ProcessGroup | None = None,
+    device: torch.device | None = None,
     async_ops: bool = False,
 ):
     """
@@ -2653,13 +2651,13 @@ def _coalescing_manager(
 
 class _TimeEstimator:
     def __init__(self) -> None:
-        self.estimated_time: Optional[float] = None
+        self.estimated_time: float | None = None
 
 
 @contextlib.contextmanager
 def _time_estimator(
-    group: Optional[ProcessGroup] = None,
-    device: Optional[torch.device] = None,
+    group: ProcessGroup | None = None,
+    device: torch.device | None = None,
 ):
     """
     Context manager used to estimate time of collectives.
@@ -2766,28 +2764,27 @@ def batch_isend_irecv(p2p_op_list: list[P2POp]) -> list[Work]:
                 )
 
         return cm.works
-    else:
-        # backend not support coalescing
-        reqs = []
-        for p2p_op in p2p_op_list:
-            work = p2p_op.op(
-                p2p_op.tensor,
-                group=p2p_op.group,
-                tag=p2p_op.tag,
-                **peer_kwarg(p2p_op),
-            )
-            if work:
-                reqs.append(work)
-        return reqs
+    # backend not support coalescing
+    reqs = []
+    for p2p_op in p2p_op_list:
+        work = p2p_op.op(
+            p2p_op.tensor,
+            group=p2p_op.group,
+            tag=p2p_op.tag,
+            **peer_kwarg(p2p_op),
+        )
+        if work:
+            reqs.append(work)
+    return reqs
 
 
 @_exception_logger
 def broadcast(
     tensor: torch.Tensor,
-    src: Optional[int] = None,
-    group: Optional[ProcessGroup] = None,
+    src: int | None = None,
+    group: ProcessGroup | None = None,
     async_op: bool = False,
-    group_src: Optional[int] = None,
+    group_src: int | None = None,
 ):
     """
     Broadcasts the tensor to the whole group.
@@ -2815,7 +2812,7 @@ def broadcast(
     _check_single_tensor(tensor, "tensor")
     if _rank_not_in_group(group):
         _warn_not_in_group("broadcast")
-        return
+        return None
 
     opts = BroadcastOptions()
     opts.rootRank = group_src
@@ -2824,7 +2821,7 @@ def broadcast(
     work = group.broadcast([tensor], opts)
     if async_op:
         return work
-    elif (
+    if (
         work is not None
     ):  # Backward compatible with backends that don't sync at CPP level
         work.wait()
@@ -2899,7 +2896,7 @@ def all_reduce(tensor, op=ReduceOp.SUM, group=None, async_op=False):
     _check_single_tensor(tensor, "tensor")
     if _rank_not_in_group(group):
         _warn_not_in_group("all_reduce")
-        return
+        return None
 
     if tensor.is_complex():
         if not supports_complex(op):
@@ -2918,14 +2915,13 @@ def all_reduce(tensor, op=ReduceOp.SUM, group=None, async_op=False):
         _world.pg_coalesce_state[group].append(coll)
         if async_op:
             return _IllegalWork()
-        else:
-            return None
+        return None
 
     work = group.allreduce([tensor], opts)
 
     if async_op:
         return work
-    elif (
+    if (
         work is not None
     ):  # Backward compatible with backends that don't sync at CPP level
         work.wait()
@@ -2979,7 +2975,7 @@ def all_reduce_coalesced(tensors, op=ReduceOp.SUM, group=None, async_op=False):
     _ensure_all_tensors_same_dtype(tensors)
     if _rank_not_in_group(group):
         _warn_not_in_group("all_reduce_coalesced")
-        return
+        return None
 
     if any(t.is_complex() for t in tensors) and not supports_complex(op):
         raise ValueError(f"all_reduce does not support {op} on complex tensors")
@@ -2994,7 +2990,7 @@ def all_reduce_coalesced(tensors, op=ReduceOp.SUM, group=None, async_op=False):
 
     if async_op:
         return work.get_future()
-    elif (
+    if (
         work is not None
     ):  # Backward compatible with backends that don't sync at CPP level
         work.wait()
@@ -3004,11 +3000,11 @@ def all_reduce_coalesced(tensors, op=ReduceOp.SUM, group=None, async_op=False):
 @_exception_logger
 def reduce(
     tensor: torch.Tensor,
-    dst: Optional[int] = None,
+    dst: int | None = None,
     op=ReduceOp.SUM,
-    group: Optional[ProcessGroup] = None,
+    group: ProcessGroup | None = None,
     async_op: bool = False,
-    group_dst: Optional[int] = None,
+    group_dst: int | None = None,
 ):
     """
     Reduces the tensor data across all machines.
@@ -3038,7 +3034,7 @@ def reduce(
     _check_single_tensor(tensor, "tensor")
     if _rank_not_in_group(group):
         _warn_not_in_group("reduce")
-        return
+        return None
 
     opts = ReduceOptions()
     opts.reduceOp = op
@@ -3047,7 +3043,7 @@ def reduce(
     work = group.reduce([tensor], opts)
     if async_op:
         return work
-    elif (
+    if (
         work is not None
     ):  # Backward compatible with backends that don't sync at CPP level
         work.wait()
@@ -3188,10 +3184,10 @@ def all_gather_object(object_list, obj, group=None):
 @_exception_logger
 def gather_object(
     obj: Any,
-    object_gather_list: Optional[list[Any]] = None,
-    dst: Optional[int] = None,
-    group: Optional[ProcessGroup] = None,
-    group_dst: Optional[int] = None,
+    object_gather_list: list[Any] | None = None,
+    dst: int | None = None,
+    group: ProcessGroup | None = None,
+    group_dst: int | None = None,
 ):
     """
     Gathers picklable objects from the whole group in a single process.
@@ -3317,10 +3313,10 @@ def gather_object(
 @_exception_logger
 def send_object_list(
     object_list: list[Any],
-    dst: Optional[int] = None,
-    group: Optional[ProcessGroup] = None,
-    device: Optional[torch.device] = None,
-    group_dst: Optional[int] = None,
+    dst: int | None = None,
+    group: ProcessGroup | None = None,
+    device: torch.device | None = None,
+    group_dst: int | None = None,
 ):
     """
     Sends picklable objects in ``object_list`` synchronously.
@@ -3399,7 +3395,8 @@ def send_object_list(
     current_device = device or _get_object_coll_device(group)
     # Serialize object_list elements to tensors on src rank.
     tensor_list, size_list = zip(
-        *[_object_to_tensor(obj, current_device, group) for obj in object_list]
+        *[_object_to_tensor(obj, current_device, group) for obj in object_list],
+        strict=False,
     )
     object_sizes_tensor = torch.cat(size_list)
 
@@ -3420,10 +3417,10 @@ def send_object_list(
 @_exception_logger
 def recv_object_list(
     object_list: list[Any],
-    src: Optional[int] = None,
-    group: Optional[ProcessGroup] = None,
-    device: Optional[torch.device] = None,
-    group_src: Optional[int] = None,
+    src: int | None = None,
+    group: ProcessGroup | None = None,
+    device: torch.device | None = None,
+    group_src: int | None = None,
 ):
     """
     Receives picklable objects in ``object_list`` synchronously.
@@ -3526,10 +3523,10 @@ def recv_object_list(
 @_exception_logger
 def broadcast_object_list(
     object_list: list[Any],
-    src: Optional[int] = None,
-    group: Optional[ProcessGroup] = None,
-    device: Optional[torch.device] = None,
-    group_src: Optional[int] = None,
+    src: int | None = None,
+    group: ProcessGroup | None = None,
+    device: torch.device | None = None,
+    group_src: int | None = None,
 ):
     """
     Broadcasts picklable objects in ``object_list`` to the whole group.
@@ -3616,7 +3613,8 @@ def broadcast_object_list(
     # Serialize object_list elements to tensors on src rank.
     if my_group_rank == group_src:
         tensor_list, size_list = zip(
-            *[_object_to_tensor(obj, current_device, group) for obj in object_list]
+            *[_object_to_tensor(obj, current_device, group) for obj in object_list],
+            strict=False,
         )
         object_sizes_tensor = torch.cat(size_list)
     else:
@@ -3656,10 +3654,10 @@ def broadcast_object_list(
 @_exception_logger
 def scatter_object_list(
     scatter_object_output_list: list[Any],
-    scatter_object_input_list: Optional[list[Any]] = None,
-    src: Optional[int] = None,
-    group: Optional[ProcessGroup] = None,
-    group_src: Optional[int] = None,
+    scatter_object_input_list: list[Any] | None = None,
+    src: int | None = None,
+    group: ProcessGroup | None = None,
+    group_src: int | None = None,
 ):
     """
     Scatters picklable objects in ``scatter_object_input_list`` to the whole group.
@@ -3748,7 +3746,8 @@ def scatter_object_list(
             *[
                 _object_to_tensor(obj, pg_device, group)
                 for obj in scatter_object_input_list
-            ]
+            ],
+            strict=False,
         )
         tensor_list, tensor_sizes = list(tensor_list), list(tensor_sizes)
 
@@ -3866,7 +3865,7 @@ def all_gather(tensor_list, tensor, group=None, async_op=False):
     _ensure_all_tensors_same_dtype(tensor_list, tensor)
     if _rank_not_in_group(group):
         _warn_not_in_group("all_gather")
-        return
+        return None
 
     tensor_list = [
         t if not t.is_complex() else torch.view_as_real(t) for t in tensor_list
@@ -3880,7 +3879,7 @@ def all_gather(tensor_list, tensor, group=None, async_op=False):
 
     if async_op:
         return work
-    elif (
+    if (
         work is not None
     ):  # Backward compatible with backends that don't sync at CPP level
         work.wait()
@@ -3956,7 +3955,7 @@ def all_gather_into_tensor(output_tensor, input_tensor, group=None, async_op=Fal
     _check_single_tensor(output_tensor, "output_tensor")
     if _rank_not_in_group(group):
         _warn_not_in_group("all_gather_into_tensor")
-        return
+        return None
 
     output_tensor = (
         output_tensor
@@ -3980,14 +3979,13 @@ def all_gather_into_tensor(output_tensor, input_tensor, group=None, async_op=Fal
         _world.pg_coalesce_state[group].append(coll)
         if async_op:
             return _IllegalWork()
-        else:
-            return None
+        return None
 
     work = group._allgather_base(output_tensor, input_tensor, opts)
 
     if async_op:
         return work
-    elif (
+    if (
         work is not None
     ):  # Backward compatible with backends that don't sync at CPP level
         work.wait()
@@ -4081,7 +4079,7 @@ def all_gather_coalesced(
     # do shape and type checking.
     if _rank_not_in_group(group):
         _warn_not_in_group("all_gather_coalesced")
-        return
+        return None
     _check_tensor_list(input_tensor_list, "input_tensor_list")
     _ensure_all_tensors_same_dtype(input_tensor_list)
     if not isinstance(output_tensor_lists, list):
@@ -4107,7 +4105,7 @@ def all_gather_coalesced(
 
     if async_op:
         return work.get_future()
-    elif (
+    if (
         work is not None
     ):  # Backward compatible with backends that don't sync at CPP level
         work.wait()
@@ -4129,11 +4127,11 @@ def _validate_output_list_for_rank(my_rank, dst, gather_list):
 @_exception_logger
 def gather(
     tensor: torch.Tensor,
-    gather_list: Optional[list[torch.Tensor]] = None,
-    dst: Optional[int] = None,
-    group: Optional[ProcessGroup] = None,
+    gather_list: list[torch.Tensor] | None = None,
+    dst: int | None = None,
+    group: ProcessGroup | None = None,
     async_op: bool = False,
-    group_dst: Optional[int] = None,
+    group_dst: int | None = None,
 ):
     """
     Gathers a list of tensors in a single process.
@@ -4186,7 +4184,7 @@ def gather(
     group = _group_or_default_group(group)
     if _rank_not_in_group(group):
         _warn_not_in_group("gather")
-        return
+        return None
     if dst is None and group_dst is None:
         dst = 0
     group_dst = _canonicalize_group_rank(group, dst, group_dst, return_global=False)
@@ -4202,7 +4200,7 @@ def gather(
 
     if async_op:
         return work
-    elif (
+    if (
         work is not None
     ):  # Backward compatible with backends that don't sync at CPP level
         work.wait()
@@ -4212,11 +4210,11 @@ def gather(
 @_exception_logger
 def scatter(
     tensor: torch.Tensor,
-    scatter_list: Optional[list[torch.Tensor]] = None,
-    src: Optional[int] = None,
-    group: Optional[ProcessGroup] = None,
+    scatter_list: list[torch.Tensor] | None = None,
+    src: int | None = None,
+    group: ProcessGroup | None = None,
     async_op: bool = False,
-    group_src: Optional[int] = None,
+    group_src: int | None = None,
 ):
     """
     Scatters a list of tensors to all processes in a group.
@@ -4278,7 +4276,7 @@ def scatter(
     group_src = _canonicalize_group_rank(group, src, group_src, return_global=False)
     if _rank_not_in_group(group):
         _warn_not_in_group("scatter")
-        return
+        return None
     scatter_list = [
         t if not t.is_complex() else torch.view_as_real(t) for t in scatter_list
     ]
@@ -4307,7 +4305,7 @@ def scatter(
 
     if async_op:
         return work
-    elif (
+    if (
         work is not None
     ):  # Backward compatible with backends that don't sync at CPP level
         work.wait()
@@ -4339,7 +4337,7 @@ def reduce_scatter(output, input_list, op=ReduceOp.SUM, group=None, async_op=Fal
     _ensure_all_tensors_same_dtype(output, input_list)
     if _rank_not_in_group(group):
         _warn_not_in_group("reduce_scatter")
-        return
+        return None
 
     opts = ReduceScatterOptions()
     opts.reduceOp = op
@@ -4350,7 +4348,7 @@ def reduce_scatter(output, input_list, op=ReduceOp.SUM, group=None, async_op=Fal
 
     if async_op:
         return work
-    elif (
+    if (
         work is not None
     ):  # Backward compatible with backends that don't sync at CPP level
         work.wait()
@@ -4429,7 +4427,7 @@ def reduce_scatter_tensor(output, input, op=ReduceOp.SUM, group=None, async_op=F
 
     if _rank_not_in_group(group):
         _warn_not_in_group("reduce_scatter_tensor")
-        return
+        return None
 
     opts = ReduceScatterOptions()
     opts.reduceOp = op
@@ -4444,14 +4442,13 @@ def reduce_scatter_tensor(output, input, op=ReduceOp.SUM, group=None, async_op=F
         _world.pg_coalesce_state[group].append(coll)
         if async_op:
             return _IllegalWork()
-        else:
-            return None
+        return None
 
     work = group._reduce_scatter_base(output, input, opts)
 
     if async_op:
         return work
-    elif (
+    if (
         work is not None
     ):  # Backward compatible with backends that don't sync at CPP level
         work.wait()
@@ -4605,7 +4602,7 @@ def all_to_all_single(
 
     if _rank_not_in_group(group):
         _warn_not_in_group("all_to_all_single")
-        return
+        return None
 
     opts = AllToAllOptions()
     opts.asyncOp = async_op
@@ -4628,7 +4625,7 @@ def all_to_all_single(
 
     if async_op:
         return work
-    elif (
+    if (
         work is not None
     ):  # Backward compatible with backends that don't sync at CPP level
         work.wait()
@@ -4730,7 +4727,7 @@ def all_to_all(output_tensor_list, input_tensor_list, group=None, async_op=False
     """
     if _rank_not_in_group(group):
         _warn_not_in_group("all_to_all")
-        return
+        return None
 
     opts = AllToAllOptions()
     opts.asyncOp = async_op
@@ -4750,7 +4747,7 @@ def all_to_all(output_tensor_list, input_tensor_list, group=None, async_op=False
 
     if async_op:
         return work
-    elif (
+    if (
         work is not None
     ):  # Backward compatible with backends that don't sync at CPP level
         work.wait()
@@ -4759,7 +4756,7 @@ def all_to_all(output_tensor_list, input_tensor_list, group=None, async_op=False
 
 @_exception_logger
 def barrier(
-    group: Optional[ProcessGroup] = GroupMember.WORLD, async_op=False, device_ids=None
+    group: ProcessGroup | None = GroupMember.WORLD, async_op=False, device_ids=None
 ):
     """
     Synchronize all processes.
@@ -4783,7 +4780,7 @@ def barrier(
 
     if _rank_not_in_group(group):
         _warn_not_in_group("barrier")
-        return
+        return None
 
     opts = BarrierOptions()
     opts.asyncOp = async_op
@@ -4812,7 +4809,7 @@ def barrier(
 
     if async_op:
         return work
-    elif (
+    if (
         work is not None
     ):  # Backward compatible with backends that don't sync at CPP level
         work.wait()
@@ -4820,7 +4817,7 @@ def barrier(
 
 
 def monitored_barrier(
-    group: Optional[ProcessGroup] = GroupMember.WORLD,
+    group: ProcessGroup | None = GroupMember.WORLD,
     timeout=None,
     wait_all_ranks=False,
 ):
@@ -4875,7 +4872,7 @@ def monitored_barrier(
     # "Invalid process group" error is raised.
     if _rank_not_in_group(group):
         _warn_not_in_group("monitored_barrier")
-        return
+        return None
 
     if get_backend(group) != Backend.GLOO:
         raise ValueError("monitored_barrier is only implemented for GLOO backend.")
@@ -4954,7 +4951,7 @@ def _process_group_name(ranks, use_hashed_name):
     return pg_name
 
 
-def _get_backend_from_str(backend: Optional[str] = None) -> Backend:
+def _get_backend_from_str(backend: str | None = None) -> Backend:
     # Default to the same backend as the global process group
     #  if backend is not specified.
     if not backend:
@@ -4974,12 +4971,12 @@ def _is_safe_to_split() -> bool:
 
 @_time_logger
 def split_group(
-    parent_pg: Optional[ProcessGroup] = None,
-    split_ranks: Optional[list] = None,
-    timeout: Optional[timedelta] = None,
-    pg_options: Optional[Any] = None,
-    group_desc: Optional[str] = None,
-) -> Optional[ProcessGroup]:
+    parent_pg: ProcessGroup | None = None,
+    split_ranks: list | None = None,
+    timeout: timedelta | None = None,
+    pg_options: Any | None = None,
+    group_desc: str | None = None,
+) -> ProcessGroup | None:
     """
     Create a new process group split from the given parent process group.
 
@@ -5181,7 +5178,7 @@ def new_group(
     pg_options=None,
     use_local_synchronization=False,
     group_desc=None,
-    device_id: Optional[torch.device] = None,
+    device_id: torch.device | None = None,
 ):
     """
     Create a new distributed group.
@@ -5271,7 +5268,7 @@ def _new_group_with_tag(
     pg_tag=None,
     use_local_synchronization=False,
     group_desc=None,
-    device_id: Optional[torch.device] = None,
+    device_id: torch.device | None = None,
 ):
     """
     Variant of ``new_group`` that exposes tag creation.
@@ -5583,7 +5580,7 @@ def new_subgroups_by_enumeration(
     return cur_subgroup, subgroups
 
 
-def _find_pg_by_ranks_and_tag(tag: str, ranks: list[int]) -> Optional[ProcessGroup]:
+def _find_pg_by_ranks_and_tag(tag: str, ranks: list[int]) -> ProcessGroup | None:
     if len(tag) > 0 and not tag.startswith("ptd:") and not tag.startswith("user:"):
         tag = f"user:{tag}"
 

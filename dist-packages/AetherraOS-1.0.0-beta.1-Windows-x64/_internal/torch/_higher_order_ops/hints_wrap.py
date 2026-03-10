@@ -38,8 +38,7 @@ class HintsWrapper(HigherOrderOperator):
 
         if not all(isinstance(t, (torch.Tensor, int, float, bool)) for t in args):
             raise RuntimeError(
-                "args must be a tuple of tensors, ints, floats, or bools, got "
-                f"{args}"
+                f"args must be a tuple of tensors, ints, floats, or bools, got {args}"
             )
 
         if not isinstance(kwargs, dict):
@@ -138,5 +137,4 @@ def inner(proxy_mode, body_fn, args, kwargs, hints):
         return trace_hints_wrapper(
             proxy_mode, hints_wrapper, body_fn, args, kwargs, hints
         )
-    else:
-        return hints_wrapper(body_fn, args, kwargs, hints)
+    return hints_wrapper(body_fn, args, kwargs, hints)

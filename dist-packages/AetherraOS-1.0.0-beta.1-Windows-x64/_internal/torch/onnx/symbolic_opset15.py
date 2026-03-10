@@ -30,9 +30,9 @@ import functools
 
 import torch
 from torch import _C
-from torch.onnx import symbolic_helper, symbolic_opset9 as opset9
+from torch.onnx import symbolic_helper
+from torch.onnx import symbolic_opset9 as opset9
 from torch.onnx._internal import jit_utils, registration
-
 
 _onnx_symbolic = functools.partial(registration.onnx_symbolic, opset=15)
 
@@ -43,8 +43,7 @@ def aten__is_(g: jit_utils.GraphContext, self, other):
         if isinstance(self.type(), _C.OptionalType):
             none = g.op("OptionalHasElement", self)
             return g.op("Not", none)
-        else:
-            return g.op("Constant", value_t=torch.BoolTensor([0]))
+        return g.op("Constant", value_t=torch.BoolTensor([0]))
     return opset9.eq(g, self, other)
 
 

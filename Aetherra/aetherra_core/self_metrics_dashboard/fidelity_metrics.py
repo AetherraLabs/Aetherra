@@ -7,6 +7,6 @@ class MemoryFidelityScorer:
         self.last_score = 1.0
 
     def score(self, data):
-        # Placeholder: just return a mock score
+        # Baseline: return a default score until full metric logic is wired.
         self.last_score = 0.99
         return {"score": self.last_score}

@@ -57,9 +57,10 @@ supported.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from contextlib import AbstractContextManager, contextmanager
 from threading import local
-from typing import Any, Callable, cast, Generic, TYPE_CHECKING, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
 from torch.utils._ordered_set import OrderedSet
 
@@ -72,7 +73,6 @@ from .ops_handler import (  # noqa: F401
     StoreMode,
     WrapperHandler,
 )
-
 
 if TYPE_CHECKING:
     import torch
@@ -117,7 +117,7 @@ class Virtualized(Generic[T]):
     store other things, like booleans.
     """
 
-    def __init__(self, vname: str, default: Union[Callable[[], T], type[NullHandler]]):
+    def __init__(self, vname: str, default: Callable[[], T] | type[NullHandler]):
         self._vname = vname
         self._key: str = f"__torchinductor_{vname}"
         self._default = default
@@ -173,10 +173,9 @@ class NullKernelHandler(NullHandler):
 
         if self.index_dtype == "tl.int64":
             return torch.int64
-        elif self.index_dtype == "tl.int32":
+        if self.index_dtype == "tl.int32":
             return torch.int32
-        else:
-            raise ValueError(f"Unknown dtype: {self.index_dtype}")
+        raise ValueError(f"Unknown dtype: {self.index_dtype}")
 
 
 _ops: Virtualized[OpsHandler[Any]] = Virtualized(

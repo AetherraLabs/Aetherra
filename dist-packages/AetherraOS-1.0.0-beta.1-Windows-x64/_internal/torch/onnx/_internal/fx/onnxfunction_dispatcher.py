@@ -9,13 +9,13 @@ from __future__ import annotations
 import logging
 import operator
 import types
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 import torch._ops
 import torch.fx
-from torch.onnx._internal.fx import registration, type_utils as fx_type_utils
-
+from torch.onnx._internal.fx import registration
+from torch.onnx._internal.fx import type_utils as fx_type_utils
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -483,7 +483,9 @@ class _OnnxSchemaChecker:
         # NOTE: 2. The dtypes of inputs and attributes should be in the
         # type constraints of the OpSchema. If they are not, we know the function is not
         # eligible to be a perfect match, but can be a nearest match candidate.
-        for schema_input, torch_input in zip(self.op_schema.inputs, function_inputs):
+        for schema_input, torch_input in zip(
+            self.op_schema.inputs, function_inputs, strict=False
+        ):
             torch_input_compatible_types = _find_onnx_data_type(torch_input)
             allowed_types = self.type_constraints[schema_input.type_str]
             if not allowed_types.intersection(torch_input_compatible_types) and not any(
@@ -569,7 +571,9 @@ class _OnnxSchemaChecker:
         self._matching_score = 0
         # If they have different length of arguments, the score would be lower to those
         # functions which have the same length of arguments.
-        for schema_input, torch_input in zip(self.op_schema.inputs, inputs):
+        for schema_input, torch_input in zip(
+            self.op_schema.inputs, inputs, strict=False
+        ):
             torch_input_compatible_types = _find_onnx_data_type(torch_input)
             allowed_types = self.type_constraints[schema_input.type_str]
             if allowed_types.intersection(torch_input_compatible_types):
@@ -680,7 +684,7 @@ def _is_arg_with_complex_dtype(arg: fx_type_utils.Argument) -> bool:
         and torch.is_complex(arg.meta["val"])
     ):
         return True
-    elif isinstance(arg, list):
+    if isinstance(arg, list):
         for item in arg:
             return _is_arg_with_complex_dtype(item)
     return False
@@ -713,9 +717,8 @@ def _find_onnx_data_type(
         if any(isinstance(input, fx_type_utils.TensorLike) for input in torch_input):
             # NOTE: Any Tensor involved in a list would make it a seq(tensor(onnx_type))
             return {f"seq({dtype})" for dtype in set_dtype}
-        else:
-            # constant list of non-tensor type
-            return set_dtype
+        # constant list of non-tensor type
+        return set_dtype
     if (
         torch_input is None
         or (

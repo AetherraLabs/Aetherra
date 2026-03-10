@@ -233,9 +233,7 @@ class EmotionDetector:
         # Determine primary emotion
         primary_emotion = EmotionCategory.NEUTRAL.value
         if emotion_scores:
-            primary_emotion = max(
-                emotion_scores.keys(), key=lambda k: emotion_scores[k]
-            )
+            primary_emotion = max(emotion_scores.keys(), key=lambda k: emotion_scores[k])
 
         # Detect intent
         detected_intent = self._detect_intent(text_lower)

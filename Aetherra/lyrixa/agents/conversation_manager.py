@@ -485,7 +485,7 @@ class LyrixaEnhancedConversationManager:
             except Exception as e:
                 logger.warning(f"OpenAI API error: {e}")
 
-        # Fallback to placeholder responses
+        # Fallback to baseline responses
         message_lower = message.lower()
 
         if "hello" in message_lower or "hi" in message_lower:

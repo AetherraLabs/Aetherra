@@ -14,7 +14,8 @@ import functools
 import inspect
 import pickle
 import warnings
-from typing import Any, Callable, Union
+from collections.abc import Callable
+from typing import Any
 
 import torch
 import torch._jit_internal as _jit_internal
@@ -29,9 +30,9 @@ from torch.jit._monkeytype_config import (
     monkeytype_trace,
 )
 from torch.jit._recursive import (
+    ScriptMethodStub,
     _compile_and_register_class,
     infer_methods_to_compile,
-    ScriptMethodStub,
     wrap_cpp_module,
 )
 from torch.jit._state import (
@@ -52,7 +53,6 @@ from torch.package import PackageExporter, PackageImporter
 from torch.utils import set_module
 
 from ._serialization import validate_map_location
-
 
 type_trace_db = JitTypeTraceStore()  # DB to hold all call traces from MonkeyType
 
@@ -315,8 +315,7 @@ class ScriptMeta(type):
                     cls = type(module)
                     if hasattr(cls, "_methods"):
                         return [v for k, v in sorted(cls._methods.items())]
-                    else:
-                        return infer_methods_to_compile(module)
+                    return infer_methods_to_compile(module)
 
                 self.__dict__["_actual_script_module"] = (
                     torch.jit._recursive.create_script_module(
@@ -492,8 +491,7 @@ if _enabled:
         def __iadd__(self, other):
             if self._c._has_method("__iadd__"):
                 return self.forward_magic_method("__iadd__", other)
-            else:
-                return self.forward_magic_method("__add__", other)
+            return self.forward_magic_method("__add__", other)
 
     for method_name in _magic_methods:
 
@@ -817,9 +815,9 @@ if _enabled:
             # but we want to get the python wrapper from _modules instead of the raw _c object.
             if attr in self._modules:
                 return self._modules[attr]
-            elif self._c.hasattr(attr):
+            if self._c.hasattr(attr):
                 return self._c.getattr(attr)
-            elif self._c._has_method(attr):
+            if self._c._has_method(attr):
                 script_method = self._c._get_method(attr)
                 # cache method so future calls do not go through __getattr__
                 # to improve invocation performance
@@ -1094,7 +1092,7 @@ def _script_impl(
     optimize=None,
     _frames_up=0,
     _rcb=None,
-    example_inputs: Union[list[tuple], dict[Callable, list[tuple]], None] = None,
+    example_inputs: list[tuple] | dict[Callable, list[tuple]] | None = None,
 ):
     global type_trace_db
 
@@ -1152,12 +1150,9 @@ def _script_impl(
         return torch.jit._recursive.create_script_module(
             obj, torch.jit._recursive.infer_methods_to_compile
         )
-    else:
-        obj = (
-            obj.__prepare_scriptable__()
-            if hasattr(obj, "__prepare_scriptable__")
-            else obj
-        )  # type: ignore[operator]
+    obj = (
+        obj.__prepare_scriptable__() if hasattr(obj, "__prepare_scriptable__") else obj
+    )  # type: ignore[operator]
 
     if isinstance(obj, dict):
         return create_script_dict(obj)
@@ -1192,7 +1187,7 @@ def _script_impl(
             _rcb = _jit_internal.createResolutionCallbackFromFrame(_frames_up + 1)
         _compile_and_register_class(obj, _rcb, qualified_name)
         return obj
-    elif inspect.isfunction(obj) or inspect.ismethod(obj):
+    if inspect.isfunction(obj) or inspect.ismethod(obj):
         qualified_name = _qualified_name(obj)
         # this is a decorated fn, and we need to the underlying fn and its rcb
         if hasattr(obj, "__script_if_tracing_wrapper"):
@@ -1222,8 +1217,7 @@ def _script_impl(
         fn._torchdynamo_inline = obj  # type: ignore[attr-defined]
         _set_jit_function_cache(obj, fn)
         return fn
-    else:
-        return torch.jit._recursive.create_script_class(obj)
+    return torch.jit._recursive.create_script_class(obj)
 
 
 def script(
@@ -1231,7 +1225,7 @@ def script(
     optimize=None,
     _frames_up=0,
     _rcb=None,
-    example_inputs: Union[list[tuple], dict[Callable, list[tuple]], None] = None,
+    example_inputs: list[tuple] | dict[Callable, list[tuple]] | None = None,
 ):
     r"""Script the function.
 

@@ -2,7 +2,7 @@
 import torch
 import torch.distributed as dist
 import torch.distributed.distributed_c10d as distributed_c10d
-from torch.distributed._shard.sharded_tensor import _sharded_op_impl, ShardedTensor
+from torch.distributed._shard.sharded_tensor import ShardedTensor, _sharded_op_impl
 
 
 def _communicate_result(result, pg):

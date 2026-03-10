@@ -29,9 +29,7 @@ class OptimizerPlugin:
 
         # Check for common anti-patterns
         if "for" in code_content and "append" in code_content:
-            suggestions.append(
-                "Consider using list comprehensions instead of append in loops"
-            )
+            suggestions.append("Consider using list comprehensions instead of append in loops")
 
         if "import *" in code_content:
             suggestions.append(
@@ -61,9 +59,7 @@ class OptimizerPlugin:
                 "Large memory dataset detected - consider using generators or iterators"
             )
 
-        suggestions.append(
-            "Implement memory cleanup routines for long-running processes"
-        )
+        suggestions.append("Implement memory cleanup routines for long-running processes")
         suggestions.append("Consider using __slots__ for classes with many instances")
 
         return suggestions
@@ -77,9 +73,7 @@ class OptimizerPlugin:
             "sorting": "Use built-in sort() which is highly optimized (Timsort)",
         }
 
-        return improvements.get(
-            algorithm_pattern, "No specific algorithmic improvements detected"
-        )
+        return improvements.get(algorithm_pattern, "No specific algorithmic improvements detected")
 
     def generate_optimization_report(self, target, context=None):
         """Generate comprehensive optimization report"""

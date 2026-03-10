@@ -1,14 +1,16 @@
 # mypy: ignore-errors
 
-import torch
 from functools import partial
+
+import numpy as np
+
+import torch
 from torch.testing import make_tensor
+from torch.testing._internal.common_dtype import all_types_and
 from torch.testing._internal.opinfo.core import (
     OpInfo,
     SampleInput,
 )
-from torch.testing._internal.common_dtype import all_types_and
-import numpy as np
 
 # Note: [autograd.Function db]
 #
@@ -30,8 +32,8 @@ class NumpyCube(torch.autograd.Function):
     @staticmethod
     def forward(input):
         input_np = to_numpy(input)
-        dinput = torch.tensor(3 * input_np ** 2, device=input.device)
-        return torch.tensor(input_np ** 3, device=input.device), dinput
+        dinput = torch.tensor(3 * input_np**2, device=input.device)
+        return torch.tensor(input_np**3, device=input.device), dinput
 
     @staticmethod
     def setup_context(ctx, inputs, output):
@@ -41,7 +43,9 @@ class NumpyCube(torch.autograd.Function):
     @staticmethod
     def backward(ctx, grad_output, grad_saved):
         input, dinput = ctx.saved_tensors
-        return NumpyMul.apply(grad_output, dinput) + 6 * NumpyMul.apply(grad_saved, input)
+        return NumpyMul.apply(grad_output, dinput) + 6 * NumpyMul.apply(
+            grad_saved, input
+        )
 
     @staticmethod
     def vmap(info, in_dims, input):
@@ -51,7 +55,9 @@ class NumpyCube(torch.autograd.Function):
     @staticmethod
     def jvp(ctx, input_tangent):
         input, dinput = ctx.saved_tensors
-        return NumpyMul.apply(input_tangent, dinput), 6 * NumpyMul.apply(input_tangent, input)
+        return NumpyMul.apply(input_tangent, dinput), 6 * NumpyMul.apply(
+            input_tangent, input
+        )
 
 
 class CubeGenVmap(torch.autograd.Function):
@@ -59,7 +65,7 @@ class CubeGenVmap(torch.autograd.Function):
 
     @staticmethod
     def forward(x):
-        return x ** 3, 3 * x ** 2
+        return x**3, 3 * x**2
 
     @staticmethod
     def setup_context(ctx, inputs, outputs):
@@ -75,11 +81,15 @@ class CubeGenVmap(torch.autograd.Function):
     @staticmethod
     def jvp(ctx, input_tangent):
         input, dinput = ctx.saved_tensors
-        return MulGenVmap.apply(input_tangent, dinput), 6 * NumpyMul.apply(input_tangent, input)
+        return MulGenVmap.apply(input_tangent, dinput), 6 * NumpyMul.apply(
+            input_tangent, input
+        )
 
 
 def sample_inputs_numpy_cube(opinfo, device, dtype, requires_grad, **kwargs):
-    make_arg = partial(make_tensor, device=device, dtype=dtype, requires_grad=requires_grad)
+    make_arg = partial(
+        make_tensor, device=device, dtype=dtype, requires_grad=requires_grad
+    )
     yield SampleInput(make_arg(1, low=0.8, high=2), args=())
 
 
@@ -87,7 +97,7 @@ class NumpyCubeNotComposable(torch.autograd.Function):
     @staticmethod
     def forward(input):
         input_np = to_numpy(input)
-        return torch.tensor(input_np ** 3, device=input.device), input_np
+        return torch.tensor(input_np**3, device=input.device), input_np
 
     @staticmethod
     def setup_context(ctx, inputs, output):
@@ -98,7 +108,7 @@ class NumpyCubeNotComposable(torch.autograd.Function):
     @staticmethod
     @torch.autograd.function.once_differentiable
     def backward(ctx, grad_output, grad_saved):
-        result_np = 3 * (ctx.input_np ** 2)
+        result_np = 3 * (ctx.input_np**2)
         return torch.tensor(result_np, device=ctx.device)
 
 
@@ -137,14 +147,23 @@ class NumpyMul(torch.autograd.Function):
         x, y = ctx.saved_tensors
         return x_tangent * y + y_tangent * x
 
+
 def sample_inputs_numpy_mul(opinfo, device, dtype, requires_grad, **kwargs):
-    make_arg = partial(make_tensor, device=device, dtype=dtype, requires_grad=requires_grad)
+    make_arg = partial(
+        make_tensor, device=device, dtype=dtype, requires_grad=requires_grad
+    )
     # Broadcasting
-    yield SampleInput(make_arg(4, low=0.9, high=2), args=(make_arg(3, 4, low=0.9, high=2),))
+    yield SampleInput(
+        make_arg(4, low=0.9, high=2), args=(make_arg(3, 4, low=0.9, high=2),)
+    )
+
 
 def sample_inputs_numpy_mul_scalar(opinfo, device, dtype, requires_grad, **kwargs):
-    make_arg = partial(make_tensor, device=device, dtype=dtype, requires_grad=requires_grad)
+    make_arg = partial(
+        make_tensor, device=device, dtype=dtype, requires_grad=requires_grad
+    )
     yield SampleInput(make_arg(4, low=0.9, high=2), args=(), kwargs={"scalar": 3.14})
+
 
 class MulGenVmap(torch.autograd.Function):
     generate_vmap_rule = True
@@ -184,14 +203,14 @@ class NumpyExp_(torch.autograd.Function):
 
     @staticmethod
     def setup_context(ctx, inputs, output):
-        x, = inputs
+        (x,) = inputs
         ctx.mark_dirty(x)
         ctx.save_for_backward(output)
         ctx.save_for_forward(output)
 
     @staticmethod
     def backward(ctx, grad_output):
-        output, = ctx.saved_tensors
+        (output,) = ctx.saved_tensors
         return NumpyMul.apply(grad_output, output)
 
     @staticmethod
@@ -202,9 +221,10 @@ class NumpyExp_(torch.autograd.Function):
     @staticmethod
     def jvp(ctx, x_tangent):
         # Doesn't call numpy operations because I didn't want to write NumpyMul_
-        output, = ctx.saved_tensors
+        (output,) = ctx.saved_tensors
         x_tangent.mul_(output)
         return x_tangent
+
 
 class NumpySort(torch.autograd.Function):
     @staticmethod
@@ -246,6 +266,7 @@ class NumpySort(torch.autograd.Function):
         ind, ind_inv = ctx.saved_tensors
         return NumpyTake.apply(x_tangent, ind, ind_inv, ctx.dim), None, None
 
+
 class SortGenVmap(torch.autograd.Function):
     generate_vmap_rule = True
 
@@ -277,12 +298,16 @@ class SortGenVmap(torch.autograd.Function):
 
 
 def sample_inputs_numpy_sort(opinfo, device, dtype, requires_grad, **kwargs):
-    make_arg = partial(make_tensor, device=device, dtype=dtype, requires_grad=requires_grad)
+    make_arg = partial(
+        make_tensor, device=device, dtype=dtype, requires_grad=requires_grad
+    )
     yield SampleInput(make_arg(3, 5), args=(1,))
 
 
 def sample_inputs_numpy_take(opinfo, device, dtype, requires_grad, **kwargs):
-    make_arg = partial(make_tensor, device=device, dtype=dtype, requires_grad=requires_grad)
+    make_arg = partial(
+        make_tensor, device=device, dtype=dtype, requires_grad=requires_grad
+    )
     tensor = make_arg(3, 5)
     dim = 1
     _, ind, ind_inv = NumpySort.apply(tensor, 1)
@@ -336,6 +361,7 @@ class NumpyTake(torch.autograd.Function):
         ind, ind_inv = ctx.saved_tensors
         return NumpyTake.apply(x_tangent, ind, ind_inv, ctx.dim)
 
+
 class TakeGenVmap(torch.autograd.Function):
     generate_vmap_rule = True
 
@@ -360,6 +386,7 @@ class TakeGenVmap(torch.autograd.Function):
     def jvp(ctx, x_tangent, ind_tangent, ind_inv_tangent, _):
         ind, ind_inv = ctx.saved_tensors
         return TakeGenVmap.apply(x_tangent, ind, ind_inv, ctx.dim)
+
 
 class Select(torch.autograd.Function):
     @staticmethod
@@ -388,6 +415,7 @@ class Select(torch.autograd.Function):
     def jvp(ctx, x_tangent, _):
         return Select.apply(x_tangent, ctx.idx)
 
+
 class SelectGenVmap(torch.autograd.Function):
     generate_vmap_rule = True
 
@@ -413,8 +441,11 @@ class SelectGenVmap(torch.autograd.Function):
 
 
 def sample_inputs_select(opinfo, device, dtype, requires_grad, **kwargs):
-    make_arg = partial(make_tensor, device=device, dtype=dtype, requires_grad=requires_grad)
+    make_arg = partial(
+        make_tensor, device=device, dtype=dtype, requires_grad=requires_grad
+    )
     yield SampleInput(make_arg(3, 5), args=(2,))
+
 
 class ScaleGradGenVmap(torch.autograd.Function):
     generate_vmap_rule = True
@@ -435,6 +466,7 @@ class ScaleGradGenVmap(torch.autograd.Function):
     @staticmethod
     def jvp(ctx, x_tangent):
         return x_tangent * ScaleGradGenVmap.scale
+
 
 class ZeroGradientsGenVmap(torch.autograd.Function):
     generate_vmap_rule = True
@@ -468,7 +500,9 @@ class ZeroGradientsGenVmap(torch.autograd.Function):
 
 
 def sample_inputs_forward_default_args(opinfo, device, dtype, requires_grad, **kwargs):
-    make_arg = partial(make_tensor, device=device, dtype=dtype, requires_grad=requires_grad)
+    make_arg = partial(
+        make_tensor, device=device, dtype=dtype, requires_grad=requires_grad
+    )
     yield SampleInput(make_arg(3, 5))
 
 
@@ -502,7 +536,7 @@ class ForwardHasDefaultArgs(torch.autograd.Function):
 
 autograd_function_db = [
     OpInfo(
-        'NumpyCubeAutogradFunction',
+        "NumpyCubeAutogradFunction",
         op=NumpyCube.apply,
         supports_forward_ad=True,
         supports_fwgrad_bwgrad=True,
@@ -511,7 +545,7 @@ autograd_function_db = [
         supports_out=False,
     ),
     OpInfo(
-        'NumpyExpMarkDirtyAutogradFunction',
+        "NumpyExpMarkDirtyAutogradFunction",
         op=lambda x: NumpyExp_.apply(x.clone()),
         inplace_variant=NumpyExp_.apply,
         supports_forward_ad=True,
@@ -521,7 +555,7 @@ autograd_function_db = [
         supports_out=False,
     ),
     OpInfo(
-        'NumpyMulAutogradFunction',
+        "NumpyMulAutogradFunction",
         op=NumpyMul.apply,
         supports_forward_ad=True,
         supports_fwgrad_bwgrad=True,
@@ -530,7 +564,7 @@ autograd_function_db = [
         supports_out=False,
     ),
     OpInfo(
-        'NumpyCubeNotComposableAutogradFunction',
+        "NumpyCubeNotComposableAutogradFunction",
         op=lambda x: NumpyCubeNotComposable.apply(x)[0],
         supports_forward_ad=False,
         supports_fwgrad_bwgrad=False,
@@ -539,7 +573,7 @@ autograd_function_db = [
         supports_out=False,
     ),
     OpInfo(
-        'NumpySortAutogradFunction',
+        "NumpySortAutogradFunction",
         op=NumpySort.apply,
         supports_forward_ad=False,
         supports_fwgrad_bwgrad=False,
@@ -549,7 +583,7 @@ autograd_function_db = [
         gradcheck_wrapper=lambda y, ind: y,
     ),
     OpInfo(
-        'NumpyTakeAutogradFunction',
+        "NumpyTakeAutogradFunction",
         op=NumpyTake.apply,
         supports_forward_ad=False,
         supports_fwgrad_bwgrad=False,
@@ -558,7 +592,7 @@ autograd_function_db = [
         supports_out=False,
     ),
     OpInfo(
-        'SelectAutogradFunction',
+        "SelectAutogradFunction",
         op=Select.apply,
         supports_forward_ad=True,
         supports_fwgrad_bwgrad=True,
@@ -567,7 +601,7 @@ autograd_function_db = [
         supports_out=False,
     ),
     OpInfo(
-        'CubeGenVmapAutogradFunction',
+        "CubeGenVmapAutogradFunction",
         op=CubeGenVmap.apply,
         supports_forward_ad=True,
         supports_fwgrad_bwgrad=True,
@@ -576,7 +610,7 @@ autograd_function_db = [
         supports_out=False,
     ),
     OpInfo(
-        'MulGenVmapAutogradFunction',
+        "MulGenVmapAutogradFunction",
         op=MulGenVmap.apply,
         supports_forward_ad=True,
         supports_fwgrad_bwgrad=True,
@@ -585,7 +619,7 @@ autograd_function_db = [
         supports_out=False,
     ),
     OpInfo(
-        'SortGenVmapAutogradFunction',
+        "SortGenVmapAutogradFunction",
         op=SortGenVmap.apply,
         supports_forward_ad=True,
         supports_fwgrad_bwgrad=True,
@@ -595,7 +629,7 @@ autograd_function_db = [
         gradcheck_wrapper=lambda y, ind: y,
     ),
     OpInfo(
-        'SelectGenVmapAutogradFunction',
+        "SelectGenVmapAutogradFunction",
         op=SelectGenVmap.apply,
         supports_forward_ad=True,
         supports_fwgrad_bwgrad=True,
@@ -604,7 +638,7 @@ autograd_function_db = [
         supports_out=False,
     ),
     OpInfo(
-        'ScaleGradGenVmapAutogradFunction',
+        "ScaleGradGenVmapAutogradFunction",
         op=ScaleGradGenVmap.apply,
         supports_forward_ad=True,
         supports_fwgrad_bwgrad=True,
@@ -613,7 +647,7 @@ autograd_function_db = [
         supports_out=False,
     ),
     OpInfo(
-        'ZeroGradientsGenVmapAutogradFunction',
+        "ZeroGradientsGenVmapAutogradFunction",
         op=ZeroGradientsGenVmap.apply,
         supports_forward_ad=True,
         supports_fwgrad_bwgrad=True,
@@ -622,7 +656,7 @@ autograd_function_db = [
         supports_out=False,
     ),
     OpInfo(
-        'ForwardHasDefaultArgsAutogradFunction',
+        "ForwardHasDefaultArgsAutogradFunction",
         op=ForwardHasDefaultArgs.apply,
         supports_forward_ad=True,
         supports_fwgrad_bwgrad=True,

@@ -108,9 +108,7 @@ class LyrixaAdvancedPluginManager:
     ):
         self.plugin_directory = Path(plugin_directory)
         self.additional_directories = [Path(d) for d in (additional_directories or [])]
-        self.all_plugin_directories = [
-            self.plugin_directory
-        ] + self.additional_directories
+        self.all_plugin_directories = [self.plugin_directory] + self.additional_directories
         self.memory_system = memory_system
 
         # Plugin registry
@@ -184,9 +182,7 @@ class LyrixaAdvancedPluginManager:
                             await self._load_plugin_from_package(plugin_subdir)
                             discovered_count += 1
                         except Exception as e:
-                            print(
-                                f"⚠️ Failed to load plugin package {plugin_subdir.name}: {e}"
-                            )
+                            print(f"⚠️ Failed to load plugin package {plugin_subdir.name}: {e}")
 
         print(f"🔍 Auto-discovery complete: {discovered_count} plugins found")
 
@@ -249,9 +245,7 @@ class LyrixaAdvancedPluginManager:
         finally:
             sys.path.remove(str(self.plugin_directory))
 
-    async def _extract_plugin_metadata(
-        self, module, plugin_name: str
-    ) -> PluginMetadata:
+    async def _extract_plugin_metadata(self, module, plugin_name: str) -> PluginMetadata:
         """Extract metadata from a plugin module"""
 
         # Default metadata
@@ -279,11 +273,7 @@ class LyrixaAdvancedPluginManager:
         functions = {}
 
         for name, obj in inspect.getmembers(module):
-            if (
-                inspect.isfunction(obj)
-                and not name.startswith("_")
-                and hasattr(obj, "__call__")
-            ):
+            if inspect.isfunction(obj) and not name.startswith("_") and callable(obj):
                 functions[name] = obj
 
         return functions
@@ -315,12 +305,10 @@ class LyrixaAdvancedPluginManager:
         intent_keywords = intent.lower().split()
         for plugin_name, metadata in self.plugin_metadata.items():
             capability_match = any(
-                keyword in " ".join(metadata.capabilities).lower()
-                for keyword in intent_keywords
+                keyword in " ".join(metadata.capabilities).lower() for keyword in intent_keywords
             )
             tag_match = any(
-                keyword in " ".join(metadata.tags).lower()
-                for keyword in intent_keywords
+                keyword in " ".join(metadata.tags).lower() for keyword in intent_keywords
             )
 
             if capability_match or tag_match:
@@ -362,9 +350,7 @@ class LyrixaAdvancedPluginManager:
 
             plugin = self.plugins[plugin_name]
             if function_name not in plugin["functions"]:
-                raise ValueError(
-                    f"Function '{function_name}' not found in plugin '{plugin_name}'"
-                )
+                raise ValueError(f"Function '{function_name}' not found in plugin '{plugin_name}'")
 
             # Execute function
             func = plugin["functions"][function_name]
@@ -390,24 +376,18 @@ class LyrixaAdvancedPluginManager:
             metadata = self.plugin_metadata[plugin_name]
             if execution.success:
                 # Update average execution time
-                total_time = metadata.average_execution_time * (
-                    metadata.usage_count - 1
-                )
+                total_time = metadata.average_execution_time * (metadata.usage_count - 1)
                 metadata.average_execution_time = (
                     total_time + execution.execution_time
                 ) / metadata.usage_count
 
                 # Update success rate
                 successful_executions = metadata.usage_count * metadata.success_rate
-                metadata.success_rate = (successful_executions + 1) / (
-                    metadata.usage_count + 1
-                )
+                metadata.success_rate = (successful_executions + 1) / (metadata.usage_count + 1)
             else:
                 # Update success rate for failed execution
                 successful_executions = metadata.usage_count * metadata.success_rate
-                metadata.success_rate = successful_executions / (
-                    metadata.usage_count + 1
-                )
+                metadata.success_rate = successful_executions / (metadata.usage_count + 1)
 
         self.execution_history.append(execution)
         return execution
@@ -439,9 +419,7 @@ class LyrixaAdvancedPluginManager:
         print(f"✅ Created plugin chain: {chain_name}")
         return chain
 
-    async def execute_plugin_chain(
-        self, chain_name: str, initial_input: Any
-    ) -> Dict[str, Any]:
+    async def execute_plugin_chain(self, chain_name: str, initial_input: Any) -> Dict[str, Any]:
         """Execute a plugin chain"""
         if chain_name not in self.plugin_chains:
             raise ValueError(f"Plugin chain '{chain_name}' not found")
@@ -526,9 +504,7 @@ class LyrixaAdvancedPluginManager:
             function_name = step.get("function", "main")
             config = step.get("config", {})
             try:
-                exec_task = self.execute_plugin(
-                    plugin_name, function_name, shared_input, **config
-                )
+                exec_task = self.execute_plugin(plugin_name, function_name, shared_input, **config)
                 execution = await _asyncio.wait_for(exec_task, timeout=timeout)
                 return {
                     "index": idx,
@@ -538,7 +514,7 @@ class LyrixaAdvancedPluginManager:
                     "execution_time": execution.execution_time,
                     "error": execution.error_message,
                 }
-            except _asyncio.TimeoutError:
+            except TimeoutError:
                 return {
                     "index": idx,
                     "plugin": plugin_name,
@@ -674,17 +650,11 @@ class LyrixaAdvancedPluginManager:
         }
 
         # Determine plugin type
-        if any(
-            word in description_lower
-            for word in ["analyze", "scan", "inspect", "check"]
-        ):
+        if any(word in description_lower for word in ["analyze", "scan", "inspect", "check"]):
             analysis["plugin_type"] = PluginType.ANALYSIS
             analysis["capabilities"].extend(["analysis", "inspection", "validation"])
 
-        if any(
-            word in description_lower
-            for word in ["generate", "create", "build", "make"]
-        ):
+        if any(word in description_lower for word in ["generate", "create", "build", "make"]):
             analysis["plugin_type"] = PluginType.GENERATION
             analysis["capabilities"].extend(["generation", "creation", "building"])
 
@@ -720,9 +690,7 @@ class LyrixaAdvancedPluginManager:
 
         return analysis
 
-    def _generate_plugin_template(
-        self, plugin_name: str, analysis: Dict[str, Any]
-    ) -> str:
+    def _generate_plugin_template(self, plugin_name: str, analysis: Dict[str, Any]) -> str:
         """Generate plugin code template based on analysis"""
 
         template = f'''#!/usr/bin/env python3
@@ -731,7 +699,7 @@ class LyrixaAdvancedPluginManager:
 {("=" * (len(plugin_name) + 9))}
 
 Auto-generated plugin scaffold for Lyrixa.
-TODO: Implement the actual functionality.
+Implement project-specific functionality in this scaffold before production use.
 """
 
 __version__ = "1.0.0"
@@ -755,7 +723,7 @@ class {plugin_name.title()}Plugin:
     """
     Main plugin class for {plugin_name}
 
-    TODO: Implement the plugin functionality based on requirements.
+    Implement plugin functionality based on project requirements.
     """
 
     def __init__(self):
@@ -770,7 +738,7 @@ class {plugin_name.title()}Plugin:
             template += f'''
     async def {func_name}(self, input_data: Any, **kwargs) -> Dict[str, Any]:
         """
-        TODO: Implement {func_name} functionality
+        Implement {func_name} functionality
 
         Args:
             input_data: The input data to process
@@ -780,7 +748,7 @@ class {plugin_name.title()}Plugin:
             Dict containing the processed results
         """
         try:
-            # TODO: Implement actual functionality here
+            # Add domain-specific processing logic here.
             result = {{
                 "status": "success",
                 "data": input_data,  # Replace with actual processing
@@ -825,9 +793,7 @@ async def {func_name}(input_data: Any, **kwargs) -> Dict[str, Any]:
         suggestions = []
 
         # Find relevant plugins
-        relevant_plugins = await self.route_intent_to_plugins(
-            user_input, user_input, context
-        )
+        relevant_plugins = await self.route_intent_to_plugins(user_input, user_input, context)
 
         for plugin_name in relevant_plugins:
             metadata = self.plugin_metadata[plugin_name]
@@ -850,33 +816,25 @@ async def {func_name}(input_data: Any, **kwargs) -> Dict[str, Any]:
 
         return suggestions
 
-    def _calculate_relevance_score(
-        self, user_input: str, metadata: PluginMetadata
-    ) -> float:
+    def _calculate_relevance_score(self, user_input: str, metadata: PluginMetadata) -> float:
         """Calculate how relevant a plugin is to the user input"""
         score = 0.0
         user_words = user_input.lower().split()
 
         # Check capabilities
         capability_matches = sum(
-            1
-            for word in user_words
-            if any(word in cap.lower() for cap in metadata.capabilities)
+            1 for word in user_words if any(word in cap.lower() for cap in metadata.capabilities)
         )
         score += capability_matches * 0.3
 
         # Check tags
         tag_matches = sum(
-            1
-            for word in user_words
-            if any(word in tag.lower() for tag in metadata.tags)
+            1 for word in user_words if any(word in tag.lower() for tag in metadata.tags)
         )
         score += tag_matches * 0.2
 
         # Check description
-        desc_matches = sum(
-            1 for word in user_words if word in metadata.description.lower()
-        )
+        desc_matches = sum(1 for word in user_words if word in metadata.description.lower())
         score += desc_matches * 0.1
 
         # Performance bonus
@@ -899,22 +857,15 @@ async def {func_name}(input_data: Any, **kwargs) -> Dict[str, Any]:
             if self.execution_history
             else 1.0,
             "plugins_by_type": {
-                ptype.value: sum(
-                    1 for m in self.plugin_metadata.values() if m.plugin_type == ptype
-                )
+                ptype.value: sum(1 for m in self.plugin_metadata.values() if m.plugin_type == ptype)
                 for ptype in PluginType
             },
             "top_plugins": sorted(
-                [
-                    (name, meta.usage_count)
-                    for name, meta in self.plugin_metadata.items()
-                ],
+                [(name, meta.usage_count) for name, meta in self.plugin_metadata.items()],
                 key=lambda x: x[1],
                 reverse=True,
             )[:5],
-            "recent_executions": self.execution_history[-10:]
-            if self.execution_history
-            else [],
+            "recent_executions": self.execution_history[-10:] if self.execution_history else [],
         }
 
     async def _load_plugin_chains(self):
@@ -973,17 +924,13 @@ async def {func_name}(input_data: Any, **kwargs) -> Dict[str, Any]:
 
                     # Filter out unexpected keys from chain_data
                     valid_keys = required_fields | {"usage_count"}
-                    filtered_chain_data = {
-                        k: v for k, v in chain_data.items() if k in valid_keys
-                    }
+                    filtered_chain_data = {k: v for k, v in chain_data.items() if k in valid_keys}
 
                     try:
                         chain = PluginChain(**filtered_chain_data)
                         self.plugin_chains[chain.name] = chain
                     except Exception as chain_error:
-                        print(
-                            f"⚠️ Failed to create plugin chain from data: {chain_error}"
-                        )
+                        print(f"⚠️ Failed to create plugin chain from data: {chain_error}")
                         continue
 
             print(f"✅ Loaded {len(self.plugin_chains)} plugin chains from memory")

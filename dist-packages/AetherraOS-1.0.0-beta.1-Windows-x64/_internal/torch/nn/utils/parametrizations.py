@@ -1,13 +1,11 @@
 # mypy: allow-untyped-defs
-from enum import auto, Enum
-from typing import Optional
+from enum import Enum, auto
 
 import torch
 import torch.nn.functional as F
 from torch import Tensor
 from torch.nn.modules import Module
 from torch.nn.utils import parametrize
-
 
 __all__ = ["orthogonal", "spectral_norm", "weight_norm"]
 
@@ -163,35 +161,34 @@ class _Orthogonal(Module):
             # to use a particular reflection
             A.diagonal(dim1=-2, dim2=-1)[tau == 0.0] *= -1
             return A.mT if transpose else A
-        else:
-            if n == k:
-                # We check whether Q is orthogonal
-                if not _is_orthogonal(Q):
-                    Q = _make_orthogonal(Q)
-                else:  # Is orthogonal
-                    Q = Q.clone()
-            else:
-                # Complete Q into a full n x n orthogonal matrix
-                N = torch.randn(
-                    *(Q.size()[:-2] + (n, n - k)), dtype=Q.dtype, device=Q.device
-                )
-                Q = torch.cat([Q, N], dim=-1)
+        if n == k:
+            # We check whether Q is orthogonal
+            if not _is_orthogonal(Q):
                 Q = _make_orthogonal(Q)
-            self.base = Q
+            else:  # Is orthogonal
+                Q = Q.clone()
+        else:
+            # Complete Q into a full n x n orthogonal matrix
+            N = torch.randn(
+                *(Q.size()[:-2] + (n, n - k)), dtype=Q.dtype, device=Q.device
+            )
+            Q = torch.cat([Q, N], dim=-1)
+            Q = _make_orthogonal(Q)
+        self.base = Q
 
-            # It is necessary to return the -Id, as we use the diagonal for the
-            # Householder parametrization. Using -Id makes:
-            # householder(torch.zeros(m,n)) == torch.eye(m,n)
-            # Poor man's version of eye_like
-            neg_Id = torch.zeros_like(Q_init)
-            neg_Id.diagonal(dim1=-2, dim2=-1).fill_(-1.0)
-            return neg_Id
+        # It is necessary to return the -Id, as we use the diagonal for the
+        # Householder parametrization. Using -Id makes:
+        # householder(torch.zeros(m,n)) == torch.eye(m,n)
+        # Poor man's version of eye_like
+        neg_Id = torch.zeros_like(Q_init)
+        neg_Id.diagonal(dim1=-2, dim2=-1).fill_(-1.0)
+        return neg_Id
 
 
 def orthogonal(
     module: Module,
     name: str = "weight",
-    orthogonal_map: Optional[str] = None,
+    orthogonal_map: str | None = None,
     *,
     use_trivialization: bool = True,
 ) -> Module:
@@ -314,7 +311,7 @@ def orthogonal(
 class _WeightNorm(Module):
     def __init__(
         self,
-        dim: Optional[int] = 0,
+        dim: int | None = 0,
     ) -> None:
         super().__init__()
         if dim is None:
@@ -505,18 +502,17 @@ class _SpectralNorm(Module):
         if weight.ndim == 1:
             # Faster and more exact path, no need to approximate anything
             return F.normalize(weight, dim=0, eps=self.eps)
-        else:
-            weight_mat = self._reshape_weight_to_matrix(weight)
-            if self.training:
-                self._power_method(weight_mat, self.n_power_iterations)
-            # See above on why we need to clone
-            u = self._u.clone(memory_format=torch.contiguous_format)
-            v = self._v.clone(memory_format=torch.contiguous_format)
-            # The proper way of computing this should be through F.bilinear, but
-            # it seems to have some efficiency issues:
-            # https://github.com/pytorch/pytorch/issues/58093
-            sigma = torch.vdot(u, torch.mv(weight_mat, v))
-            return weight / sigma
+        weight_mat = self._reshape_weight_to_matrix(weight)
+        if self.training:
+            self._power_method(weight_mat, self.n_power_iterations)
+        # See above on why we need to clone
+        u = self._u.clone(memory_format=torch.contiguous_format)
+        v = self._v.clone(memory_format=torch.contiguous_format)
+        # The proper way of computing this should be through F.bilinear, but
+        # it seems to have some efficiency issues:
+        # https://github.com/pytorch/pytorch/issues/58093
+        sigma = torch.vdot(u, torch.mv(weight_mat, v))
+        return weight / sigma
 
     def right_inverse(self, value: torch.Tensor) -> torch.Tensor:
         # we may want to assert here that the passed value already
@@ -529,7 +525,7 @@ def spectral_norm(
     name: str = "weight",
     n_power_iterations: int = 1,
     eps: float = 1e-12,
-    dim: Optional[int] = None,
+    dim: int | None = None,
 ) -> Module:
     r"""Apply spectral normalization to a parameter in the given module.
 

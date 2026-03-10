@@ -19,9 +19,7 @@ from pathlib import Path
 from typing import Dict
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -180,9 +178,7 @@ class DeploymentReadinessChecker:
             }
 
         # Count test files
-        test_files = list(tests_dir.glob("**/test_*.py")) + list(
-            tests_dir.glob("**/*_test.py")
-        )
+        test_files = list(tests_dir.glob("**/test_*.py")) + list(tests_dir.glob("**/*_test.py"))
 
         return {
             "status": "pass",
@@ -387,17 +383,13 @@ class DeploymentReadinessChecker:
                         missing_patterns.append(pattern)
 
                 if missing_patterns:
-                    security_issues.append(
-                        f"Missing .gitignore patterns: {missing_patterns}"
-                    )
+                    security_issues.append(f"Missing .gitignore patterns: {missing_patterns}")
 
             except Exception as e:
                 security_issues.append(f"Error reading .gitignore: {e}")
 
         # Check for secrets in workflow files
-        workflow_files = list(
-            (self.project_root / ".github" / "workflows").glob("*.yml")
-        )
+        workflow_files = list((self.project_root / ".github" / "workflows").glob("*.yml"))
         hardcoded_secrets = []
 
         for workflow_file in workflow_files:
@@ -408,8 +400,7 @@ class DeploymentReadinessChecker:
                 # Simple check for potential hardcoded secrets
                 if (
                     any(
-                        keyword in content
-                        for keyword in ["password:", "token:", "key:", "secret:"]
+                        keyword in content for keyword in ["password:", "token:", "key:", "secret:"]
                     )
                     and "secrets." not in content
                 ):
@@ -419,9 +410,7 @@ class DeploymentReadinessChecker:
                 pass
 
         if hardcoded_secrets:
-            security_issues.append(
-                f"Potential hardcoded secrets in: {hardcoded_secrets}"
-            )
+            security_issues.append(f"Potential hardcoded secrets in: {hardcoded_secrets}")
 
         if security_issues:
             return {
@@ -476,8 +465,7 @@ class DeploymentReadinessChecker:
 
         # Determine overall deployment readiness
         self.results["summary"]["deployment_ready"] = (
-            self.results["summary"]["failures"] == 0
-            and self.results["summary"]["warnings"] <= 2
+            self.results["summary"]["failures"] == 0 and self.results["summary"]["warnings"] <= 2
         )
 
         # Generate recommendations
@@ -491,29 +479,21 @@ class DeploymentReadinessChecker:
 
         for check_name, result in self.results["checks"].items():
             if result["status"] == "fail":
-                recommendations.append(
-                    f"CRITICAL: Fix {check_name} - {result['message']}"
-                )
+                recommendations.append(f"CRITICAL: Fix {check_name} - {result['message']}")
             elif result["status"] == "warning":
-                recommendations.append(
-                    f"RECOMMENDED: Address {check_name} - {result['message']}"
-                )
+                recommendations.append(f"RECOMMENDED: Address {check_name} - {result['message']}")
 
         # General recommendations
         if self.results["summary"]["failures"] > 0:
             recommendations.append("Address all critical failures before deployment")
 
         if self.results["summary"]["warnings"] > 3:
-            recommendations.append(
-                "Consider addressing warnings to improve deployment reliability"
-            )
+            recommendations.append("Consider addressing warnings to improve deployment reliability")
 
         if self.results["summary"]["deployment_ready"]:
             recommendations.append("✅ Project appears ready for CI/CD deployment!")
         else:
-            recommendations.append(
-                "❌ Project needs additional work before CI/CD deployment"
-            )
+            recommendations.append("❌ Project needs additional work before CI/CD deployment")
 
         self.results["recommendations"] = recommendations
 
@@ -566,9 +546,7 @@ def main():
     # Standard library imports
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Aetherra CI/CD Deployment Readiness Checker"
-    )
+    parser = argparse.ArgumentParser(description="Aetherra CI/CD Deployment Readiness Checker")
     parser.add_argument(
         "project_root",
         nargs="?",

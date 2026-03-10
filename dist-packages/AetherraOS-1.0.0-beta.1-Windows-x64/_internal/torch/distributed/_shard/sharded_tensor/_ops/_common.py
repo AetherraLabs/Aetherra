@@ -3,9 +3,9 @@ import functools
 
 from torch.distributed._shard.common_op_utils import _basic_validation
 from torch.distributed._shard.sharded_tensor import (
-    _sharded_op_impl,
     Shard,
     ShardedTensor,
+    _sharded_op_impl,
 )
 
 

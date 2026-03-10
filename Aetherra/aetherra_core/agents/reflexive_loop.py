@@ -15,12 +15,11 @@ Advanced self-awareness system that gives Lyrixa the ability to:
 This creates true AI self-awareness through reflexive analysis.
 """
 
-
 # Standard library imports
 import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set
 
 # Import both memory systems for compatibility
 try:
@@ -103,9 +102,7 @@ class LyrixaReflexiveLoop:
     5. Provide self-aware responses and recommendations
     """
 
-    def __init__(
-        self, memory_system: Union[LyrixaMemorySystem, LyrixaEnhancedMemorySystem]
-    ):
+    def __init__(self, memory_system: LyrixaMemorySystem | LyrixaEnhancedMemorySystem):
         self.memory = memory_system
         self.project_understanding: Optional[ProjectUnderstanding] = None
         self.user_patterns: List[UserPattern] = []
@@ -113,9 +110,7 @@ class LyrixaReflexiveLoop:
         self.session_interactions: List[Dict[str, Any]] = []
 
         # Analysis configuration
-        self.pattern_detection_window = timedelta(
-            days=7
-        )  # Look back 7 days for patterns
+        self.pattern_detection_window = timedelta(days=7)  # Look back 7 days for patterns
         self.min_pattern_evidence = 3  # Minimum occurrences to identify a pattern
         self.reflection_interval = timedelta(hours=2)  # Reflect every 2 hours
         self.last_reflection = datetime.now()
@@ -128,7 +123,7 @@ class LyrixaReflexiveLoop:
     def _extract_memory_content(self, memory) -> Dict[str, Any]:
         """Extract content from memory object regardless of format"""
         if hasattr(memory, "content"):
-            return getattr(memory, "content")
+            return memory.content
         elif isinstance(memory, dict):
             return memory.get("content", memory)
         else:
@@ -137,7 +132,7 @@ class LyrixaReflexiveLoop:
     def _extract_memory_tags(self, memory) -> List[str]:
         """Extract tags from memory object regardless of format"""
         if hasattr(memory, "tags"):
-            return getattr(memory, "tags")
+            return memory.tags
         elif isinstance(memory, dict):
             return memory.get("tags", [])
         else:
@@ -177,9 +172,7 @@ class LyrixaReflexiveLoop:
             actions_taken = interaction_data.get("actions_taken", [])
 
             # Extract project information from interaction
-            project_info = self._extract_project_information(
-                user_input, context, actions_taken
-            )
+            project_info = self._extract_project_information(user_input, context, actions_taken)
 
             if project_info:
                 await self._update_project_state(project_info)
@@ -192,9 +185,7 @@ class LyrixaReflexiveLoop:
         """Analyze user behavior patterns from recent interactions"""
         try:
             # Add current interaction to session data
-            self.session_interactions.append(
-                {**interaction_data, "timestamp": datetime.now()}
-            )
+            self.session_interactions.append({**interaction_data, "timestamp": datetime.now()})
 
             # Keep only recent interactions (within pattern detection window)
             cutoff_time = datetime.now() - self.pattern_detection_window
@@ -409,9 +400,7 @@ class LyrixaReflexiveLoop:
         """Infer initial project understanding from existing memory"""
         try:
             # Look for recent project-related interactions
-            memories = await self.memory.recall_memories(
-                "project development coding", limit=10
-            )
+            memories = await self.memory.recall_memories("project development coding", limit=10)
 
             if not memories:
                 # Create basic understanding
@@ -461,10 +450,7 @@ class LyrixaReflexiveLoop:
                             project_info["technologies"].add(tech)
 
                     # Extract goals
-                    if (
-                        "goal" in text_content.lower()
-                        or "build" in text_content.lower()
-                    ):
+                    if "goal" in text_content.lower() or "build" in text_content.lower():
                         project_info["goals"].append(str(content)[:100])
 
             self.project_understanding = ProjectUnderstanding(
@@ -503,13 +489,9 @@ class LyrixaReflexiveLoop:
         # Extract project type
         if any(word in user_input.lower() for word in ["plugin", "extension", "addon"]):
             project_info["project_type"] = "plugin"
-        elif any(
-            word in user_input.lower() for word in ["web app", "website", "frontend"]
-        ):
+        elif any(word in user_input.lower() for word in ["web app", "website", "frontend"]):
             project_info["project_type"] = "web_app"
-        elif any(
-            word in user_input.lower() for word in ["ai", "ml", "model", "assistant"]
-        ):
+        elif any(word in user_input.lower() for word in ["ai", "ml", "model", "assistant"]):
             project_info["project_type"] = "ai_system"
         elif any(word in user_input.lower() for word in ["api", "service", "backend"]):
             project_info["project_type"] = "api_service"
@@ -545,17 +527,11 @@ class LyrixaReflexiveLoop:
         # Extract current phase
         if any(word in user_input.lower() for word in ["testing", "test", "debug"]):
             project_info["current_phase"] = "testing"
-        elif any(
-            word in user_input.lower() for word in ["deploy", "production", "release"]
-        ):
+        elif any(word in user_input.lower() for word in ["deploy", "production", "release"]):
             project_info["current_phase"] = "deployment"
-        elif any(
-            word in user_input.lower() for word in ["plan", "design", "architecture"]
-        ):
+        elif any(word in user_input.lower() for word in ["plan", "design", "architecture"]):
             project_info["current_phase"] = "planning"
-        elif any(
-            word in user_input.lower() for word in ["code", "implement", "develop"]
-        ):
+        elif any(word in user_input.lower() for word in ["code", "implement", "develop"]):
             project_info["current_phase"] = "development"
 
         return project_info if project_info else {}
@@ -589,9 +565,7 @@ class LyrixaReflexiveLoop:
                 self.project_understanding.current_phase = project_info["current_phase"]
 
             if "technologies" in project_info:
-                self.project_understanding.technologies.update(
-                    project_info["technologies"]
-                )
+                self.project_understanding.technologies.update(project_info["technologies"])
 
             self.project_understanding.last_updated = datetime.now()
             self.project_understanding.confidence = min(
@@ -710,8 +684,7 @@ class LyrixaReflexiveLoop:
                     frequency=hour_counts[most_active_hour],
                     first_observed=datetime.now() - self.pattern_detection_window,
                     last_observed=datetime.now(),
-                    confidence=hour_counts[most_active_hour]
-                    / len(self.session_interactions),
+                    confidence=hour_counts[most_active_hour] / len(self.session_interactions),
                 )
 
         return None
@@ -744,14 +717,11 @@ class LyrixaReflexiveLoop:
                 return UserPattern(
                     pattern_type="technology_preference",
                     description=f"Prefers working with {preferred_tech}",
-                    evidence=[
-                        f"Mentioned {preferred_tech} {tech_mentions[preferred_tech]} times"
-                    ],
+                    evidence=[f"Mentioned {preferred_tech} {tech_mentions[preferred_tech]} times"],
                     frequency=tech_mentions[preferred_tech],
                     first_observed=datetime.now() - self.pattern_detection_window,
                     last_observed=datetime.now(),
-                    confidence=tech_mentions[preferred_tech]
-                    / len(self.session_interactions),
+                    confidence=tech_mentions[preferred_tech] / len(self.session_interactions),
                 )
 
         return None
@@ -771,9 +741,7 @@ class LyrixaReflexiveLoop:
         if existing_pattern is not None:
             # Update existing pattern
             self.user_patterns[existing_pattern].frequency = new_pattern.frequency
-            self.user_patterns[
-                existing_pattern
-            ].last_observed = new_pattern.last_observed
+            self.user_patterns[existing_pattern].last_observed = new_pattern.last_observed
             self.user_patterns[existing_pattern].confidence = new_pattern.confidence
             self.user_patterns[existing_pattern].evidence.extend(new_pattern.evidence)
         else:
@@ -806,9 +774,7 @@ class LyrixaReflexiveLoop:
         insights = []
 
         # Find goal revisiting patterns
-        goal_patterns = [
-            p for p in self.user_patterns if p.pattern_type == "goal_revisiting"
-        ]
+        goal_patterns = [p for p in self.user_patterns if p.pattern_type == "goal_revisiting"]
         for pattern in goal_patterns:
             if pattern.frequency >= 3:
                 insights.append(
@@ -832,14 +798,10 @@ class LyrixaReflexiveLoop:
         insights = []
 
         # Time-based productivity insights
-        time_patterns = [
-            p for p in self.user_patterns if p.pattern_type == "time_preference"
-        ]
+        time_patterns = [p for p in self.user_patterns if p.pattern_type == "time_preference"]
         for pattern in time_patterns:
             hour = int(pattern.description.split("around ")[1].split(":")[0])
-            time_desc = (
-                "morning" if hour < 12 else "afternoon" if hour < 18 else "evening"
-            )
+            time_desc = "morning" if hour < 12 else "afternoon" if hour < 18 else "evening"
 
             insights.append(
                 ConversationInsight(
@@ -862,9 +824,7 @@ class LyrixaReflexiveLoop:
         insights = []
 
         if self.project_understanding:
-            days_since_update = (
-                datetime.now() - self.project_understanding.last_updated
-            ).days
+            days_since_update = (datetime.now() - self.project_understanding.last_updated).days
 
             if days_since_update > 7:
                 insights.append(
@@ -889,9 +849,7 @@ class LyrixaReflexiveLoop:
         """Analyze technology preference patterns"""
         insights = []
 
-        tech_patterns = [
-            p for p in self.user_patterns if p.pattern_type == "technology_preference"
-        ]
+        tech_patterns = [p for p in self.user_patterns if p.pattern_type == "technology_preference"]
         for pattern in tech_patterns:
             tech_name = pattern.description.split("working with ")[1]
 
@@ -918,8 +876,7 @@ class LyrixaReflexiveLoop:
 
         # Analyze conversation patterns
         avg_response_quality = sum(
-            interaction.get("confidence", 0.5)
-            for interaction in self.session_interactions
+            interaction.get("confidence", 0.5) for interaction in self.session_interactions
         ) / len(self.session_interactions)
 
         return SelfReflection(
@@ -1040,9 +997,7 @@ class LyrixaReflexiveLoop:
                 pattern_words = set(pattern.description.lower().split())
                 input_words = set(current_input.lower().split())
 
-                overlap_ratio = len(pattern_words & input_words) / len(
-                    pattern_words | input_words
-                )
+                overlap_ratio = len(pattern_words & input_words) / len(pattern_words | input_words)
                 if overlap_ratio > 0.4:  # 40% similarity
                     return pattern.frequency
 
@@ -1054,9 +1009,7 @@ class LyrixaReflexiveLoop:
 
         for pattern in self.user_patterns:
             if pattern.pattern_type == "time_preference":
-                preferred_hour = int(
-                    pattern.description.split("around ")[1].split(":")[0]
-                )
+                preferred_hour = int(pattern.description.split("around ")[1].split(":")[0])
 
                 if abs(current_hour - preferred_hour) <= 1:
                     return "This is typically your most productive time! Based on past patterns, you accomplish more during this hour."

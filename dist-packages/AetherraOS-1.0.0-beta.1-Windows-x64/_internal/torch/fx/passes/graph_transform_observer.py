@@ -1,18 +1,17 @@
 # mypy: allow-untyped-defs
 import os
-from typing import Callable, Optional, TypeVar
+from collections.abc import Callable
+from typing import TypeVar
 
 from torch.fx import Graph, Node
 from torch.fx._compatibility import compatibility
 from torch.fx.graph_module import GraphModule
 from torch.fx.traceback import NodeSource, NodeSourceAction
 
-
 T = TypeVar("T")
 
 
 from .graph_drawer import FxGraphDrawer
-
 
 __all__ = ["GraphTransformObserver"]
 
@@ -25,8 +24,8 @@ class GraphTransformObserver:
         self,
         gm: GraphModule,
         passname: str,
-        subsystem: Optional[str] = None,
-        log_url: Optional[str] = None,
+        subsystem: str | None = None,
+        log_url: str | None = None,
     ):
         """
         log_url is inferred to be torch._inductor.config.trace.log_url_for_graph_xform unless otherwise specified
@@ -72,14 +71,14 @@ class GraphTransformObserver:
     def get_current_pass_count(cls):
         return cls.__pass_count
 
-    def apply_gm_pass(self, pass_fn: Callable[[GraphModule], T]) -> Optional[T]:
+    def apply_gm_pass(self, pass_fn: Callable[[GraphModule], T]) -> T | None:
         with self:
             if not self._check_disable_pass():
                 return pass_fn(self.gm)
 
         return None
 
-    def apply_graph_pass(self, pass_fn: Callable[[Graph], T]) -> Optional[T]:
+    def apply_graph_pass(self, pass_fn: Callable[[Graph], T]) -> T | None:
         with self:
             if not self._check_disable_pass():
                 return pass_fn(self.gm.graph)

@@ -1,15 +1,16 @@
 # mypy: allow-untyped-defs
 import uuid
 from collections import OrderedDict
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable, Generic, Optional, Protocol
-from typing_extensions import Concatenate, ParamSpec, TypeVar
+from typing import Concatenate, Generic, Protocol
+
+from typing_extensions import ParamSpec, TypeVar
 
 import torch
 import torch.nn as nn
 from torch.distributed._composable_state import _State
 from torch.distributed.utils import _get_root_modules
-
 
 _T = TypeVar("_T", covariant=True)
 _P = ParamSpec("_P")
@@ -187,17 +188,16 @@ def contract(
                         f"FQNs only in original: {orig_only}\n"
                         f"FQNs only in new: {new_only}"
                     )
-                else:
-                    raise RuntimeError(
-                        f"{check_key}"
-                        "Composable distributed API implementations cannot modify "
-                        "the order of FQNs.\n"
-                        f"Original FQNs: {orig_only}\n"
-                        f"New FQNs: {new_only}"
-                    )
+                raise RuntimeError(
+                    f"{check_key}"
+                    "Composable distributed API implementations cannot modify "
+                    "the order of FQNs.\n"
+                    f"Original FQNs: {orig_only}\n"
+                    f"New FQNs: {new_only}"
+                )
 
             for orig_named_params, new_named_params in zip(
-                all_orig_named_params, all_new_named_params
+                all_orig_named_params, all_new_named_params, strict=False
             ):
                 check_fqn(
                     list(orig_named_params.keys()),
@@ -205,7 +205,7 @@ def contract(
                     "Checking parameters: ",
                 )
             for orig_named_buffers, new_named_buffers in zip(
-                all_orig_named_buffers, all_new_named_buffers
+                all_orig_named_buffers, all_new_named_buffers, strict=False
             ):
                 check_fqn(
                     list(orig_named_buffers.keys()),
@@ -213,7 +213,7 @@ def contract(
                     "Checking buffers: ",
                 )
             for orig_named_modules, new_named_modules in zip(
-                all_orig_named_modules, all_new_named_modules
+                all_orig_named_modules, all_new_named_modules, strict=False
             ):
                 check_fqn(
                     list(orig_named_modules.keys()),
@@ -239,7 +239,7 @@ def contract(
     return inner  # type: ignore[return-value]
 
 
-def _get_registry(module: nn.Module) -> Optional[dict[str, RegistryItem]]:
+def _get_registry(module: nn.Module) -> dict[str, RegistryItem] | None:
     r"""
     Get an ``OrderedDict`` of composable APIs that have been applied to the
     ``module``, indexed by the API name. If no API has been applied, then this

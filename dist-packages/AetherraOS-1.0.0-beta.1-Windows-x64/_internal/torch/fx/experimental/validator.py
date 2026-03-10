@@ -4,8 +4,9 @@ import functools
 import logging
 import math
 import operator
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 import sympy
 
@@ -16,7 +17,6 @@ from torch._dynamo.exc import TorchDynamoException
 from torch._dynamo.utils import dynamo_timed
 from torch.fx.node import Argument, Target
 from torch.utils._sympy.interp import sympy_interp
-
 
 log = logging.getLogger(__name__)
 
@@ -90,12 +90,9 @@ try:
             def collect_str_args(e):
                 if not (z3.is_app(e) and e.decl().kind() == kind):
                     return [z3str(e)]
-                else:
-                    return [
-                        x
-                        for i in range(e.num_args())
-                        for x in collect_str_args(e.arg(i))
-                    ]
+                return [
+                    x for i in range(e.num_args()) for x in collect_str_args(e.arg(i))
+                ]
 
             args = collect_str_args(e)
 
@@ -551,7 +548,7 @@ try:
                 log.debug("add target guard: %s", z3str(z3expr))
             self._target_exprs.add(z3expr)
 
-        def add_assertion(self, e: Union[z3.BoolRef, sympy.Basic]) -> None:
+        def add_assertion(self, e: z3.BoolRef | sympy.Basic) -> None:
             if isinstance(e, sympy.Basic):
                 self._check_freesymbols(e)
                 ref = self.to_z3_boolean_expr(e)
@@ -570,7 +567,7 @@ try:
             if len(self._source_exprs) == 0 or len(self._target_exprs) == 0:
                 # If there are no source/target expressions, there's nothing we really
                 # wish to prove. So, we just return.
-                return None
+                return
 
             # Here, we use "QF_NRA" logic for the solver:
             #   "Quantifier-free Non-linear Real Arithmetic".
@@ -609,18 +606,17 @@ try:
                         inp for inp in self._source_exprs if not model.evaluate(inp)
                     ],
                 )
+            if r == z3.unknown:
+                # Could not find a solution. It didn't fail, but it also
+                # didn't succeed. Canceling the validation execution (keyboard
+                # interrupt) also gets to this branch.
+                log.warning(
+                    "translation validation: could not validate: got z3.unknown"
+                )
             else:
-                if r == z3.unknown:
-                    # Could not find a solution. It didn't fail, but it also
-                    # didn't succeed. Canceling the validation execution (keyboard
-                    # interrupt) also gets to this branch.
-                    log.warning(
-                        "translation validation: could not validate: got z3.unknown"
-                    )
-                else:
-                    # Target expressions are sound.
-                    assert r == z3.unsat
-                    log.debug("translation validation: success")
+                # Target expressions are sound.
+                assert r == z3.unsat
+                log.debug("translation validation: success")
 
 except ImportError:
     _HAS_Z3 = False
@@ -729,13 +725,13 @@ _assert_z3_installed_if_tv_set()
 def bisect(shape_env):
     from torch.fx.experimental.recording import (
         FakeTensorMeta,
-        replay_shape_env_events,
         ShapeEnvEvent,
+        replay_shape_env_events,
     )
     from torch.fx.experimental.symbolic_shapes import (
         CURRENT_NODE_KEY,
-        ShapeEnv,
         SHAPEENV_EVENT_KEY,
+        ShapeEnv,
     )
 
     events = shape_env.events
@@ -767,8 +763,8 @@ def bisect(shape_env):
 
     # Checks whether the given shape_env fails when produce_guards is called.
     def check_shapeenv_fails(
-        shape_env: ShapeEnv, tracked_fakes: Optional[list[Any]]
-    ) -> Optional[ValidationException]:
+        shape_env: ShapeEnv, tracked_fakes: list[Any] | None
+    ) -> ValidationException | None:
         assert tracked_fakes is not None
         try:
             # This produce_guards call is a best-effort replication, since we
@@ -785,7 +781,7 @@ def bisect(shape_env):
 
     # Checks whether the ShapeEnv reconstructed by replaying the events until
     # node is created fails when produce_guards is called.
-    def check_node_fails(node: torch.fx.Node) -> Optional[ValidationException]:
+    def check_node_fails(node: torch.fx.Node) -> ValidationException | None:
         number = node.meta[SHAPEENV_EVENT_KEY]
         # Reconstruct shape_env until the event at event_number.
         shape_env = replay_shape_env_events(events[: number + 1])

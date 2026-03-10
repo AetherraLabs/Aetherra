@@ -1,10 +1,10 @@
 # mypy: allow-untyped-defs
 from __future__ import annotations
 
-from typing import Callable, cast, Generic, Optional, TypeVar, Union
+from collections.abc import Callable
+from typing import Generic, Optional, TypeVar, Union, cast
 
 import torch
-
 
 __all__ = ["Future", "collect_all", "wait_all"]
 
@@ -26,9 +26,7 @@ class Future(torch._C.Future, Generic[T], metaclass=_PyFutureMeta):
     .. warning:: GPU support is a beta feature, subject to changes.
     """
 
-    def __init__(
-        self, *, devices: Optional[list[Union[int, str, torch.device]]] = None
-    ):
+    def __init__(self, *, devices: list[int | str | torch.device] | None = None):
         r"""
         Create an empty unset ``Future``. If the future is intended to hold
         values containing CUDA tensors, (a superset of) their CUDA devices must

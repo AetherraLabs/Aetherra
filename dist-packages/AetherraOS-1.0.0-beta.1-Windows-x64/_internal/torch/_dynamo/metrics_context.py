@@ -16,10 +16,8 @@ execution performance.
 import heapq
 import logging
 import time
-from collections.abc import Iterator
-from typing import Any, Callable, Optional
-from typing_extensions import TypeAlias
-
+from collections.abc import Callable, Iterator
+from typing import Any, TypeAlias
 
 log = logging.getLogger(__name__)
 
@@ -46,7 +44,7 @@ class TopN:
 
 
 OnExitType: TypeAlias = Callable[
-    [int, int, dict[str, Any], Optional[type[BaseException]], Optional[BaseException]],
+    [int, int, dict[str, Any], type[BaseException] | None, BaseException | None],
     None,
 ]
 
@@ -78,8 +76,8 @@ class MetricsContext:
 
     def __exit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc_value: Optional[BaseException],
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
         _traceback: Any,
     ) -> None:
         """
@@ -196,7 +194,7 @@ class RuntimeMetricsContext:
         self._start_time_ns: int = 0
 
     def increment(
-        self, metric: str, value: int, extra: Optional[dict[str, Any]] = None
+        self, metric: str, value: int, extra: dict[str, Any] | None = None
     ) -> None:
         """
         Increment a metric by a given amount.

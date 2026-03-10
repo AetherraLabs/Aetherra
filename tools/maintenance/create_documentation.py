@@ -23,10 +23,10 @@ def generate_directory_readme(dir_path, dir_info):
     readme_content = f"""# {Path(dir_path).name}
 
 ## Purpose
-{dir_info['purpose']}
+{dir_info["purpose"]}
 
 ## Contents
-This directory contains **{dir_info['total_files']} files** organized as follows:
+This directory contains **{dir_info["total_files"]} files** organized as follows:
 
 """
 
@@ -183,13 +183,13 @@ def create_main_project_breakdown():
 
 ## 📊 Project Overview
 
-**Analysis Date:** {analysis['timestamp']}
-**Project Root:** {analysis['project_root']}
+**Analysis Date:** {analysis["timestamp"]}
+**Project Root:** {analysis["project_root"]}
 
 ### Statistics
-- **Total Files:** {analysis['summary']['total_files']}
-- **Total Directories:** {analysis['summary']['total_directories']}
-- **File Categories:** {len(analysis['summary']['file_categories'])}
+- **Total Files:** {analysis["summary"]["total_files"]}
+- **Total Directories:** {analysis["summary"]["total_directories"]}
+- **File Categories:** {len(analysis["summary"]["file_categories"])}
 
 ### File Distribution
 """
@@ -219,9 +219,9 @@ def create_main_project_breakdown():
 
     for dir_path, dir_info in sorted(major_dirs.items()):
         breakdown_content += f"""#### `{dir_path}`
-**Purpose:** {dir_info['purpose']}
-**Files:** {dir_info['total_files']} total
-**Key Types:** {', '.join(f"{k} ({v})" for k, v in sorted(dir_info['file_counts'].items(), key=lambda x: x[1], reverse=True)[:3])}
+**Purpose:** {dir_info["purpose"]}
+**Files:** {dir_info["total_files"]} total
+**Key Types:** {", ".join(f"{k} ({v})" for k, v in sorted(dir_info["file_counts"].items(), key=lambda x: x[1], reverse=True)[:3])}
 
 """
 

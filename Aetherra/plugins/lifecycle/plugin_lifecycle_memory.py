@@ -37,13 +37,9 @@ class PluginMemoryEntry:
     }
     created_by = "Plugin System Auto-Fixer"
 
-    def __init__(
-        self, plugin_name: str, event_type: str, context: Optional[Dict] = None
-    ):
+    def __init__(self, plugin_name: str, event_type: str, context: Optional[Dict] = None):
         self.plugin_name = plugin_name
-        self.event_type = (
-            event_type  # 'loaded', 'unloaded', 'executed', 'created', 'modified'
-        )
+        self.event_type = event_type  # 'loaded', 'unloaded', 'executed', 'created', 'modified'
         self.timestamp = datetime.now()
         self.context = context or {}
         self.session_id = None
@@ -76,9 +72,7 @@ class PluginLifecycleMemory:
     """Memory-aware plugin lifecycle management system."""
 
     def __init__(self, memory_dir: Optional[str] = None):
-        self.memory_dir = memory_dir or os.path.join(
-            os.path.dirname(__file__), ".memory"
-        )
+        self.memory_dir = memory_dir or os.path.join(os.path.dirname(__file__), ".memory")
         self.memory_entries = deque(maxlen=1000)  # Last 1000 memory entries
         self.usage_patterns = {}  # plugin_name -> PluginUsagePattern
         self.session_context = {}
@@ -135,9 +129,7 @@ class PluginLifecycleMemory:
                     "co_occurrence": dict(pattern.co_occurrence),
                     "average_session_length": pattern.average_session_length,
                     "success_rate": pattern.success_rate,
-                    "last_used": pattern.last_used.isoformat()
-                    if pattern.last_used
-                    else None,
+                    "last_used": pattern.last_used.isoformat() if pattern.last_used else None,
                     "creation_reason": pattern.creation_reason,
                     "lifecycle_stage": pattern.lifecycle_stage,
                 }
@@ -153,24 +145,14 @@ class PluginLifecycleMemory:
         for name, pattern_data in data.get("usage_patterns", {}).items():
             pattern = PluginUsagePattern(pattern_data["plugin_name"])
             pattern.total_uses = pattern_data.get("total_uses", 0)
-            pattern.time_patterns = defaultdict(
-                int, pattern_data.get("time_patterns", {})
-            )
-            pattern.day_patterns = defaultdict(
-                int, pattern_data.get("day_patterns", {})
-            )
-            pattern.context_patterns = defaultdict(
-                int, pattern_data.get("context_patterns", {})
-            )
+            pattern.time_patterns = defaultdict(int, pattern_data.get("time_patterns", {}))
+            pattern.day_patterns = defaultdict(int, pattern_data.get("day_patterns", {}))
+            pattern.context_patterns = defaultdict(int, pattern_data.get("context_patterns", {}))
             pattern.file_type_patterns = defaultdict(
                 int, pattern_data.get("file_type_patterns", {})
             )
-            pattern.co_occurrence = defaultdict(
-                int, pattern_data.get("co_occurrence", {})
-            )
-            pattern.average_session_length = pattern_data.get(
-                "average_session_length", 0.0
-            )
+            pattern.co_occurrence = defaultdict(int, pattern_data.get("co_occurrence", {}))
+            pattern.average_session_length = pattern_data.get("average_session_length", 0.0)
             pattern.success_rate = pattern_data.get("success_rate", 1.0)
             pattern.creation_reason = pattern_data.get("creation_reason", "")
             pattern.lifecycle_stage = pattern_data.get("lifecycle_stage", "active")
@@ -270,9 +252,7 @@ class PluginLifecycleMemory:
             # Update success rate
             recent_successes = sum(1 for use in pattern.recent_uses if use["success"])
             pattern.success_rate = (
-                recent_successes / len(pattern.recent_uses)
-                if pattern.recent_uses
-                else 1.0
+                recent_successes / len(pattern.recent_uses) if pattern.recent_uses else 1.0
             )
 
         elif event_type == "created":
@@ -287,9 +267,7 @@ class PluginLifecycleMemory:
         """Update current session context."""
         self.session_context.update(context)
 
-    def get_load_recommendations(
-        self, current_context: Optional[Dict] = None
-    ) -> List[Dict]:
+    def get_load_recommendations(self, current_context: Optional[Dict] = None) -> List[Dict]:
         """Get plugin load recommendations based on memory and patterns."""
         recommendations = []
         current_time = datetime.now()
@@ -315,14 +293,9 @@ class PluginLifecycleMemory:
                 )
                 combined_time_score = (time_score + day_score) / 2
 
-                if (
-                    combined_time_score
-                    >= self.auto_load_rules["time_based"]["threshold"]
-                ):
+                if combined_time_score >= self.auto_load_rules["time_based"]["threshold"]:
                     score += combined_time_score * 30
-                    reasons.append(
-                        f"Frequently used at this time ({combined_time_score:.1%})"
-                    )
+                    reasons.append(f"Frequently used at this time ({combined_time_score:.1%})")
 
             # Context-based scoring
             if self.auto_load_rules["context_based"]["enabled"]:
@@ -339,9 +312,7 @@ class PluginLifecycleMemory:
                             )
                             context_score += (
                                 file_score
-                                * self.auto_load_rules["context_based"][
-                                    "file_type_weight"
-                                ]
+                                * self.auto_load_rules["context_based"]["file_type_weight"]
                             )
 
                 # Task matching
@@ -349,12 +320,9 @@ class PluginLifecycleMemory:
                 if current_task:
                     for context_key, count in pattern.context_patterns.items():
                         if current_task.lower() in context_key.lower():
-                            task_score = count / max(
-                                sum(pattern.context_patterns.values()), 1
-                            )
+                            task_score = count / max(sum(pattern.context_patterns.values()), 1)
                             context_score += (
-                                task_score
-                                * self.auto_load_rules["context_based"]["task_weight"]
+                                task_score * self.auto_load_rules["context_based"]["task_weight"]
                             )
 
                 if context_score >= self.auto_load_rules["context_based"]["threshold"]:
@@ -376,21 +344,16 @@ class PluginLifecycleMemory:
                     [
                         use
                         for use in recent_uses
-                        if datetime.fromisoformat(use["timestamp"]).date()
-                        == current_time.date()
+                        if datetime.fromisoformat(use["timestamp"]).date() == current_time.date()
                     ]
                 )
 
                 if (
-                    weekly_frequency
-                    >= self.auto_load_rules["frequency"]["weekly_threshold"]
-                    or daily_frequency
-                    >= self.auto_load_rules["frequency"]["daily_threshold"]
+                    weekly_frequency >= self.auto_load_rules["frequency"]["weekly_threshold"]
+                    or daily_frequency >= self.auto_load_rules["frequency"]["daily_threshold"]
                 ):
                     score += 20
-                    reasons.append(
-                        f"High usage frequency ({weekly_frequency} uses this week)"
-                    )
+                    reasons.append(f"High usage frequency ({weekly_frequency} uses this week)")
 
             # Success rate bonus
             if pattern.success_rate > 0.8:
@@ -412,9 +375,7 @@ class PluginLifecycleMemory:
                         "confidence": min(100, score),
                         "reasons": reasons,
                         "lifecycle_stage": pattern.lifecycle_stage,
-                        "last_used": pattern.last_used.isoformat()
-                        if pattern.last_used
-                        else None,
+                        "last_used": pattern.last_used.isoformat() if pattern.last_used else None,
                         "total_uses": pattern.total_uses,
                         "success_rate": pattern.success_rate,
                     }
@@ -458,9 +419,7 @@ class PluginLifecycleMemory:
 
             if len(recent_uses) < 3:  # Less than 3 uses in 30 days
                 suggestion_score += 25
-                reasons.append(
-                    f"Low usage frequency ({len(recent_uses)} uses in 30 days)"
-                )
+                reasons.append(f"Low usage frequency ({len(recent_uses)} uses in 30 days)")
 
             if suggestion_score > 30:  # Threshold for unload suggestion
                 suggestions.append(
@@ -468,9 +427,7 @@ class PluginLifecycleMemory:
                         "plugin_name": plugin_name,
                         "suggestion_score": suggestion_score,
                         "reasons": reasons,
-                        "last_used": pattern.last_used.isoformat()
-                        if pattern.last_used
-                        else None,
+                        "last_used": pattern.last_used.isoformat() if pattern.last_used else None,
                         "success_rate": pattern.success_rate,
                         "recent_usage_count": len(recent_uses),
                         "recommended_action": "unload"
@@ -490,9 +447,7 @@ class PluginLifecycleMemory:
         pattern = self.usage_patterns[plugin_name]
 
         # Get all events for this plugin
-        plugin_events = [
-            entry for entry in self.memory_entries if entry.plugin_name == plugin_name
-        ]
+        plugin_events = [entry for entry in self.memory_entries if entry.plugin_name == plugin_name]
 
         # Analyze lifecycle stages
         lifecycle_events = defaultdict(list)
@@ -500,32 +455,20 @@ class PluginLifecycleMemory:
             lifecycle_events[event.event_type].append(event)
 
         # Calculate lifecycle metrics
-        creation_event = next(
-            (e for e in plugin_events if e.event_type == "created"), None
-        )
+        creation_event = next((e for e in plugin_events if e.event_type == "created"), None)
         first_use = min(
-            (
-                e.timestamp
-                for e in plugin_events
-                if e.event_type in ["executed", "loaded"]
-            ),
+            (e.timestamp for e in plugin_events if e.event_type in ["executed", "loaded"]),
             default=None,
         )
         last_use = max(
-            (
-                e.timestamp
-                for e in plugin_events
-                if e.event_type in ["executed", "loaded"]
-            ),
+            (e.timestamp for e in plugin_events if e.event_type in ["executed", "loaded"]),
             default=None,
         )
 
         analysis = {
             "plugin_name": plugin_name,
             "lifecycle_stage": pattern.lifecycle_stage,
-            "creation_date": creation_event.timestamp.isoformat()
-            if creation_event
-            else None,
+            "creation_date": creation_event.timestamp.isoformat() if creation_event else None,
             "creation_reason": pattern.creation_reason,
             "first_use": first_use.isoformat() if first_use else None,
             "last_use": last_use.isoformat() if last_use else None,
@@ -538,15 +481,14 @@ class PluginLifecycleMemory:
                 "best_hours": sorted(
                     pattern.time_patterns.items(), key=lambda x: x[1], reverse=True
                 )[:3],
-                "best_days": sorted(
-                    pattern.day_patterns.items(), key=lambda x: x[1], reverse=True
-                )[:3],
+                "best_days": sorted(pattern.day_patterns.items(), key=lambda x: x[1], reverse=True)[
+                    :3
+                ],
             },
             "file_type_associations": dict(pattern.file_type_patterns),
             "co_occurrence_patterns": dict(pattern.co_occurrence),
             "lifecycle_events_count": {
-                event_type: len(events)
-                for event_type, events in lifecycle_events.items()
+                event_type: len(events) for event_type, events in lifecycle_events.items()
             },
             "recommendation": self._generate_lifecycle_recommendation(pattern),
         }
@@ -572,12 +514,8 @@ class PluginLifecycleMemory:
         # Calculate trend
         recent_weeks = list(weekly_usage.values())[-4:]  # Last 4 weeks
         if len(recent_weeks) >= 2:
-            trend_direction = (
-                "increasing" if recent_weeks[-1] > recent_weeks[0] else "decreasing"
-            )
-            trend_strength = abs(recent_weeks[-1] - recent_weeks[0]) / max(
-                recent_weeks[0], 1
-            )
+            trend_direction = "increasing" if recent_weeks[-1] > recent_weeks[0] else "decreasing"
+            trend_strength = abs(recent_weeks[-1] - recent_weeks[0]) / max(recent_weeks[0], 1)
         else:
             trend_direction = "stable"
             trend_strength = 0
@@ -594,9 +532,7 @@ class PluginLifecycleMemory:
         current_time = datetime.now()
 
         # Calculate metrics
-        days_since_last_use = (
-            (current_time - pattern.last_used).days if pattern.last_used else 999
-        )
+        days_since_last_use = (current_time - pattern.last_used).days if pattern.last_used else 999
         recent_usage_count = len(
             [
                 use
@@ -680,13 +616,7 @@ class PluginLifecycleMemory:
                 for name, rate, uses in most_successful
             ],
             "lifecycle_distribution": {
-                stage: len(
-                    [
-                        p
-                        for p in self.usage_patterns.values()
-                        if p.lifecycle_stage == stage
-                    ]
-                )
+                stage: len([p for p in self.usage_patterns.values() if p.lifecycle_stage == stage])
                 for stage in ["active", "idle", "deprecated", "retired"]
             },
             "auto_load_rules": self.auto_load_rules,
@@ -737,9 +667,7 @@ def record_plugin_event(
     success: bool = True,
 ):
     """Convenience function for recording plugin events."""
-    return lifecycle_memory.record_plugin_event(
-        plugin_name, event_type, context, success
-    )
+    return lifecycle_memory.record_plugin_event(plugin_name, event_type, context, success)
 
 
 def get_load_recommendations(current_context: Optional[Dict] = None) -> List[Dict]:

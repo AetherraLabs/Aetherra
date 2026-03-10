@@ -23,7 +23,6 @@ from .loss_for_object_detection import (
 )
 from .loss_rt_detr import RTDetrHungarianMatcher, RTDetrLoss
 
-
 if is_vision_available():
     from transformers.image_transforms import center_to_corners_format
 
@@ -33,12 +32,20 @@ def _set_aux_loss(outputs_class, outputs_coord):
     # this is a workaround to make torchscript happy, as torchscript
     # doesn't support dictionary with non-homogeneous values, such
     # as a dict having both a Tensor and a list.
-    return [{"logits": a, "pred_boxes": b} for a, b in zip(outputs_class, outputs_coord)]
+    return [
+        {"logits": a, "pred_boxes": b}
+        for a, b in zip(outputs_class, outputs_coord, strict=False)
+    ]
 
 
 @torch.jit.unused
 def _set_aux_loss2(
-    outputs_class, outputs_coord, outputs_corners, outputs_ref, teacher_corners=None, teacher_logits=None
+    outputs_class,
+    outputs_coord,
+    outputs_corners,
+    outputs_ref,
+    teacher_corners=None,
+    teacher_logits=None,
 ):
     # this is a workaround to make torchscript happy, as torchscript
     # doesn't support dictionary with non-homogeneous values, such
@@ -52,11 +59,15 @@ def _set_aux_loss2(
             "teacher_corners": teacher_corners,
             "teacher_logits": teacher_logits,
         }
-        for a, b, c, d in zip(outputs_class, outputs_coord, outputs_corners, outputs_ref)
+        for a, b, c, d in zip(
+            outputs_class, outputs_coord, outputs_corners, outputs_ref, strict=False
+        )
     ]
 
 
-def weighting_function(max_num_bins: int, up: torch.Tensor, reg_scale: int) -> torch.Tensor:
+def weighting_function(
+    max_num_bins: int, up: torch.Tensor, reg_scale: int
+) -> torch.Tensor:
     """
     Generates the non-uniform Weighting Function W(n) for bounding box regression.
 
@@ -75,7 +86,13 @@ def weighting_function(max_num_bins: int, up: torch.Tensor, reg_scale: int) -> t
     step = (upper_bound1 + 1) ** (2 / (max_num_bins - 2))
     left_values = [-((step) ** i) + 1 for i in range(max_num_bins // 2 - 1, 0, -1)]
     right_values = [(step) ** i - 1 for i in range(1, max_num_bins // 2)]
-    values = [-upper_bound2] + left_values + [torch.zeros_like(up[0][None])] + right_values + [upper_bound2]
+    values = (
+        [-upper_bound2]
+        + left_values
+        + [torch.zeros_like(up[0][None])]
+        + right_values
+        + [upper_bound2]
+    )
     values = [v if v.dim() > 0 else v.unsqueeze(0) for v in values]
     values = torch.cat(values, 0)
     return values
@@ -161,12 +178,22 @@ def bbox2distance(points, bbox, max_num_bins, reg_scale, up, eps=0.1):
     """
 
     reg_scale = abs(reg_scale)
-    left = (points[:, 0] - bbox[:, 0]) / (points[..., 2] / reg_scale + 1e-16) - 0.5 * reg_scale
-    top = (points[:, 1] - bbox[:, 1]) / (points[..., 3] / reg_scale + 1e-16) - 0.5 * reg_scale
-    right = (bbox[:, 2] - points[:, 0]) / (points[..., 2] / reg_scale + 1e-16) - 0.5 * reg_scale
-    bottom = (bbox[:, 3] - points[:, 1]) / (points[..., 3] / reg_scale + 1e-16) - 0.5 * reg_scale
+    left = (points[:, 0] - bbox[:, 0]) / (
+        points[..., 2] / reg_scale + 1e-16
+    ) - 0.5 * reg_scale
+    top = (points[:, 1] - bbox[:, 1]) / (
+        points[..., 3] / reg_scale + 1e-16
+    ) - 0.5 * reg_scale
+    right = (bbox[:, 2] - points[:, 0]) / (
+        points[..., 2] / reg_scale + 1e-16
+    ) - 0.5 * reg_scale
+    bottom = (bbox[:, 3] - points[:, 1]) / (
+        points[..., 3] / reg_scale + 1e-16
+    ) - 0.5 * reg_scale
     four_lens = torch.stack([left, top, right, bottom], -1)
-    four_lens, weight_right, weight_left = translate_gt(four_lens, max_num_bins, reg_scale, up)
+    four_lens, weight_right, weight_left = translate_gt(
+        four_lens, max_num_bins, reg_scale, up
+    )
     if max_num_bins is not None:
         four_lens = four_lens.clamp(min=0, max=max_num_bins - eps)
     return four_lens.reshape(-1).detach(), weight_right.detach(), weight_left.detach()
@@ -213,14 +240,23 @@ class DFineLoss(RTDetrLoss):
         self.up = nn.Parameter(torch.tensor([config.up]), requires_grad=False)
 
     def unimodal_distribution_focal_loss(
-        self, pred, label, weight_right, weight_left, weight=None, reduction="sum", avg_factor=None
+        self,
+        pred,
+        label,
+        weight_right,
+        weight_left,
+        weight=None,
+        reduction="sum",
+        avg_factor=None,
     ):
         dis_left = label.long()
         dis_right = dis_left + 1
 
-        loss = F.cross_entropy(pred, dis_left, reduction="none") * weight_left.reshape(-1) + F.cross_entropy(
-            pred, dis_right, reduction="none"
-        ) * weight_right.reshape(-1)
+        loss = F.cross_entropy(pred, dis_left, reduction="none") * weight_left.reshape(
+            -1
+        ) + F.cross_entropy(pred, dis_right, reduction="none") * weight_right.reshape(
+            -1
+        )
 
         if weight is not None:
             weight = weight.float()
@@ -242,9 +278,14 @@ class DFineLoss(RTDetrLoss):
         losses = {}
         if "pred_corners" in outputs:
             idx = self._get_source_permutation_idx(indices)
-            target_boxes = torch.cat([t["boxes"][i] for t, (_, i) in zip(targets, indices)], dim=0)
+            target_boxes = torch.cat(
+                [t["boxes"][i] for t, (_, i) in zip(targets, indices, strict=False)],
+                dim=0,
+            )
 
-            pred_corners = outputs["pred_corners"][idx].reshape(-1, (self.max_num_bins + 1))
+            pred_corners = outputs["pred_corners"][idx].reshape(
+                -1, (self.max_num_bins + 1)
+            )
             ref_points = outputs["ref_points"][idx].detach()
             with torch.no_grad():
                 self.fgl_targets = bbox2distance(
@@ -258,9 +299,10 @@ class DFineLoss(RTDetrLoss):
             target_corners, weight_right, weight_left = self.fgl_targets
 
             ious = torch.diag(
-                box_iou(center_to_corners_format(outputs["pred_boxes"][idx]), center_to_corners_format(target_boxes))[
-                    0
-                ]
+                box_iou(
+                    center_to_corners_format(outputs["pred_boxes"][idx]),
+                    center_to_corners_format(target_boxes),
+                )[0]
             )
             weight_targets = ious.unsqueeze(-1).repeat(1, 1, 4).reshape(-1).detach()
 
@@ -274,17 +316,28 @@ class DFineLoss(RTDetrLoss):
             )
 
             pred_corners = outputs["pred_corners"].reshape(-1, (self.max_num_bins + 1))
-            target_corners = outputs["teacher_corners"].reshape(-1, (self.max_num_bins + 1))
+            target_corners = outputs["teacher_corners"].reshape(
+                -1, (self.max_num_bins + 1)
+            )
             if torch.equal(pred_corners, target_corners):
                 losses["loss_ddf"] = pred_corners.sum() * 0
             else:
-                weight_targets_local = outputs["teacher_logits"].sigmoid().max(dim=-1)[0]
+                weight_targets_local = (
+                    outputs["teacher_logits"].sigmoid().max(dim=-1)[0]
+                )
                 mask = torch.zeros_like(weight_targets_local, dtype=torch.bool)
                 mask[idx] = True
                 mask = mask.unsqueeze(-1).repeat(1, 1, 4).reshape(-1)
 
-                weight_targets_local[idx] = ious.reshape_as(weight_targets_local[idx]).to(weight_targets_local.dtype)
-                weight_targets_local = weight_targets_local.unsqueeze(-1).repeat(1, 1, 4).reshape(-1).detach()
+                weight_targets_local[idx] = ious.reshape_as(
+                    weight_targets_local[idx]
+                ).to(weight_targets_local.dtype)
+                weight_targets_local = (
+                    weight_targets_local.unsqueeze(-1)
+                    .repeat(1, 1, 4)
+                    .reshape(-1)
+                    .detach()
+                )
 
                 loss_match_local = (
                     weight_targets_local
@@ -303,10 +356,12 @@ class DFineLoss(RTDetrLoss):
                     ((~mask).sum() * batch_scale) ** 0.5,
                 )
                 loss_match_local1 = loss_match_local[mask].mean() if mask.any() else 0
-                loss_match_local2 = loss_match_local[~mask].mean() if (~mask).any() else 0
-                losses["loss_ddf"] = (loss_match_local1 * self.num_pos + loss_match_local2 * self.num_neg) / (
-                    self.num_pos + self.num_neg
+                loss_match_local2 = (
+                    loss_match_local[~mask].mean() if (~mask).any() else 0
                 )
+                losses["loss_ddf"] = (
+                    loss_match_local1 * self.num_pos + loss_match_local2 * self.num_neg
+                ) / (self.num_pos + self.num_neg)
 
         return losses
 
@@ -348,11 +403,19 @@ def DFineForObjectDetectionLoss(
     if config.auxiliary_loss:
         if denoising_meta_values is not None:
             dn_out_coord, outputs_coord = torch.split(
-                outputs_coord.clamp(min=0, max=1), denoising_meta_values["dn_num_split"], dim=2
+                outputs_coord.clamp(min=0, max=1),
+                denoising_meta_values["dn_num_split"],
+                dim=2,
             )
-            dn_out_class, outputs_class = torch.split(outputs_class, denoising_meta_values["dn_num_split"], dim=2)
-            dn_out_corners, out_corners = torch.split(predicted_corners, denoising_meta_values["dn_num_split"], dim=2)
-            dn_out_refs, out_refs = torch.split(initial_reference_points, denoising_meta_values["dn_num_split"], dim=2)
+            dn_out_class, outputs_class = torch.split(
+                outputs_class, denoising_meta_values["dn_num_split"], dim=2
+            )
+            dn_out_corners, out_corners = torch.split(
+                predicted_corners, denoising_meta_values["dn_num_split"], dim=2
+            )
+            dn_out_refs, out_refs = torch.split(
+                initial_reference_points, denoising_meta_values["dn_num_split"], dim=2
+            )
 
             auxiliary_outputs = _set_aux_loss2(
                 outputs_class[:, :-1].transpose(0, 1),

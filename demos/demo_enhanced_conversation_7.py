@@ -277,7 +277,9 @@ if __name__ == "__main__":
     # Offer interactive mode
     try:
         choice = (
-            input("\n🎮 Would you like to try interactive mode? (y/n): ").strip().lower()
+            input("\n🎮 Would you like to try interactive mode? (y/n): ")
+            .strip()
+            .lower()
         )
         if choice in ["y", "yes"]:
             asyncio.run(interactive_demo())

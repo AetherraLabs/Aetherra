@@ -1,16 +1,17 @@
 import logging
 import operator
+from collections.abc import Callable
 from functools import partial
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 import sympy
 from sympy import Expr
 
 import torch
 from torch.utils._sympy.value_ranges import (
-    bound_sympy,
     SymPyValueRangeAnalysis,
     ValueRanges,
+    bound_sympy,
 )
 
 from ..utils._sympy.functions import PowByNatural
@@ -19,7 +20,6 @@ from .loop_body import InterpreterShim, LoopBody, LoopBodyBlock
 from .ops_handler import DefaultHandler, ReductionType, StoreMode
 from .utils import cache_on_self, dominated_nodes
 from .virtualized import V
-
 
 log = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ class BoundVars:
     """
 
     def __init__(self, loop_body: LoopBody) -> None:
-        def upper_bound(v: Union[Expr, int]) -> int:
+        def upper_bound(v: Expr | int) -> int:
             return bound_sympy(v).upper if isinstance(v, Expr) else v
 
         self.loop_body = loop_body
@@ -85,7 +85,7 @@ class BoundVars:
         self, submodules: dict[str, Callable[..., Any]]
     ) -> dict[str, Callable[..., ValueRanges[Expr]]]:
         result: dict[str, Callable[..., ValueRanges[Expr]]] = {}
-        for key in submodules.keys():
+        for key in submodules:
             if key == "get_index":
                 result[key] = self.get_index
             elif "masked_subblock" in key:
@@ -197,7 +197,7 @@ class ValueRangeAnalysis(SymPyValueRangeAnalysis, DefaultHandler):
     def to_dtype(
         x: Any,
         dtype: torch.dtype,
-        src_dtype: Optional[torch.dtype] = None,
+        src_dtype: torch.dtype | None = None,
         use_compute_types: bool = True,
     ) -> ValueRanges[Any]:
         x = ValueRanges.wrap(x)
@@ -205,35 +205,31 @@ class ValueRangeAnalysis(SymPyValueRangeAnalysis, DefaultHandler):
         if dtype == torch.bool:
             if x.is_singleton():
                 return ValueRanges.wrap(x.lower != 0)
-            elif x.is_bool:
+            if x.is_bool:
                 return x
-            elif 0 not in x:
+            if 0 not in x:
                 return ValueRanges.wrap(sympy.true)
-            else:
-                return ValueRanges(sympy.false, sympy.true)
+            return ValueRanges(sympy.false, sympy.true)
 
         def cast(x: Any, dtype: torch.dtype) -> sympy.Expr:
             # dtype is int or float
             if dtype.is_floating_point:
                 return sympy.Float(x)
-            else:
-                if x in (int_oo, -int_oo):
-                    return x
-                try:
-                    return sympy.Integer(x)
-                except TypeError:
-                    # inf cannot be cast to Integer
-                    return x
+            if x in (int_oo, -int_oo):
+                return x
+            try:
+                return sympy.Integer(x)
+            except TypeError:
+                # inf cannot be cast to Integer
+                return x
 
         if x.is_bool:
             if x.is_singleton():
                 val = 1 if x.lower else 0
                 return ValueRanges.wrap(cast(val, dtype))
-            else:
-                return ValueRanges(cast(0, dtype), cast(1, dtype))
-        else:
-            # int to float or float to int
-            return ValueRanges(cast(x.lower, dtype), cast(x.upper, dtype))
+            return ValueRanges(cast(0, dtype), cast(1, dtype))
+        # int to float or float to int
+        return ValueRanges(cast(x.lower, dtype), cast(x.upper, dtype))
 
     @staticmethod
     def square(x: Any) -> ValueRanges[Any]:

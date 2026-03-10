@@ -5,13 +5,12 @@ import abc
 import collections
 import copy
 import operator
-from typing import Any, Final, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Final
 
 import torch
 import torch.fx
 from torch.onnx._internal.fx import _pass
 from torch.utils import _pytree as pytree
-
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterator, Sequence

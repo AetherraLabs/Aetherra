@@ -5,7 +5,6 @@ from torch.ao.quantization.qconfig import QConfig
 from torch.ao.quantization.quant_type import QuantType
 from torch.jit._recursive import wrap_cpp_module
 
-
 __all__ = [
     "script_qconfig",
     "script_qconfig_dict",

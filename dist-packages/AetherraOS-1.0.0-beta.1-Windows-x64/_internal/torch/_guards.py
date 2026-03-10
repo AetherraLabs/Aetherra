@@ -13,17 +13,15 @@ import unittest.mock
 import weakref
 from abc import abstractmethod
 from collections import defaultdict
+from collections.abc import Callable
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import (
+    TYPE_CHECKING,
     Any,
-    Callable,
     Generic,
     NamedTuple,
-    Optional,
-    TYPE_CHECKING,
     TypeVar,
-    Union,
 )
 
 import torch
@@ -31,7 +29,6 @@ from torch.utils import _pytree as pytree
 from torch.utils._backport_slots import dataclass_slots
 from torch.utils._traceback import CapturedTraceback, format_frame
 from torch.utils.weak import WeakTensorKeyDictionary
-
 
 log = logging.getLogger(__name__)
 
@@ -70,15 +67,15 @@ CA_COMPILE_ID_PATTERN = re.compile(
 # TODO: mark as kw_only=True once we drop support for <Python 3.10
 @dataclass(frozen=True)
 class CompileId:
-    frame_id: Optional[int]
+    frame_id: int | None
     # This id is per-frame, and counts how many times we've compiled this
     # frame.  This could have been a global id but having this be per-frame
     # gives you a better intuitive sense for how many recompiles have occurred
     # so far.
-    frame_compile_id: Optional[int]
+    frame_compile_id: int | None
 
     # torch.compiling a compiled autograd graph
-    compiled_autograd_id: Optional[int] = None
+    compiled_autograd_id: int | None = None
 
     # TODO: consider also tracking the recompilation count
     # See Note: Updating CompileId
@@ -92,12 +89,11 @@ class CompileId:
                 frame_str = f"/{self.frame_id}/{self.frame_compile_id}"
 
             return f"!{self.compiled_autograd_id}{frame_str}"
-        else:
-            assert self.frame_id is not None and self.frame_compile_id is not None
-            return f"{self.frame_id}/{self.frame_compile_id}"
+        assert self.frame_id is not None and self.frame_compile_id is not None
+        return f"{self.frame_id}/{self.frame_compile_id}"
 
     @classmethod
-    def from_string(cls, compile_id: Optional[str]):
+    def from_string(cls, compile_id: str | None):
         """
         Factory method that creates a CompileId from its string representation.
         Keep this in sync with the __str__ method.
@@ -129,8 +125,7 @@ class TraceId(NamedTuple):
         # Keep this in sync with tlparse repo
         if self.attempt == 0:
             return str(self.compile_id)
-        else:
-            return f"{self.compile_id}_{self.attempt}"
+        return f"{self.compile_id}_{self.attempt}"
 
 
 class GuardSource(enum.Enum):
@@ -215,8 +210,8 @@ class GuardBuilderBase:
 
 @dataclasses.dataclass(frozen=True)
 class SLoc:
-    framework_loc: Optional[Union[traceback.FrameSummary, str]]
-    maybe_user_loc: Optional[str]
+    framework_loc: traceback.FrameSummary | str | None
+    maybe_user_loc: str | None
 
     def __str__(self):
         floc = (
@@ -226,8 +221,7 @@ class SLoc:
         )
         if self.maybe_user_loc is not None:
             return f"{self.maybe_user_loc} ({floc})"
-        else:
-            return f"({floc})"
+        return f"({floc})"
 
 
 class ShapeGuard(NamedTuple):
@@ -260,14 +254,14 @@ class Guard:
     create_fn: Callable[[GuardBuilderBase, Guard], None]
 
     # Export only. These values are written to at time of guard check_fn creation.
-    guard_types: Optional[list[str]] = None
-    code_list: Optional[list[str]] = None
-    obj_weakref: Optional[object] = None
-    guarded_class_weakref: Optional[type] = None
+    guard_types: list[str] | None = None
+    code_list: list[str] | None = None
+    obj_weakref: object | None = None
+    guarded_class_weakref: type | None = None
 
-    stack: Optional[CapturedTraceback] = None
-    user_stack: Optional[traceback.StackSummary] = None
-    _hash: Optional[int] = None
+    stack: CapturedTraceback | None = None
+    user_stack: traceback.StackSummary | None = None
+    _hash: int | None = None
 
     def __hash__(self):
         if self._hash is None:
@@ -296,8 +290,7 @@ class Guard:
     def inner_create_fn(self):
         if isinstance(self.create_fn, functools.partial):
             return self.create_fn.func
-        else:
-            return self.create_fn
+        return self.create_fn
 
     @property
     def name(self) -> str:
@@ -327,10 +320,8 @@ class Guard:
             obj = obj_weakref()
             if obj is not None:
                 return f"<weakref at {hex(id(obj_weakref))}; to '{obj.__class__.__name__}' at {hex(id(obj))}>"
-            else:
-                return f"<weakref at {hex(id(obj_weakref))}; dead>"
-        else:
-            return str(obj_weakref)
+            return f"<weakref at {hex(id(obj_weakref))}; dead>"
+        return str(obj_weakref)
 
     def __repr__(self):
         s = f"""
@@ -740,9 +731,7 @@ class HopDispatchSetCache:
 
         self.hop_cache_map = {invoke_subgraph: InvokeSubgraphCache()}
 
-    def get_cache(
-        self, op: torch._ops.HigherOrderOperator
-    ) -> Optional[HopSubgraphCache]:
+    def get_cache(self, op: torch._ops.HigherOrderOperator) -> HopSubgraphCache | None:
         if op not in self.hop_cache_map:
             return None
         return self.hop_cache_map[op]  # type: ignore[index]
@@ -776,12 +765,12 @@ class CompileContext:
         return _TLS.compile_context
 
     @staticmethod
-    def try_get() -> Optional[CompileContext]:
+    def try_get() -> CompileContext | None:
         return getattr(_TLS, "compile_context", None)
 
     def __init__(self, compile_id):
         assert compile_id is None or isinstance(compile_id, CompileId)
-        self.compile_id: Optional[CompileId] = compile_id
+        self.compile_id: CompileId | None = compile_id
         self.attempt = 0
         # Verbose ShapeEnv guards produced.
         self.shape_env_guards: list[str] = []
@@ -812,7 +801,7 @@ class TracingContext:
     """
 
     @staticmethod
-    def try_get() -> Optional[TracingContext]:
+    def try_get() -> TracingContext | None:
         return getattr(_TLS, "tracing_context", None)
 
     @staticmethod
@@ -854,7 +843,7 @@ class TracingContext:
         # careful not to accidentally induce guards on the SymInt if
         # you ever do change this in aot_autograd.py; you should check
         # on permutations preferentially.)
-        self.output_strides: Optional[list[Optional[tuple[int, ...]]]] = None
+        self.output_strides: list[tuple[int, ...] | None] | None = None
         # When this is True, whenever we encounter an int in Dynamo tracing,
         # we will (1) force unspec it and (2) force it as a size-like unbacked
         # integer.  This is currently used when processing certain lists of
@@ -885,7 +874,7 @@ class TracingContext:
         prior = {}
         ctx = TracingContext.get()
 
-        for key in kwargs.keys():
+        for key in kwargs:
             # KeyError on invalid entry
             prior[key] = getattr(ctx, key)
         for key, val in kwargs.items():
@@ -995,7 +984,7 @@ class TracingContext:
 
 
 @contextmanager
-def compile_context(context: Optional[CompileContext]):
+def compile_context(context: CompileContext | None):
     old_context = getattr(_TLS, "compile_context", None)
     _TLS.compile_context = context
     try:
@@ -1005,7 +994,7 @@ def compile_context(context: Optional[CompileContext]):
 
 
 @contextmanager
-def tracing(context: Optional[TracingContext]):
+def tracing(context: TracingContext | None):
     """
     This function installs the passed in tracing context as a dynamic scoped
     global variable.
@@ -1122,8 +1111,7 @@ def detect_fake_mode(inputs: Any = None):
                 f"fake mode from {desc2} {i2} allocated at:\n{m.stack}"
             )
         return fake_mode
-    else:
-        return None
+    return None
 
 
 def active_fake_mode():

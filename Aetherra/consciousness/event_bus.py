@@ -99,9 +99,7 @@ class EventBus:
             except Exception:
                 pass
         if _LOG:
-            print(
-                f"[EVENT_BUS] {event_type} (workspace={'Y' if to_workspace else 'N'})"
-            )
+            print(f"[EVENT_BUS] {event_type} (workspace={'Y' if to_workspace else 'N'})")
 
     def _loop(self):  # async worker
         while not self._stop and self._queue is not None:

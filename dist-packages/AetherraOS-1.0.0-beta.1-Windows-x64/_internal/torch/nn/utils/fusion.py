@@ -5,7 +5,6 @@ from typing import TypeVar
 
 import torch
 
-
 __all__ = [
     "fuse_conv_bn_eval",
     "fuse_conv_bn_weights",

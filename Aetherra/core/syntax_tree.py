@@ -21,13 +21,13 @@ This file maintains backward compatibility with existing code.
 
 # Local imports
 # Import everything from the new modular system
-from .syntax import parse_aetherra  # Legacy alias
 from .syntax import (
     AetherraParser,
     NodeType,
     SyntaxNode,
     SyntaxTreeVisitor,
     analyze_syntax_tree,
+    parse_aetherra,  # Legacy alias
 )
 
 

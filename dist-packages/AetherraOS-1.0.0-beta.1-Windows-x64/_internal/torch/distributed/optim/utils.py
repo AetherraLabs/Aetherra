@@ -11,7 +11,6 @@ from .functional_rmsprop import _FunctionalRMSprop
 from .functional_rprop import _FunctionalRprop
 from .functional_sgd import _FunctionalSGD
 
-
 # dict to map a user passed in optimizer_class to a functional
 # optimizer class if we have already defined inside the
 # distributed.optim package, this is so that we hide the

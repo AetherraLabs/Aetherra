@@ -25,7 +25,6 @@ import subprocess
 import sys
 import tempfile
 import traceback
-from typing import Optional
 from unittest.mock import patch
 
 import torch
@@ -166,10 +165,9 @@ torch._inductor.config.{"cpp" if device == "cpu" else "triton"}.inject_relu_bug_
                 b"",
                 stderr.getvalue().encode("utf-8"),
             )
-        else:
-            if cwd is not None:
-                cwd = _as_posix_path(cwd)
-            return subprocess.run(args, capture_output=True, cwd=cwd, check=False)
+        if cwd is not None:
+            cwd = _as_posix_path(cwd)
+        return subprocess.run(args, capture_output=True, cwd=cwd, check=False)
 
     # Run `code` in a separate python process.
     # Returns the completed process state and the directory containing the
@@ -264,7 +262,7 @@ torch._dynamo.config.debug_dir_root = "{_as_posix_path(self.DEBUG_DIR)}"
     # crash the process
     def _run_full_test(
         self, run_code, repro_after, expected_error, *, isolate, minifier_args=()
-    ) -> Optional[MinifierTestResult]:
+    ) -> MinifierTestResult | None:
         if isolate:
             repro_level = 3
         elif expected_error is None or expected_error == "AccuracyError":

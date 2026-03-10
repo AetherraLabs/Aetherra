@@ -106,9 +106,7 @@ class EmotionalMemory:
         # Invalidate pattern cache when new data is added
         self.pattern_cache.clear()
 
-    def get_recent_emotional_trend(
-        self, time_window_minutes: int = 30
-    ) -> Dict[str, Any]:
+    def get_recent_emotional_trend(self, time_window_minutes: int = 30) -> Dict[str, Any]:
         """Analyze recent emotional trends"""
         cutoff_time = datetime.now() - timedelta(minutes=time_window_minutes)
         recent_states = [
@@ -124,9 +122,7 @@ class EmotionalMemory:
 
         avg_valence = statistics.mean(valences)
         avg_intensity = statistics.mean(intensities)
-        valence_stability = (
-            1.0 - statistics.stdev(valences) if len(valences) > 1 else 1.0
-        )
+        valence_stability = 1.0 - statistics.stdev(valences) if len(valences) > 1 else 1.0
 
         # Determine trend direction
         if len(recent_states) >= 3:
@@ -158,14 +154,10 @@ class EmotionalMemory:
         """Get most frequent emotions in the given states"""
         emotion_counts = {}
         for state in states:
-            emotion_counts[state.primary_emotion] = (
-                emotion_counts.get(state.primary_emotion, 0) + 1
-            )
+            emotion_counts[state.primary_emotion] = emotion_counts.get(state.primary_emotion, 0) + 1
 
         # Sort by frequency and return top 3
-        sorted_emotions = sorted(
-            emotion_counts.items(), key=lambda x: x[1], reverse=True
-        )
+        sorted_emotions = sorted(emotion_counts.items(), key=lambda x: x[1], reverse=True)
         return [emotion for emotion, _ in sorted_emotions[:3]]
 
     def detect_emotional_patterns(self) -> Dict[str, Any]:
@@ -365,9 +357,7 @@ class EmpatheticResponseGenerator:
         if strategy == "auto":
             strategy = self._select_empathy_strategy(user_emotional_state)
 
-        empathetic_elements = self._create_empathetic_elements(
-            user_emotional_state, strategy
-        )
+        empathetic_elements = self._create_empathetic_elements(user_emotional_state, strategy)
         enhanced_response = self._integrate_empathy_with_response(
             base_response, empathetic_elements
         )
@@ -376,9 +366,7 @@ class EmpatheticResponseGenerator:
             "enhanced_response": enhanced_response,
             "empathy_strategy": strategy,
             "emotional_elements": empathetic_elements,
-            "empathy_score": self._calculate_empathy_score(
-                enhanced_response, user_emotional_state
-            ),
+            "empathy_score": self._calculate_empathy_score(enhanced_response, user_emotional_state),
         }
 
     def _select_empathy_strategy(self, emotional_state: EmotionalState) -> str:
@@ -450,9 +438,7 @@ class EmpatheticResponseGenerator:
 
         return " ".join(empathetic_parts)
 
-    def _calculate_empathy_score(
-        self, response: str, emotional_state: EmotionalState
-    ) -> float:
+    def _calculate_empathy_score(self, response: str, emotional_state: EmotionalState) -> float:
         """Calculate empathy score for the response"""
 
         empathy_indicators = [
@@ -472,9 +458,7 @@ class EmpatheticResponseGenerator:
         ]
 
         response_lower = response.lower()
-        empathy_count = sum(
-            1 for indicator in empathy_indicators if indicator in response_lower
-        )
+        empathy_count = sum(1 for indicator in empathy_indicators if indicator in response_lower)
 
         # Base score from empathy indicators
         base_score = min(0.8, empathy_count * 0.2)
@@ -499,9 +483,7 @@ class MoodTracker:
             "very_positive": (0.6, 1.0),
         }
 
-    def update_mood(
-        self, emotional_state: EmotionalState, session_context: Optional[Dict] = None
-    ):
+    def update_mood(self, emotional_state: EmotionalState, session_context: Optional[Dict] = None):
         """Update mood tracking with new emotional state"""
 
         mood_entry = {
@@ -553,9 +535,7 @@ class MoodTracker:
             mood_distribution[category] = mood_distribution.get(category, 0) + 1
 
         # Generate insights and recommendations
-        insights = self._generate_mood_insights(
-            avg_valence, mood_volatility, mood_distribution
-        )
+        insights = self._generate_mood_insights(avg_valence, mood_volatility, mood_distribution)
         recommendations = self._generate_mood_recommendations(insights)
 
         return {
@@ -717,13 +697,9 @@ class AdvancedEmotionalIntelligence:
 
             # Step 6: Calculate performance metrics
             processing_time = (datetime.now() - start_time).total_seconds() * 1000
-            self._update_performance_metrics(
-                empathetic_result["empathy_score"], processing_time
-            )
+            self._update_performance_metrics(empathetic_result["empathy_score"], processing_time)
 
-            print(
-                f"💫 Emotional intelligence processing complete: {processing_time:.1f}ms"
-            )
+            print(f"💫 Emotional intelligence processing complete: {processing_time:.1f}ms")
 
             return {
                 "enhanced_response": empathetic_result["enhanced_response"],
@@ -746,16 +722,13 @@ class AdvancedEmotionalIntelligence:
             print(f"[WARN] Emotional intelligence processing error: {e}")
 
             # Fallback: Basic empathetic enhancement
-            simple_enhancement = self._create_simple_empathetic_response(
-                user_input, base_response
-            )
+            simple_enhancement = self._create_simple_empathetic_response(user_input, base_response)
 
             return {
                 "enhanced_response": simple_enhancement,
                 "emotional_analysis": {"status": "fallback_mode"},
                 "empathy_metrics": {"empathy_score": 0.5, "strategy_used": "fallback"},
-                "processing_time_ms": (datetime.now() - start_time).total_seconds()
-                * 1000,
+                "processing_time_ms": (datetime.now() - start_time).total_seconds() * 1000,
                 "status": "fallback",
                 "error": str(e),
             }
@@ -808,24 +781,16 @@ class AdvancedEmotionalIntelligence:
 
         return high_dominance.get(emotion, low_dominance.get(emotion, 0.5))
 
-    def _create_simple_empathetic_response(
-        self, user_input: str, base_response: str
-    ) -> str:
+    def _create_simple_empathetic_response(self, user_input: str, base_response: str) -> str:
         """Create a simple empathetic response for fallback"""
 
         # Basic emotion keywords
-        if any(
-            word in user_input.lower()
-            for word in ["frustrated", "annoying", "difficult"]
-        ):
+        if any(word in user_input.lower() for word in ["frustrated", "annoying", "difficult"]):
             return f"I understand this can be frustrating. {base_response}"
-        elif any(
-            word in user_input.lower() for word in ["excited", "great", "awesome"]
-        ):
+        elif any(word in user_input.lower() for word in ["excited", "great", "awesome"]):
             return f"That's wonderful! {base_response}"
         elif any(
-            word in user_input.lower()
-            for word in ["confused", "unclear", "don't understand"]
+            word in user_input.lower() for word in ["confused", "unclear", "don't understand"]
         ):
             return f"I can see this is confusing. {base_response}"
         else:
@@ -840,9 +805,7 @@ class AdvancedEmotionalIntelligence:
         # Update average empathy score
         current_avg = self.performance_metrics["avg_empathy_score"]
         total_responses = self.performance_metrics["empathetic_responses_generated"]
-        new_avg = (
-            (current_avg * (total_responses - 1)) + empathy_score
-        ) / total_responses
+        new_avg = ((current_avg * (total_responses - 1)) + empathy_score) / total_responses
         self.performance_metrics["avg_empathy_score"] = new_avg
 
         # Track processing times (keep last 100)
@@ -869,12 +832,8 @@ class AdvancedEmotionalIntelligence:
             },
             "performance_metrics": {
                 "total_interactions": self.performance_metrics["emotion_detections"],
-                "empathetic_responses": self.performance_metrics[
-                    "empathetic_responses_generated"
-                ],
-                "avg_empathy_score": round(
-                    self.performance_metrics["avg_empathy_score"], 3
-                ),
+                "empathetic_responses": self.performance_metrics["empathetic_responses_generated"],
+                "avg_empathy_score": round(self.performance_metrics["avg_empathy_score"], 3),
                 "avg_processing_time_ms": round(statistics.mean(processing_times), 1)
                 if processing_times
                 else 0,

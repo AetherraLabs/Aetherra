@@ -1,22 +1,22 @@
 import contextlib
 import threading
-from collections.abc import Generator, Iterable
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable, Generator, Iterable
+from typing import Any
 
 from torch.utils._exposed_in import exposed_in
 
-from .custom_ops import custom_op, CustomOpDef
+from .custom_ops import CustomOpDef, custom_op
 from .infer_schema import infer_schema
 
 
 @exposed_in("torch.library")
 def triton_op(
     name: str,
-    fn: Optional[Callable] = None,
+    fn: Callable | None = None,
     /,
     *,
-    mutates_args: Union[str, Iterable[str]],
-    schema: Optional[str] = None,
+    mutates_args: str | Iterable[str],
+    schema: str | None = None,
 ) -> Callable:
     """Create a custom operator whose implementation is backed by 1+ triton kernels.
 
@@ -154,17 +154,15 @@ def triton_op(
 
             if custom_triton_ops_decomposition_disabled():
                 return mode.__torch_dispatch__(op, types, args, kwargs)
-            else:
-                with mode:
-                    return fn(*args, **kwargs)
+            with mode:
+                return fn(*args, **kwargs)
 
         result.register_torch_dispatch(FunctionalTensorMode, functional_decomp)
         return result
 
     if fn is None:
         return dec
-    else:
-        return dec(fn)
+    return dec(fn)
 
 
 wrap_triton_enabled = threading.local()

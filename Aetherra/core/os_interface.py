@@ -6,7 +6,6 @@
 Provides the foundational OS-level integration for AI-driven computing.
 """
 
-
 # Standard library imports
 import logging
 import platform
@@ -114,9 +113,7 @@ class AetherraOS:
             "platform": self.platform,
             "status": self.system_status,
             "consciousness_level": self.consciousness_level,
-            "ai_services_count": len(
-                [s for s in self.ai_services.values() if s is not None]
-            ),
+            "ai_services_count": len([s for s in self.ai_services.values() if s is not None]),
             "consciousness_metrics": self.consciousness_metrics,
             "consciousness_features": self.consciousness_features,
             "uptime": self._get_uptime(),
@@ -172,9 +169,7 @@ class AetherraOS:
             logger.error(f"❌ Failed to launch AI interface: {e}")
             return False
 
-    def execute_ai_command(
-        self, command: str, params: Dict[str, Any] = None
-    ) -> Dict[str, Any]:
+    def execute_ai_command(self, command: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
         """Execute an AI command through the OS interface."""
         try:
             if params is None:
@@ -194,9 +189,7 @@ class AetherraOS:
                 self.consciousness_metrics["level"] = self.consciousness_level
 
                 result["success"] = True
-                result[
-                    "result"
-                ] = f"Consciousness enhanced to {self.consciousness_level:.2f}"
+                result["result"] = f"Consciousness enhanced to {self.consciousness_level:.2f}"
                 logger.info(f"🧠 {result['result']}")
 
             elif command == "launch_interface":
@@ -205,9 +198,7 @@ class AetherraOS:
                 success = self.launch_ai_interface(interface_type)
 
                 result["success"] = success
-                result[
-                    "result"
-                ] = f"Interface launch {'successful' if success else 'failed'}"
+                result["result"] = f"Interface launch {'successful' if success else 'failed'}"
 
             elif command == "system_status":
                 # Get system status
@@ -354,9 +345,7 @@ def enhance_consciousness(boost: float = 0.1) -> bool:
     """Enhance system consciousness level."""
     try:
         aetherra_os = get_aetherra_os()
-        result = aetherra_os.execute_ai_command(
-            "enhance_consciousness", {"boost": boost}
-        )
+        result = aetherra_os.execute_ai_command("enhance_consciousness", {"boost": boost})
         return result["success"]
     except Exception as e:
         logger.error(f"❌ Consciousness enhancement failed: {e}")

@@ -1,7 +1,7 @@
 # mypy: ignore-errors
 
 import traceback
-from typing import Any, NamedTuple, Optional
+from typing import Any, NamedTuple
 
 import torch
 import torch.fx
@@ -10,8 +10,7 @@ from torch._guards import detect_fake_mode
 from torch._prims_common import definitely_contiguous_for_memory_format
 from torch._subclasses.meta_utils import is_sparse_any
 from torch.fx._compatibility import compatibility
-from torch.fx.node import map_aggregate, Node
-
+from torch.fx.node import Node, map_aggregate
 
 __all__ = ["TensorMetadata", "ShapeProp"]
 
@@ -26,7 +25,7 @@ class TensorMetadata(NamedTuple):
     dtype: torch.dtype
     requires_grad: bool
     stride: tuple[int, ...]
-    memory_format: Optional[torch.memory_format]
+    memory_format: torch.memory_format | None
 
     # Quantization metadata
     is_quantized: bool
@@ -193,8 +192,7 @@ class ShapeProp(torch.fx.Interpreter):
                 nonlocal found_tensor
                 found_tensor = True
                 return _extract_tensor_metadata(obj)
-            else:
-                return obj
+            return obj
 
         meta = map_aggregate(result, extract_tensor_meta)
         if found_tensor:

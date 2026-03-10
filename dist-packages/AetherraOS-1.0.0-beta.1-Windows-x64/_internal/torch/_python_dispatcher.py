@@ -3,7 +3,6 @@ import re
 
 import torch._C as C
 
-
 """
 PythonDispatcher class is a thin python-binding to C++ dispatcher and it
 is designed to show how dispatcher precompute works. In particular,

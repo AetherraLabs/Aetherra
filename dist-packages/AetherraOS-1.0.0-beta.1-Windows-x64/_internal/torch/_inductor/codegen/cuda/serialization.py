@@ -3,7 +3,6 @@ import enum
 import functools
 import json
 from enum import Enum
-from typing import Optional
 
 from torch._inductor.codegen.cuda.cutlass_utils import try_import_cutlass
 
@@ -460,7 +459,7 @@ class CUTLASSOperationSerializer:
 
 
 @functools.lru_cache(1)
-def get_cutlass_operation_serializer() -> Optional[CUTLASSOperationSerializer]:
+def get_cutlass_operation_serializer() -> CUTLASSOperationSerializer | None:
     if not try_import_cutlass():
         return None
     return CUTLASSOperationSerializer()

@@ -18,17 +18,16 @@ from torch.testing._internal.opinfo.core import (
     DecorateInfo,
     ErrorInput,
     OpInfo,
-    sample_inputs_spectral_ops,
     SampleInput,
     SpectralFuncInfo,
     SpectralFuncType,
+    sample_inputs_spectral_ops,
 )
 from torch.testing._internal.opinfo.refs import (
+    PythonRefInfo,
     _find_referenced_opinfo,
     _inherit_constructor_args,
-    PythonRefInfo,
 )
-
 
 has_scipy_fft = False
 if TEST_SCIPY:

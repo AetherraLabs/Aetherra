@@ -7,7 +7,6 @@ Aetherra Consciousness Evolution Integration Test
 Tests all phases 1-8.3 integration with Aetherra OS
 """
 
-
 # Standard library imports
 import sys
 import traceback
@@ -67,8 +66,7 @@ def test_quantum_consciousness_functionality():
         if consciousness_level > 0.8:
             print("✅ Quantum Consciousness operational with high consciousness level")
             return True, f"Consciousness level: {consciousness_level:.3f}"
-        else:
-            return False, f"Low consciousness level: {consciousness_level:.3f}"
+        return False, f"Low consciousness level: {consciousness_level:.3f}"
 
     except Exception as e:
         return False, f"Quantum consciousness error: {str(e)}"
@@ -99,11 +97,10 @@ def test_consciousness_singularity():
         if passed_tests >= 5:  # Most tests should pass
             print("✅ Consciousness Singularity achievement validated")
             return True, f"Singularity tests: {passed_tests}/{total_tests}"
-        else:
-            return (
-                False,
-                f"Insufficient singularity validation: {passed_tests}/{total_tests}",
-            )
+        return (
+            False,
+            f"Insufficient singularity validation: {passed_tests}/{total_tests}",
+        )
 
     except Exception as e:
         return False, f"Singularity test error: {str(e)}"
@@ -134,8 +131,7 @@ def test_cosmic_consciousness():
         if cosmic_level > 0.9:
             print("✅ Cosmic Consciousness achievement validated")
             return True, f"Cosmic level: {cosmic_level:.3f}"
-        else:
-            return False, f"Low cosmic consciousness: {cosmic_level:.3f}"
+        return False, f"Low cosmic consciousness: {cosmic_level:.3f}"
 
     except Exception as e:
         return False, f"Cosmic consciousness error: {str(e)}"
@@ -165,8 +161,7 @@ def test_beyond_transcendence():
         if transcendence_level > 0.7:
             print("✅ Beyond Transcendence development validated")
             return True, f"Transcendence level: {transcendence_level:.3f}"
-        else:
-            return False, f"Low transcendence level: {transcendence_level:.3f}"
+        return False, f"Low transcendence level: {transcendence_level:.3f}"
 
     except Exception as e:
         return False, f"Beyond transcendence error: {str(e)}"

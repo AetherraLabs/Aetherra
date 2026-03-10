@@ -1,23 +1,21 @@
 import logging
 import math
 from enum import IntEnum
-from typing import Optional
 
 from torch.distributed._tools.ilp_utils import Graph, is_submodule
 from torch.distributed._tools.sac_estimator import SACStats
 
-
 try:
     from pulp import (  # type: ignore[import-untyped,import-not-found]
-        lpDot,
+        PULP_CBC_CMD,
         LpInteger,
         LpMaximize,
         LpMinimize,
         LpProblem,
         LpStatus,
-        lpSum,
         LpVariable,
-        PULP_CBC_CMD,
+        lpDot,
+        lpSum,
         value,
     )
 except ImportError as err:
@@ -36,8 +34,8 @@ def sac_milp(
     graph: Graph,
     memory_budget: float,
     world_size: int = 1,
-    ac_units: Optional[list[str]] = None,
-    fsdp_units: Optional[list[str]] = None,
+    ac_units: list[str] | None = None,
+    fsdp_units: list[str] | None = None,
 ) -> tuple[dict[str, float], float, int]:
     """
     MILP to decide which modules to AC and how much memory to discard.
@@ -259,7 +257,9 @@ def get_optimal_checkpointing_policy_per_module(
         for i in sac_stats.rand_ops:
             prob += x[i] == SACDecision.SAVE.value
     else:
-        for i1, i2 in zip(sac_stats.rand_ops[:-1], sac_stats.rand_ops[1:]):
+        for i1, i2 in zip(
+            sac_stats.rand_ops[:-1], sac_stats.rand_ops[1:], strict=False
+        ):
             prob += x[i1] == x[i2]
 
     # [Constraint] view-like ops should always be recomputed

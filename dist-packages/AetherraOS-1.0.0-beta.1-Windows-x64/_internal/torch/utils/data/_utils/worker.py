@@ -1,5 +1,5 @@
 # mypy: allow-untyped-defs
-r""""Contains definitions of the methods used by the _BaseDataLoaderIter workers.
+r""" "Contains definitions of the methods used by the _BaseDataLoaderIter workers.
 
 These **needs** to be in global scope since Py2 doesn't support serializing
 static methods.
@@ -9,13 +9,12 @@ import os
 import queue
 import random
 from dataclasses import dataclass
-from typing import Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Optional
 
 import torch
 from torch._utils import ExceptionWrapper
 
 from . import HAS_NUMPY, IS_WINDOWS, MP_STATUS_CHECK_INTERVAL, signal_handling
-
 
 if TYPE_CHECKING:
     from torch.utils.data import Dataset
@@ -98,7 +97,7 @@ class WorkerInfo:
         return f"{self.__class__.__name__}({', '.join(items)})"
 
 
-def get_worker_info() -> Optional[WorkerInfo]:
+def get_worker_info() -> WorkerInfo | None:
     r"""Returns the information about the current
     :class:`~torch.utils.data.DataLoader` iterator worker process.
 
@@ -140,7 +139,7 @@ r"""Dummy class used to resume the fetching when worker reuse is enabled"""
 
 @dataclass(frozen=True)
 class _ResumeIteration:
-    seed: Optional[int] = None
+    seed: int | None = None
 
 
 # The function `_generate_state` is adapted from `numpy.random.SeedSequence`
@@ -330,17 +329,17 @@ def _worker_loop(
                     dataset_kind, dataset, auto_collation, collate_fn, drop_last
                 )
                 continue
-            elif r is None:
+            if r is None:
                 # Received the final signal
                 assert done_event.is_set() or iteration_end
                 break
-            elif done_event.is_set() or iteration_end:
+            if done_event.is_set() or iteration_end:
                 # `done_event` is set. But I haven't received the final signal
                 # (None) yet. I will keep continuing until get it, and skip the
                 # processing steps.
                 continue
             idx, index = r
-            data: Union[_IterableDatasetStopIteration, ExceptionWrapper]
+            data: _IterableDatasetStopIteration | ExceptionWrapper
             if init_exception is not None:
                 data = init_exception
                 init_exception = None

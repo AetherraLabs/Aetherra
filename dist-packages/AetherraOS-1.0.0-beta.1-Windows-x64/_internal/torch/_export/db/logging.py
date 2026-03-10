@@ -1,8 +1,7 @@
-from typing import Optional
-
 def exportdb_error_message(case_name: str) -> str:
-    from .examples import all_examples
     from torch._utils_internal import log_export_usage
+
+    from .examples import all_examples
 
     ALL_EXAMPLES = all_examples()
     # Detect whether case_name is really registered in exportdb.
@@ -10,15 +9,14 @@ def exportdb_error_message(case_name: str) -> str:
         url_case_name = case_name.replace("_", "-")
         return f"See {case_name} in exportdb for unsupported case. \
                 https://pytorch.org/docs/main/generated/exportdb/index.html#{url_case_name}"
-    else:
-        log_export_usage(
-            event="export.error.casenotregistered",
-            message=case_name,
-        )
-        return f"{case_name} is unsupported."
+    log_export_usage(
+        event="export.error.casenotregistered",
+        message=case_name,
+    )
+    return f"{case_name} is unsupported."
 
 
-def get_class_if_classified_error(e: Exception) -> Optional[str]:
+def get_class_if_classified_error(e: Exception) -> str | None:
     """
     Returns a string case name if the export error e is classified.
     Returns None otherwise.

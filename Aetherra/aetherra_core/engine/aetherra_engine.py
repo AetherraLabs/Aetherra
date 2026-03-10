@@ -20,58 +20,75 @@ from datetime import datetime
 from threading import Lock
 from typing import Any, Dict, List, Optional
 
-# Try to import components with graceful fallbacks
+# Try to import components while tracking import failures.
+COMPONENT_IMPORT_ERRORS: dict[str, Exception] = {}
+
+
+class ComponentUnavailableError(RuntimeError):
+    """Raised when an unavailable optional component is used."""
+
+
+# Core component imports with explicit degraded fallbacks.
 try:
     # Local imports
     from ..memory.memory_core import AetherraMemorySystem
-except ImportError:
-    # Create a mock memory system
+except ImportError as exc:
+    COMPONENT_IMPORT_ERRORS["memory_system"] = exc
+
     class AetherraMemorySystem:
         def __init__(self, *args, **kwargs):
-            pass
+            self._error = COMPONENT_IMPORT_ERRORS["memory_system"]
+
+        def _unavailable(self):
+            raise ComponentUnavailableError(f"Memory system unavailable: {self._error}")
 
         async def store(self, *args, **kwargs):
-            return {"status": "mock"}
+            self._unavailable()
 
         async def retrieve(self, *args, **kwargs):
-            return []
+            self._unavailable()
 
         async def store_memory(self, *args, **kwargs):
-            return "mock_memory_id"
+            self._unavailable()
 
         async def recall_memories(self, *args, **kwargs):
-            return []
+            self._unavailable()
 
         async def get_memory_stats(self, *args, **kwargs):
-            return {"total_memories": 0}
+            self._unavailable()
 
         async def get_conversation_context(self, *args, **kwargs):
-            return []
+            self._unavailable()
 
         async def store_learning(self, *args, **kwargs):
-            return {"status": "mock"}
+            self._unavailable()
 
         def close_connection(self, *args, **kwargs):
-            pass
+            return None
 
 
 try:
     # Local imports
     from .introspection_controller import IntrospectionController
-except ImportError:
+except ImportError as exc:
+    COMPONENT_IMPORT_ERRORS["introspection"] = exc
 
     class IntrospectionController:
         def __init__(self, *args, **kwargs):
-            pass
+            self._error = COMPONENT_IMPORT_ERRORS["introspection"]
 
         async def start_introspection(self, *args, **kwargs):
-            pass
+            return None
 
         async def stop_introspection(self, *args, **kwargs):
-            pass
+            return None
 
         def get_health_status(self, *args, **kwargs):
-            return {"status": "mock", "health": "good"}
+            return {
+                "status": "unavailable",
+                "health": "degraded",
+                "error": str(self._error),
+            }
 
         @property
         def component_monitor(self):
@@ -81,49 +98,67 @@ except ImportError:
 try:
     # Local imports
     from .reasoning_engine import ReasoningEngine
-except ImportError:
+except ImportError as exc:
+    COMPONENT_IMPORT_ERRORS["reasoning_engine"] = exc
 
     class ReasoningEngine:
         def __init__(self, *args, **kwargs):
-            pass
+            self._error = COMPONENT_IMPORT_ERRORS["reasoning_engine"]
 
         async def reason(self, *args, **kwargs):
-            return {"status": "mock", "reasoning": "Mock reasoning engine"}
+            return {
+                "status": "unavailable",
+                "reasoning": "Reasoning engine unavailable",
+                "error": str(self._error),
+            }
 
 
 try:
     # Local imports
     from .self_improvement_engine import SelfImprovementEngine
-except ImportError:
+except ImportError as exc:
+    COMPONENT_IMPORT_ERRORS["self_improvement"] = exc
 
     class SelfImprovementEngine:
         def __init__(self, *args, **kwargs):
-            pass
+            self._error = COMPONENT_IMPORT_ERRORS["self_improvement"]
 
         async def start_improvement_cycle(self, *args, **kwargs):
-            pass
+            return None
 
         async def stop_improvement_cycle(self, *args, **kwargs):
-            pass
+            return None
 
         def record_performance_metric(self, *args, **kwargs):
-            return {"status": "mock"}
+            return {
+                "status": "unavailable",
+                "error": str(self._error),
+            }
 
         def get_improvement_status(self, *args, **kwargs):
-            return {"status": "mock", "improvements": 0}
+            return {
+                "status": "unavailable",
+                "improvements": 0,
+                "error": str(self._error),
+            }
 
 
 try:
     # Local imports
     from .plugin_chain_executor import PluginChainExecutor
-except ImportError:
+except ImportError as exc:
+    COMPONENT_IMPORT_ERRORS["plugin_executor"] = exc
 
     class PluginChainExecutor:
         def __init__(self, *args, **kwargs):
-            pass
+            self._error = COMPONENT_IMPORT_ERRORS["plugin_executor"]
 
         async def execute_chain(self, *args, **kwargs):
-            return {"status": "mock", "results": []}
+            return {
+                "status": "unavailable",
+                "results": [],
+                "error": str(self._error),
+            }
 
 
 try:
@@ -135,32 +170,56 @@ except ImportError:
         # Fallback to deprecated shim (emits DeprecationWarning)
         # Local imports
         from ..orchestration.agent_orchestrator import AgentOrchestrator  # type: ignore
-    except ImportError:
+    except ImportError as exc:
+        COMPONENT_IMPORT_ERRORS["agent_orchestrator"] = exc
 
         class AgentOrchestrator:
             def __init__(self, *args, **kwargs):
-                pass
+                self._error = COMPONENT_IMPORT_ERRORS["agent_orchestrator"]
 
             async def start_orchestration(self, *args, **kwargs):
-                pass
+                return None
 
             async def stop_orchestration(self, *args, **kwargs):
-                pass
+                return None
 
             def get_system_status(self, *args, **kwargs):
-                return {"status": "mock", "total_agents": 0, "pending_tasks": 0}
+                return {
+                    "status": "unavailable",
+                    "total_agents": 0,
+                    "pending_tasks": 0,
+                    "error": str(self._error),
+                }
 
             async def submit_task(self, *args, **kwargs):
-                return "mock_task_id"
+                return {
+                    "status": "unavailable",
+                    "task_id": None,
+                    "error": str(self._error),
+                }
 
             def get_task_status(self, *args, **kwargs):
-                return {"status": "mock", "progress": 100}
+                return {
+                    "status": "unavailable",
+                    "progress": 0,
+                    "error": str(self._error),
+                }
 
             async def orchestrate(self, *args, **kwargs):
-                return {"status": "mock", "result": "Mock orchestration"}
+                return {
+                    "status": "unavailable",
+                    "result": None,
+                    "error": str(self._error),
+                }
 
 
 logger = logging.getLogger(__name__)
+
+REQUIRED_COMPONENT_KEYS = {
+    "memory_system",
+    "reasoning_engine",
+    "agent_orchestrator",
+}
 
 
 # Ensure a current event loop exists for legacy get_event_loop() callers on Windows/Python 3.13+
@@ -188,6 +247,25 @@ class AetherraEngine:
         improvement_db_path: str = "lyrixa_improvement.db",
         orchestrator_db_path: str = "lyrixa_orchestrator.db",
     ):
+        self._profile = str(os.getenv("AETHERRA_PROFILE", "dev")).lower()
+
+        missing_required = {
+            key: err
+            for key, err in COMPONENT_IMPORT_ERRORS.items()
+            if key in REQUIRED_COMPONENT_KEYS
+        }
+        if self._profile in {"prod", "production"} and missing_required:
+            details = ", ".join(f"{name}: {err}" for name, err in missing_required.items())
+            raise RuntimeError(
+                "Required engine dependencies unavailable in production profile: " + details
+            )
+
+        if COMPONENT_IMPORT_ERRORS:
+            logger.warning(
+                "Engine running with degraded components: %s",
+                ", ".join(sorted(COMPONENT_IMPORT_ERRORS.keys())),
+            )
+
         # Core subsystems
         self.memory_system = AetherraMemorySystem(memory_db_path)
         self.reasoning_engine = ReasoningEngine(reasoning_db_path)
@@ -392,7 +470,7 @@ class AetherraEngine:
 
                 return {
                     "total_memories": (stats or {}).get("total_memories", 0),
-                    "response_time": 100.0,  # Placeholder for measured latency
+                    "response_time": 100.0,  # Baseline until measured latency is available
                 }
             except Exception as e:
                 logger.error(f"Memory health check failed: {e}")
@@ -802,7 +880,7 @@ class AetherraEngine:
                     else:
                         raise RuntimeError("llm_not_ready")
             except Exception:
-                # Fallback to placeholder generator if LLM not available
+                # Fallback to built-in generator if LLM is unavailable
                 raw_response = self._generate_response(
                     safe_message, reasoning_result, relevant_memories
                 )
@@ -940,9 +1018,9 @@ class AetherraEngine:
             }
 
     def _generate_response(self, message: str, reasoning_result, relevant_memories: List) -> str:
-        """Generate response based on message and context (placeholder implementation)"""
+        """Generate response based on message and context (baseline implementation)."""
 
-        # This is a simple placeholder - in a real system this would use an LLM
+        # This is a simple baseline; a production profile should prefer LLM output.
 
         if "hello" in message.lower():
             return f"Hello! I'm Lyrixa, your AI assistant. I understand you said: '{message}'. How can I help you today?"

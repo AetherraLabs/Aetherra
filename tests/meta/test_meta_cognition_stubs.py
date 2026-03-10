@@ -21,7 +21,7 @@ from Aetherra.consciousness.intelligence.meta_cognition import (
 )
 
 
-@pytest.fixture()
+@pytest.fixture
 def meta_cog(tmp_path: Path) -> MetaCognitionSystem:
     db_file = tmp_path / "meta_cognition_test.db"
     return MetaCognitionSystem(db_path=str(db_file))

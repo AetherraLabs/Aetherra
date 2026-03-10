@@ -43,9 +43,7 @@ try:
 except ImportError:
     SentenceTransformer = None
     VECTOR_EMBEDDINGS_AVAILABLE = False
-    print(
-        "[GoalForecaster] ⚠️ Vector embeddings not available - install sentence-transformers"
-    )
+    print("[GoalForecaster] ⚠️ Vector embeddings not available - install sentence-transformers")
 
 try:
     # Third party imports
@@ -148,10 +146,7 @@ class PersistentForecastDB:
             try:
                 # Serialize vector embedding if available
                 vector_blob = None
-                if (
-                    "vector_embedding" in forecast
-                    and forecast["vector_embedding"] is not None
-                ):
+                if "vector_embedding" in forecast and forecast["vector_embedding"] is not None:
                     vector_blob = forecast["vector_embedding"].tobytes()
 
                 conn.execute(
@@ -182,9 +177,7 @@ class PersistentForecastDB:
             finally:
                 conn.close()
 
-    def get_similar_forecasts(
-        self, vector_embedding: np.ndarray, limit: int = 5
-    ) -> List[Dict]:
+    def get_similar_forecasts(self, vector_embedding: np.ndarray, limit: int = 5) -> List[Dict]:
         """Retrieve similar forecasts using vector similarity"""
         with self.lock:
             conn = sqlite3.connect(self.db_path)
@@ -356,9 +349,7 @@ class MultiAgentOrchestrator:
         }
         print(f"[Orchestrator] ✅ Initialized {len(self.agents)} agents")
 
-    async def orchestrate_goal_execution(
-        self, goal: str, forecast_id: str
-    ) -> Dict[str, Any]:
+    async def orchestrate_goal_execution(self, goal: str, forecast_id: str) -> Dict[str, Any]:
         """Orchestrate multi-agent execution of a goal"""
         print(f"[Orchestrator] 🚀 Orchestrating execution for goal: {goal}")
 
@@ -376,9 +367,7 @@ class MultiAgentOrchestrator:
             await self._store_agent_task(forecast_id, "executor", execution_result)
 
             # Phase 4: Validation
-            validation_result = await self.agents["validator"].validate(
-                execution_result
-            )
+            validation_result = await self.agents["validator"].validate(execution_result)
             await self._store_agent_task(forecast_id, "validator", validation_result)
 
             return {
@@ -478,9 +467,7 @@ class VectorEmbeddingEngine:
 
                 if FAISS_AVAILABLE:
                     # Initialize FAISS index for fast similarity search
-                    self.index = faiss.IndexFlatIP(
-                        384
-                    )  # Inner product for cosine similarity
+                    self.index = faiss.IndexFlatIP(384)  # Inner product for cosine similarity
                     print("[VectorEngine] ✅ FAISS index initialized")
             except Exception as e:
                 print(f"[VectorEngine] ❌ Model init error: {e}")
@@ -509,9 +496,7 @@ class VectorEmbeddingEngine:
             for i, vector in enumerate(stored_vectors):
                 vector_norm = np.linalg.norm(vector)
                 if query_norm > 0 and vector_norm > 0:
-                    similarity = np.dot(query_vector, vector) / (
-                        query_norm * vector_norm
-                    )
+                    similarity = np.dot(query_vector, vector) / (query_norm * vector_norm)
                     similarities.append((i, float(similarity)))
 
             similarities.sort(key=lambda x: x[1], reverse=True)
@@ -531,14 +516,9 @@ class VectorEmbeddingEngine:
             # Add vectors to index and search
             self.index.reset()
             self.index.add(vectors_matrix)
-            scores, indices = self.index.search(
-                query_normalized, min(top_k, len(stored_vectors))
-            )
+            scores, indices = self.index.search(query_normalized, min(top_k, len(stored_vectors)))
 
-            return [
-                (int(indices[0][i]), float(scores[0][i]))
-                for i in range(len(indices[0]))
-            ]
+            return [(int(indices[0][i]), float(scores[0][i])) for i in range(len(indices[0]))]
         except Exception as e:
             print(f"[VectorEngine] ❌ Search error: {e}")
             return []
@@ -621,9 +601,7 @@ def analyze_goal_sentiment(goal: str) -> Dict[str, Any]:
             # Use similarity context for better analysis
             if similar_forecasts:
                 # Found similar forecasts (contextual awareness for future enhancements)
-                print(
-                    f"[GoalForecaster] Found {len(similar_forecasts)} similar historical goals"
-                )
+                print(f"[GoalForecaster] Found {len(similar_forecasts)} similar historical goals")
 
     # Enhanced sentiment analysis with vector context
     positive_words = [
@@ -688,16 +666,12 @@ def analyze_goal_sentiment(goal: str) -> Dict[str, Any]:
         "positive_score": positive_score,
         "negative_score": negative_score,
         "neutral_score": neutral_score,
-        "vector_embedding": goal_embedding.tolist()
-        if goal_embedding is not None
-        else None,
+        "vector_embedding": goal_embedding.tolist() if goal_embedding is not None else None,
         "semantic_analysis_available": vector_engine.model is not None,
     }
 
 
-async def forecast_goal_async(
-    goal: str, memory_system=None, plugin_index=None
-) -> Dict[str, Any]:
+async def forecast_goal_async(goal: str, memory_system=None, plugin_index=None) -> Dict[str, Any]:
     """
     Enhanced asynchronous goal forecasting with:
     - Persistent storage
@@ -727,38 +701,25 @@ async def forecast_goal_async(
         forecast = "Goal is too vague or short for reliable forecasting."
         suggestions.append("Please provide more specific details about your goal.")
         suggestions.append("Consider breaking down complex goals into smaller steps.")
-    elif (
-        sentiment_analysis["sentiment"] == "negative"
-        and sentiment_analysis["confidence"] > 0.7
-    ):
+    elif sentiment_analysis["sentiment"] == "negative" and sentiment_analysis["confidence"] > 0.7:
         risk = "high"
-        forecast = (
-            "Goal involves potentially destructive actions - proceed with caution."
-        )
-        suggestions.append(
-            "Consider backup procedures and safety measures before proceeding."
-        )
+        forecast = "Goal involves potentially destructive actions - proceed with caution."
+        suggestions.append("Consider backup procedures and safety measures before proceeding.")
         suggestions.append("Review system state and ensure rollback capabilities.")
     elif any(
-        word in goal.lower()
-        for word in ["delete", "remove", "shutdown", "format", "destroy"]
+        word in goal.lower() for word in ["delete", "remove", "shutdown", "format", "destroy"]
     ):
         risk = "high"
         forecast = "Goal may be destructive and requires careful validation."
         suggestions.append("Implement confirmation workflow before execution.")
         suggestions.append("Ensure proper backup and recovery procedures.")
-    elif any(
-        word in goal.lower()
-        for word in ["install", "plugin", "extend", "add", "integrate"]
-    ):
+    elif any(word in goal.lower() for word in ["install", "plugin", "extend", "add", "integrate"]):
         risk = "medium"
         forecast = "Goal involves system modifications - validate compatibility."
         suggestions.append("Check plugin compatibility and dependencies.")
         suggestions.append("Consider testing in isolated environment first.")
     elif sentiment_analysis["sentiment"] == "positive":
-        forecast = (
-            "Goal shows positive intent and aligns well with system capabilities."
-        )
+        forecast = "Goal shows positive intent and aligns well with system capabilities."
         if sentiment_analysis["confidence"] > 0.7:
             suggestions.append("Goal appears well-structured for automated execution.")
 
@@ -779,9 +740,7 @@ async def forecast_goal_async(
                 suggestions.append(
                     f"Found {len(similar_forecasts)} similar historical goals with {avg_similarity:.1%} similarity."
                 )
-                suggestions.append(
-                    "Consider reviewing historical outcomes for insights."
-                )
+                suggestions.append("Consider reviewing historical outcomes for insights.")
 
     # Plugin capability assessment
     available_plugins = plugin_manager.get_available_plugins()
@@ -848,18 +807,14 @@ async def forecast_goal_async(
     # Optionally trigger multi-agent orchestration for complex goals
     if risk != "high" and len(goal.split()) > 5:
         try:
-            orchestration_result = await orchestrator.orchestrate_goal_execution(
-                goal, forecast_id
-            )
+            orchestration_result = await orchestrator.orchestrate_goal_execution(goal, forecast_id)
             entry["orchestration"] = orchestration_result
             print("[GoalForecaster] ✅ Multi-agent orchestration completed")
         except Exception as e:
             print(f"[GoalForecaster] ⚠️ Orchestration error: {e}")
             entry["orchestration"] = {"success": False, "error": str(e)}
 
-    print(
-        f"[GoalForecaster] ✅ Enhanced forecast completed with {confidence:.1%} confidence"
-    )
+    print(f"[GoalForecaster] ✅ Enhanced forecast completed with {confidence:.1%} confidence")
     return entry
 
 
@@ -872,9 +827,7 @@ def forecast_goal(goal: str, memory_system=None, plugin_index=None) -> Dict[str,
         # Run async forecasting in event loop
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        result = loop.run_until_complete(
-            forecast_goal_async(goal, memory_system, plugin_index)
-        )
+        result = loop.run_until_complete(forecast_goal_async(goal, memory_system, plugin_index))
         loop.close()
         return result
     except Exception as e:
@@ -955,9 +908,7 @@ def get_system_stats() -> Dict[str, Any]:
             avg_confidence = cursor.fetchone()[0] or 0.0
 
             # Agent task statistics
-            cursor = conn.execute(
-                "SELECT COUNT(*) FROM agent_tasks WHERE status = 'completed'"
-            )
+            cursor = conn.execute("SELECT COUNT(*) FROM agent_tasks WHERE status = 'completed'")
             completed_tasks = cursor.fetchone()[0]
 
             return {

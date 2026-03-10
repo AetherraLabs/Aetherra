@@ -1,9 +1,13 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any
 
-from ..utils import is_accelerate_available, is_torch_available, is_torch_xpu_available, logging
+from ..utils import (
+    is_accelerate_available,
+    is_torch_available,
+    is_torch_xpu_available,
+    logging,
+)
 from .base import HfQuantizer
 from .quantizers_utils import get_module_from_name
-
 
 if is_torch_available():
     import torch
@@ -36,7 +40,9 @@ class FineGrainedFP8HfQuantizer(HfQuantizer):
             )
 
         if not is_accelerate_available():
-            raise ImportError("Loading an FP8 quantized model requires accelerate (`pip install accelerate`)")
+            raise ImportError(
+                "Loading an FP8 quantized model requires accelerate (`pip install accelerate`)"
+            )
 
         if kwargs.get("from_tf", False) or kwargs.get("from_flax", False):
             raise ValueError(
@@ -45,7 +51,9 @@ class FineGrainedFP8HfQuantizer(HfQuantizer):
             )
 
         if not (torch.cuda.is_available() or is_torch_xpu_available()):
-            raise RuntimeError("No GPU or XPU found. A GPU or XPU is needed for FP8 quantization.")
+            raise RuntimeError(
+                "No GPU or XPU found. A GPU or XPU is needed for FP8 quantization."
+            )
 
         if torch.cuda.is_available():
             compute_capability = torch.cuda.get_device_capability()
@@ -56,7 +64,7 @@ class FineGrainedFP8HfQuantizer(HfQuantizer):
                     f", actual = `{major}.{minor}`"
                 )
 
-        device_map = kwargs.get("device_map", None)
+        device_map = kwargs.get("device_map")
         if device_map is None:
             logger.warning_once(
                 "You have loaded an FP8 model on CPU and have a CUDA device available, make sure to set "
@@ -76,7 +84,9 @@ class FineGrainedFP8HfQuantizer(HfQuantizer):
 
     def update_torch_dtype(self, torch_dtype: "torch.dtype") -> "torch.dtype":
         if torch_dtype is None:
-            logger.info("Setting torch_dtype to torch.float32 as no torch_dtype was specified in from_pretrained")
+            logger.info(
+                "Setting torch_dtype to torch.float32 as no torch_dtype was specified in from_pretrained"
+            )
             torch_dtype = torch.float32
         return torch_dtype
 
@@ -86,8 +96,8 @@ class FineGrainedFP8HfQuantizer(HfQuantizer):
         param_value: "torch.Tensor",
         param_name: str,
         target_device: "torch.device",
-        state_dict: Dict[str, Any],
-        unexpected_keys: Optional[List[str]] = None,
+        state_dict: dict[str, Any],
+        unexpected_keys: list[str] | None = None,
     ):
         """
         Quantizes weights to FP8 format using Block-wise quantization
@@ -121,7 +131,9 @@ class FineGrainedFP8HfQuantizer(HfQuantizer):
         scale = scale.unsqueeze(-1).unsqueeze(-1)
 
         # Quantize the weights
-        quantized_param = torch.clamp(param_value * scale, min=fp8_min, max=fp8_max).to(torch.float8_e4m3fn)
+        quantized_param = torch.clamp(param_value * scale, min=fp8_min, max=fp8_max).to(
+            torch.float8_e4m3fn
+        )
 
         quantized_param = quantized_param.permute(0, 1, 3, 2, 4)
         # Reshape back to matrix shape
@@ -132,14 +144,16 @@ class FineGrainedFP8HfQuantizer(HfQuantizer):
 
         # Load into the model
         _load_parameter_into_model(model, param_name, quantized_param)
-        _load_parameter_into_model(model, param_name.rsplit(".", 1)[0] + ".weight_scale_inv", scale)
+        _load_parameter_into_model(
+            model, param_name.rsplit(".", 1)[0] + ".weight_scale_inv", scale
+        )
 
     def check_quantized_param(
         self,
         model: "PreTrainedModel",
         param_value: "torch.Tensor",
         param_name: str,
-        state_dict: Dict[str, Any],
+        state_dict: dict[str, Any],
         **kwargs,
     ):
         from ..integrations.finegrained_fp8 import FP8Linear
@@ -149,18 +163,21 @@ class FineGrainedFP8HfQuantizer(HfQuantizer):
         if isinstance(module, FP8Linear):
             if self.pre_quantized or tensor_name == "bias":
                 if tensor_name == "weight" and param_value.dtype != torch.float8_e4m3fn:
-                    raise ValueError("Expect quantized weights but got an unquantized weight")
+                    raise ValueError(
+                        "Expect quantized weights but got an unquantized weight"
+                    )
                 return False
-            else:
-                if tensor_name == "weight_scale_inv":
-                    raise ValueError("Expect unquantized weights but got a quantized weight_scale")
-                return True
+            if tensor_name == "weight_scale_inv":
+                raise ValueError(
+                    "Expect unquantized weights but got a quantized weight_scale"
+                )
+            return True
         return False
 
     def _process_model_before_weight_loading(
         self,
         model: "PreTrainedModel",
-        keep_in_fp32_modules: Optional[List[str]] = None,
+        keep_in_fp32_modules: list[str] | None = None,
         **kwargs,
     ):
         from ..integrations.finegrained_fp8 import replace_with_fp8_linear
@@ -180,7 +197,9 @@ class FineGrainedFP8HfQuantizer(HfQuantizer):
     def _process_model_after_weight_loading(self, model: "PreTrainedModel", **kwargs):
         return model
 
-    def update_missing_keys(self, model, missing_keys: List[str], prefix: str) -> List[str]:
+    def update_missing_keys(
+        self, model, missing_keys: list[str], prefix: str
+    ) -> list[str]:
         from ..integrations import FP8Linear
 
         not_missing_keys = []

@@ -112,9 +112,7 @@ def main() -> int:
     except Exception as e:
         _info(f"Error calling chat endpoint: {e}")
 
-    _info(
-        "Next: visit http://localhost:{}/metrics for Prometheus metrics.".format(port)
-    )
+    _info(f"Next: visit http://localhost:{port}/metrics for Prometheus metrics.")
     _info(
         "To try streaming enable SSE: POST /api/ai/stream with same JSON (when stream flag set)."
     )

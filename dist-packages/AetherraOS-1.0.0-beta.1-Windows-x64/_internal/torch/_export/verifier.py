@@ -3,7 +3,7 @@ import inspect
 import math
 import operator
 from collections.abc import Iterable
-from typing import Any, final, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, final
 
 import torch
 from torch._ops import HigherOrderOperator, OpOverload
@@ -18,7 +18,6 @@ from torch.export.graph_signature import (
     TokenArgument,
 )
 from torch.fx import GraphModule
-
 
 if TYPE_CHECKING:
     from torch.export.exported_program import ExportedProgram
@@ -41,23 +40,18 @@ def _check_val(node: torch.fx.Node) -> None:
     from torch.fx.experimental.symbolic_shapes import SymBool, SymFloat, SymInt
 
     def _check_correct_val(val):
-        if val is None:
-            return True
-        elif isinstance(val, (int, bool, str, float)):
-            return True
-        elif isinstance(
-            val, (torch.memory_format, torch.dtype, torch.device, torch.layout)
+        if (
+            val is None
+            or isinstance(val, (int, bool, str, float))
+            or isinstance(
+                val, (torch.memory_format, torch.dtype, torch.device, torch.layout)
+            )
+            or isinstance(val, (FakeTensor, torch.Tensor))
+            or isinstance(val, (SymInt, SymFloat, SymBool))
+            or isinstance(val, CustomObjArgument)
         ):
             return True
-        elif isinstance(
-            val, (FakeTensor, torch.Tensor)
-        ):  # TODO(zhxchen17) Remove Tensor.
-            return True
-        elif isinstance(val, (SymInt, SymFloat, SymBool)):
-            return True
-        elif isinstance(val, CustomObjArgument):
-            return True
-        elif isinstance(val, Iterable):
+        if isinstance(val, Iterable):
             return all(_check_correct_val(x) for x in val)
         return False
 
@@ -256,7 +250,7 @@ class Verifier(metaclass=_VerifierMeta):
                         f"call_module is not valid: got a class '{node.target}' ",
                     )
 
-                elif node.op == "call_function":
+                if node.op == "call_function":
                     _check_val(node)
 
                     _check_valid_op(node.target)
@@ -281,21 +275,20 @@ class Verifier(metaclass=_VerifierMeta):
                                 and hasattr(attr, "original_module")
                             ):
                                 continue
-                            else:
-                                backend_id = getattr(attr, "backend_id", None)
-                                processed_bytes = getattr(attr, "processed_bytes", None)
-                                compile_specs = getattr(attr, "compile_specs", None)
-                                raise SpecViolationError(
-                                    f"Invalid get_attr type {type(attr)}. \n"
-                                    f"LoweredBackendModule fields: "
-                                    f"backend_id(str) : {type(backend_id)}, "
-                                    f"processed_bytes(bytes) : {type(processed_bytes)}, "
-                                    f"compile_specs(list) : {type(compile_specs)}"
-                                )
-                        elif type(attr).__name__ == "AOTInductorEPModule":
-                            continue
-
-                        elif type(attr).__name__ == "AOTInductorRunnerWrapper":
+                            backend_id = getattr(attr, "backend_id", None)
+                            processed_bytes = getattr(attr, "processed_bytes", None)
+                            compile_specs = getattr(attr, "compile_specs", None)
+                            raise SpecViolationError(
+                                f"Invalid get_attr type {type(attr)}. \n"
+                                f"LoweredBackendModule fields: "
+                                f"backend_id(str) : {type(backend_id)}, "
+                                f"processed_bytes(bytes) : {type(processed_bytes)}, "
+                                f"compile_specs(list) : {type(compile_specs)}"
+                            )
+                        if (
+                            type(attr).__name__ == "AOTInductorEPModule"
+                            or type(attr).__name__ == "AOTInductorRunnerWrapper"
+                        ):
                             continue
 
                     if not isinstance(attr, _allowed_getattr_types(is_toplevel_gm)):
@@ -349,7 +342,7 @@ def _verify_exported_program_signature(exported_program) -> None:
             f"does not match number of inputs in the graph signature ({len(gs.input_specs)})"
         )
 
-    for input_spec, node in zip(gs.input_specs, input_node_names):
+    for input_spec, node in zip(gs.input_specs, input_node_names, strict=False):
         if isinstance(
             input_spec.arg,
             (TensorArgument, SymIntArgument, SymFloatArgument, SymBoolArgument),
@@ -362,7 +355,7 @@ def _verify_exported_program_signature(exported_program) -> None:
         if input_spec.kind == InputKind.USER_INPUT:
             continue
 
-        elif input_spec.kind == InputKind.PARAMETER:
+        if input_spec.kind == InputKind.PARAMETER:
             if not isinstance(input_spec.arg, TensorArgument):
                 raise SpecViolationError(
                     f"Parameter {input_spec.name} is not a tensor argument. Found {input_spec.arg} instead."
@@ -487,7 +480,9 @@ def _verify_exported_program_signature(exported_program) -> None:
                 f"Buffers to mutate: {gs.buffers_to_mutate}, User inputs to mutate: {gs.user_inputs_to_mutate}"
             )
 
-    for user_output_node, user_output_name in zip(user_output_nodes, gs.user_outputs):
+    for user_output_node, user_output_name in zip(
+        user_output_nodes, gs.user_outputs, strict=False
+    ):
         if user_output_node != user_output_name:
             raise SpecViolationError(
                 f"User output {user_output_node} is not in the correct "

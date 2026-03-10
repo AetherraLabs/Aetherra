@@ -42,7 +42,6 @@ from __future__ import annotations
 # Standard library imports
 import fnmatch
 import subprocess
-import sys
 
 FORBIDDEN_GLOBS = [
     # Outbox and audit logs

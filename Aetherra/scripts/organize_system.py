@@ -80,9 +80,7 @@ Examples:
         help="Project root directory (default: current directory)",
     )
     parser.add_argument("--config", help="Configuration file for monitoring daemon")
-    parser.add_argument(
-        "--verbose", "-v", action="store_true", help="Enable verbose logging"
-    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose logging")
 
     args = parser.parse_args()
 
@@ -124,9 +122,7 @@ Examples:
             print(f"  🔍 Orphaned files: {len(analysis.orphaned_files)}")
             print(f"  📋 Duplicate logic instances: {len(analysis.duplicate_logic)}")
             print(f"  ⚠️  Broken imports: {len(analysis.broken_imports)}")
-            print(
-                f"  💡 Optimization suggestions: {len(analysis.optimization_suggestions)}"
-            )
+            print(f"  💡 Optimization suggestions: {len(analysis.optimization_suggestions)}")
             print(f"  🎯 Critical files: {len(analysis.critical_files)}")
 
             if analysis.orphaned_files:
@@ -143,9 +139,7 @@ Examples:
                         f"    • {suggestion['type']}: {suggestion.get('reason', 'No reason provided')}"
                     )
                 if len(analysis.optimization_suggestions) > 3:
-                    print(
-                        f"    ... and {len(analysis.optimization_suggestions) - 3} more"
-                    )
+                    print(f"    ... and {len(analysis.optimization_suggestions) - 3} more")
 
             print(f"\n📝 Detailed logs: {intelligence.evolution_log_path}")
 
@@ -174,9 +168,7 @@ Examples:
                 print("🔍 DRY RUN MODE - Preview of potential changes:")
             else:
                 print("⚠️  EXECUTION MODE - Making actual changes:")
-                confirm = input(
-                    "Are you sure you want to execute optimizations? (yes/no): "
-                )
+                confirm = input("Are you sure you want to execute optimizations? (yes/no): ")
                 if confirm.lower() != "yes":
                     print("❌ Optimization cancelled.")
                     return

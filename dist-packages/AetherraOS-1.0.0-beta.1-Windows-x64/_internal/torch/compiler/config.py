@@ -13,10 +13,8 @@ contain configuration options that affect only a specific part of the compiler:
 """
 
 import sys
-from typing import Optional
 
 from torch.utils._config_module import Config, install_config_module
-
 
 __all__ = [
     "job_id",
@@ -29,7 +27,7 @@ __all__ = [
 # FB-internal note: you do NOT have to specify this explicitly specify this if
 # you run on MAST, we will automatically default this to
 # mast:MAST_JOB_NAME:MAST_JOB_VERSION.
-job_id: Optional[str] = Config(
+job_id: str | None = Config(
     env_name_default=["TORCH_COMPILE_JOB_ID", "TORCH_COMPILE_STICKY_PGO_KEY"],
     default=None,
 )

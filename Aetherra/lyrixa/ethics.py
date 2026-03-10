@@ -125,9 +125,7 @@ class LyrixaEthicsFramework:
 
         # Generate mitigation strategies
         if evaluation["ethics_score"] < 70:
-            evaluation["mitigation_strategies"] = self._generate_mitigation_strategies(
-                evaluation
-            )
+            evaluation["mitigation_strategies"] = self._generate_mitigation_strategies(evaluation)
 
         return evaluation
 
@@ -156,9 +154,7 @@ class LyrixaEthicsFramework:
             if violations:
                 compliance["compliant"] = False
                 compliance["violations"].extend(violations)
-                compliance["required_actions"].extend(
-                    self._get_compliance_actions(violations)
-                )
+                compliance["required_actions"].extend(self._get_compliance_actions(violations))
 
         return compliance
 
@@ -297,9 +293,7 @@ class LyrixaEthicsFramework:
 
         return concerns
 
-    def _detect_bias(
-        self, content: str, context: Optional[Dict[str, Any]]
-    ) -> List[str]:
+    def _detect_bias(self, content: str, context: Optional[Dict[str, Any]]) -> List[str]:
         """Detect potential bias in content."""
         bias_indicators = []
         content_lower = content.lower()
@@ -322,9 +316,7 @@ class LyrixaEthicsFramework:
 
         return bias_indicators
 
-    def _check_privacy(
-        self, content: str, context: Optional[Dict[str, Any]]
-    ) -> List[str]:
+    def _check_privacy(self, content: str, context: Optional[Dict[str, Any]]) -> List[str]:
         """Check for privacy concerns."""
         privacy_concerns = []
         content_lower = content.lower()
@@ -486,16 +478,12 @@ class LyrixaEthicsFramework:
             "safety_guidelines": len(self.safety_guidelines),
             "bias_detectors": len(self.bias_detectors),
             "privacy_protections": len(self.privacy_protections),
-            "recent_assessments": self.ethics_history[-5:]
-            if self.ethics_history
-            else [],
+            "recent_assessments": self.ethics_history[-5:] if self.ethics_history else [],
         }
 
 
 # Convenience functions for easy access
-def assess_content_safety(
-    content: str, context: Optional[Dict[str, Any]] = None
-) -> Dict[str, Any]:
+def assess_content_safety(content: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Quick content safety assessment."""
     framework = LyrixaEthicsFramework()
     return framework.assess_content(content, context)

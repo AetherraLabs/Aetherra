@@ -2,14 +2,13 @@
 import operator
 import pickle
 from collections import defaultdict
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from itertools import chain
-from typing import Any, Callable, no_type_check, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, no_type_check
 
 import torch
 import torch.nn as nn
 from torch.utils._python_dispatch import TorchDispatchMode
-
 
 if TYPE_CHECKING:
     from torch.utils.hooks import RemovableHandle
@@ -161,7 +160,7 @@ class MemoryTracker:
             min_val = min(chain.from_iterable(y_values)) * 0.999
             max_val = max(chain.from_iterable(y_values)) * 1.001
             plt.figure()
-            for y, label in zip(y_values, labels):
+            for y, label in zip(y_values, labels, strict=False):
                 plt.plot(x, y, label=label)
             plt.xlabel("# Operator Calls")
             plt.ylabel("Memory (MB)")

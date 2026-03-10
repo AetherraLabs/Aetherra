@@ -4,10 +4,10 @@ from typing import NamedTuple
 import torch
 import torch.utils._pytree as pytree
 from torch._C._functorch import (
+    TransformType,
     _unwrap_for_grad,
     _wrap_for_grad,
     current_level,
-    TransformType,
 )
 from torch._functorch.apis import vmap
 from torch._functorch.utils import enable_single_level_autograd_function
@@ -172,7 +172,9 @@ def wrap_outputs_maintaining_identity(
 
     unwrapped_input_to_orig_input = {
         id(unwrapped): orig
-        for unwrapped, orig in zip(flat_unwrapped_inputs, flat_orig_inputs)
+        for unwrapped, orig in zip(
+            flat_unwrapped_inputs, flat_orig_inputs, strict=False
+        )
     }
 
     flat_outputs, spec = pytree.tree_flatten(outputs)
@@ -332,10 +334,9 @@ def custom_function_call_vmap_helper(
     def lower_to_next():
         if autograd_function_case:
             return interpreter.lower()
-        else:
-            return torch._C._ExcludeDispatchKeyGuard(
-                torch._C.DispatchKeySet(torch._C.DispatchKey.FuncTorchBatched)
-            )
+        return torch._C._ExcludeDispatchKeyGuard(
+            torch._C.DispatchKeySet(torch._C.DispatchKey.FuncTorchBatched)
+        )
 
     unwrapped_operands, in_dims = unwrap_batched(operands, current_level)
     # If none of the tensors are batched at the current level, then we skip the
@@ -345,8 +346,7 @@ def custom_function_call_vmap_helper(
         with lower_to_next():
             if autograd_function_case:
                 return custom_function_call(op, *operands)
-            else:
-                return op(*operands, **kwargs)
+            return op(*operands, **kwargs)
 
     with lower_to_next():
         result = vmap_function(info, in_dims, *unwrapped_operands, **kwargs)
@@ -402,8 +402,7 @@ def vmapify_autograd_function(autograd_function, in_dims, batch_size, randomness
         )(*operands)
         if isinstance(outputs, torch.Tensor):
             return outputs, out_dims
-        else:
-            return *outputs, out_dims
+        return *outputs, out_dims
 
     def setup_context(ctx, inputs, outputs):
         outputs, out_dims = unpack_outputs(outputs)
@@ -466,8 +465,7 @@ def vmapify_autograd_function(autograd_function, in_dims, batch_size, randomness
         )
         if isinstance(result, torch.Tensor):
             return result, None
-        else:
-            return *result, None
+        return *result, None
 
     def backward(ctx, *grad_outputs):
         key = id(Generated)
@@ -479,7 +477,9 @@ def vmapify_autograd_function(autograd_function, in_dims, batch_size, randomness
 
         grad_outputs_in_dims = tuple(
             in_dim if grad_output is not None else None
-            for grad_output, in_dim in zip(grad_outputs_, grad_outputs_in_dims)
+            for grad_output, in_dim in zip(
+                grad_outputs_, grad_outputs_in_dims, strict=False
+            )
         )
 
         def backward_no_context(inputs):
@@ -521,7 +521,7 @@ def get_tangents_in_dims(input_dims, tangents):
     flat_tangents = pytree.arg_tree_leaves(*tangents)
     result = [
         None if tangent is None else in_dim
-        for in_dim, tangent in zip(flat_in_dims, flat_tangents)
+        for in_dim, tangent in zip(flat_in_dims, flat_tangents, strict=False)
     ]
     return pytree.tree_unflatten(result, spec)
 
@@ -601,7 +601,7 @@ class WrappedCtx:
     def __setattr__(self, name, value):
         if name in type(self)._pt_reserved_attrs:
             self.__dict__[name] = value
-            return
+            return None
         return setattr(self._pt_inner_ctx, name, value)
 
 
@@ -664,6 +664,7 @@ def reductify(
             grad_input_bdim,
             input_bdim,
             target_shape_without_bdim_to_reduce_to,
+            strict=False,
         )
     )
     return result

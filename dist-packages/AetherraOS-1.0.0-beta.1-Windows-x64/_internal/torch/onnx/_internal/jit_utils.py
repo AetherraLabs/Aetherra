@@ -17,7 +17,6 @@ from torch import _C
 from torch.onnx._globals import GLOBALS
 from torch.onnx._internal import registration
 
-
 _ATTR_PATTERN = re.compile("^(.+)_(([ifstgz])|(ty))$")
 _SKIP_NODE_ATTRIBUTES = {"inplace", "aten"}
 

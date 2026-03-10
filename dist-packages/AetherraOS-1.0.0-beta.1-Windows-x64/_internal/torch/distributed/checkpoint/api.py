@@ -1,7 +1,6 @@
 import traceback as tb
 from typing import Any
 
-
 WRAPPED_EXCEPTION = tuple[BaseException, tb.StackSummary]
 
 __all__ = ["CheckpointException"]

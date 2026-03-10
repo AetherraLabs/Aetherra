@@ -1,12 +1,10 @@
 # mypy: allow-untyped-defs
 from collections.abc import Iterable
-from typing import Union
 
 import torch
 from torch import Tensor
 
 from . import _lazy_call, _lazy_init, current_device, device_count, is_initialized
-
 
 __all__ = [
     "get_rng_state",
@@ -21,7 +19,7 @@ __all__ = [
 ]
 
 
-def get_rng_state(device: Union[int, str, torch.device] = "cuda") -> Tensor:
+def get_rng_state(device: int | str | torch.device = "cuda") -> Tensor:
     r"""Return the random number generator state of the specified GPU as a ByteTensor.
 
     Args:
@@ -49,9 +47,7 @@ def get_rng_state_all() -> list[Tensor]:
     return results
 
 
-def set_rng_state(
-    new_state: Tensor, device: Union[int, str, torch.device] = "cuda"
-) -> None:
+def set_rng_state(new_state: Tensor, device: int | str | torch.device = "cuda") -> None:
     r"""Set the random number generator state of the specified GPU.
 
     Args:

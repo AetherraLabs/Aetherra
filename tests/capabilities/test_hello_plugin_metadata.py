@@ -12,7 +12,7 @@ def test_hello_plugin_metadata_basic():
     missing = REQUIRED_KEYS - data.keys()
     assert not missing, f"Missing required metadata keys: {missing}"
     assert data["name"] == "hello_plugin"
-    assert (
-        isinstance(data["capabilities"], list) and data["capabilities"]
-    ), "Capabilities list must be non-empty"
+    assert isinstance(data["capabilities"], list) and data["capabilities"], (
+        "Capabilities list must be non-empty"
+    )
     assert data["entry_point"].endswith(":HelloPlugin")

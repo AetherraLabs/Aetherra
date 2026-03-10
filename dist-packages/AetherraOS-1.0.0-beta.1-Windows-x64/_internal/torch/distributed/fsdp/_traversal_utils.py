@@ -11,7 +11,6 @@ import torch.nn as nn
 from torch.distributed._composable.contract import _get_registry
 from torch.distributed.fsdp._common_utils import _FSDPState, _get_module_fsdp_state
 
-
 """
 [Note: FSDP State Traversal]
 For the wrapper code path, ``_FSDPState`` is the ``FullyShardedDataParallel``

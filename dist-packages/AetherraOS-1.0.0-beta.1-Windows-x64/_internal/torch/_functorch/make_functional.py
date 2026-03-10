@@ -6,14 +6,13 @@
 # LICENSE file in the root directory of this source tree.
 
 import copy
-from collections.abc import Iterable, Sequence
-from typing import Any, Callable, NoReturn, Union
+from collections.abc import Callable, Iterable, Sequence
+from typing import Any, NoReturn
 
 import torch
 import torch.nn as nn
 from torch import Tensor
 from torch.nn.utils._named_member_accessor import NamedMemberAccessor
-
 
 # Utilities to make nn.Module "functional"
 # In particular the goal is to be able to provide a function that takes as input
@@ -31,8 +30,8 @@ def raise_parameter_tying_error() -> NoReturn:
 
 
 def create_names_map(
-    named_params: Union[dict[str, Tensor], Iterable[tuple[str, Tensor]]],
-    tied_named_params: Union[dict[str, Tensor], Iterable[tuple[str, Tensor]]],
+    named_params: dict[str, Tensor] | Iterable[tuple[str, Tensor]],
+    tied_named_params: dict[str, Tensor] | Iterable[tuple[str, Tensor]],
 ) -> dict[str, list[str]]:
     """
     named_params is a dictionary of tensors: {'A': A, 'B': B}
@@ -79,7 +78,7 @@ def _extract_members(
     if len(unique_named_members) == 0:
         names, params = (), ()
     else:
-        names, params = zip(*unique_named_members)  # type: ignore[assignment]
+        names, params = zip(*unique_named_members, strict=False)  # type: ignore[assignment]
     return params, names, names_map
 
 
@@ -125,7 +124,7 @@ def _swap_state(
 ) -> list[Tensor]:
     result: list[Tensor] = []
     accessor = NamedMemberAccessor(mod)
-    for (_, attr_names), elem in zip(names_map.items(), elems):
+    for (_, attr_names), elem in zip(names_map.items(), elems, strict=False):
         for i, attr_name in enumerate(attr_names):
             if i == 0:
                 result.append(accessor.swap_tensor(attr_name, elem))
@@ -469,9 +468,9 @@ def make_functional_with_buffers(
 
 
 def transpose_stack(
-    tuple_of_tuple_of_tensors: tuple[tuple[Tensor, ...], ...]
+    tuple_of_tuple_of_tensors: tuple[tuple[Tensor, ...], ...],
 ) -> tuple[Tensor, ...]:
-    tuple_of_tuple_of_tensors = tuple(zip(*tuple_of_tuple_of_tensors))
+    tuple_of_tuple_of_tensors = tuple(zip(*tuple_of_tuple_of_tensors, strict=False))
     results = tuple(
         torch.stack(shards).detach() for shards in tuple_of_tuple_of_tensors
     )
@@ -533,7 +532,7 @@ def combine_state_for_ensemble(
             "combine_state_for_ensemble: Expected all models to be of the same class."
         )
     funcs, params, buffers = zip(
-        *[make_functional_with_buffers(model) for model in models]
+        *[make_functional_with_buffers(model) for model in models], strict=False
     )
     params = transpose_stack(params)
     buffers = transpose_stack(buffers)
@@ -542,7 +541,7 @@ def combine_state_for_ensemble(
 
 def functional_init(
     model_class: type[nn.Module],
-    ensemble_shape: Union[tuple[()], tuple[int]] = (),
+    ensemble_shape: tuple[()] | tuple[int] = (),
     device: torch.types.Device = "cpu",
 ):
     def wrapped(*args, **kwargs):
@@ -560,7 +559,7 @@ def functional_init(
         )
         _, fn, names = make_functional_deprecated_v1(model_class(*args, **kwargs))
         weights = tuple(make_functional_deprecated_v1(model)[0] for model in models)
-        weights = tuple(zip(*weights))
+        weights = tuple(zip(*weights, strict=False))
         weights = tuple(torch.stack(shards).detach() for shards in weights)
         return weights, fn, names
 
@@ -569,7 +568,7 @@ def functional_init(
 
 def functional_init_with_buffers(
     model_class: type[nn.Module],
-    ensemble_shape: Union[tuple[()], tuple[int]] = (),
+    ensemble_shape: tuple[()] | tuple[int] = (),
     device: torch.types.Device = "cpu",
 ):
     def wrapped(*args, **kwargs):
@@ -596,11 +595,12 @@ def functional_init_with_buffers(
             *tuple(
                 make_functional_with_buffers_deprecated_v1(model)[:2]
                 for model in models
-            )
+            ),
+            strict=False,
         )
-        weights = tuple(zip(*weights))
+        weights = tuple(zip(*weights, strict=False))
         weights = tuple(torch.stack(shards).detach() for shards in weights)
-        buffers = tuple(zip(*buffers))
+        buffers = tuple(zip(*buffers, strict=False))
         buffers = tuple(torch.stack(shards).detach() for shards in buffers)
         return weights, buffers, fn, weight_names, buffer_names
 

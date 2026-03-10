@@ -3,8 +3,8 @@ import dataclasses
 import inspect
 import sys
 import warnings
-from collections.abc import Iterable, Iterator
-from typing import Any, Callable, Union
+from collections.abc import Callable, Iterable, Iterator
+from typing import Any
 
 import torch
 import torch.utils._pytree as pytree
@@ -321,7 +321,7 @@ def has_tensor_arg(schema: _C.FunctionSchema) -> bool:
     )
 
 
-def get_device_arg_index(schema: _C.FunctionSchema) -> Union[int, None]:
+def get_device_arg_index(schema: _C.FunctionSchema) -> int | None:
     """
     Given a schema, returns the id of the `device: torch.device` argument.
     If it does not exist, returns None.
@@ -426,7 +426,7 @@ class MutationChecker:
             and not (pre.isnan().all() and post.isnan().all())
             if isinstance(pre, torch.Tensor) and isinstance(post, torch.Tensor)
             else None
-            for pre, post in zip(self.real_pre_hashes, real_post_hashes)
+            for pre, post in zip(self.real_pre_hashes, real_post_hashes, strict=False)
         ]
         was_mutated_args, was_mutated_kwargs = pytree.tree_unflatten(
             was_mutated, self.args_spec

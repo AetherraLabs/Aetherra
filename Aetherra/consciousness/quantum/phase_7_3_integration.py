@@ -193,10 +193,8 @@ class QuantumMemoryTemporalIntegration:
             temporal_integration = {}
             if temporal_context:
                 temporal_window = temporal_window or timedelta(hours=2)
-                temporal_integration = (
-                    await self.temporal_system.temporal_memory_integration(
-                        temporal_context, query
-                    )
+                temporal_integration = await self.temporal_system.temporal_memory_integration(
+                    temporal_context, query
                 )
 
             # Enhance query with temporal context
@@ -205,9 +203,7 @@ class QuantumMemoryTemporalIntegration:
                 enhanced_query.update(temporal_integration["integrated_state"])
 
             # Perform quantum memory search
-            memory_results = await self.memory_system.quantum_memory_search(
-                enhanced_query
-            )
+            memory_results = await self.memory_system.quantum_memory_search(enhanced_query)
 
             # Apply temporal coherence weighting
             enhanced_memories = []
@@ -225,8 +221,7 @@ class QuantumMemoryTemporalIntegration:
                         "memory_type": memory.memory_type.value,
                         "memory_strength": memory.memory_strength,
                         "temporal_coherence": bridge_strength,
-                        "enhanced_relevance": memory.memory_strength
-                        * (1 + bridge_strength * 0.5),
+                        "enhanced_relevance": memory.memory_strength * (1 + bridge_strength * 0.5),
                     }
                     enhanced_memories.append(enhanced_memory)
             else:
@@ -247,8 +242,7 @@ class QuantumMemoryTemporalIntegration:
             retrieval_result = {
                 "memories": enhanced_memories,
                 "temporal_integration": temporal_integration,
-                "enhancement_applied": temporal_integration.get("temporal_strength", 0)
-                > 0.3,
+                "enhancement_applied": temporal_integration.get("temporal_strength", 0) > 0.3,
                 "total_memories": len(enhanced_memories),
                 "retrieval_timestamp": datetime.now(),
             }
@@ -272,9 +266,7 @@ class QuantumMemoryTemporalIntegration:
     ) -> Dict[str, Any]:
         """Create temporal predictions enhanced by quantum memory patterns"""
         try:
-            self.logger.info(
-                f"🔮 Temporal prediction with memory enhancement for {target_time}"
-            )
+            self.logger.info(f"🔮 Temporal prediction with memory enhancement for {target_time}")
 
             # Get relevant memories for prediction context
             memory_context = await self.enhanced_memory_retrieval(
@@ -288,9 +280,7 @@ class QuantumMemoryTemporalIntegration:
 
             if memory_context["memories"]:
                 # Extract patterns from relevant memories
-                memory_patterns = await self._extract_memory_patterns(
-                    memory_context["memories"]
-                )
+                memory_patterns = await self._extract_memory_patterns(memory_context["memories"])
                 enhanced_context.update(memory_patterns)
 
             # Create temporal prediction
@@ -299,9 +289,7 @@ class QuantumMemoryTemporalIntegration:
             )
 
             # Apply memory-based confidence adjustment
-            memory_confidence_factor = self._calculate_memory_confidence_factor(
-                memory_context
-            )
+            memory_confidence_factor = self._calculate_memory_confidence_factor(memory_context)
             adjusted_confidence = prediction.confidence * memory_confidence_factor
 
             # Create enhanced prediction result
@@ -353,13 +341,11 @@ class QuantumMemoryTemporalIntegration:
             )
 
             # Calculate evolution potential
-            evolution_potential = (
-                await self._calculate_comprehensive_evolution_potential(
-                    current_state,
-                    evolutionary_memories,
-                    evolution_patterns,
-                    evolution_trigger,
-                )
+            evolution_potential = await self._calculate_comprehensive_evolution_potential(
+                current_state,
+                evolutionary_memories,
+                evolution_patterns,
+                evolution_trigger,
             )
 
             if evolution_potential > 0.7:
@@ -391,24 +377,18 @@ class QuantumMemoryTemporalIntegration:
                     }
                 )
 
-                self.logger.info(
-                    f"🚀 Consciousness evolution completed: {evolution_potential:.3f}"
-                )
+                self.logger.info(f"🚀 Consciousness evolution completed: {evolution_potential:.3f}")
 
                 return {
                     "evolution_occurred": True,
                     "evolution_potential": evolution_potential,
                     "evolution_result": evolution_result,
                     "state_id": evolution_state_id,
-                    "evolutionary_memories_used": len(
-                        evolutionary_memories["memories"]
-                    ),
+                    "evolutionary_memories_used": len(evolutionary_memories["memories"]),
                     "temporal_patterns_used": len(evolution_patterns),
                 }
             else:
-                self.logger.info(
-                    f"🔄 Evolution potential insufficient: {evolution_potential:.3f}"
-                )
+                self.logger.info(f"🔄 Evolution potential insufficient: {evolution_potential:.3f}")
                 return {
                     "evolution_occurred": False,
                     "evolution_potential": evolution_potential,
@@ -425,9 +405,7 @@ class QuantumMemoryTemporalIntegration:
         """Calculate coherence between temporal moment and memory trace"""
         try:
             # Get temporal moment
-            temporal_moment = self.temporal_system.temporal_moments.get(
-                temporal_moment_id
-            )
+            temporal_moment = self.temporal_system.temporal_moments.get(temporal_moment_id)
             if not temporal_moment:
                 return 0.0
 
@@ -517,9 +495,7 @@ class QuantumMemoryTemporalIntegration:
             momentum_factor = 1.0
             if self.consciousness_evolution_history:
                 recent_evolution = self.consciousness_evolution_history[-1]
-                time_since_last = (
-                    datetime.now() - recent_evolution["timestamp"]
-                ).total_seconds()
+                time_since_last = (datetime.now() - recent_evolution["timestamp"]).total_seconds()
                 momentum_factor = min(2.0, 1.0 + (3600.0 / max(time_since_last, 60.0)))
 
             evolution_potential = (
@@ -547,9 +523,7 @@ class QuantumMemoryTemporalIntegration:
             )
 
             if evolution_result.get("evolution_occurred"):
-                self.logger.info(
-                    f"🚀 Automatic consciousness evolution triggered for {state_id}"
-                )
+                self.logger.info(f"🚀 Automatic consciousness evolution triggered for {state_id}")
 
         except Exception as e:
             self.logger.error(f"❌ Failed to trigger consciousness evolution: {e}")
@@ -559,8 +533,7 @@ class QuantumMemoryTemporalIntegration:
         try:
             if self.integrated_states:
                 integration_strengths = [
-                    state.integration_strength
-                    for state in self.integrated_states.values()
+                    state.integration_strength for state in self.integrated_states.values()
                 ]
                 self.avg_integration_strength = sum(integration_strengths) / len(
                     integration_strengths
@@ -583,9 +556,7 @@ class QuantumMemoryTemporalIntegration:
                 return bridge.correlation_strength
         return 0.0
 
-    async def _extract_memory_patterns(
-        self, memories: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    async def _extract_memory_patterns(self, memories: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Extract patterns from memory collection"""
         patterns = {}
 
@@ -605,9 +576,7 @@ class QuantumMemoryTemporalIntegration:
 
         return pattern_averages
 
-    def _calculate_memory_confidence_factor(
-        self, memory_context: Dict[str, Any]
-    ) -> float:
+    def _calculate_memory_confidence_factor(self, memory_context: Dict[str, Any]) -> float:
         """Calculate confidence factor based on memory context"""
         if not memory_context.get("memories"):
             return 1.0
@@ -617,9 +586,7 @@ class QuantumMemoryTemporalIntegration:
 
         # Factor based on temporal integration strength
         temporal_factor = (
-            1.0
-            + memory_context.get("temporal_integration", {}).get("temporal_strength", 0)
-            * 0.3
+            1.0 + memory_context.get("temporal_integration", {}).get("temporal_strength", 0) * 0.3
         )
 
         return memory_count_factor * temporal_factor
@@ -633,12 +600,10 @@ class QuantumMemoryTemporalIntegration:
             self.integrated_states.values(), key=lambda s: s.timestamp, reverse=True
         )[:5]
 
-        avg_integration = sum(s.integration_strength for s in recent_states) / len(
+        avg_integration = sum(s.integration_strength for s in recent_states) / len(recent_states)
+        avg_evolution_potential = sum(s.evolution_potential for s in recent_states) / len(
             recent_states
         )
-        avg_evolution_potential = sum(
-            s.evolution_potential for s in recent_states
-        ) / len(recent_states)
 
         return {
             "consciousness_level": avg_integration,
@@ -659,9 +624,7 @@ class QuantumMemoryTemporalIntegration:
         base_potential = current_state.get("consciousness_level", 0.5)
 
         # Memory factor
-        memory_factor = min(
-            1.5, 1.0 + len(evolutionary_memories.get("memories", [])) * 0.1
-        )
+        memory_factor = min(1.5, 1.0 + len(evolutionary_memories.get("memories", [])) * 0.1)
 
         # Pattern factor
         pattern_factor = min(1.3, 1.0 + len(evolution_patterns) * 0.1)
@@ -669,9 +632,7 @@ class QuantumMemoryTemporalIntegration:
         # Trigger strength
         trigger_factor = evolution_trigger.get("strength", 1.0)
 
-        comprehensive_potential = (
-            base_potential * memory_factor * pattern_factor * trigger_factor
-        )
+        comprehensive_potential = base_potential * memory_factor * pattern_factor * trigger_factor
 
         return min(1.0, comprehensive_potential)
 
@@ -732,9 +693,7 @@ class QuantumMemoryTemporalIntegration:
 quantum_memory_temporal_integration = None
 
 
-def initialize_quantum_memory_temporal_integration() -> (
-    QuantumMemoryTemporalIntegration
-):
+def initialize_quantum_memory_temporal_integration() -> QuantumMemoryTemporalIntegration:
     """Initialize global integration system"""
     global quantum_memory_temporal_integration
     if quantum_memory_temporal_integration is None:
@@ -742,9 +701,7 @@ def initialize_quantum_memory_temporal_integration() -> (
     return quantum_memory_temporal_integration
 
 
-def get_quantum_memory_temporal_integration() -> (
-    Optional[QuantumMemoryTemporalIntegration]
-):
+def get_quantum_memory_temporal_integration() -> Optional[QuantumMemoryTemporalIntegration]:
     """Get global integration system instance"""
     return quantum_memory_temporal_integration
 
@@ -798,9 +755,7 @@ async def test_quantum_memory_temporal_integration():
     )
 
     print(f"  ✅ Enhanced retrieval: {len(enhanced_results['memories'])} memories found")
-    print(
-        f"  🔗 Temporal integration applied: {enhanced_results['enhancement_applied']}"
-    )
+    print(f"  🔗 Temporal integration applied: {enhanced_results['enhancement_applied']}")
 
     # Test 3: Temporal prediction with memory
     print("\n🔮 Test 3: Temporal Prediction with Memory")
@@ -812,9 +767,7 @@ async def test_quantum_memory_temporal_integration():
         target_time=future_time, prediction_context=prediction_context
     )
 
-    print(
-        f"  ✅ Enhanced prediction created: {enhanced_prediction.get('prediction_id', 'N/A')}"
-    )
+    print(f"  ✅ Enhanced prediction created: {enhanced_prediction.get('prediction_id', 'N/A')}")
     print(
         f"  📊 Memory-enhanced confidence: {enhanced_prediction.get('memory_enhanced_confidence', 0):.3f}"
     )
@@ -835,12 +788,8 @@ async def test_quantum_memory_temporal_integration():
         evolution_trigger
     )
 
-    print(
-        f"  ✅ Evolution processing: {evolution_result.get('evolution_occurred', False)}"
-    )
-    print(
-        f"  🔥 Evolution potential: {evolution_result.get('evolution_potential', 0):.3f}"
-    )
+    print(f"  ✅ Evolution processing: {evolution_result.get('evolution_occurred', False)}")
+    print(f"  🔥 Evolution potential: {evolution_result.get('evolution_potential', 0):.3f}")
 
     if evolution_result.get("evolution_occurred"):
         print(f"  🚀 Evolution state: {evolution_result.get('state_id', 'N/A')}")
@@ -853,12 +802,8 @@ async def test_quantum_memory_temporal_integration():
     for key, value in metrics["integration_metrics"].items():
         print(f"    {key}: {value}")
 
-    print(
-        f"\n  Memory System Active: {metrics['system_health']['memory_system_active']}"
-    )
-    print(
-        f"  Temporal System Active: {metrics['system_health']['temporal_system_active']}"
-    )
+    print(f"\n  Memory System Active: {metrics['system_health']['memory_system_active']}")
+    print(f"  Temporal System Active: {metrics['system_health']['temporal_system_active']}")
 
 
 if __name__ == "__main__":

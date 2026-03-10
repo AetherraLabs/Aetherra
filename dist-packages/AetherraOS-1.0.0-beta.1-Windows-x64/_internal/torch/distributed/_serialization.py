@@ -5,8 +5,7 @@ from typing import Any
 
 import torch
 import torch._weights_only_unpickler as _weights_only_unpickler
-from torch.serialization import _load, _save, DEFAULT_PROTOCOL, MAP_LOCATION
-
+from torch.serialization import DEFAULT_PROTOCOL, MAP_LOCATION, _load, _save
 
 __all__: list[str] = []
 
@@ -142,7 +141,7 @@ def _streaming_load(
         if pickle_module is None:
             pickle_module = pickle
 
-    if "encoding" not in pickle_load_args.keys():
+    if "encoding" not in pickle_load_args:
         pickle_load_args["encoding"] = "utf-8"
 
     zip_file = _PseudoZipFile()

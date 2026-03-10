@@ -2,7 +2,6 @@
 import _warnings
 import os.path
 
-
 # note: implementations
 # copied from cpython's import code
 
@@ -45,7 +44,7 @@ def _sanity_check(name, package, level):
     if level > 0:
         if not isinstance(package, str):
             raise TypeError("__package__ not set to a string")
-        elif not package:
+        if not package:
             raise ImportError("attempted relative import with no known parent package")
     if not name and level == 0:
         raise ValueError("Empty module name")
@@ -68,18 +67,17 @@ def _calc___package__(globals):
                 stacklevel=3,
             )
         return package
-    elif spec is not None:
+    if spec is not None:
         return spec.parent
-    else:
-        _warnings.warn(  # noqa: G010
-            "can't resolve package from __spec__ or __package__, "
-            "falling back on __name__ and __path__",
-            ImportWarning,
-            stacklevel=3,
-        )
-        package = globals["__name__"]
-        if "__path__" not in globals:
-            package = package.rpartition(".")[0]
+    _warnings.warn(  # noqa: G010
+        "can't resolve package from __spec__ or __package__, "
+        "falling back on __name__ and __path__",
+        ImportWarning,
+        stacklevel=3,
+    )
+    package = globals["__name__"]
+    if "__path__" not in globals:
+        package = package.rpartition(".")[0]
     return package
 
 
@@ -91,5 +89,4 @@ def _normalize_path(path):
     parent, file_name = os.path.split(path)
     if parent:
         raise ValueError(f"{path!r} must be only a file name")
-    else:
-        return file_name
+    return file_name

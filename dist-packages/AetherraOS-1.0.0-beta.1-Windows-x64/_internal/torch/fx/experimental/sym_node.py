@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-
 """
 This file does three things:
 - Contains the definition of SymNode
@@ -23,24 +22,23 @@ import math
 import operator
 import sys
 from functools import lru_cache, update_wrapper
-from typing import Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import torch
 import torch._logging.structured as structured
 
 # NB: The sym_* functions are used via getattr() and must be imported here.
 from torch import (  # noqa: F401
+    SymBool,
+    SymFloat,
+    SymInt,
     sym_float,
     sym_ite,
     sym_max,
     sym_min,
     sym_not,
-    SymBool,
-    SymFloat,
-    SymInt,
 )
 from torch._logging import dtrace_structured
-
 
 if TYPE_CHECKING:
     from torch.fx.experimental.symbolic_shapes import ShapeEnv
@@ -88,7 +86,7 @@ class SymNode:
         expr,
         shape_env,
         pytype,
-        hint: Optional[Union[int, float, bool]],
+        hint: int | float | bool | None,
         constant=None,
         fx_node=None,
         optimized_summation=False,
@@ -155,7 +153,7 @@ class SymNode:
         else:
             hint = compute_hint()
         self._hint = hint
-        self.constant: Optional[Union[int, float, bool]] = constant
+        self.constant: int | float | bool | None = constant
 
         # Record the FX node of the current node if we are doing translation
         # validation. They will be used for building the input assertions for
@@ -222,8 +220,7 @@ class SymNode:
     def maybe_as_int(self):
         if self.expr.is_number:
             return int(self.expr)
-        else:
-            return None
+        return None
 
     # NB: This does conversions, not sure if this is good or not
     def maybe_as_float(self):
@@ -231,18 +228,16 @@ class SymNode:
 
         if isinstance(self.expr, sympy.Float):
             return float(self.expr)
-        else:
-            return None
+        return None
 
     def maybe_as_bool(self):
         import sympy
 
         if self.expr is sympy.true:
             return True
-        elif self.expr is sympy.false:
+        if self.expr is sympy.false:
             return False
-        else:
-            return None
+        return None
 
     def is_int(self):
         return self.pytype is int
@@ -782,8 +777,7 @@ def _sympy_mod(a, b):
 
     if a.is_nonnegative and b.is_nonnegative:
         return Mod(a, b)
-    else:
-        return PythonMod(a, b)
+    return PythonMod(a, b)
 
 
 def _sympy_pow_by_natural(a, b):
@@ -830,7 +824,8 @@ def _binary_search_insert_arg(ordered_args, new_arg):
     if len(ordered_args) == 0:
         return [new_arg]
 
-    from sympy.core.basic import _args_sortkey as sort_key, Basic
+    from sympy.core.basic import Basic
+    from sympy.core.basic import _args_sortkey as sort_key
 
     # Fast path when new_arg > ordered_args[-1].
     if sort_key(ordered_args[-1]) < sort_key(new_arg):
@@ -847,7 +842,7 @@ def _binary_search_insert_arg(ordered_args, new_arg):
         compare_result = Basic.compare(ordered_args[mid], new_arg)
         if compare_result == 0:
             return None
-        elif compare_result < 0:
+        if compare_result < 0:
             low = mid + 1
         else:
             high = mid - 1
@@ -1074,8 +1069,7 @@ def _sympy_round(number, ndigits=None):
 
     if ndigits is None:
         return RoundToInt(number)
-    else:
-        return RoundDecimal(number, ndigits)
+    return RoundDecimal(number, ndigits)
 
 
 def _sympy_sym_float(a):
@@ -1231,16 +1225,15 @@ sizes_strides_methods = {
 def to_node(self, num):
     if isinstance(num, SymTypes):
         return num.node
-    elif type(num) is bool:
+    if type(num) is bool:
         return self.wrap_bool(num)
-    elif type(num) is int:
+    if type(num) is int:
         return self.wrap_int(num)
-    elif type(num) is float:
+    if type(num) is float:
         return self.wrap_float(num)
-    else:
-        # NotImplemented is important so that Python tries the
-        # other magic method
-        return NotImplemented
+    # NotImplemented is important so that Python tries the
+    # other magic method
+    return NotImplemented
 
 
 def wrap_node(x):
@@ -1249,12 +1242,11 @@ def wrap_node(x):
         return x.constant
     if x.is_int():
         return SymInt(x)
-    elif x.is_float():
+    if x.is_float():
         return SymFloat(x)
-    elif x.is_bool():
+    if x.is_bool():
         return SymBool(x)
-    else:
-        raise AssertionError(f"unrecognized return type {x}")
+    raise AssertionError(f"unrecognized return type {x}")
 
 
 def method_to_operator(method):
@@ -1299,17 +1291,16 @@ def _make_node_magic(method, func):
                 else:
                     arguments = [self]
 
-                def get_id(sym_node) -> Optional[int]:
+                def get_id(sym_node) -> int | None:
                     # We don't want to return an ID if the input is a constant
                     import sympy
 
-                    if sym_node.constant is not None:
-                        return None
-                    elif id(sym_node) == id(result):
-                        return None
-                    elif isinstance(sym_node.expr, (sympy.Integer, sympy.Float)):
-                        return None
-                    elif sym_node.expr in (sympy.true, sympy.false):
+                    if (
+                        sym_node.constant is not None
+                        or id(sym_node) == id(result)
+                        or isinstance(sym_node.expr, (sympy.Integer, sympy.Float))
+                        or sym_node.expr in (sympy.true, sympy.false)
+                    ):
                         return None
                     return id(sym_node)
 
@@ -1626,14 +1617,13 @@ def _make_node_sizes_strides(method, func):
                 )
         if method == "is_non_overlapping_and_dense_indicator":
             return eval_is_non_overlapping_and_dense(sizes, strides)
-        else:
-            # TODO: this is an awful implementation
-            return bool(
-                func(
-                    [sympy.sympify(a) for a in sizes],
-                    [sympy.sympify(a) for a in strides],
-                )
+        # TODO: this is an awful implementation
+        return bool(
+            func(
+                [sympy.sympify(a) for a in sizes],
+                [sympy.sympify(a) for a in strides],
             )
+        )
 
     # Skip for is_non_overlapping_and_dense_indicator
     if not hasattr(sys.modules[__name__], method):
@@ -1656,7 +1646,7 @@ def _make_user_magic(method, user_type):
     else:
         method_attr = method
 
-    def get_constant(x: Union[SymInt, int, SymFloat, float, SymBool, bool]):
+    def get_constant(x: SymInt | int | SymFloat | float | SymBool | bool):
         if isinstance(x, (int, float, bool)):
             return x
         if isinstance(x, SymBool):

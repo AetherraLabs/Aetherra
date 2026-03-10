@@ -18,7 +18,6 @@ import os
 import random
 import sys
 from pathlib import Path
-from typing import List
 
 try:
     # Third party imports
@@ -31,7 +30,7 @@ from Aetherra.analysis.static_risk import analyze_paths  # type: ignore
 from Aetherra.security.script_signing import verify_embedded_signature  # type: ignore
 
 
-def find_aether_files(root: Path) -> List[Path]:
+def find_aether_files(root: Path) -> list[Path]:
     """Return all .aether files under the repo, excluding transient/ignored dirs.
 
     Previous implementation only looked in a narrow set (scripts/, workflows/ ...)

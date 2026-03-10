@@ -10,7 +10,6 @@ Comprehensive testing for Lyrixa's actual intelligence core components.
 Tests the real intelligence API as it exists in the codebase.
 """
 
-
 # Standard library imports
 import sys
 import unittest
@@ -128,7 +127,7 @@ def create_stub_modules():
             self.current_context = {}
             self.confidence_threshold = 0.7
 
-        def analyze_context(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        def analyze_context(self, context: dict[str, Any]) -> dict[str, Any]:
             """Analyze context and return intelligence insights"""
             return {
                 "context_type": "general",
@@ -139,14 +138,14 @@ def create_stub_modules():
             }
 
         def record_decision_outcome(
-            self, decision: str, context: Dict[str, Any], success: bool
-        ) -> Dict[str, Any]:
+            self, decision: str, context: dict[str, Any], success: bool
+        ) -> dict[str, Any]:
             """Record decision outcome for learning"""
             return {"recorded": True, "decision": decision, "success": success}
 
         def predict_outcome(
-            self, scenario: Dict[str, Any], options: List[str]
-        ) -> Dict[str, Any]:
+            self, scenario: dict[str, Any], options: list[str]
+        ) -> dict[str, Any]:
             """Predict outcomes for different options"""
             return {
                 "predictions": [
@@ -155,7 +154,7 @@ def create_stub_modules():
                 "confidence": 0.8,
             }
 
-        def get_intelligence_status(self) -> Dict[str, Any]:
+        def get_intelligence_status(self) -> dict[str, Any]:
             """Get intelligence system status"""
             return {
                 "patterns_learned": len(self.memory_patterns),
@@ -184,12 +183,12 @@ def create_stub_modules():
             return "neutral"
 
         def modulate_emotion(
-            self, detected_emotion: str, context: Dict[str, Any]
+            self, detected_emotion: str, context: dict[str, Any]
         ) -> None:
             """Adjust emotional state based on detected emotion"""
             pass
 
-        def get_personality_summary(self) -> Dict[str, Any]:
+        def get_personality_summary(self) -> dict[str, Any]:
             """Get personality summary"""
             return {
                 "trait_levels": {
@@ -201,7 +200,7 @@ def create_stub_modules():
             }
 
         def learn_from_interaction(
-            self, user_input: str, response: str, feedback: Optional[str] = None
+            self, user_input: str, response: str, feedback: str | None = None
         ):
             """Learn from user interaction"""
             self.interaction_history.append(

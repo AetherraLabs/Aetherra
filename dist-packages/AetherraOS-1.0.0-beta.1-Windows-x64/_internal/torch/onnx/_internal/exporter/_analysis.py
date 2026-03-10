@@ -16,7 +16,6 @@ import torch._export.serde.schema
 from torch.export import graph_signature
 from torch.onnx._internal.exporter import _dispatching, _registration
 
-
 if TYPE_CHECKING:
     import torch.fx
 

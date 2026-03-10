@@ -8,12 +8,14 @@ import math
 import operator
 import unittest
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from functools import partial
 from itertools import product
-from typing import Any, Callable, Optional, TypeVar, Union
+from typing import Any, TypeVar
+
+from torchgen.utils import dataclass_repr
 
 import torch
 from torch.testing import make_tensor
@@ -30,19 +32,17 @@ from torch.testing._internal.common_dtype import (
     get_all_dtypes,
 )
 from torch.testing._internal.common_utils import (
-    extract_test_fn,
     IS_FBCODE,
-    is_iterable_of_tensors,
-    noncontiguous_like,
     OPINFO_SAMPLE_INPUT_INDEX,
     TEST_WITH_ROCM,
-    torch_to_numpy_dtype_dict,
-    TrackedInputIter,
     USE_PYTEST,
+    TrackedInputIter,
+    extract_test_fn,
+    is_iterable_of_tensors,
+    noncontiguous_like,
+    torch_to_numpy_dtype_dict,
 )
 from torch.testing._internal.opinfo import utils
-from torchgen.utils import dataclass_repr
-
 
 # setup logging
 log = logging.getLogger(__name__)
@@ -67,8 +67,7 @@ def _getattr_qual(obj, name, default=_NOTHING):
     except AttributeError:
         if default is not _NOTHING:
             return default
-        else:
-            raise
+        raise
 
 
 class DecorateInfo:
@@ -162,9 +161,7 @@ class SampleInput:
         # Allow calling either as SampleInput(input, args=args, kwargs=kwargs), or as
         # SampleInput(input, *args, **kwargs) but not to mix the two forms
         if args is not None or kwargs is not None:
-            assert (
-                not var_args and not var_kwargs
-            ), """
+            assert not var_args and not var_kwargs, """
 A SampleInput can be constructed "naturally" with *args and **kwargs or by
 explicitly setting the "args" and "kwargs" parameters, but the two
 methods of construction cannot be mixed!"""
@@ -226,7 +223,7 @@ cannot specify additional metadata in keyword arguments"""
             f"name={repr(self.name)}",
         ]
 
-        return f'SampleInput({", ".join(a for a in arguments if a is not None)})'
+        return f"SampleInput({', '.join(a for a in arguments if a is not None)})"
 
     def __repr__(self):
         return self._repr_helper(lambda x: x)
@@ -250,11 +247,11 @@ cannot specify additional metadata in keyword arguments"""
                 if not is_sparse and not arg.is_contiguous():
                     contiguity_suffix = ", contiguous=False"
                 return f'Tensor[size={shape}, device="{device}", dtype={dtype}{contiguity_suffix}]'
-            elif isinstance(arg, dict):
+            if isinstance(arg, dict):
                 return {k: formatter(v) for k, v in arg.items()}
-            elif is_iterable_of_tensors(arg):
+            if is_iterable_of_tensors(arg):
                 return "TensorList[" + ", ".join(map(formatter, arg)) + "]"
-            elif isinstance(arg, (list, tuple)):  # Handle list, tuple
+            if isinstance(arg, (list, tuple)):  # Handle list, tuple
                 return "(" + ",".join(map(formatter, arg)) + ")"
 
             return repr(arg)
@@ -268,18 +265,15 @@ cannot specify additional metadata in keyword arguments"""
                 with torch.no_grad():
                     return f(t)
 
-            if isinstance(t, torch.Tensor):
+            if isinstance(t, torch.Tensor) or isinstance(t, torch.dtype):
                 return _tt(t)
-            elif isinstance(t, torch.dtype):
-                return _tt(t)
-            elif isinstance(t, list):
+            if isinstance(t, list):
                 return list(map(tt, t))
-            elif isinstance(t, tuple):
+            if isinstance(t, tuple):
                 return tuple(map(tt, t))
-            elif isinstance(t, dict):
+            if isinstance(t, dict):
                 return {k: tt(v) for k, v in t.items()}
-            else:
-                return t
+            return t
 
         sample_tt_input, tt_args, tt_kwargs = (
             tt(self.input),
@@ -308,7 +302,7 @@ cannot specify additional metadata in keyword arguments"""
                 if t.dtype is torch.chalf:
                     return t.detach().cpu().to(torch.cfloat).numpy()
                 return t.detach().cpu().numpy()
-            elif isinstance(t, torch.dtype):
+            if isinstance(t, torch.dtype):
                 return torch_to_numpy_dtype_dict[t]
 
             return t
@@ -319,7 +313,7 @@ cannot specify additional metadata in keyword arguments"""
         def to_noncontiguous(t):
             if isinstance(t, torch.Tensor):
                 return noncontiguous_like(t)
-            elif isinstance(t, torch.dtype):
+            if isinstance(t, torch.dtype):
                 return t
 
             return t
@@ -647,7 +641,7 @@ class OpInfo:
 
     # An optional reference function that accepts ndarrays (AKA "NumPy arrays").
     # If given, the op will be compared with its reference on each of its sample inputs.
-    ref: Optional[Callable] = None
+    ref: Callable | None = None
 
     # the following metadata describes the operator, its variants, and its aliases, if any
 
@@ -823,11 +817,11 @@ class OpInfo:
 
     # If `supports_cow_input_no_materialize_forward == True`, this list contains
     # the arg indices or kwarg names of inputs that are expected to materialize
-    allow_cow_input_materialize_forward: list[Union[int, str]] = None
+    allow_cow_input_materialize_forward: list[int | str] = None
 
     # If `supports_cow_input_no_materialize_backward == True`, this list contains
     # the arg indices or kwarg names of inputs that are expected to materialize
-    allow_cow_input_materialize_backward: list[Union[int, str]] = None
+    allow_cow_input_materialize_backward: list[int | str] = None
 
     # wrapper function for gradcheck
     gradcheck_wrapper: Callable = lambda op, *args, **kwargs: op(*args, **kwargs)
@@ -862,10 +856,10 @@ class OpInfo:
     aten_name: str = None
 
     # if this is a composite implicit autograd op, the decomposed op
-    decomp_aten_name: Optional[str] = None
+    decomp_aten_name: str | None = None
 
     # name of the corresponding aten:: operator for backwards
-    aten_backward_name: Optional[str] = None
+    aten_backward_name: str | None = None
 
     # if a op's aten::node is expected to be symbolically autodiffed
     assert_autodiffed: bool = False
@@ -1601,13 +1595,11 @@ class SampleRule(ABC):
 
     # returns a string identifier of the rule type
     @abstractmethod
-    def type(self) -> str:
-        ...
+    def type(self) -> str: ...
 
     # returns an appropriate context that handles the xfail, skips, etc.
     @abstractmethod
-    def get_context(self, test_case):
-        ...
+    def get_context(self, test_case): ...
 
 
 # useful for specifying xfails
@@ -1769,11 +1761,11 @@ class ReductionOpInfo(OpInfo):
         name,
         *,
         # The identity value for the operator if it has one.
-        identity: Optional[Any] = None,
+        identity: Any | None = None,
         # The nan policy for the operator if it implements one.
         # - propagate: NaN values are propagated to the output
         # - omit: NaN values are discarded during the reduction
-        nan_policy: Optional[str] = None,
+        nan_policy: str | None = None,
         # Whether the operator supports reducing multiple dimensions.
         supports_multiple_dims: bool = True,
         # Whether the operator promotes integral to floating point dtypes.
@@ -1783,7 +1775,7 @@ class ReductionOpInfo(OpInfo):
         # If a specific dtype is given, then the operator always returns that
         # dtype irrespective of the input dtype. If None, the operator returns
         # the dtype according to the type promotion rules above.
-        result_dtype: Optional[torch.dtype] = None,
+        result_dtype: torch.dtype | None = None,
         # Casts complex results to real (e.g. linalg.norm or torch.var)
         complex_to_real: bool = False,
         # ReductionOpInfo tests generate their own input, dim and keepdim
@@ -1791,8 +1783,10 @@ class ReductionOpInfo(OpInfo):
         # kwargs to use when calling the op. This is required for operators that
         # have other required parameters besides the input tensor.
         generate_args_kwargs: Callable = lambda t, dim=None, keepdim=False: (
-            yield (),
-            {},
+            yield (
+                (),
+                {},
+            )
         ),
         # Options from the OpInfo base class
         **kwargs,
@@ -2476,9 +2470,9 @@ class BinaryUfuncInfo(OpInfo):
             self.supports_one_python_scalar = True
 
         if self.supports_one_python_scalar:
-            assert (
-                supports_rhs_python_scalar
-            ), "Can't support lhs and rhs Python scalars but not rhs scalars!"
+            assert supports_rhs_python_scalar, (
+                "Can't support lhs and rhs Python scalars but not rhs scalars!"
+            )
 
 
 # The following functions and classes are for testing elementwise unary operators.
@@ -3009,22 +3003,21 @@ def sample_inputs_foreach(
             )
             for _ in range(N)
         ]
-    else:
-        # interweave some empty tensors + have the last 2 tensors be empty (see #100701)
-        return [
-            torch.empty(0, dtype=dtype, device=device, requires_grad=requires_grad)
-            if (i % 3 == 0 or i >= N - 2) and intersperse_empty_tensors
-            else make_tensor(
-                (N - i, N - i),
-                dtype=dtype,
-                device=device,
-                noncontiguous=noncontiguous,
-                low=low,
-                high=high,
-                requires_grad=requires_grad,
-            )
-            for i in range(N)
-        ]
+    # interweave some empty tensors + have the last 2 tensors be empty (see #100701)
+    return [
+        torch.empty(0, dtype=dtype, device=device, requires_grad=requires_grad)
+        if (i % 3 == 0 or i >= N - 2) and intersperse_empty_tensors
+        else make_tensor(
+            (N - i, N - i),
+            dtype=dtype,
+            device=device,
+            noncontiguous=noncontiguous,
+            low=low,
+            high=high,
+            requires_grad=requires_grad,
+        )
+        for i in range(N)
+    ]
 
 
 def get_foreach_method_names(name):
@@ -3206,8 +3199,7 @@ def clone_sample(sample, **kwargs):
     def clone_tensor(t):
         if isinstance(t, torch.Tensor):
             return t.detach().clone().requires_grad_(t.requires_grad)
-        else:
-            return t
+        return t
 
     sample_kwargs = kwargs if kwargs else sample.kwargs
 

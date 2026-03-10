@@ -2,11 +2,11 @@
 import copy
 import operator
 from collections.abc import Sequence
-from typing import Any, cast, Optional
+from typing import Any, cast
 
 import torch
 from torch._subclasses.fake_tensor import FakeTensor
-from torch.distributed.tensor import DeviceMesh, distribute_tensor, DTensor
+from torch.distributed.tensor import DeviceMesh, DTensor, distribute_tensor
 from torch.distributed.tensor._dtensor_spec import DTensorSpec, TensorMeta
 from torch.distributed.tensor._op_schema import (
     OpSchema,
@@ -25,7 +25,6 @@ from torch.fx.node import Node
 from torch.fx.passes.infra.pass_base import PassBase, PassResult
 from torch.fx.passes.shape_prop import _extract_tensor_metadata
 from torch.utils import _pytree as pytree
-
 
 __all__ = ["tensor_parallel_transformation"]
 
@@ -171,12 +170,11 @@ def _get_input_node_fqn(input_name: str, graph_signature: ExportGraphSignature) 
     """
     if input_name in graph_signature.inputs_to_parameters:
         return graph_signature.inputs_to_parameters[input_name]
-    elif input_name in graph_signature.inputs_to_buffers:
+    if input_name in graph_signature.inputs_to_buffers:
         return graph_signature.inputs_to_buffers[input_name]
-    else:
-        raise ValueError(
-            f"{input_name} not found in inputs_to_parameters or inputs_to_buffers"
-        )
+    raise ValueError(
+        f"{input_name} not found in inputs_to_parameters or inputs_to_buffers"
+    )
 
 
 def _mark_sharding(
@@ -258,19 +256,18 @@ def _get_output_spec_from_output_sharding(
     """
     if isinstance(output_sharding.output_spec, DTensorSpec):
         return output_sharding.output_spec
-    else:
-        # For ops that return multiple outputs, the outputs should have the same output spec
-        assert isinstance(output_sharding.output_spec, Sequence)
-        assert output_sharding.output_spec[0] is not None
-        output_sharding.output_spec[0].tensor_meta = None
-        return output_sharding.output_spec[0]
+    # For ops that return multiple outputs, the outputs should have the same output spec
+    assert isinstance(output_sharding.output_spec, Sequence)
+    assert output_sharding.output_spec[0] is not None
+    output_sharding.output_spec[0].tensor_meta = None
+    return output_sharding.output_spec[0]
 
 
 def _create_placement_strategy(
     node: Node,
     mesh: DeviceMesh,
     placements: tuple[Placement, ...],
-    input_specs: Optional[Sequence[DTensorSpec]] = None,
+    input_specs: Sequence[DTensorSpec] | None = None,
 ) -> OpSpec:
     """
     Util function to construct an OpSpec for a given node.
@@ -292,7 +289,7 @@ def _populate_tensor_meta(node: Node, output_spec: OutputSpecType) -> None:
     """
     if isinstance(node.meta["val"], Sequence):
         assert isinstance(output_spec, Sequence)
-        for spec, fake_tensor in zip(output_spec, node.meta["val"]):
+        for spec, fake_tensor in zip(output_spec, node.meta["val"], strict=False):
             assert spec is not None
             spec.tensor_meta = TensorMeta(
                 shape=fake_tensor.shape,
@@ -427,10 +424,9 @@ def _partition_val(val: Any, spec: DTensorSpec) -> Any:
                     local_shard, num_chunks, with_padding=False, contiguous=True
                 )[0][my_coord_on_mesh_dim]
         return local_shard
-    elif isinstance(val, (list, tuple)):
+    if isinstance(val, (list, tuple)):
         return val.__class__(_partition_val(v, spec) for v in val)
-    else:
-        raise RuntimeError(f"val type {type(val)} not supported")
+    raise RuntimeError(f"val type {type(val)} not supported")
 
 
 def _insert_reshard_gm(

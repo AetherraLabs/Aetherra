@@ -6,14 +6,13 @@ from __future__ import annotations
 import glob
 import os
 import shutil
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 import torch.jit._trace
 import torch.serialization
 from torch.onnx import errors
 from torch.onnx._internal import jit_utils, registration
-
 
 if TYPE_CHECKING:
     import io
@@ -66,9 +65,13 @@ def export_as_test_case(
 
     proto = onnx.load_model_from_string(model_bytes)  # type: ignore[attr-defined]
 
-    for i, (input_proto, input) in enumerate(zip(proto.graph.input, inputs_data)):
+    for i, (input_proto, input) in enumerate(
+        zip(proto.graph.input, inputs_data, strict=False)
+    ):
         export_data(input, input_proto, os.path.join(data_set_dir, f"input_{i}.pb"))
-    for i, (output_proto, output) in enumerate(zip(proto.graph.output, outputs_data)):
+    for i, (output_proto, output) in enumerate(
+        zip(proto.graph.output, outputs_data, strict=False)
+    ):
         export_data(output, output_proto, os.path.join(data_set_dir, f"output_{i}.pb"))
 
     return test_case_dir

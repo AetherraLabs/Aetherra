@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import functools
+from collections.abc import Callable
 from contextlib import nullcontext
-from typing import Any, Callable, TYPE_CHECKING, TypeVar
-from typing_extensions import ParamSpec
+from typing import TYPE_CHECKING, Any, TypeVar
 
+from typing_extensions import ParamSpec
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -18,7 +19,6 @@ import torch._refs.nn.functional
 import torch._refs.special
 import torch.overrides
 from torch._prims_common import torch_function_passthrough
-
 
 _P = ParamSpec("_P")
 _R = TypeVar("_R")

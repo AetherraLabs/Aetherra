@@ -7,10 +7,13 @@ import functools
 import inspect
 import logging
 import threading
-from typing import Any, Generic, TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 import torch
 from torch._C._distributed_rpc import (
+    PyRRef,
+    RemoteProfilerManager,
+    WorkerInfo,
     _cleanup_python_rpc_handler,
     _delete_all_user_and_unforked_owner_rrefs,
     _destroy_rref_context,
@@ -25,21 +28,17 @@ from torch._C._distributed_rpc import (
     _reset_current_rpc_agent,
     _set_and_start_rpc_agent,
     get_rpc_timeout,
-    PyRRef,
-    RemoteProfilerManager,
-    WorkerInfo,
 )
 from torch.futures import Future
 
 from ._utils import _group_membership_management, _update_group_membership
 from .constants import DEFAULT_SHUTDOWN_TIMEOUT, UNSET_RPC_TIMEOUT
 from .internal import (
-    _build_rpc_profiling_key,
-    _internal_rpc_pickler,
     PythonUDF,
     RPCExecMode,
+    _build_rpc_profiling_key,
+    _internal_rpc_pickler,
 )
-
 
 __all__ = [
     "shutdown",
@@ -436,30 +435,27 @@ def get_worker_info(worker_name=None):
     """
     if worker_name is not None:
         return _get_current_rpc_agent().get_worker_info(worker_name)
-    else:
-        return _get_current_rpc_agent().get_worker_info()
+    return _get_current_rpc_agent().get_worker_info()
 
 
 def _to_worker_info(to):
     if isinstance(to, WorkerInfo):
         return to
-    elif isinstance(to, (str, int)):
+    if isinstance(to, (str, int)):
         return get_worker_info(to)
-    else:
-        raise ValueError(f"Cannot get WorkerInfo from name {to}")
+    raise ValueError(f"Cannot get WorkerInfo from name {to}")
 
 
 def _rref_typeof_on_owner(rref, blocking: bool = True):
     rref_type = type(rref.local_value())
     if blocking:
         return rref_type
-    else:
-        # Wrap result into a completed Future. This is so that if blocking=`False`
-        # is specified, we return a future regardless of if this call is on user
-        # or owner.
-        future = Future[type]()
-        future.set_result(rref_type)
-        return future
+    # Wrap result into a completed Future. This is so that if blocking=`False`
+    # is specified, we return a future regardless of if this call is on user
+    # or owner.
+    future = Future[type]()
+    future.set_result(rref_type)
+    return future
 
 
 def _rref_typeof_on_user(
@@ -468,8 +464,7 @@ def _rref_typeof_on_user(
     fut = rpc_async(rref.owner(), _rref_typeof_on_owner, args=(rref,), timeout=timeout)
     if blocking:
         return fut.wait()
-    else:
-        return fut
+    return fut
 
 
 T = TypeVar("T")

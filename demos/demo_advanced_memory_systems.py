@@ -97,9 +97,8 @@ class AdvancedMemoryDemo:
                     conv_init_success = False
 
                 return memory_init_success and conv_init_success
-            else:
-                print("❌ Aetherra modules not available")
-                return False
+            print("❌ Aetherra modules not available")
+            return False
 
         except Exception as e:
             print(f"❌ System initialization failed: {e}")
@@ -113,7 +112,7 @@ class AdvancedMemoryDemo:
 
         if not self.memory_manager:
             print("❌ Memory manager not available")
-            return
+            return None
 
         # Test conversation memories with different importance levels
         test_conversations = [
@@ -189,7 +188,7 @@ class AdvancedMemoryDemo:
 
         if not self.memory_manager:
             print("❌ Memory manager not available")
-            return
+            return None
 
         # Test queries with different recall strategies
         test_queries = [
@@ -281,7 +280,7 @@ class AdvancedMemoryDemo:
 
         if not self.conversation_manager:
             print("❌ Conversation manager not available")
-            return
+            return None
 
         # Test conversations that should benefit from memory
         test_conversations = [

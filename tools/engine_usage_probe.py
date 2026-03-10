@@ -18,7 +18,6 @@ import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Set
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -26,11 +25,11 @@ ROOT = Path(__file__).resolve().parents[1]
 @dataclass
 class Target:
     file: str
-    classes: List[str]
-    module_hints: List[str]
+    classes: list[str]
+    module_hints: list[str]
 
 
-TARGETS: List[Target] = [
+TARGETS: list[Target] = [
     Target(
         file="Aetherra/consciousness/quantum/quantum_consciousness_engine.py",
         classes=["QuantumConsciousnessEngine"],
@@ -69,13 +68,13 @@ AREAS = {
 }
 
 
-def file_matches_area(path: Path, patterns: List[str]) -> bool:
+def file_matches_area(path: Path, patterns: list[str]) -> bool:
     p = str(path).replace("\\", "/")
     return any(s in p for s in patterns)
 
 
-def scan_references(target: Target) -> Dict[str, Set[str]]:
-    refs: Dict[str, Set[str]] = {k: set() for k in AREAS}
+def scan_references(target: Target) -> dict[str, set[str]]:
+    refs: dict[str, set[str]] = {k: set() for k in AREAS}
     class_names = set(target.classes)
     mod_hints = set(target.module_hints)
     class_regex = re.compile(
@@ -108,7 +107,7 @@ def scan_references(target: Target) -> Dict[str, Set[str]]:
 
 
 def main():
-    report: Dict[str, Dict] = {}
+    report: dict[str, dict] = {}
     for tgt in TARGETS:
         refs = scan_references(tgt)
         report[tgt.file] = {

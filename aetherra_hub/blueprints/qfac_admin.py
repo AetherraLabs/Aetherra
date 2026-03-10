@@ -29,7 +29,7 @@ bp = Blueprint("qfac_admin", __name__)
 
 
 def _authorized() -> bool:
-    token = os.getenv("AETHERRA_HUB_CONTROL_TOKEN")
+    token = (os.getenv("AETHERRA_HUB_CONTROL_TOKEN") or "").strip()
     if not token:
         return True  # token guard disabled
     # Accept Bearer or custom header

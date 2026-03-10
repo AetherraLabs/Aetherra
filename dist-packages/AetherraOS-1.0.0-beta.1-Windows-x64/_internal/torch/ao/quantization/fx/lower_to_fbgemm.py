@@ -3,7 +3,6 @@ from torch.fx import GraphModule
 
 from ._lower_to_native_backend import _lower_to_native_backend
 
-
 __all__ = ["lower_to_fbgemm"]
 
 

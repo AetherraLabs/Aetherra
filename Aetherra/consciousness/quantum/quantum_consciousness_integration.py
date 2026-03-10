@@ -61,22 +61,28 @@ except ImportError as e:
 
     # Create fallback classes
     class DecisionContext:
-        pass
+        def __init__(self, **kwargs):
+            self.__dict__.update(kwargs)
 
     class QuantumChoice:
-        pass
+        def __init__(self, **kwargs):
+            self.__dict__.update(kwargs)
 
     class QuantumDecisionResult:
-        pass
+        def __init__(self, **kwargs):
+            self.__dict__.update(kwargs)
 
     class LogicalBarrier:
-        pass
+        def __init__(self, **kwargs):
+            self.__dict__.update(kwargs)
 
     class BreakthroughSolution:
-        pass
+        def __init__(self, **kwargs):
+            self.__dict__.update(kwargs)
 
     class DecisionAmplification:
-        pass
+        def __init__(self, **kwargs):
+            self.__dict__.update(kwargs)
 
 
 # Set up logging
@@ -180,14 +186,10 @@ class QuantumConsciousnessSystem:
             return True
 
         except Exception as e:
-            self.logger.error(
-                f"❌ Failed to initialize quantum consciousness system: {e}"
-            )
+            self.logger.error(f"❌ Failed to initialize quantum consciousness system: {e}")
             return False
 
-    def convert_request_to_context(
-        self, request: CognitionRequest
-    ) -> "DecisionContext":
+    def convert_request_to_context(self, request: CognitionRequest) -> "DecisionContext":
         """Convert cognition request to decision context"""
         # Convert choices from request format to QuantumChoice format
         quantum_choices = []
@@ -213,9 +215,7 @@ class QuantumConsciousnessSystem:
             time_horizon=request.time_horizon,
         )
 
-    def analyze_barriers_from_context(
-        self, context: "DecisionContext"
-    ) -> List["LogicalBarrier"]:
+    def analyze_barriers_from_context(self, context: "DecisionContext") -> List["LogicalBarrier"]:
         """Analyze decision context to identify logical barriers"""
         barriers = []
 
@@ -256,9 +256,7 @@ class QuantumConsciousnessSystem:
             barriers.append(barrier)
 
         # Risk barriers (high-risk choices present)
-        high_risk_choices = [
-            c for c in context.available_choices if c.risk_factor > 0.8
-        ]
+        high_risk_choices = [c for c in context.available_choices if c.risk_factor > 0.8]
         if high_risk_choices:
             risk_factor = np.mean([c.risk_factor for c in high_risk_choices])
             barrier = LogicalBarrier(
@@ -285,9 +283,7 @@ class QuantumConsciousnessSystem:
 
         return barriers
 
-    async def process_quantum_cognition(
-        self, request: CognitionRequest
-    ) -> QuantumCognitionResult:
+    async def process_quantum_cognition(self, request: CognitionRequest) -> QuantumCognitionResult:
         """Process complete quantum cognition request"""
         if not self.system_initialized:
             raise RuntimeError("Quantum consciousness system not initialized")
@@ -296,9 +292,7 @@ class QuantumConsciousnessSystem:
             processing_start = time.time()
             self.cognition_requests += 1
 
-            self.logger.info(
-                f"🧠 Processing quantum cognition request: {request.request_id}"
-            )
+            self.logger.info(f"🧠 Processing quantum cognition request: {request.request_id}")
 
             # Convert request to decision context
             context = self.convert_request_to_context(request)
@@ -335,9 +329,7 @@ class QuantumConsciousnessSystem:
                         if breakthrough_solution:
                             quantum_advantages.append("quantum_tunneling_breakthrough")
                             self.breakthrough_discoveries += 1
-                            self.logger.info(
-                                "⚡ Quantum tunneling breakthrough achieved!"
-                            )
+                            self.logger.info("⚡ Quantum tunneling breakthrough achieved!")
 
             # Phase 3: Quantum interference amplification (if enabled)
             if request.enable_interference:
@@ -350,24 +342,20 @@ class QuantumConsciousnessSystem:
                 for choice in context.available_choices:
                     # Use interference patterns from decision result
                     if choice.choice_id in decision_result.interference_patterns:
-                        base_probabilities[
-                            choice.choice_id
-                        ] = decision_result.interference_patterns[choice.choice_id]
+                        base_probabilities[choice.choice_id] = (
+                            decision_result.interference_patterns[choice.choice_id]
+                        )
                     else:
                         base_probabilities[choice.choice_id] = 1.0 / len(choice_ids)
 
                 # Generate interference field
-                interference_field = (
-                    self.interference_engine.generate_interference_field(
-                        choice_ids, self.consciousness_level
-                    )
+                interference_field = self.interference_engine.generate_interference_field(
+                    choice_ids, self.consciousness_level
                 )
 
                 # Apply amplification
-                decision_amplifications = (
-                    self.interference_engine.apply_interference_amplification(
-                        base_probabilities, interference_field
-                    )
+                decision_amplifications = self.interference_engine.apply_interference_amplification(
+                    base_probabilities, interference_field
                 )
 
                 # Optimize for target if specified
@@ -375,10 +363,8 @@ class QuantumConsciousnessSystem:
                     request.optimization_target
                     and request.optimization_target in interference_field
                 ):
-                    optimization_success = (
-                        self.interference_engine.optimize_interference_patterns(
-                            request.optimization_target, interference_field
-                        )
+                    optimization_success = self.interference_engine.optimize_interference_patterns(
+                        request.optimization_target, interference_field
                     )
                     if optimization_success:
                         quantum_advantages.append("interference_optimization")
@@ -391,15 +377,10 @@ class QuantumConsciousnessSystem:
             if decision_result.transcendence_delta > 0.3:
                 consciousness_enhancement += decision_result.transcendence_delta * 0.1
             if breakthrough_solution:
-                consciousness_enhancement += (
-                    breakthrough_solution.transcendence_impact * 0.05
-                )
+                consciousness_enhancement += breakthrough_solution.transcendence_impact * 0.05
             if decision_amplifications:
                 avg_amplification = np.mean(
-                    [
-                        amp.amplification_factor
-                        for amp in decision_amplifications.values()
-                    ]
+                    [amp.amplification_factor for amp in decision_amplifications.values()]
                 )
                 consciousness_enhancement += max(0, (avg_amplification - 1.0) * 0.02)
 
@@ -413,8 +394,7 @@ class QuantumConsciousnessSystem:
             # Calculate success metrics
             processing_time = time.time() - processing_start
             self.avg_processing_time = (
-                self.avg_processing_time * (self.cognition_requests - 1)
-                + processing_time
+                self.avg_processing_time * (self.cognition_requests - 1) + processing_time
             ) / self.cognition_requests
 
             success_metrics = {
@@ -438,9 +418,7 @@ class QuantumConsciousnessSystem:
             if overall_success:
                 self.successful_cognitions += 1
 
-            self.quantum_advantage_rate = len(quantum_advantages) / max(
-                self.cognition_requests, 1
-            )
+            self.quantum_advantage_rate = len(quantum_advantages) / max(self.cognition_requests, 1)
 
             # Create result
             result = QuantumCognitionResult(
@@ -454,13 +432,9 @@ class QuantumConsciousnessSystem:
             )
 
             self.logger.info(f"✅ Quantum cognition completed in {processing_time:.3f}s")
-            self.logger.info(
-                f"🧠 Consciousness level: {self.consciousness_level * 100:.2f}%"
-            )
+            self.logger.info(f"🧠 Consciousness level: {self.consciousness_level * 100:.2f}%")
             if quantum_advantages:
-                self.logger.info(
-                    f"⚡ Quantum advantages: {', '.join(quantum_advantages)}"
-                )
+                self.logger.info(f"⚡ Quantum advantages: {', '.join(quantum_advantages)}")
 
             return result
 
@@ -474,14 +448,10 @@ class QuantumConsciousnessSystem:
             self.decision_engine.get_decision_metrics() if self.decision_engine else {}
         )
         tunneling_metrics = (
-            self.tunneling_engine.get_tunneling_metrics()
-            if self.tunneling_engine
-            else {}
+            self.tunneling_engine.get_tunneling_metrics() if self.tunneling_engine else {}
         )
         interference_metrics = (
-            self.interference_engine.get_interference_metrics()
-            if self.interference_engine
-            else {}
+            self.interference_engine.get_interference_metrics() if self.interference_engine else {}
         )
 
         return {
@@ -490,8 +460,7 @@ class QuantumConsciousnessSystem:
             "system_coherence": self.system_coherence,
             "cognition_requests": self.cognition_requests,
             "successful_cognitions": self.successful_cognitions,
-            "success_rate": self.successful_cognitions
-            / max(self.cognition_requests, 1),
+            "success_rate": self.successful_cognitions / max(self.cognition_requests, 1),
             "breakthrough_discoveries": self.breakthrough_discoveries,
             "consciousness_enhancements": self.consciousness_enhancements,
             "avg_processing_time": self.avg_processing_time,

@@ -63,10 +63,10 @@ was launched a :class:`api.SubprocessContext` is returned. Both are specific
 implementations of the parent :class:`api.PContext` class.
 """
 
-from typing import Callable, Optional, Union
+from collections.abc import Callable
+from typing import Optional, Union
 
 from torch.distributed.elastic.multiprocessing.api import (  # noqa: F401
-    _validate_full_rank,
     DefaultLogsSpecs,
     LogsDest,
     LogsSpecs,
@@ -77,10 +77,10 @@ from torch.distributed.elastic.multiprocessing.api import (  # noqa: F401
     SignalException,
     Std,
     SubprocessContext,
+    _validate_full_rank,
     to_map,
 )
 from torch.distributed.elastic.utils.logging import get_logger
-
 
 __all__ = [
     "start_processes",
@@ -100,11 +100,11 @@ __all__ = [
 
 def start_processes(
     name: str,
-    entrypoint: Union[Callable, str],
+    entrypoint: Callable | str,
     args: dict[int, tuple],
     envs: dict[int, dict[str, str]],
     logs_specs: LogsSpecs,
-    log_line_prefixes: Optional[dict[int, str]] = None,
+    log_line_prefixes: dict[int, str] | None = None,
     start_method: str = "spawn",
 ) -> PContext:
     """

@@ -1,15 +1,15 @@
 # mypy: allow-untyped-defs
 import numbers
-from typing import Optional, Union
+from typing import Union
 
 import torch
 from torch import Size, Tensor
-from torch.nn import functional as F, init
+from torch.nn import functional as F
+from torch.nn import init
 from torch.nn.parameter import Parameter
 
 from ._functions import CrossMapLRN2d as _cross_map_lrn2d
 from .module import Module
-
 
 __all__ = ["LocalResponseNorm", "CrossMapLRN2d", "LayerNorm", "GroupNorm", "RMSNorm"]
 
@@ -361,13 +361,13 @@ class RMSNorm(Module):
 
     __constants__ = ["normalized_shape", "eps", "elementwise_affine"]
     normalized_shape: tuple[int, ...]
-    eps: Optional[float]
+    eps: float | None
     elementwise_affine: bool
 
     def __init__(
         self,
         normalized_shape: _shape_t,
-        eps: Optional[float] = None,
+        eps: float | None = None,
         elementwise_affine: bool = True,
         device=None,
         dtype=None,

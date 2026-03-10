@@ -1,11 +1,9 @@
 # mypy: allow-untyped-defs
 import abc
 from collections import namedtuple
-from typing import Optional
 
 from torch.fx._compatibility import compatibility
 from torch.fx.graph_module import GraphModule
-
 
 __all__ = ["PassResult", "PassBase"]
 
@@ -37,7 +35,7 @@ class PassBase(abc.ABC):
     the PassManager's `passes` attribute.
     """
 
-    def __call__(self, graph_module: GraphModule) -> Optional[PassResult]:
+    def __call__(self, graph_module: GraphModule) -> PassResult | None:
         """
         Runs the precondition check, the pass itself, and the postcondition check.
         """
@@ -48,7 +46,7 @@ class PassBase(abc.ABC):
         return res
 
     @abc.abstractmethod
-    def call(self, graph_module: GraphModule) -> Optional[PassResult]:
+    def call(self, graph_module: GraphModule) -> PassResult | None:
         """
         The pass that is run through the given graph module. To implement a
         pass, it is required to implement this function.

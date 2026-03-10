@@ -77,13 +77,9 @@ class PrivacyPreservingLearning:
         """Categorize interaction context without storing content"""
         user_input_lower = user_input.lower()
 
-        if any(
-            word in user_input_lower for word in ["error", "bug", "problem", "issue"]
-        ):
+        if any(word in user_input_lower for word in ["error", "bug", "problem", "issue"]):
             return "technical_support"
-        elif any(
-            word in user_input_lower for word in ["learn", "understand", "explain"]
-        ):
+        elif any(word in user_input_lower for word in ["learn", "understand", "explain"]):
             return "learning"
         elif any(word in user_input_lower for word in ["create", "build", "make"]):
             return "creative"
@@ -121,9 +117,7 @@ class PrivacyPreservingLearning:
             }
 
         # Update pattern with differential privacy
-        self.anonymized_patterns[pattern_key]["effectiveness_scores"].append(
-            effectiveness_score
-        )
+        self.anonymized_patterns[pattern_key]["effectiveness_scores"].append(effectiveness_score)
         self.anonymized_patterns[pattern_key]["occurrence_count"] += 1
         self.anonymized_patterns[pattern_key]["last_updated"] = datetime.now()
 
@@ -151,9 +145,7 @@ class PrivacyPreservingLearning:
         # Analyze effective patterns (with noise for privacy)
         for pattern_key, pattern_data in self.anonymized_patterns.items():
             if len(pattern_data["effectiveness_scores"]) >= 3:  # Minimum sample size
-                avg_effectiveness = statistics.mean(
-                    pattern_data["effectiveness_scores"]
-                )
+                avg_effectiveness = statistics.mean(pattern_data["effectiveness_scores"])
 
                 if avg_effectiveness > 0.7:  # High effectiveness threshold
                     insights["effective_patterns"].append(
@@ -161,9 +153,7 @@ class PrivacyPreservingLearning:
                             "pattern_type": pattern_key,
                             "effectiveness": round(avg_effectiveness, 2),
                             "sample_size": pattern_data["occurrence_count"],
-                            "confidence": min(
-                                pattern_data["occurrence_count"] / 10.0, 1.0
-                            ),
+                            "confidence": min(pattern_data["occurrence_count"] / 10.0, 1.0),
                         }
                     )
 
@@ -212,9 +202,7 @@ class CommunityPersonalityTrends:
 
         # Update overall metrics
         self.personality_trends[trend_key]["sample_count"] += 1
-        self.personality_trends[trend_key]["satisfaction_scores"].append(
-            user_satisfaction
-        )
+        self.personality_trends[trend_key]["satisfaction_scores"].append(user_satisfaction)
 
     def get_personality_recommendations(
         self, context: str, cultural_context: Optional[str] = None
@@ -244,9 +232,7 @@ class CommunityPersonalityTrends:
                 satisfactions = [d["satisfaction"] for d in effectiveness_data]
 
                 # Simple correlation - in production would use more sophisticated methods
-                optimal_value = self._find_optimal_trait_value(
-                    trait_values, satisfactions
-                )
+                optimal_value = self._find_optimal_trait_value(trait_values, satisfactions)
                 recommendations[trait] = optimal_value
 
         # Fill in missing traits with defaults
@@ -274,7 +260,7 @@ class CommunityPersonalityTrends:
             return 0.7  # Default value
 
         # Group by trait value ranges and find highest satisfaction range
-        value_satisfaction_pairs = list(zip(trait_values, satisfactions))
+        value_satisfaction_pairs = list(zip(trait_values, satisfactions, strict=False))
         value_satisfaction_pairs.sort(key=lambda x: x[0])
 
         # Simple optimization - find range with highest average satisfaction
@@ -298,9 +284,7 @@ class CommunityPersonalityTrends:
         return {
             "total_contexts_tracked": len(self.personality_trends),
             "active_patterns": sum(
-                1
-                for trend in self.personality_trends.values()
-                if trend["sample_count"] >= 5
+                1 for trend in self.personality_trends.values() if trend["sample_count"] >= 5
             ),
             "cultural_variations": len(
                 set(key.split("_")[-1] for key in self.personality_trends.keys())
@@ -342,9 +326,7 @@ class SocialFeedbackIntegration:
             "personality_aspects": personality_aspects,
             "feedback_type": feedback_type,
             "timestamp": datetime.now(),
-            "user_hash": hashlib.sha256(f"{user_id}_feedback".encode()).hexdigest()[
-                :16
-            ],
+            "user_hash": hashlib.sha256(f"{user_id}_feedback".encode()).hexdigest()[:16],
         }
 
         if explicit_feedback:
@@ -406,9 +388,7 @@ class SocialFeedbackIntegration:
                 high_quality_points = [d for d in data_points if d["quality"] > 0.7]
 
                 if high_quality_points:
-                    preferred_value = statistics.mean(
-                        [d["value"] for d in high_quality_points]
-                    )
+                    preferred_value = statistics.mean([d["value"] for d in high_quality_points])
                     optimized_preferences[aspect] = round(preferred_value, 2)
 
         return {
@@ -416,9 +396,7 @@ class SocialFeedbackIntegration:
             "sample_size": len(all_feedback),
             "avg_quality": round(statistics.mean(quality_ratings), 2),
             "preferences": optimized_preferences,
-            "confidence": min(
-                len(all_feedback) / 50.0, 1.0
-            ),  # Confidence based on sample size
+            "confidence": min(len(all_feedback) / 50.0, 1.0),  # Confidence based on sample size
         }
 
     def get_feedback_trends(self, days: int = 7) -> Dict[str, Any]:
@@ -446,12 +424,8 @@ class SocialFeedbackIntegration:
             if len(quality_trend) > 1 and quality_trend[-1] > quality_trend[0]
             else "stable",
             "feedback_types": {
-                "implicit": len(
-                    [f for f in recent_feedback if f["feedback_type"] == "implicit"]
-                ),
-                "explicit": len(
-                    [f for f in recent_feedback if f["feedback_type"] == "explicit"]
-                ),
+                "implicit": len([f for f in recent_feedback if f["feedback_type"] == "implicit"]),
+                "explicit": len([f for f in recent_feedback if f["feedback_type"] == "explicit"]),
             },
         }
 
@@ -488,9 +462,7 @@ class SocialLearningCoordinator:
             )
 
             # Step 2: Add to community learning dataset
-            self.privacy_learning.add_community_learning_data(
-                anonymized_data, interaction_quality
-            )
+            self.privacy_learning.add_community_learning_data(anonymized_data, interaction_quality)
 
             # Step 3: Track personality effectiveness
             context_type = anonymized_data["interaction_patterns"]["context_type"]
@@ -504,10 +476,8 @@ class SocialLearningCoordinator:
             )
 
             # Step 5: Get personalized recommendations
-            personality_recommendations = (
-                self.personality_trends.get_personality_recommendations(
-                    context_type, cultural_context
-                )
+            personality_recommendations = self.personality_trends.get_personality_recommendations(
+                context_type, cultural_context
             )
 
             # Step 6: Update metrics
@@ -594,10 +564,8 @@ def get_community_personality_recommendations(
     context: str, cultural_context: Optional[str] = None
 ) -> Dict[str, float]:
     """Get community-learned personality recommendations"""
-    return (
-        social_learning_coordinator.personality_trends.get_personality_recommendations(
-            context, cultural_context
-        )
+    return social_learning_coordinator.personality_trends.get_personality_recommendations(
+        context, cultural_context
     )
 
 

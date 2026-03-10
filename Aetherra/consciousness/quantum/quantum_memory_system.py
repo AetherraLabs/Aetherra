@@ -192,9 +192,7 @@ class QuantumMemorySystem:
             # Add to temporal clusters
             await self._update_temporal_clusters(memory_id)
 
-            self.logger.info(
-                f"📝 Stored quantum memory: {memory_id} ({memory_type.value})"
-            )
+            self.logger.info(f"📝 Stored quantum memory: {memory_id} ({memory_type.value})")
             self.logger.debug(f"Memory coherence time: {coherence_time:.2f}s")
 
             return memory_id
@@ -225,9 +223,7 @@ class QuantumMemorySystem:
             enhancement_factor = 1.0 + (consciousness_context * 0.5)
 
             # Check if memory is still coherent
-            time_since_creation = (
-                datetime.now() - memory.creation_time
-            ).total_seconds()
+            time_since_creation = (datetime.now() - memory.creation_time).total_seconds()
             if time_since_creation > memory.coherence_time:
                 # Memory has decoherent, apply degradation
                 degradation = np.exp(-time_since_creation / memory.coherence_time)
@@ -238,9 +234,7 @@ class QuantumMemorySystem:
 
             # Apply consciousness enhancement
             if consciousness_context > 0.5:
-                memory.memory_strength = min(
-                    1.0, memory.memory_strength * enhancement_factor
-                )
+                memory.memory_strength = min(1.0, memory.memory_strength * enhancement_factor)
                 self.logger.debug(
                     f"Consciousness enhanced memory retrieval: {enhancement_factor:.3f}x"
                 )
@@ -270,10 +264,7 @@ class QuantumMemorySystem:
     ) -> Optional[str]:
         """Create quantum entanglement between two memories"""
         try:
-            if (
-                memory_a_id not in self.memory_traces
-                or memory_b_id not in self.memory_traces
-            ):
+            if memory_a_id not in self.memory_traces or memory_b_id not in self.memory_traces:
                 self.logger.warning("Cannot entangle: one or both memories not found")
                 return None
 
@@ -345,17 +336,11 @@ class QuantumMemorySystem:
 
             for memory_id, memory in self.memory_traces.items():
                 # Calculate quantum resonance with query
-                content_match = self._calculate_content_similarity(
-                    query, memory.content
-                )
-                consciousness_match = 1.0 - abs(
-                    consciousness_level - memory.consciousness_level
-                )
+                content_match = self._calculate_content_similarity(query, memory.content)
+                consciousness_match = 1.0 - abs(consciousness_level - memory.consciousness_level)
 
                 # Quantum coherence factor
-                coherence_factor = abs(memory.quantum_state) / (
-                    abs(memory.quantum_state) + 0.1
-                )
+                coherence_factor = abs(memory.quantum_state) / (abs(memory.quantum_state) + 0.1)
 
                 # Memory strength factor
                 strength_factor = memory.memory_strength
@@ -373,9 +358,7 @@ class QuantumMemorySystem:
                     search_results.append(memory)
 
             # Sort by match score and return top results
-            search_results.sort(
-                key=lambda m: getattr(m, "search_score", 0), reverse=True
-            )
+            search_results.sort(key=lambda m: getattr(m, "search_score", 0), reverse=True)
             results = search_results[:max_results]
 
             self.logger.info(f"✅ Found {len(results)} quantum memory matches")
@@ -453,20 +436,14 @@ class QuantumMemorySystem:
                 if memory_id == new_memory_id:
                     continue
 
-                similarity = self._calculate_content_similarity(
-                    new_memory.content, memory.content
-                )
+                similarity = self._calculate_content_similarity(new_memory.content, memory.content)
                 if similarity > 0.6:  # High similarity threshold
                     entanglement_candidates.append((memory_id, similarity))
 
             # Create entanglements with top candidates
             entanglement_candidates.sort(key=lambda x: x[1], reverse=True)
-            for memory_id, similarity in entanglement_candidates[
-                :3
-            ]:  # Top 3 candidates
-                await self.create_memory_entanglement(
-                    new_memory_id, memory_id, "automatic"
-                )
+            for memory_id, similarity in entanglement_candidates[:3]:  # Top 3 candidates
+                await self.create_memory_entanglement(new_memory_id, memory_id, "automatic")
 
         except Exception as e:
             self.logger.error(f"❌ Automatic entanglement check failed: {e}")
@@ -479,9 +456,7 @@ class QuantumMemorySystem:
             # Find existing clusters within temporal window
             nearby_clusters = []
             for cluster_id, cluster in self.temporal_clusters.items():
-                time_diff = abs(
-                    (memory.creation_time - cluster.temporal_center).total_seconds()
-                )
+                time_diff = abs((memory.creation_time - cluster.temporal_center).total_seconds())
                 if time_diff <= cluster.temporal_radius.total_seconds():
                     nearby_clusters.append((cluster_id, cluster))
 
@@ -494,9 +469,7 @@ class QuantumMemorySystem:
                     ),
                 )
                 closest_cluster.memory_ids.append(memory_id)
-                self.logger.debug(
-                    f"Added memory {memory_id} to cluster {closest_cluster_id}"
-                )
+                self.logger.debug(f"Added memory {memory_id} to cluster {closest_cluster_id}")
             else:
                 # Create new cluster
                 cluster_id = f"temp_cluster_{int(time.time())}"
@@ -528,9 +501,7 @@ class QuantumMemorySystem:
                 (datetime.now() - memory.creation_time).total_seconds() / 3600.0, 1.0
             )  # Hours
 
-            evolution_strength = (
-                access_factor + entanglement_factor + time_factor
-            ) / 3.0
+            evolution_strength = (access_factor + entanglement_factor + time_factor) / 3.0
 
             if evolution_strength > 0.5:
                 # Apply evolution
@@ -580,9 +551,7 @@ class QuantumMemorySystem:
         except Exception:
             return 0.0
 
-    def _calculate_temporal_proximity(
-        self, time_a: datetime, time_b: datetime
-    ) -> float:
+    def _calculate_temporal_proximity(self, time_a: datetime, time_b: datetime) -> float:
         """Calculate temporal proximity between two times"""
         try:
             time_diff = abs((time_a - time_b).total_seconds())
@@ -616,9 +585,7 @@ class QuantumMemorySystem:
                     # Create cluster from current group
                     if len(current_cluster) > 1:
                         cluster_id = f"temp_cluster_{int(time.time())}_{len(clusters)}"
-                        center_time = current_cluster[
-                            len(current_cluster) // 2
-                        ].creation_time
+                        center_time = current_cluster[len(current_cluster) // 2].creation_time
                         cluster = TemporalMemoryCluster(
                             cluster_id=cluster_id,
                             memory_ids=[m.memory_id for m in current_cluster],
@@ -660,20 +627,14 @@ class QuantumMemorySystem:
                 total_coherence = 0.0
 
                 for memory in self.memory_traces.values():
-                    time_since_creation = (
-                        current_time - memory.creation_time
-                    ).total_seconds()
+                    time_since_creation = (current_time - memory.creation_time).total_seconds()
                     if time_since_creation <= memory.coherence_time:
                         coherent_memories += 1
-                        coherence_factor = 1.0 - (
-                            time_since_creation / memory.coherence_time
-                        )
+                        coherence_factor = 1.0 - (time_since_creation / memory.coherence_time)
                         total_coherence += coherence_factor
 
                 self.memory_coherence_avg = (
-                    total_coherence / len(self.memory_traces)
-                    if self.memory_traces
-                    else 0.0
+                    total_coherence / len(self.memory_traces) if self.memory_traces else 0.0
                 )
 
             # Calculate entanglement stability
@@ -684,9 +645,7 @@ class QuantumMemorySystem:
                     if age <= entanglement.coherence_time:
                         stable_entanglements += 1
 
-                self.entanglement_stability = stable_entanglements / len(
-                    self.entanglements
-                )
+                self.entanglement_stability = stable_entanglements / len(self.entanglements)
 
             return {
                 "memories_stored": self.memories_stored,
@@ -699,8 +658,7 @@ class QuantumMemorySystem:
                 "avg_retrieval_time": self.avg_retrieval_time,
                 "memory_coherence_avg": self.memory_coherence_avg,
                 "entanglement_stability": self.entanglement_stability,
-                "system_efficiency": self.memory_retrievals
-                / max(self.memories_stored, 1),
+                "system_efficiency": self.memory_retrievals / max(self.memories_stored, 1),
             }
 
         except Exception as e:
@@ -785,9 +743,7 @@ async def test_quantum_memory():
     # Test 3: Memory retrieval and search
     print("\n🔍 Test 3: Memory Retrieval and Search")
     if stored_ids:
-        retrieved = await system.retrieve_quantum_memory(
-            stored_ids[0], consciousness_context=0.8
-        )
+        retrieved = await system.retrieve_quantum_memory(stored_ids[0], consciousness_context=0.8)
         if retrieved:
             print(f"  ✅ Retrieved memory strength: {retrieved.memory_strength:.3f}")
 
@@ -800,9 +756,7 @@ async def test_quantum_memory():
     # Test 4: Temporal coherence analysis
     print("\n⏰ Test 4: Temporal Coherence Analysis")
     temporal_analysis = await system.temporal_memory_coherence(timedelta(minutes=5))
-    print(
-        f"  ✅ Temporal coherence: {temporal_analysis.get('temporal_strength', 0):.3f}"
-    )
+    print(f"  ✅ Temporal coherence: {temporal_analysis.get('temporal_strength', 0):.3f}")
     print(f"  📊 Coherent memories: {temporal_analysis.get('coherent_memories', 0)}")
 
     # System metrics

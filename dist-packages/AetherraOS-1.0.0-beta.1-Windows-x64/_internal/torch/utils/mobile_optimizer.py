@@ -1,10 +1,12 @@
 # mypy: allow-untyped-defs
 """This module contains utility method for mobile model optimization and lint."""
 
-import torch
 from enum import Enum
+from typing import AnyStr
+
+import torch
 from torch._C import _MobileOptimizerType as MobileOptimizerType
-from typing import Optional, AnyStr
+
 
 class LintCode(Enum):
     BUNDLED_INPUT = 1
@@ -12,11 +14,13 @@ class LintCode(Enum):
     DROPOUT = 3
     BATCHNORM = 4
 
+
 def optimize_for_mobile(
-        script_module: torch.jit.ScriptModule,
-        optimization_blocklist: Optional[set[MobileOptimizerType]] = None,
-        preserved_methods: Optional[list[AnyStr]] = None,
-        backend: str = 'CPU') -> torch.jit.RecursiveScriptModule:
+    script_module: torch.jit.ScriptModule,
+    optimization_blocklist: set[MobileOptimizerType] | None = None,
+    preserved_methods: list[AnyStr] | None = None,
+    backend: str = "CPU",
+) -> torch.jit.RecursiveScriptModule:
     """
     Optimize a torch script module for mobile deployment.
 
@@ -31,8 +35,7 @@ def optimize_for_mobile(
         A new optimized torch script module
     """
     if not isinstance(script_module, torch.jit.ScriptModule):
-        raise TypeError(
-            f'Got {type(script_module)}, but ScriptModule is expected.')
+        raise TypeError(f"Got {type(script_module)}, but ScriptModule is expected.")
 
     if optimization_blocklist is None:
         optimization_blocklist = set()
@@ -45,28 +48,35 @@ def optimize_for_mobile(
     # mypy errors (i.e. List[AnyStr] = List[str])
     preserved_methods_str: list[str] = [str(method) for method in preserved_methods]
 
-    bundled_inputs_attributes = _get_bundled_inputs_preserved_attributes(script_module, preserved_methods_str)
+    bundled_inputs_attributes = _get_bundled_inputs_preserved_attributes(
+        script_module, preserved_methods_str
+    )
     if all(hasattr(script_module, method) for method in bundled_inputs_attributes):
-        preserved_methods_str = list(set(preserved_methods_str + bundled_inputs_attributes))
+        preserved_methods_str = list(
+            set(preserved_methods_str + bundled_inputs_attributes)
+        )
 
-    non_exist_methods = [method for method in preserved_methods_str if not hasattr(script_module, method)]
+    non_exist_methods = [
+        method for method in preserved_methods_str if not hasattr(script_module, method)
+    ]
     if non_exist_methods:
         raise AttributeError(
-            f"The following methods to preserve do not exist in script_module: {', '.join(non_exist_methods)}")
+            f"The following methods to preserve do not exist in script_module: {', '.join(non_exist_methods)}"
+        )
 
     backend = backend.lower()
-    if backend == 'cpu':
+    if backend == "cpu":
         optimized_cpp_module = torch._C._jit_pass_optimize_for_mobile(
-            script_module._c,
-            optimization_blocklist,
-            preserved_methods_str)
-    elif backend == 'vulkan':
+            script_module._c, optimization_blocklist, preserved_methods_str
+        )
+    elif backend == "vulkan":
         optimized_cpp_module = torch._C._jit_pass_vulkan_optimize_for_mobile(
-            script_module._c,
-            optimization_blocklist,
-            preserved_methods_str)
-    elif backend == 'metal':
-        optimized_cpp_module = torch._C._jit_pass_metal_optimize_for_mobile(script_module._c, preserved_methods_str)
+            script_module._c, optimization_blocklist, preserved_methods_str
+        )
+    elif backend == "metal":
+        optimized_cpp_module = torch._C._jit_pass_metal_optimize_for_mobile(
+            script_module._c, preserved_methods_str
+        )
     else:
         raise TypeError("Unknown backend, must be one of 'CPU', 'Vulkan' or 'Metal'")
 
@@ -84,52 +94,75 @@ def generate_mobile_module_lints(script_module: torch.jit.ScriptModule):
         lint_map: A list of dictionary that contains modules lints
     """
     if not isinstance(script_module, torch.jit.ScriptModule):
-        raise TypeError(
-            f'Got {type(script_module)}, but ScriptModule is expected.')
+        raise TypeError(f"Got {type(script_module)}, but ScriptModule is expected.")
 
     lint_list = []
 
     if not hasattr(script_module, "_generate_bundled_inputs_for_forward"):
-        lint_list.append({"name": LintCode.BUNDLED_INPUT.name, "message": "No bundled input for forward, please add bundled inputs "
-                          "before saving the module using torch.utils.bundled_inputs.augment_model_with_bundled_inputs."})
+        lint_list.append(
+            {
+                "name": LintCode.BUNDLED_INPUT.name,
+                "message": "No bundled input for forward, please add bundled inputs "
+                "before saving the module using torch.utils.bundled_inputs.augment_model_with_bundled_inputs.",
+            }
+        )
 
     for name, param in script_module.named_parameters():
         if param.requires_grad:
-            lint_list.append({"name": LintCode.REQUIRES_GRAD.name, "message": f"Param {name} requires grad, "
-                             "please set torch.no_grad() to reduce memory usage and improve computation speed during "
-                              "inference phase."})
+            lint_list.append(
+                {
+                    "name": LintCode.REQUIRES_GRAD.name,
+                    "message": f"Param {name} requires grad, "
+                    "please set torch.no_grad() to reduce memory usage and improve computation speed during "
+                    "inference phase.",
+                }
+            )
 
     op_names = torch.jit.export_opnames(script_module)
     for op_name in op_names:
         if "dropout" in op_name:
-            lint_list.append({"name": LintCode.DROPOUT.name,
-                              "message": f"Operator {op_name} exists, remember to call eval() before "
-                              "saving the module.and call torch.utils.mobile_optimizer.optimize_for_mobile to drop dropout "
-                              "operator."})
+            lint_list.append(
+                {
+                    "name": LintCode.DROPOUT.name,
+                    "message": f"Operator {op_name} exists, remember to call eval() before "
+                    "saving the module.and call torch.utils.mobile_optimizer.optimize_for_mobile to drop dropout "
+                    "operator.",
+                }
+            )
         if "batch_norm" in op_name:
-            lint_list.append({"name": LintCode.BATCHNORM.name,
-                              "message": f"Operator {op_name} exists, remember to call eval() before "
-                              "saving the module and call torch.utils.mobile_optimizer.optimize_for_mobile to drop batch_norm "
-                              "operator."})
+            lint_list.append(
+                {
+                    "name": LintCode.BATCHNORM.name,
+                    "message": f"Operator {op_name} exists, remember to call eval() before "
+                    "saving the module and call torch.utils.mobile_optimizer.optimize_for_mobile to drop batch_norm "
+                    "operator.",
+                }
+            )
 
     return lint_list
 
-def _get_bundled_inputs_preserved_attributes(script_module: torch.jit.ScriptModule, preserved_methods: list[str]) -> list[str]:
 
+def _get_bundled_inputs_preserved_attributes(
+    script_module: torch.jit.ScriptModule, preserved_methods: list[str]
+) -> list[str]:
     bundled_inputs_attributes = []
     # Has bundled inputs for forward
-    if hasattr(script_module, 'get_all_bundled_inputs'):
-        bundled_inputs_attributes.append('get_all_bundled_inputs')
-        bundled_inputs_attributes.append('get_num_bundled_inputs')
+    if hasattr(script_module, "get_all_bundled_inputs"):
+        bundled_inputs_attributes.append("get_all_bundled_inputs")
+        bundled_inputs_attributes.append("get_num_bundled_inputs")
 
     # Bundled inputs in module after the change that introduced bundled inputs for multiple functions
-    if hasattr(script_module, 'get_bundled_inputs_functions_and_info'):
-        bundled_inputs_attributes.append('get_bundled_inputs_functions_and_info')
+    if hasattr(script_module, "get_bundled_inputs_functions_and_info"):
+        bundled_inputs_attributes.append("get_bundled_inputs_functions_and_info")
         all_info = script_module.get_bundled_inputs_functions_and_info()
         for function_name in all_info:
             if function_name not in preserved_methods:
                 bundled_inputs_attributes.append(function_name)
-            bundled_inputs_attributes.append("get_all_bundled_inputs_for_" + function_name)
-            bundled_inputs_attributes.append("_bundled_inputs_deflated_" + function_name)
+            bundled_inputs_attributes.append(
+                "get_all_bundled_inputs_for_" + function_name
+            )
+            bundled_inputs_attributes.append(
+                "_bundled_inputs_deflated_" + function_name
+            )
 
     return bundled_inputs_attributes

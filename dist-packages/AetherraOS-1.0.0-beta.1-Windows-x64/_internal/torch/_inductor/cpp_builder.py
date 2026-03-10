@@ -21,15 +21,14 @@ from collections.abc import Sequence
 from ctypes import cdll
 from ctypes.util import find_library
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any
 
 import torch
 from torch._dynamo.utils import dynamo_timed
 from torch._inductor import config, exc
-from torch._inductor.cpu_vec_isa import invalid_vec_isa, VecISA
+from torch._inductor.cpu_vec_isa import VecISA, invalid_vec_isa
 from torch._inductor.runtime.runtime_utils import cache_dir
 from torch.torch_version import TorchVersion
-
 
 if config.is_fbcode():
     from triton.fb.build import _run_build_command, build_paths
@@ -74,7 +73,7 @@ log = logging.getLogger(__name__)
 # =============================== toolchain ===============================
 @functools.lru_cache(1)
 def cpp_compiler_search(search: str) -> str:
-    from torch._inductor.codecache import get_lock_dir, LOCK_TIMEOUT
+    from torch._inductor.codecache import LOCK_TIMEOUT, get_lock_dir
 
     for cxx in search:
         try:
@@ -159,17 +158,14 @@ def get_cpp_compiler() -> str:
 def get_ld_and_objcopy(use_relative_path: bool) -> tuple[str, str]:
     if _IS_WINDOWS:
         raise RuntimeError("Windows is not supported yet.")
+    if config.is_fbcode():
+        ld = build_paths.ld
+        objcopy = (
+            build_paths.objcopy_fallback if use_relative_path else build_paths.objcopy
+        )
     else:
-        if config.is_fbcode():
-            ld = build_paths.ld
-            objcopy = (
-                build_paths.objcopy_fallback
-                if use_relative_path
-                else build_paths.objcopy
-            )
-        else:
-            ld = "ld"
-            objcopy = "objcopy"
+        ld = "ld"
+        objcopy = "objcopy"
     return ld, objcopy
 
 
@@ -211,7 +207,7 @@ def _is_clang(cpp_compiler: str) -> bool:
     # Mac OS apple clang maybe named as gcc, need check compiler info.
     if sys.platform == "darwin":
         return _is_apple_clang(cpp_compiler)
-    elif _IS_WINDOWS:
+    if _IS_WINDOWS:
         # clang suite have many compilers, and only clang-cl is supported.
         if re.search(r"((clang$)|(clang\+\+$))", cpp_compiler):
             raise RuntimeError(
@@ -417,13 +413,13 @@ class BuildOptionsBase:
     def __init__(
         self,
         compiler: str = "",
-        definitions: Optional[list[str]] = None,
-        include_dirs: Optional[list[str]] = None,
-        cflags: Optional[list[str]] = None,
-        ldflags: Optional[list[str]] = None,
-        libraries_dirs: Optional[list[str]] = None,
-        libraries: Optional[list[str]] = None,
-        passthrough_args: Optional[list[str]] = None,
+        definitions: list[str] | None = None,
+        include_dirs: list[str] | None = None,
+        cflags: list[str] | None = None,
+        ldflags: list[str] | None = None,
+        libraries_dirs: list[str] | None = None,
+        libraries: list[str] | None = None,
+        passthrough_args: list[str] | None = None,
         aot_mode: bool = False,
         use_relative_path: bool = False,
         compile_only: bool = False,
@@ -442,7 +438,7 @@ class BuildOptionsBase:
 
         # Optionally, the path to a precompiled header which should be included on the
         # build command line.
-        self.precompiled_header: Optional[str] = None
+        self.precompiled_header: str | None = None
 
         self._aot_mode: bool = aot_mode
         self._use_relative_path: bool = use_relative_path
@@ -529,8 +525,7 @@ class BuildOptionsBase:
 def _get_warning_all_cflag(warning_all: bool = True) -> list[str]:
     if not _IS_WINDOWS:
         return ["Wall"] if warning_all else []
-    else:
-        return []
+    return []
 
 
 def _get_cpp_std_cflag(std_num: str = "c++17") -> list[str]:
@@ -544,8 +539,7 @@ def _get_cpp_std_cflag(std_num: str = "c++17") -> list[str]:
         """
         std_num = "c++20"
         return [f"std:{std_num}"]
-    else:
-        return [f"std={std_num}"]
+    return [f"std={std_num}"]
 
 
 def _get_os_related_cpp_cflags(cpp_compiler: str) -> list[str]:
@@ -601,32 +595,31 @@ def _get_optimization_cflags(
 ) -> list[str]:
     if _IS_WINDOWS:
         return ["O1" if min_optimize else "O2"]
-    else:
-        wrapper_opt_level = config.aot_inductor.compile_wrapper_opt_level
-        cflags = (
-            ["O0", "g"]
-            if config.aot_inductor.debug_compile
-            else [wrapper_opt_level if min_optimize else "O3", "DNDEBUG"]
-        )
-        cflags += _get_ffast_math_flags()
-        cflags.append("fno-finite-math-only")
-        if not config.cpp.enable_unsafe_math_opt_flag:
-            cflags.append("fno-unsafe-math-optimizations")
-        cflags.append(f"ffp-contract={config.cpp.enable_floating_point_contract_flag}")
+    wrapper_opt_level = config.aot_inductor.compile_wrapper_opt_level
+    cflags = (
+        ["O0", "g"]
+        if config.aot_inductor.debug_compile
+        else [wrapper_opt_level if min_optimize else "O3", "DNDEBUG"]
+    )
+    cflags += _get_ffast_math_flags()
+    cflags.append("fno-finite-math-only")
+    if not config.cpp.enable_unsafe_math_opt_flag:
+        cflags.append("fno-unsafe-math-optimizations")
+    cflags.append(f"ffp-contract={config.cpp.enable_floating_point_contract_flag}")
 
-        if sys.platform != "darwin":
-            # on macos, unknown argument: '-fno-tree-loop-vectorize'
-            if _is_gcc(cpp_compiler):
-                cflags.append("fno-tree-loop-vectorize")
-            # https://stackoverflow.com/questions/65966969/why-does-march-native-not-work-on-apple-m1
-            # `-march=native` is unrecognized option on M1
-            if not config.is_fbcode():
-                if platform.machine() == "ppc64le":
-                    cflags.append("mcpu=native")
-                else:
-                    cflags.append("march=native")
+    if sys.platform != "darwin":
+        # on macos, unknown argument: '-fno-tree-loop-vectorize'
+        if _is_gcc(cpp_compiler):
+            cflags.append("fno-tree-loop-vectorize")
+        # https://stackoverflow.com/questions/65966969/why-does-march-native-not-work-on-apple-m1
+        # `-march=native` is unrecognized option on M1
+        if not config.is_fbcode():
+            if platform.machine() == "ppc64le":
+                cflags.append("mcpu=native")
+            else:
+                cflags.append("march=native")
 
-        return cflags
+    return cflags
 
 
 def _get_shared_cflag(do_link: bool) -> list[str]:
@@ -739,8 +732,7 @@ class CppOptions(BuildOptionsBase):
 def _get_glibcxx_abi_build_flags() -> list[str]:
     if not _IS_WINDOWS:
         return ["-D_GLIBCXX_USE_CXX11_ABI=" + str(int(torch._C._GLIBCXX_USE_CXX11_ABI))]
-    else:
-        return []
+    return []
 
 
 def _get_torch_cpp_wrapper_definition() -> list[str]:
@@ -760,10 +752,8 @@ def _use_fb_internal_macros() -> list[str]:
                 "C10_DISABLE_TENSORIMPL_EXTENSIBILITY",
             ]
             return fb_internal_macros
-        else:
-            return []
-    else:
         return []
+    return []
 
 
 def _setup_standard_sys_libs(
@@ -831,7 +821,7 @@ def _get_build_args_of_chosen_isa(vec_isa: VecISA) -> tuple[list[str], list[str]
 def _get_torch_related_args(
     include_pytorch: bool, aot_mode: bool
 ) -> tuple[list[str], list[str], list[str]]:
-    from torch.utils.cpp_extension import include_paths, TORCH_LIB_PATH
+    from torch.utils.cpp_extension import TORCH_LIB_PATH, include_paths
 
     include_dirs = include_paths()
     libraries_dirs = [TORCH_LIB_PATH]
@@ -1238,7 +1228,7 @@ def _set_gpu_runtime_env() -> None:
 
 
 @functools.lru_cache(8)
-def _find_libcudart_static(path: str) -> Optional[Path]:
+def _find_libcudart_static(path: str) -> Path | None:
     lib_dirs = list(Path(path).rglob("libcudart_static.a"))
     if lib_dirs:
         return lib_dirs[0].resolve().parent
@@ -1253,7 +1243,7 @@ def _transform_cuda_paths(lpaths: list[str]) -> None:
     # 2. Linux machines may have CUDA installed under either lib64/ or lib/
     for i, path in enumerate(lpaths):
         if "CUDA_HOME" in os.environ and path.startswith(os.environ["CUDA_HOME"]):
-            lib_dir: Optional[Path] = _find_libcudart_static(path)
+            lib_dir: Path | None = _find_libcudart_static(path)
             if lib_dir is None:
                 continue
             lpaths[i] = str(lib_dir)
@@ -1482,7 +1472,7 @@ class CppBuilder:
     def __init__(
         self,
         name: str,
-        sources: Union[str, list[str]],
+        sources: str | list[str],
         BuildOption: BuildOptionsBase,
         output_dir: str = "",
     ) -> None:

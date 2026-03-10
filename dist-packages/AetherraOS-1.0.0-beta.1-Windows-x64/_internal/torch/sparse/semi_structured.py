@@ -1,7 +1,8 @@
 # mypy: allow-untyped-defs
 import warnings
 from collections import namedtuple
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 import torch
 from torch.sparse._semi_structured_conversions import (
@@ -20,7 +21,6 @@ from torch.sparse._semi_structured_ops import (
     semi_sparse_values,
     semi_sparse_view,
 )
-
 
 __all__ = [
     "SparseSemiStructuredTensor",
@@ -62,11 +62,11 @@ class SparseSemiStructuredTensor(torch.Tensor):
     BACKEND: str
     SPARSE_DISPATCH: dict[Callable, Callable]
 
-    packed: Optional[torch.Tensor]
-    meta: Optional[torch.Tensor]
-    packed_t: Optional[torch.Tensor]
-    meta_t: Optional[torch.Tensor]
-    compressed_swizzled_bitmask: Optional[torch.Tensor]
+    packed: torch.Tensor | None
+    meta: torch.Tensor | None
+    packed_t: torch.Tensor | None
+    meta_t: torch.Tensor | None
+    compressed_swizzled_bitmask: torch.Tensor | None
     fuse_transpose_cusparselt: bool
     alg_id_cusparselt: int
 
@@ -76,11 +76,11 @@ class SparseSemiStructuredTensor(torch.Tensor):
     def __new__(  # noqa: PYI034
         cls,
         shape: torch.Size,
-        packed: Optional[torch.Tensor],
-        meta: Optional[torch.Tensor],
-        packed_t: Optional[torch.Tensor],
-        meta_t: Optional[torch.Tensor],
-        compressed_swizzled_bitmask: Optional[torch.Tensor],
+        packed: torch.Tensor | None,
+        meta: torch.Tensor | None,
+        packed_t: torch.Tensor | None,
+        meta_t: torch.Tensor | None,
+        compressed_swizzled_bitmask: torch.Tensor | None,
         fuse_transpose_cusparselt: bool = False,
         alg_id_cusparselt: int = 0,
         requires_grad: bool = False,
@@ -294,8 +294,7 @@ class SparseSemiStructuredTensor(torch.Tensor):
         to_pad_n = -n % min_cols if n < min_cols or n % min_rows else 0
         if to_pad_m or to_pad_n:
             return torch.nn.functional.pad(dense_input, (0, to_pad_n, 0, to_pad_m))
-        else:
-            return dense_input
+        return dense_input
 
     def to_dense(self):  # type:ignore[override]
         col = self.shape[-1]
@@ -309,7 +308,7 @@ class SparseSemiStructuredTensor(torch.Tensor):
         self,
         B: torch.Tensor,
         *,
-        bias: Optional[torch.Tensor] = None,
+        bias: torch.Tensor | None = None,
         **kwargs,
     ) -> torch.Tensor:
         raise NotImplementedError
@@ -497,7 +496,7 @@ class SparseSemiStructuredTensorCUTLASS(SparseSemiStructuredTensor):
         )
 
     def _mm(
-        self, B: torch.Tensor, *, bias: Optional[torch.Tensor] = None, **kwargs
+        self, B: torch.Tensor, *, bias: torch.Tensor | None = None, **kwargs
     ) -> torch.Tensor:
         if isinstance(B, SparseSemiStructuredTensor):
             raise ValueError(
@@ -512,14 +511,11 @@ class SparseSemiStructuredTensorCUTLASS(SparseSemiStructuredTensor):
             raise NotImplementedError(
                 f"`{cls_name}` matmul: operation is not supported"
             )
+        if bias is None:
+            res = torch._sparse_semi_structured_mm(self.packed, self.meta, B)
         else:
-            if bias is None:
-                res = torch._sparse_semi_structured_mm(self.packed, self.meta, B)
-            else:
-                res = torch._sparse_semi_structured_addmm(
-                    bias, self.packed, self.meta, B
-                )
-            return res[: self.shape[0]]
+            res = torch._sparse_semi_structured_addmm(bias, self.packed, self.meta, B)
+        return res[: self.shape[0]]
 
 
 class SparseSemiStructuredTensorCUSPARSELT(SparseSemiStructuredTensor):
@@ -614,7 +610,7 @@ class SparseSemiStructuredTensorCUSPARSELT(SparseSemiStructuredTensor):
         )
 
     def _mm(
-        self, B: torch.Tensor, *, bias: Optional[torch.Tensor] = None, **kwargs
+        self, B: torch.Tensor, *, bias: torch.Tensor | None = None, **kwargs
     ) -> torch.Tensor:
         if isinstance(B, SparseSemiStructuredTensor):
             raise ValueError(
@@ -647,12 +643,11 @@ class SparseSemiStructuredTensorCUSPARSELT(SparseSemiStructuredTensor):
             raise NotImplementedError(
                 f"`{self.__class__.__name__}` matmul: operation is not supported"
             )
-        else:
-            res = torch._cslt_sparse_mm(
-                self.packed,
-                B,
-                bias=bias,
-                transpose_result=self.fuse_transpose_cusparselt,
-                alg_id=self.alg_id_cusparselt,
-            )
-            return res.t() if self.fuse_transpose_cusparselt else res
+        res = torch._cslt_sparse_mm(
+            self.packed,
+            B,
+            bias=bias,
+            transpose_result=self.fuse_transpose_cusparselt,
+            alg_id=self.alg_id_cusparselt,
+        )
+        return res.t() if self.fuse_transpose_cusparselt else res

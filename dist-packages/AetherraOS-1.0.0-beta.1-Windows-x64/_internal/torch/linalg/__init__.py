@@ -1,9 +1,10 @@
 from torch._C import (  # type: ignore[attr-defined]
     _add_docstr,
     _linalg,
+)
+from torch._C import (
     _LinAlgError as LinAlgError,
 )
-
 
 common_notes = {
     "experimental_warning": """This function is "experimental" and it may change in a future PyTorch release.""",

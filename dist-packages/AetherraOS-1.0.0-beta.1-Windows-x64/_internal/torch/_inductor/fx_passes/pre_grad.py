@@ -4,7 +4,6 @@ import itertools
 import logging
 import types
 from collections.abc import Sequence
-from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -22,15 +21,14 @@ from torch.nn.utils.fusion import fuse_conv_bn_eval, fuse_conv_bn_weights
 from .. import config
 from ..fx_utils import matches_module_function_pattern
 from ..pattern_matcher import (
-    init_once_fakemode,
     PatternMatcherPass,
+    init_once_fakemode,
     stable_topological_sort,
 )
 from ..utils import is_cpu_device, pass_execution_and_save
-from .group_batch_fusion import group_batch_fusion_passes, PRE_GRAD_FUSIONS
+from .group_batch_fusion import PRE_GRAD_FUSIONS, group_batch_fusion_passes
 from .misc_patterns import numpy_compat_normalization
 from .split_cat import PRE_GRAD_PATTERNS
-
 
 log = logging.getLogger(__name__)
 
@@ -181,8 +179,8 @@ def _get_pass_name_func(p):
 def _run_pre_dispatch_passes(
     gm: torch.fx.GraphModule,
     example_inputs: Sequence[object] = (),
-    add_passes: Optional[str] = None,
-    remove_passes: Optional[str] = None,
+    add_passes: str | None = None,
+    remove_passes: str | None = None,
 ) -> None:
     # order matters
     default_pass_list = [
@@ -268,8 +266,8 @@ def _run_pre_dispatch_passes(
 def pre_grad_passes(
     gm: torch.fx.GraphModule,
     example_inputs: Sequence[object] = (),
-    add_passes: Optional[str] = None,
-    remove_passes: Optional[str] = None,
+    add_passes: str | None = None,
+    remove_passes: str | None = None,
 ) -> torch.fx.GraphModule:
     """
     Apply passes on the input FX graph using Torch IR.
@@ -410,8 +408,7 @@ def remove_identity(gm: torch.fx.GraphModule) -> torch.fx.GraphModule:
             if isinstance(self.submodules[target], nn.Identity):
                 assert len(args) == 1
                 return args[0]
-            else:
-                return super().call_module(target, args, kwargs)
+            return super().call_module(target, args, kwargs)
 
     return IdentityRemover(gm).transform()
 
@@ -610,20 +607,17 @@ class NormalizedLinearNode:
     def get_input(self) -> torch.fx.Node:
         if len(self.node.args) > 0:
             return self.node.args[0]  # type: ignore[return-value]
-        else:
-            return self.node.kwargs["input"]  # type: ignore[return-value]
+        return self.node.kwargs["input"]  # type: ignore[return-value]
 
     def get_weight(self) -> torch.fx.Node:
         if len(self.node.args) > 1:
             return self.node.args[1]  # type: ignore[return-value]
-        else:
-            return self.node.kwargs["weight"]  # type: ignore[return-value]
+        return self.node.kwargs["weight"]  # type: ignore[return-value]
 
     def get_bias(self) -> torch.fx.Node:
         if len(self.node.args) > 2:
             return self.node.args[2]  # type: ignore[return-value]
-        else:
-            return self.node.kwargs["bias"] if "bias" in self.node.kwargs else None  # type: ignore[return-value]
+        return self.node.kwargs["bias"] if "bias" in self.node.kwargs else None  # type: ignore[return-value]
 
 
 class NormalizedMatmulNode:
@@ -635,14 +629,12 @@ class NormalizedMatmulNode:
     def get_input(self) -> torch.fx.Node:
         if len(self.node.args) > 0:
             return self.node.args[0]  # type: ignore[return-value]
-        else:
-            return self.node.kwargs["input"]  # type: ignore[return-value]
+        return self.node.kwargs["input"]  # type: ignore[return-value]
 
     def get_other(self) -> torch.fx.Node:
         if len(self.node.args) > 1:
             return self.node.args[1]  # type: ignore[return-value]
-        else:
-            return self.node.kwargs["other"]  # type: ignore[return-value]
+        return self.node.kwargs["other"]  # type: ignore[return-value]
 
 
 def check_permute(node: torch.fx.Node) -> bool:
@@ -748,7 +740,7 @@ def linear_permute_fusion(module: torch.fx.GraphModule) -> torch.fx.GraphModule:
 # ---->
 # Y2 = (W * X^T + bias.unsqueeze(-1))^T
 def linear_transpose(
-    input: torch.Tensor, weight: torch.Tensor, bias: Optional[torch.Tensor]
+    input: torch.Tensor, weight: torch.Tensor, bias: torch.Tensor | None
 ) -> torch.Tensor:
     if bias is None:
         return torch.matmul(weight, input.transpose(-1, -2))
@@ -845,7 +837,7 @@ def permute_matmul_fusion(module: torch.fx.GraphModule) -> torch.fx.GraphModule:
 # ---->
 # Y2 = X1.transpose(-1, -2) * W1^T + bias1
 def transpose_linear(
-    input: torch.Tensor, weight: torch.Tensor, bias: Optional[torch.Tensor]
+    input: torch.Tensor, weight: torch.Tensor, bias: torch.Tensor | None
 ) -> torch.Tensor:
     if bias is None:
         return torch.matmul(input.transpose(-1, -2), weight.t())

@@ -23,7 +23,7 @@ import sys
 import typing
 import warnings
 from pathlib import Path
-from typing import Any, Dict, List, Optional, TypedDict, Union
+from typing import Any, Optional, TypedDict, Union
 
 import numpy as np
 import typing_extensions
@@ -32,10 +32,15 @@ from huggingface_hub.errors import EntryNotFoundError
 from .audio_utils import load_audio
 from .dynamic_module_utils import custom_object_save
 from .feature_extraction_utils import BatchFeature
-from .image_utils import ChannelDimension, ImageInput, is_valid_image, is_vision_available, load_image
+from .image_utils import (
+    ChannelDimension,
+    ImageInput,
+    is_valid_image,
+    is_vision_available,
+    load_image,
+)
 from .utils.chat_template_utils import render_jinja_template
 from .video_utils import VideoInput, load_video
-
 
 if is_vision_available():
     from .image_utils import PILImageResampling
@@ -65,7 +70,6 @@ from .utils import (
     list_repo_templates,
     logging,
 )
-
 
 logger = logging.get_logger(__name__)
 
@@ -124,24 +128,30 @@ class TextKwargs(TypedDict, total=False):
             The side on which padding will be applied.
     """
 
-    text_pair: Optional[Union[TextInput, PreTokenizedInput, list[TextInput], list[PreTokenizedInput]]]
-    text_target: Union[TextInput, PreTokenizedInput, list[TextInput], list[PreTokenizedInput]]
-    text_pair_target: Optional[Union[TextInput, PreTokenizedInput, list[TextInput], list[PreTokenizedInput]]]
-    add_special_tokens: Optional[bool]
-    padding: Union[bool, str, PaddingStrategy]
-    truncation: Union[bool, str, TruncationStrategy]
-    max_length: Optional[int]
-    stride: Optional[int]
-    is_split_into_words: Optional[bool]
-    pad_to_multiple_of: Optional[int]
-    return_token_type_ids: Optional[bool]
-    return_attention_mask: Optional[bool]
-    return_overflowing_tokens: Optional[bool]
-    return_special_tokens_mask: Optional[bool]
-    return_offsets_mapping: Optional[bool]
-    return_length: Optional[bool]
-    verbose: Optional[bool]
-    padding_side: Optional[str]
+    text_pair: (
+        TextInput | PreTokenizedInput | list[TextInput] | list[PreTokenizedInput] | None
+    )
+    text_target: (
+        TextInput | PreTokenizedInput | list[TextInput] | list[PreTokenizedInput]
+    )
+    text_pair_target: (
+        TextInput | PreTokenizedInput | list[TextInput] | list[PreTokenizedInput] | None
+    )
+    add_special_tokens: bool | None
+    padding: bool | str | PaddingStrategy
+    truncation: bool | str | TruncationStrategy
+    max_length: int | None
+    stride: int | None
+    is_split_into_words: bool | None
+    pad_to_multiple_of: int | None
+    return_token_type_ids: bool | None
+    return_attention_mask: bool | None
+    return_overflowing_tokens: bool | None
+    return_special_tokens_mask: bool | None
+    return_offsets_mapping: bool | None
+    return_length: bool | None
+    verbose: bool | None
+    padding_side: str | None
 
 
 class ImagesKwargs(TypedDict, total=False):
@@ -184,22 +194,22 @@ class ImagesKwargs(TypedDict, total=False):
             The device to use for processing (e.g. "cpu", "cuda"), only relevant for fast image processing.
     """
 
-    do_resize: Optional[bool]
-    size: Optional[dict[str, int]]
-    size_divisor: Optional[int]
-    crop_size: Optional[Dict[str, int]]
-    resample: Optional[Union["PILImageResampling", int]]
-    do_rescale: Optional[bool]
-    rescale_factor: Optional[float]
-    do_normalize: Optional[bool]
-    image_mean: Optional[Union[float, list[float]]]
-    image_std: Optional[Union[float, list[float]]]
-    do_pad: Optional[bool]
-    pad_size: Optional[dict[str, int]]
-    do_center_crop: Optional[bool]
-    data_format: Optional[ChannelDimension]
-    input_data_format: Optional[Union[str, ChannelDimension]]
-    device: Optional[str]
+    do_resize: bool | None
+    size: dict[str, int] | None
+    size_divisor: int | None
+    crop_size: dict[str, int] | None
+    resample: Union["PILImageResampling", int] | None
+    do_rescale: bool | None
+    rescale_factor: float | None
+    do_normalize: bool | None
+    image_mean: float | list[float] | None
+    image_std: float | list[float] | None
+    do_pad: bool | None
+    pad_size: dict[str, int] | None
+    do_center_crop: bool | None
+    data_format: ChannelDimension | None
+    input_data_format: str | ChannelDimension | None
+    device: str | None
 
 
 class VideosKwargs(TypedDict, total=False):
@@ -241,23 +251,23 @@ class VideosKwargs(TypedDict, total=False):
             The channel dimension format for the input video.
     """
 
-    do_convert_rgb: Optional[bool]
-    do_resize: Optional[bool]
-    size: Optional[dict[str, int]]
-    size_divisor: Optional[int]
-    default_to_square: Optional[bool]
+    do_convert_rgb: bool | None
+    do_resize: bool | None
+    size: dict[str, int] | None
+    size_divisor: int | None
+    default_to_square: bool | None
     resample: Optional["PILImageResampling"]
-    do_rescale: Optional[bool]
-    rescale_factor: Optional[float]
-    do_normalize: Optional[bool]
-    image_mean: Optional[Union[float, list[float]]]
-    image_std: Optional[Union[float, list[float]]]
-    do_pad: Optional[bool]
-    do_center_crop: Optional[bool]
-    crop_size: Optional[Dict[str, int]]
-    data_format: Optional[ChannelDimension]
-    input_data_format: Optional[Union[str, ChannelDimension]]
-    device: Optional[str]
+    do_rescale: bool | None
+    rescale_factor: float | None
+    do_normalize: bool | None
+    image_mean: float | list[float] | None
+    image_std: float | list[float] | None
+    do_pad: bool | None
+    do_center_crop: bool | None
+    crop_size: dict[str, int] | None
+    data_format: ChannelDimension | None
+    input_data_format: str | ChannelDimension | None
+    device: str | None
 
 
 class AudioKwargs(TypedDict, total=False):
@@ -290,20 +300,24 @@ class AudioKwargs(TypedDict, total=False):
             Whether or not [`~ASTFeatureExtractor.__call__`] should return `attention_mask`.
     """
 
-    sampling_rate: Optional[int]
-    raw_speech: Optional[Union["np.ndarray", list[float], list["np.ndarray"], list[list[float]]]]
-    padding: Optional[Union[bool, str, PaddingStrategy]]
-    max_length: Optional[int]
-    truncation: Optional[bool]
-    pad_to_multiple_of: Optional[int]
-    return_attention_mask: Optional[bool]
+    sampling_rate: int | None
+    raw_speech: (
+        Union["np.ndarray", list[float], list["np.ndarray"], list[list[float]]] | None
+    )
+    padding: bool | str | PaddingStrategy | None
+    max_length: int | None
+    truncation: bool | None
+    pad_to_multiple_of: int | None
+    return_attention_mask: bool | None
 
 
 class CommonKwargs(TypedDict, total=False):
-    return_tensors: Optional[Union[str, TensorType]]
+    return_tensors: str | TensorType | None
 
 
-class ProcessingKwargs(TextKwargs, ImagesKwargs, VideosKwargs, AudioKwargs, CommonKwargs, total=False):
+class ProcessingKwargs(
+    TextKwargs, ImagesKwargs, VideosKwargs, AudioKwargs, CommonKwargs, total=False
+):
     """
     Base class for kwargs passing to processors.
     A model should have its own `ModelProcessorKwargs` class that inherits from `ProcessingKwargs` to provide:
@@ -390,11 +404,11 @@ class TokenizerChatTemplateKwargs(TypedDict, total=False):
         This functionality is only available for chat templates that support it via the `{% generation %}` keyword.
     """
 
-    tools: Optional[list[dict]] = None
-    documents: Optional[list[dict[str, str]]] = None
-    add_generation_prompt: Optional[bool] = False
-    continue_final_message: Optional[bool] = False
-    return_assistant_tokens_mask: Optional[bool] = False
+    tools: list[dict] | None = None
+    documents: list[dict[str, str]] | None = None
+    add_generation_prompt: bool | None = False
+    continue_final_message: bool | None = False
+    return_assistant_tokens_mask: bool | None = False
 
 
 class ChatTemplateLoadKwargs(TypedDict, total=False):
@@ -422,14 +436,16 @@ class ChatTemplateLoadKwargs(TypedDict, total=False):
                 return np.linspace(start_idx, end_idx, num_frames, dtype=int)
     """
 
-    num_frames: Optional[int] = None
-    video_load_backend: Optional[str] = "pyav"
-    video_fps: Optional[int] = None
-    sampling_rate: Optional[int] = 16_000
-    load_audio_from_video: Optional[bool] = False
+    num_frames: int | None = None
+    video_load_backend: str | None = "pyav"
+    video_fps: int | None = None
+    sampling_rate: int | None = 16_000
+    load_audio_from_video: bool | None = False
 
 
-class ProcessorChatTemplateKwargs(ChatTemplateLoadKwargs, TokenizerChatTemplateKwargs, total=False):
+class ProcessorChatTemplateKwargs(
+    ChatTemplateLoadKwargs, TokenizerChatTemplateKwargs, total=False
+):
     """
     Keyword arguments for processor's `apply_chat_template`.
 
@@ -439,12 +455,17 @@ class ProcessorChatTemplateKwargs(ChatTemplateLoadKwargs, TokenizerChatTemplateK
         Whether to return a dictionary with named outputs. Has no effect if tokenize is `False`.
     """
 
-    tokenize: Optional[bool] = False
-    return_dict: Optional[bool] = False
+    tokenize: bool | None = False
+    return_dict: bool | None = False
 
 
 class AllKwargsForChatTemplate(
-    TextKwargs, ImagesKwargs, VideosKwargs, AudioKwargs, CommonKwargs, ProcessorChatTemplateKwargs
+    TextKwargs,
+    ImagesKwargs,
+    VideosKwargs,
+    AudioKwargs,
+    CommonKwargs,
+    ProcessorChatTemplateKwargs,
 ):
     processor_kwargs: ProcessingKwargs = {
         **ProcessingKwargs.__annotations__,
@@ -481,11 +502,10 @@ class ProcessorMixin(PushToHubMixin):
         for key in kwargs:
             if key not in self.attributes:
                 raise TypeError(f"Unexpected keyword argument {key}.")
-        for arg, attribute_name in zip(args, self.attributes):
+        for arg, attribute_name in zip(args, self.attributes, strict=False):
             if attribute_name in kwargs:
                 raise TypeError(f"Got multiple values for argument {attribute_name}.")
-            else:
-                kwargs[attribute_name] = arg
+            kwargs[attribute_name] = arg
 
         if len(kwargs) != len(self.attributes):
             raise ValueError(
@@ -499,7 +519,11 @@ class ProcessorMixin(PushToHubMixin):
             # Nothing is ever going to be an instance of "AutoXxx", in that case we check the base class.
             class_name = AUTO_TO_BASE_CLASS_MAPPING.get(class_name, class_name)
             if isinstance(class_name, tuple):
-                proper_class = tuple(self.get_possibly_dynamic_module(n) for n in class_name if n is not None)
+                proper_class = tuple(
+                    self.get_possibly_dynamic_module(n)
+                    for n in class_name
+                    if n is not None
+                )
             else:
                 proper_class = self.get_possibly_dynamic_module(class_name)
 
@@ -547,7 +571,10 @@ class ProcessorMixin(PushToHubMixin):
         output = {
             k: v
             for k, v in output.items()
-            if not (isinstance(v, PushToHubMixin) or v.__class__.__name__ == "BeamSearchDecoderCTC")
+            if not (
+                isinstance(v, PushToHubMixin)
+                or v.__class__.__name__ == "BeamSearchDecoderCTC"
+            )
         }
 
         return output
@@ -563,7 +590,7 @@ class ProcessorMixin(PushToHubMixin):
 
         return json.dumps(dictionary, indent=2, sort_keys=True) + "\n"
 
-    def to_json_file(self, json_file_path: Union[str, os.PathLike]):
+    def to_json_file(self, json_file_path: str | os.PathLike):
         """
         Save this instance to a JSON file.
 
@@ -575,9 +602,13 @@ class ProcessorMixin(PushToHubMixin):
             writer.write(self.to_json_string())
 
     def __repr__(self):
-        attributes_repr = [f"- {name}: {repr(getattr(self, name))}" for name in self.attributes]
+        attributes_repr = [
+            f"- {name}: {repr(getattr(self, name))}" for name in self.attributes
+        ]
         attributes_repr = "\n".join(attributes_repr)
-        return f"{self.__class__.__name__}:\n{attributes_repr}\n\n{self.to_json_string()}"
+        return (
+            f"{self.__class__.__name__}:\n{attributes_repr}\n\n{self.to_json_string()}"
+        )
 
     def save_pretrained(self, save_directory, push_to_hub: bool = False, **kwargs):
         """
@@ -610,7 +641,7 @@ class ProcessorMixin(PushToHubMixin):
                 "The `use_auth_token` argument is deprecated and will be removed in v5 of Transformers. Please use `token` instead.",
                 FutureWarning,
             )
-            if kwargs.get("token", None) is not None:
+            if kwargs.get("token") is not None:
                 raise ValueError(
                     "`token` and `use_auth_token` are both specified. Please set only the argument `token`."
                 )
@@ -626,8 +657,13 @@ class ProcessorMixin(PushToHubMixin):
         # If we have a custom config, we copy the file defining it in the folder and set the attributes so it can be
         # loaded from the Hub.
         if self._auto_class is not None:
-            attrs = [getattr(self, attribute_name) for attribute_name in self.attributes]
-            configs = [(a.init_kwargs if isinstance(a, PreTrainedTokenizerBase) else a) for a in attrs]
+            attrs = [
+                getattr(self, attribute_name) for attribute_name in self.attributes
+            ]
+            configs = [
+                (a.init_kwargs if isinstance(a, PreTrainedTokenizerBase) else a)
+                for a in attrs
+            ]
             configs.append(self)
             custom_object_save(self, save_directory, config=configs)
 
@@ -641,7 +677,9 @@ class ProcessorMixin(PushToHubMixin):
                 attribute._set_processor_class(self.__class__.__name__)
             if attribute_name == "tokenizer":
                 # Propagate save_jinja_files to tokenizer to ensure we don't get conflicts
-                attribute.save_pretrained(save_directory, save_jinja_files=save_jinja_files)
+                attribute.save_pretrained(
+                    save_directory, save_jinja_files=save_jinja_files
+                )
             else:
                 attribute.save_pretrained(save_directory)
 
@@ -655,7 +693,9 @@ class ProcessorMixin(PushToHubMixin):
         # If we save using the predefined names, we can load using `from_pretrained`
         # plus we save chat_template in its own file
         output_processor_file = os.path.join(save_directory, PROCESSOR_NAME)
-        output_chat_template_file_jinja = os.path.join(save_directory, CHAT_TEMPLATE_FILE)
+        output_chat_template_file_jinja = os.path.join(
+            save_directory, CHAT_TEMPLATE_FILE
+        )
         output_chat_template_file_legacy = os.path.join(
             save_directory, LEGACY_PROCESSOR_CHAT_TEMPLATE_FILE
         )  # Legacy filename
@@ -677,23 +717,36 @@ class ProcessorMixin(PushToHubMixin):
                 # and the other templates in the chat_templates/ directory
                 for template_name, template in self.chat_template.items():
                     if template_name == "default":
-                        with open(output_chat_template_file_jinja, "w", encoding="utf-8") as f:
+                        with open(
+                            output_chat_template_file_jinja, "w", encoding="utf-8"
+                        ) as f:
                             f.write(self.chat_template["default"])
-                        logger.info(f"chat template saved in {output_chat_template_file_jinja}")
+                        logger.info(
+                            f"chat template saved in {output_chat_template_file_jinja}"
+                        )
                     else:
                         os.makedirs(chat_template_dir, exist_ok=True)
-                        template_filepath = os.path.join(chat_template_dir, f"{template_name}.jinja")
+                        template_filepath = os.path.join(
+                            chat_template_dir, f"{template_name}.jinja"
+                        )
                         with open(template_filepath, "w", encoding="utf-8") as f:
                             f.write(template)
                         logger.info(f"chat template saved in {template_filepath}")
             elif is_single_template:
                 # Legacy format for single templates: Put them in chat_template.json
                 chat_template_json_string = (
-                    json.dumps({"chat_template": self.chat_template}, indent=2, sort_keys=True) + "\n"
+                    json.dumps(
+                        {"chat_template": self.chat_template}, indent=2, sort_keys=True
+                    )
+                    + "\n"
                 )
-                with open(output_chat_template_file_legacy, "w", encoding="utf-8") as writer:
+                with open(
+                    output_chat_template_file_legacy, "w", encoding="utf-8"
+                ) as writer:
                     writer.write(chat_template_json_string)
-                logger.info(f"chat template saved in {output_chat_template_file_legacy}")
+                logger.info(
+                    f"chat template saved in {output_chat_template_file_legacy}"
+                )
             elif self.chat_template is not None:
                 # At this point we have multiple templates in the legacy format, which is not supported
                 # chat template dicts are saved to chat_template.json as lists of dicts with fixed key names.
@@ -723,7 +776,7 @@ class ProcessorMixin(PushToHubMixin):
 
     @classmethod
     def get_processor_dict(
-        cls, pretrained_model_name_or_path: Union[str, os.PathLike], **kwargs
+        cls, pretrained_model_name_or_path: str | os.PathLike, **kwargs
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         """
         From a `pretrained_model_name_or_path`, resolve to a dictionary of parameters, to be used for instantiating a
@@ -784,7 +837,9 @@ class ProcessorMixin(PushToHubMixin):
                 if template_dir.is_dir():
                     for template_file in template_dir.glob("*.jinja"):
                         template_name = template_file.stem
-                        additional_chat_template_files[template_name] = f"{CHAT_TEMPLATE_DIR}/{template_file.name}"
+                        additional_chat_template_files[template_name] = (
+                            f"{CHAT_TEMPLATE_DIR}/{template_file.name}"
+                        )
             else:
                 try:
                     for template in list_repo_templates(
@@ -793,7 +848,9 @@ class ProcessorMixin(PushToHubMixin):
                         revision=revision,
                         cache_dir=cache_dir,
                     ):
-                        additional_chat_template_files[template] = f"{CHAT_TEMPLATE_DIR}/{template}.jinja"
+                        additional_chat_template_files[template] = (
+                            f"{CHAT_TEMPLATE_DIR}/{template}.jinja"
+                        )
                 except EntryNotFoundError:
                     pass  # No template dir means no template files
             processor_file = PROCESSOR_NAME
@@ -892,14 +949,20 @@ class ProcessorMixin(PushToHubMixin):
                     )
         else:
             chat_templates = {
-                template_name: open(template_file, "r", encoding="utf-8").read()
+                template_name: open(template_file, encoding="utf-8").read()
                 for template_name, template_file in resolved_additional_chat_template_files.items()
             }
             if resolved_raw_chat_template_file is not None:
-                with open(resolved_raw_chat_template_file, "r", encoding="utf-8") as reader:
+                with open(resolved_raw_chat_template_file, encoding="utf-8") as reader:
                     chat_templates["default"] = reader.read()
-        if isinstance(chat_templates, dict) and "default" in chat_templates and len(chat_templates) == 1:
-            chat_templates = chat_templates["default"]  # Flatten when we just have a single template/file
+        if (
+            isinstance(chat_templates, dict)
+            and "default" in chat_templates
+            and len(chat_templates) == 1
+        ):
+            chat_templates = chat_templates[
+                "default"
+            ]  # Flatten when we just have a single template/file
 
         if chat_templates:
             kwargs["chat_template"] = chat_templates
@@ -922,14 +985,21 @@ class ProcessorMixin(PushToHubMixin):
             processor_dict = json.loads(text)
 
         except json.JSONDecodeError:
-            raise OSError(f"It looks like the config file at '{resolved_processor_file}' is not a valid JSON file.")
+            raise OSError(
+                f"It looks like the config file at '{resolved_processor_file}' is not a valid JSON file."
+            )
 
         if is_local:
             logger.info(f"loading configuration file {resolved_processor_file}")
         else:
-            logger.info(f"loading configuration file {processor_file} from cache at {resolved_processor_file}")
+            logger.info(
+                f"loading configuration file {processor_file} from cache at {resolved_processor_file}"
+            )
 
-        if "chat_template" in processor_dict and processor_dict["chat_template"] is not None:
+        if (
+            "chat_template" in processor_dict
+            and processor_dict["chat_template"] is not None
+        ):
             logger.warning_once(
                 "Chat templates should be in a 'chat_template.jinja' file but found key='chat_template' "
                 "in the processor's config. Make sure to move your template to its own file."
@@ -978,7 +1048,9 @@ class ProcessorMixin(PushToHubMixin):
         if "auto_map" in processor_dict:
             del processor_dict["auto_map"]
 
-        unused_kwargs = cls.validate_init_kwargs(processor_config=processor_dict, valid_kwargs=cls.valid_kwargs)
+        unused_kwargs = cls.validate_init_kwargs(
+            processor_config=processor_dict, valid_kwargs=cls.valid_kwargs
+        )
         processor = cls(*args, **processor_dict)
 
         # Update processor with kwargs if needed
@@ -990,13 +1062,12 @@ class ProcessorMixin(PushToHubMixin):
         logger.info(f"Processor {processor}")
         if return_unused_kwargs:
             return processor, kwargs
-        else:
-            return processor
+        return processor
 
     def _merge_kwargs(
         self,
         ModelProcessorKwargs: ProcessingKwargs,
-        tokenizer_init_kwargs: Optional[dict] = None,
+        tokenizer_init_kwargs: dict | None = None,
         **kwargs,
     ) -> dict[str, dict]:
         """
@@ -1060,11 +1131,18 @@ class ProcessorMixin(PushToHubMixin):
 
         # get defaults from set model processor kwargs if they exist
         for modality in default_kwargs:
-            default_kwargs[modality] = ModelProcessorKwargs._defaults.get(modality, {}).copy()
+            default_kwargs[modality] = ModelProcessorKwargs._defaults.get(
+                modality, {}
+            ).copy()
             # update defaults with arguments from tokenizer init
-            for modality_key in ModelProcessorKwargs.__annotations__[modality].__annotations__.keys():
+            for modality_key in ModelProcessorKwargs.__annotations__[
+                modality
+            ].__annotations__.keys():
                 # init with tokenizer init kwargs if necessary
-                if tokenizer_init_kwargs is not None and modality_key in tokenizer_init_kwargs:
+                if (
+                    tokenizer_init_kwargs is not None
+                    and modality_key in tokenizer_init_kwargs
+                ):
                     value = (
                         getattr(self.tokenizer, modality_key)
                         if hasattr(self.tokenizer, modality_key)
@@ -1078,12 +1156,17 @@ class ProcessorMixin(PushToHubMixin):
         # update modality kwargs with passed kwargs
         non_modality_kwargs = set(kwargs) - set(output_kwargs)
         for modality in output_kwargs:
-            for modality_key in ModelProcessorKwargs.__annotations__[modality].__annotations__.keys():
+            for modality_key in ModelProcessorKwargs.__annotations__[
+                modality
+            ].__annotations__.keys():
                 # check if we received a structured kwarg dict or not to handle it correctly
                 if modality in kwargs:
                     kwarg_value = kwargs[modality].pop(modality_key, "__empty__")
                     # check if this key was passed as a flat kwarg.
-                    if kwarg_value != "__empty__" and modality_key in non_modality_kwargs:
+                    if (
+                        kwarg_value != "__empty__"
+                        and modality_key in non_modality_kwargs
+                    ):
                         raise ValueError(
                             f"Keyword argument {modality_key} was passed two times:\n"
                             f"in a dictionary for {modality} and as a **kwarg."
@@ -1111,7 +1194,12 @@ class ProcessorMixin(PushToHubMixin):
             # kwargs is a flat dictionary
             for key in kwargs:
                 if key not in used_keys:
-                    if key in ModelProcessorKwargs.__annotations__["common_kwargs"].__annotations__.keys():
+                    if (
+                        key
+                        in ModelProcessorKwargs.__annotations__[
+                            "common_kwargs"
+                        ].__annotations__.keys()
+                    ):
                         output_kwargs["common_kwargs"][key] = kwargs[key]
                     elif key not in possible_modality_keywords:
                         logger.warning_once(
@@ -1126,11 +1214,11 @@ class ProcessorMixin(PushToHubMixin):
     @classmethod
     def from_pretrained(
         cls,
-        pretrained_model_name_or_path: Union[str, os.PathLike],
-        cache_dir: Optional[Union[str, os.PathLike]] = None,
+        pretrained_model_name_or_path: str | os.PathLike,
+        cache_dir: str | os.PathLike | None = None,
         force_download: bool = False,
         local_files_only: bool = False,
-        token: Optional[Union[str, bool]] = None,
+        token: str | bool | None = None,
         revision: str = "main",
         **kwargs,
     ):
@@ -1182,8 +1270,12 @@ class ProcessorMixin(PushToHubMixin):
         if token is not None:
             kwargs["token"] = token
 
-        args = cls._get_arguments_from_pretrained(pretrained_model_name_or_path, **kwargs)
-        processor_dict, kwargs = cls.get_processor_dict(pretrained_model_name_or_path, **kwargs)
+        args = cls._get_arguments_from_pretrained(
+            pretrained_model_name_or_path, **kwargs
+        )
+        processor_dict, kwargs = cls.get_processor_dict(
+            pretrained_model_name_or_path, **kwargs
+        )
         return cls.from_args_and_dict(args, processor_dict, **kwargs)
 
     @classmethod
@@ -1226,10 +1318,13 @@ class ProcessorMixin(PushToHubMixin):
         for attribute_name in cls.attributes:
             class_name = getattr(cls, f"{attribute_name}_class")
             if isinstance(class_name, tuple):
-                classes = tuple(cls.get_possibly_dynamic_module(n) if n is not None else None for n in class_name)
+                classes = tuple(
+                    cls.get_possibly_dynamic_module(n) if n is not None else None
+                    for n in class_name
+                )
                 if attribute_name == "image_processor":
                     # TODO: @yoni, change logic in v4.52 (when use_fast set to True by default)
-                    use_fast = kwargs.get("use_fast", None)
+                    use_fast = kwargs.get("use_fast")
                     if use_fast is None:
                         logger.warning_once(
                             "Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. "
@@ -1245,7 +1340,9 @@ class ProcessorMixin(PushToHubMixin):
             else:
                 attribute_class = cls.get_possibly_dynamic_module(class_name)
 
-            args.append(attribute_class.from_pretrained(pretrained_model_name_or_path, **kwargs))
+            args.append(
+                attribute_class.from_pretrained(pretrained_model_name_or_path, **kwargs)
+            )
         return args
 
     @staticmethod
@@ -1262,7 +1359,10 @@ class ProcessorMixin(PushToHubMixin):
             for custom_class in lookup_location._extra_content.values():
                 if isinstance(custom_class, tuple):
                     for custom_subclass in custom_class:
-                        if custom_subclass is not None and custom_subclass.__name__ == module_name:
+                        if (
+                            custom_subclass is not None
+                            and custom_subclass.__name__ == module_name
+                        ):
                             return custom_subclass
                 elif custom_class is not None and custom_class.__name__ == module_name:
                     return custom_class
@@ -1343,14 +1443,17 @@ class ProcessorMixin(PushToHubMixin):
                 f"However, got {len(args)} positional arguments instead."
                 "Please pass all arguments as keyword arguments instead (e.g. `processor(arg_name_1=..., arg_name_2=...))`."
             )
-        return {arg_name: arg_value for arg_value, arg_name in zip(args, self.optional_call_args)}
+        return {
+            arg_name: arg_value
+            for arg_value, arg_name in zip(args, self.optional_call_args, strict=False)
+        }
 
     def _process_messages_for_chat_template(
         self,
-        conversation: List[List[Dict[str, str]]],
-        batch_images: List[ImageInput],
-        batch_videos: List[VideoInput],
-        batch_video_metadata: List[List[Dict[str, any]]],
+        conversation: list[list[dict[str, str]]],
+        batch_images: list[ImageInput],
+        batch_videos: list[VideoInput],
+        batch_video_metadata: list[list[dict[str, any]]],
         **mm_load_kwargs: Unpack[ChatTemplateLoadKwargs],
     ):
         """
@@ -1381,8 +1484,8 @@ class ProcessorMixin(PushToHubMixin):
 
     def apply_chat_template(
         self,
-        conversation: Union[list[dict[str, str]], list[list[dict[str, str]]]],
-        chat_template: Optional[str] = None,
+        conversation: list[dict[str, str]] | list[list[dict[str, str]]],
+        chat_template: str | None = None,
         **kwargs: Unpack[AllKwargsForChatTemplate],
     ) -> str:
         """
@@ -1427,7 +1530,10 @@ class ProcessorMixin(PushToHubMixin):
                     "Cannot use apply_chat_template because this processor does not have a chat template."
                 )
         else:
-            if isinstance(self.chat_template, dict) and chat_template in self.chat_template:
+            if (
+                isinstance(self.chat_template, dict)
+                and chat_template in self.chat_template
+            ):
                 # It's the name of a template, not a full template string
                 chat_template = self.chat_template[chat_template]
             else:
@@ -1440,7 +1546,9 @@ class ProcessorMixin(PushToHubMixin):
                     "continue_final_message and add_generation_prompt are not compatible. Use continue_final_message when you want the model to continue the final message, and add_generation_prompt when you want to add a header that will prompt it to start a new assistant message instead."
                 )
             if kwargs.get("return_assistant_tokens_mask", False):
-                raise ValueError("continue_final_message is not compatible with return_assistant_tokens_mask.")
+                raise ValueError(
+                    "continue_final_message is not compatible with return_assistant_tokens_mask."
+                )
 
         # Fill sets of kwargs that should be used by different parts of template
         processed_kwargs = {
@@ -1449,8 +1557,12 @@ class ProcessorMixin(PushToHubMixin):
         }
 
         for kwarg_type in processed_kwargs:
-            for key in AllKwargsForChatTemplate.__annotations__[kwarg_type].__annotations__.keys():
-                kwarg_type_defaults = AllKwargsForChatTemplate.__annotations__[kwarg_type]
+            for key in AllKwargsForChatTemplate.__annotations__[
+                kwarg_type
+            ].__annotations__.keys():
+                kwarg_type_defaults = AllKwargsForChatTemplate.__annotations__[
+                    kwarg_type
+                ]
                 default_value = getattr(kwarg_type_defaults, key, None)
                 value = kwargs.pop(key, default_value)
                 if value is not None and not isinstance(value, dict):
@@ -1460,7 +1572,8 @@ class ProcessorMixin(PushToHubMixin):
         processed_kwargs["template_kwargs"].update(kwargs)
 
         if isinstance(conversation, (list, tuple)) and (
-            isinstance(conversation[0], (list, tuple)) or hasattr(conversation[0], "content")
+            isinstance(conversation[0], (list, tuple))
+            or hasattr(conversation[0], "content")
         ):
             is_batched = True
             conversations = conversation
@@ -1480,7 +1593,11 @@ class ProcessorMixin(PushToHubMixin):
                 images, videos = [], []
                 video_metadata = []
                 for message in conversation:
-                    visuals = [content for content in message["content"] if content["type"] in ["image", "video"]]
+                    visuals = [
+                        content
+                        for content in message["content"]
+                        if content["type"] in ["image", "video"]
+                    ]
                     audio_fnames = [
                         content[key]
                         for content in message["content"]
@@ -1506,14 +1623,27 @@ class ProcessorMixin(PushToHubMixin):
                     # Audio models do not accept nested list of audios (yet!) so we construct a flat input audio list
                     if not mm_load_kwargs["load_audio_from_video"]:
                         for fname in audio_fnames:
-                            batch_audios.append(load_audio(fname, sampling_rate=mm_load_kwargs["sampling_rate"]))
+                            batch_audios.append(
+                                load_audio(
+                                    fname, sampling_rate=mm_load_kwargs["sampling_rate"]
+                                )
+                            )
                     else:
                         for fname in video_fnames:
-                            batch_audios.append(load_audio(fname, sampling_rate=mm_load_kwargs["sampling_rate"]))
+                            batch_audios.append(
+                                load_audio(
+                                    fname, sampling_rate=mm_load_kwargs["sampling_rate"]
+                                )
+                            )
 
                     for fname in video_fnames:
-                        if isinstance(fname, (list, tuple)) and isinstance(fname[0], str):
-                            video = [np.array(load_image(image_fname)) for image_fname in fname]
+                        if isinstance(fname, (list, tuple)) and isinstance(
+                            fname[0], str
+                        ):
+                            video = [
+                                np.array(load_image(image_fname))
+                                for image_fname in fname
+                            ]
                             # create a 4D video because `load_video` always returns a 4D array
                             video = np.stack(video)
                             metadata = None
@@ -1553,7 +1683,9 @@ class ProcessorMixin(PushToHubMixin):
         prompt, generation_indices = render_jinja_template(
             conversations=conversations,
             chat_template=chat_template,
-            **processed_kwargs["template_kwargs"],  # different flags such as `return_assistant_mask`
+            **processed_kwargs[
+                "template_kwargs"
+            ],  # different flags such as `return_assistant_mask`
             **self.tokenizer.special_tokens_map,  # tokenizer special tokens are used by some templates
         )
 
@@ -1568,7 +1700,9 @@ class ProcessorMixin(PushToHubMixin):
             # special tokens in the template (consistent with tokenizers). We dont want to raise warning, it will flood command line
             # without actionable solution for users
             single_prompt = prompt[0] if is_batched else prompt
-            if self.tokenizer.bos_token is not None and single_prompt.startswith(self.tokenizer.bos_token):
+            if self.tokenizer.bos_token is not None and single_prompt.startswith(
+                self.tokenizer.bos_token
+            ):
                 kwargs["add_special_tokens"] = False
 
             out = self(
@@ -1579,25 +1713,32 @@ class ProcessorMixin(PushToHubMixin):
                 **kwargs,
             )
             if return_dict:
-                if processed_kwargs["template_kwargs"].get("return_assistant_tokens_mask", False):
+                if processed_kwargs["template_kwargs"].get(
+                    "return_assistant_tokens_mask", False
+                ):
                     assistant_masks = []
                     input_ids = out["input_ids"]
                     for i in range(len(input_ids)):
                         current_mask = [0] * len(input_ids[i])
-                        for assistant_start_char, assistant_end_char in generation_indices[i]:
+                        for (
+                            assistant_start_char,
+                            assistant_end_char,
+                        ) in generation_indices[i]:
                             start_token = out.char_to_token(i, assistant_start_char)
                             end_token = out.char_to_token(i, assistant_end_char - 1)
                             if start_token is None:
                                 # start_token is out of bounds maybe due to truncation.
                                 break
-                            for token_id in range(start_token, end_token + 1 if end_token else len(input_ids[i])):
+                            for token_id in range(
+                                start_token,
+                                end_token + 1 if end_token else len(input_ids[i]),
+                            ):
                                 current_mask[token_id] = 1
                         assistant_masks.append(current_mask)
                     out["assistant_masks"] = assistant_masks
-                    out.convert_to_tensors(tensor_type=kwargs.get("return_tensors", None))
+                    out.convert_to_tensors(tensor_type=kwargs.get("return_tensors"))
                 return out
-            else:
-                return out["input_ids"]
+            return out["input_ids"]
         return prompt
 
     # TODO: raushan, has to be public method under `VideoProcessorBase` when API is added
@@ -1605,8 +1746,8 @@ class ProcessorMixin(PushToHubMixin):
     def _load_video_for_model(
         self,
         video: Union[str, "VideoInput"],
-        num_frames: Optional[int] = None,
-        fps: Optional[int] = None,
+        num_frames: int | None = None,
+        fps: int | None = None,
         backend: str = "opencv",
         **kwargs,
     ) -> np.array:
@@ -1632,7 +1773,9 @@ class ProcessorMixin(PushToHubMixin):
         video, metadata = load_video(video, num_frames, fps=fps, backend=backend)
         return video, metadata
 
-    def post_process_image_text_to_text(self, generated_outputs, skip_special_tokens=True, **kwargs):
+    def post_process_image_text_to_text(
+        self, generated_outputs, skip_special_tokens=True, **kwargs
+    ):
         """
         Post-process the output of a vlm to decode the text.
 
@@ -1648,9 +1791,13 @@ class ProcessorMixin(PushToHubMixin):
         Returns:
             `List[str]`: The decoded text.
         """
-        return self.tokenizer.batch_decode(generated_outputs, skip_special_tokens=skip_special_tokens, **kwargs)
+        return self.tokenizer.batch_decode(
+            generated_outputs, skip_special_tokens=skip_special_tokens, **kwargs
+        )
 
-    def _check_special_mm_tokens(self, text: list[str], text_inputs: "BatchFeature", modalities: list[str]):
+    def _check_special_mm_tokens(
+        self, text: list[str], text_inputs: "BatchFeature", modalities: list[str]
+    ):
         """
         Checks that number of special tokens in text and processed text is same. The count can be different
         if tokenized text was truncated, leading to issues in model code.
@@ -1694,7 +1841,7 @@ def _validate_images_text_input_order(images, text):
         if isinstance(t, str):
             # Strings are fine
             return True
-        elif isinstance(t, (list, tuple)):
+        if isinstance(t, (list, tuple)):
             # List are fine as long as they are...
             if len(t) == 0:
                 # ... not empty
@@ -1716,14 +1863,20 @@ def _validate_images_text_input_order(images, text):
         return images, text
 
     # Handle cases where inputs need to and can be swapped
-    if (images is None and text_is_images) or (text is None and images_is_text) or (images_is_text and text_is_images):
+    if (
+        (images is None and text_is_images)
+        or (text is None and images_is_text)
+        or (images_is_text and text_is_images)
+    ):
         logger.warning_once(
             "You may have used the wrong order for inputs. `images` should be passed before `text`. "
             "The `images` and `text` inputs will be swapped. This behavior will be deprecated in transformers v4.47."
         )
         return text, images
 
-    raise ValueError("Invalid input type. Check that `images` and/or `text` are valid inputs.")
+    raise ValueError(
+        "Invalid input type. Check that `images` and/or `text` are valid inputs."
+    )
 
 
 ProcessorMixin.push_to_hub = copy_func(ProcessorMixin.push_to_hub)

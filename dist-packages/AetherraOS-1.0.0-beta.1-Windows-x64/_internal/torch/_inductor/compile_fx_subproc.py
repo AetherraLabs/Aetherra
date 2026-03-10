@@ -3,8 +3,9 @@ from __future__ import annotations
 import atexit
 import functools
 import os
-from typing import Optional, TYPE_CHECKING
-from typing_extensions import final, override
+from typing import TYPE_CHECKING, final
+
+from typing_extensions import override
 
 import torch._inductor.async_compile  # noqa: F401 required to warm up AsyncCompile pools
 import torch.fx
@@ -21,7 +22,6 @@ from .compile_fx_ext import (
     _WireProtocolPickledOutput,
 )
 from .output_code import complex_memory_overlap as complex_memory_overlap  # noqa: F401
-
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -65,7 +65,7 @@ class _SubprocessFxCompile(_OutOfProcessFxCompile):
     def _run_in_child_subprocess(
         cls,
         pickled_input: _WireProtocolPickledInput,
-        extra_env: Optional[Mapping[str, str]],
+        extra_env: Mapping[str, str] | None,
     ) -> _WireProtocolPickledOutput:
         # TODO: In subprocess mode we need to clear the inductor caches.
         # The problem:

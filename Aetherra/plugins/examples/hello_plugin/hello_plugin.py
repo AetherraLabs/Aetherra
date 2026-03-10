@@ -42,7 +42,7 @@ class HelloPlugin(PluginInterface):
         self.capabilities = ["greeting"]
 
     async def execute(self, input_data: Any, context: Dict[str, Any]) -> PluginResult:  # type: ignore[override]
-        await asyncio.sleep(0)  # yield control; placeholder for async work
+        await asyncio.sleep(0)  # yield control; baseline async hook
         output = {
             "greeting": f"{self.message} from {self.plugin_id}",
             "input": input_data,

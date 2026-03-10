@@ -37,7 +37,7 @@ class SelfModel:
     voice_guidelines: Optional[list[str]] = None
 
     @staticmethod
-    def load(path: Path = DEFAULT_SELF_MODEL_PATH) -> "SelfModel":
+    def load(path: Path = DEFAULT_SELF_MODEL_PATH) -> SelfModel:
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
             identity = data.get("identity", {})
@@ -90,9 +90,7 @@ def embodiment_statement(path: Path = DEFAULT_SELF_MODEL_PATH) -> Optional[str]:
 def why_now(path: Path = DEFAULT_SELF_MODEL_PATH) -> str:
     """Explain current context using the most recent episodic event and self model purpose."""
     sm = SelfModel.load(path)
-    purpose = (
-        sm.identity.get("purpose") or sm.identity.get("mission") or "assist and improve"
-    )
+    purpose = sm.identity.get("purpose") or sm.identity.get("mission") or "assist and improve"
     try:
         store = get_episodic_store()
         recent = store.list_recent(1)

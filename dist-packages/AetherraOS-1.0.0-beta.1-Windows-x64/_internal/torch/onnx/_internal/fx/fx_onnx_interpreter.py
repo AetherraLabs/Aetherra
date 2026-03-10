@@ -3,7 +3,8 @@ from __future__ import annotations
 
 import inspect
 import operator
-from typing import Callable, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import onnxscript
 from onnxscript.function_libs.torch_lib import (
@@ -16,10 +17,11 @@ from torch.onnx import _type_utils as jit_type_utils
 from torch.onnx._internal.fx import (
     _pass,
     onnxfunction_dispatcher,
+)
+from torch.onnx._internal.fx import (
     type_utils as fx_type_utils,
 )
 from torch.utils import _pytree
-
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -69,7 +71,7 @@ def _retrieve_or_adapt_input_to_graph_set(
         #    torch.jit.Value, fx_name_to_onnxscript_value[fx_node_arg.name],
         #    in TorchScript graph.
         return fx_name_to_onnxscript_value[onnx_tensor.name]
-    elif isinstance(onnx_tensor, (tuple, list)) and any(
+    if isinstance(onnx_tensor, (tuple, list)) and any(
         isinstance(node, torch.fx.Node)
         and fx_type_utils.is_torch_symbolic_type(node.meta.get("val"))
         for node in onnx_tensor
@@ -136,7 +138,7 @@ def _retrieve_or_adapt_input_to_graph_set(
         output.dtype = torch.int64  # type: ignore[union-attr]
         output.shape = [len(sequence_mixed_elements)]  # type: ignore[union-attr]
         return output
-    elif isinstance(onnx_tensor, (tuple, list)) and all(
+    if isinstance(onnx_tensor, (tuple, list)) and all(
         isinstance(node, torch.fx.Node) or node is None for node in onnx_tensor
     ):
         sequence_elements: list[
@@ -181,8 +183,7 @@ def filter_incompatible_and_dtype_convert_kwargs(kwargs):
                 # We omit if dtype is not provided, because onnxscript handles the
                 # default case.
                 continue
-            else:
-                value = int(jit_type_utils.JitScalarType.from_dtype(value).onnx_type())  # type: ignore[call-overload]
+            value = int(jit_type_utils.JitScalarType.from_dtype(value).onnx_type())  # type: ignore[call-overload]
         filtered[key] = value
     return filtered
 
@@ -207,7 +208,7 @@ def _fill_tensor_shape_type(
     flat_onnxscript_values, _ = _pytree.tree_flatten(onnxscript_values)
     flat_expected_values, _ = _pytree.tree_flatten(expected_values)
     for i, (onnxscript_value, expected_value) in enumerate(
-        zip(flat_onnxscript_values, flat_expected_values)
+        zip(flat_onnxscript_values, flat_expected_values, strict=False)
     ):
         if expected_value is None:
             # There is no shape/type from None.
@@ -215,7 +216,7 @@ def _fill_tensor_shape_type(
             # None could be a valid value for return type, so we need to handle it.
             # e.g. the function: meta__scaled_dot_product_flash() in cpu mode.
             continue
-        elif fx_type_utils.is_torch_symbolic_type(expected_value):
+        if fx_type_utils.is_torch_symbolic_type(expected_value):
             # aten::sym_size output is a int, not a tensor, which stands
             # for the size of one dim. We treat it as 1-D tensor.
             onnxscript_value.dtype = fx_type_utils.from_sym_value_to_torch_dtype(

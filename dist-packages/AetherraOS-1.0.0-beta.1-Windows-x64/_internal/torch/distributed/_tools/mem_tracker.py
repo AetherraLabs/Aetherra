@@ -2,12 +2,12 @@ import math
 import os
 import re
 import warnings
+from collections.abc import Callable
 from contextlib import nullcontext
 from copy import deepcopy
-from enum import auto, Enum
+from enum import Enum, auto
 from functools import partial, wraps
-from typing import Any, Callable, Optional, TYPE_CHECKING, Union
-from typing_extensions import Self
+from typing import TYPE_CHECKING, Any, Self
 
 import torch
 import torch.distributed._tools.fake_collectives
@@ -23,7 +23,6 @@ from torch.optim.optimizer import (
 from torch.utils._python_dispatch import TorchDispatchMode
 from torch.utils._pytree import tree_flatten, tree_map_only
 from torch.utils.weak import WeakIdKeyDictionary, weakref
-
 
 if TYPE_CHECKING:
     from torch.utils.hooks import RemovableHandle
@@ -178,7 +177,7 @@ class _WeakRefInfo:
         st: torch.UntypedStorage,
         device: torch.device,
         reftype: _RefType,
-        callback: Optional[Callable[[Self, weakref.ref], Any]] = None,
+        callback: Callable[[Self, weakref.ref], Any] | None = None,
     ) -> tuple[Self, weakref.ref]:
         """
         Creates a new ``_WeakRefInfo`` instance and a weak reference to a ``torch.UntypedStorage`` object,
@@ -205,13 +204,12 @@ def _get_mem_divisor(units: str) -> int:
     unit_dict = {"B": 1, "KiB": 2**10, "MiB": 2**20, "GiB": 2**30}
     if units in unit_dict:
         return unit_dict[units]
-    else:
-        raise ValueError(
-            f"Unsupported unit: {units}. Supported units are: {', '.join(unit_dict.keys())}"
-        )
+    raise ValueError(
+        f"Unsupported unit: {units}. Supported units are: {', '.join(unit_dict.keys())}"
+    )
 
 
-def _rounding_fn(value: int, divisor: int, precision: int) -> Union[float, int]:
+def _rounding_fn(value: int, divisor: int, precision: int) -> float | int:
     return value if divisor == 1 else round(value / divisor, precision)
 
 
@@ -376,9 +374,9 @@ class MemTracker(TorchDispatchMode):
         self._peak_mem: dict[torch.device, int] = {}
         self._peak_mem_snap: dict[torch.device, dict[str, int]] = {}
         self._param_to_grad_hook_handles = WeakIdKeyDictionary()
-        self._optimizer_hook_handles: Optional[
-            tuple[RemovableHandle, RemovableHandle]
-        ] = None
+        self._optimizer_hook_handles: tuple[RemovableHandle, RemovableHandle] | None = (
+            None
+        )
         # Dictionary to store the ``_WeakRefInfo`` instances corresponding to each tensor's storage.
         self._WINFO = WeakIdKeyDictionary()
         self._mod_tracker = ModTracker()
@@ -388,7 +386,7 @@ class MemTracker(TorchDispatchMode):
         self._in_opt: bool = False
         self._in_ac: bool = False
         # Weak references to the topmost AC module currently active
-        self._ac_mod: Optional[weakref.ref] = None
+        self._ac_mod: weakref.ref | None = None
         self._orig_resize = torch.UntypedStorage.resize_
         self._orig_dtensor_dispatch = DTensor._op_dispatcher.dispatch
         self._depth = 0
@@ -397,8 +395,8 @@ class MemTracker(TorchDispatchMode):
         self,
         u_type: _UpdateType,
         winfo: _WeakRefInfo,
-        old_mem_consumed: Optional[int] = None,
-        old_reftype: Optional[_RefType] = None,
+        old_mem_consumed: int | None = None,
+        old_reftype: _RefType | None = None,
     ) -> None:
         # Initialize a flag to track if the total memory might drop to zero after updates.
         maybe_zero = False
@@ -535,14 +533,13 @@ class MemTracker(TorchDispatchMode):
                         _UpdateType.SIZE, winfo, old_mem_consumed=old_mem_consumed
                     )
                 return
-            else:
-                winfo, w_st = _WeakRefInfo.create_winfo(
-                    st, t.device, reftype, self._delete_callback
-                )
-                self._WINFO[st] = (winfo, w_st)
-                # Update the current snapshot for the newly added ``_WeakRefInfo``.
-                if winfo.mem_consumed > 0:
-                    self._update_snap(_UpdateType.ADD, winfo)
+            winfo, w_st = _WeakRefInfo.create_winfo(
+                st, t.device, reftype, self._delete_callback
+            )
+            self._WINFO[st] = (winfo, w_st)
+            # Update the current snapshot for the newly added ``_WeakRefInfo``.
+            if winfo.mem_consumed > 0:
+                self._update_snap(_UpdateType.ADD, winfo)
 
     def get_tracker_snapshot(
         self, type: str = "current"
@@ -563,10 +560,9 @@ class MemTracker(TorchDispatchMode):
         """
         if type == "current":
             return deepcopy(self._curr_mem_snap)
-        elif type == "peak":
+        if type == "peak":
             return deepcopy(self._peak_mem_snap)
-        else:
-            raise ValueError(f"Invalid type {type}")
+        raise ValueError(f"Invalid type {type}")
 
     def _track_module_params_and_buffers(
         self, module: nn.Module, install_grad_hooks: bool = True
@@ -783,7 +779,7 @@ class MemTracker(TorchDispatchMode):
             self._optimizer_hook_handles = None
 
     def track_external(
-        self, *external: Union[nn.Module, optim.Optimizer, torch.Tensor]
+        self, *external: nn.Module | optim.Optimizer | torch.Tensor
     ) -> None:
         """
         Track tensors and stateful objects like modules, optimizers etc. that are created outside the MemTracker.
@@ -849,7 +845,7 @@ class MemTracker(TorchDispatchMode):
             tabulate (bool, optional): Whether to display the snapshot in a tabular format. Defaults to False.
         """
 
-        def natural_sort_key(s: str) -> list[Union[int, str]]:
+        def natural_sort_key(s: str) -> list[int | str]:
             return [
                 int(text) if text.isdigit() else text.lower()
                 for text in re.split("([0-9]+)", s)

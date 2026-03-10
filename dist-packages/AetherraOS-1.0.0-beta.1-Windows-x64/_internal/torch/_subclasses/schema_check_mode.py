@@ -10,7 +10,6 @@ from torch.utils import _pytree as pytree
 from torch.utils._python_dispatch import TorchDispatchMode
 from torch.utils._pytree import tree_map
 
-
 # Named Tuples used within SchemaCheckMode
 Mutation = namedtuple("Mutation", ["op_name", "arg_name"])
 Aliasing = namedtuple("Aliasing", ["op_name", "arg_name", "output_number"])
@@ -82,8 +81,7 @@ class SchemaCheckMode(TorchDispatchMode):
                 # TODO: This is only OK if can't have NaN quantized; idk if
                 # this is actually true
                 return torch.equal(lhs, rhs)
-            else:
-                return torch.allclose(lhs, rhs, equal_nan=True)
+            return torch.allclose(lhs, rhs, equal_nan=True)
 
         def has_mutated(before, after, md):
             are_tensors = type(before) == torch.Tensor and type(after) == torch.Tensor
@@ -106,8 +104,7 @@ class SchemaCheckMode(TorchDispatchMode):
             except Exception as exception:
                 if str(exception).startswith("Cannot inspect value of type "):
                     return False
-                else:
-                    raise exception
+                raise exception
 
         def standardize_name(name):
             return name if name != "self" else "input"
@@ -143,7 +140,11 @@ class SchemaCheckMode(TorchDispatchMode):
             func, args, kwargs, normalize_to_only_use_kwargs=True
         ).kwargs
 
-        c_p_args = dict(zip(pre_arguments.keys(), clone_inputs(pre_arguments.values())))
+        c_p_args = dict(
+            zip(
+                pre_arguments.keys(), clone_inputs(pre_arguments.values()), strict=False
+            )
+        )
         cloned_arguments = {
             name: tree_map(unwrap, c_p_args.get(name)) for name in c_p_args
         }
@@ -186,10 +187,9 @@ class SchemaCheckMode(TorchDispatchMode):
                             raise RuntimeError(
                                 f"Argument {name} is not defined to alias output but was aliasing"
                             )
-                        else:
-                            self.aliasing.append(
-                                Aliasing(func._schema.name, name, f"output_{j}")
-                            )
+                        self.aliasing.append(
+                            Aliasing(func._schema.name, name, f"output_{j}")
+                        )
                     if after is tuple_out[j] and isinstance(after, torch.Tensor):
                         # Only mutable ops e.g. (add_, add.out) are allowed to directly return inputs.
                         if not schema_info.is_mutable(
@@ -206,7 +206,10 @@ However, we found that `outputs[{str(j)}] is {name}"""
                 if any(
                     has_mutated(a, b, c)
                     for a, b, c in zip(
-                        pytree.tree_leaves(before), pytree.tree_leaves(after), md
+                        pytree.tree_leaves(before),
+                        pytree.tree_leaves(after),
+                        md,
+                        strict=False,
                     )
                 ):
                     if not schema_info.is_mutable(
@@ -215,8 +218,7 @@ However, we found that `outputs[{str(j)}] is {name}"""
                         raise RuntimeError(
                             f"Argument {name} is not defined as mutable but was mutated"
                         )
-                    else:
-                        self.mutated.append(Mutation(func._schema.name, name))
+                    self.mutated.append(Mutation(func._schema.name, name))
 
         # Aliasing between outputs
         for i, j in combinations(range(len(func._schema.returns)), 2):

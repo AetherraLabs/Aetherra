@@ -35,6 +35,7 @@ from .decorators import (
     substitute_in_graph,
 )
 from .eval_frame import (
+    OptimizedModule,
     _reset_guarded_backend_cache,
     explain,
     export,
@@ -42,19 +43,16 @@ from .eval_frame import (
     is_inductor_supported,
     optimize,
     optimize_assert,
-    OptimizedModule,
     reset_code,
 )
 from .external_utils import is_compiling
 from .mutation_guard import GenerationTracker
 from .pgo import reset_code_state
-from .symbolic_convert import TensorifyState
-from .utils import graph_break_reasons, guard_failures, orig_code_map, reset_frame_count
-
 
 # Register polyfill functions
 from .polyfills import loader as _  # usort: skip # noqa: F401
-
+from .symbolic_convert import TensorifyState
+from .utils import graph_break_reasons, guard_failures, orig_code_map, reset_frame_count
 
 __all__ = [
     "allow_in_graph",

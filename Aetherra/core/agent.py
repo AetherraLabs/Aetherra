@@ -5,7 +5,7 @@
 # Removed dangling import statement - functions can be imported when needed
 
 
-# Stub functions for missing dependencies
+# Baseline functions for missing dependencies
 def analyze_memory_patterns(memories, tag_frequency, category_frequency):
     """Placeholder for memory pattern analysis"""
     return {"patterns": [], "insights": "Analysis pending implementation"}
@@ -21,9 +21,7 @@ def suggest_system_evolution(memory_summary, function_count, context):
     return {"suggestions": ["Evolution analysis pending implementation"]}
 
 
-def provide_adaptive_suggestions(
-    context, recent_memories, available_tags, function_names
-):
+def provide_adaptive_suggestions(context, recent_memories, available_tags, function_names):
     """Placeholder for adaptive suggestions"""
     return {"suggestions": ["Adaptive suggestions pending implementation"]}
 
@@ -72,26 +70,22 @@ class AetherraAgent:
 
         # Most frequent tags
         if tag_frequency:
-            top_tags = sorted(tag_frequency.items(), key=lambda x: x[1], reverse=True)[
-                :3
-            ]
+            top_tags = sorted(tag_frequency.items(), key=lambda x: x[1], reverse=True)[:3]
             patterns.append(
                 f"Most frequent tags: {', '.join([f'{tag}({count})' for tag, count in top_tags])}"
             )
 
         # Dominant categories
         if category_frequency:
-            top_categories = sorted(
-                category_frequency.items(), key=lambda x: x[1], reverse=True
-            )[:3]
+            top_categories = sorted(category_frequency.items(), key=lambda x: x[1], reverse=True)[
+                :3
+            ]
             patterns.append(
                 f"Dominant categories: {', '.join([f'{cat}({count})' for cat, count in top_categories])}"
             )
 
         # AI pattern analysis
-        ai_analysis = analyze_memory_patterns(
-            memories, tag_frequency, category_frequency
-        )
+        ai_analysis = analyze_memory_patterns(memories, tag_frequency, category_frequency)
 
         result = "[Pattern Detection] Analysis Results:\n"
         for pattern in patterns:
@@ -136,14 +130,10 @@ class AetherraAgent:
     def suggest_evolution(self, context=""):
         """Suggest system evolution based on usage patterns"""
         memory_summary = self.memory.get_memory_summary()
-        memory_summary["recent_memories"] = self.memory.recall()[
-            -5:
-        ]  # Add recent memories
+        memory_summary["recent_memories"] = self.memory.recall()[-5:]  # Add recent memories
         function_count = self.functions.get_function_count()
 
-        evolution_suggestions = suggest_system_evolution(
-            memory_summary, function_count, context
-        )
+        evolution_suggestions = suggest_system_evolution(memory_summary, function_count, context)
 
         result = "[System Evolution Suggestions]\n"
         result += f"🧠 System maturity: {memory_summary['total_memories']} memories, {function_count} functions\n"
@@ -189,11 +179,7 @@ class AetherraAgent:
             return "learning"
         elif line.startswith("assistant"):
             return "ai_query"
-        elif (
-            line.startswith("detect")
-            or line.startswith("analyze")
-            or line.startswith("suggest")
-        ):
+        elif line.startswith("detect") or line.startswith("analyze") or line.startswith("suggest"):
             return "pattern_analysis"
         elif (
             line.startswith("load")
@@ -238,9 +224,7 @@ class AetherraAgent:
 
     def justify_self_editing(self, filename, analysis_result):
         """Provide memory-driven justification for self-editing a specific file"""
-        relevant_memories = self.memory.recall(
-            tags=["code_analysis", "error", "pattern"]
-        )
+        relevant_memories = self.memory.recall(tags=["code_analysis", "error", "pattern"])
         memory_context = "\n".join([m["text"] for m in relevant_memories[-5:]])
 
         justification_data = justify_self_editing_decision(

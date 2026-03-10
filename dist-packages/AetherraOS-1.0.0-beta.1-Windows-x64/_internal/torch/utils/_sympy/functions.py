@@ -3,8 +3,8 @@ import functools
 import math
 import operator
 import sys
-from typing import Callable, Optional, SupportsFloat, TYPE_CHECKING, TypeVar, Union
-from typing_extensions import TypeVarTuple, Unpack
+from collections.abc import Callable
+from typing import TYPE_CHECKING, SupportsFloat, TypeVar
 
 import sympy
 from sympy import S
@@ -18,9 +18,9 @@ from sympy.core.sorting import ordered
 from sympy.core.traversal import walk
 from sympy.printing.precedence import PRECEDENCE
 from sympy.utilities.iterables import sift
+from typing_extensions import TypeVarTuple, Unpack
 
 from .numbers import int_oo
-
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -98,11 +98,11 @@ def _is_symbols_binary_summation(expr: sympy.Expr) -> bool:
 
 
 def _keep_float(
-    f: Callable[[Unpack[_Ts]], _T]
-) -> Callable[[Unpack[_Ts]], Union[_T, sympy.Float]]:
+    f: Callable[[Unpack[_Ts]], _T],
+) -> Callable[[Unpack[_Ts]], _T | sympy.Float]:
     @functools.wraps(f)
-    def inner(*args: Unpack[_Ts]) -> Union[_T, sympy.Float]:
-        r: Union[_T, sympy.Float] = f(*args)
+    def inner(*args: Unpack[_Ts]) -> _T | sympy.Float:
+        r: _T | sympy.Float = f(*args)
         if any(isinstance(a, sympy.Float) for a in args) and not isinstance(
             r, sympy.Float
         ):
@@ -112,7 +112,7 @@ def _keep_float(
     return inner
 
 
-def fuzzy_eq(x: Optional[bool], y: Optional[bool]) -> Optional[bool]:
+def fuzzy_eq(x: bool | None, y: bool | None) -> bool | None:
     if None in (x, y):
         return None
     return x == y
@@ -209,9 +209,7 @@ class FloorDiv(sympy.Function):
     # Automatic evaluation.
     # https://docs.sympy.org/latest/guides/custom-functions.html#best-practices-for-eval
     @classmethod
-    def eval(
-        cls, base: sympy.Integer, divisor: sympy.Integer
-    ) -> Union[sympy.Basic, None]:
+    def eval(cls, base: sympy.Integer, divisor: sympy.Integer) -> sympy.Basic | None:
         # python test/test_dynamic_shapes.py -k TestDimConstraints.test_dim_constraints_solve_full
         # Assert triggered by inequality solver
         # assert base.is_integer, base
@@ -248,12 +246,11 @@ class FloorDiv(sympy.Function):
             r = float(base) / float(divisor)
             if r == math.inf:
                 return int_oo
-            elif r == -math.inf:
+            if r == -math.inf:
                 return -int_oo
-            elif math.isnan(r):
+            if math.isnan(r):
                 return sympy.nan
-            else:
-                return sympy.Integer(math.floor(r))
+            return sympy.Integer(math.floor(r))
         if isinstance(base, sympy.Integer) and isinstance(divisor, sympy.Integer):
             return sympy.Integer(int(base) // int(divisor))
         if isinstance(base, FloorDiv):
@@ -309,7 +306,7 @@ class ModularIndexing(sympy.Function):
     @classmethod
     def eval(
         cls, base: sympy.Integer, divisor: sympy.Integer, modulus: sympy.Integer
-    ) -> Optional[sympy.Basic]:
+    ) -> sympy.Basic | None:
         if base == 0 or modulus == 1:
             return sympy.S.Zero
 
@@ -348,8 +345,7 @@ class ModularIndexing(sympy.Function):
                         # this optimization would become valid
                         all_positive = False
                         break
-                    else:
-                        new_terms.append(term)
+                    new_terms.append(term)
 
             if len(new_terms) != len(base.args) and all_positive:
                 return ModularIndexing(sum(new_terms), divisor, modulus)
@@ -359,7 +355,7 @@ class ModularIndexing(sympy.Function):
 
         return None
 
-    def _eval_is_nonnegative(self) -> Optional[bool]:
+    def _eval_is_nonnegative(self) -> bool | None:
         p, q = self.args[:2]
         return fuzzy_eq(p.is_nonnegative, q.is_nonnegative)  # type: ignore[attr-defined]
 
@@ -372,26 +368,24 @@ class Where(sympy.Function):
     nargs: tuple[int, ...] = (3,)
     precedence: int = 35  # lower precedence than add
 
-    def _eval_is_integer(self) -> Optional[bool]:
+    def _eval_is_integer(self) -> bool | None:
         return True if self.args[1].is_integer and self.args[2].is_integer else None  # type: ignore[attr-defined]
 
-    def _eval_is_nonnegative(self) -> Optional[bool]:
+    def _eval_is_nonnegative(self) -> bool | None:
         return (
             True
             if self.args[1].is_nonnegative and self.args[2].is_nonnegative  # type: ignore[attr-defined]
             else None
         )
 
-    def _eval_is_positive(self) -> Optional[bool]:
+    def _eval_is_positive(self) -> bool | None:
         return True if self.args[1].is_positive and self.args[2].is_positive else None  # type: ignore[attr-defined]
 
     @classmethod
-    def eval(
-        cls, c: sympy.Basic, p: sympy.Basic, q: sympy.Basic
-    ) -> Optional[sympy.Basic]:
+    def eval(cls, c: sympy.Basic, p: sympy.Basic, q: sympy.Basic) -> sympy.Basic | None:
         if c == sympy.true:
             return p
-        elif c == sympy.false:
+        if c == sympy.false:
             return q
         return None
 
@@ -404,7 +398,7 @@ class PythonMod(sympy.Function):
     is_integer: bool = True
 
     @classmethod
-    def eval(cls, p: sympy.Expr, q: sympy.Expr) -> Optional[sympy.Expr]:
+    def eval(cls, p: sympy.Expr, q: sympy.Expr) -> sympy.Expr | None:
         # python test/dynamo/test_export.py -k ExportTests.test_trivial_constraint
         # Triggered by sympy.solvers.inequalities.reduce_inequalities
         # assert p.is_integer, p
@@ -449,10 +443,10 @@ class PythonMod(sympy.Function):
         return None
 
     # NB: args[1] for PythonMod
-    def _eval_is_nonnegative(self) -> Optional[bool]:
+    def _eval_is_nonnegative(self) -> bool | None:
         return True if self.args[1].is_positive else None  # type: ignore[attr-defined]
 
-    def _eval_is_nonpositive(self) -> Optional[bool]:
+    def _eval_is_nonpositive(self) -> bool | None:
         return True if self.args[1].is_negative else None  # type: ignore[attr-defined]
 
 
@@ -563,8 +557,7 @@ class CeilDiv(sympy.Function):
         divisor = sympy.sympify(divisor)
         if sympy.gcd(base, divisor) == divisor:
             return CleanDiv(base, divisor)
-        else:
-            return FloorDiv(base + (divisor - 1), divisor)
+        return FloorDiv(base + (divisor - 1), divisor)
 
 
 class LShift(sympy.Function):
@@ -636,7 +629,7 @@ class MinMaxBase(Expr, LatticeOp):  # type: ignore[misc]
     @classmethod
     def _satisfy_unique_summations_symbols(
         cls, args
-    ) -> Optional[set[sympy.core.symbol.Symbol]]:
+    ) -> set[sympy.core.symbol.Symbol] | None:
         """
         One common case in some models is building expressions of the form
         max(max(max(a+b...), c+d), e+f) which is simplified to max(a+b, c+d, e+f, ...).
@@ -691,8 +684,8 @@ class MinMaxBase(Expr, LatticeOp):  # type: ignore[misc]
 
     @classmethod
     def _unique_symbols(
-        cls, args, initial_set: Optional[set[sympy.core.symbol.Symbol]] = None
-    ) -> Optional[set[sympy.core.symbol.Symbol]]:
+        cls, args, initial_set: set[sympy.core.symbol.Symbol] | None = None
+    ) -> set[sympy.core.symbol.Symbol] | None:
         """
         Return seen_symbols if all atoms in all args are all unique symbols,
         else returns None. initial_set can be used to represent initial value for seen_symbols
@@ -700,12 +693,12 @@ class MinMaxBase(Expr, LatticeOp):  # type: ignore[misc]
         seen_symbols = set() if initial_set is None else initial_set
         for arg in args:
             for element in arg.atoms():
-                if not isinstance(element, sympy.core.symbol.Symbol):
+                if (
+                    not isinstance(element, sympy.core.symbol.Symbol)
+                    or element in seen_symbols
+                ):
                     return None
-                elif element in seen_symbols:
-                    return None
-                else:
-                    seen_symbols.add(element)
+                seen_symbols.add(element)
         return seen_symbols
 
     @classmethod
@@ -920,10 +913,12 @@ class MinMaxBase(Expr, LatticeOp):  # type: ignore[misc]
 
     _eval_is_algebraic = lambda s: _torf(i.is_algebraic for i in s.args)  # noqa: E731
     _eval_is_antihermitian = lambda s: _torf(  # noqa: E731
-        i.is_antihermitian for i in s.args  # noqa: E731
+        i.is_antihermitian
+        for i in s.args  # noqa: E731
     )  # noqa: E731
     _eval_is_commutative = lambda s: _torf(  # noqa: E731
-        i.is_commutative for i in s.args  # noqa: E731
+        i.is_commutative
+        for i in s.args  # noqa: E731
     )  # noqa: E731
     _eval_is_complex = lambda s: _torf(i.is_complex for i in s.args)  # noqa: E731
     _eval_is_composite = lambda s: _torf(i.is_composite for i in s.args)  # noqa: E731
@@ -937,10 +932,12 @@ class MinMaxBase(Expr, LatticeOp):  # type: ignore[misc]
     _eval_is_negative = lambda s: _torf(i.is_negative for i in s.args)  # noqa: E731
     _eval_is_noninteger = lambda s: _torf(i.is_noninteger for i in s.args)  # noqa: E731
     _eval_is_nonnegative = lambda s: _torf(  # noqa: E731
-        i.is_nonnegative for i in s.args  # noqa: E731
+        i.is_nonnegative
+        for i in s.args  # noqa: E731
     )  # noqa: E731
     _eval_is_nonpositive = lambda s: _torf(  # noqa: E731
-        i.is_nonpositive for i in s.args  # noqa: E731
+        i.is_nonpositive
+        for i in s.args  # noqa: E731
     )  # noqa: E731
     _eval_is_nonzero = lambda s: _torf(i.is_nonzero for i in s.args)  # noqa: E731
     _eval_is_odd = lambda s: _torf(i.is_odd for i in s.args)  # noqa: E731
@@ -950,10 +947,12 @@ class MinMaxBase(Expr, LatticeOp):  # type: ignore[misc]
     _eval_is_rational = lambda s: _torf(i.is_rational for i in s.args)  # noqa: E731
     _eval_is_real = lambda s: _torf(i.is_real for i in s.args)  # noqa: E731
     _eval_is_extended_real = lambda s: _torf(  # noqa: E731
-        i.is_extended_real for i in s.args  # noqa: E731
+        i.is_extended_real
+        for i in s.args  # noqa: E731
     )  # noqa: E731
     _eval_is_transcendental = lambda s: _torf(  # noqa: E731
-        i.is_transcendental for i in s.args  # noqa: E731
+        i.is_transcendental
+        for i in s.args  # noqa: E731
     )  # noqa: E731
     _eval_is_zero = lambda s: _torf(i.is_zero for i in s.args)  # noqa: E731
 
@@ -1048,7 +1047,7 @@ class PowByNatural(sympy.Function):
         if exp in (int_oo, sympy.oo):
             if base.is_nonnegative:
                 return int_oo
-            elif base.is_negative:
+            if base.is_negative:
                 return sympy.zoo  # this is apparently what (-2)**sympy.oo does
         # NB: do NOT translate into sympy.Pow, we will lose knowledge that exp
         # is a natural number if we do
@@ -1180,7 +1179,8 @@ class IsNonOverlappingAndDenseIndicator(sympy.Function):
             # When all strides are integral, we can sort, and the size for the
             # largest stride doesn't matter and can be arbitrarily symbolic
             s_sizes, s_strides = zip(
-                *sorted(zip(sizes, strides), key=operator.itemgetter(1))
+                *sorted(zip(sizes, strides, strict=False), key=operator.itemgetter(1)),
+                strict=False,
             )
             # Put something arbitrary in the max size spot, it'll be ignored
             if all(isinstance(a, sympy.Integer) for a in s_sizes[:-1]):

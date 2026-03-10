@@ -31,7 +31,6 @@ from torch.testing._internal.distributed.rpc.rpc_agent_test_fixture import (
     RpcAgentTestFixture,
 )
 
-
 # Right now we test up to 3-layer nested rpc calls.
 # rpc_done[1] and ctx_ids[1] represent rpc is done in prev rank, and context id
 # sent from prev rank respectively.
@@ -142,8 +141,7 @@ def my_py_nested_call(t1, t2, dst, world_size, hops):
             my_py_nested_call,
             args=(t1, t2, next_dst, world_size, hops - 1),
         )
-    else:
-        return rpc.rpc_sync(worker_name(next_dst), my_py_add, args=(t1, t2))
+    return rpc.rpc_sync(worker_name(next_dst), my_py_add, args=(t1, t2))
 
 
 # after dist autograd context is cleaned up, it should be cleaned up on other
@@ -209,8 +207,7 @@ class SimulateBackwardError(Function):
     def backward(ctx, input):
         if SimulateBackwardError._simulate_error:
             raise Exception("Simulate error on backward pass")  # noqa: TRY002
-        else:
-            return input
+        return input
 
 
 class ExecMode(Enum):
@@ -223,19 +220,18 @@ class ExecMode(Enum):
 # Common utils for both CPU and CUDA test suites
 class CommonDistAutogradTest(RpcAgentTestFixture):
     def _exec_func_with_dst(self, dst, exec_mode, method, *args):
-        if ExecMode.LOCAL == exec_mode:
+        if exec_mode == ExecMode.LOCAL:
             if len(args) == 1 and isinstance(args[0], list):
                 return method(*args[0])
             return method(*args)
-        elif ExecMode.RPC_SYNC == exec_mode:
+        if exec_mode == ExecMode.RPC_SYNC:
             return rpc.rpc_sync(worker_name(dst), method, args=(args))
-        elif ExecMode.REMOTE == exec_mode:
+        if exec_mode == ExecMode.REMOTE:
             return rpc.remote(worker_name(dst), method, args=(args)).to_here()
-        elif ExecMode.RPC_ASYNC == exec_mode:
+        if exec_mode == ExecMode.RPC_ASYNC:
             fut = rpc.rpc_async(worker_name(dst), method, args=(args))
             return fut.wait()
-        else:
-            raise ValueError(f"Unrecognized ExecMode {exec_mode}")
+        raise ValueError(f"Unrecognized ExecMode {exec_mode}")
 
     def _exec_func(self, exec_mode, method, *args):
         return self._exec_func_with_dst(self._next_rank(), exec_mode, method, *args)
@@ -256,8 +252,7 @@ class CommonDistAutogradTest(RpcAgentTestFixture):
         if exec_mode == ExecMode.LOCAL:
             torch.autograd.backward(tensors)
             return [arg.grad for arg in args]
-        else:
-            self._verify_backwards_remote(tensors, context_id, local_grads, *args)
+        self._verify_backwards_remote(tensors, context_id, local_grads, *args)
 
     def _verify_backwards_remote(self, tensors, context_id, local_grads, *args):
         dist_autograd.backward(context_id, tensors)
@@ -288,9 +283,9 @@ class CommonDistAutogradTest(RpcAgentTestFixture):
             else:
                 t1 = torch.ones(3, 3, requires_grad=True)
                 t2 = torch.zeros(3, 3, requires_grad=True)
-            if ExecMode.RPC_SYNC == exec_mode:
+            if exec_mode == ExecMode.RPC_SYNC:
                 ret = rpc.rpc_sync(worker_name(dst_rank), fn, args=(t1, t2))
-            elif ExecMode.REMOTE == exec_mode:
+            elif exec_mode == ExecMode.REMOTE:
                 ret = rpc.remote(worker_name(dst_rank), fn, args=(t1, t2)).to_here()
             else:
                 raise ValueError(f"Unrecognized ExecMode {exec_mode}")
@@ -344,13 +339,13 @@ class CommonDistAutogradTest(RpcAgentTestFixture):
             else:
                 t1 = torch.ones(3, 3, requires_grad=True)
                 t2 = torch.zeros(3, 3, requires_grad=True)
-            if ExecMode.RPC_SYNC == exec_mode:
+            if exec_mode == ExecMode.RPC_SYNC:
                 ret = rpc.rpc_sync(
                     worker_name(dst_rank),
                     my_py_nested_call,
                     args=(t1, t2, dst_rank, self.world_size, 1),
                 )
-            elif ExecMode.REMOTE == exec_mode:
+            elif exec_mode == ExecMode.REMOTE:
                 ret = rpc.remote(
                     worker_name(dst_rank),
                     my_py_nested_call,
@@ -426,7 +421,7 @@ class CommonDistAutogradTest(RpcAgentTestFixture):
             else:
                 t1 = torch.ones(3, 3, requires_grad=True)
                 t2 = torch.zeros(3, 3, requires_grad=True)
-            if ExecMode.RPC_SYNC == exec_mode:
+            if exec_mode == ExecMode.RPC_SYNC:
                 ret = rpc.rpc_sync(
                     worker_name(dst_rank),
                     my_py_nested_call,
@@ -438,7 +433,7 @@ class CommonDistAutogradTest(RpcAgentTestFixture):
                         0,
                     ),
                 )
-            elif ExecMode.REMOTE == exec_mode:
+            elif exec_mode == ExecMode.REMOTE:
                 ret = rpc.remote(
                     worker_name(dst_rank),
                     my_py_nested_call,
@@ -498,9 +493,9 @@ class CommonDistAutogradTest(RpcAgentTestFixture):
             else:
                 t1 = torch.ones(3, 3, requires_grad=False)
                 t2 = torch.zeros(3, 3, requires_grad=False)
-            if ExecMode.RPC_SYNC == exec_mode:
+            if exec_mode == ExecMode.RPC_SYNC:
                 rpc.rpc_sync(worker_name(dst_rank), torch.add, args=(t1, t2))
-            elif ExecMode.REMOTE == exec_mode:
+            elif exec_mode == ExecMode.REMOTE:
                 rpc.remote(worker_name(dst_rank), torch.add, args=(t1, t2)).to_here()
             else:
                 raise ValueError(f"Unrecognized ExecMode {exec_mode}")
@@ -535,9 +530,9 @@ class CommonDistAutogradTest(RpcAgentTestFixture):
                     tensor = torch.ones(3, 3, requires_grad=(i % 2 == 0))
                 tensors.append(tensor)
             dst_rank = self._next_rank()
-            if ExecMode.RPC_SYNC == exec_mode:
+            if exec_mode == ExecMode.RPC_SYNC:
                 ret = rpc.rpc_sync(worker_name(dst_rank), torch.stack, args=(tensors,))
-            elif ExecMode.REMOTE == exec_mode:
+            elif exec_mode == ExecMode.REMOTE:
                 ret = rpc.remote(
                     worker_name(dst_rank), torch.stack, args=(tensors,)
                 ).to_here()
@@ -1335,9 +1330,9 @@ class DistAutogradTest(CommonDistAutogradTest):
         initialize_pg(self.file_init_method, self.rank, self.world_size)
         dst_rank = (self.rank + 1) % self.world_size
         with dist_autograd.context() as context_id:
-            if ExecMode.RPC_SYNC == exec_mode:
+            if exec_mode == ExecMode.RPC_SYNC:
                 ret = rpc.rpc_sync(worker_name(dst_rank), ret_requires_grad)
-            elif ExecMode.REMOTE == exec_mode:
+            elif exec_mode == ExecMode.REMOTE:
                 ret = rpc.remote(worker_name(dst_rank), ret_requires_grad).to_here()
             else:
                 raise ValueError(f"Unrecognized ExecMode {exec_mode}")
@@ -2030,8 +2025,7 @@ class DistAutogradTest(CommonDistAutogradTest):
     def _mixed_requires_grad_operaton(cls, t1, t2):
         if t2.requires_grad:
             return t1 - t2
-        else:
-            return t1 * t2
+        return t1 * t2
 
     @dist_init
     def test_mixed_requires_grad(self):
@@ -2749,7 +2743,7 @@ class TensorPipeCudaDistAutogradTest(RpcAgentTestFixture):
 
                 for i in range(len(futs)):
                     local_gradients = [p.grad for p in local_layers[i].parameters()]
-                    for g1, g2 in zip(futs[i].wait(), local_gradients):
+                    for g1, g2 in zip(futs[i].wait(), local_gradients, strict=False):
                         self.assertEqual(g1, g2)
 
         rpc.shutdown()

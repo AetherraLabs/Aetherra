@@ -6,14 +6,14 @@ Utils shared by different modes of quantization (eager/graph)
 import functools
 import warnings
 from collections import OrderedDict
+from collections.abc import Callable
 from inspect import getfullargspec, signature
-from typing import Any, Callable, Optional, Union
+from typing import Any, Union
 
 import torch
 from torch.ao.quantization.quant_type import QuantType
 from torch.fx import Node
 from torch.nn.utils.parametrize import is_parametrized
-
 
 NodePattern = Union[tuple[Node, Node], tuple[Node, tuple[Node, Node]], Any]
 NodePattern.__module__ = "torch.ao.quantization.utils"
@@ -376,15 +376,14 @@ def get_quant_type(qconfig):
     if weight.dtype in static_dtypes:
         if hasattr(activation, "is_dynamic") and activation.is_dynamic:
             return QuantType.DYNAMIC
-        elif activation.dtype in static_dtypes:
+        if activation.dtype in static_dtypes:
             return QuantType.STATIC
-        else:
-            return QuantType.WEIGHT_ONLY
+        return QuantType.WEIGHT_ONLY
 
     if weight.dtype == torch.float16:
         if hasattr(activation, "is_dynamic") and activation.is_dynamic:
             return QuantType.DYNAMIC
-        elif activation.dtype == torch.float16:
+        if activation.dtype == torch.float16:
             return QuantType.STATIC
 
     raise Exception(  # noqa: TRY002
@@ -491,8 +490,7 @@ def _parent_name(target):
     r = target.rsplit(".", 1)
     if len(r) == 1:
         return "", r[0]
-    else:
-        return r[0], r[1]
+    return r[0], r[1]
 
 
 def has_no_children_ignoring_parametrizations(module):
@@ -503,15 +501,14 @@ def has_no_children_ignoring_parametrizations(module):
     """
     if len(module._modules) == 0:
         return True
-    elif is_parametrized(module):
+    if is_parametrized(module):
         return len(module._modules) == 1 and "parametrizations" in module._modules
-    else:
-        return False
+    return False
 
 
 def _get_path_of_module(
     root: torch.nn.Module, submodule: torch.nn.Module
-) -> Optional[str]:
+) -> str | None:
     """Get the path (fully qualified name) of a submodule
 
     Example::

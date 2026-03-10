@@ -22,15 +22,15 @@ import itertools
 import operator
 import time
 from collections import Counter, defaultdict
-from typing import Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import torch
 import torch.utils._pytree as pytree
 from torch._dynamo.external_utils import (
+    FakeCompiledAutogradEngine,
     call_accumulate_grad,
     call_backward,
     call_hook,
-    FakeCompiledAutogradEngine,
     unwrap_maybe_dynamic_int,
 )
 from torch._dynamo.source import GetItemSource, LocalSource
@@ -44,26 +44,25 @@ from torch._functorch._aot_autograd.runtime_wrappers import (
     AutogradLazyBackwardCompileInfo,
     CachedAutogradLazyBackwardCompileInfo,
 )
-from torch._guards import compile_context, CompileContext, CompileId
+from torch._guards import CompileContext, CompileId, compile_context
 from torch._logging import getArtifactLogger, trace_structured
 from torch._prims_common import clone_preserve_strides
 from torch._subclasses import FakeTensorMode
 from torch.fx import GraphModule
 from torch.fx.experimental._backward_state import BackwardState
 from torch.fx.experimental.proxy_tensor import (
+    ProxyTorchDispatchMode,
+    PythonKeyTracer,
     decompose,
     disable_autocast_cache,
     disable_proxy_modes_tracing,
     fetch_object_proxy,
-    ProxyTorchDispatchMode,
-    PythonKeyTracer,
     track_tensor_tree,
 )
 from torch.fx.experimental.symbolic_shapes import DimDynamic, ShapeEnv
 from torch.fx.traceback import preserve_node_meta, set_stack_trace
 from torch.utils._ordered_set import OrderedSet
 from torch.utils._traceback import CapturedTraceback
-
 
 if TYPE_CHECKING:
     from torch.fx.proxy import Proxy
@@ -100,7 +99,7 @@ def extract_bw_module(CompiledFunction):
         CompiledFunction._lazy_backward_info, AutogradLazyBackwardCompileInfo
     ):
         return CompiledFunction._lazy_backward_info.bw_module
-    elif isinstance(
+    if isinstance(
         CompiledFunction._lazy_backward_info, CachedAutogradLazyBackwardCompileInfo
     ):
         with torch._subclasses.fake_tensor.unset_fake_temporarily():
@@ -285,7 +284,7 @@ class AutogradCompilerInstance:
         )
         self.fx_tracer = PythonKeyTracer()
         self.proxy_mode = ProxyTorchDispatchMode(self.fx_tracer, "symbolic")
-        self.hooks_proxy: Optional[Proxy] = None
+        self.hooks_proxy: Proxy | None = None
 
     def wrap_fake(self, x, source):
         assert isinstance(x, torch.Tensor)
@@ -299,7 +298,7 @@ class AutogradCompilerInstance:
         self,
         inputs: list[torch.Tensor],
         sizes: list[int],
-        scalars: list[Union[int, float]],
+        scalars: list[int | float],
         origins: list[list[tuple[int, str]]],
         accumulate_grad: bool,
         check_nans: bool,
@@ -497,8 +496,7 @@ class AutogradCompilerInstance:
                     if node.op == "placeholder":
                         num_args += 1
                         continue
-                    else:
-                        break
+                    break
                 return num_args
 
             # set up the proxy inputs to bw_module
@@ -520,7 +518,7 @@ class AutogradCompilerInstance:
             # copy and paste them all into the compiled autograd graph.
             args_idx = 0
             value_remap = {}
-            poutputs: Optional[list[torch.fx.Proxy]] = None
+            poutputs: list[torch.fx.Proxy] | None = None
 
             # names of nodes must appear only once in the fx.Graph
             # dedup AOT backwards that appear multiple times
@@ -627,7 +625,7 @@ class AutogradCompilerInstance:
         saved_tensors,
         backward_idx: int,
         ctx: torch.autograd.function.BackwardCFunction,
-        maybe_backward_state_idx: Optional[int],
+        maybe_backward_state_idx: int | None,
     ):
         assert self.hooks_proxy is not None
         pctx = self.hooks_proxy[backward_idx]  # type: ignore[index]
@@ -658,7 +656,7 @@ class AutogradCompilerInstance:
 
         with disable_proxy_modes_tracing():
             # create fake Tensors
-            grad_ins: list[Optional[torch.Tensor]] = []
+            grad_ins: list[torch.Tensor | None] = []
             for idx, output_metadata in enumerate(output_metadatas):
                 if output_metadata is None or proxies[idx] is None:
                     grad_ins.append(None)
@@ -1183,7 +1181,7 @@ class AutogradCompilerInstance:
                     to_append.append(n.args[0])
                     to_remove.append(n)
                     hook_block.append(n)
-            for a, b in zip(to_remove, to_append):
+            for a, b in zip(to_remove, to_append, strict=False):
                 input_nodes.remove(a)
                 input_nodes.append(b)
 
@@ -1338,7 +1336,7 @@ class AutogradCompilerInstance:
         return proxy_tensor.proxy
 
     def bind_objects_to_proxies(
-        self, objects, proxies, origins: Optional[list[tuple[int, str]]] = None
+        self, objects, proxies, origins: list[tuple[int, str]] | None = None
     ):
         if isinstance(proxies, torch.fx.Proxy):
             if origins:
@@ -1367,7 +1365,7 @@ class AutogradCompilerInstance:
         self,
         node_name: str,
         nodecall_index: int,
-        pyobj: Optional[torch.autograd.Function],
+        pyobj: torch.autograd.Function | None,
     ):
         maybe_aot_id = ""
         if pyobj is not None:

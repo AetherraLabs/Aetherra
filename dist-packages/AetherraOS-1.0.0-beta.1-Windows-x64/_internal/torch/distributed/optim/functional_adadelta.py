@@ -1,5 +1,4 @@
 # mypy: allow-untyped-defs
-from typing import Optional
 
 import torch
 import torch.optim._functional as F
@@ -7,7 +6,6 @@ from torch import Tensor
 from torch.distributed.optim._deprecation_warning import (
     _scripted_functional_optimizer_deprecation_warning,
 )
-
 
 __all__: list[str] = []
 
@@ -53,7 +51,7 @@ class _FunctionalAdadelta:
 
         self.state = torch.jit.annotate(dict[torch.Tensor, dict[str, torch.Tensor]], {})
 
-    def step(self, gradients: list[Optional[Tensor]]):
+    def step(self, gradients: list[Tensor | None]):
         params = self.param_group["params"]
         params_with_grad = []
         grads = []
@@ -72,7 +70,7 @@ class _FunctionalAdadelta:
                 + f"Gradients length: {len(gradients)}"
             )
         has_complex = False
-        for param, gradient in zip(params, gradients):
+        for param, gradient in zip(params, gradients, strict=False):
             if gradient is not None:
                 has_complex |= torch.is_complex(param)
                 params_with_grad.append(param)

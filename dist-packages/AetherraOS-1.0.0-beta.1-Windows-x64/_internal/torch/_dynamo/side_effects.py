@@ -30,7 +30,7 @@ import warnings
 import weakref
 from collections.abc import MutableMapping
 from types import CellType
-from typing import Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch.nn
 
@@ -49,13 +49,12 @@ from .variables.base import (
     AttributeMutation,
     AttributeMutationExisting,
     AttributeMutationNew,
-    is_side_effect_safe,
     ValueMutationExisting,
     ValueMutationNew,
     VariableTracker,
+    is_side_effect_safe,
 )
 from .variables.user_defined import FrozenDataClassVariable
-
 
 if TYPE_CHECKING:
     from torch._dynamo.symbolic_convert import InstructionTranslator
@@ -134,7 +133,7 @@ class SideEffects:
             and self.tensor_hooks == other.tensor_hooks
         )
 
-    def diff(self, other: "SideEffects") -> Optional[str]:
+    def diff(self, other: "SideEffects") -> str | None:
         if self.id_to_variable != other.id_to_variable:
             sk_itv = self.id_to_variable.keys()
             ok_itv = other.id_to_variable.keys()
@@ -143,18 +142,17 @@ class SideEffects:
             # Feel free to augment this with more fancy diffing logic
             # if needed for debugging
             return "id_to_variable: unknown diff"
-        elif self.store_attr_mutations != other.store_attr_mutations:
+        if self.store_attr_mutations != other.store_attr_mutations:
             sk_sam = self.store_attr_mutations.keys()
             ok_sam = other.store_attr_mutations.keys()
             if sk_sam != ok_sam:
                 return f"store_attr_mutations keys: {sk_sam} != {ok_sam}"
             return "store_attr_mutations: unknown diff"
-        elif self.save_for_backward != other.save_for_backward:
+        if self.save_for_backward != other.save_for_backward:
             return "save_for_backward"
-        elif self.tensor_hooks != other.tensor_hooks:
+        if self.tensor_hooks != other.tensor_hooks:
             return "tensor_hooks"
-        else:
-            return None
+        return None
 
     def clone(self):
         """Create a shallow copy"""
@@ -487,7 +485,7 @@ class SideEffects:
         return variable
 
     def track_cell_existing(
-        self, source: Optional[Source], cell: CellType, contents: VariableTracker
+        self, source: Source | None, cell: CellType, contents: VariableTracker
     ):
         variable = variables.CellVariable(
             # We don't support mutation to cell without source because we need

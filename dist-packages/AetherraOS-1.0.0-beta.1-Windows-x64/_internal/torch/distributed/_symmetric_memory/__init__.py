@@ -2,19 +2,19 @@ import math
 import os
 import socket
 import uuid
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from datetime import timedelta
 from enum import Enum
 from functools import partial
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
 import torch
 import torch.distributed._functional_collectives as funcol
 import torch.distributed.distributed_c10d as c10d
 from torch._C._autograd import DeviceType
-from torch._C._distributed_c10d import _SymmetricMemory, Work as _Work
-
+from torch._C._distributed_c10d import Work as _Work
+from torch._C._distributed_c10d import _SymmetricMemory
 
 _group_name_to_store: dict[str, c10d.Store] = {}
 
@@ -47,11 +47,11 @@ def enable_symm_mem_for_group(group_name: str) -> None:
 
 
 _is_test_mode: bool = False
-_mocked_group_names: Optional[set[str]] = None
+_mocked_group_names: set[str] | None = None
 
 
 @contextmanager
-def _test_mode(group_names: Optional[set[str]] = None) -> Generator[None, None, None]:
+def _test_mode(group_names: set[str] | None = None) -> Generator[None, None, None]:
     """
     Forces ``is_symm_mem_enabled_for_group()`` to return ``True`` and the ops
     defined in the ``symm_mem`` namespace to use fallback implementations.
@@ -83,7 +83,7 @@ def is_symm_mem_enabled_for_group(group_name: str) -> bool:
     return group_name in _group_name_to_store
 
 
-_group_name_to_workspace_tensor: dict[str, Optional[torch.Tensor]] = {}
+_group_name_to_workspace_tensor: dict[str, torch.Tensor | None] = {}
 
 
 def get_symm_mem_workspace(group_name: str, min_size: int) -> _SymmetricMemory:
@@ -171,7 +171,7 @@ def _pipelined_multi_all_gather_and_consume(
     backend_stream = _get_backend_stream()
     backend_stream.wait_stream(torch.cuda.current_stream())
 
-    for x, y in zip(shard, ag_out):
+    for x, y in zip(shard, ag_out, strict=False):
         assert x.is_contiguous(), (
             "_pipelined_all_gather_and_consume: all tensors "
             "in `shard` must be contiguous"
@@ -184,7 +184,7 @@ def _pipelined_multi_all_gather_and_consume(
         assert x.shape[1:] == y.shape[1:]
 
     def copy_shard(dst: list[torch.Tensor], src: list[torch.Tensor]) -> None:
-        for d, s in zip(dst, src):
+        for d, s in zip(dst, src, strict=False):
             d.copy_(s)
 
     def get_p2p_bufs(remote_rank: int) -> list[torch.Tensor]:
@@ -469,42 +469,41 @@ class _ScaleMode(Enum):
 
 
 def _check_and_verify_fp8_all_gather_scale_mode(
-    shard: torch.Tensor, scale: Optional[torch.Tensor], gather_dim: int, group_size: int
+    shard: torch.Tensor, scale: torch.Tensor | None, gather_dim: int, group_size: int
 ) -> _ScaleMode:
     full_shape = list(shard.shape)
     full_shape[gather_dim] *= group_size
 
     if scale is None:
         return _ScaleMode.UNSCALED
-    elif scale.shape[:-1] == shard.shape[:-1] and scale.shape[-1] == 1:
+    if scale.shape[:-1] == shard.shape[:-1] and scale.shape[-1] == 1:
         # Row-wise scaling
         #
         # NOTE: when the last dim of both A_shard and A_scale is one, we can't
         # tell if A_scale is replicated tensor-wise scale or sharded row-wise
         # scale. Treating it as row-wise scaling for safety.
         return _ScaleMode.ROW_WISE_SHARDED
-    elif scale.numel() == 1:
+    if scale.numel() == 1:
         return _ScaleMode.TENSOR_WISE
-    elif list(scale.shape[:-1]) == full_shape[:-1]:
+    if list(scale.shape[:-1]) == full_shape[:-1]:
         return _ScaleMode.ROW_WISE_REPLICATED
-    else:
-        raise ValueError(
-            "Invalid scale shape for fp8 all-gather "
-            f"(shard shape: {shard.shape}, scale shape: {scale.shape})"
-        )
+    raise ValueError(
+        "Invalid scale shape for fp8 all-gather "
+        f"(shard shape: {shard.shape}, scale shape: {scale.shape})"
+    )
 
 
 def _fused_all_gather_matmul_impl(
     mm_out_op: torch._ops.OpOverload,
     A_shard: torch.Tensor,
     Bs: list[torch.Tensor],
-    A_scale: Optional[torch.Tensor],
+    A_scale: torch.Tensor | None,
     kwargs_list: list[dict[str, Any]],
-    out_dtypes: list[Optional[torch.dtype]],
+    out_dtypes: list[torch.dtype | None],
     gather_dim: int,
     group_name: str,
     return_A: bool,
-) -> tuple[Optional[torch.Tensor], list[torch.Tensor]]:
+) -> tuple[torch.Tensor | None, list[torch.Tensor]]:
     if A_shard.dim() < 2:
         raise ValueError("A_shard must be a matrix")
     for B in Bs:
@@ -538,7 +537,7 @@ def _fused_all_gather_matmul_impl(
 
     outputs = [
         A_flat.new_empty(A_flat.shape[0], B.shape[1], dtype=out_dtype or B.dtype)
-        for B, out_dtype in zip(Bs, out_dtypes)
+        for B, out_dtype in zip(Bs, out_dtypes, strict=False)
     ]
     output_shards = [output.chunk(group.size()) for output in outputs]
 
@@ -556,7 +555,7 @@ def _fused_all_gather_matmul_impl(
         )
 
         def row_wise_sharded_consumer(shard: list[torch.Tensor], rank: int) -> None:
-            for idx, (B, kwargs) in enumerate(zip(Bs, kwargs_list)):
+            for idx, (B, kwargs) in enumerate(zip(Bs, kwargs_list, strict=False)):
                 mm_out_op(
                     shard[0],
                     B,
@@ -579,7 +578,7 @@ def _fused_all_gather_matmul_impl(
         )
 
         def row_wise_replicated_consumer(shard: torch.Tensor, rank: int) -> None:
-            for idx, (B, kwargs) in enumerate(zip(Bs, kwargs_list)):
+            for idx, (B, kwargs) in enumerate(zip(Bs, kwargs_list, strict=False)):
                 mm_out_op(
                     shard,
                     B,
@@ -604,7 +603,7 @@ def _fused_all_gather_matmul_impl(
             assert scale_mode == _ScaleMode.UNSCALED
 
         def default_consumer(shard: torch.Tensor, rank: int) -> None:
-            for idx, (B, kwargs) in enumerate(zip(Bs, kwargs_list)):
+            for idx, (B, kwargs) in enumerate(zip(Bs, kwargs_list, strict=False)):
                 mm_out_op(shard, B, **kwargs, out=output_shards[idx][rank])
 
         _pipelined_all_gather_and_consume(
@@ -627,7 +626,7 @@ def _fused_all_gather_matmul_fallback(
     group_name: str,
     *,
     return_A: bool = True,
-) -> tuple[Optional[torch.Tensor], list[torch.Tensor]]:
+) -> tuple[torch.Tensor | None, list[torch.Tensor]]:
     group_size = c10d._get_group_size_by_name(group_name)
     A = torch.ops._c10d_functional.all_gather_into_tensor(
         A_shard.contiguous(), group_size, group_name
@@ -637,8 +636,7 @@ def _fused_all_gather_matmul_fallback(
     res = [torch.matmul(A, B).movedim(0, gather_dim) for B in Bs]
     if return_A:
         return A.movedim(0, gather_dim), res
-    else:
-        return None, res
+    return None, res
 
 
 @torch.library.impl(lib, "fused_all_gather_matmul", "CUDA")
@@ -649,7 +647,7 @@ def _fused_all_gather_matmul(
     group_name: str,
     *,
     return_A: bool = True,
-) -> tuple[Optional[torch.Tensor], list[torch.Tensor]]:
+) -> tuple[torch.Tensor | None, list[torch.Tensor]]:
     """
     Perform the following logic with micro-pipelined computation and
     communication:
@@ -819,9 +817,9 @@ def _fused_all_gather_scaled_matmul_fallback(
     B_scales: list[torch.Tensor],
     gather_dim: int,
     group_name: str,
-    biases: list[Optional[torch.Tensor]],
-    result_scales: list[Optional[torch.Tensor]],
-    out_dtypes: list[Optional[torch.dtype]],
+    biases: list[torch.Tensor | None],
+    result_scales: list[torch.Tensor | None],
+    out_dtypes: list[torch.dtype | None],
     use_fast_accum: list[bool],
 ) -> tuple[torch.Tensor, list[torch.Tensor]]:
     out_dtypes = _maybe_convert_scalar_types_to_dtypes(out_dtypes)
@@ -857,9 +855,9 @@ def _fused_all_gather_scaled_matmul_fallback(
         B: torch.Tensor,
         A_scale: torch.Tensor,
         B_scale: torch.Tensor,
-        bias: Optional[torch.Tensor],
-        result_scale: Optional[torch.Tensor],
-        out_dtype: Optional[torch.dtype],
+        bias: torch.Tensor | None,
+        result_scale: torch.Tensor | None,
+        out_dtype: torch.dtype | None,
         use_fast_accum: bool,
     ) -> torch.Tensor:
         leading_dims = A.shape[:-1]
@@ -880,7 +878,13 @@ def _fused_all_gather_scaled_matmul_fallback(
             A, B, A_scale, B_scale, bias, result_scale, out_dtype, fast_accum
         ).movedim(0, gather_dim)
         for B, B_scale, bias, result_scale, out_dtype, fast_accum in zip(
-            Bs, B_scales, biases, result_scales, out_dtypes, use_fast_accum
+            Bs,
+            B_scales,
+            biases,
+            result_scales,
+            out_dtypes,
+            use_fast_accum,
+            strict=False,
         )
     ]
 
@@ -893,9 +897,9 @@ def _fused_all_gather_scaled_matmul(
     B_scales: list[torch.Tensor],
     gather_dim: int,
     group_name: str,
-    biases: list[Optional[torch.Tensor]],
-    result_scales: list[Optional[torch.Tensor]],
-    out_dtypes: list[Optional[torch.dtype]],
+    biases: list[torch.Tensor | None],
+    result_scales: list[torch.Tensor | None],
+    out_dtypes: list[torch.dtype | None],
     use_fast_accum: list[bool],
 ) -> tuple[torch.Tensor, list[torch.Tensor]]:
     """
@@ -954,7 +958,12 @@ def _fused_all_gather_scaled_matmul(
                     "use_fast_accum": fast_accum,
                 }
                 for B_scale, bias, result_scale, out_dtype, fast_accum in zip(
-                    B_scales, biases, result_scales, out_dtypes, use_fast_accum
+                    B_scales,
+                    biases,
+                    result_scales,
+                    out_dtypes,
+                    use_fast_accum,
+                    strict=False,
                 )
             ],
             out_dtypes,
@@ -1046,7 +1055,7 @@ def _fused_matmul_reduce_scatter_impl(
     A: torch.Tensor,
     B: torch.Tensor,
     kwargs: dict[str, Any],
-    out_dtype: Optional[torch.dtype],
+    out_dtype: torch.dtype | None,
     reduce_op: str,
     scatter_dim: int,
     group_name: str,
@@ -1108,9 +1117,9 @@ def _fused_scaled_matmul_reduce_scatter(
     scatter_dim_after_maybe_reshape: int,
     group_name: str,
     output_shape: list[int],
-    bias: Optional[torch.Tensor] = None,
-    result_scale: Optional[torch.Tensor] = None,
-    out_dtype: Optional[torch.dtype] = None,
+    bias: torch.Tensor | None = None,
+    result_scale: torch.Tensor | None = None,
+    out_dtype: torch.dtype | None = None,
     use_fast_accum: bool = False,
 ) -> torch.Tensor:
     if _is_test_mode:
@@ -1162,9 +1171,9 @@ def _fused_scaled_matmul_reduce_scatter_fallback(
     scatter_dim_after_maybe_reshape: int,
     group_name: str,
     output_shape: list[int],
-    bias: Optional[torch.Tensor] = None,
-    result_scale: Optional[torch.Tensor] = None,
-    out_dtype: Optional[torch.dtype] = None,
+    bias: torch.Tensor | None = None,
+    result_scale: torch.Tensor | None = None,
+    out_dtype: torch.dtype | None = None,
     use_fast_accum: bool = False,
 ) -> torch.Tensor:
     if A_scale.numel() > 1:
@@ -1208,7 +1217,7 @@ def _fused_scaled_matmul_reduce_scatter_impl(
     B: torch.Tensor,
     A_scale: torch.Tensor,
     kwargs: dict[str, Any],
-    out_dtype: Optional[torch.dtype],
+    out_dtype: torch.dtype | None,
     reduce_op: str,
     orig_scatter_dim: int,
     scatter_dim_after_maybe_reshape: int,
@@ -1345,7 +1354,7 @@ def restride_A_for_fused_matmul_reduce_scatter(
 
 def _maybe_convert_scalar_types_to_dtypes(
     scalar_types: list[Any],
-) -> list[Optional[torch.dtype]]:
+) -> list[torch.dtype | None]:
     """
     When a list of `torch.dtype`s is passed through the dispatcher as
     `ScalarType[]`, it is converted to a list of scalar type enum values. This
@@ -1377,7 +1386,7 @@ def _maybe_convert_scalar_types_to_dtypes(
     if any(not isinstance(x, (type(None), int)) for x in scalar_types):
         return scalar_types
 
-    dtypes: list[Optional[torch.dtype]] = []
+    dtypes: list[torch.dtype | None] = []
     for scalar_type in scalar_types:
         if scalar_type is None:
             dtypes.append(scalar_type)
@@ -1600,13 +1609,10 @@ def _low_contention_reduce_scatter(
         return _low_contention_reduce_scatter_with_symm_mem_input(
             tensor, reduce_op, symm_mem
         )
-    else:
-        workspace = get_symm_mem_workspace(
-            group_name, tensor.numel() * tensor.element_size()
-        )
-        return _low_contention_reduce_scatter_with_workspace(
-            tensor, reduce_op, workspace
-        )
+    workspace = get_symm_mem_workspace(
+        group_name, tensor.numel() * tensor.element_size()
+    )
+    return _low_contention_reduce_scatter_with_workspace(tensor, reduce_op, workspace)
 
 
 # =============================================================================
@@ -1615,10 +1621,9 @@ def _low_contention_reduce_scatter(
 
 
 from collections.abc import Sequence
-from typing import Any, overload, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Union, overload
 
 from torch.types import _device, _dtype, _int
-
 
 if TYPE_CHECKING:
     from torch._C._distributed_c10d import ProcessGroup
@@ -1626,7 +1631,7 @@ if TYPE_CHECKING:
 
 @overload
 def empty(
-    *size: _int, dtype: Optional[_dtype] = None, device: Optional[_device] = None
+    *size: _int, dtype: _dtype | None = None, device: _device | None = None
 ) -> torch.Tensor: ...
 
 
@@ -1634,15 +1639,15 @@ def empty(
 def empty(
     size: Sequence[_int],
     *,
-    dtype: Optional[_dtype] = None,
-    device: Optional[_device] = None,
+    dtype: _dtype | None = None,
+    device: _device | None = None,
 ) -> torch.Tensor: ...
 
 
 def empty(  # type: ignore[misc]
     *size: Any,
-    dtype: Optional[_dtype] = None,
-    device: Optional[_device] = None,
+    dtype: _dtype | None = None,
+    device: _device | None = None,
 ) -> torch.Tensor:
     r"""
     empty(*size, *, dtype=None, device=None) -> Tensor

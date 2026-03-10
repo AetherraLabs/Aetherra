@@ -15,10 +15,11 @@ import time
 import traceback
 import warnings
 from collections import defaultdict
+from collections.abc import Callable
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 import torch.distributed.elastic.rendezvous as rdzv
 import torch.distributed.elastic.utils.store as store_util
@@ -27,7 +28,6 @@ from torch.distributed.elastic.metrics import prof, put_metric
 from torch.distributed.elastic.multiprocessing import ProcessFailure, SignalException
 from torch.distributed.elastic.rendezvous import RendezvousGracefulExitError
 from torch.distributed.elastic.utils.logging import get_logger
-
 
 __all__ = [
     "WorkerSpec",
@@ -78,15 +78,15 @@ class WorkerSpec:
     role: str
     local_world_size: int
     rdzv_handler: rdzv.RendezvousHandler
-    fn: Optional[Callable] = None
+    fn: Callable | None = None
     # TODO @kiuk - make entrypoint a required field
-    entrypoint: Union[Callable, str, None] = None
+    entrypoint: Callable | str | None = None
     args: tuple = ()
     max_restarts: int = 3
     monitor_interval: float = 0.1
-    master_port: Optional[int] = None
-    master_addr: Optional[str] = None
-    local_addr: Optional[str] = None
+    master_port: int | None = None
+    master_addr: str | None = None
+    local_addr: str | None = None
     event_log_handler: str = "null"
 
     def __post_init__(self):
@@ -110,9 +110,8 @@ class WorkerSpec:
         """
         if isinstance(self.entrypoint, str):
             return os.path.basename(self.entrypoint)
-        else:
-            assert self.entrypoint is not None
-            return self.entrypoint.__qualname__
+        assert self.entrypoint is not None
+        return self.entrypoint.__qualname__
 
 
 class Worker:
@@ -316,10 +315,9 @@ class _RoleInstanceInfo:
     def compare(obj1, obj2) -> int:
         if obj1.role == obj2.role:
             return obj1.rank - obj2.rank
-        elif obj1.role > obj2.role:
+        if obj1.role > obj2.role:
             return 1
-        else:
-            return -1
+        return -1
 
     @staticmethod
     def find_role_boundaries(roles_infos: list, role: str) -> tuple[int, int]:
@@ -758,10 +756,9 @@ class SimpleElasticAgent(ElasticAgent):
         if result.state in {WorkerState.UNHEALTHY, WorkerState.FAILED} and not failure:
             # The worker got terminated by the torchelastic agent via SIGTERM signal
             return "TERMINATED"
-        elif failure or worker.global_rank in result.return_values:
+        if failure or worker.global_rank in result.return_values:
             return result.state.value
-        else:
-            raise ValueError(f"Unknown worker: {worker.global_rank}")
+        raise ValueError(f"Unknown worker: {worker.global_rank}")
 
     @contextmanager
     def record_duration(self, state: str):
@@ -782,9 +779,9 @@ class SimpleElasticAgent(ElasticAgent):
         self,
         state: str,
         source: EventSource,
-        worker: Optional[Worker] = None,
-        raw_error: Optional[str] = None,
-        duration_ms: Optional[float] = None,
+        worker: Worker | None = None,
+        raw_error: str | None = None,
+        duration_ms: float | None = None,
     ) -> Event:
         wg = self._worker_group
         spec = wg.spec
@@ -893,7 +890,7 @@ class SimpleElasticAgent(ElasticAgent):
                 )
                 self._exit_barrier()
                 return run_result
-            elif state in {WorkerState.UNHEALTHY, WorkerState.FAILED}:
+            if state in {WorkerState.UNHEALTHY, WorkerState.FAILED}:
                 if self._remaining_restarts > 0:
                     logger.info(
                         "[%s] Worker group %s. "

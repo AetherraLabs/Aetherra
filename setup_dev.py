@@ -13,7 +13,6 @@ Usage:
     python setup_dev.py
 """
 
-
 # Standard library imports
 import shutil
 import subprocess
@@ -34,11 +33,11 @@ class AetherraSetup:
         banner = """
 🌟 ═══════════════════════════════════════════════════════════════ 🌟
    ___       _   _                             ____       _
-  / _ \     | | | |                           / ___|  ___| |_ _   _ _ __
- / /_\ \____| |_| |__   ___ _ __ _ __ __ _    \___ \ / _ \ __| | | | '_ \
- |  _  |____|  _  | '_ \ / _ \ '__| '__/ _` |    ___) |  __/ |_| |_| | |_|
- | | | |    | | | | | | |  __/ |  | | | (_| |   |____/ \___|\__|\__,_| .__/
- \_| |_/    |_| |_|_| |_|\___|_|  |_|  \__,_|                       |_|
+  / _ \\     | | | |                           / ___|  ___| |_ _   _ _ __
+ / /_\\ \\____| |_| |__   ___ _ __ _ __ __ _    \\___ \\ / _ \\ __| | | | '_ \
+ |  _  |____|  _  | '_ \\ / _ \\ '__| '__/ _` |    ___) |  __/ |_| |_| | |_|
+ | | | |    | | | | | | |  __/ |  | | | (_| |   |____/ \\___|\\__|\\__,_| .__/
+ \\_| |_/    |_| |_|_| |_|\\___|_|  |_|  \\__,_|                       |_|
 
         🚀 AI Operating System Development Environment Setup 🚀
 🌟 ═══════════════════════════════════════════════════════════════ 🌟
@@ -100,8 +99,7 @@ class AetherraSetup:
         """Get the pip command for the current platform"""
         if sys.platform == "win32":
             return str(self.venv_path / "Scripts" / "pip.exe")
-        else:
-            return str(self.venv_path / "bin" / "pip")
+        return str(self.venv_path / "bin" / "pip")
 
     def install_dependencies(self):
         """Install project dependencies"""
@@ -181,10 +179,9 @@ except ImportError as e:
             if result.returncode == 0:
                 print(result.stdout.strip())
                 return True
-            else:
-                print(result.stdout.strip())
-                print(result.stderr.strip())
-                return False
+            print(result.stdout.strip())
+            print(result.stderr.strip())
+            return False
         except Exception as e:
             print(f"[ERROR] Test failed: {e}")
             return False

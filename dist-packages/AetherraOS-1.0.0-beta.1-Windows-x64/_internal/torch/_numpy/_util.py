@@ -1,7 +1,6 @@
 # mypy: ignore-errors
 
-"""Assorted utilities, which do not need anything other then torch and stdlib.
-"""
+"""Assorted utilities, which do not need anything other then torch and stdlib."""
 
 import operator
 
@@ -93,8 +92,7 @@ def normalize_axis_tuple(axis, ndim, argname=None, allow_duplicate=False):
     if not allow_duplicate and len(set(map(int, axis))) != len(axis):
         if argname:
             raise ValueError(f"repeated axis in `{argname}` argument")
-        else:
-            raise ValueError("repeated axis")
+        raise ValueError("repeated axis")
     return axis
 
 
@@ -133,8 +131,7 @@ def axis_none_flatten(*tensors, axis=None):
     if axis is None:
         tensors = tuple(ar.flatten() for ar in tensors)
         return tensors, 0
-    else:
-        return tensors, axis
+    return tensors, axis
 
 
 def typecast_tensor(t, target_dtype, casting):
@@ -244,18 +241,16 @@ def ndarrays_to_tensors(*inputs):
 
     if len(inputs) == 0:
         return ValueError()
-    elif len(inputs) == 1:
+    if len(inputs) == 1:
         input_ = inputs[0]
         if isinstance(input_, ndarray):
             return input_.tensor
-        elif isinstance(input_, tuple):
+        if isinstance(input_, tuple):
             result = []
             for sub_input in input_:
                 sub_result = ndarrays_to_tensors(sub_input)
                 result.append(sub_result)
             return tuple(result)
-        else:
-            return input_
-    else:
-        assert isinstance(inputs, tuple)  # sanity check
-        return ndarrays_to_tensors(inputs)
+        return input_
+    assert isinstance(inputs, tuple)  # sanity check
+    return ndarrays_to_tensors(inputs)

@@ -33,8 +33,8 @@ import inspect
 import logging
 import math
 import re
-from collections.abc import Sequence
-from typing import Any, Callable, Optional, TYPE_CHECKING
+from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING, Any
 
 import torch._C
 import torch._refs
@@ -64,7 +64,7 @@ from ..utils import (
     proxy_args_kwargs,
     unwrap_if_wrapper,
 )
-from .base import typestr, VariableTracker
+from .base import VariableTracker, typestr
 from .ctx_manager import (
     AutocastModeVariable,
     ProfilerContextVariable,
@@ -74,12 +74,11 @@ from .dicts import ConstDictVariable
 from .distributed import DistributedVariable, ProcessGroupVariable
 from .lists import ListVariable, TupleVariable
 from .torch_function import (
-    can_dispatch_torch_function,
-    dispatch_torch_function,
     TensorWithTFOverrideVariable,
     TorchFunctionModeStackVariable,
+    can_dispatch_torch_function,
+    dispatch_torch_function,
 )
-
 
 try:
     import numpy as np
@@ -177,7 +176,7 @@ constant_fold_functions = dict.fromkeys(constant_fold_functions)
 
 
 @functools.cache
-def tracing_state_functions() -> dict[Callable[[], Any], Optional[bool]]:
+def tracing_state_functions() -> dict[Callable[[], Any], bool | None]:
     # Defined as a function to avoid circular import like torch.onnx
     return {
         torch.jit.is_scripting: False,
@@ -309,24 +308,23 @@ class TorchCtxManagerClassVariable(BaseTorchVariable):
             ):
                 ctx = GradModeVariable.create(tx, False)
                 return ctx.call_function(tx, args, kwargs)
-            else:
-                return GradModeVariable.create(tx, False)
-        elif self.value is torch.enable_grad:
+            return GradModeVariable.create(tx, False)
+        if self.value is torch.enable_grad:
             if len(args) == 1 and isinstance(
                 args[0], variables.functions.BaseUserFunctionVariable
             ):
                 ctx = GradModeVariable.create(tx, True)
                 return ctx.call_function(tx, args, kwargs)
             return GradModeVariable.create(tx, True)
-        elif self.value is torch.set_grad_enabled and len(args) == 1:
+        if self.value is torch.set_grad_enabled and len(args) == 1:
             return GradModeVariable.create(
                 tx, args[0].as_python_constant(), initialized=True
             )
-        elif self.value is torch.inference_mode:
+        if self.value is torch.inference_mode:
             assert len(args) <= 1 and len(kwargs) == 0
             inf_mode = args[0].as_python_constant() if len(args) == 1 else True
             return InferenceModeVariable.create(tx, inf_mode)
-        elif inspect.isclass(self.value) and issubclass(self.value, torch.Stream):
+        if inspect.isclass(self.value) and issubclass(self.value, torch.Stream):
             from torch._dynamo.variables.builder import wrap_fx_proxy_cls
 
             return wrap_fx_proxy_cls(
@@ -339,13 +337,13 @@ class TorchCtxManagerClassVariable(BaseTorchVariable):
                     {},
                 ),
             )
-        elif self.value in (
+        if self.value in (
             torch.amp.autocast_mode.autocast,
             torch.cuda.amp.autocast,
             torch.cpu.amp.autocast,
         ):
             return AutocastModeVariable.create(self.value, args, kwargs)
-        elif self.value in (
+        if self.value in (
             # NOTE any class added here must align with the semantic
             # requirements of `ProfilerContextVariable`.
             torch.profiler.profile,
@@ -355,7 +353,7 @@ class TorchCtxManagerClassVariable(BaseTorchVariable):
         ):
             warning_once(log, "Profiler function %s will be ignored", self.value)
             return ProfilerContextVariable()
-        elif (
+        if (
             self.value is torch._C.DisableTorchFunctionSubclass
             or self.value is torch._C.DisableTorchFunction
         ):
@@ -363,41 +361,39 @@ class TorchCtxManagerClassVariable(BaseTorchVariable):
             return TorchFunctionDisableVariable.create(
                 tx, only_subclass=self.value is torch._C.DisableTorchFunctionSubclass
             )
-        elif self.value is torch._functorch.vmap.vmap_increment_nesting:
+        if self.value is torch._functorch.vmap.vmap_increment_nesting:
             assert len(args) == 2
             return VmapIncrementNestingCtxManagerVariable.create(
                 tx,
                 args,
             )
-        elif self.value is torch._functorch.eager_transforms.jvp_increment_nesting:
+        if self.value is torch._functorch.eager_transforms.jvp_increment_nesting:
             assert len(args) == 0
             return JvpIncrementNestingCtxManagerVariable.create(tx)
-        elif self.value is torch.autograd.forward_ad._set_fwd_grad_enabled:
+        if self.value is torch.autograd.forward_ad._set_fwd_grad_enabled:
             assert len(args) == 1
             return SetFwdGradEnabledContextManager.create(
                 tx,
                 [guard_if_dyn(x) for x in args],
             )
-        elif self.value is torch.autograd.forward_ad.dual_level:
+        if self.value is torch.autograd.forward_ad.dual_level:
             assert len(args) == 0
             return DualLevelContextManager.create(tx)
-        elif self.value is torch._functorch.eager_transforms.grad_increment_nesting:
+        if self.value is torch._functorch.eager_transforms.grad_increment_nesting:
             assert len(args) == 0
             return GradIncrementNestingCtxManagerVariable.create(tx)
-        elif (
-            self.value is torch._functorch.eager_transforms.enable_inplace_requires_grad
-        ):
+        if self.value is torch._functorch.eager_transforms.enable_inplace_requires_grad:
             assert len(args) == 1
             return GradInplaceRequiresGradCtxManagerVariable.create(
                 tx,
                 [guard_if_dyn(x) for x in args],
             )
-        elif self.value is torch.autograd.graph.disable_saved_tensors_hooks:
+        if self.value is torch.autograd.graph.disable_saved_tensors_hooks:
             assert len(args) == 1
             return DisabledSavedTensorsHooksVariable.create(
                 tx, args[0].as_python_constant()
             )
-        elif (
+        if (
             _fsdp_param_group is not None
             and self.value is _fsdp_param_group.FSDPParamGroup.use_training_state
         ):
@@ -405,14 +401,14 @@ class TorchCtxManagerClassVariable(BaseTorchVariable):
             return FSDPParamGroupUseTrainingStateVariable.create(
                 tx, args[0], args[1].as_python_constant()
             )
-        elif self.value is torch.nn.attention.sdpa_kernel:
+        if self.value is torch.nn.attention.sdpa_kernel:
             assert len(args) == 1 or (len(kwargs) == 1 and "backends" in kwargs)
             backends = args[0] if len(args) == 1 else kwargs["backends"]
             set_priority = kwargs["set_priority"] if "set_priority" in kwargs else False
             return SDPAKernelVariable.create(
                 tx, backends.as_python_constant(), set_priority
             )
-        elif self.value is torch.nn.attention._sdpa_kernel_variadic:
+        if self.value is torch.nn.attention._sdpa_kernel_variadic:
             return SDPAKernelVariable.create(
                 tx, [arg.as_python_constant() for arg in args]
             )
@@ -507,9 +503,8 @@ class TorchInGraphFunctionVariable(BaseTorchVariable):
                         )
                     )
                 return DispatchKeySetVariable.create(dks)
-            else:
-                assert not args
-                return DispatchKeySetVariable.create(self.value())
+            assert not args
+            return DispatchKeySetVariable.create(self.value())
 
         @register(torch.overrides.get_default_nowrap_functions.__wrapped__)
         def handle_get_default_nowrap_functions(
@@ -557,8 +552,7 @@ class TorchInGraphFunctionVariable(BaseTorchVariable):
                 and hasattr(arg.value, "__torch_function__")
             ):
                 return ConstantVariable.create(True)
-            else:
-                return ConstantVariable.create(False)
+            return ConstantVariable.create(False)
 
         @register(
             torch.is_floating_point,
@@ -569,16 +563,15 @@ class TorchInGraphFunctionVariable(BaseTorchVariable):
             if isinstance(input_arg, TensorVariable) and input_arg.dtype is not None:
                 if self.value is torch.is_floating_point:
                     return ConstantVariable.create(input_arg.dtype.is_floating_point)
-                elif self.value is torch.is_complex:
+                if self.value is torch.is_complex:
                     return ConstantVariable.create(input_arg.dtype.is_complex)
-                else:
-                    raise AssertionError(f"calling {self.value}")
+                raise AssertionError(f"calling {self.value}")
 
         @register(torch.numel)
         def handle_numel(self, tx: "InstructionTranslator", input):
             if isinstance(input, TensorVariable) and input.valid_size():
                 return ConstantVariable.create(product(input.size))
-            elif isinstance(input, TensorVariable):
+            if isinstance(input, TensorVariable):
                 # Workaround dynamic shapes issue
                 return input.call_method(tx, "numel", [], {})
 
@@ -905,7 +898,7 @@ class TorchInGraphFunctionVariable(BaseTorchVariable):
                         expr.sym_num
                     )
                 )
-            elif isinstance(expr, ConstantVariable):
+            if isinstance(expr, ConstantVariable):
                 return expr
 
         @register(torch.fx.experimental.symbolic_shapes.guard_or_true)
@@ -916,7 +909,7 @@ class TorchInGraphFunctionVariable(BaseTorchVariable):
                 return variables.ConstantVariable.create(
                     torch.fx.experimental.symbolic_shapes.guard_or_true(expr.sym_num)
                 )
-            elif isinstance(expr, ConstantVariable):
+            if isinstance(expr, ConstantVariable):
                 return expr
 
         @register(torch.fx.experimental.symbolic_shapes.guard_or_false)
@@ -927,7 +920,7 @@ class TorchInGraphFunctionVariable(BaseTorchVariable):
                 return variables.ConstantVariable.create(
                     torch.fx.experimental.symbolic_shapes.guard_or_false(expr.sym_num)
                 )
-            elif isinstance(expr, ConstantVariable):
+            if isinstance(expr, ConstantVariable):
                 return expr
 
         @register(torch.fx.experimental.symbolic_shapes.statically_known_false)
@@ -938,7 +931,7 @@ class TorchInGraphFunctionVariable(BaseTorchVariable):
                         expr.sym_num
                     )
                 )
-            elif isinstance(expr, ConstantVariable):
+            if isinstance(expr, ConstantVariable):
                 return expr
 
         @register(torch.fx.experimental.symbolic_shapes.guard_scalar)
@@ -961,7 +954,7 @@ class TorchInGraphFunctionVariable(BaseTorchVariable):
                         expr.sym_num
                     )
                 )
-            elif isinstance(expr, ConstantVariable):
+            if isinstance(expr, ConstantVariable):
                 return expr
 
         @register(torch.fx.experimental.symbolic_shapes.sym_and)
@@ -993,7 +986,7 @@ class TorchInGraphFunctionVariable(BaseTorchVariable):
             elif isinstance(expr, ConstantVariable):
                 val = expr.value
             else:
-                return
+                return None
 
             return variables.ConstantVariable.create(
                 torch.fx.experimental.symbolic_shapes.has_static_value(val)
@@ -1034,12 +1027,11 @@ class TorchInGraphFunctionVariable(BaseTorchVariable):
                 # NB: This includes UnspecializedPythonVariable
                 if isinstance(x, (TensorVariable, SymNodeVariable)):
                     return True
-                elif isinstance(x, (ListVariable, TupleVariable)):
+                if isinstance(x, (ListVariable, TupleVariable)):
                     return any(check_any_unspec(y) for y in x.items)
                 # TODO: there maybe other recursive structures you need to
                 # check
-                else:
-                    return False
+                return False
 
             data_arg = None
             if args:
@@ -1374,7 +1366,7 @@ Either create the tensor outside the compiled region, or do not set the tensor t
             if isinstance(tensor_variable, TupleVariable):
                 assert isinstance(kwargs["out"], (TupleVariable, ListVariable))
                 for out_tensor, result_tensor in zip(
-                    kwargs["out"].items, tensor_variable.items
+                    kwargs["out"].items, tensor_variable.items, strict=False
                 ):
                     if (
                         isinstance(out_tensor, variables.TensorVariable)
@@ -1443,18 +1435,16 @@ Either create the tensor outside the compiled region, or do not set the tensor t
                 return variables.TupleVariable(
                     list(value.unpack_var_sequence(tx)),
                 )
-            elif value.is_python_constant():
+            if value.is_python_constant():
                 # constant prop through it
                 return variables.ConstantVariable.create(
                     torch.nn.modules.utils._ntuple(count)(value.as_python_constant()),
                 )
-            else:
-                unimplemented(f"torch.nn.modules.utils._ntuple({value})")
+            unimplemented(f"torch.nn.modules.utils._ntuple({value})")
 
         if self.value is torch.nn.modules.utils._ntuple:
             return variables.LambdaVariable(handle_ntuple)
-        else:
-            return handle_ntuple(args[0])
+        return handle_ntuple(args[0])
 
     @classmethod
     def call_nn_parameter(cls, tx, data=None, requires_grad=True):
@@ -1612,7 +1602,7 @@ class DispatchKeySetVariable(BaseTorchVariable):
                     **{k: v.as_python_constant() for k, v in kwargs.items()},
                 ),
             )
-        elif name == "highestPriorityTypeId":
+        if name == "highestPriorityTypeId":
             return variables.EnumVariable(self.value.highestPriorityTypeId())
         return super().call_method(tx, name, args, kwargs)
 
@@ -1634,15 +1624,15 @@ class FuncTorchInterpreterVariable(BaseTorchVariable):
     ) -> "VariableTracker":
         if name == "key":
             return variables.EnumVariable(self.value.key())
-        elif name == "process":
+        if name == "process":
             return tx.inline_user_function_return(
                 variables.UserFunctionVariable(self.value.process.__func__),
                 [self] + args,
                 kwargs,
             )
-        elif name in ["level", "batch_size", "randomness"]:
+        if name in ["level", "batch_size", "randomness"]:
             return variables.ConstantVariable.create(getattr(self.value, name)())
-        elif name == "lower":
+        if name == "lower":
             assert not args and not kwargs
             return variables.TemporarilyPopInterpreterStackCtxManagerVariable.create(
                 tx, None

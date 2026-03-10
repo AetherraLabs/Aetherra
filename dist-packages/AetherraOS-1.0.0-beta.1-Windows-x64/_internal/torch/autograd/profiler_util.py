@@ -4,12 +4,12 @@ import itertools
 import math
 from collections import defaultdict, namedtuple
 from operator import attrgetter
-from typing import Any, Optional
+from typing import Any
+
 from typing_extensions import deprecated
 
 import torch
 from torch.autograd import DeviceType
-
 
 __all__ = [
     "EventList",
@@ -126,9 +126,9 @@ class EventList(list):
                         current_events.pop()
                     else:
                         parent.append_cpu_child(event)
-                        assert (
-                            event.cpu_parent is None
-                        ), f"There is already a CPU parent event for {event.key}"
+                        assert event.cpu_parent is None, (
+                            f"There is already a CPU parent event for {event.key}"
+                        )
                         event.set_cpu_parent(parent)
                         break
 
@@ -138,10 +138,9 @@ class EventList(list):
         def bw_parent(evt):
             if evt is None:
                 return None
-            elif evt.scope == 1:  # BACKWARD_FUNCTION
+            if evt.scope == 1:  # BACKWARD_FUNCTION
                 return evt
-            else:
-                return bw_parent(evt.cpu_parent)
+            return bw_parent(evt.cpu_parent)
 
         fwd_stacks = {}
         for evt in self:
@@ -399,12 +398,11 @@ def _format_memory(nbytes):
     GB = 1024 * MB
     if abs(nbytes) >= GB:
         return f"{nbytes * 1.0 / GB:.2f} GB"
-    elif abs(nbytes) >= MB:
+    if abs(nbytes) >= MB:
         return f"{nbytes * 1.0 / MB:.2f} MB"
-    elif abs(nbytes) >= KB:
+    if abs(nbytes) >= KB:
         return f"{nbytes * 1.0 / KB:.2f} KB"
-    else:
-        return str(nbytes) + " B"
+    return str(nbytes) + " B"
 
 
 def _attr_formatter(name):
@@ -495,17 +493,17 @@ class FunctionEvent(FormattedTimesMixin):
         self.trace_name: str = trace_name
         self.time_range: Interval = Interval(start_us, end_us)
         self.thread: int = thread
-        self.fwd_thread: Optional[int] = fwd_thread
+        self.fwd_thread: int | None = fwd_thread
         self.kernels: list[Kernel] = []
         self.count: int = 1
         self.cpu_children: list[FunctionEvent] = []
-        self.cpu_parent: Optional[FunctionEvent] = None
+        self.cpu_parent: FunctionEvent | None = None
         self.input_shapes: tuple[int, ...] = input_shapes
         self.concrete_inputs: list[Any] = concrete_inputs
         self.kwinputs: dict[str, Any] = kwinputs
         self.stack: list = stack
         self.scope: int = scope
-        self.use_device: Optional[str] = use_device
+        self.use_device: str | None = use_device
         self.cpu_memory_usage: int = cpu_memory_usage
         self.device_memory_usage: int = device_memory_usage
         self.is_async: bool = is_async
@@ -517,8 +515,8 @@ class FunctionEvent(FormattedTimesMixin):
             thread if device_resource_id is None else device_resource_id
         )
         self.is_legacy: bool = is_legacy
-        self.flops: Optional[int] = flops
-        self.is_user_annotation: Optional[bool] = is_user_annotation
+        self.flops: int | None = flops
+        self.is_user_annotation: bool | None = is_user_annotation
         self.self_cpu_percent = -1
         self.total_cpu_percent = -1
         self.total_device_percent = -1
@@ -580,8 +578,7 @@ class FunctionEvent(FormattedTimesMixin):
     def cpu_time_total(self):
         if self.device_type == DeviceType.CPU:
             return self.time_range.elapsed_us()
-        else:
-            return 0
+        return 0
 
     @property
     def self_cpu_time_total(self):
@@ -601,17 +598,15 @@ class FunctionEvent(FormattedTimesMixin):
                 return sum(kinfo.duration for kinfo in self.kernels) + sum(
                     ch.device_time_total for ch in self.cpu_children
                 )
-            else:
-                # each legacy cpu events has a single (fake) kernel
-                return sum(kinfo.duration for kinfo in self.kernels)
-        else:
-            assert self.device_type in [
-                DeviceType.CUDA,
-                DeviceType.PrivateUse1,
-                DeviceType.MTIA,
-                DeviceType.HPU,
-            ]
-            return self.time_range.elapsed_us()
+            # each legacy cpu events has a single (fake) kernel
+            return sum(kinfo.duration for kinfo in self.kernels)
+        assert self.device_type in [
+            DeviceType.CUDA,
+            DeviceType.PrivateUse1,
+            DeviceType.MTIA,
+            DeviceType.HPU,
+        ]
+        return self.time_range.elapsed_us()
 
     @property
     @deprecated(
@@ -629,14 +624,13 @@ class FunctionEvent(FormattedTimesMixin):
             return self.device_time_total - sum(
                 child.device_time_total for child in self.cpu_children
             )
-        else:
-            assert self.device_type in [
-                DeviceType.CUDA,
-                DeviceType.PrivateUse1,
-                DeviceType.MTIA,
-                DeviceType.HPU,
-            ]
-            return self.device_time_total
+        assert self.device_type in [
+            DeviceType.CUDA,
+            DeviceType.PrivateUse1,
+            DeviceType.MTIA,
+            DeviceType.HPU,
+        ]
+        return self.device_time_total
 
     @property
     @deprecated(
@@ -669,26 +663,26 @@ class FunctionEventAvg(FormattedTimesMixin):
     """Used to average stats over multiple FunctionEvent objects."""
 
     def __init__(self) -> None:
-        self.key: Optional[str] = None
+        self.key: str | None = None
         self.count: int = 0
         self.node_id: int = 0
         self.is_async: bool = False
         self.is_remote: bool = False
-        self.use_device: Optional[str] = None
+        self.use_device: str | None = None
         self.cpu_time_total: int = 0
         self.device_time_total: int = 0
         self.self_cpu_time_total: int = 0
         self.self_device_time_total: int = 0
-        self.input_shapes: Optional[list[list[int]]] = None
-        self.overload_name: Optional[str] = None
-        self.stack: Optional[list] = None
-        self.scope: Optional[int] = None
+        self.input_shapes: list[list[int]] | None = None
+        self.overload_name: str | None = None
+        self.stack: list | None = None
+        self.scope: int | None = None
         self.cpu_memory_usage: int = 0
         self.device_memory_usage: int = 0
         self.self_cpu_memory_usage: int = 0
         self.self_device_memory_usage: int = 0
-        self.cpu_children: Optional[list[FunctionEvent]] = None
-        self.cpu_parent: Optional[FunctionEvent] = None
+        self.cpu_children: list[FunctionEvent] | None = None
+        self.cpu_parent: FunctionEvent | None = None
         self.device_type: DeviceType = DeviceType.CPU
         self.is_legacy: bool = False
         self.flops: int = 0
@@ -764,7 +758,7 @@ class MemRecordsAcc:
         self._indices: list[int] = []
         if len(mem_records) > 0:
             tmp = sorted([(r[0].start_ns(), i) for i, r in enumerate(mem_records)])
-            self._start_nses, self._indices = zip(*tmp)  # type: ignore[assignment]
+            self._start_nses, self._indices = zip(*tmp, strict=False)  # type: ignore[assignment]
 
     def in_interval(self, start_us, end_us):
         r"""
@@ -1045,8 +1039,7 @@ def _build_table(
             break
         if top_level_events_only and evt.cpu_parent is not None:
             continue
-        else:
-            event_limit += 1
+        event_limit += 1
         name = evt.key
         if max_name_column_width is not None and len(name) >= max_name_column_width - 3:
             name = name[: (max_name_column_width - 3)] + "..."

@@ -61,9 +61,9 @@ print('right')
             ):
                 target = s
                 break
-        assert (
-            target is not None
-        ), f"Expected suggestion for {conflict_file}, got: {suggestions}"
+        assert target is not None, (
+            f"Expected suggestion for {conflict_file}, got: {suggestions}"
+        )
 
         ok, change = await svc.apply_fix(target, edit_root=repo_root)
         assert ok, f"apply_fix failed: {change}"

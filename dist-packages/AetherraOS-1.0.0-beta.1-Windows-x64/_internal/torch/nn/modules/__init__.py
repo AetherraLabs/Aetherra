@@ -1,10 +1,9 @@
-from .module import Module  # usort: skip
-from .linear import Bilinear, Identity, LazyLinear, Linear  # usort: skip
 from .activation import (
     CELU,
     ELU,
     GELU,
     GLU,
+    SELU,
     Hardshrink,
     Hardsigmoid,
     Hardswish,
@@ -18,7 +17,6 @@ from .activation import (
     ReLU,
     ReLU6,
     RReLU,
-    SELU,
     Sigmoid,
     SiLU,
     Softmax,
@@ -83,6 +81,7 @@ from .instancenorm import (
     LazyInstanceNorm2d,
     LazyInstanceNorm3d,
 )
+from .linear import Bilinear, Identity, LazyLinear, Linear  # usort: skip
 from .loss import (
     BCELoss,
     BCEWithLogitsLoss,
@@ -107,6 +106,7 @@ from .loss import (
     TripletMarginLoss,
     TripletMarginWithDistanceLoss,
 )
+from .module import Module  # usort: skip
 from .normalization import (
     CrossMapLRN2d,
     GroupNorm,
@@ -154,7 +154,7 @@ from .pooling import (
     MaxUnpool2d,
     MaxUnpool3d,
 )
-from .rnn import GRU, GRUCell, LSTM, LSTMCell, RNN, RNNBase, RNNCell, RNNCellBase
+from .rnn import GRU, LSTM, RNN, GRUCell, LSTMCell, RNNBase, RNNCell, RNNCellBase
 from .sparse import Embedding, EmbeddingBag
 from .transformer import (
     Transformer,
@@ -164,7 +164,6 @@ from .transformer import (
     TransformerEncoderLayer,
 )
 from .upsampling import Upsample, UpsamplingBilinear2d, UpsamplingNearest2d
-
 
 __all__ = [
     "AdaptiveAvgPool1d",

@@ -1,14 +1,12 @@
 # mypy: allow-untyped-defs
-from typing import Optional, Union
 
 import torch
-from torch import nan, Tensor
+from torch import Tensor, nan
 from torch.distributions import constraints
 from torch.distributions.distribution import Distribution
 from torch.distributions.gamma import Gamma
 from torch.distributions.utils import broadcast_all
 from torch.types import _Number, _size
-
 
 __all__ = ["FisherSnedecor"]
 
@@ -35,9 +33,9 @@ class FisherSnedecor(Distribution):
 
     def __init__(
         self,
-        df1: Union[Tensor, float],
-        df2: Union[Tensor, float],
-        validate_args: Optional[bool] = None,
+        df1: Tensor | float,
+        df2: Tensor | float,
+        validate_args: bool | None = None,
     ) -> None:
         self.df1, self.df2 = broadcast_all(df1, df2)
         self._gamma1 = Gamma(self.df1 * 0.5, self.df1)

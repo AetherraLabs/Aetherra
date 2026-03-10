@@ -3,7 +3,6 @@ import types
 from .modules import *  # noqa: F403
 from .modules.fused import _FusedModule  # noqa: F403
 
-
 # # Subpackages
 # from . import qat  # noqa: F403
 # from . import quantized  # noqa: F403

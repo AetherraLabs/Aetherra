@@ -1,7 +1,8 @@
 # mypy: allow-untyped-defs
 import contextlib
 import functools
-from typing import Callable
+from collections.abc import Callable
+
 from typing_extensions import deprecated
 
 import torch

@@ -22,13 +22,12 @@ the code needed to recreate values.
 import dataclasses
 import enum
 import functools
-from typing import Any, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any
 
 from torch._guards import ChainedSource, GuardSource, Source
 
 from . import utils
 from .bytecode_transformation import create_call_function, create_instruction
-
 
 if TYPE_CHECKING:
     from .codegen import PyCodegen
@@ -117,7 +116,7 @@ class LocalSource(Source):
 
     # Whether we know this input is dynamic (based on example_inputs)
     # For non tensors, we simply look at the first index of the tuple
-    dynamism: Optional[frozenset[str]] = None
+    dynamism: frozenset[str] | None = None
 
     # Whether the item at this source is the _content_ of a cell that is
     # dereferenced from the root frame, i.e., it's a part of the `co_cellvars`
@@ -329,7 +328,7 @@ class UnspecializedParamBufferSource(AttrSource):
 # present within the final view shape metadata.
 @dataclasses.dataclass(frozen=True)
 class EphemeralSource(Source):
-    desc: Optional[str] = None
+    desc: str | None = None
 
     def guard_source(self):
         return GuardSource.EPHEMERAL
@@ -352,16 +351,16 @@ class TensorProperty(enum.Enum):
     def method_name(self):
         if self is TensorProperty.SIZE:
             return "size"
-        elif self is TensorProperty.STRIDE:
+        if self is TensorProperty.STRIDE:
             return "stride"
-        elif self is TensorProperty.STORAGE_OFFSET:
+        if self is TensorProperty.STORAGE_OFFSET:
             return "storage_offset"
 
 
 @dataclasses.dataclass(frozen=True)
 class TensorPropertySource(ChainedSource):
     prop: TensorProperty
-    idx: Optional[int] = None  # None for STORAGE_OFFSET
+    idx: int | None = None  # None for STORAGE_OFFSET
 
     def __post_init__(self):
         assert self.base is not None
@@ -390,13 +389,12 @@ class TensorPropertySource(ChainedSource):
     def name(self):
         if self.prop is TensorProperty.SIZE:
             return f"{self.base.name()}.size()[{self.idx}]"
-        elif self.prop is TensorProperty.STRIDE:
+        if self.prop is TensorProperty.STRIDE:
             return f"{self.base.name()}.stride()[{self.idx}]"
-        elif self.prop is TensorProperty.STORAGE_OFFSET:
+        if self.prop is TensorProperty.STORAGE_OFFSET:
             assert self.idx is None
             return f"{self.base.name()}.storage_offset()"
-        else:
-            raise AssertionError(f"unhandled {self.prop}")
+        raise AssertionError(f"unhandled {self.prop}")
 
 
 @dataclasses.dataclass(frozen=True)
@@ -490,7 +488,7 @@ class AttrProxySource(ChainedSource):
 
 @dataclasses.dataclass(frozen=True)
 class DefaultsSource(ChainedSource):
-    idx_key: Union[int, str]
+    idx_key: int | str
     is_kw: bool = False
     field: str = dataclasses.field(init=False, repr=False, compare=False)
     _name: str = dataclasses.field(init=False, repr=False, compare=False)
@@ -560,8 +558,7 @@ class GetItemSource(ChainedSource):
         assert not isinstance(self.index, Source)
         if self.index_is_slice:
             return f"{self.base.name()}[{self.unpack_slice()!r}]"
-        else:
-            return f"{self.base.name()}[{self.index!r}]"
+        return f"{self.base.name()}[{self.index!r}]"
 
 
 @dataclasses.dataclass(frozen=True)
@@ -619,8 +616,7 @@ class DictGetItemSource(ChainedSource):
     def name(self):
         if isinstance(self.index, ConstDictKeySource):
             return f"{self.base.name()}[{self.index.name()}]"
-        else:
-            return f"{self.base.name()}[{self.index!r}]"
+        return f"{self.base.name()}[{self.index!r}]"
 
 
 # Same as DictGetItemSource but used for dict.__getitem__ calls to ensure that
@@ -664,8 +660,7 @@ class DictSubclassGetItemSource(ChainedSource):
     def name(self):
         if isinstance(self.index, ConstDictKeySource):
             return f"dict.__getitem__({self.base.name()}, {self.index.name()})"
-        else:
-            return f"{self.base.name()}[{self.index!r}]"
+        return f"{self.base.name()}[{self.index!r}]"
 
 
 @dataclasses.dataclass(frozen=True)
@@ -691,8 +686,7 @@ class ListGetItemSource(GetItemSource):
             raise RuntimeError(
                 "List[slice] is a temporary object and should not have a source"
             )
-        else:
-            codegen.append_output(codegen.create_load_const(self.index))
+        codegen.append_output(codegen.create_load_const(self.index))
 
         codegen.extend_output(create_call_function(2, False))
 
@@ -705,8 +699,7 @@ class ListGetItemSource(GetItemSource):
             raise RuntimeError(
                 "List[slice] is a temporary object and should not have a source"
             )
-        else:
-            return f"list.__getitem__({self.base.name()}, {self.index!r})"
+        return f"list.__getitem__({self.base.name()}, {self.index!r})"
 
 
 @dataclasses.dataclass(frozen=True)
@@ -913,7 +906,7 @@ class BackwardStateSource(Source):
         return GuardSource.BACKWARD_STATE
 
 
-def get_local_source_name(source: Source, *, only_allow_input=False) -> Optional[str]:
+def get_local_source_name(source: Source, *, only_allow_input=False) -> str | None:
     if isinstance(source, ChainedSource):
         return get_local_source_name(source.base, only_allow_input=only_allow_input)
     if not isinstance(source, LocalSource):
@@ -931,7 +924,7 @@ def is_from_global_source(source: Source) -> bool:
     return get_global_source_name(source) is not None
 
 
-def get_global_source_name(source: Source) -> Optional[str]:
+def get_global_source_name(source: Source) -> str | None:
     if isinstance(source, ChainedSource):
         return get_global_source_name(source.base)
     if not isinstance(source, GlobalSource):
@@ -986,7 +979,7 @@ def is_from_unspecialized_param_buffer_source(source: Source):
 def is_from_flatten_script_object_source(source: Source):
     if isinstance(source, FlattenScriptObjectSource):
         return True
-    elif isinstance(source, ChainedSource):
+    if isinstance(source, ChainedSource):
         return is_from_flatten_script_object_source(source.base)
     return False
 

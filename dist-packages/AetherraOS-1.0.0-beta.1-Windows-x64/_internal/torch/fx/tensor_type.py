@@ -24,8 +24,7 @@ class TensorType:
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             return list(self.__args__) == list(other.__args__)
-        else:
-            return False
+        return False
 
     @staticmethod
     def __class_getitem__(*args):
@@ -77,10 +76,9 @@ def is_consistent(t1, t2):
     if isinstance(t1, TensorType) and isinstance(t2, TensorType):
         return len(t1.__args__) == len(t2.__args__) and all(
             is_consistent(elem1, elem2)
-            for elem1, elem2 in zip(t1.__args__, t2.__args__)
+            for elem1, elem2 in zip(t1.__args__, t2.__args__, strict=False)
         )
-    else:
-        return False
+    return False
 
 
 @compatibility(is_backward_compatible=False)
@@ -104,8 +102,7 @@ def is_more_precise(t1, t2):
     if isinstance(t1, TensorType) and isinstance(t2, TensorType):
         return len(t1.__args__) == len(t2.__args__) and all(
             is_more_precise(elem1, elem2)
-            for elem1, elem2 in zip(t1.__args__, t2.__args__)
+            for elem1, elem2 in zip(t1.__args__, t2.__args__, strict=False)
         )
 
-    else:
-        return False
+    return False

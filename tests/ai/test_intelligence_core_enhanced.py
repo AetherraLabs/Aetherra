@@ -10,7 +10,6 @@ Enhanced testing for Lyrixa's cognitive, personality, and self-awareness systems
 This version attempts to import actual modules and provides comprehensive testing.
 """
 
-
 # Standard library imports
 import sys
 import unittest
@@ -129,7 +128,7 @@ def create_stub_modules():
             self.current_context = {}
             self.confidence_threshold = 0.7
 
-        def analyze_context(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        def analyze_context(self, context: dict[str, Any]) -> dict[str, Any]:
             """Analyze context and return intelligence insights"""
             self.current_context = context
             context_type = self._classify_context(context)
@@ -144,21 +143,20 @@ def create_stub_modules():
                 "analysis_timestamp": datetime.now().isoformat(),
             }
 
-        def _classify_context(self, context: Dict[str, Any]) -> str:
+        def _classify_context(self, context: dict[str, Any]) -> str:
             """Classify context type"""
             context_str = str(context).lower()
             if "code" in context_str or "programming" in context_str:
                 return "programming"
-            elif "chat" in context_str or "conversation" in context_str:
+            if "chat" in context_str or "conversation" in context_str:
                 return "conversational"
-            elif "analysis" in context_str or "data" in context_str:
+            if "analysis" in context_str or "data" in context_str:
                 return "analytical"
-            elif "goal" in context_str or "task" in context_str:
+            if "goal" in context_str or "task" in context_str:
                 return "goal_oriented"
-            else:
-                return "general"
+            return "general"
 
-        def _calculate_complexity(self, context: Dict[str, Any]) -> float:
+        def _calculate_complexity(self, context: dict[str, Any]) -> float:
             """Calculate complexity score"""
             complexity = min(len(str(context)) / 1000, 1.0)
             if isinstance(context, dict):
@@ -166,8 +164,8 @@ def create_stub_modules():
             return min(complexity, 1.0)
 
         def _find_similar_patterns(
-            self, context: Dict[str, Any]
-        ) -> List[Dict[str, Any]]:
+            self, context: dict[str, Any]
+        ) -> list[dict[str, Any]]:
             """Find similar patterns in memory"""
             # Simulate pattern matching
             return [
@@ -180,7 +178,7 @@ def create_stub_modules():
                 }
             ]
 
-        def _generate_recommendations(self, context_type: str) -> List[str]:
+        def _generate_recommendations(self, context_type: str) -> list[str]:
             """Generate context-appropriate recommendations"""
             recommendations = {
                 "programming": [
@@ -208,7 +206,7 @@ def create_stub_modules():
             return recommendations.get(context_type, recommendations["general"])
 
         def learn_pattern(
-            self, pattern_name: str, pattern_data: Dict[str, Any]
+            self, pattern_name: str, pattern_data: dict[str, Any]
         ) -> bool:
             """Learn and store a new pattern"""
             self.memory_patterns[pattern_name] = {
@@ -220,8 +218,8 @@ def create_stub_modules():
             return True
 
         def make_decision(
-            self, options: List[str], context: Dict[str, Any]
-        ) -> Dict[str, Any]:
+            self, options: list[str], context: dict[str, Any]
+        ) -> dict[str, Any]:
             """Make an intelligent decision"""
             if not options:
                 return {
@@ -252,7 +250,7 @@ def create_stub_modules():
                 "decision_id": len(self.decision_history),
             }
 
-        def get_intelligence_summary(self) -> Dict[str, Any]:
+        def get_intelligence_summary(self) -> dict[str, Any]:
             """Get summary of intelligence state"""
             return {
                 "patterns_learned": len(self.memory_patterns),
@@ -290,21 +288,20 @@ def create_stub_modules():
                 for word in ["excited", "amazing", "great", "fantastic"]
             ):
                 return "excited"
-            elif any(
+            if any(
                 word in user_input_lower
                 for word in ["confused", "stuck", "help", "problem"]
             ):
                 return "confused"
-            elif any(
+            if any(
                 word in user_input_lower
                 for word in ["thanks", "perfect", "exactly", "wonderful"]
             ):
                 return "satisfied"
-            else:
-                return "neutral"
+            return "neutral"
 
         def modulate_emotion(
-            self, detected_emotion: str, context: Dict[str, Any]
+            self, detected_emotion: str, context: dict[str, Any]
         ) -> None:
             """Adjust emotional state based on detected emotion"""
             emotion_mapping = {
@@ -329,7 +326,7 @@ def create_stub_modules():
                 )
                 self.current_emotion = new_emotion
 
-        def get_personality_summary(self) -> Dict[str, Any]:
+        def get_personality_summary(self) -> dict[str, Any]:
             """Get personality summary"""
             return {
                 "trait_levels": {
@@ -343,7 +340,7 @@ def create_stub_modules():
             }
 
         def learn_from_interaction(
-            self, user_input: str, response: str, feedback: Optional[str] = None
+            self, user_input: str, response: str, feedback: str | None = None
         ):
             """Learn from user interaction"""
             interaction = {
@@ -364,7 +361,7 @@ def create_stub_modules():
             if len(self.interaction_history) > 100:
                 self.interaction_history = self.interaction_history[-50:]
 
-        def _adapt_from_feedback(self, feedback: str, interaction: Dict[str, Any]):
+        def _adapt_from_feedback(self, feedback: str, interaction: dict[str, Any]):
             """Adapt personality based on feedback"""
             feedback_lower = feedback.lower()
 
@@ -391,7 +388,7 @@ def create_stub_modules():
 
             self.adaptation_history.append(adaptation)
 
-        def get_trait_expression(self, response_text: str) -> Dict[str, float]:
+        def get_trait_expression(self, response_text: str) -> dict[str, float]:
             """Analyze trait expression in response"""
             response_lower = response_text.lower()
 

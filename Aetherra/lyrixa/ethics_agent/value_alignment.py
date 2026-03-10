@@ -60,15 +60,11 @@ class ValueAlignmentEngine:
             assessment["value_scores"][value.value] = score
 
         # Calculate overall alignment
-        assessment["overall_alignment"] = sum(
-            assessment["value_scores"].values()
-        ) / len(CoreValue)
+        assessment["overall_alignment"] = sum(assessment["value_scores"].values()) / len(CoreValue)
 
         # Identify concerns and recommendations
         assessment["alignment_concerns"] = self._identify_alignment_concerns(assessment)
-        assessment["recommendations"] = self._generate_alignment_recommendations(
-            assessment
-        )
+        assessment["recommendations"] = self._generate_alignment_recommendations(assessment)
 
         return assessment
 
@@ -169,16 +165,12 @@ class ValueAlignmentEngine:
 
         return concerns
 
-    def _generate_alignment_recommendations(
-        self, assessment: Dict[str, Any]
-    ) -> List[str]:
+    def _generate_alignment_recommendations(self, assessment: Dict[str, Any]) -> List[str]:
         """Generate recommendations for improving value alignment."""
         recommendations = []
 
         if assessment["overall_alignment"] < 0.6:
-            recommendations.append(
-                "Consider revising decision to better align with core values"
-            )
+            recommendations.append("Consider revising decision to better align with core values")
 
         if assessment["alignment_concerns"]:
             recommendations.append("Address specific value alignment concerns")

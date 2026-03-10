@@ -40,8 +40,9 @@ import types
 import typing
 import unittest
 from collections import defaultdict
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, cast, Optional, Union
+from typing import Any, cast
 
 import torch
 import torch._inductor.test_operators
@@ -52,7 +53,7 @@ from torch.utils import _config_module
 
 from . import config
 from .resume_execution import TORCH_DYNAMO_RESUME_IN_PREFIX
-from .utils import getfile, hashable, NP_SUPPORTED_MODULES, unwrap_if_wrapper
+from .utils import NP_SUPPORTED_MODULES, getfile, hashable, unwrap_if_wrapper
 from .variables import (
     BuiltinVariable,
     FunctionalCallVariable,
@@ -67,8 +68,7 @@ from .variables import (
     UserMethodVariable,
 )
 
-
-np: Optional[types.ModuleType] = None
+np: types.ModuleType | None = None
 try:
     import numpy as np
 except ModuleNotFoundError:
@@ -2980,8 +2980,7 @@ def get_torch_obj_rule_map() -> dict[Any, type["VariableTracker"]]:
                     raise AssertionError(
                         f"Duplicate torch object {obj} with different rules: {v}, {d[obj]}"
                     )
-                else:
-                    d[obj] = v
+                d[obj] = v
     return d
 
 
@@ -3062,11 +3061,11 @@ class FunctionIdSet:
     added to the graph and what will cause a graph break.
     """
 
-    function_ids: Optional[set[int]] = None
-    function_names: Optional[dict[int, str]] = None
+    function_ids: set[int] | None = None
+    function_names: dict[int, str] | None = None
 
     def __init__(
-        self, lazy_initializer: Callable[[], Union[dict[int, str], set[int]]]
+        self, lazy_initializer: Callable[[], dict[int, str] | set[int]]
     ) -> None:
         self.lazy_initializer = lazy_initializer
 
@@ -3629,10 +3628,10 @@ def add(import_name: str):
 
     module_spec = find_spec(import_name)
     if not module_spec:
-        return
+        return None
     origin = module_spec.origin
     if origin is None:
-        return
+        return None
     SKIP_DIRS.append(_strip_init_py(origin))
     _recompile_re()
 
@@ -3640,7 +3639,7 @@ def add(import_name: str):
 @dataclasses.dataclass
 class SkipResult:
     skipped: bool
-    reason: Optional[str]
+    reason: str | None
 
 
 def check_file(filename, is_inlined_call=False):
@@ -3697,10 +3696,10 @@ def check_file(filename, is_inlined_call=False):
 
 @dataclasses.dataclass
 class FunctionInfo:
-    py_obj: Optional[object]
-    name: Optional[str]
+    py_obj: object | None
+    name: str | None
     filename: str
-    code: Optional[types.CodeType]
+    code: types.CodeType | None
 
 
 """
@@ -3780,17 +3779,16 @@ def check_verbose(obj, is_inlined_call=False):
             False,
             f"inlined according trace_rules.lookup {reasons.pop()}",
         )
-    elif issubclass(rule, TorchInGraphFunctionVariable):
+    if issubclass(rule, TorchInGraphFunctionVariable):
         return SkipResult(
             False,
             f"registered in torch_obj_rule {reasons.pop()}",
         )
-    else:
-        assert rule == SkipFunctionVariable, rule
-        return SkipResult(
-            True,
-            f"skipped according trace_rules.lookup {reasons.pop()}",
-        )
+    assert rule == SkipFunctionVariable, rule
+    return SkipResult(
+        True,
+        f"skipped according trace_rules.lookup {reasons.pop()}",
+    )
 
 
 def check(obj, is_inlined_call=False):
@@ -3857,7 +3855,7 @@ def lookup_inner(
     name=None,
     filename=None,
     is_direct_call=True,
-    reasons: Union[None, set[str]] = None,
+    reasons: None | set[str] = None,
 ):
     result = _lookup_inner(
         obj,
@@ -3892,7 +3890,7 @@ def _lookup_inner(
     name=None,
     filename=None,
     is_direct_call=True,
-    reasons: Union[None, set[str]] = None,
+    reasons: None | set[str] = None,
 ):
     # Step 1: lookup obj's tracing rule in `torch_name_rule_map`.
     # The rules defined in `torch_name_rule_map` mainly includes two parts:
@@ -3936,7 +3934,7 @@ def _lookup_inner(
             if reasons is not None:
                 reasons.add("func name is patched_init")
             return SkipFunctionVariable
-        elif name == "__torch_function__" or (
+        if name == "__torch_function__" or (
             obj and getattr(obj, "__name__", None) == "__torch_function__"
         ):
             if reasons is not None:
@@ -3971,8 +3969,7 @@ def _lookup_inner(
         reasons.add(skip_result.reason)
     if skip_result.skipped:
         return SkipFunctionVariable
-    else:
-        return UserFunctionVariable
+    return UserFunctionVariable
 
 
 def clear_lru_cache():

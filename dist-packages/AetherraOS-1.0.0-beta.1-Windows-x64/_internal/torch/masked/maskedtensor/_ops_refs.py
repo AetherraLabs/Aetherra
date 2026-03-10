@@ -1,28 +1,28 @@
 # mypy: allow-untyped-defs
 # Copyright (c) Meta Platforms, Inc. and affiliates
 
+from collections.abc import Callable
 from functools import partial
-from typing import Any, Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 
-from .binary import _apply_native_binary, NATIVE_BINARY_FNS, NATIVE_INPLACE_BINARY_FNS
+from .binary import NATIVE_BINARY_FNS, NATIVE_INPLACE_BINARY_FNS, _apply_native_binary
 from .core import (
+    MaskedTensor,
     _get_data,
     _masks_match,
     _maybe_get_mask,
     is_masked_tensor,
-    MaskedTensor,
 )
-from .passthrough import _apply_pass_through_fn, PASSTHROUGH_FNS
+from .passthrough import PASSTHROUGH_FNS, _apply_pass_through_fn
 from .reductions import (
-    _apply_reduction,
     NATIVE_REDUCE_FNS,
     TENSOR_REDUCE_FNS,
     TORCH_REDUCE_FNS,
+    _apply_reduction,
 )
-from .unary import _apply_native_unary, NATIVE_INPLACE_UNARY_FNS, NATIVE_UNARY_FNS
-
+from .unary import NATIVE_INPLACE_UNARY_FNS, NATIVE_UNARY_FNS, _apply_native_unary
 
 if TYPE_CHECKING:
     from torch._ops import OpOverload
@@ -84,9 +84,9 @@ class _MaskedToDense(torch.autograd.Function):
 
         if layout == torch.sparse_coo:
             return grad_output.to_sparse_coo()
-        elif layout == torch.sparse_csr:
+        if layout == torch.sparse_csr:
             return grad_output.to_sparse_csr()
-        elif layout == torch.strided:
+        if layout == torch.strided:
             return grad_output.to_dense()
         raise ValueError("to_dense: Unsupported input layout: ", layout)
 
@@ -390,10 +390,9 @@ def _softmax_backward_data(func, *args, **kwargs):
         )
         res = MaskedTensor(new_grad_data, _maybe_get_mask(grad))
         return res
-    else:
-        raise ValueError(
-            f"__torch_dispatch__, {func}: grad and output must both be MaskedTensors"
-        )
+    raise ValueError(
+        f"__torch_dispatch__, {func}: grad and output must both be MaskedTensors"
+    )
 
 
 @register_dispatch_func([torch.ops.aten.copy_])

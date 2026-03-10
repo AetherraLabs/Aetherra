@@ -10,13 +10,14 @@ import os
 import sys
 import typing
 from abc import abstractmethod
-from typing import Any, Callable, Generic, Optional, TypeVar, Union
-from typing_extensions import override, TypeAlias
+from collections.abc import Callable
+from typing import Any, Generic, Optional, TypeAlias, TypeVar
+
+from typing_extensions import override
 
 from torch._dynamo.utils import dynamo_timed
 from torch._inductor import config
 from torch.monitor import _WaitCounter
-
 
 try:
     import redis
@@ -69,14 +70,14 @@ class RemoteCacheBackend(Generic[_T]):
         self._name = f"backend:{type(self).__name__}"
 
     @abstractmethod
-    def _get(self, key: str) -> Optional[_T]:
+    def _get(self, key: str) -> _T | None:
         pass
 
     @abstractmethod
     def _put(self, key: str, data: _T) -> None:
         pass
 
-    def get(self, key: str) -> Optional[_T]:
+    def get(self, key: str) -> _T | None:
         try:
             value = self._get(key)
             cache_stats.get(self._name, value)
@@ -106,7 +107,7 @@ class RemoteCacheSerde(Generic[_T, _U]):
 
 
 JsonDataTy = Optional[
-    Union[int, float, str, bool, dict[str, "JsonDataTy"], list["JsonDataTy"]]
+    int | float | str | bool | dict[str, "JsonDataTy"] | list["JsonDataTy"]
 ]
 
 
@@ -150,7 +151,7 @@ class RemoteCachePassthroughSerde(RemoteCacheSerde[_T, _T]):
 # use the concrete type of the RemoteCache as the reported cache. See
 # RemoteFxGraphCache below as an example.
 class RemoteCache(Generic[_T]):
-    backend_override_cls: Optional[Callable[[], RemoteCacheBackend[Any]]] = None
+    backend_override_cls: Callable[[], RemoteCacheBackend[Any]] | None = None
 
     def __init__(
         self, backend: RemoteCacheBackend[_U], serde: RemoteCacheSerde[_T, _U]
@@ -164,7 +165,7 @@ class RemoteCache(Generic[_T]):
 
     # See if the cache contains `key`. Returns `None` if the value is not
     # present in the cache.
-    def get(self, key: str) -> Optional[_T]:
+    def get(self, key: str) -> _T | None:
         with _WaitCounter("pytorch.remote_cache.get").guard():
             sample = self._create_sample()
             try:
@@ -192,16 +193,16 @@ class RemoteCache(Generic[_T]):
             self._log_sample(sample)
 
     # Used to convert data from the cache into structured data.
-    def _decode(self, data: _U, sample: Optional[Sample]) -> _T:  # type: ignore[override]
+    def _decode(self, data: _U, sample: Sample | None) -> _T:  # type: ignore[override]
         return self.serde.decode(data)  # type: ignore[arg-type]
 
     # Used to convert structured data into data for the cache.
-    def _encode(self, value: _T, sample: Optional[Sample]) -> object:  # returns _U
+    def _encode(self, value: _T, sample: Sample | None) -> object:  # returns _U
         return self.serde.encode(value)
 
     # Get structured data from the cache.
     # Separate from `get` so that it can be overridden.
-    def _get(self, key: str, sample: Optional[Sample]) -> Optional[_T]:
+    def _get(self, key: str, sample: Sample | None) -> _T | None:
         if data := self._backend_get(key):
             return self._decode(data, sample)
         return None
@@ -214,7 +215,7 @@ class RemoteCache(Generic[_T]):
 
     # Put structured data into the cache.
     # Separate from `put` so that it can be overridden.
-    def _put(self, key: str, value: _T, sample: Optional[Sample]) -> None:
+    def _put(self, key: str, value: _T, sample: Sample | None) -> None:
         data = self._encode(value, sample)
         self._backend_put(key, data)
 
@@ -226,11 +227,11 @@ class RemoteCache(Generic[_T]):
 
     # Create a logging Sample - used with internal loggers to monitor cache
     # effectiveness.
-    def _create_sample(self) -> Optional[Sample]:
+    def _create_sample(self) -> Sample | None:
         return None
 
     # Write the logging Sample to the logger.
-    def _log_sample(self, sample: Optional[Sample]) -> None:
+    def _log_sample(self, sample: Sample | None) -> None:
         pass
 
 
@@ -239,7 +240,7 @@ class RedisRemoteCacheBackend(RemoteCacheBackend[bytes]):
     A Redis implementation of a remote/distributed cache.
     """
 
-    _redis: Optional[redis.Redis] = None
+    _redis: redis.Redis | None = None
 
     def __init__(self, cache_id: str) -> None:
         super().__init__()
@@ -255,7 +256,7 @@ class RedisRemoteCacheBackend(RemoteCacheBackend[bytes]):
             )
 
     @override
-    def _get(self, key: str) -> Optional[bytes]:
+    def _get(self, key: str) -> bytes | None:
         if not self._redis:
             # Either redis wasn't found or we already had some trouble...
             return None
@@ -304,12 +305,12 @@ class RedisRemoteCache(RemoteCache[JsonDataTy]):
         return self._key_fmt.format(key=key)
 
     @override
-    def _get(self, key: str, sample: Optional[Sample]) -> Optional[JsonDataTy]:
+    def _get(self, key: str, sample: Sample | None) -> JsonDataTy | None:
         key = self._get_key(key)
         return super()._get(key, sample)
 
     @override
-    def _put(self, key: str, value: JsonDataTy, sample: Optional[Sample]) -> None:
+    def _put(self, key: str, value: JsonDataTy, sample: Sample | None) -> None:
         key = self._get_key(key)
         super()._put(key, value, sample)
 
@@ -339,18 +340,17 @@ def create_cache(
     is_fbcode: bool,
     fb_cache_cls: str,
     oss_cache_cls: str,
-) -> Optional[RemoteCache[JsonDataTy]]:
+) -> RemoteCache[JsonDataTy] | None:
     try:
         if is_fbcode:
             import torch._inductor.fb.remote_cache
 
             cache_cls = getattr(torch._inductor.fb.remote_cache, fb_cache_cls)
             return cache_cls(key)
-        else:
-            this_module = sys.modules[__name__]
+        this_module = sys.modules[__name__]
 
-            cache_cls = getattr(this_module, oss_cache_cls)
-            return cache_cls(key)
+        cache_cls = getattr(this_module, oss_cache_cls)
+        return cache_cls(key)
 
     except Exception:
         log.warning("Unable to create a remote cache", exc_info=True)
@@ -381,7 +381,7 @@ class _CacheStats:
     def hit(self, name: str, count: int = 1) -> None:
         self._stats[name].hit += count
 
-    def get(self, name: str, value: Optional[object]) -> None:
+    def get(self, name: str, value: object | None) -> None:
         if value is None:
             self.miss(name)
         else:

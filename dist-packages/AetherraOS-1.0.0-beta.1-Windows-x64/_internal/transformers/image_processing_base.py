@@ -18,7 +18,7 @@ import json
 import os
 import warnings
 from io import BytesIO
-from typing import Any, Optional, TypeVar, Union
+from typing import Any, TypeVar
 
 import numpy as np
 import requests
@@ -38,7 +38,6 @@ from .utils import (
     is_vision_available,
     logging,
 )
-
 
 if is_vision_available():
     from PIL import Image
@@ -98,11 +97,11 @@ class ImageProcessingMixin(PushToHubMixin):
     @classmethod
     def from_pretrained(
         cls: type[ImageProcessorType],
-        pretrained_model_name_or_path: Union[str, os.PathLike],
-        cache_dir: Optional[Union[str, os.PathLike]] = None,
+        pretrained_model_name_or_path: str | os.PathLike,
+        cache_dir: str | os.PathLike | None = None,
         force_download: bool = False,
         local_files_only: bool = False,
-        token: Optional[Union[str, bool]] = None,
+        token: str | bool | None = None,
         revision: str = "main",
         **kwargs,
     ) -> ImageProcessorType:
@@ -205,11 +204,18 @@ class ImageProcessingMixin(PushToHubMixin):
         if token is not None:
             kwargs["token"] = token
 
-        image_processor_dict, kwargs = cls.get_image_processor_dict(pretrained_model_name_or_path, **kwargs)
+        image_processor_dict, kwargs = cls.get_image_processor_dict(
+            pretrained_model_name_or_path, **kwargs
+        )
 
         return cls.from_dict(image_processor_dict, **kwargs)
 
-    def save_pretrained(self, save_directory: Union[str, os.PathLike], push_to_hub: bool = False, **kwargs):
+    def save_pretrained(
+        self,
+        save_directory: str | os.PathLike,
+        push_to_hub: bool = False,
+        **kwargs,
+    ):
         """
         Save an image processor object to the directory `save_directory`, so that it can be re-loaded using the
         [`~image_processing_utils.ImageProcessingMixin.from_pretrained`] class method.
@@ -231,14 +237,16 @@ class ImageProcessingMixin(PushToHubMixin):
                 "The `use_auth_token` argument is deprecated and will be removed in v5 of Transformers. Please use `token` instead.",
                 FutureWarning,
             )
-            if kwargs.get("token", None) is not None:
+            if kwargs.get("token") is not None:
                 raise ValueError(
                     "`token` and `use_auth_token` are both specified. Please set only the argument `token`."
                 )
             kwargs["token"] = use_auth_token
 
         if os.path.isfile(save_directory):
-            raise AssertionError(f"Provided path ({save_directory}) should be a directory, not a file")
+            raise AssertionError(
+                f"Provided path ({save_directory}) should be a directory, not a file"
+            )
 
         os.makedirs(save_directory, exist_ok=True)
 
@@ -272,7 +280,7 @@ class ImageProcessingMixin(PushToHubMixin):
 
     @classmethod
     def get_image_processor_dict(
-        cls, pretrained_model_name_or_path: Union[str, os.PathLike], **kwargs
+        cls, pretrained_model_name_or_path: str | os.PathLike, **kwargs
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         """
         From a `pretrained_model_name_or_path`, resolve to a dictionary of parameters, to be used for instantiating a
@@ -299,7 +307,9 @@ class ImageProcessingMixin(PushToHubMixin):
         local_files_only = kwargs.pop("local_files_only", False)
         revision = kwargs.pop("revision", None)
         subfolder = kwargs.pop("subfolder", "")
-        image_processor_filename = kwargs.pop("image_processor_filename", IMAGE_PROCESSOR_NAME)
+        image_processor_filename = kwargs.pop(
+            "image_processor_filename", IMAGE_PROCESSOR_NAME
+        )
 
         from_pipeline = kwargs.pop("_from_pipeline", None)
         from_auto_class = kwargs.pop("_from_auto", False)
@@ -315,7 +325,10 @@ class ImageProcessingMixin(PushToHubMixin):
                 )
             token = use_auth_token
 
-        user_agent = {"file_type": "image processor", "from_auto_class": from_auto_class}
+        user_agent = {
+            "file_type": "image processor",
+            "from_auto_class": from_auto_class,
+        }
         if from_pipeline is not None:
             user_agent["using_pipeline"] = from_pipeline
 
@@ -326,7 +339,9 @@ class ImageProcessingMixin(PushToHubMixin):
         pretrained_model_name_or_path = str(pretrained_model_name_or_path)
         is_local = os.path.isdir(pretrained_model_name_or_path)
         if os.path.isdir(pretrained_model_name_or_path):
-            image_processor_file = os.path.join(pretrained_model_name_or_path, image_processor_filename)
+            image_processor_file = os.path.join(
+                pretrained_model_name_or_path, image_processor_filename
+            )
         if os.path.isfile(pretrained_model_name_or_path):
             resolved_image_processor_file = pretrained_model_name_or_path
             is_local = True
@@ -385,8 +400,11 @@ class ImageProcessingMixin(PushToHubMixin):
                     image_processor_dict["auto_map"], pretrained_model_name_or_path
                 )
             if "custom_pipelines" in image_processor_dict:
-                image_processor_dict["custom_pipelines"] = add_model_info_to_custom_pipelines(
-                    image_processor_dict["custom_pipelines"], pretrained_model_name_or_path
+                image_processor_dict["custom_pipelines"] = (
+                    add_model_info_to_custom_pipelines(
+                        image_processor_dict["custom_pipelines"],
+                        pretrained_model_name_or_path,
+                    )
                 )
 
         return image_processor_dict, kwargs
@@ -433,8 +451,7 @@ class ImageProcessingMixin(PushToHubMixin):
         logger.info(f"Image processor {image_processor}")
         if return_unused_kwargs:
             return image_processor, kwargs
-        else:
-            return image_processor
+        return image_processor
 
     def to_dict(self) -> dict[str, Any]:
         """
@@ -449,7 +466,7 @@ class ImageProcessingMixin(PushToHubMixin):
         return output
 
     @classmethod
-    def from_json_file(cls, json_file: Union[str, os.PathLike]):
+    def from_json_file(cls, json_file: str | os.PathLike):
         """
         Instantiates a image processor of type [`~image_processing_utils.ImageProcessingMixin`] from the path to a JSON
         file of parameters.
@@ -488,7 +505,7 @@ class ImageProcessingMixin(PushToHubMixin):
 
         return json.dumps(dictionary, indent=2, sort_keys=True) + "\n"
 
-    def to_json_file(self, json_file_path: Union[str, os.PathLike]):
+    def to_json_file(self, json_file_path: str | os.PathLike):
         """
         Save this instance to a JSON file.
 
@@ -528,7 +545,7 @@ class ImageProcessingMixin(PushToHubMixin):
 
         cls._auto_class = auto_class
 
-    def fetch_images(self, image_url_or_urls: Union[str, list[str]]):
+    def fetch_images(self, image_url_or_urls: str | list[str]):
         """
         Convert a single or a list of urls into the corresponding `PIL.Image` objects.
 
@@ -543,16 +560,21 @@ class ImageProcessingMixin(PushToHubMixin):
         }
         if isinstance(image_url_or_urls, list):
             return [self.fetch_images(x) for x in image_url_or_urls]
-        elif isinstance(image_url_or_urls, str):
+        if isinstance(image_url_or_urls, str):
             response = requests.get(image_url_or_urls, stream=True, headers=headers)
             response.raise_for_status()
             return Image.open(BytesIO(response.content))
-        else:
-            raise TypeError(f"only a single or a list of entries is supported but got type={type(image_url_or_urls)}")
+        raise TypeError(
+            f"only a single or a list of entries is supported but got type={type(image_url_or_urls)}"
+        )
 
 
 ImageProcessingMixin.push_to_hub = copy_func(ImageProcessingMixin.push_to_hub)
 if ImageProcessingMixin.push_to_hub.__doc__ is not None:
-    ImageProcessingMixin.push_to_hub.__doc__ = ImageProcessingMixin.push_to_hub.__doc__.format(
-        object="image processor", object_class="AutoImageProcessor", object_files="image processor file"
+    ImageProcessingMixin.push_to_hub.__doc__ = (
+        ImageProcessingMixin.push_to_hub.__doc__.format(
+            object="image processor",
+            object_class="AutoImageProcessor",
+            object_files="image processor file",
+        )
     )

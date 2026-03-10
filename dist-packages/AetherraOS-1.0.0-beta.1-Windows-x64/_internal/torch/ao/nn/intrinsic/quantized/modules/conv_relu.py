@@ -7,7 +7,6 @@ import torch.ao.nn.quantized as nnq
 import torch.nn.functional as F
 from torch.nn.utils import fuse_conv_bn_weights
 
-
 __all__ = [
     "ConvReLU1d",
     "ConvReLU2d",

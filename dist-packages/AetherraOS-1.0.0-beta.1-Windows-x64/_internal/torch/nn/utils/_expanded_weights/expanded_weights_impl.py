@@ -1,12 +1,11 @@
 # mypy: allow-untyped-defs
 import functools
+from collections.abc import Callable
 from contextlib import contextmanager
-from typing import Callable
 
 import torch
 from torch._decomp import decomposition_table
 from torch.utils._pytree import tree_map_only
-
 
 HANDLED_FUNCTIONS: dict[Callable, torch.autograd.Function] = {}
 
@@ -140,7 +139,7 @@ class ExpandedWeight(torch.Tensor):
                     return decomp(*args, **kwargs)
         if func == torch._cudnn_rnn_flatten_weight:
             # since we aren't using the fused cuda kernels for RNNs, don't do this
-            return
+            return None
         if func in cls.handled_functions:
             return cls.handled_functions[func].apply(
                 tuple(kwargs.keys()), func, *(args + tuple(kwargs.values()))

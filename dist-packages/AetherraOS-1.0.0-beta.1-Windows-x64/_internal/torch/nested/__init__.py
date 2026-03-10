@@ -5,8 +5,8 @@ import torch
 import torch.nn.functional as F
 from torch import SymInt, Tensor
 from torch._C import _add_docstr, _nested  # type: ignore[attr-defined]
-from torch.types import _device as Device, _dtype as DType
-
+from torch.types import _device as Device
+from torch.types import _dtype as DType
 
 __all__ = [
     "to_padded_tensor",
@@ -18,16 +18,16 @@ __all__ = [
 ]
 
 # Allowlist these for weights_only load of NJT
-from ._internal.nested_tensor import _rebuild_njt, NestedTensor as _NestedTensor
-
+from ._internal.nested_tensor import NestedTensor as _NestedTensor
+from ._internal.nested_tensor import _rebuild_njt
 
 torch.serialization.add_safe_globals([_NestedTensor, _rebuild_njt])
 
 
 def as_nested_tensor(
-    ts: Union[Tensor, list[Tensor], tuple[Tensor, ...]],
-    dtype: Optional[DType] = None,
-    device: Optional[Device] = None,
+    ts: Tensor | list[Tensor] | tuple[Tensor, ...],
+    dtype: DType | None = None,
+    device: Device | None = None,
     layout=None,
 ) -> Tensor:
     r"""
@@ -93,11 +93,10 @@ def as_nested_tensor(
         if layout == ts.layout:
             # return input directly or input copied to device / dtype
             return ts.to(device=device, dtype=dtype)
-        else:
-            # TODO: Just use nt.to(layout=layout) when it exists.
-            raise RuntimeError(
-                "as_nested_tensor(): Converting between nested tensor layouts is not supported"
-            )
+        # TODO: Just use nt.to(layout=layout) when it exists.
+        raise RuntimeError(
+            "as_nested_tensor(): Converting between nested tensor layouts is not supported"
+        )
 
     if layout is None:
         layout = torch.strided
@@ -112,10 +111,9 @@ def as_nested_tensor(
                 nested_sizes,
                 *torch._nested_compute_contiguous_strides_offsets(nested_sizes),
             )
-        else:
-            assert isinstance(ts, list)
-            return torch._nested_tensor_from_tensor_list(ts, dtype, None, device, None)
-    elif layout == torch.jagged:
+        assert isinstance(ts, list)
+        return torch._nested_tensor_from_tensor_list(ts, dtype, None, device, None)
+    if layout == torch.jagged:
         if isinstance(ts, Tensor):
             if device is None:
                 device = ts.device
@@ -136,16 +134,12 @@ def as_nested_tensor(
             return nested_view_from_values_offsets(
                 values, offsets, min_seqlen=seq_len, max_seqlen=seq_len
             )
-        else:
-            from torch.nested._internal.nested_tensor import jagged_from_list
+        from torch.nested._internal.nested_tensor import jagged_from_list
 
-            assert isinstance(ts, list)
-            nt, _ = jagged_from_list(ts, offsets=None, device=device, dtype=dtype)
-            return nt
-    else:
-        raise RuntimeError(
-            f"Specified layout is unsupported for nested tensors: {layout}"
-        )
+        assert isinstance(ts, list)
+        nt, _ = jagged_from_list(ts, offsets=None, device=device, dtype=dtype)
+        return nt
+    raise RuntimeError(f"Specified layout is unsupported for nested tensors: {layout}")
 
 
 # Note: This not only adds doc strings for the nested ops, but
@@ -254,7 +248,7 @@ def nested_tensor(
             requires_grad=requires_grad,
             pin_memory=pin_memory,
         )
-    elif layout == torch.jagged:
+    if layout == torch.jagged:
         # Need to wrap lists of scalars as tensors
         list_of_tensors = [
             t if isinstance(t, Tensor) else torch.as_tensor(t) for t in tensor_list
@@ -272,17 +266,14 @@ def nested_tensor(
             nt = nt.pin_memory()  # type: ignore[assignment]
 
         return nt
-    else:
-        raise RuntimeError(
-            f"Specified layout is unsupported for nested tensors: {layout}"
-        )
+    raise RuntimeError(f"Specified layout is unsupported for nested tensors: {layout}")
 
 
 def narrow(
     tensor: Tensor,
     dim: int,
-    start: Union[int, Tensor],
-    length: Union[int, Tensor],
+    start: int | Tensor,
+    length: int | Tensor,
     layout=torch.strided,
 ) -> Tensor:
     r"""
@@ -358,11 +349,11 @@ def narrow(
 
 def nested_tensor_from_jagged(
     values: Tensor,
-    offsets: Optional[Tensor] = None,
-    lengths: Optional[Tensor] = None,
-    jagged_dim: Optional[int] = None,
-    min_seqlen: Optional[int] = None,
-    max_seqlen: Optional[int] = None,
+    offsets: Tensor | None = None,
+    lengths: Tensor | None = None,
+    jagged_dim: int | None = None,
+    min_seqlen: int | None = None,
+    max_seqlen: int | None = None,
 ) -> Tensor:
     r"""
     Constructs a jagged layout nested tensor from the given jagged components. The jagged layout
@@ -442,11 +433,10 @@ def nested_tensor_from_jagged(
             raise RuntimeError(
                 "nested_tensor_from_jagged(): At least one of offsets or lengths is required."
             )
-        else:
-            # TODO: Truly support offsets=None at some point?
-            # For now, just convert lengths -> offsets for kernel convenience
-            offsets = F.pad(lengths.cumsum(0), (1, 0))
-            lengths = None
+        # TODO: Truly support offsets=None at some point?
+        # For now, just convert lengths -> offsets for kernel convenience
+        offsets = F.pad(lengths.cumsum(0), (1, 0))
+        lengths = None
 
     if jagged_dim is None:
         jagged_dim = 1

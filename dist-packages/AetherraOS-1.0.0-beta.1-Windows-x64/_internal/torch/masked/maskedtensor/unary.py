@@ -5,7 +5,6 @@ import torch
 
 from .core import _map_mt_args_kwargs, _wrap_result
 
-
 __all__ = []  # type: ignore[var-annotated]
 
 
@@ -148,8 +147,7 @@ def _unary_helper(fn, args, kwargs, inplace):
     if inplace:
         args[0]._set_data_mask(result_data, mask_args[0])
         return args[0]
-    else:
-        return _wrap_result(result_data, mask_args[0])
+    return _wrap_result(result_data, mask_args[0])
 
 
 def _torch_unary(fn_name):

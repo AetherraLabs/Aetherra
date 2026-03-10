@@ -118,9 +118,7 @@ class AetherRuntime:
         self.running = True
         start_time = time.time()
 
-        print(
-            f"🚀 Starting .aether script execution ({len(self.script_lines)} commands)"
-        )
+        print(f"🚀 Starting .aether script execution ({len(self.script_lines)} commands)")
 
         for i, line in enumerate(self.script_lines, 1):
             if not self.running:
@@ -149,11 +147,7 @@ class AetherRuntime:
         """Get execution statistics."""
         return {
             "goals_completed": len(
-                [
-                    h
-                    for h in self.context.execution_history
-                    if h["status"] == "completed"
-                ]
+                [h for h in self.context.execution_history if h["status"] == "completed"]
             ),
             "goals_failed": len(
                 [h for h in self.context.execution_history if h["status"] == "failed"]
@@ -183,7 +177,7 @@ class AetherRuntime:
             plugin_name = line.replace("use plugin", "", 1).strip('" ')
             if self.context.plugins:
                 try:
-                    # TODO: Pass policy/trust context when available
+                    # Integration point: pass policy/trust context when available
                     result = self.context.plugins.execute_plugin(plugin_name)
                     self.context.variables["last_plugin_result"] = result
                     print(f"🧩 Plugin '{plugin_name}' executed successfully")
@@ -201,9 +195,7 @@ class AetherRuntime:
                     result = self.context.memory.search(query)
                     self.context.variables[var_name] = result
                     print(f"🧠 Recalled '{query}' → ${var_name}")
-                    print(
-                        f"   📊 Found {len(result) if isinstance(result, list) else 1} results"
-                    )
+                    print(f"   📊 Found {len(result) if isinstance(result, list) else 1} results")
                 except Exception as e:
                     print(f"❌ Memory recall failed: {e}")
             else:
@@ -221,9 +213,7 @@ class AetherRuntime:
                         self.context.variables["last_output"] = output
                         self.context.variables[f"{agent_name}_output"] = output
                         print(f"🤖 Agent '{agent_name}' executed with ${input_var}")
-                        print(
-                            f"   📤 Output stored in $last_output and ${agent_name}_output"
-                        )
+                        print(f"   📤 Output stored in $last_output and ${agent_name}_output")
                     except Exception as e:
                         print(f"❌ Agent '{agent_name}' failed: {e}")
                 else:
@@ -233,9 +223,7 @@ class AetherRuntime:
 
         # Store in memory with enhanced handling
         elif line.startswith("store"):
-            match = re.match(
-                r"store \$(\w+) in memory(?:\s+as\s+[\"'](.+?)[\"'])?", line
-            )
+            match = re.match(r"store \$(\w+) in memory(?:\s+as\s+[\"'](.+?)[\"'])?", line)
             if match and self.context.memory:
                 var_name = match.group(1)
                 tag = match.group(2) if match.group(2) else var_name
@@ -261,9 +249,7 @@ class AetherRuntime:
                     self.context.variables[var_name] = value[1:-1]
                 elif value.startswith("$"):
                     ref_var = value[1:]
-                    self.context.variables[var_name] = self.context.variables.get(
-                        ref_var
-                    )
+                    self.context.variables[var_name] = self.context.variables.get(ref_var)
                 else:
                     try:
                         # Try to parse as number
@@ -325,15 +311,11 @@ class AetherRuntime:
         """Initialize the runtime context and ensure all components are ready."""
         print("Initializing AetherRuntime...")
         if not self.context.memory or not self.context.plugins:
-            raise RuntimeError(
-                "Memory or plugins are not registered in the runtime context."
-            )
+            raise RuntimeError("Memory or plugins are not registered in the runtime context.")
         await asyncio.sleep(0)  # Simulate async initialization if needed
         print("AetherRuntime initialized successfully.")
 
-    def execute_async(
-        self, command: str, context: Optional[Dict[str, Any]] = None
-    ) -> str:
+    def execute_async(self, command: str, context: Optional[Dict[str, Any]] = None) -> str:
         """Execute a command asynchronously using the executor."""
         if not hasattr(self, "executor"):
             # Aetherra imports

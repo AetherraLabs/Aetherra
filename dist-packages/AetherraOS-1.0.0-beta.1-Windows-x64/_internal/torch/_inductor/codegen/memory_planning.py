@@ -5,7 +5,7 @@ import collections
 import dataclasses
 import itertools
 import pprint
-from typing import Any, Optional, Protocol, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Protocol
 
 import sympy
 
@@ -13,7 +13,7 @@ import torch
 from torch.utils._ordered_set import OrderedSet
 
 from .. import config
-from ..utils import _align, align, cache_on_self, CachedMethod, IndentedBuffer
+from ..utils import CachedMethod, IndentedBuffer, _align, align, cache_on_self
 from ..virtualized import V
 from .wrapper import (
     AllocateLine,
@@ -23,7 +23,6 @@ from .wrapper import (
     NullLine,
     ReuseLine,
 )
-
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -140,8 +139,8 @@ class Allocation(AllocationTreeNode):
     size_hint: int
     symbolic_size: sympy.Expr
     allocated: bool = False
-    pool: Optional[AllocationPool] = None
-    offset: Optional[sympy.Expr] = None
+    pool: AllocationPool | None = None
+    offset: sympy.Expr | None = None
 
     @property
     def device(self):
@@ -259,31 +258,28 @@ class TemporalSplit(ClearCacheOnAllocateMixin, AllocationTreeNode):
         if len(overlapping) > 1:
             # TODO(jansel): we could try harder here by merging overlapping in space
             return False
-        elif len(overlapping) == 1:
+        if len(overlapping) == 1:
             return overlapping[0].allocate(block, is_last)
-        else:
-            block.mark_allocated()
+        block.mark_allocated()
 
-            if len(self.allocations) == 1 and isinstance(self.allocations[-1], Empty):
-                self.allocations.pop()
+        if len(self.allocations) == 1 and isinstance(self.allocations[-1], Empty):
+            self.allocations.pop()
 
-            if slot_size == block_size:
-                # perfect fit
-                self.allocations.append(block)
-            elif slot_size > block_size:
-                self.allocations.append(
-                    SpatialSplit.create(block, slot_size - block_size)
-                )
-            else:  # grow this allocation
-                assert is_last
-                self.allocations = [
-                    *(
-                        SpatialSplit.create(a, block_size - slot_size)
-                        for a in self.allocations
-                    ),
-                    block,
-                ]
-            return True
+        if slot_size == block_size:
+            # perfect fit
+            self.allocations.append(block)
+        elif slot_size > block_size:
+            self.allocations.append(SpatialSplit.create(block, slot_size - block_size))
+        else:  # grow this allocation
+            assert is_last
+            self.allocations = [
+                *(
+                    SpatialSplit.create(a, block_size - slot_size)
+                    for a in self.allocations
+                ),
+                block,
+            ]
+        return True
 
     @cache_on_self
     def get_live_ranges(self) -> LiveRanges:
@@ -372,8 +368,8 @@ class AllocationPool:
     device: torch.device
     root: TemporalSplit
     can_expand: bool = True
-    restrict_live_range: Optional[LiveRange] = None
-    name: Optional[str] = None
+    restrict_live_range: LiveRange | None = None
+    name: str | None = None
     names_to_del: list[str] = dataclasses.field(default_factory=list)
     creation_cache: dict[str, str] = dataclasses.field(default_factory=dict)
 
@@ -515,7 +511,7 @@ class BufferGroup:
         self.node = node
         self.names = [node.get_name()]
         self.is_output = False
-        self.allocation: Optional[Allocation] = None
+        self.allocation: Allocation | None = None
         self.live_range = LiveRange(float("inf"), -float("inf"))
 
     def update_usage(self, timestep: int):
@@ -554,7 +550,7 @@ class PoolMemoryPlanningLine(MemoryPlanningLine):
     """Abstract base class for {Alloc,Dealloc}FromPoolLine"""
 
     group: BufferGroup
-    timestep: Optional[int] = None
+    timestep: int | None = None
 
     @property
     def node(self):
@@ -612,7 +608,7 @@ class MemoryPlanner:
 
     wrapper: Any
     pools: AllocationPools = dataclasses.field(default_factory=AllocationPools)
-    buffer_groups: Optional[list[BufferGroup]] = None
+    buffer_groups: list[BufferGroup] | None = None
 
     def plan(self, lines: list[Any]) -> list[Any]:
         """Call all the memory planning passes in sequence"""

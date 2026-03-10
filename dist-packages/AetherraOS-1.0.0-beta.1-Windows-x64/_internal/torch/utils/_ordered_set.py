@@ -5,10 +5,11 @@ from collections.abc import (
     Iterator,
     MutableSet,
     Reversible,
+)
+from collections.abc import (
     Set as AbstractSet,
 )
-from typing import Any, cast, Optional, TypeVar
-
+from typing import Any, TypeVar, cast
 
 T = TypeVar("T")
 T_co = TypeVar("T_co", covariant=True)
@@ -23,7 +24,7 @@ class OrderedSet(MutableSet[T], Reversible[T]):
 
     __slots__ = ("_dict",)
 
-    def __init__(self, iterable: Optional[Iterable[T]] = None):
+    def __init__(self, iterable: Iterable[T] | None = None):
         self._dict = dict.fromkeys(iterable, None) if iterable is not None else {}
 
     @staticmethod
@@ -70,8 +71,7 @@ class OrderedSet(MutableSet[T], Reversible[T]):
 
         if not isinstance(other, AbstractSet) and isinstance(other, Iterable):
             return cls(other)
-        else:
-            return other
+        return other
 
     def pop(self) -> T:
         if not self:

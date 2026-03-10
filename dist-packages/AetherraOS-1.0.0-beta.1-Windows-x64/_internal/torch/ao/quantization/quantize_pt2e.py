@@ -23,7 +23,6 @@ from .pt2e.utils import _disallow_eval_train, _fuse_conv_bn_, _get_node_name_to_
 from .quantize_fx import _convert_to_reference_decomposed_fx
 from .utils import DEPRECATION_WARNING
 
-
 __all__ = [
     "prepare_pt2e",
     "prepare_qat_pt2e",

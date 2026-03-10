@@ -18,13 +18,14 @@ import re
 import sys
 import types
 from collections import Counter
-from typing import Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import torch.nn
 from torch.utils._ordered_set import OrderedSet
 
 from . import config, graph_break_hints, utils
 from .bytecode_transformation import (
+    Instruction,
     add_push_null,
     add_push_null_call_function_ex,
     create_call_function,
@@ -34,7 +35,6 @@ from .bytecode_transformation import (
     create_load_const,
     create_load_method,
     create_rot_n,
-    Instruction,
 )
 from .exc import IncorrectUsage, unimplemented_v2
 from .source import AttrSource, ChainedSource, DictGetItemSource, Source
@@ -52,7 +52,6 @@ from .variables.tensor import (
     UnspecializedPythonVariable,
 )
 from .variables.torch_function import TensorWithTFOverrideVariable
-
 
 if TYPE_CHECKING:
     from .symbolic_convert import InstructionTranslatorBase
@@ -72,14 +71,14 @@ class PyCodegen:
     def __init__(
         self,
         tx: "InstructionTranslatorBase",
-        root: Optional[torch.nn.Module] = None,
-        graph_output_var: Optional[str] = None,
+        root: torch.nn.Module | None = None,
+        graph_output_var: str | None = None,
         tempvars=None,
         overridden_sources=None,
     ) -> None:
         self.root = root
-        self.top_of_stack: Optional[Union[VariableTracker, Source]] = None
-        self.uses: Counter[Union[VariableTracker, Source]] = collections.Counter()
+        self.top_of_stack: VariableTracker | Source | None = None
+        self.uses: Counter[VariableTracker | Source] = collections.Counter()
         self.graph_outputs: dict[int, GraphOutputEntry] = {}
         self._output: list[Instruction] = []
         # This determines which VariableTracker/Source should be stored as
@@ -191,12 +190,12 @@ class PyCodegen:
             assert allow_cache is True, "allow_cache must be True for Source"
             if self.top_of_stack is value:
                 self._output.append(create_dup_top())
-                return
+                return None
 
             if self.tempvars.get(source) is not None:
                 self._output.append(self.create_load(self.tempvars[source]))
                 self.top_of_stack = source
-                return
+                return None
 
             self.uses[source] += 1
             try:
@@ -213,7 +212,7 @@ class PyCodegen:
                 self.add_cache(source)
             self.top_of_stack = source
 
-            return
+            return None
 
         assert isinstance(value, VariableTracker)
         output = self._output
@@ -222,12 +221,12 @@ class PyCodegen:
         if allow_cache:
             if self.top_of_stack is value:
                 output.append(create_dup_top())
-                return
+                return None
 
             if self.tempvars.get(value) is not None:
                 output.append(self.create_load(self.tempvars[value]))
                 self.top_of_stack = value
-                return
+                return None
 
         if value.is_realized() and isinstance(
             value, ContextlibContextManagerLocalGeneratorObjectVariable
@@ -671,7 +670,7 @@ class PyCodegen:
             output.insert(-1, self.create_load_const(kw_names))
             output[-1] = create_instruction("CALL_KW", arg=nargs)
             return output
-        elif sys.version_info >= (3, 11):
+        if sys.version_info >= (3, 11):
             output = create_call_function(nargs, push_null)
             if sys.version_info >= (3, 12):
                 idx = -1

@@ -67,9 +67,7 @@ def run(
             logger.warning("ConsciousnessCore has no dream_cycle attribute")
             results["errors"].append("dream_cycle_missing")
         else:
-            dream_results = consciousness_core.dream_cycle.run(
-                consciousness_core.qualia_learner
-            )
+            dream_results = consciousness_core.dream_cycle.run(consciousness_core.qualia_learner)
             results["dream"] = dream_results
             logger.info(
                 f"Dream cycle completed: {dream_results.get('snapshots_analyzed', 0)} snapshots analyzed"

@@ -13,11 +13,10 @@ import torch.utils._pytree as pytree
 from torch._ops import HigherOrderOperator
 from torch._subclasses.fake_tensor import FakeTensor, FakeTensorMode
 from torch.fx.experimental.proxy_tensor import (
-    disable_proxy_modes_tracing,
     ProxyTorchDispatchMode,
+    disable_proxy_modes_tracing,
     track_tensor_tree,
 )
-
 
 AOTI_LOWERED_MODULE = "AOTInductorEPModule/AOTInductorRunnerWrapper"
 
@@ -83,17 +82,13 @@ def call_delegate_cpu(
         # use stateless original_gm for tracing with fake tensors
         fake_out = original_gm(*new_args)
         return fake_out
-    else:
-        # use AOTI Runner for real tensors
-        new_input_args = new_args[len(weight_args) :]
-        if type(lowered_module).__name__ == "AOTInductorRunnerWrapper":
-            return lowered_module(*new_input_args)  # type: ignore[misc]
-        elif type(lowered_module).__name__ == "AOTInductorEPModule":
-            return lowered_module(new_input_args)  # type: ignore[misc]
-        else:
-            raise RuntimeError(
-                f"Unexpected lowered_module type: {type(lowered_module)}."
-            )
+    # use AOTI Runner for real tensors
+    new_input_args = new_args[len(weight_args) :]
+    if type(lowered_module).__name__ == "AOTInductorRunnerWrapper":
+        return lowered_module(*new_input_args)  # type: ignore[misc]
+    if type(lowered_module).__name__ == "AOTInductorEPModule":
+        return lowered_module(new_input_args)  # type: ignore[misc]
+    raise RuntimeError(f"Unexpected lowered_module type: {type(lowered_module)}.")
 
 
 def trace_aoti_call_delegate(
@@ -156,6 +151,9 @@ def call_delegate_functionalize(
     )
     with ctx.redispatch_to_next():
         res = aoti_call_delegate(
-            lowered_module, original_gm, unwrapped_weight_args, unwrapped_input_args  # type: ignore[arg-type]
+            lowered_module,
+            original_gm,
+            unwrapped_weight_args,
+            unwrapped_input_args,  # type: ignore[arg-type]
         )
         return ctx.wrap_tensors(res)

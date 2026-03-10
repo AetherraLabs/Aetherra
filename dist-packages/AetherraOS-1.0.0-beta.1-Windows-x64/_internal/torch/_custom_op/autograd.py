@@ -74,7 +74,7 @@ def mark_non_differentiable(ctx, output, output_differentiability):
         assert len(output_differentiability) == len(tuple_output)
         non_differentiable_tensors = []
         for idx, (differentiable, out) in enumerate(
-            zip(output_differentiability, tuple_output)
+            zip(output_differentiability, tuple_output, strict=False)
         ):
             if isinstance(out, torch.Tensor):
                 if not differentiable:
@@ -226,7 +226,7 @@ def validate_grad_inputs_dict(grad_inputs_dict, forward_op, args_info):
                     f"hold a list of {len(arg_info)} gradients but got "
                     f"{len(grad)}"
                 )
-            for idx, (g, info) in enumerate(zip(grad, arg_info)):
+            for idx, (g, info) in enumerate(zip(grad, arg_info, strict=False)):
                 if g is None:
                     continue
                 if not isinstance(g, torch.Tensor):
@@ -299,9 +299,11 @@ def save_pytree_for_backward(ctx, stuff):
 # Inverse operation to save_pytree_for_backward
 def unpack_saved(ctx):
     flat_stuff = [None] * ctx.num_elts
-    for tensor, idx in zip(ctx.saved_tensors, ctx.tensor_idxs):
+    for tensor, idx in zip(ctx.saved_tensors, ctx.tensor_idxs, strict=False):
         flat_stuff[idx] = tensor
-    for non_tensor, idx in zip(ctx.saved_non_tensors, ctx.non_tensor_idxs):
+    for non_tensor, idx in zip(
+        ctx.saved_non_tensors, ctx.non_tensor_idxs, strict=False
+    ):
         flat_stuff[idx] = non_tensor
     stuff = pytree.tree_unflatten(flat_stuff, ctx.spec)
     return stuff

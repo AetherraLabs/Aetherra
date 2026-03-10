@@ -1,7 +1,7 @@
 # mypy: allow-untyped-defs
 import collections
 import logging
-from typing import Any, Optional, Union
+from typing import Any
 
 import torch
 from torch._export.verifier import SpecViolationError
@@ -19,7 +19,6 @@ from torch.export.exported_program import (
 from torch.fx._symbolic_trace import _ConstantAttributeType
 from torch.fx.graph_module import _get_attr
 
-
 log = logging.getLogger(__name__)
 
 
@@ -34,7 +33,7 @@ class ConstantAttrMap(collections.abc.MutableMapping):
     def __init__(self) -> None:
         # Underlying dict that we use to implement this mapping.
         self._constant_attrs: dict[
-            Union[int, torch.Tensor, FakeScriptObject, torch.utils._pytree.TreeSpec],
+            int | torch.Tensor | FakeScriptObject | torch.utils._pytree.TreeSpec,
             list[Any],
         ] = {}
         # Map from the hash(ScriptObject) to the ScriptObject itself. Used for
@@ -98,8 +97,7 @@ def get_constant_fqn(node: torch.fx.Node, constant_name: str) -> str:
     parent_fqn = list(node.meta["nn_module_stack"].values())[-1][0]
     if len(parent_fqn) > 0:
         return f"{parent_fqn}.{constant_name}"
-    else:
-        return constant_name
+    return constant_name
 
 
 def _get_first_fqn(
@@ -110,7 +108,7 @@ def _get_first_fqn(
     return fqns[0] if fqns else None
 
 
-def _unused_constant(node: torch.fx.Node) -> Optional[list[torch.fx.Node]]:
+def _unused_constant(node: torch.fx.Node) -> list[torch.fx.Node] | None:
     """
     If there is a tensor constant created while tracing, here is how the graph
     looks like:
@@ -155,8 +153,7 @@ def _unused_constant(node: torch.fx.Node) -> Optional[list[torch.fx.Node]]:
 
     if len(detach_node.users) > 0:
         return None
-    else:
-        return [detach_node, lift_fresh_node, node]
+    return [detach_node, lift_fresh_node, node]
 
 
 def lift_constants_pass(
@@ -373,7 +370,10 @@ def lift_constants_pass(
 
 def rewrite_script_object_meta(
     gm: torch.fx.GraphModule,
-) -> dict[str, _ConstantAttributeType,]:
+) -> dict[
+    str,
+    _ConstantAttributeType,
+]:
     """When tracing, we produce a graph with FakeScriptObject in the
     meta["val"].
 

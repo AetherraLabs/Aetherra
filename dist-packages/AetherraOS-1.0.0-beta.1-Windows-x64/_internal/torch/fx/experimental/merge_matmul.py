@@ -164,7 +164,7 @@ def merge_matmul(in_mod: torch.nn.Module):
         ]
 
         # Replace all uses of the original, unmerged matmuls with the equivalent split chunk from the merged matmul.
-        for old, new in zip(mms, merge_mm_res):
+        for old, new in zip(mms, merge_mm_res, strict=False):
             old.replace_all_uses_with(new)
             gm.graph.erase_node(old)
 

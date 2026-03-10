@@ -3,12 +3,10 @@ import collections
 import inspect
 import typing
 from types import GenericAlias
-from typing import Optional, Union
 
 import torch
-from torch import device, dtype, Tensor, types
+from torch import Tensor, device, dtype, types
 from torch.utils._exposed_in import exposed_in
-
 
 # This is used as a negative test for
 # test_custom_ops.py::TestTypeConversion::test_type_eval.
@@ -21,7 +19,7 @@ def infer_schema(
     /,
     *,
     mutates_args,
-    op_name: Optional[str] = None,
+    op_name: str | None = None,
 ) -> str:
     r"""Parses the schema of a given function with type hints. The schema is inferred from the
     function's type hints, and can be used to define a new operator.
@@ -77,7 +75,7 @@ def infer_schema(
             )
 
     def unstringify_types(
-        tys: tuple[Union[type[object], str], ...],
+        tys: tuple[type[object] | str, ...],
     ) -> tuple[tuple[typing.Any, ...], bool]:
         res = []
         changed = False
@@ -87,16 +85,15 @@ def infer_schema(
             changed |= ty_changed
         if changed:
             return tuple(res), True
-        else:
-            return tys, False  # type: ignore[return-value]
+        return tys, False  # type: ignore[return-value]
 
-    def unstringify_type(ty: Union[type[object], str]) -> tuple[typing.Any, bool]:
+    def unstringify_type(ty: type[object] | str) -> tuple[typing.Any, bool]:
         # Dig through a generic type and if it contains a stringified type
         # convert that to a real type. The second return value indicates if the
         # type contained a string or not.
         if isinstance(ty, str):
             return convert_type_string(ty), True
-        elif origin := typing.get_origin(ty):
+        if origin := typing.get_origin(ty):
             args, args_changed = unstringify_types(typing.get_args(ty))
             if args_changed:
                 return GenericAlias(origin, args), True
@@ -150,13 +147,13 @@ def infer_schema(
                     "the arguments that are mutated or the string 'unknown'. "
                 )
             if schema_type.startswith("Tensor"):
-                schema_type = f"Tensor(a{idx}!){schema_type[len('Tensor'):]}"
+                schema_type = f"Tensor(a{idx}!){schema_type[len('Tensor') :]}"
         elif name in mutates_args:
             if not schema_type.startswith("Tensor"):
                 error_fn(
                     f"Parameter {name} is in mutable_args but only Tensors or collections of Tensors can be mutated"
                 )
-            schema_type = f"Tensor(a{idx}!){schema_type[len('Tensor'):]}"
+            schema_type = f"Tensor(a{idx}!){schema_type[len('Tensor') :]}"
         seen_args.add(name)
         if param.default is inspect.Parameter.empty:
             params.append(f"{schema_type} {name}")
@@ -194,18 +191,18 @@ def infer_schema(
 
 
 def derived_types(
-    base_type: Union[type, typing._SpecialForm],
+    base_type: type | typing._SpecialForm,
     cpp_type: str,
     list_base: bool,
     optional_base_list: bool,
     optional_list_base: bool,
 ):
-    result: list[tuple[Union[type, typing._SpecialForm, GenericAlias], str]] = [
+    result: list[tuple[type | typing._SpecialForm | GenericAlias, str]] = [
         (base_type, cpp_type),
         (typing.Optional[base_type], f"{cpp_type}?"),
     ]
 
-    def derived_seq_types(typ: Union[type, typing._SpecialForm]):
+    def derived_seq_types(typ: type | typing._SpecialForm):
         return (
             typing.Sequence[typ],  # type: ignore[valid-type]  # noqa: UP006
             typing.List[typ],  # type: ignore[valid-type]  # noqa: UP006
@@ -231,7 +228,7 @@ def derived_types(
 
 
 def get_supported_param_types():
-    data: list[tuple[Union[type, typing._SpecialForm], str, bool, bool, bool]] = [
+    data: list[tuple[type | typing._SpecialForm, str, bool, bool, bool]] = [
         # (python type, schema type, type[] variant, type?[] variant, type[]? variant
         (Tensor, "Tensor", True, True, False),
         (int, "SymInt", True, False, True),
@@ -268,7 +265,7 @@ def parse_return(annotation, error_fn):
 
     origin = typing.get_origin(annotation)
     if origin is not tuple:
-        if annotation not in SUPPORTED_RETURN_TYPES.keys():
+        if annotation not in SUPPORTED_RETURN_TYPES:
             error_fn(
                 f"Return has unsupported type {annotation}. "
                 f"The valid types are: {SUPPORTED_RETURN_TYPES}."
@@ -315,10 +312,9 @@ def tuple_to_list(tuple_type: type[tuple]) -> type[list]:
     ):
         # Handle the case of an empty tuple type
         return list
-    elif len(type_args) == 1:
+    if len(type_args) == 1:
         # General case: create a List with the same type arguments
         return list[type_args[0]]  # type: ignore[valid-type]
-    elif len(type_args) == 2 and type_args[1] is Ellipsis:
+    if len(type_args) == 2 and type_args[1] is Ellipsis:
         return list[type_args[0]]  # type: ignore[valid-type]
-    else:
-        return list[typing.Union[tuple(type_args)]]  # type: ignore[misc, return-value]
+    return list[tuple(type_args)]  # type: ignore[misc, return-value]

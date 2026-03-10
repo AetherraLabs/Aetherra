@@ -2,18 +2,18 @@
 
 __all__ = ["svd_lowrank", "pca_lowrank"]
 
-from typing import Optional
 
 import torch
-from torch import _linalg_utils as _utils, Tensor
+from torch import Tensor
+from torch import _linalg_utils as _utils
 from torch.overrides import handle_torch_function, has_torch_function
 
 
 def get_approximate_basis(
     A: Tensor,
     q: int,
-    niter: Optional[int] = 2,
-    M: Optional[Tensor] = None,
+    niter: int | None = 2,
+    M: Tensor | None = None,
 ) -> Tensor:
     """Return tensor :math:`Q` with :math:`q` orthonormal columns such
     that :math:`Q Q^H A` approximates :math:`A`. If :math:`M` is
@@ -85,9 +85,9 @@ def get_approximate_basis(
 
 def svd_lowrank(
     A: Tensor,
-    q: Optional[int] = 6,
-    niter: Optional[int] = 2,
-    M: Optional[Tensor] = None,
+    q: int | None = 6,
+    niter: int | None = 2,
+    M: Tensor | None = None,
 ) -> tuple[Tensor, Tensor, Tensor]:
     r"""Return the singular value decomposition ``(U, S, V)`` of a matrix,
     batches of matrices, or a sparse matrix :math:`A` such that
@@ -149,9 +149,9 @@ def svd_lowrank(
 
 def _svd_lowrank(
     A: Tensor,
-    q: Optional[int] = 6,
-    niter: Optional[int] = 2,
-    M: Optional[Tensor] = None,
+    q: int | None = 6,
+    niter: int | None = 2,
+    M: Tensor | None = None,
 ) -> tuple[Tensor, Tensor, Tensor]:
     # Algorithm 5.1 in Halko et al., 2009
 
@@ -183,7 +183,7 @@ def _svd_lowrank(
 
 def pca_lowrank(
     A: Tensor,
-    q: Optional[int] = None,
+    q: int | None = None,
     center: bool = True,
     niter: int = 2,
 ) -> tuple[Tensor, Tensor, Tensor]:
@@ -289,6 +289,5 @@ def pca_lowrank(
         ones_m1_t = torch.ones(A.shape[:-2] + (1, m), dtype=dtype, device=A.device)
         M = torch.sparse.mm(C_t, ones_m1_t).mT
         return _svd_lowrank(A, q, niter=niter, M=M)
-    else:
-        C = A.mean(dim=(-2,), keepdim=True)
-        return _svd_lowrank(A - C, q, niter=niter, M=None)
+    C = A.mean(dim=(-2,), keepdim=True)
+    return _svd_lowrank(A - C, q, niter=niter, M=None)

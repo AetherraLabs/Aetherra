@@ -1,5 +1,4 @@
 # mypy: allow-untyped-defs
-from typing import Optional
 
 import torch
 import torch.nn.functional as F
@@ -56,7 +55,7 @@ class EmbeddingPerSampleGrad(torch.autograd.Function):
                 1, index, grad_output.reshape(batch_size, -1, embedding_dim)
             )
 
-        results: list[Optional[torch.Tensor]] = []
+        results: list[torch.Tensor | None] = []
         results.append(None)  # for kwarg names
         results.append(None)  # for op reference
 

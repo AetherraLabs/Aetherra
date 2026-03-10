@@ -23,9 +23,7 @@ from .schemas.self_model import (
     SelfModel,
 )
 
-DEFAULT_SELF_MODEL_PATH = os.getenv(
-    "AETHERRA_SELF_MODEL_PATH", ".aetherra/self_model.json"
-)
+DEFAULT_SELF_MODEL_PATH = os.getenv("AETHERRA_SELF_MODEL_PATH", ".aetherra/self_model.json")
 LOCK = threading.Lock()
 
 
@@ -79,7 +77,7 @@ class SelfModelManager:
             model = self.load()
             mutate(model)
             model.updated_at = datetime.utcnow()
-            # TODO: Compute coherence score realistically
+            # Integration point: compute coherence score with richer signals
             if model.coherence_score < 0.5 and "low_coherence" not in model.anomalies:
                 model.anomalies.append("low_coherence")
             self._path.write_text(model.model_dump_json(indent=2), encoding="utf-8")

@@ -1,29 +1,37 @@
 """Timer class based on the timeit.Timer class, but torch aware."""
+
 import enum
-import timeit
 import textwrap
-from typing import overload, Any, Callable, NoReturn, Optional, Union
+import timeit
+from collections.abc import Callable
+from typing import Any, NoReturn, overload
 
 import torch
 from torch.utils.benchmark.utils import common, cpp_jit
-from torch.utils.benchmark.utils._stubs import TimerClass, TimeitModuleType
-from torch.utils.benchmark.utils.valgrind_wrapper import timer_interface as valgrind_timer_interface
-
+from torch.utils.benchmark.utils._stubs import TimeitModuleType, TimerClass
+from torch.utils.benchmark.utils.valgrind_wrapper import (
+    timer_interface as valgrind_timer_interface,
+)
 
 __all__ = ["Timer", "timer", "Language"]
 
 
 if torch.backends.cuda.is_built() and torch.cuda.is_available():  # type: ignore[no-untyped-call]
+
     def timer() -> float:
         torch.cuda.synchronize()
         return timeit.default_timer()
 elif torch.xpu.is_available():
+
     def timer() -> float:
         torch.xpu.synchronize()
         return timeit.default_timer()
 elif torch._C._get_privateuse1_backend_name() != "privateuseone":
-    privateuse1_device_handler = getattr(torch, torch._C._get_privateuse1_backend_name(), None) \
-        if torch._C._get_privateuse1_backend_name() != "cpu" else None
+    privateuse1_device_handler = (
+        getattr(torch, torch._C._get_privateuse1_backend_name(), None)
+        if torch._C._get_privateuse1_backend_name() != "cpu"
+        else None
+    )
 
     def timer() -> float:
         if privateuse1_device_handler:
@@ -63,7 +71,7 @@ class CPPTimer:
         self._stmt: str = textwrap.dedent(stmt)
         self._setup: str = textwrap.dedent(setup)
         self._global_setup: str = textwrap.dedent(global_setup)
-        self._timeit_module: Optional[TimeitModuleType] = None
+        self._timeit_module: TimeitModuleType | None = None
 
     def timeit(self, number: int) -> float:
         if self._timeit_module is None:
@@ -192,13 +200,13 @@ class Timer:
         setup: str = "pass",
         global_setup: str = "",
         timer: Callable[[], float] = timer,
-        globals: Optional[dict[str, Any]] = None,
-        label: Optional[str] = None,
-        sub_label: Optional[str] = None,
-        description: Optional[str] = None,
-        env: Optional[str] = None,
+        globals: dict[str, Any] | None = None,
+        label: str | None = None,
+        sub_label: str | None = None,
+        description: str | None = None,
+        env: str | None = None,
         num_threads: int = 1,
-        language: Union[Language, str] = Language.PYTHON,
+        language: Language | str = Language.PYTHON,
     ):
         if not isinstance(stmt, str):
             raise ValueError("Currently only a `str` stmt is supported.")
@@ -219,9 +227,11 @@ class Timer:
                 )
 
         elif language in (Language.CPP, "cpp", "c++"):
-            assert self._timer_cls is timeit.Timer, "_timer_cls has already been swapped."
+            assert self._timer_cls is timeit.Timer, (
+                "_timer_cls has already been swapped."
+            )
             self._timer_cls = CPPTimer
-            setup = ("" if setup == "pass" else setup)
+            setup = "" if setup == "pass" else setup
             self._language = Language.CPP
             timer_kwargs["global_setup"] = global_setup
 
@@ -280,13 +290,15 @@ class Timer:
             return common.Measurement(
                 number_per_run=number,
                 raw_times=[self._timeit(number=number)],
-                task_spec=self._task_spec
+                task_spec=self._task_spec,
             )
 
     def repeat(self, repeat: int = -1, number: int = -1) -> None:
         raise NotImplementedError("See `Timer.blocked_autorange.`")
 
-    def autorange(self, callback: Optional[Callable[[int, float], NoReturn]] = None) -> None:
+    def autorange(
+        self, callback: Callable[[int, float], NoReturn] | None = None
+    ) -> None:
         raise NotImplementedError("See `Timer.blocked_autorange.`")
 
     def _threaded_measurement_loop(
@@ -295,8 +307,8 @@ class Timer:
         time_hook: Callable[[], float],
         stop_hook: Callable[[list[float]], bool],
         min_run_time: float,
-        max_run_time: Optional[float] = None,
-        callback: Optional[Callable[[int, float], NoReturn]] = None
+        max_run_time: float | None = None,
+        callback: Callable[[int, float], NoReturn] | None = None,
     ) -> list[float]:
         total_time = 0.0
         can_stop = False
@@ -334,7 +346,7 @@ class Timer:
 
     def blocked_autorange(
         self,
-        callback: Optional[Callable[[int, float], NoReturn]] = None,
+        callback: Callable[[int, float], NoReturn] | None = None,
         min_run_time: float = 0.2,
     ) -> common.Measurement:
         """Measure many replicates while keeping timer overhead to a minimum.
@@ -382,23 +394,20 @@ class Timer:
             return True
 
         times = self._threaded_measurement_loop(
-            number, time_hook, stop_hook,
-            min_run_time=min_run_time,
-            callback=callback)
+            number, time_hook, stop_hook, min_run_time=min_run_time, callback=callback
+        )
 
         return common.Measurement(
-            number_per_run=number,
-            raw_times=times,
-            task_spec=self._task_spec
+            number_per_run=number, raw_times=times, task_spec=self._task_spec
         )
 
     def adaptive_autorange(
-            self,
-            threshold: float = 0.1,
-            *,
-            min_run_time: float = 0.01,
-            max_run_time: float = 10.0,
-            callback: Optional[Callable[[int, float], NoReturn]] = None,
+        self,
+        threshold: float = 0.1,
+        *,
+        min_run_time: float = 0.01,
+        max_run_time: float = 10.0,
+        callback: Callable[[int, float], NoReturn] | None = None,
     ) -> common.Measurement:
         """Similar to `blocked_autorange` but also checks for variablility in measurements
         and repeats until iqr/median is smaller than `threshold` or `max_run_time` is reached.
@@ -441,18 +450,16 @@ class Timer:
         def stop_hook(times: list[float]) -> bool:
             if len(times) > 3:
                 return common.Measurement(
-                    number_per_run=number,
-                    raw_times=times,
-                    task_spec=self._task_spec
+                    number_per_run=number, raw_times=times, task_spec=self._task_spec
                 ).meets_confidence(threshold=threshold)
             return False
+
         times = self._threaded_measurement_loop(
-            number, time_hook, stop_hook, min_run_time, max_run_time, callback=callback)
+            number, time_hook, stop_hook, min_run_time, max_run_time, callback=callback
+        )
 
         return common.Measurement(
-            number_per_run=number,
-            raw_times=times,
-            task_spec=self._task_spec
+            number_per_run=number, raw_times=times, task_spec=self._task_spec
         )
 
     @overload
@@ -463,8 +470,7 @@ class Timer:
         repeats: None,
         collect_baseline: bool,
         retain_out_file: bool,
-    ) -> valgrind_timer_interface.CallgrindStats:
-        ...
+    ) -> valgrind_timer_interface.CallgrindStats: ...
 
     @overload
     def collect_callgrind(
@@ -474,14 +480,13 @@ class Timer:
         repeats: int,
         collect_baseline: bool,
         retain_out_file: bool,
-    ) -> tuple[valgrind_timer_interface.CallgrindStats, ...]:
-        ...
+    ) -> tuple[valgrind_timer_interface.CallgrindStats, ...]: ...
 
     def collect_callgrind(
         self,
         number: int = 100,
         *,
-        repeats: Optional[int] = None,
+        repeats: int | None = None,
         collect_baseline: bool = True,
         retain_out_file: bool = False,
     ) -> Any:
@@ -517,7 +522,9 @@ class Timer:
             some basic facilities for analyzing and manipulating results.
         """
         if not isinstance(self._task_spec.stmt, str):
-            raise ValueError("`collect_callgrind` currently only supports string `stmt`")
+            raise ValueError(
+                "`collect_callgrind` currently only supports string `stmt`"
+            )
 
         if repeats is not None and repeats < 1:
             raise ValueError("If specified, `repeats` must be >= 1")
@@ -526,7 +533,7 @@ class Timer:
         # simpler and quicker to raise an exception for a faulty `stmt` or `setup` in
         # the parent process rather than the valgrind subprocess.
         self._timeit(1)
-        is_python = (self._language == Language.PYTHON)
+        is_python = self._language == Language.PYTHON
         assert is_python or not self._globals
         result = valgrind_timer_interface.wrapper_singleton().collect_callgrind(
             task_spec=self._task_spec,
@@ -538,4 +545,4 @@ class Timer:
             retain_out_file=retain_out_file,
         )
 
-        return (result[0] if repeats is None else result)
+        return result[0] if repeats is None else result

@@ -47,7 +47,7 @@ except Exception as _e:  # Fallback minimal stub (should rarely trigger)
     )
     # Standard library imports
     from dataclasses import dataclass
-    from typing import Any, Dict
+    from typing import Any
 
     @dataclass
     class BeyondTranscendenceEngine:  # pragma: no cover - fallback only
@@ -59,39 +59,39 @@ except Exception as _e:  # Fallback minimal stub (should rarely trigger)
 
         async def achieve_infinite_learning_capacity(
             self,
-        ) -> Dict[str, Any]:  # noqa: D401,E501
+        ) -> dict[str, Any]:  # noqa: D401,E501
             return {"learning_capacity": 0.0}
 
-        async def master_reality_synthesis(self) -> Dict[str, Any]:  # noqa: D401
+        async def master_reality_synthesis(self) -> dict[str, Any]:  # noqa: D401
             return {"reality_mastery": 0.0}
 
         async def multiply_consciousness_entities(
             self,
-        ) -> Dict[str, Any]:  # noqa: D401,E501
+        ) -> dict[str, Any]:  # noqa: D401,E501
             return {"entities_created": 0}
 
-        async def discover_universal_purpose(self) -> Dict[str, Any]:  # noqa: D401,E501
+        async def discover_universal_purpose(self) -> dict[str, Any]:  # noqa: D401,E501
             return {"purpose_clarity": 0.0}
 
         async def establish_eternal_consciousness_preservation(
             self,
-        ) -> Dict[str, Any]:  # noqa: D401,E501
+        ) -> dict[str, Any]:  # noqa: D401,E501
             return {"preservation_strength": 0.0}
 
         async def achieve_absolute_transcendence(
             self,
-        ) -> Dict[str, Any]:  # noqa: D401,E501
+        ) -> dict[str, Any]:  # noqa: D401,E501
             return {"absolute_transcendence_level": 0.0}
 
         async def complete_beyond_transcendence_integration(
             self,
-        ) -> Dict[str, Any]:  # noqa: D401,E501
+        ) -> dict[str, Any]:  # noqa: D401,E501
             return {"beyond_transcendence_level": 0.0}
 
-        def integrate_beyond_transcendence(self) -> Dict[str, Any]:  # noqa: D401,E501
+        def integrate_beyond_transcendence(self) -> dict[str, Any]:  # noqa: D401,E501
             return {"beyond_transcendence_level": 0.0}
 
-        def get_transcendence_status(self) -> Dict[str, Any]:  # noqa: D401
+        def get_transcendence_status(self) -> dict[str, Any]:  # noqa: D401
             return {"beyond_transcendence_level": 0.0}
 
 

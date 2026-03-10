@@ -18,7 +18,6 @@ import os
 import re
 import sys
 import unittest
-from typing import Union
 
 import torch
 import torch.testing
@@ -27,16 +26,17 @@ from torch.testing._internal.common_utils import (  # type: ignore[attr-defined]
     IS_WINDOWS,
     TEST_WITH_CROSSREF,
     TEST_WITH_TORCHDYNAMO,
+)
+from torch.testing._internal.common_utils import (
     TestCase as TorchTestCase,
 )
 
 from . import config, reset, utils
 
-
 log = logging.getLogger(__name__)
 
 
-def run_tests(needs: Union[str, tuple[str, ...]] = ()) -> None:
+def run_tests(needs: str | tuple[str, ...] = ()) -> None:
     from torch.testing._internal.common_utils import run_tests
 
     if TEST_WITH_TORCHDYNAMO or TEST_WITH_CROSSREF:

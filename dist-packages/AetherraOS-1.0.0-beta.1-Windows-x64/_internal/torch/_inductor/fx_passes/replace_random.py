@@ -15,7 +15,6 @@ from ..pattern_matcher import (
 )
 from ..virtualized import V
 
-
 log = logging.getLogger(__name__)
 patterns = PatternMatcherPass()
 aten = torch.ops.aten

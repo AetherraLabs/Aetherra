@@ -4,9 +4,9 @@ import copy
 import math
 import os
 import sys
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial, wraps
-from typing import Callable
 
 import torch
 import torch.fx as fx
@@ -15,7 +15,6 @@ from torch.multiprocessing.reductions import StorageWeakRef
 from torch.utils._content_store import ContentStoreWriter
 
 from .compile_utils import get_outputs, get_placeholders
-
 
 is_tuple = object()
 
@@ -101,10 +100,10 @@ def _convert_node_to_placeholder(graph, node, inps):
         inps.append(concrete_val)
         return True
 
-    elif concrete_val is None:
+    if concrete_val is None:
         return False
 
-    elif concrete_val is is_tuple:
+    if concrete_val is is_tuple:
         r = False
         for tuple_user in list(node.users):
             r = _convert_node_to_placeholder(graph, tuple_user, inps) or r
@@ -114,7 +113,7 @@ def _convert_node_to_placeholder(graph, node, inps):
         # graph.erase_node(node)
         return r
 
-    elif isinstance(concrete_val, LoadTensorMeta):
+    if isinstance(concrete_val, LoadTensorMeta):
         node.op = "call_function"
         node.target = torch.ops.debugprims.load_tensor.default
         node.args = (
@@ -276,8 +275,7 @@ def minifier(
                     )
                     return None
                 return new_state
-            else:
-                print(f"FAIL: {name}", file=sys.stderr)
+            print(f"FAIL: {name}", file=sys.stderr)
             return None
 
         return new_func
@@ -304,9 +302,8 @@ def minifier(
                         new_graph, cur_inps
                     ):
                         return ReproState(new_graph, cur_inps)
-                    else:
-                        tested.add(idx)
-                        new_graph.erase_node(output_node)
+                    tested.add(idx)
+                    new_graph.erase_node(output_node)
             env[node] = new_node
         return None
 

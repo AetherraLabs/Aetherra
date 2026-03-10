@@ -68,12 +68,8 @@ class WorkspaceCandidate:
 class WorkspaceCore:
     def __init__(self):
         self._enabled = os.getenv("AETHERRA_CONSCIOUSNESS_ENABLED", "0") == "1"
-        self._max_candidates = int(
-            os.getenv("AETHERRA_WORKSPACE_MAX_CANDIDATES", "256")
-        )
-        self._select_interval_ms = int(
-            os.getenv("AETHERRA_WORKSPACE_SELECT_INTERVAL_MS", "500")
-        )
+        self._max_candidates = int(os.getenv("AETHERRA_WORKSPACE_MAX_CANDIDATES", "256"))
+        self._select_interval_ms = int(os.getenv("AETHERRA_WORKSPACE_SELECT_INTERVAL_MS", "500"))
         self._max_broadcast_per_min = int(
             os.getenv("AETHERRA_WORKSPACE_MAX_BROADCAST_PER_MIN", "600")
         )
@@ -163,9 +159,7 @@ class WorkspaceCore:
         adj_weight = weight
         if _get_affect_engine and os.getenv("AETHERRA_AFFECT_WEIGHT", "1") == "1":
             try:
-                adj_weight = max(
-                    adj_weight, 0.0001
-                ) * _get_affect_engine().affect_weight(priority)
+                adj_weight = max(adj_weight, 0.0001) * _get_affect_engine().affect_weight(priority)
             except Exception:
                 pass
         return -(priority) / max(adj_weight, 0.0001)

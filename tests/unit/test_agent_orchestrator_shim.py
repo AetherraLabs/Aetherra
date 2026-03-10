@@ -43,9 +43,9 @@ def test_legacy_orchestration_import_emits_warning_and_forwards_symbols():
         )
 
     # Must have at least one DeprecationWarning captured
-    assert any(
-        isinstance(x.message, DeprecationWarning) for x in w
-    ), "Expected DeprecationWarning when importing deprecated orchestrator shim"
+    assert any(isinstance(x.message, DeprecationWarning) for x in w), (
+        "Expected DeprecationWarning when importing deprecated orchestrator shim"
+    )
 
     # Identity checks: forwarded symbols should be exactly the same objects
     assert AgentOrchestrator is CanonicalOrchestrator

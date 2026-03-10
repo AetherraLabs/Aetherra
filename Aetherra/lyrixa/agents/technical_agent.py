@@ -39,9 +39,7 @@ class TechnicalAgent(AgentBase):
         super().__init__()
         self.agent_type = "technical_support"
         self.name = "TechnicalAgent"
-        self.description = (
-            "Advanced technical support and system diagnostics specialist"
-        )
+        self.description = "Advanced technical support and system diagnostics specialist"
         self.capabilities = [
             "system_diagnostics",
             "error_troubleshooting",

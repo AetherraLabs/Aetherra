@@ -2,7 +2,7 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates
 import logging
 from functools import cache
-from typing import cast, NamedTuple, Optional
+from typing import NamedTuple, cast
 
 import torch
 import torch.distributed._functional_collectives as funcol
@@ -15,7 +15,6 @@ from torch.distributed.tensor.placement_types import (
     Replicate,
     Shard,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +102,9 @@ def _gen_transform_infos_non_cached(
                 # If target is Shard, check for nested sharding on the tensor dim BEFORE the current mesh_dim
                 shard_dim = target.dim
                 current_mesh_sharding, target_mesh_sharding = [], []
-                for i, (s, p) in enumerate(zip(current_placements, target_placements)):
+                for i, (s, p) in enumerate(
+                    zip(current_placements, target_placements, strict=False)
+                ):
                     if i >= mesh_dim:
                         break
                     if s.is_shard(shard_dim):
@@ -130,7 +131,7 @@ def _gen_transform_infos_non_cached(
     # needed transform infos (i.e. the replication from nested sharding might need to further
     # perform resharding to Shard again)
     for mesh_dim, (current, target) in enumerate(
-        zip(current_placements, target_placements)
+        zip(current_placements, target_placements, strict=False)
     ):
         if current != target:
             transform_infos.append(
@@ -289,8 +290,8 @@ class Redistribute(torch.autograd.Function):
         device_mesh: DeviceMesh,
         placements: tuple[Placement, ...],
         async_op: bool = False,
-        forward_dtype: Optional[torch.dtype] = None,
-        backward_dtype: Optional[torch.dtype] = None,
+        forward_dtype: torch.dtype | None = None,
+        backward_dtype: torch.dtype | None = None,
     ):
         ctx.async_op = async_op
         ctx.backward_dtype = backward_dtype

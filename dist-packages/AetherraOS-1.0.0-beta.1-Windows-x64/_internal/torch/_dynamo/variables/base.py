@@ -16,9 +16,9 @@ computations.
 """
 
 import collections
-from collections.abc import ItemsView, KeysView, Sequence, ValuesView
+from collections.abc import Callable, ItemsView, KeysView, Sequence, ValuesView
 from enum import Enum
-from typing import Any, Callable, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from .. import graph_break_hints, variables
 from ..current_scope_id import current_scope_id
@@ -26,7 +26,6 @@ from ..exc import raise_observed_exception, unimplemented_v2
 from ..guards import GuardBuilder, install_guard
 from ..source import AttrSource, Source
 from ..utils import cmp_name_to_op_mapping, istype
-
 
 if TYPE_CHECKING:
     from ..codegen import PyCodegen
@@ -182,7 +181,7 @@ class AttributeMutationNew(AttributeMutation):
     the Python world.
     """
 
-    def __init__(self, cls_source: Optional[Source] = None):
+    def __init__(self, cls_source: Source | None = None):
         super().__init__(SourceType.New)
         self.cls_source = cls_source
 
@@ -263,7 +262,7 @@ class VariableTracker(metaclass=VariableTrackerMeta):
         cls,
         fn: Callable[["VariableTracker"], None],
         value: Any,
-        cache: Optional[dict[int, Any]] = None,
+        cache: dict[int, Any] | None = None,
     ) -> None:
         """
         Walk value and call fn on all the VariableTracker instances
@@ -481,14 +480,14 @@ class VariableTracker(metaclass=VariableTrackerMeta):
         if name == "__len__" and self.has_unpack_var_sequence(tx):
             assert not (args or kwargs)
             return variables.ConstantVariable.create(len(self.unpack_var_sequence(tx)))
-        elif (
+        if (
             name == "__getattr__"
             and len(args) == 1
             and args[0].is_python_constant()
             and not kwargs
         ):
             return self.var_getattr(tx, args[0].as_python_constant())
-        elif name in cmp_name_to_op_mapping and len(args) == 1 and not kwargs:
+        if name in cmp_name_to_op_mapping and len(args) == 1 and not kwargs:
             other = args[0]
             if not isinstance(self, type(other)) and not (
                 isinstance(self, variables.GetAttrVariable)
@@ -592,13 +591,12 @@ class VariableTracker(metaclass=VariableTrackerMeta):
     def build(
         tx: "InstructionTranslatorBase",
         value: Any,
-        source: Optional[Source] = None,
+        source: Source | None = None,
     ) -> Any:
         """Create a new VariableTracker from a value and optional Source"""
         if source is None:
             return builder.SourcelessBuilder.create(tx, value)
-        else:
-            return variables.LazyVariableTracker.create(value, source)
+        return variables.LazyVariableTracker.create(value, source)
 
     def __init__(
         self,
@@ -633,10 +631,8 @@ def typestr(*objs):
         (obj,) = objs
         if isinstance(obj, VariableTracker):
             return str(obj)
-        else:
-            return type(obj).__name__
-    else:
-        return " ".join(map(typestr, objs))
+        return type(obj).__name__
+    return " ".join(map(typestr, objs))
 
 
 from . import builder

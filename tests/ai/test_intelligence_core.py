@@ -96,7 +96,7 @@ except ImportError as e:
             self.current_context = {}
             self.confidence_threshold = 0.7
 
-        def analyze_context(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        def analyze_context(self, context: dict[str, Any]) -> dict[str, Any]:
             return {
                 "context_type": "general",
                 "complexity_score": 0.5,
@@ -106,14 +106,14 @@ except ImportError as e:
             }
 
         def learn_pattern(
-            self, pattern_name: str, pattern_data: Dict[str, Any]
+            self, pattern_name: str, pattern_data: dict[str, Any]
         ) -> bool:
             self.memory_patterns[pattern_name] = pattern_data
             return True
 
         def make_decision(
-            self, options: List[str], context: Dict[str, Any]
-        ) -> Dict[str, Any]:
+            self, options: list[str], context: dict[str, Any]
+        ) -> dict[str, Any]:
             return {
                 "chosen_option": options[0] if options else "default",
                 "confidence": 0.8,
@@ -138,11 +138,11 @@ except ImportError as e:
             return "neutral"
 
         def modulate_emotion(
-            self, detected_emotion: str, context: Dict[str, Any]
+            self, detected_emotion: str, context: dict[str, Any]
         ) -> None:
             pass
 
-        def get_personality_summary(self) -> Dict[str, Any]:
+        def get_personality_summary(self) -> dict[str, Any]:
             return {
                 "trait_levels": {
                     trait.name.lower(): level
@@ -153,7 +153,7 @@ except ImportError as e:
             }
 
         def learn_from_interaction(
-            self, user_input: str, response: str, feedback: Optional[str] = None
+            self, user_input: str, response: str, feedback: str | None = None
         ):
             self.interaction_history.append(
                 {
@@ -178,9 +178,9 @@ except ImportError as e:
             self,
             user_input: str,
             lyrixa_response: str,
-            context: Optional[Dict[str, Any]] = None,
-            critique_data: Optional[Dict[str, Any]] = None,
-        ) -> Dict[str, Any]:
+            context: dict[str, Any] | None = None,
+            critique_data: dict[str, Any] | None = None,
+        ) -> dict[str, Any]:
             return {
                 "interaction_analysis": {"patterns_detected": True},
                 "patterns_updated": True,
@@ -196,10 +196,10 @@ except ImportError as e:
             reflection_id: str,
             topic: str,
             insight: str,
-            supporting_data: Dict[str, Any],
+            supporting_data: dict[str, Any],
             generated_at: datetime,
             importance: float,
-            follow_up_actions: List[str],
+            follow_up_actions: list[str],
         ):
             self.reflection_id = reflection_id
             self.topic = topic
@@ -214,8 +214,8 @@ except ImportError as e:
             self,
             insight_type: str,
             message: str,
-            evidence: List[str],
-            actionable_suggestions: List[str],
+            evidence: list[str],
+            actionable_suggestions: list[str],
             confidence: float,
         ):
             self.insight_type = insight_type
@@ -232,11 +232,11 @@ except ImportError as e:
             self.self_knowledge = {}
 
         async def analyze_user_patterns(
-            self, interaction_data: Dict[str, Any]
-        ) -> Dict[str, Any]:
+            self, interaction_data: dict[str, Any]
+        ) -> dict[str, Any]:
             return {"patterns_found": True, "pattern_count": 3}
 
-        async def generate_insights(self) -> List[ConversationInsight]:
+        async def generate_insights(self) -> list[ConversationInsight]:
             return [
                 ConversationInsight(
                     insight_type="productivity",
@@ -250,7 +250,7 @@ except ImportError as e:
                 )
             ]
 
-        async def perform_self_reflection(self) -> List[SelfReflection]:
+        async def perform_self_reflection(self) -> list[SelfReflection]:
             return [
                 SelfReflection(
                     reflection_id="ref_001",

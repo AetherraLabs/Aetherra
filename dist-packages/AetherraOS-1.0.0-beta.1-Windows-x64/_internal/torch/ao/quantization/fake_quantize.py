@@ -8,16 +8,15 @@ from typing import Any
 
 import torch
 from torch.ao.quantization.observer import (
-    _with_args,
-    default_fixed_qparams_range_0to1_observer,
-    default_fixed_qparams_range_neg1to1_observer,
     FixedQParamsObserver,
     HistogramObserver,
     MovingAverageMinMaxObserver,
     MovingAveragePerChannelMinMaxObserver,
+    _with_args,
+    default_fixed_qparams_range_0to1_observer,
+    default_fixed_qparams_range_neg1to1_observer,
 )
 from torch.nn import Module
-
 
 __all__ = [
     "FakeQuantizeBase",

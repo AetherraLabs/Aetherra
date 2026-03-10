@@ -189,10 +189,9 @@ class BehaviorLearningEngine:
         """Bucket system load into categories."""
         if load < 0.3:
             return "low"
-        elif load < 0.7:
+        if load < 0.7:
             return "medium"
-        else:
-            return "high"
+        return "high"
 
     def _get_time_period(self, time_str: str) -> str:
         """Get time period category."""
@@ -200,12 +199,11 @@ class BehaviorLearningEngine:
             hour = int(time_str.split(":")[0])
             if 6 <= hour < 12:
                 return "morning"
-            elif 12 <= hour < 18:
+            if 12 <= hour < 18:
                 return "afternoon"
-            elif 18 <= hour < 22:
+            if 18 <= hour < 22:
                 return "evening"
-            else:
-                return "night"
+            return "night"
         except Exception:
             return "unknown"
 
@@ -217,12 +215,11 @@ class BehaviorLearningEngine:
         # Simple pattern analysis
         if any("memory" in cmd.lower() for cmd in commands):
             return "memory_focused"
-        elif any("plugin" in cmd.lower() for cmd in commands):
+        if any("plugin" in cmd.lower() for cmd in commands):
             return "plugin_focused"
-        elif any("system" in cmd.lower() for cmd in commands):
+        if any("system" in cmd.lower() for cmd in commands):
             return "system_focused"
-        else:
-            return "general"
+        return "general"
 
     def _categorize_goals(self, goals: list[str]) -> str:
         """Categorize current goals."""

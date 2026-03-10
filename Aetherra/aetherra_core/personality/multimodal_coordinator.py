@@ -99,9 +99,7 @@ class PersonalityModalityProfile:
                 "efficiency_focus": True,
             }
 
-    def adapt_trait_for_modality(
-        self, trait: PersonalityTrait, base_value: float
-    ) -> float:
+    def adapt_trait_for_modality(self, trait: PersonalityTrait, base_value: float) -> float:
         """Adapt a personality trait value for this specific modality"""
 
         modality_adjustments = {
@@ -158,9 +156,7 @@ class MultiModalCoordinator:
     def __init__(self, memory_system=None):
         self.memory_system = memory_system
         self.active_modalities: Set[InteractionModality] = set()
-        self.modality_profiles: Dict[
-            InteractionModality, PersonalityModalityProfile
-        ] = {}
+        self.modality_profiles: Dict[InteractionModality, PersonalityModalityProfile] = {}
         self.modality_states: Dict[InteractionModality, ModalityState] = {}
         self.user_preferences: Dict[str, Any] = {}
         self.coordination_history: List[Dict[str, Any]] = []
@@ -248,9 +244,7 @@ class MultiModalCoordinator:
             print(f"❌ Failed to deactivate modality {modality}: {e}")
             return False
 
-    async def coordinate_personality_across_modes(
-        self, context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def coordinate_personality_across_modes(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """
         Coordinate personality expression across all active modalities
 
@@ -286,18 +280,14 @@ class MultiModalCoordinator:
                     modality, current_personality, context
                 )
                 modality_results[modality] = modality_result
-                coordination_result["modality_personalities"][
-                    modality.value
-                ] = modality_result
+                coordination_result["modality_personalities"][modality.value] = modality_result
 
             # Calculate consistency score across modalities
             consistency_score = self._calculate_consistency_score(modality_results)
             coordination_result["consistency_score"] = consistency_score
 
             # Generate optimization suggestions
-            optimizations = self._generate_optimization_suggestions(
-                modality_results, context
-            )
+            optimizations = self._generate_optimization_suggestions(modality_results, context)
             coordination_result["optimization_suggestions"] = optimizations
 
             # Update metrics
@@ -410,9 +400,7 @@ class MultiModalCoordinator:
 
         average_variance = total_variance / trait_count
         # Convert variance to consistency score (lower variance = higher consistency)
-        consistency_score = max(
-            0.0, 1.0 - (average_variance * 4)
-        )  # Scale variance appropriately
+        consistency_score = max(0.0, 1.0 - (average_variance * 4))  # Scale variance appropriately
 
         return consistency_score
 
@@ -434,9 +422,7 @@ class MultiModalCoordinator:
 
         # Check for optimal modality selection
         user_preference = context.get("preferred_modality")
-        if user_preference and user_preference not in [
-            m.value for m in self.active_modalities
-        ]:
+        if user_preference and user_preference not in [m.value for m in self.active_modalities]:
             suggestions.append(
                 f"User prefers {user_preference} modality. Consider activating it for better experience."
             )
@@ -447,16 +433,12 @@ class MultiModalCoordinator:
             interaction_type == "technical"
             and InteractionModality.CODE not in self.active_modalities
         ):
-            suggestions.append(
-                "Technical context detected. Consider activating code modality."
-            )
+            suggestions.append("Technical context detected. Consider activating code modality.")
         elif (
             interaction_type == "creative"
             and InteractionModality.VISUAL not in self.active_modalities
         ):
-            suggestions.append(
-                "Creative context detected. Consider activating visual modality."
-            )
+            suggestions.append("Creative context detected. Consider activating visual modality.")
 
         return suggestions
 
@@ -511,13 +493,9 @@ class MultiModalCoordinator:
 
         # Base recommendations by interaction type
         if interaction_type == "technical":
-            recommended_modalities.extend(
-                [InteractionModality.TEXT, InteractionModality.CODE]
-            )
+            recommended_modalities.extend([InteractionModality.TEXT, InteractionModality.CODE])
         elif interaction_type == "creative":
-            recommended_modalities.extend(
-                [InteractionModality.TEXT, InteractionModality.VISUAL]
-            )
+            recommended_modalities.extend([InteractionModality.TEXT, InteractionModality.VISUAL])
         elif interaction_type == "casual":
             recommended_modalities.extend([InteractionModality.TEXT])
             if context.get("voice_available"):
@@ -534,9 +512,7 @@ class MultiModalCoordinator:
             except ValueError:
                 pass  # Invalid modality preference
 
-        optimization_result["recommended_modalities"] = [
-            m.value for m in recommended_modalities
-        ]
+        optimization_result["recommended_modalities"] = [m.value for m in recommended_modalities]
 
         # Apply optimizations if different from current
         optimizations_applied = []
@@ -553,9 +529,7 @@ class MultiModalCoordinator:
                 if modality not in recommended_modalities:
                     success = await self.deactivate_modality(modality)
                     if success:
-                        optimizations_applied.append(
-                            f"Deactivated {modality.value} modality"
-                        )
+                        optimizations_applied.append(f"Deactivated {modality.value} modality")
 
         optimization_result["optimizations_applied"] = optimizations_applied
 
@@ -566,9 +540,9 @@ class MultiModalCoordinator:
 
         avg_response_time = 0.0
         if self.coordination_metrics["response_time_ms"]:
-            avg_response_time = sum(
+            avg_response_time = sum(self.coordination_metrics["response_time_ms"]) / len(
                 self.coordination_metrics["response_time_ms"]
-            ) / len(self.coordination_metrics["response_time_ms"])
+            )
 
         success_rate = 0.0
         if self.coordination_metrics["total_coordinations"] > 0:
@@ -579,15 +553,11 @@ class MultiModalCoordinator:
 
         return {
             "active_modalities": [m.value for m in self.active_modalities],
-            "modality_states": {
-                m.value: s.value for m, s in self.modality_states.items()
-            },
+            "modality_states": {m.value: s.value for m, s in self.modality_states.items()},
             "metrics": {
                 "total_coordinations": self.coordination_metrics["total_coordinations"],
                 "success_rate": success_rate,
-                "average_consistency_score": self.coordination_metrics[
-                    "consistency_score"
-                ],
+                "average_consistency_score": self.coordination_metrics["consistency_score"],
                 "average_response_time_ms": avg_response_time,
                 "modality_switches": self.coordination_metrics["modality_switches"],
             },
@@ -624,9 +594,7 @@ async def coordinate_personality_for_interaction(
         for modality_str in preferred_modalities:
             try:
                 modality = InteractionModality(modality_str)
-                await multi_modal_coordinator.activate_modality(
-                    modality, interaction_context
-                )
+                await multi_modal_coordinator.activate_modality(modality, interaction_context)
             except ValueError:
                 print(f"⚠️ Invalid modality: {modality_str}")
 
@@ -637,16 +605,12 @@ async def coordinate_personality_for_interaction(
         )
 
     # Coordinate personality across active modalities
-    coordination_result = (
-        await multi_modal_coordinator.coordinate_personality_across_modes(
-            interaction_context
-        )
+    coordination_result = await multi_modal_coordinator.coordinate_personality_across_modes(
+        interaction_context
     )
 
     # Optimize for context
-    optimization_result = await multi_modal_coordinator.optimize_for_context(
-        interaction_context
-    )
+    optimization_result = await multi_modal_coordinator.optimize_for_context(interaction_context)
 
     return {
         "coordination": coordination_result,

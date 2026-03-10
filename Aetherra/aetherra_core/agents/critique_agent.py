@@ -128,9 +128,7 @@ class ResponseCritiqueAgent:
         personality_analysis = self._analyze_personality_consistency(response, context)
 
         # Analyze contextual appropriateness
-        context_analysis = self._analyze_contextual_appropriateness(
-            user_input, response, context
-        )
+        context_analysis = self._analyze_contextual_appropriateness(user_input, response, context)
 
         # Analyze learning opportunities
         learning_analysis = self._analyze_learning_opportunities(
@@ -251,9 +249,7 @@ class ResponseCritiqueAgent:
             "trait_expressions": trait_expressions,
             "active_traits": active_traits,
             "missing_traits": [
-                trait
-                for trait in active_traits
-                if not trait_expressions.get(trait, False)
+                trait for trait in active_traits if not trait_expressions.get(trait, False)
             ],
         }
 
@@ -269,9 +265,7 @@ class ResponseCritiqueAgent:
         emotional_alignment = self._check_emotional_alignment(user_emotion, response)
 
         # Check response length appropriateness
-        length_appropriateness = self._check_length_appropriateness(
-            user_input, response, context
-        )
+        length_appropriateness = self._check_length_appropriateness(user_input, response, context)
 
         # Check technical level matching
         technical_matching = self._check_technical_level_matching(user_input, response)
@@ -310,9 +304,7 @@ class ResponseCritiqueAgent:
         expected_patterns = emotion_patterns.get(primary_emotion, [])
 
         if expected_patterns:
-            matches = sum(
-                1 for pattern in expected_patterns if pattern in response_lower
-            )
+            matches = sum(1 for pattern in expected_patterns if pattern in response_lower)
             alignment_score = min(1.0, matches / len(expected_patterns))
         else:
             alignment_score = 0.5  # Neutral score for unknown emotions
@@ -355,9 +347,7 @@ class ResponseCritiqueAgent:
             "ideal_ratio": ideal_ratio,
         }
 
-    def _check_technical_level_matching(
-        self, user_input: str, response: str
-    ) -> Dict[str, Any]:
+    def _check_technical_level_matching(self, user_input: str, response: str) -> Dict[str, Any]:
         """Check if technical complexity matches user's level"""
 
         # Simple technical complexity indicators
@@ -426,10 +416,7 @@ class ResponseCritiqueAgent:
         opportunities = []
 
         # Check basic critique scores
-        if (
-            basic_critique["naturalness_score"]
-            < self.quality_thresholds["naturalness_score"]
-        ):
+        if basic_critique["naturalness_score"] < self.quality_thresholds["naturalness_score"]:
             opportunities.append(
                 {
                     "type": "naturalness",
@@ -439,10 +426,7 @@ class ResponseCritiqueAgent:
                 }
             )
 
-        if (
-            basic_critique["engagement_score"]
-            < self.quality_thresholds["engagement_score"]
-        ):
+        if basic_critique["engagement_score"] < self.quality_thresholds["engagement_score"]:
             opportunities.append(
                 {
                     "type": "engagement",
@@ -492,9 +476,7 @@ class ResponseCritiqueAgent:
             suggestions.append("Add a follow-up question to maintain conversation flow")
 
         if not acknowledges_user:
-            suggestions.append(
-                "Acknowledge the user's input before providing your response"
-            )
+            suggestions.append("Acknowledge the user's input before providing your response")
 
         if not has_transitions:
             suggestions.append("Use transition words to connect ideas more smoothly")
@@ -535,13 +517,9 @@ class ResponseCritiqueAgent:
             recommendations["priority_score"] = 0.6
 
         # Personality adjustments
-        personality_score = enhanced_analysis["personality_consistency"][
-            "consistency_score"
-        ]
+        personality_score = enhanced_analysis["personality_consistency"]["consistency_score"]
         if personality_score < 0.7:
-            missing_traits = enhanced_analysis["personality_consistency"][
-                "missing_traits"
-            ]
+            missing_traits = enhanced_analysis["personality_consistency"]["missing_traits"]
             for trait in missing_traits:
                 recommendations["personality_adjustments"].append(
                     f"Increase expression of {trait} trait in responses"
@@ -577,9 +555,9 @@ class ResponseCritiqueAgent:
 
         # Keep only recent trend data
         if len(self.improvement_metrics["quality_trend"]) > 50:
-            self.improvement_metrics["quality_trend"] = self.improvement_metrics[
-                "quality_trend"
-            ][-25:]
+            self.improvement_metrics["quality_trend"] = self.improvement_metrics["quality_trend"][
+                -25:
+            ]
 
         # Track common issues
         opportunities = analysis_result["enhanced_analysis"]["learning_opportunities"][
@@ -606,9 +584,7 @@ class ResponseCritiqueAgent:
                                 "overall_enhancement_score"
                             ],
                             "recommendations_count": len(
-                                analysis_result["improvement_recommendations"][
-                                    "immediate_actions"
-                                ]
+                                analysis_result["improvement_recommendations"]["immediate_actions"]
                             ),
                         }
                     },
@@ -647,9 +623,7 @@ class ResponseCritiqueAgent:
 
         return applications
 
-    async def _adjust_personality_trait(
-        self, trait_name: str, adjustment: float
-    ) -> None:
+    async def _adjust_personality_trait(self, trait_name: str, adjustment: float) -> None:
         """Safely adjust a personality trait"""
         try:
             # Local imports
@@ -673,9 +647,7 @@ class ResponseCritiqueAgent:
 
                 self.improvement_metrics["personality_adaptations_made"] += 1
 
-                print(
-                    f"🎭 Adjusted {trait_name} trait: {current_value:.3f} → {new_value:.3f}"
-                )
+                print(f"🎭 Adjusted {trait_name} trait: {current_value:.3f} → {new_value:.3f}")
 
         except Exception as e:
             print(f"⚠️ Failed to adjust personality trait {trait_name}: {e}")
@@ -683,9 +655,7 @@ class ResponseCritiqueAgent:
     def get_critique_summary(self) -> Dict[str, Any]:
         """Get a summary of critique agent performance"""
 
-        recent_scores = [
-            item["score"] for item in self.improvement_metrics["quality_trend"][-10:]
-        ]
+        recent_scores = [item["score"] for item in self.improvement_metrics["quality_trend"][-10:]]
 
         trend_direction = "stable"
         if len(recent_scores) >= 3:
@@ -706,12 +676,8 @@ class ResponseCritiqueAgent:
                     reverse=True,
                 )
             ),
-            "improvements_applied": self.improvement_metrics[
-                "improvement_suggestions_applied"
-            ],
-            "personality_adaptations": self.improvement_metrics[
-                "personality_adaptations_made"
-            ],
+            "improvements_applied": self.improvement_metrics["improvement_suggestions_applied"],
+            "personality_adaptations": self.improvement_metrics["personality_adaptations_made"],
             "recent_quality_scores": recent_scores,
         }
 
@@ -745,9 +711,7 @@ async def analyze_and_improve_response(
 
     # Apply improvements if requested
     if apply_improvements:
-        improvements_applied = (
-            await response_critique_agent.apply_improvement_suggestions(analysis)
-        )
+        improvements_applied = await response_critique_agent.apply_improvement_suggestions(analysis)
         analysis["improvements_applied"] = improvements_applied
 
     return analysis

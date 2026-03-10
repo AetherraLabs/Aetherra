@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import functools
-from typing import Any, Callable, cast, TypeVar
-
+from collections.abc import Callable
+from typing import Any, TypeVar, cast
 
 _is_onnx_exporting = False
 

@@ -5,7 +5,6 @@ from collections.abc import Iterable
 
 import torch
 
-
 _MISSING: torch.Tensor = object()  # type: ignore[assignment]
 
 
@@ -132,24 +131,23 @@ class NamedMemberAccessor:
 
         if name in self.memo:
             return self.memo[name]
+        prefix, dot, attr = name.rpartition(".")
+        if dot:
+            module = self.get_submodule(prefix)
         else:
-            prefix, dot, attr = name.rpartition(".")
-            if dot:
-                module = self.get_submodule(prefix)
-            else:
-                module = self.module
-            try:
-                submodule = getattr(module, attr)
-            except AttributeError as ex:
-                raise AttributeError(
-                    f"{module._get_name()} has no attribute `{attr}`"
-                ) from ex
-            if not isinstance(submodule, torch.nn.Module):
-                raise TypeError(  # noqa: B904
-                    f"submodule `{name}`: {submodule} is not an instance of torch.nn.Module"
-                )
-            self.memo[name] = submodule
-            return submodule
+            module = self.module
+        try:
+            submodule = getattr(module, attr)
+        except AttributeError as ex:
+            raise AttributeError(
+                f"{module._get_name()} has no attribute `{attr}`"
+            ) from ex
+        if not isinstance(submodule, torch.nn.Module):
+            raise TypeError(  # noqa: B904
+                f"submodule `{name}`: {submodule} is not an instance of torch.nn.Module"
+            )
+        self.memo[name] = submodule
+        return submodule
 
     def swap_submodule(self, path: str, value: "torch.nn.Module") -> "torch.nn.Module":
         """
@@ -249,7 +247,7 @@ class NamedMemberAccessor:
             values = list(values)
         assert len(names) == len(values), "names and values must have the same length"
 
-        for name, value in zip(names, values):
+        for name, value in zip(names, values, strict=False):
             self.set_tensor(name, value)
 
     def set_tensors_dict(self, named_tensors: dict[str, torch.Tensor]) -> None:
@@ -297,7 +295,7 @@ class NamedMemberAccessor:
 
         return [
             self.swap_tensor(name, value, allow_missing=allow_missing)
-            for name, value in zip(names, values)
+            for name, value in zip(names, values, strict=False)
         ]
 
     def swap_tensors_dict(

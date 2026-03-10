@@ -33,16 +33,12 @@ class LyrixaMemoryEngine:
     def store_fragment(self, fragment: MemoryFragment) -> None:
         self.fractal_mesh.store_fragment(fragment)
 
-    def retrieve_by_concept(
-        self, concept: str, limit: int = 10
-    ) -> List[MemoryFragment]:
+    def retrieve_by_concept(self, concept: str, limit: int = 10) -> List[MemoryFragment]:
         if hasattr(self.fractal_mesh, "retrieve_by_concept"):
             return self.fractal_mesh.retrieve_by_concept(concept, limit)
         return []
 
-    def mutate_fragment(
-        self, fragment: MemoryFragment, **kwargs
-    ) -> Optional[MemoryFragment]:
+    def mutate_fragment(self, fragment: MemoryFragment, **kwargs) -> Optional[MemoryFragment]:
         if hasattr(self.fractal_mesh, "mutate_fragment"):
             return self.fractal_mesh.mutate_fragment(fragment, **kwargs)
         return None

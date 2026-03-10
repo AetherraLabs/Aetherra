@@ -2,10 +2,11 @@
 
 import functools
 import operator
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, Callable, Optional, TypeVar, Union
+from typing import Any, TypeVar, Union
+
 from typing_extensions import ParamSpec
 
 import torch
@@ -14,14 +15,13 @@ from torch.utils._ordered_set import OrderedSet
 from . import ir
 from .exc import SubgraphLoweringException
 from .ops_handler import SimpleCSEHandler
-from .virtualized import ops, V, WrapperHandler
-
+from .virtualized import V, WrapperHandler, ops
 
 T = TypeVar("T")
 _P = ParamSpec("_P")
 
 OpOverload = torch._ops.OpOverload
-LoweringDict = dict[Union[OpOverload, str], Callable[..., Any]]
+LoweringDict = dict[OpOverload | str, Callable[..., Any]]
 TargetType = Union[Callable[..., Any], str]
 
 
@@ -31,12 +31,12 @@ class PointwiseSubgraphLowering(torch.fx.Interpreter):
     lowering object. Errors if buffers are created unexpectedly
     """
 
-    graph_outputs: Optional[list[ir.IRNode]]
+    graph_outputs: list[ir.IRNode] | None
     root_graph: torch._inductor.graph.GraphLowering
-    _current_op: Optional[TargetType]
+    _current_op: TargetType | None
     # For backwards of buffer_grads with scatters we allow mutations
-    allowed_mutations: Optional[OrderedSet[OpOverload]]
-    additional_lowerings: Optional[LoweringDict]
+    allowed_mutations: OrderedSet[OpOverload] | None
+    additional_lowerings: LoweringDict | None
     buffers: list[ir.Buffer]
     mutated_buffers: OrderedSet[str]
 
@@ -44,8 +44,8 @@ class PointwiseSubgraphLowering(torch.fx.Interpreter):
         self,
         gm: torch.fx.GraphModule,
         root_graph_lowering: torch._inductor.graph.GraphLowering,
-        allowed_mutations: Optional[OrderedSet[OpOverload]] = None,
-        additional_lowerings: Optional[LoweringDict] = None,
+        allowed_mutations: OrderedSet[OpOverload] | None = None,
+        additional_lowerings: LoweringDict | None = None,
     ) -> None:
         super().__init__(gm)
         self.graph_outputs = None
@@ -89,12 +89,11 @@ class PointwiseSubgraphLowering(torch.fx.Interpreter):
             name = self.qualify_name(f"buf{len(self.buffers)}")
             self.buffers.append(buffer)
             return name
-        else:
-            raise SubgraphLoweringException(
-                "Buffers cannot be created while lowering a pointwise subgraph. "
-                "This could be for a good reason (e.g. you're calling an op we can't codegen as a pointwise op), "
-                "but it could also be a bug. Please file a bug report if you think this should be supportable."
-            )
+        raise SubgraphLoweringException(
+            "Buffers cannot be created while lowering a pointwise subgraph. "
+            "This could be for a good reason (e.g. you're calling an op we can't codegen as a pointwise op), "
+            "but it could also be a bug. Please file a bug report if you think this should be supportable."
+        )
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self.root_graph, name)
@@ -159,9 +158,7 @@ def lower_pointwise_subgraph(
     subgraph: ir.Subgraph, inputs: list[InputDescriptor]
 ) -> Callable[_P, Any]:
     # Lower subgraph to ir.Pointwise nodes
-    def fake_inner_fn(
-        loop_idx: int, input_idx: int
-    ) -> Union[ir.Expr, ir.TensorBox, None]:
+    def fake_inner_fn(loop_idx: int, input_idx: int) -> ir.Expr | ir.TensorBox | None:
         return ops.placeholder(input_idx)
 
     graph_inputs = [

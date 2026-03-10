@@ -1,6 +1,6 @@
 import copy
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 import torch
 import torch.utils._pytree as pytree
@@ -30,14 +30,14 @@ class HopArgumentInfoGen:
         example_value: Any,
         *,
         name: str = "",
-        default_value: Optional[Any] = None,
+        default_value: Any | None = None,
         is_mutated: bool = False,
         kw_only: bool = False,
     ) -> HopArgumentInfo:
         if default_value is not None:
-            assert type(example_value) == type(
-                default_value
-            ), f"example_value type {type(example_value)} doesn't match default_value type: {type(default_value)}"
+            assert type(example_value) == type(default_value), (
+                f"example_value type {type(example_value)} doesn't match default_value type: {type(default_value)}"
+            )
 
         return HopArgumentInfo(
             name=name,
@@ -63,7 +63,7 @@ class CTypeGen:
 
         if isinstance(obj, torch.fx.GraphModule):
             return torch._C.AnyType.get()
-        elif isinstance(obj, torch.SymInt):
+        if isinstance(obj, torch.SymInt):
             return torch._C.SymIntType.get()
         return torch._C._jit_try_infer_type(obj).type()
 
@@ -93,14 +93,14 @@ class HopSchemaGenerator:
     def __init__(self, hop: torch._ops.HigherOrderOperator):
         self.arg_infos: list[HopArgumentInfo] = []
         self.example_outputs: list[Any] = []
-        self.schema_tree_spec: Optional[pytree.TreeSpec] = None
+        self.schema_tree_spec: pytree.TreeSpec | None = None
         self.hop = hop
 
     def add_arg(
         self,
         name: str,
         example_value: Any,
-        default_value: Optional[Any] = None,
+        default_value: Any | None = None,
         is_mutated: bool = False,
         kw_only: bool = False,
     ) -> None:
@@ -200,19 +200,19 @@ class CFunctionSchemaGen:
         op_name: str,
         inp_argument_info: list[HopArgumentInfo],
         out_argument_info: HopArgumentInfo,
-        schema_tree_spec: Optional[pytree.TreeSpec],
+        schema_tree_spec: pytree.TreeSpec | None,
     ) -> Any:
         args = []
         for i, arg_info in enumerate(inp_argument_info):
             args.append(CArgumentGen.from_hop_argument_info(i, arg_info))
 
         # NOTE: we want the output to always be a single argument with torch._C.TupleType.
-        assert isinstance(
-            out_argument_info.example_value, tuple
-        ), f"expect out_argument_info's example_value to be a tuple but got {out_argument_info.example_value}"
-        assert (
-            not out_argument_info.is_mutated
-        ), "out_argument_info.is_mutated should always be set to False."
+        assert isinstance(out_argument_info.example_value, tuple), (
+            f"expect out_argument_info's example_value to be a tuple but got {out_argument_info.example_value}"
+        )
+        assert not out_argument_info.is_mutated, (
+            "out_argument_info.is_mutated should always be set to False."
+        )
         rets = None
         if len(out_argument_info.example_value) == 1:
             rets = [CArgumentGen.from_hop_argument_info(0, out_argument_info, True)]
@@ -251,7 +251,7 @@ class HopSchema(torch._C.FunctionSchema):
         returns: list[torch._C.Argument],
         is_vararg: bool,
         is_varret: bool,
-        schema_tree_spec: Optional[pytree.TreeSpec],
+        schema_tree_spec: pytree.TreeSpec | None,
     ):
         self.tree_spec = schema_tree_spec
         self.is_vararg = is_vararg
@@ -289,12 +289,11 @@ def find_hop_schema(
             if node.op == "get_attr":
                 assert isinstance(node.target, str)
                 return getattr(gm, node.target)
-            else:
-                return (
-                    node.meta["example_value"]
-                    if "example_value" in node.meta
-                    else node.meta["val"]
-                )
+            return (
+                node.meta["example_value"]
+                if "example_value" in node.meta
+                else node.meta["val"]
+            )
 
         fake_args, fake_kwargs = pytree.tree_map_only(
             torch.fx.Node,

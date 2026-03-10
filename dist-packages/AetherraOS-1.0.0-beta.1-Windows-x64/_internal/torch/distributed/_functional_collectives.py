@@ -2,7 +2,7 @@
 import contextlib
 import sys
 import warnings
-from typing import Any, cast, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Union, cast
 
 import torch
 import torch.distributed as dist
@@ -11,7 +11,6 @@ from torch.distributed.device_mesh import DeviceMesh
 from torch.fx.experimental.proxy_tensor import get_proxy_mode
 
 from . import _functional_collectives_impl as fun_col_impl
-
 
 try:
     from torch.utils._cxx_pytree import tree_map_only
@@ -413,7 +412,7 @@ def reduce_scatter_tensor_coalesced(
     group_size = c10d._get_group_size_by_name(group_name)
 
     assert len(scatter_dim) == len(inputs)
-    for idx, (dim, tensor) in enumerate(zip(scatter_dim, inputs)):
+    for idx, (dim, tensor) in enumerate(zip(scatter_dim, inputs, strict=False)):
         assert tensor.size(dim) % group_size == 0, (
             f"input dimension {dim} ({tensor.size(dim)} must be a multiple of group_size {group_size} for tensor at index {idx}"
         )
@@ -450,8 +449,8 @@ def _is_view_op(tgt):
 
 def all_to_all_single(
     self: torch.Tensor,
-    output_split_sizes: Optional[list[int]],
-    input_split_sizes: Optional[list[int]],
+    output_split_sizes: list[int] | None,
+    input_split_sizes: list[int] | None,
     group: RANK_TYPES,
     tag: str = "",
 ) -> torch.Tensor:
@@ -498,8 +497,8 @@ def all_to_all_single(
 
 def all_to_all_single_autograd(
     self: torch.Tensor,
-    output_split_sizes: Optional[list[int]],
-    input_split_sizes: Optional[list[int]],
+    output_split_sizes: list[int] | None,
+    input_split_sizes: list[int] | None,
     group: RANK_TYPES,
     tag: str = "",
 ) -> torch.Tensor:
@@ -609,7 +608,7 @@ class AsyncCollectiveTensor(torch.Tensor):
         return AsyncCollectiveTensor(elem)
 
     def __coerce_same_metadata_as_tangent__(
-        self, expected_metadata: Any, expected_type: Optional[type] = None
+        self, expected_metadata: Any, expected_type: type | None = None
     ):
         if expected_type is not torch.Tensor:
             return None
@@ -624,8 +623,7 @@ class AsyncCollectiveTensor(torch.Tensor):
             out = wait_tensor(self.elem)
             self.completed = True
             return out
-        else:
-            return self.elem
+        return self.elem
 
     def wait(self) -> torch.Tensor:
         return wait_tensor(self.elem)
@@ -765,14 +763,14 @@ def _resolve_group_name(group: RANK_TYPES, tag: str = "") -> str:
     # https://github.com/pytorch/pytorch/issues/93173#issuecomment-1907095208
     if isinstance(group, dist.ProcessGroup):
         return group.group_name
-    elif isinstance(group, str):
+    if isinstance(group, str):
         return group
-    elif isinstance(group, DeviceMesh):
+    if isinstance(group, DeviceMesh):
         assert group.ndim == 1, (
             "Only 1D mesh is supported, pass in (DeviceMesh, int) together if mesh > 1D"
         )
         return group._dim_group_names[0]
-    elif isinstance(group, tuple):
+    if isinstance(group, tuple):
         if (
             len(group) == 2
             and isinstance(group[0], DeviceMesh)
@@ -781,9 +779,8 @@ def _resolve_group_name(group: RANK_TYPES, tag: str = "") -> str:
             dmesh = group[0]
             dim = group[1]
             return dmesh._dim_group_names[dim]
-        else:
-            raise ValueError("Invalid tuple for group must be (DeviceMesh, int)")
-    elif isinstance(group, list):
+        raise ValueError("Invalid tuple for group must be (DeviceMesh, int)")
+    if isinstance(group, list):
         if not is_torchdynamo_compiling():
             warnings.warn(
                 "The combination of ranks + tag as process group "
@@ -793,8 +790,7 @@ def _resolve_group_name(group: RANK_TYPES, tag: str = "") -> str:
                 stacklevel=3,
             )
         return c10d._resolve_group_name_by_ranks_and_tag(cast(list[int], group), tag)
-    else:
-        raise ValueError(f"Unsupported group type: {type(group)}, {group}")
+    raise ValueError(f"Unsupported group type: {type(group)}, {group}")
 
 
 class _FromTorchTensor(torch.autograd.Function):
@@ -941,12 +937,11 @@ def _all_to_all_single_meta(
 ):
     if output_split_sizes is None:
         return input.new_empty(input.size())
-    else:
-        for s in output_split_sizes:
-            torch._check_is_size(s)
-        out_size = list(input.size())
-        out_size[0] = sum(output_split_sizes)
-        return input.new_empty(out_size)
+    for s in output_split_sizes:
+        torch._check_is_size(s)
+    out_size = list(input.size())
+    out_size[0] = sum(output_split_sizes)
+    return input.new_empty(out_size)
 
 
 def _all_gather_into_tensor_out_native_meta(input, group_size, group_name, *, out):
@@ -1175,21 +1170,32 @@ def all_gather_inplace(
     for t in tensor_list:
         output_splits.append(output[offset : offset + t.size(0)])
         offset += t.size(0)
-    for dst, src in zip(tensor_list, output_splits):
+    for dst, src in zip(tensor_list, output_splits, strict=False):
         dst.copy_(src)
     return tensor_list
 
 
 from torch.distributed.distributed_c10d import (
     _all_gather_base as legacy_all_gather_base,
+)
+from torch.distributed.distributed_c10d import (
     _reduce_scatter_base as legacy_reduce_scatter_base,
+)
+from torch.distributed.distributed_c10d import (
     all_gather as legacy_all_gather,
+)
+from torch.distributed.distributed_c10d import (
     all_gather_into_tensor as legacy_allgather,
+)
+from torch.distributed.distributed_c10d import (
     all_reduce as legacy_allreduce,
+)
+from torch.distributed.distributed_c10d import (
     all_to_all_single as legacy_all_to_all_single,
+)
+from torch.distributed.distributed_c10d import (
     reduce_scatter_tensor as legacy_reducescatter,
 )
-
 
 # This dict should contain sets of functions that dynamo is allowed to remap.
 # Functions in this set should accept the same args/kwargs 1:1 as their mapping.

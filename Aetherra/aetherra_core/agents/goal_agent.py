@@ -74,9 +74,7 @@ class GoalAgent(AgentBase):
                 metadata={"error": str(e)},
             )
 
-    async def _create_goal(
-        self, description: str, context: Dict[str, Any]
-    ) -> AgentResponse:
+    async def _create_goal(self, description: str, context: Dict[str, Any]) -> AgentResponse:
         """Create a new goal"""
         goal_id = f"goal_{self.goal_counter}"
         self.goal_counter += 1
@@ -108,9 +106,7 @@ class GoalAgent(AgentBase):
             metadata={"goal_id": goal_id, "goal": goal.__dict__},
         )
 
-    async def _check_goal_status(
-        self, input_text: str, context: Dict[str, Any]
-    ) -> AgentResponse:
+    async def _check_goal_status(self, input_text: str, context: Dict[str, Any]) -> AgentResponse:
         """Check status of goals"""
         if not self.goals:
             return AgentResponse(
@@ -133,9 +129,7 @@ class GoalAgent(AgentBase):
         if active_goals:
             status_text += "Active Goals:\n"
             for goal in active_goals:
-                status_text += (
-                    f"- {goal.id}: {goal.description} (Progress: {goal.progress:.1%})\n"
-                )
+                status_text += f"- {goal.id}: {goal.description} (Progress: {goal.progress:.1%})\n"
 
         return AgentResponse(
             content=status_text,

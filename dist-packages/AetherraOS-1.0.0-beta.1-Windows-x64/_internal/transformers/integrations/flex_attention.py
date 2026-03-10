@@ -26,14 +26,13 @@ Citation:
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Tuple, Union
+from typing import Union
 
 import torch
 from packaging import version
 
 from ..utils import is_torch_flex_attn_available
 from ..utils.import_utils import _torch_version
-
 
 if is_torch_flex_attn_available():
     from torch.nn.attention.flex_attention import BlockMask, flex_attention
@@ -84,10 +83,10 @@ Offset = Union[torch.Tensor, int]
 
 def make_flex_block_causal_mask(
     attention_mask_2d: torch.Tensor,
-    attention_chunk_size: Optional[int] = None,
+    attention_chunk_size: int | None = None,
     query_length=None,
     key_length=None,
-    offsets: Optional[Tuple[Offset, Offset]] = None,
+    offsets: tuple[Offset, Offset] | None = None,
 ) -> "BlockMask":
     """
     Create a block causal document mask for a batch of sequences, both packed and unpacked.
@@ -116,13 +115,17 @@ def make_flex_block_causal_mask(
         key_length = total_seq_len
     if not query_length:
         query_length = total_seq_len
-    attention_mask_2d = torch.nn.functional.pad(attention_mask_2d, value=0, pad=(0, key_length))
+    attention_mask_2d = torch.nn.functional.pad(
+        attention_mask_2d, value=0, pad=(0, key_length)
+    )
     device = attention_mask_2d.device
     document_ids = attention_mask_2d.clone()
 
     if attention_chunk_size is not None:
         # we create an arange, then we just // by chunk size to get [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3]
-        chunk_idxs = (document_ids.clone().fill_(1).cumsum(-1) - 1) // (attention_chunk_size)
+        chunk_idxs = (document_ids.clone().fill_(1).cumsum(-1) - 1) // (
+            attention_chunk_size
+        )
 
     # Instead of passing a tensor mask, flex attention requires a mask_mod function
     # that determines which elements of QK^T should be included in the attention
@@ -138,7 +141,9 @@ def make_flex_block_causal_mask(
         for an illustration.
         """
         causal_mask = q_idx >= kv_idx  # not valid when decoding
-        document_mask = document_ids[batch_idx, q_idx] == document_ids[batch_idx, kv_idx]
+        document_mask = (
+            document_ids[batch_idx, q_idx] == document_ids[batch_idx, kv_idx]
+        )
         padding_mask = attention_mask_2d[batch_idx, q_idx] > 0
         final_mask = causal_mask & padding_mask & document_mask
         return final_mask
@@ -151,7 +156,9 @@ def make_flex_block_causal_mask(
         causal_doc_mask = causal_mask_mod(batch_idx, head_idx, q_idx, kv_idx)
         return chunk_mask & causal_doc_mask
 
-    mask_mod_maybe_combined = causal_mask_mod if attention_chunk_size is None else chunk_causal_mask_mod
+    mask_mod_maybe_combined = (
+        causal_mask_mod if attention_chunk_size is None else chunk_causal_mask_mod
+    )
 
     if offsets is not None:
         q_offset = offsets[0]
@@ -200,7 +207,9 @@ def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
     batch, num_key_value_heads, slen, head_dim = hidden_states.shape
     if n_rep == 1:
         return hidden_states
-    hidden_states = hidden_states[:, :, None, :, :].expand(batch, num_key_value_heads, n_rep, slen, head_dim)
+    hidden_states = hidden_states[:, :, None, :, :].expand(
+        batch, num_key_value_heads, n_rep, slen, head_dim
+    )
     return hidden_states.reshape(batch, num_key_value_heads * n_rep, slen, head_dim)
 
 
@@ -210,11 +219,11 @@ def flex_attention_forward(
     key: torch.Tensor,
     value: torch.Tensor,
     attention_mask: Union[torch.Tensor, "BlockMask"],
-    scaling: Optional[float] = None,
-    softcap: Optional[float] = None,
-    head_mask: Optional[torch.Tensor] = None,
+    scaling: float | None = None,
+    softcap: float | None = None,
+    head_mask: torch.Tensor | None = None,
     **kwargs,
-) -> Tuple[torch.Tensor, torch.Tensor]:
+) -> tuple[torch.Tensor, torch.Tensor]:
     block_mask = None
     causal_mask = None
     if isinstance(attention_mask, BlockMask):
@@ -243,7 +252,7 @@ def flex_attention_forward(
         value = repeat_kv(value, query.shape[1] // value.shape[1])
         enable_gqa = False
 
-    kernel_options = kwargs.get("kernel_options", None)
+    kernel_options = kwargs.get("kernel_options")
     attn_output, attention_weights = compile_friendly_flex_attention(
         query,
         key,

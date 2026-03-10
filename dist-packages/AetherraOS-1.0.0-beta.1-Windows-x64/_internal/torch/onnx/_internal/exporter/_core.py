@@ -12,8 +12,8 @@ import pathlib
 import textwrap
 import traceback
 import typing
-from collections.abc import Mapping, Sequence
-from typing import Any, Callable, Literal
+from collections.abc import Callable, Mapping, Sequence
+from typing import Any, Literal
 
 import onnxscript
 import onnxscript.evaluator
@@ -41,7 +41,6 @@ from torch.onnx._internal.exporter import (
     _type_casting,
     _verification,
 )
-
 
 if typing.TYPE_CHECKING:
     import os
@@ -211,7 +210,7 @@ def _set_shape_types(
             meta_vals,
         )
         meta_vals = (meta_vals,)
-    for value, meta_val in zip(values, meta_vals):
+    for value, meta_val in zip(values, meta_vals, strict=False):
         _set_shape_type(value, meta_val, complex_to_float=complex_to_float)
 
 
@@ -450,10 +449,9 @@ def _convert_fx_arg_to_onnx_arg(
             if isinstance(source_outputs, Sequence):
                 # If the node is getting an input from another node, get the actual value the node is retrieving
                 return _handle_getitem_node(arg, node_name_to_values)
-            else:
-                # `source_outputs` is a sequence(tensor()) value and we need to
-                # use SequenceAt to get the value. This is handled by torchlib
-                pass
+            # `source_outputs` is a sequence(tensor()) value and we need to
+            # use SequenceAt to get the value. This is handled by torchlib
+            pass
         if isinstance(arg, torch.fx.Node) and arg.op == "get_attr":
             return node_name_to_local_functions[arg.name]
         # If the input is a node, get the value from the mapping
@@ -521,10 +519,9 @@ def _handle_call_function_node_with_lowering(
         if isinstance(source_outputs, Sequence):
             _handle_getitem_node(node, node_name_to_values)
             return
-        else:
-            # `source_outputs` is a sequence(tensor()) value and we need to
-            # use SequenceAt to get the value. This is handled by torchlib
-            pass
+        # `source_outputs` is a sequence(tensor()) value and we need to
+        # use SequenceAt to get the value. This is handled by torchlib
+        pass
 
     # Map FX inputs to ONNX inputs and fill optional inputs.
     # torch_args and torch_kwargs are for op-level validation
@@ -846,7 +843,7 @@ def _get_inputs_and_attributes(
     if inspect.isbuiltin(node.target):
         inputs = list(node.args)
     else:
-        for arg, schema_arg in zip(node.args, node_schema.arguments):
+        for arg, schema_arg in zip(node.args, node_schema.arguments, strict=False):
             if arg is None or isinstance(arg, torch.fx.Node):
                 inputs.append(arg)
                 input_names.append(schema_arg.name)

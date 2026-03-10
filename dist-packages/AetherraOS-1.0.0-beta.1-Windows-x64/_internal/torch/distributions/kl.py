@@ -1,11 +1,11 @@
 # mypy: allow-untyped-defs
 import math
 import warnings
+from collections.abc import Callable
 from functools import total_ordering
-from typing import Callable
 
 import torch
-from torch import inf, Tensor
+from torch import Tensor, inf
 
 from .bernoulli import Bernoulli
 from .beta import Beta
@@ -24,19 +24,19 @@ from .half_normal import HalfNormal
 from .independent import Independent
 from .laplace import Laplace
 from .lowrank_multivariate_normal import (
+    LowRankMultivariateNormal,
     _batch_lowrank_logdet,
     _batch_lowrank_mahalanobis,
-    LowRankMultivariateNormal,
 )
-from .multivariate_normal import _batch_mahalanobis, MultivariateNormal
+from .multivariate_normal import MultivariateNormal, _batch_mahalanobis
 from .normal import Normal
 from .one_hot_categorical import OneHotCategorical
 from .pareto import Pareto
 from .poisson import Poisson
 from .transformed_distribution import TransformedDistribution
 from .uniform import Uniform
-from .utils import _sum_rightmost, euler_constant as _euler_gamma
-
+from .utils import _sum_rightmost
+from .utils import euler_constant as _euler_gamma
 
 _KL_REGISTRY: dict[
     tuple[type, type], Callable
@@ -102,7 +102,7 @@ class _Match:
         return self.types == other.types
 
     def __le__(self, other):
-        for x, y in zip(self.types, other.types):
+        for x, y in zip(self.types, other.types, strict=False):
             if not issubclass(x, y):
                 return False
             if x is not y:
@@ -290,7 +290,7 @@ def _kl_expfamily_expfamily(p, q):
     lg_normal = p._log_normalizer(*p_nparams)
     gradients = torch.autograd.grad(lg_normal.sum(), p_nparams, create_graph=True)
     result = q._log_normalizer(*q_nparams) - lg_normal
-    for pnp, qnp, g in zip(p_nparams, q_nparams, gradients):
+    for pnp, qnp, g in zip(p_nparams, q_nparams, gradients, strict=False):
         term = (qnp - pnp) * g
         result -= _sum_rightmost(term, len(q.event_shape))
     return result

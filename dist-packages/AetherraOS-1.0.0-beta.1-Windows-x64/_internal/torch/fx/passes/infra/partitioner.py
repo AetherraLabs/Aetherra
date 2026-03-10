@@ -4,22 +4,18 @@ import itertools
 import logging
 import operator
 from collections.abc import Iterable, Sequence
-from typing import Optional
 
 from torch.fx.graph_module import GraphModule
-from torch.fx.node import _get_qualified_name, Node
+from torch.fx.node import Node, _get_qualified_name
 from torch.fx.passes.operator_support import OperatorSupportBase
 from torch.fx.passes.utils.fuser_utils import fuse_by_partitions
-
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
 
 
 class Partition:
-    def __init__(
-        self, id: Optional[int] = None, nodes: Optional[Iterable[Node]] = None
-    ):
+    def __init__(self, id: int | None = None, nodes: Iterable[Node] | None = None):
         self.id = id
         self.nodes = dict.fromkeys(nodes) if nodes is not None else {}
 
@@ -56,8 +52,8 @@ class CapabilityBasedPartitioner:
         graph_module: GraphModule,
         operator_support: OperatorSupportBase,
         allows_single_node_partition: bool = False,
-        non_compute_ops: Optional[Sequence[str]] = None,
-        allowed_single_node_partition_ops: Optional[Sequence[str]] = None,
+        non_compute_ops: Sequence[str] | None = None,
+        allowed_single_node_partition_ops: Sequence[str] | None = None,
     ) -> None:
         self.graph_module = graph_module
         self.operator_support = operator_support
@@ -172,12 +168,12 @@ class CapabilityBasedPartitioner:
 
             return merge_id, True
 
-        def merge_single_node(node: Node, id: Optional[int]):
+        def merge_single_node(node: Node, id: int | None):
             def _update_partition_map(node: Node, id: int):
                 # Iterate through all the users of this node and update the partition map to indicate
                 # that there is a path from the partition id of this node to the target partition id.
                 for user_node in node.users:
-                    target_id = assignment.get(user_node, None)
+                    target_id = assignment.get(user_node)
                     if target_id is not None:
                         partition_map[id].add(target_id)
                         partition_map[id].update(partition_map[target_id])
@@ -243,9 +239,9 @@ class CapabilityBasedPartitioner:
 
             # node has tuple outputs, re-assign all following getitem node into node's partition
             if is_tuple_output:
-                id = assignment.get(node, None)  # type: ignore[arg-type]
+                id = assignment.get(node)  # type: ignore[arg-type]
                 for user in node.users:
-                    if assignment.get(user, None) != id:  # type: ignore[arg-type]
+                    if assignment.get(user) != id:  # type: ignore[arg-type]
                         nodes_reassignment[user] = id  # type: ignore[assignment]
         for node, id in nodes_reassignment.items():
             merge_single_node(node, id)

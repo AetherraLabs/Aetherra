@@ -170,14 +170,10 @@ class LyrixaAI(AgentBase):
             )
 
             # Add recent conversation history for context
-            recent_history = (
-                self.conversation_history[-5:] if self.conversation_history else []
-            )
+            recent_history = self.conversation_history[-5:] if self.conversation_history else []
             for entry in recent_history:
                 if entry["role"] in ["user", "assistant"]:
-                    messages.append(
-                        {"role": entry["role"], "content": entry["content"]}
-                    )
+                    messages.append({"role": entry["role"], "content": entry["content"]})
 
             # Add current user message
             messages.append({"role": "user", "content": message})
@@ -196,18 +192,14 @@ class LyrixaAI(AgentBase):
             if ai_response:
                 ai_response = ai_response.strip()
             else:
-                ai_response = (
-                    "I apologize, but I couldn't generate a response at this time."
-                )
+                ai_response = "I apologize, but I couldn't generate a response at this time."
             return ai_response
 
         except Exception as e:
             print(f"OpenAI API Error: {e}")
             return await self._generate_fallback_response(message, context)
 
-    async def _generate_fallback_response(
-        self, message: str, context: Dict[str, Any]
-    ) -> str:
+    async def _generate_fallback_response(self, message: str, context: Dict[str, Any]) -> str:
         """
         Generate fallback response when AI is unavailable.
 
@@ -228,13 +220,13 @@ class LyrixaAI(AgentBase):
         elif any(word in message_lower for word in ["help", "what can you do"]):
             return "I'm here to help with conversations and questions. I can discuss various topics and assist with tasks."
         elif "?" in message:
-            return f"That's an interesting question about '{message[:30]}...' Let me think about that."
+            return (
+                f"That's an interesting question about '{message[:30]}...' Let me think about that."
+            )
         else:
             return f"I understand you mentioned '{message[:30]}...' Could you tell me more about what you'd like to know?"
 
-    def _add_to_history(
-        self, role: str, content: str, metadata: Optional[Dict[str, Any]] = None
-    ):
+    def _add_to_history(self, role: str, content: str, metadata: Optional[Dict[str, Any]] = None):
         """Add message to conversation history."""
         entry = {
             "role": role,
@@ -257,9 +249,7 @@ class LyrixaAI(AgentBase):
             "total_messages": len(self.conversation_history),
             "model": self.model,
             "api_available": bool(self.api_key),
-            "last_messages": self.conversation_history[-5:]
-            if self.conversation_history
-            else [],
+            "last_messages": self.conversation_history[-5:] if self.conversation_history else [],
         }
 
     def clear_history(self):
@@ -291,9 +281,7 @@ class LyrixaAI(AgentBase):
             facts = await pmem.recall_by_tag("ownership", limit=5)
             verified = [f for f in facts if f.get("verified")]
             if not verified:
-                cands = await pmem.retrieve(
-                    "Aetherra Labs ownership", limit=5, memory_type="fact"
-                )
+                cands = await pmem.retrieve("Aetherra Labs ownership", limit=5, memory_type="fact")
                 verified = [c for c in cands if c.get("verified")]
             if verified:
                 verified.sort(key=lambda x: x.get("created_at", ""), reverse=True)

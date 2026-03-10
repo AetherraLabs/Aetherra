@@ -20,7 +20,6 @@ import os
 import re
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Set
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -42,24 +41,24 @@ IMPORT_RE = re.compile(r"^\s*(?:from|import)\s+([\w\.]+)", re.MULTILINE)
 class EngineInfo:
     file: str
     module: str
-    classes: List[str]
+    classes: list[str]
     doc: str
-    imports: List[str]
-    references_os: List[str]
-    references_lyrixa: List[str]
-    references_ui: List[str]
-    references_tests: List[str]
-    references_docs: List[str]
+    imports: list[str]
+    references_os: list[str]
+    references_lyrixa: list[str]
+    references_ui: list[str]
+    references_tests: list[str]
+    references_docs: list[str]
     bucket: str  # memory | consciousness | cognitive | analytics | other
     intended_for: str  # OS | Lyrixa | Shared | Unknown
-    suggested_move: Optional[str]
-    duplicate_of: Optional[str]
+    suggested_move: str | None
+    duplicate_of: str | None
     action: str  # keep | keep-move | deprecate | remove
-    reasons: List[str]
+    reasons: list[str]
 
 
-def iter_py_files() -> List[Path]:
-    files: List[Path] = []
+def iter_py_files() -> list[Path]:
+    files: list[Path] = []
     for root, dirs, fs in os.walk(ROOT):
         if any(part in SKIP_DIRS for part in Path(root).parts):
             continue
@@ -81,7 +80,7 @@ def path_to_module(p: Path) -> str:
     return rel.replace("/", ".")
 
 
-def bucket_for(p: Path, classes: List[str], doc: str) -> str:
+def bucket_for(p: Path, classes: list[str], doc: str) -> str:
     s = f"{p.as_posix()}\n{doc}".lower()
     if "/consciousness/" in s or "consciousness" in s:
         return "consciousness"
@@ -95,7 +94,7 @@ def bucket_for(p: Path, classes: List[str], doc: str) -> str:
 
 
 def intended_for_area(
-    p: Path, imports: List[str], refs_os: bool, refs_lyrixa: bool, refs_ui: bool
+    p: Path, imports: list[str], refs_os: bool, refs_lyrixa: bool, refs_ui: bool
 ) -> str:
     path_s = p.as_posix()
     if path_s.startswith("Aetherra/consciousness/"):
@@ -115,13 +114,13 @@ def intended_for_area(
 
 
 def collect_references(
-    target_module: str, class_names: List[str], all_files: List[Path]
-) -> tuple[List[str], List[str], List[str], List[str], List[str]]:
-    os_refs: Set[str] = set()
-    lyrixa_refs: Set[str] = set()
-    ui_refs: Set[str] = set()
-    tests_refs: Set[str] = set()
-    docs_refs: Set[str] = set()
+    target_module: str, class_names: list[str], all_files: list[Path]
+) -> tuple[list[str], list[str], list[str], list[str], list[str]]:
+    os_refs: set[str] = set()
+    lyrixa_refs: set[str] = set()
+    ui_refs: set[str] = set()
+    tests_refs: set[str] = set()
+    docs_refs: set[str] = set()
 
     mod_key = target_module.replace(".py", "")
     class_re = (
@@ -168,7 +167,7 @@ def collect_references(
     )
 
 
-def suggest_move(p: Path, bucket: str, intended: str) -> Optional[str]:
+def suggest_move(p: Path, bucket: str, intended: str) -> str | None:
     s = p.as_posix()
     if intended == "OS":
         if bucket == "memory" and not s.startswith("Aetherra/aetherra_core/memory/"):
@@ -188,7 +187,7 @@ def suggest_move(p: Path, bucket: str, intended: str) -> Optional[str]:
 def main() -> int:
     py_files = iter_py_files()
 
-    engines: List[EngineInfo] = []
+    engines: list[EngineInfo] = []
 
     # First pass: collect classes and docs
     for p in py_files:
@@ -242,7 +241,7 @@ def main() -> int:
         )
 
     # Detect duplicates by class name across files
-    class_map: Dict[str, List[EngineInfo]] = {}
+    class_map: dict[str, list[EngineInfo]] = {}
     for e in engines:
         for c in e.classes:
             class_map.setdefault(c, []).append(e)
@@ -309,7 +308,7 @@ def main() -> int:
     )
 
     # Emit Markdown
-    lines: List[str] = [
+    lines: list[str] = [
         "# Engine Inspection Report",
         "",
         "| File | Classes | Bucket | Intended | OS | Lyrixa | UI | Tests | Action |",

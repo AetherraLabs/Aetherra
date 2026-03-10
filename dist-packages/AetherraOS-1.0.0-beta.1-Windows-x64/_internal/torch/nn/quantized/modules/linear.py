@@ -10,5 +10,4 @@ while adding an import statement here.
 
 from torch.ao.nn.quantized.modules.linear import Linear, LinearPackedParams
 
-
 __all__ = ["LinearPackedParams", "Linear"]

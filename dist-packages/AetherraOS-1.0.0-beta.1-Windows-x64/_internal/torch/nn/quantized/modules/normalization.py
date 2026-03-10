@@ -16,7 +16,6 @@ from torch.ao.nn.quantized.modules.normalization import (
     LayerNorm,
 )
 
-
 __all__ = [
     "LayerNorm",
     "GroupNorm",

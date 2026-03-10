@@ -14,5 +14,4 @@ from torch.ao.nn.quantized.modules.embedding_ops import (
     EmbeddingPackedParams,
 )
 
-
 __all__ = ["EmbeddingPackedParams", "Embedding", "EmbeddingBag"]

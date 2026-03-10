@@ -6,7 +6,6 @@ from torch.nn.intrinsic.quantized.modules.conv_relu import (
 )
 from torch.nn.intrinsic.quantized.modules.linear_relu import LinearReLU
 
-
 __all__ = [
     "LinearReLU",
     "ConvReLU1d",

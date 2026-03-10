@@ -3,15 +3,16 @@ import copy
 import dataclasses
 import itertools
 import os
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import torch
 import torch._lazy as lazy
 import torch._lazy.metrics as metrics
 from torch import fx
-from torch._lazy import computation, debug as lazy_debug
+from torch._lazy import computation
+from torch._lazy import debug as lazy_debug
 from torch._lazy.tensor_factory_functions import tensor_factory_functions
-
 
 debug = os.environ.get("debug_extract_compiled_graph") is not None
 
@@ -41,7 +42,7 @@ class GraphInputMatcher:
     def __call__(self, args):
         real_input = []
         for tensor_id, traced_ivalue in zip(
-            self.graph_input_tensor_ids, self.graph_input_ivalues
+            self.graph_input_tensor_ids, self.graph_input_ivalues, strict=False
         ):
             arg_idx = self.tensor_id_to_arg_idx.get(tensor_id, None)
             if arg_idx is None:

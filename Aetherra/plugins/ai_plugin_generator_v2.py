@@ -37,9 +37,7 @@ class PluginTemplate:
     }
     created_by = "Plugin System Auto-Fixer"
 
-    def __init__(
-        self, name: str, category: str, template: str, metadata: Dict | None = None
-    ):
+    def __init__(self, name: str, category: str, template: str, metadata: Dict | None = None):
         self.name = name
         self.category = category
         self.template = template
@@ -441,9 +439,7 @@ def main(*args, **kwargs):
     def _load_learning_data(self):
         """Load learning data from previous generations."""
         try:
-            data_file = os.path.join(
-                os.path.dirname(__file__), "generator_learning_data.json"
-            )
+            data_file = os.path.join(os.path.dirname(__file__), "generator_learning_data.json")
             if os.path.exists(data_file):
                 with open(data_file) as f:
                     self.learning_data = json.load(f)
@@ -454,9 +450,7 @@ def main(*args, **kwargs):
     def _save_learning_data(self):
         """Save learning data for future improvements."""
         try:
-            data_file = os.path.join(
-                os.path.dirname(__file__), "generator_learning_data.json"
-            )
+            data_file = os.path.join(os.path.dirname(__file__), "generator_learning_data.json")
             with open(data_file, "w") as f:
                 json.dump(self.learning_data, f, indent=2)
         except Exception as e:
@@ -567,9 +561,7 @@ def main(*args, **kwargs):
         best_template = max(template_scores.items(), key=lambda x: x[1])[0]
         return self.templates[best_template]
 
-    def _generate_plugin_parameters(
-        self, requirements: Dict, template: PluginTemplate
-    ) -> Dict:
+    def _generate_plugin_parameters(self, requirements: Dict, template: PluginTemplate) -> Dict:
         """Generate parameters for plugin code generation."""
         plugin_name = requirements.get("name", "generated_plugin")
 
@@ -595,9 +587,7 @@ def main(*args, **kwargs):
 
         # Generate template-specific code
         if template.name == "data":
-            params["processing_code"] = self._generate_data_processing_code(
-                requirements
-            )
+            params["processing_code"] = self._generate_data_processing_code(requirements)
         elif template.name == "api":
             params["init_code"] = 'self.base_url = kwargs.get("base_url", "")'
 
@@ -605,17 +595,11 @@ def main(*args, **kwargs):
         execution_lines = []
         for func in requirements.get("functionality", []):
             if func == "text_processing":
-                execution_lines.append(
-                    'result = self._process_text(args[0] if args else "")'
-                )
+                execution_lines.append('result = self._process_text(args[0] if args else "")')
             elif func == "data_analysis":
-                execution_lines.append(
-                    "result = self._analyze_data(args[0] if args else [])"
-                )
+                execution_lines.append("result = self._analyze_data(args[0] if args else [])")
             elif func == "file_processing":
-                execution_lines.append(
-                    'result = self._process_file(args[0] if args else "")'
-                )
+                execution_lines.append('result = self._process_file(args[0] if args else "")')
             else:
                 execution_lines.append(f"result = self._handle_{func}(*args, **kwargs)")
 
@@ -680,7 +664,7 @@ def main(*args, **kwargs):
         except KeyError as e:
             # Handle missing parameters
             missing_param = str(e).strip("'")
-            params[missing_param] = f"TODO: Define {missing_param}"
+            params[missing_param] = f"Define {missing_param}"
             return template.template.format(**params)
 
     def _validate_generated_code(self, code: str) -> Dict:
@@ -698,21 +682,13 @@ def main(*args, **kwargs):
             validation_result["valid"] = True
 
             # Check for required components
-            classes = [
-                node for node in ast.walk(tree) if isinstance(node, ast.ClassDef)
-            ]
+            classes = [node for node in ast.walk(tree) if isinstance(node, ast.ClassDef)]
             if not classes:
-                validation_result["warnings"].append(
-                    "No classes found in generated code"
-                )
+                validation_result["warnings"].append("No classes found in generated code")
 
-            functions = [
-                node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
-            ]
+            functions = [node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
             if not functions:
-                validation_result["warnings"].append(
-                    "No functions found in generated code"
-                )
+                validation_result["warnings"].append("No functions found in generated code")
 
             # Check for execute method
             execute_methods = [
@@ -752,9 +728,7 @@ def main(*args, **kwargs):
         # Update success rate
         usage = self.learning_data[template_name]["usage_count"]
         success = self.learning_data[template_name]["success_count"]
-        self.learning_data[template_name]["success_rate"] = (
-            success / usage if usage > 0 else 0
-        )
+        self.learning_data[template_name]["success_rate"] = success / usage if usage > 0 else 0
 
         # Track errors
         for error in validation_result.get("errors", []):
@@ -790,9 +764,7 @@ def main(*args, **kwargs):
             tree = ast.parse(plugin_code)
 
             # Check for docstrings
-            classes = [
-                node for node in ast.walk(tree) if isinstance(node, ast.ClassDef)
-            ]
+            classes = [node for node in ast.walk(tree) if isinstance(node, ast.ClassDef)]
             for cls in classes:
                 if not (
                     cls.body
@@ -803,14 +775,10 @@ def main(*args, **kwargs):
 
             # Check for error handling
             try_blocks = [node for node in ast.walk(tree) if isinstance(node, ast.Try)]
-            functions = [
-                node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
-            ]
+            functions = [node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
 
             if len(try_blocks) < len(functions) * 0.5:
-                suggestions.append(
-                    "Consider adding more error handling with try-except blocks"
-                )
+                suggestions.append("Consider adding more error handling with try-except blocks")
 
             # Check for type hints
             type_hinted_functions = 0

@@ -8,24 +8,24 @@ examine their input shapes and stack traces, study device kernel activity and vi
     An earlier version of the API in :mod:`torch.autograd` module is considered legacy and will be deprecated.
 
 """
+
 import os
 
-from torch._C._autograd import _supported_activities, DeviceType, kineto_available
-from torch._C._profiler import _ExperimentalConfig, ProfilerActivity, RecordScope
+from torch._C._autograd import DeviceType, _supported_activities, kineto_available
+from torch._C._profiler import ProfilerActivity, RecordScope, _ExperimentalConfig
 from torch._environment import is_fbcode
 from torch.autograd.profiler import KinetoStepTracker, record_function
 from torch.optim.optimizer import register_optimizer_step_post_hook
 
 from .profiler import (
-    _KinetoProfile,
     ExecutionTraceObserver,
-    profile,
     ProfilerAction,
+    _KinetoProfile,
+    profile,
     schedule,
     supported_activities,
     tensorboard_trace_handler,
 )
-
 
 __all__ = [
     "profile",

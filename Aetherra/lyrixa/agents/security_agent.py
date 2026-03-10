@@ -39,9 +39,7 @@ class SecurityAgent(AgentBase):
         super().__init__()
         self.agent_type = "security_monitor"
         self.name = "SecurityAgent"
-        self.description = (
-            "Advanced security monitoring and threat detection specialist"
-        )
+        self.description = "Advanced security monitoring and threat detection specialist"
         self.capabilities = [
             "security_monitoring",
             "threat_detection",
@@ -557,8 +555,6 @@ class SecurityAgent(AgentBase):
             "capabilities": self.capabilities,
             "description": self.description,
             "active_alerts": len(self.security_alerts),
-            "threat_signatures": len(
-                self.threat_signatures.get("malware_signatures", [])
-            ),
+            "threat_signatures": len(self.threat_signatures.get("malware_signatures", [])),
             "last_updated": time.time(),
         }

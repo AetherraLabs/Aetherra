@@ -39,7 +39,6 @@ from .api import (  # noqa: F401
     RdzvEvent,
 )
 
-
 _events_loggers: dict[str, logging.Logger] = {}
 
 
@@ -86,10 +85,10 @@ def construct_and_record_rdzv_event(
     node_state: NodeState,
     name: str = "",
     hostname: str = "",
-    pid: Optional[int] = None,
+    pid: int | None = None,
     master_endpoint: str = "",
-    local_id: Optional[int] = None,
-    rank: Optional[int] = None,
+    local_id: int | None = None,
+    rank: int | None = None,
 ) -> None:
     """
     Initialize rendezvous event object and record its operations.

@@ -142,28 +142,22 @@ class MemoryAwarePluginIntegrator:
 
         # Execute plugin with memory context
         try:
-            execution_result = (
-                await self.plugin_router.execute_plugin_with_memory_context(
-                    plugin_name="sample_memory_aware_plugin",
-                    plugin_function=sample_plugin,
-                    input_data={
-                        "task": "demonstrate memory integration",
-                        "parameters": {"example": True},
-                    },
-                    user_context="Testing memory-aware plugin system",
-                    goal_context="Complete Phase 1.3 plugin system integration",
-                )
+            execution_result = await self.plugin_router.execute_plugin_with_memory_context(
+                plugin_name="sample_memory_aware_plugin",
+                plugin_function=sample_plugin,
+                input_data={
+                    "task": "demonstrate memory integration",
+                    "parameters": {"example": True},
+                },
+                user_context="Testing memory-aware plugin system",
+                goal_context="Complete Phase 1.3 plugin system integration",
             )
 
             logger.info("✅ Plugin executed successfully")
             logger.info(f"   • Success: {execution_result.success}")
-            logger.info(
-                f"   • Concepts triggered: {execution_result.concepts_triggered}"
-            )
+            logger.info(f"   • Concepts triggered: {execution_result.concepts_triggered}")
             logger.info(f"   • Execution time: {execution_result.execution_time:.3f}s")
-            logger.info(
-                f"   • Context relevance: {execution_result.context_relevance_score:.2f}"
-            )
+            logger.info(f"   • Context relevance: {execution_result.context_relevance_score:.2f}")
 
             return execution_result
 
@@ -180,29 +174,21 @@ class MemoryAwarePluginIntegrator:
 
         try:
             # Get plugin recommendations
-            recommendations = (
-                await self.plugin_router.get_recommended_plugins_for_context(
-                    context="memory integration testing plugin execution",
-                    max_recommendations=3,
-                )
+            recommendations = await self.plugin_router.get_recommended_plugins_for_context(
+                context="memory integration testing plugin execution",
+                max_recommendations=3,
             )
 
             logger.info(f"📋 Plugin recommendations: {len(recommendations)} found")
             for rec in recommendations:
-                logger.info(
-                    f"   • {rec['plugin']}: relevance score {rec['relevance_score']}"
-                )
+                logger.info(f"   • {rec['plugin']}: relevance score {rec['relevance_score']}")
 
             # Get memory insights
             insights = await self.plugin_router.get_memory_driven_plugin_insights()
 
             logger.info("🔍 Plugin insights generated:")
-            logger.info(
-                f"   • Active concepts: {len(insights['most_active_concepts'])}"
-            )
-            logger.info(
-                f"   • Plugin affinities: {len(insights['plugin_concept_affinities'])}"
-            )
+            logger.info(f"   • Active concepts: {len(insights['most_active_concepts'])}")
+            logger.info(f"   • Plugin affinities: {len(insights['plugin_concept_affinities'])}")
             logger.info(
                 f"   • Optimization suggestions: {len(insights['optimization_suggestions'])}"
             )

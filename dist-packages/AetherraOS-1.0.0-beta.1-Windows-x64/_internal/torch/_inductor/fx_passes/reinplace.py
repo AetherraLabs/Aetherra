@@ -3,9 +3,9 @@ import itertools
 import logging
 import operator
 from collections import defaultdict
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import Any, Callable, cast, Union
+from typing import Any, Union, cast
 
 import torch
 import torch.fx.node
@@ -27,7 +27,6 @@ from torch.fx.immutable_collections import immutable_dict, immutable_list
 from torch.fx.passes.reinplace import _is_view_op
 from torch.utils import _pytree as pytree
 from torch.utils._ordered_set import OrderedSet
-
 
 log = logging.getLogger(__name__)
 aten = torch.ops.aten
@@ -503,7 +502,7 @@ def reinplace_inplaceable_ops_core(graph: torch.fx.Graph) -> None:
 
         if mutated_arg.op in ("placeholder", "get_attr"):
             # Get the first copy_ node that mutates the mutated_arg.
-            copy_node = copy_nodes.get(mutated_arg, None)
+            copy_node = copy_nodes.get(mutated_arg)
             if copy_node is None:
                 # There is no copy_ back to the candidate mutated_arg (which is a graph input).
                 # Therefore the semantics of the program are that it does not mutate
@@ -515,7 +514,7 @@ def reinplace_inplaceable_ops_core(graph: torch.fx.Graph) -> None:
                 return False
 
             return True
-        elif any(view.op in ("placeholder", "get_attr") for view in shared_view_nodes):
+        if any(view.op in ("placeholder", "get_attr") for view in shared_view_nodes):
             # This should never happen in auto_functionalize_v2 non-inference mode,
             # since all mutated_arg are bases.
 
@@ -523,10 +522,9 @@ def reinplace_inplaceable_ops_core(graph: torch.fx.Graph) -> None:
             # do not allow for inplacing.
             # This would require more sophisticated algorithm to handle
             return False
-        else:
-            return not any_use_of_views_after_node(
-                node, shared_view_nodes, copy_node=None, mutated_arg=mutated_arg
-            )
+        return not any_use_of_views_after_node(
+            node, shared_view_nodes, copy_node=None, mutated_arg=mutated_arg
+        )
 
     def log_inplace_results(
         node_name,
@@ -547,8 +545,7 @@ def reinplace_inplaceable_ops_core(graph: torch.fx.Graph) -> None:
                 and isinstance(t.numel(), int)
             ):
                 return t.element_size() * t.numel()
-            else:
-                return 0
+            return 0
 
         for node in missed_nodes:
             if isinstance(node, (list, tuple)):

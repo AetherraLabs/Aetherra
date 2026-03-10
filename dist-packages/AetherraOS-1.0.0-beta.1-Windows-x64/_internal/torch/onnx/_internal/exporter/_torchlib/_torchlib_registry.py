@@ -4,18 +4,16 @@
 
 from __future__ import annotations
 
-
 __all__ = ["onnx_impl", "get_torchlib_ops"]
 
 import logging
-from collections.abc import Sequence
-from typing import Any, Callable, TypeVar
+from collections.abc import Callable, Sequence
+from typing import Any, TypeVar
 
 import onnxscript
 
 import torch
 from torch.onnx._internal.exporter import _constants, _registration
-
 
 _T = TypeVar("_T", bound=Callable)
 

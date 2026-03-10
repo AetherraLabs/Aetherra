@@ -7,8 +7,12 @@ import math
 import sys
 import typing
 import warnings
-from typing import Any, Callable, Literal, NoReturn, TypeVar as _TypeVar
-from typing_extensions import Concatenate as _Concatenate, ParamSpec as _ParamSpec
+from collections.abc import Callable
+from typing import Any, Literal, NoReturn
+from typing import Concatenate as _Concatenate
+from typing import TypeVar as _TypeVar
+
+from typing_extensions import ParamSpec as _ParamSpec
 
 import torch
 import torch._C._onnx as _C_onnx
@@ -18,7 +22,6 @@ from torch import _C
 from torch.onnx import _constants, _type_utils, errors, utils
 from torch.onnx._globals import GLOBALS
 from torch.onnx._internal import jit_utils
-
 
 if typing.TYPE_CHECKING:
     from collections.abc import Sequence
@@ -64,25 +67,24 @@ def _parse_arg(
         node_val = _node_get(node, "value")
         if desc == "i":
             return int(node_val)
-        elif desc == "f":
+        if desc == "f":
             return float(node_val)
-        elif desc == "b":
+        if desc == "b":
             return bool(node_val)
-        elif desc == "s":
+        if desc == "s":
             return str(node_val)
-        elif desc == "t":
+        if desc == "t":
             return node_val
-        elif desc == "is":
+        if desc == "is":
             return [int(v) for v in node_val]
-        elif desc == "fs":
+        if desc == "fs":
             return [float(v) for v in node_val]
-        else:
-            raise errors.SymbolicValueError(
-                f"ONNX symbolic does not understand the Constant node '{node}' "
-                f"specified with descriptor '{desc}'.",
-                value,
-            )
-    elif node.kind() == "prim::ListConstruct":
+        raise errors.SymbolicValueError(
+            f"ONNX symbolic does not understand the Constant node '{node}' "
+            f"specified with descriptor '{desc}'.",
+            value,
+        )
+    if node.kind() == "prim::ListConstruct":
         if desc == "is":
             for v in node.inputs():
                 element_node = v.node()
@@ -95,12 +97,11 @@ def _parse_arg(
                         value,
                     )
             return [int(_node_get(v.node(), "value")) for v in value.node().inputs()]
-        else:
-            raise errors.SymbolicValueError(
-                f"ONNX symbolic does not know how to unpack the ListConstruct node that "
-                f"is not a list of integers: '{node}'",
-                value,
-            )
+        raise errors.SymbolicValueError(
+            f"ONNX symbolic does not know how to unpack the ListConstruct node that "
+            f"is not a list of integers: '{node}'",
+            value,
+        )
 
     if arg_name is None or node_name is None:
         raise errors.SymbolicValueError(
@@ -264,7 +265,9 @@ def parse_args(
                 fn_name = None
             args = [
                 _parse_arg(arg, arg_desc, arg_name, fn_name)  # type: ignore[method-assign]
-                for arg, arg_desc, arg_name in zip(args, arg_descriptors, arg_names)
+                for arg, arg_desc, arg_name in zip(
+                    args, arg_descriptors, arg_names, strict=False
+                )
             ]
             # only support _outputs in kwargs
             assert len(kwargs) <= 1, (
@@ -351,7 +354,7 @@ def quantized_args(
             arg_q_descriptors_extended = arg_q_descriptors + (False,) * (
                 len(args) - len(arg_q_descriptors)
             )
-            descriptor_args = tuple(zip(arg_q_descriptors_extended, args))
+            descriptor_args = tuple(zip(arg_q_descriptors_extended, args, strict=False))
 
             def _is_arg_quantized(descriptor, arg):
                 return descriptor and _is_value(arg) and _is_tuple_construct(arg)
@@ -699,10 +702,9 @@ def _slice_helper(
         from torch.onnx.symbolic_opset9 import _slice as _slice9
 
         return _slice9(g, input, axes, starts, ends)
-    else:
-        from torch.onnx.symbolic_opset10 import _slice as _slice10
+    from torch.onnx.symbolic_opset10 import _slice as _slice10
 
-        return _slice10(g, input, axes, starts, ends, steps)
+    return _slice10(g, input, axes, starts, ends, steps)
 
 
 def _is_fp(value) -> bool:
@@ -753,10 +755,7 @@ def _sort_helper(g: jit_utils.GraphContext, input, dim, decending=True, out=None
         if not decending:
             _unimplemented("Sort", "Ascending is not supported")
         return g.op("TopK", input, dim_size_, axis_i=dim, outputs=2)
-    else:
-        return g.op(
-            "TopK", input, dim_size_, axis_i=dim, largest_i=decending, outputs=2
-        )
+    return g.op("TopK", input, dim_size_, axis_i=dim, largest_i=decending, outputs=2)
 
 
 def _topk_helper(
@@ -774,10 +773,9 @@ def _topk_helper(
         if not largest:
             _unimplemented("TopK", "Ascending is not supported")
         return g.op("TopK", input, k, axis_i=dim, outputs=2)
-    else:
-        return g.op(
-            "TopK", input, k, axis_i=dim, largest_i=largest, sorted_i=sorted, outputs=2
-        )
+    return g.op(
+        "TopK", input, k, axis_i=dim, largest_i=largest, sorted_i=sorted, outputs=2
+    )
 
 
 def _lt_helper(g: jit_utils.GraphContext, input, other):
@@ -785,10 +783,9 @@ def _lt_helper(g: jit_utils.GraphContext, input, other):
         from torch.onnx.symbolic_opset8 import lt as _lt8
 
         return _lt8(g, input, other)
-    else:
-        from torch.onnx.symbolic_opset9 import lt as _lt9
+    from torch.onnx.symbolic_opset9 import lt as _lt9
 
-        return _lt9(g, input, other)
+    return _lt9(g, input, other)
 
 
 def _interpolate_warning(interpolate_mode):
@@ -812,7 +809,7 @@ def _unsqueeze_helper(g: jit_utils.GraphContext, input, axes_i):
     if len(axes_i) == 0:
         # unnecessary unsqueeze if axes length==0
         return input
-    elif _is_constant(axes_i[0]):
+    if _is_constant(axes_i[0]):
         if g.opset >= 13:
             axes = g.op("Constant", value_t=torch.tensor(axes_i, dtype=torch.long))
             return g.op("Unsqueeze", input, axes)
@@ -843,7 +840,7 @@ def _squeeze_helper(g: jit_utils.GraphContext, input, axes_i):
         raise errors.SymbolicValueError(
             "For Squeeze axses as input, the axes rank must be one in ONNX spec.", input
         )
-    elif axes_rank == 0:
+    if axes_rank == 0:
         # The axes is a scalar. Unsqueeze it to a rank 1 tensor.
         axes_t = _unsqueeze_helper(g, axes_t, [0])
         return g.op("Squeeze", input, axes_t)
@@ -877,8 +874,7 @@ def _reducesum_helper(
             keepdims_i=keepdims_i,
             noop_with_empty_axes_i=noop_with_empty_axes_i,
         )
-    else:
-        return g.op("ReduceSum", input, axes_i=axes_i, keepdims_i=keepdims_i)
+    return g.op("ReduceSum", input, axes_i=axes_i, keepdims_i=keepdims_i)
 
 
 def _interpolate_size_to_scales(g: jit_utils.GraphContext, input, output_size, dim):
@@ -941,12 +937,9 @@ def _interpolate_get_scales(g: jit_utils.GraphContext, scale_factor, dim):
         scale_factor_rank is not None and scale_factor_rank > 0
     ):
         return g.op("Concat", offsets, scale_factor, axis_i=0)
-    else:
-        scale_factor = _unsqueeze_helper(g, scale_factor, [0])
-        scale_factor = g.op(
-            "Cast", scale_factor, to_i=_C_onnx.TensorProtoDataType.FLOAT
-        )
-        scales = [scale_factor for i in range(dim - 2)]
+    scale_factor = _unsqueeze_helper(g, scale_factor, [0])
+    scale_factor = g.op("Cast", scale_factor, to_i=_C_onnx.TensorProtoDataType.FLOAT)
+    scales = [scale_factor for i in range(dim - 2)]
     scale_factor = g.op("Concat", offsets, *scales, axis_i=0)
     return scale_factor
 
@@ -1069,24 +1062,21 @@ def _interpolate_helper(name, dim, interpolate_mode):
                 mode_s=interpolate_mode,  # nearest, linear, or cubic
                 nearest_mode_s="floor",
             )  # only valid when mode="nearest"
+        if g.opset >= 13:
+            empty_roi = _optional_input_placeholder_tensor(g)
         else:
-            if g.opset >= 13:
-                empty_roi = _optional_input_placeholder_tensor(g)
-            else:
-                empty_roi = g.op(
-                    "Constant", value_t=torch.tensor([], dtype=torch.float32)
-                )
+            empty_roi = g.op("Constant", value_t=torch.tensor([], dtype=torch.float32))
 
-            return g.op(
-                "Resize",
-                input,
-                empty_roi,
-                scales,
-                coordinate_transformation_mode_s=coordinate_transformation_mode,
-                cubic_coeff_a_f=-0.75,  # only valid when mode="cubic"
-                mode_s=interpolate_mode,  # nearest, linear, or cubic
-                nearest_mode_s="floor",
-            )  # only valid when mode="nearest"
+        return g.op(
+            "Resize",
+            input,
+            empty_roi,
+            scales,
+            coordinate_transformation_mode_s=coordinate_transformation_mode,
+            cubic_coeff_a_f=-0.75,  # only valid when mode="cubic"
+            mode_s=interpolate_mode,  # nearest, linear, or cubic
+            nearest_mode_s="floor",
+        )  # only valid when mode="nearest"
 
     return symbolic_fn
 
@@ -1167,27 +1157,27 @@ def __interpolate_helper(
             mode_s=mode,  # nearest, linear, or cubic
             nearest_mode_s="floor",
         )
-    else:  # if not _is_none(scales)
-        rank = _get_tensor_rank(input)
-        if rank is None:
-            return _unimplemented("interpolate (with scales)", "missing input shape")
+    # if not _is_none(scales)
+    rank = _get_tensor_rank(input)
+    if rank is None:
+        return _unimplemented("interpolate (with scales)", "missing input shape")
 
-        if g.opset >= 13:
-            empty_roi = _optional_input_placeholder_tensor(g)
-        else:
-            empty_roi = g.op("Constant", value_t=torch.tensor([], dtype=torch.float32))
+    if g.opset >= 13:
+        empty_roi = _optional_input_placeholder_tensor(g)
+    else:
+        empty_roi = g.op("Constant", value_t=torch.tensor([], dtype=torch.float32))
 
-        scales = _interpolate_get_scales(g, scale_factor, rank)
-        return g.op(
-            "Resize",
-            input,
-            empty_roi,
-            scales,
-            coordinate_transformation_mode_s=coordinate_transformation_mode,
-            cubic_coeff_a_f=-0.75,  # only valid when mode="cubic"
-            mode_s=mode,  # nearest, linear, or cubic
-            nearest_mode_s="floor",
-        )  # only valid when mode="nearest"
+    scales = _interpolate_get_scales(g, scale_factor, rank)
+    return g.op(
+        "Resize",
+        input,
+        empty_roi,
+        scales,
+        coordinate_transformation_mode_s=coordinate_transformation_mode,
+        cubic_coeff_a_f=-0.75,  # only valid when mode="cubic"
+        mode_s=mode,  # nearest, linear, or cubic
+        nearest_mode_s="floor",
+    )  # only valid when mode="nearest"
 
 
 def _unbind_helper(g: jit_utils.GraphContext, self, dim, _outputs):
@@ -1364,8 +1354,7 @@ def _reshape_helper(g: jit_utils.GraphContext, input, shape, allowzero=0):
                 "Reshape with allowzero=1", GLOBALS.export_onnx_opset_version, 14, input
             )
         return g.op("Reshape", input, shape)
-    else:
-        return g.op("Reshape", input, shape, allowzero_i=allowzero)
+    return g.op("Reshape", input, shape, allowzero_i=allowzero)
 
 
 def _batchnorm_helper(
@@ -1733,27 +1722,21 @@ def _reduce_op_symbolic_helper(onnx_op_name, allow_multi_dim_support=True):
             # (not dim)
             # all-reduce path
             return _handle_reduce_dim_none(g, self, onnx_op_name)
+        # dim-reduce path
+        keepdim = _get_const(keepdim, "i", "keepdim")
+        if g.opset < 18:
+            desc = "is" if allow_multi_dim_support else "i"
+            dim = _get_const(dim, desc, "dim")
+            dim_list = dim if allow_multi_dim_support else [dim]
+            return g.op(onnx_op_name, self, axes_i=dim_list, keepdims_i=keepdim)
+        if _is_value(dim):
+            axes = dim
         else:
-            # dim-reduce path
-            keepdim = _get_const(keepdim, "i", "keepdim")
-            if g.opset < 18:
-                desc = "is" if allow_multi_dim_support else "i"
-                dim = _get_const(dim, desc, "dim")
-                dim_list = dim if allow_multi_dim_support else [dim]
-                return g.op(onnx_op_name, self, axes_i=dim_list, keepdims_i=keepdim)
+            if allow_multi_dim_support:
+                axes = g.op("Constant", value_t=torch.tensor(dim, dtype=torch.long))
             else:
-                if _is_value(dim):
-                    axes = dim
-                else:
-                    if allow_multi_dim_support:
-                        axes = g.op(
-                            "Constant", value_t=torch.tensor(dim, dtype=torch.long)
-                        )
-                    else:
-                        axes = g.op(
-                            "Constant", value_t=torch.tensor([dim], dtype=torch.long)
-                        )
-                return g.op(onnx_op_name, self, axes, keepdims_i=keepdim)
+                axes = g.op("Constant", value_t=torch.tensor([dim], dtype=torch.long))
+        return g.op(onnx_op_name, self, axes, keepdims_i=keepdim)
 
     return symbolic
 
@@ -1833,16 +1816,15 @@ def _max_helper(g: jit_utils.GraphContext, self, dim_or_y=None, keepdim=None):
     if keepdim is None:
         return _op_with_optional_float_cast(g, "Max", self, dim_or_y, opset_before=12)
     # torch.max(input, dim, keepdim)
+    keepdim = _get_const(keepdim, "i", "keepdim")
+    dim = _get_const(dim_or_y, "i", "dim")
+    if g.opset < 18:
+        max = g.op("ReduceMax", self, axes_i=[dim], keepdims_i=keepdim)
     else:
-        keepdim = _get_const(keepdim, "i", "keepdim")
-        dim = _get_const(dim_or_y, "i", "dim")
-        if g.opset < 18:
-            max = g.op("ReduceMax", self, axes_i=[dim], keepdims_i=keepdim)
-        else:
-            axes = g.op("Constant", value_t=torch.tensor([dim], dtype=torch.long))
-            max = g.op("ReduceMax", self, axes, keepdims_i=keepdim)
-        indices = g.op("ArgMax", self, axis_i=dim, keepdims_i=keepdim)
-        return max, indices
+        axes = g.op("Constant", value_t=torch.tensor([dim], dtype=torch.long))
+        max = g.op("ReduceMax", self, axes, keepdims_i=keepdim)
+    indices = g.op("ArgMax", self, axis_i=dim, keepdims_i=keepdim)
+    return max, indices
 
 
 def _min_helper(g: jit_utils.GraphContext, self, dim_or_y=None, keepdim=None):
@@ -1853,16 +1835,15 @@ def _min_helper(g: jit_utils.GraphContext, self, dim_or_y=None, keepdim=None):
     if keepdim is None:
         return _op_with_optional_float_cast(g, "Min", self, dim_or_y, opset_before=12)
     # torch.min(input, dim, keepdim)
+    keepdim = _get_const(keepdim, "i", "keepdim")
+    dim = _get_const(dim_or_y, "i", "dim")
+    if g.opset < 18:
+        min = g.op("ReduceMin", self, axes_i=[dim], keepdims_i=keepdim)
     else:
-        keepdim = _get_const(keepdim, "i", "keepdim")
-        dim = _get_const(dim_or_y, "i", "dim")
-        if g.opset < 18:
-            min = g.op("ReduceMin", self, axes_i=[dim], keepdims_i=keepdim)
-        else:
-            axes = g.op("Constant", value_t=torch.tensor([dim], dtype=torch.long))
-            min = g.op("ReduceMin", self, axes, keepdims_i=keepdim)
-        indices = g.op("ArgMin", self, axis_i=dim, keepdims_i=keepdim)
-        return min, indices
+        axes = g.op("Constant", value_t=torch.tensor([dim], dtype=torch.long))
+        min = g.op("ReduceMin", self, axes, keepdims_i=keepdim)
+    indices = g.op("ArgMin", self, axis_i=dim, keepdims_i=keepdim)
+    return min, indices
 
 
 def _numel_helper(g: jit_utils.GraphContext, self):
@@ -1904,43 +1885,42 @@ def _var_mean_helper(g: jit_utils.GraphContext, input, dim, correction, keepdim)
             mul = g.op("Mul", var, num_elements)
             var = g.op("Div", mul, g.op("Sub", num_elements, one))
         return var, mean
+    axes = None
+    if dim is None:
+        mean = g.op("ReduceMean", input, keepdims_i=0)
+        t_mean = mean
+        num_elements = _numel_helper(g, input)
     else:
-        axes = None
-        if dim is None:
-            mean = g.op("ReduceMean", input, keepdims_i=0)
-            t_mean = mean
-            num_elements = _numel_helper(g, input)
-        else:
-            axes = g.op("Constant", value_t=torch.tensor(dim, dtype=torch.long))
-            mean = g.op("ReduceMean", input, axes, keepdims_i=keepdim)
-            t_mean = g.op("ReduceMean", input, axes, keepdims_i=1)
-            redudced_dims = g.op("Shape", input)
-            # dim could contain one or multiple dimensions
-            redudced_dims = g.op(
-                "Gather",
-                redudced_dims,
-                g.op("Constant", value_t=torch.tensor(dim)),
-                axis_i=0,
-            )
-            num_elements = g.op("ReduceProd", redudced_dims, keepdims_i=0)
-        sub_v = g.op("Sub", input, t_mean)
-        sqr_sub = g.op("Mul", sub_v, sub_v)
-        keepdim_mean = 0 if dim is None else keepdim
-        if axes is None:
-            var = g.op("ReduceMean", sqr_sub, keepdims_i=keepdim_mean)
-        else:
-            var = g.op("ReduceMean", sqr_sub, axes, keepdims_i=keepdim_mean)
-        # Correct bias in calculating variance, by dividing it over (N - correction) instead on N
-        if correction is None:
-            correction = 1
-        if correction != 0:
-            num_elements = g.op(
-                "Cast", num_elements, to_i=_C_onnx.TensorProtoDataType.FLOAT
-            )
-            one = g.op("Constant", value_t=torch.tensor(correction, dtype=torch.float))
-            mul = g.op("Mul", var, num_elements)
-            var = g.op("Div", mul, g.op("Sub", num_elements, one))
-        return var, mean
+        axes = g.op("Constant", value_t=torch.tensor(dim, dtype=torch.long))
+        mean = g.op("ReduceMean", input, axes, keepdims_i=keepdim)
+        t_mean = g.op("ReduceMean", input, axes, keepdims_i=1)
+        redudced_dims = g.op("Shape", input)
+        # dim could contain one or multiple dimensions
+        redudced_dims = g.op(
+            "Gather",
+            redudced_dims,
+            g.op("Constant", value_t=torch.tensor(dim)),
+            axis_i=0,
+        )
+        num_elements = g.op("ReduceProd", redudced_dims, keepdims_i=0)
+    sub_v = g.op("Sub", input, t_mean)
+    sqr_sub = g.op("Mul", sub_v, sub_v)
+    keepdim_mean = 0 if dim is None else keepdim
+    if axes is None:
+        var = g.op("ReduceMean", sqr_sub, keepdims_i=keepdim_mean)
+    else:
+        var = g.op("ReduceMean", sqr_sub, axes, keepdims_i=keepdim_mean)
+    # Correct bias in calculating variance, by dividing it over (N - correction) instead on N
+    if correction is None:
+        correction = 1
+    if correction != 0:
+        num_elements = g.op(
+            "Cast", num_elements, to_i=_C_onnx.TensorProtoDataType.FLOAT
+        )
+        one = g.op("Constant", value_t=torch.tensor(correction, dtype=torch.float))
+        mul = g.op("Mul", var, num_elements)
+        var = g.op("Div", mul, g.op("Sub", num_elements, one))
+    return var, mean
 
 
 def _embedding_bag_helper(
@@ -2090,25 +2070,24 @@ def _linalg_vector_norm_helper(
             return _onnx_opset_unsupported_detailed(
                 "linalg_vector_norm", 9, 11, "ord=0 not supported", self
             )
-        else:
-            if dim is None:
-                self = _reshape_helper(
-                    g,
-                    self,
-                    g.op("Constant", value_t=torch.tensor([-1], dtype=torch.int64)),
-                )
-                keepdim = False
+        if dim is None:
+            self = _reshape_helper(
+                g,
+                self,
+                g.op("Constant", value_t=torch.tensor([-1], dtype=torch.int64)),
+            )
+            keepdim = False
 
-            cond_op = g.op(
-                "Not",
-                g.op("Equal", self, g.op("Constant", value_t=torch.LongTensor([0]))),
-            )
-            cond_op = g.op(
-                "Cast",
-                cond_op,
-                to_i=_type_utils.JitScalarType.from_value(self).onnx_type(),
-            )
-            return _reducesum_helper(g, cond_op, axes_i=dim, keepdims_i=keepdim)
+        cond_op = g.op(
+            "Not",
+            g.op("Equal", self, g.op("Constant", value_t=torch.LongTensor([0]))),
+        )
+        cond_op = g.op(
+            "Cast",
+            cond_op,
+            to_i=_type_utils.JitScalarType.from_value(self).onnx_type(),
+        )
+        return _reducesum_helper(g, cond_op, axes_i=dim, keepdims_i=keepdim)
     elif ord == 1:
         if g.opset < 18:
             result = _reduce_op_symbolic_helper("ReduceL1")(

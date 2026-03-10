@@ -97,9 +97,7 @@ Provide structured analysis:"""
         ]
 
         content_lower = content.lower()
-        keyword_count = sum(
-            1 for keyword in important_keywords if keyword in content_lower
-        )
+        keyword_count = sum(1 for keyword in important_keywords if keyword in content_lower)
         score += keyword_count * 0.05
 
         # Recency factor (newer memories slightly more important)
@@ -146,9 +144,7 @@ Provide structured analysis:"""
             for tag in all_tags:
                 tag_counts[tag] = tag_counts.get(tag, 0) + 1
 
-            common_tags = sorted(tag_counts.items(), key=lambda x: x[1], reverse=True)[
-                :3
-            ]
+            common_tags = sorted(tag_counts.items(), key=lambda x: x[1], reverse=True)[:3]
             patterns.append(
                 f"Common tags: {', '.join([f'{tag}({count})' for tag, count in common_tags])}"
             )
@@ -162,13 +158,9 @@ Provide structured analysis:"""
         # Memory count insights
         total_memories = len(memories)
         if total_memories > 100:
-            insights.append(
-                "Large memory collection - consider implementing memory cleanup"
-            )
+            insights.append("Large memory collection - consider implementing memory cleanup")
         elif total_memories < 10:
-            insights.append(
-                "Small memory collection - system is just starting to learn"
-            )
+            insights.append("Small memory collection - system is just starting to learn")
 
         # Score distribution insights
         scores = [self.score_memory_importance(memory) for memory in memories]
@@ -177,9 +169,7 @@ Provide structured analysis:"""
             high_value_count = len([s for s in scores if s > 0.7])
 
             if avg_score > 0.7:
-                insights.append(
-                    "High-value memory collection with many important entries"
-                )
+                insights.append("High-value memory collection with many important entries")
             elif high_value_count > 0:
                 insights.append(
                     f"{high_value_count} high-value memories identified for priority retention"
@@ -208,10 +198,7 @@ Provide structured analysis:"""
             for cluster_name, cluster_memories in clusters.items():
                 # Simple similarity based on common words
                 cluster_content = " ".join(
-                    [
-                        m.get("content", m.get("text", "")).lower()
-                        for m in cluster_memories
-                    ]
+                    [m.get("content", m.get("text", "")).lower() for m in cluster_memories]
                 )
 
                 common_words = len(set(content.split()) & set(cluster_content.split()))

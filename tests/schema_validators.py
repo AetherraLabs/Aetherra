@@ -5,7 +5,7 @@
 from typing import Any, Dict
 
 
-def validate_lyrixa_chat_response(data: Dict[str, Any]) -> None:
+def validate_lyrixa_chat_response(data: dict[str, Any]) -> None:
     """Lightweight shape checks for Lyrixa chat bridge responses.
 
     Required (lenient types where noted):
@@ -29,9 +29,9 @@ def validate_lyrixa_chat_response(data: Dict[str, Any]) -> None:
     # Persona
     persona = data.get("persona")
     assert isinstance(persona, dict), "persona must be an object"
-    assert (
-        isinstance(persona.get("name"), str) and persona["name"].strip()
-    ), "persona.name must be a non-empty string"
+    assert isinstance(persona.get("name"), str) and persona["name"].strip(), (
+        "persona.name must be a non-empty string"
+    )
 
     # Awareness can be a short string or object
     awareness = data.get("awareness")
@@ -50,9 +50,9 @@ def validate_lyrixa_chat_response(data: Dict[str, Any]) -> None:
     if "suggestions" in data:
         assert isinstance(data["suggestions"], list), "suggestions must be a list"
     if "applied_changes" in data:
-        assert isinstance(
-            data["applied_changes"], list
-        ), "applied_changes must be a list"
+        assert isinstance(data["applied_changes"], list), (
+            "applied_changes must be a list"
+        )
 
     # Optional scratchpad policy sanity
     if "scratchpad_policy" in data:

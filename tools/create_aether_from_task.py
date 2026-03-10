@@ -29,7 +29,6 @@ import argparse
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 DEFAULT_TEMPLATE = """
 # @meta: {"created": "{created}", "author": "Lyrixa Code Studio", "task": "{task}"}
@@ -69,7 +68,7 @@ def slugify(text: str) -> str:
     return "".join(c.lower() if c.isalnum() else "_" for c in text).strip("_")
 
 
-def load_custom_template() -> Optional[str]:
+def load_custom_template() -> str | None:
     """Return template text from AETHERRA_TEMPLATE_DIR if available, else None.
 
     Checks for template.aether then default.aether.

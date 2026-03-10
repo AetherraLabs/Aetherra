@@ -2,7 +2,6 @@
 import copy
 import itertools
 import math
-from typing import Optional
 
 import torch
 import torch.distributed as dist
@@ -15,16 +14,16 @@ from torch.distributed._shard.sharded_tensor import (
     TensorProperties,
 )
 from torch.distributed._shard.sharding_spec import ShardMetadata
-from torch.distributed.tensor import DeviceMesh, DTensor, Replicate, Shard as DShard
+from torch.distributed.tensor import DeviceMesh, DTensor, Replicate
+from torch.distributed.tensor import Shard as DShard
 
 
 def _get_remote_device_str(rank, device_type, num_devices_per_node):
     if device_type.lower() == "cpu":
         return f"rank:{rank}/{device_type}"
-    elif device_type.lower() == "hpu":
+    if device_type.lower() == "hpu":
         return f"rank:{rank}/{device_type}:{_get_device_module(device_type).current_device()}"
-    else:
-        return f"rank:{rank}/{device_type}:{rank % num_devices_per_node}"
+    return f"rank:{rank}/{device_type}:{rank % num_devices_per_node}"
 
 
 def _create_chunk_sharded_tensor(
@@ -33,7 +32,7 @@ def _create_chunk_sharded_tensor(
     world_size: int,
     num_devices_per_node: int,
     pg: dist.ProcessGroup,
-    device: Optional[torch.device] = None,
+    device: torch.device | None = None,
 ) -> ShardedTensor:
     """
     Shard a tensor to chunks along the first dimension. The local rank will gets its
@@ -71,7 +70,9 @@ def _create_chunk_sharded_tensor(
     assert len(chunk_sizes) == len(chunk_offsets) == len(placements)
     shard_metadata = [
         ShardMetadata(offset, size, placement)
-        for offset, size, placement in zip(chunk_offsets, chunk_sizes, placements)
+        for offset, size, placement in zip(
+            chunk_offsets, chunk_sizes, placements, strict=False
+        )
     ]
     sharded_tensor_metadata = ShardedTensorMetadata(
         shards_metadata=shard_metadata,
@@ -116,7 +117,7 @@ def _create_chunk_dtensor(
 
 def _all_gather_dtensor(
     tensor: DTensor,
-    root_mesh: Optional[DeviceMesh],
+    root_mesh: DeviceMesh | None,
 ) -> torch.Tensor:
     """
     All gather a DTensor in its sharded dimension and return the local tensor.

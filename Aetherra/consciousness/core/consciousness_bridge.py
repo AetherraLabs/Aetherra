@@ -185,9 +185,7 @@ class ConsciousnessBridge:
     async def _handle_consciousness_message(self, message: ConsciousnessMessage):
         """Handle a consciousness message"""
         try:
-            self.logger.debug(
-                f"Processing message: {message.message_type} from {message.source}"
-            )
+            self.logger.debug(f"Processing message: {message.message_type} from {message.source}")
 
             # Route message to appropriate handler
             if message.message_type in self.response_handlers:
@@ -298,9 +296,7 @@ class ConsciousnessBridge:
 
                 # Update metadata with collective state
                 for state in [aetherra_state, lyrixa_state]:
-                    state.metadata[
-                        "collective_consciousness"
-                    ] = collective_consciousness
+                    state.metadata["collective_consciousness"] = collective_consciousness
                     state.metadata["last_sync"] = datetime.now().isoformat()
 
                 # Emit consciousness sync event
@@ -320,9 +316,7 @@ class ConsciousnessBridge:
         """Check for emergent consciousness patterns"""
         try:
             # Analyze system states for emergent behaviors
-            total_agents = sum(
-                len(state.active_agents) for state in self.system_states.values()
-            )
+            total_agents = sum(len(state.active_agents) for state in self.system_states.values())
             avg_consciousness = sum(
                 state.consciousness_level for state in self.system_states.values()
             ) / len(self.system_states)
@@ -568,9 +562,7 @@ if __name__ == "__main__":
         # Check system states
         states = bridge.get_all_system_states()
         for system_id, state in states.items():
-            print(
-                f"{system_id}: {state.status} (consciousness: {state.consciousness_level})"
-            )
+            print(f"{system_id}: {state.status} (consciousness: {state.consciousness_level})")
 
         await bridge.shutdown()
 

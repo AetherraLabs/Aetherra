@@ -1,12 +1,11 @@
 # mypy: allow-untyped-defs
 import dataclasses
 from collections.abc import Collection, Mapping
-from enum import auto, Enum
-from typing import Optional, TYPE_CHECKING, Union
+from enum import Enum, auto
+from typing import TYPE_CHECKING, Union
 
 from torch._library.fake_class_registry import FakeScriptObject
 from torch._subclasses.fake_tensor import is_fake
-
 
 if TYPE_CHECKING:
     import torch
@@ -57,13 +56,13 @@ class SymBoolArgument:
 class CustomObjArgument:
     name: str
     class_fqn: str
-    fake_val: Optional[FakeScriptObject] = None
+    fake_val: FakeScriptObject | None = None
 
 
 @dataclasses.dataclass
 class ConstantArgument:
     name: str
-    value: Union[int, float, bool, str, None]
+    value: int | float | bool | str | None
 
 
 ArgumentSpec = Union[
@@ -90,8 +89,8 @@ class InputKind(Enum):
 class InputSpec:
     kind: InputKind
     arg: ArgumentSpec
-    target: Optional[str]
-    persistent: Optional[bool] = None
+    target: str | None
+    persistent: bool | None = None
 
     def __post_init__(self):
         if self.kind == InputKind.BUFFER:
@@ -131,7 +130,7 @@ class OutputKind(Enum):
 class OutputSpec:
     kind: OutputKind
     arg: ArgumentSpec
-    target: Optional[str]
+    target: str | None
 
     def __post_init__(self):
         assert isinstance(
@@ -322,8 +321,8 @@ class ExportGraphSignature:
 
     # Graph node names of pytree-flattened inputs of original program
     @property
-    def user_inputs(self) -> Collection[Union[int, float, bool, None, str]]:
-        user_inputs: list[Union[int, float, bool, None, str]] = []
+    def user_inputs(self) -> Collection[int | float | bool | None | str]:
+        user_inputs: list[int | float | bool | None | str] = []
         for s in self.input_specs:
             if s.kind != InputKind.USER_INPUT:
                 continue
@@ -348,8 +347,8 @@ class ExportGraphSignature:
     # Graph node names of pytree-flattened outputs of original program
     # For joint-graph purposes, will include the loss output.
     @property
-    def user_outputs(self) -> Collection[Union[int, float, bool, None, str]]:
-        user_outputs: list[Union[int, float, bool, None, str]] = []
+    def user_outputs(self) -> Collection[int | float | bool | None | str]:
+        user_outputs: list[int | float | bool | None | str] = []
         for s in self.output_specs:
             if s.kind not in [
                 OutputKind.USER_OUTPUT,
@@ -438,7 +437,7 @@ class ExportGraphSignature:
         )
 
     @property
-    def backward_signature(self) -> Optional[ExportBackwardSignature]:
+    def backward_signature(self) -> ExportBackwardSignature | None:
         loss_output = None
         gradients_to_parameters: dict[str, str] = {}
         gradients_to_user_inputs: dict[str, str] = {}
@@ -469,7 +468,7 @@ class ExportGraphSignature:
     # name in output. The shape of output after aot_autograd will be like:
     # (updated_inputs, user_outputs, dep_token).
     @property
-    def assertion_dep_token(self) -> Optional[Mapping[int, str]]:
+    def assertion_dep_token(self) -> Mapping[int, str] | None:
         return None
 
     @property
@@ -563,27 +562,26 @@ def _make_argument_spec(node, token_names) -> ArgumentSpec:
     val = node.meta["val"]
     if node.name in token_names:
         return TokenArgument(name=node.name)
-    elif is_fake(val):
+    if is_fake(val):
         return TensorArgument(name=node.name)
-    elif isinstance(val, SymInt):
+    if isinstance(val, SymInt):
         return SymIntArgument(name=node.name)
-    elif isinstance(val, SymFloat):
+    if isinstance(val, SymFloat):
         return SymFloatArgument(name=node.name)
-    elif isinstance(val, SymBool):
+    if isinstance(val, SymBool):
         return SymBoolArgument(name=node.name)
-    elif isinstance(val, ScriptObject):
+    if isinstance(val, ScriptObject):
         return CustomObjArgument(name=node.name, class_fqn=val._type().qualified_name())  # type: ignore[attr-defined]
-    elif isinstance(val, FakeScriptObject):
+    if isinstance(val, FakeScriptObject):
         return CustomObjArgument(
             name=node.name, class_fqn=val.script_class_name, fake_val=val
         )
-    elif isinstance(val, (int, bool, str, float, type(None))):
+    if isinstance(val, (int, bool, str, float, type(None))):
         return ConstantArgument(name=node.name, value=val)
-    else:
-        raise AssertionError(
-            f"Encountered an unsupported object of type {type(val)} "
-            f"while writing the metadata for exported program"
-        )
+    raise AssertionError(
+        f"Encountered an unsupported object of type {type(val)} "
+        f"while writing the metadata for exported program"
+    )
 
 
 def _convert_to_export_graph_signature(
@@ -639,21 +637,20 @@ def _convert_to_export_graph_signature(
         name = inp.name
         if name in user_inputs:
             return InputSpec(kind=InputKind.USER_INPUT, arg=inp, target=None)
-        elif name in inputs_to_parameters:
+        if name in inputs_to_parameters:
             return InputSpec(
                 kind=InputKind.PARAMETER,
                 arg=inp,
                 target=inputs_to_parameters[name],  # type: ignore[index]
             )
-        elif name in inputs_to_buffers:
+        if name in inputs_to_buffers:
             return InputSpec(
                 kind=InputKind.BUFFER,
                 arg=inp,
                 target=inputs_to_buffers[name],  # type: ignore[index]
                 persistent=(inputs_to_buffers[name] not in non_persistent_buffers),  # type: ignore[index]
             )
-        else:
-            raise AssertionError(f"Unknown tensor input kind: {name}")
+        raise AssertionError(f"Unknown tensor input kind: {name}")
 
     def to_output_spec(idx: int, o: ArgumentSpec) -> OutputSpec:
         if isinstance(o, TokenArgument):
@@ -669,35 +666,32 @@ def _convert_to_export_graph_signature(
                     arg=o,
                     target=buffer_mutations[name],  # type: ignore[index]
                 )
-            elif name in user_input_mutations:
+            if name in user_input_mutations:
                 return OutputSpec(
                     kind=OutputKind.USER_INPUT_MUTATION,
                     arg=o,
                     target=user_input_mutations[name],  # type: ignore[index]
                 )
-            else:
-                raise AssertionError(f"Unknown tensor mutation kind: {name}")
-        else:
-            if name in user_outputs:
-                return OutputSpec(kind=OutputKind.USER_OUTPUT, arg=o, target=None)
+            raise AssertionError(f"Unknown tensor mutation kind: {name}")
+        if name in user_outputs:
+            return OutputSpec(kind=OutputKind.USER_OUTPUT, arg=o, target=None)
 
-            elif name in grad_params:
-                return OutputSpec(
-                    kind=OutputKind.GRADIENT_TO_PARAMETER,
-                    arg=o,
-                    target=grad_params[name],
-                )
-            elif name in grad_user_inputs:
-                return OutputSpec(
-                    kind=OutputKind.GRADIENT_TO_USER_INPUT,
-                    arg=o,
-                    target=grad_user_inputs[name],
-                )
-            elif name == loss_output:
-                return OutputSpec(kind=OutputKind.LOSS_OUTPUT, arg=o, target=None)
+        if name in grad_params:
+            return OutputSpec(
+                kind=OutputKind.GRADIENT_TO_PARAMETER,
+                arg=o,
+                target=grad_params[name],
+            )
+        if name in grad_user_inputs:
+            return OutputSpec(
+                kind=OutputKind.GRADIENT_TO_USER_INPUT,
+                arg=o,
+                target=grad_user_inputs[name],
+            )
+        if name == loss_output:
+            return OutputSpec(kind=OutputKind.LOSS_OUTPUT, arg=o, target=None)
 
-            else:
-                raise AssertionError(f"Unknown tensor output kind: {name}")
+        raise AssertionError(f"Unknown tensor output kind: {name}")
 
     input_specs = [to_input_spec(inp) for inp in inputs]
     output_specs = [to_output_spec(idx, o) for idx, o in enumerate(outputs)]

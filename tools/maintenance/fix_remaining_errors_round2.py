@@ -7,7 +7,6 @@ Comprehensive Error Fixing Script for Phase 7.1 - Round 2
 Addresses the remaining issues after initial fixes.
 """
 
-
 # Standard library imports
 import logging
 import os
@@ -88,9 +87,8 @@ def fix_phase3_auto_generator_type_handling():
             f.write(content)
         logger.info(f"✅ Fixed type handling in {file_path}")
         return True
-    else:
-        logger.info(f"✅ No changes needed in {file_path}")
-        return True
+    logger.info(f"✅ No changes needed in {file_path}")
+    return True
 
 
 def add_defensive_programming_to_all_panel_methods():
@@ -162,9 +160,8 @@ def add_defensive_programming_to_all_panel_methods():
             f"✅ Added defensive programming to all panel methods in {file_path}"
         )
         return True
-    else:
-        logger.info(f"✅ No changes needed for defensive programming in {file_path}")
-        return True
+    logger.info(f"✅ No changes needed for defensive programming in {file_path}")
+    return True
 
 
 def update_roadmap_with_latest_status():

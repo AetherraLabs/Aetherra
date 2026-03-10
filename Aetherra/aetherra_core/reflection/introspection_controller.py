@@ -96,9 +96,7 @@ class ComponentMonitor:
         self.components: Dict[str, Dict] = {}
         self.monitoring_active = False
 
-    def register_component(
-        self, name: str, check_function: Callable, threshold: Dict[str, float]
-    ):
+    def register_component(self, name: str, check_function: Callable, threshold: Dict[str, float]):
         """Register a component for monitoring"""
         self.components[name] = {
             "check_function": check_function,
@@ -220,11 +218,7 @@ class MemoryAnalyzer:
         memory_percent = [s["memory_percent"] for s in recent_snapshots]
 
         # Calculate trends
-        rss_trend = (
-            (rss_values[-1] - rss_values[0]) / len(rss_values)
-            if len(rss_values) > 1
-            else 0
-        )
+        rss_trend = (rss_values[-1] - rss_values[0]) / len(rss_values) if len(rss_values) > 1 else 0
         percent_trend = (
             (memory_percent[-1] - memory_percent[0]) / len(memory_percent)
             if len(memory_percent) > 1
@@ -322,13 +316,9 @@ class IntrospectionController:
                 loop = None
         self._task_loop = loop
         if loop is not None:
-            self.introspection_task = loop.create_task(
-                self._introspection_loop(interval)
-            )
+            self.introspection_task = loop.create_task(self._introspection_loop(interval))
         else:
-            self.introspection_task = asyncio.create_task(
-                self._introspection_loop(interval)
-            )
+            self.introspection_task = asyncio.create_task(self._introspection_loop(interval))
 
         logger.info(f"Introspection monitoring started (interval: {interval}s)")
 
@@ -350,14 +340,10 @@ class IntrospectionController:
             # Cancel on the owning loop
             if task_loop is not None:
                 try:
-                    logger.debug(
-                        "[INTROSPECT] Cancelling introspection task via owning loop"
-                    )
+                    logger.debug("[INTROSPECT] Cancelling introspection task via owning loop")
                     task_loop.call_soon_threadsafe(self.introspection_task.cancel)
                 except Exception:
-                    logger.debug(
-                        "[INTROSPECT] Owning loop cancel failed; cancelling directly"
-                    )
+                    logger.debug("[INTROSPECT] Owning loop cancel failed; cancelling directly")
                     self.introspection_task.cancel()
             else:
                 logger.debug("[INTROSPECT] Unknown task loop; cancelling directly")
@@ -378,21 +364,14 @@ class IntrospectionController:
                     on_current_loop = False
 
                 if on_current_loop or (
-                    task_loop is not None
-                    and current_loop is not None
-                    and task_loop is current_loop
+                    task_loop is not None and current_loop is not None and task_loop is current_loop
                 ):
                     try:
-                        logger.debug(
-                            "[INTROSPECT] Awaiting introspection task on same loop"
-                        )
+                        logger.debug("[INTROSPECT] Awaiting introspection task on same loop")
                         await self.introspection_task
                     except asyncio.CancelledError:
                         pass
-                elif (
-                    task_loop is not None
-                    and getattr(task_loop, "is_running", lambda: False)()
-                ):
+                elif task_loop is not None and getattr(task_loop, "is_running", lambda: False)():
                     # Standard library imports
                     import concurrent.futures as _cf
 
@@ -447,9 +426,7 @@ class IntrospectionController:
             system_state = await self._collect_system_state()
 
             # Generate introspection report
-            report = await self._generate_report(
-                system_state, IntrospectionLevel.MODERATE
-            )
+            report = await self._generate_report(system_state, IntrospectionLevel.MODERATE)
 
             # Store report
             self.reports.append(report)
@@ -462,9 +439,7 @@ class IntrospectionController:
                 except Exception as e:
                     logger.error(f"Callback error: {e}")
 
-            logger.debug(
-                f"Introspection completed: health_score={report.health_score:.2f}"
-            )
+            logger.debug(f"Introspection completed: health_score={report.health_score:.2f}")
 
         except Exception as e:
             logger.error(f"Introspection error: {e}")
@@ -501,9 +476,7 @@ class IntrospectionController:
         }
 
         # Count errors and warnings
-        error_count = sum(
-            1 for state in component_states.values() if state == ComponentState.ERROR
-        )
+        error_count = sum(1 for state in component_states.values() if state == ComponentState.ERROR)
         warning_count = sum(
             1 for state in component_states.values() if state == ComponentState.WARNING
         )

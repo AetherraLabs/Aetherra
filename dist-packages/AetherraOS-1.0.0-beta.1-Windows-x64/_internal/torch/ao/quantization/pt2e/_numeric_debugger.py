@@ -1,8 +1,7 @@
 import copy
 import logging
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import Callable, Optional
 
 import torch
 from torch.ao.ns.fx.utils import compute_sqnr
@@ -10,7 +9,6 @@ from torch.ao.quantization.pt2e.graph_utils import bfs_trace_with_node_process
 from torch.export import ExportedProgram
 from torch.fx import GraphModule, Node
 from torch.nn import functional as F
-
 
 NUMERIC_DEBUG_HANDLE_KEY = "numeric_debug_handle"
 CUSTOM_KEY = "custom"
@@ -88,16 +86,15 @@ def _detach(x: object) -> object:
 def _tensor_shape_equals(x: object, y: object) -> bool:
     if isinstance(x, torch.Tensor) and isinstance(y, torch.Tensor):
         return x.shape == y.shape
-    elif isinstance(x, (list, tuple)) and isinstance(y, (list, tuple)):
-        return all(_tensor_shape_equals(e1, e2) for e1, e2 in zip(x, y))
-    elif isinstance(x, dict) and isinstance(y, dict):
+    if isinstance(x, (list, tuple)) and isinstance(y, (list, tuple)):
+        return all(_tensor_shape_equals(e1, e2) for e1, e2 in zip(x, y, strict=False))
+    if isinstance(x, dict) and isinstance(y, dict):
         all_equal = True
         for k in x:
             all_equal = all_equal and k in y and (_tensor_shape_equals(x[k], y[k]))
         return all_equal
-    else:
-        log.debug("Comparing non Tensors: %s and %s, they must be equal", x, y)
-        return type(x) == type(y) and x == y
+    log.debug("Comparing non Tensors: %s and %s, they must be equal", x, y)
+    return type(x) == type(y) and x == y
 
 
 def _loss_fn(
@@ -111,12 +108,11 @@ def _loss_fn(
     """
     if isinstance(x, torch.Tensor) and isinstance(y, torch.Tensor):
         return loss(x.to(torch.float32), y.to(torch.float32))
-    elif isinstance(x, (list, tuple)) and isinstance(y, (list, tuple)):
-        return type(x)([_loss_fn(loss, e1, e2) for e1, e2 in zip(x, y)])
-    elif isinstance(x, dict) and isinstance(y, dict):
+    if isinstance(x, (list, tuple)) and isinstance(y, (list, tuple)):
+        return type(x)([_loss_fn(loss, e1, e2) for e1, e2 in zip(x, y, strict=False)])
+    if isinstance(x, dict) and isinstance(y, dict):
         return {k: _loss_fn(loss, e, y[k]) for k, e in x.items()}
-    else:
-        return None
+    return None
 
 
 class OutputLogger(torch.nn.Module):
@@ -131,8 +127,8 @@ class OutputLogger(torch.nn.Module):
     def __init__(
         self,
         debug_handle: int,
-        node_name: Optional[str] = None,
-        nn_module_stack: Optional[object] = None,
+        node_name: str | None = None,
+        nn_module_stack: object | None = None,
     ) -> None:
         super().__init__()
         self.node_name = node_name
@@ -265,13 +261,12 @@ def _module_stack_to_str(module_stack: object) -> str:
     if len(module_values_list) > 0:
         owning_module = module_values_list[-1][0]
         return str(owning_module)
-    else:
-        return str(module_stack)
+    return str(module_stack)
 
 
 def extract_results_from_loggers(
     model: GraphModule,
-) -> dict[int, tuple[Optional[str], object, list[object]]]:
+) -> dict[int, tuple[str | None, object, list[object]]]:
     """For a given model, extract the tensors stats and related information for each debug handle.
     The reason we have a list of object, instead of Tensor is because the output of node may not be
     a Tensor, it could be (nested) list, tuple or dict as well.
@@ -282,7 +277,7 @@ def extract_results_from_loggers(
 
     """
     # Results maps debug handle to a tensor list for each model being compared.
-    handles: dict[int, tuple[Optional[str], object, list[object]]] = {}
+    handles: dict[int, tuple[str | None, object, list[object]]] = {}
     for _name, module in model.named_children():
         if isinstance(module, OutputLogger) and len(module.stats) > 0:
             handles[module.debug_handle] = (
@@ -295,8 +290,8 @@ def extract_results_from_loggers(
 
 
 def compare_results(
-    ref_results: dict[int, tuple[Optional[str], object, list[torch.Tensor]]],
-    actual_results: dict[int, tuple[Optional[str], object, list[torch.Tensor]]],
+    ref_results: dict[int, tuple[str | None, object, list[torch.Tensor]]],
+    actual_results: dict[int, tuple[str | None, object, list[torch.Tensor]]],
 ) -> dict[int, NodeAccuracySummary]:
     """Given two dict mapping from `debug_handle_id` (int) to list of tensors
     return a map from `debug_handle_id` to `NodeAccuracySummary` that contains
@@ -321,7 +316,7 @@ def compare_results(
         try:
             results = [
                 QuantizationComparisonResult(actual=a, ref=b)
-                for a, b in zip(actual_stats, ref_stats)
+                for a, b in zip(actual_stats, ref_stats, strict=False)
             ]
         except Exception as e:
             # Add extra information for an exception from QuantizationComparisonResult

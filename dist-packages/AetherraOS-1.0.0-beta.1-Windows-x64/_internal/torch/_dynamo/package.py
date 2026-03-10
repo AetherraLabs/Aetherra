@@ -20,7 +20,7 @@ import platform
 import sys
 import types
 from collections.abc import Generator
-from typing import Any, NewType, Optional
+from typing import Any, NewType
 
 import torch
 import torch._inductor.package
@@ -28,7 +28,6 @@ from torch._dynamo.precompile_context import PrecompileCacheArtifact, Precompile
 from torch.compiler._cache import CacheArtifactFactory
 
 from .bytecode_transformation import get_code_keys
-
 
 logger = logging.getLogger(__name__)
 
@@ -50,10 +49,10 @@ class SerializedCode:
     co_firstlineno: int
     co_cellvars: tuple[str, ...]
     co_freevars: tuple[str, ...]
-    co_linetable: Optional[bytes] = None
-    co_qualname: Optional[str] = None
-    co_exceptiontable: Optional[bytes] = None
-    co_lnotab: Optional[str] = None
+    co_linetable: bytes | None = None
+    co_qualname: str | None = None
+    co_exceptiontable: bytes | None = None
+    co_lnotab: str | None = None
 
     @classmethod
     @functools.cache
@@ -154,11 +153,11 @@ class CompilePackage:
         updates with compiled functions and resume functions.
     """
 
-    def __init__(self, fn: Any, dynamo: Optional[_DynamoCacheEntry] = None) -> None:
+    def __init__(self, fn: Any, dynamo: _DynamoCacheEntry | None = None) -> None:
         self._innermost_fn = None
         self._codes: dict[types.CodeType, _DynamoCodeCacheEntry] = {}
 
-        self._current_entry: Optional[_DynamoCodeCacheEntry] = None
+        self._current_entry: _DynamoCodeCacheEntry | None = None
         self._installed_globals: dict[types.ModuleType, list[str]] = {}
 
         # For debugging/testing purpose only.
@@ -168,7 +167,7 @@ class CompilePackage:
         self.uninstall()
         self.validate()
 
-    def _initialize(self, fn: Any, dynamo: Optional[_DynamoCacheEntry] = None) -> None:
+    def _initialize(self, fn: Any, dynamo: _DynamoCacheEntry | None = None) -> None:
         from .eval_frame import innermost_fn
 
         self._innermost_fn = innermost_fn(fn)
@@ -197,7 +196,7 @@ class CompilePackage:
         self,
         python_code: types.CodeType,
         python_module: str,
-        name: Optional[_FunctionId] = None,
+        name: _FunctionId | None = None,
     ) -> None:
         if python_code not in self._codes:
             code = _DynamoCodeCacheEntry(
@@ -255,7 +254,7 @@ class CompilePackage:
         self,
         python_code: types.CodeType,
         python_module: str,
-        name: Optional[str],
+        name: str | None,
     ) -> None:
         self._add_function(
             python_code, python_module, _FunctionId(name) if name else None
@@ -265,7 +264,7 @@ class CompilePackage:
         assert self._current_entry is not None
         self._current_entry.import_sources[alias] = module_name
 
-    def add_backend_id(self, backend_id: str, backend: Optional[Any] = None) -> None:
+    def add_backend_id(self, backend_id: str, backend: Any | None = None) -> None:
         assert self._current_entry is not None
         assert backend_id.startswith("__compiled_fn_")  # sanity check
         backend_id = _BackendId(backend_id)

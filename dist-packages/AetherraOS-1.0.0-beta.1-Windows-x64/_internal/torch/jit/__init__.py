@@ -8,6 +8,8 @@ import torch._C
 
 # These are imported so users can access them from the `torch.jit` module
 from torch._jit_internal import (
+    Final,
+    Future,
     _Await,
     _drop,
     _IgnoreContextManager,
@@ -15,8 +17,6 @@ from torch._jit_internal import (
     _overload,
     _overload_method,
     export,
-    Final,
-    Future,
     ignore,
     is_scripting,
     unused,
@@ -33,18 +33,18 @@ from torch.jit._fuser import (
 )
 from torch.jit._ir_utils import _InsertPoint
 from torch.jit._script import (
-    _ScriptProfile,
-    _unwrap_optional,
     Attribute,
     CompilationUnit,
-    interface,
     RecursiveScriptClass,
     RecursiveScriptModule,
-    script,
-    script_method,
     ScriptFunction,
     ScriptModule,
     ScriptWarning,
+    _ScriptProfile,
+    _unwrap_optional,
+    interface,
+    script,
+    script_method,
 )
 from torch.jit._serialization import (
     jit_module_from_flatbuffer,
@@ -53,21 +53,20 @@ from torch.jit._serialization import (
     save_jit_module_to_flatbuffer,
 )
 from torch.jit._trace import (
+    ONNXTracedModule,
+    TopLevelTracedModule,
+    TracedModule,
+    TracerWarning,
+    TracingCheckError,
     _flatten,
     _get_trace_graph,
     _script_if_tracing,
     _unique_state_dict,
     is_tracing,
-    ONNXTracedModule,
-    TopLevelTracedModule,
     trace,
     trace_module,
-    TracedModule,
-    TracerWarning,
-    TracingCheckError,
 )
 from torch.utils import set_module
-
 
 __all__ = [
     "Attribute",

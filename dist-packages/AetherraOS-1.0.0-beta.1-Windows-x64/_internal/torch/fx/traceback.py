@@ -9,7 +9,6 @@ from ._compatibility import compatibility
 from .graph import Graph
 from .node import Node
 
-
 __all__ = [
     "preserve_node_meta",
     "has_preserved_node_meta",
@@ -54,9 +53,9 @@ class NodeSource:
 
     def __init__(
         self,
-        node: Optional[Node],
+        node: Node | None,
         pass_name: str = "",
-        action: Optional[Union["NodeSourceAction", list["NodeSourceAction"]]] = None,
+        action: Union["NodeSourceAction", list["NodeSourceAction"]] | None = None,
     ):
         self.pass_name = pass_name
 
@@ -184,9 +183,8 @@ def reset_grad_fn_seq_nr():
 def format_stack() -> list[str]:
     if should_preserve_node_meta:
         return [current_meta.get("stack_trace", "")]
-    else:
-        # fallback to traceback.format_stack()
-        return traceback.format_list(traceback.extract_stack()[:-1])
+    # fallback to traceback.format_stack()
+    return traceback.format_list(traceback.extract_stack()[:-1])
 
 
 @compatibility(is_backward_compatible=False)

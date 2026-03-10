@@ -18,9 +18,7 @@ AFFECT_SCHEMA_VERSION = 1
 
 class AffectSnapshot(BaseModel):
     schema_version: int = Field(AFFECT_SCHEMA_VERSION, description="Schema version")
-    ts: datetime = Field(
-        default_factory=datetime.utcnow, description="Snapshot timestamp UTC"
-    )
+    ts: datetime = Field(default_factory=datetime.utcnow, description="Snapshot timestamp UTC")
     valence: float = Field(
         0.0, ge=-1.0, le=1.0, description="Pleasantness axis (-1 negative, 1 positive)"
     )
@@ -30,12 +28,8 @@ class AffectSnapshot(BaseModel):
         le=1.0,
         description="Activation/energy (0 calm, 1 highly activated)",
     )
-    uncertainty: float = Field(
-        0.0, ge=0.0, le=1.0, description="Epistemic uncertainty (0 certain)"
-    )
-    rationale: str = Field(
-        "baseline", description="Brief explanation for current state"
-    )
+    uncertainty: float = Field(0.0, ge=0.0, le=1.0, description="Epistemic uncertainty (0 certain)")
+    rationale: str = Field("baseline", description="Brief explanation for current state")
 
     class Config:
         json_schema_extra = {

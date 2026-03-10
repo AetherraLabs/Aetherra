@@ -127,9 +127,7 @@ def start_aetherra_os():
             # Create and start OS launcher in background
             async def start_os_background():
                 launcher = AetherraOSLauncher()
-                await launcher.launch_full_os(
-                    {"gui_enabled": False}
-                )  # Start without GUI
+                await launcher.launch_full_os({"gui_enabled": False})  # Start without GUI
 
             # Run OS startup in background thread
             # Standard library imports
@@ -223,9 +221,7 @@ def main():
 
         time.sleep(2)
         if not check_os_status():
-            print(
-                "[WARN] OS may still be starting up - continuing with interface launch"
-            )
+            print("[WARN] OS may still be starting up - continuing with interface launch")
 
     # Launch interface
     exit_code = launch_interface()

@@ -5,12 +5,10 @@ import threading
 import weakref
 from dataclasses import dataclass
 from functools import partial, reduce
-from typing import Optional, Union
 
 import torch
 import torch.distributed as dist
 from torch._C._distributed_c10d import (
-    _create_work_from_future,
     AllgatherOptions,
     AllreduceOptions,
     AllToAllOptions,
@@ -20,11 +18,11 @@ from torch._C._distributed_c10d import (
     ReduceScatterOptions,
     ScatterOptions,
     Store,
+    _create_work_from_future,
 )
-from torch.distributed.distributed_c10d import _CollOp, _store_based_barrier, P2POp
+from torch.distributed.distributed_c10d import P2POp, _CollOp, _store_based_barrier
 from torch.futures import Future
 from torch.utils import _pytree as pytree
-
 
 """
 TODO:
@@ -110,7 +108,7 @@ class AllToAllBase:
     def _size_cumsum(
         self,
         buf_size: int,
-        sizes: Union[torch.Tensor, list[int], None],
+        sizes: torch.Tensor | list[int] | None,
         world_size: int,
     ) -> torch.Tensor:
         if sizes is None or len(sizes) == 0:
@@ -343,8 +341,8 @@ class ProcessLocalGroup(dist.ProcessGroup):
         self,
         output_buffer: torch.Tensor,
         input_buffer: torch.Tensor,
-        output_split_sizes: Optional[list[int]],
-        input_split_sizes: Optional[list[int]],
+        output_split_sizes: list[int] | None,
+        input_split_sizes: list[int] | None,
         opts=AllToAllOptions(),
     ) -> torch.Tensor:
         coll = ProcessLocalGroup._start_coll(AllToAllBase(), self)
@@ -421,7 +419,9 @@ class ProcessLocalGroup(dist.ProcessGroup):
     ):
         works = [
             self._reduce_scatter_base(output_tensor, input_tensor, opts)
-            for output_tensor, input_tensor in zip(output_tensors, input_tensors)
+            for output_tensor, input_tensor in zip(
+                output_tensors, input_tensors, strict=False
+            )
         ]
         for work in works[:-1]:
             work.wait()
@@ -431,7 +431,7 @@ class ProcessLocalGroup(dist.ProcessGroup):
         self, output_tensor_list, input_tensor_list, opts=AllgatherOptions()
     ):
         res = None
-        for o_t, i_t in zip(output_tensor_list, input_tensor_list):
+        for o_t, i_t in zip(output_tensor_list, input_tensor_list, strict=False):
             res = self._allgather_base(o_t, i_t)
         return res
 
@@ -490,14 +490,14 @@ dist.Backend.register_backend("threaded", _create_threaded_pg, devices=["cpu", "
 @dataclass
 class WorldData:
     default_pg: dist.ProcessGroup
-    pg_map: dict[dist.ProcessGroup, tuple[str, Optional[Store]]]
+    pg_map: dict[dist.ProcessGroup, tuple[str, Store | None]]
     pg_names: dict[dist.ProcessGroup, str]
     pg_group_ranks: dict[dist.ProcessGroup, dict[int, int]]
     pg_backend_config: dict[dist.ProcessGroup, str]
     group_count: int
     tags_to_pg: dict[str, list[dist.ProcessGroup]]
     pg_to_tag: dict[dist.ProcessGroup, str]
-    pg_coalesce_state: dict[dist.ProcessGroup, list[Union[_CollOp, P2POp]]]
+    pg_coalesce_state: dict[dist.ProcessGroup, list[_CollOp | P2POp]]
 
 
 class ThreadLocalWorld:
@@ -551,7 +551,7 @@ class ThreadLocalWorld:
         return self._get_world().pg_to_tag
 
     @property
-    def pg_coalesce_state(self) -> dict[dist.ProcessGroup, list[Union[_CollOp, P2POp]]]:
+    def pg_coalesce_state(self) -> dict[dist.ProcessGroup, list[_CollOp | P2POp]]:
         return self._get_world().pg_coalesce_state
 
 

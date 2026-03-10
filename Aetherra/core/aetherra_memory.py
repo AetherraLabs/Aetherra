@@ -34,7 +34,7 @@ def lightning_fast_data(*args, **kwargs):
 
 
 def optimize_memory_system(obj):
-    pass
+    return obj
 
 
 MEMORY_FILE = "memory_store.json"
@@ -63,12 +63,12 @@ class AetherraMemory:
     def load(self):
         """Load memories from persistent storage"""
         # Auto-loaded by the new system
-        pass
+        return len(getattr(self._memory_system, "memory", []))
 
     def save(self):
         """Save memories to persistent storage"""
         # Auto-saved by the new system
-        pass
+        return True
 
     @property
     def memory(self):
@@ -105,9 +105,7 @@ class AetherraMemory:
         insights = []
 
         if total_memories > 10:
-            insights.append(
-                f"High activity period with {total_memories} memories recorded"
-            )
+            insights.append(f"High activity period with {total_memories} memories recorded")
         elif total_memories > 5:
             insights.append(f"Moderate activity with {total_memories} memories")
         else:
@@ -204,9 +202,7 @@ class AetherraMemory:
         """Get detailed statistics about memory usage"""
         return self._memory_system.get_memory_stats()
 
-    def pattern_analysis(
-        self, pattern, frequency_threshold="weekly", timeframe_days=30
-    ):
+    def pattern_analysis(self, pattern, frequency_threshold="weekly", timeframe_days=30):
         """Analyze memory patterns and their frequency"""
         # Enhanced implementation using pattern analyzer
         try:

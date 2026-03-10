@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import typing
-from typing import Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import sympy
 
@@ -20,7 +20,6 @@ from .template_heuristics import (
     XPUConfigHeuristic,
 )
 from .virtualized import V
-
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -54,94 +53,91 @@ class InductorChoices:
     """
 
     def get_config_heuristics(
-        self, device_type: Optional[str] = "cuda"
+        self, device_type: str | None = "cuda"
     ) -> BaseConfigHeuristic:
         if device_type == "cuda":
             if torch.version.hip is None:
                 return CUDAConfigHeuristic()
-            else:
-                return ROCmConfigHeuristic()
-        elif device_type == "xpu":
+            return ROCmConfigHeuristic()
+        if device_type == "xpu":
             return XPUConfigHeuristic()
-        elif device_type == "cpu":
+        if device_type == "cpu":
             return CPUConfigHeuristic()
-        else:
-            return BaseConfigHeuristic()
+        return BaseConfigHeuristic()
 
     # GEMM configs
     def get_base_mm_configs(
-        self, device_type: Optional[str] = "cuda"
+        self, device_type: str | None = "cuda"
     ) -> partial[Generator[TritonConfig, None, None]]:
         mm_heuristics = self.get_config_heuristics(device_type)
         if config.max_autotune_gemm_search_space != "EXHAUSTIVE":
             return mm_heuristics.get_mm_configs()
-        else:
-            return mm_heuristics.get_exhaustive_mm_configs()
+        return mm_heuristics.get_exhaustive_mm_configs()
 
     def get_extra_mm_configs(
-        self, device_type: Optional[str] = "cuda"
+        self, device_type: str | None = "cuda"
     ) -> partial[Generator[TritonConfig, None, None]]:
         mm_heuristics = self.get_config_heuristics(device_type)
         return mm_heuristics.get_extra_mm_configs()
 
     def get_int8_mm_configs(
-        self, device_type: Optional[str] = "cuda"
+        self, device_type: str | None = "cuda"
     ) -> partial[Generator[TritonConfig, None, None]]:
         mm_heuristics = self.get_config_heuristics(device_type)
         return mm_heuristics.get_int8_mm_configs()
 
     def get_mixed_mm_configs(
-        self, device_type: Optional[str] = "cuda"
+        self, device_type: str | None = "cuda"
     ) -> partial[Generator[TritonConfig, None, None]]:
         mm_heuristics = self.get_config_heuristics(device_type)
         return mm_heuristics.get_mixed_mm_configs()
 
     def get_persistent_mm_configs(
-        self, device_type: Optional[str] = "cuda"
+        self, device_type: str | None = "cuda"
     ) -> partial[Generator[TritonConfig, None, None]]:
         mm_heuristics = self.get_config_heuristics(device_type)
         return mm_heuristics.get_persistent_mm_configs()
 
     def get_scaled_mm_configs(
-        self, device_type: Optional[str] = "cuda"
+        self, device_type: str | None = "cuda"
     ) -> partial[Generator[TritonConfig, None, None]]:
         mm_heuristics = self.get_config_heuristics(device_type)
         return mm_heuristics.get_scaled_mm_configs()
 
     def get_scaled_persistent_mm_configs(
-        self, device_type: Optional[str] = "cuda"
+        self, device_type: str | None = "cuda"
     ) -> partial[Generator[TritonConfig, None, None]]:
         mm_heuristics = self.get_config_heuristics(device_type)
         return mm_heuristics.get_scaled_persistent_mm_configs()
 
     def get_mm_plus_mm_configs(
-        self, device_type: Optional[str] = "cuda"
+        self, device_type: str | None = "cuda"
     ) -> partial[Generator[TritonConfig, None, None]]:
         mm_heuristics = self.get_config_heuristics(device_type)
         return mm_heuristics.get_mm_plus_mm_configs()
 
     # Conv configs
     def get_conv_configs(
-        self, device_type: Optional[str] = "cuda"
+        self, device_type: str | None = "cuda"
     ) -> partial[Generator[TritonConfig, None, None]]:
         conv_heuristics = self.get_config_heuristics(device_type)
         return conv_heuristics.get_conv_configs()
 
     # Flex attention configs
     def get_flex_attention_fwd_configs(
-        self, head_dim: int, dtype: torch.dtype, device_type: Optional[str] = "cuda"
+        self, head_dim: int, dtype: torch.dtype, device_type: str | None = "cuda"
     ) -> list[Any]:
         flex_heuristics = self.get_config_heuristics(device_type)
         return flex_heuristics.get_flex_attn_fwd_configs(head_dim, dtype)
 
     def get_flex_attention_bwd_configs(
-        self, head_dim: int, dtype: torch.dtype, device_type: Optional[str] = "cuda"
+        self, head_dim: int, dtype: torch.dtype, device_type: str | None = "cuda"
     ) -> list[Any]:
         flex_heuristics = self.get_config_heuristics(device_type)
         return flex_heuristics.get_flex_attn_bwd_configs(head_dim, dtype)
 
     def get_flex_decode_configs(
-        self, head_dim: int, dtype: torch.dtype, device_type: Optional[str] = "cuda"
+        self, head_dim: int, dtype: torch.dtype, device_type: str | None = "cuda"
     ) -> list[Any]:
         flex_heuristics = self.get_config_heuristics(device_type)
         return flex_heuristics.get_flex_decode_configs(head_dim, dtype)
@@ -274,38 +270,37 @@ class InductorChoices:
             return (reduction_numel_hint + split_size * num_threads - 1) // (
                 split_size * num_threads
             )
-        else:
-            # TODO the best heuristic currently has XBLOCK (corresponding to numel_hint) 128
-            # extend to even smaller number of outputs
-            rvals_per_thread = 4  # comes from heuristics, refactor to not leak here
-            xvals_per_block = 128
-            xblocks = (numel_hint + xvals_per_block - 1) // xvals_per_block
-            if reduction_numel_hint * numel_hint < min_elements_per_device:
-                split_size = min_elements_per_thread
-            elif reduction_numel_hint * numel_hint < max_elements_per_device:
-                target_blocks = num_sm * threads_per_sm // (num_threads)
-                target_blocks = (target_blocks + xblocks - 1) // xblocks
-                tmp_split_size = (
-                    reduction_numel_hint + rvals_per_thread * target_blocks - 1
-                ) // (rvals_per_thread * target_blocks)
-                divisors = sympy.divisors(reduction_numel_hint)
-                closest = min(divisors, key=lambda x: abs(x - tmp_split_size))
-                if abs(tmp_split_size - closest) < 20:
-                    split_size = max(closest, min_elements_per_thread)
-                else:
-                    split_size = tmp_split_size
+        # TODO the best heuristic currently has XBLOCK (corresponding to numel_hint) 128
+        # extend to even smaller number of outputs
+        rvals_per_thread = 4  # comes from heuristics, refactor to not leak here
+        xvals_per_block = 128
+        xblocks = (numel_hint + xvals_per_block - 1) // xvals_per_block
+        if reduction_numel_hint * numel_hint < min_elements_per_device:
+            split_size = min_elements_per_thread
+        elif reduction_numel_hint * numel_hint < max_elements_per_device:
+            target_blocks = num_sm * threads_per_sm // (num_threads)
+            target_blocks = (target_blocks + xblocks - 1) // xblocks
+            tmp_split_size = (
+                reduction_numel_hint + rvals_per_thread * target_blocks - 1
+            ) // (rvals_per_thread * target_blocks)
+            divisors = sympy.divisors(reduction_numel_hint)
+            closest = min(divisors, key=lambda x: abs(x - tmp_split_size))
+            if abs(tmp_split_size - closest) < 20:
+                split_size = max(closest, min_elements_per_thread)
             else:
-                divisors = sympy.divisors(reduction_numel_hint)
-                closest = min(divisors, key=lambda x: abs(x - max_elements_per_thread))
-                if abs(closest - max_elements_per_thread) < 50:
-                    # prefer even splits
-                    split_size = closest
-                else:
-                    split_size = max_elements_per_thread
+                split_size = tmp_split_size
+        else:
+            divisors = sympy.divisors(reduction_numel_hint)
+            closest = min(divisors, key=lambda x: abs(x - max_elements_per_thread))
+            if abs(closest - max_elements_per_thread) < 50:
+                # prefer even splits
+                split_size = closest
+            else:
+                split_size = max_elements_per_thread
 
-            return (reduction_numel_hint + rvals_per_thread * split_size - 1) // (
-                rvals_per_thread * split_size
-            )
+        return (reduction_numel_hint + rvals_per_thread * split_size - 1) // (
+            rvals_per_thread * split_size
+        )
 
     @staticmethod
     def can_fuse(

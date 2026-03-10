@@ -11,7 +11,6 @@ from . import (
     _enable_server_process_global_profiler,
 )
 
-
 __all__: list[str] = []
 
 
@@ -110,7 +109,7 @@ class _server_process_global_profile(profile):
         This enables thread-local profiler on all RPC threads running server-side request callbacks.
         """
         if not self.enabled:
-            return
+            return None
 
         if self.entered:  # type: ignore[has-type]
             raise RuntimeError("autograd profiler traces are not reentrant")
@@ -150,7 +149,7 @@ class _server_process_global_profile(profile):
             of an RPC request handling within the profiling range.
         """
         if not self.enabled:
-            return
+            return None
 
         process_global_events = _disable_server_process_global_profiler()
 

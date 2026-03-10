@@ -1,5 +1,4 @@
 # mypy: allow-untyped-defs
-from typing import Optional, Union
 
 import torch
 from torch import Tensor
@@ -9,7 +8,6 @@ from torch.distributions.gumbel import euler_constant
 from torch.distributions.transformed_distribution import TransformedDistribution
 from torch.distributions.transforms import AffineTransform, PowerTransform
 from torch.distributions.utils import broadcast_all
-
 
 __all__ = ["Weibull"]
 
@@ -39,9 +37,9 @@ class Weibull(TransformedDistribution):
 
     def __init__(
         self,
-        scale: Union[Tensor, float],
-        concentration: Union[Tensor, float],
-        validate_args: Optional[bool] = None,
+        scale: Tensor | float,
+        concentration: Tensor | float,
+        validate_args: bool | None = None,
     ) -> None:
         self.scale, self.concentration = broadcast_all(scale, concentration)
         self.concentration_reciprocal = self.concentration.reciprocal()

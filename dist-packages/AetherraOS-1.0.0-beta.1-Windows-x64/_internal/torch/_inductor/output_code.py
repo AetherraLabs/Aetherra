@@ -25,9 +25,9 @@ from __future__ import annotations
 import dataclasses
 import logging
 import os
+from collections.abc import Callable
 from functools import partial
-from typing import Any, Callable, Optional, TYPE_CHECKING, Union
-from typing_extensions import TypeAlias
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 import torch
 from torch._dynamo.utils import counters, get_runtime_metrics_context
@@ -41,10 +41,10 @@ from torch._inductor.cudagraph_utils import (
 )
 from torch._inductor.freezing_utils import has_frozen_params, is_frozen_param
 from torch._inductor.utils import (
-    align_inputs_from_check_idxs,
     BoxedBool,
     GraphPartitionMap,
     InputType,
+    align_inputs_from_check_idxs,
     output_node,
     set_tracing_context_output_strides,
 )
@@ -52,7 +52,6 @@ from torch.utils._ordered_set import OrderedSet
 
 from . import config
 from .runtime.autotune_cache import AutotuneCacheBundler
-
 
 if TYPE_CHECKING:
     from collections import Counter
@@ -74,13 +73,13 @@ class OutputCode:
     # TODO: Remove underscores here
 
     # None if the output is not remote cacheable
-    _fx_graph_cache_key: Optional[str] = dataclasses.field(default=None, init=False)
-    _fx_graph_cache_debug_lines: Optional[list[str]] = dataclasses.field(
+    _fx_graph_cache_key: str | None = dataclasses.field(default=None, init=False)
+    _fx_graph_cache_debug_lines: list[str] | None = dataclasses.field(
         default=None, init=False
     )
 
     # How long it took to compile this OutputCode, end to end
-    _time_taken_ns: Optional[int] = dataclasses.field(default=None, init=False)
+    _time_taken_ns: int | None = dataclasses.field(default=None, init=False)
 
     def __call__(self, inputs: Sequence[Any]) -> Any:
         raise NotImplementedError(type(self))
@@ -130,7 +129,7 @@ def complex_memory_overlap(t: torch.Tensor) -> bool:
         strides = t.stride()
         sizes = t.shape
         indices = list(range(len(strides)))
-        indices = [x for _, x in sorted(zip(strides, indices))]
+        indices = [x for _, x in sorted(zip(strides, indices, strict=False))]
         for i in range(len(strides)):
             prev_stride = 1 if i == 0 else strides[indices[i - 1]]
             prev_size = 1 if i == 0 else sizes[indices[i - 1]]
@@ -141,7 +140,7 @@ def complex_memory_overlap(t: torch.Tensor) -> bool:
 
 def maybe_handle_backward_generation(
     compiled_graph: CompiledFxGraph,
-    boxed_forward_device_index: Optional[BoxedDeviceIndex],
+    boxed_forward_device_index: BoxedDeviceIndex | None,
 ) -> None:
     assert compiled_graph.current_callable is not None
     is_backward = compiled_graph.fx_kwargs["is_backward"]
@@ -170,7 +169,7 @@ def maybe_handle_backward_generation(
 def prepare_cudagraph_post_compile(
     compiled_graph: CompiledFxGraph,
     example_inputs: Sequence[InputType],
-    boxed_forward_device_index: Optional[BoxedDeviceIndex],
+    boxed_forward_device_index: BoxedDeviceIndex | None,
 ) -> None:
     if not config.triton.cudagraph_trees:
         # Force specialize all inputs so that CUDA graphs will work
@@ -189,7 +188,7 @@ def cudagraph_post_compile(
     compiled_graph: CompiledFxGraph,
     cudagraphs: BoxedBool,
     constants: dict[str, torch.Tensor],
-    boxed_forward_device_index: Optional[BoxedDeviceIndex],
+    boxed_forward_device_index: BoxedDeviceIndex | None,
 ) -> None:
     """
     Checks for any reasons not to run cudagraphs and then
@@ -252,7 +251,7 @@ def cudagraph_partition_post_compile(
     compiled_graph: CompiledFxGraph,
     cudagraphs: BoxedBool,
     constants: dict[str, torch.Tensor],
-    boxed_forward_device_index: Optional[BoxedDeviceIndex],
+    boxed_forward_device_index: BoxedDeviceIndex | None,
 ) -> None:
     """
     Cudagraphify each partition functions, which first prepares the necessary
@@ -394,25 +393,25 @@ class CompiledFxGraph(OutputCode):
     to support FxGraph caching.
     """
 
-    current_callable: Optional[Callable[..., Any]]
-    recursively_apply_fns: Optional[Callable[..., Any]]
-    compiled_fn_runner: Optional[Any]
+    current_callable: Callable[..., Any] | None
+    recursively_apply_fns: Callable[..., Any] | None
+    compiled_fn_runner: Any | None
     cache_key: str
     source_code: str = dataclasses.field(repr=False)  # Do not display source_code
     runnable_graph_str: str = dataclasses.field(repr=False)  # Do not display graph
     inductor_post_grad_graph_str: str = dataclasses.field(
         repr=False
     )  # Do not display graph
-    cache_linemap: Optional[list[tuple[int, str]]]
+    cache_linemap: list[tuple[int, str]] | None
     device_types: OrderedSet[str]
     device_idxs: OrderedSet[int]
     mutated_inputs: OrderedSet[str]
     mutated_input_idxs: OrderedSet[int]
-    constants: Optional[dict[str, torch.Tensor]]
+    constants: dict[str, torch.Tensor] | None
     frozen_param_names: dict[str, str]
     torchbind_constants: dict[str, torch._C.ScriptObject | FakeScriptObject]
-    output_strides: Optional[list[Optional[tuple[_StrideExprStr, ...]]]]
-    disabled_cudagraphs_reason: Optional[str]
+    output_strides: list[tuple[_StrideExprStr, ...] | None] | None
+    disabled_cudagraphs_reason: str | None
     metrics_deltas: metrics.CachedMetricsDeltas
     counter_deltas: Counter[str]
     # This is a string representation of an expression we serialize
@@ -420,23 +419,23 @@ class CompiledFxGraph(OutputCode):
     # context in order to verify the validity of serving a cached
     # fx graph. The expression must be generated by:
     # ShapeEnv.produce_guards_expression()
-    guards_expr: Optional[str]
+    guards_expr: str | None
 
-    cudagraph_info: Optional[CudagraphCachedInfo]
-    partition_maps: Optional[list[GraphPartitionMap]]
+    cudagraph_info: CudagraphCachedInfo | None
+    partition_maps: list[GraphPartitionMap] | None
     fx_kwargs: _CompileFxKwargs
     inputs_to_check: Sequence[int]
 
-    _boxed_call: Optional[bool] = None
-    _triton_bundle: Optional[TritonBundle] = None
+    _boxed_call: bool | None = None
+    _triton_bundle: TritonBundle | None = None
 
     def __init__(
         self,
-        current_callable: Optional[Callable[..., Any]],
+        current_callable: Callable[..., Any] | None,
         graph: GraphLowering,
         gm: torch.fx.GraphModule,
-        output_strides: list[Optional[tuple[_StrideExprStr, ...]]],
-        disabled_cudagraphs_reason: Optional[str],
+        output_strides: list[tuple[_StrideExprStr, ...] | None],
+        disabled_cudagraphs_reason: str | None,
         metrics_deltas: metrics.CachedMetricsDeltas,
         counter_deltas: Counter[str],
         cudagraphs: BoxedBool,
@@ -446,7 +445,7 @@ class CompiledFxGraph(OutputCode):
         inputs_to_check: Sequence[int],
         runnable_graph_str: str,
         inductor_post_grad_graph_str: str,
-        compiled_fn_runner: Optional[Any] = None,
+        compiled_fn_runner: Any | None = None,
     ) -> None:
         self.current_callable = current_callable
         self.compiled_fn_runner = compiled_fn_runner
@@ -719,7 +718,7 @@ class CompiledAOTI(OutputCode):
     Class holding an AOTInductor compiled so.
     """
 
-    filename: Union[str, list[Union[str, Weights]]]
+    filename: str | list[str | Weights]
 
     def __call__(self, inputs: Sequence[Any]) -> Any:
         raise NotImplementedError("NYI")

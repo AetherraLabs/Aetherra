@@ -11,8 +11,8 @@ a functionalized version of the graph under compilation.
 import collections
 import contextlib
 import logging
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable, Optional
 
 import torch
 import torch.utils._pytree as pytree
@@ -29,12 +29,12 @@ from torch.utils._python_dispatch import (
 )
 
 from .functional_utils import (
+    MetadataKey,
     are_all_mutations_hidden_from_autograd,
     are_all_mutations_under_no_grad_or_inference_mode,
     from_fun,
     has_data_mutation,
     has_metadata_mutation,
-    MetadataKey,
     to_fun,
     was_inductor_storage_resized,
 )
@@ -48,8 +48,7 @@ from .schemas import (
     ViewAndMutationMeta,
 )
 from .subclass_utils import create_subclass_meta
-from .utils import _get_autocast_states, KNOWN_TYPES, strict_zip
-
+from .utils import KNOWN_TYPES, _get_autocast_states, strict_zip
 
 zip = strict_zip
 
@@ -151,7 +150,7 @@ def run_functionalized_fw_and_collect_metadata(
     # TODO: refactor to kill this flag
     is_train: bool = False,
     # Note: this is guaranteed to be set when running under dynamo
-    static_input_indices: Optional[list[int]] = None,
+    static_input_indices: list[int] | None = None,
     pre_dispatch: bool = False,
     # is_export is technically only needed to avoid using functionalization V2
     # during analysis
@@ -166,8 +165,7 @@ def run_functionalized_fw_and_collect_metadata(
             r = to_fun(t)
             memo[t] = r
             return r
-        else:
-            return t
+        return t
 
     @wraps(f)
     def inner(*flat_args):
@@ -284,7 +282,7 @@ def run_functionalized_fw_and_collect_metadata(
         )
 
         out_storage_to_metadata_key_to_tensors: collections.defaultdict[
-            Optional[StorageWeakRef],
+            StorageWeakRef | None,
             collections.defaultdict[MetadataKey, set[torch.Tensor]],
         ] = collections.defaultdict(lambda: collections.defaultdict(set))
 
@@ -571,9 +569,9 @@ from a multi-output view call"
                             output_type = (
                                 OutputType.alias_of_intermediate_save_as_output
                             )
-                            intermediate_base_tensor_id_to_output_idx[
-                                id(o._base)
-                            ] = new_out_idx
+                            intermediate_base_tensor_id_to_output_idx[id(o._base)] = (
+                                new_out_idx
+                            )
                             intermediate_bases.append(o._base)
             elif (
                 # See https://github.com/pytorch/pytorch/issues/100348 for this case.

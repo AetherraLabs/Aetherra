@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
@@ -10,7 +9,6 @@
 Built-in Python-based plugin marketplace server for Aetherra OS.
 Provides plugin registration, discovery, and basic marketplace functionality.
 """
-
 
 # Standard library imports
 import logging

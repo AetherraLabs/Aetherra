@@ -8,10 +8,10 @@ import inspect
 import math
 import os
 import warnings
+from collections.abc import Callable
 from itertools import chain
 from types import CodeType, FunctionType, ModuleType
-from typing import Any, Callable, get_args, NamedTuple, Optional, Union
-from typing_extensions import TypeAlias
+from typing import Any, NamedTuple, TypeAlias, get_args
 
 import torch
 import torch.utils._pytree as pytree
@@ -20,11 +20,10 @@ from torch._library.fake_class_registry import FakeScriptObject
 
 from ._compatibility import compatibility
 from ._lazy_graph_module import _make_graph_module
-from .graph import _PyTreeCodeGen, _PyTreeInfo, Graph
+from .graph import Graph, _PyTreeCodeGen, _PyTreeInfo
 from .graph_module import GraphModule
 from .node import Argument, base_types, map_aggregate
 from .proxy import ParameterProxy, Proxy, Scope, ScopeContextManager, TracerBase
-
 
 HAS_VARSTUFF = inspect.CO_VARARGS | inspect.CO_VARKEYWORDS
 
@@ -36,9 +35,9 @@ _proxyable_classes: dict[type, None] = {}
 
 _is_fx_tracing_flag = False
 
-_ConstantAttributeType: TypeAlias = Union[
-    torch.Tensor, torch.ScriptObject, FakeScriptObject, pytree.TreeSpec
-]
+_ConstantAttributeType: TypeAlias = (
+    torch.Tensor | torch.ScriptObject | FakeScriptObject | pytree.TreeSpec
+)
 
 _constant_attribute_types = get_args(_ConstantAttributeType)
 
@@ -119,9 +118,8 @@ class ProxyableClassMeta(type):
         if len(found_proxies) != 0:
             tracer = found_proxies[0].tracer
             return tracer.create_proxy("call_function", cls, args, kwargs)
-        else:
-            cls.__init__(instance, *args, **kwargs)  # type: ignore[misc]
-            return instance
+        cls.__init__(instance, *args, **kwargs)  # type: ignore[misc]
+        return instance
 
 
 def _patch_function(fn: FunctionType, nargs: int) -> FunctionType:
@@ -216,7 +214,7 @@ class PHWithMeta(PHBase):
     Object representing an input placeholder to `concrete_args`
     """
 
-    def __init__(self, ph_key: Optional[str] = None):
+    def __init__(self, ph_key: str | None = None):
         super().__init__()
 
         # Provide a hey for user to identify placeholder node during analysis
@@ -306,7 +304,7 @@ class Tracer(TracerBase):
         self._autowrap_search: list[ModuleType] = list(autowrap_modules)
         self.param_shapes_constant = param_shapes_constant
 
-        self.submodule_paths: Optional[dict[torch.nn.Module, str]] = None
+        self.submodule_paths: dict[torch.nn.Module, str] | None = None
         self.root_module_name: str = ""
         # Maps the containing module's name to the operator name
         self.scope = Scope("", None)
@@ -381,7 +379,7 @@ class Tracer(TracerBase):
                 if a is p:
                     return self.create_node("get_attr", n, (), {})
             raise NameError("parameter is not a member of this module")
-        elif isinstance(a, torch.Tensor):
+        if isinstance(a, torch.Tensor):
             for n_, p_ in self.root.named_buffers():
                 if a is p_:
                     return self.create_node("get_attr", n_, (), {})
@@ -403,7 +401,7 @@ class Tracer(TracerBase):
         # tensor value into a special attribute on the Module s.t. we can
         # retrieve it with a get_attr.
         if isinstance(a, _constant_attribute_types):
-            qualname: Optional[str] = self.tensor_attrs.get(a)
+            qualname: str | None = self.tensor_attrs.get(a)
 
             # Tensor was not found in the Module hierarchy, stow it away in a
             # special attribute and set the qualname to refer to that
@@ -484,11 +482,10 @@ class Tracer(TracerBase):
             return path
         # O(N^2) fallback in the case that we didn't store the submodule
         # paths.
-        else:
-            for n, p in self.root.named_modules():
-                if mod is p:
-                    return n
-            raise NameError("module is not installed as a submodule")
+        for n, p in self.root.named_modules():
+            if mod is p:
+                return n
+        raise NameError("module is not installed as a submodule")
 
     @compatibility(is_backward_compatible=True)
     def call_module(
@@ -674,7 +671,7 @@ class Tracer(TracerBase):
                 raise RuntimeError(
                     f"Tracing expected {len(arg_names)} arguments but got {len(concrete_args)} concrete arguments"
                 )
-            concrete_args = dict(zip(arg_names, concrete_args))
+            concrete_args = dict(zip(arg_names, concrete_args, strict=False))
 
         def proxy_placeholder(name):
             return self._proxy_placeholder(name, concrete_args, sig, fn_for_analysis)
@@ -714,8 +711,8 @@ class Tracer(TracerBase):
     @compatibility(is_backward_compatible=True)
     def trace(
         self,
-        root: Union[torch.nn.Module, Callable[..., Any]],
-        concrete_args: Optional[dict[str, Any]] = None,
+        root: torch.nn.Module | Callable[..., Any],
+        concrete_args: dict[str, Any] | None = None,
     ) -> Graph:
         """
         Trace ``root`` and return the corresponding FX ``Graph`` representation. ``root``
@@ -766,7 +763,7 @@ class Tracer(TracerBase):
                 self.root = torch.nn.Module()
                 fn = root
 
-            tracer_cls: Optional[type[Tracer]] = getattr(self, "__class__", None)
+            tracer_cls: type[Tracer] | None = getattr(self, "__class__", None)
             self.graph = Graph(tracer_cls=tracer_cls)
             if hasattr(fn, "__code__"):
                 code = fn.__code__
@@ -1135,7 +1132,7 @@ class _Patcher:
         self.visited.clear()
 
 
-CURRENT_PATCHER: Optional[_Patcher] = None
+CURRENT_PATCHER: _Patcher | None = None
 
 
 @contextlib.contextmanager
@@ -1203,7 +1200,7 @@ def _autowrap_check(
 
 
 @compatibility(is_backward_compatible=True)
-def wrap(fn_or_name: Union[str, Callable]):
+def wrap(fn_or_name: str | Callable):
     """
     This function can be called at module-level scope to register fn_or_name as a "leaf function".
     A "leaf function" will be preserved as a CallFunction node in the FX trace instead of being
@@ -1268,8 +1265,8 @@ def wrap(fn_or_name: Union[str, Callable]):
 
 @compatibility(is_backward_compatible=True)
 def symbolic_trace(
-    root: Union[torch.nn.Module, Callable[..., Any]],
-    concrete_args: Optional[dict[str, Any]] = None,
+    root: torch.nn.Module | Callable[..., Any],
+    concrete_args: dict[str, Any] | None = None,
 ) -> GraphModule:
     """
     Symbolic tracing API

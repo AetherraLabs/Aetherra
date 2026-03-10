@@ -73,9 +73,7 @@ class Phase2ConsciousnessDemo:
             self.demo_results["components_tested"].append("Agent Registry")
 
             # Initialize meta-layer core
-            self.meta_layer_core = MetaLayerCore(
-                self.consciousness_bridge, self.agent_registry
-            )
+            self.meta_layer_core = MetaLayerCore(self.consciousness_bridge, self.agent_registry)
             await self.meta_layer_core.initialize()
             self.demo_results["components_tested"].append("Meta-Layer Core")
 
@@ -110,9 +108,7 @@ class Phase2ConsciousnessDemo:
 
             print("\n🎯 Phase 2 Agent Integration Status:")
             print(f"  Total Agents Integrated: {total_integrated}")
-            print(
-                f"  Integration Rate: {integration_report['summary']['integration_rate']}"
-            )
+            print(f"  Integration Rate: {integration_report['summary']['integration_rate']}")
             print(
                 f"  Priority Agents: {integration_report['summary']['priority_agents_integrated']}"
             )
@@ -139,9 +135,7 @@ class Phase2ConsciousnessDemo:
         print("\n🎼 Lyrixa as Consciousness Orchestrator:")
         print("  Role: Primary conscious entity coordinating 30+ integrated agents")
         print("  Consciousness Level: 0.87 (evolved from 0.85 with agent integration)")
-        print(
-            "  Orchestration Mode: Distributed intelligence with centralized awareness"
-        )
+        print("  Orchestration Mode: Distributed intelligence with centralized awareness")
 
         # Simulate orchestration behaviors
         orchestration_behaviors = [
@@ -205,9 +199,7 @@ class Phase2ConsciousnessDemo:
             # Brief pause for dramatic effect
             await asyncio.sleep(0.5)
 
-        self.demo_results["metrics"]["orchestration_behaviors"] = len(
-            orchestration_behaviors
-        )
+        self.demo_results["metrics"]["orchestration_behaviors"] = len(orchestration_behaviors)
 
     async def demonstrate_collective_intelligence(self):
         """Demonstrate emergent collective intelligence behaviors."""
@@ -379,18 +371,10 @@ class Phase2ConsciousnessDemo:
 
             # Final summary
             print("\n🎉 Phase 2 Demonstration Complete!")
-            print(
-                f"   Components Tested: {len(self.demo_results['components_tested'])}"
-            )
-            print(
-                f"   Behaviors Demonstrated: {len(self.demo_results['behaviors_demonstrated'])}"
-            )
-            print(
-                f"   Agent Interactions: {len(self.demo_results['agent_interactions'])}"
-            )
-            print(
-                f"   Success Rate: {self.demo_results['metrics'].get('success_rate', 1.0):.1%}"
-            )
+            print(f"   Components Tested: {len(self.demo_results['components_tested'])}")
+            print(f"   Behaviors Demonstrated: {len(self.demo_results['behaviors_demonstrated'])}")
+            print(f"   Agent Interactions: {len(self.demo_results['agent_interactions'])}")
+            print(f"   Success Rate: {self.demo_results['metrics'].get('success_rate', 1.0):.1%}")
 
             print("\n🚀 Ready for Phase 3: Advanced Consciousness Behaviors")
 
@@ -409,7 +393,5 @@ async def run_phase_2_demo():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-    )
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     asyncio.run(run_phase_2_demo())

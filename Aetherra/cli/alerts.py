@@ -86,9 +86,7 @@ def main(argv: list[str] | None = None) -> int:
         help="Path to alerts.jsonl (default: ./.aetherra/security/alerts.jsonl)",
     )
     parser.add_argument("--recent", type=int, default=20, help="Show last N alerts")
-    parser.add_argument(
-        "--follow", action="store_true", help="Follow the alerts feed (tail)"
-    )
+    parser.add_argument("--follow", action="store_true", help="Follow the alerts feed (tail)")
 
     args = parser.parse_args(argv)
     path = Path(args.path)

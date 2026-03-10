@@ -22,9 +22,7 @@ class NarrativeChapter(BaseModel):
     start_ts: datetime = Field(..., description="Start timestamp of covered period")
     end_ts: datetime = Field(..., description="End timestamp of covered period")
     summary: str = Field(..., description="High-level consolidated narrative summary")
-    key_events: List[str] = Field(
-        default_factory=list, description="Referenced episodic event ids"
-    )
+    key_events: List[str] = Field(default_factory=list, description="Referenced episodic event ids")
     coherence_index: float = Field(
         1.0, ge=0.0, le=1.0, description="Narrative coherence metric (1=coherent)"
     )

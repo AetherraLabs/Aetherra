@@ -1,7 +1,6 @@
 # mypy: ignore-errors
 from ..cutlass_utils import try_import_cutlass
 
-
 # copied / modified from original at
 # https://github.com/NVIDIA/cutlass/blob/8783c41851cd3582490e04e69e0cd756a8c1db7f/tools/library/scripts/gemm_operation.py#L658
 

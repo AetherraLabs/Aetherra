@@ -6,7 +6,6 @@ Simple Memory Adapter - A simplified memory engine that provides basic functiona
 without complex dependencies for the GUI validation.
 """
 
-
 # Standard library imports
 import sqlite3
 import uuid

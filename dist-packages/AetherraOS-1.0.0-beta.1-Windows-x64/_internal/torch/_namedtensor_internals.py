@@ -1,7 +1,6 @@
 # mypy: allow-untyped-defs
 from collections import OrderedDict
 
-
 """
 This file contains helper functions that implement experimental functionality
 for named tensors in python. All of these are experimental, unstable, and
@@ -34,14 +33,13 @@ def unzip_namedshape(namedshape):
         )
     if len(namedshape) == 0:
         raise RuntimeError("Expected namedshape to non-empty.")
-    return zip(*namedshape)
+    return zip(*namedshape, strict=False)
 
 
 def namer_api_name(inplace):
     if inplace:
         return "rename_"
-    else:
-        return "rename"
+    return "rename"
 
 
 def is_ellipsis(item):

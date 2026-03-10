@@ -143,14 +143,14 @@ Now all metrics in the group ``my_app`` will be printed to stdout as:
 from typing import Optional
 
 from .api import (  # noqa: F401
-    configure,
     ConsoleMetricHandler,
-    get_elapsed_time_ms,
-    getStream,
     MetricData,
     MetricHandler,
     MetricsConfig,
     NullMetricHandler,
+    configure,
+    get_elapsed_time_ms,
+    getStream,
     prof,
     profile,
     publish_metric,
@@ -158,7 +158,7 @@ from .api import (  # noqa: F401
 )
 
 
-def initialize_metrics(cfg: Optional[MetricsConfig] = None):
+def initialize_metrics(cfg: MetricsConfig | None = None):
     pass
 
 

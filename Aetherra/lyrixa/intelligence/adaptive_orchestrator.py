@@ -58,9 +58,7 @@ class AdaptiveIntelligenceOrchestrator:
         for name, res in zip(provider_names, done, strict=True):
             if isinstance(res, Exception) or not isinstance(res, dict):
                 continue
-            if res.get("response") and not self._looks_errorish(
-                str(res.get("response"))
-            ):
+            if res.get("response") and not self._looks_errorish(str(res.get("response"))):
                 results.append((name, res))
 
         if not results:
@@ -102,9 +100,7 @@ class AdaptiveIntelligenceOrchestrator:
             return []
         providers: list[str] = []
         wanted = self.capabilities.get(intent, [])
-        providers_map = cast(
-            dict[str, Any], getattr(self.intelligence, "providers", {})
-        )
+        providers_map = cast(dict[str, Any], getattr(self.intelligence, "providers", {}))
         for name in wanted:
             p = providers_map.get(name)
             if p and p.get("available"):
@@ -116,9 +112,7 @@ class AdaptiveIntelligenceOrchestrator:
                     providers.append(name)
         return providers[:2]  # cap ensemble size
 
-    async def _run_provider(
-        self, name: str, message: str, ctx: dict[str, Any]
-    ) -> dict[str, Any]:
+    async def _run_provider(self, name: str, message: str, ctx: dict[str, Any]) -> dict[str, Any]:
         # Use the intelligence pipeline but bias to provider by temporarily switching active_provider
         if not self.intelligence:
             return {}
@@ -136,9 +130,7 @@ class AdaptiveIntelligenceOrchestrator:
         ctx: dict[str, Any],
     ) -> tuple[str, dict[str, float], list[dict[str, Any]]]:
         # Rank by length as a baseline
-        ranked = sorted(
-            results, key=lambda kv: len(str(kv[1].get("response", ""))), reverse=True
-        )
+        ranked = sorted(results, key=lambda kv: len(str(kv[1].get("response", ""))), reverse=True)
         best_name, best_res = ranked[0]
         best_text = str(best_res.get("response", "")).strip()
 
@@ -147,9 +139,7 @@ class AdaptiveIntelligenceOrchestrator:
         consensus_scores: list[float] = []
         for i in range(len(texts)):
             for j in range(i + 1, len(texts)):
-                consensus_scores.append(
-                    difflib.SequenceMatcher(None, texts[i], texts[j]).ratio()
-                )
+                consensus_scores.append(difflib.SequenceMatcher(None, texts[i], texts[j]).ratio())
         consensus = statistics.mean(consensus_scores) if consensus_scores else 0.0
 
         # Pull coherence signal if present in context awareness

@@ -12,7 +12,6 @@ This script verifies that all dependencies are compatible with GPL-3.0
 and generates a comprehensive legal compliance report.
 """
 
-
 # Standard library imports
 import re
 import sys
@@ -115,11 +114,10 @@ def check_license_compatibility():
         print("🎉 ALL PACKAGES ARE GPL-3.0 COMPATIBLE!")
         print("✅ Project is legally clear for distribution.")
         return True
-    else:
-        print()
-        print("⚠️  WARNING: Incompatible packages found!")
-        print("❌ Review incompatible packages before distribution.")
-        return False
+    print()
+    print("⚠️  WARNING: Incompatible packages found!")
+    print("❌ Review incompatible packages before distribution.")
+    return False
 
 
 def verify_project_files():

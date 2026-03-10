@@ -108,9 +108,7 @@ class AgentOrchestrator:
         # Load persistent data
         self._load_state()
 
-        logger.info(
-            f"[AGENT] Agent Orchestrator initialized with {len(self.agents)} agents"
-        )
+        logger.info(f"[AGENT] Agent Orchestrator initialized with {len(self.agents)} agents")
 
     def _load_state(self):
         """Load orchestrator state from persistent storage."""
@@ -162,9 +160,7 @@ class AgentOrchestrator:
                     {
                         **task.__dict__,
                         "created_at": task.created_at.isoformat(),
-                        "started_at": task.started_at.isoformat()
-                        if task.started_at
-                        else None,
+                        "started_at": task.started_at.isoformat() if task.started_at else None,
                         "completed_at": task.completed_at.isoformat()
                         if task.completed_at
                         else None,
@@ -275,15 +271,9 @@ class AgentOrchestrator:
                 obj = args[0]
                 # Extract possible attributes; fall back to synthesized id
                 agent_id = getattr(obj, "agent_id", None) or getattr(obj, "name", None)
-                name = (
-                    getattr(obj, "name", None)
-                    or agent_id
-                    or f"agent_{len(self.agents) + 1:04d}"
-                )
+                name = getattr(obj, "name", None) or agent_id or f"agent_{len(self.agents) + 1:04d}"
                 raw_caps = getattr(obj, "capabilities", [])
-                capabilities = (
-                    list(raw_caps) if isinstance(raw_caps, list | tuple | set) else []
-                )
+                capabilities = list(raw_caps) if isinstance(raw_caps, list | tuple | set) else []
 
             # Synthesize defaults if still missing
             agent_id = agent_id or name or f"agent_{len(self.agents) + 1:04d}"
@@ -307,9 +297,7 @@ class AgentOrchestrator:
             self.agents[agent_id] = agent
             self._save_state()
 
-            logger.info(
-                f"✅ Registered agent '{name}' with capabilities: {capabilities}"
-            )
+            logger.info(f"✅ Registered agent '{name}' with capabilities: {capabilities}")
             return True
 
         except Exception as e:  # pragma: no cover - defensive path
@@ -367,9 +355,7 @@ class AgentOrchestrator:
         # Sort tasks by priority
         self.task_queue.sort(key=lambda tid: self._get_task_priority_value(tid))
 
-        for task_id in self.task_queue[
-            :
-        ]:  # Copy to avoid modification during iteration
+        for task_id in self.task_queue[:]:  # Copy to avoid modification during iteration
             task = self.tasks.get(task_id)
             if not task or task.status != TaskStatus.PENDING:
                 self.task_queue.remove(task_id)
@@ -398,9 +384,7 @@ class AgentOrchestrator:
     def _find_suitable_agent(self, required_capabilities: list[str]) -> Agent | None:
         """Find the best available agent for the given capabilities."""
         available_agents = [
-            agent
-            for agent in self.agents.values()
-            if agent.status == AgentStatus.AVAILABLE
+            agent for agent in self.agents.values() if agent.status == AgentStatus.AVAILABLE
         ]
 
         if not available_agents:
@@ -439,9 +423,7 @@ class AgentOrchestrator:
             logger.info(f"[AGENT] Assigned task '{task.name}' to agent '{agent.name}'")
 
         except Exception as e:
-            logger.error(
-                f"❌ Failed to assign task {task.task_id} to agent {agent.agent_id}: {e}"
-            )
+            logger.error(f"❌ Failed to assign task {task.task_id} to agent {agent.agent_id}: {e}")
             task.status = TaskStatus.FAILED
             task.error_message = str(e)
 
@@ -539,22 +521,12 @@ class AgentOrchestrator:
         available_agents = len(
             [a for a in self.agents.values() if a.status == AgentStatus.AVAILABLE]
         )
-        busy_agents = len(
-            [a for a in self.agents.values() if a.status == AgentStatus.BUSY]
-        )
-        offline_agents = len(
-            [a for a in self.agents.values() if a.status == AgentStatus.OFFLINE]
-        )
+        busy_agents = len([a for a in self.agents.values() if a.status == AgentStatus.BUSY])
+        offline_agents = len([a for a in self.agents.values() if a.status == AgentStatus.OFFLINE])
 
-        pending_tasks = len(
-            [t for t in self.tasks.values() if t.status == TaskStatus.PENDING]
-        )
-        running_tasks = len(
-            [t for t in self.tasks.values() if t.status == TaskStatus.RUNNING]
-        )
-        completed_tasks = len(
-            [t for t in self.tasks.values() if t.status == TaskStatus.COMPLETED]
-        )
+        pending_tasks = len([t for t in self.tasks.values() if t.status == TaskStatus.PENDING])
+        running_tasks = len([t for t in self.tasks.values() if t.status == TaskStatus.RUNNING])
+        completed_tasks = len([t for t in self.tasks.values() if t.status == TaskStatus.COMPLETED])
 
         return {
             "orchestration_active": self.orchestration_active,
@@ -582,9 +554,7 @@ class AgentOrchestrator:
             "assigned_agent": task.assigned_agent,
             "created_at": task.created_at.isoformat(),
             "started_at": task.started_at.isoformat() if task.started_at else None,
-            "completed_at": task.completed_at.isoformat()
-            if task.completed_at
-            else None,
+            "completed_at": task.completed_at.isoformat() if task.completed_at else None,
             "result": task.result,
             "error_message": task.error_message,
         }

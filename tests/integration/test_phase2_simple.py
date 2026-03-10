@@ -10,7 +10,6 @@ Test the updated launcher with Phase 2 Live Context Bridge capabilities.
 No GUI instantiation, Windows PowerShell compatible.
 """
 
-
 # Standard library imports
 import platform
 import sys

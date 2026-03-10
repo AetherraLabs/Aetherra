@@ -4,7 +4,8 @@ import collections
 import dataclasses
 import heapq
 import logging
-from typing import Callable, TYPE_CHECKING, TypedDict, Union
+from collections.abc import Callable
+from typing import TYPE_CHECKING, TypedDict, Union
 
 from torch._utils_internal import signpost_event
 from torch.utils._ordered_set import OrderedSet
@@ -12,7 +13,6 @@ from torch.utils._ordered_set import OrderedSet
 from .ir import MultiOutputLayout, NoneLayout
 from .utils import get_dtype_size, is_wait
 from .virtualized import V
-
 
 if TYPE_CHECKING:
     from .dependencies import Dep
@@ -42,8 +42,8 @@ class MemoryPlanningInfoForBuffer:
 class MemoryPlanningInfoForNode:
     index: int = 0
     size: int = 0
-    pred_buffers: OrderedSet[Union[SchedulerBuffer, FreeableInputBuffer]] = (
-        dataclasses.field(default_factory=OrderedSet)
+    pred_buffers: OrderedSet[SchedulerBuffer | FreeableInputBuffer] = dataclasses.field(
+        default_factory=OrderedSet
     )
     pred_nodes: OrderedSet[BaseSchedulerNode] = dataclasses.field(
         default_factory=OrderedSet
@@ -164,7 +164,7 @@ def compute_size_for_scheduler_buffer(
                 )
             sched_buf_to_size[sched_buf.get_name()] = (_size, _size)
             return _size
-        elif isinstance(sched_buf.node.layout, MultiOutputLayout):
+        if isinstance(sched_buf.node.layout, MultiOutputLayout):
             size_alloc = 0
             for user in sched_buf.users:
                 if isinstance(user.node, OutputNode):
@@ -177,15 +177,14 @@ def compute_size_for_scheduler_buffer(
                 0,
             )
             return size_alloc
-        else:
-            buf_size = V.graph.sizevars.size_hint(
-                sched_buf.node.get_numel(), fallback=0
-            ) * get_dtype_size(sched_buf.node.get_dtype())
-            sched_buf_to_size[sched_buf.get_name()] = (
-                0 if user_of_MultiOutputLayout else buf_size,
-                buf_size,
-            )
-            return buf_size
+        buf_size = V.graph.sizevars.size_hint(
+            sched_buf.node.get_numel(), fallback=0
+        ) * get_dtype_size(sched_buf.node.get_dtype())
+        sched_buf_to_size[sched_buf.get_name()] = (
+            0 if user_of_MultiOutputLayout else buf_size,
+            buf_size,
+        )
+        return buf_size
 
     for sched_buf in name_to_buf.values():
         # skip if sched_buf is already processed as an user of another SchedulerBuffer
@@ -218,7 +217,7 @@ def assign_memory_planning_info_for_scheduler_buffers(
 
     # populate the MemoryPlanningInfoForBuffer attribute to each scheduler buffer
     # note: there are scheduler buffers not in dep_name_to_succ_nodes (e.g., graph outputs)
-    for buf_name in name_to_buf.keys():
+    for buf_name in name_to_buf:
         name_to_buf[buf_name].mpi_buffer = MemoryPlanningInfoForBuffer(
             size_alloc=sched_buf_to_size[buf_name][0],
             size_free=sched_buf_to_size[buf_name][1],
@@ -281,7 +280,7 @@ def estimate_peak_memory(
     # map each scheduler buffer to its size, start step, and end step
     @dataclasses.dataclass
     class BufferInfo:
-        buffer: Union[SchedulerBuffer, FreeableInputBuffer]
+        buffer: SchedulerBuffer | FreeableInputBuffer
         size_alloc: int
         size_free: int
         start_step: int
@@ -395,7 +394,7 @@ def topological_sort_lpmf(
         outdegree: int
 
     node_info: dict[BaseSchedulerNode, NodeInfo] = dict()
-    buf_info: dict[Union[SchedulerBuffer, FreeableInputBuffer], BufferInfo] = dict()
+    buf_info: dict[SchedulerBuffer | FreeableInputBuffer, BufferInfo] = dict()
 
     # compute nodes' number of unmet dependencies (for schedulability)
     # initialize the list of nodes ready to be scheduled

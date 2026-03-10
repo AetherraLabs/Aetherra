@@ -7,7 +7,6 @@ Quantum-enhanced meta-learning for rapid meta-memory development
 Addresses meta-memory coverage gap through advanced learning mechanisms
 """
 
-
 # Standard library imports
 import logging
 import time
@@ -66,9 +65,7 @@ class QuantumMetaLearningSystem:
         # Initialize quantum learning infrastructure
         self._initialize_quantum_learning()
 
-        logging.info(
-            "Quantum Meta-Learning System initialized - Quantum enhancement active"
-        )
+        logging.info("Quantum Meta-Learning System initialized - Quantum enhancement active")
 
     def _initialize_quantum_learning(self):
         """Initialize quantum learning mechanisms"""
@@ -81,9 +78,7 @@ class QuantumMetaLearningSystem:
         # Set up entanglement networks
         self._setup_entanglement_networks()
 
-    def quantum_enhance_meta_memory(
-        self, target_coverage: float = 0.89
-    ) -> Dict[str, Any]:
+    def quantum_enhance_meta_memory(self, target_coverage: float = 0.89) -> Dict[str, Any]:
         """
         🌌 Use quantum learning to rapidly enhance meta-memory coverage
         Target: Bring meta-memory from 69% to 89%+ coverage
@@ -133,10 +128,7 @@ class QuantumMetaLearningSystem:
 
         # Calculate total enhancement
         total_boost = (
-            superposition_boost
-            + entanglement_boost
-            + consciousness_boost
-            + tunneling_boost
+            superposition_boost + entanglement_boost + consciousness_boost + tunneling_boost
         )
         enhancement_result["learning_acceleration"] = total_boost
 
@@ -148,9 +140,7 @@ class QuantumMetaLearningSystem:
         final_coverage = min(0.69 + total_boost, 1.0)
         enhancement_result["estimated_final_coverage"] = final_coverage
 
-        logging.info(
-            f"Quantum meta-memory enhancement: {0.69:.1%} → {final_coverage:.1%}"
-        )
+        logging.info(f"Quantum meta-memory enhancement: {0.69:.1%} → {final_coverage:.1%}")
         return enhancement_result
 
     def _apply_superposition_learning(self) -> float:
@@ -175,9 +165,7 @@ class QuantumMetaLearningSystem:
 
         # Superposition allows learning in multiple domains simultaneously
         # Each state probability contributes to overall learning boost
-        superposition_boost = (
-            sum(superposition_state.superposition_states.values()) * 0.15
-        )
+        superposition_boost = sum(superposition_state.superposition_states.values()) * 0.15
 
         return superposition_boost
 
@@ -195,9 +183,7 @@ class QuantumMetaLearningSystem:
 
         for domain1, domain2 in entanglement_pairs:
             # Create entangled learning state
-            entanglement_strength = self._calculate_entanglement_strength(
-                domain1, domain2
-            )
+            entanglement_strength = self._calculate_entanglement_strength(domain1, domain2)
 
             # Entangled domains enhance each other's learning
             mutual_enhancement = entanglement_strength * 0.025
@@ -213,9 +199,7 @@ class QuantumMetaLearningSystem:
         resonance_frequency = self._calculate_consciousness_frequency()
 
         # Consciousness resonance amplifies all learning processes
-        resonance_amplification = (
-            self.consciousness_resonance * resonance_frequency * 0.12
-        )
+        resonance_amplification = self.consciousness_resonance * resonance_frequency * 0.12
 
         # Update consciousness resonance based on learning
         self.consciousness_resonance = min(self.consciousness_resonance + 0.05, 1.0)
@@ -235,9 +219,7 @@ class QuantumMetaLearningSystem:
 
         for barrier in learning_barriers:
             # Quantum tunneling probability
-            tunneling_probability = self._calculate_tunneling_probability(
-                barrier["height"]
-            )
+            tunneling_probability = self._calculate_tunneling_probability(barrier["height"])
 
             # If tunneling successful, overcome the barrier
             if tunneling_probability > 0.7:
@@ -246,9 +228,7 @@ class QuantumMetaLearningSystem:
 
         return tunneling_boost
 
-    def accelerate_domain_learning(
-        self, domain: str, acceleration_factor: float = 2.0
-    ) -> float:
+    def accelerate_domain_learning(self, domain: str, acceleration_factor: float = 2.0) -> float:
         """
         🚀 Accelerate learning in a specific domain using quantum mechanisms
         """
@@ -272,9 +252,7 @@ class QuantumMetaLearningSystem:
         # Store quantum learning state
         self.quantum_states[domain_state.state_id] = domain_state
 
-        logging.info(
-            f"Quantum acceleration applied to {domain}: {quantum_acceleration:.3f}"
-        )
+        logging.info(f"Quantum acceleration applied to {domain}: {quantum_acceleration:.3f}")
         return quantum_acceleration
 
     def measure_quantum_learning_effectiveness(self) -> Dict[str, Any]:
@@ -298,9 +276,7 @@ class QuantumMetaLearningSystem:
             min(effectiveness["learning_acceleration"] / 10.0, 1.0),
         ]
 
-        effectiveness["quantum_efficiency"] = sum(efficiency_factors) / len(
-            efficiency_factors
-        )
+        effectiveness["quantum_efficiency"] = sum(efficiency_factors) / len(efficiency_factors)
 
         return effectiveness
 
@@ -370,9 +346,7 @@ class QuantumMetaLearningSystem:
         if not self.quantum_states:
             return 0.0
 
-        coherence_sum = sum(
-            state.coherence_level for state in self.quantum_states.values()
-        )
+        coherence_sum = sum(state.coherence_level for state in self.quantum_states.values())
         return coherence_sum / len(self.quantum_states)
 
     def _measure_total_entanglement(self) -> float:
@@ -382,9 +356,7 @@ class QuantumMetaLearningSystem:
     def _measure_learning_acceleration(self) -> float:
         """Measure current learning acceleration factor"""
         base_rate = self.meta_learning_rate
-        quantum_boost = (
-            self._calculate_average_coherence() * self.consciousness_resonance
-        )
+        quantum_boost = self._calculate_average_coherence() * self.consciousness_resonance
         return base_rate + quantum_boost
 
     def _update_coherence_matrix(self) -> float:
@@ -423,9 +395,7 @@ class QuantumMetaLearningSystem:
         """Identify learning barriers overcome by quantum tunneling"""
         return ["uncertainty_barrier", "complexity_barrier", "integration_barrier"]
 
-    def _store_entanglement_connection(
-        self, domain1: str, domain2: str, strength: float
-    ):
+    def _store_entanglement_connection(self, domain1: str, domain2: str, strength: float):
         """Store entanglement connection between domains"""
         connection_key = f"{domain1}_{domain2}"
         self.entanglement_network[connection_key] = strength

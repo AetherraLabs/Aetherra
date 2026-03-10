@@ -26,7 +26,7 @@ from __future__ import annotations
 import gc
 import tracemalloc
 from dataclasses import asdict, dataclass
-from typing import Any, Dict
+from typing import Any
 
 
 @dataclass
@@ -40,7 +40,7 @@ class FragmentationStats:
     fragmentation_ratio_before: float
     fragmentation_ratio_after: float
 
-    def to_dict(self) -> Dict[str, Any]:  # pragma: no cover - trivial
+    def to_dict(self) -> dict[str, Any]:  # pragma: no cover - trivial
         return asdict(self)
 
 

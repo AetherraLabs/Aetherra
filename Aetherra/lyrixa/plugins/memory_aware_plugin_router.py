@@ -136,9 +136,7 @@ class MemoryAwarePluginRouter:
             )
 
             # Step 2: Enhance input data with memory context
-            enhanced_input = await self._enhance_input_with_memory(
-                input_data, memory_context
-            )
+            enhanced_input = await self._enhance_input_with_memory(input_data, memory_context)
 
             # Step 3: Execute plugin with enhanced context
             memory_start = datetime.now()
@@ -238,9 +236,7 @@ class MemoryAwarePluginRouter:
             plugin_history = self._get_plugin_usage_history(plugin_name)
 
             # Calculate context confidence
-            context_confidence = min(
-                1.0, len(related_fragments) / self.max_context_fragments
-            )
+            context_confidence = min(1.0, len(related_fragments) / self.max_context_fragments)
 
             return PluginMemoryContext(
                 active_concepts=active_concepts,
@@ -277,9 +273,7 @@ class MemoryAwarePluginRouter:
                 }
                 for frag in memory_context.related_fragments[:5]  # Top 5 most relevant
             ],
-            "usage_patterns": memory_context.plugin_usage_history[
-                -3:
-            ],  # Recent patterns
+            "usage_patterns": memory_context.plugin_usage_history[-3:],  # Recent patterns
             "context_confidence": memory_context.context_confidence,
         }
 
@@ -307,9 +301,7 @@ class MemoryAwarePluginRouter:
         sig = inspect.signature(plugin_function)
         if "_memory_context" in sig.parameters:
             # Plugin is memory-aware
-            return await plugin_function(
-                enhanced_input, memory_context=memory_context, **kwargs
-            )
+            return await plugin_function(enhanced_input, memory_context=memory_context, **kwargs)
         else:
             # Legacy plugin - just pass enhanced input
             return await plugin_function(enhanced_input, **kwargs)
@@ -368,9 +360,7 @@ class MemoryAwarePluginRouter:
         except Exception as e:
             logger.warning(f"Failed to store plugin execution in memory: {e}")
 
-    def _get_plugin_usage_history(
-        self, plugin_name: str, days: int = 7
-    ) -> List[Dict[str, Any]]:
+    def _get_plugin_usage_history(self, plugin_name: str, days: int = 7) -> List[Dict[str, Any]]:
         """Get recent usage history for a plugin"""
 
         cutoff_date = datetime.now() - timedelta(days=days)
@@ -405,9 +395,7 @@ class MemoryAwarePluginRouter:
             contradictions = self.concept_manager.get_recent_contradictions(days=7)
             concept_contradictions = [c for c in contradictions if c.concept == concept]
             if concept_contradictions:
-                hints["warnings"].append(
-                    f"Recent contradictions detected in concept '{concept}'"
-                )
+                hints["warnings"].append(f"Recent contradictions detected in concept '{concept}'")
 
         return hints
 
@@ -448,16 +436,14 @@ class MemoryAwarePluginRouter:
                 "relevance_score": score,
                 "triggered_concepts": list(concepts),
             }
-            for plugin, score in sorted(
-                plugin_scores.items(), key=lambda x: x[1], reverse=True
-            )[:max_recommendations]
+            for plugin, score in sorted(plugin_scores.items(), key=lambda x: x[1], reverse=True)[
+                :max_recommendations
+            ]
         ]
 
         return recommendations
 
-    async def analyze_plugin_performance_by_concept(
-        self, plugin_name: str
-    ) -> Dict[str, Any]:
+    async def analyze_plugin_performance_by_concept(self, plugin_name: str) -> Dict[str, Any]:
         """Analyze how a plugin performs across different memory concepts"""
 
         plugin_executions = [
@@ -485,9 +471,7 @@ class MemoryAwarePluginRouter:
         # Calculate averages
         for concept, stats in concept_performance.items():
             if stats["total_executions"] > 0:
-                stats["success_rate"] = (
-                    stats["successful_executions"] / stats["total_executions"]
-                )
+                stats["success_rate"] = stats["successful_executions"] / stats["total_executions"]
                 stats["avg_execution_time"] /= stats["total_executions"]
                 stats["avg_context_relevance"] /= stats["total_executions"]
 
@@ -495,8 +479,7 @@ class MemoryAwarePluginRouter:
             "plugin_name": plugin_name,
             "total_executions": len(plugin_executions),
             "overall_success_rate": (
-                sum(1 for exec in plugin_executions if exec.success)
-                / len(plugin_executions)
+                sum(1 for exec in plugin_executions if exec.success) / len(plugin_executions)
                 if plugin_executions
                 else 0
             ),
@@ -528,9 +511,7 @@ class MemoryAwarePluginRouter:
             data["success_rate"] = data["success_rate"] / data["count"]
 
         insights["most_active_concepts"] = dict(
-            sorted(concept_activity.items(), key=lambda x: x[1]["count"], reverse=True)[
-                :10
-            ]
+            sorted(concept_activity.items(), key=lambda x: x[1]["count"], reverse=True)[:10]
         )
 
         # Generate optimization suggestions
@@ -562,9 +543,7 @@ class MemoryEnhancedPluginManager:
         # Get original plugin function
         original_function = getattr(self.plugin_manager, "execute_plugin", None)
         if not original_function:
-            raise AttributeError(
-                "Original plugin manager doesn't support execute_plugin"
-            )
+            raise AttributeError("Original plugin manager doesn't support execute_plugin")
 
         # Convert args to input_data format
         input_data = {"args": args, "kwargs": kwargs}

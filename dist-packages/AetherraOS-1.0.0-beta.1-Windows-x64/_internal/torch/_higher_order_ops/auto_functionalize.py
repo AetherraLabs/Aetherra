@@ -3,7 +3,7 @@ import warnings
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, get_args, Optional, Union
+from typing import Any, Union, get_args
 
 import torch
 import torch._library.utils as library_utils
@@ -11,10 +11,10 @@ import torch.utils._pytree as pytree
 from torch import Tensor
 from torch._C import DispatchKey
 from torch._higher_order_ops.utils import (
-    _has_gen_schema,
-    call_op,
     HopInstance,
     HopSchema,
+    _has_gen_schema,
+    call_op,
     materialize_callable_in_args,
     unique_graph_id,
 )
@@ -22,8 +22,8 @@ from torch._ops import HigherOrderOperator, OperatorBase, OpOverload
 from torch._prims_common import clone_preserve_strides
 from torch._subclasses.fake_tensor import FakeTensorMode
 from torch.fx.experimental.proxy_tensor import (
-    disable_proxy_modes_tracing,
     ProxyTorchDispatchMode,
+    disable_proxy_modes_tracing,
     track_tensor_tree,
 )
 
@@ -53,8 +53,7 @@ pytree.register_constant(SchemaHolder)
 def get_base(tensor):
     if torch.is_inference_mode_enabled():
         return tensor._inference_mode_base
-    else:
-        return tensor._base
+    return tensor._base
 
 
 class ViewInfo(ABC):
@@ -70,8 +69,8 @@ class ViewInfo(ABC):
 
 @dataclass
 class AsStridedViewInfo(ViewInfo):
-    size: Sequence[Union[int, torch.SymInt]]
-    stride: Sequence[Union[int, torch.SymInt]]
+    size: Sequence[int | torch.SymInt]
+    stride: Sequence[int | torch.SymInt]
     storage_offset: int
 
     def __init__(self, base_index, size, stride, storage_offset):
@@ -91,9 +90,9 @@ class AsStridedViewInfo(ViewInfo):
 
 @dataclass
 class SliceViewInfo(ViewInfo):
-    dim: Union[int, torch.SymInt]
-    start: Union[int, torch.SymInt]
-    end: Union[int, torch.SymInt]
+    dim: int | torch.SymInt
+    start: int | torch.SymInt
+    end: int | torch.SymInt
 
     def __init__(self, base_index, dim, start, end):
         super().__init__(base_index)
@@ -216,14 +215,14 @@ def write_view_information_to_args(
             if base is None:
                 # no need to add anything else other than _base_index
                 return
-            elif is_alias(base, tensor):
+            if is_alias(base, tensor):
                 use_alias()
             elif (slice_info := try_use_slice(base, tensor)) is not None:
                 use_slice(*slice_info)
             else:
                 use_as_strided(tensor)
 
-    for arg_name, arg_type in zip(mutable_arg_names, mutable_arg_types):
+    for arg_name, arg_type in zip(mutable_arg_names, mutable_arg_types, strict=False):
         arg = kwargs[arg_name]
         if library_utils.is_tensorlist_like_type(arg_type):
             if arg is None:
@@ -239,7 +238,7 @@ def write_view_information_to_args(
             write_single_view(
                 f"_{arg_name}",
                 kwargs[arg_name],
-                arg_to_base_index.get(arg_name, None),  # type: ignore[arg-type]
+                arg_to_base_index.get(arg_name),  # type: ignore[arg-type]
             )
         else:
             raise RuntimeError(f"Unsupported type {arg_type}")
@@ -268,26 +267,25 @@ def read_view_information_from_args(
         base_index = get_arg(f"{prefix}_base_index")
         if base_index is None:
             return None
-        elif f"{prefix}_alias" in kwargs:
+        if f"{prefix}_alias" in kwargs:
             get_arg(f"{prefix}_alias")
             return AliasViewInfo(base_index)
-        elif f"{prefix}_storage_offset" in kwargs:
+        if f"{prefix}_storage_offset" in kwargs:
             # The view is regenerated using as_strided.
             size = get_arg(f"{prefix}_size")
             stride = get_arg(f"{prefix}_stride")
             storage_offset = get_arg(f"{prefix}_storage_offset")
             return AsStridedViewInfo(base_index, size, stride, storage_offset)
-        elif f"{prefix}_slice_dim" in kwargs:
+        if f"{prefix}_slice_dim" in kwargs:
             dim = get_arg(f"{prefix}_slice_dim")
             start = get_arg(f"{prefix}_slice_start")
             end = get_arg(f"{prefix}_slice_end")
             return SliceViewInfo(base_index, dim, start, end)
-        else:
-            # This means that the argument is the base tensor
-            return NotView(base_index)
+        # This means that the argument is the base tensor
+        return NotView(base_index)
 
     args_view_info: dict[str, Any] = {}
-    for arg_name, arg_type in zip(mutable_arg_names, mutable_arg_types):
+    for arg_name, arg_type in zip(mutable_arg_names, mutable_arg_types, strict=False):
         if library_utils.is_tensorlist_like_type(arg_type):
             length = get_arg(f"_{arg_name}_length")
             if length is None:
@@ -386,11 +384,11 @@ class AutoFunctionalizedV2(HigherOrderOperator):
         _mutable_op: _MutableOpType,
         **kwargs: Any,
     ) -> tuple[Any, tuple[Tensor, ...]]:
-        _op_to_check: Optional[Union[OpOverload, HopInstance]] = None
+        _op_to_check: OpOverload | HopInstance | None = None
         if isinstance(_mutable_op, HigherOrderOperator):
             _op_to_check = HopInstance(
                 _mutable_op,
-                SchemaHolder.from_tree_spec(kwargs.get("_op_schema", None)).schema,  # type: ignore[arg-type]
+                SchemaHolder.from_tree_spec(kwargs.get("_op_schema")).schema,  # type: ignore[arg-type]
             )
         else:
             _op_to_check = _mutable_op
@@ -409,7 +407,7 @@ auto_functionalized_v2.fallthrough(DispatchKey.AutogradCUDA)
 
 
 def can_auto_functionalize(
-    op: Union[OperatorBase, HopInstance],
+    op: OperatorBase | HopInstance,
 ) -> bool:
     if isinstance(op, HopInstance):
         # HOPs that implement gen_schema and schema is not functional are auto_functionalizable.
@@ -522,15 +520,14 @@ def do_auto_functionalize(
         )
     with ctx.redispatch_to_next():
         unwrapped_outs = auto_functionalized(
-            op, **unwrapped_kwargs  # type: ignore[arg-type]
+            op,
+            **unwrapped_kwargs,  # type: ignore[arg-type]
         )
 
     # List of the name of args that get mutated (according to the schema)
     mutable_args_names, _ = get_mutable_args(op)
 
-    unwrapped_actual_out: Union[Any, tuple[Any]] = unwrapped_outs[
-        : -len(mutable_args_names)
-    ]
+    unwrapped_actual_out: Any | tuple[Any] = unwrapped_outs[: -len(mutable_args_names)]
     unwrapped_mutable_out = unwrapped_outs[-len(mutable_args_names) :]
 
     if len(op._schema.returns) == 0:
@@ -542,7 +539,9 @@ def do_auto_functionalize(
     else:
         assert len(unwrapped_actual_out) == len(op._schema.returns)
 
-    for name, unwrapped_out in zip(mutable_args_names, unwrapped_mutable_out):
+    for name, unwrapped_out in zip(
+        mutable_args_names, unwrapped_mutable_out, strict=False
+    ):
         # Can be None if input was `Tensor(a!)?`
         if unwrapped_out is None:
             continue
@@ -561,7 +560,7 @@ def do_auto_functionalize(
             isinstance(o, torch.Tensor) for o in unwrapped_out
         ):
             assert len(orig_arg) == len(unwrapped_out)
-            for orig_a, o in zip(orig_arg, unwrapped_out):
+            for orig_a, o in zip(orig_arg, unwrapped_out, strict=False):
                 sync_update(o, orig_a)
         else:
             raise RuntimeError(
@@ -573,7 +572,7 @@ def do_auto_functionalize(
 
 def do_auto_functionalize_v2(
     mode: "torch._subclasses.functional_tensor.FunctionalTensorMode",
-    op: Union[OpOverload, HopInstance],
+    op: OpOverload | HopInstance,
     args: tuple[Any, ...],
     kwargs: dict[str, Any],
 ) -> Any:
@@ -694,10 +693,11 @@ def do_auto_functionalize_v2(
 
     with ctx.redispatch_to_next():
         unwrapped_outs = auto_functionalized_v2(
-            op, **auto_func_kwargs  # type: ignore[arg-type]
+            op,
+            **auto_func_kwargs,  # type: ignore[arg-type]
         )
 
-    unwrapped_actual_out: Union[Any, tuple[Any]] = (
+    unwrapped_actual_out: Any | tuple[Any] = (
         unwrapped_outs if len(all_bases) == 0 else unwrapped_outs[: -len(all_bases)]
     )
 
@@ -706,9 +706,9 @@ def do_auto_functionalize_v2(
     )
 
     if isinstance(op, HigherOrderOperator):
-        assert (
-            len(schema.returns) > 0
-        ), f"hop is expected to return at least one output {schema}."
+        assert len(schema.returns) > 0, (
+            f"hop is expected to return at least one output {schema}."
+        )
         assert len(unwrapped_actual_out) == len(schema.returns)
     else:
         if len(schema.returns) == 0:
@@ -720,7 +720,7 @@ def do_auto_functionalize_v2(
         else:
             assert len(unwrapped_actual_out) == len(schema.returns)
 
-    for orig_arg, unwrapped_out in zip(all_bases, unwrapped_mutable_out):
+    for orig_arg, unwrapped_out in zip(all_bases, unwrapped_mutable_out, strict=False):
         # Can be None if input was `Tensor(a!)?`
         if unwrapped_out is None:
             continue
@@ -737,7 +737,7 @@ def do_auto_functionalize_v2(
             isinstance(o, torch.Tensor) for o in unwrapped_out
         ):
             assert len(orig_arg) == len(unwrapped_out)
-            for orig_a, o in zip(orig_arg, unwrapped_out):
+            for orig_a, o in zip(orig_arg, unwrapped_out, strict=False):
                 sync_update(o, orig_a)
         else:
             raise RuntimeError(
@@ -751,7 +751,7 @@ def do_auto_functionalize_v2(
 @auto_functionalized.py_impl(DispatchKey.CompositeExplicitAutograd)
 def auto_functionalized_dense(
     _mutable_op: OpOverload,
-    _only_clone_these_tensors: Optional[tuple[str, ...]] = None,
+    _only_clone_these_tensors: tuple[str, ...] | None = None,
     **kwargs: Any,
 ) -> tuple[Any, tuple[Tensor, ...]]:
     new_kwargs = dict(**kwargs)
@@ -779,8 +779,7 @@ def auto_functionalized_dense(
 
     if isinstance(out, tuple):
         return (*out, *result)  # type: ignore[return-value]
-    else:
-        return (out, *result)  # type: ignore[return-value]
+    return (out, *result)  # type: ignore[return-value]
 
 
 @auto_functionalized.py_impl(FakeTensorMode)
@@ -828,7 +827,7 @@ def auto_functionalized_func(ctx, _mutable_op, **kwargs):
 @auto_functionalized_v2.py_impl(DispatchKey.CompositeExplicitAutograd)
 def auto_functionalized_v2_dense(
     _mutable_op: _MutableOpType,
-    _only_clone_these_bases: Optional[tuple[int, ...]] = None,
+    _only_clone_these_bases: tuple[int, ...] | None = None,
     **kwargs: Any,
 ) -> tuple[Any, tuple[Tensor, ...]]:
     _all_bases: list[Tensor] = kwargs.pop("_all_bases", [])
@@ -841,7 +840,7 @@ def auto_functionalized_v2_dense(
         schema = pytree.tree_unflatten([], kwargs.pop("_op_schema")).schema
 
     if isinstance(_mutable_op, OpOverload):
-        _callable_op: Union[HopInstance, OpOverload] = _mutable_op
+        _callable_op: HopInstance | OpOverload = _mutable_op
     else:
         assert isinstance(schema, HopSchema)
         _callable_op = HopInstance(_mutable_op, schema)
@@ -861,8 +860,7 @@ def auto_functionalized_v2_dense(
 
     if isinstance(out, tuple):
         return (*out, *all_bases_new)  # type: ignore[return-value]
-    else:
-        return (out, *all_bases_new)  # type: ignore[return-value]
+    return (out, *all_bases_new)  # type: ignore[return-value]
 
 
 def _generate_new_op_kwargs_from_bases(
@@ -878,8 +876,7 @@ def _generate_new_op_kwargs_from_bases(
             return None
         if i in _only_clone_these_bases:
             return clone_preserve_strides(t)
-        else:
-            return t
+        return t
 
     all_bases_new = [maybe_copy(i, t) for i, t in enumerate(all_bases)]
 
@@ -945,11 +942,11 @@ def auto_functionalized_v2_proxy(
         # hop node in the traced graph and graph module inputs to the hop. Finally, we replace the
         # original kwarg's callable with the graph module.
         all_bases = kwargs.get("_all_bases", [])
-        _only_clone_these_bases = kwargs.get("_only_clone_these_bases", None)
+        _only_clone_these_bases = kwargs.get("_only_clone_these_bases")
         if _only_clone_these_bases is None:
             _only_clone_these_bases = tuple(range(len(all_bases)))
 
-        schema = pytree.tree_unflatten([], kwargs.get("_op_schema", None)).schema  # type: ignore[arg-type]
+        schema = pytree.tree_unflatten([], kwargs.get("_op_schema")).schema  # type: ignore[arg-type]
         new_kwargs, _ = _generate_new_op_kwargs_from_bases(
             schema,
             {k: v for k, v in kwargs.items() if k not in ("_all_bases", "_op_schema")},

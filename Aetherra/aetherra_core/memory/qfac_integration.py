@@ -300,7 +300,7 @@ class QFACMemorySystem:
                     # Older signature: analyzer only
                     return _RealDashboard(analyzer)
             except Exception:
-                # Fallback stub to avoid import errors when dashboard class isn't available
+                # Fallback class to avoid import errors when dashboard class isn't available
                 class _DashboardStub:
                     def __init__(self, _analyzer):
                         self.analyzer = _analyzer

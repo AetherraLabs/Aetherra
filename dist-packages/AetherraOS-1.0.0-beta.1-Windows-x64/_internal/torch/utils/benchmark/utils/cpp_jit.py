@@ -1,17 +1,17 @@
 """JIT C++ strings into executables."""
+
 import atexit
 import os
 import re
 import shutil
 import textwrap
 import threading
-from typing import Any, Optional
+from typing import Any
 
 import torch
+from torch.utils import cpp_extension
 from torch.utils.benchmark.utils._stubs import CallgrindModuleType, TimeitModuleType
 from torch.utils.benchmark.utils.common import _make_temp_dir
-from torch.utils import cpp_extension
-
 
 LOCK = threading.Lock()
 SOURCE_ROOT = os.path.split(os.path.abspath(__file__))[0]
@@ -29,7 +29,8 @@ SOURCE_ROOT = os.path.split(os.path.abspath(__file__))[0]
 #   ````
 # `setup` and `stmt` do not change, so we can reuse the executable from the
 # first pass through the loop.
-_BUILD_ROOT: Optional[str] = None
+_BUILD_ROOT: str | None = None
+
 
 def _get_build_root() -> str:
     global _BUILD_ROOT
@@ -63,7 +64,7 @@ def _get_build_root() -> str:
 #   analysis and the shims no longer justify their maintenance and code
 #   complexity costs) back testing paths will be removed.
 
-CXX_FLAGS: Optional[list[str]]
+CXX_FLAGS: list[str] | None
 if hasattr(torch.__config__, "_cxx_flags"):
     try:
         CXX_FLAGS = torch.__config__._cxx_flags().strip().split()
@@ -88,18 +89,18 @@ if CONDA_PREFIX is not None:
     EXTRA_INCLUDE_PATHS.append(os.path.join(CONDA_PREFIX, "include"))
 
 
-COMPAT_CALLGRIND_BINDINGS: Optional[CallgrindModuleType] = None
+COMPAT_CALLGRIND_BINDINGS: CallgrindModuleType | None = None
+
+
 def get_compat_bindings() -> CallgrindModuleType:
     with LOCK:
         global COMPAT_CALLGRIND_BINDINGS
         if COMPAT_CALLGRIND_BINDINGS is None:
             COMPAT_CALLGRIND_BINDINGS = cpp_extension.load(
                 name="callgrind_bindings",
-                sources=[os.path.join(
-                    SOURCE_ROOT,
-                    "valgrind_wrapper",
-                    "compat_bindings.cpp"
-                )],
+                sources=[
+                    os.path.join(SOURCE_ROOT, "valgrind_wrapper", "compat_bindings.cpp")
+                ],
                 extra_cflags=CXX_FLAGS,
                 extra_include_paths=EXTRA_INCLUDE_PATHS,
             )
@@ -107,25 +108,18 @@ def get_compat_bindings() -> CallgrindModuleType:
 
 
 def _compile_template(
-    *,
-    stmt: str,
-    setup: str,
-    global_setup: str,
-    src: str,
-    is_standalone: bool
+    *, stmt: str, setup: str, global_setup: str, src: str, is_standalone: bool
 ) -> Any:
     for before, after, indentation in (
         ("// GLOBAL_SETUP_TEMPLATE_LOCATION", global_setup, 0),
         ("// SETUP_TEMPLATE_LOCATION", setup, 4),
-        ("// STMT_TEMPLATE_LOCATION", stmt, 8)
+        ("// STMT_TEMPLATE_LOCATION", stmt, 8),
     ):
         # C++ doesn't care about indentation so this code isn't load
         # bearing the way it is with Python, but this makes the source
         # look nicer if a human has to look at it.
         src = re.sub(
-            before,
-            textwrap.indent(after, " " * indentation)[indentation:],
-            src
+            before, textwrap.indent(after, " " * indentation)[indentation:], src
         )
 
     # We want to isolate different Timers. However `cpp_extension` will
@@ -152,21 +146,29 @@ def _compile_template(
     )
 
 
-def compile_timeit_template(*, stmt: str, setup: str, global_setup: str) -> TimeitModuleType:
+def compile_timeit_template(
+    *, stmt: str, setup: str, global_setup: str
+) -> TimeitModuleType:
     template_path: str = os.path.join(SOURCE_ROOT, "timeit_template.cpp")
     with open(template_path) as f:
         src: str = f.read()
 
-    module = _compile_template(stmt=stmt, setup=setup, global_setup=global_setup, src=src, is_standalone=False)
+    module = _compile_template(
+        stmt=stmt, setup=setup, global_setup=global_setup, src=src, is_standalone=False
+    )
     assert isinstance(module, TimeitModuleType)
     return module
 
 
 def compile_callgrind_template(*, stmt: str, setup: str, global_setup: str) -> str:
-    template_path: str = os.path.join(SOURCE_ROOT, "valgrind_wrapper", "timer_callgrind_template.cpp")
+    template_path: str = os.path.join(
+        SOURCE_ROOT, "valgrind_wrapper", "timer_callgrind_template.cpp"
+    )
     with open(template_path) as f:
         src: str = f.read()
 
-    target = _compile_template(stmt=stmt, setup=setup, global_setup=global_setup, src=src, is_standalone=True)
+    target = _compile_template(
+        stmt=stmt, setup=setup, global_setup=global_setup, src=src, is_standalone=True
+    )
     assert isinstance(target, str)
     return target

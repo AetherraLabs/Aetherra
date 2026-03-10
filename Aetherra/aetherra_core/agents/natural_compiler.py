@@ -93,9 +93,7 @@ class NaturalLanguageCompiler:
         text = text.lower().strip()
 
         # Track context
-        self.context_memory.append(
-            {"input": text, "timestamp": datetime.now().isoformat()}
-        )
+        self.context_memory.append({"input": text, "timestamp": datetime.now().isoformat()})
 
         # Parse intent and generate AetherraCode
         aetherra = self._parse_intent(text)
@@ -244,11 +242,7 @@ class AetherraCodeIDE:
 
                 # Ask if user wants to execute with EOF handling
                 try:
-                    execute = (
-                        input("\n▶️  Execute this AetherraCode? (y/n): ")
-                        .strip()
-                        .lower()
-                    )
+                    execute = input("\n▶️  Execute this AetherraCode? (y/n): ").strip().lower()
                 except EOFError:
                     print("\n\n👋 Input stream closed. Session ended.")
                     break
@@ -272,9 +266,7 @@ def main():
     # Standard library imports
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="AetherraCode Natural Language Compiler"
-    )
+    parser = argparse.ArgumentParser(description="AetherraCode Natural Language Compiler")
     parser.add_argument(
         "--interactive",
         "-i",

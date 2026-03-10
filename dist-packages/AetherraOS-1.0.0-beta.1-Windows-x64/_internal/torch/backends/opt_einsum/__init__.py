@@ -5,8 +5,7 @@ from contextlib import contextmanager
 from functools import lru_cache as _lru_cache
 from typing import Any
 
-from torch.backends import __allow_nonbracketed_mutation, ContextProp, PropModule
-
+from torch.backends import ContextProp, PropModule, __allow_nonbracketed_mutation
 
 try:
     import opt_einsum as _opt_einsum  # type: ignore[import]

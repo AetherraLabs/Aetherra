@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
@@ -18,7 +17,7 @@ import os
 import threading
 import time
 from datetime import datetime
-from typing import Any, Dict, Optional, cast
+from typing import Any, cast
 
 try:
     # Third party imports
@@ -97,7 +96,7 @@ class AetherraHubServer:
             )
         except Exception:
             self._idem_ttl_sec = 120
-        self._idem_cache: Dict[str, float] = {}
+        self._idem_cache: dict[str, float] = {}
         self._idem_enforce = os.environ.get("AETHERRA_IDEMPOTENCY_ENFORCE", "0") == "1"
         # Optional enforcement of X-Aetherra-Chat-Version: 2
         self._chat_ver_required = (
@@ -232,7 +231,7 @@ class AetherraHubServer:
         except Exception:
             pass
 
-    def _trainer_submit_job(self, payload: Dict[str, Any]) -> str:
+    def _trainer_submit_job(self, payload: dict[str, Any]) -> str:
         # Generate a simple job id
         try:
             # Standard library imports
@@ -329,7 +328,7 @@ class AetherraHubServer:
                     job["finished_at"] = self._trainer_now_iso()
 
     # ---- Trainer evaluation helpers ----
-    def _trainer_submit_eval(self, payload: Dict[str, Any]) -> str:
+    def _trainer_submit_eval(self, payload: dict[str, Any]) -> str:
         # Generate a simple eval id
         try:
             # Standard library imports
@@ -442,7 +441,7 @@ class AetherraHubServer:
                 loop = None
 
             if loop and loop.is_running():
-                result_container: Dict[str, Any] = {}
+                result_container: dict[str, Any] = {}
 
                 def _runner():
                     try:
@@ -463,8 +462,7 @@ class AetherraHubServer:
                 if "result" in result_container:
                     return result_container["result"]
                 raise result_container.get("error", RuntimeError("async-run-timeout"))
-            else:
-                return asyncio.run(coro)
+            return asyncio.run(coro)
 
         # Optional imports for federation, telemetry, memory optics, signing.
         # By default, skip these at startup to avoid heavy deps and unintended .env loaders.
@@ -556,13 +554,13 @@ class AetherraHubServer:
                     vary = resp.headers.get("Vary")
                     resp.headers["Vary"] = (vary + ", Origin") if vary else "Origin"
                     resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-                    resp.headers[
-                        "Access-Control-Allow-Headers"
-                    ] = "Content-Type, X-Aetherra-Token, X-Aetherra-Trace-Id, X-Aetherra-Chat-Version, X-Aetherra-Policy"
+                    resp.headers["Access-Control-Allow-Headers"] = (
+                        "Content-Type, X-Aetherra-Token, X-Aetherra-Trace-Id, X-Aetherra-Chat-Version, X-Aetherra-Policy"
+                    )
                     # Expose custom headers to browser JS
-                    resp.headers[
-                        "Access-Control-Expose-Headers"
-                    ] = "X-Aetherra-Trace-Id, X-Aetherra-Chat-Version, X-Aetherra-Policy"
+                    resp.headers["Access-Control-Expose-Headers"] = (
+                        "X-Aetherra-Trace-Id, X-Aetherra-Chat-Version, X-Aetherra-Policy"
+                    )
                     # Only opt into Private Network Access for allowed origins
                     if pna_allow:
                         resp.headers["Access-Control-Allow-Private-Network"] = "true"
@@ -575,7 +573,7 @@ class AetherraHubServer:
         # Respond to any OPTIONS preflight early so clients donΓÇÖt 404 on dynamic routes
         @app.route("/", methods=["OPTIONS"])  # type: ignore[misc]
         @app.route("/<path:_any>", methods=["OPTIONS"])  # type: ignore[misc]
-        def _cors_options(_any: Optional[str] = None):
+        def _cors_options(_any: str | None = None):
             # Third party imports
             from flask import make_response  # type: ignore
 
@@ -856,7 +854,7 @@ class AetherraHubServer:
 
                 _cur = {"id": _start_id}
 
-                def _send(event: str, data: Dict[str, Any]):
+                def _send(event: str, data: dict[str, Any]):
                     env = {
                         "id": _cur["id"],
                         "trace_id": trace_id,
@@ -923,7 +921,7 @@ class AetherraHubServer:
                 except Exception:
                     _evt_q = None  # type: ignore[assignment]
 
-                def _emit(evt: str, data: Dict[str, Any]):
+                def _emit(evt: str, data: dict[str, Any]):
                     try:
                         if _evt_q is not None:
                             _evt_q.put((evt, data))
@@ -935,7 +933,7 @@ class AetherraHubServer:
                         "thought", {"text": str(text) if text is not None else "", **kw}
                     )
 
-                def _on_tool(info: Dict[str, Any] | None = None, **kw):
+                def _on_tool(info: dict[str, Any] | None = None, **kw):
                     payload = {**(info or {}), **kw}
                     if "name" not in payload:
                         payload["name"] = "unknown"
@@ -947,7 +945,7 @@ class AetherraHubServer:
                     )
 
                 done = {"flag": False}
-                holder: Dict[str, Any] = {}
+                holder: dict[str, Any] = {}
 
                 def _runner_thread(eng):
                     try:
@@ -962,7 +960,7 @@ class AetherraHubServer:
                                     "on_tool": _on_tool,
                                     "on_chunk": _on_chunk,
                                 }
-                                _ctx = cast(Dict[str, Any], _ctx)
+                                _ctx = cast(dict[str, Any], _ctx)
                                 _ctx["trace_id"] = trace_id
                                 result = await eng.process_message(msg, _ctx)
                                 return True, result
@@ -1017,7 +1015,7 @@ class AetherraHubServer:
                         if _evt_q is not None:
                             try:
                                 evt, data = _evt_q.get(timeout=0.05)
-                                _send(str(evt), cast(Dict[str, Any], data))
+                                _send(str(evt), cast(dict[str, Any], data))
                             except Exception:
                                 pass
                         else:
@@ -1030,7 +1028,7 @@ class AetherraHubServer:
                     if _evt_q is not None:
                         while True:
                             evt, data = _evt_q.get_nowait()
-                            _send(str(evt), cast(Dict[str, Any], data))
+                            _send(str(evt), cast(dict[str, Any], data))
                 except Exception:
                     pass
 
@@ -1080,7 +1078,7 @@ class AetherraHubServer:
                     pass
 
         # --- Request contract helpers (versioning + idempotency) ---
-        def _require_chat_version(req) -> Optional[Any]:
+        def _require_chat_version(req) -> Any | None:
             """If version enforcement is enabled, require X-Aetherra-Chat-Version: 2."""
             try:
                 if not self._chat_ver_required:
@@ -1110,8 +1108,8 @@ class AetherraHubServer:
             return f"{principal}|{client_id}"
 
         def _idem_check_and_mark(
-            principal: str, client_id: Optional[str]
-        ) -> tuple[bool, Optional[tuple[Any, int]]]:
+            principal: str, client_id: str | None
+        ) -> tuple[bool, tuple[Any, int] | None]:
             """Returns (is_dup, response_if_dup). If dup, provide a 409 JSON with standard error."""
             if not client_id:
                 return False, None
@@ -1160,7 +1158,7 @@ class AetherraHubServer:
             return False, None
 
         # Internal helpers to access registry/kernel from sync Flask routes
-        def _policy_snapshot_global() -> Dict[str, Any]:
+        def _policy_snapshot_global() -> dict[str, Any]:
             """Effective chat policy snapshot used for headers and SSE policy events.
 
             Includes: base flags, safety mode, DP flags, capability grants, and
@@ -1198,7 +1196,7 @@ class AetherraHubServer:
                 # Fall back to defaults when no override provided
                 return default_caps
 
-            def _network_policy_for_mode(mode: str) -> Dict[str, Any]:
+            def _network_policy_for_mode(mode: str) -> dict[str, Any]:
                 mode = (mode or "standard").strip().lower()
                 env_list = os.environ.get("AETHERRA_NETWORK_ALLOWLIST", "").strip()
                 if env_list:
@@ -1258,7 +1256,7 @@ class AetherraHubServer:
                 }
 
         # --- Security helpers: redaction, allowlist checks, ledger ---
-        def _security_ledger_write(event: str, trace_id: str, details: Dict[str, Any]):
+        def _security_ledger_write(event: str, trace_id: str, details: dict[str, Any]):
             """Append a single security event to the security ledger JSONL (best-effort)."""
             try:
                 # Standard library imports
@@ -1287,7 +1285,7 @@ class AetherraHubServer:
             except Exception:
                 pass
 
-        def _redact_text(text: str) -> Dict[str, Any]:
+        def _redact_text(text: str) -> dict[str, Any]:
             """Return { text, redactions: [ { pattern, start, end }... ] } with basic secret redactions."""
             # Standard library imports
             import re as _re
@@ -1344,7 +1342,7 @@ class AetherraHubServer:
                     return True
             return False
 
-        def _safety_precheck(message: str, trace_id: str, route: str) -> Dict[str, Any]:
+        def _safety_precheck(message: str, trace_id: str, route: str) -> dict[str, Any]:
             """Run prompt-defense preflight: redact, check network policy and basic risky phrases.
 
             Returns dict with keys:
@@ -1366,10 +1364,10 @@ class AetherraHubServer:
             # Network allowlist
             net = policy.get("network_policy") or {}
             allowlist = (
-                list((net.get("allowlist") or [])) if isinstance(net, dict) else []
+                list(net.get("allowlist") or []) if isinstance(net, dict) else []
             )
             block_unknown = bool(
-                (net.get("block_unknown") if isinstance(net, dict) else True)
+                net.get("block_unknown") if isinstance(net, dict) else True
             )
             hosts = _extract_urls_hosts(msg2)
             for h in hosts:
@@ -1448,8 +1446,8 @@ class AetherraHubServer:
 
         def _extract_trace_id(
             req,
-            body: Optional[Dict[str, Any]] = None,
-            query: Optional[Dict[str, Any]] = None,
+            body: dict[str, Any] | None = None,
+            query: dict[str, Any] | None = None,
         ) -> str:
             # Standard library imports
             import uuid as _uuid
@@ -1476,7 +1474,7 @@ class AetherraHubServer:
                 pass
             return str(_uuid.uuid4())
 
-        def _write_chat_dlq(trace_id: str, reason: str, payload: Dict[str, Any]):
+        def _write_chat_dlq(trace_id: str, reason: str, payload: dict[str, Any]):
             """Best-effort DLQ write. Prefer kernel DLQ when available, else write a local hub DLQ file."""
             try:
 
@@ -1607,8 +1605,8 @@ class AetherraHubServer:
             code: str,
             message: str,
             trace_id: str,
-            details: Optional[Dict[str, Any]] = None,
-        ) -> Dict[str, Any]:
+            details: dict[str, Any] | None = None,
+        ) -> dict[str, Any]:
             return {
                 "error": {
                     "code": code,
@@ -1618,15 +1616,15 @@ class AetherraHubServer:
                 }
             }
 
-        def _classify_engine_error(err: Any) -> Dict[str, Any]:
+        def _classify_engine_error(err: Any) -> dict[str, Any]:
             """Best-effort error classification for upstream/engine errors.
 
             Returns dict with keys: code, http_status, message, headers(optional), details(optional).
             """
             msg = str(err or "server").strip()
             low = msg.lower()
-            headers: Dict[str, str] = {}
-            details: Dict[str, Any] = {}
+            headers: dict[str, str] = {}
+            details: dict[str, Any] = {}
             # Rate limited
             if any(w in low for w in ("rate limit", "too many requests", "429")):
                 details["retry_after_sec"] = int(
@@ -1806,8 +1804,7 @@ class AetherraHubServer:
                     try:
                         if _a.iscoroutinefunction(fn):
                             return await fn(kernel)
-                        else:
-                            return fn(kernel)
+                        return fn(kernel)
                     except Exception as e:  # pragma: no cover - surfaced to caller
                         logging.error(
                             "Exception in kernel mutation: %s", e, exc_info=True
@@ -1987,9 +1984,9 @@ class AetherraHubServer:
         # --- Chat payload contract normalizer ---
         def _normalize_chat_result(
             raw: Any,
-            message: Optional[str] = None,
-            ctx: Optional[Dict[str, Any]] = None,
-        ) -> Dict[str, Any]:
+            message: str | None = None,
+            ctx: dict[str, Any] | None = None,
+        ) -> dict[str, Any]:
             """Normalize engine chat results to a unified contract.
 
             Fields added:
@@ -2077,9 +2074,8 @@ class AetherraHubServer:
 
             # Confidence (structured + legacy)
             # Standard library imports
-            from typing import Optional as _Opt
 
-            cb: Dict[str, _Opt[float]] = {
+            cb: dict[str, float | None] = {
                 "model": None,
                 "grounding": None,
                 "coherence": None,
@@ -2127,7 +2123,7 @@ class AetherraHubServer:
                 except Exception:
                     legacy_conf = 0.5
 
-            normalized: Dict[str, Any] = {
+            normalized: dict[str, Any] = {
                 "response": resp_text,
                 # Maintain backward compatibility for tests that expect 'text'
                 # when the engine returns a simple 'text' field. Mirror response.
@@ -2175,7 +2171,7 @@ class AetherraHubServer:
                 pass
 
             # Evidence list: pass-through if provided, else derive from memories/sources
-            def _coerce_evidence_item(it: Any) -> Optional[Dict[str, Any]]:
+            def _coerce_evidence_item(it: Any) -> dict[str, Any] | None:
                 try:
                     if not isinstance(it, dict):
                         return None
@@ -2186,7 +2182,7 @@ class AetherraHubServer:
                             kind = "memory"
                         elif it.get("uri") or it.get("url"):
                             kind = "doc"
-                    out: Dict[str, Any] = {"kind": kind or "memory"}
+                    out: dict[str, Any] = {"kind": kind or "memory"}
                     # Common fields
                     if it.get("id"):
                         out["id"] = it.get("id")
@@ -2231,7 +2227,7 @@ class AetherraHubServer:
                     return None
 
             try:
-                evidence: list[Dict[str, Any]] = []
+                evidence: list[dict[str, Any]] = []
                 # Pass-through preferred
                 if isinstance(base, dict) and isinstance(base.get("evidence"), list):
                     for it in base.get("evidence") or []:
@@ -2633,8 +2629,7 @@ class AetherraHubServer:
             self.stats["requests_served"] += 1
             if plugin_id in self.plugins:
                 return jsonify(self.plugins[plugin_id])  # type: ignore[name-defined]
-            else:
-                return jsonify({"error": "Plugin not found"}), 404  # type: ignore[name-defined]
+            return jsonify({"error": "Plugin not found"}), 404  # type: ignore[name-defined]
 
         @app.route("/api/stats", methods=["GET"])
         def get_stats():
@@ -2695,10 +2690,10 @@ class AetherraHubServer:
             )
 
             # Defensive wrappers
-            def _subset_kernel(ks: Dict[str, Any]) -> Dict[str, Any]:  # type: ignore[name-defined]
+            def _subset_kernel(ks: dict[str, Any]) -> dict[str, Any]:  # type: ignore[name-defined]
                 if not isinstance(ks, dict):
                     return {"running": False}
-                out: Dict[str, Any] = {  # type: ignore[name-defined]
+                out: dict[str, Any] = {  # type: ignore[name-defined]
                     "running": bool(
                         ks.get("running") is True
                         or str(ks.get("state", "")).lower() == "running"
@@ -2726,7 +2721,7 @@ class AetherraHubServer:
                         pass
                 return out
 
-            def _subset_registry(rs: Dict[str, Any]) -> Dict[str, Any]:  # type: ignore[name-defined]
+            def _subset_registry(rs: dict[str, Any]) -> dict[str, Any]:  # type: ignore[name-defined]
                 if not isinstance(rs, dict):
                     return {"ok": False}
                 return {
@@ -2735,7 +2730,7 @@ class AetherraHubServer:
                     "by_status": rs.get("service_count_by_status", {}),
                 }
 
-            def _subset_orchestrator(oc: Dict[str, Any]) -> Optional[Dict[str, Any]]:  # type: ignore[name-defined]
+            def _subset_orchestrator(oc: dict[str, Any]) -> dict[str, Any] | None:  # type: ignore[name-defined]
                 if not isinstance(oc, dict) or not oc:
                     return None
                 try:
@@ -2747,10 +2742,10 @@ class AetherraHubServer:
                 except Exception:
                     return None
 
-            def _subset_memory(ms: Dict[str, Any]) -> Dict[str, Any]:  # type: ignore[name-defined]
+            def _subset_memory(ms: dict[str, Any]) -> dict[str, Any]:  # type: ignore[name-defined]
                 if not isinstance(ms, dict):
                     return {"enabled": False}
-                out: Dict[str, Any] = {  # type: ignore[name-defined]
+                out: dict[str, Any] = {  # type: ignore[name-defined]
                     "enabled": bool(ms.get("enabled", False)),
                 }
                 for k in ("coherence", "fragments", "branches", "entanglement_nodes"):
@@ -2790,7 +2785,7 @@ class AetherraHubServer:
             except Exception:
                 pass
 
-            payload: Dict[str, Any] = {  # type: ignore[name-defined]
+            payload: dict[str, Any] = {  # type: ignore[name-defined]
                 "ok": ok,
                 "ts": _dt.now().isoformat(),
                 "kernel": kernel_sub,
@@ -2803,7 +2798,7 @@ class AetherraHubServer:
             # Optional hub version if attribute available
             try:
                 if getattr(self, "version", None):
-                    payload["version"] = str(getattr(self, "version"))
+                    payload["version"] = str(self.version)
             except Exception:
                 pass
             return jsonify(payload)  # type: ignore[name-defined]
@@ -3263,9 +3258,7 @@ class AetherraHubServer:
                     lines.append(
                         'aetherra_orchestrator_task_latency_ms_bucket{le="+Inf"} 0.0'.replace(
                             "{", "{{"
-                        ).replace(
-                            "}", "}}"
-                        )
+                        ).replace("}", "}}")
                     )
                 except Exception:
                     pass
@@ -3763,8 +3756,7 @@ class AetherraHubServer:
                     try:
                         if _a.iscoroutinefunction(fn):
                             return await fn(impl)
-                        else:
-                            return fn(impl)
+                        return fn(impl)
                     except Exception:
                         # Log the real exception internally but do not leak details to caller
                         logging.error("Engine call failed", exc_info=True)
@@ -4072,7 +4064,7 @@ class AetherraHubServer:
             async def _call(engine):
                 try:
                     _ctx = dict(ctx or {})
-                    _ctx = cast(Dict[str, Any], _ctx)
+                    _ctx = cast(dict[str, Any], _ctx)
                     _ctx["trace_id"] = trace_id
                     _ctx["priority"] = prio
                     _ctx["deadline_ts"] = deadline_ts
@@ -4352,7 +4344,7 @@ class AetherraHubServer:
             # Shared TTFT controller for this request
             ttft_ctrl = {"done": False, "t0": None}
 
-            def _sse(event: str, data: Dict[str, Any]):
+            def _sse(event: str, data: dict[str, Any]):
                 # Standard library imports
                 import json as _json
                 import time as _t_local
@@ -4405,7 +4397,7 @@ class AetherraHubServer:
                 _cur["id"] = eid + 1
                 return out
 
-            def _policy_snapshot() -> Dict[str, Any]:
+            def _policy_snapshot() -> dict[str, Any]:
                 # Delegate to global snapshot builder (includes dp/capabilities/network)
                 return _policy_snapshot_global()
 
@@ -4516,7 +4508,7 @@ class AetherraHubServer:
                     _evt_q = None  # type: ignore[assignment]
 
                 # Build callback shims that push into queue
-                def _emit_event(evt_type: str, data: Dict[str, Any]):
+                def _emit_event(evt_type: str, data: dict[str, Any]):
                     try:
                         if _evt_q is not None:
                             _evt_q.put((evt_type, data))
@@ -4528,7 +4520,7 @@ class AetherraHubServer:
                         "thought", {"text": str(text) if text is not None else "", **kw}
                     )
 
-                def _on_tool(info: Dict[str, Any] | None = None, **kw):
+                def _on_tool(info: dict[str, Any] | None = None, **kw):
                     payload = {**(info or {}), **kw}
                     if "name" not in payload:
                         payload["name"] = "unknown"
@@ -4541,7 +4533,7 @@ class AetherraHubServer:
 
                 # Start engine processing on a background thread/loop, passing callbacks
                 done = {"flag": False}
-                holder: Dict[str, Any] = {}
+                holder: dict[str, Any] = {}
 
                 def _runner_thread(eng):
                     try:
@@ -4556,7 +4548,7 @@ class AetherraHubServer:
                                     "on_tool": _on_tool,
                                     "on_chunk": _on_chunk,
                                 }
-                                _ctx = cast(Dict[str, Any], _ctx)
+                                _ctx = cast(dict[str, Any], _ctx)
                                 _ctx["trace_id"] = trace_id
                                 _ctx["priority"] = prio
                                 _ctx["deadline_ts"] = deadline_ts
@@ -4656,7 +4648,7 @@ class AetherraHubServer:
                                     except Exception:
                                         pass
                                 yield _sse(
-                                    str(evt_type), cast(Dict[str, Any], evt_data)
+                                    str(evt_type), cast(dict[str, Any], evt_data)
                                 )
                             except Exception:
                                 pass
@@ -4676,7 +4668,7 @@ class AetherraHubServer:
                     if _evt_q is not None:
                         while True:
                             evt_type, evt_data = _evt_q.get_nowait()
-                            yield _sse(str(evt_type), cast(Dict[str, Any], evt_data))
+                            yield _sse(str(evt_type), cast(dict[str, Any], evt_data))
                 except Exception:
                     pass
 
@@ -4991,7 +4983,7 @@ class AetherraHubServer:
             _cur = {"id": start_id}
 
             # Priority & expiry params via query (optional)
-            prio = str((qd.get("priority") or "normal")).strip().lower()
+            prio = str(qd.get("priority") or "normal").strip().lower()
             ttl_q = qd.get("ttl_sec")
             try:
                 ttl_sec = (
@@ -5020,7 +5012,7 @@ class AetherraHubServer:
             # Shared TTFT controller for this GET request (outer scope for _sse)
             ttft_ctrl_get = {"done": False, "t0": None}
 
-            def _sse(event: str, data: Dict[str, Any]):
+            def _sse(event: str, data: dict[str, Any]):
                 # Standard library imports
                 import json as _json
                 import time as _t_local
@@ -5072,7 +5064,7 @@ class AetherraHubServer:
                 _cur["id"] = eid + 1
                 return out
 
-            def _policy_snapshot() -> Dict[str, Any]:
+            def _policy_snapshot() -> dict[str, Any]:
                 return _policy_snapshot_global()
 
             def _generate():
@@ -5179,7 +5171,7 @@ class AetherraHubServer:
                 except Exception:
                     _evt_q = None  # type: ignore[assignment]
 
-                def _emit_event(evt_type: str, data: Dict[str, Any]):
+                def _emit_event(evt_type: str, data: dict[str, Any]):
                     try:
                         if _evt_q is not None:
                             _evt_q.put((evt_type, data))
@@ -5191,7 +5183,7 @@ class AetherraHubServer:
                         "thought", {"text": str(text) if text is not None else "", **kw}
                     )
 
-                def _on_tool(info: Dict[str, Any] | None = None, **kw):
+                def _on_tool(info: dict[str, Any] | None = None, **kw):
                     payload = {**(info or {}), **kw}
                     if "name" not in payload:
                         payload["name"] = "unknown"
@@ -5203,7 +5195,7 @@ class AetherraHubServer:
                     )
 
                 done = {"flag": False}
-                holder: Dict[str, Any] = {}
+                holder: dict[str, Any] = {}
 
                 def _runner_thread(eng):
                     try:
@@ -5219,7 +5211,7 @@ class AetherraHubServer:
                                         "on_chunk": _on_chunk,
                                     }
                                 }
-                                _ctx = cast(Dict[str, Any], _ctx)
+                                _ctx = cast(dict[str, Any], _ctx)
                                 _ctx["trace_id"] = trace_id
                                 _ctx["priority"] = prio
                                 _ctx["deadline_ts"] = deadline_ts
@@ -5282,7 +5274,7 @@ class AetherraHubServer:
                             try:
                                 evt_type, evt_data = _evt_q.get(timeout=0.05)
                                 yield _sse(
-                                    str(evt_type), cast(Dict[str, Any], evt_data)
+                                    str(evt_type), cast(dict[str, Any], evt_data)
                                 )
                             except Exception:
                                 pass
@@ -5298,7 +5290,7 @@ class AetherraHubServer:
                     if _evt_q is not None:
                         while True:
                             evt_type, evt_data = _evt_q.get_nowait()
-                            yield _sse(str(evt_type), cast(Dict[str, Any], evt_data))
+                            yield _sse(str(evt_type), cast(dict[str, Any], evt_data))
                 except Exception:
                     pass
 
@@ -5311,7 +5303,7 @@ class AetherraHubServer:
                 normalized = None
                 if success:
                     try:
-                        _ctx_norm: Dict[str, Any] = {}
+                        _ctx_norm: dict[str, Any] = {}
                         if sp_q:
                             _ctx_norm["scratchpad_policy"] = sp_q
                         normalized = _normalize_chat_result(
@@ -5657,7 +5649,7 @@ class AetherraHubServer:
 
             poll_ms = int(os.environ.get("AETHERRA_AGENTS_STREAM_POLL_MS", "200"))
 
-            def _sse(event: str, data: Dict[str, Any]):
+            def _sse(event: str, data: dict[str, Any]):
                 # Standard library imports
                 import json as _json
 
@@ -6121,7 +6113,7 @@ class AetherraHubServer:
                 except Exception:
                     available_bool = False
                 backend_str = str(st.get("provider", "sim"))
-                payload = cast(Dict[str, Any], dict(st))
+                payload = cast(dict[str, Any], dict(st))
                 if "available" not in payload:
                     payload["available"] = available_bool
                 if "backend" not in payload:
@@ -6289,7 +6281,7 @@ class AetherraHubServer:
                         payload = request.get_json(force=True, silent=True) or {}  # type: ignore
                     except Exception:
                         payload = {}
-                    job_id = self._trainer_submit_job(cast(Dict[str, Any], payload))
+                    job_id = self._trainer_submit_job(cast(dict[str, Any], payload))
                     return jsonify({"ok": True, "job_id": job_id})  # type: ignore[name-defined]
                 # GET
                 jobs_out = []
@@ -6343,7 +6335,7 @@ class AetherraHubServer:
                         payload = request.get_json(force=True, silent=True) or {}  # type: ignore
                     except Exception:
                         payload = {}
-                    eval_id = self._trainer_submit_eval(cast(Dict[str, Any], payload))
+                    eval_id = self._trainer_submit_eval(cast(dict[str, Any], payload))
                     return jsonify({"ok": True, "eval_id": eval_id})  # type: ignore[name-defined]
                 # GET
                 evals_out = []
@@ -6507,7 +6499,7 @@ class AetherraHubServer:
             self.server_running = False
             return False
 
-    def register_plugin(self, plugin_data: Dict) -> bool:
+    def register_plugin(self, plugin_data: dict) -> bool:
         """Register a plugin directly (for internal use)"""
         try:
             plugin_id = plugin_data.get("name", f"plugin_{len(self.plugins)}")
@@ -6533,7 +6525,7 @@ class AetherraHubServer:
         """Get the number of registered plugins"""
         return len(self.plugins)
 
-    def get_stats(self) -> Dict:
+    def get_stats(self) -> dict:
         """Get Hub statistics"""
         return {
             **self.stats,
@@ -6583,7 +6575,7 @@ def start_hub_server(port: int = 3001) -> AetherraHubServer:
     return hub_server
 
 
-def get_hub_server() -> Optional[AetherraHubServer]:
+def get_hub_server() -> AetherraHubServer | None:
     """Get the global Hub server instance"""
     return hub_server
 

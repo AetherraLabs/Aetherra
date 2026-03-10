@@ -12,6 +12,7 @@ if is_available() and not torch._C._dist_autograd_init():
 
 if is_available():
     from torch._C._distributed_autograd import (
+        DistAutogradContext,
         _current_context,
         _get_debug_info,
         _get_max_id,
@@ -21,7 +22,6 @@ if is_available():
         _release_context,
         _retrieve_context,
         backward,
-        DistAutogradContext,
         get_gradients,
     )
 

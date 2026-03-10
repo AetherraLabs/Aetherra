@@ -70,6 +70,7 @@ except ImportError:
         async def improve(self, context):
             return {"status": "improvement_not_available"}
 
+
 # Legacy/compat compatibility: provide stubs for older components if missing
 try:
     # Attempt imports from potential legacy locations (best effort)
@@ -78,6 +79,7 @@ try:
     from Aetherra.core.interpreter import AetherraInterpreter  # type: ignore
     from Aetherra.core.memory import AetherraMemory  # type: ignore
 except Exception:  # noqa: BLE001
+
     class AetherraInterpreter:  # type: ignore
         def execute(self, code: str) -> str:  # minimal API
             return f"[interpreted] {code}"
@@ -325,9 +327,7 @@ class ChatRouter:
             # Update statistics
             self._update_stats(result, start_time)
 
-            logger.info(
-                f"📤 Message routed: {route.handler} (confidence: {result.confidence:.2f})"
-            )
+            logger.info(f"📤 Message routed: {route.handler} (confidence: {result.confidence:.2f})")
 
             return result
 
@@ -379,25 +379,16 @@ class ChatRouter:
         content = message.content.lower()
 
         # Simple keyword-based analysis
-        if any(
-            word in content
-            for word in ["what", "how", "why", "when", "where", "who", "which"]
-        ):
+        if any(word in content for word in ["what", "how", "why", "when", "where", "who", "which"]):
             intent = "question"
             confidence = 0.7
-        elif any(
-            word in content for word in ["please", "can you", "could you", "would you"]
-        ):
+        elif any(word in content for word in ["please", "can you", "could you", "would you"]):
             intent = "command"
             confidence = 0.6
-        elif any(
-            word in content for word in ["think", "reflect", "analyze", "consider"]
-        ):
+        elif any(word in content for word in ["think", "reflect", "analyze", "consider"]):
             intent = "reflection"
             confidence = 0.5
-        elif any(
-            word in content for word in ["autonomous", "self-improve", "optimize"]
-        ):
+        elif any(word in content for word in ["autonomous", "self-improve", "optimize"]):
             intent = "autonomous_request"
             confidence = 0.8
         else:
@@ -423,9 +414,7 @@ class ChatRouter:
             pattern_match = re.search(route.pattern, message.content, re.IGNORECASE)
             if pattern_match:
                 # Calculate match score
-                score = self._calculate_route_score(
-                    route, intent_analysis, pattern_match
-                )
+                score = self._calculate_route_score(route, intent_analysis, pattern_match)
 
                 if score > best_score:
                     best_score = score
@@ -489,9 +478,7 @@ class ChatRouter:
 
         # Add session history if required
         if route.requires_context:
-            context_data["session_history"] = self._get_session_history(
-                message.session_id
-            )
+            context_data["session_history"] = self._get_session_history(message.session_id)
 
         # Add system health if required
         if route.requires_context:
@@ -516,13 +503,11 @@ class ChatRouter:
 
         # Keep only last 50 messages per session
         if len(self.session_history[message.session_id]) > 50:
-            self.session_history[message.session_id] = self.session_history[
-                message.session_id
-            ][-50:]
+            self.session_history[message.session_id] = self.session_history[message.session_id][
+                -50:
+            ]
 
-    def _get_session_history(
-        self, session_id: str, limit: int = 10
-    ) -> List[Dict[str, Any]]:
+    def _get_session_history(self, session_id: str, limit: int = 10) -> List[Dict[str, Any]]:
         """Get session history for context"""
         history = self.session_history.get(session_id, [])
         return [
@@ -609,9 +594,7 @@ class ChatRouter:
                 "success": False,
             }
 
-    async def _default_handler(
-        self, message: ChatMessage, routing_result: RoutingResult
-    ) -> str:
+    async def _default_handler(self, message: ChatMessage, routing_result: RoutingResult) -> str:
         """Default handler for unregistered routes"""
         return f"I understand you're asking about '{message.content}', but I don't have a specific handler for that type of request yet. I'm routing this as a {routing_result.intent_type.value} with {routing_result.confidence:.2f} confidence."
 
@@ -641,9 +624,7 @@ class ChatRouter:
             "session_id": session_id,
             "history_length": len(self.session_history.get(session_id, [])),
             "cached_context": self.context_cache.get(session_id, {}),
-            "last_activity": self.session_history.get(session_id, [])[
-                -1
-            ].timestamp.isoformat()
+            "last_activity": self.session_history.get(session_id, [])[-1].timestamp.isoformat()
             if self.session_history.get(session_id)
             else None,
         }
@@ -664,16 +645,12 @@ def create_chat_router(workspace_path: str = ".") -> ChatRouter:
 
 
 # Example handler functions
-async def example_question_handler(
-    message: ChatMessage, routing_result: RoutingResult
-) -> str:
+async def example_question_handler(message: ChatMessage, routing_result: RoutingResult) -> str:
     """Example handler for questions"""
     return f"You asked: '{message.content}'. This is a question with {routing_result.confidence:.2f} confidence."
 
 
-async def example_command_handler(
-    message: ChatMessage, routing_result: RoutingResult
-) -> str:
+async def example_command_handler(message: ChatMessage, routing_result: RoutingResult) -> str:
     """Example handler for commands"""
     return f"I understand you want me to: '{message.content}'. This is a command with {routing_result.confidence:.2f} confidence."
 
@@ -741,9 +718,7 @@ class AetherraChatRouter:
     def _load_aether_functions(self):
         """Load Aetherra function definitions from JSON file."""
         try:
-            functions_path = (
-                Path(__file__).parent.parent / "data" / "aetherra_functions.json"
-            )
+            functions_path = Path(__file__).parent.parent / "data" / "aetherra_functions.json"
             with open(functions_path) as f:
                 return json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
@@ -830,9 +805,7 @@ class AetherraChatRouter:
 
         # Rule for code generation
         if "generate" in message_lower and (
-            "code" in message_lower
-            or "script" in message_lower
-            or "workflow" in message_lower
+            "code" in message_lower or "script" in message_lower or "workflow" in message_lower
         ):
             return "generate_code", {"description": message}
 
@@ -880,11 +853,7 @@ class AetherraChatRouter:
 
         # Find the function definition
         command_def = next(
-            (
-                f
-                for f in self.aether_functions.get("functions", [])
-                if f["name"] == command_name
-            ),
+            (f for f in self.aether_functions.get("functions", []) if f["name"] == command_name),
             None,
         )
 
@@ -918,9 +887,7 @@ class AetherraChatRouter:
                 prompt += f"{entry['sender']}: {entry['message']}\n"
 
         # Add recent memories
-        recent_memories = self.memory.recall(
-            f"memory related to user {user_id}", limit=3
-        )
+        recent_memories = self.memory.recall(f"memory related to user {user_id}", limit=3)
         if recent_memories:
             prompt += "\nRecent context:\n"
             for mem in recent_memories:

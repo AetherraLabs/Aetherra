@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, TypeVar
 
 from ..decorators import substitute_in_graph
 
-
 if TYPE_CHECKING:
     from collections.abc import Iterable
 

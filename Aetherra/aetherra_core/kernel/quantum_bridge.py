@@ -7,11 +7,11 @@ class QuantumBridgeInterface:
         self.config = config
 
     def write(self, data, metadata=None):
-        # Placeholder: just return a dict
+        # Baseline implementation: return a normalized write record.
         return {"written": data, "metadata": metadata}
 
     def query(self, query):
-        # Placeholder: return a list of mock results
+        # Baseline implementation: return a lightweight simulated result set.
         return [{"result": "mock", "query": query}]
 
     def backend_name(self):

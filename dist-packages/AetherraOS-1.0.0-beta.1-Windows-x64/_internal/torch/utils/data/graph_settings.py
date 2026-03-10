@@ -1,16 +1,16 @@
 # mypy: allow-untyped-defs
 import inspect
 import warnings
-from typing import Any, Optional
+from typing import Any
+
 from typing_extensions import deprecated
 
 import torch
 from torch.utils.data.datapipes.iter.sharding import (
-    _ShardingIterDataPipe,
     SHARDING_PRIORITIES,
+    _ShardingIterDataPipe,
 )
 from torch.utils.data.graph import DataPipe, DataPipeGraph, traverse_dps
-
 
 __all__ = [
     "apply_random_seed",
@@ -94,9 +94,7 @@ def _is_shuffle_datapipe(datapipe: DataPipe) -> bool:
     )
 
 
-def apply_shuffle_settings(
-    datapipe: DataPipe, shuffle: Optional[bool] = None
-) -> DataPipe:
+def apply_shuffle_settings(datapipe: DataPipe, shuffle: bool | None = None) -> DataPipe:
     r"""
     Traverse the graph of ``DataPipes`` to find and set shuffle attribute.
 

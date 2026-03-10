@@ -3,11 +3,15 @@ import copy
 import warnings
 from collections import namedtuple
 from typing import Any, Optional, Union
+
 from typing_extensions import deprecated
 
 import torch
 import torch.nn as nn
 from torch.ao.quantization.fake_quantize import (
+    FakeQuantize,
+    FakeQuantizeBase,
+    FusedMovingAvgObsFakeQuantize,
     default_dynamic_fake_quant,
     default_embedding_fake_quant,
     default_embedding_fake_quant_4bit,
@@ -17,14 +21,18 @@ from torch.ao.quantization.fake_quantize import (
     default_fused_wt_fake_quant,
     default_per_channel_weight_fake_quant,
     default_weight_fake_quant,
-    FakeQuantize,
-    FakeQuantizeBase,
     fused_per_channel_wt_fake_quant_range_neg_127_to_127,
     fused_wt_fake_quant_range_neg_127_to_127,
-    FusedMovingAvgObsFakeQuantize,
 )
 
 from .observer import (
+    HistogramObserver,
+    MinMaxObserver,
+    MovingAverageMinMaxObserver,
+    NoopObserver,
+    ObserverBase,
+    PlaceholderObserver,
+    ReuseInputObserver,
     _PartialWrapper,
     default_debug_observer,
     default_dynamic_quant_observer,
@@ -35,17 +43,9 @@ from .observer import (
     default_placeholder_observer,
     default_reuse_input_observer,
     default_weight_observer,
-    HistogramObserver,
-    MinMaxObserver,
-    MovingAverageMinMaxObserver,
-    NoopObserver,
-    ObserverBase,
     per_channel_weight_observer_range_neg_127_to_127,
-    PlaceholderObserver,
-    ReuseInputObserver,
     weight_observer_range_neg_127_to_127,
 )
-
 
 __all__ = [
     "QConfig",
@@ -540,7 +540,7 @@ def get_default_qat_qconfig_dict(backend="x86", version=1):
     ).to_dict()
 
 
-def _assert_valid_qconfig(qconfig: Optional[QConfig], mod: torch.nn.Module) -> None:
+def _assert_valid_qconfig(qconfig: QConfig | None, mod: torch.nn.Module) -> None:
     """
     Verifies that this `qconfig` is valid.
     """
@@ -572,7 +572,7 @@ QConfigAny.__module__ = "torch.ao.quantization.qconfig"
 
 
 def _add_module_to_qconfig_obs_ctr(
-    qconfig: QConfigAny, module: Optional[nn.Module]
+    qconfig: QConfigAny, module: nn.Module | None
 ) -> Any:
     r"""This is a helper function for use in quantization prepare that updates a qconfig so that
     the constructors stored in the qconfig will create observers on the same device that
@@ -662,17 +662,16 @@ def qconfig_equals(q1: QConfigAny, q2: QConfigAny):
     """
     if q1 is None or q2 is None:
         return q1 == q2
-    else:
-        assert q1 is not None and q2 is not None
-        try:
-            # Qconfig weight and activation can be either a partial wrapper,
-            # or an observer class. Special handling is required (above) for
-            # comparing partial wrappers.
-            activation_same = _obs_or_fq_ctr_equals(q1.activation, q2.activation)
-            weight_same = _obs_or_fq_ctr_equals(q1.weight, q2.weight)
-            return activation_same and weight_same
-        except AttributeError:
-            return q1 == q2
+    assert q1 is not None and q2 is not None
+    try:
+        # Qconfig weight and activation can be either a partial wrapper,
+        # or an observer class. Special handling is required (above) for
+        # comparing partial wrappers.
+        activation_same = _obs_or_fq_ctr_equals(q1.activation, q2.activation)
+        weight_same = _obs_or_fq_ctr_equals(q1.weight, q2.weight)
+        return activation_same and weight_same
+    except AttributeError:
+        return q1 == q2
 
 
 def _activation_is_memoryless(qconfig: QConfig):
@@ -689,11 +688,10 @@ def _activation_is_memoryless(qconfig: QConfig):
     act = qconfig.activation()
     if isinstance(act, FakeQuantizeBase) and hasattr(act, "activation_post_process"):
         return _is_memoryless(act.activation_post_process)
-    else:
-        return _is_memoryless(act)
+    return _is_memoryless(act)
 
 
-def _is_reuse_input_qconfig(qconfig: Optional[QConfig]):
+def _is_reuse_input_qconfig(qconfig: QConfig | None):
     return (
         qconfig is not None
         and isinstance(qconfig.activation(), ReuseInputObserver)

@@ -62,14 +62,14 @@ class ReflectionAgent(AgentBase):
 
         reflection_text = f"Daily Reflection for {today.strftime('%B %d, %Y')}:\n\n"
         reflection_text += "🎯 Goals: 3 goals active, 1 completed, 0 escalated\n"
+        reflection_text += "[TOOL] System: All systems operational, no errors detected\n"
+        reflection_text += "📊 Performance: Response time: 150ms avg, Memory usage: 65%\n"
         reflection_text += (
-            "[TOOL] System: All systems operational, no errors detected\n"
+            "💡 Insights: Strong performance in goal completion. System stability maintained.\n"
         )
         reflection_text += (
-            "📊 Performance: Response time: 150ms avg, Memory usage: 65%\n"
+            "📋 Tomorrow's Focus: Continue current goal progression, monitor memory usage\n"
         )
-        reflection_text += "💡 Insights: Strong performance in goal completion. System stability maintained.\n"
-        reflection_text += "📋 Tomorrow's Focus: Continue current goal progression, monitor memory usage\n"
 
         return AgentResponse(
             content=reflection_text,
@@ -123,9 +123,7 @@ class ReflectionAgent(AgentBase):
                 metadata={"history_count": 0},
             )
 
-        history_text = (
-            f"Reflection History ({len(self.reflection_history)} entries):\n\n"
-        )
+        history_text = f"Reflection History ({len(self.reflection_history)} entries):\n\n"
 
         return AgentResponse(
             content=history_text,
@@ -134,13 +132,13 @@ class ReflectionAgent(AgentBase):
             metadata={"history_count": len(self.reflection_history)},
         )
 
-    async def _general_reflection(
-        self, input_text: str, context: Dict[str, Any]
-    ) -> AgentResponse:
+    async def _general_reflection(self, input_text: str, context: Dict[str, Any]) -> AgentResponse:
         """Perform general reflection based on input"""
         reflection_text = f"Reflection on: {input_text}\n\n"
         reflection_text += "🤔 Analysis:\n"
-        reflection_text += "Based on your input, I can see you're interested in reflection and analysis.\n\n"
+        reflection_text += (
+            "Based on your input, I can see you're interested in reflection and analysis.\n\n"
+        )
         reflection_text += "💭 Thoughts:\n"
         reflection_text += (
             "Regular reflection is key to continuous improvement and self-awareness.\n"

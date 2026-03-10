@@ -15,7 +15,6 @@ from torch.ao.nn.intrinsic import (
 )
 from torch.ao.nn.intrinsic.modules.fused import _FusedModule  # noqa: F401
 
-
 __all__ = [
     "BNReLU2d",
     "BNReLU3d",

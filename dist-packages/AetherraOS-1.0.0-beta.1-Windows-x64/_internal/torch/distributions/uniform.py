@@ -1,13 +1,11 @@
 # mypy: allow-untyped-defs
-from typing import Optional, Union
 
 import torch
-from torch import nan, Tensor
+from torch import Tensor, nan
 from torch.distributions import constraints
 from torch.distributions.distribution import Distribution
 from torch.distributions.utils import broadcast_all
 from torch.types import _Number, _size
-
 
 __all__ = ["Uniform"]
 
@@ -57,9 +55,9 @@ class Uniform(Distribution):
 
     def __init__(
         self,
-        low: Union[Tensor, float],
-        high: Union[Tensor, float],
-        validate_args: Optional[bool] = None,
+        low: Tensor | float,
+        high: Tensor | float,
+        validate_args: bool | None = None,
     ) -> None:
         self.low, self.high = broadcast_all(low, high)
 

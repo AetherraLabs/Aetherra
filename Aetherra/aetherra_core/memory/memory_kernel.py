@@ -23,6 +23,9 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
+from ..kernel.narrator import MemoryNarrator
+from ..kernel.pulse import MemoryPulseMonitor
+
 # Local imports
 from ..memory.fractal_mesh.analogs import CrossContextAnalogies
 from ..memory.fractal_mesh.base import (
@@ -36,8 +39,6 @@ from ..memory.fractal_mesh.timelines import EpisodicTimeline
 # Import existing memory components
 from ..memory.memory_core import LyrixaMemorySystem
 from .reflector import MemoryReflector
-from ..kernel.narrator import MemoryNarrator
-from ..kernel.pulse import MemoryPulseMonitor
 
 
 @dataclass
@@ -177,9 +178,7 @@ class LyrixaMemoryEngine:
 
             # Update fragment with associative links from clustering
             if affected_clusters:
-                fragment.associative_links.extend(
-                    affected_clusters[:5]
-                )  # Limit associations
+                fragment.associative_links.extend(affected_clusters[:5])  # Limit associations
                 self.fractal_mesh.store_fragment(fragment)  # Update with associations
 
             self.operation_stats["successful_operations"] += 1
@@ -236,9 +235,7 @@ class LyrixaMemoryEngine:
 
         if recall_strategy in ["vector", "hybrid"]:
             # Vector-based recall from core system
-            vector_results = await self.core_memory.recall_memories(
-                query_text=query, limit=limit
-            )
+            vector_results = await self.core_memory.recall_memories(query_text=query, limit=limit)
 
             for i, memory in enumerate(vector_results):
                 results.append(
@@ -256,9 +253,7 @@ class LyrixaMemoryEngine:
             # Concept-based recall
             if concept_filter:
                 for concept in concept_filter:
-                    concept_fragments = self.fractal_mesh.retrieve_by_concept(
-                        concept, limit
-                    )
+                    concept_fragments = self.fractal_mesh.retrieve_by_concept(concept, limit)
                     for fragment in concept_fragments:
                         results.append(
                             {
@@ -318,11 +313,7 @@ class LyrixaMemoryEngine:
         else:
             # Default to last 24 hours
             cutoff = datetime.now() - timedelta(days=1)
-            fragments = [
-                f
-                for f in self.fractal_mesh.fragments.values()
-                if f.created_at >= cutoff
-            ]
+            fragments = [f for f in self.fractal_mesh.fragments.values() if f.created_at >= cutoff]
 
         # Generate narrative based on type
         if narrative_type == "daily":
@@ -353,9 +344,7 @@ class LyrixaMemoryEngine:
             insights = self.reflector.reflect_on_past_range(fragments, time_range)
 
         elif reflection_type == "contradictions":
-            insights = self.reflector.analyze_contradictions(
-                fragments, concept_clusters
-            )
+            insights = self.reflector.analyze_contradictions(fragments, concept_clusters)
 
         elif reflection_type == "concept_exploration" and target_concept:
             insights = self.reflector.explore_concept_connections(
@@ -414,9 +403,7 @@ class LyrixaMemoryEngine:
                 else None,
                 "memory_stats": {
                     "last_check": self.last_pulse_check.isoformat(),
-                    "system_uptime": (
-                        datetime.now() - self.last_pulse_check
-                    ).total_seconds(),
+                    "system_uptime": (datetime.now() - self.last_pulse_check).total_seconds(),
                 },
                 "performance_metrics": self.operation_stats,
                 "status": "healthy" if health.coherence_score > 0.7 else "degraded",
@@ -476,9 +463,7 @@ class LyrixaMemoryEngine:
                 "health_trend": health.health_trend,
                 "drift_alerts": drift_alerts,
                 "monitoring_active": self.config.auto_pulse_monitoring,
-                "next_scheduled_check": (
-                    self.last_pulse_check + timedelta(hours=2)
-                ).isoformat(),
+                "next_scheduled_check": (self.last_pulse_check + timedelta(hours=2)).isoformat(),
             }
 
             return pulse_data
@@ -550,15 +535,11 @@ class LyrixaMemoryEngine:
         ]
 
         for alert in low_severity_alerts[:3]:  # Resolve up to 3 low-severity alerts
-            if self.pulse_monitor.resolve_alert(
-                alert.alert_id, "Auto-resolved during maintenance"
-            ):
+            if self.pulse_monitor.resolve_alert(alert.alert_id, "Auto-resolved during maintenance"):
                 maintenance_results["alerts_resolved"] += 1
 
         # Clean up very old low-confidence fragments
-        cutoff_date = datetime.now() - timedelta(
-            days=self.config.fragment_retention_days
-        )
+        cutoff_date = datetime.now() - timedelta(days=self.config.fragment_retention_days)
         old_fragments = [
             f
             for f in self.fractal_mesh.fragments.values()

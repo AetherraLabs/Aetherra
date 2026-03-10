@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2018 The HuggingFace Inc. team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +26,7 @@ from abc import ABC, abstractmethod
 from collections import UserDict
 from contextlib import contextmanager
 from os.path import abspath, exists
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from ..dynamic_module_utils import custom_object_save
 from ..feature_extraction_utils import PreTrainedFeatureExtractor
@@ -55,8 +54,7 @@ from ..utils import (
     logging,
 )
 
-
-GenericTensor = Union[List["GenericTensor"], "torch.Tensor", "tf.Tensor"]
+GenericTensor = Union[list["GenericTensor"], "torch.Tensor", "tf.Tensor"]
 
 if is_tf_available():
     import tensorflow as tf
@@ -103,7 +101,7 @@ def _pad(items, key, padding_value, padding_side):
             # This is probable image so padding shouldn't be necessary
             # B, C, H, W
             return torch.cat([item[key] for item in items], dim=0)
-        elif dim == 4 and key == "input_features":
+        if dim == 4 and key == "input_features":
             # this is probably a mel spectrogram batched
             return torch.cat([item[key] for item in items], dim=0)
         max_length = max(item[key].shape[1] for item in items)
@@ -117,9 +115,15 @@ def _pad(items, key, padding_value, padding_side):
                 return torch.cat([item[key] for item in items], dim=0)
             tensor = torch.zeros((batch_size, max_length), dtype=dtype) + padding_value
         elif dim == 3:
-            tensor = torch.zeros((batch_size, max_length, shape[-1]), dtype=dtype) + padding_value
+            tensor = (
+                torch.zeros((batch_size, max_length, shape[-1]), dtype=dtype)
+                + padding_value
+            )
         elif dim == 4:
-            tensor = torch.zeros((batch_size, max_length, shape[-2], shape[-1]), dtype=dtype) + padding_value
+            tensor = (
+                torch.zeros((batch_size, max_length, shape[-2], shape[-1]), dtype=dtype)
+                + padding_value
+            )
 
         for i, item in enumerate(items):
             if dim == 2:
@@ -139,8 +143,7 @@ def _pad(items, key, padding_value, padding_side):
                     tensor[i, : len(item[key][0]), :, :] = item[key][0].clone()
 
         return tensor
-    else:
-        return [item[key] for item in items]
+    return [item[key] for item in items]
 
 
 def pad_collate_fn(tokenizer, feature_extractor):
@@ -149,22 +152,27 @@ def pad_collate_fn(tokenizer, feature_extractor):
     # Feature extractor
     f_padding_side = None
     if tokenizer is None and feature_extractor is None:
-        raise ValueError("Pipeline without tokenizer or feature_extractor cannot do batching")
+        raise ValueError(
+            "Pipeline without tokenizer or feature_extractor cannot do batching"
+        )
     if tokenizer is not None:
         if tokenizer.pad_token_id is None:
             raise ValueError(
                 "Pipeline with tokenizer without pad_token cannot do batching. You can try to set it with "
                 "`pipe.tokenizer.pad_token_id = model.config.eos_token_id`."
             )
-        else:
-            t_padding_value = tokenizer.pad_token_id
-            t_padding_side = tokenizer.padding_side
+        t_padding_value = tokenizer.pad_token_id
+        t_padding_side = tokenizer.padding_side
     if feature_extractor is not None:
         # Feature extractor can be images, where no padding is expected
         f_padding_value = getattr(feature_extractor, "padding_value", None)
         f_padding_side = getattr(feature_extractor, "padding_side", None)
 
-    if t_padding_side is not None and f_padding_side is not None and t_padding_side != f_padding_side:
+    if (
+        t_padding_side is not None
+        and f_padding_side is not None
+        and t_padding_side != f_padding_side
+    ):
         raise ValueError(
             f"The feature extractor, and tokenizer don't agree on padding side {t_padding_side} != {f_padding_side}"
         )
@@ -209,9 +217,9 @@ def pad_collate_fn(tokenizer, feature_extractor):
 def infer_framework_load_model(
     model,
     config: AutoConfig,
-    model_classes: Optional[Dict[str, Tuple[type]]] = None,
-    task: Optional[str] = None,
-    framework: Optional[str] = None,
+    model_classes: dict[str, tuple[type]] | None = None,
+    task: str | None = None,
+    framework: str | None = None,
     **model_kwargs,
 ):
     """
@@ -270,7 +278,9 @@ def infer_framework_load_model(
             class_tuple = class_tuple + tuple(classes)
 
         if len(class_tuple) == 0:
-            raise ValueError(f"Pipeline cannot infer suitable model classes from {model}")
+            raise ValueError(
+                f"Pipeline cannot infer suitable model classes from {model}"
+            )
 
         all_traceback = {}
         for model_class in class_tuple:
@@ -301,7 +311,9 @@ def infer_framework_load_model(
         if isinstance(model, str):
             error = ""
             for class_name, trace in all_traceback.items():
-                error += f"while loading with {class_name}, an error is thrown:\n{trace}\n"
+                error += (
+                    f"while loading with {class_name}, an error is thrown:\n{trace}\n"
+                )
             raise ValueError(
                 f"Could not load model {model} with any of the following classes: {class_tuple}. See the original errors:\n\n{error}\n"
             )
@@ -313,9 +325,9 @@ def infer_framework_load_model(
 
 def infer_framework_from_model(
     model,
-    model_classes: Optional[Dict[str, Tuple[type]]] = None,
-    task: Optional[str] = None,
-    framework: Optional[str] = None,
+    model_classes: dict[str, tuple[type]] | None = None,
+    task: str | None = None,
+    framework: str | None = None,
     **model_kwargs,
 ):
     """
@@ -346,11 +358,17 @@ def infer_framework_from_model(
     else:
         config = model.config
     return infer_framework_load_model(
-        model, config, model_classes=model_classes, _from_pipeline=task, task=task, framework=framework, **model_kwargs
+        model,
+        config,
+        model_classes=model_classes,
+        _from_pipeline=task,
+        task=task,
+        framework=framework,
+        **model_kwargs,
     )
 
 
-def get_framework(model, revision: Optional[str] = None):
+def get_framework(model, revision: str | None = None):
     """
     Select framework (TensorFlow or PyTorch) to use.
 
@@ -385,8 +403,8 @@ def get_framework(model, revision: Optional[str] = None):
 
 
 def get_default_model_and_revision(
-    targeted_task: Dict, framework: Optional[str], task_options: Optional[Any]
-) -> Tuple[str, str]:
+    targeted_task: dict, framework: str | None, task_options: Any | None
+) -> tuple[str, str]:
     """
     Select a default model to use for a given task. Defaults to pytorch if ambiguous.
 
@@ -415,14 +433,18 @@ def get_default_model_and_revision(
     defaults = targeted_task["default"]
     if task_options:
         if task_options not in defaults:
-            raise ValueError(f"The task does not provide any default models for options {task_options}")
+            raise ValueError(
+                f"The task does not provide any default models for options {task_options}"
+            )
         default_models = defaults[task_options]["model"]
     elif "model" in defaults:
         default_models = targeted_task["default"]["model"]
     else:
         # XXX This error message needs to be updated to be more generic if more tasks are going to become
         # parametrized
-        raise ValueError('The task defaults can\'t be correctly selected. You probably meant "translation_XX_to_YY"')
+        raise ValueError(
+            'The task defaults can\'t be correctly selected. You probably meant "translation_XX_to_YY"'
+        )
 
     if framework is None:
         framework = "pt"
@@ -432,9 +454,9 @@ def get_default_model_and_revision(
 
 def load_assistant_model(
     model: "PreTrainedModel",
-    assistant_model: Optional[Union[str, "PreTrainedModel"]],
-    assistant_tokenizer: Optional[PreTrainedTokenizer],
-) -> Tuple[Optional["PreTrainedModel"], Optional[PreTrainedTokenizer]]:
+    assistant_model: Union[str, "PreTrainedModel"] | None,
+    assistant_tokenizer: PreTrainedTokenizer | None,
+) -> tuple[Optional["PreTrainedModel"], PreTrainedTokenizer | None]:
     """
     Prepares the assistant model and the assistant tokenizer for a pipeline whose model that can call `generate`.
 
@@ -452,7 +474,7 @@ def load_assistant_model(
     if not model.can_generate() or assistant_model is None:
         return None, None
 
-    if getattr(model, "framework") != "pt" or not isinstance(model, PreTrainedModel):
+    if model.framework != "pt" or not isinstance(model, PreTrainedModel):
         raise ValueError(
             "Assisted generation, triggered by the `assistant_model` argument, is only available for "
             "`PreTrainedModel` model instances. For instance, TF or JAX models are not supported."
@@ -461,8 +483,12 @@ def load_assistant_model(
     # If the model is passed as a string, load the model and the corresponding tokenizer
     if isinstance(assistant_model, str):
         assistant_config = AutoConfig.from_pretrained(assistant_model)
-        _, loaded_assistant_model = infer_framework_load_model(assistant_model, config=assistant_config)
-        loaded_assistant_model = loaded_assistant_model.to(device=model.device, dtype=model.dtype)
+        _, loaded_assistant_model = infer_framework_load_model(
+            assistant_model, config=assistant_config
+        )
+        loaded_assistant_model = loaded_assistant_model.to(
+            device=model.device, dtype=model.dtype
+        )
         loaded_assistant_tokenizer = AutoTokenizer.from_pretrained(assistant_model)
     else:
         loaded_assistant_model = assistant_model
@@ -470,7 +496,9 @@ def load_assistant_model(
 
     # Finally, let's check the tokenizers: if the two models have different tokenizers, we need to keep the assistant
     # tokenizer
-    same_vocab_size = model.config.vocab_size == loaded_assistant_model.config.vocab_size
+    same_vocab_size = (
+        model.config.vocab_size == loaded_assistant_model.config.vocab_size
+    )
     same_special_tokens = all(
         getattr(model.config, token) == getattr(loaded_assistant_model.config, token)
         for token in ("eos_token_id", "pad_token_id", "bos_token_id")
@@ -537,9 +565,9 @@ class PipelineDataFormat:
 
     def __init__(
         self,
-        output_path: Optional[str],
-        input_path: Optional[str],
-        column: Optional[str],
+        output_path: str | None,
+        input_path: str | None,
+        column: str | None,
         overwrite: bool = False,
     ):
         self.output_path = output_path
@@ -548,7 +576,9 @@ class PipelineDataFormat:
         self.is_multi_columns = len(self.column) > 1
 
         if self.is_multi_columns:
-            self.column = [tuple(c.split("=")) if "=" in c else (c, c) for c in self.column]
+            self.column = [
+                tuple(c.split("=")) if "=" in c else (c, c) for c in self.column
+            ]
 
         if output_path is not None and not overwrite:
             if exists(abspath(self.output_path)):
@@ -563,7 +593,7 @@ class PipelineDataFormat:
         raise NotImplementedError()
 
     @abstractmethod
-    def save(self, data: Union[dict, List[dict]]):
+    def save(self, data: dict | list[dict]):
         """
         Save the provided data object with the representation for the current [`~pipelines.PipelineDataFormat`].
 
@@ -572,7 +602,7 @@ class PipelineDataFormat:
         """
         raise NotImplementedError()
 
-    def save_binary(self, data: Union[dict, List[dict]]) -> str:
+    def save_binary(self, data: dict | list[dict]) -> str:
         """
         Save the provided data object as a pickle-formatted binary data on the disk.
 
@@ -593,9 +623,9 @@ class PipelineDataFormat:
     @staticmethod
     def from_str(
         format: str,
-        output_path: Optional[str],
-        input_path: Optional[str],
-        column: Optional[str],
+        output_path: str | None,
+        input_path: str | None,
+        column: str | None,
         overwrite=False,
     ) -> "PipelineDataFormat":
         """
@@ -617,13 +647,18 @@ class PipelineDataFormat:
             [`~pipelines.PipelineDataFormat`]: The proper data format.
         """
         if format == "json":
-            return JsonPipelineDataFormat(output_path, input_path, column, overwrite=overwrite)
-        elif format == "csv":
-            return CsvPipelineDataFormat(output_path, input_path, column, overwrite=overwrite)
-        elif format == "pipe":
-            return PipedPipelineDataFormat(output_path, input_path, column, overwrite=overwrite)
-        else:
-            raise KeyError(f"Unknown reader {format} (Available reader are json/csv/pipe)")
+            return JsonPipelineDataFormat(
+                output_path, input_path, column, overwrite=overwrite
+            )
+        if format == "csv":
+            return CsvPipelineDataFormat(
+                output_path, input_path, column, overwrite=overwrite
+            )
+        if format == "pipe":
+            return PipedPipelineDataFormat(
+                output_path, input_path, column, overwrite=overwrite
+            )
+        raise KeyError(f"Unknown reader {format} (Available reader are json/csv/pipe)")
 
 
 class CsvPipelineDataFormat(PipelineDataFormat):
@@ -640,15 +675,15 @@ class CsvPipelineDataFormat(PipelineDataFormat):
 
     def __init__(
         self,
-        output_path: Optional[str],
-        input_path: Optional[str],
-        column: Optional[str],
+        output_path: str | None,
+        input_path: str | None,
+        column: str | None,
         overwrite=False,
     ):
         super().__init__(output_path, input_path, column, overwrite=overwrite)
 
     def __iter__(self):
-        with open(self.input_path, "r") as f:
+        with open(self.input_path) as f:
             reader = csv.DictReader(f)
             for row in reader:
                 if self.is_multi_columns:
@@ -656,7 +691,7 @@ class CsvPipelineDataFormat(PipelineDataFormat):
                 else:
                     yield row[self.column[0]]
 
-    def save(self, data: List[dict]):
+    def save(self, data: list[dict]):
         """
         Save the provided data object with the representation for the current [`~pipelines.PipelineDataFormat`].
 
@@ -684,14 +719,14 @@ class JsonPipelineDataFormat(PipelineDataFormat):
 
     def __init__(
         self,
-        output_path: Optional[str],
-        input_path: Optional[str],
-        column: Optional[str],
+        output_path: str | None,
+        input_path: str | None,
+        column: str | None,
         overwrite=False,
     ):
         super().__init__(output_path, input_path, column, overwrite=overwrite)
 
-        with open(input_path, "r") as f:
+        with open(input_path) as f:
             self._entries = json.load(f)
 
     def __iter__(self):
@@ -733,7 +768,10 @@ class PipedPipelineDataFormat(PipelineDataFormat):
                 line = line.split("\t")
                 if self.column:
                     # Dictionary to map arguments
-                    yield {kwargs: l for (kwargs, _), l in zip(self.column, line)}
+                    yield {
+                        kwargs: l
+                        for (kwargs, _), l in zip(self.column, line, strict=False)
+                    }
                 else:
                     yield tuple(line)
 
@@ -750,7 +788,7 @@ class PipedPipelineDataFormat(PipelineDataFormat):
         """
         print(data)
 
-    def save_binary(self, data: Union[dict, List[dict]]) -> str:
+    def save_binary(self, data: dict | list[dict]) -> str:
         if self.output_path is None:
             raise KeyError(
                 "When using piped input on pipeline outputting large object requires an output file path. "
@@ -878,7 +916,10 @@ if is_torch_available():
 
 @add_end_docstrings(
     build_pipeline_init_args(
-        has_tokenizer=True, has_feature_extractor=True, has_image_processor=True, has_processor=True
+        has_tokenizer=True,
+        has_feature_extractor=True,
+        has_image_processor=True,
+        has_processor=True,
     )
 )
 class Pipeline(_ScikitCompat, PushToHubMixin):
@@ -922,16 +963,16 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
     def __init__(
         self,
         model: Union["PreTrainedModel", "TFPreTrainedModel"],
-        tokenizer: Optional[PreTrainedTokenizer] = None,
-        feature_extractor: Optional[PreTrainedFeatureExtractor] = None,
-        image_processor: Optional[BaseImageProcessor] = None,
-        processor: Optional[ProcessorMixin] = None,
-        modelcard: Optional[ModelCard] = None,
-        framework: Optional[str] = None,
+        tokenizer: PreTrainedTokenizer | None = None,
+        feature_extractor: PreTrainedFeatureExtractor | None = None,
+        image_processor: BaseImageProcessor | None = None,
+        processor: ProcessorMixin | None = None,
+        modelcard: ModelCard | None = None,
+        framework: str | None = None,
         task: str = "",
         args_parser: ArgumentHandler = None,
         device: Union[int, "torch.device"] = None,
-        torch_dtype: Optional[Union[str, "torch.dtype"]] = None,
+        torch_dtype: Union[str, "torch.dtype"] | None = None,
         binary_output: bool = False,
         **kwargs,
     ):
@@ -967,17 +1008,22 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
             if device == -1 and self.model.device is not None:
                 device = self.model.device
             if isinstance(device, torch.device):
-                if (device.type == "xpu" and not is_torch_xpu_available(check_device=True)) or (
-                    device.type == "hpu" and not is_torch_hpu_available()
-                ):
-                    raise ValueError(f'{device} is not available, you should use device="cpu" instead')
+                if (
+                    device.type == "xpu"
+                    and not is_torch_xpu_available(check_device=True)
+                ) or (device.type == "hpu" and not is_torch_hpu_available()):
+                    raise ValueError(
+                        f'{device} is not available, you should use device="cpu" instead'
+                    )
 
                 self.device = device
             elif isinstance(device, str):
-                if ("xpu" in device and not is_torch_xpu_available(check_device=True)) or (
-                    "hpu" in device and not is_torch_hpu_available()
-                ):
-                    raise ValueError(f'{device} is not available, you should use device="cpu" instead')
+                if (
+                    "xpu" in device and not is_torch_xpu_available(check_device=True)
+                ) or ("hpu" in device and not is_torch_hpu_available()):
+                    raise ValueError(
+                        f'{device} is not available, you should use device="cpu" instead'
+                    )
 
                 self.device = torch.device(device)
             elif device < 0:
@@ -1021,29 +1067,45 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
         # 2 - load the assistant model if it is passed.
         if self._pipeline_calls_generate and self.model.can_generate():
             self.assistant_model, self.assistant_tokenizer = load_assistant_model(
-                self.model, kwargs.pop("assistant_model", None), kwargs.pop("assistant_tokenizer", None)
+                self.model,
+                kwargs.pop("assistant_model", None),
+                kwargs.pop("assistant_tokenizer", None),
             )
-            self.prefix = self.model.config.prefix if hasattr(self.model.config, "prefix") else None
+            self.prefix = (
+                self.model.config.prefix
+                if hasattr(self.model.config, "prefix")
+                else None
+            )
             # each pipeline with text generation capabilities should define its own default generation in a
             # `_default_generation_config` class attribute
-            default_pipeline_generation_config = getattr(self, "_default_generation_config", GenerationConfig())
-            if hasattr(self.model, "_prepare_generation_config"):  # TF doesn't have `_prepare_generation_config`
+            default_pipeline_generation_config = getattr(
+                self, "_default_generation_config", GenerationConfig()
+            )
+            if hasattr(
+                self.model, "_prepare_generation_config"
+            ):  # TF doesn't have `_prepare_generation_config`
                 # Uses `generate`'s logic to enforce the following priority of arguments:
                 # 1. user-defined config options in `**kwargs`
                 # 2. model's generation config values
                 # 3. pipeline's default generation config values
                 # NOTE: _prepare_generation_config creates a deep copy of the generation config before updating it,
                 # and returns all kwargs that were not used to update the generation config
-                prepared_generation_config, kwargs = self.model._prepare_generation_config(
-                    generation_config=default_pipeline_generation_config, use_model_defaults=True, **kwargs
+                prepared_generation_config, kwargs = (
+                    self.model._prepare_generation_config(
+                        generation_config=default_pipeline_generation_config,
+                        use_model_defaults=True,
+                        **kwargs,
+                    )
                 )
                 self.generation_config = prepared_generation_config
                 # if the `max_new_tokens` is set to the pipeline default, but `max_length` is set to a non-default
                 # value: let's honor `max_length`. E.g. we want Whisper's default `max_length=448` take precedence
                 # over over the pipeline's length default.
                 if (
-                    default_pipeline_generation_config.max_new_tokens is not None  # there's a pipeline default
-                    and self.generation_config.max_new_tokens == default_pipeline_generation_config.max_new_tokens
+                    default_pipeline_generation_config.max_new_tokens
+                    is not None  # there's a pipeline default
+                    and self.generation_config.max_new_tokens
+                    == default_pipeline_generation_config.max_new_tokens
                     and self.generation_config.max_length is not None
                     and self.generation_config.max_length != 20  # global default
                 ):
@@ -1073,11 +1135,17 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
         self.call_count = 0
         self._batch_size = kwargs.pop("batch_size", None)
         self._num_workers = kwargs.pop("num_workers", None)
-        self._preprocess_params, self._forward_params, self._postprocess_params = self._sanitize_parameters(**kwargs)
+        self._preprocess_params, self._forward_params, self._postprocess_params = (
+            self._sanitize_parameters(**kwargs)
+        )
 
         # In processor only mode, we can get the modality processors from the processor
         if self.processor is not None and all(
-            [self.tokenizer is None, self.feature_extractor is None, self.image_processor is None]
+            [
+                self.tokenizer is None,
+                self.feature_extractor is None,
+                self.image_processor is None,
+            ]
         ):
             self.tokenizer = getattr(self.processor, "tokenizer", None)
             self.feature_extractor = getattr(self.processor, "feature_extractor", None)
@@ -1092,7 +1160,7 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
 
     def save_pretrained(
         self,
-        save_directory: Union[str, os.PathLike],
+        save_directory: str | os.PathLike,
         safe_serialization: bool = True,
         **kwargs,
     ):
@@ -1114,14 +1182,16 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
                 "The `use_auth_token` argument is deprecated and will be removed in v5 of Transformers. Please use `token` instead.",
                 FutureWarning,
             )
-            if kwargs.get("token", None) is not None:
+            if kwargs.get("token") is not None:
                 raise ValueError(
                     "`token` and `use_auth_token` are both specified. Please set only the argument `token`."
                 )
             kwargs["token"] = use_auth_token
 
         if os.path.isfile(save_directory):
-            logger.error(f"Provided path ({save_directory}) should be a directory, not a file")
+            logger.error(
+                f"Provided path ({save_directory}) should be a directory, not a file"
+            )
             return
         os.makedirs(save_directory, exist_ok=True)
 
@@ -1198,7 +1268,9 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
             output = pipe(...)
         ```"""
         if self.framework == "tf":
-            with tf.device("/CPU:0" if self.device == -1 else f"/device:GPU:{self.device}"):
+            with tf.device(
+                "/CPU:0" if self.device == -1 else f"/device:GPU:{self.device}"
+            ):
                 yield
         else:
             if self.device.type == "cuda":
@@ -1233,22 +1305,34 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
     def _ensure_tensor_on_device(self, inputs, device):
         if isinstance(inputs, ModelOutput):
             return ModelOutput(
-                {name: self._ensure_tensor_on_device(tensor, device) for name, tensor in inputs.items()}
+                {
+                    name: self._ensure_tensor_on_device(tensor, device)
+                    for name, tensor in inputs.items()
+                }
             )
-        elif isinstance(inputs, dict):
-            return {name: self._ensure_tensor_on_device(tensor, device) for name, tensor in inputs.items()}
-        elif isinstance(inputs, UserDict):
-            return UserDict({name: self._ensure_tensor_on_device(tensor, device) for name, tensor in inputs.items()})
-        elif isinstance(inputs, list):
+        if isinstance(inputs, dict):
+            return {
+                name: self._ensure_tensor_on_device(tensor, device)
+                for name, tensor in inputs.items()
+            }
+        if isinstance(inputs, UserDict):
+            return UserDict(
+                {
+                    name: self._ensure_tensor_on_device(tensor, device)
+                    for name, tensor in inputs.items()
+                }
+            )
+        if isinstance(inputs, list):
             return [self._ensure_tensor_on_device(item, device) for item in inputs]
-        elif isinstance(inputs, tuple):
-            return tuple([self._ensure_tensor_on_device(item, device) for item in inputs])
-        elif isinstance(inputs, torch.Tensor):
+        if isinstance(inputs, tuple):
+            return tuple(
+                [self._ensure_tensor_on_device(item, device) for item in inputs]
+            )
+        if isinstance(inputs, torch.Tensor):
             return inputs.to(device)
-        else:
-            return inputs
+        return inputs
 
-    def check_model_type(self, supported_models: Union[List[str], dict]):
+    def check_model_type(self, supported_models: list[str] | dict):
         """
         Check if the model class is in supported by the pipeline.
 
@@ -1294,7 +1378,9 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
         raise NotImplementedError("_sanitize_parameters not implemented")
 
     @abstractmethod
-    def preprocess(self, input_: Any, **preprocess_parameters: Dict) -> Dict[str, GenericTensor]:
+    def preprocess(
+        self, input_: Any, **preprocess_parameters: dict
+    ) -> dict[str, GenericTensor]:
         """
         Preprocess will take the `input_` of a specific pipeline and return a dictionary of everything necessary for
         `_forward` to run properly. It should contain at least one tensor, but might have arbitrary other items.
@@ -1302,7 +1388,9 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
         raise NotImplementedError("preprocess not implemented")
 
     @abstractmethod
-    def _forward(self, input_tensors: Dict[str, GenericTensor], **forward_parameters: Dict) -> ModelOutput:
+    def _forward(
+        self, input_tensors: dict[str, GenericTensor], **forward_parameters: dict
+    ) -> ModelOutput:
         """
         _forward will receive the prepared dictionary from `preprocess` and run it on the model. This method might
         involve the GPU or the CPU and should be agnostic to it. Isolating this function is the reason for `preprocess`
@@ -1315,7 +1403,9 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
         raise NotImplementedError("_forward not implemented")
 
     @abstractmethod
-    def postprocess(self, model_outputs: ModelOutput, **postprocess_parameters: Dict) -> Any:
+    def postprocess(
+        self, model_outputs: ModelOutput, **postprocess_parameters: dict
+    ) -> Any:
         """
         Postprocess will receive the raw outputs of the `_forward` method, generally tensors, and reformat them into
         something more friendly. Generally it will output a list or a dict or results (containing just strings and
@@ -1334,15 +1424,25 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
             elif self.framework == "pt":
                 inference_context = self.get_inference_context()
                 with inference_context():
-                    model_inputs = self._ensure_tensor_on_device(model_inputs, device=self.device)
+                    model_inputs = self._ensure_tensor_on_device(
+                        model_inputs, device=self.device
+                    )
                     model_outputs = self._forward(model_inputs, **forward_params)
-                    model_outputs = self._ensure_tensor_on_device(model_outputs, device=torch.device("cpu"))
+                    model_outputs = self._ensure_tensor_on_device(
+                        model_outputs, device=torch.device("cpu")
+                    )
             else:
                 raise ValueError(f"Framework {self.framework} is not supported")
         return model_outputs
 
     def get_iterator(
-        self, inputs, num_workers: int, batch_size: int, preprocess_params, forward_params, postprocess_params
+        self,
+        inputs,
+        num_workers: int,
+        batch_size: int,
+        preprocess_params,
+        forward_params,
+        postprocess_params,
     ):
         if isinstance(inputs, collections.abc.Sized):
             dataset = PipelineDataset(inputs, self.preprocess, preprocess_params)
@@ -1356,14 +1456,33 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
                 num_workers = 1
             dataset = PipelineIterator(inputs, self.preprocess, preprocess_params)
         if "TOKENIZERS_PARALLELISM" not in os.environ:
-            logger.info("Disabling tokenizer parallelism, we're using DataLoader multithreading already")
+            logger.info(
+                "Disabling tokenizer parallelism, we're using DataLoader multithreading already"
+            )
             os.environ["TOKENIZERS_PARALLELISM"] = "false"
         # TODO hack by collating feature_extractor and image_processor
-        feature_extractor = self.feature_extractor if self.feature_extractor is not None else self.image_processor
-        collate_fn = no_collate_fn if batch_size == 1 else pad_collate_fn(self.tokenizer, feature_extractor)
-        dataloader = DataLoader(dataset, num_workers=num_workers, batch_size=batch_size, collate_fn=collate_fn)
-        model_iterator = PipelineIterator(dataloader, self.forward, forward_params, loader_batch_size=batch_size)
-        final_iterator = PipelineIterator(model_iterator, self.postprocess, postprocess_params)
+        feature_extractor = (
+            self.feature_extractor
+            if self.feature_extractor is not None
+            else self.image_processor
+        )
+        collate_fn = (
+            no_collate_fn
+            if batch_size == 1
+            else pad_collate_fn(self.tokenizer, feature_extractor)
+        )
+        dataloader = DataLoader(
+            dataset,
+            num_workers=num_workers,
+            batch_size=batch_size,
+            collate_fn=collate_fn,
+        )
+        model_iterator = PipelineIterator(
+            dataloader, self.forward, forward_params, loader_batch_size=batch_size
+        )
+        final_iterator = PipelineIterator(
+            model_iterator, self.postprocess, postprocess_params
+        )
         return final_iterator
 
     def __call__(self, inputs, *args, num_workers=None, batch_size=None, **kwargs):
@@ -1381,7 +1500,9 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
             else:
                 batch_size = self._batch_size
 
-        preprocess_params, forward_params, postprocess_params = self._sanitize_parameters(**kwargs)
+        preprocess_params, forward_params, postprocess_params = (
+            self._sanitize_parameters(**kwargs)
+        )
 
         # Fuse __init__ params and __call__ params without modifying the __init__ ones.
         preprocess_params = {**self._preprocess_params, **preprocess_params}
@@ -1389,7 +1510,11 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
         postprocess_params = {**self._postprocess_params, **postprocess_params}
 
         self.call_count += 1
-        if self.call_count > 10 and self.framework == "pt" and self.device.type == "cuda":
+        if (
+            self.call_count > 10
+            and self.framework == "pt"
+            and self.device.type == "cuda"
+        ):
             logger.warning_once(
                 "You seem to be using the pipelines sequentially on GPU. In order to maximize efficiency please use a"
                 " dataset",
@@ -1402,36 +1527,60 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
         is_iterable = is_dataset or is_generator or is_list
 
         # TODO make the get_iterator work also for `tf` (and `flax`).
-        can_use_iterator = self.framework == "pt" and (is_dataset or is_generator or is_list)
+        can_use_iterator = self.framework == "pt" and (
+            is_dataset or is_generator or is_list
+        )
 
         if is_list:
             if can_use_iterator:
                 final_iterator = self.get_iterator(
-                    inputs, num_workers, batch_size, preprocess_params, forward_params, postprocess_params
+                    inputs,
+                    num_workers,
+                    batch_size,
+                    preprocess_params,
+                    forward_params,
+                    postprocess_params,
                 )
                 outputs = list(final_iterator)
                 return outputs
-            else:
-                return self.run_multi(inputs, preprocess_params, forward_params, postprocess_params)
-        elif can_use_iterator:
-            return self.get_iterator(
-                inputs, num_workers, batch_size, preprocess_params, forward_params, postprocess_params
+            return self.run_multi(
+                inputs, preprocess_params, forward_params, postprocess_params
             )
-        elif is_iterable:
-            return self.iterate(inputs, preprocess_params, forward_params, postprocess_params)
-        elif self.framework == "pt" and isinstance(self, ChunkPipeline):
+        if can_use_iterator:
+            return self.get_iterator(
+                inputs,
+                num_workers,
+                batch_size,
+                preprocess_params,
+                forward_params,
+                postprocess_params,
+            )
+        if is_iterable:
+            return self.iterate(
+                inputs, preprocess_params, forward_params, postprocess_params
+            )
+        if self.framework == "pt" and isinstance(self, ChunkPipeline):
             return next(
                 iter(
                     self.get_iterator(
-                        [inputs], num_workers, batch_size, preprocess_params, forward_params, postprocess_params
+                        [inputs],
+                        num_workers,
+                        batch_size,
+                        preprocess_params,
+                        forward_params,
+                        postprocess_params,
                     )
                 )
             )
-        else:
-            return self.run_single(inputs, preprocess_params, forward_params, postprocess_params)
+        return self.run_single(
+            inputs, preprocess_params, forward_params, postprocess_params
+        )
 
     def run_multi(self, inputs, preprocess_params, forward_params, postprocess_params):
-        return [self.run_single(item, preprocess_params, forward_params, postprocess_params) for item in inputs]
+        return [
+            self.run_single(item, preprocess_params, forward_params, postprocess_params)
+            for item in inputs
+        ]
 
     def run_single(self, inputs, preprocess_params, forward_params, postprocess_params):
         model_inputs = self.preprocess(inputs, **preprocess_params)
@@ -1443,7 +1592,9 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
         # This function should become `get_iterator` again, this is a temporary
         # easy solution.
         for input_ in inputs:
-            yield self.run_single(input_, preprocess_params, forward_params, postprocess_params)
+            yield self.run_single(
+                input_, preprocess_params, forward_params, postprocess_params
+            )
 
 
 Pipeline.push_to_hub = copy_func(Pipeline.push_to_hub)
@@ -1463,10 +1614,18 @@ class ChunkPipeline(Pipeline):
         return outputs
 
     def get_iterator(
-        self, inputs, num_workers: int, batch_size: int, preprocess_params, forward_params, postprocess_params
+        self,
+        inputs,
+        num_workers: int,
+        batch_size: int,
+        preprocess_params,
+        forward_params,
+        postprocess_params,
     ):
         if "TOKENIZERS_PARALLELISM" not in os.environ:
-            logger.info("Disabling tokenizer parallelism, we're using DataLoader multithreading already")
+            logger.info(
+                "Disabling tokenizer parallelism, we're using DataLoader multithreading already"
+            )
             os.environ["TOKENIZERS_PARALLELISM"] = "false"
         if num_workers > 1:
             logger.warning(
@@ -1477,25 +1636,46 @@ class ChunkPipeline(Pipeline):
         dataset = PipelineChunkIterator(inputs, self.preprocess, preprocess_params)
 
         # TODO hack by collating feature_extractor and image_processor
-        feature_extractor = self.feature_extractor if self.feature_extractor is not None else self.image_processor
-        collate_fn = no_collate_fn if batch_size == 1 else pad_collate_fn(self.tokenizer, feature_extractor)
-        dataloader = DataLoader(dataset, num_workers=num_workers, batch_size=batch_size, collate_fn=collate_fn)
-        model_iterator = PipelinePackIterator(dataloader, self.forward, forward_params, loader_batch_size=batch_size)
-        final_iterator = PipelineIterator(model_iterator, self.postprocess, postprocess_params)
+        feature_extractor = (
+            self.feature_extractor
+            if self.feature_extractor is not None
+            else self.image_processor
+        )
+        collate_fn = (
+            no_collate_fn
+            if batch_size == 1
+            else pad_collate_fn(self.tokenizer, feature_extractor)
+        )
+        dataloader = DataLoader(
+            dataset,
+            num_workers=num_workers,
+            batch_size=batch_size,
+            collate_fn=collate_fn,
+        )
+        model_iterator = PipelinePackIterator(
+            dataloader, self.forward, forward_params, loader_batch_size=batch_size
+        )
+        final_iterator = PipelineIterator(
+            model_iterator, self.postprocess, postprocess_params
+        )
         return final_iterator
 
 
 class PipelineRegistry:
-    def __init__(self, supported_tasks: Dict[str, Any], task_aliases: Dict[str, str]) -> None:
+    def __init__(
+        self, supported_tasks: dict[str, Any], task_aliases: dict[str, str]
+    ) -> None:
         self.supported_tasks = supported_tasks
         self.task_aliases = task_aliases
 
-    def get_supported_tasks(self) -> List[str]:
-        supported_task = list(self.supported_tasks.keys()) + list(self.task_aliases.keys())
+    def get_supported_tasks(self) -> list[str]:
+        supported_task = list(self.supported_tasks.keys()) + list(
+            self.task_aliases.keys()
+        )
         supported_task.sort()
         return supported_task
 
-    def check_task(self, task: str) -> Tuple[str, Dict, Any]:
+    def check_task(self, task: str) -> tuple[str, dict, Any]:
         if task in self.task_aliases:
             task = self.task_aliases[task]
         if task in self.supported_tasks:
@@ -1508,7 +1688,9 @@ class PipelineRegistry:
                 targeted_task = self.supported_tasks["translation"]
                 task = "translation"
                 return task, targeted_task, (tokens[1], tokens[3])
-            raise KeyError(f"Invalid translation task {task}, use 'translation_XX_to_YY' format")
+            raise KeyError(
+                f"Invalid translation task {task}, use 'translation_XX_to_YY' format"
+            )
 
         raise KeyError(
             f"Unknown task {task}, available tasks are {self.get_supported_tasks() + ['translation_XX_to_YY']}"
@@ -1518,13 +1700,15 @@ class PipelineRegistry:
         self,
         task: str,
         pipeline_class: type,
-        pt_model: Optional[Union[type, Tuple[type]]] = None,
-        tf_model: Optional[Union[type, Tuple[type]]] = None,
-        default: Optional[Dict] = None,
-        type: Optional[str] = None,
+        pt_model: type | tuple[type] | None = None,
+        tf_model: type | tuple[type] | None = None,
+        default: dict | None = None,
+        type: str | None = None,
     ) -> None:
         if task in self.supported_tasks:
-            logger.warning(f"{task} is already registered. Overwriting pipeline for task {task}...")
+            logger.warning(
+                f"{task} is already registered. Overwriting pipeline for task {task}..."
+            )
 
         if pt_model is None:
             pt_model = ()

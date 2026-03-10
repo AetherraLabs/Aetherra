@@ -7,8 +7,9 @@
 # LICENSE file in the root directory of this source tree.
 
 import contextlib
+from collections.abc import Callable
 from functools import partial, wraps
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 import torch
 import torch.autograd.forward_ad as fwAD
@@ -130,12 +131,14 @@ def _autograd_grad(
         diff_outputs = tuple(out for out in outputs if out.requires_grad)
     else:
         result = tuple(
-            (out, go) for out, go in zip(outputs, grad_outputs) if out.requires_grad
+            (out, go)
+            for out, go in zip(outputs, grad_outputs, strict=False)
+            if out.requires_grad
         )
         if len(result) == 0:
             diff_outputs, grad_outputs = (), ()
         else:
-            diff_outputs, grad_outputs = zip(*result)
+            diff_outputs, grad_outputs = zip(*result, strict=False)
     if len(diff_outputs) == 0:
         return tuple(torch.zeros_like(inp) for inp in inputs)
     with torch._dynamo.compiled_autograd._disable():
@@ -149,7 +152,7 @@ def _autograd_grad(
         )
     grad_inputs = tuple(
         torch.zeros_like(inp) if gi is None else gi
-        for gi, inp in zip(grad_inputs, inputs)
+        for gi, inp in zip(grad_inputs, inputs, strict=False)
     )
     return grad_inputs
 
@@ -332,7 +335,7 @@ def jvp_increment_nesting():
 
 @doesnt_support_saved_tensors_hooks
 def _vjp_with_argnums(
-    func: Callable, *primals, argnums: Optional[argnums_t] = None, has_aux: bool = False
+    func: Callable, *primals, argnums: argnums_t | None = None, has_aux: bool = False
 ):
     # This is the same function as vjp but also accepts an argnums argument
     # All args are the same as vjp except for the added argument
@@ -403,8 +406,7 @@ def _vjp_with_argnums(
 
     if has_aux:
         return results, wrapper, aux
-    else:
-        return results, wrapper
+    return results, wrapper
 
 
 def _safe_zero_index(x):
@@ -429,10 +431,10 @@ def error_if_complex(func_name, args, is_input):
 @exposed_in("torch.func")
 def jacrev(
     func: Callable,
-    argnums: Union[int, tuple[int]] = 0,
+    argnums: int | tuple[int] = 0,
     *,
     has_aux=False,
-    chunk_size: Optional[int] = None,
+    chunk_size: int | None = None,
     _preallocate_and_copy=False,
 ):
     """
@@ -679,7 +681,7 @@ def jacrev(
                         )
                     return flat_results
 
-                for r, sr in zip(flat_results, stacked_results):
+                for r, sr in zip(flat_results, stacked_results, strict=False):
                     sr[idx * chunk_size : (idx + 1) * chunk_size].copy_(r)
 
             return stacked_results
@@ -698,9 +700,11 @@ def jacrev(
         flat_input_flat_output = [
             tuple(
                 split.view(out.shape + primal.shape)
-                for split, out in zip(splits, flat_output)
+                for split, out in zip(splits, flat_output, strict=False)
             )
-            for splits, primal in zip(flat_jacobians_per_input, flat_primals)
+            for splits, primal in zip(
+                flat_jacobians_per_input, flat_primals, strict=False
+            )
         ]
 
         # Step 3: Right now, `jacobian` is a List[List[Tensor]].
@@ -711,7 +715,7 @@ def jacrev(
         # b. tree_unflatten the inner Lists (which correspond to the primals)
         # c. handle the argnums=int case
         # d. tree_unflatten the outer List (which corresponds to the outputs)
-        flat_output_flat_input = tuple(zip(*flat_input_flat_output))
+        flat_output_flat_input = tuple(zip(*flat_input_flat_output, strict=False))
 
         flat_output_input = tuple(
             tree_unflatten(flat_input, primals_spec)
@@ -810,14 +814,14 @@ def _chunked_standard_basis_for_(tensors, tensor_numels, chunk_size=None):
     for chunk_idx, total_numel in enumerate(chunk_numels):
         chunks = tuple(
             tensor.new_zeros(total_numel, tensor_numel)
-            for tensor, tensor_numel in zip(tensors, tensor_numels)
+            for tensor, tensor_numel in zip(tensors, tensor_numels, strict=False)
         )
 
-        for chunk, diag_start_idx in zip(chunks, diag_start_indices):
+        for chunk, diag_start_idx in zip(chunks, diag_start_indices, strict=False):
             chunk.diagonal(diag_start_idx + chunk_idx * chunk_size).fill_(1)
         chunks = tuple(
             chunk.view(total_numel, *tensor.shape)
-            for chunk, tensor in zip(chunks, tensors)
+            for chunk, tensor in zip(chunks, tensors, strict=False)
         )
         yield chunks
 
@@ -886,8 +890,7 @@ def _slice_argnums(args, argnums, as_tuple=True):
     if isinstance(argnums, int):
         if as_tuple:
             return (args[argnums],)
-        else:
-            return args[argnums]
+        return args[argnums]
     return tuple(args[i] for i in argnums)
 
 
@@ -930,8 +933,7 @@ def assert_output_is_tensor_or_tensors(output: Any, api: str) -> None:
         return
     if not isinstance(output, tuple):
         raise RuntimeError(
-            f"{api}: Expected output of f to be a Tensor or Tensors, got "
-            f"{type(output)}"
+            f"{api}: Expected output of f to be a Tensor or Tensors, got {type(output)}"
         )
     if len(output) == 0:
         raise RuntimeError(
@@ -1049,7 +1051,7 @@ def _jvp_with_argnums(
     func: Callable,
     primals: Any,
     tangents: Any,
-    argnums: Optional[argnums_t],
+    argnums: argnums_t | None,
     *,
     strict: bool = False,
     has_aux: bool,
@@ -1093,7 +1095,8 @@ def _jvp_with_argnums(
             ctx = fwAD.dual_level if JVP_NESTING == 1 else contextlib.nullcontext
             with ctx():
                 flat_duals = tuple(
-                    fwAD.make_dual(p, t) for p, t in zip(flat_primals, flat_tangents)
+                    fwAD.make_dual(p, t)
+                    for p, t in zip(flat_primals, flat_tangents, strict=False)
                 )
                 duals = tree_unflatten(flat_duals, primals_spec)
                 if argnums is not None:
@@ -1113,7 +1116,8 @@ def _jvp_with_argnums(
                 assert_non_empty_tensor_output(result_duals, jvp_str)
 
                 primals_out, tangents_out = zip(
-                    *[safe_unpack_dual(dual, strict) for dual in result_duals]
+                    *[safe_unpack_dual(dual, strict) for dual in result_duals],
+                    strict=False,
                 )
                 primals_out = tree_map(
                     partial(_undo_create_differentiable, level=level), primals_out
@@ -1291,6 +1295,7 @@ def jacfwd(
                 for primal, jac_out_in in zip(
                     flat_primals,
                     jac_out.movedim(0, -1).split(flat_primals_numels, dim=-1),
+                    strict=False,
                 )
             )
             for jac_out in jac_outs
@@ -1655,14 +1660,14 @@ def functionalize(func: Callable, *, remove: str = "mutations") -> Callable:
 
             # And if any mutations were applied to the inputs, we need to propagate them back to the user.
             for unwrapped, wrapped in zip(
-                flattened_unwrapped_args, flattened_wrapped_args
+                flattened_unwrapped_args, flattened_wrapped_args, strict=False
             ):
                 if isinstance(unwrapped, torch.Tensor) and isinstance(
                     wrapped, torch.Tensor
                 ):
                     _propagate_functional_input_mutation(unwrapped, wrapped)
             for unwrapped, wrapped in zip(
-                flattened_unwrapped_kwargs, flattened_wrapped_kwargs
+                flattened_unwrapped_kwargs, flattened_wrapped_kwargs, strict=False
             ):
                 if isinstance(unwrapped, torch.Tensor) and isinstance(
                     wrapped, torch.Tensor
@@ -1734,7 +1739,8 @@ def linearize(func: Callable, *primals) -> tuple[Any, Callable]:
     def trace_fn(flat_tangents):
         with fwAD.dual_level():
             flat_duals = tuple(
-                fwAD.make_dual(p, t) for p, t in zip(flat_primals, flat_tangents)
+                fwAD.make_dual(p, t)
+                for p, t in zip(flat_primals, flat_tangents, strict=False)
             )
             duals = tree_unflatten(flat_duals, primals_argspec)
             output = func(*duals)

@@ -4,7 +4,6 @@ from typing import Any
 from torch._vendor.packaging.version import InvalidVersion, Version
 from torch.version import __version__ as internal_version
 
-
 __all__ = ["TorchVersion"]
 
 
@@ -32,9 +31,9 @@ class TorchVersion(str):
     def _convert_to_version(self, inp: Any) -> Any:
         if isinstance(inp, Version):
             return inp
-        elif isinstance(inp, str):
+        if isinstance(inp, str):
             return Version(inp)
-        elif isinstance(inp, Iterable):
+        if isinstance(inp, Iterable):
             # Ideally this should work for most cases by attempting to group
             # the version tuple, assuming the tuple looks (MAJOR, MINOR, ?PATCH)
             # Examples:
@@ -42,8 +41,7 @@ class TorchVersion(str):
             #   * (1, 20)     -> Version("1.20")
             #   * (1, 20, 1)  -> Version("1.20.1")
             return Version(".".join(str(item) for item in inp))
-        else:
-            raise InvalidVersion(inp)
+        raise InvalidVersion(inp)
 
     def _cmp_wrapper(self, cmp: Any, method: str) -> bool:
         try:

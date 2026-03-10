@@ -12,8 +12,6 @@ import logging
 import sys
 import threading
 import time
-from typing import Optional
-
 
 try:
     import etcd  # type: ignore[import]
@@ -30,9 +28,8 @@ from torch.distributed.elastic.rendezvous import (
     RendezvousTimeoutError,
 )
 
-from .etcd_store import cas_delay, EtcdStore
+from .etcd_store import EtcdStore, cas_delay
 from .utils import parse_rendezvous_endpoint
-
 
 __all__ = [
     "EtcdRendezvousRetryableFailure",
@@ -153,7 +150,7 @@ class EtcdRendezvousHandler(RendezvousHandler):
     +--------------------------------------------+--------------------------+
     """
 
-    def __init__(self, rdzv_impl: "EtcdRendezvous", local_addr: Optional[str]):
+    def __init__(self, rdzv_impl: "EtcdRendezvous", local_addr: str | None):
         """
         Args:
             rdzv_impl: the implementation of the rendezvous
@@ -542,7 +539,7 @@ class EtcdRendezvous:
 
             # When reaching min workers, or changing state to frozen, we'll set
             # the active_version node to be ephemeral.
-            set_ttl: Optional[int] = None
+            set_ttl: int | None = None
             if len(state["participants"]) == self._num_max_workers:
                 state["status"] = "frozen"
                 state["keep_alives"] = []
@@ -572,7 +569,7 @@ class EtcdRendezvous:
                 # Success, all peers arrived.
                 return active_version
 
-            elif state["status"] == "joinable" and state["version"] == expected_version:
+            if state["status"] == "joinable" and state["version"] == expected_version:
                 # Continue waiting for any interesting events.
                 active_version, state = self.try_wait_for_state_change(
                     etcd_index=active_version.etcd_index + 1
@@ -640,7 +637,7 @@ class EtcdRendezvous:
                 # Success. This rendezvous is final, and we accept it.
                 return active_version
 
-            elif state["status"] == "frozen" and state["version"] == expected_version:
+            if state["status"] == "frozen" and state["version"] == expected_version:
                 # Continue waiting for any interesting events.
                 active_version, state = self.try_wait_for_state_change(
                     etcd_index=active_version.etcd_index + 1

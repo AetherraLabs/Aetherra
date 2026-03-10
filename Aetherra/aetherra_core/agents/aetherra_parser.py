@@ -248,26 +248,20 @@ class AetherraLexer:
 
             # Newlines
             if char == "\n":
-                self.tokens.append(
-                    Token(TokenType.NEWLINE, "\n", self.line, self.column)
-                )
+                self.tokens.append(Token(TokenType.NEWLINE, "\n", self.line, self.column))
                 self.advance()
                 continue
 
             # Strings
             if char in "\"'":
                 value = self.read_string()
-                self.tokens.append(
-                    Token(TokenType.STRING, value, self.line, self.column)
-                )
+                self.tokens.append(Token(TokenType.STRING, value, self.line, self.column))
                 continue
 
             # Numbers
             if char.isdigit():
                 value = self.read_number()
-                self.tokens.append(
-                    Token(TokenType.NUMBER, value, self.line, self.column)
-                )
+                self.tokens.append(Token(TokenType.NUMBER, value, self.line, self.column))
                 continue
 
             # Colon
@@ -284,9 +278,7 @@ class AetherraLexer:
                 if next_char is not None and next_char == "=":
                     op += next_char
                     self.advance()
-                self.tokens.append(
-                    Token(TokenType.OPERATOR, op, self.line, self.column)
-                )
+                self.tokens.append(Token(TokenType.OPERATOR, op, self.line, self.column))
                 continue
 
             # Identifiers and keywords
@@ -398,9 +390,7 @@ class AetherraParser:
                 self.advance()  # skip 'as'
                 tag = self.expect(TokenType.STRING).value
 
-            return MemoryNode(
-                type="memory", line=line, operation="remember", data=data, tag=tag
-            )
+            return MemoryNode(type="memory", line=line, operation="remember", data=data, tag=tag)
 
         elif operation == "recall":
             # recall experiences with "tag"
@@ -456,9 +446,7 @@ class AetherraParser:
             self.advance()
 
         target = " ".join(target_tokens)
-        return IntentNode(
-            type="intent", line=line, action=action, target=target, modifier=modifier
-        )
+        return IntentNode(type="intent", line=line, action=action, target=target, modifier=modifier)
 
     def parse_conditional(self) -> ConditionalNode:
         """Parse: when/if condition: body end"""
@@ -493,9 +481,7 @@ class AetherraParser:
         if self.current_token and self.current_token.type == TokenType.END:
             self.advance()
 
-        return ConditionalNode(
-            type=cond_type, line=line, condition=condition, body=body
-        )
+        return ConditionalNode(type=cond_type, line=line, condition=condition, body=body)
 
     def parse_plugin(self) -> PluginNode:
         """Parse: plugin: monitoring ... end"""
@@ -545,9 +531,7 @@ class AetherraParser:
         if self.current_token and self.current_token.type == TokenType.END:
             self.advance()
 
-        return PluginNode(
-            type="plugin", line=line, plugin_name=plugin_name, actions=actions
-        )
+        return PluginNode(type="plugin", line=line, plugin_name=plugin_name, actions=actions)
 
     def parse_statement(self) -> Optional[AetherraNode]:
         """Parse a single AetherraCode statement"""

@@ -2,12 +2,13 @@
 
 import math
 import warnings
-from typing import Callable, Literal, Optional as _Optional, TypeVar, Union
+from collections.abc import Callable
+from typing import Literal, TypeVar
+
 from typing_extensions import ParamSpec
 
 import torch
 from torch import Tensor
-
 
 __all__ = [
     "calculate_gain",
@@ -66,7 +67,7 @@ _FanMode = Literal["fan_in", "fan_out"]
 # managers, so these need to be implemented as builtins. Using these wrappers
 # lets us keep those builtins small and re-usable.
 def _no_grad_uniform_(
-    tensor: Tensor, a: float, b: float, generator: _Optional[torch.Generator] = None
+    tensor: Tensor, a: float, b: float, generator: torch.Generator | None = None
 ) -> Tensor:
     with torch.no_grad():
         return tensor.uniform_(a, b, generator=generator)
@@ -76,7 +77,7 @@ def _no_grad_normal_(
     tensor: Tensor,
     mean: float,
     std: float,
-    generator: _Optional[torch.Generator] = None,
+    generator: torch.Generator | None = None,
 ) -> Tensor:
     with torch.no_grad():
         return tensor.normal_(mean, std, generator=generator)
@@ -88,7 +89,7 @@ def _no_grad_trunc_normal_(
     std: float,
     a: float,
     b: float,
-    generator: _Optional[torch.Generator] = None,
+    generator: torch.Generator | None = None,
 ) -> Tensor:
     # Method based on https://people.sc.fsu.edu/~jburkardt/presentations/truncated_normal.pdf
     def norm_cdf(x: float) -> float:
@@ -137,7 +138,7 @@ def _no_grad_zero_(tensor: Tensor) -> Tensor:
 
 
 def calculate_gain(
-    nonlinearity: _NonlinearityType, param: _Optional[Union[int, float]] = None
+    nonlinearity: _NonlinearityType, param: int | float | None = None
 ) -> float:
     r"""Return the recommended gain value for the given nonlinearity function.
 
@@ -185,11 +186,11 @@ def calculate_gain(
     ]
     if nonlinearity in linear_fns or nonlinearity == "sigmoid":
         return 1
-    elif nonlinearity == "tanh":
+    if nonlinearity == "tanh":
         return 5.0 / 3
-    elif nonlinearity == "relu":
+    if nonlinearity == "relu":
         return math.sqrt(2.0)
-    elif nonlinearity == "leaky_relu":
+    if nonlinearity == "leaky_relu":
         if param is None:
             negative_slope = 0.01
         elif (
@@ -202,19 +203,18 @@ def calculate_gain(
         else:
             raise ValueError(f"negative_slope {param} not a valid number")
         return math.sqrt(2.0 / (1 + negative_slope**2))
-    elif nonlinearity == "selu":
+    if nonlinearity == "selu":
         return (
             3.0 / 4
         )  # Value found empirically (https://github.com/pytorch/pytorch/pull/50664)
-    else:
-        raise ValueError(f"Unsupported nonlinearity {nonlinearity}")
+    raise ValueError(f"Unsupported nonlinearity {nonlinearity}")
 
 
 def uniform_(
     tensor: Tensor,
     a: float = 0.0,
     b: float = 1.0,
-    generator: _Optional[torch.Generator] = None,
+    generator: torch.Generator | None = None,
 ) -> Tensor:
     r"""Fill the input Tensor with values drawn from the uniform distribution.
 
@@ -241,7 +241,7 @@ def normal_(
     tensor: Tensor,
     mean: float = 0.0,
     std: float = 1.0,
-    generator: _Optional[torch.Generator] = None,
+    generator: torch.Generator | None = None,
 ) -> Tensor:
     r"""Fill the input Tensor with values drawn from the normal distribution.
 
@@ -270,7 +270,7 @@ def trunc_normal_(
     std: float = 1.0,
     a: float = -2.0,
     b: float = 2.0,
-    generator: _Optional[torch.Generator] = None,
+    generator: torch.Generator | None = None,
 ) -> Tensor:
     r"""Fill the input Tensor with values drawn from a truncated normal distribution.
 
@@ -437,7 +437,7 @@ def _calculate_fan_in_and_fan_out(tensor: Tensor) -> tuple[int, int]:
 def xavier_uniform_(
     tensor: Tensor,
     gain: float = 1.0,
-    generator: _Optional[torch.Generator] = None,
+    generator: torch.Generator | None = None,
 ) -> Tensor:
     r"""Fill the input `Tensor` with values using a Xavier uniform distribution.
 
@@ -478,7 +478,7 @@ def xavier_uniform_(
 def xavier_normal_(
     tensor: Tensor,
     gain: float = 1.0,
-    generator: _Optional[torch.Generator] = None,
+    generator: torch.Generator | None = None,
 ) -> Tensor:
     r"""Fill the input `Tensor` with values using a Xavier normal distribution.
 
@@ -529,7 +529,7 @@ def kaiming_uniform_(
     a: float = 0,
     mode: _FanMode = "fan_in",
     nonlinearity: _NonlinearityType = "leaky_relu",
-    generator: _Optional[torch.Generator] = None,
+    generator: torch.Generator | None = None,
 ) -> Tensor:
     r"""Fill the input `Tensor` with values using a Kaiming uniform distribution.
 
@@ -594,7 +594,7 @@ def kaiming_normal_(
     a: float = 0,
     mode: _FanMode = "fan_in",
     nonlinearity: _NonlinearityType = "leaky_relu",
-    generator: _Optional[torch.Generator] = None,
+    generator: torch.Generator | None = None,
 ) -> Tensor:
     r"""Fill the input `Tensor` with values using a Kaiming normal distribution.
 
@@ -645,7 +645,7 @@ def kaiming_normal_(
 def orthogonal_(
     tensor: Tensor,
     gain: float = 1,
-    generator: _Optional[torch.Generator] = None,
+    generator: torch.Generator | None = None,
 ) -> Tensor:
     r"""Fill the input `Tensor` with a (semi) orthogonal matrix.
 
@@ -697,7 +697,7 @@ def sparse_(
     tensor: Tensor,
     sparsity: float,
     std: float = 0.01,
-    generator: _Optional[torch.Generator] = None,
+    generator: torch.Generator | None = None,
 ) -> Tensor:
     r"""Fill the 2D input `Tensor` as a sparse matrix.
 

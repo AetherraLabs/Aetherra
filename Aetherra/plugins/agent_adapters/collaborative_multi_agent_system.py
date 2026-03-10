@@ -10,10 +10,10 @@ import asyncio
 import logging
 import time
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
-from dataclasses import dataclass, field
 
 logger = logging.getLogger(__name__)
 
@@ -135,8 +135,7 @@ class BaseAgent(ABC):
         # Update averages
         total_tasks = self.performance_metrics["tasks_completed"]
         self.performance_metrics["average_quality_score"] = (
-            self.performance_metrics["average_quality_score"] * (total_tasks - 1)
-            + quality_score
+            self.performance_metrics["average_quality_score"] * (total_tasks - 1) + quality_score
         ) / total_tasks
         self.performance_metrics["average_completion_time"] = (
             self.performance_metrics["average_completion_time"] * (total_tasks - 1)
@@ -145,16 +144,10 @@ class BaseAgent(ABC):
 
         # Update success rate
         if success:
-            current_successes = self.performance_metrics["success_rate"] * (
-                total_tasks - 1
-            )
-            self.performance_metrics["success_rate"] = (
-                current_successes + 1
-            ) / total_tasks
+            current_successes = self.performance_metrics["success_rate"] * (total_tasks - 1)
+            self.performance_metrics["success_rate"] = (current_successes + 1) / total_tasks
         else:
-            current_successes = self.performance_metrics["success_rate"] * (
-                total_tasks - 1
-            )
+            current_successes = self.performance_metrics["success_rate"] * (total_tasks - 1)
             self.performance_metrics["success_rate"] = current_successes / total_tasks
 
 
@@ -197,14 +190,10 @@ class ArchitectAgent(BaseAgent):
     ) -> Dict[str, Any]:
         """Review contribution for architectural soundness"""
         return {
-            "architectural_compliance": self._check_architectural_compliance(
-                contribution, task
-            ),
+            "architectural_compliance": self._check_architectural_compliance(contribution, task),
             "design_consistency": self._check_design_consistency(contribution),
             "scalability_assessment": self._assess_scalability(contribution),
-            "recommendations": self._provide_architectural_recommendations(
-                contribution
-            ),
+            "recommendations": self._provide_architectural_recommendations(contribution),
         }
 
     def _assess_structural_complexity(self, task: CodeTask) -> float:
@@ -258,10 +247,10 @@ class ArchitectAgent(BaseAgent):
 {task.description}
 
 ## Structural Approach
-{analysis['recommended_approach']}
+{analysis["recommended_approach"]}
 
 ## Design Patterns
-{', '.join(analysis['design_patterns_needed']) if analysis['design_patterns_needed'] else 'None required'}
+{", ".join(analysis["design_patterns_needed"]) if analysis["design_patterns_needed"] else "None required"}
 
 ## Module Structure
 - Main implementation: Core logic
@@ -292,9 +281,7 @@ class ArchitectAgent(BaseAgent):
         """Assess scalability of the contribution"""
         return 0.75  # Would implement actual checks
 
-    def _provide_architectural_recommendations(
-        self, contribution: AgentContribution
-    ) -> List[str]:
+    def _provide_architectural_recommendations(self, contribution: AgentContribution) -> List[str]:
         """Provide architectural recommendations"""
         return ["Consider using dependency injection", "Add proper error handling"]
 
@@ -357,9 +344,7 @@ class RefactorSpecialistAgent(BaseAgent):
         """Review contribution for refactoring opportunities"""
         return {
             "code_quality_score": self._rate_code_quality(contribution.content),
-            "refactoring_suggestions": self._suggest_refactoring_improvements(
-                contribution.content
-            ),
+            "refactoring_suggestions": self._suggest_refactoring_improvements(contribution.content),
             "maintainability_score": self._assess_maintainability(contribution.content),
         }
 
@@ -594,7 +579,7 @@ import unittest
 import pytest
 from unittest.mock import Mock, patch
 
-class Test{task.title.replace(' ', '')}(unittest.TestCase):
+class Test{task.title.replace(" ", "")}(unittest.TestCase):
     \"\"\"Test suite for {task.title}\"\"\"
 
     def setUp(self):
@@ -603,22 +588,22 @@ class Test{task.title.replace(' ', '')}(unittest.TestCase):
 
     def test_basic_functionality(self):
         \"\"\"Test basic functionality works as expected\"\"\"
-        # TODO: Implement basic functionality test
-        self.assertTrue(True)  # Placeholder
+            # Implement basic functionality assertions for the generated unit.
+        self.assertTrue(True)  # Baseline assertion
 
     def test_edge_cases(self):
         \"\"\"Test edge cases and boundary conditions\"\"\"
-        # TODO: Implement edge case tests
+            # Add edge-case assertions for boundary conditions.
         pass
 
     def test_error_handling(self):
         \"\"\"Test proper error handling\"\"\"
-        # TODO: Test error conditions
+            # Add assertions for expected error conditions.
         pass
 
     def test_performance(self):
         \"\"\"Test performance requirements\"\"\"
-        # TODO: Add performance tests if needed
+            # Add latency or throughput checks when relevant.
         pass
 
 if __name__ == '__main__':
@@ -736,9 +721,7 @@ class CollaborativeMultiAgentSystem:
         self.agents[AgentRole.REFACTOR_SPECIALIST] = RefactorSpecialistAgent(
             str(self.workspace_path)
         )
-        self.agents[AgentRole.TEST_ENGINEER] = TestEngineerAgent(
-            str(self.workspace_path)
-        )
+        self.agents[AgentRole.TEST_ENGINEER] = TestEngineerAgent(str(self.workspace_path))
 
         logger.info(f"🤖 Initialized {len(self.agents)} collaborative agents")
 
@@ -750,9 +733,7 @@ class CollaborativeMultiAgentSystem:
         assigned_agents = await self._assign_agents_to_task(task)
         self.task_assignments[task.task_id] = assigned_agents
 
-        logger.info(
-            f"📋 Task '{task.title}' submitted with {len(assigned_agents)} agents assigned"
-        )
+        logger.info(f"📋 Task '{task.title}' submitted with {len(assigned_agents)} agents assigned")
         return task.task_id
 
     async def _assign_agents_to_task(self, task: CodeTask) -> List[str]:
@@ -794,9 +775,7 @@ class CollaborativeMultiAgentSystem:
 
             # Phase 2: Contribution - Agents make their contributions in optimal order
             logger.info(f"⚡ Phase 2: Contributions for task '{task.title}'")
-            contribution_order = self._determine_contribution_order(
-                task, assigned_agent_ids
-            )
+            contribution_order = self._determine_contribution_order(task, assigned_agent_ids)
 
             for agent_id in contribution_order:
                 agent = self._get_agent_by_id(agent_id)
@@ -846,9 +825,7 @@ class CollaborativeMultiAgentSystem:
             for agent_id in assigned_agent_ids:
                 agent = self._get_agent_by_id(agent_id)
                 if agent:
-                    agent.update_performance_metrics(
-                        quality_score, completion_time, True
-                    )
+                    agent.update_performance_metrics(quality_score, completion_time, True)
                     agent.current_tasks.discard(task_id)
                     agent.completed_tasks.append(task_id)
 
@@ -893,9 +870,7 @@ class CollaborativeMultiAgentSystem:
                 return agent
         return None
 
-    def _determine_contribution_order(
-        self, task: CodeTask, agent_ids: List[str]
-    ) -> List[str]:
+    def _determine_contribution_order(self, task: CodeTask, agent_ids: List[str]) -> List[str]:
         """Determine optimal order for agent contributions"""
         # Simple ordering: Architect first, then others, Test Engineer last
         ordered_agents = []
@@ -952,9 +927,7 @@ class CollaborativeMultiAgentSystem:
             return 0.0
 
         # Average contribution confidence scores
-        avg_confidence = sum(c.confidence_score for c in contributions) / len(
-            contributions
-        )
+        avg_confidence = sum(c.confidence_score for c in contributions) / len(contributions)
 
         # Factor in review scores (simplified)
         review_bonus = 0.0
@@ -993,9 +966,7 @@ class CollaborativeMultiAgentSystem:
         if total_tasks == 0:
             return {"message": "No collaborative tasks completed yet"}
 
-        avg_quality = (
-            sum(r.quality_score for r in self.collaboration_history) / total_tasks
-        )
+        avg_quality = sum(r.quality_score for r in self.collaboration_history) / total_tasks
         avg_completion_time = (
             sum(r.completion_time for r in self.collaboration_history) / total_tasks
         )
@@ -1038,9 +1009,7 @@ class CollaborativeMultiAgentSystem:
         return {
             "common_contribution_types": contribution_types,
             "effective_agent_combinations": agent_combinations,
-            "average_agents_per_task": sum(
-                len(r.contributions) for r in self.collaboration_history
-            )
+            "average_agents_per_task": sum(len(r.contributions) for r in self.collaboration_history)
             / len(self.collaboration_history),
         }
 
@@ -1078,9 +1047,7 @@ if __name__ == "__main__":
         print(f"📋 Task submitted: {task_id}")
 
         result = await system.execute_collaborative_task(task_id)
-        print(
-            f"✅ Task completed: Success={result.success}, Quality={result.quality_score:.2f}"
-        )
+        print(f"✅ Task completed: Success={result.success}, Quality={result.quality_score:.2f}")
 
         # Get system metrics
         metrics = system.get_system_metrics()

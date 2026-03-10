@@ -5,11 +5,12 @@ Python polyfills for operator
 from __future__ import annotations
 
 import operator
-from typing import Any, Callable, overload, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar, overload
+
 from typing_extensions import TypeVarTuple, Unpack
 
 from ..decorators import substitute_in_graph
-
 
 # Most unary and binary operators are handled by BuiltinVariable (e.g., `pos`, `add`)
 __all__ = ["attrgetter", "itemgetter", "methodcaller"]

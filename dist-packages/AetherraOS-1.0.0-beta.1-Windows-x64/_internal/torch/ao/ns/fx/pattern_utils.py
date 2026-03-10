@@ -1,4 +1,5 @@
-from typing import Any, Callable, Union
+from collections.abc import Callable
+from typing import Any, Union
 
 import torch
 import torch.nn as nn
@@ -11,7 +12,6 @@ from torch.fx import GraphModule
 from torch.fx.graph import Node
 
 from .ns_types import NSNodeTargetType
-
 
 toq = torch.ops.quantized
 
@@ -190,11 +190,11 @@ def end_node_matches_reversed_fusion(
                         return False
                 else:
                     assert isinstance(cur_fusion_el, tuple)
-                    if cur_node.target != cur_fusion_el[0]:
-                        return False
-                    elif len(cur_node.args) < 2:
-                        return False
-                    elif cur_node.args[1] != cur_fusion_el[1]:
+                    if (
+                        cur_node.target != cur_fusion_el[0]
+                        or len(cur_node.args) < 2
+                        or cur_node.args[1] != cur_fusion_el[1]
+                    ):
                         return False
 
                 if len(cur_node.args) > 0 and isinstance(cur_node.args[0], Node):

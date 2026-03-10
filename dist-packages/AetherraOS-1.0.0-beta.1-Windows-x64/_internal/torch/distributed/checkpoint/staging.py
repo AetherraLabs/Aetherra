@@ -1,9 +1,7 @@
-from typing import Optional
 from typing_extensions import Protocol, runtime_checkable
 
 from torch.distributed._state_dict_utils import _copy_state_dict, _create_cpu_state_dict
 from torch.distributed.checkpoint.metadata import STATE_DICT_TYPE
-
 
 __all__ = ["AsyncStager", "BlockingAsyncStager"]
 
@@ -93,7 +91,7 @@ class BlockingAsyncStager(AsyncStager):
         """
         self.cache_staged_state_dict = cache_staged_state_dict
         self.type_check = type_check
-        self.state_dict_cache: Optional[STATE_DICT_TYPE] = None
+        self.state_dict_cache: STATE_DICT_TYPE | None = None
 
     def stage(self, state_dict: STATE_DICT_TYPE) -> STATE_DICT_TYPE:
         """

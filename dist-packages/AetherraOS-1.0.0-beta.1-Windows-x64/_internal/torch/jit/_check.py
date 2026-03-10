@@ -201,9 +201,7 @@ class AttributeTypeIsSupportedChecker(ast.NodeVisitor):
                 node.func.value.value.id != "torch"
                 or node.func.value.attr != "jit"
                 or node.func.attr != "annotate"
-            ):
-                self.generic_visit(node)
-            elif (
+            ) or (
                 node.func.value.value.id != "jit" or node.func.value.attr != "annotate"
             ):
                 self.generic_visit(node)

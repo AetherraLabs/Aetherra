@@ -9,7 +9,6 @@ Aetherra API Server Launcher
 Startup script for the Aetherra .aether Script Execution API.
 """
 
-
 # Standard library imports
 import sys
 from pathlib import Path
@@ -46,9 +45,7 @@ def main():
 
     except ImportError as e:
         print(f"❌ Missing dependencies: {e}")
-        print(
-            "[DISC] Install dependencies with: pip install -r Aetherra/api/requirements.txt"
-        )
+        print("[DISC] Install dependencies with: pip install -r Aetherra/api/requirements.txt")
         sys.exit(1)
     except KeyboardInterrupt:
         print("\n🛑 Server stopped by user")

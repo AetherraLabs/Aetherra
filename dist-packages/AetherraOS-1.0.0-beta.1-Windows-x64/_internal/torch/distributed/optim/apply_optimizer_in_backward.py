@@ -3,7 +3,6 @@ from typing import Any, no_type_check
 
 import torch
 
-
 __all__: list[str] = []
 
 # WeakTensorKeyDictionary to store relevant meta-data for the Tensor/Parameter

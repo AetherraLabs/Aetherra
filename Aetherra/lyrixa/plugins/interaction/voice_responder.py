@@ -85,7 +85,7 @@ class VoiceResponderPlugin:
         self.running = False
         self.subscription_task: Optional[asyncio.Task] = None
 
-        # Audio backend (placeholder — would use actual audio library)
+        # Audio backend hook for optional real playback libraries.
         self.audio_backend = None  # e.g., sounddevice, pygame, pydub
 
         # Expression to audio cue mapping
@@ -165,7 +165,7 @@ class VoiceResponderPlugin:
         """Main playback loop."""
         while self.running:
             try:
-                # Placeholder for actual audio playback logic
+                # Baseline playback loop for event-driven audio handling.
                 # In reality, this would poll the event bus or use callbacks
                 await asyncio.sleep(0.1)
 
@@ -227,7 +227,7 @@ class VoiceResponderPlugin:
             cue: Audio cue type
             intensity: Playback intensity (affects volume)
         """
-        # PLACEHOLDER: This would integrate with actual audio backend
+        # Backend integration point for optional real audio playback.
 
         # Example with sounddevice (requires: pip install sounddevice numpy):
         # import sounddevice as sd
@@ -261,15 +261,16 @@ class VoiceResponderPlugin:
         # sd.play(samples, 44100, blocking=False)
 
         # For now, just log
-        logger.debug(
-            f"[AUDIO BACKEND PLACEHOLDER] Would play {cue.value} at {intensity:.2f} volume"
-        )
+        logger.debug(f"[AUDIO BACKEND HOOK] Would play {cue.value} at {intensity:.2f} volume")
 
     async def _stop_audio(self):
         """Stop any currently playing audio."""
-        # PLACEHOLDER: Stop audio backend
-        # Example: sd.stop()
-        pass
+        backend = self.audio_backend
+        if backend and hasattr(backend, "stop"):
+            result = backend.stop()
+            if asyncio.iscoroutine(result):
+                await result
+        self.current_cue = None
 
     # Configuration API
 

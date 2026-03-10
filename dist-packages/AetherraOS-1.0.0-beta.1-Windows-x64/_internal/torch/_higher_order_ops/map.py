@@ -1,6 +1,7 @@
 # mypy: allow-untyped-defs
 import functools
-from typing import Callable, Union
+from collections.abc import Callable
+
 from typing_extensions import TypeVarTuple
 
 import torch
@@ -12,9 +13,9 @@ from torch._ops import HigherOrderOperator
 from torch._subclasses.fake_tensor import FakeTensorMode
 from torch._subclasses.functional_tensor import disable_functional_mode
 from torch.fx.experimental.proxy_tensor import (
+    ProxyTorchDispatchMode,
     disable_proxy_modes_tracing,
     make_fx,
-    ProxyTorchDispatchMode,
     track_tensor_tree,
 )
 
@@ -113,7 +114,7 @@ def create_fw_bw_graph(f, num_mapped_args, *args):
 
 def map(
     f: Callable[[pytree.PyTree, tuple[pytree.PyTree, ...]], pytree.PyTree],
-    xs: Union[pytree.PyTree, torch.Tensor],
+    xs: pytree.PyTree | torch.Tensor,
     *args: TypeVarTuple,
 ):
     r"""

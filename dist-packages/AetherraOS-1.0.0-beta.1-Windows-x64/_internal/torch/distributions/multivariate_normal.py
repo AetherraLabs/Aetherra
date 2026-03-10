@@ -1,6 +1,5 @@
 # mypy: allow-untyped-defs
 import math
-from typing import Optional
 
 import torch
 from torch import Tensor
@@ -8,7 +7,6 @@ from torch.distributions import constraints
 from torch.distributions.distribution import Distribution
 from torch.distributions.utils import _standard_normal, lazy_property
 from torch.types import _size
-
 
 __all__ = ["MultivariateNormal"]
 
@@ -47,7 +45,7 @@ def _batch_mahalanobis(bL, bx):
     new_batch_dims = outer_batch_dims + 2 * bL_batch_dims
     # Reshape bx with the shape (..., 1, i, j, 1, n)
     bx_new_shape = bx.shape[:outer_batch_dims]
-    for sL, sx in zip(bL.shape[:-2], bx.shape[outer_batch_dims:-1]):
+    for sL, sx in zip(bL.shape[:-2], bx.shape[outer_batch_dims:-1], strict=False):
         bx_new_shape += (sx // sL, sL)
     bx_new_shape += (n,)
     bx = bx.reshape(bx_new_shape)
@@ -135,10 +133,10 @@ class MultivariateNormal(Distribution):
     def __init__(
         self,
         loc: Tensor,
-        covariance_matrix: Optional[Tensor] = None,
-        precision_matrix: Optional[Tensor] = None,
-        scale_tril: Optional[Tensor] = None,
-        validate_args: Optional[bool] = None,
+        covariance_matrix: Tensor | None = None,
+        precision_matrix: Tensor | None = None,
+        scale_tril: Tensor | None = None,
+        validate_args: bool | None = None,
     ) -> None:
         if loc.dim() < 1:
             raise ValueError("loc must be at least one-dimensional.")
@@ -265,5 +263,4 @@ class MultivariateNormal(Distribution):
         H = 0.5 * self._event_shape[0] * (1.0 + math.log(2 * math.pi)) + half_log_det
         if len(self._batch_shape) == 0:
             return H
-        else:
-            return H.expand(self._batch_shape)
+        return H.expand(self._batch_shape)

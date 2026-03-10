@@ -7,7 +7,6 @@ import dataclasses
 import itertools
 from typing import TYPE_CHECKING, TypeVar
 
-
 if TYPE_CHECKING:
     from collections.abc import Generator
 
@@ -98,7 +97,7 @@ def dataclass_slots(cls: type[_T]) -> type[DataclassInstance]:
 
         def _dataclass_setstate(self: _T, state: list[object]) -> None:
             fields = dataclasses.fields(self)
-            for field, value in zip(fields, state):
+            for field, value in zip(fields, state, strict=False):
                 # use setattr because dataclass may be frozen
                 object.__setattr__(self, field.name, value)
 

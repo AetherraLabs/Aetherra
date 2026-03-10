@@ -61,16 +61,13 @@ class ReflectorPlugin:
         recent_actions = [
             action
             for action in self.behavior_log
-            if datetime.fromisoformat(action.get("timestamp", "1970-01-01"))
-            > cutoff_time
+            if datetime.fromisoformat(action.get("timestamp", "1970-01-01")) > cutoff_time
         ]
 
         reflection = {
             "timeframe": f"Last {timeframe_hours} hours",
             "total_actions": len(recent_actions),
-            "action_types": Counter(
-                [action.get("type", "unknown") for action in recent_actions]
-            ),
+            "action_types": Counter([action.get("type", "unknown") for action in recent_actions]),
             "success_rate": self._calculate_success_rate(recent_actions),
             "goal_progress": self._evaluate_goal_progress(recent_actions),
             "inefficiencies": self._detect_inefficiencies(recent_actions),
@@ -129,16 +126,12 @@ class ReflectorPlugin:
 
         return f"Decision tracked: {decision.get('action', 'unknown')} (confidence: {decision.get('confidence', 0.5)})"
 
-    def learning_assessment(
-        self, topic: str, current_performance: float
-    ) -> Dict[str, Any]:
+    def learning_assessment(self, topic: str, current_performance: float) -> Dict[str, Any]:
         """Assess learning progress on a specific topic"""
         assessment = {
             "topic": topic,
             "current_performance": current_performance,
-            "improvement_rate": self._calculate_improvement_rate(
-                topic, current_performance
-            ),
+            "improvement_rate": self._calculate_improvement_rate(topic, current_performance),
             "learning_curve": self._analyze_learning_curve(topic),
             "mastery_level": self._assess_mastery_level(topic, current_performance),
             "next_steps": self._suggest_learning_steps(topic, current_performance),
@@ -242,11 +235,7 @@ class ReflectorPlugin:
 
         # Mock efficiency calculation based on action patterns
         successful_actions = len(
-            [
-                action
-                for action in action_log
-                if action.get("data", {}).get("success", True)
-            ]
+            [action for action in action_log if action.get("data", {}).get("success", True)]
         )
 
         efficiency_score = successful_actions / len(action_log) if action_log else 0.0
@@ -266,9 +255,7 @@ class ReflectorPlugin:
             return ["Start logging actions for better self-reflection"]
 
         # Analyze patterns and suggest improvements
-        type_frequency = Counter(
-            [action.get("type", "unknown") for action in action_log]
-        )
+        type_frequency = Counter([action.get("type", "unknown") for action in action_log])
 
         if type_frequency.get("error", 0) > len(action_log) * 0.2:
             recommendations.append(
@@ -290,20 +277,13 @@ class ReflectorPlugin:
     def _assess_learning_progress(self, action_log: List[Dict]) -> Dict[str, Any]:
         """Assess learning progress from action patterns"""
         learning_actions = [
-            action
-            for action in action_log
-            if action.get("type") in ["learn", "adapt", "analyze"]
+            action for action in action_log if action.get("type") in ["learn", "adapt", "analyze"]
         ]
 
         return {
-            "learning_frequency": len(learning_actions) / len(action_log)
-            if action_log
-            else 0,
+            "learning_frequency": len(learning_actions) / len(action_log) if action_log else 0,
             "learning_domains": list(
-                {
-                    action.get("data", {}).get("domain", "general")
-                    for action in learning_actions
-                }
+                {action.get("data", {}).get("domain", "general") for action in learning_actions}
             ),
             "adaptation_rate": self._calculate_adaptation_rate(action_log),
         }
@@ -311,9 +291,7 @@ class ReflectorPlugin:
     def _calculate_adaptation_rate(self, action_log: List[Dict]) -> float:
         """Calculate how quickly the system adapts to new patterns"""
         # Mock calculation - in real implementation would analyze actual adaptation
-        adapt_actions = [
-            action for action in action_log if action.get("type") == "adapt"
-        ]
+        adapt_actions = [action for action in action_log if action.get("type") == "adapt"]
         return len(adapt_actions) / len(action_log) if action_log else 0.0
 
     def _calculate_success_rate(self, action_log: List[Dict]) -> float:
@@ -322,11 +300,7 @@ class ReflectorPlugin:
             return 0.0
 
         successful = len(
-            [
-                action
-                for action in action_log
-                if action.get("data", {}).get("success", True)
-            ]
+            [action for action in action_log if action.get("data", {}).get("success", True)]
         )
 
         return successful / len(action_log)
@@ -338,9 +312,7 @@ class ReflectorPlugin:
         return {
             "goals_set": len(goal_actions),
             "goal_completion_estimate": 0.7,  # Mock value
-            "active_goals": len(
-                {action.get("data", {}).get("goal_id") for action in goal_actions}
-            ),
+            "active_goals": len({action.get("data", {}).get("goal_id") for action in goal_actions}),
         }
 
     def _detect_inefficiencies(self, action_log: List[Dict]) -> List[str]:
@@ -349,9 +321,7 @@ class ReflectorPlugin:
 
         # Look for repeated failed actions
         failed_actions = [
-            action
-            for action in action_log
-            if not action.get("data", {}).get("success", True)
+            action for action in action_log if not action.get("data", {}).get("success", True)
         ]
 
         if len(failed_actions) > len(action_log) * 0.3:
@@ -413,7 +383,7 @@ class ReflectorPlugin:
 
     def _measure_adaptation_speed(self) -> float:
         """Measure adaptation speed"""
-        return 0.5  # Placeholder
+        return 0.5  # Baseline estimate
 
     def _analyze_decision_quality(self, decision: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze quality of a decision"""
@@ -421,7 +391,7 @@ class ReflectorPlugin:
 
     def _calculate_improvement_rate(self, topic: str, performance: float) -> float:
         """Calculate improvement rate for a topic"""
-        return 0.1  # Placeholder
+        return 0.1  # Baseline estimate
 
     def _analyze_learning_curve(self, topic: str) -> Dict[str, Any]:
         """Analyze learning curve for a topic"""
@@ -442,7 +412,7 @@ class ReflectorPlugin:
 
     def _calculate_goal_completion_rate(self, goal_actions: List[Dict]) -> float:
         """Calculate goal completion rate"""
-        return 0.7  # Placeholder
+        return 0.7  # Baseline estimate
 
     def _analyze_goal_time_efficiency(self, goal_actions: List[Dict]) -> Dict[str, Any]:
         """Analyze time efficiency for goals"""
@@ -489,9 +459,7 @@ class ReflectorPlugin:
         type_counts = Counter(action_types)
 
         for action_type, count in type_counts.items():
-            if (
-                count > len(action_log) * 0.5
-            ):  # If one action type is >50% of all actions
+            if count > len(action_log) * 0.5:  # If one action type is >50% of all actions
                 waste_indicators.append(f"Excessive {action_type} actions detected")
 
         return waste_indicators

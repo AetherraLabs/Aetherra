@@ -2,8 +2,9 @@
 import contextlib
 import logging
 import math
+from collections.abc import Callable
 from functools import lru_cache
-from typing import Any, Callable, cast, Optional, TypeVar, Union
+from typing import Any, TypeVar, cast
 from unittest.mock import patch
 
 import torch
@@ -11,7 +12,8 @@ import torch.utils
 from torch.utils._ordered_set import OrderedSet
 
 from ..._dynamo.utils import counters
-from .. import config, ir, lowering as L
+from .. import config, ir
+from .. import lowering as L
 from ..kernel.mm_common import mm_args
 from ..select_algorithm import DataProcessorTemplateWrapper
 from ..utils import (
@@ -20,26 +22,25 @@ from ..utils import (
     is_same_tensor,
     parallel_num_threads,
 )
-from ..virtualized import ops, V
+from ..virtualized import V, ops
 from .cpp import get_export_declaration
 from .cpp_micro_gemm import (
     CppMicroBrgemm,
     CppMicroGemm,
     CppMicroGemmAMX,
     CppMicroGemmFP32Vec,
+    LayoutType,
     create_micro_gemm,
     is_int8_woq_gemm_small_m_dim_corner_case,
-    LayoutType,
 )
 from .cpp_template import CppTemplate
 from .cpp_template_kernel import CppTemplateKernel
 from .cpp_utils import (
-    create_epilogue_with_attr,
     DTYPE_TO_CPP,
     GemmBlocking,
+    create_epilogue_with_attr,
     get_gemm_template_output_and_compute_dtype,
 )
-
 
 log = logging.getLogger(__name__)
 
@@ -405,7 +406,7 @@ def transpose_w(W: _T, trans_w: bool) -> _T:
     return W
 
 
-def expand_bias(B: Optional[_T], X: _T) -> Optional[_T]:
+def expand_bias(B: _T | None, X: _T) -> _T | None:
     """
     Expand Bias to the same size of X.
     """
@@ -497,11 +498,11 @@ def gen_2d_view_of_epilogue_buf(
     Y: ir.Buffer,
     template_buffer: ir.Buffer,
     epilogue_nodes: list[ir.IRNode],
-    reindexers: list[Optional[Callable[[list[Any]], list[Any]]]],
-    default_reindexers: list[Optional[Callable[[list[Any]], list[Any]]]],
+    reindexers: list[Callable[[list[Any]], list[Any]] | None],
+    default_reindexers: list[Callable[[list[Any]], list[Any]] | None],
 ) -> tuple[
-    Union[ir.Buffer, ir.ReinterpretView],
-    list[Optional[Callable[[list[Any]], list[Any]]]],
+    ir.Buffer | ir.ReinterpretView,
+    list[Callable[[list[Any]], list[Any]] | None],
 ]:
     """
     The dimension and the indexing could be different between the GEMM output, i.e. `template_buffer`, which is
@@ -511,7 +512,7 @@ def gen_2d_view_of_epilogue_buf(
     In this function, we return a 2D buffer (`Y_2d`) according to GEMM output (reinterpreted from `Y` if needed) and
     build a reindexer that converts the indexing of `Y` into `Y_2d`.
     """
-    Y_2d: Union[ir.Buffer, ir.ReinterpretView] = Y
+    Y_2d: ir.Buffer | ir.ReinterpretView = Y
     if (
         Y.get_size() == template_buffer.get_size()
         and Y.get_stride() == template_buffer.get_stride()
@@ -564,7 +565,7 @@ def gen_2d_view_of_epilogue_buf(
         new_reindexers = [
             get_reindexer(epilogue_node, default_reindexer)
             for epilogue_node, default_reindexer in zip(
-                epilogue_nodes, default_reindexers
+                epilogue_nodes, default_reindexers, strict=False
             )
         ]
         reindexers.extend(new_reindexers)
@@ -591,7 +592,7 @@ class CppGemmTemplate(CppTemplate):
         beta=1,
         alpha=1,
         has_bias=False,
-        epilogue_creator: Optional[Callable[[ir.Buffer], ir.Pointwise]] = None,
+        epilogue_creator: Callable[[ir.Buffer], ir.Pointwise] | None = None,
         should_block_weights: bool = True,
         name="packed_gemm",
     ) -> None:
@@ -675,9 +676,7 @@ class CppGemmTemplate(CppTemplate):
                 block_n_size = blocking.block_n * register_blocking.block_n
                 best_block_m_size = best_blocking.block_m * register_blocking.block_m
                 best_block_n_size = best_blocking.block_n * register_blocking.block_n
-                if blocking.block_k > best_blocking.block_k:
-                    best_blocking = blocking
-                elif (
+                if blocking.block_k > best_blocking.block_k or (
                     blocking.block_k == best_blocking.block_k
                     and block_m_size + block_n_size
                     < best_block_m_size + best_block_n_size
@@ -900,8 +899,8 @@ class CppGemmTemplate(CppTemplate):
         has_bias=False,
         trans_w=False,
         input_indices=None,
-        epilogue_creator: Optional[Callable[[ir.Buffer], ir.Pointwise]] = None,
-        act_mapping: Optional[dict[int, ir.IRNode]] = None,
+        epilogue_creator: Callable[[ir.Buffer], ir.Pointwise] | None = None,
+        act_mapping: dict[int, ir.IRNode] | None = None,
     ):
         """
         Add choices for the GEMM template.
@@ -934,14 +933,13 @@ class CppGemmTemplate(CppTemplate):
                     inputs[inp_idx],
                     *[inputs[idx] for idx in input_indices[3:]],
                 ], layout_or_out
-            elif len(inputs) >= len(input_indices):
+            if len(inputs) >= len(input_indices):
                 assert len(input_indices) >= 2
                 return [inputs[idx] for idx in input_indices], layout_or_out
-            else:
-                # For when input is used for x and w, i.e. X@X.T or similar
-                # Assumes the first input is the only input
-                assert len(inputs) == 1
-                return [inputs[0]] * len(input_indices), layout_or_out
+            # For when input is used for x and w, i.e. X@X.T or similar
+            # Assumes the first input is the only input
+            assert len(inputs) == 1
+            return [inputs[0]] * len(input_indices), layout_or_out
 
         new_inputs, new_layout = reorder_and_filter(input_nodes, layout)
         is_mkldnn_wgt = (
@@ -1272,36 +1270,33 @@ class CppGemmTemplate(CppTemplate):
             W = ir.ExternKernel.realize_input(W)
             W = ir.ExternKernel.require_contiguous(W)
             return W
-        else:
-            k = new_size[-2]
-            # Apply VNNI packing to the weight tensor
-            if should_pack:
-                # TODO: Move VNNI weight packing for non-constant tensors into the template,
-                # to improve cache locality and avoid full-tensor copy.
-                layout_str = (
-                    "VNNI4"
-                    if micro_gemm.get_b_layout() == LayoutType.VNNI4
-                    else "VNNI2"
-                )
-                assert micro_gemm.get_b_layout() in [
-                    LayoutType.VNNI2,
-                    LayoutType.VNNI4,
-                ], f"We only support {layout_str} for now"
-                vnni_size = 4 if micro_gemm.get_b_layout() == LayoutType.VNNI4 else 2
-                assert k % vnni_size == 0, (
-                    f"k should be divisible by vnni_size for {layout_str} layout"
-                )
-                vnni_view_size = list(new_size)
-                vnni_view_size[-2] = k // vnni_size
-                vnni_view_size.insert(-1, vnni_size)
-                W = W.view(vnni_view_size).transpose(-1, -2).contiguous().view(new_size)
-            # normalize stride to be "contiguous_strides" per size
-            # this avoids the problems in L.view during template codegen
-            new_stride = [1]
-            for sz in reversed(W.shape[1:]):
-                new_stride.insert(0, new_stride[0] * sz)
-            W = W.as_strided(W.shape, new_stride)
-            return W
+        k = new_size[-2]
+        # Apply VNNI packing to the weight tensor
+        if should_pack:
+            # TODO: Move VNNI weight packing for non-constant tensors into the template,
+            # to improve cache locality and avoid full-tensor copy.
+            layout_str = (
+                "VNNI4" if micro_gemm.get_b_layout() == LayoutType.VNNI4 else "VNNI2"
+            )
+            assert micro_gemm.get_b_layout() in [
+                LayoutType.VNNI2,
+                LayoutType.VNNI4,
+            ], f"We only support {layout_str} for now"
+            vnni_size = 4 if micro_gemm.get_b_layout() == LayoutType.VNNI4 else 2
+            assert k % vnni_size == 0, (
+                f"k should be divisible by vnni_size for {layout_str} layout"
+            )
+            vnni_view_size = list(new_size)
+            vnni_view_size[-2] = k // vnni_size
+            vnni_view_size.insert(-1, vnni_size)
+            W = W.view(vnni_view_size).transpose(-1, -2).contiguous().view(new_size)
+        # normalize stride to be "contiguous_strides" per size
+        # this avoids the problems in L.view during template codegen
+        new_stride = [1]
+        for sz in reversed(W.shape[1:]):
+            new_stride.insert(0, new_stride[0] * sz)
+        W = W.as_strided(W.shape, new_stride)
+        return W
 
     def get_default_reindexers(self, epilogue_nodes):
         return [None] * len(epilogue_nodes)
@@ -1309,9 +1304,9 @@ class CppGemmTemplate(CppTemplate):
     def get_options(
         self,
         kernel: CppTemplateKernel,
-        template_buffer_node: Optional[ir.CppTemplateBuffer] = None,
-        flag_template_buffer_has_other_users: Optional[bool] = None,
-        epilogue_nodes: Optional[list[ir.IRNode]] = None,
+        template_buffer_node: ir.CppTemplateBuffer | None = None,
+        flag_template_buffer_has_other_users: bool | None = None,
+        epilogue_nodes: list[ir.IRNode] | None = None,
     ) -> dict[str, Any]:
         assert len(self.input_nodes) >= 2
 
@@ -1356,7 +1351,7 @@ class CppGemmTemplate(CppTemplate):
         gemm_output_buffer = template_buffer
 
         epilogues: list[ir.IRNode] = []
-        reindexers: list[Optional[Callable[[list[Any]], list[Any]]]] = []
+        reindexers: list[Callable[[list[Any]], list[Any]] | None] = []
         epilogue_creators: list[Callable[[ir.Buffer], ir.Pointwise]] = []
         fake_buffers: list[ir.Buffer] = []
         Y_aliases: OrderedSet[str] = OrderedSet()
@@ -1467,7 +1462,7 @@ class CppGemmTemplate(CppTemplate):
                     )
 
         assert isinstance(Y, (ir.Buffer, ir.ReinterpretView))
-        Y_2d: Union[ir.Buffer, ir.ReinterpretView] = Y
+        Y_2d: ir.Buffer | ir.ReinterpretView = Y
 
         if epilogue_nodes:
             if not template_buffer_has_other_users:
@@ -1577,9 +1572,9 @@ class CppGemmTemplate(CppTemplate):
     def render(  # type: ignore[override, return]
         self,
         kernel: CppTemplateKernel,
-        template_buffer_node: Optional[ir.CppTemplateBuffer] = None,
-        flag_template_buffer_has_other_users: Optional[bool] = None,
-        epilogue_nodes: Optional[list[ir.IRNode]] = None,
+        template_buffer_node: ir.CppTemplateBuffer | None = None,
+        flag_template_buffer_has_other_users: bool | None = None,
+        epilogue_nodes: list[ir.IRNode] | None = None,
         **kwargs,
     ) -> str:
         options = self.get_options(

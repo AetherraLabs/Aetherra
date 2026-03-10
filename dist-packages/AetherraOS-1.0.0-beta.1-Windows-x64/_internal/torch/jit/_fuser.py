@@ -111,7 +111,7 @@ def _script_method_graph_for(self, parent, *args, **kwargs):
 
         assert len(fw_states) == len(diff_nodes)
         # swap each differentiable graph with optimized graph in their execution plan
-        for n, state in zip(diff_nodes, fw_states):
+        for n, state in zip(diff_nodes, fw_states, strict=False):
             fw_execution_plans = list(state.execution_plans.values())
             # we can only update the subgraph when there's a unique execution
             # plan. Avoid assert here so we would skip the ones that can't be

@@ -3,7 +3,7 @@
 import hashlib
 from itertools import chain
 from types import ModuleType
-from typing import Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 import torch.fx
@@ -13,13 +13,12 @@ from torch.fx.node import _format_arg, _get_qualified_name
 from torch.fx.operator_schemas import normalize_function
 from torch.fx.passes.shape_prop import TensorMetadata
 
-
 if TYPE_CHECKING:
     import pydot
 
     HAS_PYDOT = True
 else:
-    pydot: Optional[ModuleType]
+    pydot: ModuleType | None
     try:
         import pydot
 
@@ -83,7 +82,7 @@ if HAS_PYDOT:
             ignore_parameters_and_buffers: bool = False,
             skip_node_names_in_args: bool = True,
             parse_stack_trace: bool = False,
-            dot_graph_shape: Optional[str] = None,
+            dot_graph_shape: str | None = None,
             normalize_args: bool = False,
         ):
             self._name = name
@@ -148,8 +147,7 @@ if HAS_PYDOT:
             """
             if submod_name is None:
                 return self.get_main_dot_graph()
-            else:
-                return self.get_submod_dot_graph(submod_name)
+            return self.get_submod_dot_graph(submod_name)
 
         def get_main_dot_graph(self) -> pydot.Dot:
             return self._dot_graphs[self._name]
@@ -313,25 +311,24 @@ if HAS_PYDOT:
         def _tensor_meta_to_label(self, tm) -> str:
             if tm is None:
                 return ""
-            elif isinstance(tm, TensorMetadata):
+            if isinstance(tm, TensorMetadata):
                 return self._stringify_tensor_meta(tm)
-            elif isinstance(tm, list):
+            if isinstance(tm, list):
                 result = ""
                 for item in tm:
                     result += self._tensor_meta_to_label(item)
                 return result
-            elif isinstance(tm, dict):
+            if isinstance(tm, dict):
                 result = ""
                 for v in tm.values():
                     result += self._tensor_meta_to_label(v)
                 return result
-            elif isinstance(tm, tuple):
+            if isinstance(tm, tuple):
                 result = ""
                 for item in tm:
                     result += self._tensor_meta_to_label(item)
                 return result
-            else:
-                raise RuntimeError(f"Unsupported tensor meta type {type(tm)}")
+            raise RuntimeError(f"Unsupported tensor meta type {type(tm)}")
 
         def _stringify_tensor_meta(self, tm: TensorMetadata) -> str:
             result = ""
@@ -492,7 +489,7 @@ else:
                 ignore_parameters_and_buffers: bool = False,
                 skip_node_names_in_args: bool = True,
                 parse_stack_trace: bool = False,
-                dot_graph_shape: Optional[str] = None,
+                dot_graph_shape: str | None = None,
                 normalize_args: bool = False,
             ):
                 raise RuntimeError(

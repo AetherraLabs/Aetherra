@@ -19,7 +19,6 @@ import os
 import re
 import time
 from pathlib import Path
-from typing import List, Set
 
 ROOT = Path(__file__).resolve().parents[1]
 DOC_OVERVIEW = ROOT / "docs" / "PROJECT_OVERVIEW.md"
@@ -40,8 +39,8 @@ ROUTE_PATTERN = re.compile(r"@app\.route\((?P<q>['\"])\s*([^'\"]+)\1.*?\)")
 BLUEPRINT_ROUTE_PATTERN = re.compile(r"@\w+\.route\((?P<q>['\"])\s*([^'\"]+)\1.*?\)")
 
 
-def find_env_vars_in_code() -> Set[str]:
-    found: Set[str] = set()
+def find_env_vars_in_code() -> set[str]:
+    found: set[str] = set()
     for path in ROOT.rglob("*.py"):
         if any(
             part in {".venv", "__pycache__", "node_modules", ".git"}
@@ -73,8 +72,8 @@ def _normalize_route(route: str) -> str:
     return route
 
 
-def find_routes_in_code() -> Set[str]:
-    found: Set[str] = set()
+def find_routes_in_code() -> set[str]:
+    found: set[str] = set()
     for path in ROOT.rglob("*.py"):
         if any(
             part in {".venv", "__pycache__", "node_modules", ".git"}
@@ -111,7 +110,7 @@ def _extract_section(text: str, heading: str) -> str:
     return text[start:end]
 
 
-def read_doc_section_envs(doc: Path) -> Set[str]:
+def read_doc_section_envs(doc: Path) -> set[str]:
     """Extract documented environment variable names from the overview doc.
 
     Enhancements (Sept 2025):
@@ -127,7 +126,7 @@ def read_doc_section_envs(doc: Path) -> Set[str]:
     envs_all = set(ENV_PATTERN.findall(text))
 
     # Additional: parse table cells explicitly to ensure no inline formatting breaks detection
-    table_envs: Set[str] = set()
+    table_envs: set[str] = set()
     for line in text.splitlines():
         if "|" in line:
             # Split columns, scan each token
@@ -140,12 +139,12 @@ def read_doc_section_envs(doc: Path) -> Set[str]:
     return set(sorted(envs_all))
 
 
-def read_doc_endpoints(doc: Path) -> Set[str]:
+def read_doc_endpoints(doc: Path) -> set[str]:
     if not doc.exists():
         return set()
     text = doc.read_text(encoding="utf-8", errors="ignore")
 
-    def _extract_paths(src: str) -> Set[str]:
+    def _extract_paths(src: str) -> set[str]:
         # Extract inline/code paths that may include angle-bracket segments
         paths = set(re.findall(r"(/[-a-zA-Z0-9_./<>]+)", src))
         normed = {_normalize_route(p) for p in paths if p.startswith("/")}
@@ -188,7 +187,7 @@ def read_doc_endpoints(doc: Path) -> Set[str]:
         "Endpoints",
         "API Endpoints",
     ]
-    collected: Set[str] = set()
+    collected: set[str] = set()
     for h in sections_to_try:
         sec = _extract_section(text, h)
         if sec:
@@ -253,7 +252,7 @@ def main() -> int:
         }
 
     # Optional config to fine-tune reporting, without changing pass/fail semantics
-    cfg_ignore_extra_envs: Set[str] = set()
+    cfg_ignore_extra_envs: set[str] = set()
     if DOCS_CFG.exists():
         try:
             cfg = json.loads(DOCS_CFG.read_text(encoding="utf-8"))
@@ -318,7 +317,7 @@ def main() -> int:
         except Exception as e:
             print(f"[debug] failed to write debug JSON ({debug_json_path}): {e}")
 
-    lines: List[str] = []
+    lines: list[str] = []
     lines.append("# Docs Consistency Report\n")
     lines.append(f"Document: {DOC_OVERVIEW}")
     lines.append("")

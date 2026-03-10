@@ -14,10 +14,10 @@ import subprocess
 import sys
 import time
 import warnings
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from concurrent.futures import ThreadPoolExecutor
-from ctypes import byref, c_size_t, c_void_p, CDLL
-from typing import Any, Callable, IO, Optional, TYPE_CHECKING, Union
+from ctypes import CDLL, byref, c_size_t, c_void_p
+from typing import IO, TYPE_CHECKING, Any, Union
 
 import torch
 import torch._inductor.async_compile  # noqa: F401 required to warm up AsyncCompile pools
@@ -28,13 +28,12 @@ from torch._inductor.codecache import (
     CppCodeCache,
     CUDACodeCache,
     DLLWrapper,
-    get_hash,
     PyCodeCache,
+    get_hash,
 )
 from torch._inductor.utils import get_gpu_type, get_ld_library_path, is_gpu
 from torch._logging import getArtifactLogger
 from torch.utils._ordered_set import OrderedSet
-
 
 if TYPE_CHECKING:
     from types import ModuleType
@@ -44,7 +43,6 @@ if TYPE_CHECKING:
 from . import config
 from .runtime.benchmarking import benchmarker
 from .virtualized import V
-
 
 CUDA_VISIBLE_DEVICES = "CUDA_VISIBLE_DEVICES"
 
@@ -98,7 +96,7 @@ class TuningProcess:
     def recv(read_pipe: IO[bytes]) -> Any:
         return pickle.load(read_pipe)
 
-    def __init__(self, device: Optional[int]):
+    def __init__(self, device: int | None):
         self.device = device
         self.start()
 
@@ -257,7 +255,7 @@ class TuningProcessPool:
         self.executor = ThreadPoolExecutor(max_workers=len(devices))
 
     @staticmethod
-    def get_device_list() -> Sequence[Optional[int]]:
+    def get_device_list() -> Sequence[int | None]:
         """
         Gather the list of devices to be used in the pool.
         """
@@ -329,7 +327,9 @@ class TuningProcessPool:
 
         # Use a ThreadExecutorPool to spread the work across the subprocesses and
         # to grab subprocesses as soon as they're free.
-        results = dict(zip(choices, self.executor.map(self.target, choices)))
+        results = dict(
+            zip(choices, self.executor.map(self.target, choices), strict=False)
+        )
 
         return results
 
@@ -344,12 +344,12 @@ class TensorMeta:
     sizes: torch._prims_common.ShapeType
     strides: torch._prims_common.StrideType
     offset: int
-    name: Optional[str] = None
+    name: str | None = None
 
     @classmethod
     def from_irnodes(
-        cls, irnodes: Union[LayoutOrBuffer, Sequence[LayoutOrBuffer]]
-    ) -> Union[TensorMeta, list[TensorMeta]]:
+        cls, irnodes: LayoutOrBuffer | Sequence[LayoutOrBuffer]
+    ) -> TensorMeta | list[TensorMeta]:
         if isinstance(irnodes, Sequence):
             result: list[Any] = [cls.from_irnodes(x) for x in irnodes]
             assert all(isinstance(x, TensorMeta) for x in result)
@@ -405,8 +405,8 @@ class BenchmarkRequest:
     def __init__(
         self,
         kernel_name: str,
-        input_tensor_meta: Union[TensorMeta, list[TensorMeta]],
-        output_tensor_meta: Union[TensorMeta, list[TensorMeta]],
+        input_tensor_meta: TensorMeta | list[TensorMeta],
+        output_tensor_meta: TensorMeta | list[TensorMeta],
         extra_args: Iterable[Any],
     ) -> None:
         # the kernel name defined in the module
@@ -441,14 +441,14 @@ class BenchmarkRequest:
         self,
         fn,
         *input_tensors: torch.Tensor,
-        out: Optional[torch.Tensor] = None,
+        out: torch.Tensor | None = None,
     ) -> float:
         raise NotImplementedError
 
     def benchmark(
         self,
         *input_tensors: torch.Tensor,
-        out: Optional[torch.Tensor] = None,
+        out: torch.Tensor | None = None,
     ) -> float:
         debug = autotuning_log.isEnabledFor(logging.DEBUG)
         if debug:
@@ -498,9 +498,9 @@ class _TestBenchmarkRequest(BenchmarkRequest):
     def __init__(
         self,
         result: float = 0.0,
-        device: Optional[int] = None,
-        sleep: Optional[float] = None,
-        exc: Optional[Exception] = None,
+        device: int | None = None,
+        sleep: float | None = None,
+        exc: Exception | None = None,
         crash: bool = False,
     ):
         self.result = result
@@ -510,7 +510,7 @@ class _TestBenchmarkRequest(BenchmarkRequest):
         self.crash = crash
 
     def benchmark(
-        self, *input_tensors: torch.Tensor, out: Optional[torch.Tensor] = None
+        self, *input_tensors: torch.Tensor, out: torch.Tensor | None = None
     ) -> float:
         if self.device is not None:
             assert os.environ.get(CUDA_VISIBLE_DEVICES, None) == str(self.device)
@@ -528,7 +528,7 @@ class GPUDeviceBenchmarkMixin:
         self,
         fn,
         *input_tensors: torch.Tensor,
-        out: Optional[torch.Tensor] = None,
+        out: torch.Tensor | None = None,
     ) -> float:
         device_idx_set = OrderedSet(
             tensor.device.index
@@ -563,7 +563,7 @@ class CPUDeviceBenchmarkMixin:
         self,
         fn,
         *input_tensors: torch.Tensor,
-        out: Optional[torch.Tensor] = None,
+        out: torch.Tensor | None = None,
     ) -> float:
         return benchmarker.benchmark_cpu(fn)
 
@@ -574,8 +574,8 @@ class TritonBenchmarkRequest(BenchmarkRequest):
     def __init__(
         self,
         kernel_name: str,
-        input_tensor_meta: Union[TensorMeta, list[TensorMeta]],
-        output_tensor_meta: Union[TensorMeta, list[TensorMeta]],
+        input_tensor_meta: TensorMeta | list[TensorMeta],
+        output_tensor_meta: TensorMeta | list[TensorMeta],
         extra_args: Iterable[Any],
         module_path: str,  # the path of the module defining the triton kernel
         module_cache_key: str,
@@ -641,16 +641,15 @@ class TritonBenchmarkRequest(BenchmarkRequest):
                 **warmup_arg,
                 stream=stream,
             )
-        else:
-            return functools.partial(
-                run_method,
-                *input_tensors,
-                out,
-                *extra_args,
-                **warmup_arg,
-                stream=stream,
-                benchmark_run=True,
-            )
+        return functools.partial(
+            run_method,
+            *input_tensors,
+            out,
+            *extra_args,
+            **warmup_arg,
+            stream=stream,
+            benchmark_run=True,
+        )
 
     def precompile(self):
         mod = PyCodeCache.load_by_key_path(self.module_cache_key, self.module_path)
@@ -681,16 +680,16 @@ class CUDABenchmarkRequest(GPUDeviceBenchmarkMixin, BenchmarkRequest):
     def __init__(
         self,
         kernel_name: str,
-        input_tensor_meta: Union[TensorMeta, list[TensorMeta]],
-        output_tensor_meta: Union[TensorMeta, list[TensorMeta]],
+        input_tensor_meta: TensorMeta | list[TensorMeta],
+        output_tensor_meta: TensorMeta | list[TensorMeta],
         extra_args: Iterable[Any],
         source_code: str,
     ) -> None:
         super().__init__(kernel_name, input_tensor_meta, output_tensor_meta, extra_args)
         self.source_code = source_code
         self.workspace_size: int = 0
-        self.workspace: Optional[torch.Tensor] = None
-        self.DLL: Optional[DLLWrapper] = None
+        self.workspace: torch.Tensor | None = None
+        self.DLL: DLLWrapper | None = None
         self._workspace_size_updated = False
         self.hash_key: str = ""
         self.source_file: str = ""
@@ -818,15 +817,15 @@ class CppBenchmarkRequest(CPUDeviceBenchmarkMixin, BenchmarkRequest):
     def __init__(
         self,
         kernel_name: str,
-        input_tensor_meta: Union[TensorMeta, list[TensorMeta]],
-        output_tensor_meta: Union[TensorMeta, list[TensorMeta]],
+        input_tensor_meta: TensorMeta | list[TensorMeta],
+        output_tensor_meta: TensorMeta | list[TensorMeta],
         extra_args: Iterable[Any],
         source_code: str,
     ) -> None:
         super().__init__(kernel_name, input_tensor_meta, output_tensor_meta, extra_args)
         self.source_code = source_code
         self.hash_key = get_hash(source_code)
-        self.DLL: Optional[Union[CDLL, ModuleType]] = None
+        self.DLL: CDLL | ModuleType | None = None
 
     def precompile(self):
         # Prepopulate CppCodeCache

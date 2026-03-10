@@ -11,7 +11,6 @@ import torch.cuda._pin_memory_utils as pin_memory_utils
 from torch.storage import UntypedStorage
 from torch.utils.weak import WeakIdKeyDictionary
 
-
 logger = getLogger()
 logger.setLevel(logging.INFO)
 
@@ -65,7 +64,7 @@ class StateDictStager:
                 pass
 
             # Check if any elements changed during deepcopy
-            for k, j in zip(x, y):
+            for k, j in zip(x, y, strict=False):
                 if k is not j:
                     # At least one element changed, create new tuple
                     return tuple(y)

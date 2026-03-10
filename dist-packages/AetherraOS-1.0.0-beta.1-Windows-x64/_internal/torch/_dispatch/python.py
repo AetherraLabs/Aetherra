@@ -1,9 +1,10 @@
 # mypy: allow-untyped-defs
 import itertools
 import unittest.mock
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
-from typing import Callable, TypeVar, Union
+from typing import TypeVar
+
 from typing_extensions import ParamSpec
 
 import torch
@@ -12,7 +13,6 @@ import torch._ops
 import torch.utils._python_dispatch
 import torch.utils._pytree as pytree
 from torch._C import DispatchKey
-
 
 __all__ = ["enable_python_dispatcher", "no_python_dispatcher", "enable_pre_dispatch"]
 
@@ -86,7 +86,7 @@ def check_metadata_matches(n, r, desc):
     # TODO: test the specs match; empirically  sometimes we have a tuple
     # on one side and a list on the other
     assert len(n_vals) == len(r_vals), f"{len(n_vals)} != {len(r_vals)}"
-    for i, nv, rv in zip(range(len(n_vals)), n_vals, r_vals):
+    for i, nv, rv in zip(range(len(n_vals)), n_vals, r_vals, strict=False):
         if not isinstance(rv, torch.Tensor):
             continue
         check_tensor_metadata_matches(nv, rv, lambda: f"{desc()} output {i}")
@@ -105,13 +105,12 @@ def _fmt(a: object) -> object:
         return Lit(
             f"torch.empty_strided({tuple(a.size())}, {a.stride()}, dtype={a.dtype})"
         )
-    else:
-        return a
+    return a
 
 
 def make_crossref_functionalize(
     op: torch._ops.OpOverload[_P, _T], final_key: DispatchKey
-) -> Union[Callable[_P, _T], DispatchKey]:
+) -> Callable[_P, _T] | DispatchKey:
     from torch._subclasses.fake_tensor import FakeTensorMode
 
     # This case is pretty weird, suppress it for now
@@ -140,8 +139,7 @@ def make_crossref_functionalize(
         def maybe_detach(t):
             if isinstance(t, torch.Tensor):
                 return t.detach()
-            else:
-                return t
+            return t
 
         # TODO: This probably does the wrong thing if you're running other
         # substantive modes with the normal op outside here

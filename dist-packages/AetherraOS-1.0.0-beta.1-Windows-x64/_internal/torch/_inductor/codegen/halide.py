@@ -7,8 +7,9 @@ import itertools
 import logging
 import re
 from collections import defaultdict
+from collections.abc import Callable
 from math import inf
-from typing import Any, Callable, cast, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, cast
 
 import sympy
 
@@ -18,7 +19,7 @@ import torch._logging
 from ..._prims_common import is_integer_dtype
 from ...utils._ordered_set import OrderedSet
 from ...utils._sympy.functions import FloorDiv, ModularIndexing
-from ...utils._sympy.symbol import symbol_is_type, SymT
+from ...utils._sympy.symbol import SymT, symbol_is_type
 from ...utils._sympy.value_ranges import ValueRanges
 from .. import config, ir
 from ..codecache import HalideCodeCache
@@ -33,7 +34,8 @@ from ..utils import (
     sympy_index_symbol,
     sympy_subs,
 )
-from ..virtualized import _ops as ops, V
+from ..virtualized import V
+from ..virtualized import _ops as ops
 from .common import (
     BackendFeature,
     CSEVariable,
@@ -47,8 +49,7 @@ from .common import (
 )
 from .cpp import DTYPE_TO_CPP
 from .cpp_utils import cexpr
-from .simd import constant_repr, SIMDKernel, SIMDScheduling
-
+from .simd import SIMDKernel, SIMDScheduling, constant_repr
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -244,7 +245,7 @@ class HalideOverrides(OpOverrides):
     def to_dtype(
         x,
         dtype: torch.dtype,
-        src_dtype: Optional[torch.dtype] = None,
+        src_dtype: torch.dtype | None = None,
         use_compute_types=True,
     ):
         if dtype == torch.bool:
@@ -575,10 +576,10 @@ class HalideCSEVariable(CSEVariable):
         self,
         name,
         bounds: ValueRanges[Any],
-        dtype: Optional[torch.dtype] = None,
+        dtype: torch.dtype | None = None,
     ) -> None:
         super().__init__(name, bounds, dtype)
-        self.used_dims: Optional[list[sympy.Symbol]] = None
+        self.used_dims: list[sympy.Symbol] | None = None
 
     def update_on_args(self, name, args, kwargs):
         used = OrderedSet(self.used_dims or ())
@@ -609,7 +610,7 @@ class HalideCSEVariable(CSEVariable):
 
 @dataclasses.dataclass
 class DimensionInfo:
-    expr: Optional[sympy.Expr]
+    expr: sympy.Expr | None
     size: sympy.Expr
     stride: sympy.Expr
 
@@ -1037,7 +1038,7 @@ class HalideKernel(SIMDKernel):
             return False
         if is_store:
             return self.buffer_dimensions[var] == dims
-        for old, new in zip(self.buffer_dimensions[var], dims):
+        for old, new in zip(self.buffer_dimensions[var], dims, strict=False):
             if old.stride != new.stride:
                 return False
             if old.size != new.size or old.expr != new.expr:
@@ -1137,8 +1138,7 @@ class HalideKernel(SIMDKernel):
                     f"{result} = hl.select({self._load_mask}, {line}, hl.cast({halide_type(dtype)}, 0))"
                 )
             return result
-        else:
-            return self.genfunc(line, self.used_dims_from_index(index))
+        return self.genfunc(line, self.used_dims_from_index(index))
 
     def lookup_cse_var(self, name: str):
         return self.cse.varname_map[re.sub(r"\[.*", "", name)]
@@ -1177,8 +1177,8 @@ class HalideKernel(SIMDKernel):
         dtype: torch.dtype,
         src_dtype: torch.dtype,
         reduction_type: ReductionType,
-        value: Union[CSEVariable, tuple[CSEVariable, ...]],
-    ) -> Union[CSEVariable, tuple[CSEVariable, ...]]:
+        value: CSEVariable | tuple[CSEVariable, ...],
+    ) -> CSEVariable | tuple[CSEVariable, ...]:
         """Codegen a reduction operation"""
         assert self.inside_reduction
         assert not self._load_mask
@@ -1301,7 +1301,7 @@ class HalideKernel(SIMDKernel):
         )
         initial = [
             f"hl.cast({halide_acc_type(dtype)}, {value})"
-            for dtype, value in zip(dtypes, values)
+            for dtype, value in zip(dtypes, values, strict=False)
         ]
 
         length = self.kexpr(self.rename_indexing(self.range_trees[-1].numel))
@@ -1385,15 +1385,14 @@ class HalideKernel(SIMDKernel):
             _call_str, arg = arg_tuple
             if isinstance(arg, SizeArg):
                 return 1  # this would normally be at the end, move it to middle
-            elif "out_ptr" in arg.name:
+            if "out_ptr" in arg.name:
                 return 2
-            else:
-                assert "in_ptr" in arg.name
-                return 0
+            assert "in_ptr" in arg.name
+            return 0
 
-        result: list[tuple[Optional[str], KernelArgType]] = []
+        result: list[tuple[str | None, KernelArgType]] = []
         _, a, b, _ = self.args.python_argdefs()
-        for call_str, arg in sorted(zip(a, b), key=arg_order):
+        for call_str, arg in sorted(zip(a, b, strict=False), key=arg_order):
             result.append((call_str, arg))
             if isinstance(arg, TensorArg):
                 assert arg.offset == 0 and arg.alias_of is None

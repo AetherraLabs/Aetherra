@@ -9,7 +9,7 @@
 
 import datetime
 import logging
-from typing import cast, Optional
+from typing import cast
 
 from torch.distributed import PrefixStore, Store, TCPStore
 from torch.distributed.elastic.rendezvous import (
@@ -19,7 +19,6 @@ from torch.distributed.elastic.rendezvous import (
     RendezvousStoreInfo,
 )
 from torch.distributed.elastic.rendezvous.utils import parse_rendezvous_endpoint
-
 
 __all__ = ["StaticTCPRendezvous", "create_rdzv_handler"]
 
@@ -51,7 +50,7 @@ class StaticTCPRendezvous(RendezvousHandler):
         self.world_size = world_size
         self.run_id = run_id
         self.timeout = datetime.timedelta(seconds=timeout)
-        self._store: Optional[Store] = None
+        self._store: Store | None = None
 
     def get_backend(self) -> str:
         return "static"

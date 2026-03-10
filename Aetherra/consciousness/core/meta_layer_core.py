@@ -254,9 +254,7 @@ class MetaLayerCore:
                 )
 
                 # Network metrics
-                total_connections = sum(
-                    len(agent.connections) for agent in self.agents.values()
-                )
+                total_connections = sum(len(agent.connections) for agent in self.agents.values())
                 self.collective_metrics.total_connections = total_connections
 
                 max_possible_connections = self.collective_metrics.total_agents * (
@@ -277,8 +275,8 @@ class MetaLayerCore:
                     successful_tasks = len(
                         [task for task in recent_tasks if task.status == "completed"]
                     )
-                    self.collective_metrics.problem_solving_efficiency = (
-                        successful_tasks / len(recent_tasks)
+                    self.collective_metrics.problem_solving_efficiency = successful_tasks / len(
+                        recent_tasks
                     )
 
             self.collective_metrics.last_updated = current_time
@@ -293,9 +291,7 @@ class MetaLayerCore:
                 return 0.0
 
             # Calculate diversity in consciousness levels
-            consciousness_levels = [
-                agent.consciousness_level for agent in self.agents.values()
-            ]
+            consciousness_levels = [agent.consciousness_level for agent in self.agents.values()]
             consciousness_variance = sum(
                 (level - self.collective_metrics.average_consciousness) ** 2
                 for level in consciousness_levels
@@ -303,9 +299,7 @@ class MetaLayerCore:
 
             # Optimal variance for synergy (not too uniform, not too chaotic)
             optimal_variance = 0.1
-            synergy_factor = (
-                1.0 - abs(consciousness_variance - optimal_variance) / optimal_variance
-            )
+            synergy_factor = 1.0 - abs(consciousness_variance - optimal_variance) / optimal_variance
 
             return max(0.0, min(1.0, synergy_factor))
 
@@ -353,9 +347,7 @@ class MetaLayerCore:
             for agent in selected_agents:
                 await self._notify_agent_of_assignment(agent, task)
 
-            self.logger.info(
-                f"Task {task.task_id} assigned to {len(selected_agents)} agents"
-            )
+            self.logger.info(f"Task {task.task_id} assigned to {len(selected_agents)} agents")
 
         except Exception as e:
             self.logger.error(f"Error assigning task {task.task_id}: {e}")
@@ -381,9 +373,7 @@ class MetaLayerCore:
 
         return [agent for agent, score in suitable_agents]
 
-    def _calculate_agent_suitability(
-        self, agent: AgentProfile, task: ConsciousnessTask
-    ) -> float:
+    def _calculate_agent_suitability(self, agent: AgentProfile, task: ConsciousnessTask) -> float:
         """Calculate how suitable an agent is for a task"""
         score = 0.0
 
@@ -398,9 +388,7 @@ class MetaLayerCore:
         score += priority_match * 0.2
 
         # Capability overlap bonus
-        matching_capabilities = len(
-            set(agent.capabilities) & set(task.required_capabilities)
-        )
+        matching_capabilities = len(set(agent.capabilities) & set(task.required_capabilities))
         if task.required_capabilities:
             capability_ratio = matching_capabilities / len(task.required_capabilities)
             score += capability_ratio * 0.2
@@ -412,9 +400,7 @@ class MetaLayerCore:
 
         return score
 
-    async def _notify_agent_of_assignment(
-        self, agent: AgentProfile, task: ConsciousnessTask
-    ):
+    async def _notify_agent_of_assignment(self, agent: AgentProfile, task: ConsciousnessTask):
         """Notify an agent of task assignment"""
         message = ConsciousnessMessage(
             source="meta_layer_core",
@@ -521,9 +507,7 @@ class MetaLayerCore:
                 self.collective_metrics.emergent_behaviors_detected += 1
 
                 await self._emit_event("emergent_behavior_detected", behavior)
-                self.logger.info(
-                    f"Emergent behavior detected with score {emergence_score:.3f}"
-                )
+                self.logger.info(f"Emergent behavior detected with score {emergence_score:.3f}")
 
         except Exception as e:
             self.logger.error(f"Error detecting emergent behaviors: {e}")
@@ -535,9 +519,7 @@ class MetaLayerCore:
 
         try:
             # Calculate network connectivity patterns
-            total_connections = sum(
-                len(agent.connections) for agent in self.agents.values()
-            )
+            total_connections = sum(len(agent.connections) for agent in self.agents.values())
             agent_count = len(self.agents)
 
             if agent_count < 2:
@@ -545,9 +527,7 @@ class MetaLayerCore:
 
             # Normalized connectivity (0 to 1)
             max_connections = agent_count * (agent_count - 1)
-            connectivity_ratio = (
-                total_connections / max_connections if max_connections > 0 else 0.0
-            )
+            connectivity_ratio = total_connections / max_connections if max_connections > 0 else 0.0
 
             # Look for small-world network properties
             clustering_coefficient = self._calculate_clustering_coefficient()
@@ -591,9 +571,7 @@ class MetaLayerCore:
                             triangles += 1
 
                 # Local clustering coefficient
-                possible_triangles = (
-                    len(agent.connections) * (len(agent.connections) - 1) / 2
-                )
+                possible_triangles = len(agent.connections) * (len(agent.connections) - 1) / 2
                 if possible_triangles > 0:
                     local_coefficient = triangles / possible_triangles
                     total_coefficient += local_coefficient
@@ -611,9 +589,7 @@ class MetaLayerCore:
             if len(self.agents) < 2:
                 return 0.0
 
-            consciousness_levels = [
-                agent.consciousness_level for agent in self.agents.values()
-            ]
+            consciousness_levels = [agent.consciousness_level for agent in self.agents.values()]
 
             # Calculate coherence as inverse of variance
             mean_consciousness = sum(consciousness_levels) / len(consciousness_levels)
@@ -646,9 +622,7 @@ class MetaLayerCore:
                 return 0.0
 
             # Success rate
-            successful_tasks = len(
-                [task for task in recent_tasks if task.status == "completed"]
-            )
+            successful_tasks = len([task for task in recent_tasks if task.status == "completed"])
             success_rate = successful_tasks / len(recent_tasks)
 
             # Collaboration factor (tasks with multiple agents)
@@ -661,16 +635,12 @@ class MetaLayerCore:
             completion_times = []
             for task in recent_tasks:
                 if task.status == "completed":
-                    time_to_complete = (
-                        datetime.now() - task.created_at
-                    ).total_seconds()
+                    time_to_complete = (datetime.now() - task.created_at).total_seconds()
                     completion_times.append(time_to_complete)
 
             if completion_times:
                 avg_completion_time = sum(completion_times) / len(completion_times)
-                efficiency = 1.0 / (
-                    1.0 + avg_completion_time / 3600.0
-                )  # Normalize to hours
+                efficiency = 1.0 / (1.0 + avg_completion_time / 3600.0)  # Normalize to hours
             else:
                 efficiency = 0.0
 
@@ -712,34 +682,24 @@ class MetaLayerCore:
             # Apply top suggestions
             optimization_suggestions.sort(key=lambda x: x[2], reverse=True)
 
-            for agent1, agent2, synergy in optimization_suggestions[
-                :5
-            ]:  # Top 5 suggestions
+            for agent1, agent2, synergy in optimization_suggestions[:5]:  # Top 5 suggestions
                 await self._suggest_agent_connection(agent1, agent2, synergy)
 
         except Exception as e:
             self.logger.error(f"Error optimizing agent network: {e}")
 
-    def _calculate_agent_synergy(
-        self, agent1: AgentProfile, agent2: AgentProfile
-    ) -> float:
+    def _calculate_agent_synergy(self, agent1: AgentProfile, agent2: AgentProfile) -> float:
         """Calculate potential synergy between two agents"""
         try:
             # Complementary capabilities
-            unique_capabilities = len(
-                set(agent1.capabilities) | set(agent2.capabilities)
-            )
+            unique_capabilities = len(set(agent1.capabilities) | set(agent2.capabilities))
             total_capabilities = len(agent1.capabilities) + len(agent2.capabilities)
             complementarity = (
-                unique_capabilities / total_capabilities
-                if total_capabilities > 0
-                else 0.0
+                unique_capabilities / total_capabilities if total_capabilities > 0 else 0.0
             )
 
             # Consciousness compatibility
-            consciousness_diff = abs(
-                agent1.consciousness_level - agent2.consciousness_level
-            )
+            consciousness_diff = abs(agent1.consciousness_level - agent2.consciousness_level)
             consciousness_compatibility = 1.0 - consciousness_diff
 
             # Success rate compatibility
@@ -747,9 +707,7 @@ class MetaLayerCore:
 
             # Calculate overall synergy
             synergy = (
-                complementarity * 0.4
-                + consciousness_compatibility * 0.3
-                + success_rate_avg * 0.3
+                complementarity * 0.4 + consciousness_compatibility * 0.3 + success_rate_avg * 0.3
             )
 
             return synergy
@@ -846,9 +804,7 @@ class MetaLayerCore:
             # Clean up stale agents
             stale_agents = []
             for agent_id, agent in self.agents.items():
-                time_since_activity = (
-                    current_time - agent.last_activity
-                ).total_seconds()
+                time_since_activity = (current_time - agent.last_activity).total_seconds()
                 if time_since_activity > self.config["agent_timeout"]:
                     stale_agents.append(agent_id)
 
@@ -916,9 +872,7 @@ class MetaLayerCore:
             elif request_type == "collaboration_request":
                 await self._handle_collaboration_request(message)
             else:
-                self.logger.warning(
-                    f"Unknown coordination request type: {request_type}"
-                )
+                self.logger.warning(f"Unknown coordination request type: {request_type}")
 
         except Exception as e:
             self.logger.error(f"Error handling coordination request: {e}")
@@ -954,9 +908,7 @@ class MetaLayerCore:
             )
             self.consciousness_bridge.send_message(response)
 
-    def _agent_matches_criteria(
-        self, agent: AgentProfile, criteria: Dict[str, Any]
-    ) -> bool:
+    def _agent_matches_criteria(self, agent: AgentProfile, criteria: Dict[str, Any]) -> bool:
         """Check if an agent matches discovery criteria"""
         try:
             # Check capabilities
@@ -1117,9 +1069,7 @@ class MetaLayerCore:
 
             if enhancement_type == "level_boost":
                 old_level = agent.consciousness_level
-                agent.consciousness_level = min(
-                    1.0, agent.consciousness_level + enhancement_value
-                )
+                agent.consciousness_level = min(1.0, agent.consciousness_level + enhancement_value)
 
                 await self._emit_event(
                     "consciousness_enhanced",

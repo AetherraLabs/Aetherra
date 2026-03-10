@@ -8,13 +8,11 @@ import functools
 import io
 import threading
 import warnings
-from typing import Any, cast, Optional as _Optional, TYPE_CHECKING, TypeVar, Union
-from typing_extensions import Self
+from typing import TYPE_CHECKING, Any, Self, TypeVar, cast
 
 import torch
 from torch._utils import _to, _type
-from torch.types import _bool, _int, Storage
-
+from torch.types import Storage, _bool, _int
 
 if TYPE_CHECKING:
     from torch._prims_common import DeviceLikeType
@@ -35,7 +33,7 @@ except ModuleNotFoundError:
 _share_memory_lock = threading.Lock()
 _share_memory_map: dict[int, threading.RLock] = {}
 
-T = TypeVar("T", bound="Union[_StorageBase, TypedStorage]")
+T = TypeVar("T", bound="_StorageBase | TypedStorage")
 
 
 class _StorageBase:
@@ -46,9 +44,9 @@ class _StorageBase:
     # Used when
     # (1) stashing FakeTensor device onto storage in torch.serialization.skip_data
     # (2) stashing device onto storage to propagate to FakeTensor when torch.load under FakeTensorMode
-    _fake_device: _Optional[torch.device] = None
+    _fake_device: torch.device | None = None
     # Used when loading with FakeTensorMode to give information about offset of storage in torch.saved-file
-    _checkpoint_offset: _Optional[int] = None
+    _checkpoint_offset: int | None = None
 
     def __init__(self, *args, **kwargs):
         pass
@@ -62,10 +60,10 @@ class _StorageBase:
     def __setitem__(self, *args, **kwargs):
         raise NotImplementedError
 
-    def copy_(self, source: T, non_blocking: _Optional[_bool] = None) -> T:
+    def copy_(self, source: T, non_blocking: _bool | None = None) -> T:
         raise NotImplementedError
 
-    def new(self) -> Union[_StorageBase, TypedStorage]:
+    def new(self) -> _StorageBase | TypedStorage:
         raise NotImplementedError
 
     def nbytes(self) -> _int:
@@ -75,13 +73,11 @@ class _StorageBase:
         return self.nbytes()
 
     def type(
-        self, dtype: _Optional[str] = None, non_blocking: _bool = False
-    ) -> Union[_StorageBase, TypedStorage]:
+        self, dtype: str | None = None, non_blocking: _bool = False
+    ) -> _StorageBase | TypedStorage:
         return _type(self, dtype, non_blocking)
 
-    def cuda(
-        self, device=None, non_blocking=False
-    ) -> Union[_StorageBase, TypedStorage]:
+    def cuda(self, device=None, non_blocking=False) -> _StorageBase | TypedStorage:
         """Returns a copy of this object in CUDA memory.
 
         If this object is already in CUDA memory and on the correct device, then
@@ -96,7 +92,7 @@ class _StorageBase:
         device2 = torch.device("cuda", device) if device else torch.device("cuda")
         return self.to(device=device2, non_blocking=non_blocking)
 
-    def hpu(self, device=None, non_blocking=False) -> Union[_StorageBase, TypedStorage]:
+    def hpu(self, device=None, non_blocking=False) -> _StorageBase | TypedStorage:
         """Returns a copy of this object in HPU memory.
 
         If this object is already in HPU memory and on the correct device, then
@@ -166,7 +162,7 @@ class _StorageBase:
     def _new_with_weak_ptr(cls, *args, **kwargs) -> Self:
         raise NotImplementedError
 
-    def _shared_decref(self) -> Union[_StorageBase, TypedStorage]:
+    def _shared_decref(self) -> _StorageBase | TypedStorage:
         raise NotImplementedError
 
     def _write_file(self, *args, **kwargs):
@@ -175,7 +171,7 @@ class _StorageBase:
     def resize_(self, size: _int):
         raise NotImplementedError
 
-    def _weak_ref(self, *args, **kwargs) -> Union[_StorageBase, TypedStorage]:
+    def _weak_ref(self, *args, **kwargs) -> _StorageBase | TypedStorage:
         raise NotImplementedError
 
     def _set_from_file(self, *args, **kwargs):
@@ -210,17 +206,17 @@ class _StorageBase:
         raise NotImplementedError
 
     @classmethod
-    def from_file(cls, filename, shared, nbytes) -> Union[_StorageBase, TypedStorage]:
+    def from_file(cls, filename, shared, nbytes) -> _StorageBase | TypedStorage:
         raise NotImplementedError
 
     @classmethod
-    def _expired(cls, *args, **kwargs) -> Union[_StorageBase, TypedStorage]:
+    def _expired(cls, *args, **kwargs) -> _StorageBase | TypedStorage:
         raise NotImplementedError
 
     def _byteswap(self, *args, **kwargs):
         raise NotImplementedError
 
-    def _get_filename(self, *args, **kwargs) -> _Optional[str]:
+    def _get_filename(self, *args, **kwargs) -> str | None:
         raise NotImplementedError
 
     def __repr__(self):
@@ -354,7 +350,7 @@ class _StorageBase:
         """Casts this storage to float8_e4m3fnuz type"""
         return self._to(torch.float8_e4m3fnuz)
 
-    def is_pinned(self, device: Union[str, torch.device] = "cuda"):
+    def is_pinned(self, device: str | torch.device = "cuda"):
         r"""Determine whether the CPU storage is already pinned on device.
 
         Args:
@@ -370,7 +366,7 @@ class _StorageBase:
             .is_pinned(device)
         )
 
-    def pin_memory(self, device: Union[str, torch.device] = "cuda"):
+    def pin_memory(self, device: str | torch.device = "cuda"):
         r"""Copy the CPU storage to pinned memory, if it's not already pinned.
 
         Args:
@@ -410,10 +406,9 @@ class _StorageBase:
         device = torch.device(device)
         if device.type in ["cuda", torch._C._get_privateuse1_backend_name(), "hpu"]:
             return cls(size, device=device)
-        elif get_sharing_strategy() == "file_system":
+        if get_sharing_strategy() == "file_system":
             return cls._new_using_filename_cpu(size)
-        else:
-            return cls._new_using_fd_cpu(size)
+        return cls._new_using_fd_cpu(size)
 
     def untyped(self):
         return self
@@ -478,7 +473,7 @@ class UntypedStorage(torch._C.StorageBase, _StorageBase):
         return self.device.type == "hpu"
 
     @property
-    def filename(self) -> _Optional[str]:
+    def filename(self) -> str | None:
         """Returns the file name associated with this storage.
 
         The file name will be a string if the storage is on CPU and was created via
@@ -619,8 +614,7 @@ def _get_storage_from_sequence(sequence, dtype, device):
 def _isint(x):
     if HAS_NUMPY:
         return isinstance(x, (int, np.integer))
-    else:
-        return isinstance(x, int)
+    return isinstance(x, int)
 
 
 _always_warn_typed_storage_removal = False
@@ -642,8 +636,7 @@ def _warn_typed_storage_removal(stacklevel=2):
     def is_first_time():
         if not hasattr(_warn_typed_storage_removal, "has_warned"):
             return True
-        else:
-            return not _warn_typed_storage_removal.__dict__["has_warned"]
+        return not _warn_typed_storage_removal.__dict__["has_warned"]
 
     if _get_always_warn_typed_storage_removal() or is_first_time():
         message = (
@@ -664,14 +657,13 @@ def _get_device_from_module(module: str):
     last_part = module.rsplit(".", 1)[-1]
     if last_part in ["cuda", torch._C._get_privateuse1_backend_name(), "hpu"]:
         return last_part
-    else:
-        return "cpu"
+    return "cpu"
 
 
 class TypedStorage:
     is_sparse: _bool = False
     # Used when stashing FakeTensor device onto storage in torch.save(metadata_only=True)
-    _fake_device: _Optional[torch.device] = None
+    _fake_device: torch.device | None = None
 
     dtype: torch.dtype
 
@@ -680,7 +672,7 @@ class TypedStorage:
         return self.dtype
 
     @property
-    def filename(self) -> _Optional[str]:
+    def filename(self) -> str | None:
         """Returns the file name associated with this storage if the storage was memory mapped from a file.
         or ``None`` if the storage was not created by memory mapping a file."""
         return self._untyped_storage.filename
@@ -709,78 +701,71 @@ class TypedStorage:
         if cls == TypedStorage:
             return super().__new__(cls)
 
-        else:
-            arg_error_msg = (
-                f"{cls}.__new__ received an invalid combination "
-                f"of arguments. Expected one of:\n"
-                " * no arguments\n"
-                " * (int size)\n"
-                " * (Sequence data)\n"
-                " * (*, UntypedStorage wrap_storage)"
+        arg_error_msg = (
+            f"{cls}.__new__ received an invalid combination "
+            f"of arguments. Expected one of:\n"
+            " * no arguments\n"
+            " * (int size)\n"
+            " * (Sequence data)\n"
+            " * (*, UntypedStorage wrap_storage)"
+        )
+
+        if device is not None:
+            raise RuntimeError(
+                arg_error_msg + "\nKeyword argument 'device' cannot be specified"
             )
 
-            if device is not None:
-                raise RuntimeError(
-                    arg_error_msg + "\nKeyword argument 'device' cannot be specified"
+        if dtype is not None:
+            raise RuntimeError(
+                arg_error_msg + "\nKeyword argument 'dtype' cannot be specified"
+            )
+
+        if wrap_storage is None:
+            if len(args) > 1:
+                raise RuntimeError(arg_error_msg + "\nToo many positional arguments")
+
+            if (
+                len(args) == 1
+                and not _isint(args[0])
+                and not isinstance(args[0], collections.abc.Sequence)
+            ):
+                raise TypeError(
+                    arg_error_msg + f"\nArgument type not recognized: {type(args[0])}"
                 )
 
-            if dtype is not None:
-                raise RuntimeError(
-                    arg_error_msg + "\nKeyword argument 'dtype' cannot be specified"
-                )
+            return TypedStorage(
+                *args,
+                dtype=cls._dtype,
+                device=_get_device_from_module(cls.__module__),
+                _internal=True,
+            )
 
-            if wrap_storage is None:
-                if len(args) > 1:
-                    raise RuntimeError(
-                        arg_error_msg + "\nToo many positional arguments"
-                    )
+        if len(args) != 0:
+            raise RuntimeError(
+                arg_error_msg + "\nNo positional arguments should be given when using "
+                "'wrap_storage'"
+            )
 
-                if (
-                    len(args) == 1
-                    and not _isint(args[0])
-                    and not isinstance(args[0], collections.abc.Sequence)
-                ):
-                    raise TypeError(
-                        arg_error_msg
-                        + f"\nArgument type not recognized: {type(args[0])}"
-                    )
+        if not isinstance(wrap_storage, torch.UntypedStorage):
+            raise TypeError(
+                arg_error_msg
+                + f"\nArgument 'wrap_storage' must be UntypedStorage, but got {type(wrap_storage)}"
+            )
 
-                return TypedStorage(
-                    *args,
-                    dtype=cls._dtype,
-                    device=_get_device_from_module(cls.__module__),
-                    _internal=True,
-                )
+        cls_device = _get_device_from_module(cls.__module__)
 
-            else:
-                if len(args) != 0:
-                    raise RuntimeError(
-                        arg_error_msg
-                        + "\nNo positional arguments should be given when using "
-                        "'wrap_storage'"
-                    )
+        if wrap_storage.device.type != cls_device:
+            raise RuntimeError(
+                arg_error_msg + f"\nDevice of 'wrap_storage' must be {cls_device}"
+                f", but got {wrap_storage.device.type}"
+            )
 
-                if not isinstance(wrap_storage, torch.UntypedStorage):
-                    raise TypeError(
-                        arg_error_msg
-                        + f"\nArgument 'wrap_storage' must be UntypedStorage, but got {type(wrap_storage)}"
-                    )
-
-                cls_device = _get_device_from_module(cls.__module__)
-
-                if wrap_storage.device.type != cls_device:
-                    raise RuntimeError(
-                        arg_error_msg
-                        + f"\nDevice of 'wrap_storage' must be {cls_device}"
-                        f", but got {wrap_storage.device.type}"
-                    )
-
-                return TypedStorage(
-                    *args,
-                    wrap_storage=wrap_storage,
-                    dtype=cls.dtype,
-                    _internal=True,
-                )
+        return TypedStorage(
+            *args,
+            wrap_storage=wrap_storage,
+            dtype=cls.dtype,
+            _internal=True,
+        )
 
     def __init__(
         self,
@@ -898,8 +883,7 @@ class TypedStorage:
                     wrap_storage=untyped_storage, dtype=self.dtype, _internal=True
                 ),
             )
-        else:
-            return type(self)(wrap_storage=untyped_storage)
+        return type(self)(wrap_storage=untyped_storage)
 
     def __len__(self):
         _warn_typed_storage_removal()
@@ -909,27 +893,23 @@ class TypedStorage:
         if idx is None:
             if is_stop:
                 return self._size()
-            else:
-                return 0
+            return 0
 
-        else:
-            if type(idx) != int:
-                raise TypeError(f"can't index a {type(self)} with {type(idx)}")
-            if is_stop:
-                if (idx > self._size()) or (idx < -self._size()):
-                    raise IndexError(
-                        f"index {idx} out of range for storage of size {self.size()}"
-                    )
-                if idx > 0:
-                    return idx
-                else:
-                    return idx % self._size()
-            else:
-                if (idx >= self._size()) or (idx < -self._size()):
-                    raise IndexError(
-                        f"index {idx} out of range for storage of size {self.size()}"
-                    )
-                return idx % self._size()
+        if type(idx) != int:
+            raise TypeError(f"can't index a {type(self)} with {type(idx)}")
+        if is_stop:
+            if (idx > self._size()) or (idx < -self._size()):
+                raise IndexError(
+                    f"index {idx} out of range for storage of size {self.size()}"
+                )
+            if idx > 0:
+                return idx
+            return idx % self._size()
+        if (idx >= self._size()) or (idx < -self._size()):
+            raise IndexError(
+                f"index {idx} out of range for storage of size {self.size()}"
+            )
+        return idx % self._size()
 
     def __setitem__(self, idx, value):
         _warn_typed_storage_removal()
@@ -986,7 +966,7 @@ class TypedStorage:
             raise RuntimeError(
                 "slices are only supported in UntypedStorage.__getitem__"
             )
-        elif not isinstance(idx, int):
+        if not isinstance(idx, int):
             raise RuntimeError(f"can't index a {type(self)} with {type(idx)}")
 
         if self.dtype in [
@@ -1018,7 +998,7 @@ class TypedStorage:
             ).set_(self)
             return tmp_tensor[idx_wrapped].item()
 
-    def copy_(self, source: T, non_blocking: _Optional[bool] = None):
+    def copy_(self, source: T, non_blocking: bool | None = None):
         _warn_typed_storage_removal()
         if isinstance(source, TypedStorage):
             self._untyped_storage.copy_(source._untyped_storage, non_blocking)
@@ -1036,9 +1016,9 @@ class TypedStorage:
 
     def type(
         self,
-        dtype: _Optional[str] = None,
+        dtype: str | None = None,
         non_blocking: bool = False,
-    ) -> Union[_StorageBase, TypedStorage, str]:
+    ) -> _StorageBase | TypedStorage | str:
         _warn_typed_storage_removal()
         if dtype is None:
             legacy_class = self._get_legacy_storage_class()
@@ -1048,8 +1028,7 @@ class TypedStorage:
 
             return ".".join([self.__module__, type(self).__name__])
 
-        else:
-            return self._untyped_storage.type(dtype, non_blocking)
+        return self._untyped_storage.type(dtype, non_blocking)
 
     def cuda(self, device=None, non_blocking=False) -> Self:
         _warn_typed_storage_removal()
@@ -1114,9 +1093,8 @@ class TypedStorage:
         )
         if self.device.type == "meta":
             return "...\n" + info_str
-        else:
-            data_str = " " + "\n ".join(str(self[i]) for i in range(self.size()))
-            return data_str + "\n" + info_str
+        data_str = " " + "\n ".join(str(self[i]) for i in range(self.size()))
+        return data_str + "\n" + info_str
 
     def __repr__(self):
         _warn_typed_storage_removal()
@@ -1157,7 +1135,7 @@ class TypedStorage:
         _warn_typed_storage_removal()
         return self._new_wrapped_storage(self._untyped_storage.cpu())
 
-    def is_pinned(self, device: Union[str, torch.device] = "cuda"):
+    def is_pinned(self, device: str | torch.device = "cuda"):
         r"""Determine whether the CPU TypedStorage is already pinned on device.
 
         Args:
@@ -1170,7 +1148,7 @@ class TypedStorage:
         _warn_typed_storage_removal()
         return self._untyped_storage.is_pinned(device)
 
-    def pin_memory(self, device: Union[str, torch.device] = "cuda"):
+    def pin_memory(self, device: str | torch.device = "cuda"):
         r"""Copy the CPU TypedStorage to pinned memory, if it's not already pinned.
 
         Args:

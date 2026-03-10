@@ -63,12 +63,11 @@ class Parameter(torch.Tensor, metaclass=_ParameterMeta):
     def __deepcopy__(self, memo):
         if id(self) in memo:
             return memo[id(self)]
-        else:
-            result = type(self)(
-                self.data.clone(memory_format=torch.preserve_format), self.requires_grad
-            )
-            memo[id(self)] = result
-            return result
+        result = type(self)(
+            self.data.clone(memory_format=torch.preserve_format), self.requires_grad
+        )
+        memo[id(self)] = result
+        return result
 
     def __repr__(self):
         return "Parameter containing:\n" + super().__repr__()
@@ -204,10 +203,9 @@ class UninitializedParameter(UninitializedTensorMixin, Parameter):
     def __deepcopy__(self, memo):
         if id(self) in memo:
             return memo[id(self)]
-        else:
-            result = type(self)(self.requires_grad, self.data.device, self.data.dtype)
-            memo[id(self)] = result
-            return result
+        result = type(self)(self.requires_grad, self.data.device, self.data.dtype)
+        memo[id(self)] = result
+        return result
 
 
 # Metaclass to combine _TensorMeta and the instance check override for Buffer.

@@ -4,9 +4,10 @@ circular dependencies.
 """
 
 import functools
-from typing import Callable, Literal, Optional, overload, TypeVar, Union
-from typing_extensions import ParamSpec
+from collections.abc import Callable
+from typing import Literal, TypeVar, overload
 
+from typing_extensions import ParamSpec
 
 _T = TypeVar("_T")
 _P = ParamSpec("_P")
@@ -25,8 +26,8 @@ def _disable_dynamo(
 
 
 def _disable_dynamo(
-    fn: Optional[Callable[_P, _T]] = None, recursive: bool = True
-) -> Union[Callable[_P, _T], Callable[[Callable[_P, _T]], Callable[_P, _T]]]:
+    fn: Callable[_P, _T] | None = None, recursive: bool = True
+) -> Callable[_P, _T] | Callable[[Callable[_P, _T]], Callable[_P, _T]]:
     """
     This API should be only used inside torch, external users should still use
     torch._dynamo.disable. The main goal of this API is to avoid circular
@@ -53,7 +54,6 @@ def _disable_dynamo(
             return disable_fn(*args, **kwargs)
 
         return inner
-    else:
-        # decorator usage like @_disable_dynamo(recursive=False). The resulting
-        # object expects the original decorated function as the arg.
-        return functools.partial(_disable_dynamo, recursive=recursive)
+    # decorator usage like @_disable_dynamo(recursive=False). The resulting
+    # object expects the original decorated function as the arg.
+    return functools.partial(_disable_dynamo, recursive=recursive)

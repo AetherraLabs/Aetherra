@@ -24,7 +24,7 @@ import time
 from collections import Counter
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, List, Optional, Dict
+from typing import Any, Dict, List, Optional
 
 # Third party imports
 import numpy as np
@@ -114,21 +114,15 @@ class CompressionMetrics:
         compressed_size = max(1, int(original_size / compression_ratio))
 
         # Calculate fidelity and quality metrics
-        fidelity_level = self._determine_fidelity_level(
-            entropy, recursive_density, structure_depth
-        )
+        fidelity_level = self._determine_fidelity_level(entropy, recursive_density, structure_depth)
 
-        pattern_confidence = self._calculate_pattern_confidence(
-            recursive_density, structure_depth
-        )
+        pattern_confidence = self._calculate_pattern_confidence(recursive_density, structure_depth)
 
         reconstruction_quality = self._estimate_reconstruction_quality(
             fidelity_level, pattern_confidence, entropy
         )
 
-        semantic_preservation = self._estimate_semantic_preservation(
-            memory_data, fidelity_level
-        )
+        semantic_preservation = self._estimate_semantic_preservation(memory_data, fidelity_level)
 
         # Access frequency analysis
         access_frequency = self._calculate_access_frequency(access_history)
@@ -153,9 +147,7 @@ class CompressionMetrics:
         )
 
         calculation_time = time.time() - start_time
-        print(
-            f"   🔬 Calculated compression score for {fragment_id} in {calculation_time:.3f}s"
-        )
+        print(f"   🔬 Calculated compression score for {fragment_id} in {calculation_time:.3f}s")
         print(f"      • Entropy: {entropy:.3f}")
         print(f"      • Recursive Density: {recursive_density:.3f}")
         print(f"      • Fidelity: {fidelity_level.value}")
@@ -243,9 +235,7 @@ class CompressionMetrics:
 
             # Count repeated patterns
             pattern_counts = Counter(substrings)
-            repeated_patterns = sum(
-                count - 1 for count in pattern_counts.values() if count > 1
-            )
+            repeated_patterns = sum(count - 1 for count in pattern_counts.values() if count > 1)
             total_possible = len(substrings)
 
             if total_possible > 0:
@@ -380,9 +370,7 @@ class CompressionMetrics:
             # Other data types may be more fragile
             return max(0.6, base_preservation - 0.05)
 
-    def _calculate_access_frequency(
-        self, access_history: Optional[List[float]]
-    ) -> float:
+    def _calculate_access_frequency(self, access_history: Optional[List[float]]) -> float:
         """
         Calculate memory access frequency (accesses per day)
         """

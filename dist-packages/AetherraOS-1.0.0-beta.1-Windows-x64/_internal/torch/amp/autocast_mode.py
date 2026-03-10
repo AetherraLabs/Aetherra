@@ -2,11 +2,10 @@
 import collections
 import functools
 import warnings
-from typing import Any, Optional
+from typing import Any
 
 import torch
 from torch.types import _dtype
-
 
 try:
     import numpy as np
@@ -43,7 +42,9 @@ def autocast_decorator(autocast_instance, func):
         with autocast_instance:
             return func(*args, **kwargs)
 
-    decorate_autocast.__script_unsupported = "@autocast() decorator is not supported in script mode"  # type: ignore[attr-defined]
+    decorate_autocast.__script_unsupported = (
+        "@autocast() decorator is not supported in script mode"  # type: ignore[attr-defined]
+    )
     return decorate_autocast
 
 
@@ -218,9 +219,9 @@ class autocast:
     def __init__(
         self,
         device_type: str,
-        dtype: Optional[_dtype] = None,
+        dtype: _dtype | None = None,
         enabled: bool = True,
-        cache_enabled: Optional[bool] = None,
+        cache_enabled: bool | None = None,
     ):
         if not isinstance(device_type, str):
             raise ValueError(
@@ -397,7 +398,7 @@ class autocast:
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any):  # type: ignore[override]
         if torch._jit_internal.is_scripting():
-            return
+            return None
 
         # Drop the cache when we exit to a nesting level that's outside any instance of autocast.
         if torch.autocast_decrement_nesting() == 0:
@@ -455,30 +456,26 @@ def _cast(value, device_type: str, dtype: _dtype):
             and (value.dtype is not torch.float64)
         )
         return value.to(dtype) if is_eligible else value
-    elif isinstance(value, (str, bytes)):
+    if isinstance(value, (str, bytes)) or HAS_NUMPY and isinstance(value, np.ndarray):
         return value
-    elif HAS_NUMPY and isinstance(value, np.ndarray):
-        return value
-    elif isinstance(value, collections.abc.Mapping):
+    if isinstance(value, collections.abc.Mapping):
         return {
             _cast(k, device_type, dtype): _cast(v, device_type, dtype)
             for k, v in value.items()
         }
-    elif isinstance(value, collections.abc.Iterable):
+    if isinstance(value, collections.abc.Iterable):
         iterable = (_cast(v, device_type, dtype) for v in value)
         if isinstance(value, (list, tuple)):
             return type(value)(iterable)
-        else:
-            return iterable
-    else:
-        return value
+        return iterable
+    return value
 
 
 def custom_fwd(
     fwd=None,
     *,
     device_type: str,
-    cast_inputs: Optional[_dtype] = None,
+    cast_inputs: _dtype | None = None,
 ):
     """
     Create a helper decorator for ``forward`` methods of custom autograd functions.
@@ -515,17 +512,16 @@ def custom_fwd(
         if cast_inputs is None:
             args[0]._fwd_used_autocast = torch.is_autocast_enabled(device_type)
             return fwd(*args, **kwargs)
+        autocast_context = torch.is_autocast_enabled(device_type)
+        args[0]._fwd_used_autocast = False
+        if autocast_context:
+            with autocast(device_type=device_type, enabled=False):
+                return fwd(
+                    *_cast(args, device_type, cast_inputs),
+                    **_cast(kwargs, device_type, cast_inputs),
+                )
         else:
-            autocast_context = torch.is_autocast_enabled(device_type)
-            args[0]._fwd_used_autocast = False
-            if autocast_context:
-                with autocast(device_type=device_type, enabled=False):
-                    return fwd(
-                        *_cast(args, device_type, cast_inputs),
-                        **_cast(kwargs, device_type, cast_inputs),
-                    )
-            else:
-                return fwd(*args, **kwargs)
+            return fwd(*args, **kwargs)
 
     return decorate_fwd
 

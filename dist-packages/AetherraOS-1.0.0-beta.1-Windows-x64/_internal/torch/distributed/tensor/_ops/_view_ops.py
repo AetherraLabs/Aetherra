@@ -1,8 +1,8 @@
 # mypy: allow-untyped-defs
 # Copyright (c) Meta Platforms, Inc. and affiliates
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
-from typing import Callable, cast, Optional, Union
+from typing import cast
 
 import torch
 from torch import Tensor
@@ -23,7 +23,6 @@ from torch.distributed.tensor._ops.utils import (
     register_op_strategy,
 )
 from torch.distributed.tensor.placement_types import Placement, Replicate, Shard
-
 
 aten = torch.ops.aten
 
@@ -91,11 +90,10 @@ class Repeat(DimSpec):
     def new(cls, dim: DimSpec, times: int) -> DimSpec:
         if times == 1:
             return dim
-        elif isinstance(dim, Singleton):
+        if isinstance(dim, Singleton):
             # repeating a singleton is the same as broadcasting it
             return Broadcast(dim, times)
-        else:
-            return Repeat(dim, times)
+        return Repeat(dim, times)
 
     def inputs(self) -> Iterable[DimSpec]:
         return (self.input_dim,)
@@ -112,11 +110,10 @@ class Flatten(DimSpec):
         if len(dims) == 0:
             # flattening a scalar leads to a singleton
             return Singleton()
-        elif len(dims) == 1:
+        if len(dims) == 1:
             # flattening a single dimension is no-op
             return dims[0]
-        else:
-            return Flatten(dims)
+        return Flatten(dims)
 
     def inputs(self) -> Iterable[DimSpec]:
         return self.input_dims
@@ -141,17 +138,16 @@ class Split(DimSpec):
             # not really a group, just return the input dim back
             assert idx == 0
             return dim
-        elif group_shape[idx] == 1:
+        if group_shape[idx] == 1:
             return Singleton()
-        else:
-            # remove singletons from group
-            # group_mapping = [(new_index, (shape, old_index)) ...]
-            group_mapping = list(
-                enumerate((s, i) for i, s in enumerate(group_shape) if s != 1)
-            )
-            new_group_shape = tuple(m[1][0] for m in group_mapping)
-            new_idx = next(filter(lambda x: x[1][1] == idx, group_mapping))[0]
-            return Split(dim, new_group_shape, new_idx)
+        # remove singletons from group
+        # group_mapping = [(new_index, (shape, old_index)) ...]
+        group_mapping = list(
+            enumerate((s, i) for i, s in enumerate(group_shape) if s != 1)
+        )
+        new_group_shape = tuple(m[1][0] for m in group_mapping)
+        new_idx = next(filter(lambda x: x[1][1] == idx, group_mapping))[0]
+        return Split(dim, new_group_shape, new_idx)
 
     def inputs(self) -> Iterable[DimSpec]:
         return (self.input_dim,)
@@ -166,12 +162,11 @@ def dim_pad_left(ndim: int, min_dims: int) -> DimMap:
 def dim_atleast_3d(ndim: int) -> DimMap:
     if ndim == 0:
         return (Singleton(), Singleton(), Singleton())
-    elif ndim == 1:
+    if ndim == 1:
         return (Singleton(), InputDim(0), Singleton())
-    elif ndim == 2:
+    if ndim == 2:
         return (InputDim(0), InputDim(1), Singleton())
-    else:
-        return tuple(InputDim(i) for i in range(ndim))
+    return tuple(InputDim(i) for i in range(ndim))
 
 
 def expand(input_shape: Shape, shape: Shape) -> DimMap:
@@ -182,7 +177,7 @@ def expand(input_shape: Shape, shape: Shape) -> DimMap:
     padded_input = dim_pad_left(len(input_shape), len(shape))
     # 2. check that input shapes are compatible
     mapping = []
-    for p, desired_s in zip(padded_input, shape):
+    for p, desired_s in zip(padded_input, shape, strict=False):
         if isinstance(p, Singleton):
             actual_s = 1
             assert desired_s >= 0
@@ -198,31 +193,29 @@ def expand(input_shape: Shape, shape: Shape) -> DimMap:
     return tuple(mapping)
 
 
-def normalize_sizes(sizes: Union[Shape, tuple[Shape]]) -> Shape:
+def normalize_sizes(sizes: Shape | tuple[Shape]) -> Shape:
     if isinstance(sizes[0], int):
         return cast(Shape, sizes)
-    elif len(sizes) == 1:
+    if len(sizes) == 1:
         return sizes[0]
-    else:
-        raise RuntimeError("Size must be int... or tuple")
+    raise RuntimeError("Size must be int... or tuple")
 
 
 def dim_flatten(ndim: int, start_dim=0, end_dim=-1) -> DimMap:
     if ndim == 0:
         return (Singleton(),)
-    elif ndim == 1:
+    if ndim == 1:
         return (InputDim(0),)
-    else:
-        # only flattening dims from start_dim to end_dim (inclusive)
-        # other dims are passed through
-        if end_dim < 0:
-            end_dim += ndim
-        results: list[DimSpec] = [InputDim(i) for i in range(start_dim)]
-        results.append(
-            Flatten.new(tuple(InputDim(i) for i in range(start_dim, end_dim + 1)))
-        )
-        results.extend([InputDim(i) for i in range(end_dim + 1, ndim)])
-        return tuple(results)
+    # only flattening dims from start_dim to end_dim (inclusive)
+    # other dims are passed through
+    if end_dim < 0:
+        end_dim += ndim
+    results: list[DimSpec] = [InputDim(i) for i in range(start_dim)]
+    results.append(
+        Flatten.new(tuple(InputDim(i) for i in range(start_dim, end_dim + 1)))
+    )
+    results.extend([InputDim(i) for i in range(end_dim + 1, ndim)])
+    return tuple(results)
 
 
 def dim_movedim(
@@ -241,7 +234,7 @@ def dim_movedim(
     assert max(destination) < ndim
 
     dest = [-1] * ndim
-    for i, d in zip(input, destination):
+    for i, d in zip(input, destination, strict=False):
         dest[d] = i
 
     unused_inputs_iter = iter(i for i in range(ndim) if i not in input_set)
@@ -394,7 +387,7 @@ def dim_transpose(ndim: int, dim1: int, dim2: int) -> DimMap:
     return tuple(dimmap)
 
 
-def dim_squeeze(shape: Shape, dim: Optional[int] = None) -> DimMap:
+def dim_squeeze(shape: Shape, dim: int | None = None) -> DimMap:
     # FIXME: this is wrong when dim=None and one of the dimensions
     # equals size of the mesh. For example squeeze(DTensor(tensor(4), Shard[0])) could
     # end up as squeeze(tensor(1)) if we have 4 devices; this would lead to
@@ -423,7 +416,7 @@ def dim_view_as_real(shape: Shape) -> DimMap:
     return tuple(results)
 
 
-def dim_reduction(ndim: int, dim_or_dims: Optional[DimsType], keepdim: bool) -> DimMap:
+def dim_reduction(ndim: int, dim_or_dims: DimsType | None, keepdim: bool) -> DimMap:
     """
     General fallback for reduction ops where Partial() does not apply.
 
@@ -507,18 +500,18 @@ def propagate_shape_and_sharding(
 
     def maybe_get_shard_mesh_dim_and_placement(
         input_dim: InputDim,
-    ) -> tuple[Optional[int], Optional[Shard]]:
+    ) -> tuple[int | None, Shard | None]:
         # if input_dim is sharded, return the mesh_dim and shard placement
         for i, placement in enumerate(input_src_placements):
             if isinstance(placement, Shard) and placement.dim == input_dim.input_dim:
                 return i, placement
         return None, None
 
-    def get_in_dim_to_shard(cmd: DimSpec) -> Optional[InputDim]:
+    def get_in_dim_to_shard(cmd: DimSpec) -> InputDim | None:
         # TODO(whc) this helper is pretty hard to understand, at least it should be better documented if not refactored
         if isinstance(cmd, InputDim):
             return cmd
-        elif isinstance(cmd, Flatten):
+        if isinstance(cmd, Flatten):
             for i, dim in enumerate(cmd.input_dims):
                 if isinstance(dim, InputDim):
                     can_shard_dim = True
@@ -553,7 +546,7 @@ def propagate_shape_and_sharding(
             # TODO(whc) dim0 can be sharded or not sharded, can't it?
             # should we only return it if its sharded in the placement?
             return dim0 if isinstance(dim0, InputDim) else None
-        elif isinstance(cmd, Split):
+        if isinstance(cmd, Split):
             in_dim = get_in_dim_to_shard(cmd.input_dim)
             out_size = cmd.group_shape[cmd.split_id]
             if cmd.split_id == 0 and in_dim is not None:
@@ -573,7 +566,7 @@ def propagate_shape_and_sharding(
 
                 # 2. here we special case things like [Shard(0), Shard(0)]
                 submesh_size = 1
-                for size, shard in zip(mesh_sizes, input_src_placements):
+                for size, shard in zip(mesh_sizes, input_src_placements, strict=False):
                     if isinstance(shard, Shard) and shard.dim == in_dim:
                         submesh_size *= size
                 assert out_size % submesh_size == 0, (
@@ -582,13 +575,12 @@ def propagate_shape_and_sharding(
 
             # we will only shard our first component of the split
             return in_dim if cmd.split_id == 0 else None
-        elif isinstance(cmd, Repeat):
+        if isinstance(cmd, Repeat):
             in_dim = get_in_dim_to_shard(cmd.input_dim)
             if in_dim is not None:
                 shardable_dims[in_dim.input_dim] = [False] * mesh_ndim
             return None
-        else:
-            return None
+        return None
 
     # for each output dim, find the corresponding input dim in terms of sharding prop
     shard_dim_map = {}
@@ -616,7 +608,7 @@ def propagate_shape_and_sharding(
 def register_op_strategy_map(
     aten_op_overload: torch._ops.OpOverload,
     local_op_name: Callable[..., torch.Tensor],
-    schema_info: Optional[RuntimeSchemaInfo] = None,
+    schema_info: RuntimeSchemaInfo | None = None,
     strict_view: bool = False,
 ) -> None:
     """

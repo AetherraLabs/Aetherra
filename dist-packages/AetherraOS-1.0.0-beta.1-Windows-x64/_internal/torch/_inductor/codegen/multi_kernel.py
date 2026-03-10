@@ -8,12 +8,11 @@ from torch._inductor.metrics import get_metric_table, is_metric_table_enabled
 from torch.utils._ordered_set import OrderedSet
 
 from .. import config
-from ..codecache import code_hash, CodeCacheFuture, get_path, write_atomic
+from ..codecache import CodeCacheFuture, code_hash, get_path, write_atomic
 from ..runtime.benchmarking import benchmarker
-from ..utils import cache_on_self, IndentedBuffer
+from ..utils import IndentedBuffer, cache_on_self
 from ..virtualized import V
 from .common import TensorArg, WorkspaceArg
-
 
 log = logging.getLogger(__name__)
 
@@ -120,7 +119,7 @@ class MultiKernel:
     @staticmethod
     def merge_workspaces_inplace(kernels):
         if len(kernels) < 2:
-            return
+            return None
         # All kernels must share the same workspace
         workspace_args = functools.reduce(
             MultiKernel._merge_workspace_args,
@@ -168,7 +167,7 @@ class MultiKernel:
         seen: OrderedSet[str] = OrderedSet()
         for k in self.kernels:
             _, call_args, precompile_args, _ = k.args.python_argdefs()
-            for arg, precompile_arg in zip(call_args, precompile_args):
+            for arg, precompile_arg in zip(call_args, precompile_args, strict=False):
                 if arg in seen:
                     continue
                 seen.add(arg)

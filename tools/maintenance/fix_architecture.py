@@ -16,7 +16,6 @@ import os
 import re
 import shutil
 from pathlib import Path
-from typing import Dict, List
 
 
 class ArchitecturalFixer:
@@ -31,7 +30,7 @@ class ArchitecturalFixer:
         self.fixes_applied = []
         self.moves_needed = []
 
-    def fix_import_violations(self) -> List[str]:
+    def fix_import_violations(self) -> list[str]:
         """Fix core AI files importing from Lyrixa"""
         print("🔧 Fixing core import violations...")
 
@@ -88,7 +87,7 @@ class ArchitecturalFixer:
 
         return fixed_files
 
-    def move_gui_to_lyrixa(self) -> List[str]:
+    def move_gui_to_lyrixa(self) -> list[str]:
         """Move GUI components from core to Lyrixa"""
         print("🔧 Moving GUI components to Lyrixa...")
 
@@ -122,7 +121,7 @@ class ArchitecturalFixer:
 
         return moved_files
 
-    def fix_engine_locations(self) -> List[str]:
+    def fix_engine_locations(self) -> list[str]:
         """Fix core engines incorrectly placed in Lyrixa"""
         print("🔧 Analyzing core engines in Lyrixa...")
 
@@ -230,7 +229,7 @@ if __name__ == "__main__":
         print(f"  ✅ Created architecture guard: {guard_path}")
 
     def generate_fix_report(
-        self, import_fixes: List[str], gui_moves: List[str], engine_analysis: List[str]
+        self, import_fixes: list[str], gui_moves: list[str], engine_analysis: list[str]
     ) -> str:
         """Generate comprehensive fix report"""
         report = []
@@ -297,12 +296,14 @@ if __name__ == "__main__":
         report.append("")
         report.append("- ✅ Core AI files no longer import from Lyrixa")
         report.append("- ✅ GUI components moved to Lyrixa interface")
-        report.append("- ✅ Clear separation between brain (Aetherra) and face (Lyrixa)")
+        report.append(
+            "- ✅ Clear separation between brain (Aetherra) and face (Lyrixa)"
+        )
         report.append("")
 
         return "\\n".join(report)
 
-    def apply_fixes(self) -> Dict[str, List[str]]:
+    def apply_fixes(self) -> dict[str, list[str]]:
         """Apply all architectural fixes"""
         print("🔧 APPLYING ARCHITECTURAL FIXES")
         print("=" * 40)

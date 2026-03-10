@@ -3,15 +3,16 @@
 import functools
 import unittest
 
-import torch
 from functorch.experimental.control_flow import map
+
+import torch
+from torch._higher_order_ops import InvokeQuant, invoke_quant_packed
+from torch._higher_order_ops.invoke_subgraph import mark_compile_region
 from torch.nn.attention.flex_attention import _create_empty_block_mask, flex_attention
 from torch.testing import make_tensor
 from torch.testing._internal.common_device_type import onlyCUDA
 from torch.testing._internal.common_dtype import all_types_and, custom_types
 from torch.testing._internal.opinfo.core import DecorateInfo, OpInfo, SampleInput
-from torch._higher_order_ops.invoke_subgraph import mark_compile_region
-from torch._higher_order_ops import InvokeQuant, invoke_quant_packed
 
 
 def sample_inputs_map(opinfo, device, dtype, requires_grad, **kwargs):
@@ -80,17 +81,17 @@ FIXME_hop_that_doesnt_have_opinfo_test_allowlist = [
     "graphsafe_run_with_rng_state",
     "out_dtype",
     "trace_wrapped",
-    'tag_activation_checkpoint',
-    'executorch_call_delegate',
-    'wrap',
-    'wrap_with_set_grad_enabled',
-    'auto_functionalized_v2',
-    'associative_scan',
-    'flat_apply',  # is WIP, doesn't pass any of the tests yet
-    'wrap_with_autocast',
-    'wrap_activation_checkpoint',
-    'run_const_graph',
-    'auto_functionalized',
+    "tag_activation_checkpoint",
+    "executorch_call_delegate",
+    "wrap",
+    "wrap_with_set_grad_enabled",
+    "auto_functionalized_v2",
+    "associative_scan",
+    "flat_apply",  # is WIP, doesn't pass any of the tests yet
+    "wrap_with_autocast",
+    "wrap_activation_checkpoint",
+    "run_const_graph",
+    "auto_functionalized",
     "map",  # T183144629
     "map_impl",
     "with_effects",
@@ -153,6 +154,7 @@ def sample_inputs_invoke_subgraph(opinfo, device, dtype, requires_grad, **kwargs
 def fn_for_invoke_subgraph(x):
     return torch.sin(x)
 
+
 def simple_invoke_subgraph(x):
     return fn_for_invoke_subgraph(x)
 
@@ -214,7 +216,6 @@ def sample_inputs_scan(opinfo, device, dtype, requires_grad, **kwargs):
 
 
 def simple_scan(init, xs):
-
     def combine_fn(carry, x):
         result = carry @ x + x
         return result, carry.clone()
@@ -229,15 +230,14 @@ def simple_invoke_quant(x):
     def fn(x, y):
         return (torch.sin(x) * y,)
 
-    return quant_tracer(fn, x, x)[0] * 2.
+    return quant_tracer(fn, x, x)[0] * 2.0
 
 
 def simple_invoke_quant_packed(x):
     def fn(x):
         return (torch.sin(x),)
 
-    return invoke_quant_packed(fn, x)[0] * 2.
-
+    return invoke_quant_packed(fn, x)[0] * 2.0
 
 
 hop_db = [

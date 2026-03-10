@@ -1,4 +1,5 @@
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 from torch.utils._pytree import Context, TreeSpec
 
@@ -33,7 +34,7 @@ def reorder_kwargs(user_kwargs: dict[str, Any], spec: TreeSpec) -> dict[str, Any
 def is_equivalent(
     spec1: TreeSpec,
     spec2: TreeSpec,
-    equivalence_fn: Callable[[Optional[type], Context, Optional[type], Context], bool],
+    equivalence_fn: Callable[[type | None, Context, type | None, Context], bool],
 ) -> bool:
     """Customizable equivalence check for two TreeSpecs.
 
@@ -57,7 +58,9 @@ def is_equivalent(
     if len(spec1.children_specs) != len(spec2.children_specs):
         return False
 
-    for child_spec1, child_spec2 in zip(spec1.children_specs, spec2.children_specs):
+    for child_spec1, child_spec2 in zip(
+        spec1.children_specs, spec2.children_specs, strict=False
+    ):
         if not is_equivalent(child_spec1, child_spec2, equivalence_fn):
             return False
 

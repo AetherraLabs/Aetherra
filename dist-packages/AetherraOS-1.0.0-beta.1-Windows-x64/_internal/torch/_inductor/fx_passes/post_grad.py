@@ -5,7 +5,9 @@ import itertools
 import logging
 import operator
 from collections import Counter, defaultdict
-from typing import Any, Callable, Optional, TypeVar, Union
+from collections.abc import Callable
+from typing import Any, TypeVar, Union
+
 from typing_extensions import ParamSpec
 
 import torch
@@ -27,43 +29,42 @@ from ..comms import remove_fsdp2_unsharded_param_graph_input_usage
 from ..fx_utils import FakeTensorUpdater, get_fake_args_kwargs, get_node_storage
 from ..lowering import lowerings as L
 from ..pattern_matcher import (
-    _return_true,
+    MULTIPLE,
     Arg,
     CallFunction,
     CallFunctionVarArgs,
-    filter_nodes,
-    fwd_only,
-    get_arg_value,
-    get_mutation_region_id,
     Ignored,
-    init_once_fakemode,
     KeywordArg,
     ListOf,
     Match,
     MultiOutputPattern,
-    MULTIPLE,
     PatternMatcherPass,
+    _return_true,
+    filter_nodes,
+    fwd_only,
+    get_arg_value,
+    get_mutation_region_id,
+    init_once_fakemode,
     register_graph_pattern,
     register_replacement,
     stable_topological_sort,
 )
 from ..utils import (
+    OPTIMUS_EXCLUDE_POST_GRAD,
     decode_device,
     get_all_devices,
     get_gpu_type,
     is_gpu,
     is_pointwise_use,
-    OPTIMUS_EXCLUDE_POST_GRAD,
 )
 from ..virtualized import V
 from .b2b_gemm import B2B_GEMM_PASS
 from .ddp_fusion import fuse_ddp_communication
-from .group_batch_fusion import group_batch_fusion_passes, POST_GRAD_FUSIONS
+from .group_batch_fusion import POST_GRAD_FUSIONS, group_batch_fusion_passes
 from .micro_pipeline_tp import micro_pipeline_tp_pass
 from .pre_grad import is_same_dict, save_inductor_dict
 from .reinplace import reinplace_inplaceable_ops
 from .split_cat import POST_GRAD_PATTERNS
-
 
 _T = TypeVar("_T")
 _P = ParamSpec("_P")
@@ -327,7 +328,7 @@ def decompose_map_to_while_loop(gm: torch.fx.GraphModule):
                 sub_xs = [torch.ops.aten.select.int(x, 0, idx_int) for x in xs]
                 outs = sub_gm(*sub_xs, *additional_inputs)
 
-                for out, buffer in zip(outs, out_bufs):
+                for out, buffer in zip(outs, out_bufs, strict=False):
                     buffer_slice = torch.ops.aten.select.int(buffer, 0, idx_int)
                     buffer_slice.copy_(out)
                 return loop_idx + 1, *out_bufs, *xs
@@ -359,7 +360,7 @@ def decompose_map_to_while_loop(gm: torch.fx.GraphModule):
 
 
 def resolve_shape_to_proxy(
-    shape: list[Union[int, torch.SymInt]], bound_symbols: dict[Any, Any]
+    shape: list[int | torch.SymInt], bound_symbols: dict[Any, Any]
 ):
     """
     Given a list of symints/ints, this function returns a calculated expression of bound_symbols' values.
@@ -531,7 +532,7 @@ def decompose_scan_to_while_loop(gm: torch.fx.GraphModule):
                     sub_gm(*(list(carry) + sub_xs + list(additional_inputs))),
                     num_init_leaves,
                 )
-                for y, y_out in zip(ys, ys_outs):
+                for y, y_out in zip(ys, ys_outs, strict=False):
                     y_out_slice = torch.ops.aten.select.int(y_out, 0, idx_int)
                     y_out_slice.copy_(y)
                 return loop_idx + 1, *ys_outs, *next_carry, *xs
@@ -859,16 +860,15 @@ def cat_slice_cat(match, cat_input, size, dim=1):
             ],
             dim,
         )
-    else:
-        # don't expect to hit this case, just fall back
-        tmp = L[aten.cat](cat_input, dim)
-        return L[aten.cat](
-            [
-                tmp,
-                L[aten.slice](tmp, dim, 0, size),
-            ],
-            dim,
-        )
+    # don't expect to hit this case, just fall back
+    tmp = L[aten.cat](cat_input, dim)
+    return L[aten.cat](
+        [
+            tmp,
+            L[aten.slice](tmp, dim, 0, size),
+        ],
+        dim,
+    )
 
 
 def is_valid_splitwithsizes_cat(match):
@@ -1305,7 +1305,7 @@ def is_valid_cat_splitwithsizes(match):
     if len(cat_inputs) != len(split_sizes):
         return False
 
-    for cat_input, split_size in zip(cat_inputs, split_sizes):
+    for cat_input, split_size in zip(cat_inputs, split_sizes, strict=False):
         # each cat input tensor's size along dim
         # should match the corresponding split size
         if "val" not in cat_input.meta:
@@ -1590,7 +1590,7 @@ class ConstructorMoverPass:
 
         return False
 
-    def get_node_device(self, node: fx.Node) -> Optional[torch.device]:
+    def get_node_device(self, node: fx.Node) -> torch.device | None:
         """
         Get the device of a node.
         """

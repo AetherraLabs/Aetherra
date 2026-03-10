@@ -67,9 +67,7 @@ class AetherraHubConnector:
                         asyncio.create_task(self._handle_messages())
 
                         self.connected = True
-                        logger.info(
-                            "[HUB] Lyrixa successfully connected to Aetherra Hub"
-                        )
+                        logger.info("[HUB] Lyrixa successfully connected to Aetherra Hub")
                         await self._notify_status_change("connected")
                         return True
 
@@ -194,9 +192,7 @@ class AetherraHubConnector:
         try:
             # Use an ephemeral session to avoid cross-loop reuse in GUI threads
             async with aiohttp.ClientSession() as s:
-                async with s.get(
-                    f"http://{self.hub_host}:{self.hub_port}/api/plugins"
-                ) as resp:
+                async with s.get(f"http://{self.hub_host}:{self.hub_port}/api/plugins") as resp:
                     if resp.status != 200:
                         return []
                     data = await resp.json()
@@ -344,9 +340,7 @@ class AetherraOSDetector:
             hub_host = os.getenv("AETHERRA_HUB_HOST", "localhost")
             hub_port = int(os.getenv("AETHERRA_HUB_PORT", "3001"))
             async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    f"http://{hub_host}:{hub_port}/status"
-                ) as response:
+                async with session.get(f"http://{hub_host}:{hub_port}/status") as response:
                     if response.status == 200:
                         hub_status = await response.json()
                         detection_result["hub_connected"] = True
@@ -358,9 +352,7 @@ class AetherraOSDetector:
                         ) as services_response:
                             if services_response.status == 200:
                                 services = await services_response.json()
-                                detection_result["services"] = services.get(
-                                    "services", []
-                                )
+                                detection_result["services"] = services.get("services", [])
 
                                 # Check if Aetherra OS backend is in the service list
                                 for service in detection_result["services"]:

@@ -3,7 +3,6 @@ import contextlib
 
 import torch
 
-
 __all__ = [
     "fallback_dispatcher",
     "semi_sparse_values",
@@ -41,8 +40,7 @@ def semi_sparse_values(func, types, args=(), kwargs=None) -> torch.Tensor:
         m, k = A.shape
         num_kept_elements = m * k // 2
         return A.packed[:num_kept_elements:].view(m, -1)
-    else:
-        return A.packed.detach()
+    return A.packed.detach()
 
 
 def semi_sparse_indices(func, types, args=(), kwargs=None) -> torch.Tensor:
@@ -55,8 +53,7 @@ def semi_sparse_indices(func, types, args=(), kwargs=None) -> torch.Tensor:
         num_kept_elements = m * k // 2
         metadata = A.packed[num_kept_elements:].view(m, -1)
         return metadata.view(torch.int32 if A.dtype == torch.int32 else torch.int16)
-    else:
-        return A.meta
+    return A.meta
 
 
 def semi_sparse_t(func, types, args=(), kwargs=None) -> torch.Tensor:
@@ -121,13 +118,12 @@ def semi_sparse_mm(func, types, args=(), kwargs=None) -> torch.Tensor:
         B_padded = A._pad_dense_input(B)
         res = A._mm(B_padded)
         return res[:, :col]
-    else:
-        B_t = B.t()
-        assert isinstance(B_t, torch.sparse.SparseSemiStructuredTensor)
-        row, col = A.shape
-        A_padded = B._pad_dense_input(A)
-        res = B_t._mm(A_padded.t()).t()
-        return res[:row, :]
+    B_t = B.t()
+    assert isinstance(B_t, torch.sparse.SparseSemiStructuredTensor)
+    row, col = A.shape
+    A_padded = B._pad_dense_input(A)
+    res = B_t._mm(A_padded.t()).t()
+    return res[:row, :]
 
 
 def semi_sparse_addmm(func, types, args=(), kwargs=None) -> torch.Tensor:

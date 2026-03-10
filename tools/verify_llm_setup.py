@@ -21,15 +21,15 @@ from __future__ import annotations
 import json
 import os
 import sys
-from typing import Any, Dict
+from typing import Any
 
 
 def _env_bool(name: str, default: str = "0") -> bool:
     return os.environ.get(name, default).strip() == "1"
 
 
-def check_flags() -> Dict[str, Any]:
-    out: Dict[str, Any] = {"ok": True, "warnings": [], "notes": []}
+def check_flags() -> dict[str, Any]:
+    out: dict[str, Any] = {"ok": True, "warnings": [], "notes": []}
     enabled = _env_bool("AETHERRA_AI_API_ENABLED")
     stream = _env_bool("AETHERRA_AI_API_STREAM")
     require = _env_bool("AETHERRA_AI_API_REQUIRE_TOKEN")
@@ -53,8 +53,8 @@ def check_flags() -> Dict[str, Any]:
     return out
 
 
-def check_provider_keys() -> Dict[str, Any]:
-    out: Dict[str, Any] = {"ok": True, "providers": {}}
+def check_provider_keys() -> dict[str, Any]:
+    out: dict[str, Any] = {"ok": True, "providers": {}}
     for name, env in (
         ("openai", "OPENAI_API_KEY"),
         ("anthropic", "ANTHROPIC_API_KEY"),
@@ -67,11 +67,11 @@ def check_provider_keys() -> Dict[str, Any]:
     return out
 
 
-def maybe_round_trip() -> Dict[str, Any]:
+def maybe_round_trip() -> dict[str, Any]:
     """Attempt a minimal local round-trip if SDKs are installed and keys present.
     Best-effort: never raises, returns status only.
     """
-    res: Dict[str, Any] = {"attempted": False, "ok": True, "details": []}
+    res: dict[str, Any] = {"attempted": False, "ok": True, "details": []}
     # OpenAI
     key = os.environ.get("OPENAI_API_KEY", "").strip()
     if key:
@@ -106,7 +106,7 @@ def maybe_round_trip() -> Dict[str, Any]:
 
 
 def main() -> int:
-    report: Dict[str, Any] = {
+    report: dict[str, Any] = {
         "flags": check_flags(),
         "providers": check_provider_keys(),
         "round_trip": maybe_round_trip(),

@@ -4,15 +4,15 @@ from __future__ import annotations
 
 # Standard library imports
 import uuid
-from typing import Any, Dict, Optional
+from typing import Any
 
 __all__ = ["extract_trace_id"]
 
 
 def extract_trace_id(
     req: Any = None,
-    body: Optional[Dict[str, Any]] = None,
-    query: Optional[Dict[str, Any]] = None,
+    body: dict[str, Any] | None = None,
+    query: dict[str, Any] | None = None,
 ) -> str:
     try:
         hdr = (getattr(req, "headers", {}) or {}).get("X-Aetherra-Trace-Id")

@@ -14,9 +14,7 @@ from Aetherra.runtime.script_runner import ScriptRunner
 class ScriptRouter:
     def __init__(self, context):
         self.runner = ScriptRunner()
-        self.context = (
-            context  # Dictionary: {"memory": ..., "plugins": ..., "agents": ...}
-        )
+        self.context = context  # Dictionary: {"memory": ..., "plugins": ..., "agents": ...}
         self.registry = script_registry_loader.get_registry()
 
     def suggest_script(self, goal: str) -> str:
@@ -78,11 +76,11 @@ class ScriptRouter:
         response = f"🤖 **Script Suggestions for '{goal}':**\n\n"
 
         for i, suggestion in enumerate(suggestions[:3]):  # Top 3 suggestions
-            response += (
-                f"{i + 1}. **{suggestion['name']}** ({suggestion['category']})\n"
-            )
+            response += f"{i + 1}. **{suggestion['name']}** ({suggestion['category']})\n"
             response += f"   {suggestion['description']}\n"
-            response += f"   ⏱️ {suggestion['execution_time']} | [TOOL] {suggestion['complexity']}\n\n"
+            response += (
+                f"   ⏱️ {suggestion['execution_time']} | [TOOL] {suggestion['complexity']}\n\n"
+            )
 
         if len(suggestions) > 3:
             response += f"... and {len(suggestions) - 3} more scripts available.\n"
@@ -100,9 +98,7 @@ class ScriptRouter:
 
         for category, info in categories.items():
             scripts = script_registry_loader.get_scripts_by_category(category)
-            response += (
-                f"{info['icon']} **{category.title()}** ({info['priority']} priority)\n"
-            )
+            response += f"{info['icon']} **{category.title()}** ({info['priority']} priority)\n"
             response += f"   {info['description']}\n"
             response += f"   📝 {len(scripts)} scripts available\n\n"
 
@@ -159,7 +155,9 @@ class ScriptRouter:
                 return "No scripts found in standard library."
             response = "📚 **Available Scripts:**\n\n"
             for script in scripts:
-                response += f"• **{script['name']}** ({script['category']}): {script['description']}\n"
+                response += (
+                    f"• **{script['name']}** ({script['category']}): {script['description']}\n"
+                )
             return response
 
         # Match description request
@@ -168,7 +166,9 @@ class ScriptRouter:
             name = desc_match.group(1).strip()
             for script in self.runner.list_scripts():
                 if script["name"] == name:
-                    return f"📝 **{name}**: {script['description']}\nTags: {', '.join(script['tags'])}"
+                    return (
+                        f"📝 **{name}**: {script['description']}\nTags: {', '.join(script['tags'])}"
+                    )
             return f"Script '{name}' not found."
 
         return "🤖 I can help you with scripts! Try:\n• 'list scripts' - Show all available scripts\n• 'suggest [goal]' - Get script suggestions for a goal\n• 'categories' - Show script categories\n• 'run [name]' - Execute a script\n• 'describe [name]' - Get script details"

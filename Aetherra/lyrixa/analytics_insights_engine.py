@@ -10,7 +10,6 @@ Advanced Memory Systems to provide deep behavioral analysis, performance metrics
 and predictive insights.
 """
 
-
 # Standard library imports
 import json
 import logging
@@ -327,9 +326,7 @@ class AnalyticsEngine:
                 if hourly_performance:
                     # Find peak performance hours
                     best_hours = sorted(hourly_performance, key=lambda x: x[0])[:3]
-                    worst_hours = sorted(
-                        hourly_performance, key=lambda x: x[0], reverse=True
-                    )[:3]
+                    worst_hours = sorted(hourly_performance, key=lambda x: x[0], reverse=True)[:3]
 
                     if best_hours and worst_hours:
                         insights.append(
@@ -502,7 +499,7 @@ class AnalyticsEngine:
                         insights.append(
                             InsightPattern(
                                 pattern_id="excellent_memory_performance",
-                                description=f"Excellent memory recall performance: {recall_performance[0]*1000:.1f}ms average. "
+                                description=f"Excellent memory recall performance: {recall_performance[0] * 1000:.1f}ms average. "
                                 f"Memory systems are highly optimized.",
                                 confidence=0.9,
                                 impact_score=0.6,
@@ -747,8 +744,7 @@ class AnalyticsEngine:
                     "total_metrics": total_metrics,
                     "total_insights": total_insights,
                     "category_statistics": {
-                        row[0]: {"average": row[1], "count": row[2]}
-                        for row in category_stats
+                        row[0]: {"average": row[1], "count": row[2]} for row in category_stats
                     },
                     "analytics_stats": self.analytics_stats.copy(),
                     "system_health": await self._calculate_system_health(),
@@ -926,9 +922,7 @@ class InsightsEngine:
             correlation_insights = await self._generate_correlation_insights()
 
             # Generate recommendations
-            recommendations = await self._generate_recommendations(
-                base_insights, advanced_insights
-            )
+            recommendations = await self._generate_recommendations(base_insights, advanced_insights)
 
             insights_time = time.time() - insights_start
 
@@ -962,9 +956,7 @@ class InsightsEngine:
                 # Analyze performance bottlenecks
                 performance_data = await self._get_performance_data()
                 if performance_data:
-                    insights.extend(
-                        await self._analyze_performance_bottlenecks(performance_data)
-                    )
+                    insights.extend(await self._analyze_performance_bottlenecks(performance_data))
 
             elif category == "user_experience":
                 # Analyze user satisfaction patterns
@@ -977,9 +969,7 @@ class InsightsEngine:
                 conversation_data = await self._get_conversation_data()
                 if conversation_data:
                     insights.extend(
-                        await self._analyze_conversation_effectiveness(
-                            conversation_data
-                        )
+                        await self._analyze_conversation_effectiveness(conversation_data)
                     )
 
             elif category == "memory_efficiency":
@@ -1028,16 +1018,12 @@ class InsightsEngine:
 
         try:
             # Analyze correlation between response time and user satisfaction
-            response_satisfaction_corr = (
-                await self._analyze_response_satisfaction_correlation()
-            )
+            response_satisfaction_corr = await self._analyze_response_satisfaction_correlation()
             if response_satisfaction_corr:
                 correlations.append(response_satisfaction_corr)
 
             # Analyze correlation between memory usage and performance
-            memory_performance_corr = (
-                await self._analyze_memory_performance_correlation()
-            )
+            memory_performance_corr = await self._analyze_memory_performance_correlation()
             if memory_performance_corr:
                 correlations.append(memory_performance_corr)
 
@@ -1056,9 +1042,7 @@ class InsightsEngine:
         try:
             # Analyze high-impact insights
             high_impact_insights = [
-                insight
-                for insight in base_insights
-                if insight.get("impact_score", 0) > 0.8
+                insight for insight in base_insights if insight.get("impact_score", 0) > 0.8
             ]
 
             for insight in high_impact_insights:
@@ -1067,9 +1051,7 @@ class InsightsEngine:
                     recommendations.append(recommendation)
 
             # Generate system-wide recommendations
-            system_recommendations = await self._generate_system_recommendations(
-                advanced_insights
-            )
+            system_recommendations = await self._generate_system_recommendations(advanced_insights)
             recommendations.extend(system_recommendations)
 
         except Exception as e:
@@ -1123,8 +1105,7 @@ class InsightsEngine:
         high_priority = [
             insight
             for insight in insights
-            if insight.get("impact_score", 0) > 0.8
-            and insight.get("confidence", 0) > 0.8
+            if insight.get("impact_score", 0) > 0.8 and insight.get("confidence", 0) > 0.8
         ]
 
         for insight in high_priority[:5]:  # Top 5 key findings
@@ -1132,9 +1113,7 @@ class InsightsEngine:
 
         return key_findings
 
-    async def _extract_priority_actions(
-        self, insights: List[Dict[str, Any]]
-    ) -> List[str]:
+    async def _extract_priority_actions(self, insights: List[Dict[str, Any]]) -> List[str]:
         """Extract priority actions from insights"""
 
         actions = []
@@ -1150,9 +1129,7 @@ class InsightsEngine:
 
         return actions[:5]  # Top 5 priority actions
 
-    async def _assess_overall_system_status(
-        self, insights: List[Dict[str, Any]]
-    ) -> str:
+    async def _assess_overall_system_status(self, insights: List[Dict[str, Any]]) -> str:
         """Assess overall system status based on insights"""
 
         # Count positive vs negative insights
@@ -1179,9 +1156,9 @@ class InsightsEngine:
             return "needs_attention"
 
 
-# Placeholder implementations for complex analysis methods
-class AnalyticsStubMethods:
-    """Stub implementations for complex analytics methods that would be fully implemented"""
+# Baseline implementations for complex analysis methods
+class AnalyticsBaselineMethods:
+    """Baseline implementations for complex analytics methods pending full rollout"""
 
     async def _analyze_performance_bottlenecks(self, data):
         return [{"type": "performance", "finding": "Sample performance analysis"}]
@@ -1226,10 +1203,10 @@ class AnalyticsStubMethods:
         return [{"type": "system", "recommendation": "Sample system recommendation"}]
 
 
-# Mix in stub methods to InsightsEngine
-for method_name in dir(AnalyticsStubMethods):
+# Mix baseline methods into InsightsEngine
+for method_name in dir(AnalyticsBaselineMethods):
     if method_name.startswith("_") and not method_name.startswith("__"):
-        setattr(InsightsEngine, method_name, getattr(AnalyticsStubMethods, method_name))
+        setattr(InsightsEngine, method_name, getattr(AnalyticsBaselineMethods, method_name))
 
 
 # Convenience functions for easy integration

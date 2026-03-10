@@ -13,18 +13,26 @@ ensuring type safety and clear contracts between different components of the sys
 
 import dataclasses
 import types
-from typing import Any, Callable, NamedTuple, Optional, Protocol, Union
+from collections.abc import Callable
+from typing import Any, NamedTuple, Protocol, Union
 
 # CacheEntry has a `guard_manager` field for the guard, and a `code` field for the code object.
 from torch._C._dynamo.eval_frame import (
     _CacheEntry as CacheEntry,
+)
+from torch._C._dynamo.eval_frame import (
     _ExtraState as ExtraState,
+)
+from torch._C._dynamo.eval_frame import (
     _FrameAction as FrameAction,
+)
+from torch._C._dynamo.eval_frame import (
     _FrameExecStrategy as FrameExecStrategy,
+)
+from torch._C._dynamo.eval_frame import (
     _PyInterpreterFrame as DynamoFrameType,
 )
 from torch._guards import CompileId, Guard
-
 
 # We use a dict to store additional data per frame.
 FrameState = dict[Any, Any]
@@ -54,9 +62,9 @@ class GuardFn(Protocol):
     code_parts: list[str]
     verbose_code_parts: list[str]
     global_scope: dict[str, object]
-    guard_fail_fn: Optional[Callable[[GuardFail], None]]
-    cache_entry: Optional[CacheEntry]
-    extra_state: Optional[ExtraState]
+    guard_fail_fn: Callable[[GuardFail], None] | None
+    cache_entry: CacheEntry | None
+    extra_state: ExtraState | None
 
     # maps locals of user function to bool
     def __call__(self, f_locals: dict[str, object]) -> bool: ...
@@ -81,7 +89,7 @@ class ConvertFrameReturn:
     )
     # also apply frame_exec strategy to future frames with same code
     apply_to_code: bool = True
-    guarded_code: Optional[GuardedCode] = None
+    guarded_code: GuardedCode | None = None
 
 
 def wrap_guarded_code(guarded_code: GuardedCode) -> ConvertFrameReturn:
@@ -95,7 +103,7 @@ class DynamoCallbackFn(Protocol):
     def __call__(
         self,
         frame: DynamoFrameType,
-        cache_entry: Optional[CacheEntry],
+        cache_entry: CacheEntry | None,
         frame_state: FrameState,
     ) -> ConvertFrameReturn: ...
 
@@ -136,4 +144,4 @@ class ProfilerEndHook(Protocol):
 class BytecodeHook(Protocol):
     def __call__(
         self, code: types.CodeType, new_code: types.CodeType
-    ) -> Optional[types.CodeType]: ...
+    ) -> types.CodeType | None: ...

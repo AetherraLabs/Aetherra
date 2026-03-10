@@ -1,8 +1,9 @@
 # mypy: allow-untyped-defs
 import functools
 import operator
+from collections.abc import Callable
 from functools import reduce
-from typing import Any, Callable
+from typing import Any
 
 import torch
 from torch._dynamo.utils import counters
@@ -12,19 +13,19 @@ from torch.utils._ordered_set import OrderedSet
 from .. import ir
 from ..lowering import lowerings as L
 from ..pattern_matcher import (
+    MULTIPLE,
     Arg,
     CallFunction,
+    KeywordArg,
     filter_nodes,
     get_arg_value,
-    KeywordArg,
-    MULTIPLE,
 )
 from ..utils import (
+    SUPPORTED_MKLDNN_DEVICES,
     is_mkldnn_bf16_supported,
     is_mkldnn_fp16_supported,
-    SUPPORTED_MKLDNN_DEVICES,
 )
-from ..virtualized import ops, V
+from ..virtualized import V, ops
 from .freezing_patterns import register_freezing_graph_pattern
 from .post_grad import register_lowering_pattern
 from .quantization import (
@@ -33,7 +34,6 @@ from .quantization import (
     _register_quantization_weight_pack_pass,
     _register_woq_lowerings,
 )
-
 
 if torch._C._has_mkldnn:
     aten = torch.ops.aten
@@ -159,10 +159,9 @@ if torch._C._has_mkldnn:
         """
         if device_type == "cpu":
             return CpuMkldnnDeviceOp()
-        elif device_type == "xpu":
+        if device_type == "xpu":
             return XpuMkldnnDeviceOp()
-        else:
-            raise RuntimeError(f"MKLDNN is not supported on {device_type} device.")
+        raise RuntimeError(f"MKLDNN is not supported on {device_type} device.")
 
     def _is_valid_grouped_gemm_fusion(computation_nodes):
         """
@@ -281,10 +280,9 @@ if torch._C._has_mkldnn:
         out = unary_fusion(computation_call)
         if lowp_dtype == torch.bfloat16:
             return _to_bf16(out)
-        elif lowp_dtype == torch.float16:
+        if lowp_dtype == torch.float16:
             return _to_fp16(out)
-        else:
-            return out
+        return out
 
     def _gelu_fusion_1(computation_call):
         return CallFunction(
@@ -483,19 +481,18 @@ if torch._C._has_mkldnn:
                     "",
                 ]
                 return L[computation_op](*computation_args)
-            else:
-                # computation_args += ["none", [], ""]
-                out = L[computation_op](*computation_args)
-                if lowp_dtype:
-                    out = L[prims.convert_element_type.default](out, dtype=torch.float)
-                out = L[aten.where](
-                    L[aten.gt](out, 0),
-                    out,
-                    L[aten.mul](out, negative_slope),
-                )
-                if lowp_dtype:
-                    out = L[prims.convert_element_type.default](out, dtype=dtype2)  # type: ignore[possibly-undefined]
-                return out
+            # computation_args += ["none", [], ""]
+            out = L[computation_op](*computation_args)
+            if lowp_dtype:
+                out = L[prims.convert_element_type.default](out, dtype=torch.float)
+            out = L[aten.where](
+                L[aten.gt](out, 0),
+                out,
+                L[aten.mul](out, negative_slope),
+            )
+            if lowp_dtype:
+                out = L[prims.convert_element_type.default](out, dtype=dtype2)  # type: ignore[possibly-undefined]
+            return out
 
         return fn
 
@@ -533,14 +530,13 @@ if torch._C._has_mkldnn:
                     "",
                 ]
                 return L[computation_op](*computation_args)
-            else:
-                out = L[computation_op](*computation_args)
-                if lowp_dtype:
-                    out = L[prims.convert_element_type.default](out, dtype=torch.float)
-                out = L[aten.clamp_max](L[aten.clamp_min](out, min_value), max_value)
-                if lowp_dtype:
-                    out = L[prims.convert_element_type.default](out, dtype=dtype2)  # type: ignore[possibly-undefined]
-                return out
+            out = L[computation_op](*computation_args)
+            if lowp_dtype:
+                out = L[prims.convert_element_type.default](out, dtype=torch.float)
+            out = L[aten.clamp_max](L[aten.clamp_min](out, min_value), max_value)
+            if lowp_dtype:
+                out = L[prims.convert_element_type.default](out, dtype=dtype2)  # type: ignore[possibly-undefined]
+            return out
 
         return fn
 
@@ -664,7 +660,7 @@ if torch._C._has_mkldnn:
                     _visited_nodes.add(_current_node)
                     if _current_node == _ancestor_node:
                         return True
-                    elif isinstance(
+                    if isinstance(
                         _current_node, torch.fx.Node
                     ) and _current_node.op not in ["placeholder", "output", "get_attr"]:
                         for input in _current_node.all_input_nodes:
@@ -872,7 +868,9 @@ if torch._C._has_mkldnn:
                 _unary_fusion_pattern(_leaky_relu_fusion, call_fn, 3, lowp_dtype)
                 for call_fn in computation_call_fns
             ]
-            for pattern, computation_op in zip(_leaky_relu_patterns, computation_ops):
+            for pattern, computation_op in zip(
+                _leaky_relu_patterns, computation_ops, strict=False
+            ):
                 _register_leaky_relu_fusion_lowering(
                     pattern, computation_op, lowp_dtype
                 )
@@ -880,7 +878,9 @@ if torch._C._has_mkldnn:
                 _unary_fusion_pattern(_hardtanh_fusion, call_fn, 1, lowp_dtype)
                 for call_fn in computation_call_fns
             ]
-            for pattern, computation_op in zip(hardtanh_patterns, computation_ops):
+            for pattern, computation_op in zip(
+                hardtanh_patterns, computation_ops, strict=False
+            ):
                 _register_hardtanh_fusion_lowering(pattern, computation_op, lowp_dtype)
 
     def _register_inplace_fusion():
@@ -937,7 +937,7 @@ if torch._C._has_mkldnn:
         ]
         _computation_user_1 = [_conv_call(users=1), _linear_call(users=1)]
         for computation_call, computation_op, fusion_op in zip(
-            _computation_user_1, computation_ops[:-1], fusion_ops
+            _computation_user_1, computation_ops[:-1], fusion_ops, strict=False
         ):
             for binary_op in binary_ops:
                 pattern = _binary_fusion_v2(computation_call, binary_op)
@@ -956,7 +956,7 @@ if torch._C._has_mkldnn:
         fusion_ops = [mkldnn._convolution_pointwise.binary]
         _computation_user_1 = [_conv_call(users=1)]
         for computation_call, computation_op, fusion_op in zip(
-            _computation_user_1, computation_ops[:-1], fusion_ops
+            _computation_user_1, computation_ops[:-1], fusion_ops, strict=False
         ):
             for binary_op in binary_ops:
                 pattern_v1 = _combined_fusion(
@@ -1186,7 +1186,9 @@ if torch._C._has_mkldnn:
             strides = conv_node.args[3]
             if any(
                 output_padding >= stride
-                for output_padding, stride in zip(output_paddings, strides)
+                for output_padding, stride in zip(
+                    output_paddings, strides, strict=False
+                )
             ):
                 return False
         return True

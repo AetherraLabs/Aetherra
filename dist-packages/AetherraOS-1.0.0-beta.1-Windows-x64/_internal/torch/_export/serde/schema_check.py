@@ -5,7 +5,7 @@ import inspect
 import re
 import typing
 from enum import IntEnum
-from typing import Annotated, Any, ForwardRef, Optional, Union
+from typing import Annotated, Any, ForwardRef, Union
 
 from torch._export.serde import schema
 from torch._export.serde.union import _Union
@@ -49,20 +49,20 @@ def _staged_schema():
         def dump_type(t, level: int) -> tuple[str, str, str]:
             if getattr(t, "__name__", None) in cpp_enum_defs:
                 return t.__name__, "int64_t", t.__name__
-            elif t in _CPP_TYPE_MAP:
+            if t in _CPP_TYPE_MAP:
                 return (t.__name__, _CPP_TYPE_MAP[t], _THRIFT_TYPE_MAP[t])
-            elif isinstance(t, str):
+            if isinstance(t, str):
                 assert t in defs
                 assert t not in cpp_enum_defs
                 assert "[" not in t
                 return t, f"ForwardRef<{t}>", t
-            elif isinstance(t, ForwardRef):
+            if isinstance(t, ForwardRef):
                 return (
                     t.__forward_arg__,
                     f"ForwardRef<{t.__forward_arg__}>",
                     t.__forward_arg__,
                 )
-            elif o := typing.get_origin(t):
+            if o := typing.get_origin(t):
                 # Lemme know if there's a better way to do this.
                 if o == list:
                     yaml_head, cpp_head, thrift_head, thrift_tail = (
@@ -93,49 +93,43 @@ def _staged_schema():
                 else:
                     raise AssertionError(f"Type {t} is not supported in export schema.")
                 yaml_arg_types, cpp_arg_types, thrift_arg_types = zip(
-                    *[dump_type(x, level + 1) for x in typing.get_args(t)]
+                    *[dump_type(x, level + 1) for x in typing.get_args(t)], strict=False
                 )
                 return (
                     (f"{yaml_head}[{', '.join(yaml_arg_types)}]"),
                     (f"{cpp_head}<{', '.join(cpp_arg_types)}>"),
                     f"{thrift_head}{', '.join(thrift_arg_types)}{thrift_tail}",
                 )
-            elif isinstance(t, type):
+            if isinstance(t, type):
                 return (t.__name__, t.__name__, t.__name__)
-            else:
-                raise AssertionError(f"Type {t} is not supported in export schema.")
+            raise AssertionError(f"Type {t} is not supported in export schema.")
 
         def dump_cpp_value(v) -> str:
             if v is None:
                 return "std::nullopt"
-            elif v is True:
+            if v is True:
                 return "true"
-            elif v is False:
+            if v is False:
                 return "false"
-            elif v == {}:
+            if v == {} or v == [] or v == ():
                 return "{}"
-            elif v == []:
-                return "{}"
-            elif v == ():
-                return "{}"
-            elif isinstance(v, str):
+            if isinstance(v, str):
                 return f'"{v}"'
-            else:
-                raise AssertionError(
-                    f"Default value {v} is not supported yet in export schema."
-                )
+            raise AssertionError(
+                f"Default value {v} is not supported yet in export schema."
+            )
 
-        def dump_field(f) -> tuple[dict[str, Any], str, Optional[str], str, int]:
+        def dump_field(f) -> tuple[dict[str, Any], str, str | None, str, int]:
             t, cpp_type, thrift_type = dump_type(f.type, 0)
             ret = {"type": t}
-            cpp_default: Optional[str] = None
-            assert (
-                typing.get_origin(f.type) == Annotated
-            ), f"Field {f.name} must be annotated with an integer id."
+            cpp_default: str | None = None
+            assert typing.get_origin(f.type) == Annotated, (
+                f"Field {f.name} must be annotated with an integer id."
+            )
             thrift_id = f.type.__metadata__[0]
-            assert (
-                type(thrift_id) is int
-            ), f"Field {f.name} must be annotated with an integer id."
+            assert type(thrift_id) is int, (
+                f"Field {f.name} must be annotated with an integer id."
+            )
 
             value = dataclasses.MISSING
             if f.default is not dataclasses.MISSING:
@@ -173,9 +167,7 @@ def _staged_schema():
 
     def _handle_int_enum(name, ty):
         yaml_ret[name] = {"kind": "enum", "fields": {x.name: x.value for x in ty}}
-        cpp_enum_defs[
-            name
-        ] = f"""
+        cpp_enum_defs[name] = f"""
 enum class {name} {{
 {chr(10).join([f"  {x.name} = {x.value}," for x in ty])}
 }};
@@ -240,14 +232,17 @@ enum {name} {{
 
         from_json_def = f"""{{
   {name} nlohmann_json_default_obj;
-{chr(10).join(
-    [f'  nlohmann_json_t.{name} = nlohmann_json_j.value("{name}", nlohmann_json_default_obj.{name});'
-    for name, f in cpp_fields.items()])}
+{
+            chr(10).join(
+                [
+                    f'  nlohmann_json_t.{name} = nlohmann_json_j.value("{name}", nlohmann_json_default_obj.{name});'
+                    for name, f in cpp_fields.items()
+                ]
+            )
+        }
 }}
 """
-        cpp_class_defs[
-            name
-        ] = f"""
+        cpp_class_defs[name] = f"""
 class {name} {{
  private:
 {field_decls}
@@ -262,9 +257,7 @@ class {name} {{
         cpp_json_defs.append(f"inline {from_json_decl} {from_json_def}")
         cpp_type_decls.append(f"class {name};")
 
-        thrift_type_defs[
-            name
-        ] = f"""
+        thrift_type_defs[name] = f"""
 struct {name} {{
 {chr(10).join(f"  {f['thrift_id']}: {f['thrift_type']} {n};" for n, f in thrift_fields.items())}
 }}"""
@@ -307,9 +300,7 @@ struct {name} {{
             ]
         )
 
-        cpp_class_defs[
-            name
-        ] = f"""
+        cpp_class_defs[name] = f"""
 class {name} {{
   struct Void {{}};
 
@@ -352,9 +343,7 @@ inline void parseEnum(std::string_view s, {name}::Tag& t) {{
 """
         cpp_type_decls.append(f"class {name};")
 
-        thrift_type_defs[
-            name
-        ] = f"""
+        thrift_type_defs[name] = f"""
 union {name} {{
 {chr(10).join(f"  {f['thrift_id']}: {f['thrift_type']} {n};" for n, f in thrift_fields.items())}
 }}"""
@@ -613,11 +602,11 @@ class _Commit:
     additions: dict[str, Any]
     subtractions: dict[str, Any]
     base: dict[str, Any]
-    checksum_head: Optional[str]
+    checksum_head: str | None
     cpp_header: str
     cpp_header_path: str
-    thrift_checksum_head: Optional[str]
-    thrift_checksum_real: Optional[str]
+    thrift_checksum_head: str | None
+    thrift_checksum_real: str | None
     thrift_checksum_next: str
     thrift_schema: str
     thrift_schema_path: str
@@ -645,7 +634,7 @@ def update_schema():
         assert thrift_content[1].startswith("// checksum<<")
         thrift_checksum_real = _hash_content("\n".join(thrift_content[2:]))
 
-        from yaml import load, Loader
+        from yaml import Loader, load
 
         dst = load(content, Loader=Loader)
         assert isinstance(dst, dict)

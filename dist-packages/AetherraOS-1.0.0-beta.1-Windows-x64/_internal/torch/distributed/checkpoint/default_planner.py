@@ -7,7 +7,7 @@ import logging
 import operator
 from collections import ChainMap
 from functools import reduce
-from typing import Any, cast, Optional, Union
+from typing import Any, cast
 
 import torch
 from torch.distributed._shard._utils import narrow_tensor_by_index
@@ -19,12 +19,12 @@ from torch.distributed.checkpoint._nested_dict import (
 from torch.distributed.checkpoint._sharded_tensor_utils import _flatten_sharded_tensors
 from torch.distributed.checkpoint._traverse import set_element
 from torch.distributed.checkpoint.metadata import (
+    STATE_DICT_TYPE,
+    STORAGE_TYPES,
     BytesStorageMetadata,
     ChunkStorageMetadata,
     Metadata,
     MetadataIndex,
-    STATE_DICT_TYPE,
-    STORAGE_TYPES,
     StorageMeta,
     TensorStorageMetadata,
 )
@@ -51,7 +51,6 @@ from torch.distributed.tensor import DTensor
 
 from . import _version
 
-
 logger: logging.Logger = logging.getLogger(__name__)
 
 
@@ -73,7 +72,7 @@ class DefaultSavePlanner(SavePlanner):
         self,
         flatten_state_dict: bool = True,
         flatten_sharded_tensors: bool = True,
-        dedup_replicated_tensors: Optional[bool] = None,
+        dedup_replicated_tensors: bool | None = None,
         dedup_save_to_lowest_rank: bool = False,
         enable_plan_caching: bool = False,
     ) -> None:
@@ -93,7 +92,7 @@ class DefaultSavePlanner(SavePlanner):
     def set_up_planner(
         self,
         state_dict: STATE_DICT_TYPE,
-        storage_meta: Optional[StorageMeta] = None,
+        storage_meta: StorageMeta | None = None,
         is_coordinator: bool = False,
     ) -> None:
         if self.flatten_state_dict:
@@ -121,8 +120,7 @@ class DefaultSavePlanner(SavePlanner):
                     "No change in the local plan. Skipping sending the plan to the coordinator"
                 )
                 return SavePlan([], usable=False)
-            else:
-                SavePlanner._cached_save_plan[self._cached_plans_key] = plan
+            SavePlanner._cached_save_plan[self._cached_plans_key] = plan
 
         return self.plan
 
@@ -196,7 +194,9 @@ class DefaultSavePlanner(SavePlanner):
 
             if self._cached_plans_key in self._cached_global_plan:
                 for cached_plan, new_plan in zip(
-                    SavePlanner._cached_global_plan[self._cached_plans_key], global_plan
+                    SavePlanner._cached_global_plan[self._cached_plans_key],
+                    global_plan,
+                    strict=False,
                 ):
                     if _compare_save_plans(cached_plan, new_plan):
                         global_plan_delta.append(SavePlan([], usable=False))
@@ -250,7 +250,7 @@ class DefaultSavePlanner(SavePlanner):
         self.plan = finished_plan
         return self.plan
 
-    def resolve_data(self, write_item: WriteItem) -> Union[torch.Tensor, io.BytesIO]:
+    def resolve_data(self, write_item: WriteItem) -> torch.Tensor | io.BytesIO:
         object = self.lookup_object(write_item.index)
         return self.transform_object(write_item, object)
 
@@ -296,7 +296,7 @@ class DefaultLoadPlanner(LoadPlanner):
     def set_up_planner(
         self,
         state_dict: STATE_DICT_TYPE,
-        metadata: Optional[Metadata] = None,
+        metadata: Metadata | None = None,
         is_coordinator: bool = False,
     ) -> None:
         _init_state_dict(state_dict)
@@ -429,7 +429,7 @@ class _EmptyStateDictLoadPlanner(DefaultLoadPlanner):
     def set_up_planner(
         self,
         state_dict: STATE_DICT_TYPE,
-        metadata: Optional[Metadata] = None,
+        metadata: Metadata | None = None,
         is_coordinator: bool = False,
     ) -> None:
         assert not state_dict
@@ -469,8 +469,7 @@ def create_default_local_load_plan(
         if fqn not in metadata.state_dict_metadata:
             if strict:
                 raise RuntimeError(f"Missing key in checkpoint state_dict: {fqn}.")
-            else:
-                continue
+            continue
 
         md = metadata.state_dict_metadata[fqn]
         if (

@@ -6,7 +6,8 @@ enough, so that more sophisticated ones can also be easily integrated in the
 future.
 """
 
-from torch.optim import lr_scheduler as lr_scheduler, swa_utils as swa_utils
+from torch.optim import lr_scheduler as lr_scheduler
+from torch.optim import swa_utils as swa_utils
 from torch.optim._adafactor import Adafactor as Adafactor
 from torch.optim.adadelta import Adadelta as Adadelta
 from torch.optim.adagrad import Adagrad as Adagrad
@@ -22,7 +23,6 @@ from torch.optim.rmsprop import RMSprop as RMSprop
 from torch.optim.rprop import Rprop as Rprop
 from torch.optim.sgd import SGD as SGD
 from torch.optim.sparse_adam import SparseAdam as SparseAdam
-
 
 Adafactor.__module__ = "torch.optim"
 

@@ -1,6 +1,5 @@
 # mypy: allow-untyped-defs
 import math
-from typing import Optional, Union
 
 import torch
 from torch import Tensor
@@ -10,7 +9,6 @@ from torch.distributions.transforms import AffineTransform, ExpTransform
 from torch.distributions.uniform import Uniform
 from torch.distributions.utils import broadcast_all, euler_constant
 from torch.types import _Number
-
 
 __all__ = ["Gumbel"]
 
@@ -36,9 +34,9 @@ class Gumbel(TransformedDistribution):
 
     def __init__(
         self,
-        loc: Union[Tensor, float],
-        scale: Union[Tensor, float],
-        validate_args: Optional[bool] = None,
+        loc: Tensor | float,
+        scale: Tensor | float,
+        validate_args: bool | None = None,
     ) -> None:
         self.loc, self.scale = broadcast_all(loc, scale)
         finfo = torch.finfo(self.loc.dtype)

@@ -29,9 +29,7 @@ class SmartAgentMigrator:
         report_files = list(tools_dir.glob("agent_discovery_report_*.json"))
 
         if not report_files:
-            print(
-                "❌ No discovery report found! Run comprehensive_agent_discovery.py first"
-            )
+            print("❌ No discovery report found! Run comprehensive_agent_discovery.py first")
             return None
 
         # Get the latest report
@@ -79,8 +77,7 @@ class SmartAgentMigrator:
 
             # Skip archived, backup, test files
             if any(
-                skip in agent_file
-                for skip in ["archive", "backup", "test_", "demo_", "example_"]
+                skip in agent_file for skip in ["archive", "backup", "test_", "demo_", "example_"]
             ):
                 continue
 
@@ -89,10 +86,7 @@ class SmartAgentMigrator:
                 smart_filtered["core_agents"].append(agent)
 
             # Web interface related
-            elif any(
-                web_term in agent_file
-                for web_term in ["web", "gui", "interface", "server"]
-            ):
+            elif any(web_term in agent_file for web_term in ["web", "gui", "interface", "server"]):
                 smart_filtered["web_interface_agents"].append(agent)
 
         # AI handlers: Focus on actual AI model interfaces
@@ -103,10 +97,7 @@ class SmartAgentMigrator:
                 agent_file = agent["file"].lower()
 
                 # Skip archived/test files
-                if any(
-                    skip in agent_file
-                    for skip in ["archive", "backup", "test_", "demo_"]
-                ):
+                if any(skip in agent_file for skip in ["archive", "backup", "test_", "demo_"]):
                     continue
 
                 # Focus on real AI handlers
@@ -120,10 +111,7 @@ class SmartAgentMigrator:
             if agent["category"] == "cognitive_component":
                 agent_file = agent["file"].lower()
 
-                if any(
-                    skip in agent_file
-                    for skip in ["archive", "backup", "test_", "demo_"]
-                ):
+                if any(skip in agent_file for skip in ["archive", "backup", "test_", "demo_"]):
                     continue
 
                 if any(mem_term in agent_file for mem_term in memory_keywords):
@@ -136,10 +124,7 @@ class SmartAgentMigrator:
             if agent["category"] == "orchestrator":
                 agent_file = agent["file"].lower()
 
-                if any(
-                    skip in agent_file
-                    for skip in ["archive", "backup", "test_", "demo_"]
-                ):
+                if any(skip in agent_file for skip in ["archive", "backup", "test_", "demo_"]):
                     continue
 
                 if any(orch_term in agent_file for orch_term in orchestration_keywords):
@@ -151,11 +136,9 @@ class SmartAgentMigrator:
 
         for category, agents in smart_filtered.items():
             if agents:
-                print(
-                    f"\n🔸 {category.upper().replace('_', ' ')} ({len(agents)} agents):"
-                )
+                print(f"\n🔸 {category.upper().replace('_', ' ')} ({len(agents)} agents):")
                 for i, agent in enumerate(agents[:3]):
-                    print(f"   {i+1}. {agent['file']}")
+                    print(f"   {i + 1}. {agent['file']}")
                 if len(agents) > 3:
                     print(f"   ... and {len(agents) - 3} more")
 
@@ -183,9 +166,7 @@ class SmartAgentMigrator:
             target_dir = self.clean_dir / target_mapping[category]
             target_dir.mkdir(parents=True, exist_ok=True)
 
-            print(
-                f"\n[DISC] Migrating {category.replace('_', ' ')} to {target_mapping[category]}:"
-            )
+            print(f"\n[DISC] Migrating {category.replace('_', ' ')} to {target_mapping[category]}:")
 
             for agent in agents:
                 try:
@@ -212,9 +193,7 @@ class SmartAgentMigrator:
                         print(f"   [WARN]  Skipped {agent['file']} (not found)")
 
                 except Exception as e:
-                    migration_results["errors"].append(
-                        {"file": agent["file"], "error": str(e)}
-                    )
+                    migration_results["errors"].append({"file": agent["file"], "error": str(e)})
                     print(f"   ❌ Error migrating {agent['file']}: {e}")
 
         return migration_results
@@ -377,9 +356,7 @@ class AgentIntegrationBridge:
 agent_bridge = AgentIntegrationBridge()
 '''
 
-        bridge_file = (
-            self.clean_dir / "lyrixa" / "agents" / "agent_integration_bridge.py"
-        )
+        bridge_file = self.clean_dir / "lyrixa" / "agents" / "agent_integration_bridge.py"
         bridge_file.parent.mkdir(parents=True, exist_ok=True)
         bridge_file.write_text(bridge_content, encoding="utf-8")
 
@@ -547,9 +524,7 @@ def main():
     print("✅ Updated main launcher with agent support")
 
     if migration_results["skipped"]:
-        print(
-            f"[WARN]  Skipped {len(migration_results['skipped'])} agents (files not found)"
-        )
+        print(f"[WARN]  Skipped {len(migration_results['skipped'])} agents (files not found)")
 
     if migration_results["errors"]:
         print(f"❌ Errors with {len(migration_results['errors'])} agents")

@@ -12,21 +12,21 @@ import re
 import typing
 import warnings
 from collections import defaultdict
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, Callable, Literal, NamedTuple, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Literal, NamedTuple, Optional
 
 import torch
 import torch.utils._pytree as pytree
-from torch._C import _fx_map_arg as map_arg, _NodeIter
+from torch._C import _fx_map_arg as map_arg
+from torch._C import _NodeIter
 from torch.utils._dtype_abbrs import dtype_abbrs
 
 from . import _pytree as fx_pytree
 from ._compatibility import compatibility
 from .immutable_collections import immutable_dict
-from .node import _get_qualified_name, _type_repr, Argument, Node, Target
-
+from .node import Argument, Node, Target, _get_qualified_name, _type_repr
 
 __all__ = ["PythonCode", "CodeGen", "Graph"]
 
@@ -154,7 +154,7 @@ class _Namespace:
         self._used_names: set[str] = set()
         self._base_count: dict[str, int] = {}
 
-    def create_name(self, candidate: str, obj: Optional[Any]) -> str:
+    def create_name(self, candidate: str, obj: Any | None) -> str:
         """Create a unique name.
 
         Arguments:
@@ -226,7 +226,7 @@ class PythonCode:
     globals: dict[str, Any]
     # Optional mapping from the forward function's line number to
     # node index.
-    _lineno_map: Optional[dict[int, Optional[int]]]
+    _lineno_map: dict[int, int | None] | None
 
 
 def _format_target(base: str, target: str) -> str:
@@ -275,7 +275,7 @@ class _PyTreeInfo(NamedTuple):
 
     orig_args: list[str]
     in_spec: pytree.TreeSpec
-    out_spec: Optional[pytree.TreeSpec]
+    out_spec: pytree.TreeSpec | None
 
 
 @dataclass(frozen=True)
@@ -321,7 +321,7 @@ class CodeGen:
     _sym_repr: Callable[["torch.types.PySymType"], str] = lambda x: repr(x)
 
     def __init__(self):
-        self._body_transformer: Optional[TransformCodeFunc] = None
+        self._body_transformer: TransformCodeFunc | None = None
         self._func_name: str = "forward"
 
     def gen_fn_def(self, free_vars: list[str], maybe_return_annotation: str) -> str:
@@ -450,10 +450,9 @@ class CodeGen:
                         return origin_typename
 
                     return f"{origin_typename}[{','.join(args)}]"
-                else:
-                    # Bare type, such as `typing.Tuple` with no subscript
-                    # This code-path used in Python 3.9+
-                    return origin_typename
+                # Bare type, such as `typing.Tuple` with no subscript
+                # This code-path used in Python 3.9+
+                return origin_typename
 
             # Common case: this is a regular module name like 'foo.bar.baz'
             return add_global(typename, o)
@@ -474,36 +473,32 @@ class CodeGen:
         def _get_repr(arg: Any) -> str:
             if isinstance(arg, Node):  # first because common
                 return repr(arg)
-            elif isinstance(arg, tuple) and hasattr(arg, "_fields"):
+            if isinstance(arg, tuple) and hasattr(arg, "_fields"):
                 # Handle NamedTuples (if it has `_fields`) via add_global.
                 qualified_name = _get_qualified_name(type(arg))
                 global_name = add_global(qualified_name, type(arg))
                 return f"{global_name}{repr(tuple(arg))}"
-            elif isinstance(
-                arg, (torch._ops.OpOverload, torch._ops.HigherOrderOperator)
-            ):
+            if isinstance(arg, (torch._ops.OpOverload, torch._ops.HigherOrderOperator)):
                 qualified_name = _get_qualified_name(arg)
                 global_name = add_global(qualified_name, arg)
                 return f"{global_name}"
-            elif isinstance(arg, enum.Enum):
+            if isinstance(arg, enum.Enum):
                 cls = arg.__class__
                 clsname = add_global(cls.__name__, cls)
                 return f"{clsname}.{arg.name}"
-            elif isinstance(arg, torch.Tensor):
+            if isinstance(arg, torch.Tensor):
                 size = list(arg.size())
                 dtype = str(arg.dtype).split(".")[-1]
                 return f"torch.Tensor(size={size}, dtype={dtype})"
-            elif isinstance(arg, tuple):
+            if isinstance(arg, tuple):
                 if len(arg) == 1:
                     return f"({_get_repr(arg[0])},)"
-                else:
-                    return "(" + ", ".join(_get_repr(a) for a in arg) + ")"
-            elif isinstance(arg, list):
+                return "(" + ", ".join(_get_repr(a) for a in arg) + ")"
+            if isinstance(arg, list):
                 return "[" + ", ".join(_get_repr(a) for a in arg) + "]"
-            elif isinstance(arg, slice):
+            if isinstance(arg, slice):
                 return f"slice({_get_repr(arg.start)}, {_get_repr(arg.stop)}, {_get_repr(arg.step)})"
-            else:
-                return blue(repr(arg))
+            return blue(repr(arg))
 
         def _format_args(
             args: tuple[Argument, ...], kwargs: dict[str, Argument]
@@ -629,14 +624,14 @@ class CodeGen:
                 if raw_name != repr(node):
                     body.append(f"{repr(node)} = {raw_name}\n")
                 return
-            elif node.op == "call_method":
+            if node.op == "call_method":
                 assert isinstance(node.target, str)
                 body.append(
                     f"{repr(node)}{maybe_type_annotation} = {_format_target(_get_repr(node.args[0]), node.target)}"
                     f"({_format_args(node.args[1:], node.kwargs)})"
                 )
                 return
-            elif node.op == "call_function":
+            if node.op == "call_function":
                 assert callable(node.target)
                 # pretty print operators
                 if (
@@ -683,20 +678,20 @@ class CodeGen:
                 if node.meta.get("is_wrapped", False):
                     wrapped_fns.setdefault(global_name)
                 return
-            elif node.op == "call_module":
+            if node.op == "call_module":
                 assert isinstance(node.target, str)
                 body.append(
                     f"{repr(node)}{maybe_type_annotation} = "
                     f"{_format_target(root_module, node.target)}({_format_args(node.args, node.kwargs)})"
                 )
                 return
-            elif node.op == "get_attr":
+            if node.op == "get_attr":
                 assert isinstance(node.target, str)
                 body.append(
                     f"{repr(node)}{maybe_type_annotation} = {_format_target(root_module, node.target)}"
                 )
                 return
-            elif node.op == "output":
+            if node.op == "output":
                 if node.type is not None:
                     maybe_return_annotation[0] = f" -> {type_repr(node.type)}"
                 body.append(self.generate_output(node.args[0]))
@@ -736,7 +731,7 @@ class CodeGen:
         prologue = self.gen_fn_def(free_vars, maybe_return_annotation[0])
 
         # remove counter and generate lineno to node index mapping
-        lineno_map: dict[int, Optional[int]] = {}
+        lineno_map: dict[int, int | None] = {}
         prologue_len = prologue.count("\n") + 1
         new_lines: list[str] = []
         cur_idx = None
@@ -827,6 +822,7 @@ class _PyTreeCodeGen(CodeGen):
                         for k, v in zip(
                             self.pytree_info.in_spec.children_specs[1].context,
                             self.pytree_info.orig_args[count_args:],
+                            strict=False,
                         )
                     )
                     + "}"
@@ -848,8 +844,7 @@ class _PyTreeCodeGen(CodeGen):
     def generate_output(self, output_args):
         if self.pytree_info and self.pytree_info.out_spec:
             return f"return pytree.tree_unflatten({repr(output_args)}, self._out_spec)"
-        else:
-            return super().generate_output(output_args)
+        return super().generate_output(output_args)
 
 
 class _FindNodesLookupTable:
@@ -858,11 +853,11 @@ class _FindNodesLookupTable:
     """
 
     def __init__(self):
-        self.table: dict[tuple[str, Optional[Target]], dict[Node, None]] = defaultdict(
+        self.table: dict[tuple[str, Target | None], dict[Node, None]] = defaultdict(
             dict
         )
 
-    def _key(self, node) -> tuple[str, Optional[Target]]:
+    def _key(self, node) -> tuple[str, Target | None]:
         return (node.op, node.target if node.op == "call_function" else None)
 
     def __contains__(self, node) -> bool:
@@ -939,8 +934,8 @@ class Graph:
     def __init__(
         self,
         owning_module: Optional["GraphModule"] = None,
-        tracer_cls: Optional[type["Tracer"]] = None,
-        tracer_extras: Optional[dict[str, Any]] = None,
+        tracer_cls: type["Tracer"] | None = None,
+        tracer_extras: dict[str, Any] | None = None,
     ):
         """
         Construct an empty Graph.
@@ -1015,7 +1010,7 @@ class Graph:
     @compatibility(is_backward_compatible=True)
     def graph_copy(
         self, g: "Graph", val_map: dict[Node, Node], return_output_node=False
-    ) -> "Optional[Argument]":
+    ) -> "Argument | None":
         """
         Copy all nodes from a given graph into ``self``.
 
@@ -1067,10 +1062,10 @@ class Graph:
         self,
         op: str,
         target: "Target",
-        args: Optional[tuple["Argument", ...]] = None,
-        kwargs: Optional[dict[str, "Argument"]] = None,
-        name: Optional[str] = None,
-        type_expr: Optional[Any] = None,
+        args: tuple["Argument", ...] | None = None,
+        kwargs: dict[str, "Argument"] | None = None,
+        name: str | None = None,
+        type_expr: Any | None = None,
     ) -> Node:
         """
         Create a ``Node`` and add it to the ``Graph`` at the current insert-point.
@@ -1177,7 +1172,7 @@ class Graph:
         )
 
     @compatibility(is_backward_compatible=True)
-    def inserting_before(self, n: Optional[Node] = None):
+    def inserting_before(self, n: Node | None = None):
         """Set the point at which create_node and companion methods will insert into the graph.
         When used within a 'with' statement, this will temporary set the insert point and
         then restore it when the with statement exits::
@@ -1201,7 +1196,7 @@ class Graph:
         return _InsertPoint(self, n.prepend)
 
     @compatibility(is_backward_compatible=True)
-    def inserting_after(self, n: Optional[Node] = None):
+    def inserting_after(self, n: Node | None = None):
         """Set the point at which create_node and companion methods will insert into the graph.
         When used within a 'with' statement, this will temporary set the insert point and
         then restore it when the with statement exits::
@@ -1228,7 +1223,7 @@ class Graph:
     def placeholder(
         self,
         name: str,
-        type_expr: Optional[Any] = None,
+        type_expr: Any | None = None,
         default_value: Any = inspect.Signature.empty,
     ) -> Node:
         """
@@ -1258,7 +1253,7 @@ class Graph:
         return self.create_node("placeholder", name, args=args, type_expr=type_expr)
 
     @compatibility(is_backward_compatible=True)
-    def get_attr(self, qualified_name: str, type_expr: Optional[Any] = None) -> Node:
+    def get_attr(self, qualified_name: str, type_expr: Any | None = None) -> Node:
         """
         Insert a ``get_attr`` node into the Graph. A ``get_attr`` ``Node`` represents the
         fetch of an attribute from the ``Module`` hierarchy.
@@ -1329,9 +1324,9 @@ class Graph:
     def call_module(
         self,
         module_name: str,
-        args: Optional[tuple["Argument", ...]] = None,
-        kwargs: Optional[dict[str, "Argument"]] = None,
-        type_expr: Optional[Any] = None,
+        args: tuple["Argument", ...] | None = None,
+        kwargs: dict[str, "Argument"] | None = None,
+        type_expr: Any | None = None,
     ) -> Node:
         """
         Insert a ``call_module`` ``Node`` into the ``Graph``. A ``call_module`` node
@@ -1379,9 +1374,9 @@ class Graph:
     def call_method(
         self,
         method_name: str,
-        args: Optional[tuple["Argument", ...]] = None,
-        kwargs: Optional[dict[str, "Argument"]] = None,
-        type_expr: Optional[Any] = None,
+        args: tuple["Argument", ...] | None = None,
+        kwargs: dict[str, "Argument"] | None = None,
+        type_expr: Any | None = None,
     ) -> Node:
         """
         Insert a ``call_method`` ``Node`` into the ``Graph``. A ``call_method`` node
@@ -1418,10 +1413,10 @@ class Graph:
     def call_function(
         self,
         the_function: Callable[..., Any],
-        args: Optional[tuple["Argument", ...]] = None,
-        kwargs: Optional[dict[str, "Argument"]] = None,
-        type_expr: Optional[Any] = None,
-        name: Optional[str] = None,
+        args: tuple["Argument", ...] | None = None,
+        kwargs: dict[str, "Argument"] | None = None,
+        type_expr: Any | None = None,
+        name: str | None = None,
     ) -> Node:
         """
         Insert a ``call_function`` ``Node`` into the ``Graph``. A ``call_function`` node
@@ -1492,7 +1487,7 @@ class Graph:
         return result_node
 
     @compatibility(is_backward_compatible=True)
-    def output(self, result: "Argument", type_expr: Optional[Any] = None):
+    def output(self, result: "Argument", type_expr: Any | None = None):
         """
         Insert an ``output`` ``Node`` into the ``Graph``. An ``output`` node represents
         a ``return`` statement in Python code. ``result`` is the value that should
@@ -1674,7 +1669,7 @@ class Graph:
         """
 
         # Check topo order
-        def check_arg(arg: Node, n: Optional[Node] = None) -> None:
+        def check_arg(arg: Node, n: Node | None = None) -> None:
             context_str = f" of Node '{n}' " if n else " "
             if arg.graph is not self:
                 raise RuntimeError(
@@ -1743,7 +1738,7 @@ class Graph:
 
     @compatibility(is_backward_compatible=True)
     def eliminate_dead_code(
-        self, is_impure_node: Optional[Callable[[Node], bool]] = None
+        self, is_impure_node: Callable[[Node], bool] | None = None
     ) -> bool:
         """
         Remove all dead code from the graph, based on each node's number of
@@ -1833,7 +1828,7 @@ class Graph:
     @compatibility(is_backward_compatible=False)
     def on_generate_code(
         self,
-        make_transformer: Callable[[Optional[TransformCodeFunc]], TransformCodeFunc],
+        make_transformer: Callable[[TransformCodeFunc | None], TransformCodeFunc],
     ):
         """Register a transformer function when python code is generated
 

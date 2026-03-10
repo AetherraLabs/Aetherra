@@ -1,7 +1,7 @@
 # mypy: allow-untyped-defs
 from collections import defaultdict
 from copy import deepcopy
-from typing import Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pytorch_lightning as pl  # type: ignore[import]
 
@@ -10,7 +10,6 @@ from ._data_sparstity_utils import (
     _get_valid_name,
     _log_sparsified_level,
 )
-
 
 if TYPE_CHECKING:
     import torch
@@ -48,7 +47,7 @@ class PostTrainingDataSparsity(pl.callbacks.Callback):
         self.data_sparsifier_class = data_sparsifier_class
         self.data_sparsifier_args = data_sparsifier_args
         self.data_sparsifier: Any = None
-        self.sparsified: Optional[torch.nn.Module] = None
+        self.sparsified: torch.nn.Module | None = None
 
     def on_fit_end(self, trainer, pl_module) -> None:
         self.sparsified = deepcopy(pl_module.model).eval()
@@ -129,7 +128,7 @@ class TrainingAwareDataSparsity(pl.callbacks.Callback):
         # fields
         self.data_sparsifier: Any = None
         self.data_scheduler: Any = None
-        self.sparsified: Optional[torch.nn.Module] = None
+        self.sparsified: torch.nn.Module | None = None
 
         self.data_sparsifier_state_dict: Any = None
 

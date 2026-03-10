@@ -3,7 +3,8 @@ import copy
 import dataclasses
 import itertools
 import operator
-from typing import Any, Callable, Optional, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 import torch
 import torch.nn.functional as F
@@ -16,7 +17,7 @@ from torch.ao.quantization.quantizer import (
     SharedQuantizationSpec,
 )
 from torch.fx import Graph, GraphModule, Node
-from torch.fx.subgraph_rewriter import replace_pattern_with_filters, ReplacedPatterns
+from torch.fx.subgraph_rewriter import ReplacedPatterns, replace_pattern_with_filters
 
 from .utils import (
     _get_aten_graph_module_for_pattern,
@@ -25,7 +26,6 @@ from .utils import (
     _is_conv_transpose_fn,
     fold_bn_weights_into_conv_node,
 )
-
 
 if TYPE_CHECKING:
     from torch.fx.passes.utils.matcher_with_name_node_map_utils import InternalMatch
@@ -374,7 +374,7 @@ def _get_conv_bn_pattern_nodes(r: ReplacedPatterns) -> dict[str, tuple[Node, Nod
         "conv_bias_q", "conv_bias_dq"
     """
 
-    def _get_nodes(nodes: list[Node]) -> tuple[Node, Node, Optional[Node]]:
+    def _get_nodes(nodes: list[Node]) -> tuple[Node, Node, Node | None]:
         """
         Return a 3-tuple of (conv_node, bn_node, getitem_node).
         This asserts that the match contains exactly one of each node.
@@ -563,7 +563,7 @@ def _update_special_qspecs_after_replacement(
         if isinstance(edge_or_node, Node):
             _node = edge_or_node
             return original_to_replacement_node.get(_node, _node)
-        elif (
+        if (
             isinstance(edge_or_node, tuple)
             and len(edge_or_node) == 2
             and all(isinstance(x, Node) for x in edge_or_node)
@@ -573,18 +573,16 @@ def _update_special_qspecs_after_replacement(
                 original_to_replacement_node.get(src, src),
                 original_to_replacement_node.get(dest, dest),
             )
-        else:
-            raise ValueError("unexpected type for edge_or_node: ", type(edge_or_node))
+        raise ValueError("unexpected type for edge_or_node: ", type(edge_or_node))
 
     def _get_new_qspec(qspec: QuantizationSpecBase):
         if isinstance(qspec, SharedQuantizationSpec):
             new_edge_or_node = _get_new_edge_or_node(qspec.edge_or_node)
             return SharedQuantizationSpec(new_edge_or_node)
-        elif isinstance(qspec, DerivedQuantizationSpec):
+        if isinstance(qspec, DerivedQuantizationSpec):
             new_derived_from = [_get_new_edge_or_node(x) for x in qspec.derived_from]
             return dataclasses.replace(qspec, derived_from=new_derived_from)
-        else:
-            return qspec
+        return qspec
 
     if "quantization_annotation" not in node.meta:
         return

@@ -14,7 +14,6 @@ import warnings
 
 from ...utils import is_sklearn_available, requires_backends
 
-
 if is_sklearn_available():
     from scipy.stats import pearsonr, spearmanr
     from sklearn.metrics import f1_score, matthews_corrcoef
@@ -60,39 +59,40 @@ def pearson_and_spearman(preds, labels):
 def glue_compute_metrics(task_name, preds, labels):
     warnings.warn(DEPRECATION_WARNING, FutureWarning)
     requires_backends(glue_compute_metrics, "sklearn")
-    assert len(preds) == len(labels), f"Predictions and labels have mismatched lengths {len(preds)} and {len(labels)}"
+    assert len(preds) == len(labels), (
+        f"Predictions and labels have mismatched lengths {len(preds)} and {len(labels)}"
+    )
     if task_name == "cola":
         return {"mcc": matthews_corrcoef(labels, preds)}
-    elif task_name == "sst-2":
+    if task_name == "sst-2":
         return {"acc": simple_accuracy(preds, labels)}
-    elif task_name == "mrpc":
+    if task_name == "mrpc":
         return acc_and_f1(preds, labels)
-    elif task_name == "sts-b":
+    if task_name == "sts-b":
         return pearson_and_spearman(preds, labels)
-    elif task_name == "qqp":
+    if task_name == "qqp":
         return acc_and_f1(preds, labels)
-    elif task_name == "mnli":
+    if task_name == "mnli":
         return {"mnli/acc": simple_accuracy(preds, labels)}
-    elif task_name == "mnli-mm":
+    if task_name == "mnli-mm":
         return {"mnli-mm/acc": simple_accuracy(preds, labels)}
-    elif task_name == "qnli":
+    if (
+        task_name == "qnli"
+        or task_name == "rte"
+        or task_name == "wnli"
+        or task_name == "hans"
+    ):
         return {"acc": simple_accuracy(preds, labels)}
-    elif task_name == "rte":
-        return {"acc": simple_accuracy(preds, labels)}
-    elif task_name == "wnli":
-        return {"acc": simple_accuracy(preds, labels)}
-    elif task_name == "hans":
-        return {"acc": simple_accuracy(preds, labels)}
-    else:
-        raise KeyError(task_name)
+    raise KeyError(task_name)
 
 
 def xnli_compute_metrics(task_name, preds, labels):
     warnings.warn(DEPRECATION_WARNING, FutureWarning)
     requires_backends(xnli_compute_metrics, "sklearn")
     if len(preds) != len(labels):
-        raise ValueError(f"Predictions and labels have mismatched lengths {len(preds)} and {len(labels)}")
+        raise ValueError(
+            f"Predictions and labels have mismatched lengths {len(preds)} and {len(labels)}"
+        )
     if task_name == "xnli":
         return {"acc": simple_accuracy(preds, labels)}
-    else:
-        raise KeyError(task_name)
+    raise KeyError(task_name)

@@ -1,7 +1,8 @@
 # mypy: allow-untyped-defs
 import operator
 from collections import defaultdict
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 import sympy
 
@@ -88,7 +89,7 @@ class FakeTensorUpdater:
         return (node, node.target, id(node.args), id(node.kwargs))
 
     def incremental_update(self):
-        existing_storages: defaultdict[Optional[int], int] = defaultdict(int)
+        existing_storages: defaultdict[int | None, int] = defaultdict(int)
         for node in self.graph.nodes:
             existing_storages[get_node_storage(node)] += 1
 
@@ -102,7 +103,8 @@ class FakeTensorUpdater:
                 if len(new) != len(old):
                     return False
                 return all(
-                    is_fake_tensor_same(new_i, old_i) for new_i, old_i in zip(new, old)
+                    is_fake_tensor_same(new_i, old_i)
+                    for new_i, old_i in zip(new, old, strict=False)
                 )
             if new is None:
                 return old is None
@@ -192,7 +194,7 @@ def get_storage(t: torch.Tensor) -> int:
     return t.untyped_storage()._cdata
 
 
-def get_node_storage(node: torch.fx.Node) -> Optional[int]:
+def get_node_storage(node: torch.fx.Node) -> int | None:
     if "val" not in node.meta:
         return None
     if not isinstance(node.meta["val"], torch.Tensor):
@@ -254,7 +256,7 @@ def is_node_realized(node: torch.fx.Node) -> bool:
     return False
 
 
-def count_flops_fx(node: torch.fx.Node) -> Optional[int]:
+def count_flops_fx(node: torch.fx.Node) -> int | None:
     if isinstance(node.target, str):
         return None
     with FakeTensorMode(allow_non_fake_inputs=True):

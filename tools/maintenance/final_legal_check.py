@@ -12,7 +12,6 @@ This script performs a final verification that all legal compliance
 measures are properly implemented.
 """
 
-
 # Standard library imports
 from pathlib import Path
 
@@ -121,14 +120,13 @@ def main():
         print("🛡️ NO LEGAL OBSTACLES FOR DEVELOPMENT OR DISTRIBUTION")
 
         return 0
-    else:
-        print("❌ SOME LEGAL COMPLIANCE CHECKS FAILED")
-        print()
-        print("⚠️ Please address the issues above before distribution.")
-        print("📞 Consider consulting with a qualified IP attorney for")
-        print("   specific legal advice regarding commercial distribution.")
+    print("❌ SOME LEGAL COMPLIANCE CHECKS FAILED")
+    print()
+    print("⚠️ Please address the issues above before distribution.")
+    print("📞 Consider consulting with a qualified IP attorney for")
+    print("   specific legal advice regarding commercial distribution.")
 
-        return 1
+    return 1
 
 
 if __name__ == "__main__":

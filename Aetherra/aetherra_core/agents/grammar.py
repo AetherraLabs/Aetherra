@@ -150,9 +150,7 @@ class AetherraCodeTransformer(Transformer):
     """Transforms parse tree into AetherraCode AST"""
 
     def program(self, statements):
-        return AetherraCodeAST(
-            type="program", children=[s for s in statements if s is not None]
-        )
+        return AetherraCodeAST(type="program", children=[s for s in statements if s is not None])
 
     # Goal statements
     def goal_statement(self, args):
@@ -295,9 +293,7 @@ class AetherraCodeTransformer(Transformer):
             children.append(
                 AetherraCodeAST(
                     type="else_block",
-                    children=else_block
-                    if isinstance(else_block, list)
-                    else [else_block],
+                    children=else_block if isinstance(else_block, list) else [else_block],
                 )
             )
 
@@ -381,9 +377,7 @@ class AetherraCodeTransformer(Transformer):
         )
 
     def pattern_condition(self, args):
-        return AetherraCodeAST(
-            type="pattern_condition", value=self._extract_value(args[0])
-        )
+        return AetherraCodeAST(type="pattern_condition", value=self._extract_value(args[0]))
 
     # Method calls and expressions
     def method_call(self, args):
@@ -393,11 +387,7 @@ class AetherraCodeTransformer(Transformer):
         return AetherraCodeAST(
             type="method_call",
             value=f"{obj}.{method}",
-            children=arguments
-            if isinstance(arguments, list)
-            else [arguments]
-            if arguments
-            else [],
+            children=arguments if isinstance(arguments, list) else [arguments] if arguments else [],
         )
 
     def argument_list(self, args):
@@ -420,11 +410,7 @@ class AetherraCodeTransformer(Transformer):
         elements = args[0] if args else []
         return AetherraCodeAST(
             type="array",
-            children=elements
-            if isinstance(elements, list)
-            else [elements]
-            if elements
-            else [],
+            children=elements if isinstance(elements, list) else [elements] if elements else [],
         )
 
     def array_elements(self, args):
@@ -439,9 +425,7 @@ class AetherraCodeTransformer(Transformer):
         )
 
     def expression_statement(self, args):
-        return AetherraCodeAST(
-            type="expression_statement", value=self._extract_value(args[0])
-        )
+        return AetherraCodeAST(type="expression_statement", value=self._extract_value(args[0]))
 
     def comment(self, args):
         return AetherraCodeAST(type="comment", value=str(args[0]).strip("#").strip())
@@ -588,7 +572,10 @@ class AetherraParser:
 class AetherraCodeSyntaxError(Exception):
     """AetherraCode-specific syntax error"""
 
-    pass
+    def __init__(self, message: str, line: int | None = None):
+        full_message = message if line is None else f"{message} (line {line})"
+        super().__init__(full_message)
+        self.line = line
 
 
 # Factory function for easy access
@@ -636,12 +623,8 @@ agent: off"""
                 # Print AST structure for first test
                 if test_name == "Basic Constructs":
                     ast = result["ast"]
-                    print(
-                        f"🌳 AST Structure: {ast.type} with {len(ast.children)} children"
-                    )
-                    for i, child in enumerate(
-                        ast.children[:3]
-                    ):  # Show first 3 children
+                    print(f"🌳 AST Structure: {ast.type} with {len(ast.children)} children")
+                    for i, child in enumerate(ast.children[:3]):  # Show first 3 children
                         print(f"   Child {i + 1}: {child.type} = {child.value}")
             else:
                 print("❌ Syntax errors found:")

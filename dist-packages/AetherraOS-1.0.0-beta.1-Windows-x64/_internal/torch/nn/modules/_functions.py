@@ -119,8 +119,7 @@ class SyncBatchNorm(Function):
         # apply element-wise normalization
         if input.numel() > 0:
             return torch.batch_norm_elemt(input, weight, bias, mean, invstd, eps)
-        else:
-            return torch.empty_like(input)
+        return torch.empty_like(input)
 
     @staticmethod
     def backward(self, grad_output):

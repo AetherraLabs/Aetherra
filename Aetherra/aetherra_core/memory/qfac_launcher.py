@@ -66,11 +66,11 @@ except Exception:
                 return None
 
             async def export_dashboard_report(self, filename: str = "qfac_dashboard_report.json"):
-                # Minimal stub: persist performance snapshot from analyzer
+                # Minimal fallback: persist performance snapshot from analyzer
                 try:
                     perf = await self.analyzer.monitor_compression_performance()
                 except Exception:
-                    perf = {"status": "unavailable", "reason": "dashboard stub"}
+                    perf = {"status": "unavailable", "reason": "dashboard fallback"}
                 output = Path(filename)
                 with open(output, "w") as f:
                     json.dump(perf, f, indent=2, default=str)

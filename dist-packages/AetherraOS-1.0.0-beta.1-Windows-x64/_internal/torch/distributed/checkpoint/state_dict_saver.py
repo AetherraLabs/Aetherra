@@ -5,7 +5,8 @@ import os
 import warnings
 from concurrent.futures import Future
 from enum import Enum
-from typing import cast, Optional, Union
+from typing import cast
+
 from typing_extensions import deprecated
 
 import torch
@@ -23,7 +24,7 @@ from torch.distributed.checkpoint._async_thread_executor import (
 from torch.distributed.checkpoint._storage_utils import _storage_setup
 from torch.distributed.checkpoint.default_planner import DefaultSavePlanner
 from torch.distributed.checkpoint.logger import _dcp_method_logger
-from torch.distributed.checkpoint.metadata import Metadata, STATE_DICT_TYPE
+from torch.distributed.checkpoint.metadata import STATE_DICT_TYPE, Metadata
 from torch.distributed.checkpoint.planner import SavePlan, SavePlanner
 from torch.distributed.checkpoint.staging import AsyncStager
 from torch.distributed.checkpoint.stateful import Stateful
@@ -31,7 +32,6 @@ from torch.distributed.checkpoint.storage import StorageWriter
 from torch.distributed.distributed_c10d import _get_default_group
 
 from .utils import _api_bc_check, _DistWrapper, _profile
-
 
 __all__ = ["save_state_dict", "save", "async_save", "AsyncCheckpointerType"]
 
@@ -51,10 +51,10 @@ class AsyncCheckpointerType(Enum):
 def save_state_dict(
     state_dict: STATE_DICT_TYPE,
     storage_writer: StorageWriter,
-    process_group: Optional[dist.ProcessGroup] = None,
+    process_group: dist.ProcessGroup | None = None,
     coordinator_rank: int = 0,
     no_dist: bool = False,
-    planner: Optional[SavePlanner] = None,
+    planner: SavePlanner | None = None,
 ) -> Metadata:
     """This method is deprecated. Please switch to 'save'."""
     storage_writer.reset()
@@ -76,10 +76,10 @@ def save_state_dict(
 def save(
     state_dict: STATE_DICT_TYPE,
     *,
-    checkpoint_id: Union[str, os.PathLike, None] = None,
-    storage_writer: Optional[StorageWriter] = None,
-    planner: Optional[SavePlanner] = None,
-    process_group: Optional[dist.ProcessGroup] = None,
+    checkpoint_id: str | os.PathLike | None = None,
+    storage_writer: StorageWriter | None = None,
+    planner: SavePlanner | None = None,
+    process_group: dist.ProcessGroup | None = None,
     no_dist: bool = False,
 ) -> Metadata:
     """
@@ -186,10 +186,10 @@ def save(
 def async_save(
     state_dict: STATE_DICT_TYPE,
     *,
-    checkpoint_id: Union[str, os.PathLike, None] = None,
-    storage_writer: Optional[StorageWriter] = None,
-    planner: Optional[SavePlanner] = None,
-    process_group: Optional[dist.ProcessGroup] = None,
+    checkpoint_id: str | os.PathLike | None = None,
+    storage_writer: StorageWriter | None = None,
+    planner: SavePlanner | None = None,
+    process_group: dist.ProcessGroup | None = None,
     async_checkpointer_type: AsyncCheckpointerType = AsyncCheckpointerType.THREAD,
 ) -> Future:
     """Asynchronous version of ``save``. This code first de-stages the state_dict on to the
@@ -308,10 +308,10 @@ def _stateful_to_state_dict(state_dict: STATE_DICT_TYPE) -> STATE_DICT_TYPE:
 def _save_state_dict(
     state_dict: STATE_DICT_TYPE,
     storage_writer: StorageWriter,
-    process_group: Optional[dist.ProcessGroup] = None,
+    process_group: dist.ProcessGroup | None = None,
     coordinator_rank: int = 0,
     no_dist: bool = False,
-    planner: Optional[SavePlanner] = None,
+    planner: SavePlanner | None = None,
 ) -> Metadata:
     torch._C._log_api_usage_once("torch.distributed.checkpoint.save_state_dict")
 

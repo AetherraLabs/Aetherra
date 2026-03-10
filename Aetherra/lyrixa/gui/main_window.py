@@ -17,11 +17,11 @@ try:
 except Exception:  # pragma: no cover - absence acceptable in headless tests
     class QWidget:  # type: ignore
         def __init__(self, *_, **__):
-            pass
+            self._visible = False
         def show(self):
-            pass
+            self._visible = True
         def close(self):  # mimic Qt API
-            pass
+            self._visible = False
 
 
 class _WebBridgeStub:

@@ -1,5 +1,4 @@
 # mypy: allow-untyped-defs
-from typing import Optional
 
 import torch
 
@@ -31,7 +30,7 @@ def standard_kwargs(kwarg_names, expanded_args):
     expanded_args_without_kwargs = expanded_args[
         : len(expanded_args) - len(kwarg_names)
     ]
-    expanded_kwargs = dict(zip(kwarg_names, kwarg_values))
+    expanded_kwargs = dict(zip(kwarg_names, kwarg_values, strict=False))
     return expanded_args_without_kwargs, expanded_kwargs
 
 
@@ -93,7 +92,7 @@ def _check_and_unexpand_args(func, expanded_args, expanded_kwargs):
                 f"input batch size of {batch_size} with ExpandedWeight of batch size {arg.batch_size}"
             )
 
-    loss_reduction: Optional[str] = None
+    loss_reduction: str | None = None
     for arg in expanded_args + tuple(expanded_kwargs.values()):
         if isinstance(arg, ExpandedWeight):
             if loss_reduction is None:
@@ -118,8 +117,7 @@ def _check_and_unexpand_args(func, expanded_args, expanded_kwargs):
 def maybe_scale_by_batch_size(grad_sample, expanded_weight):
     if expanded_weight.loss_reduction == "mean":
         return grad_sample * expanded_weight.batch_size
-    else:
-        return grad_sample
+    return grad_sample
 
 
 def set_grad_sample_if_exists(maybe_expanded_weight, per_sample_grad_fn):
@@ -150,12 +148,12 @@ def unpack_expanded_weight_or_tensor(maybe_expanded_weight, func=lambda x: x):
     if isinstance(maybe_expanded_weight, ExpandedWeight):
         orig_weight = maybe_expanded_weight.orig_weight
         return func(orig_weight)
-    elif (
+    if (
         isinstance(maybe_expanded_weight, torch.Tensor)
         and not maybe_expanded_weight.requires_grad
     ):
         return func(maybe_expanded_weight)
-    elif isinstance(maybe_expanded_weight, torch.Tensor):
+    if isinstance(maybe_expanded_weight, torch.Tensor):
         raise RuntimeError(
             "ExpandedWeights currently does not support a mixture of ExpandedWeight parameters "
             "and normal Parameters. Please file and issue with pytorch/pytorch"
@@ -183,6 +181,5 @@ def sum_over_all_but_batch_and_last_n(
     """
     if tensor.dim() == n_dims + 1:
         return tensor
-    else:
-        dims = list(range(1, tensor.dim() - n_dims))
-        return tensor.sum(dim=dims)
+    dims = list(range(1, tensor.dim() - n_dims))
+    return tensor.sum(dim=dims)

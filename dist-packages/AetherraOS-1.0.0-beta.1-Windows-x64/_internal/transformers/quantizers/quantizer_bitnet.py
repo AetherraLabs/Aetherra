@@ -11,16 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import TYPE_CHECKING, Dict, List, Optional, Union
+from typing import TYPE_CHECKING
 
 from .base import HfQuantizer
-
 
 if TYPE_CHECKING:
     from ..modeling_utils import PreTrainedModel
 
 from ..utils import is_accelerate_available, is_torch_available, logging
-
 
 if is_torch_available():
     import torch
@@ -48,7 +46,9 @@ class BitNetHfQuantizer(HfQuantizer):
 
     def validate_environment(self, *args, **kwargs):
         if not is_accelerate_available():
-            raise ImportError("Loading a BitNet quantized model requires accelerate (`pip install accelerate`)")
+            raise ImportError(
+                "Loading a BitNet quantized model requires accelerate (`pip install accelerate`)"
+            )
 
         if kwargs.get("from_tf", False) or kwargs.get("from_flax", False):
             raise ValueError(
@@ -62,14 +62,16 @@ class BitNetHfQuantizer(HfQuantizer):
             )
             return
 
-        device_map = kwargs.get("device_map", None)
+        device_map = kwargs.get("device_map")
         if device_map is None:
             logger.warning_once(
                 "You have loaded a BitNet model on CPU and have a CUDA device available, make sure to set "
                 "your model on a GPU device in order to run your model."
             )
         elif device_map is not None:
-            if isinstance(device_map, dict) and ("cpu" in device_map.values() or "disk" in device_map.values()):
+            if isinstance(device_map, dict) and (
+                "cpu" in device_map.values() or "disk" in device_map.values()
+            ):
                 raise ValueError(
                     "You are attempting to load a BitNet model with a device_map that contains a CPU or disk device."
                     "This is not supported. Please remove the CPU or disk device from the device_map."
@@ -81,7 +83,7 @@ class BitNetHfQuantizer(HfQuantizer):
     def _process_model_before_weight_loading(
         self,
         model: "PreTrainedModel",
-        keep_in_fp32_modules: Optional[List[str]] = None,
+        keep_in_fp32_modules: list[str] | None = None,
         **kwargs,
     ):
         from ..integrations import replace_with_bitnet_linear
@@ -97,7 +99,9 @@ class BitNetHfQuantizer(HfQuantizer):
             pre_quantized=self.pre_quantized,
         )
 
-    def adjust_max_memory(self, max_memory: Dict[str, Union[int, str]]) -> Dict[str, Union[int, str]]:
+    def adjust_max_memory(
+        self, max_memory: dict[str, int | str]
+    ) -> dict[str, int | str]:
         max_memory = {key: val * 0.90 for key, val in max_memory.items()}
         return max_memory
 

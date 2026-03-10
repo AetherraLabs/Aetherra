@@ -1,7 +1,7 @@
 # mypy: allow-untyped-defs
 import itertools
-from collections.abc import Iterable
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable, Iterable
+from typing import Any
 
 import sympy
 from sympy.parsing.sympy_parser import parse_expr
@@ -11,7 +11,8 @@ from torch._inductor.utils import do_bench_using_profiling
 from torch.utils._ordered_set import OrderedSet
 from torch.utils._sympy.symbol import SymT
 
-from .. import config, cpp_builder, ir, lowering as L
+from .. import config, cpp_builder, ir
+from .. import lowering as L
 from ..autotune_process import CppBenchmarkRequest
 from ..loop_body import LoopBody
 from ..select_algorithm import PartialRender
@@ -19,18 +20,17 @@ from ..utils import sympy_index_symbol, sympy_index_symbol_with_prefix
 from ..virtualized import V
 from .common import REMOVED
 from .cpp import CppKernel, CppKernelProxy, KernelGroup
-from .cpp_utils import cexpr_index, DTYPE_TO_CPP, LocalBufferContext
+from .cpp_utils import DTYPE_TO_CPP, LocalBufferContext, cexpr_index
 
 
 def parse_expr_with_index_symbols(expr):
     if isinstance(expr, sympy.Expr):
         return expr
-    elif isinstance(expr, (list, tuple)):
+    if isinstance(expr, (list, tuple)):
         return [parse_expr_with_index_symbols(e) for e in expr]
-    else:
-        expr = parse_expr(str(expr))
-        int_symbols = {sym: sympy_index_symbol(sym.name) for sym in expr.free_symbols}
-        return expr.subs(int_symbols)
+    expr = parse_expr(str(expr))
+    int_symbols = {sym: sympy_index_symbol(sym.name) for sym in expr.free_symbols}
+    return expr.subs(int_symbols)
 
 
 def wrap_with_tensorbox(node) -> ir.TensorBox:
@@ -55,9 +55,9 @@ class CppTemplateKernel(CppKernel):
         self,
         inputs: dict[str, ir.Buffer],
         outputs: dict[str, ir.Buffer],
-        aliases: Optional[dict[str, str]] = None,
+        aliases: dict[str, str] | None = None,
         function_name: str = "",
-        extra_sizevars: Optional[list[sympy.Expr]] = None,
+        extra_sizevars: list[sympy.Expr] | None = None,
         placeholder: str = "<DEF_KERNEL>",
     ) -> str:
         if len(function_name) == 0:
@@ -127,8 +127,7 @@ class CppTemplateKernel(CppKernel):
     def acc_dtype(self, node: ir.Buffer) -> str:
         if node.get_dtype() in [torch.float32, torch.bfloat16, torch.half]:
             return "float"
-        else:
-            raise NotImplementedError(f"Unsupported dtype: {node.get_dtype()}")
+        raise NotImplementedError(f"Unsupported dtype: {node.get_dtype()}")
 
     def size(self, node: ir.Buffer, dim: int) -> str:
         return cexpr_index(self.rename_indexing(node.get_size()[dim]))
@@ -189,14 +188,12 @@ class CppTemplateKernel(CppKernel):
             graph_id = V.graph.graph_id
             prefix = "graph_" + str(graph_id) + "_" if graph_id is not None else ""
             return f'RECORD_FUNCTION("{prefix}{self.kernel_name}", c10::ArrayRef<c10::IValue>({{}}));'
-        else:
-            return ""
+        return ""
 
     def unroll_pragma(self, unroll):
         if cpp_builder.is_gcc():
             return f"#pragma GCC unroll {unroll}"
-        else:
-            return f"#pragma unroll {unroll}"
+        return f"#pragma unroll {unroll}"
 
     def define_buffer(self, name, sizes: list[Any], dtype=torch.float) -> str:
         """Define kernel local buffer"""
@@ -239,8 +236,8 @@ class CppTemplateKernel(CppKernel):
         self,
         dst: ir.Buffer,
         nodes: list[ir.IRNode],
-        offsets: Optional[list[sympy.Expr]] = None,
-        reindexers: Optional[list[Optional[Callable[[list[Any]], list[Any]]]]] = None,
+        offsets: list[sympy.Expr] | None = None,
+        reindexers: list[Callable[[list[Any]], list[Any]] | None] | None = None,
     ) -> str:
         var_sizes = (tuple(dst.get_size()), ())
         var_ranges = {
@@ -267,7 +264,9 @@ class CppTemplateKernel(CppKernel):
                 assert len(args) == 2
                 assert len(args[0]) == len(var_sizes[0])
                 assert len(args[1]) == 0
-                new_args = [arg + offset for arg, offset in zip(args[0], offsets)]  # type: ignore[arg-type]
+                new_args = [
+                    arg + offset for arg, offset in zip(args[0], offsets, strict=False)
+                ]  # type: ignore[arg-type]
                 if reindexers[i] is not None:
                     new_args = reindexers[i](new_args)  # type: ignore[misc]
                 V.ops.store(
@@ -295,7 +294,7 @@ class CppTemplateKernel(CppKernel):
         dst: tuple[ir.Buffer],
         nodes: list[ir.IRNode],
         offsets: list[sympy.Expr],
-        reindexers: list[Optional[Callable[[list[Any]], list[Any]]]],
+        reindexers: list[Callable[[list[Any]], list[Any]] | None],
         output_names: list[str],
     ) -> str:
         ref_dst = dst[0]
@@ -321,7 +320,10 @@ class CppTemplateKernel(CppKernel):
                 assert len(args) == 2
                 assert len(args[0]) == len(var_sizes[0])
                 assert len(args[1]) == 0
-                new_args = [arg + offset for arg, offset in zip(args[0], offsets[i])]  # type: ignore[arg-type]
+                new_args = [
+                    arg + offset
+                    for arg, offset in zip(args[0], offsets[i], strict=False)
+                ]  # type: ignore[arg-type]
                 if reindexers[i] is not None:
                     new_args = reindexers[i](new_args)  # type: ignore[misc]
                 V.ops.store(
@@ -348,10 +350,10 @@ class CppTemplateKernel(CppKernel):
         self,
         dst: ir.Buffer,
         src: ir.Buffer,
-        orig_src: Optional[ir.Buffer] = None,
-        epilogue_nodes: Optional[list[ir.IRNode]] = None,
-        offsets: Optional[list[Any]] = None,
-        reindexers: Optional[list[Optional[Callable[[list[Any]], list[Any]]]]] = None,
+        orig_src: ir.Buffer | None = None,
+        epilogue_nodes: list[ir.IRNode] | None = None,
+        offsets: list[Any] | None = None,
+        reindexers: list[Callable[[list[Any]], list[Any]] | None] | None = None,
     ):
         """
         Store the `src` buffer to the `dst` buffer. The size of `src` and `dst` should match.
@@ -409,14 +411,17 @@ class CppTemplateKernel(CppKernel):
         self,
         dst: tuple[ir.Buffer],
         src: tuple[ir.IRNode],
-        orig_src: Optional[tuple[ir.IRNode]] = None,
-        epilogue_nodes: Optional[list[ir.IRNode]] = None,
-        offsets: Optional[list[Any]] = None,
-        reindexers: Optional[list[Optional[Callable[[list[Any]], list[Any]]]]] = None,
-        multi_output_buffers: Optional[tuple[ir.MultiOutput]] = None,
+        orig_src: tuple[ir.IRNode] | None = None,
+        epilogue_nodes: list[ir.IRNode] | None = None,
+        offsets: list[Any] | None = None,
+        reindexers: list[Callable[[list[Any]], list[Any]] | None] | None = None,
+        multi_output_buffers: tuple[ir.MultiOutput] | None = None,
     ):
         assert isinstance(dst, Iterable)
-        assert all(_dst.get_size() == _src.get_size() for _src, _dst in zip(src, dst))
+        assert all(
+            _dst.get_size() == _src.get_size()
+            for _src, _dst in zip(src, dst, strict=False)
+        )
         if offsets:
             offsets = parse_expr_with_index_symbols(offsets)
         gemm_num = len(src)
@@ -494,7 +499,7 @@ class CppTemplateKernel(CppKernel):
             if dst[0].get_name() != src[0].get_name():
                 copy_list = []
                 with LocalBufferContext(self.args) as scope:
-                    for _src, _dst in zip(src, dst):
+                    for _src, _dst in zip(src, dst, strict=False):
                         copy_list.extend([L.copy(_dst, _src).data.data])
                         scope.add_local_buffer(_src)
                         output_names.append(_dst.get_name())
@@ -509,11 +514,12 @@ class CppTemplateKernel(CppKernel):
                     )
             else:
                 assert all(
-                    _src.get_name() == _dst.get_name() for _src, _dst in zip(src, dst)
+                    _src.get_name() == _dst.get_name()
+                    for _src, _dst in zip(src, dst, strict=False)
                 )
                 assert all(
                     _src.get_layout() == _dst.get_layout()
-                    for _src, _dst in zip(src, dst)
+                    for _src, _dst in zip(src, dst, strict=False)
                 )
                 return ""
 
@@ -544,15 +550,14 @@ class CppTemplateCaller(ir.ChoiceCaller):
             [
                 ir.CppTemplateBuffer,
                 bool,
-                Optional[list[ir.IRNode]],
+                list[ir.IRNode] | None,
             ],
             str,
         ],
         bmreq: CppBenchmarkRequest,
         template: "CppTemplate",  # type: ignore[name-defined]  # noqa: F821
-        info_kwargs: Optional[
-            dict[str, Union[ir.PrimitiveInfoType, list[ir.PrimitiveInfoType]]]
-        ] = None,
+        info_kwargs: dict[str, ir.PrimitiveInfoType | list[ir.PrimitiveInfoType]]
+        | None = None,
     ):
         super().__init__(name, input_nodes, layout, description="")
         self.category = category
@@ -582,7 +587,7 @@ class CppTemplateCaller(ir.ChoiceCaller):
 
     def info_dict(
         self,
-    ) -> dict[str, Union[ir.PrimitiveInfoType, list[ir.PrimitiveInfoType]]]:
+    ) -> dict[str, ir.PrimitiveInfoType | list[ir.PrimitiveInfoType]]:
         return {"backend": "CPP", "op_type": "unknown"}
 
     def output_node(self) -> ir.TensorBox:

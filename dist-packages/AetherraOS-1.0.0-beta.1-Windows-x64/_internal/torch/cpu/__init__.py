@@ -12,7 +12,6 @@ import torch
 from .. import device as _device
 from . import amp
 
-
 __all__ = [
     "is_available",
     "is_initialized",
@@ -140,7 +139,7 @@ class StreamContext(AbstractContextManager):
 
     """
 
-    cur_stream: Optional[Stream]
+    cur_stream: Stream | None
 
     def __init__(self, stream):
         self.stream = stream

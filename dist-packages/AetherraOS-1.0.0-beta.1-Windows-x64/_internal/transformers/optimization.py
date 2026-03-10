@@ -16,7 +16,6 @@
 import math
 import warnings
 from functools import partial
-from typing import Optional, Union
 
 import torch
 from torch.optim import Optimizer
@@ -25,7 +24,6 @@ from torch.optim.lr_scheduler import LambdaLR, ReduceLROnPlateau
 from .trainer_pt_utils import LayerWiseDummyOptimizer, LayerWiseDummyScheduler
 from .trainer_utils import SchedulerType
 from .utils import logging
-
 
 logger = logging.get_logger(__name__)
 
@@ -69,13 +67,17 @@ def get_reduce_on_plateau_schedule(optimizer: Optimizer, **kwargs):
     return ReduceLROnPlateau(optimizer, **kwargs)
 
 
-def _get_constant_schedule_with_warmup_lr_lambda(current_step: int, *, num_warmup_steps: int):
+def _get_constant_schedule_with_warmup_lr_lambda(
+    current_step: int, *, num_warmup_steps: int
+):
     if current_step < num_warmup_steps:
         return float(current_step) / float(max(1.0, num_warmup_steps))
     return 1.0
 
 
-def get_constant_schedule_with_warmup(optimizer: Optimizer, num_warmup_steps: int, last_epoch: int = -1):
+def get_constant_schedule_with_warmup(
+    optimizer: Optimizer, num_warmup_steps: int, last_epoch: int = -1
+):
     """
     Create a schedule with a constant learning rate preceded by a warmup period during which the learning rate
     increases linearly between 0 and the initial lr set in the optimizer.
@@ -92,17 +94,27 @@ def get_constant_schedule_with_warmup(optimizer: Optimizer, num_warmup_steps: in
         `torch.optim.lr_scheduler.LambdaLR` with the appropriate schedule.
     """
 
-    lr_lambda = partial(_get_constant_schedule_with_warmup_lr_lambda, num_warmup_steps=num_warmup_steps)
+    lr_lambda = partial(
+        _get_constant_schedule_with_warmup_lr_lambda, num_warmup_steps=num_warmup_steps
+    )
     return LambdaLR(optimizer, lr_lambda, last_epoch=last_epoch)
 
 
-def _get_linear_schedule_with_warmup_lr_lambda(current_step: int, *, num_warmup_steps: int, num_training_steps: int):
+def _get_linear_schedule_with_warmup_lr_lambda(
+    current_step: int, *, num_warmup_steps: int, num_training_steps: int
+):
     if current_step < num_warmup_steps:
         return float(current_step) / float(max(1, num_warmup_steps))
-    return max(0.0, float(num_training_steps - current_step) / float(max(1, num_training_steps - num_warmup_steps)))
+    return max(
+        0.0,
+        float(num_training_steps - current_step)
+        / float(max(1, num_training_steps - num_warmup_steps)),
+    )
 
 
-def get_linear_schedule_with_warmup(optimizer, num_warmup_steps, num_training_steps, last_epoch=-1):
+def get_linear_schedule_with_warmup(
+    optimizer, num_warmup_steps, num_training_steps, last_epoch=-1
+):
     """
     Create a schedule with a learning rate that decreases linearly from the initial lr set in the optimizer to 0, after
     a warmup period during which it increases linearly from 0 to the initial lr set in the optimizer.
@@ -130,16 +142,28 @@ def get_linear_schedule_with_warmup(optimizer, num_warmup_steps, num_training_st
 
 
 def _get_cosine_schedule_with_warmup_lr_lambda(
-    current_step: int, *, num_warmup_steps: int, num_training_steps: int, num_cycles: float
+    current_step: int,
+    *,
+    num_warmup_steps: int,
+    num_training_steps: int,
+    num_cycles: float,
 ):
     if current_step < num_warmup_steps:
         return float(current_step) / float(max(1, num_warmup_steps))
-    progress = float(current_step - num_warmup_steps) / float(max(1, num_training_steps - num_warmup_steps))
-    return max(0.0, 0.5 * (1.0 + math.cos(math.pi * float(num_cycles) * 2.0 * progress)))
+    progress = float(current_step - num_warmup_steps) / float(
+        max(1, num_training_steps - num_warmup_steps)
+    )
+    return max(
+        0.0, 0.5 * (1.0 + math.cos(math.pi * float(num_cycles) * 2.0 * progress))
+    )
 
 
 def get_cosine_schedule_with_warmup(
-    optimizer: Optimizer, num_warmup_steps: int, num_training_steps: int, num_cycles: float = 0.5, last_epoch: int = -1
+    optimizer: Optimizer,
+    num_warmup_steps: int,
+    num_training_steps: int,
+    num_cycles: float = 0.5,
+    last_epoch: int = -1,
 ):
     """
     Create a schedule with a learning rate that decreases following the values of the cosine function between the
@@ -173,18 +197,30 @@ def get_cosine_schedule_with_warmup(
 
 
 def _get_cosine_with_hard_restarts_schedule_with_warmup_lr_lambda(
-    current_step: int, *, num_warmup_steps: int, num_training_steps: int, num_cycles: int
+    current_step: int,
+    *,
+    num_warmup_steps: int,
+    num_training_steps: int,
+    num_cycles: int,
 ):
     if current_step < num_warmup_steps:
         return float(current_step) / float(max(1, num_warmup_steps))
-    progress = float(current_step - num_warmup_steps) / float(max(1, num_training_steps - num_warmup_steps))
+    progress = float(current_step - num_warmup_steps) / float(
+        max(1, num_training_steps - num_warmup_steps)
+    )
     if progress >= 1.0:
         return 0.0
-    return max(0.0, 0.5 * (1.0 + math.cos(math.pi * ((float(num_cycles) * progress) % 1.0))))
+    return max(
+        0.0, 0.5 * (1.0 + math.cos(math.pi * ((float(num_cycles) * progress) % 1.0)))
+    )
 
 
 def get_cosine_with_hard_restarts_schedule_with_warmup(
-    optimizer: Optimizer, num_warmup_steps: int, num_training_steps: int, num_cycles: int = 1, last_epoch: int = -1
+    optimizer: Optimizer,
+    num_warmup_steps: int,
+    num_training_steps: int,
+    num_cycles: int = 1,
+    last_epoch: int = -1,
 ):
     """
     Create a schedule with a learning rate that decreases following the values of the cosine function between the
@@ -227,18 +263,22 @@ def _get_polynomial_decay_schedule_with_warmup_lr_lambda(
 ):
     if current_step < num_warmup_steps:
         return float(current_step) / float(max(1, num_warmup_steps))
-    elif current_step > num_training_steps:
+    if current_step > num_training_steps:
         return lr_end / lr_init  # as LambdaLR multiplies by lr_init
-    else:
-        lr_range = lr_init - lr_end
-        decay_steps = num_training_steps - num_warmup_steps
-        pct_remaining = 1 - (current_step - num_warmup_steps) / decay_steps
-        decay = lr_range * pct_remaining**power + lr_end
-        return decay / lr_init  # as LambdaLR multiplies by lr_init
+    lr_range = lr_init - lr_end
+    decay_steps = num_training_steps - num_warmup_steps
+    pct_remaining = 1 - (current_step - num_warmup_steps) / decay_steps
+    decay = lr_range * pct_remaining**power + lr_end
+    return decay / lr_init  # as LambdaLR multiplies by lr_init
 
 
 def get_polynomial_decay_schedule_with_warmup(
-    optimizer, num_warmup_steps, num_training_steps, lr_end=1e-7, power=1.0, last_epoch=-1
+    optimizer,
+    num_warmup_steps,
+    num_training_steps,
+    lr_end=1e-7,
+    power=1.0,
+    last_epoch=-1,
 ):
     """
     Create a schedule with a learning rate that decreases as a polynomial decay from the initial lr set in the
@@ -270,7 +310,9 @@ def get_polynomial_decay_schedule_with_warmup(
 
     lr_init = optimizer.defaults["lr"]
     if not (lr_init > lr_end):
-        raise ValueError(f"lr_end ({lr_end}) must be smaller than initial lr ({lr_init})")
+        raise ValueError(
+            f"lr_end ({lr_end}) must be smaller than initial lr ({lr_init})"
+        )
 
     lr_lambda = partial(
         _get_polynomial_decay_schedule_with_warmup_lr_lambda,
@@ -283,7 +325,9 @@ def get_polynomial_decay_schedule_with_warmup(
     return LambdaLR(optimizer, lr_lambda, last_epoch)
 
 
-def _get_inverse_sqrt_schedule_lr_lambda(current_step: int, *, num_warmup_steps: int, timescale: Optional[int] = None):
+def _get_inverse_sqrt_schedule_lr_lambda(
+    current_step: int, *, num_warmup_steps: int, timescale: int | None = None
+):
     if current_step < num_warmup_steps:
         return float(current_step) / float(max(1, num_warmup_steps))
     shift = timescale - num_warmup_steps
@@ -292,7 +336,10 @@ def _get_inverse_sqrt_schedule_lr_lambda(current_step: int, *, num_warmup_steps:
 
 
 def get_inverse_sqrt_schedule(
-    optimizer: Optimizer, num_warmup_steps: int, timescale: Optional[int] = None, last_epoch: int = -1
+    optimizer: Optimizer,
+    num_warmup_steps: int,
+    timescale: int | None = None,
+    last_epoch: int = -1,
 ):
     """
     Create a schedule with an inverse square-root learning rate, from the initial lr set in the optimizer, after a
@@ -317,16 +364,27 @@ def get_inverse_sqrt_schedule(
     if timescale is None:
         timescale = num_warmup_steps or 10_000
 
-    lr_lambda = partial(_get_inverse_sqrt_schedule_lr_lambda, num_warmup_steps=num_warmup_steps, timescale=timescale)
+    lr_lambda = partial(
+        _get_inverse_sqrt_schedule_lr_lambda,
+        num_warmup_steps=num_warmup_steps,
+        timescale=timescale,
+    )
     return LambdaLR(optimizer, lr_lambda, last_epoch=last_epoch)
 
 
 def _get_cosine_schedule_with_warmup_lr_lambda(
-    current_step: int, *, num_warmup_steps: int, num_training_steps: int, num_cycles: float, min_lr_rate: float = 0.0
+    current_step: int,
+    *,
+    num_warmup_steps: int,
+    num_training_steps: int,
+    num_cycles: float,
+    min_lr_rate: float = 0.0,
 ):
     if current_step < num_warmup_steps:
         return float(current_step) / float(max(1, num_warmup_steps))
-    progress = float(current_step - num_warmup_steps) / float(max(1, num_training_steps - num_warmup_steps))
+    progress = float(current_step - num_warmup_steps) / float(
+        max(1, num_training_steps - num_warmup_steps)
+    )
     factor = 0.5 * (1.0 + math.cos(math.pi * float(num_cycles) * 2.0 * progress))
     factor = factor * (1 - min_lr_rate) + min_lr_rate
     return max(0, factor)
@@ -338,8 +396,8 @@ def get_cosine_with_min_lr_schedule_with_warmup(
     num_training_steps: int,
     num_cycles: float = 0.5,
     last_epoch: int = -1,
-    min_lr: Optional[float] = None,
-    min_lr_rate: Optional[float] = None,
+    min_lr: float | None = None,
+    min_lr_rate: float | None = None,
 ):
     """
     Create a schedule with a learning rate that decreases following the values of the cosine function between the
@@ -369,10 +427,12 @@ def get_cosine_with_min_lr_schedule_with_warmup(
 
     if min_lr is not None and min_lr_rate is not None:
         raise ValueError("Only one of min_lr or min_lr_rate should be set")
-    elif min_lr is not None:
+    if min_lr is not None:
         min_lr_rate = min_lr / optimizer.defaults["lr"]
     elif min_lr_rate is None:
-        raise ValueError("One of min_lr or min_lr_rate should be set through the `lr_scheduler_kwargs`")
+        raise ValueError(
+            "One of min_lr or min_lr_rate should be set through the `lr_scheduler_kwargs`"
+        )
 
     lr_lambda = partial(
         _get_cosine_schedule_with_warmup_lr_lambda,
@@ -410,11 +470,15 @@ def _get_wsd_scheduler_lambda(
         return 1.0
 
     if current_step < num_warmup_steps + num_stable_steps + num_decay_steps:
-        progress = float(current_step - num_warmup_steps - num_stable_steps) / float(max(1, num_decay_steps))
+        progress = float(current_step - num_warmup_steps - num_stable_steps) / float(
+            max(1, num_decay_steps)
+        )
         if decay_type == "linear":
             factor = 1.0 - progress
         elif decay_type == "cosine":
-            factor = 0.5 * (1.0 + math.cos(math.pi * float(num_cycles) * 2.0 * progress))
+            factor = 0.5 * (
+                1.0 + math.cos(math.pi * float(num_cycles) * 2.0 * progress)
+            )
         elif decay_type == "1-sqrt":
             factor = 1.0 - math.sqrt(progress)
         factor = factor * (1.0 - min_lr_ratio) + min_lr_ratio
@@ -426,8 +490,8 @@ def get_wsd_schedule(
     optimizer: Optimizer,
     num_warmup_steps: int,
     num_decay_steps: int,
-    num_training_steps: Optional[int] = None,
-    num_stable_steps: Optional[int] = None,
+    num_training_steps: int | None = None,
+    num_stable_steps: int | None = None,
     warmup_type: str = "linear",
     decay_type: str = "cosine",
     min_lr_ratio: float = 0,
@@ -468,16 +532,24 @@ def get_wsd_schedule(
     """
 
     if num_training_steps is None and num_stable_steps is None:
-        raise ValueError("Either num_training_steps or num_stable_steps must be specified.")
+        raise ValueError(
+            "Either num_training_steps or num_stable_steps must be specified."
+        )
 
     if num_training_steps is not None and num_stable_steps is not None:
-        warnings.warn("Both num_training_steps and num_stable_steps are specified. num_stable_steps will be used.")
+        warnings.warn(
+            "Both num_training_steps and num_stable_steps are specified. num_stable_steps will be used."
+        )
 
     if warmup_type not in ["linear", "cosine", "1-sqrt"]:
-        raise ValueError(f"Unknown warmup type: {warmup_type}, expected 'linear', 'cosine' or '1-sqrt'")
+        raise ValueError(
+            f"Unknown warmup type: {warmup_type}, expected 'linear', 'cosine' or '1-sqrt'"
+        )
 
     if decay_type not in ["linear", "cosine", "1-sqrt"]:
-        raise ValueError(f"Unknown decay type: {decay_type}, expected 'linear', 'cosine' or '1-sqrt'")
+        raise ValueError(
+            f"Unknown decay type: {decay_type}, expected 'linear', 'cosine' or '1-sqrt'"
+        )
 
     if num_stable_steps is None:
         num_stable_steps = num_training_steps - num_warmup_steps - num_decay_steps
@@ -510,11 +582,11 @@ TYPE_TO_SCHEDULER_FUNCTION = {
 
 
 def get_scheduler(
-    name: Union[str, SchedulerType],
+    name: str | SchedulerType,
     optimizer: Optimizer,
-    num_warmup_steps: Optional[int] = None,
-    num_training_steps: Optional[int] = None,
-    scheduler_specific_kwargs: Optional[dict] = None,
+    num_warmup_steps: int | None = None,
+    num_training_steps: int | None = None,
+    scheduler_specific_kwargs: dict | None = None,
 ):
     """
     Unified API to get any scheduler from its name.
@@ -561,7 +633,9 @@ def get_scheduler(
             if param.requires_grad:
                 param.register_post_accumulate_grad_hook(scheduler_hook)
 
-        return LayerWiseDummyScheduler(optimizer_dict=optimizer_dict, lr=optimizer.defaults["lr"])
+        return LayerWiseDummyScheduler(
+            optimizer_dict=optimizer_dict, lr=optimizer.defaults["lr"]
+        )
 
     if name == SchedulerType.CONSTANT:
         return schedule_func(optimizer)
@@ -574,7 +648,9 @@ def get_scheduler(
 
     # All other schedulers require `num_warmup_steps`
     if num_warmup_steps is None:
-        raise ValueError(f"{name} requires `num_warmup_steps`, please provide that argument.")
+        raise ValueError(
+            f"{name} requires `num_warmup_steps`, please provide that argument."
+        )
 
     if name == SchedulerType.CONSTANT_WITH_WARMUP:
         return schedule_func(optimizer, num_warmup_steps=num_warmup_steps)
@@ -593,7 +669,9 @@ def get_scheduler(
 
     # All other schedulers require `num_training_steps`
     if num_training_steps is None:
-        raise ValueError(f"{name} requires `num_training_steps`, please provide that argument.")
+        raise ValueError(
+            f"{name} requires `num_training_steps`, please provide that argument."
+        )
 
     return schedule_func(
         optimizer,
@@ -702,7 +780,9 @@ class Adafactor(Optimizer):
         warmup_init=False,
     ):
         if lr is not None and relative_step:
-            raise ValueError("Cannot combine manual `lr` and `relative_step=True` options")
+            raise ValueError(
+                "Cannot combine manual `lr` and `relative_step=True` options"
+            )
         if warmup_init and not relative_step:
             raise ValueError("`warmup_init=True` requires `relative_step=True`")
 
@@ -723,7 +803,9 @@ class Adafactor(Optimizer):
     def _get_lr(param_group, param_state):
         rel_step_sz = param_group["lr"]
         if param_group["relative_step"]:
-            min_step = 1e-6 * param_state["step"] if param_group["warmup_init"] else 1e-2
+            min_step = (
+                1e-6 * param_state["step"] if param_group["warmup_init"] else 1e-2
+            )
             rel_step_sz = min(min_step, 1.0 / math.sqrt(param_state["step"]))
         param_scale = 1.0
         if param_group["scale_parameter"]:
@@ -744,7 +826,11 @@ class Adafactor(Optimizer):
     def _approx_sq_grad(exp_avg_sq_row, exp_avg_sq_col):
         # copy from fairseq's adafactor implementation:
         # https://github.com/huggingface/transformers/blob/8395f14de6068012787d83989c3627c3df6a252b/src/transformers/optimization.py#L505
-        r_factor = (exp_avg_sq_row / exp_avg_sq_row.mean(dim=-1, keepdim=True)).rsqrt_().unsqueeze(-1)
+        r_factor = (
+            (exp_avg_sq_row / exp_avg_sq_row.mean(dim=-1, keepdim=True))
+            .rsqrt_()
+            .unsqueeze(-1)
+        )
         c_factor = exp_avg_sq_col.unsqueeze(-2).rsqrt()
         return torch.mul(r_factor, c_factor)
 
@@ -784,7 +870,9 @@ class Adafactor(Optimizer):
                         state["exp_avg"] = torch.zeros_like(grad)
                     if factored:
                         state["exp_avg_sq_row"] = torch.zeros(grad_shape[:-1]).to(grad)
-                        state["exp_avg_sq_col"] = torch.zeros(grad_shape[:-2] + grad_shape[-1:]).to(grad)
+                        state["exp_avg_sq_col"] = torch.zeros(
+                            grad_shape[:-2] + grad_shape[-1:]
+                        ).to(grad)
                     else:
                         state["exp_avg_sq"] = torch.zeros_like(grad)
 
@@ -812,8 +900,12 @@ class Adafactor(Optimizer):
                     exp_avg_sq_row = state["exp_avg_sq_row"]
                     exp_avg_sq_col = state["exp_avg_sq_col"]
 
-                    exp_avg_sq_row.mul_(beta2t).add_(update.mean(dim=-1), alpha=(1.0 - beta2t))
-                    exp_avg_sq_col.mul_(beta2t).add_(update.mean(dim=-2), alpha=(1.0 - beta2t))
+                    exp_avg_sq_row.mul_(beta2t).add_(
+                        update.mean(dim=-1), alpha=(1.0 - beta2t)
+                    )
+                    exp_avg_sq_col.mul_(beta2t).add_(
+                        update.mean(dim=-2), alpha=(1.0 - beta2t)
+                    )
 
                     # Approximation of exponential moving average of square of gradient
                     update = self._approx_sq_grad(exp_avg_sq_row, exp_avg_sq_col)
@@ -824,12 +916,16 @@ class Adafactor(Optimizer):
                     exp_avg_sq.mul_(beta2t).add_(update, alpha=(1.0 - beta2t))
                     update = exp_avg_sq.rsqrt().mul_(grad)
 
-                update.div_((self._rms(update) / group["clip_threshold"]).clamp_(min=1.0))
+                update.div_(
+                    (self._rms(update) / group["clip_threshold"]).clamp_(min=1.0)
+                )
                 update.mul_(lr)
 
                 if use_first_moment:
                     exp_avg = state["exp_avg"]
-                    exp_avg.mul_(group["beta1"]).add_(update, alpha=(1 - group["beta1"]))
+                    exp_avg.mul_(group["beta1"]).add_(
+                        update, alpha=(1 - group["beta1"])
+                    )
                     update = exp_avg
 
                 if group["weight_decay"] != 0:

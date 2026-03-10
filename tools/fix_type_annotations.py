@@ -10,7 +10,6 @@ code quality and type safety.
 import ast
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple, Union
 
 
 class TypeAnnotationFixer:
@@ -114,7 +113,7 @@ class TypeAnnotationFixer:
 
         return "Any"
 
-    def get_suggested_param_type(self, param_name: str) -> Optional[str]:
+    def get_suggested_param_type(self, param_name: str) -> str | None:
         """Get suggested parameter type based on parameter name."""
         if param_name in self.common_param_types:
             return self.common_param_types[param_name]
@@ -122,19 +121,17 @@ class TypeAnnotationFixer:
         # Pattern matching
         if param_name.endswith("_id"):
             return "str"
-        elif param_name.endswith("_list"):
+        if param_name.endswith("_list"):
             return "List[Any]"
-        elif param_name.endswith("_dict"):
+        if param_name.endswith("_dict"):
             return "Dict[str, Any]"
-        elif param_name.endswith("_set"):
+        if param_name.endswith("_set"):
             return "Set[Any]"
-        elif param_name.endswith("_path"):
+        if param_name.endswith("_path") or param_name.endswith("_file"):
             return "Union[str, Path]"
-        elif param_name.endswith("_file"):
-            return "Union[str, Path]"
-        elif param_name.endswith("_url"):
+        if param_name.endswith("_url"):
             return "str"
-        elif param_name.endswith("_callback"):
+        if param_name.endswith("_callback"):
             return "Callable"
 
         return "Any"
@@ -142,7 +139,7 @@ class TypeAnnotationFixer:
     def fix_file(self, file_path: Path) -> bool:
         """Fix type annotations in a single file."""
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
 
             # Parse the AST to find functions without annotations
@@ -280,8 +277,8 @@ class TypeAnnotationFixer:
         return False
 
     def fix_project(
-        self, root_path: Path, file_patterns: List[str] = None
-    ) -> Dict[str, int]:
+        self, root_path: Path, file_patterns: list[str] = None
+    ) -> dict[str, int]:
         """Fix type annotations across the project."""
         if file_patterns is None:
             file_patterns = ["**/*.py"]
@@ -339,7 +336,7 @@ def main():
     else:
         # Fix entire project
         results = fixer.fix_project(root_path)
-        print(f"\n📊 Results:")
+        print("\n📊 Results:")
         print(f"  Fixed: {results['fixed']} files")
         print(f"  Errors: {results['errors']} files")
         print(f"  Skipped: {results['skipped']} files")

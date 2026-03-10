@@ -1,10 +1,11 @@
 # mypy: allow-untyped-defs
 import math
 import operator
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from enum import Enum
 from functools import reduce, wraps
-from typing import Callable, Optional, TypeVar, Union
+from typing import TypeVar
+
 from typing_extensions import ParamSpec
 
 import torch
@@ -18,24 +19,24 @@ from torch._decomp import (
 )
 from torch._ops import OpOverload
 from torch._prims import (
-    _prim_elementwise_meta,
     ELEMENTWISE_PRIM_TYPE_PROMOTION_KIND,
+    _prim_elementwise_meta,
     view_of,
 )
 from torch._prims_common import (
+    ELEMENTWISE_TYPE_PROMOTION_KIND,
     BoolLike,
+    FloatLike,
+    IntLike,
+    Number,
+    TensorLike,
     corresponding_complex_dtype,
     corresponding_real_dtype,
     definitely_contiguous,
     elementwise_dtypes,
-    ELEMENTWISE_TYPE_PROMOTION_KIND,
-    FloatLike,
-    IntLike,
     is_contiguous,
     make_contiguous_strides_for,
-    Number,
     suggest_memory_format,
-    TensorLike,
 )
 from torch._prims_common.wrappers import (
     _maybe_convert_to_dtype,
@@ -47,7 +48,6 @@ from torch._prims_common.wrappers import (
 from torch._refs import _broadcast_shapes, _maybe_broadcast
 from torch.fx.experimental import _config as exp_config
 from torch.utils import _pytree as pytree
-
 
 _T = TypeVar("_T")
 _P = ParamSpec("_P")
@@ -304,8 +304,7 @@ def _view_unbacked_meta(a, shape, size_oblivious_enabled=True):
             _a = torch._refs.unsqueeze(_a, -1)
         if _a is a:
             return view_of(a)
-        else:
-            return _a
+        return _a
 
     # Special-cases reshaping to zero dim tensors
     if len(shape) == 0:
@@ -315,8 +314,7 @@ def _view_unbacked_meta(a, shape, size_oblivious_enabled=True):
             _a = torch._refs.squeeze(_a, -1)
         if _a is a:
             return view_of(a)
-        else:
-            return _a
+        return _a
 
     shape_numel = reduce(operator.mul, shape, 1)
 
@@ -360,8 +358,7 @@ def _view_meta(a, *shape):
         a, shape
     ):
         return _view_unbacked_meta(a, shape)
-    else:
-        return torch._refs._reshape_view_helper(a, *shape, allow_copy=False)
+    return torch._refs._reshape_view_helper(a, *shape, allow_copy=False)
 
 
 @register_meta(aten.linalg_matrix_exp)
@@ -481,8 +478,7 @@ cufft_max_ndim = 3
 def use_optimized_cufft_path(dim: list[int]):
     if len(dim) > cufft_max_ndim or (len(dim) >= 2 and dim[0] == 0 and dim[1] == 1):
         return False
-    else:
-        return True
+    return True
 
 
 @register_meta([aten._fft_r2c.default, aten._fft_r2c.out])
@@ -540,10 +536,9 @@ def meta_fft_r2c(self, dim, normalization, onesided):
 
         return output
 
-    else:
-        return self.new_empty(
-            out_sizes, dtype=utils.corresponding_complex_dtype(self.dtype)
-        )
+    return self.new_empty(
+        out_sizes, dtype=utils.corresponding_complex_dtype(self.dtype)
+    )
 
 
 @register_meta(aten.randperm.generator_out)
@@ -635,25 +630,23 @@ def meta_fft_c2r(self: Tensor, dim: list[int], normalization: int, lastdim: int)
                 dim,
                 forward=False,
             )
-        else:
-            # First complete any C2C transforms
-            if len(dim) > 1:
-                temp = meta_fft_c2c(self, dim[:-1], 0, lastdim)  # fft_norm_mode::none
-            else:
-                temp = self.clone(memory_format=torch.contiguous_format)
-            return _exec_fft(output, temp, out_sizes, [dim[-1]], forward=False)
-
-    else:
-        input = self
+        # First complete any C2C transforms
         if len(dim) > 1:
-            c2c_dims = dim[:-1]
-            input = meta_fft_c2c(self, c2c_dims, normalization, forward=False)
-            dim = dim[-1:]
+            temp = meta_fft_c2c(self, dim[:-1], 0, lastdim)  # fft_norm_mode::none
+        else:
+            temp = self.clone(memory_format=torch.contiguous_format)
+        return _exec_fft(output, temp, out_sizes, [dim[-1]], forward=False)
 
-        out_sizes = list(input.size())
-        out_sizes[dim[-1]] = lastdim
-        out = self.new_empty(out_sizes, dtype=toRealValueType(self.dtype))
-        return _exec_fft(out, input, out_sizes, dim, forward=False)
+    input = self
+    if len(dim) > 1:
+        c2c_dims = dim[:-1]
+        input = meta_fft_c2c(self, c2c_dims, normalization, forward=False)
+        dim = dim[-1:]
+
+    out_sizes = list(input.size())
+    out_sizes[dim[-1]] = lastdim
+    out = self.new_empty(out_sizes, dtype=toRealValueType(self.dtype))
+    return _exec_fft(out, input, out_sizes, dim, forward=False)
 
 
 @register_meta(aten.copy_.default)
@@ -703,9 +696,9 @@ def meta_sparse_structured_linear(
     input: Tensor,
     weight: Tensor,
     _meta: Tensor,
-    bias: Optional[Tensor] = None,
-    _activation_opt: Optional[str] = None,
-    out_dtype: Optional[torch.dtype] = None,
+    bias: Tensor | None = None,
+    _activation_opt: str | None = None,
+    out_dtype: torch.dtype | None = None,
 ):
     output_sizes = list(input.shape)
     if bias is not None:
@@ -737,7 +730,7 @@ def meta_sparse_structured_mm(
     mat1: Tensor,
     mat1_meta: Tensor,
     mat2: Tensor,
-    out_dtype: Optional[torch.dtype] = None,
+    out_dtype: torch.dtype | None = None,
 ):
     assert len(mat1.shape) == 2
     assert len(mat1_meta.shape) == 2
@@ -766,7 +759,7 @@ def meta_sparse_structured_addmm(
     *,
     alpha=1,
     beta=1,
-    out_dtype: Optional[torch.dtype] = None,
+    out_dtype: torch.dtype | None = None,
 ):
     assert len(input.shape) == 1, (
         "only input broadcasted to columns of mat1 * mat2 product is supported"
@@ -796,9 +789,9 @@ def meta_sparse_structured_addmm(
 def meta__cslt_sparse_mm(
     compressed_A: torch.Tensor,
     dense_B: torch.Tensor,
-    bias: Optional[Tensor] = None,
-    alpha: Optional[Tensor] = None,
-    out_dtype: Optional[torch.dtype] = None,
+    bias: Tensor | None = None,
+    alpha: Tensor | None = None,
+    out_dtype: torch.dtype | None = None,
     transpose_result: bool = False,
     alg_id: int = 0,
     split_k: int = 1,
@@ -882,9 +875,9 @@ def meta_segment_reduce(
     data: Tensor,
     reduce: str,
     *,
-    lengths: Optional[Tensor] = None,
-    indices: Optional[Tensor] = None,
-    offsets: Optional[Tensor] = None,
+    lengths: Tensor | None = None,
+    indices: Tensor | None = None,
+    offsets: Tensor | None = None,
     axis: int = 0,
     unsafe: bool = False,
     initial=None,
@@ -1622,7 +1615,7 @@ def _linalg_svd_meta(
     A: Tensor,
     full_matrices: bool = False,
     compute_uv: bool = True,
-    driver: Optional[str] = None,
+    driver: str | None = None,
 ):
     checkIsMatrix(A, "linalg.svd")
     checkFloatingOrComplex(A, "linalg.svd")
@@ -1675,7 +1668,7 @@ def _linalg_broadcast_batch_dims(
 def _linalg_broadcast_batch_dims_name(
     arg1: Tensor,
     arg2: Tensor,
-    name: Optional[str],
+    name: str | None,
 ) -> tuple[Tensor, Tensor]:
     # If there's no name we assume we don't want to check the errors
     if name:
@@ -1707,10 +1700,10 @@ def _linalg_solve_ex(
     *,
     left: bool = True,
     check_errors: bool = False,
-    result: Optional[Tensor] = None,
-    LU: Optional[Tensor] = None,
-    pivots: Optional[Tensor] = None,
-    info: Optional[Tensor] = None,
+    result: Tensor | None = None,
+    LU: Tensor | None = None,
+    pivots: Tensor | None = None,
+    info: Tensor | None = None,
 ) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     checkFloatingOrComplex(A, "linalg.solve")
     torch._check(
@@ -1750,7 +1743,7 @@ def _linalg_solve_ex(
     out = (result, LU, pivots, info)
     res = (result_, LU_, pivots_, info_)
     if all(x is not None for x in out):
-        for r, o in zip(res, out):
+        for r, o in zip(res, out, strict=False):
             # resize and copy operations are done in-place
             _maybe_resize_out(o, r.shape)  # type: ignore[arg-type]
             # strides are not copied in out_wrapper
@@ -1767,7 +1760,7 @@ def linalg_solve_triangular_meta(
     upper: bool,
     left: bool = True,
     unitriangular: bool = False,
-    out: Optional[Tensor] = None,
+    out: Tensor | None = None,
 ) -> Tensor:
     if out is None:
         out = A.new_empty([0])
@@ -2005,8 +1998,7 @@ def _pad1d_common(input, padding, *, is_reflection):
 
     if input.ndim == 2:
         return input.new_empty((nplane, output_w))
-    else:
-        return input.new_empty((nbatch, nplane, output_w))
+    return input.new_empty((nbatch, nplane, output_w))
 
 
 @register_meta(aten.reflection_pad1d)
@@ -2116,8 +2108,7 @@ def _pad2d_common(input, padding, *, is_reflection):
 
     if input.ndim == 3:
         return input.new_empty((nplane, output_h, output_w))
-    else:
-        return input.new_empty((nbatch, nplane, output_h, output_w))
+    return input.new_empty((nbatch, nplane, output_h, output_w))
 
 
 @register_meta(aten.reflection_pad2d)
@@ -2233,8 +2224,7 @@ def _pad3d_common(input, padding, *, is_reflection):
 
     if batch_mode:
         return input.new_empty((nbatch, nplane, output_d, output_h, output_w))  # type: ignore[possibly-undefined]
-    else:
-        return input.new_empty((nplane, output_d, output_h, output_w))
+    return input.new_empty((nplane, output_d, output_h, output_w))
 
 
 @register_meta(aten.reflection_pad3d)
@@ -2310,10 +2300,9 @@ def meta__pdist_forward(self: Tensor, p: float = 2) -> Tensor:
     n = self.size(0)
     if n <= 1:
         return self.new_empty([0]).to(memory_format=torch.legacy_contiguous_format)  # type: ignore[call-overload]
-    else:
-        return self.new_empty((n * (n - 1) // 2,)).to(
-            memory_format=torch.legacy_contiguous_format
-        )  # type: ignore[call-overload]
+    return self.new_empty((n * (n - 1) // 2,)).to(
+        memory_format=torch.legacy_contiguous_format
+    )  # type: ignore[call-overload]
 
 
 @register_meta(aten._pdist_backward)
@@ -2435,25 +2424,24 @@ def _compute_reduction_shape(self, dims, keepdim):
 def device_hint(tensor) -> "str":
     if isinstance(tensor, torch._subclasses.FakeTensor):
         return tensor.fake_device.type
-    elif (
+    if (
         hasattr(tensor, "device")
         and hasattr(tensor.device, "type")
         and tensor.device.type != "meta"
     ):
         return tensor.device.type
-    else:
-        return "cuda"  # default to cuda
+    return "cuda"  # default to cuda
 
 
 def calc_conv_nd_return_shape(
     input_tensor: torch.Tensor,
     weight: torch.Tensor,
-    stride: Union[list[int], int],
-    padding: Union[list[int], int],
-    dilation: Union[list[int], int],
+    stride: list[int] | int,
+    padding: list[int] | int,
+    dilation: list[int] | int,
     is_transposed: bool,
     groups: int,
-    output_padding: Optional[Union[list[int], int]] = None,
+    output_padding: list[int] | int | None = None,
 ):
     def _formula(ln: int, p: int, d: int, k: int, s: int) -> int:
         """
@@ -2516,7 +2504,7 @@ def calc_conv_nd_return_shape(
     elif len(dilation) == 1:
         dilation = [dilation[0]] * len(dims)
 
-    output_padding_list: Optional[list[int]] = None
+    output_padding_list: list[int] | None = None
     if output_padding:
         if isinstance(output_padding, IntLike):
             output_padding_list = [output_padding] * len(dims)
@@ -2561,9 +2549,9 @@ def is_channels_last(ten):
 def meta_miopen_batch_norm(
     input_tensor: torch.Tensor,
     weight: torch.Tensor,
-    bias: Optional[torch.Tensor],
-    running_mean: Optional[torch.Tensor],
-    running_var: Optional[torch.Tensor],
+    bias: torch.Tensor | None,
+    running_mean: torch.Tensor | None,
+    running_var: torch.Tensor | None,
     training: bool,
     exponential_average_factor: float,
     epsilon: float,
@@ -2616,7 +2604,7 @@ def meta_conv(
                 return torch.channels_last
         if input_tensor.is_contiguous(memory_format=torch.contiguous_format):
             return torch.contiguous_format
-        elif input_tensor.is_contiguous(memory_format=torch.preserve_format):
+        if input_tensor.is_contiguous(memory_format=torch.preserve_format):
             return torch.preserve_format
 
     shape_out = calc_conv_nd_return_shape(
@@ -3170,8 +3158,7 @@ def meta_avg_pool3d(
 
     if input.ndim == 4:
         return input.new_empty((nslices, otime, oheight, owidth))
-    else:
-        return input.new_empty((nbatch, nslices, otime, oheight, owidth))
+    return input.new_empty((nbatch, nslices, otime, oheight, owidth))
 
 
 @register_meta(aten.avg_pool3d_backward)
@@ -3361,14 +3348,13 @@ def meta_adaptive_max_pool2d(input, output_size):
         out = input.new_empty(out_shape)
         indices = input.new_empty(out_shape, dtype=torch.int64)
         return out, indices
-    else:
-        out_shape = (sizeB, sizeD, osizeH, osizeW)  # type: ignore[assignment]
-        memory_format = utils.suggest_memory_format(input)
-        out = input.new_empty(out_shape).to(memory_format=memory_format)
-        indices = input.new_empty(out_shape, dtype=torch.int64).to(
-            memory_format=memory_format
-        )
-        return out, indices
+    out_shape = (sizeB, sizeD, osizeH, osizeW)  # type: ignore[assignment]
+    memory_format = utils.suggest_memory_format(input)
+    out = input.new_empty(out_shape).to(memory_format=memory_format)
+    indices = input.new_empty(out_shape, dtype=torch.int64).to(
+        memory_format=memory_format
+    )
+    return out, indices
 
 
 @register_meta(aten.adaptive_max_pool2d_backward)
@@ -3488,7 +3474,7 @@ def meta_index_Tensor(self, indices):
     torch._check(bool(indices), lambda: "at least one index must be provided")
     # aten::index is the internal advanced indexing implementation
     # checkIndexTensorTypes and expandTensors
-    result: list[Optional[Tensor]] = []
+    result: list[Tensor | None] = []
     for i, index in enumerate(indices):
         if index is not None:
             torch._check(
@@ -3891,7 +3877,7 @@ def get_kai_packed_weight_size(n_bits, N, K, groupsize):
             return kai_get_rhs_packed_size_rhs_pack_nxk_qsi4cxp_qsu4cxs1s0(
                 N, K, kai_nr, kai_kr, kai_sr
             )
-        elif groupsize % 32 == 0 and K % groupsize == 0:  # groupwise
+        if groupsize % 32 == 0 and K % groupsize == 0:  # groupwise
             kai_nr = 8
             kai_kr = 16
             kai_sr = 2
@@ -3956,7 +3942,7 @@ def get_kai_packed_weight_size(n_bits, N, K, groupsize):
 
 @register_meta([aten._dyn_quant_pack_4bit_weight])
 def meta__dyn_quant_pack_4bit_weight(
-    weights, scales_zeros, bias: Optional[Tensor], block_size, in_features, out_features
+    weights, scales_zeros, bias: Tensor | None, block_size, in_features, out_features
 ):
     torch._check(
         weights.dtype is torch.uint8,
@@ -4138,8 +4124,7 @@ def meta_embedding_bag(
     def is_fast_path(src, scale, output, padding_idx):
         if scale is not None:
             return is_fast_path_index_select_scale(src, scale, output, padding_idx)
-        else:
-            return is_fast_path_index_select(src, output, padding_idx)
+        return is_fast_path_index_select(src, output, padding_idx)
 
     if device_hint(offsets) != "cpu":
         offset2bag = indices.new_empty(indices.size(0))
@@ -4187,7 +4172,7 @@ def _get_reduction_dtype(input, dtype, promote_int_to_long=True):
 
     if input.dtype.is_floating_point or input.dtype.is_complex:
         return input.dtype
-    elif promote_int_to_long:
+    if promote_int_to_long:
         return torch.long
 
     return input.dtype
@@ -4300,20 +4285,17 @@ def meta_binop_inplace_alpha(self, other, alpha=1):
     def is_integeric(arg):
         if isinstance(arg, TensorLike):
             return utils.is_integer_dtype(arg.dtype)
-        else:
-            return isinstance(arg, IntLike)
+        return isinstance(arg, IntLike)
 
     def is_floatic(arg):
         if isinstance(arg, TensorLike):
             return utils.is_float_dtype(arg.dtype)
-        else:
-            return isinstance(arg, FloatLike)
+        return isinstance(arg, FloatLike)
 
     def is_booleanic(arg):
         if isinstance(arg, TensorLike):
             return utils.is_boolean_dtype(arg.dtype)
-        else:
-            return isinstance(arg, BoolLike)
+        return isinstance(arg, BoolLike)
 
     # Do not allow int+float->int in-place
     if is_integeric(self) and is_floatic(other):
@@ -5430,7 +5412,7 @@ def grid_sampler_3d_backward(
 
 @register_meta([aten.full.default])
 def full(size, fill_value, *args, **kwargs):
-    dtype = kwargs.get("dtype", None)
+    dtype = kwargs.get("dtype")
     if not dtype:
         dtype = utils.get_dtype(fill_value)
     kwargs["dtype"] = dtype
@@ -5624,26 +5606,25 @@ def get_operator_enum(reduce_, use_new_options=False):
     if use_new_options:
         if reduce_ == "sum":
             return "REDUCE_ADD"
-        elif reduce_ == "prod":
+        if reduce_ == "prod":
             return "REDUCE_MULTIPLY"
-        elif reduce_ == "mean":
+        if reduce_ == "mean":
             return "REDUCE_MEAN"
-        elif reduce_ == "amax":
+        if reduce_ == "amax":
             return "REDUCE_MAXIMUM"
-        elif reduce_ == "amin":
+        if reduce_ == "amin":
             return "REDUCE_MINIMUM"
         torch._check(
             False,
             lambda: "reduce argument must be either sum, prod, mean, amax or amin.",
         )
-        return
-    else:
-        if reduce_ == "add":
-            return "REDUCE_ADD"
-        elif reduce_ == "multiply":
-            return "REDUCE_MULTIPLY"
-        torch._check(False, lambda: "reduce argument must be either add or multiply.")
-        return
+        return None
+    if reduce_ == "add":
+        return "REDUCE_ADD"
+    if reduce_ == "multiply":
+        return "REDUCE_MULTIPLY"
+    torch._check(False, lambda: "reduce argument must be either add or multiply.")
+    return None
 
 
 # From aten/src/ATen/native/ScatterGatherChecks.h
@@ -5775,7 +5756,7 @@ def meta__scaled_dot_product_flash_attention(
     dropout_p: float = 0.0,
     is_causal: bool = False,
     return_debug_mask: bool = False,
-    scale: Optional[float] = None,
+    scale: float | None = None,
 ):
     batch_size = query.size(0)
     num_heads = query.size(1)
@@ -5857,12 +5838,12 @@ def meta__scaled_dot_product_cudnn_attention(
     query: Tensor,
     key: Tensor,
     value: Tensor,
-    attn_bias: Optional[Tensor],
+    attn_bias: Tensor | None,
     compute_log_sumexp: bool,
     dropout_p: float = 0.0,
     is_causal: bool = False,
     return_debug_mask: bool = False,
-    scale: Optional[float] = None,
+    scale: float | None = None,
 ):
     B = query.size(0)
     H = query.size(1)
@@ -5901,11 +5882,11 @@ def meta__scaled_dot_product_fused_attention_overrideable(
     query: Tensor,
     key: Tensor,
     value: Tensor,
-    attn_bias: Optional[Tensor] = None,
+    attn_bias: Tensor | None = None,
     dropout_p: float = 0.0,
     is_causal: bool = False,
     return_debug_mask: bool = False,
-    scale: Optional[float] = None,
+    scale: float | None = None,
 ):
     B = query.size(0)
     H_Q = query.size(1)
@@ -5959,7 +5940,7 @@ def meta__scaled_dot_product_flash_backward(
     is_causal: bool,
     philox_seed: Tensor,
     philox_offset: Tensor,
-    scale: Optional[float] = None,
+    scale: float | None = None,
 ):
     grad_q = torch.empty_like(query.transpose(1, 2)).transpose(1, 2)
     grad_k = torch.empty_like(key.transpose(1, 2)).transpose(1, 2)
@@ -5978,8 +5959,8 @@ def meta__scaled_dot_product_flash_attention_for_cpu(
     value: Tensor,
     dropout_p: float = 0.0,
     is_causal: bool = False,
-    attn_mask: Optional[Tensor] = None,
-    scale: Optional[float] = None,
+    attn_mask: Tensor | None = None,
+    scale: float | None = None,
 ):
     batch_size = query.size(0)
     num_heads = query.size(1)
@@ -6015,8 +5996,8 @@ def meta__scaled_dot_product_flash_attention_for_cpu_backward(
     logsumexp: Tensor,
     dropout_p: float,
     is_causal: bool,
-    attn_mask: Optional[Tensor] = None,
-    scale: Optional[float] = None,
+    attn_mask: Tensor | None = None,
+    scale: float | None = None,
 ):
     # cpus's grad layout is different from cuda's,
     # i.e. (batch_size, seq_len,num_heads, head_dim)
@@ -6053,11 +6034,11 @@ def meta__scaled_dot_product_efficient_attention(
     query: Tensor,
     key: Tensor,
     value: Tensor,
-    attn_bias: Optional[Tensor],
+    attn_bias: Tensor | None,
     compute_log_sumexp: bool,
     dropout_p=0.0,
     is_causal: bool = False,
-    scale: Optional[float] = None,
+    scale: float | None = None,
 ):
     query = query.transpose(1, 2)
     key = key.transpose(1, 2)
@@ -6103,7 +6084,7 @@ def meta__scaled_dot_product_efficient_backward(
     query: Tensor,
     key: Tensor,
     value: Tensor,
-    attn_bias: Optional[Tensor],
+    attn_bias: Tensor | None,
     out: Tensor,
     logsumexp: Tensor,
     philox_seed: Tensor,
@@ -6111,7 +6092,7 @@ def meta__scaled_dot_product_efficient_backward(
     dropout_p: float,
     grad_input_mask: list[bool],
     is_causal: bool = False,
-    scale: Optional[float] = None,
+    scale: float | None = None,
 ):
     batch_size = query.size(0)
     num_heads = query.size(1)
@@ -6174,7 +6155,7 @@ def meta__scaled_dot_product_cudnn_backward(
     max_k: int,
     dropout_p: float,
     is_causal: bool,
-    scale: Optional[float] = None,
+    scale: float | None = None,
 ):
     grad_q = torch.empty_like(query)
     grad_k = torch.empty_like(key)
@@ -6191,18 +6172,18 @@ def meta__flash_attention_forward(
     query: Tensor,
     key: Tensor,
     value: Tensor,
-    cum_seq_q: Optional[Tensor],
-    cum_seq_k: Optional[Tensor],
+    cum_seq_q: Tensor | None,
+    cum_seq_k: Tensor | None,
     max_q: int,
     max_k: int,
     dropout_p: float,
     is_causal: bool,
     return_debug_mask: bool,
-    scale: Optional[float] = None,
-    window_size_left: Optional[int] = None,
-    window_size_right: Optional[int] = None,
-    seqused_k: Optional[Tensor] = None,
-    alibi_slopes: Optional[Tensor] = None,
+    scale: float | None = None,
+    window_size_left: int | None = None,
+    window_size_right: int | None = None,
+    seqused_k: Tensor | None = None,
+    alibi_slopes: Tensor | None = None,
 ):
     # NB: there are two underlying paths:
     # 1. normal dense path; expect 4D inputs of shape (batch_size, seqlen, num_heads, head_dim)
@@ -6282,9 +6263,9 @@ def meta__flash_attention_backward(
     is_causal: bool,
     philox_seed: Tensor,
     philox_offset: Tensor,
-    scale: Optional[float] = None,
-    window_size_left: Optional[int] = None,
-    window_size_right: Optional[int] = None,
+    scale: float | None = None,
+    window_size_left: int | None = None,
+    window_size_right: int | None = None,
 ):
     grad_query = torch.empty_like(query)
     grad_key = torch.empty_like(key)
@@ -6302,18 +6283,18 @@ def meta__efficient_attention_forward(
     query: Tensor,
     key: Tensor,
     value: Tensor,
-    bias: Optional[Tensor],
-    cu_seqlens_q: Optional[Tensor],
-    cu_seqlens_k: Optional[Tensor],
-    max_seqlen_q: Optional[int],
-    max_seqlen_k: Optional[int],
+    bias: Tensor | None,
+    cu_seqlens_q: Tensor | None,
+    cu_seqlens_k: Tensor | None,
+    max_seqlen_q: int | None,
+    max_seqlen_k: int | None,
     dropout_p: float,
     custom_mask_type: int,
     compute_log_sumexp: bool = False,
-    scale: Optional[float] = None,
-    causal_diagonal: Optional[Tensor] = None,
-    seqlen_k: Optional[Tensor] = None,
-    window_size: Optional[int] = None,
+    scale: float | None = None,
+    causal_diagonal: Tensor | None = None,
+    seqlen_k: Tensor | None = None,
+    window_size: int | None = None,
 ):
     B = query.size(0)
     M = query.size(1)
@@ -6355,9 +6336,9 @@ def meta__efficient_attention_backward(
     query: Tensor,
     key: Tensor,
     value: Tensor,
-    bias: Optional[Tensor],
-    cu_seqlens_q: Optional[Tensor],
-    cu_seqlens_k: Optional[Tensor],
+    bias: Tensor | None,
+    cu_seqlens_q: Tensor | None,
+    cu_seqlens_k: Tensor | None,
     max_seqlen_q: torch.SymInt,
     max_seqlen_k: torch.SymInt,
     logsumexp: Tensor,
@@ -6366,8 +6347,8 @@ def meta__efficient_attention_backward(
     philox_offset: Tensor,
     custom_mask_type: int,
     bias_requires_grad: bool,
-    scale: Optional[float] = None,
-    num_splits_key: Optional[int] = None,
+    scale: float | None = None,
+    num_splits_key: int | None = None,
     shared_storage_dqdkdv: bool = False,
 ):
     if shared_storage_dqdkdv:
@@ -6411,9 +6392,9 @@ def meta_scaled_mm(
     mat2: torch.Tensor,
     scale_a: torch.Tensor,
     scale_b: torch.Tensor,
-    bias: Optional[torch.Tensor] = None,
-    scale_result: Optional[torch.Tensor] = None,
-    out_dtype: Optional[torch.dtype] = None,
+    bias: torch.Tensor | None = None,
+    scale_result: torch.Tensor | None = None,
+    out_dtype: torch.dtype | None = None,
     use_fast_accum: bool = False,
 ):
     def is_fp8_or_fp4_type(dtype):
@@ -6673,10 +6654,10 @@ def upsample_nearest2d(input, output_size, scales_h=None, scales_w=None):
 )
 def upsample_nearest2d_backward(
     grad_output: Tensor,
-    output_size: Sequence[Union[int, torch.SymInt]],
-    input_size: Sequence[Union[int, torch.SymInt]],
-    scales_h: Optional[float] = None,
-    scales_w: Optional[float] = None,
+    output_size: Sequence[int | torch.SymInt],
+    input_size: Sequence[int | torch.SymInt],
+    scales_h: float | None = None,
+    scales_w: float | None = None,
 ):
     full_output_size = upsample_common_check(
         input_size, output_size, num_spatial_dims=2
@@ -7049,11 +7030,10 @@ def meta_pixel_shuffle(self, upscale_factor):
         if is_channels_last(self):
             if device_hint(self) == "cuda":
                 return torch.contiguous_format
-            else:
-                return torch.channels_last
-        elif self.is_contiguous(memory_format=torch.contiguous_format):
+            return torch.channels_last
+        if self.is_contiguous(memory_format=torch.contiguous_format):
             return torch.contiguous_format
-        elif self.is_contiguous(memory_format=torch.preserve_format):
+        if self.is_contiguous(memory_format=torch.preserve_format):
             return torch.preserve_format
 
     C = self.shape[-3] // (upscale_factor * upscale_factor)
@@ -7310,8 +7290,8 @@ def meta_searchsorted(
         return torch.empty_like(
             self, dtype=dtype, memory_format=torch.contiguous_format
         )
-    else:  # Scalar
-        return torch.empty((), dtype=dtype, device=sorted_sequence.device)
+    # Scalar
+    return torch.empty((), dtype=dtype, device=sorted_sequence.device)
 
 
 def _check_for_unsupported_isin_dtype(dtype):
@@ -7361,19 +7341,18 @@ def meta_embedding_bag_backward(
             per_sample_weights,
             padding_idx,
         )
-    else:
-        return meta_embedding_bag_dense_backward(
-            grad,
-            indices,
-            offset2bag,
-            bag_size,
-            maximum_indices,
-            num_weights,
-            scale_grad_by_freq,
-            mode,
-            per_sample_weights,
-            padding_idx,
-        )
+    return meta_embedding_bag_dense_backward(
+        grad,
+        indices,
+        offset2bag,
+        bag_size,
+        maximum_indices,
+        num_weights,
+        scale_grad_by_freq,
+        mode,
+        per_sample_weights,
+        padding_idx,
+    )
 
 
 @register_meta(aten._embedding_bag_dense_backward)
@@ -7511,12 +7490,12 @@ def _create_grouped_mm_output_tensor(mat1, mat2, offs, out_dtype):
 def _meta_grouped_mm_common(
     mat_a: Tensor,
     mat_b: Tensor,
-    scale_a: Optional[torch.Tensor],
-    scale_b: Optional[torch.Tensor],
-    offs: Optional[Tensor] = None,
-    bias: Optional[Tensor] = None,
-    scale_result: Optional[torch.Tensor] = None,
-    out_dtype: Optional[torch.dtype] = None,
+    scale_a: torch.Tensor | None,
+    scale_b: torch.Tensor | None,
+    offs: Tensor | None = None,
+    bias: Tensor | None = None,
+    scale_result: torch.Tensor | None = None,
+    out_dtype: torch.dtype | None = None,
     use_fast_accum: bool = False,
 ):
     torch._check(
@@ -7681,9 +7660,9 @@ def _meta_grouped_mm_common(
 def grouped_mm(
     mat_a: Tensor,
     mat_b: Tensor,
-    offs: Optional[Tensor] = None,
-    bias: Optional[Tensor] = None,
-    out_dtype: Optional[torch.dtype] = None,
+    offs: Tensor | None = None,
+    bias: Tensor | None = None,
+    out_dtype: torch.dtype | None = None,
 ) -> Tensor:
     return _meta_grouped_mm_common(
         mat_a,
@@ -7703,10 +7682,10 @@ def meta_scaled_grouped_mm(
     mat_b: torch.Tensor,
     scale_a: torch.Tensor,
     scale_b: torch.Tensor,
-    offs: Optional[torch.Tensor] = None,
-    bias: Optional[torch.Tensor] = None,
-    scale_result: Optional[torch.Tensor] = None,
-    out_dtype: Optional[torch.dtype] = None,
+    offs: torch.Tensor | None = None,
+    bias: torch.Tensor | None = None,
+    scale_result: torch.Tensor | None = None,
+    out_dtype: torch.dtype | None = None,
     use_fast_accum: bool = False,
 ):
     return _meta_grouped_mm_common(

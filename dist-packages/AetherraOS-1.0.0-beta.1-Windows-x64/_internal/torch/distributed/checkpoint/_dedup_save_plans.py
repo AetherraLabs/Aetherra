@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 from torch.distributed.checkpoint.planner import SavePlan, WriteItem
 
-
 if TYPE_CHECKING:
     from torch.distributed.checkpoint.metadata import MetadataIndex
 
@@ -60,5 +59,5 @@ def dedup_save_plans(
         dataclasses.replace(
             plan, items=[item for item in plan.items if item.index in item_indexes]
         )
-        for plan, item_indexes in zip(all_plans, plan_to_item_indices)
+        for plan, item_indexes in zip(all_plans, plan_to_item_indices, strict=False)
     ]

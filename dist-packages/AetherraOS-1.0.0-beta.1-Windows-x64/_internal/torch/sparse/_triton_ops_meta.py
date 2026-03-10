@@ -97,6 +97,7 @@ tune_bsr_dense_addmm to learn how to register a custom set of optimal
 kernel parameters for addmm-based operations.
 
 """
+
 __all__ = ["get_meta", "tune_bsr_dense_addmm", "tune__int_bsr_dense_addmm"]
 
 import inspect
@@ -146,15 +147,19 @@ def get_meta(op, key, device_name=None, version=(0, torch.float16, 0.5), exact=F
         if re.match(r"NVIDIA A100[^\d]", device_name) is not None:
             device_name = "NVIDIA A100-SXM4-80GB"
         else:
-            return
+            return None
         op_data = _operation_device_version_data.get((op, device_name, version))
     if op_data is None:
-        return
+        return None
 
     matching_data = {}
     if "*" in key:
         for op_key in op_data:
-            if [None for k1, k2 in zip(op_key, key) if k2 != "*" and k1 != k2]:
+            if [
+                None
+                for k1, k2 in zip(op_key, key, strict=False)
+                if k2 != "*" and k1 != k2
+            ]:
                 continue
             matching_data[op_key] = op_data[op_key]
     else:
@@ -172,10 +177,14 @@ def get_meta(op, key, device_name=None, version=(0, torch.float16, 0.5), exact=F
                 "num_stages",
                 "num_warps",
             )
-            meta = dict(zip(names, values))
+            meta = dict(zip(names, values, strict=False))
         elif op in {"bsr_dense_addmm", "_int_bsr_dense_addmm"}:
             meta = dict(
-                zip(("GROUP_SIZE_ROW", "SPLIT_N", "num_stages", "num_warps"), values)
+                zip(
+                    ("GROUP_SIZE_ROW", "SPLIT_N", "num_stages", "num_warps"),
+                    values,
+                    strict=False,
+                )
             )
         else:
             raise NotImplementedError(f"names for {op=}")
@@ -284,7 +293,7 @@ def minimize(
         return tuple(parameters[k] for k in sorted(parameters))
 
     def from_key(key, parameters):
-        return dict(zip(sorted(parameters), key))
+        return dict(zip(sorted(parameters), key, strict=False))
 
     if all_values is None:
         all_values = {}
@@ -342,7 +351,7 @@ def minimize(
         for i, (_, d_tuple) in enumerate(all_directions):
             pbar.update(1)
             next_parameters = parameters.copy()
-            for name, direction in zip(names, d_tuple):
+            for name, direction in zip(names, d_tuple, strict=False):
                 value = next_parameters[name]
                 if direction == 0:
                     continue
@@ -432,9 +441,9 @@ def minimize(
 
 
 def create_blocked_tensor(B, M, N, blocksize, sparsity, dtype, device):
-    assert (
-        sparsity <= 1.0 and sparsity >= 0.0
-    ), "sparsity should be a value between 0 and 1"
+    assert sparsity <= 1.0 and sparsity >= 0.0, (
+        "sparsity should be a value between 0 and 1"
+    )
     assert M % blocksize[0] == 0
     assert N % blocksize[1] == 0
     shape = (B, M // blocksize[0], N // blocksize[1])[int(B == 0) :]

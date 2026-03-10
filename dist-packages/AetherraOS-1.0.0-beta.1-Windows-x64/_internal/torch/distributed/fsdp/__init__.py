@@ -2,11 +2,11 @@ from ._flat_param import FlatParameter as FlatParameter
 from ._fully_shard import (
     CPUOffloadPolicy,
     FSDPModule,
-    fully_shard,
     MixedPrecisionPolicy,
     OffloadPolicy,
-    register_fsdp_forward_method,
     UnshardHandle,
+    fully_shard,
+    register_fsdp_forward_method,
 )
 from .fully_sharded_data_parallel import (
     BackwardPrefetch,
@@ -26,7 +26,6 @@ from .fully_sharded_data_parallel import (
     StateDictSettings,
     StateDictType,
 )
-
 
 __all__ = [
     # FSDP1

@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 
-from collections.abc import Iterator
-from typing import Callable, TypeVar
-from typing_extensions import Self
-
+from collections.abc import Callable, Iterator
+from typing import Self, TypeVar
 
 # Copyright (c) Facebook, Inc. and its affiliates.
 # All rights reserved.
@@ -53,5 +51,4 @@ class CyclingIterator(Iterator[_T]):
                 self._epoch += 1
                 self._iter = self._generator_fn(self._epoch)
                 return self.__next__()
-            else:
-                raise eod
+            raise eod

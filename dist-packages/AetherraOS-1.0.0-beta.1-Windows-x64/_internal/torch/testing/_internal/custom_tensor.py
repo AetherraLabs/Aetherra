@@ -7,7 +7,6 @@ import torch
 import torch.utils._pytree as pytree
 from torch.utils._python_dispatch import return_and_correct_aliasing
 
-
 FancyNamedTuple = namedtuple("FancyNamedTuple", ["foo", "bar"])
 
 
@@ -144,7 +143,9 @@ class CustomTensorPlainOut(torch.Tensor):
             new_out = pytree.tree_unflatten(
                 (
                     CustomTensorPlainOut(tensor1, tensor2)
-                    for tensor1, tensor2 in zip(out_inner_flat_1, out_inner_flat_2)
+                    for tensor1, tensor2 in zip(
+                        out_inner_flat_1, out_inner_flat_2, strict=False
+                    )
                 ),
                 spec,
             )

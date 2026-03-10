@@ -5,7 +5,6 @@ from typing import Any
 
 import torch
 
-
 # See [Note: Metadata mutation in proxy tracing] for why sacrificial parameter mutates
 # metadata during proxy tracing and we should remove the sacrificial parameter logic.
 doc = """

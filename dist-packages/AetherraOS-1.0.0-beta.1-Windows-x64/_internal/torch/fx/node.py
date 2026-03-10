@@ -4,8 +4,9 @@ import inspect
 import logging
 import operator
 import types
-from collections.abc import Mapping, Sequence
-from typing import Any, Callable, Optional, TYPE_CHECKING, TypeVar, Union
+from collections.abc import Callable, Mapping, Sequence
+from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union
+
 from typing_extensions import ParamSpec
 
 import torch
@@ -18,7 +19,6 @@ from torch.fx.operator_schemas import (
 
 from .._ops import ops as _ops
 from ._compatibility import compatibility
-
 
 if TYPE_CHECKING:
     from .graph import Graph
@@ -174,7 +174,7 @@ def _get_qualified_name(func: Callable[..., Any]) -> str:
 def _format_arg(arg: object, max_list_len: float = float("inf")) -> str:
     if hasattr(arg, "_custom_fx_repr_fn"):
         return arg._custom_fx_repr_fn()
-    elif isinstance(arg, list):
+    if isinstance(arg, list):
         items = ", ".join(
             _format_arg(a) for idx, a in enumerate(arg) if idx < max_list_len
         )
@@ -182,7 +182,7 @@ def _format_arg(arg: object, max_list_len: float = float("inf")) -> str:
             "" if len(arg) < max_list_len + 1 else f", ...[total_len={len(arg)}]"
         )
         return f"[{items}{maybe_len}]"
-    elif isinstance(arg, tuple):
+    if isinstance(arg, tuple):
         items = ", ".join(
             _format_arg(a) for idx, a in enumerate(arg) if idx < max_list_len
         )
@@ -191,14 +191,13 @@ def _format_arg(arg: object, max_list_len: float = float("inf")) -> str:
         )
         maybe_comma = "," if len(arg) == 1 else ""
         return f"({items}{maybe_comma}{maybe_len})"
-    elif isinstance(arg, dict):
+    if isinstance(arg, dict):
         items_str = ", ".join(f"{k}: {_format_arg(v)}" for k, v in arg.items())
         return f"{{{items_str}}}"
 
     if isinstance(arg, Node):
         return "%" + str(arg)
-    else:
-        return str(arg)
+    return str(arg)
 
 
 @compatibility(is_backward_compatible=True)
@@ -259,10 +258,10 @@ class Node(_NodeBase):
     # generated function return type. (Note this is a special case. ``return``
     # does not produce a value, it's more of a notation. Thus, this value
     # describes the type of args[0] in the ``return`` node.
-    type: Optional[Any]
+    type: Any | None
     _sort_key: Any
     # If set, use this fn to print this node
-    _repr_fn: Optional[Callable[["Node"], str]]
+    _repr_fn: Callable[["Node"], str] | None
     # Dictionary to store metadata passes need to do their
     # transformations. This metadata is preserved across node copies
     meta: dict[str, Any]
@@ -276,7 +275,7 @@ class Node(_NodeBase):
         target: "Target",
         args: tuple["Argument", ...],
         kwargs: dict[str, "Argument"],
-        return_type: Optional[Any] = None,
+        return_type: Any | None = None,
     ) -> None:
         """
         Instantiate an instance of ``Node``. Note: most often, you want to use the
@@ -526,7 +525,7 @@ class Node(_NodeBase):
         _new_input_nodes: dict[Node, None] = {}
         _fx_map_arg(arg, _new_input_nodes.setdefault)
 
-        for new_use in _new_input_nodes.keys():
+        for new_use in _new_input_nodes:
             if new_use not in self._input_nodes:
                 self._input_nodes.setdefault(new_use)
                 new_use.users.setdefault(self)
@@ -545,7 +544,7 @@ class Node(_NodeBase):
         self.kwargs = {**self.kwargs, key: arg}
 
     @property
-    def stack_trace(self) -> Optional[str]:
+    def stack_trace(self) -> str | None:
         """
         Return the Python stack trace that was recorded during tracing, if any.
         When traced with fx.Tracer, this property is usually populated by
@@ -559,7 +558,7 @@ class Node(_NodeBase):
         return self.meta.get("stack_trace", None)
 
     @stack_trace.setter
-    def stack_trace(self, trace: Optional[str]) -> None:
+    def stack_trace(self, trace: str | None) -> None:
         self.meta["stack_trace"] = trace
 
     def __repr__(self) -> str:
@@ -588,16 +587,16 @@ class Node(_NodeBase):
                 return _get_qualified_name(target)  # type: ignore[arg-type]
             if target.__module__ == "builtins":
                 return f"builtins.{name}"
-            elif target.__module__ == "_operator":
+            if target.__module__ == "_operator":
                 return f"operator.{name}"
         return _get_qualified_name(target)  # type: ignore[arg-type]
 
     @compatibility(is_backward_compatible=True)
     def format_node(
         self,
-        placeholder_names: Optional[list[str]] = None,
-        maybe_return_typename: Optional[list[str]] = None,
-    ) -> Optional[str]:
+        placeholder_names: list[str] | None = None,
+        maybe_return_typename: list[str] | None = None,
+    ) -> str | None:
         """
         Return a descriptive string representation of ``self``.
 
@@ -636,7 +635,7 @@ class Node(_NodeBase):
             maybe_typename = f"{_type_repr(self.type)} " if self.type else ""
             default_val = "(default=" + str(self.args[0]) + ")" if self.args else ""
             return f"%{self.name} : {maybe_typename}[num_users={len(self.users)}] = {self.op}[target={self.target}]{default_val}"
-        elif self.op == "get_attr":
+        if self.op == "get_attr":
             maybe_typename = (
                 f"{_type_repr(self.type)} " if self.type is not None else ""
             )
@@ -644,19 +643,16 @@ class Node(_NodeBase):
                 f"%{self.name} : {maybe_typename}[num_users={len(self.users)}] = "
                 f"{self.op}[target={self._pretty_print_target(self.target)}]"
             )
-        elif self.op == "output":
+        if self.op == "output":
             if self.type and maybe_return_typename:
                 maybe_return_typename[0] = f" -> {_type_repr(self.type)}"
             return f"return {self.args[0]}"
-        else:
-            maybe_typename = (
-                f"{_type_repr(self.type)} " if self.type is not None else ""
-            )
-            return (
-                f"%{self.name} : {maybe_typename}[num_users={len(self.users)}] = "
-                f"{self.op}[target={self._pretty_print_target(self.target)}]("
-                f"args = {_format_arg(self.args)}, kwargs = {_format_arg(self.kwargs)})"
-            )
+        maybe_typename = f"{_type_repr(self.type)} " if self.type is not None else ""
+        return (
+            f"%{self.name} : {maybe_typename}[num_users={len(self.users)}] = "
+            f"{self.op}[target={self._pretty_print_target(self.target)}]("
+            f"args = {_format_arg(self.args)}, kwargs = {_format_arg(self.kwargs)})"
+        )
 
     @compatibility(is_backward_compatible=True)
     def replace_all_uses_with(
@@ -701,8 +697,7 @@ class Node(_NodeBase):
             def maybe_replace_node(n: Node) -> Node:
                 if n == self:
                     return replace_with
-                else:
-                    return n
+                return n
 
             if getattr(m, "_replace_hooks", None):
                 for replace_hook in m._replace_hooks:
@@ -763,10 +758,10 @@ class Node(_NodeBase):
     def normalized_arguments(
         self,
         root: torch.nn.Module,
-        arg_types: Optional[tuple[Any]] = None,
-        kwarg_types: Optional[dict[str, Any]] = None,
+        arg_types: tuple[Any] | None = None,
+        kwarg_types: dict[str, Any] | None = None,
         normalize_to_only_use_kwargs: bool = False,
-    ) -> Optional[ArgsKwargsPair]:
+    ) -> ArgsKwargsPair | None:
         """
         Returns normalized arguments to Python targets. This means that
         `args/kwargs` will be matched up to the module/functional's
@@ -799,7 +794,7 @@ class Node(_NodeBase):
                 kwarg_types,
                 normalize_to_only_use_kwargs=normalize_to_only_use_kwargs,
             )
-        elif self.op == "call_module":
+        if self.op == "call_module":
             assert isinstance(self.target, str)
             return normalize_module(
                 root,

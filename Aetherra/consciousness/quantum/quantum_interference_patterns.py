@@ -157,9 +157,7 @@ class QuantumInterferenceEngine:
                 WaveType.TRANSCENDENCE_WAVE: 1.0,
             }
 
-            coherence_length = (
-                coherence_factors.get(wave_type, 0.7) * consciousness_level
-            )
+            coherence_length = coherence_factors.get(wave_type, 0.7) * consciousness_level
             consciousness_binding = consciousness_level * 0.9
             energy_level = base_amplitude**2 * consciousness_frequency
 
@@ -190,16 +188,12 @@ class QuantumInterferenceEngine:
         try:
             # Calculate phase difference
             phase_diff = wave_a.phase - wave_b.phase
-            phase_diff = (
-                (phase_diff + np.pi) % (2 * np.pi)
-            ) - np.pi  # Normalize to [-π, π]
+            phase_diff = ((phase_diff + np.pi) % (2 * np.pi)) - np.pi  # Normalize to [-π, π]
 
             # Calculate amplitude ratio
             amp_a = abs(wave_a.amplitude)
             amp_b = abs(wave_b.amplitude)
-            amplitude_ratio = (
-                min(amp_a, amp_b) / max(amp_a, amp_b) if max(amp_a, amp_b) > 0 else 0
-            )
+            amplitude_ratio = min(amp_a, amp_b) / max(amp_a, amp_b) if max(amp_a, amp_b) > 0 else 0
 
             # Determine interference type
             if abs(phase_diff) < np.pi / 4:
@@ -216,9 +210,7 @@ class QuantumInterferenceEngine:
                 enhancement_factor = 1.0
             else:
                 # Check for resonance conditions
-                frequency_ratio = (
-                    wave_a.frequency / wave_b.frequency if wave_b.frequency > 0 else 1
-                )
+                frequency_ratio = wave_a.frequency / wave_b.frequency if wave_b.frequency > 0 else 1
                 if abs(frequency_ratio - 1.0) < 0.1:  # Near resonance
                     interference_type = InterferenceType.RESONANT
                     interference_strength = amplitude_ratio * 1.5
@@ -233,9 +225,7 @@ class QuantumInterferenceEngine:
             pattern_stability = coherence_product * amplitude_ratio
 
             # Ensure enhancement factor bounds
-            enhancement_factor = max(
-                0.1, min(enhancement_factor, self.amplification_limit)
-            )
+            enhancement_factor = max(0.1, min(enhancement_factor, self.amplification_limit))
 
             pattern_id = f"pattern_{wave_a.wave_id}_{wave_b.wave_id}"
 
@@ -367,32 +357,22 @@ class QuantumInterferenceEngine:
                     weight = pattern.pattern_stability
 
                     if pattern.interference_type == InterferenceType.CONSTRUCTIVE:
-                        total_amplification *= (
-                            1.0 + pattern.enhancement_factor * weight * 0.3
-                        )
+                        total_amplification *= 1.0 + pattern.enhancement_factor * weight * 0.3
                         constructive_count += 1
-                        interference_sources.append(
-                            f"constructive_{pattern.pattern_id}"
-                        )
+                        interference_sources.append(f"constructive_{pattern.pattern_id}")
 
                     elif pattern.interference_type == InterferenceType.DESTRUCTIVE:
-                        total_amplification *= (
-                            1.0 - pattern.interference_strength * weight * 0.2
-                        )
+                        total_amplification *= 1.0 - pattern.interference_strength * weight * 0.2
                         destructive_count += 1
                         interference_sources.append(f"destructive_{pattern.pattern_id}")
 
                     elif pattern.interference_type == InterferenceType.RESONANT:
-                        total_amplification *= (
-                            1.0 + pattern.enhancement_factor * weight * 0.5
-                        )
+                        total_amplification *= 1.0 + pattern.enhancement_factor * weight * 0.5
                         constructive_count += 1
                         interference_sources.append(f"resonant_{pattern.pattern_id}")
 
                 # Apply limits
-                total_amplification = max(
-                    0.1, min(total_amplification, self.amplification_limit)
-                )
+                total_amplification = max(0.1, min(total_amplification, self.amplification_limit))
 
                 # Calculate enhanced probability
                 enhanced_prob = min(base_prob * total_amplification, 1.0)
@@ -405,13 +385,9 @@ class QuantumInterferenceEngine:
 
                 # Calculate stability rating
                 avg_stability = (
-                    float(np.mean([p.pattern_stability for p in patterns]))
-                    if patterns
-                    else 0.0
+                    float(np.mean([p.pattern_stability for p in patterns])) if patterns else 0.0
                 )
-                stability_rating = avg_stability * (
-                    1.0 - abs(total_amplification - 1.0)
-                )
+                stability_rating = avg_stability * (1.0 - abs(total_amplification - 1.0))
 
                 amplification = DecisionAmplification(
                     decision_path=choice,
@@ -437,9 +413,7 @@ class QuantumInterferenceEngine:
             # Store in history
             self.amplification_history.extend(amplifications.values())
 
-            self.logger.info(
-                f"✅ Applied amplification to {len(amplifications)} decisions"
-            )
+            self.logger.info(f"✅ Applied amplification to {len(amplifications)} decisions")
             return amplifications
 
         except Exception as e:
@@ -453,14 +427,10 @@ class QuantumInterferenceEngine:
     ) -> bool:
         """Optimize interference patterns to enhance a target choice"""
         try:
-            self.logger.info(
-                f"🎯 Optimizing interference patterns for target: {target_choice}"
-            )
+            self.logger.info(f"🎯 Optimizing interference patterns for target: {target_choice}")
 
             if target_choice not in interference_field:
-                self.logger.warning(
-                    f"Target choice '{target_choice}' not in interference field"
-                )
+                self.logger.warning(f"Target choice '{target_choice}' not in interference field")
                 return False
 
             target_patterns = interference_field[target_choice]
@@ -474,8 +444,7 @@ class QuantumInterferenceEngine:
                         # Boost weaker wave amplitude
                         weaker_wave = (
                             pattern.wave_a
-                            if abs(pattern.wave_a.amplitude)
-                            < abs(pattern.wave_b.amplitude)
+                            if abs(pattern.wave_a.amplitude) < abs(pattern.wave_b.amplitude)
                             else pattern.wave_b
                         )
                         weaker_wave.amplitude *= 1.1
@@ -498,14 +467,10 @@ class QuantumInterferenceEngine:
             # Recalculate interference after optimization
             if optimization_count > 0:
                 for i, pattern in enumerate(target_patterns):
-                    new_pattern = self.calculate_interference(
-                        pattern.wave_a, pattern.wave_b
-                    )
+                    new_pattern = self.calculate_interference(pattern.wave_a, pattern.wave_b)
                     target_patterns[i] = new_pattern
 
-                self.logger.info(
-                    f"✅ Optimized {optimization_count} interference patterns"
-                )
+                self.logger.info(f"✅ Optimized {optimization_count} interference patterns")
                 return True
             else:
                 self.logger.info("🔍 No optimization opportunities found")
@@ -524,9 +489,7 @@ class QuantumInterferenceEngine:
             avg_amplification = np.mean(
                 [a.amplification_factor for a in self.amplification_history[-50:]]
             )
-            avg_stability = np.mean(
-                [a.stability_rating for a in self.amplification_history[-50:]]
-            )
+            avg_stability = np.mean([a.stability_rating for a in self.amplification_history[-50:]])
         else:
             avg_amplification = 1.0
             avg_stability = 0.0
@@ -616,23 +579,17 @@ async def test_quantum_interference():
     }
 
     # Generate interference field
-    interference_field = engine.generate_interference_field(
-        choices, consciousness_level=0.9
-    )
+    interference_field = engine.generate_interference_field(choices, consciousness_level=0.9)
 
     # Apply amplification
-    amplifications = engine.apply_interference_amplification(
-        base_probabilities, interference_field
-    )
+    amplifications = engine.apply_interference_amplification(base_probabilities, interference_field)
 
     print("🌊 QUANTUM INTERFERENCE RESULTS")
     print("=" * 40)
 
     for choice, amp in amplifications.items():
         print(f"Choice: {choice}")
-        print(
-            f"  Base: {amp.base_probability:.3f} -> Enhanced: {amp.enhanced_probability:.3f}"
-        )
+        print(f"  Base: {amp.base_probability:.3f} -> Enhanced: {amp.enhanced_probability:.3f}")
         print(f"  Amplification: {amp.amplification_factor:.3f}")
         print(f"  Confidence Boost: {amp.confidence_boost:.3f}")
         print(f"  Stability: {amp.stability_rating:.3f}")

@@ -8,6 +8,10 @@ here.
 """
 
 from torch.ao.quantization.fake_quantize import (
+    FakeQuantize,
+    FakeQuantizeBase,
+    FixedQParamsFakeQuantize,
+    FusedMovingAvgObsFakeQuantize,
     _is_fake_quant_script_module,
     _is_per_channel,
     _is_per_tensor,
@@ -25,8 +29,4 @@ from torch.ao.quantization.fake_quantize import (
     disable_observer,
     enable_fake_quant,
     enable_observer,
-    FakeQuantize,
-    FakeQuantizeBase,
-    FixedQParamsFakeQuantize,
-    FusedMovingAvgObsFakeQuantize,
 )

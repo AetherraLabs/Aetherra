@@ -2,6 +2,7 @@
 """
 Utils for caching the outputs of AOTAutograd
 """
+
 from __future__ import annotations
 
 import base64
@@ -15,31 +16,34 @@ import shutil
 import time
 import traceback
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from copy import copy
 from dataclasses import dataclass
-from typing import Any, Callable, Generic, Optional, TYPE_CHECKING, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
+
+from torchgen.utils import dataclass_repr
 from typing_extensions import override
 
 import torch
 from torch._dynamo.precompile_context import PrecompileCacheArtifact, PrecompileContext
 from torch._dynamo.trace_rules import torch_non_c_binding_in_graph_functions
 from torch._dynamo.utils import (
-    chromium_event_log_active,
     CompileEventLogger,
+    chromium_event_log_active,
     counters,
     dynamo_timed,
 )
 from torch._functorch import config
 from torch._inductor.codecache import (
-    _ident,
-    add_ephemeral_timeout_increase_for_distributed,
     BypassFxGraphCache,
-    create_cache,
-    extract_tensor_metadata_for_cache_key,
     FxGraphCache,
     FxGraphCachePickler,
     FxGraphHashDetails,
     GuardedCache,
+    _ident,
+    add_ephemeral_timeout_increase_for_distributed,
+    create_cache,
+    extract_tensor_metadata_for_cache_key,
     sha256_hash,
     write_atomic,
 )
@@ -59,7 +63,6 @@ from torch.compiler._cache import (
 )
 from torch.fx.experimental.symbolic_shapes import hint_int
 from torch.utils._triton import has_triton_package
-from torchgen.utils import dataclass_repr
 
 from .runtime_wrappers import (
     AOTDispatchAutograd,
@@ -67,12 +70,11 @@ from .runtime_wrappers import (
     CachedAutogradLazyBackwardCompileInfo,
     CompilerWrapper,
     FunctionalizedRngRuntimeWrapper,
-    post_compile,
     RuntimeWrapper,
     SubclassMeta,
+    post_compile,
 )
 from .schemas import AOTAutogradCacheInfo, AOTConfig, ViewAndMutationMeta  # noqa: F401
-
 
 if TYPE_CHECKING:
     from torch._inductor.compile_fx import _CompileFxKwargs
@@ -111,7 +113,7 @@ def should_use_remote_autograd_cache():
 
     jk_name = "pytorch/remote_cache:aot_autograd_cache_version"
 
-    return REMOTE_CACHE_VERSION >= torch._utils_internal.justknobs_getval_int(jk_name)
+    return torch._utils_internal.justknobs_getval_int(jk_name) <= REMOTE_CACHE_VERSION
 
 
 def should_use_local_autograd_cache():
@@ -425,16 +427,13 @@ class InductorOutput(Generic[TOut], ABC):
     """
 
     @abstractmethod
-    def pre_save(self) -> None:
-        ...
+    def pre_save(self) -> None: ...
 
     @abstractmethod
-    def load(self, example_inputs) -> TOut:
-        ...
+    def load(self, example_inputs) -> TOut: ...
 
     @abstractmethod
-    def post_compile(self, result: TOut, fx_config: _CompileFxKwargs) -> TOut:
-        ...
+    def post_compile(self, result: TOut, fx_config: _CompileFxKwargs) -> TOut: ...
 
 
 @dataclass
@@ -482,7 +481,7 @@ class CompiledFxGraphLoadable(InductorOutput[CompiledFxGraph]):
 @dataclass
 class FxGraphCacheLoadable(InductorOutput[CompiledFxGraph]):
     fx_graph_cache_info: tuple[str, list[str]]
-    fx_graph_guard_expr: Optional[str]
+    fx_graph_guard_expr: str | None
 
     def pre_save(self):
         return
@@ -598,7 +597,9 @@ class CompiledBackward(GenericCompiledBackward[CompiledFxGraph], FxGraphCacheLoa
         # See note [Wrapping bw_compiler in disable]
         # This is done by _wrapped_bw_compiler in torch/_dynamo/backends/common.py
         # But since on cache hit we do not call the bw_compiler, we need to reapply the disable
-        return torch._dynamo.disable(compiled_bw, reason="do not trace generated backwards pass")  # type: ignore[return-value]
+        return torch._dynamo.disable(
+            compiled_bw, reason="do not trace generated backwards pass"
+        )  # type: ignore[return-value]
 
 
 # Forward types don't have any extra parameters, so this is just a TypeAlias, in essence
@@ -617,7 +618,9 @@ class BundledCompiledBackward(
         # See note [Wrapping bw_compiler in disable]
         # This is done by _wrapped_bw_compiler in torch/_dynamo/backends/common.py
         # But since on cache hit we do not call the bw_compiler, we need to reapply the disable
-        return torch._dynamo.disable(compiled_bw, reason="do not trace generated backwards pass")  # type: ignore[return-value]
+        return torch._dynamo.disable(
+            compiled_bw, reason="do not trace generated backwards pass"
+        )  # type: ignore[return-value]
 
 
 @dataclass
@@ -663,13 +666,13 @@ class GenericAOTAutogradCacheEntry(Generic[TForward, TBackward]):
 
     # Forward and Backward info
     compiled_fw: TForward
-    compiled_bw: Optional[TBackward]
+    compiled_bw: TBackward | None
 
     # Code of the joint graph using print_readable()
     # Used for logging purposes
-    aot_joint_graph_str: Optional[str]
-    aot_forward_graph_str: Optional[str]
-    aot_backward_graph_str: Optional[str]
+    aot_joint_graph_str: str | None
+    aot_forward_graph_str: str | None
+    aot_backward_graph_str: str | None
 
     # Runtime_metadata saved right before compilation
     runtime_metadata: ViewAndMutationMeta
@@ -678,8 +681,8 @@ class GenericAOTAutogradCacheEntry(Generic[TForward, TBackward]):
     dispatch_wrappers: list[CompilerWrapper]
 
     # Used by AOTSubclassWrapper
-    maybe_subclass_meta: Optional[SubclassMeta]
-    num_fw_outs_saved_for_bw: Optional[int]
+    maybe_subclass_meta: SubclassMeta | None
+    num_fw_outs_saved_for_bw: int | None
 
     # Used by RuntimeWrapepr
     indices_of_inps_to_detach: list[int]
@@ -693,10 +696,10 @@ class GenericAOTAutogradCacheEntry(Generic[TForward, TBackward]):
     # Used by standalone_compile
     sanitized_aot_config: AOTConfig
 
-    guards_expr: Optional[str]
+    guards_expr: str | None
 
     # Used by Compiled Autograd
-    serialized_bw_module: Optional[SerializedGraphModule]
+    serialized_bw_module: SerializedGraphModule | None
 
     def pre_save(self):
         """
@@ -1026,11 +1029,11 @@ class AOTAutogradCache(GuardedCache[GenericAOTAutogradCacheEntry]):
     @staticmethod
     def load(
         dispatch_and_compile: Callable,
-        mod: Union[torch.fx.GraphModule, torch._dynamo.utils.GmWrapper],
+        mod: torch.fx.GraphModule | torch._dynamo.utils.GmWrapper,
         args,
         aot_config: AOTConfig,
         cudagraphs: BoxedBool,
-        boxed_forward_device_index: Optional[BoxedDeviceIndex],
+        boxed_forward_device_index: BoxedDeviceIndex | None,
         local: bool,
         remote: bool,
     ) -> Callable:
@@ -1053,9 +1056,7 @@ class AOTAutogradCache(GuardedCache[GenericAOTAutogradCacheEntry]):
                 cache_key, debug_lines = autograd_cache_key(
                     gm, args, aot_config, fx_config
                 )
-                entry: Optional[
-                    GenericAOTAutogradCacheEntry
-                ] = AOTAutogradCache._lookup(
+                entry: GenericAOTAutogradCacheEntry | None = AOTAutogradCache._lookup(
                     cache_key, local, remote, args, cache_info, aot_config
                 )
                 if entry is not None:
@@ -1081,9 +1082,8 @@ class AOTAutogradCache(GuardedCache[GenericAOTAutogradCacheEntry]):
                     # FXGraphCache and AOTAutogradCache?
                     # get_metrics_context().increment(...)
                     if (
-                        ephemeral_increase := add_ephemeral_timeout_increase_for_distributed(
-                            time_saved_ns
-                        )
+                        ephemeral_increase
+                        := add_ephemeral_timeout_increase_for_distributed(time_saved_ns)
                     ) != 0:
                         cache_info["ephemeral_timeout_increase"] = ephemeral_increase
 
@@ -1176,7 +1176,7 @@ class AOTAutogradCache(GuardedCache[GenericAOTAutogradCacheEntry]):
     @classmethod
     def generate_guards_expression(
         cls: type[AOTAutogradCache], cache_info: AOTAutogradCacheInfo
-    ) -> Optional[str]:
+    ) -> str | None:
         shape_env = cls._get_shape_env()
         assert shape_env is not None
         symints = cache_info.forward_symints
@@ -1198,7 +1198,7 @@ class AOTAutogradCache(GuardedCache[GenericAOTAutogradCacheEntry]):
         return os.path.join(cls._get_tmp_dir(), key)
 
     @staticmethod
-    def evaluate_guards(guard_expr: str, hints: Union[list[int], list[torch.SymInt]]):
+    def evaluate_guards(guard_expr: str, hints: list[int] | list[torch.SymInt]):
         if torch._inductor.config.unsafe_skip_cache_dynamic_shape_guards:
             return True
         shape_env = AOTAutogradCache._get_shape_env()
@@ -1213,10 +1213,10 @@ class AOTAutogradCache(GuardedCache[GenericAOTAutogradCacheEntry]):
         remote: bool,
         args: list[Any],
         cache_info: dict[str, Any],
-        aot_config: Optional[AOTConfig],
-    ) -> Optional[GenericAOTAutogradCacheEntry]:
+        aot_config: AOTConfig | None,
+    ) -> GenericAOTAutogradCacheEntry | None:
         """Given a key generated by AOTAutogradCachePickler, look up its location in the cache."""
-        remote_cache: Optional[RemoteCache[JsonDataTy]] = None
+        remote_cache: RemoteCache[JsonDataTy] | None = None
         if remote:
             remote_cache = AOTAutogradCache.get_remote_cache()
 
@@ -1299,7 +1299,7 @@ class AOTAutogradCache(GuardedCache[GenericAOTAutogradCacheEntry]):
             log.info("Bypassing autograd cache due to: %s", e)
             if remote:
                 log_cache_bypass("bypass_aot_autograd", str(e))
-            return None
+            return
         except Exception as e:
             log.info("AOTAutograd cache unable to serialize compiled graph: %s", e)
             if remote:
@@ -1308,12 +1308,12 @@ class AOTAutogradCache(GuardedCache[GenericAOTAutogradCacheEntry]):
                 )
             if config.strict_autograd_cache:
                 raise e
-            return None
+            return
 
         if remote:
-            remote_cache: Optional[
-                RemoteCache[JsonDataTy]
-            ] = AOTAutogradCache.get_remote_cache()
+            remote_cache: RemoteCache[JsonDataTy] | None = (
+                AOTAutogradCache.get_remote_cache()
+            )
             if remote_cache is not None:
                 time_taken_ms = int(
                     (entry.forward_time_taken_ns + entry.backward_time_taken_ns) // 1e6
@@ -1326,7 +1326,7 @@ class AOTAutogradCache(GuardedCache[GenericAOTAutogradCacheEntry]):
 
     @staticmethod
     @functools.cache
-    def get_remote_cache() -> Optional[RemoteCache[JsonDataTy]]:
+    def get_remote_cache() -> RemoteCache[JsonDataTy] | None:
         """
         Attempts to load the remote cache, returns None on error.
         """
@@ -1341,22 +1341,22 @@ class AOTAutogradCache(GuardedCache[GenericAOTAutogradCacheEntry]):
     @staticmethod
     def make_entry(
         compiled_fw_func: CompiledFxGraph,
-        compiled_bw_func: Optional[CompiledFxGraph],
-        aot_joint_graph_str: Optional[str],
-        aot_forward_graph_str: Optional[str],
-        aot_backward_graph_str: Optional[str],
+        compiled_bw_func: CompiledFxGraph | None,
+        aot_joint_graph_str: str | None,
+        aot_forward_graph_str: str | None,
+        aot_backward_graph_str: str | None,
         runtime_metadata: ViewAndMutationMeta,
         dispatch_wrappers: list[CompilerWrapper],
-        maybe_subclass_meta: Optional[SubclassMeta],
-        num_fw_outs_saved_for_bw: Optional[int],
+        maybe_subclass_meta: SubclassMeta | None,
+        num_fw_outs_saved_for_bw: int | None,
         indices_of_inps_to_detach: list[int],
         forward_time_taken_ns: int,
         backward_time_taken_ns: int,
         sanitized_aot_config: AOTConfig,
-        guards_expr: Optional[str],
-        backward_state_indices: Optional[list[int]],
-        num_symints_saved_for_bw: Optional[int],
-        serialized_bw_module: Optional[SerializedGraphModule],
+        guards_expr: str | None,
+        backward_state_indices: list[int] | None,
+        num_symints_saved_for_bw: int | None,
+        serialized_bw_module: SerializedGraphModule | None,
     ) -> GenericAOTAutogradCacheEntry:
         if config.bundled_autograd_cache:
             # Helper function to unwrap all the wrappers we added during aotdispatch
@@ -1396,47 +1396,44 @@ class AOTAutogradCache(GuardedCache[GenericAOTAutogradCacheEntry]):
                 serialized_bw_module=serialized_bw_module,
             )
 
-        else:
-            fw_key = getattr(compiled_fw_func, "_fx_graph_cache_key", None)
-            fw_debug_lines = getattr(
-                compiled_fw_func, "_fx_graph_cache_debug_lines", []
+        fw_key = getattr(compiled_fw_func, "_fx_graph_cache_key", None)
+        fw_debug_lines = getattr(compiled_fw_func, "_fx_graph_cache_debug_lines", [])
+
+        assert fw_key is not None
+        compiled_forward = CompiledForward(
+            fx_graph_cache_info=(fw_key, fw_debug_lines),
+            fx_graph_guard_expr=getattr(compiled_fw_func, "guards_expr", None),
+        )
+        compiled_backward = None
+        if compiled_bw_func is not None:
+            bw_key = getattr(compiled_bw_func, "_fx_graph_cache_key", None)
+            bw_debug_lines = getattr(
+                compiled_bw_func, "_fx_graph_cache_debug_lines", []
+            )
+            assert bw_key is not None
+            assert backward_state_indices is not None
+            assert num_symints_saved_for_bw is not None
+            compiled_backward = CompiledBackward(
+                fx_graph_cache_info=(bw_key, bw_debug_lines),
+                fx_graph_guard_expr=getattr(compiled_bw_func, "guards_expr", None),
+                backward_state_indices=backward_state_indices,
+                num_symints_saved_for_bw_=num_symints_saved_for_bw,
             )
 
-            assert fw_key is not None
-            compiled_forward = CompiledForward(
-                fx_graph_cache_info=(fw_key, fw_debug_lines),
-                fx_graph_guard_expr=getattr(compiled_fw_func, "guards_expr", None),
-            )
-            compiled_backward = None
-            if compiled_bw_func is not None:
-                bw_key = getattr(compiled_bw_func, "_fx_graph_cache_key", None)
-                bw_debug_lines = getattr(
-                    compiled_bw_func, "_fx_graph_cache_debug_lines", []
-                )
-                assert bw_key is not None
-                assert backward_state_indices is not None
-                assert num_symints_saved_for_bw is not None
-                compiled_backward = CompiledBackward(
-                    fx_graph_cache_info=(bw_key, bw_debug_lines),
-                    fx_graph_guard_expr=getattr(compiled_bw_func, "guards_expr", None),
-                    backward_state_indices=backward_state_indices,
-                    num_symints_saved_for_bw_=num_symints_saved_for_bw,
-                )
-
-            return AOTAutogradCacheEntry(
-                compiled_fw=compiled_forward,
-                compiled_bw=compiled_backward,
-                aot_joint_graph_str=aot_joint_graph_str,
-                aot_forward_graph_str=aot_forward_graph_str,
-                aot_backward_graph_str=aot_backward_graph_str,
-                runtime_metadata=runtime_metadata,
-                dispatch_wrappers=dispatch_wrappers,
-                maybe_subclass_meta=maybe_subclass_meta,
-                num_fw_outs_saved_for_bw=num_fw_outs_saved_for_bw,
-                indices_of_inps_to_detach=indices_of_inps_to_detach,
-                forward_time_taken_ns=forward_time_taken_ns,
-                backward_time_taken_ns=backward_time_taken_ns,
-                sanitized_aot_config=sanitized_aot_config,
-                guards_expr=guards_expr,
-                serialized_bw_module=serialized_bw_module,
-            )
+        return AOTAutogradCacheEntry(
+            compiled_fw=compiled_forward,
+            compiled_bw=compiled_backward,
+            aot_joint_graph_str=aot_joint_graph_str,
+            aot_forward_graph_str=aot_forward_graph_str,
+            aot_backward_graph_str=aot_backward_graph_str,
+            runtime_metadata=runtime_metadata,
+            dispatch_wrappers=dispatch_wrappers,
+            maybe_subclass_meta=maybe_subclass_meta,
+            num_fw_outs_saved_for_bw=num_fw_outs_saved_for_bw,
+            indices_of_inps_to_detach=indices_of_inps_to_detach,
+            forward_time_taken_ns=forward_time_taken_ns,
+            backward_time_taken_ns=backward_time_taken_ns,
+            sanitized_aot_config=sanitized_aot_config,
+            guards_expr=guards_expr,
+            serialized_bw_module=serialized_bw_module,
+        )

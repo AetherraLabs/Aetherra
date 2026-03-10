@@ -8,16 +8,15 @@ import functools
 
 from torch._functorch.utils import argnums_t, exposed_in
 from torch._functorch.vmap import (
+    Callable,
     _check_out_dims_is_int_or_int_pytree,
     _check_randomness_arg,
     _chunked_vmap,
     _process_batched_inputs,
-    Callable,
     in_dims_t,
     out_dims_t,
     vmap_impl,
 )
-
 
 # vmap(func)(inputs) wraps all Tensor inputs to be batched in BatchedTensors,
 # sends those into func, and then unwraps the output BatchedTensors. Operations
@@ -265,11 +264,11 @@ def chunk_vmap(
                 t,
             ]
             * chunks_
-            for t, in_dim in zip(flat_args_, flat_in_dims_)
+            for t, in_dim in zip(flat_args_, flat_in_dims_, strict=False)
         )
         # transpose chunk dim and flatten structure
         # chunks_flat_args is a list of flatten args
-        chunks_flat_args = zip(*flat_args_chunks)
+        chunks_flat_args = zip(*flat_args_chunks, strict=False)
         return chunks_flat_args
 
     @functools.wraps(func)

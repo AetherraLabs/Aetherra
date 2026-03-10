@@ -3,20 +3,22 @@
 import importlib
 import math
 import warnings
-from typing import Callable, Optional, TYPE_CHECKING, Union
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import torch
-from torch import _VF, sym_int as _sym_int, Tensor
+from torch import _VF, Tensor
+from torch import sym_int as _sym_int
 from torch._C import _add_docstr, _infer_size
 from torch._jit_internal import (
-    _overload,
-    boolean_dispatch,
     BroadcastingList1,
     BroadcastingList2,
     BroadcastingList3,
+    _overload,
+    boolean_dispatch,
 )
 from torch._torch_docs import reproducibility_notes, sparse_support_notes, tf32_notes
-from torch.nn import _reduction as _Reduction, grad  # noqa: F401
+from torch.nn import _reduction as _Reduction  # noqa: F401
 from torch.nn.modules.utils import _list_with_default, _pair, _single, _triple
 from torch.overrides import (
     handle_torch_function,
@@ -24,7 +26,6 @@ from torch.overrides import (
     has_torch_function_unary,
     has_torch_function_variadic,
 )
-
 
 if TYPE_CHECKING:
     from torch.types import _dtype as DType
@@ -433,10 +434,10 @@ Args:
 def fractional_max_pool2d_with_indices(
     input: Tensor,
     kernel_size: BroadcastingList2[int],
-    output_size: Optional[BroadcastingList2[int]] = None,
-    output_ratio: Optional[BroadcastingList2[float]] = None,
+    output_size: BroadcastingList2[int] | None = None,
+    output_ratio: BroadcastingList2[float] | None = None,
     return_indices: bool = False,
-    _random_samples: Optional[Tensor] = None,
+    _random_samples: Tensor | None = None,
 ) -> tuple[Tensor, Tensor]:  # noqa: D400
     r"""
     fractional_max_pool2d(input, kernel_size, output_size=None, output_ratio=None, return_indices=False, _random_samples=None)
@@ -510,10 +511,10 @@ def fractional_max_pool2d_with_indices(
 def _fractional_max_pool2d(
     input: Tensor,
     kernel_size: BroadcastingList2[int],
-    output_size: Optional[BroadcastingList2[int]] = None,
-    output_ratio: Optional[BroadcastingList2[float]] = None,
+    output_size: BroadcastingList2[int] | None = None,
+    output_ratio: BroadcastingList2[float] | None = None,
     return_indices: bool = False,
-    _random_samples: Optional[Tensor] = None,
+    _random_samples: Tensor | None = None,
 ) -> Tensor:
     if has_torch_function_variadic(input, _random_samples):
         return handle_torch_function(
@@ -545,10 +546,10 @@ fractional_max_pool2d = boolean_dispatch(
 def fractional_max_pool3d_with_indices(
     input: Tensor,
     kernel_size: BroadcastingList3[int],
-    output_size: Optional[BroadcastingList3[int]] = None,
-    output_ratio: Optional[BroadcastingList3[float]] = None,
+    output_size: BroadcastingList3[int] | None = None,
+    output_ratio: BroadcastingList3[float] | None = None,
     return_indices: bool = False,
-    _random_samples: Optional[Tensor] = None,
+    _random_samples: Tensor | None = None,
 ) -> tuple[Tensor, Tensor]:  # noqa: D400
     r"""
     fractional_max_pool3d(input, kernel_size, output_size=None, output_ratio=None, return_indices=False, _random_samples=None)
@@ -626,10 +627,10 @@ def fractional_max_pool3d_with_indices(
 def _fractional_max_pool3d(
     input: Tensor,
     kernel_size: BroadcastingList3[int],
-    output_size: Optional[BroadcastingList3[int]] = None,
-    output_ratio: Optional[BroadcastingList3[float]] = None,
+    output_size: BroadcastingList3[int] | None = None,
+    output_ratio: BroadcastingList3[float] | None = None,
     return_indices: bool = False,
-    _random_samples: Optional[Tensor] = None,
+    _random_samples: Tensor | None = None,
 ) -> Tensor:
     if has_torch_function_variadic(input, _random_samples):
         return handle_torch_function(
@@ -661,7 +662,7 @@ fractional_max_pool3d = boolean_dispatch(
 def max_pool1d_with_indices(
     input: Tensor,
     kernel_size: BroadcastingList1[int],
-    stride: Optional[BroadcastingList1[int]] = None,
+    stride: BroadcastingList1[int] | None = None,
     padding: BroadcastingList1[int] = 0,
     dilation: BroadcastingList1[int] = 1,
     ceil_mode: bool = False,
@@ -714,7 +715,7 @@ def max_pool1d_with_indices(
 def _max_pool1d(
     input: Tensor,
     kernel_size: BroadcastingList1[int],
-    stride: Optional[BroadcastingList1[int]] = None,
+    stride: BroadcastingList1[int] | None = None,
     padding: BroadcastingList1[int] = 0,
     dilation: BroadcastingList1[int] = 1,
     ceil_mode: bool = False,
@@ -751,7 +752,7 @@ max_pool1d = boolean_dispatch(
 def max_pool2d_with_indices(
     input: Tensor,
     kernel_size: BroadcastingList2[int],
-    stride: Optional[BroadcastingList2[int]] = None,
+    stride: BroadcastingList2[int] | None = None,
     padding: BroadcastingList2[int] = 0,
     dilation: BroadcastingList2[int] = 1,
     ceil_mode: bool = False,
@@ -804,7 +805,7 @@ def max_pool2d_with_indices(
 def _max_pool2d(
     input: Tensor,
     kernel_size: BroadcastingList2[int],
-    stride: Optional[BroadcastingList2[int]] = None,
+    stride: BroadcastingList2[int] | None = None,
     padding: BroadcastingList2[int] = 0,
     dilation: BroadcastingList2[int] = 1,
     ceil_mode: bool = False,
@@ -841,7 +842,7 @@ max_pool2d = boolean_dispatch(
 def max_pool3d_with_indices(
     input: Tensor,
     kernel_size: BroadcastingList3[int],
-    stride: Optional[BroadcastingList3[int]] = None,
+    stride: BroadcastingList3[int] | None = None,
     padding: BroadcastingList3[int] = 0,
     dilation: BroadcastingList3[int] = 1,
     ceil_mode: bool = False,
@@ -894,7 +895,7 @@ def max_pool3d_with_indices(
 def _max_pool3d(
     input: Tensor,
     kernel_size: BroadcastingList3[int],
-    stride: Optional[BroadcastingList3[int]] = None,
+    stride: BroadcastingList3[int] | None = None,
     padding: BroadcastingList3[int] = 0,
     dilation: BroadcastingList3[int] = 1,
     ceil_mode: bool = False,
@@ -933,7 +934,7 @@ def _unpool_output_size(
     kernel_size: list[int],
     stride: list[int],
     padding: list[int],
-    output_size: Optional[list[int]],
+    output_size: list[int] | None,
 ) -> list[int]:
     input_size = input.size()
     default_size = torch.jit.annotate(list[int], [])
@@ -969,9 +970,9 @@ def max_unpool1d(
     input: Tensor,
     indices: Tensor,
     kernel_size: BroadcastingList1[int],
-    stride: Optional[BroadcastingList1[int]] = None,
+    stride: BroadcastingList1[int] | None = None,
     padding: BroadcastingList1[int] = 0,
-    output_size: Optional[BroadcastingList1[int]] = None,
+    output_size: BroadcastingList1[int] | None = None,
 ) -> Tensor:
     r"""Compute a partial inverse of :class:`MaxPool1d`.
 
@@ -1008,9 +1009,9 @@ def max_unpool2d(
     input: Tensor,
     indices: Tensor,
     kernel_size: BroadcastingList2[int],
-    stride: Optional[BroadcastingList2[int]] = None,
+    stride: BroadcastingList2[int] | None = None,
     padding: BroadcastingList2[int] = 0,
-    output_size: Optional[BroadcastingList2[int]] = None,
+    output_size: BroadcastingList2[int] | None = None,
 ) -> Tensor:
     r"""Compute a partial inverse of :class:`MaxPool2d`.
 
@@ -1041,9 +1042,9 @@ def max_unpool3d(
     input: Tensor,
     indices: Tensor,
     kernel_size: BroadcastingList3[int],
-    stride: Optional[BroadcastingList3[int]] = None,
+    stride: BroadcastingList3[int] | None = None,
     padding: BroadcastingList3[int] = 0,
-    output_size: Optional[BroadcastingList3[int]] = None,
+    output_size: BroadcastingList3[int] | None = None,
 ) -> Tensor:
     r"""Compute a partial inverse of :class:`MaxPool3d`.
 
@@ -1072,9 +1073,9 @@ def max_unpool3d(
 
 def lp_pool3d(
     input: Tensor,
-    norm_type: Union[int, float],
+    norm_type: int | float,
     kernel_size: BroadcastingList3[int],
-    stride: Optional[BroadcastingList3[int]] = None,
+    stride: BroadcastingList3[int] | None = None,
     ceil_mode: bool = False,
 ) -> Tensor:
     r"""
@@ -1110,9 +1111,9 @@ def lp_pool3d(
 
 def lp_pool2d(
     input: Tensor,
-    norm_type: Union[int, float],
+    norm_type: int | float,
     kernel_size: BroadcastingList2[int],
-    stride: Optional[BroadcastingList2[int]] = None,
+    stride: BroadcastingList2[int] | None = None,
     ceil_mode: bool = False,
 ) -> Tensor:
     r"""
@@ -1146,9 +1147,9 @@ def lp_pool2d(
 
 def lp_pool1d(
     input: Tensor,
-    norm_type: Union[int, float],
+    norm_type: int | float,
     kernel_size: int,
-    stride: Optional[BroadcastingList1[int]] = None,
+    stride: BroadcastingList1[int] | None = None,
     ceil_mode: bool = False,
 ) -> Tensor:
     r"""Apply a 1D power-average pooling over an input signal composed of several input planes.
@@ -2066,9 +2067,9 @@ def _get_softmax_dim(name: str, ndim: int, stacklevel: int) -> int:
 
 def softmin(
     input: Tensor,
-    dim: Optional[int] = None,
+    dim: int | None = None,
     _stacklevel: int = 3,
-    dtype: Optional[DType] = None,
+    dtype: DType | None = None,
 ) -> Tensor:
     r"""Apply a softmin function.
 
@@ -2099,9 +2100,9 @@ def softmin(
 
 def softmax(
     input: Tensor,
-    dim: Optional[int] = None,
+    dim: int | None = None,
     _stacklevel: int = 3,
-    dtype: Optional[DType] = None,
+    dtype: DType | None = None,
 ) -> Tensor:
     r"""Apply a softmax function.
 
@@ -2216,9 +2217,9 @@ def gumbel_softmax(
 
 def log_softmax(
     input: Tensor,
-    dim: Optional[int] = None,
+    dim: int | None = None,
     _stacklevel: int = 3,
-    dtype: Optional[DType] = None,
+    dtype: DType | None = None,
 ) -> Tensor:
     r"""Apply a softmax followed by a logarithm.
 
@@ -2432,8 +2433,8 @@ def _no_grad_embedding_renorm_(
 def embedding(
     input: Tensor,
     weight: Tensor,
-    padding_idx: Optional[int] = None,
-    max_norm: Optional[float] = None,
+    padding_idx: int | None = None,
+    max_norm: float | None = None,
     norm_type: float = 2.0,
     scale_grad_by_freq: bool = False,
     sparse: bool = False,
@@ -2549,15 +2550,15 @@ def embedding(
 def embedding_bag(
     input: Tensor,
     weight: Tensor,
-    offsets: Optional[Tensor] = None,
-    max_norm: Optional[float] = None,
+    offsets: Tensor | None = None,
+    max_norm: float | None = None,
     norm_type: float = 2,
     scale_grad_by_freq: bool = False,
     mode: str = "mean",
     sparse: bool = False,
-    per_sample_weights: Optional[Tensor] = None,
+    per_sample_weights: Tensor | None = None,
     include_last_offset: bool = False,
-    padding_idx: Optional[int] = None,
+    padding_idx: int | None = None,
 ) -> Tensor:
     r"""Compute sums, means or maxes of `bags` of embeddings.
 
@@ -2785,10 +2786,10 @@ def _verify_batch_size(size: list[int]) -> None:
 
 def batch_norm(
     input: Tensor,
-    running_mean: Optional[Tensor],
-    running_var: Optional[Tensor],
-    weight: Optional[Tensor] = None,
-    bias: Optional[Tensor] = None,
+    running_mean: Tensor | None,
+    running_var: Tensor | None,
+    weight: Tensor | None = None,
+    bias: Tensor | None = None,
     training: bool = False,
     momentum: float = 0.1,
     eps: float = 1e-5,
@@ -2840,10 +2841,10 @@ def _verify_spatial_size(size: list[int]) -> None:
 
 def instance_norm(
     input: Tensor,
-    running_mean: Optional[Tensor] = None,
-    running_var: Optional[Tensor] = None,
-    weight: Optional[Tensor] = None,
-    bias: Optional[Tensor] = None,
+    running_mean: Tensor | None = None,
+    running_var: Tensor | None = None,
+    weight: Tensor | None = None,
+    bias: Tensor | None = None,
     use_input_stats: bool = True,
     momentum: float = 0.1,
     eps: float = 1e-5,
@@ -2884,8 +2885,8 @@ def instance_norm(
 def layer_norm(
     input: Tensor,
     normalized_shape: list[int],
-    weight: Optional[Tensor] = None,
-    bias: Optional[Tensor] = None,
+    weight: Tensor | None = None,
+    bias: Tensor | None = None,
     eps: float = 1e-5,
 ) -> Tensor:
     r"""Apply Layer Normalization for last certain number of dimensions.
@@ -2910,8 +2911,8 @@ def layer_norm(
 def rms_norm(
     input: Tensor,
     normalized_shape: list[int],
-    weight: Optional[Tensor] = None,
-    eps: Optional[float] = None,
+    weight: Tensor | None = None,
+    eps: float | None = None,
 ) -> Tensor:
     r"""Apply Root Mean Square Layer Normalization.
 
@@ -2927,8 +2928,8 @@ def rms_norm(
 def group_norm(
     input: Tensor,
     num_groups: int,
-    weight: Optional[Tensor] = None,
-    bias: Optional[Tensor] = None,
+    weight: Tensor | None = None,
+    bias: Tensor | None = None,
     eps: float = 1e-5,
 ) -> Tensor:
     r"""Apply Group Normalization for last certain number of dimensions.
@@ -3090,10 +3091,10 @@ if ctc_loss.__doc__:
 def nll_loss(
     input: Tensor,
     target: Tensor,
-    weight: Optional[Tensor] = None,
-    size_average: Optional[bool] = None,
+    weight: Tensor | None = None,
+    size_average: bool | None = None,
     ignore_index: int = -100,
-    reduce: Optional[bool] = None,
+    reduce: bool | None = None,
     reduction: str = "mean",
 ) -> Tensor:
     r"""Compute the negative log likelihood loss.
@@ -3154,9 +3155,9 @@ def poisson_nll_loss(
     target: Tensor,
     log_input: bool = True,
     full: bool = False,
-    size_average: Optional[bool] = None,
+    size_average: bool | None = None,
     eps: float = 1e-8,
-    reduce: Optional[bool] = None,
+    reduce: bool | None = None,
     reduction: str = "mean",
 ) -> Tensor:
     r"""Compute the Poisson negative log likelihood loss.
@@ -3212,7 +3213,7 @@ def poisson_nll_loss(
 def gaussian_nll_loss(
     input: Tensor,
     target: Tensor,
-    var: Union[Tensor, float],
+    var: Tensor | float,
     full: bool = False,
     eps: float = 1e-6,
     reduction: str = "mean",
@@ -3294,17 +3295,16 @@ def gaussian_nll_loss(
 
     if reduction == "mean":
         return loss.mean()
-    elif reduction == "sum":
+    if reduction == "sum":
         return loss.sum()
-    else:
-        return loss
+    return loss
 
 
 def kl_div(
     input: Tensor,
     target: Tensor,
-    size_average: Optional[bool] = None,
-    reduce: Optional[bool] = None,
+    size_average: bool | None = None,
+    reduce: bool | None = None,
     reduction: str = "mean",
     log_target: bool = False,
 ) -> Tensor:
@@ -3379,10 +3379,10 @@ def kl_div(
 def cross_entropy(
     input: Tensor,
     target: Tensor,
-    weight: Optional[Tensor] = None,
-    size_average: Optional[bool] = None,
+    weight: Tensor | None = None,
+    size_average: bool | None = None,
     ignore_index: int = -100,
-    reduce: Optional[bool] = None,
+    reduce: bool | None = None,
     reduction: str = "mean",
     label_smoothing: float = 0.0,
 ) -> Tensor:
@@ -3472,9 +3472,9 @@ def cross_entropy(
 def binary_cross_entropy(
     input: Tensor,
     target: Tensor,
-    weight: Optional[Tensor] = None,
-    size_average: Optional[bool] = None,
-    reduce: Optional[bool] = None,
+    weight: Tensor | None = None,
+    size_average: bool | None = None,
+    reduce: bool | None = None,
     reduction: str = "mean",
 ) -> Tensor:
     r"""Compute Binary Cross Entropy between the target and input probabilities.
@@ -3533,11 +3533,11 @@ def binary_cross_entropy(
 def binary_cross_entropy_with_logits(
     input: Tensor,
     target: Tensor,
-    weight: Optional[Tensor] = None,
-    size_average: Optional[bool] = None,
-    reduce: Optional[bool] = None,
+    weight: Tensor | None = None,
+    size_average: bool | None = None,
+    reduce: bool | None = None,
     reduction: str = "mean",
-    pos_weight: Optional[Tensor] = None,
+    pos_weight: Tensor | None = None,
 ) -> Tensor:
     r"""Compute Binary Cross Entropy between target and input logits.
 
@@ -3602,8 +3602,8 @@ def binary_cross_entropy_with_logits(
 def smooth_l1_loss(
     input: Tensor,
     target: Tensor,
-    size_average: Optional[bool] = None,
-    reduce: Optional[bool] = None,
+    size_average: bool | None = None,
+    reduce: bool | None = None,
     reduction: str = "mean",
     beta: float = 1.0,
 ) -> Tensor:
@@ -3657,10 +3657,9 @@ def smooth_l1_loss(
         return torch._C._nn.l1_loss(
             expanded_input, expanded_target, _Reduction.get_enum(reduction)
         )
-    else:
-        return torch._C._nn.smooth_l1_loss(
-            expanded_input, expanded_target, _Reduction.get_enum(reduction), beta
-        )
+    return torch._C._nn.smooth_l1_loss(
+        expanded_input, expanded_target, _Reduction.get_enum(reduction), beta
+    )
 
 
 def huber_loss(
@@ -3668,7 +3667,7 @@ def huber_loss(
     target: Tensor,
     reduction: str = "mean",
     delta: float = 1.0,
-    weight: Optional[Tensor] = None,
+    weight: Tensor | None = None,
 ) -> Tensor:
     r"""Compute the Huber loss, with optional weighting.
 
@@ -3719,37 +3718,35 @@ def huber_loss(
         return torch._C._nn.huber_loss(
             expanded_input, expanded_target, _Reduction.get_enum(reduction), delta
         )
-    else:
-        if weight.size() != input.size():
-            raise ValueError("Weights and input must have the same size.")
+    if weight.size() != input.size():
+        raise ValueError("Weights and input must have the same size.")
 
-        # Calculate the unweighted loss first
-        unweighted_loss = torch._C._nn.huber_loss(
-            expanded_input, expanded_target, _Reduction.get_enum("none"), delta
-        )
+    # Calculate the unweighted loss first
+    unweighted_loss = torch._C._nn.huber_loss(
+        expanded_input, expanded_target, _Reduction.get_enum("none"), delta
+    )
 
-        # Apply weight to the unweighted loss
-        weighted_loss = unweighted_loss * weight
+    # Apply weight to the unweighted loss
+    weighted_loss = unweighted_loss * weight
 
-        if reduction == "none":
-            return weighted_loss
-        elif reduction == "sum":
-            return torch.sum(weighted_loss)
-        elif reduction == "mean":
-            return weighted_loss.mean()
-        else:
-            raise ValueError(
-                f"Invalid reduction mode: {reduction}. Expected one of 'none', 'mean', 'sum'."
-            )
+    if reduction == "none":
+        return weighted_loss
+    if reduction == "sum":
+        return torch.sum(weighted_loss)
+    if reduction == "mean":
+        return weighted_loss.mean()
+    raise ValueError(
+        f"Invalid reduction mode: {reduction}. Expected one of 'none', 'mean', 'sum'."
+    )
 
 
 def l1_loss(
     input: Tensor,
     target: Tensor,
-    size_average: Optional[bool] = None,
-    reduce: Optional[bool] = None,
+    size_average: bool | None = None,
+    reduce: bool | None = None,
     reduction: str = "mean",
-    weight: Optional[Tensor] = None,
+    weight: Tensor | None = None,
 ) -> Tensor:  # noqa: D400,D402
     r"""Compute the L1 loss, with optional weighting.
 
@@ -3802,27 +3799,25 @@ def l1_loss(
 
         if reduction == "none":
             return weighted_absolute_errors
-        elif reduction == "sum":
+        if reduction == "sum":
             return torch.sum(weighted_absolute_errors)
-        elif reduction == "mean":
+        if reduction == "mean":
             return torch.sum(weighted_absolute_errors) / torch.sum(weight)
-        else:
-            raise ValueError(
-                f"Invalid reduction mode: {reduction}. Expected one of 'none', 'mean', 'sum'."
-            )
-    else:
-        return torch._C._nn.l1_loss(
-            expanded_input, expanded_target, _Reduction.get_enum(reduction)
+        raise ValueError(
+            f"Invalid reduction mode: {reduction}. Expected one of 'none', 'mean', 'sum'."
         )
+    return torch._C._nn.l1_loss(
+        expanded_input, expanded_target, _Reduction.get_enum(reduction)
+    )
 
 
 def mse_loss(
     input: Tensor,
     target: Tensor,
-    size_average: Optional[bool] = None,
-    reduce: Optional[bool] = None,
+    size_average: bool | None = None,
+    reduce: bool | None = None,
     reduction: str = "mean",
-    weight: Optional[Tensor] = None,
+    weight: Tensor | None = None,
 ) -> Tensor:
     r"""Compute the element-wise mean squared error, with optional weighting.
 
@@ -3877,18 +3872,16 @@ def mse_loss(
 
         if reduction == "none":
             return weighted_squared_errors
-        elif reduction == "sum":
+        if reduction == "sum":
             return torch.sum(weighted_squared_errors)
-        elif reduction == "mean":
+        if reduction == "mean":
             return torch.sum(weighted_squared_errors) / torch.sum(weight)
-        else:
-            raise ValueError(
-                f"Invalid reduction mode: {reduction}. Expected one of 'none', 'mean', 'sum'."
-            )
-    else:
-        return torch._C._nn.mse_loss(
-            expanded_input, expanded_target, _Reduction.get_enum(reduction)
+        raise ValueError(
+            f"Invalid reduction mode: {reduction}. Expected one of 'none', 'mean', 'sum'."
         )
+    return torch._C._nn.mse_loss(
+        expanded_input, expanded_target, _Reduction.get_enum(reduction)
+    )
 
 
 def margin_ranking_loss(
@@ -3896,8 +3889,8 @@ def margin_ranking_loss(
     input2: Tensor,
     target: Tensor,
     margin: float = 0,
-    size_average: Optional[bool] = None,
-    reduce: Optional[bool] = None,
+    size_average: bool | None = None,
+    reduce: bool | None = None,
     reduction: str = "mean",
 ) -> Tensor:  # noqa: D400,D402
     r"""Compute the margin ranking loss.
@@ -3946,8 +3939,8 @@ def hinge_embedding_loss(
     input: Tensor,
     target: Tensor,
     margin: float = 1.0,
-    size_average: Optional[bool] = None,
-    reduce: Optional[bool] = None,
+    size_average: bool | None = None,
+    reduce: bool | None = None,
     reduction: str = "mean",
 ) -> Tensor:  # noqa: D400,D402
     r"""Compute the hinge embedding loss.
@@ -3989,8 +3982,8 @@ def hinge_embedding_loss(
 def multilabel_margin_loss(
     input: Tensor,
     target: Tensor,
-    size_average: Optional[bool] = None,
-    reduce: Optional[bool] = None,
+    size_average: bool | None = None,
+    reduce: bool | None = None,
     reduction: str = "mean",
 ) -> Tensor:  # noqa: D400,D402
     r"""Compute the multilabel margin loss.
@@ -4030,8 +4023,8 @@ def multilabel_margin_loss(
 def soft_margin_loss(
     input: Tensor,
     target: Tensor,
-    size_average: Optional[bool] = None,
-    reduce: Optional[bool] = None,
+    size_average: bool | None = None,
+    reduce: bool | None = None,
     reduction: str = "mean",
 ) -> Tensor:  # noqa: D400,D402
     r"""Compute the soft margin loss.
@@ -4071,9 +4064,9 @@ def soft_margin_loss(
 def multilabel_soft_margin_loss(
     input: Tensor,
     target: Tensor,
-    weight: Optional[Tensor] = None,
-    size_average: Optional[bool] = None,
-    reduce: Optional[bool] = None,
+    weight: Tensor | None = None,
+    size_average: bool | None = None,
+    reduce: bool | None = None,
     reduction: str = "mean",
 ) -> Tensor:  # noqa: D400,D402
     r"""Compute the multilabel soft margin loss.
@@ -4133,8 +4126,8 @@ def cosine_embedding_loss(
     input2: Tensor,
     target: Tensor,
     margin: float = 0,
-    size_average: Optional[bool] = None,
-    reduce: Optional[bool] = None,
+    size_average: bool | None = None,
+    reduce: bool | None = None,
     reduction: str = "mean",
 ) -> Tensor:  # noqa: D400,D402
     r"""Compute the cosine embedding loss.
@@ -4180,9 +4173,9 @@ def multi_margin_loss(
     target: Tensor,
     p: int = 1,
     margin: float = 1.0,
-    weight: Optional[Tensor] = None,
-    size_average: Optional[bool] = None,
-    reduce: Optional[bool] = None,
+    weight: Tensor | None = None,
+    size_average: bool | None = None,
+    reduce: bool | None = None,
     reduction: str = "mean",
 ) -> Tensor:  # noqa: D400,D402
     r"""Compute the multi margin loss, with optional weighting.
@@ -4371,10 +4364,10 @@ Examples::
 @_overload
 def upsample(  # noqa: F811
     input: Tensor,
-    size: Optional[int] = None,
-    scale_factor: Optional[float] = None,
+    size: int | None = None,
+    scale_factor: float | None = None,
     mode: str = "nearest",
-    align_corners: Optional[bool] = None,
+    align_corners: bool | None = None,
 ) -> Tensor:  # noqa: B950
     pass
 
@@ -4382,10 +4375,10 @@ def upsample(  # noqa: F811
 @_overload
 def upsample(  # noqa: F811
     input: Tensor,
-    size: Optional[list[int]] = None,
-    scale_factor: Optional[float] = None,
+    size: list[int] | None = None,
+    scale_factor: float | None = None,
     mode: str = "nearest",
-    align_corners: Optional[bool] = None,
+    align_corners: bool | None = None,
 ) -> Tensor:  # noqa: B950
     pass
 
@@ -4482,11 +4475,11 @@ def _is_integer(x) -> bool:
 @_overload
 def interpolate(  # noqa: F811
     input: Tensor,
-    size: Optional[int] = None,
-    scale_factor: Optional[list[float]] = None,
+    size: int | None = None,
+    scale_factor: list[float] | None = None,
     mode: str = "nearest",
-    align_corners: Optional[bool] = None,
-    recompute_scale_factor: Optional[bool] = None,
+    align_corners: bool | None = None,
+    recompute_scale_factor: bool | None = None,
     antialias: bool = False,
 ) -> Tensor:  # noqa: B950
     pass
@@ -4495,11 +4488,11 @@ def interpolate(  # noqa: F811
 @_overload
 def interpolate(  # noqa: F811
     input: Tensor,
-    size: Optional[list[int]] = None,
-    scale_factor: Optional[list[float]] = None,
+    size: list[int] | None = None,
+    scale_factor: list[float] | None = None,
     mode: str = "nearest",
-    align_corners: Optional[bool] = None,
-    recompute_scale_factor: Optional[bool] = None,
+    align_corners: bool | None = None,
+    recompute_scale_factor: bool | None = None,
     antialias: bool = False,
 ) -> Tensor:  # noqa: B950
     pass
@@ -4508,11 +4501,11 @@ def interpolate(  # noqa: F811
 @_overload
 def interpolate(  # noqa: F811
     input: Tensor,
-    size: Optional[int] = None,
-    scale_factor: Optional[float] = None,
+    size: int | None = None,
+    scale_factor: float | None = None,
     mode: str = "nearest",
-    align_corners: Optional[bool] = None,
-    recompute_scale_factor: Optional[bool] = None,
+    align_corners: bool | None = None,
+    recompute_scale_factor: bool | None = None,
     antialias: bool = False,
 ) -> Tensor:  # noqa: B950
     pass
@@ -4521,11 +4514,11 @@ def interpolate(  # noqa: F811
 @_overload
 def interpolate(  # noqa: F811
     input: Tensor,
-    size: Optional[list[int]] = None,
-    scale_factor: Optional[float] = None,
+    size: list[int] | None = None,
+    scale_factor: float | None = None,
     mode: str = "nearest",
-    align_corners: Optional[bool] = None,
-    recompute_scale_factor: Optional[bool] = None,
+    align_corners: bool | None = None,
+    recompute_scale_factor: bool | None = None,
     antialias: bool = False,
 ) -> Tensor:
     pass
@@ -4533,11 +4526,11 @@ def interpolate(  # noqa: F811
 
 def interpolate(  # noqa: F811
     input: Tensor,
-    size: Optional[int] = None,
-    scale_factor: Optional[list[float]] = None,
+    size: int | None = None,
+    scale_factor: list[float] | None = None,
     mode: str = "nearest",
-    align_corners: Optional[bool] = None,
-    recompute_scale_factor: Optional[bool] = None,
+    align_corners: bool | None = None,
+    recompute_scale_factor: bool | None = None,
     antialias: bool = False,
 ) -> Tensor:  # noqa: B950
     r"""Down/up samples the input.
@@ -4639,7 +4632,7 @@ def interpolate(  # noqa: F811
     # be non-None, and it will be a list (or tuple).
     if size is not None and scale_factor is not None:
         raise ValueError("only one of size or scale_factor should be defined")
-    elif size is not None:
+    if size is not None:
         assert scale_factor is None
         scale_factors = None
         if isinstance(size, (list, tuple)):
@@ -4816,8 +4809,8 @@ if interpolate.__doc__:
 @_overload
 def upsample_nearest(  # noqa: F811
     input: Tensor,
-    size: Optional[int] = None,
-    scale_factor: Optional[float] = None,
+    size: int | None = None,
+    scale_factor: float | None = None,
 ) -> Tensor:
     pass
 
@@ -4825,8 +4818,8 @@ def upsample_nearest(  # noqa: F811
 @_overload
 def upsample_nearest(  # noqa: F811
     input: Tensor,
-    size: Optional[list[int]] = None,
-    scale_factor: Optional[float] = None,
+    size: list[int] | None = None,
+    scale_factor: float | None = None,
 ) -> Tensor:
     pass
 
@@ -4866,8 +4859,8 @@ if upsample_nearest.__doc__:
 @_overload
 def upsample_bilinear(  # noqa: F811
     input: Tensor,
-    size: Optional[int] = None,
-    scale_factor: Optional[float] = None,
+    size: int | None = None,
+    scale_factor: float | None = None,
 ) -> Tensor:
     pass
 
@@ -4875,8 +4868,8 @@ def upsample_bilinear(  # noqa: F811
 @_overload
 def upsample_bilinear(  # noqa: F811
     input: Tensor,
-    size: Optional[list[int]] = None,
-    scale_factor: Optional[float] = None,
+    size: list[int] | None = None,
+    scale_factor: float | None = None,
 ) -> Tensor:
     pass
 
@@ -4884,8 +4877,8 @@ def upsample_bilinear(  # noqa: F811
 @_overload
 def upsample_bilinear(  # noqa: F811
     input: Tensor,
-    size: Optional[int] = None,
-    scale_factor: Optional[list[float]] = None,
+    size: int | None = None,
+    scale_factor: list[float] | None = None,
 ) -> Tensor:
     pass
 
@@ -4893,8 +4886,8 @@ def upsample_bilinear(  # noqa: F811
 @_overload
 def upsample_bilinear(  # noqa: F811
     input: Tensor,
-    size: Optional[list[int]] = None,
-    scale_factor: Optional[list[float]] = None,
+    size: list[int] | None = None,
+    scale_factor: list[float] | None = None,
 ) -> Tensor:
     pass
 
@@ -4950,7 +4943,7 @@ def grid_sample(
     grid: Tensor,
     mode: str = "bilinear",
     padding_mode: str = "zeros",
-    align_corners: Optional[bool] = None,
+    align_corners: bool | None = None,
 ) -> Tensor:
     r"""Compute grid sample.
 
@@ -5107,7 +5100,7 @@ def grid_sample(
 def affine_grid(
     theta: Tensor,
     size: list[int],
-    align_corners: Optional[bool] = None,
+    align_corners: bool | None = None,
 ) -> Tensor:
     r"""Generate 2D or 3D flow field (sampling grid), given a batch of affine matrices :attr:`theta`.
 
@@ -5210,7 +5203,7 @@ def pad(
     input: Tensor,
     pad: list[int],
     mode: str = "constant",
-    value: Optional[float] = None,
+    value: float | None = None,
 ) -> Tensor:
     r"""
     pad(input, pad, mode="constant", value=None) -> Tensor
@@ -5423,8 +5416,8 @@ def triplet_margin_loss(
     p: float = 2,
     eps: float = 1e-6,
     swap: bool = False,
-    size_average: Optional[bool] = None,
-    reduce: Optional[bool] = None,
+    size_average: bool | None = None,
+    reduce: bool | None = None,
     reduction: str = "mean",
 ) -> Tensor:
     r"""Compute the triplet loss between given input tensors and a margin greater than 0.
@@ -5462,7 +5455,7 @@ def triplet_margin_with_distance_loss(
     positive: Tensor,
     negative: Tensor,
     *,
-    distance_function: Optional[Callable[[Tensor, Tensor], Tensor]] = None,
+    distance_function: Callable[[Tensor, Tensor], Tensor] | None = None,
     margin: float = 1.0,
     swap: bool = False,
     reduction: str = "mean",
@@ -5528,10 +5521,10 @@ def triplet_margin_with_distance_loss(
     # Apply reduction
     if reduction == "sum":
         return torch.sum(loss)
-    elif reduction == "mean":
+    if reduction == "mean":
         return torch.mean(loss)
-    else:  # reduction == "none"
-        return loss
+    # reduction == "none"
+    return loss
 
 
 def normalize(
@@ -5539,7 +5532,7 @@ def normalize(
     p: float = 2.0,
     dim: int = 1,
     eps: float = 1e-12,
-    out: Optional[Tensor] = None,
+    out: Tensor | None = None,
 ) -> Tensor:
     r"""Perform :math:`L_p` normalization of inputs over specified dimension.
 
@@ -5566,9 +5559,8 @@ def normalize(
     if out is None:
         denom = input.norm(p, dim, keepdim=True).clamp_min(eps).expand_as(input)
         return input / denom
-    else:
-        denom = input.norm(p, dim, keepdim=True).clamp_min_(eps).expand_as(input)
-        return torch.div(input, denom, out=out)
+    denom = input.norm(p, dim, keepdim=True).clamp_min_(eps).expand_as(input)
+    return torch.div(input, denom, out=out)
 
 
 def assert_int_or_pair(arg: list[int], arg_name: str, message: str) -> None:
@@ -5659,7 +5651,7 @@ def _in_projection_packed(
     k: Tensor,
     v: Tensor,
     w: Tensor,
-    b: Optional[Tensor] = None,
+    b: Tensor | None = None,
 ) -> list[Tensor]:
     r"""Perform the in-projection step of the attention operation, using packed weights.
 
@@ -5702,31 +5694,29 @@ def _in_projection_packed(
                 .contiguous()
             )
             return proj[0], proj[1], proj[2]
-        else:
-            # encoder-decoder attention
-            w_q, w_kv = w.split([E, E * 2])
-            if b is None:
-                b_q = b_kv = None
-            else:
-                b_q, b_kv = b.split([E, E * 2])
-            q_proj = linear(q, w_q, b_q)
-            kv_proj = linear(k, w_kv, b_kv)
-            # reshape to 2, E and not E, 2 is deliberate for better memory coalescing and keeping same order as chunk()
-            kv_proj = (
-                kv_proj.unflatten(-1, (2, E))
-                .unsqueeze(0)
-                .transpose(0, -2)
-                .squeeze(-2)
-                .contiguous()
-            )
-            return (q_proj, kv_proj[0], kv_proj[1])
-    else:
-        w_q, w_k, w_v = w.chunk(3)
+        # encoder-decoder attention
+        w_q, w_kv = w.split([E, E * 2])
         if b is None:
-            b_q = b_k = b_v = None
+            b_q = b_kv = None
         else:
-            b_q, b_k, b_v = b.chunk(3)
-        return linear(q, w_q, b_q), linear(k, w_k, b_k), linear(v, w_v, b_v)
+            b_q, b_kv = b.split([E, E * 2])
+        q_proj = linear(q, w_q, b_q)
+        kv_proj = linear(k, w_kv, b_kv)
+        # reshape to 2, E and not E, 2 is deliberate for better memory coalescing and keeping same order as chunk()
+        kv_proj = (
+            kv_proj.unflatten(-1, (2, E))
+            .unsqueeze(0)
+            .transpose(0, -2)
+            .squeeze(-2)
+            .contiguous()
+        )
+        return (q_proj, kv_proj[0], kv_proj[1])
+    w_q, w_k, w_v = w.chunk(3)
+    if b is None:
+        b_q = b_k = b_v = None
+    else:
+        b_q, b_k, b_v = b.chunk(3)
+    return linear(q, w_q, b_q), linear(k, w_k, b_k), linear(v, w_v, b_v)
 
 
 def _in_projection(
@@ -5736,9 +5726,9 @@ def _in_projection(
     w_q: Tensor,
     w_k: Tensor,
     w_v: Tensor,
-    b_q: Optional[Tensor] = None,
-    b_k: Optional[Tensor] = None,
-    b_v: Optional[Tensor] = None,
+    b_q: Tensor | None = None,
+    b_k: Tensor | None = None,
+    b_v: Tensor | None = None,
 ) -> tuple[Tensor, Tensor, Tensor]:
     r"""Perform the in-projection step of the attention operation.
 
@@ -5963,8 +5953,8 @@ def _mha_shape_check(
     query: Tensor,
     key: Tensor,
     value: Tensor,
-    key_padding_mask: Optional[Tensor],
-    attn_mask: Optional[Tensor],
+    key_padding_mask: Tensor | None,
+    attn_mask: Tensor | None,
     num_heads: int,
 ):
     # Verifies the expected shape for `query, `key`, `value`, `key_padding_mask` and `attn_mask`
@@ -6022,13 +6012,13 @@ def _mha_shape_check(
 
 
 def _canonical_mask(
-    mask: Optional[Tensor],
+    mask: Tensor | None,
     mask_name: str,
-    other_type: Optional[DType],
+    other_type: DType | None,
     other_name: str,
     target_type: DType,
     check_other: bool = True,
-) -> Optional[Tensor]:
+) -> Tensor | None:
     if mask is not None:
         _mask_dtype = mask.dtype
         _mask_is_float = torch.is_floating_point(mask)
@@ -6049,10 +6039,10 @@ def _canonical_mask(
     return mask
 
 
-def _none_or_dtype(input: Optional[Tensor]) -> Optional[DType]:
+def _none_or_dtype(input: Tensor | None) -> DType | None:
     if input is None:
         return None
-    elif isinstance(input, torch.Tensor):
+    if isinstance(input, torch.Tensor):
         return input.dtype
     raise RuntimeError("input to _none_or_dtype() must be None or torch.Tensor")
 
@@ -6078,27 +6068,27 @@ def multi_head_attention_forward(
     value: Tensor,
     embed_dim_to_check: int,
     num_heads: int,
-    in_proj_weight: Optional[Tensor],
-    in_proj_bias: Optional[Tensor],
-    bias_k: Optional[Tensor],
-    bias_v: Optional[Tensor],
+    in_proj_weight: Tensor | None,
+    in_proj_bias: Tensor | None,
+    bias_k: Tensor | None,
+    bias_v: Tensor | None,
     add_zero_attn: bool,
     dropout_p: float,
     out_proj_weight: Tensor,
-    out_proj_bias: Optional[Tensor],
+    out_proj_bias: Tensor | None,
     training: bool = True,
-    key_padding_mask: Optional[Tensor] = None,
+    key_padding_mask: Tensor | None = None,
     need_weights: bool = True,
-    attn_mask: Optional[Tensor] = None,
+    attn_mask: Tensor | None = None,
     use_separate_proj_weight: bool = False,
-    q_proj_weight: Optional[Tensor] = None,
-    k_proj_weight: Optional[Tensor] = None,
-    v_proj_weight: Optional[Tensor] = None,
-    static_k: Optional[Tensor] = None,
-    static_v: Optional[Tensor] = None,
+    q_proj_weight: Tensor | None = None,
+    k_proj_weight: Tensor | None = None,
+    v_proj_weight: Tensor | None = None,
+    static_k: Tensor | None = None,
+    static_v: Tensor | None = None,
     average_attn_weights: bool = True,
     is_causal: bool = False,
-) -> tuple[Tensor, Optional[Tensor]]:
+) -> tuple[Tensor, Tensor | None]:
     r"""Forward method for MultiHeadAttention.
 
     See :class:`torch.nn.MultiheadAttention` for details.
@@ -6467,30 +6457,27 @@ def multi_head_attention_forward(
             attn_output = attn_output.squeeze(1)
             attn_output_weights = attn_output_weights.squeeze(0)
         return attn_output, attn_output_weights
-    else:
-        # attn_mask can be either (L,S) or (N*num_heads, L, S)
-        # if attn_mask's shape is (1, L, S) we need to unsqueeze to (1, 1, L, S)
-        # in order to match the input for SDPA of (N, num_heads, L, S)
-        if attn_mask is not None:
-            if attn_mask.size(0) == 1 and attn_mask.dim() == 3:
-                attn_mask = attn_mask.unsqueeze(0)
-            else:
-                attn_mask = attn_mask.view(bsz, num_heads, -1, src_len)
+    # attn_mask can be either (L,S) or (N*num_heads, L, S)
+    # if attn_mask's shape is (1, L, S) we need to unsqueeze to (1, 1, L, S)
+    # in order to match the input for SDPA of (N, num_heads, L, S)
+    if attn_mask is not None:
+        if attn_mask.size(0) == 1 and attn_mask.dim() == 3:
+            attn_mask = attn_mask.unsqueeze(0)
+        else:
+            attn_mask = attn_mask.view(bsz, num_heads, -1, src_len)
 
-        q = q.view(bsz, num_heads, tgt_len, head_dim)
-        k = k.view(bsz, num_heads, src_len, head_dim)
-        v = v.view(bsz, num_heads, src_len, head_dim)
+    q = q.view(bsz, num_heads, tgt_len, head_dim)
+    k = k.view(bsz, num_heads, src_len, head_dim)
+    v = v.view(bsz, num_heads, src_len, head_dim)
 
-        attn_output = scaled_dot_product_attention(
-            q, k, v, attn_mask, dropout_p, is_causal
-        )
-        attn_output = (
-            attn_output.permute(2, 0, 1, 3).contiguous().view(bsz * tgt_len, embed_dim)
-        )
+    attn_output = scaled_dot_product_attention(q, k, v, attn_mask, dropout_p, is_causal)
+    attn_output = (
+        attn_output.permute(2, 0, 1, 3).contiguous().view(bsz * tgt_len, embed_dim)
+    )
 
-        attn_output = linear(attn_output, out_proj_weight, out_proj_bias)
-        attn_output = attn_output.view(tgt_len, bsz, attn_output.size(1))
-        if not is_batched:
-            # squeeze the output if input was unbatched
-            attn_output = attn_output.squeeze(1)
-        return attn_output, None
+    attn_output = linear(attn_output, out_proj_weight, out_proj_bias)
+    attn_output = attn_output.view(tgt_len, bsz, attn_output.size(1))
+    if not is_batched:
+        # squeeze the output if input was unbatched
+        attn_output = attn_output.squeeze(1)
+    return attn_output, None

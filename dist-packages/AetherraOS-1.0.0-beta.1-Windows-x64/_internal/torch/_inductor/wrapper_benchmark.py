@@ -4,7 +4,7 @@ import datetime
 import tempfile
 from collections import defaultdict
 from types import ModuleType
-from typing import Any, Optional, Protocol
+from typing import Any, Protocol
 
 import torch
 from torch.autograd import DeviceType
@@ -38,8 +38,7 @@ def get_kernel_category_by_source_code(src_code: str) -> str:
     ]
     if len(choices) == 1:
         return choices[0]
-    else:
-        return "unknown"
+    return "unknown"
 
 
 def get_kernel_category(kernel_mod: ModuleType) -> str:
@@ -56,8 +55,7 @@ def get_kernel_category(kernel_mod: ModuleType) -> str:
     choices = [ch for ch in _kernel_category_choices if ch in kernel_mod.__dict__]
     if len(choices) == 1:
         return choices[0]
-    else:
-        return "unknown"
+    return "unknown"
 
 
 def get_triton_kernel(mod: ModuleType):  # type: ignore[no-untyped-def]
@@ -73,7 +71,7 @@ def get_triton_kernel(mod: ModuleType):  # type: ignore[no-untyped-def]
 
 
 def benchmark_all_kernels(
-    benchmark_name: str, benchmark_all_configs: Optional[dict[Any, Any]]
+    benchmark_name: str, benchmark_all_configs: dict[Any, Any] | None
 ) -> None:
     """
     An experimental API used only when config.benchmark_kernel is true.
@@ -108,9 +106,9 @@ def benchmark_all_kernels(
 
         def get_info_str(
             ms: float,
-            n_regs: Optional[Any],
-            n_spills: Optional[Any],
-            shared: Optional[Any],
+            n_regs: Any | None,
+            n_spills: Any | None,
+            shared: Any | None,
             prefix: str = "",
         ) -> str:
             if not any(x is None for x in [n_regs, n_spills, shared]):

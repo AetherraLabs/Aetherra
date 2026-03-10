@@ -1,10 +1,10 @@
 # mypy: ignore-errors
 
 import itertools
-from collections.abc import KeysView, Sequence
+from collections.abc import Callable, KeysView, Sequence
 from contextlib import contextmanager, nullcontext
 from functools import partial, wraps
-from typing import Any, Callable, NewType, Optional, Protocol, TypeVar
+from typing import Any, NewType, Protocol, TypeVar
 from unittest.mock import patch
 
 import torch
@@ -33,7 +33,6 @@ from torch.fx.experimental.proxy_tensor import (
 )
 from torch.fx.experimental.symbolic_shapes import ShapeEnv
 from torch.utils._python_dispatch import is_traceable_wrapper_subclass
-
 
 static_inputs_log = torch._logging.getArtifactLogger(
     __name__, "cudagraph_static_inputs"
@@ -91,9 +90,9 @@ from ._aot_autograd.runtime_wrappers import (  # noqa: F401
     AOTSyntheticBaseWrapper,
 )
 from ._aot_autograd.schemas import (  # noqa: F401
+    FQN,
     AOTConfig,
     BackwardSignature,
-    FQN,
     GraphInputName,
     GraphOutputName,
     GraphSignature,
@@ -123,11 +122,11 @@ from ._aot_autograd.traced_function_transforms import (  # noqa: F401
     fn_prepped_for_autograd,
 )
 from ._aot_autograd.utils import (  # noqa: F401
+    KNOWN_TYPES,
     _get_autocast_states,
     _get_symint_hints,
     call_func_at_runtime_with_args,
     create_tree_flattened_fn,
-    KNOWN_TYPES,
     make_boxed_compiler,
     make_boxed_func,
     maybe_to_fresh_input,
@@ -137,7 +136,6 @@ from ._aot_autograd.utils import (  # noqa: F401
     strict_zip,
 )
 from .partitioners import default_partition
-
 
 zip = strict_zip
 
@@ -454,8 +452,7 @@ class AOTDispatchCompiler(Protocol):
         self,
         gm: torch.fx.GraphModule,
         example_inputs: Sequence[InputType],
-    ) -> Any:
-        ...
+    ) -> Any: ...
 
 
 # TODO: bikeshed on this name
@@ -487,7 +484,7 @@ def process_inputs(
     flat_args: list[Any],
     aot_config: AOTConfig,
     fake_mode: FakeTensorMode,
-    shape_env: Optional[ShapeEnv],
+    shape_env: ShapeEnv | None,
     ignore_shape_env: bool = False,
 ) -> FakifiedFlatArgs:
     with fake_mode:
@@ -555,7 +552,7 @@ def process_inputs(
 
 def construct_fake_mode(
     flat_args: list[Any], aot_config: AOTConfig
-) -> tuple[FakeTensorMode, Optional[ShapeEnv]]:
+) -> tuple[FakeTensorMode, ShapeEnv | None]:
     fake_mode = detect_fake_mode(flat_args)
     if fake_mode is None:
         shape_env = ShapeEnv() if aot_config.dynamic_shapes else None
@@ -570,7 +567,7 @@ def create_aot_dispatcher_function(
     fake_flat_args: FakifiedFlatArgs,
     aot_config: AOTConfig,
     fake_mode: FakeTensorMode,
-    shape_env: Optional[ShapeEnv],
+    shape_env: ShapeEnv | None,
 ) -> tuple[Callable, ViewAndMutationMeta]:
     with dynamo_timed("create_aot_dispatcher_function", log_pt2_compile_event=True):
         return _create_aot_dispatcher_function(
@@ -583,7 +580,7 @@ def _create_aot_dispatcher_function(
     fake_flat_args: FakifiedFlatArgs,
     aot_config: AOTConfig,
     fake_mode: FakeTensorMode,
-    shape_env: Optional[ShapeEnv],
+    shape_env: ShapeEnv | None,
 ) -> tuple[Callable, ViewAndMutationMeta]:
     """
     Traces the forward and backward graphs of the attr:`flat_fn` to generate a
@@ -637,13 +634,14 @@ def _create_aot_dispatcher_function(
     # If any saved tensor hooks are active, we **don't** want to trace them.
     # Instead, we'll let them run at runtime, around the custom autograd.Function
     # that we generate in torch.compile.
-    with torch.autograd.set_multithreading_enabled(
-        False
-    ), preserve_rng_state(), (
-        fake_mode
-    ), (
-        python_dispatcher_mode
-    ), PhiloxStateTracker(), torch._dynamo.utils._disable_saved_tensors_hooks_during_tracing():
+    with (
+        torch.autograd.set_multithreading_enabled(False),
+        preserve_rng_state(),
+        fake_mode,
+        python_dispatcher_mode,
+        PhiloxStateTracker(),
+        torch._dynamo.utils._disable_saved_tensors_hooks_during_tracing(),
+    ):
         from torch._library.fake_class_registry import (
             FakeScriptObject,
             maybe_to_fake_obj,
@@ -756,7 +754,7 @@ def _create_aot_dispatcher_function(
         if fw_metadata.num_intermediate_bases > 0:
             assert not req_subclass_dispatch, f"""\
 torch.compile is currently being used with tensor subclass inputs:
-{','.join([str(type(x)) for x in fake_flat_args])}. We are attempting to a compile a graph with two graph outputs
+{",".join([str(type(x)) for x in fake_flat_args])}. We are attempting to a compile a graph with two graph outputs
 that alias one another, which is currently unsupported in the subclass use case. If you run into this,
 please file a github issue"""
 
@@ -820,16 +818,15 @@ or otherwise set torch._functorch.config.functionalize_rng_ops = False."""
                     "backend_compile", dispatch_mode="export"
                 )
                 return partial(aot_dispatch_export, needs_autograd=needs_autograd)
-            elif needs_autograd and not aot_config.pre_dispatch:
+            if needs_autograd and not aot_config.pre_dispatch:
                 CompileEventLogger.try_add_pt2_compile(
                     "backend_compile", dispatch_mode="autograd"
                 )
                 return aot_dispatch_autograd
-            else:
-                CompileEventLogger.try_add_pt2_compile(
-                    "backend_compile", dispatch_mode="inference"
-                )
-                return aot_dispatch_base
+            CompileEventLogger.try_add_pt2_compile(
+                "backend_compile", dispatch_mode="inference"
+            )
+            return aot_dispatch_base
 
         compiler_fn = choose_dispatcher(needs_autograd, aot_config)
 
@@ -845,12 +842,12 @@ or otherwise set torch._functorch.config.functionalize_rng_ops = False."""
 def aot_function(
     fn: Callable,
     fw_compiler: Callable,
-    bw_compiler: Optional[Callable] = None,
+    bw_compiler: Callable | None = None,
     partition_fn: Callable = default_partition,
-    decompositions: Optional[dict] = None,
+    decompositions: dict | None = None,
     num_params_buffers: int = 0,
     keep_inference_input_mutations: bool = False,
-    inference_compiler: Optional[Callable] = None,
+    inference_compiler: Callable | None = None,
     *,
     # Whether or not to trace with dynamic shapes
     dynamic=False,
@@ -1012,7 +1009,7 @@ def aot_module(mod: nn.Module, *args, **kwargs) -> nn.Module:
 
 def _try_get_metadata_from_dynamo(
     mod: torch.nn.Module, param_keys: KeysView[str], full_args_num: int
-) -> tuple[Optional[list[torch._guards.Source]], list[int]]:
+) -> tuple[list[torch._guards.Source] | None, list[int]]:
     """
     Metadata is forwarded from Dynamo to AOTDispatch via special fields on GraphModule.
     We first verify that `mod` does come from Dynamo, then we handle cases where
@@ -1095,13 +1092,13 @@ def aot_module_simplified(
     mod: nn.Module,
     args,
     fw_compiler: AOTDispatchCompiler,
-    bw_compiler: Optional[AOTDispatchCompiler] = None,
+    bw_compiler: AOTDispatchCompiler | None = None,
     partition_fn: Callable = default_partition,
-    decompositions: Optional[dict] = None,
+    decompositions: dict | None = None,
     keep_inference_input_mutations=False,
-    inference_compiler: Optional[AOTDispatchCompiler] = None,
-    cudagraphs: Optional[BoxedBool] = None,
-    boxed_forward_device_index: Optional[BoxedDeviceIndex] = None,
+    inference_compiler: AOTDispatchCompiler | None = None,
+    cudagraphs: BoxedBool | None = None,
+    boxed_forward_device_index: BoxedDeviceIndex | None = None,
     ignore_shape_env: bool = False,
 ) -> nn.Module:
     """
@@ -1252,16 +1249,16 @@ def aot_export_module(
     mod: nn.Module,
     args,
     *,
-    decompositions: Optional[dict] = None,
+    decompositions: dict | None = None,
     # If true, we'll return a joint forward-backward graph,
     # As well as metadata on the loss + gradients in the backward.
     trace_joint: bool,
     # If trace_joint is True, we expect your module to return a scalar loss.
     # Your module can return multiple outputs, so you must specify which output the loss is.
-    output_loss_index: Optional[int] = None,
+    output_loss_index: int | None = None,
     pre_dispatch: bool = False,
     # If None, will be infered from inputs and mod.graph.nodes if mod is a graph module, but the inferred result might be wrong.
-    dynamic_shapes: Optional[bool] = None,
+    dynamic_shapes: bool | None = None,
     kwargs=None,
 ) -> tuple[torch.fx.GraphModule, GraphSignature]:
     """
@@ -1425,9 +1422,7 @@ We require the output marked as the loss (at index {output_loss_index}) to be a 
             output_gradients = []
             for a, grad in zip(args, gradients):
                 if isinstance(a, torch.Tensor) and a.requires_grad:
-                    assert (
-                        grad is not None
-                    ), """\
+                    assert grad is not None, """\
 Found a parameter that did not receive a gradient.
 "This is most likely a bug, but if this needs to be supported please comment on this Github issue:
 https://github.com/pytorch/pytorch/issues/101192
@@ -1464,7 +1459,7 @@ def aot_export_joint_simple(
     # it will assume that parms/buffers are static.
     # With the new inferred dynamic shapes API, maybe this doesn't matter?
     num_params_buffers: int = 0,
-    decompositions: Optional[dict] = None,
+    decompositions: dict | None = None,
 ) -> torch.fx.GraphModule:
     """
     A simplified version of export. Used by higher order operators.
@@ -1540,7 +1535,9 @@ def aot_export_joint_simple(
     if config.debug_assert:
         # Smoke test that after partitioning, we can run the forward without any calling convention changes.
         fw_module, _bw_module = aot_config.default_partition(  # noqa: F821
-            fx_g, args, num_fwd_outputs=len(fw_metadata.output_infos)  # noqa: F821
+            fx_g,
+            args,
+            num_fwd_outputs=len(fw_metadata.output_infos),  # noqa: F821
         )
         # Attempt to run the fw_module with the original user inputs
         fake_mode = detect_fake_mode(args)
@@ -1560,7 +1557,7 @@ def _aot_export_function(
     args,
     *,
     num_params_buffers: int = 0,
-    decompositions: Optional[dict] = None,
+    decompositions: dict | None = None,
     # If we're exporting a joint graph and we don't want any tangent inputs in the graph
     # (because we are backpropping through a scalar 1 loss),
     # we need to explicitly specify not to include tangents in the graph.
@@ -1571,7 +1568,7 @@ def _aot_export_function(
     no_tangents: bool = False,
     pre_dispatch: bool = False,
     # If None, `dynamic_shapes` will be infered from inputs, but the inferred result might be wrong.
-    dynamic_shapes: Optional[bool] = None,
+    dynamic_shapes: bool | None = None,
     kwargs=None,
 ) -> tuple[torch.fx.GraphModule, ViewAndMutationMeta, pytree.TreeSpec, pytree.TreeSpec]:
     kwargs = kwargs or {}

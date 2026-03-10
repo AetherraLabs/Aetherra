@@ -5,7 +5,6 @@ import torch.ao.ns._numeric_suite as ns
 import torch.ao.quantization
 import torch.nn as nn
 
-
 __all__ = [
     "get_module",
     "parent_child_names",
@@ -28,8 +27,7 @@ def parent_child_names(name):
     split_name = name.rsplit(".", 1)
     if len(split_name) == 1:
         return "", split_name[0]
-    else:
-        return split_name[0], split_name[1]
+    return split_name[0], split_name[1]
 
 
 def get_param(module, attr):
@@ -41,8 +39,7 @@ def get_param(module, attr):
     param = getattr(module, attr, None)
     if callable(param):
         return param()
-    else:
-        return param
+    return param
 
 
 class MeanShadowLogger(ns.Logger):

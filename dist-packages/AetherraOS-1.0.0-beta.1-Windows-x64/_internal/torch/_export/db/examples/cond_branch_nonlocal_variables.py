@@ -1,7 +1,8 @@
 # mypy: allow-untyped-defs
+from functorch.experimental.control_flow import cond
+
 import torch
 
-from functorch.experimental.control_flow import cond
 
 class CondBranchNonlocalVariables(torch.nn.Module):
     """
@@ -50,6 +51,7 @@ class CondBranchNonlocalVariables(torch.nn.Module):
             false_fn,
             [x, my_tensor_var, torch.tensor(my_primitive_var)],
         )
+
 
 example_args = (torch.randn(6),)
 tags = {

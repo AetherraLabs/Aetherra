@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 from torch.onnx._internal._lazy_import import onnxscript_ir as ir
 from torch.onnx._internal.exporter import _constants
 
-
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
@@ -21,13 +20,13 @@ logger = logging.getLogger(__name__)
 
 def rename_inputs(model: ir.Model, new_names: Sequence[str]) -> None:
     # TODO: Ensure the names do not have duplicates
-    for input, new_name in zip(model.graph.inputs, new_names):
+    for input, new_name in zip(model.graph.inputs, new_names, strict=False):
         input.metadata_props["pkg.torch.onnx.original_node_name"] = str(input.name)
         input.name = new_name
 
 
 def rename_outputs(model: ir.Model, new_names: Sequence[str]) -> None:
-    for output, new_name in zip(model.graph.outputs, new_names):
+    for output, new_name in zip(model.graph.outputs, new_names, strict=False):
         output.metadata_props["pkg.torch.onnx.original_node_name"] = str(output.name)
         output.name = new_name
 

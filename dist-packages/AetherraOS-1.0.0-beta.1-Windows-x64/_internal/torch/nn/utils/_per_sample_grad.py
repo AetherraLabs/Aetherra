@@ -62,8 +62,7 @@ def call_for_per_sample_grads(
     def maybe_build_expanded_weight(og_tensor, batch_size):
         if og_tensor.requires_grad:
             return ExpandedWeight(og_tensor, batch_size, loss_reduction)
-        else:
-            return og_tensor
+        return og_tensor
 
     def compute_batch_size(*args, **kwargs):
         args_and_kwargs = pytree.arg_tree_leaves(*args, **kwargs)

@@ -1,7 +1,6 @@
 import importlib
 import warnings
-from typing import Callable
-
+from collections.abc import Callable
 
 _MESSAGE_TEMPLATE = (
     r"Usage of '{old_location}' is deprecated; please use '{new_location}' instead."

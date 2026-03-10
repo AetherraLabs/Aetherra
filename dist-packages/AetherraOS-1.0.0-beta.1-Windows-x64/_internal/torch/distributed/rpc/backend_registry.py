@@ -8,9 +8,9 @@ from typing import cast
 import torch
 import torch.distributed as dist
 
-from . import api, constants as rpc_constants
+from . import api
+from . import constants as rpc_constants
 from ._utils import _group_membership_management, _update_group_membership
-
 
 __all__ = [
     "backend_registered",
@@ -398,29 +398,28 @@ def _tensorpipe_init_backend_handler(
 
         return agent
     # initialization for dynamic rpc (ranks can join and leave)
-    else:
-        with _group_membership_management(store, name, True):
-            # Construct TPAgent with empty reverse_device_map and devices
-            # these properties will be updated after initialization
-            agent = TensorPipeAgent(
-                store,
-                name,
-                rank,
-                world_size,
-                rpc_backend_options,
-                {},
-                [],
-            )
-            api._init_rpc_states(agent)
+    with _group_membership_management(store, name, True):
+        # Construct TPAgent with empty reverse_device_map and devices
+        # these properties will be updated after initialization
+        agent = TensorPipeAgent(
+            store,
+            name,
+            rank,
+            world_size,
+            rpc_backend_options,
+            {},
+            [],
+        )
+        api._init_rpc_states(agent)
 
-            try:
-                # Notify all workers in group this rank has joined and set devices and reverse_device_map
-                # This is a synchronous operation that completes once all existing ranks are updated
-                _set_devices_and_reverse_device_map(agent)
-            except Exception:
-                api.shutdown()
-                raise
-            return agent
+        try:
+            # Notify all workers in group this rank has joined and set devices and reverse_device_map
+            # This is a synchronous operation that completes once all existing ranks are updated
+            _set_devices_and_reverse_device_map(agent)
+        except Exception:
+            api.shutdown()
+            raise
+        return agent
 
 
 register_backend(

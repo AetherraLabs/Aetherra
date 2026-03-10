@@ -1,7 +1,6 @@
 # Defined in torch/csrc/export/pt2_archive_constants.h
 from torch._C._export import pt2_archive_constants
 
-
 AOTINDUCTOR_DIR: str = pt2_archive_constants.AOTINDUCTOR_DIR
 ARCHIVE_FORMAT_PATH: str = pt2_archive_constants.ARCHIVE_FORMAT_PATH
 ARCHIVE_FORMAT_VALUE: str = pt2_archive_constants.ARCHIVE_FORMAT_VALUE

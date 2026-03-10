@@ -6,27 +6,26 @@ import importlib
 import inspect
 import sys
 import types
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from functools import cached_property
 from typing import (
-    Any,
-    Callable,
-    ClassVar,
-    final,
-    Generic,
-    Optional,
     TYPE_CHECKING,
-    Union,
+    Any,
+    ClassVar,
+    Concatenate,
+    Generic,
+    final,
 )
-from typing_extensions import Concatenate, ParamSpec, TypeVar
+
+from typing_extensions import ParamSpec, TypeVar
 
 import torch
 import torch.utils._pytree as pytree
 from torch import _utils_internal
-from torch._C import _dispatch_is_included_in_alias as is_included_in_alias, DispatchKey
-from torch._functorch.pyfunctorch import dispatch_functorch, TransformType
+from torch._C import DispatchKey
+from torch._C import _dispatch_is_included_in_alias as is_included_in_alias
+from torch._functorch.pyfunctorch import TransformType, dispatch_functorch
 from torch.utils._python_dispatch import TorchDispatchMode
-
 
 if TYPE_CHECKING:
     from torch._subclasses.functional_tensor import BaseFunctionalizeAPI
@@ -79,9 +78,7 @@ class OperatorBase:
         # for use with OpOverload; cache lookup is done entirely from C++
         # for speed.
         # TODO: The cache is NOT currently used by HigherOrderOperator, but it should!
-        self._dispatch_cache: dict[
-            DispatchKey, Union[DispatchKey, Callable[..., Any]]
-        ] = {}
+        self._dispatch_cache: dict[DispatchKey, DispatchKey | Callable[..., Any]] = {}
 
         # This table allows you to override the behavior of a particular
         # dispatch key to call a custom Python function, rather than the
@@ -99,7 +96,7 @@ class OperatorBase:
         # makes sense that you should be able to register them, the same
         # way you can register dispatch keys.
         self.python_key_table: dict[
-            type[Union[TorchDispatchMode, torch.Tensor]], Callable[..., Any]
+            type[TorchDispatchMode | torch.Tensor], Callable[..., Any]
         ] = {}
 
         # This table allows you to override the behavior of functorch
@@ -121,12 +118,7 @@ class OperatorBase:
 
     def py_impl(
         self,
-        k: Union[
-            type[TorchDispatchMode],
-            type[torch.Tensor],
-            TransformType,
-            DispatchKey,
-        ],
+        k: type[TorchDispatchMode] | type[torch.Tensor] | TransformType | DispatchKey,
     ) -> Callable[[Callable[_P, _T]], Callable[_P, _T]]:
         def inner(fn: Callable[_P, _T]) -> Callable[_P, _T]:
             if inspect.isclass(k) and (
@@ -185,7 +177,7 @@ class OperatorBase:
             return fn(CppFunctionalizeAPI(), *args, **kwargs)
 
         def functionalize_dispatch_mode_fn(
-            mode: Optional[FunctionalTensorMode], *args: _P.args, **kwargs: _P.kwargs
+            mode: FunctionalTensorMode | None, *args: _P.args, **kwargs: _P.kwargs
         ) -> _T:
             return fn(PythonFunctionalizeAPI(mode), *args, **kwargs)
 
@@ -240,7 +232,7 @@ def resolve_key(op: OperatorBase, k: DispatchKey):  # type: ignore[valid-type]
             torch._C._dispatch_autogradother_backends
         ):
             raise RuntimeError("ambiguous autogradother kernel")
-        elif not has_backend_kernel:
+        if not has_backend_kernel:
             return cand
     # 2.4. For autograd backend keys, use kernel from DispatchKey::Autograd if available
     cand = DispatchKey.Autograd
@@ -306,12 +298,7 @@ class HigherOrderOperator(OperatorBase, abc.ABC):
 
     def py_impl(
         self,
-        k: Union[
-            type[TorchDispatchMode],
-            type[torch.Tensor],
-            TransformType,
-            DispatchKey,
-        ],
+        k: type[TorchDispatchMode] | type[torch.Tensor] | TransformType | DispatchKey,
     ) -> Callable[[Callable[_P, _T]], Callable[_P, _T]]:
         if isinstance(k, DispatchKey) and not self.non_fallthrough_keys.has(k):
             self.non_fallthrough_keys = self.non_fallthrough_keys.add(k)
@@ -625,14 +612,13 @@ def unset_mode_pre_dispatch(mode_key, schema_check=False):
             current_mode = current_mode_stack_pre_dispatch.get(0)
             mode_stack_state_for_pre_dispatch().set(0, None)
             return current_mode
-        elif mode_key == torch._C._TorchDispatchModeKey.FUNCTIONAL:
+        if mode_key == torch._C._TorchDispatchModeKey.FUNCTIONAL:
             current_mode = current_mode_stack_pre_dispatch.get(1)
             mode_stack_state_for_pre_dispatch().set(1, None)
             return current_mode
-        else:
-            current_mode = mode_stack_state_for_pre_dispatch()._schema_check_mode
-            mode_stack_state_for_pre_dispatch()._schema_check_mode = None
-            return current_mode
+        current_mode = mode_stack_state_for_pre_dispatch()._schema_check_mode
+        mode_stack_state_for_pre_dispatch()._schema_check_mode = None
+        return current_mode
 
     current_mode = _unset_mode()
 
@@ -712,23 +698,21 @@ def _get_dispatch_mode_pre_dispatch(mode_key):
     )
     if mode_key == torch._C._TorchDispatchModeKey.PROXY:
         return mode_stack_state_for_pre_dispatch().get(0)
-    else:
-        return mode_stack_state_for_pre_dispatch().get(1)
+    return mode_stack_state_for_pre_dispatch().get(1)
 
 
 def _get_current_dispatch_mode_pre_dispatch():
     if mode_stack_state_for_pre_dispatch()._schema_check_mode is not None:
         return mode_stack_state_for_pre_dispatch()._schema_check_mode
-    else:
-        stack_len = mode_stack_state_for_pre_dispatch().count()
-        if stack_len == 2:
-            return mode_stack_state_for_pre_dispatch().get(1)
-        if stack_len == 1:
-            return (
-                mode_stack_state_for_pre_dispatch().get(1)
-                if mode_stack_state_for_pre_dispatch().get(1) is not None
-                else mode_stack_state_for_pre_dispatch().get(0)
-            )
+    stack_len = mode_stack_state_for_pre_dispatch().count()
+    if stack_len == 2:
+        return mode_stack_state_for_pre_dispatch().get(1)
+    if stack_len == 1:
+        return (
+            mode_stack_state_for_pre_dispatch().get(1)
+            if mode_stack_state_for_pre_dispatch().get(1) is not None
+            else mode_stack_state_for_pre_dispatch().get(0)
+        )
     return None
 
 
@@ -870,10 +854,9 @@ class OpOverload(OperatorBase, Generic[_P, _T]):
             # using Python dispatcher (also taking advantage of the autograd
             # formula).  But it's included for completeness
             return self.py_kernels[dk](*args, **kwargs)
-        elif torch._C._dispatch_has_kernel_for_dispatch_key(self.name(), dk):
+        if torch._C._dispatch_has_kernel_for_dispatch_key(self.name(), dk):
             return self._op_dk(dk, *args, **kwargs)
-        else:
-            return NotImplemented
+        return NotImplemented
 
     # Remove a dispatch key from the dispatch cache.  This will force it to get
     # recomputed the next time.  Does nothing
@@ -887,7 +870,7 @@ class OpOverload(OperatorBase, Generic[_P, _T]):
         self._dispatch_cache.pop(key, None)
 
     # This implements the pre-computation logic for the Python dispatcher.
-    def _get_dispatch(self, key: DispatchKey) -> Union[DispatchKey, Callable[_P, _T]]:
+    def _get_dispatch(self, key: DispatchKey) -> DispatchKey | Callable[_P, _T]:
         # This is only called upon a cache miss
         assert key not in self._dispatch_cache, f"{self} {key}"
 
@@ -1038,9 +1021,9 @@ class TorchBindOpOverload(OpOverload[_P, _T]):
     @contextlib.contextmanager
     def _register_as_effectful_op_temporarily(self):
         from torch._higher_order_ops.effects import (
+            SIDE_EFFECTS,
             _EffectType,
             _register_effectful_op,
-            SIDE_EFFECTS,
         )
 
         try:
@@ -1401,7 +1384,7 @@ class _HigherOrderNamespace(types.ModuleType):
 
     def __getattr__(self, name: str) -> HigherOrderOperator:
         # Following _OpNamespace.__getattr__, we cache the op on this object.
-        op = _higher_order_ops.get(name, None)
+        op = _higher_order_ops.get(name)
         if op is None:
             raise AttributeError(
                 f"'_HigherOrderNamespace' 'torch.ops.higher_order' object has no attribute '{name}'"

@@ -1,5 +1,6 @@
 # mypy: allow-untyped-defs
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable
+from typing import Any
 
 import torch
 import torch.ao.nn.quantized as nnq
@@ -10,7 +11,6 @@ from torch.ao.quantization.quantization_mappings import (
     get_default_compare_output_module_list,
 )
 
-
 NON_LEAF_MODULE_TO_ADD_OBSERVER_ALLOW_LIST = {
     nnqd.Linear,
     nnq.Linear,
@@ -20,10 +20,10 @@ NON_LEAF_MODULE_TO_ADD_OBSERVER_ALLOW_LIST = {
 
 
 def _find_match(
-    str_list: Union[dict[str, Any], list[str]],
+    str_list: dict[str, Any] | list[str],
     key_str: str,
     postfix: str,
-) -> Optional[str]:
+) -> str | None:
     split_str = key_str.split(".")
     if split_str[-1] == postfix:
         match_string = "".join(key_str.split(".")[0:-1])
@@ -48,8 +48,7 @@ def _find_match(
                 if match_string == pattern2:
                     return s2
         return None
-    else:
-        return None
+    return None
 
 
 def compare_weights(

@@ -1,14 +1,13 @@
 # mypy: allow-untyped-defs
 # Copyright (c) Meta Platforms, Inc. and affiliates
 import functools
-from collections.abc import Sequence
-from typing import Callable, Optional, Union
+from collections.abc import Callable, Sequence
+from typing import Optional, Union
 
 import torch
 from torch.distributed._functional_collectives import AsyncCollectiveTensor
 from torch.distributed.tensor import DeviceMesh, DTensor
 from torch.distributed.tensor.placement_types import Placement
-
 
 try:
     from torch.utils import _cxx_pytree as pytree
@@ -26,9 +25,9 @@ OutputPlacements = Union[PlacementType, tuple[PlacementType, ...]]
 def local_map(
     func: Callable,
     out_placements: OutputPlacements,
-    in_placements: Optional[InputPlacements] = None,
-    in_grad_placements: Optional[InputPlacements] = None,
-    device_mesh: Optional[DeviceMesh] = None,
+    in_placements: InputPlacements | None = None,
+    in_grad_placements: InputPlacements | None = None,
+    device_mesh: DeviceMesh | None = None,
     *,
     redistribute_inputs: bool = False,
 ):
@@ -136,7 +135,7 @@ def local_map(
     .. note:: This API is currently experimental and subject to change
     """
 
-    def wrapped(device_mesh: Optional[DeviceMesh], *args, **kwargs):
+    def wrapped(device_mesh: DeviceMesh | None, *args, **kwargs):
         # process input args
         flat_args, args_spec = pytree.tree_flatten(args)
         if in_placements is not None:
@@ -231,7 +230,7 @@ def local_map(
                 f" received {len(out_placements_tuple)} out_placements but"
                 f" {len(flat_out)} is expected!"
             )
-            for out, spec in zip(flat_out, out_placements_tuple):
+            for out, spec in zip(flat_out, out_placements_tuple, strict=False):
                 if isinstance(out, torch.Tensor):
                     assert not isinstance(out, DTensor), (
                         f"torch.Tensor output expected but received {type(out)}: {out}"
@@ -248,7 +247,6 @@ def local_map(
                     flat_dist_out.append(out)
 
             return pytree.tree_unflatten(flat_dist_out, out_spec)
-        else:
-            return out
+        return out
 
     return functools.partial(wrapped, device_mesh)

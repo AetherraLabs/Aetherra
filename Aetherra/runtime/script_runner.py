@@ -18,9 +18,7 @@ class ScriptRunner:
 
     def _load_registry(self):
         if not os.path.exists(self.registry_path):
-            raise FileNotFoundError(
-                f"Standard library registry not found: {self.registry_path}"
-            )
+            raise FileNotFoundError(f"Standard library registry not found: {self.registry_path}")
         with open(self.registry_path, encoding="utf-8") as f:
             return json.load(f)
 

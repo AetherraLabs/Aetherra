@@ -13,7 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 
@@ -43,7 +43,7 @@ def main() -> int:
         "bomFormat": "Aetherra-SBOM",
         "specVersion": "0.1-alpha",
         "metadata": {
-            "generated": datetime.now(timezone.utc).isoformat(),
+            "generated": datetime.now(UTC).isoformat(),
             "tool": "generate_sbom.py",
             "source": str(src),
             "env": {

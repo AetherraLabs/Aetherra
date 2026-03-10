@@ -4,12 +4,12 @@ from __future__ import annotations
 import contextlib
 import copy
 import operator
-from typing import Callable, Optional, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import torch
 
 from ..utils import node_replace_, nodes_map
-
 
 if TYPE_CHECKING:
     from torch._ops import HigherOrderOperator
@@ -106,9 +106,9 @@ def _replace_with_hop_helper(
 
 def _sequential_split_and_maybe_inline_subgraphs_helper(
     new_gm: torch.fx.GraphModule,
-    graph_signature: Optional[ExportGraphSignature],
+    graph_signature: ExportGraphSignature | None,
     maybe_inline_or_replace_with_hop: Callable[[torch.fx.Node], None],
-) -> tuple[torch.fx.GraphModule, Optional[ExportGraphSignature]]:
+) -> tuple[torch.fx.GraphModule, ExportGraphSignature | None]:
     """
     Helper function for replacing graph nodse with higher order nodes.
     For each subgraph in `new_gm`, decides whether to construct a HOO subgraph, or inline the calls
@@ -128,7 +128,7 @@ def _sequential_split_and_maybe_inline_subgraphs_helper(
             new_signature.output_specs
         )
         for arg_node, out_spec in zip(
-            new_gm_out_node.args[0], new_signature.output_specs
+            new_gm_out_node.args[0], new_signature.output_specs, strict=False
         ):
             if arg_node is None:
                 assert out_spec.arg.value is None  # type: ignore[union-attr]
@@ -156,12 +156,12 @@ def _sequential_split_and_maybe_inline_subgraphs_helper(
 
 def _replace_with_hop_pass_helper(
     gm: torch.fx.GraphModule,
-    graph_signature: Optional[ExportGraphSignature],
+    graph_signature: ExportGraphSignature | None,
     sequential_split_and_maybe_inline_subgraphs: Callable[
-        [torch.fx.GraphModule, Optional[ExportGraphSignature]],
-        tuple[torch.fx.GraphModule, Optional[ExportGraphSignature]],
+        [torch.fx.GraphModule, ExportGraphSignature | None],
+        tuple[torch.fx.GraphModule, ExportGraphSignature | None],
     ],
-) -> tuple[torch.fx.GraphModule, Optional[ExportGraphSignature]]:
+) -> tuple[torch.fx.GraphModule, ExportGraphSignature | None]:
     """
     Split gm into sub-graph-modules using `sequential_split_and_maybe_inline_subgraphs`, and
     then recursively call itself on each of the submodules.

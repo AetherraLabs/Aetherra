@@ -2,10 +2,9 @@ import io
 import json
 import struct
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 import torch
-
 
 _metadata_fn: str = "model.safetensors.index.json"
 
@@ -54,7 +53,7 @@ class _HFStorageInfo:
 
 
 def _gen_file_name(
-    index: int, largest_index: int, shard_index: Optional[int] = None
+    index: int, largest_index: int, shard_index: int | None = None
 ) -> str:
     if shard_index is not None:
         return (
@@ -65,13 +64,12 @@ def _gen_file_name(
             )
             + SUFFIX
         )
-    else:
-        return (
-            FILE_NAME.format(
-                cpt_idx=f"{index}".zfill(5), num_files=f"{largest_index}".zfill(5)
-            )
-            + SUFFIX
+    return (
+        FILE_NAME.format(
+            cpt_idx=f"{index}".zfill(5), num_files=f"{largest_index}".zfill(5)
         )
+        + SUFFIX
+    )
 
 
 def _get_safetensors_file_metadata(file_bytes: io.IOBase) -> tuple[Any, int]:
@@ -97,7 +95,7 @@ def _get_dtype(dtype_str: str) -> torch.dtype:
     return dtype
 
 
-def _get_dcp_custom_metadata(metadata: Any) -> Optional[Any]:
+def _get_dcp_custom_metadata(metadata: Any) -> Any | None:
     if DEFAULT_EXTRA_METADATA_KEY in metadata:
         custom_metadata = metadata[DEFAULT_EXTRA_METADATA_KEY]
         if CUSTOM_METADATA_KEY in custom_metadata:

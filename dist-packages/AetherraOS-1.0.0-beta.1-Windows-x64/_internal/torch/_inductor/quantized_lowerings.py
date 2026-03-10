@@ -10,13 +10,12 @@ from .codegen.cpp_utils import create_epilogue_with_attr
 from .lowering import expand, register_lowering
 from .mkldnn_ir import WeightInt4PackMatmul
 from .select_algorithm import (
-    autotune_select_algorithm,
     ExternKernelChoice,
+    autotune_select_algorithm,
     realize_inputs,
 )
 from .utils import use_aten_gemm_kernels, use_cpp_gemm_template
 from .virtualized import V
-
 
 log = logging.getLogger(__name__)
 

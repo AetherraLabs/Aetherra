@@ -44,7 +44,7 @@ from collections import defaultdict
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 SUPPRESSION_FILE = Path(".aetherra/workflow_suppressions.txt")
 
@@ -72,7 +72,7 @@ class WorkflowResult:
     suppressed: bool | None = None
 
 
-def discover_aether_files(root: Path) -> List[Path]:
+def discover_aether_files(root: Path) -> list[Path]:
     ignore_dirs = {
         ".git",
         ".hg",
@@ -83,7 +83,7 @@ def discover_aether_files(root: Path) -> List[Path]:
         "build",
         "dist",
     }
-    files: List[Path] = []
+    files: list[Path] = []
     for p in root.rglob("*.aether"):
         if not p.is_file():
             continue
@@ -93,7 +93,7 @@ def discover_aether_files(root: Path) -> List[Path]:
     return sorted(files)
 
 
-def verify_signature_and_risk(path: Path) -> Tuple[bool | None, int | None]:
+def verify_signature_and_risk(path: Path) -> tuple[bool | None, int | None]:
     try:
         # Aetherra imports
         from Aetherra.analysis.static_risk import analyze_paths  # type: ignore
@@ -128,7 +128,7 @@ def categorize_exception(stderr: str) -> str:
     return "Other"
 
 
-def execute_workflow(path: Path, timeout: int = 8) -> Tuple[WorkflowResult, str]:
+def execute_workflow(path: Path, timeout: int = 8) -> tuple[WorkflowResult, str]:
     """Execute a workflow with structured interpreter integration.
 
     Returns (WorkflowResult, raw_combined_output_or_error_text)
@@ -162,7 +162,7 @@ def execute_workflow(path: Path, timeout: int = 8) -> Tuple[WorkflowResult, str]
         )
         return wr, wr.error or "Timeout"
 
-    parse_json: Optional[Dict[str, Any]] = None
+    parse_json: dict[str, Any] | None = None
     for line in parse_proc.stdout.splitlines():
         if line.strip().startswith("{") and '"code"' in line:
             try:
@@ -214,7 +214,7 @@ def execute_workflow(path: Path, timeout: int = 8) -> Tuple[WorkflowResult, str]
         )
         return wr, wr.error or "Timeout"
 
-    run_json: Optional[Dict[str, Any]] = None
+    run_json: dict[str, Any] | None = None
     for line in run_proc.stdout.splitlines():
         if line.strip().startswith("{") and '"code"' in line:
             try:
@@ -270,11 +270,11 @@ def _classify_single(p: Path, timeout: int) -> WorkflowResult:
 
 
 def classify(
-    paths: List[Path], jobs: int = 1, timeout: int = 8
-) -> List[WorkflowResult]:
+    paths: list[Path], jobs: int = 1, timeout: int = 8
+) -> list[WorkflowResult]:
     if jobs <= 1:
         return [_classify_single(p, timeout) for p in paths]
-    results: List[WorkflowResult] = []
+    results: list[WorkflowResult] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as ex:
         future_map = {ex.submit(_classify_single, p, timeout): p for p in paths}
         for fut in concurrent.futures.as_completed(future_map):
@@ -292,8 +292,8 @@ def classify(
     return results
 
 
-def aggregate(results: List[WorkflowResult]) -> Dict[str, Any]:
-    by_cat: Dict[str, List[WorkflowResult]] = defaultdict(list)
+def aggregate(results: list[WorkflowResult]) -> dict[str, Any]:
+    by_cat: dict[str, list[WorkflowResult]] = defaultdict(list)
     for r in results:
         by_cat[r.category].append(r)
     cat_summary = {
@@ -314,7 +314,7 @@ def aggregate(results: List[WorkflowResult]) -> Dict[str, Any]:
 
 
 def write_artifacts(
-    results: List[WorkflowResult], summary: Dict[str, Any], output: str, md: str
+    results: list[WorkflowResult], summary: dict[str, Any], output: str, md: str
 ):
     Path(output).write_text(
         json.dumps(
@@ -343,7 +343,7 @@ def write_artifacts(
     Path(md).write_text("\n".join(lines), encoding="utf-8")
 
 
-def persist_history(summary: Dict[str, Any], history_dir: Path, artifact_json: Path):
+def persist_history(summary: dict[str, Any], history_dir: Path, artifact_json: Path):
     history_dir.mkdir(parents=True, exist_ok=True)
     ts = summary.get("timestamp", datetime.now(UTC).isoformat())
     stamp = ts.replace(":", "").replace("-", "")[:15]
@@ -354,7 +354,7 @@ def persist_history(summary: Dict[str, Any], history_dir: Path, artifact_json: P
 
     # Build trends (last N = 20)
     entries = sorted(history_dir.glob("*_classification.json"))[-20:]
-    trends: List[Dict[str, Any]] = []
+    trends: list[dict[str, Any]] = []
     for p in entries:
         try:
             data = json.loads(p.read_text(encoding="utf-8"))

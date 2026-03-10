@@ -58,10 +58,7 @@ class AetherraFileRouter:
         if any(part in IGNORED_DIRS for part in file.parts):
             return True
         # Prevent moving gui_generator.py or plugin_registry.py from kernel
-        if (
-            file.name in ("gui_generator.py", "plugin_registry.py")
-            and "kernel" in file.parts
-        ):
+        if file.name in ("gui_generator.py", "plugin_registry.py") and "kernel" in file.parts:
             return True
         return False
 
@@ -101,9 +98,7 @@ class AetherraFileRouter:
             except Exception as e:
                 system_logger.log(f"[router] Could not scaffold UI: {e}")
 
-        self.routes.append(
-            {"file": file.name, "to": str(target_path), "type": category}
-        )
+        self.routes.append({"file": file.name, "to": str(target_path), "type": category})
 
     def export_log(self):
         with open(self.root / "file_routing_log.json", "w") as f:

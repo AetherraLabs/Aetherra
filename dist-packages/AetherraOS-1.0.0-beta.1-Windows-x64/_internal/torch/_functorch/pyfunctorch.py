@@ -12,13 +12,12 @@ from torch._C._functorch import (
     CInterpreter,
     CJvpInterpreterPtr,
     CVmapInterpreterPtr,
-    pop_dynamic_layer_stack,
-    push_dynamic_layer_stack,
     RandomnessType,
     TransformType,
+    pop_dynamic_layer_stack,
+    push_dynamic_layer_stack,
 )
 from torch.autograd.forward_ad import _set_fwd_grad_enabled
-
 
 """
 This file contains the functorch integration with PyDispatcher.
@@ -145,9 +144,9 @@ class VmapInterpreter(FuncTorchInterpreter):
         typ = self._cptr.randomness()
         if typ == RandomnessType.Error:
             return "error"
-        elif typ == RandomnessType.Same:
+        if typ == RandomnessType.Same:
             return "same"
-        elif typ == RandomnessType.Different:
+        if typ == RandomnessType.Different:
             return "different"
         raise RuntimeError(f"Unknown RandomnessType: {typ}")
 
@@ -295,7 +294,7 @@ def compare_functorch_state(states: list[tuple[Any, ...]]) -> bool:
 
     cis = retrieve_all_functorch_interpreters()
     return len(cis) == len(states) and all(
-        ci.check_state(state) for ci, state in zip(cis, states)
+        ci.check_state(state) for ci, state in zip(cis, states, strict=False)
     )
 
 

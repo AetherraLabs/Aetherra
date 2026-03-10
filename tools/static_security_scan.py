@@ -24,7 +24,6 @@ import re
 import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List
 
 SECRET_PATTERNS = {
     "aws_access_key": re.compile(r"AKIA[0-9A-Z]{16}"),
@@ -62,8 +61,8 @@ class Finding:
 
 @dataclass
 class ScanReport:
-    findings: List[Finding]
-    summary: Dict[str, int]
+    findings: list[Finding]
+    summary: dict[str, int]
 
     def to_dict(self):  # pragma: no cover - trivial
         return {
@@ -72,9 +71,9 @@ class ScanReport:
         }
 
 
-def load_allowlist(root: Path) -> List[re.Pattern]:
+def load_allowlist(root: Path) -> list[re.Pattern]:
     allowlist_file = root / ".aetherra_scan_allowlist"
-    patterns: List[re.Pattern] = []
+    patterns: list[re.Pattern] = []
     if allowlist_file.exists():
         for line in allowlist_file.read_text().splitlines():
             line = line.strip()
@@ -87,16 +86,16 @@ def load_allowlist(root: Path) -> List[re.Pattern]:
     return patterns
 
 
-def is_allowed(line: str, allow_patterns: List[re.Pattern]) -> bool:
+def is_allowed(line: str, allow_patterns: list[re.Pattern]) -> bool:
     return any(p.search(line) for p in allow_patterns)
 
 
-def scan_file(path: Path, allow_patterns: List[re.Pattern]) -> List[Finding]:
+def scan_file(path: Path, allow_patterns: list[re.Pattern]) -> list[Finding]:
     try:
         text = path.read_text(encoding="utf-8", errors="ignore")
     except Exception:
         return []
-    findings: List[Finding] = []
+    findings: list[Finding] = []
     lines = text.splitlines()
     # Secrets
     for idx, line in enumerate(lines, start=1):
@@ -158,14 +157,14 @@ def scan_file(path: Path, allow_patterns: List[re.Pattern]) -> List[Finding]:
 
 def scan_root(root: Path) -> ScanReport:
     allow_patterns = load_allowlist(root)
-    findings: List[Finding] = []
+    findings: list[Finding] = []
     for path in root.rglob("*.py"):
         # Skip virtual envs or build dirs
         if any(part in {".venv", "venv", "build", "dist"} for part in path.parts):
             continue
         findings.extend(scan_file(path, allow_patterns))
 
-    summary: Dict[str, int] = {}
+    summary: dict[str, int] = {}
     for f in findings:
         summary[f.category] = summary.get(f.category, 0) + 1
     summary["total"] = len(findings)

@@ -6,7 +6,6 @@ from typing import cast
 import torch
 from torch.types import Storage
 
-
 __serialization_id_record_name__ = ".data/serialization_id"
 
 
@@ -62,5 +61,4 @@ class DirectoryReader:
     ):
         if self.has_record(__serialization_id_record_name__):
             return self.get_record(__serialization_id_record_name__)
-        else:
-            return ""
+        return ""

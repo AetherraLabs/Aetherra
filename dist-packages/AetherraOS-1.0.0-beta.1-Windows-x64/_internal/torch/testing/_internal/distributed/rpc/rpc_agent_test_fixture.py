@@ -18,8 +18,7 @@ class RpcAgentTestFixture(ABC):
             master_addr = os.environ["MASTER_ADDR"]
             master_port = os.environ["MASTER_PORT"]
             return f"tcp://{master_addr}:{master_port}"
-        else:
-            return self.file_init_method
+        return self.file_init_method
 
     @property
     def file_init_method(self):

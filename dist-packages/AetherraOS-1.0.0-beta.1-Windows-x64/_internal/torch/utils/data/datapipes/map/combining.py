@@ -5,7 +5,6 @@ from typing import TypeVar
 from torch.utils.data.datapipes._decorator import functional_datapipe
 from torch.utils.data.datapipes.datapipe import MapDataPipe
 
-
 __all__ = ["ConcaterMapDataPipe", "ZipperMapDataPipe"]
 
 _T_co = TypeVar("_T_co", covariant=True)
@@ -51,8 +50,7 @@ class ConcaterMapDataPipe(MapDataPipe):
         for dp in self.datapipes:
             if index - offset < len(dp):
                 return dp[index - offset]
-            else:
-                offset += len(dp)
+            offset += len(dp)
         raise IndexError(f"Index {index} is out of range.")
 
     def __len__(self) -> int:

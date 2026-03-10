@@ -15,7 +15,6 @@ import os
 import re
 import shutil
 from pathlib import Path
-from typing import Dict, List
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -33,7 +32,7 @@ class ComprehensiveAetherraOrganizer:
         if not self.dry_run:
             self.backup_dir.mkdir(exist_ok=True)
 
-    def get_comprehensive_reorganization_plan(self) -> Dict[str, str]:
+    def get_comprehensive_reorganization_plan(self) -> dict[str, str]:
         """Generate a comprehensive reorganization plan based on file analysis"""
 
         reorganization_plan = {}
@@ -170,7 +169,7 @@ class ComprehensiveAetherraOrganizer:
             else:
                 logger.warning(f"⚠️ Source file not found: {old_path}")
 
-    def find_all_python_files(self) -> List[Path]:
+    def find_all_python_files(self) -> list[Path]:
         """Find all Python files in the aetherra_core directory"""
         python_files = []
         for root, dirs, files in os.walk(self.base_path):
@@ -179,7 +178,7 @@ class ComprehensiveAetherraOrganizer:
                     python_files.append(Path(root) / file)
         return python_files
 
-    def extract_imports(self, filepath: Path) -> List[tuple[str, str, int]]:
+    def extract_imports(self, filepath: Path) -> list[tuple[str, str, int]]:
         """Extract import statements from a Python file"""
         imports = []
         try:

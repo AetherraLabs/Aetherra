@@ -1,11 +1,10 @@
 import os
 import sysconfig
-from typing import Optional
 
 from torch.utils._triton import has_triton
 
 
-def enable_triton(lib_dir: Optional[str] = None) -> dict[str, str]:
+def enable_triton(lib_dir: str | None = None) -> dict[str, str]:
     """
     Enable NVSHMEM device functions for Triton. It performs a NVSHMEM
     device-side initialization on the kernel module created by Triton.

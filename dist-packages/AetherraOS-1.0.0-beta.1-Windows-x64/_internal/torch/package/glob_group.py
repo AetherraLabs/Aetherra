@@ -3,7 +3,6 @@ import re
 from collections.abc import Iterable
 from typing import Union
 
-
 GlobPattern = Union[str, Iterable[str]]
 
 
@@ -63,8 +62,7 @@ class GlobGroup:
     def _glob_list(elems: GlobPattern, separator: str = "."):
         if isinstance(elems, str):
             return [GlobGroup._glob_to_re(elems, separator)]
-        else:
-            return [GlobGroup._glob_to_re(e, separator) for e in elems]
+        return [GlobGroup._glob_to_re(e, separator) for e in elems]
 
     @staticmethod
     def _glob_to_re(pattern: str, separator: str = "."):
@@ -74,12 +72,10 @@ class GlobGroup:
             if "**" in component:
                 if component == "**":
                     return "(" + re.escape(separator) + "[^" + separator + "]+)*"
-                else:
-                    raise ValueError("** can only appear as an entire path segment")
-            else:
-                return re.escape(separator) + ("[^" + separator + "]*").join(
-                    re.escape(x) for x in component.split("*")
-                )
+                raise ValueError("** can only appear as an entire path segment")
+            return re.escape(separator) + ("[^" + separator + "]*").join(
+                re.escape(x) for x in component.split("*")
+            )
 
         result = "".join(component_to_re(c) for c in pattern.split(separator))
         return re.compile(result)

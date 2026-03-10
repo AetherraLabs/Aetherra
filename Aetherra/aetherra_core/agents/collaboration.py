@@ -318,9 +318,7 @@ class DocumentationGenerator(AIAgent):
 
         await asyncio.sleep(0.2)  # Simulate processing time
 
-        documentation = self._generate_documentation(
-            task.description, task.context.get("code", "")
-        )
+        documentation = self._generate_documentation(task.description, task.context.get("code", ""))
 
         execution_time = time.time() - start_time
 
@@ -536,9 +534,7 @@ class AICollaborationFramework:
         )
 
         print("✅ Collaborative solution completed!")
-        print(
-            f"   Total time: {final_solution['collaboration_metrics']['total_time']:.2f}s"
-        )
+        print(f"   Total time: {final_solution['collaboration_metrics']['total_time']:.2f}s")
         print(
             f"   Average confidence: {final_solution['collaboration_metrics']['average_confidence']:.0%}"
         )
@@ -552,10 +548,7 @@ class AICollaborationFramework:
 
     def get_agent_capabilities(self) -> Dict[str, List[str]]:
         """Get capabilities of all agents"""
-        return {
-            role.value: agent.get_capabilities()
-            for role, agent in self.ai_agents.items()
-        }
+        return {role.value: agent.get_capabilities() for role, agent in self.ai_agents.items()}
 
     def get_collaboration_stats(self) -> Dict[str, Any]:
         """Get statistics about collaborations"""
@@ -642,13 +635,9 @@ if __name__ == "__main__":
 
         print("\n📊 Collaboration Results:")
         print(f"   Problem: {result['problem']}")
-        print(
-            f"   Agents involved: {result['collaboration_metrics']['agents_involved']}"
-        )
+        print(f"   Agents involved: {result['collaboration_metrics']['agents_involved']}")
         print(f"   Total time: {result['collaboration_metrics']['total_time']:.2f}s")
-        print(
-            f"   Average confidence: {result['collaboration_metrics']['average_confidence']:.0%}"
-        )
+        print(f"   Average confidence: {result['collaboration_metrics']['average_confidence']:.0%}")
 
         # Get collaboration stats
         stats = framework.get_collaboration_stats()

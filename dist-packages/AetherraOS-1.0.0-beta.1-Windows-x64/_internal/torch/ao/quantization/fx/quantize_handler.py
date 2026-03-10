@@ -1,6 +1,6 @@
 # mypy: allow-untyped-defs
 from abc import ABC
-from typing import Callable, Optional
+from collections.abc import Callable
 
 import torch
 from torch.ao.quantization.backend_config import (
@@ -12,7 +12,6 @@ from torch.ao.quantization.utils import NodePattern, Pattern, QuantizerCls
 from torch.fx.graph import Node
 
 from .utils import all_node_args_have_no_tensors
-
 
 __all__ = [
     "QuantizeHandler",
@@ -48,7 +47,7 @@ class QuantizeHandler(ABC):  # noqa: B024
         self,
         node_pattern: NodePattern,
         modules: dict[str, torch.nn.Module],
-        root_node_getter: Optional[Callable] = None,
+        root_node_getter: Callable | None = None,
         is_custom_module=False,
         is_standalone_module=False,
     ):
@@ -114,7 +113,7 @@ def _get_quantize_handler_cls(
             self,
             node_pattern: NodePattern,
             modules: dict[str, torch.nn.Module],
-            root_node_getter: Optional[Callable] = None,
+            root_node_getter: Callable | None = None,
         ):
             super().__init__(node_pattern, modules, root_node_getter)
             if num_tensor_args_to_observation_type:

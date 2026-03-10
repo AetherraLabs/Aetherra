@@ -2,20 +2,20 @@
 import dataclasses
 import operator
 import sys
+from collections.abc import Callable
 from enum import Enum
-from typing import Callable, Optional
 
 import torch
 
 from .. import cpp_builder, ir
 from ..cpu_vec_isa import (
-    pick_vec_isa,
     VecAMX,
     VecAVX2,
     VecAVX512,
     VecISA,
     VecNEON,
     VecSVE256,
+    pick_vec_isa,
 )
 from ..utils import IndentedBuffer, parallel_num_threads
 from ..virtualized import V
@@ -37,8 +37,7 @@ def get_restrict_keyword() -> str:
     if _IS_WINDOWS:
         # https://learn.microsoft.com/en-us/cpp/cpp/extension-restrict?view=msvc-170
         return "__restrict"
-    else:
-        return "__restrict__"
+    return "__restrict__"
 
 
 class CppMicroGemm:
@@ -231,7 +230,7 @@ class CppMicroGemmConfig:
     compute_dtype: torch.dtype
     vec_isa_cls: type[VecISA]
     register_blocking: GemmBlocking
-    extra_check: Optional[Callable[..., bool]] = None
+    extra_check: Callable[..., bool] | None = None
 
 
 micro_gemm_configs: dict[type[CppMicroGemm], list[CppMicroGemmConfig]] = {}
@@ -1277,8 +1276,7 @@ inline void {{kernel_name}}_amx_kernel_{{num_rows}}_{{num_columns}}(
     def get_b_layout(self):
         if self.input_dtype in [torch.uint8, torch.int8]:
             return LayoutType.VNNI4
-        else:
-            return LayoutType.VNNI2
+        return LayoutType.VNNI2
 
 
 # extra check for CppMicroBrgemm
@@ -1359,7 +1357,7 @@ class CppMicroBrgemm(CppMicroGemm):
 def check_woq_int4_extra(config, m, n, k, alpha, num_threads, **kwargs):
     if alpha != 1:
         return False
-    q_group_size = kwargs.get("q_group_size", None)
+    q_group_size = kwargs.get("q_group_size")
     assert q_group_size is not None
     if (
         q_group_size < 32
@@ -1887,7 +1885,7 @@ def create_micro_gemm(
     num_threads=-1,
     use_ref=True,
     q_group_size=None,
-) -> Optional[CppMicroGemm]:
+) -> CppMicroGemm | None:
     """
     Based on the provided info, try to find the config of the micro-kernel that would
     deliver the best performance in terms of lower latency for this case.
@@ -2005,7 +2003,6 @@ def create_micro_gemm(
             return CppMicroGemmRef(
                 name, input_dtype, input2_dtype, output_dtype, compute_dtype, alpha
             )
-        else:
-            return None
+        return None
     # TODO(jgong5): allow autotuning on choices of configs
     return create_from_config(*max(matched_configs, key=operator.itemgetter(0))[1:])

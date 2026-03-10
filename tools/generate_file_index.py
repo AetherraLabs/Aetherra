@@ -20,8 +20,8 @@ import argparse
 import os
 import re
 import sys
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional
 
 DEFAULT_INCLUDE_EXT = {".py", ".md", ".aether", ".json"}
 DEFAULT_EXCLUDE_DIRS = {
@@ -36,7 +36,7 @@ DEFAULT_EXCLUDE_DIRS = {
 TOP_LEVEL_ONLY = set()  # keep empty to allow full traversal
 
 
-def extract_python_summary(path: Path) -> Optional[str]:
+def extract_python_summary(path: Path) -> str | None:
     """Best-effort: return first line of top-level docstring or leading comment."""
     try:
         text = path.read_text(encoding="utf-8", errors="ignore")
@@ -83,8 +83,8 @@ def should_skip_dir(path: Path) -> bool:
     return name in DEFAULT_EXCLUDE_DIRS
 
 
-def collect_files(root: Path, include_ext: Iterable[str]) -> List[Path]:
-    files: List[Path] = []
+def collect_files(root: Path, include_ext: Iterable[str]) -> list[Path]:
+    files: list[Path] = []
     for dirpath, dirnames, filenames in os.walk(root):
         p = Path(dirpath)
         # prune excluded
@@ -98,9 +98,9 @@ def collect_files(root: Path, include_ext: Iterable[str]) -> List[Path]:
     return files
 
 
-def make_tree_lines(paths: List[Path], root: Path) -> List[str]:
+def make_tree_lines(paths: list[Path], root: Path) -> list[str]:
     # Build a nested map of directories to children
-    tree: Dict[str, Dict] = {}
+    tree: dict[str, dict] = {}
     for path in paths:
         rel = path.relative_to(root).as_posix()
         parts = rel.split("/")
@@ -112,11 +112,11 @@ def make_tree_lines(paths: List[Path], root: Path) -> List[str]:
                 cursor.setdefault("__files__", []).append(path)
             else:
                 cursor = cursor.setdefault(key, {})
-    lines: List[str] = []
+    lines: list[str] = []
 
-    def walk(node: Dict, prefix: str, base: Path):
+    def walk(node: dict, prefix: str, base: Path):
         # Folders first (sorted), then files
-        for name in sorted(k for k in node.keys() if k != "__files__"):
+        for name in sorted(k for k in node if k != "__files__"):
             lines.append(f"{prefix}{name}/")
             walk(node[name], prefix + "  ", base / name)
         for path in sorted(node.get("__files__", []), key=lambda p: p.name.lower()):
@@ -151,7 +151,7 @@ def main():
     }
 
     # Collect from important subtrees to keep scope relevant
-    candidates: List[Path] = []
+    candidates: list[Path] = []
     include_paths = [
         root / "Aetherra",
         root / "tools",

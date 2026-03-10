@@ -2,11 +2,10 @@
 # Standard library imports
 import csv
 import subprocess
-import sys
 
 # Read CSV and extract all unique labels
 labels = set()
-with open("aetherra_selfinc_issues.csv", "r", encoding="utf-8") as f:
+with open("aetherra_selfinc_issues.csv", encoding="utf-8") as f:
     reader = csv.DictReader(f)
     for row in reader:
         label_list = row["labels"].strip()

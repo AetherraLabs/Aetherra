@@ -9,14 +9,13 @@ Python polyfills for common builtins.
 # mypy: allow-untyped-defs
 
 import types
-from collections.abc import Iterable, MutableMapping, Sequence
+from collections.abc import Callable, Iterable, MutableMapping, Sequence
 from itertools import repeat as _repeat
-from typing import Any, Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 
 from ..utils import dict_keys
-
 
 if TYPE_CHECKING:
     # Load by torch._dynamo.polyfills.loader
@@ -24,11 +23,23 @@ if TYPE_CHECKING:
     # Put the submodules here to avoid circular imports
     from . import (
         builtins as builtins,
+    )
+    from . import (
         functools as functools,
+    )
+    from . import (
         itertools as itertools,
+    )
+    from . import (
         operator as operator,
+    )
+    from . import (
         os as os,
+    )
+    from . import (
         pytree as pytree,
+    )
+    from . import (
         sys as sys,
     )
 
@@ -93,7 +104,7 @@ def accumulate_grad(x, new_grad):
 def list_cmp(op: Callable[[Any, Any], bool], left: Sequence[Any], right: Sequence[Any]):
     """emulate `(1,2,3) > (1,2)` etc"""
     # Apply `op` to the first pair that differ
-    for a, b in zip(left, right):
+    for a, b in zip(left, right, strict=False):
         if a != b:
             return op(a, b)
 
@@ -250,7 +261,7 @@ def foreach_map_fn(*args):
         return op(*args[1:])
 
     out = []
-    for unpacked in zip(*new_args):
+    for unpacked in zip(*new_args, strict=False):
         out.append(op(*unpacked))
 
     return out

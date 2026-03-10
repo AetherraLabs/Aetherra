@@ -2,8 +2,9 @@
 # mypy: allow-untyped-defs
 import math as pymath
 import warnings
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, TypeVar
+from typing import Any, TypeVar
 
 from .triton_compat import (  # noqa: F401
     _log2,
@@ -13,7 +14,6 @@ from .triton_compat import (  # noqa: F401
     tl,
     triton,
 )
-
 
 _T = TypeVar("_T")
 _LOG_2_E: tl.constexpr = tl.constexpr(pymath.log2(pymath.e))
@@ -170,8 +170,7 @@ def max_with_index(value, index, dim):
 def exp(x, use_fast_math: tl.constexpr):
     if use_fast_math:
         return libdevice.exp2(x * _LOG_2_E)
-    else:
-        return math.exp(x)
+    return math.exp(x)
 
 
 @triton.jit

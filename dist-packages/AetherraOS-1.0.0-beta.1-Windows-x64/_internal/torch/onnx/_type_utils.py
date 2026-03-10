@@ -11,7 +11,6 @@ import torch
 from torch._C import _onnx as _C_onnx
 from torch.onnx import errors
 
-
 if typing.TYPE_CHECKING:
     # Hack to help mypy to recognize torch._C.Value
     from torch import _C  # noqa: F401
@@ -200,7 +199,7 @@ class JitScalarType(enum.IntEnum):
                 raise errors.OnnxExporterError(
                     "value must be either torch._C.Value or torch.Tensor objects."
                 )
-            elif not isinstance(default, JitScalarType):
+            if not isinstance(default, JitScalarType):
                 raise errors.OnnxExporterError(
                     "default value must be a JitScalarType object."
                 )

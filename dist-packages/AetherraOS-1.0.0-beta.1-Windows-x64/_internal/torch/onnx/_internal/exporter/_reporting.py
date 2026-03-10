@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 
 from torch.onnx._internal.exporter import _analysis, _registration, _verification
 
-
 if TYPE_CHECKING:
     import os
 

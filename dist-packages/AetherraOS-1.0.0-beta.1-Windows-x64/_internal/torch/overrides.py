@@ -27,9 +27,10 @@ import contextlib
 import functools
 import types
 import warnings
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from functools import wraps
-from typing import Any, Callable, Optional, TypeVar
+from typing import Any, TypeVar
+
 from typing_extensions import ParamSpec
 
 import torch
@@ -44,7 +45,6 @@ from torch._C import (
     _pop_torch_function_stack,
     _push_on_torch_function_stack,
 )
-
 
 __all__ = [
     "get_ignored_functions",
@@ -1595,7 +1595,7 @@ def wrap_torch_function(dispatcher: Callable):
 
 def _get_overloaded_args(
     relevant_args: Iterable[Any],
-    get_type_fn: Optional[Callable[[Any], type]] = None,
+    get_type_fn: Callable[[Any], type] | None = None,
 ) -> list[Any]:
     """Returns a list of arguments on which to call __torch_function__.
 
@@ -1831,11 +1831,11 @@ def _get_overridable_functions() -> tuple[
             if namespace is not torch.Tensor:
                 if func_name.startswith("__"):
                     continue
-                elif func_name.startswith("_"):
-                    ignore = True
-                elif func_name.endswith("_"):
-                    ignore = True
-                elif not func_name[0].islower():
+                if (
+                    func_name.startswith("_")
+                    or func_name.endswith("_")
+                    or not func_name[0].islower()
+                ):
                     ignore = True
                 elif func_name == "unique_dim":
                     continue
@@ -1869,9 +1869,8 @@ def _get_overridable_functions() -> tuple[
                         namespace, func.__name__
                     )
                     continue
-                else:
-                    overridable_funcs[func].append(func.__get__)
-                    continue
+                overridable_funcs[func].append(func.__get__)
+                continue
 
             if not callable(func):
                 continue

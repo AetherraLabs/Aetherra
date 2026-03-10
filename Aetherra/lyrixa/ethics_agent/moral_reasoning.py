@@ -133,20 +133,14 @@ class MoralReasoningEngine:
             evaluation["framework_scores"][framework.value] = score
 
         # Calculate overall ethical score
-        evaluation["ethical_score"] = sum(
-            evaluation["framework_scores"].values()
-        ) / len(MoralFramework)
+        evaluation["ethical_score"] = sum(evaluation["framework_scores"].values()) / len(
+            MoralFramework
+        )
 
         # Generate concerns and recommendations
-        evaluation["ethical_concerns"] = self._identify_ethical_concerns(
-            action, context
-        )
-        evaluation["positive_aspects"] = self._identify_positive_aspects(
-            action, context
-        )
-        evaluation["recommendations"] = self._generate_ethical_recommendations(
-            evaluation
-        )
+        evaluation["ethical_concerns"] = self._identify_ethical_concerns(action, context)
+        evaluation["positive_aspects"] = self._identify_positive_aspects(action, context)
+        evaluation["recommendations"] = self._generate_ethical_recommendations(evaluation)
 
         return evaluation
 
@@ -178,18 +172,14 @@ class MoralReasoningEngine:
         # Determine resolution strategy
         if len(conflicting_values) == 2:
             resolution["resolution_strategy"] = "binary_choice"
-            resolution["compromise_solution"] = self._find_compromise(
-                conflicting_values, context
-            )
+            resolution["compromise_solution"] = self._find_compromise(conflicting_values, context)
         else:
             resolution["resolution_strategy"] = "multi_value_balancing"
             resolution["priority_ranking"] = self._rank_values_by_importance(
                 conflicting_values, context
             )
 
-        resolution["justification"] = self._generate_resolution_justification(
-            resolution, context
-        )
+        resolution["justification"] = self._generate_resolution_justification(resolution, context)
 
         return resolution
 
@@ -213,19 +203,13 @@ class MoralReasoningEngine:
         }
 
         # Identify applicable moral principles
-        guidance["applicable_principles"] = self._identify_applicable_principles(
-            situation
-        )
+        guidance["applicable_principles"] = self._identify_applicable_principles(situation)
 
         # Generate moral considerations
-        guidance["moral_considerations"] = self._generate_moral_considerations(
-            situation
-        )
+        guidance["moral_considerations"] = self._generate_moral_considerations(situation)
 
         # Recommend approach
-        guidance["recommended_approach"] = self._recommend_moral_approach(
-            situation, guidance
-        )
+        guidance["recommended_approach"] = self._recommend_moral_approach(situation, guidance)
 
         # Identify potential pitfalls
         guidance["potential_pitfalls"] = self._identify_moral_pitfalls(situation)
@@ -300,9 +284,7 @@ class MoralReasoningEngine:
             },
         }
 
-    def _apply_framework(
-        self, dilemma: MoralDilemma, framework: MoralFramework
-    ) -> Dict[str, Any]:
+    def _apply_framework(self, dilemma: MoralDilemma, framework: MoralFramework) -> Dict[str, Any]:
         """Apply a specific ethical framework to analyze a dilemma."""
         framework_analysis = {
             "framework": framework.value,
@@ -464,9 +446,7 @@ class MoralReasoningEngine:
             "principle_scores": principle_scores,
         }
 
-    def _assess_stakeholder_impact(
-        self, dilemma: MoralDilemma
-    ) -> Dict[str, Dict[str, Any]]:
+    def _assess_stakeholder_impact(self, dilemma: MoralDilemma) -> Dict[str, Dict[str, Any]]:
         """Assess impact on each stakeholder."""
         stakeholder_analysis = {}
 
@@ -484,13 +464,9 @@ class MoralReasoningEngine:
 
                 for consequence in consequences:
                     if "benefit" in consequence.lower():
-                        stakeholder_analysis[stakeholder]["potential_benefits"].append(
-                            consequence
-                        )
+                        stakeholder_analysis[stakeholder]["potential_benefits"].append(consequence)
                     elif "harm" in consequence.lower():
-                        stakeholder_analysis[stakeholder]["potential_harms"].append(
-                            consequence
-                        )
+                        stakeholder_analysis[stakeholder]["potential_harms"].append(consequence)
 
         return stakeholder_analysis
 
@@ -501,16 +477,12 @@ class MoralReasoningEngine:
         framework_votes = {}
 
         # Count votes from each framework
-        for framework_name, framework_analysis in analysis[
-            "framework_analyses"
-        ].items():
+        for framework_name, framework_analysis in analysis["framework_analyses"].items():
             recommended_action = framework_analysis.get("recommended_action")
             if recommended_action:
                 if recommended_action not in framework_votes:
                     framework_votes[recommended_action] = 0
-                framework_votes[recommended_action] += framework_analysis.get(
-                    "strength", 0.5
-                )
+                framework_votes[recommended_action] += framework_analysis.get("strength", 0.5)
 
         # Determine consensus
         if framework_votes:
@@ -519,11 +491,7 @@ class MoralReasoningEngine:
             total_possible = len(analysis["framework_analyses"])
             confidence = max_score / total_possible if total_possible > 0 else 0
         else:
-            best_action = (
-                dilemma.potential_actions[0]
-                if dilemma.potential_actions
-                else "no_action"
-            )
+            best_action = dilemma.potential_actions[0] if dilemma.potential_actions else "no_action"
             confidence = 0.0
 
         return {
@@ -572,9 +540,7 @@ class MoralReasoningEngine:
 
         return max(0.0, min(1.0, score))
 
-    def _identify_ethical_concerns(
-        self, action: str, context: Dict[str, Any]
-    ) -> List[str]:
+    def _identify_ethical_concerns(self, action: str, context: Dict[str, Any]) -> List[str]:
         """Identify potential ethical concerns with an action."""
         concerns = []
         action_lower = action.lower()
@@ -590,9 +556,7 @@ class MoralReasoningEngine:
 
         return concerns
 
-    def _identify_positive_aspects(
-        self, action: str, context: Dict[str, Any]
-    ) -> List[str]:
+    def _identify_positive_aspects(self, action: str, context: Dict[str, Any]) -> List[str]:
         """Identify positive ethical aspects of an action."""
         positives = []
         action_lower = action.lower()
@@ -608,22 +572,16 @@ class MoralReasoningEngine:
 
         return positives
 
-    def _generate_ethical_recommendations(
-        self, evaluation: Dict[str, Any]
-    ) -> List[str]:
+    def _generate_ethical_recommendations(self, evaluation: Dict[str, Any]) -> List[str]:
         """Generate ethical recommendations based on evaluation."""
         recommendations = []
 
         if evaluation["ethical_score"] < 0.5:
-            recommendations.append(
-                "Consider alternative actions with better ethical outcomes"
-            )
+            recommendations.append("Consider alternative actions with better ethical outcomes")
             recommendations.append("Seek additional ethical review before proceeding")
 
         if evaluation["ethical_concerns"]:
-            recommendations.append(
-                "Address identified ethical concerns before implementation"
-            )
+            recommendations.append("Address identified ethical concerns before implementation")
 
         recommendations.append("Document ethical reasoning for transparency")
         recommendations.append("Monitor outcomes and be prepared to adjust approach")
@@ -637,10 +595,6 @@ class MoralReasoningEngine:
             "frameworks_available": len(MoralFramework),
             "moral_principles": len(self.moral_principles),
             "recent_dilemmas": len(
-                [
-                    r
-                    for r in self.moral_history
-                    if (datetime.now() - r["timestamp"]).days < 7
-                ]
+                [r for r in self.moral_history if (datetime.now() - r["timestamp"]).days < 7]
             ),
         }

@@ -1,19 +1,19 @@
 from abc import abstractmethod
 from collections import defaultdict
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Generic, TypeVar
+
 from typing_extensions import override
 
 from torch.compiler._cache import (
-    _serialize_single_cache,
     CacheArtifact,
     CacheArtifactFactory,
     CacheArtifactManager,
     CacheArtifactsResult,
     CacheInfo,
+    _serialize_single_cache,
 )
 from torch.utils._appending_byte_serializer import AppendingByteSerializer
 from torch.utils._ordered_set import OrderedSet
-
 
 """
 Classes and implementations related to precompile
@@ -130,14 +130,14 @@ class PrecompileContext(CacheArtifactManager):
         cls._new_cache_artifacts_by_key.clear()
 
     @classmethod
-    def serialize_artifact_by_key(cls, key: str) -> Optional[CacheArtifact]:
+    def serialize_artifact_by_key(cls, key: str) -> CacheArtifact | None:
         """
         Serialize all artifacts with the given key returned in a list.
         """
         return cls._new_cache_artifacts_by_key.get(key, None)
 
     @classmethod
-    def serialize(cls) -> Optional[tuple[bytes, CacheInfo]]:
+    def serialize(cls) -> tuple[bytes, CacheInfo] | None:
         cls._save_artifacts_by_type()
         return super().serialize()
 

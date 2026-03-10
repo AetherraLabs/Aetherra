@@ -3,11 +3,10 @@ Python polyfills for functools
 """
 
 import functools
-from collections.abc import Iterable
-from typing import Callable, TypeVar
+from collections.abc import Callable, Iterable
+from typing import TypeVar
 
 from ..decorators import substitute_in_graph
-
 
 __all__ = ["reduce"]
 

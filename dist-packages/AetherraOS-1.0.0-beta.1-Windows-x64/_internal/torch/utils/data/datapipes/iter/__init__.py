@@ -1,16 +1,28 @@
 from torch.utils.data.datapipes.iter.callable import (
     CollatorIterDataPipe as Collator,
+)
+from torch.utils.data.datapipes.iter.callable import (
     MapperIterDataPipe as Mapper,
 )
 from torch.utils.data.datapipes.iter.combinatorics import (
     SamplerIterDataPipe as Sampler,
+)
+from torch.utils.data.datapipes.iter.combinatorics import (
     ShufflerIterDataPipe as Shuffler,
 )
 from torch.utils.data.datapipes.iter.combining import (
     ConcaterIterDataPipe as Concater,
+)
+from torch.utils.data.datapipes.iter.combining import (
     DemultiplexerIterDataPipe as Demultiplexer,
+)
+from torch.utils.data.datapipes.iter.combining import (
     ForkerIterDataPipe as Forker,
+)
+from torch.utils.data.datapipes.iter.combining import (
     MultiplexerIterDataPipe as Multiplexer,
+)
+from torch.utils.data.datapipes.iter.combining import (
     ZipperIterDataPipe as Zipper,
 )
 from torch.utils.data.datapipes.iter.filelister import (
@@ -21,7 +33,11 @@ from torch.utils.data.datapipes.iter.fileopener import (
 )
 from torch.utils.data.datapipes.iter.grouping import (
     BatcherIterDataPipe as Batcher,
+)
+from torch.utils.data.datapipes.iter.grouping import (
     GrouperIterDataPipe as Grouper,
+)
+from torch.utils.data.datapipes.iter.grouping import (
     UnBatcherIterDataPipe as UnBatcher,
 )
 from torch.utils.data.datapipes.iter.routeddecoder import (
@@ -37,7 +53,6 @@ from torch.utils.data.datapipes.iter.streamreader import (
 from torch.utils.data.datapipes.iter.utils import (
     IterableWrapperIterDataPipe as IterableWrapper,
 )
-
 
 __all__ = [
     "Batcher",

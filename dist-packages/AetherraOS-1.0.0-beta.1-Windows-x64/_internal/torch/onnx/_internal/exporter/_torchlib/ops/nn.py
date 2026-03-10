@@ -5,11 +5,15 @@
 
 from __future__ import annotations
 
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from onnxscript.onnx_opset import (  # type: ignore[attr-defined]
     opset20 as op20,
+)
+from onnxscript.onnx_opset import (
     opset21 as op21,
+)
+from onnxscript.onnx_opset import (
     opset23 as op23,
 )
 
@@ -17,7 +21,6 @@ import torch
 from torch.onnx._internal._lazy_import import onnxscript_ir as ir
 from torch.onnx._internal.exporter._torchlib._tensor_typing import TFloat, TReal
 from torch.onnx._internal.exporter._torchlib._torchlib_registry import onnx_impl
-
 
 if TYPE_CHECKING:
     from onnxscript.values import Opset
@@ -41,8 +44,8 @@ def aten_gelu_opset20(
 def aten_group_norm(
     input: TFloat,
     num_groups: int,
-    weight: Optional[TFloat] = None,
-    bias: Optional[TFloat] = None,
+    weight: TFloat | None = None,
+    bias: TFloat | None = None,
     eps: float = 1e-05,
     cudnn_enabled: bool = True,
 ) -> TFloat:
@@ -65,10 +68,10 @@ def aten_scaled_dot_product_attention_23(
     query: TFloat,
     key: TFloat,
     value: TFloat,
-    attn_mask: Optional[TFloat] = None,
+    attn_mask: TFloat | None = None,
     dropout_p: float = 0.0,
     is_causal: bool = False,
-    scale: Optional[float] = None,
+    scale: float | None = None,
     enable_gqa: bool = False,
 ) -> TFloat:
     """scaled_dot_product_attention(Tensor query, Tensor key, Tensor value, Tensor? attn_mask=None, float dropout_p=0.0, bool is_causal=False, *, float? scale=None, bool enable_gqa=False) -> Tensor

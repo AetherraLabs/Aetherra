@@ -2,7 +2,6 @@
 # mypy: disable-error-code="attr-defined,name-defined"
 from __future__ import annotations
 
-
 __all__ = ["ONNXProgram"]
 
 import contextlib
@@ -13,13 +12,14 @@ import os
 import tempfile
 import textwrap
 import warnings
-from typing import Any, Callable, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 import torch
-from torch.onnx._internal._lazy_import import onnx, onnxscript_apis, onnxscript_ir as ir
+from torch.onnx._internal._lazy_import import onnx, onnxscript_apis
+from torch.onnx._internal._lazy_import import onnxscript_ir as ir
 from torch.onnx._internal.exporter import _dynamic_shapes, _ir_passes
 from torch.utils import _pytree
-
 
 # NOTE: DO NOT import module from torch.onnx._internal to this module in the global scope
 # because ONNXProgram is exposed to the public API
@@ -211,7 +211,7 @@ ONNXProgram(
         # We don't expect non-tensor as inputs
         ort_input = {
             k.name: _to_ort_value(v)
-            for k, v in zip(self.model.graph.inputs, flatten_args)
+            for k, v in zip(self.model.graph.inputs, flatten_args, strict=False)
         }
         run_options = ort.RunOptions()
         run_options.log_severity_level = 3  # 3: Error

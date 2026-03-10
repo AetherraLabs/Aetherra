@@ -14,7 +14,6 @@ from ._common_operator_config_utils import (
 )
 from .backend_config import BackendConfig, DTypeConfig, DTypeWithConstraints
 
-
 __all__ = [
     "get_qnnpack_backend_config",
 ]

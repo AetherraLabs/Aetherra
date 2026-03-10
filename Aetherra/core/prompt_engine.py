@@ -50,16 +50,16 @@ def recall(query_dict, limit=None) -> List[Dict]:
 
         # Check each query parameter
         for key, value in query_dict.items():
-            if key == "type" and memory.get("type") != value:
-                match = False
-                break
-            elif key == "user_id" and memory.get("user_id") != value:
-                match = False
-                break
-            elif key == "timestamp_gte" and memory.get("timestamp", 0) < value:
-                match = False
-                break
-            elif key == "timestamp_lte" and memory.get("timestamp", 0) > value:
+            if (
+                key == "type"
+                and memory.get("type") != value
+                or key == "user_id"
+                and memory.get("user_id") != value
+                or key == "timestamp_gte"
+                and memory.get("timestamp", 0) < value
+                or key == "timestamp_lte"
+                and memory.get("timestamp", 0) > value
+            ):
                 match = False
                 break
 
@@ -197,9 +197,7 @@ try:
     search_memory_one = aetherra_search_memory_one
     get_system_status = aetherra_get_system_status
 except ImportError:
-    logger.info(
-        "[TOOL] Aetherra core modules not available, using local implementations"
-    )
+    logger.info("[TOOL] Aetherra core modules not available, using local implementations")
     AETHERRA_AVAILABLE = False
     # Local implementations are already defined above
 
@@ -257,9 +255,7 @@ Your Plugin Editor is a native PySide6 tab with the following ACTUAL features:
 
     # 🔍 4. User Preferences and Learning
     try:
-        user_profile = (
-            search_memory_one({"type": "user_profile", "user_id": user_id}) or {}
-        )
+        user_profile = search_memory_one({"type": "user_profile", "user_id": user_id}) or {}
     except Exception as e:
         logger.warning(f"Could not retrieve user profile: {e}")
         user_profile = {}
@@ -299,10 +295,7 @@ Your Plugin Editor is a native PySide6 tab with the following ACTUAL features:
         memory_context = ""
         if relevant_memories:
             memory_context = "Recent context from our interactions: " + "; ".join(
-                [
-                    mem.get("summary", mem.get("content", ""))[:100]
-                    for mem in relevant_memories
-                ]
+                [mem.get("summary", mem.get("content", ""))[:100] for mem in relevant_memories]
             )
     except Exception as e:
         logger.warning(f"Could not retrieve memories: {e}")
@@ -453,9 +446,7 @@ class LyrixaTimeAwareness:
             greeting_style = "Late night support mode."
 
         # Weekend vs weekday
-        weekend_modifier = (
-            "relaxed" if day_of_week in ["Saturday", "Sunday"] else "focused"
-        )
+        weekend_modifier = "relaxed" if day_of_week in ["Saturday", "Sunday"] else "focused"
 
         return {
             "time_mood": time_mood,
@@ -482,17 +473,12 @@ class LyrixaLearningEngine:
 
         # Analyze recent interactions (simplified)
         total_length = sum(
-            len(interaction.get("user_message", ""))
-            for interaction in recent_interactions
+            len(interaction.get("user_message", "")) for interaction in recent_interactions
         )
-        avg_length = (
-            total_length / len(recent_interactions) if recent_interactions else 50
-        )
+        avg_length = total_length / len(recent_interactions) if recent_interactions else 50
 
         question_count = sum(
-            1
-            for interaction in recent_interactions
-            if "?" in interaction.get("user_message", "")
+            1 for interaction in recent_interactions if "?" in interaction.get("user_message", "")
         )
 
         technical_keywords = sum(
@@ -512,12 +498,8 @@ class LyrixaLearningEngine:
         else:
             style = "standard"
 
-        complexity = (
-            "high" if technical_keywords > len(recent_interactions) * 0.5 else "medium"
-        )
-        humor_preference = (
-            "witty" if question_count > len(recent_interactions) * 0.3 else "subtle"
-        )
+        complexity = "high" if technical_keywords > len(recent_interactions) * 0.5 else "medium"
+        humor_preference = "witty" if question_count > len(recent_interactions) * 0.3 else "subtle"
 
         return {
             "style": style,
@@ -530,9 +512,7 @@ class LyrixaLearningEngine:
         }
 
 
-def get_contextual_personality_layer(
-    user_id: str, system_summary: Dict[str, Any]
-) -> str:
+def get_contextual_personality_layer(user_id: str, system_summary: Dict[str, Any]) -> str:
     """Generate a contextual personality layer based on current conditions"""
 
     # Initialize engines
@@ -552,17 +532,14 @@ def get_contextual_personality_layer(
                 {
                     "type": "user_interaction",
                     "user_id": user_id,
-                    "timestamp_gte": datetime.now().timestamp()
-                    - 7 * 86400,  # Last 7 days
+                    "timestamp_gte": datetime.now().timestamp() - 7 * 86400,  # Last 7 days
                 },
                 limit=10,
             )
             or []
         )
 
-        user_style = learning_engine.analyze_user_interaction_style(
-            user_id, recent_interactions
-        )
+        user_style = learning_engine.analyze_user_interaction_style(user_id, recent_interactions)
     except Exception as e:
         logger.warning(f"Could not retrieve user interactions: {e}")
         user_style = {"style": "standard", "complexity": "medium", "humor": "subtle"}

@@ -402,29 +402,28 @@ class AdvancedProjectAnalyzer:
         if filepath.suffix == ".md":
             if name.startswith("readme"):
                 return "Project documentation (README)"
-            else:
-                return "Documentation file"
+            return "Documentation file"
 
         # Based on Python analysis
         if analysis.get("language") == "Python":
             if analysis.get("classes"):
                 return f"Python module with {len(analysis['classes'])} class(es)"
-            elif analysis.get("functions"):
+            if analysis.get("functions"):
                 return f"Python module with {len(analysis['functions'])} function(s)"
-            elif analysis.get("is_package"):
+            if analysis.get("is_package"):
                 return "Python package initialization"
 
         # Based on directory location
         if "api" in path_str:
             return "API-related functionality"
-        elif "gui" in path_str or "ui" in path_str:
+        if "gui" in path_str or "ui" in path_str:
             return "User interface component"
-        elif "core" in path_str:
+        if "core" in path_str:
             return "Core system functionality"
-        elif "util" in path_str or "helper" in path_str:
+        if "util" in path_str or "helper" in path_str:
             return "Utility/helper functions"
 
-        return f'{analysis.get("language", "File")} source file'
+        return f"{analysis.get('language', 'File')} source file"
 
     def calculate_file_hash(self, filepath):
         """Calculate SHA256 hash of file content"""
@@ -438,7 +437,7 @@ class AdvancedProjectAnalyzer:
         """Calculate the depth of a nested dictionary"""
         if isinstance(d, dict) and d:
             return 1 + max(self.calculate_dict_depth(v) for v in d.values())
-        elif isinstance(d, list) and d:
+        if isinstance(d, list) and d:
             return max(
                 self.calculate_dict_depth(item)
                 for item in d
@@ -663,19 +662,19 @@ class AdvancedProjectAnalyzer:
         # Context-based inference
         if "aetherra" in name:
             return "Aetherra OS core component"
-        elif "lyrixa" in name:
+        if "lyrixa" in name:
             return "Lyrixa AI assistant component"
-        elif "intelligence" in name or "ai" in name:
+        if "intelligence" in name or "ai" in name:
             return "Artificial intelligence and ML components"
-        elif "memory" in name:
+        if "memory" in name:
             return "Memory management and storage systems"
-        elif "quantum" in name:
+        if "quantum" in name:
             return "Quantum computing and advanced algorithms"
-        elif "ethics" in name:
+        if "ethics" in name:
             return "Ethics and safety systems"
-        elif "web" in name:
+        if "web" in name:
             return "Web interface and server components"
-        elif "agent" in name:
+        if "agent" in name:
             return "Agent-based systems and AI agents"
 
         return f"Specialized directory for {name} functionality"

@@ -70,9 +70,7 @@ class CoreToolsPlugin:
             with open(file_path, encoding=encoding) as f:
                 content = f.read()
 
-            self._log_operation(
-                "read_file", {"file_path": file_path, "size": len(content)}
-            )
+            self._log_operation("read_file", {"file_path": file_path, "size": len(content)})
             return content
 
         except Exception as e:
@@ -88,9 +86,7 @@ class CoreToolsPlugin:
             with open(file_path, "w", encoding=encoding) as f:
                 f.write(content)
 
-            self._log_operation(
-                "write_file", {"file_path": file_path, "size": len(content)}
-            )
+            self._log_operation("write_file", {"file_path": file_path, "size": len(content)})
             return f"Successfully wrote {len(content)} characters to {file_path}"
 
         except Exception as e:
@@ -103,20 +99,14 @@ class CoreToolsPlugin:
             with open(file_path, "a", encoding=encoding) as f:
                 f.write(content)
 
-            self._log_operation(
-                "append_file", {"file_path": file_path, "size": len(content)}
-            )
+            self._log_operation("append_file", {"file_path": file_path, "size": len(content)})
             return f"Successfully appended {len(content)} characters to {file_path}"
 
         except Exception as e:
-            self._log_operation(
-                "append_file", {"file_path": file_path, "error": str(e)}
-            )
+            self._log_operation("append_file", {"file_path": file_path, "error": str(e)})
             raise Exception(f"Failed to append to file {file_path}: {e}") from e
 
-    def list_files(
-        self, directory: str, pattern: str = "*", recursive: bool = False
-    ) -> List[str]:
+    def list_files(self, directory: str, pattern: str = "*", recursive: bool = False) -> List[str]:
         """List files in a directory"""
         try:
             path_obj = pathlib.Path(directory)
@@ -163,23 +153,17 @@ class CoreToolsPlugin:
         try:
             if os.path.isfile(file_path):
                 os.remove(file_path)
-                self._log_operation(
-                    "delete_file", {"file_path": file_path, "type": "file"}
-                )
+                self._log_operation("delete_file", {"file_path": file_path, "type": "file"})
                 return f"File deleted: {file_path}"
             elif os.path.isdir(file_path):
                 shutil.rmtree(file_path)
-                self._log_operation(
-                    "delete_file", {"file_path": file_path, "type": "directory"}
-                )
+                self._log_operation("delete_file", {"file_path": file_path, "type": "directory"})
                 return f"Directory deleted: {file_path}"
             else:
                 return f"Path not found: {file_path}"
 
         except Exception as e:
-            self._log_operation(
-                "delete_file", {"file_path": file_path, "error": str(e)}
-            )
+            self._log_operation("delete_file", {"file_path": file_path, "error": str(e)})
             raise Exception(f"Failed to delete {file_path}: {e}") from e
 
     def copy_file(self, source: str, destination: str) -> str:
@@ -189,9 +173,7 @@ class CoreToolsPlugin:
             os.makedirs(os.path.dirname(destination), exist_ok=True)
 
             shutil.copy2(source, destination)
-            self._log_operation(
-                "copy_file", {"source": source, "destination": destination}
-            )
+            self._log_operation("copy_file", {"source": source, "destination": destination})
             return f"File copied from {source} to {destination}"
 
         except Exception as e:
@@ -199,9 +181,7 @@ class CoreToolsPlugin:
                 "copy_file",
                 {"source": source, "destination": destination, "error": str(e)},
             )
-            raise Exception(
-                f"Failed to copy file from {source} to {destination}: {e}"
-            ) from e
+            raise Exception(f"Failed to copy file from {source} to {destination}: {e}") from e
 
     def move_file(self, source: str, destination: str) -> str:
         """Move a file"""
@@ -210,9 +190,7 @@ class CoreToolsPlugin:
             os.makedirs(os.path.dirname(destination), exist_ok=True)
 
             shutil.move(source, destination)
-            self._log_operation(
-                "move_file", {"source": source, "destination": destination}
-            )
+            self._log_operation("move_file", {"source": source, "destination": destination})
             return f"File moved from {source} to {destination}"
 
         except Exception as e:
@@ -220,9 +198,7 @@ class CoreToolsPlugin:
                 "move_file",
                 {"source": source, "destination": destination, "error": str(e)},
             )
-            raise Exception(
-                f"Failed to move file from {source} to {destination}: {e}"
-            ) from e
+            raise Exception(f"Failed to move file from {source} to {destination}: {e}") from e
 
     def file_info(self, file_path: str) -> Dict[str, Any]:
         """Get detailed information about a file"""
@@ -267,17 +243,13 @@ class CoreToolsPlugin:
 
                         for i, line in enumerate(lines, 1):
                             if search_term.lower() in line.lower():
-                                matching_lines.append(
-                                    {"line_number": i, "content": line.strip()}
-                                )
+                                matching_lines.append({"line_number": i, "content": line.strip()})
 
                         results.append(
                             {
                                 "file": file_path,
                                 "matches": len(matching_lines),
-                                "lines": matching_lines[
-                                    :10
-                                ],  # Limit to first 10 matches
+                                "lines": matching_lines[:10],  # Limit to first 10 matches
                             }
                         )
 
@@ -297,9 +269,7 @@ class CoreToolsPlugin:
             return results
 
         except Exception as e:
-            self._log_operation(
-                "search_files", {"directory": directory, "error": str(e)}
-            )
+            self._log_operation("search_files", {"directory": directory, "error": str(e)})
             raise Exception(f"Failed to search files in {directory}: {e}") from e
 
     def calculate_hash(self, file_path: str, algorithm: str = "sha256") -> str:
@@ -313,6 +283,7 @@ class CoreToolsPlugin:
         try:
             algo = algorithm.lower()
             from typing import Any as _Any  # local alias to avoid import pollution
+
             hasher: _Any
             if algo == "sha256":
                 hasher = hashlib.sha256()
@@ -332,15 +303,11 @@ class CoreToolsPlugin:
                     hasher.update(chunk)
 
             hash_value: str = str(hasher.hexdigest())
-            self._log_operation(
-                "calculate_hash", {"file_path": file_path, "algorithm": algorithm}
-            )
+            self._log_operation("calculate_hash", {"file_path": file_path, "algorithm": algorithm})
             return hash_value
 
         except Exception as e:
-            self._log_operation(
-                "calculate_hash", {"file_path": file_path, "error": str(e)}
-            )
+            self._log_operation("calculate_hash", {"file_path": file_path, "error": str(e)})
             raise Exception(f"Failed to calculate hash for {file_path}: {e}") from e
 
     # Data Format Operations
@@ -382,9 +349,7 @@ class CoreToolsPlugin:
             self._log_operation("read_csv", {"file_path": file_path, "error": str(e)})
             raise Exception(f"Failed to read CSV from {file_path}: {e}") from e
 
-    def write_csv(
-        self, file_path: str, data: List[Dict[str, Any]], delimiter: str = ","
-    ) -> str:
+    def write_csv(self, file_path: str, data: List[Dict[str, Any]], delimiter: str = ",") -> str:
         """Write data to a CSV file"""
         try:
             if not data:
@@ -397,9 +362,7 @@ class CoreToolsPlugin:
                 writer.writeheader()
                 writer.writerows(data)
 
-            self._log_operation(
-                "write_csv", {"file_path": file_path, "rows": len(data)}
-            )
+            self._log_operation("write_csv", {"file_path": file_path, "rows": len(data)})
             return f"Successfully wrote {len(data)} rows to {file_path}"
 
         except Exception as e:
@@ -424,9 +387,7 @@ class CoreToolsPlugin:
             return f"Compressed {len(file_paths)} files to {archive_path}"
 
         except Exception as e:
-            self._log_operation(
-                "compress_files", {"archive_path": archive_path, "error": str(e)}
-            )
+            self._log_operation("compress_files", {"archive_path": archive_path, "error": str(e)})
             raise Exception(f"Failed to compress files to {archive_path}: {e}") from e
 
     def extract_archive(self, archive_path: str, extract_to: str) -> str:
@@ -447,9 +408,7 @@ class CoreToolsPlugin:
             return f"Extracted {file_count} files to {extract_to}"
 
         except Exception as e:
-            self._log_operation(
-                "extract_archive", {"archive_path": archive_path, "error": str(e)}
-            )
+            self._log_operation("extract_archive", {"archive_path": archive_path, "error": str(e)})
             raise Exception(f"Failed to extract archive {archive_path}: {e}") from e
 
     # Data Processing Operations
@@ -457,9 +416,7 @@ class CoreToolsPlugin:
         """Parse text using regular expressions"""
         try:
             matches = re.findall(pattern, text, re.MULTILINE | re.IGNORECASE)
-            self._log_operation(
-                "parse_text", {"pattern": pattern, "matches": len(matches)}
-            )
+            self._log_operation("parse_text", {"pattern": pattern, "matches": len(matches)})
             return matches
 
         except Exception as e:
@@ -481,9 +438,7 @@ class CoreToolsPlugin:
         except Exception as e:
             raise Exception(f"Failed to format data as {format_type}: {e}") from e
 
-    def validate_data(
-        self, data: Any, validation_rules: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def validate_data(self, data: Any, validation_rules: Dict[str, Any]) -> Dict[str, Any]:
         """Validate data against rules"""
         try:
             results: Dict[str, Any] = {"valid": True, "errors": [], "warnings": []}
@@ -528,9 +483,7 @@ class CoreToolsPlugin:
         except Exception as e:
             raise Exception(f"Failed to transform data: {e}") from e
 
-    def filter_data(
-        self, data: List[Any], filter_func: str, value: Any = None
-    ) -> List[Any]:
+    def filter_data(self, data: List[Any], filter_func: str, value: Any = None) -> List[Any]:
         """Filter data using various criteria"""
         try:
             if filter_func == "contains" and value:
@@ -610,9 +563,7 @@ class CoreToolsPlugin:
             "available_actions": self.available_actions,
             "temp_directory": self.temp_dir,
             "operations_performed": len(self.operation_history),
-            "recent_operations": self.operation_history[-5:]
-            if self.operation_history
-            else [],
+            "recent_operations": self.operation_history[-5:] if self.operation_history else [],
         }
 
     # Private helper methods

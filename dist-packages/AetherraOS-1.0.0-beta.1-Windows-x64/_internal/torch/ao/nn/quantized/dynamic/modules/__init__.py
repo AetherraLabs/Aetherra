@@ -7,8 +7,7 @@ from .conv import (
     ConvTranspose3d,
 )
 from .linear import Linear
-from .rnn import GRU, GRUCell, LSTM, LSTMCell, RNNCell
-
+from .rnn import GRU, LSTM, GRUCell, LSTMCell, RNNCell
 
 __all__ = [
     "Linear",

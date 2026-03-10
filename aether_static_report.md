@@ -2,7 +2,7 @@
 
 Root: D:\Aetherra Project
 Files found: 65
-Profile: prod
+Profile: test
 
 ## Discovered .aether Files
 - D:\Aetherra Project\Aetherra\aetherra_core\system\agent_diagnostics.aether
@@ -124,19 +124,19 @@ Profile: prod
 - D:\Aetherra Project\lyrixa_system_check.aether: OK
 - D:\Aetherra Project\self_organizer.aether: OK
 - D:\Aetherra Project\test_ai_os.aether: OK
-- D:\Aetherra Project\workflows\batch_processing_loop.aether: FAIL (signature mismatch)
-- D:\Aetherra Project\workflows\health_check_conditional.aether: FAIL (signature mismatch)
+- D:\Aetherra Project\workflows\batch_processing_loop.aether: OK
+- D:\Aetherra Project\workflows\health_check_conditional.aether: OK
 - D:\Aetherra Project\workflows\hello_plugin_demo.aether: OK
-- D:\Aetherra Project\workflows\ingest_safe_generated.aether: FAIL (missing signature header)
-- D:\Aetherra Project\workflows\knowledge_import.aether: FAIL (missing signature header)
-- D:\Aetherra Project\workflows\night_cycle_enhanced.aether: FAIL (missing signature header)
+- D:\Aetherra Project\workflows\ingest_safe_generated.aether: OK
+- D:\Aetherra Project\workflows\knowledge_import.aether: OK
+- D:\Aetherra Project\workflows\night_cycle_enhanced.aether: OK
 - D:\Aetherra Project\workflows\on_error_chain_demo.aether: OK
 - D:\Aetherra Project\workflows\parallel_workflow_demo.aether: OK
 - D:\Aetherra Project\workflows\plugin_chain_demo.aether: OK
-- D:\Aetherra Project\workflows\plugin_chain_workflow.aether: FAIL (signature mismatch)
-- D:\Aetherra Project\workflows\storm_demo.aether: FAIL (missing signature header)
+- D:\Aetherra Project\workflows\plugin_chain_workflow.aether: OK
+- D:\Aetherra Project\workflows\storm_demo.aether: OK
 - D:\Aetherra Project\workflows\system_readiness.aether: OK
-- D:\Aetherra Project\workflows\teach_lyrixa.aether: FAIL (missing signature header)
+- D:\Aetherra Project\workflows\teach_lyrixa.aether: OK
 
 ## Static Risk Analysis
 Total risk score: 4

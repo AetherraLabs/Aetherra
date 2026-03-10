@@ -291,7 +291,7 @@ class PruningContainer(BasePruningMethod):
         # check that we're adding a pruning method to the container
         if not isinstance(method, BasePruningMethod) and method is not None:
             raise TypeError(f"{type(method)} is not a BasePruningMethod subclass")
-        elif method is not None and self._tensor_name != method._tensor_name:
+        if method is not None and self._tensor_name != method._tensor_name:
             raise ValueError(
                 "Can only add pruning methods acting on "
                 f"the parameter named '{self._tensor_name}' to PruningContainer {self}."
@@ -1334,8 +1334,7 @@ def _compute_nparams_toprune(amount, tensor_size):
     # incorrect type already checked in _validate_pruning_amount_init
     if isinstance(amount, numbers.Integral):
         return amount
-    else:
-        return round(amount * tensor_size)
+    return round(amount * tensor_size)
 
 
 def _validate_pruning_dim(t, dim):

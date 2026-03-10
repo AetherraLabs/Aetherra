@@ -6,7 +6,6 @@
 Test script to demonstrate Lyrixa's Multi-AI Fallback System
 """
 
-
 # Standard library imports
 import sys
 from pathlib import Path
@@ -78,12 +77,11 @@ def test_ai_fallback():
 
             if any(word in message_lower for word in ["hello", "hi", "hey"]):
                 return "Hello! I'm feeling neutral right now with 80% energy. How can I help you?"
-            elif "how are you" in message_lower:
+            if "how are you" in message_lower:
                 return "I'm doing well! My current emotional state is neutral and my energy level is at 80%."
-            elif "fallback" in message_lower or "ai" in message_lower:
+            if "fallback" in message_lower or "ai" in message_lower:
                 return f"I have {len(available_models)} AI models configured with intelligent fallback capabilities!"
-            else:
-                return "That's interesting! My neutral state is helping me process your message. What would you like to explore?"
+            return "That's interesting! My neutral state is helping me process your message. What would you like to explore?"
 
         test_message = "Hello Lyrixa! How are you feeling today?"
         response = generate_local_fallback(test_message)

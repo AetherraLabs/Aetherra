@@ -85,9 +85,7 @@ class SelfEvaluationAgent(AgentBase):
             metadata={"evaluation_id": evaluation_id},
         )
 
-    async def _generate_improvement_plan(
-        self, context: Dict[str, Any]
-    ) -> AgentResponse:
+    async def _generate_improvement_plan(self, context: Dict[str, Any]) -> AgentResponse:
         """Generate improvement plan based on evaluations"""
         result_text = "Improvement Plan:\n\n"
         result_text += "🎯 Recommended Improvements:\n"
@@ -127,17 +125,11 @@ class SelfEvaluationAgent(AgentBase):
             metadata={"metrics": self.performance_metrics},
         )
 
-    async def _learn_from_feedback(
-        self, input_text: str, context: Dict[str, Any]
-    ) -> AgentResponse:
+    async def _learn_from_feedback(self, input_text: str, context: Dict[str, Any]) -> AgentResponse:
         """Learn from user feedback"""
         input_lower = input_text.lower()
 
-        if (
-            "good" in input_lower
-            or "excellent" in input_lower
-            or "great" in input_lower
-        ):
+        if "good" in input_lower or "excellent" in input_lower or "great" in input_lower:
             sentiment = "positive"
             self.performance_metrics["user_satisfaction"] = min(
                 1.0, self.performance_metrics["user_satisfaction"] + 0.01
@@ -154,9 +146,7 @@ class SelfEvaluationAgent(AgentBase):
         result_text += f"• Sentiment: {sentiment}\n"
         result_text += f"• Feedback: {input_text}\n"
         result_text += "• Impact: Updated user satisfaction metric\n\n"
-        result_text += (
-            "I use this feedback to continuously improve my responses and performance."
-        )
+        result_text += "I use this feedback to continuously improve my responses and performance."
 
         return AgentResponse(
             content=result_text,

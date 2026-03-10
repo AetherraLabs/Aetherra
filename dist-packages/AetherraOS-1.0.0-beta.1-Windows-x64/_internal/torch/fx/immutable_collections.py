@@ -1,20 +1,18 @@
 from collections.abc import Iterable
-from typing import Any, NoReturn, TypeVar
-from typing_extensions import Self
+from typing import Any, NoReturn, Self, TypeVar
 
 from torch.utils._pytree import (
+    Context,
     _dict_flatten,
     _dict_flatten_with_keys,
     _dict_unflatten,
     _list_flatten,
     _list_flatten_with_keys,
     _list_unflatten,
-    Context,
     register_pytree_node,
 )
 
 from ._compatibility import compatibility
-
 
 __all__ = ["immutable_list", "immutable_dict"]
 

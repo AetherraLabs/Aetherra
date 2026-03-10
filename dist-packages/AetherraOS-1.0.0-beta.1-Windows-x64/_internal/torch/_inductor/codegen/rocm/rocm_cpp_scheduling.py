@@ -11,7 +11,6 @@ from ...virtualized import V
 from ..common import IndentedBuffer
 from .rocm_template_buffer import ROCmTemplateBuffer
 
-
 log = logging.getLogger(__name__)
 
 

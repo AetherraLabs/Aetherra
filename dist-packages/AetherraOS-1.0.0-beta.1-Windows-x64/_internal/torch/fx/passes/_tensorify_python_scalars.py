@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Any, Union
+from typing import Any
 
 from sympy import Integer, Number, Symbol
 from sympy.logic.boolalg import BooleanAtom
@@ -18,9 +18,9 @@ from torch._subclasses.fake_tensor import FakeTensor
 from torch._utils_internal import justknobs_check
 from torch.fx._utils import lazy_format_graph_code
 from torch.fx.experimental.symbolic_shapes import (  # noqa: TCH001
+    ShapeEnv,
     guard_scalar,
     has_free_symbols,
-    ShapeEnv,
 )
 from torch.fx.graph_module import GraphModule  # noqa: TCH001
 
@@ -29,8 +29,7 @@ from torch.fx.passes.runtime_assert import _get_sym_val
 from torch.fx.proxy import MetaProxy
 from torch.utils._sympy.interp import _run_sympy_handler, sympy_interp
 from torch.utils._sympy.reference import TensorReferenceAnalysis
-from torch.utils._sympy.symbol import symbol_is_type, SymT
-
+from torch.utils._sympy.symbol import SymT, symbol_is_type
 
 __all__: list[str] = []
 
@@ -117,7 +116,7 @@ def tensorify_python_scalars(
     else:
         knob = justknobs_check("pytorch/compiler:tensorify_python_scalars")
     if not knob:
-        return None
+        return
 
     graph = gm.graph
     tracer = fx.proxy.GraphAppendingTracer(graph)
@@ -132,8 +131,7 @@ def tensorify_python_scalars(
         if node.op != "placeholder":
             first_non_placeholder = node
             break
-        else:
-            placeholders.add(node)
+        placeholders.add(node)
 
     Analysis = TensorReferenceAnalysis
 
@@ -152,7 +150,7 @@ def tensorify_python_scalars(
         # cache constants, why not
         if isinstance(expr, (Integer, Number, BooleanAtom)):
             dtype = None
-            c: Union[bool, int, float]
+            c: bool | int | float
             if isinstance(expr, BooleanAtom):
                 dtype = torch.bool
                 c = bool(expr)

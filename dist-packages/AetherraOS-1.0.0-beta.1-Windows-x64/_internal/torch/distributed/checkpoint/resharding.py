@@ -1,6 +1,5 @@
 from torch.distributed.checkpoint.metadata import ChunkStorageMetadata
 
-
 __all__: list[str] = []
 
 
@@ -46,6 +45,7 @@ def _shards_get_overlap_region_wrt_saved_tensor(
             current_shard.offsets,
             saved_shard.sizes,
             current_shard.sizes,
+            strict=False,
         )
     ):
         min_range_end = min(

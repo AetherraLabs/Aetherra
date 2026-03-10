@@ -31,7 +31,8 @@ import logging
 import os
 import os.path
 import re
-from typing import Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+
 from typing_extensions import override
 
 import torch
@@ -44,14 +45,13 @@ from torch.compiler._cache import (
 from torch.utils._triton import has_triton
 
 from ..remote_cache import (
-    create_cache,
     JsonDataTy,
     RemoteCache,
     RemoteCacheBackend,
     RemoteCacheJsonSerde,
+    create_cache,
 )
-from .triton_compat import Config, HAS_WARP_SPEC
-
+from .triton_compat import HAS_WARP_SPEC, Config
 
 if TYPE_CHECKING:
     from ..remote_cache import Sample
@@ -115,22 +115,21 @@ class AutotuneCacheArtifact(CacheArtifact):
 @dataclasses.dataclass
 class AutotuneCache:
     configs_hash: str
-    local_cache: Optional[tuple[RemoteCache[JsonDataTy], str]] = None
-    remote_cache: Optional[tuple[RemoteCache[JsonDataTy], str]] = None
+    local_cache: tuple[RemoteCache[JsonDataTy], str] | None = None
+    remote_cache: tuple[RemoteCache[JsonDataTy], str] | None = None
 
     # Create a AutotuneCache. Returns None if none of the caches can be used.
     @staticmethod
     def create(
         inductor_meta: _InductorMetaTy, filename: str, configs_hash: str
-    ) -> Optional[AutotuneCache]:
+    ) -> AutotuneCache | None:
         cache = AutotuneCache(configs_hash)
         key = AutotuneCache._prepare_key(filename)
         cache._setup_local_cache(inductor_meta, os.path.dirname(filename), key)
         cache._setup_remote_autotune_cache(inductor_meta, key)
         if cache.local_cache or cache.remote_cache:
             return cache
-        else:
-            return None
+        return None
 
     @staticmethod
     def _prepare_key(filename: str) -> str:
@@ -141,7 +140,7 @@ class AutotuneCache:
         return hashlib.sha256(key.encode("utf-8")).hexdigest()
 
     # Read the best config options from the most local cache and return it.
-    def _read(self) -> Optional[dict[str, JsonDataTy]]:
+    def _read(self) -> dict[str, JsonDataTy] | None:
         if local_cache := self.local_cache:
             cache, key = local_cache
             if best_config := cache.get(key):
@@ -160,7 +159,7 @@ class AutotuneCache:
     # which `configs` represents that option.
     def read_best(
         self, inductor_meta: _InductorMetaTy, configs: list[Config]
-    ) -> Optional[Config]:
+    ) -> Config | None:
         if best := self._read():
             return _load_cached_autotuning(
                 best, self.configs_hash, configs, inductor_meta
@@ -271,7 +270,7 @@ class AutotuneCache:
         config: Config,
         time_taken_ns: int,
         found_by_coordesc: bool = False,
-        triton_cache_hash: Optional[str] = None,
+        triton_cache_hash: str | None = None,
     ) -> None:
         data = {
             **config.kwargs,
@@ -374,7 +373,7 @@ class _AutotuneCacheBundlerImpl:
         jk = torch._utils_internal.justknobs_getval_int(
             "pytorch/remote_cache:bundled_autotune_remote_cache_version"
         )
-        return REMOTE_CACHE_VERSION >= jk
+        return jk <= REMOTE_CACHE_VERSION
 
     def _load_cache(self) -> bool:
         from torch._inductor import codecache
@@ -413,7 +412,7 @@ class _AutotuneCacheBundlerImpl:
 
 
 class AutotuneCacheBundler:
-    _bundler: Optional[_AutotuneCacheBundlerImpl] = None
+    _bundler: _AutotuneCacheBundlerImpl | None = None
 
     def __init__(self) -> None:
         pass
@@ -426,8 +425,8 @@ class AutotuneCacheBundler:
         cls,
         inductor_meta: _InductorMetaTy,
         *,
-        code: Optional[str] = None,
-        code_hash: Optional[str] = None,
+        code: str | None = None,
+        code_hash: str | None = None,
     ) -> None:
         assert cls._bundler is None
 
@@ -525,8 +524,11 @@ def _should_use_remote_autotune_cache(inductor_meta: _InductorMetaTy) -> bool:
     except ModuleNotFoundError:
         return False
 
-    return REMOTE_CACHE_VERSION >= torch._utils_internal.justknobs_getval_int(
-        "pytorch/remote_cache:autotune_memcache_version"
+    return (
+        torch._utils_internal.justknobs_getval_int(
+            "pytorch/remote_cache:autotune_memcache_version"
+        )
+        <= REMOTE_CACHE_VERSION
     )
 
 
@@ -535,7 +537,7 @@ def _load_cached_autotuning(
     configs_hash: str,
     configs: list[Config],
     inductor_meta: _InductorMetaTy,
-) -> Optional[Config]:
+) -> Config | None:
     if best_config is None:
         return None
     if best_config.pop("configs_hash", None) != configs_hash:
@@ -588,7 +590,7 @@ def _load_cached_autotuning(
 
 class _LocalAutotuneCacheBackend(RemoteCacheBackend[bytes]):
     @override
-    def _get(self, key: str) -> Optional[bytes]:
+    def _get(self, key: str) -> bytes | None:
         try:
             with open(key, "rb") as fd:
                 return fd.read()
@@ -610,7 +612,7 @@ class LocalAutotuneCache(RemoteCache[JsonDataTy]):
         super().__init__(backend, serde)
 
     @override
-    def _get(self, key: str, sample: Optional[Sample]) -> Optional[JsonDataTy]:
+    def _get(self, key: str, sample: Sample | None) -> JsonDataTy | None:
         AutotuneCacheBundler.sync()
         result = super()._get(key, sample)
         if result is not None:
@@ -628,7 +630,7 @@ class LocalAutotuneCache(RemoteCache[JsonDataTy]):
         return result
 
     @override
-    def _put(self, key: str, value: JsonDataTy, sample: Optional[Sample]) -> None:
+    def _put(self, key: str, value: JsonDataTy, sample: Sample | None) -> None:
         AutotuneCacheBundler.put(key, value)
         super()._put(key, value, sample)
 

@@ -47,22 +47,24 @@ import uuid
 import warnings
 import weakref
 from collections import Counter, OrderedDict
+from collections.abc import Callable
 from contextlib import AbstractContextManager, contextmanager
 from dataclasses import is_dataclass
 from functools import lru_cache
 from types import CodeType, MethodWrapperType
 from typing import (
     Any,
-    Callable,
-    cast,
     ClassVar,
     Generic,
-    Optional,
-    overload,
+    Literal,
+    TypeAlias,
+    TypeGuard,
     TypeVar,
-    Union,
+    cast,
+    overload,
 )
-from typing_extensions import Literal, TypeAlias, TypeGuard, TypeIs
+
+from typing_extensions import TypeIs
 
 import torch
 import torch._functorch.config
@@ -93,7 +95,6 @@ from torch.utils._triton import has_triton, has_triton_package
 from torch.utils.hooks import RemovableHandle
 
 from .graph_utils import _get_flat_args
-
 
 if typing.TYPE_CHECKING:
     from collections.abc import (
@@ -219,8 +220,8 @@ class ReinplaceCounters:
 
 
 def tabulate(
-    rows: Union[list[tuple[str, object]], list[list[object]]],
-    headers: Union[tuple[str, ...], list[str]],
+    rows: list[tuple[str, object]] | list[list[object]],
+    headers: tuple[str, ...] | list[str],
 ) -> str:
     try:
         import tabulate
@@ -361,7 +362,7 @@ class CompileEventLogger:
     def log_instant_event(
         event_name: str,
         metadata: dict[str, Any],
-        time_ns: Optional[int] = None,
+        time_ns: int | None = None,
         log_level: CompileEventLogLevel = CompileEventLogLevel.CHROMIUM,
     ):
         if time_ns is None:
@@ -574,9 +575,7 @@ class CompileEventLogger:
         )
 
     @staticmethod
-    def instant(
-        event_name: str, metadata: dict[str, Any], time_ns: Optional[int] = None
-    ):
+    def instant(event_name: str, metadata: dict[str, Any], time_ns: int | None = None):
         """
         Log an instant event to chromium logs with name <event_name> at time <time_ns>. The `args` field in
         Perfetto will point to metadata. <time_ns> should be a value obtained from time.time_ns().
@@ -617,14 +616,14 @@ _dynamo_timed_tls = threading.local()
 def dynamo_timed(
     key: str,
     # TODO(masneral): Deprecate this param.
-    phase_name: Optional[str] = None,
+    phase_name: str | None = None,
     log_pt2_compile_event: bool = False,
-    metadata: Optional[dict[str, object]] = None,
-    dynamo_compile_column_us: Optional[str] = None,
-    compile_id: Optional[CompileId] = None,
-    is_backward: Optional[bool] = None,
+    metadata: dict[str, object] | None = None,
+    dynamo_compile_column_us: str | None = None,
+    compile_id: CompileId | None = None,
+    is_backward: bool | None = None,
     log_waitcounter: bool = False,
-    waitcounter_name_override: Optional[str] = None,
+    waitcounter_name_override: str | None = None,
 ) -> Generator[Any, None, None]:
     """
     dynamo_timed is a context manager
@@ -796,7 +795,7 @@ def compile_times(repr="str", aggregate: bool = False):
         out = "TorchDynamo compilation metrics:\n"
         out += tabulate(rows, headers=("Function", "Runtimes (s)"))
         return out
-    elif repr == "csv":
+    if repr == "csv":
         values = [
             fmt_fn(v, item_fn=lambda x: f"{x:.6f}")
             for v in compilation_time_metrics.values()
@@ -833,7 +832,7 @@ class DuplicateWarningChecker:
     def reset(self):
         self.set = OrderedDict()
 
-    def add(self, key: Union[str, tuple[object, object]]) -> bool:
+    def add(self, key: str | tuple[object, object]) -> bool:
         if key in self.set:
             self.set.move_to_end(key, last=True)
             if not config.verbose:
@@ -1066,17 +1065,17 @@ def is_lru_cache_wrapped_function(
     )
 
 
-_FuncTypes: TypeAlias = Union[
-    types.FunctionType,
-    types.BuiltinFunctionType,
-    types.MethodDescriptorType,
-    types.WrapperDescriptorType,
-]
+_FuncTypes: TypeAlias = (
+    types.FunctionType
+    | types.BuiltinFunctionType
+    | types.MethodDescriptorType
+    | types.WrapperDescriptorType
+)
 
 
 def is_function_or_wrapper(
     value: Any,
-) -> TypeIs[Union[_FuncTypes, torch._ops.OpOverloadPacket, torch._ops.OpOverload]]:
+) -> TypeIs[_FuncTypes | torch._ops.OpOverloadPacket | torch._ops.OpOverload]:
     return is_function(value) or isinstance(
         value, (torch._ops.OpOverloadPacket, torch._ops.OpOverload)
     )
@@ -1119,13 +1118,11 @@ cmp_name_to_op_str_mapping = {
 def is_wrapper_or_member_descriptor(
     value: Any,
 ) -> TypeIs[
-    Union[
-        types.GetSetDescriptorType,
-        types.MethodDescriptorType,
-        types.WrapperDescriptorType,
-        types.MemberDescriptorType,
-        types.MethodWrapperType,
-    ]
+    types.GetSetDescriptorType
+    | types.MethodDescriptorType
+    | types.WrapperDescriptorType
+    | types.MemberDescriptorType
+    | types.MethodWrapperType
 ]:
     return isinstance(
         value,
@@ -1215,13 +1212,13 @@ def proxy_args_kwargs(args, kwargs):
         )
 
 
-def to_int_ms(v: Optional[float]) -> Optional[int]:
+def to_int_ms(v: float | None) -> int | None:
     return None if v is None else int(v * 1000)
 
 
 # float64 timestamp has a quarter microsecond precision in 2024, so while
 # this is suboptimal we shouldn't meaningfully lose precision
-def to_int_us(v: Optional[float]) -> Optional[int]:
+def to_int_us(v: float | None) -> int | None:
     return None if v is None else int(v * 1_000_000)
 
 
@@ -1232,99 +1229,99 @@ LOG_FORMAT_VERSION = 3
 
 @dataclasses.dataclass
 class CompilationMetrics:
-    compile_id: Optional[str] = None
-    frame_key: Optional[str] = None
-    co_name: Optional[str] = None
-    co_filename: Optional[str] = None
-    co_firstlineno: Optional[int] = None
-    cache_size: Optional[int] = None
-    accumulated_cache_size: Optional[int] = None
-    guard_count: Optional[int] = None
-    shape_env_guard_count: Optional[int] = None
-    graph_op_count: Optional[int] = None
-    graph_node_count: Optional[int] = None
-    graph_input_count: Optional[int] = None
-    start_time: Optional[float] = None
-    entire_frame_compile_time_s: Optional[float] = None
-    backend_compile_time_s: Optional[float] = None
-    inductor_compile_time_s: Optional[float] = None
-    code_gen_time_s: Optional[float] = None
-    fail_type: Optional[str] = None
-    fail_reason: Optional[str] = None
-    fail_user_frame_filename: Optional[str] = None
-    fail_user_frame_lineno: Optional[int] = None
-    non_compliant_ops: Optional[set[str]] = None
-    compliant_custom_ops: Optional[set[str]] = None
-    restart_reasons: Optional[set[str]] = None
-    dynamo_time_before_restart_s: Optional[float] = None
+    compile_id: str | None = None
+    frame_key: str | None = None
+    co_name: str | None = None
+    co_filename: str | None = None
+    co_firstlineno: int | None = None
+    cache_size: int | None = None
+    accumulated_cache_size: int | None = None
+    guard_count: int | None = None
+    shape_env_guard_count: int | None = None
+    graph_op_count: int | None = None
+    graph_node_count: int | None = None
+    graph_input_count: int | None = None
+    start_time: float | None = None
+    entire_frame_compile_time_s: float | None = None
+    backend_compile_time_s: float | None = None
+    inductor_compile_time_s: float | None = None
+    code_gen_time_s: float | None = None
+    fail_type: str | None = None
+    fail_reason: str | None = None
+    fail_user_frame_filename: str | None = None
+    fail_user_frame_lineno: int | None = None
+    non_compliant_ops: set[str] | None = None
+    compliant_custom_ops: set[str] | None = None
+    restart_reasons: set[str] | None = None
+    dynamo_time_before_restart_s: float | None = None
     # Sometimes, we will finish analyzing a frame but conclude we don't want
     # to install any guarded code.  True means we actually decided to install
     # a compiled frame
-    has_guarded_code: Optional[bool] = None
-    remote_cache_time_saved_s: Optional[float] = None
-    structured_logging_overhead_s: Optional[float] = None
-    config_suppress_errors: Optional[bool] = None
-    config_inline_inbuilt_nn_modules: Optional[bool] = None
-    specialize_float: Optional[bool] = None
-    dynamo_config: Optional[str] = None
-    is_forward: Optional[bool] = None
-    num_triton_bundles: Optional[int] = None
-    remote_fx_graph_cache_get_time_ms: Optional[int] = None
-    remote_fx_graph_cache_put_time_ms: Optional[int] = None
-    start_time_us: Optional[int] = None
-    duration_us: Optional[int] = None
-    dynamo_cumulative_compile_time_us: Optional[int] = None
-    aot_autograd_cumulative_compile_time_us: Optional[int] = None
-    inductor_cumulative_compile_time_us: Optional[int] = None
-    inductor_code_gen_cumulative_compile_time_us: Optional[int] = None
-    triton_compile_time_us: Optional[int] = None
-    runtime_cudagraphify_time_us: Optional[int] = None
-    runtime_triton_autotune_time_us: Optional[int] = None
-    dynamo_compile_time_before_restart_us: Optional[int] = None
-    distributed_ephemeral_timeout_us: Optional[int] = None
-    structured_logging_overhead_us: Optional[int] = None
-    remote_fx_graph_cache_get_time_us: Optional[int] = None
-    remote_fx_graph_cache_put_time_us: Optional[int] = None
-    backward_cumulative_compile_time_us: Optional[int] = None
-    end_time_us: Optional[int] = None
-    pre_grad_pass_time_us: Optional[int] = None
-    post_grad_pass_time_us: Optional[int] = None
-    joint_graph_pass_time_us: Optional[int] = None
+    has_guarded_code: bool | None = None
+    remote_cache_time_saved_s: float | None = None
+    structured_logging_overhead_s: float | None = None
+    config_suppress_errors: bool | None = None
+    config_inline_inbuilt_nn_modules: bool | None = None
+    specialize_float: bool | None = None
+    dynamo_config: str | None = None
+    is_forward: bool | None = None
+    num_triton_bundles: int | None = None
+    remote_fx_graph_cache_get_time_ms: int | None = None
+    remote_fx_graph_cache_put_time_ms: int | None = None
+    start_time_us: int | None = None
+    duration_us: int | None = None
+    dynamo_cumulative_compile_time_us: int | None = None
+    aot_autograd_cumulative_compile_time_us: int | None = None
+    inductor_cumulative_compile_time_us: int | None = None
+    inductor_code_gen_cumulative_compile_time_us: int | None = None
+    triton_compile_time_us: int | None = None
+    runtime_cudagraphify_time_us: int | None = None
+    runtime_triton_autotune_time_us: int | None = None
+    dynamo_compile_time_before_restart_us: int | None = None
+    distributed_ephemeral_timeout_us: int | None = None
+    structured_logging_overhead_us: int | None = None
+    remote_fx_graph_cache_get_time_us: int | None = None
+    remote_fx_graph_cache_put_time_us: int | None = None
+    backward_cumulative_compile_time_us: int | None = None
+    end_time_us: int | None = None
+    pre_grad_pass_time_us: int | None = None
+    post_grad_pass_time_us: int | None = None
+    joint_graph_pass_time_us: int | None = None
     log_format_version: int = LOG_FORMAT_VERSION
-    inductor_config: Optional[str] = None
-    remote_cache_version: Optional[int] = None
-    inductor_fx_remote_cache_hit_count: Optional[int] = None
-    inductor_fx_remote_cache_miss_count: Optional[int] = None
-    inductor_fx_remote_cache_backend_type: Optional[str] = None
-    inductor_fx_remote_cache_hit_keys: Optional[str] = None
-    inductor_fx_remote_cache_miss_keys: Optional[str] = None
-    cuda_version: Optional[str] = None
-    triton_version: Optional[str] = None
-    feature_usage: Optional[dict[str, bool]] = None
-    compile_time_autotune_time_us: Optional[int] = None
-    is_runtime: Optional[bool] = False
-    gc_time_us: Optional[int] = None
-    tensorify_float_attempt: Optional[bool] = None
-    tensorify_float_success: Optional[bool] = None
-    tensorify_float_failure: Optional[set[str]] = None
-    guard_latency_us: Optional[float] = None
-    recompile_reason: Optional[str] = None
-    num_graph_breaks: Optional[int] = None
-    triton_kernel_compile_times_us: Optional[str] = None
-    ir_count: Optional[int] = None
-    cudagraph_skip_reason: Optional[str] = None
-    python_version: Optional[str] = None
-    pgo_put_remote_code_state_time_us: Optional[int] = None
-    pgo_get_remote_code_state_time_us: Optional[int] = None
+    inductor_config: str | None = None
+    remote_cache_version: int | None = None
+    inductor_fx_remote_cache_hit_count: int | None = None
+    inductor_fx_remote_cache_miss_count: int | None = None
+    inductor_fx_remote_cache_backend_type: str | None = None
+    inductor_fx_remote_cache_hit_keys: str | None = None
+    inductor_fx_remote_cache_miss_keys: str | None = None
+    cuda_version: str | None = None
+    triton_version: str | None = None
+    feature_usage: dict[str, bool] | None = None
+    compile_time_autotune_time_us: int | None = None
+    is_runtime: bool | None = False
+    gc_time_us: int | None = None
+    tensorify_float_attempt: bool | None = None
+    tensorify_float_success: bool | None = None
+    tensorify_float_failure: set[str] | None = None
+    guard_latency_us: float | None = None
+    recompile_reason: str | None = None
+    num_graph_breaks: int | None = None
+    triton_kernel_compile_times_us: str | None = None
+    ir_count: int | None = None
+    cudagraph_skip_reason: str | None = None
+    python_version: str | None = None
+    pgo_put_remote_code_state_time_us: int | None = None
+    pgo_get_remote_code_state_time_us: int | None = None
     # The number of elements within parameters. This is classically what people
     # think of when they think of parameters in a ML model.
-    param_numel: Optional[int] = None
+    param_numel: int | None = None
     # The number of elements counted by bytes - i.e. a float32 is 4 bytes
     # per element.
-    param_bytes: Optional[int] = None
+    param_bytes: int | None = None
     # The number of parameters counted by fields. This is mostly a proxy for
     # the number of distinct type of params.
-    param_count: Optional[int] = None
+    param_count: int | None = None
 
     @classmethod
     def create(cls, metrics: dict[str, Any]):
@@ -1334,13 +1331,13 @@ class CompilationMetrics:
         we transform some fields to comma-separated strings for scuba logging.
         """
 
-        def us_to_s(metric: Optional[int]) -> Optional[float]:
+        def us_to_s(metric: int | None) -> float | None:
             return metric / 1e6 if metric is not None else None
 
-        def us_to_ms(metric: Optional[int]) -> Optional[int]:
+        def us_to_ms(metric: int | None) -> int | None:
             return metric // 1000 if metric is not None else None
 
-        def collection_to_str(metric: Optional[Any]) -> Optional[str]:
+        def collection_to_str(metric: Any | None) -> str | None:
             def safe_str(item: Any) -> str:
                 try:
                     return str(item)
@@ -1355,7 +1352,7 @@ class CompilationMetrics:
 
             return ",".join(safe_str(item) for item in sorted(metric))
 
-        def collection_to_json_str(metric: Optional[Any]) -> Optional[str]:
+        def collection_to_json_str(metric: Any | None) -> str | None:
             if metric is None:
                 return None
             try:
@@ -1467,7 +1464,7 @@ def add_compilation_metrics_to_chromium(c: CompilationMetrics) -> None:
     )
 
 
-def _get_dynamo_config_for_logging() -> Optional[str]:
+def _get_dynamo_config_for_logging() -> str | None:
     def clean_for_json(d: dict[str, Any]) -> dict[str, Any]:
         blocklist = {
             "TYPE_CHECKING",
@@ -1502,7 +1499,7 @@ def _get_dynamo_config_for_logging() -> Optional[str]:
     return json.dumps(config_dict, sort_keys=True)
 
 
-def _scrubbed_inductor_config_for_logging() -> Optional[str]:
+def _scrubbed_inductor_config_for_logging() -> str | None:
     """
     Method to parse and scrub uninteresting configs from inductor config
     """
@@ -1549,8 +1546,8 @@ def record_compilation_metrics(
     start_time_ns: int,
     end_time_ns: int,
     metrics: dict[str, Any],
-    exc_type: Optional[type[BaseException]],
-    exc_value: Optional[BaseException],
+    exc_type: type[BaseException] | None,
+    exc_value: BaseException | None,
 ):
     if torch._inductor.utils.should_use_remote_fx_graph_cache():
         try:
@@ -1659,11 +1656,10 @@ class ChromiumEventLogger:
         """
         if hasattr(self.tls, "stack"):
             return self.tls.stack
-        else:
-            self.tls.stack = []
-            return self.tls.stack
+        self.tls.stack = []
+        return self.tls.stack
 
-    def get_outermost_event(self) -> Optional[str]:
+    def get_outermost_event(self) -> str | None:
         """
         Get the outermost event name (i.e. the longest running event)
         or None if the stack is empty.
@@ -1678,9 +1674,8 @@ class ChromiumEventLogger:
         """
         if hasattr(self.tls, "pt2_compile_substack"):
             return self.tls.pt2_compile_substack
-        else:
-            self.tls.pt2_compile_substack = []
-            return self.tls.pt2_compile_substack
+        self.tls.pt2_compile_substack = []
+        return self.tls.pt2_compile_substack
 
     def get_event_data(self) -> dict[str, Any]:
         if not hasattr(self.tls, "event_data"):
@@ -1770,7 +1765,7 @@ class ChromiumEventLogger:
         time_ns: int,
         metadata: dict[str, Any],
         log_pt2_compile_event: bool = False,
-        compile_id: Optional[CompileId] = None,
+        compile_id: CompileId | None = None,
     ) -> None:
         """
         Logs the start of a single event.
@@ -1811,7 +1806,7 @@ class ChromiumEventLogger:
         metadata: dict[str, Any],
         start_time_ns: int,
         log_pt2_compile_event: bool,
-        compile_id: Optional[CompileId] = None,
+        compile_id: CompileId | None = None,
     ) -> None:
         """
         Logs the end of a single event. This function should only be
@@ -1882,7 +1877,7 @@ class ChromiumEventLogger:
         event_name: str,
         time_ns: int,
         phase: str,
-        metadata: Optional[dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """
         Logs a timed event in chromium format. See log_event_start, log_event_end, etc.
@@ -1910,7 +1905,7 @@ class ChromiumEventLogger:
         self,
         event_name: str,
         time_ns: int,
-        metadata: Optional[dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
         # By default, an instant event isn't logged internally, only to structured logging.
         log_pt2_compile_event: bool = False,
     ) -> None:
@@ -1949,7 +1944,7 @@ class ChromiumEventLogger:
             )
 
 
-CHROMIUM_EVENT_LOG: Optional[ChromiumEventLogger] = None
+CHROMIUM_EVENT_LOG: ChromiumEventLogger | None = None
 
 
 def get_chromium_event_logger() -> ChromiumEventLogger:
@@ -2069,7 +2064,7 @@ def clone_input(x, *, dtype=None):
                 x.shape,
                 is_coalesced=x.is_coalesced(),
             )
-        elif is_sparse_compressed(x):
+        if is_sparse_compressed(x):
             if x.layout in {torch.sparse_csr, torch.sparse_bsr}:
                 compressed_indices = x.crow_indices()
                 plain_indices = x.col_indices()
@@ -2085,7 +2080,8 @@ def clone_input(x, *, dtype=None):
             )
 
         needed_size = sum(
-            (shape - 1) * stride for shape, stride in zip(x.size(), x.stride())
+            (shape - 1) * stride
+            for shape, stride in zip(x.size(), x.stride(), strict=False)
         )
         if x.is_quantized:
             result = torch.empty_quantized((needed_size + 32,), x)
@@ -2114,7 +2110,7 @@ def clone_input(x, *, dtype=None):
 
 
 def clone_inputs(example_inputs):
-    res: Union[dict[Any, Any], list[Any]]
+    res: dict[Any, Any] | list[Any]
     if type(example_inputs) is dict:
         res = dict(example_inputs)
         for key, value in res.items():
@@ -2379,7 +2375,7 @@ def common_constants():
     }
 
 
-def is_torch_sym(value: Any) -> TypeGuard[Union[torch.SymBool, torch.SymInt]]:
+def is_torch_sym(value: Any) -> TypeGuard[torch.SymBool | torch.SymInt]:
     return isinstance(value, (torch.SymBool, torch.SymInt)) and not isinstance(
         value.node, torch.nested._internal.nested_int.NestedIntNode
     )
@@ -2523,10 +2519,9 @@ def get_items_from_dict(obj):
     assert isinstance(obj, dict)
     if istype(obj, (dict, OrderedDict)):
         return obj.items()
-    elif isinstance(obj, OrderedDict):
+    if isinstance(obj, OrderedDict):
         return [(k, OrderedDict.__getitem__(obj, k)) for k in OrderedDict.keys(obj)]
-    else:
-        return [(k, dict.__getitem__(obj, k)) for k in dict.keys(obj)]
+    return [(k, dict.__getitem__(obj, k)) for k in dict.keys(obj)]
 
 
 def nn_module_new(cls):
@@ -2641,7 +2636,7 @@ def iter_contains(items, search, tx, check_tensor_identity=False):
         # Match of Tensor means match of FakeTensor
         search = _get_fake_tensor(search)
 
-    found: Optional[VariableTracker] = None
+    found: VariableTracker | None = None
     for x in items:
         if must_check_tensor_id:
             if isinstance(x, TensorVariable):
@@ -2662,7 +2657,7 @@ def iter_contains(items, search, tx, check_tensor_identity=False):
 
 def key_is_id(
     k: Any,
-) -> TypeIs[Union[torch.Tensor, torch.nn.Module, MethodWrapperType]]:
+) -> TypeIs[torch.Tensor | torch.nn.Module | MethodWrapperType]:
     """Returns whether it indexes dictionaries using its id"""
     return isinstance(k, (torch.Tensor, torch.nn.Module, MethodWrapperType))
 
@@ -2678,19 +2673,17 @@ def const_repr(x, *, local) -> str:
         elems_repr = ",".join(const_repr(s, local=local) for s in x)
         if isinstance(x, list):
             return f"[{elems_repr}]"
-        else:
-            assert isinstance(x, tuple)
-            if len(x) == 1:
-                return f"({elems_repr},)"
-            else:
-                return f"({elems_repr})"
-    elif isinstance(x, enum.Enum):
+        assert isinstance(x, tuple)
+        if len(x) == 1:
+            return f"({elems_repr},)"
+        return f"({elems_repr})"
+    if isinstance(x, enum.Enum):
         # To workaround repr(Enum) returning invalid global reference before python 3.11
         # by calling enum_repr and removing quotes to render enum in guard code.
         return enum_repr(x, local=local).replace("'", "")
-    elif is_builtin_callable(x):
+    if is_builtin_callable(x):
         return x.__name__
-    elif isinstance(x, type):
+    if isinstance(x, type):
 
         def fullname(o):
             klass = o.__class__
@@ -2700,8 +2693,7 @@ def const_repr(x, *, local) -> str:
             return module + "." + klass.__qualname__
 
         return fullname(x)
-    else:
-        return f"{x!r}"
+    return f"{x!r}"
 
 
 def dict_keys_repr(const_keys, *, local) -> str:
@@ -2818,9 +2810,9 @@ def same(
                 use_larger_multiplier_for_smaller_tensor=use_larger_multiplier_for_smaller_tensor,
                 force_max_multiplier=force_max_multiplier,
             )
-            for ai, bi, fp64_refi in zip(ref, res, fp64_ref)
+            for ai, bi, fp64_refi in zip(ref, res, fp64_ref, strict=False)
         )
-    elif type(ref).__name__ == "QuestionAnsweringModelOutput":
+    if type(ref).__name__ == "QuestionAnsweringModelOutput":
         # This skips checking accuracy for start_logits/end_logits.
         # Tentatively, start_logits/end_logits appear to be very prone to
         # inaccuracies and is somewhat subsumed by checking the loss.
@@ -2838,7 +2830,7 @@ def same(
             use_larger_multiplier_for_smaller_tensor=use_larger_multiplier_for_smaller_tensor,
             force_max_multiplier=force_max_multiplier,
         )
-    elif isinstance(ref, dict):
+    if isinstance(ref, dict):
         assert isinstance(res, dict)
         assert set(ref.keys()) == set(res.keys()), (
             f"keys mismatch {set(ref.keys())} == {set(res.keys())}"
@@ -2863,11 +2855,11 @@ def same(
                 log_error("Accuracy failed for key name %s", k)
                 return False
         return True
-    elif isinstance(ref, set):
+    if isinstance(ref, set):
         assert isinstance(res, set)
         assert set(ref) == set(res), f"elements mismatch {set(ref)} == {set(res)}"
         return True
-    elif isinstance(ref, (torch.Tensor, float)):
+    if isinstance(ref, (torch.Tensor, float)):
         assert not isinstance(ref, torch._subclasses.FakeTensor)
         assert not isinstance(res, torch._subclasses.FakeTensor)
 
@@ -2911,120 +2903,119 @@ def same(
             if score < 0.99:
                 log.warning("Similarity score=%s", score.detach().cpu().item())
             return score >= 0.99
-        else:
-            if not exact_dtype:
-                ref = ref.to(res.dtype)
+        if not exact_dtype:
+            ref = ref.to(res.dtype)
 
-            # First try usual allclose
-            if torch.allclose(ref, res, atol=tol, rtol=tol, equal_nan=equal_nan):
+        # First try usual allclose
+        if torch.allclose(ref, res, atol=tol, rtol=tol, equal_nan=equal_nan):
+            return True
+
+        # Check error from fp64 version
+        if fp64_ref.dtype == torch.float64:
+            # Fix a corner case that res and fp64_ref does not contains NaN and match (with loose tolerance)
+            # while the ref contains NaN. In this case, RMSE should not match any ways.
+            # But res is 'BETTER' than ref so we count it pass.
+            #
+            # This happens for Super_SloMo when loop ordering after fusion is enabled:
+            # https://gist.github.com/shunting314/11f235c70f7db0d52718d26f4a701cab
+            loose_tol = 1e-2 * 4
+            if (
+                not fp64_ref.isnan().any()
+                and not res.isnan().any()
+                and ref.isnan().any()
+                and torch.allclose(
+                    fp64_ref.to(dtype=res.dtype),
+                    res,
+                    atol=loose_tol,
+                    rtol=loose_tol,
+                    equal_nan=equal_nan,
+                )
+            ):
                 return True
+            ref_error = rmse(fp64_ref, ref).item()
+            # ref unable to produce this with stable numerics in this precision, ignore
+            if math.isnan(ref_error):
+                log.warning(
+                    "Found nan in reference. Consider running in higher precision."
+                )
 
-            # Check error from fp64 version
-            if fp64_ref.dtype == torch.float64:
-                # Fix a corner case that res and fp64_ref does not contains NaN and match (with loose tolerance)
-                # while the ref contains NaN. In this case, RMSE should not match any ways.
-                # But res is 'BETTER' than ref so we count it pass.
-                #
-                # This happens for Super_SloMo when loop ordering after fusion is enabled:
-                # https://gist.github.com/shunting314/11f235c70f7db0d52718d26f4a701cab
-                loose_tol = 1e-2 * 4
-                if (
-                    not fp64_ref.isnan().any()
-                    and not res.isnan().any()
-                    and ref.isnan().any()
-                    and torch.allclose(
-                        fp64_ref.to(dtype=res.dtype),
-                        res,
-                        atol=loose_tol,
-                        rtol=loose_tol,
-                        equal_nan=equal_nan,
-                    )
+            res_error = rmse(fp64_ref, res).item()
+
+            def get_multiplier():
+                # In some particular cases, we expect high difference in results.
+                # At the moment one of this cases is inductor freezing bfloat16 convolution const folding.
+                # In case of it the res_error is at least one order of magnitude higher.
+                if force_max_multiplier:
+                    return 10.0
+                # In the case of using AMP (Automatic Mixed Precision), certain models have
+                # failed the benchmark's correctness check. However, the end-to-end model's
+                # accuracy when comparing AMP with FP32 is within a difference of less than 0.1%.
+                # Thus, it's possible that the correctness check failures for these models are
+                # false alarms. We use multiplier of 3 instead of 2 to avoid these false alarms.
+                multiplier = (
+                    3.0 if res.dtype in (torch.float16, torch.bfloat16) else 2.0
+                )
+
+                if use_larger_multiplier_for_smaller_tensor and (
+                    fp64_ref.numel() <= 10
                 ):
-                    return True
-                ref_error = rmse(fp64_ref, ref).item()
-                # ref unable to produce this with stable numerics in this precision, ignore
-                if math.isnan(ref_error):
-                    log.warning(
-                        "Found nan in reference. Consider running in higher precision."
-                    )
-
-                res_error = rmse(fp64_ref, res).item()
-
-                def get_multiplier():
-                    # In some particular cases, we expect high difference in results.
-                    # At the moment one of this cases is inductor freezing bfloat16 convolution const folding.
-                    # In case of it the res_error is at least one order of magnitude higher.
-                    if force_max_multiplier:
-                        return 10.0
-                    # In the case of using AMP (Automatic Mixed Precision), certain models have
-                    # failed the benchmark's correctness check. However, the end-to-end model's
-                    # accuracy when comparing AMP with FP32 is within a difference of less than 0.1%.
-                    # Thus, it's possible that the correctness check failures for these models are
-                    # false alarms. We use multiplier of 3 instead of 2 to avoid these false alarms.
-                    multiplier = (
-                        3.0 if res.dtype in (torch.float16, torch.bfloat16) else 2.0
-                    )
-
-                    if use_larger_multiplier_for_smaller_tensor and (
-                        fp64_ref.numel() <= 10
-                    ):
-                        multiplier = 10.0
-                    elif use_larger_multiplier_for_smaller_tensor and (
-                        fp64_ref.numel() <= 500
-                    ):
-                        multiplier = 8.0
-                    elif (
-                        fp64_ref.numel() < 1000
-                        or (ref.ndim == 4 and ref.shape[-1] == ref.shape[-2] == 1)
-                        # large tol means a benchmark has been specified as REQUIRE_HIGHER_TOLERANCE
-                        or tol >= 2 * 1e-2
-                    ):
-                        # In the presence of noise, noise might dominate our error
-                        # metric for smaller tensors.
-                        # Similarly, for 1x1 kernels, there seems to be high noise with amp.
-                        multiplier = 3.0
-                    return multiplier
-
-                multiplier = get_multiplier()
-
-                passes_test = res_error <= (multiplier * ref_error + tol / 10.0)
-                if (
-                    not passes_test
-                    and equal_nan
-                    and math.isnan(ref_error)
-                    and math.isnan(res_error)
-                    # Some unit test for the accuracy minifier relies on
-                    # returning false in this case.
-                    and not torch._inductor.config.cpp.inject_relu_bug_TESTING_ONLY
+                    multiplier = 10.0
+                elif use_larger_multiplier_for_smaller_tensor and (
+                    fp64_ref.numel() <= 500
                 ):
-                    passes_test = True
-                if not passes_test:
-                    log_error(
-                        "RMSE (res-fp64): %.5f, (ref-fp64): %.5f and shape=%s. res.dtype: %s, multiplier: %f, tol: %f"
-                        ", use_larger_multiplier_for_smaller_tensor: %d",
-                        res_error,
-                        ref_error,
-                        res.size(),
-                        res.dtype,
-                        multiplier,
-                        tol,
-                        use_larger_multiplier_for_smaller_tensor,
-                    )
-                return passes_test
+                    multiplier = 8.0
+                elif (
+                    fp64_ref.numel() < 1000
+                    or (ref.ndim == 4 and ref.shape[-1] == ref.shape[-2] == 1)
+                    # large tol means a benchmark has been specified as REQUIRE_HIGHER_TOLERANCE
+                    or tol >= 2 * 1e-2
+                ):
+                    # In the presence of noise, noise might dominate our error
+                    # metric for smaller tensors.
+                    # Similarly, for 1x1 kernels, there seems to be high noise with amp.
+                    multiplier = 3.0
+                return multiplier
 
-            if ignore_non_fp:
-                return True
+            multiplier = get_multiplier()
 
-            log_error("Accuracy failed: allclose not within tol=%s", tol)
-            return False
-    elif isinstance(ref, (str, int, type(None), bool, torch.device)):
+            passes_test = res_error <= (multiplier * ref_error + tol / 10.0)
+            if (
+                not passes_test
+                and equal_nan
+                and math.isnan(ref_error)
+                and math.isnan(res_error)
+                # Some unit test for the accuracy minifier relies on
+                # returning false in this case.
+                and not torch._inductor.config.cpp.inject_relu_bug_TESTING_ONLY
+            ):
+                passes_test = True
+            if not passes_test:
+                log_error(
+                    "RMSE (res-fp64): %.5f, (ref-fp64): %.5f and shape=%s. res.dtype: %s, multiplier: %f, tol: %f"
+                    ", use_larger_multiplier_for_smaller_tensor: %d",
+                    res_error,
+                    ref_error,
+                    res.size(),
+                    res.dtype,
+                    multiplier,
+                    tol,
+                    use_larger_multiplier_for_smaller_tensor,
+                )
+            return passes_test
+
+        if ignore_non_fp:
+            return True
+
+        log_error("Accuracy failed: allclose not within tol=%s", tol)
+        return False
+    if isinstance(ref, (str, int, type(None), bool, torch.device)):
         if ignore_non_fp:
             return True
         r = ref == res
         if not r:
             log_error("Accuracy failed (%s): %s != %s", type(ref), ref, res)
         return r
-    elif is_numpy_int_type(ref) or is_numpy_float_type(ref):
+    if is_numpy_int_type(ref) or is_numpy_float_type(ref):
         if relax_numpy_equality and not (
             is_numpy_int_type(res) or is_numpy_float_type(res)
         ):
@@ -3033,7 +3024,7 @@ def same(
         if not r:
             log_error("Accuracy failed (numpy): %s != %s", ref, res)
         return r
-    elif is_numpy_ndarray(ref):
+    if is_numpy_ndarray(ref):
         return (type(ref) is type(res)) and same(
             torch.as_tensor(ref),
             torch.as_tensor(res),
@@ -3047,7 +3038,7 @@ def same(
             log_error=log_error,
             use_larger_multiplier_for_smaller_tensor=use_larger_multiplier_for_smaller_tensor,
         )
-    elif type(ref).__name__ in (
+    if type(ref).__name__ in (
         "MaskedLMOutput",
         "Seq2SeqLMOutput",
         "CausalLMOutputWithCrossAttentions",
@@ -3077,8 +3068,7 @@ def same(
             )
             for key in ref.__dict__.keys()
         )
-    else:
-        raise RuntimeError(f"unsupported type: {type(ref).__name__}")
+    raise RuntimeError(f"unsupported type: {type(ref).__name__}")
 
 
 def format_func_info(code):
@@ -3135,7 +3125,7 @@ def get_debug_dir():
 def extract_fake_example_value(node, required=True):
     if "example_value" in node.meta and is_fake(node.meta["example_value"]):
         return node.meta["example_value"]
-    elif required:
+    if required:
         from torch._dynamo.exc import unimplemented_v2
 
         from . import graph_break_hints
@@ -3162,7 +3152,7 @@ def get_fake_values_from_nodes(tx, nodes, allow_non_graph_fake):
             # ensure_graph_fake
             return get_fake_value(n, tx, allow_non_graph_fake)
 
-        elif n.op == "get_attr" and "example_value" not in n.meta:
+        if n.op == "get_attr" and "example_value" not in n.meta:
             assert n.target in tx.output.nn_modules
             gm = tx.output.nn_modules[n.target]
             assert isinstance(gm, torch.fx.GraphModule)
@@ -3189,10 +3179,10 @@ def get_fake_value(node, tx, allow_non_graph_fake=False):
 
     from .exc import (
         TorchRuntimeError,
-        unimplemented_v2,
         Unsupported,
         UserError,
         UserErrorType,
+        unimplemented_v2,
     )
 
     op = node.op
@@ -3419,7 +3409,7 @@ def run_node(tracer, node, args, kwargs, nnmodule):
         try:
             if op == "call_function":
                 return node.target(*args, **kwargs)
-            elif op == "call_method":
+            if op == "call_method":
                 if not hasattr(args[0], node.target):
                     from .exc import unimplemented_v2
 
@@ -3430,12 +3420,12 @@ def run_node(tracer, node, args, kwargs, nnmodule):
                         hints=[],
                     )
                 return getattr(args[0], node.target)(*args[1:], **kwargs)
-            elif op == "call_module":
+            if op == "call_module":
                 assert nnmodule is not None
                 return nnmodule(*args, **kwargs)
-            elif op == "get_attr":
+            if op == "get_attr":
                 return tracer.output_graph.get_submodule(node.target)
-            elif op == "placeholder":
+            if op == "placeholder":
                 assert "example_value" in node.meta
                 return node.meta["example_value"]
 
@@ -3513,8 +3503,7 @@ def assert_no_fake_params_or_buffers(gm):
             import traceback
 
             return f"FAKE TENSOR CREATION TRACEBACK: \n {traceback.format_list(t._debug_trace)}"
-        else:
-            return "Enable TORCH_FAKE_TENSOR_DEBUG=1 to get creation stack traces on fake tensors."
+        return "Enable TORCH_FAKE_TENSOR_DEBUG=1 to get creation stack traces on fake tensors."
 
     for name, buffer in gm.named_buffers():
         assert not is_fake(buffer), (
@@ -3536,8 +3525,7 @@ def fqn(obj: Any):
 def ifdynstaticdefault(count1, count2):
     if torch._dynamo.config.assume_static_by_default:
         return count1
-    else:
-        return count2
+    return count2
 
 
 def import_submodule(mod: types.ModuleType):
@@ -3599,10 +3587,10 @@ def tensor_static_reason_to_message(reason: TensorStaticReason):
 
 
 def tensor_always_has_static_shape(
-    tensor: Union[torch.Tensor, Any],
+    tensor: torch.Tensor | Any,
     is_tensor: bool,
     tensor_source: Source,
-) -> tuple[bool, Optional[TensorStaticReason]]:
+) -> tuple[bool, TensorStaticReason | None]:
     """
     Given a tensor, source, and is_tensor flag, determine if a shape should be static.
 
@@ -3733,12 +3721,11 @@ def to_numpy_helper(value):
         return value
     if isinstance(value, tnp.ndarray):
         return to_numpy_helper(value.tensor)
-    elif isinstance(value, torch.Tensor):
+    if isinstance(value, torch.Tensor):
         return value.numpy(force=True)
-    elif isinstance(value, (tuple, list)):
+    if isinstance(value, (tuple, list)):
         return type(value)(to_numpy_helper(obj) for obj in value)
-    else:
-        return value
+    return value
 
 
 def numpy_to_tensor(value):
@@ -3748,10 +3735,9 @@ def numpy_to_tensor(value):
         return torch.as_tensor(value)
     if isinstance(value, tnp.ndarray):
         return value.tensor
-    elif isinstance(value, (tuple, list)):
+    if isinstance(value, (tuple, list)):
         return type(value)(numpy_to_tensor(obj) for obj in value)
-    else:
-        return value
+    return value
 
 
 class numpy_to_tensor_wrapper:
@@ -3771,7 +3757,7 @@ def numpy_attr_wrapper(obj, name):
     if isinstance(obj, tnp.ndarray):
         out = getattr(obj, name)
         return numpy_to_tensor(out)
-    elif isinstance(obj, torch.Tensor):
+    if isinstance(obj, torch.Tensor):
         out = getattr(tnp.ndarray(obj), name)
         return numpy_to_tensor(out)
 
@@ -3932,7 +3918,7 @@ class _Anchors:
     right_start_offset: int
 
 
-def _extract_anchors_from_expr(segment: str) -> Optional[_Anchors]:
+def _extract_anchors_from_expr(segment: str) -> _Anchors | None:
     """
     Given source code `segment` corresponding to a bytecode
     instruction, determine:
@@ -4020,7 +4006,7 @@ def _extract_anchors_from_expr(segment: str) -> Optional[_Anchors]:
             # right_col can be invalid since it is exclusive
 
             return _Anchors(cur_lineno, cur_col, cur_lineno, right_col)
-        elif isinstance(expr, ast.Subscript):
+        if isinstance(expr, ast.Subscript):
             # ast gives locations for value and slice subexpressions, e.g.
             # ( value_expr ) [ slice_expr ]
             #   value^^^^^     slice^^^^^
@@ -4035,7 +4021,7 @@ def _extract_anchors_from_expr(segment: str) -> Optional[_Anchors]:
             right_lineno = cast(int, expr.end_lineno) - 2
             right_col = normalize(right_lineno, expr.end_col_offset)
             return _Anchors(left_lineno, left_col, right_lineno, right_col)
-        elif isinstance(expr, ast.Call):
+        if isinstance(expr, ast.Call):
             # ( func_expr ) (args, kwargs)
             #   func^^^^^
             # call^^^^^^^^^^^^^^^^^^^^^^^^
@@ -4136,7 +4122,7 @@ def get_instruction_source_311(code: types.CodeType, inst: dis.Instruction) -> s
         num_spaces = len(last_line) - len(last_line.lstrip())
         markers.append(" " * num_spaces + "~" * (end_offset - num_spaces))
 
-    anchors: Optional[_Anchors] = None
+    anchors: _Anchors | None = None
     try:
         anchors = _extract_anchors_from_expr(segment)
     except AssertionError:
@@ -4664,7 +4650,7 @@ def maybe_disable_inference_mode_for_fake_prop() -> Generator[None, None, None]:
         yield
 
 
-def is_node_meta_valid(node: Optional[torch.fx.Node]) -> bool:
+def is_node_meta_valid(node: torch.fx.Node | None) -> bool:
     return node is None or "example_value" in node.meta or "val" in node.meta
 
 

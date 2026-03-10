@@ -15,22 +15,22 @@ import asyncio
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Deque, Dict, Optional, Set
+from typing import Any
 
 
 @dataclass
 class Topic:
     name: str
-    backlog: Deque[Dict[str, Any]] = field(default_factory=deque)
-    subscribers: Set[str] = field(default_factory=set)  # service names
+    backlog: deque[dict[str, Any]] = field(default_factory=deque)
+    subscribers: set[str] = field(default_factory=set)  # service names
 
 
 class EventBus:
     def __init__(self, service_registry):
         self.registry = service_registry
-        self._topics: Dict[str, Topic] = {}
+        self._topics: dict[str, Topic] = {}
         # Simple per-topic token bucket: tokens per interval (sec)
-        self._tokens: Dict[str, tuple[float, float]] = defaultdict(lambda: (0.0, 0.0))
+        self._tokens: dict[str, tuple[float, float]] = defaultdict(lambda: (0.0, 0.0))
         # Metrics counters
         self._metrics = {
             "events_published_total": 0,
@@ -43,7 +43,7 @@ class EventBus:
         self._max_backlog = 1000
 
     # --------------- Control-plane API ---------------
-    async def publish(self, topic: str, event: Dict[str, Any]) -> Dict[str, Any]:
+    async def publish(self, topic: str, event: dict[str, Any]) -> dict[str, Any]:
         t = str(topic).strip()
         if not t:
             return {"ok": False, "error": "invalid_topic"}
@@ -72,7 +72,7 @@ class EventBus:
         await self._fanout(t)
         return {"ok": True}
 
-    async def subscribe(self, topic: str, service_name: str) -> Dict[str, Any]:
+    async def subscribe(self, topic: str, service_name: str) -> dict[str, Any]:
         t = str(topic).strip()
         s = str(service_name).strip()
         if not t or not s:
@@ -82,7 +82,7 @@ class EventBus:
             top.subscribers.add(s)
         return {"ok": True}
 
-    async def ack(self, topic: str, count: int = 1) -> Dict[str, Any]:
+    async def ack(self, topic: str, count: int = 1) -> dict[str, Any]:
         t = str(topic).strip()
         c = max(0, int(count))
         async with self._lock:
@@ -115,11 +115,11 @@ class EventBus:
         return {"ok": False, "error": "unknown_message"}
 
     # --------------- Observability ---------------
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         per_topic_backlog = {n: len(t.backlog) for n, t in self._topics.items()}
         return {**self._metrics.copy(), "topic_backlog": per_topic_backlog}
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         return {
             "topics": {
                 n: {"subscribers": list(t.subscribers), "backlog": len(t.backlog)}
@@ -154,7 +154,7 @@ class EventBus:
 
 
 # Global singleton factory
-_event_bus_instance: Optional[EventBus] = None
+_event_bus_instance: EventBus | None = None
 
 
 async def get_event_bus(service_registry) -> EventBus:

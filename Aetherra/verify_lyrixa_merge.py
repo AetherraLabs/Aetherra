@@ -27,7 +27,9 @@ def main():
 
         core = get_lyrixa_core() if get_lyrixa_core else None
         print(
-            f"✅ LyrixaCore operational: {type(core).__name__}" if core else "ℹ️ LyrixaCore not available"
+            f"✅ LyrixaCore operational: {type(core).__name__}"
+            if core
+            else "ℹ️ LyrixaCore not available"
         )
 
         # Test Intelligence Stack

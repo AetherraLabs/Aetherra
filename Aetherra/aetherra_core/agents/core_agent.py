@@ -40,8 +40,8 @@ except ImportError:
         from Aetherra.plugins.agent_adapters.plugin_agent import PluginAgent
         from Aetherra.plugins.core.agent_base import AgentBase, AgentResponse
     except ImportError:
-        # If all imports fail, create placeholder classes for graceful degradation
-        print("⚠️ Agent dependencies not available, using placeholder classes")
+        # If all imports fail, create compatibility classes for graceful degradation
+        print("⚠️ Agent dependencies not available, using fallback compatibility classes")
         # Standard library imports
         from datetime import datetime
 
@@ -53,7 +53,7 @@ except ImportError:
                 print(f"[{self.name}] {message}")
 
             def process(self, input_data, context=None):
-                return AgentResponse("Agent not available", "placeholder")
+                return AgentResponse("Agent not available", "fallback")
 
         class AgentResponse:
             def __init__(
@@ -71,10 +71,10 @@ except ImportError:
                 self.metadata = metadata or {}
                 self.timestamp = datetime.now()
 
-        # Create placeholder classes for all agents
-        EscalationAgent = (
-            GoalAgent
-        ) = PluginAgent = ReflectionAgent = SelfEvaluationAgent = AgentBase
+        # Create fallback classes for all agents
+        EscalationAgent = GoalAgent = PluginAgent = ReflectionAgent = SelfEvaluationAgent = (
+            AgentBase
+        )
 
 
 class LyrixaAI(AgentBase):
@@ -97,20 +97,14 @@ class LyrixaAI(AgentBase):
         self.prompt_engine = prompt_engine
         self.llm_manager = llm_manager
         self.intelligence_stack = intelligence_stack
-        self.gui_interface = (
-            gui_interface  # Reference to GUI window for auto-population
-        )
+        self.gui_interface = gui_interface  # Reference to GUI window for auto-population
 
         # Initialize sub-agents
         self.goal_agent = GoalAgent(memory, prompt_engine, llm_manager)
-        self.plugin_agent = PluginAgent(
-            memory, prompt_engine, llm_manager, intelligence_stack
-        )
+        self.plugin_agent = PluginAgent(memory, prompt_engine, llm_manager, intelligence_stack)
         self.reflection_agent = ReflectionAgent(memory, prompt_engine, llm_manager)
         self.escalation_agent = EscalationAgent(memory, prompt_engine, llm_manager)
-        self.self_evaluation_agent = SelfEvaluationAgent(
-            memory, prompt_engine, llm_manager
-        )
+        self.self_evaluation_agent = SelfEvaluationAgent(memory, prompt_engine, llm_manager)
 
         self.agents = {
             "goal": self.goal_agent,
@@ -162,9 +156,7 @@ class LyrixaAI(AgentBase):
                     "input": input_text,
                     "response": response.content,
                     "agent": agent_name,
-                    "timestamp": response.timestamp.isoformat()
-                    if response.timestamp
-                    else None,
+                    "timestamp": response.timestamp.isoformat() if response.timestamp else None,
                 }
             )
 
@@ -286,10 +278,7 @@ class LyrixaAI(AgentBase):
         ):
             response_content = "Hello! 👋 I'm Lyrixa, your modular AI assistant. Nice to meet you! I'm ready to help with anything you need. What's on your mind today?"
 
-        elif any(
-            word in input_lower
-            for word in ["how are you", "how's it going", "what's up"]
-        ):
+        elif any(word in input_lower for word in ["how are you", "how's it going", "what's up"]):
             response_content = "I'm doing great! All my systems are running smoothly and I'm ready to assist. My 5 specialist agents are standing by to help with goals, plugins, analysis, problem-solving, and self-improvement. How are you doing?"
 
         elif any(
@@ -314,9 +303,7 @@ I use multiple AI models (currently GPT-4o) and can switch between them as neede
         elif any(word in input_lower for word in ["thanks", "thank you", "appreciate"]):
             response_content = "You're very welcome! I'm here whenever you need assistance. Feel free to ask me anything - whether it's casual conversation or help with specific tasks. 😊"
 
-        elif any(
-            word in input_lower for word in ["bye", "goodbye", "see you", "talk later"]
-        ):
+        elif any(word in input_lower for word in ["bye", "goodbye", "see you", "talk later"]):
             response_content = "Goodbye! It was great talking with you. I'll be here whenever you need me. Have a wonderful day! 👋"
 
         else:
@@ -369,9 +356,7 @@ I use multiple AI models (currently GPT-4o) and can switch between them as neede
 
     async def get_available_plugins(self) -> Dict[str, Any]:
         """Get all available plugins from the intelligence stack"""
-        if not self.intelligence_stack or not hasattr(
-            self.intelligence_stack, "plugin_bridge"
-        ):
+        if not self.intelligence_stack or not hasattr(self.intelligence_stack, "plugin_bridge"):
             return {"error": "Plugin bridge not available", "plugins": []}
 
         try:
@@ -379,9 +364,7 @@ I use multiple AI models (currently GPT-4o) and can switch between them as neede
                 discovered_plugins = (
                     await self.intelligence_stack.plugin_bridge.discover_all_plugins()
                 )
-                plugin_summary = (
-                    self.intelligence_stack.plugin_bridge.get_plugin_summary_for_gui()
-                )
+                plugin_summary = self.intelligence_stack.plugin_bridge.get_plugin_summary_for_gui()
 
                 return {
                     "total_plugins": len(discovered_plugins),
@@ -397,9 +380,7 @@ I use multiple AI models (currently GPT-4o) and can switch between them as neede
 
     async def summarize_plugin(self, plugin_name: str) -> Dict[str, Any]:
         """Get detailed summary of a specific plugin"""
-        if not self.intelligence_stack or not hasattr(
-            self.intelligence_stack, "plugin_bridge"
-        ):
+        if not self.intelligence_stack or not hasattr(self.intelligence_stack, "plugin_bridge"):
             return {"error": "Plugin bridge not available"}
 
         try:
@@ -427,9 +408,7 @@ I use multiple AI models (currently GPT-4o) and can switch between them as neede
                             "capabilities": plugin_data.get("capabilities", []),
                             "version": plugin_data.get("version", "Unknown"),
                             "author": plugin_data.get("author", "Unknown"),
-                            "discovery_source": plugin_data.get(
-                                "discovered_from", "Unknown"
-                            ),
+                            "discovery_source": plugin_data.get("discovered_from", "Unknown"),
                         }
 
                 return {"found": False, "error": f"Plugin '{plugin_name}' not found"}
@@ -444,10 +423,8 @@ I use multiple AI models (currently GPT-4o) and can switch between them as neede
             return {"error": "Intelligence stack not available", "recommendations": []}
 
         try:
-            recommendations = (
-                await self.intelligence_stack.get_plugin_recommendations_for_lyrixa(
-                    query
-                )
+            recommendations = await self.intelligence_stack.get_plugin_recommendations_for_lyrixa(
+                query
             )
             return {
                 "query": query,
@@ -530,9 +507,7 @@ I use multiple AI models (currently GPT-4o) and can switch between them as neede
 
         return None
 
-    async def _check_and_auto_populate_gui(
-        self, response: AgentResponse, input_text: str
-    ):
+    async def _check_and_auto_populate_gui(self, response: AgentResponse, input_text: str):
         """Check if response contains plugin code and auto-populate GUI if available"""
         if not self.gui_interface:
             return  # No GUI available
@@ -550,9 +525,7 @@ I use multiple AI models (currently GPT-4o) and can switch between them as neede
             if generated_code:
                 # Auto-populate the Plugin Editor with the generated code
                 filename = f"{plugin_name}.aether"
-                success = self.gui_interface.inject_plugin_code(
-                    generated_code, filename
-                )
+                success = self.gui_interface.inject_plugin_code(generated_code, filename)
 
                 if success:
                     self.log(f"✅ Auto-populated Plugin Editor with {filename}")
@@ -575,9 +548,7 @@ I use multiple AI models (currently GPT-4o) and can switch between them as neede
         if self.gui_interface and hasattr(self.gui_interface, "inject_plugin_code"):
             try:
                 success = self.gui_interface.inject_plugin_code(code, filename)
-                self.log(
-                    f"🎯 Plugin injection {'successful' if success else 'failed'}: {filename}"
-                )
+                self.log(f"🎯 Plugin injection {'successful' if success else 'failed'}: {filename}")
                 return success
             except Exception as e:
                 self.log(f"❌ Plugin injection error: {e}")

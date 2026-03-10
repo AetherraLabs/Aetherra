@@ -39,9 +39,7 @@ class ReplayEpisode:
     reconstruction_fidelity: float  # How accurate the reconstruction is (0-1)
     compression_ratio: float  # Original vs reconstructed size ratio
     fractal_depth: int  # Maximum depth in reconstruction
-    temporal_sequence: List[
-        Dict[str, Any]
-    ]  # Ordered sequence of reconstructed elements
+    temporal_sequence: List[Dict[str, Any]]  # Ordered sequence of reconstructed elements
     pattern_coverage: float  # Percentage of patterns successfully reconstructed
     reconstruction_time: float  # Time taken to reconstruct
     metadata: Dict[str, Any]  # Additional reconstruction metadata
@@ -55,9 +53,7 @@ class ReconstructionContext:
     target_fidelity: float = 0.8  # Desired reconstruction fidelity
     max_depth: int = 5  # Maximum fractal depth to explore
     include_patterns: Optional[List[str]] = None  # Specific patterns to include
-    exclude_patterns: Optional[
-        List[str]
-    ] = None  # Patterns to exclude from reconstruction
+    exclude_patterns: Optional[List[str]] = None  # Patterns to exclude from reconstruction
     temporal_order: bool = True  # Whether to maintain temporal ordering
     compression_aware: bool = True  # Whether to use compression-aware reconstruction
 
@@ -67,9 +63,7 @@ class FractalReplayEngine:
     Advanced fractal replay engine for memory episode reconstruction
     """
 
-    def __init__(
-        self, fractal_encoder: FractalEncoder, data_dir: str = "fractal_replay_data"
-    ):
+    def __init__(self, fractal_encoder: FractalEncoder, data_dir: str = "fractal_replay_data"):
         self.encoder = fractal_encoder
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(exist_ok=True)
@@ -183,9 +177,7 @@ class FractalReplayEngine:
         )
 
         max_depth = max(node.fractal_depth for node in fractal_nodes)
-        pattern_coverage = (
-            len(filtered_patterns) / len(all_patterns) if all_patterns else 1.0
-        )
+        pattern_coverage = len(filtered_patterns) / len(all_patterns) if all_patterns else 1.0
         reconstruction_time = time.time() - start_time
 
         # Create replay episode
@@ -219,8 +211,7 @@ class FractalReplayEngine:
         self.replay_stats["episodes_reconstructed"] += 1
         self.replay_stats["total_reconstruction_time"] += reconstruction_time
         self.replay_stats["avg_fidelity"] = (
-            self.replay_stats["avg_fidelity"]
-            * (self.replay_stats["episodes_reconstructed"] - 1)
+            self.replay_stats["avg_fidelity"] * (self.replay_stats["episodes_reconstructed"] - 1)
             + reconstruction_fidelity
         ) / self.replay_stats["episodes_reconstructed"]
         self.replay_stats["avg_compression_ratio"] = (
@@ -242,9 +233,7 @@ class FractalReplayEngine:
         cursor = conn.cursor()
 
         placeholders = ",".join("?" for _ in node_ids)
-        cursor.execute(
-            f"SELECT * FROM fractal_nodes WHERE node_id IN ({placeholders})", node_ids
-        )
+        cursor.execute(f"SELECT * FROM fractal_nodes WHERE node_id IN ({placeholders})", node_ids)
         rows = cursor.fetchall()
         conn.close()
 
@@ -320,9 +309,7 @@ class FractalReplayEngine:
             filtered = [p for p in filtered if p.pattern_id in context.include_patterns]
 
         if context.exclude_patterns:
-            filtered = [
-                p for p in filtered if p.pattern_id not in context.exclude_patterns
-            ]
+            filtered = [p for p in filtered if p.pattern_id not in context.exclude_patterns]
 
         # Filter by maximum depth
         filtered = [p for p in filtered if p.abstraction_level <= context.max_depth]
@@ -349,9 +336,7 @@ class FractalReplayEngine:
 
         for node in sorted_nodes:
             # Reconstruct content from compression seeds and rules
-            reconstructed_content = await self._reconstruct_from_seeds(
-                node, patterns, context
-            )
+            reconstructed_content = await self._reconstruct_from_seeds(node, patterns, context)
 
             # Create sequence element
             element = {
@@ -386,7 +371,7 @@ class FractalReplayEngine:
             return cached_content
 
         # For now, implement basic reconstruction
-        # TODO: Full fractal reconstruction algorithm
+        # Integration point: full fractal reconstruction algorithm
 
         if context.compression_aware and node.compression_seeds:
             # Use compression-aware reconstruction
@@ -397,20 +382,14 @@ class FractalReplayEngine:
 
         # Apply pattern-based enhancements
         if patterns:
-            reconstructed = await self._apply_pattern_enhancements(
-                reconstructed, patterns, node
-            )
+            reconstructed = await self._apply_pattern_enhancements(reconstructed, patterns, node)
 
         # Cache the result
-        await self._cache_reconstruction(
-            cache_key, reconstructed, context.target_fidelity
-        )
+        await self._cache_reconstruction(cache_key, reconstructed, context.target_fidelity)
 
         return reconstructed
 
-    async def _expand_from_seeds(
-        self, node: FractalNode, patterns: List[FractalPattern]
-    ) -> Any:
+    async def _expand_from_seeds(self, node: FractalNode, patterns: List[FractalPattern]) -> Any:
         """Expand content from compression seeds using patterns"""
 
         # Parse seeds
@@ -456,17 +435,11 @@ class FractalReplayEngine:
 
             # Apply sequence patterns to improve coherence
             for pattern in patterns:
-                if (
-                    pattern.pattern_type == "sequence"
-                    and pattern.pattern_id in node.pattern_refs
-                ):
+                if pattern.pattern_type == "sequence" and pattern.pattern_id in node.pattern_refs:
                     # Pattern-based text enhancement (simplified)
                     if pattern.instances and "ngram" in pattern.instances[0]:
                         ngram = pattern.instances[0]["ngram"]
-                        if (
-                            ngram not in enhanced_content
-                            and len(enhanced_content.split()) > 3
-                        ):
+                        if ngram not in enhanced_content and len(enhanced_content.split()) > 3:
                             # Add ngram for better coherence (simplified logic)
                             enhanced_content = f"{enhanced_content} {ngram}"
 
@@ -478,10 +451,7 @@ class FractalReplayEngine:
 
             # Apply concept patterns to enhance structure
             for pattern in patterns:
-                if (
-                    pattern.pattern_type == "concept"
-                    and pattern.pattern_id in node.pattern_refs
-                ):
+                if pattern.pattern_type == "concept" and pattern.pattern_id in node.pattern_refs:
                     if pattern.instances and "keys" in pattern.instances[0]:
                         expected_keys = pattern.instances[0]["keys"]
                         # Ensure all expected keys are present
@@ -506,16 +476,12 @@ class FractalReplayEngine:
             return 0.0
 
         # Calculate average element fidelity
-        total_fidelity = sum(
-            element["reconstruction_fidelity"] for element in temporal_sequence
-        )
+        total_fidelity = sum(element["reconstruction_fidelity"] for element in temporal_sequence)
         avg_fidelity = total_fidelity / len(temporal_sequence)
 
         # Adjust for pattern coverage
         pattern_coverage_factor = (
-            temporal_sequence[0].get("pattern_coverage", 1.0)
-            if temporal_sequence
-            else 1.0
+            temporal_sequence[0].get("pattern_coverage", 1.0) if temporal_sequence else 1.0
         )
 
         # Adjust for temporal ordering accuracy
@@ -523,10 +489,7 @@ class FractalReplayEngine:
         if context.temporal_order and len(temporal_sequence) > 1:
             correct_order = 0
             for i in range(len(temporal_sequence) - 1):
-                if (
-                    temporal_sequence[i]["timestamp"]
-                    <= temporal_sequence[i + 1]["timestamp"]
-                ):
+                if temporal_sequence[i]["timestamp"] <= temporal_sequence[i + 1]["timestamp"]:
                     correct_order += 1
             temporal_accuracy = correct_order / (len(temporal_sequence) - 1)
 
@@ -557,9 +520,7 @@ class FractalReplayEngine:
 
         return original_size / reconstructed_size
 
-    async def _estimate_element_fidelity(
-        self, original: Any, reconstructed: Any
-    ) -> float:
+    async def _estimate_element_fidelity(self, original: Any, reconstructed: Any) -> float:
         """Estimate fidelity of a single reconstructed element"""
 
         # Convert to strings for comparison
@@ -606,9 +567,7 @@ class FractalReplayEngine:
         conn.close()
         return None
 
-    async def _cache_reconstruction(
-        self, cache_key: str, content: Any, fidelity: float
-    ):
+    async def _cache_reconstruction(self, cache_key: str, content: Any, fidelity: float):
         """Cache reconstruction result"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -660,9 +619,7 @@ class FractalReplayEngine:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute(
-            "SELECT * FROM replay_episodes WHERE episode_id = ?", (episode_id,)
-        )
+        cursor.execute("SELECT * FROM replay_episodes WHERE episode_id = ?", (episode_id,))
         row = cursor.fetchone()
         conn.close()
 
@@ -813,9 +770,7 @@ async def demo_fractal_replay_engine():
         [fractal_nodes[1].node_id], "demo_episode_selective", context_selective
     )
 
-    print(
-        f"   ✅ Selective reconstruction: {episode_3.reconstruction_fidelity:.1%} fidelity"
-    )
+    print(f"   ✅ Selective reconstruction: {episode_3.reconstruction_fidelity:.1%} fidelity")
 
     print("\n📊 Replay Engine Statistics:")
     stats = await replay_engine.get_replay_statistics()

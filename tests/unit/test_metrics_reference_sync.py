@@ -37,9 +37,7 @@ def test_metrics_reference_lists_core_chat_metrics():
             name.endswith("_total")
             or name.endswith("_current")
             or name.endswith("_count")
-        ):
-            prom = f"aetherra_chat_{name}"
-        elif name in ("latency_ms_sum", "latency_count", "ttft_ms_sum", "ttft_count"):
+        ) or name in ("latency_ms_sum", "latency_count", "ttft_ms_sum", "ttft_count"):
             prom = f"aetherra_chat_{name}"
         if not prom:
             continue

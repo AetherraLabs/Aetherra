@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 import torch
 from torch.onnx._internal.fx import _pass
 
-
 if TYPE_CHECKING:
     from collections.abc import Sequence
 

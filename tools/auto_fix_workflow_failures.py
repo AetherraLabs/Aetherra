@@ -32,9 +32,7 @@ import os
 import re
 import subprocess
 import sys
-from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
 
 # Root directory of the project
 ROOT_DIR = Path(__file__).parent.parent.resolve()
@@ -105,7 +103,7 @@ class WorkflowFixer:
         self.unicode_chars_replaced = 0
         self.errors = []
 
-    def find_python_files_with_unicode(self) -> List[Tuple[Path, int, Set[str]]]:
+    def find_python_files_with_unicode(self) -> list[tuple[Path, int, set[str]]]:
         """Find all Python files containing Unicode characters"""
         unicode_files = []
 
@@ -195,7 +193,7 @@ class WorkflowFixer:
             os.environ[var] = value
             print(f"  Set {var}={value}")
 
-    def verify_fixes(self, files_to_check: List[Path]) -> Tuple[int, int]:
+    def verify_fixes(self, files_to_check: list[Path]) -> tuple[int, int]:
         """Verify that fixes work by testing file imports/execution"""
         successful = 0
         failed = 0
@@ -249,7 +247,7 @@ class WorkflowFixer:
 
     def create_fix_script(self) -> None:
         """Create a standalone fix script for easy automation"""
-        script_content = f'''#!/usr/bin/env python3
+        script_content = '''#!/usr/bin/env python3
 # Auto-generated fix script for Aetherra workflow failures
 
 import os
@@ -332,7 +330,7 @@ if __name__ == "__main__":
                     other_fixed.append(full_path)
 
         # Summary
-        print(f"\n📊 Fix Summary:")
+        print("\n📊 Fix Summary:")
         print(f"  Files changed: {self.files_changed}")
         print(f"  Unicode characters replaced: {self.unicode_chars_replaced}")
         print(f"  Errors: {len(self.errors)}")

@@ -14,7 +14,9 @@ import functools
 import math
 import sys
 import warnings
-from typing import Callable, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING
+
 from typing_extensions import deprecated
 
 import torch
@@ -27,7 +29,6 @@ from torch import _C
 from torch.onnx import _constants, _type_utils, errors, symbolic_helper
 from torch.onnx._globals import GLOBALS
 from torch.onnx._internal import jit_utils, registration
-
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -402,16 +403,14 @@ def mul(g: jit_utils.GraphContext, self, other):
     if symbolic_helper._is_bool(self) and symbolic_helper._is_bool(other):
         # ONNX Mul doesn't support Boolean, so use And as an equivalent operator.
         return g.op("And", self, other)
-    else:
-        return g.op("Mul", self, other)
+    return g.op("Mul", self, other)
 
 
 @_onnx_symbolic("aten::div")
 def div(g: jit_utils.GraphContext, self, other, *args):
     if len(args) == 0:
         return true_divide(g, self, other)
-    else:
-        return _div_rounding_mode(g, self, other, *args)
+    return _div_rounding_mode(g, self, other, *args)
 
 
 @_onnx_symbolic("aten::addcmul")
@@ -425,15 +424,14 @@ def addcmul(g: jit_utils.GraphContext, self, tensor1, tensor2, value=1.0):
 def _div_rounding_mode(g: jit_utils.GraphContext, self, other, rounding_mode):
     if rounding_mode is None:
         return true_divide(g, self, other)
-    elif rounding_mode == "floor":
+    if rounding_mode == "floor":
         return _floor_divide(g, self, other)
-    elif rounding_mode == "trunc":
+    if rounding_mode == "trunc":
         return _trunc_divide(g, self, other)
-    else:
-        raise errors.SymbolicValueError(
-            f'Unsupported rounding mode: "{rounding_mode}". Expected None, "floor" or "trunc"',
-            self,
-        )
+    raise errors.SymbolicValueError(
+        f'Unsupported rounding mode: "{rounding_mode}". Expected None, "floor" or "trunc"',
+        self,
+    )
 
 
 def _trunc_divide(g: jit_utils.GraphContext, self, other):
@@ -471,24 +469,23 @@ def _floor_divide(g: jit_utils.GraphContext, self, other):
     if symbolic_helper._is_fp(self) or symbolic_helper._is_fp(other):
         out = true_divide(g, self, other)
         return g.op("Floor", out)
-    else:
-        # Integer division does trunction rounding
-        div = g.op("Div", self, other)
-        # Division is negative if: self < 0 != other < 0
-        zero = g.op("Constant", value_t=torch.tensor(0, dtype=torch.int64))
-        negative = g.op(
-            "Xor",
-            symbolic_helper._lt_helper(g, self, zero),
-            symbolic_helper._lt_helper(g, other, zero),
-        )
+    # Integer division does trunction rounding
+    div = g.op("Div", self, other)
+    # Division is negative if: self < 0 != other < 0
+    zero = g.op("Constant", value_t=torch.tensor(0, dtype=torch.int64))
+    negative = g.op(
+        "Xor",
+        symbolic_helper._lt_helper(g, self, zero),
+        symbolic_helper._lt_helper(g, other, zero),
+    )
 
-        # For negative numbers with self % other != 0, subtract 1 to round down instead of up
-        mod = g.op("Sub", self, g.op("Mul", div, other))
-        fixup_mask = g.op("And", negative, g.op("Not", g.op("Equal", mod, zero)))
+    # For negative numbers with self % other != 0, subtract 1 to round down instead of up
+    mod = g.op("Sub", self, g.op("Mul", div, other))
+    fixup_mask = g.op("And", negative, g.op("Not", g.op("Equal", mod, zero)))
 
-        one = g.op("Constant", value_t=torch.tensor(1, dtype=torch.int64))
-        fixup = g.op("Mul", fixup_mask, one)
-        return g.op("Sub", div, fixup)
+    one = g.op("Constant", value_t=torch.tensor(1, dtype=torch.int64))
+    fixup = g.op("Mul", fixup_mask, one)
+    return g.op("Sub", div, fixup)
 
 
 @_onnx_symbolic("aten::floor_divide")
@@ -977,11 +974,10 @@ def transpose(g: jit_utils.GraphContext, self, dim0, dim1):
         axes = list(range(rank))
         axes[dim0], axes[dim1] = axes[dim1], axes[dim0]
         return g.op("Transpose", self, perm_i=axes)
-    else:
-        raise errors.SymbolicValueError(
-            "Unsupported: ONNX export of transpose for tensor of unknown rank.",
-            self,
-        )
+    raise errors.SymbolicValueError(
+        "Unsupported: ONNX export of transpose for tensor of unknown rank.",
+        self,
+    )
 
 
 @_onnx_symbolic("aten::permute")
@@ -1109,9 +1105,8 @@ def select(g: jit_utils.GraphContext, self, dim, index):
             g, self, axes=[dim], starts=[index], ends=[end_index]
         )
         return symbolic_helper._squeeze_helper(g, slice_node, [dim])
-    else:
-        # FIXME(justinchuby): can index be an int and not a value?
-        return g.op("Gather", self, index, axis_i=dim)
+    # FIXME(justinchuby): can index be an int and not a value?
+    return g.op("Gather", self, index, axis_i=dim)
 
 
 @_onnx_symbolic("aten::square")
@@ -1444,7 +1439,9 @@ def _max_pool(name, tuple_fn, ndims, return_indices):
         padding = tuple(tuple_fn(padding))
         if ceil_mode:
             padding_ceil = get_pool_ceil_padding(input, kernel_size, stride, padding)
-            padding = padding + tuple(a + b for (a, b) in zip(padding_ceil, padding))
+            padding = padding + tuple(
+                a + b for (a, b) in zip(padding_ceil, padding, strict=False)
+            )
         else:
             padding = padding * 2
         kwargs = {
@@ -1484,9 +1481,8 @@ def _max_pool(name, tuple_fn, ndims, return_indices):
             )
             indices = sub(g, indices, s)
             return r, indices
-        else:
-            r = g.op("MaxPool", input, outputs=1, **kwargs)
-            return r
+        r = g.op("MaxPool", input, outputs=1, **kwargs)
+        return r
 
     return symbolic_fn
 
@@ -1577,7 +1573,7 @@ def _avg_pool(name, tuple_fn):
         if ceil_mode:
             padding_ceil = get_pool_ceil_padding(input, kernel_size, stride, padding)
             adjusted_padding = adjusted_padding + tuple(
-                a + b for (a, b) in zip(padding_ceil, adjusted_padding)
+                a + b for (a, b) in zip(padding_ceil, adjusted_padding, strict=False)
             )
         else:
             adjusted_padding = adjusted_padding * 2
@@ -1839,14 +1835,13 @@ def pad(
     mode = symbolic_helper._parse_arg(mode, "s")
     if mode == "replicate":
         return replication_pad(g, input, pad)
-    elif mode == "reflect":
+    if mode == "reflect":
         return reflection_pad(g, input, pad)
-    elif mode == "constant":
+    if mode == "constant":
         return constant_pad_nd(g, input, pad, value)
-    elif mode == "circular":
+    if mode == "circular":
         return _pad_circular(g, input, pad)
-    else:
-        raise errors.SymbolicValueError(f"Unrecognized padding mode {mode}", input)
+    raise errors.SymbolicValueError(f"Unrecognized padding mode {mode}", input)
 
 
 @_onnx_symbolic(
@@ -2319,8 +2314,7 @@ def _convolution(
         and symbolic_helper._get_tensor_rank(bias) != 1
     ):
         return g.op("Add", n, bias)
-    else:
-        return n
+    return n
 
 
 @_onnx_symbolic("aten::_convolution_mode")
@@ -2384,8 +2378,7 @@ def _convolution_mode(
         and symbolic_helper._get_tensor_rank(bias) != 1
     ):
         return g.op("Add", n, bias)
-    else:
-        return n
+    return n
 
 
 @_onnx_symbolic("aten::convolution")
@@ -2437,24 +2430,23 @@ def conv1d(
             dilation,
             groups,
         )
-    else:
-        padding = symbolic_helper._parse_arg(padding, "is")
-        return _convolution(
-            g,
-            input,
-            weight,
-            bias,
-            stride,
-            padding,
-            dilation,
-            False,
-            (),
-            groups,
-            None,
-            None,
-            None,
-            None,
-        )
+    padding = symbolic_helper._parse_arg(padding, "is")
+    return _convolution(
+        g,
+        input,
+        weight,
+        bias,
+        stride,
+        padding,
+        dilation,
+        False,
+        (),
+        groups,
+        None,
+        None,
+        None,
+        None,
+    )
 
 
 @_onnx_symbolic("aten::conv2d")
@@ -2474,24 +2466,23 @@ def conv2d(
             dilation,
             groups,
         )
-    else:
-        padding = symbolic_helper._parse_arg(padding, "is")
-        return _convolution(
-            g,
-            input,
-            weight,
-            bias,
-            stride,
-            padding,
-            dilation,
-            False,
-            (),
-            groups,
-            None,
-            None,
-            None,
-            None,
-        )
+    padding = symbolic_helper._parse_arg(padding, "is")
+    return _convolution(
+        g,
+        input,
+        weight,
+        bias,
+        stride,
+        padding,
+        dilation,
+        False,
+        (),
+        groups,
+        None,
+        None,
+        None,
+        None,
+    )
 
 
 @_onnx_symbolic("aten::conv3d")
@@ -2511,24 +2502,23 @@ def conv3d(
             dilation,
             groups,
         )
-    else:
-        padding = symbolic_helper._parse_arg(padding, "is")
-        return _convolution(
-            g,
-            input,
-            weight,
-            bias,
-            stride,
-            padding,
-            dilation,
-            False,
-            (),
-            groups,
-            None,
-            None,
-            None,
-            None,
-        )
+    padding = symbolic_helper._parse_arg(padding, "is")
+    return _convolution(
+        g,
+        input,
+        weight,
+        bias,
+        stride,
+        padding,
+        dilation,
+        False,
+        (),
+        groups,
+        None,
+        None,
+        None,
+        None,
+    )
 
 
 @_onnx_symbolic("aten::conv_transpose1d")
@@ -2672,13 +2662,12 @@ def batch_norm(
     )
     if not training:
         return out
-    else:
-        res, new_running_mean, new_running_var, saved_mean, saved_var = out
-        new_running_mean.setType(running_mean.type())
-        new_running_var.setType(running_var.type())
-        saved_mean.setDebugName("batch_norm_dead_output-" + saved_mean.debugName())
-        saved_var.setDebugName("batch_norm_dead_output-" + saved_var.debugName())
-        return res
+    res, new_running_mean, new_running_var, saved_mean, saved_var = out
+    new_running_mean.setType(running_mean.type())
+    new_running_var.setType(running_var.type())
+    saved_mean.setDebugName("batch_norm_dead_output-" + saved_mean.debugName())
+    saved_var.setDebugName("batch_norm_dead_output-" + saved_var.debugName())
+    return res
 
 
 @_onnx_symbolic("aten::native_layer_norm")
@@ -2821,56 +2810,55 @@ def instance_norm(
         or symbolic_helper._is_none(running_var)
     ):
         return g.op("InstanceNormalization", input, weight, bias, epsilon_f=eps)
-    else:
-        input_size = symbolic_helper._get_tensor_sizes(input)
-        # If input shape is [N, C, H, W], reshape to [1, N * C, H, W] and call batch_norm.
-        # For more information instance_norm():
-        # https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/Normalization.cpp#L542
-        input_size_reshape = input_size.copy()
-        n = input_size[0]
-        if n is None:
-            raise errors.SymbolicValueError(
-                "Unsupported: ONNX export of instance_norm training for unknown "
-                "batch size.",
-                input,
-            )
-        c = input_size[1]
-        input_size_reshape[0] = 1
-        input_size_reshape[1] = n * c
-        weight_ = repeat(
-            g, weight, g.op("Constant", value_t=torch.tensor([n], dtype=torch.int64))
-        )
-        bias_ = repeat(
-            g, bias, g.op("Constant", value_t=torch.tensor([n], dtype=torch.int64))
-        )
-        running_mean_ = repeat(
-            g,
-            running_mean,
-            g.op("Constant", value_t=torch.tensor([n], dtype=torch.int64)),
-        )
-        running_var_ = repeat(
-            g,
-            running_var,
-            g.op("Constant", value_t=torch.tensor([n], dtype=torch.int64)),
-        )
-        input_reshaped = g.op(
-            "Reshape",
+    input_size = symbolic_helper._get_tensor_sizes(input)
+    # If input shape is [N, C, H, W], reshape to [1, N * C, H, W] and call batch_norm.
+    # For more information instance_norm():
+    # https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/Normalization.cpp#L542
+    input_size_reshape = input_size.copy()
+    n = input_size[0]
+    if n is None:
+        raise errors.SymbolicValueError(
+            "Unsupported: ONNX export of instance_norm training for unknown "
+            "batch size.",
             input,
-            g.op("Constant", value_t=torch.LongTensor(input_size_reshape)),
         )
-        out = batch_norm(
-            g,
-            input_reshaped,
-            weight_,
-            bias_,
-            running_mean_,
-            running_var_,
-            use_input_stats,
-            momentum,
-            eps,
-            cudnn_enabled,
-        )
-        return view(g, out, g.op("Constant", value_t=torch.tensor(input_size)))
+    c = input_size[1]
+    input_size_reshape[0] = 1
+    input_size_reshape[1] = n * c
+    weight_ = repeat(
+        g, weight, g.op("Constant", value_t=torch.tensor([n], dtype=torch.int64))
+    )
+    bias_ = repeat(
+        g, bias, g.op("Constant", value_t=torch.tensor([n], dtype=torch.int64))
+    )
+    running_mean_ = repeat(
+        g,
+        running_mean,
+        g.op("Constant", value_t=torch.tensor([n], dtype=torch.int64)),
+    )
+    running_var_ = repeat(
+        g,
+        running_var,
+        g.op("Constant", value_t=torch.tensor([n], dtype=torch.int64)),
+    )
+    input_reshaped = g.op(
+        "Reshape",
+        input,
+        g.op("Constant", value_t=torch.LongTensor(input_size_reshape)),
+    )
+    out = batch_norm(
+        g,
+        input_reshaped,
+        weight_,
+        bias_,
+        running_mean_,
+        running_var_,
+        use_input_stats,
+        momentum,
+        eps,
+        cudnn_enabled,
+    )
+    return view(g, out, g.op("Constant", value_t=torch.tensor(input_size)))
 
 
 @_onnx_symbolic("aten::unfold")
@@ -2891,7 +2879,7 @@ def unfold(g: jit_utils.GraphContext, input, dimension, size, step):
             symbolic_helper._slice_helper(
                 g, input, axes=[dimension], starts=[low], ends=[hi]
             )
-            for low, hi in zip(low_indices, hi_indices)
+            for low, hi in zip(low_indices, hi_indices, strict=False)
         ]
         ndim = len(sizes)
         perm = list(range(0, ndim))
@@ -2903,10 +2891,7 @@ def unfold(g: jit_utils.GraphContext, input, dimension, size, step):
             for t in stack
         ]
         return g.op("Concat", *unsqueeze, axis_i=dimension)
-    else:
-        return symbolic_helper._unimplemented(
-            "Unfold", "input size not accessible", input
-        )
+    return symbolic_helper._unimplemented("Unfold", "input size not accessible", input)
 
 
 @_onnx_symbolic("aten::elu")
@@ -3119,20 +3104,18 @@ def clamp(g: jit_utils.GraphContext, self, min, max):
     # Clip separately, as ONNX does not have None syntax
     if symbolic_helper._is_none(min):
         return clamp_max(g, self, max)
-    elif symbolic_helper._is_none(max):
+    if symbolic_helper._is_none(max):
         return clamp_min(g, self, min)
-    else:
-        if symbolic_helper._is_constant(min) and symbolic_helper._is_constant(max):
-            return symbolic_helper._op_with_optional_float_cast(
-                g,
-                "Clip",
-                self,
-                min_f=symbolic_helper._parse_arg(min, "f"),
-                max_f=symbolic_helper._parse_arg(max, "f"),
-                opset_before=12,
-            )
-        else:
-            return clamp_max(g, clamp_min(g, self, min), max)
+    if symbolic_helper._is_constant(min) and symbolic_helper._is_constant(max):
+        return symbolic_helper._op_with_optional_float_cast(
+            g,
+            "Clip",
+            self,
+            min_f=symbolic_helper._parse_arg(min, "f"),
+            max_f=symbolic_helper._parse_arg(max, "f"),
+            opset_before=12,
+        )
+    return clamp_max(g, clamp_min(g, self, min), max)
 
 
 @_onnx_symbolic("aten::clamp_min")
@@ -3142,12 +3125,11 @@ def clamp_min(g: jit_utils.GraphContext, self, min):
         return symbolic_helper._op_with_optional_float_cast(
             g, "Clip", self, min_f=symbolic_helper._parse_arg(min, "f"), opset_before=12
         )
-    else:
-        dtype = _type_utils.JitScalarType.from_value(self)
-        min = g.op("Cast", min, to_i=dtype.onnx_type())
-        return symbolic_helper._op_with_optional_float_cast(
-            g, "Max", self, min, opset_before=12
-        )
+    dtype = _type_utils.JitScalarType.from_value(self)
+    min = g.op("Cast", min, to_i=dtype.onnx_type())
+    return symbolic_helper._op_with_optional_float_cast(
+        g, "Max", self, min, opset_before=12
+    )
 
 
 @_onnx_symbolic("aten::clamp_max")
@@ -3157,12 +3139,11 @@ def clamp_max(g: jit_utils.GraphContext, self, max):
         return symbolic_helper._op_with_optional_float_cast(
             g, "Clip", self, max_f=symbolic_helper._parse_arg(max, "f"), opset_before=12
         )
-    else:
-        dtype = _type_utils.JitScalarType.from_value(self)
-        max = g.op("Cast", max, to_i=dtype.onnx_type())
-        return symbolic_helper._op_with_optional_float_cast(
-            g, "Min", self, max, opset_before=12
-        )
+    dtype = _type_utils.JitScalarType.from_value(self)
+    max = g.op("Cast", max, to_i=dtype.onnx_type())
+    return symbolic_helper._op_with_optional_float_cast(
+        g, "Min", self, max, opset_before=12
+    )
 
 
 @_onnx_symbolic("aten::max")
@@ -3433,14 +3414,12 @@ def tensor(
             t = g.op("Cast", t, to_i=_type_utils.JitScalarType(dtype).onnx_type())
             input_list.append(t)
         return g.op("Concat", *input_list, axis_i=0)
-    else:
-        if dtype is None:
-            dtype = _type_utils.JitScalarType.from_value(data)
-        if symbolic_helper._is_list(data) and (
-            symbolic_helper._is_tensor_list(data)
-            or symbolic_helper._is_scalar_list(data)
-        ):
-            data = g.op("ConcatFromSequence", data, axis_i=0, new_axis_i=1)
+    if dtype is None:
+        dtype = _type_utils.JitScalarType.from_value(data)
+    if symbolic_helper._is_list(data) and (
+        symbolic_helper._is_tensor_list(data) or symbolic_helper._is_scalar_list(data)
+    ):
+        data = g.op("ConcatFromSequence", data, axis_i=0, new_axis_i=1)
     return g.op("Cast", data, to_i=_type_utils.JitScalarType(dtype).onnx_type())
 
 
@@ -3570,20 +3549,19 @@ def full(
         dtype = _type_utils.JitScalarType.FLOAT if dtype is None else dtype
         tmp = zeros(g, sizes, dtype, layout, device)
         return add(g, tmp, value, g.op("Constant", value_t=torch.tensor(1)))
+    dtype = symbolic_helper._get_const(dtype, "i", "dtype")
+    if dtype is None:
+        scalar_type = _type_utils.JitScalarType.FLOAT
     else:
-        dtype = symbolic_helper._get_const(dtype, "i", "dtype")
-        if dtype is None:
-            scalar_type = _type_utils.JitScalarType.FLOAT
-        else:
-            scalar_type = _type_utils.JitScalarType(dtype)
-        sizes_ = symbolic_helper._maybe_get_const(sizes, "is")
-        if isinstance(sizes_, list) and len(sizes_) == 0:
-            sizes = g.op("Constant", value_t=torch.tensor([]).to(torch.int64))
-        return g.op(
-            "ConstantOfShape",
-            sizes,
-            value_t=const_value.view(1).to(scalar_type.dtype()),
-        )
+        scalar_type = _type_utils.JitScalarType(dtype)
+    sizes_ = symbolic_helper._maybe_get_const(sizes, "is")
+    if isinstance(sizes_, list) and len(sizes_) == 0:
+        sizes = g.op("Constant", value_t=torch.tensor([]).to(torch.int64))
+    return g.op(
+        "ConstantOfShape",
+        sizes,
+        value_t=const_value.view(1).to(scalar_type.dtype()),
+    )
 
 
 @_onnx_symbolic("aten::full_like")
@@ -3609,13 +3587,12 @@ def full_like(
         tmp = zeros_like(g, input, dtype, layout, device)
         fill_value = g.op("Cast", fill_value, to_i=scalar_type.onnx_type())
         return add(g, tmp, fill_value, g.op("Constant", value_t=torch.tensor(1)))
-    else:
-        shape = g.op("Shape", input)
-        return g.op(
-            "ConstantOfShape",
-            shape,
-            value_t=torch.tensor([fill_value], dtype=scalar_type.dtype()),
-        )
+    shape = g.op("Shape", input)
+    return g.op(
+        "ConstantOfShape",
+        shape,
+        value_t=torch.tensor([fill_value], dtype=scalar_type.dtype()),
+    )
 
 
 @_onnx_symbolic("aten::new_full")
@@ -3687,29 +3664,27 @@ def slice(g: jit_utils.GraphContext, self, *args):
                     "variables or export to a higher opset version.",
                     self,
                 )
-            else:
-                start_unsqueezed = symbolic_helper._unsqueeze_helper(g, start, [0])
-                end_unsqueezed = symbolic_helper._unsqueeze_helper(g, end, [0])
-                dim_unsqueezed = symbolic_helper._unsqueeze_helper(g, dim, [0])
-                return g.op(
-                    "DynamicSlice",
-                    self,
-                    start_unsqueezed,
-                    end_unsqueezed,
-                    dim_unsqueezed,
-                )
-        else:
-            start = 0 if is_start_none else symbolic_helper._parse_arg(start, "i")
-            end = (
-                _constants.INT64_MAX
-                if is_end_none
-                else symbolic_helper._parse_arg(end, "i")
+            start_unsqueezed = symbolic_helper._unsqueeze_helper(g, start, [0])
+            end_unsqueezed = symbolic_helper._unsqueeze_helper(g, end, [0])
+            dim_unsqueezed = symbolic_helper._unsqueeze_helper(g, dim, [0])
+            return g.op(
+                "DynamicSlice",
+                self,
+                start_unsqueezed,
+                end_unsqueezed,
+                dim_unsqueezed,
             )
-            dim = symbolic_helper._parse_arg(dim, "i")
-            return symbolic_helper._slice_helper(
-                g, self, axes=[dim], starts=[start], ends=[end]
-            )
-    elif len(args) == 3:
+        start = 0 if is_start_none else symbolic_helper._parse_arg(start, "i")
+        end = (
+            _constants.INT64_MAX
+            if is_end_none
+            else symbolic_helper._parse_arg(end, "i")
+        )
+        dim = symbolic_helper._parse_arg(dim, "i")
+        return symbolic_helper._slice_helper(
+            g, self, axes=[dim], starts=[start], ends=[end]
+        )
+    if len(args) == 3:
         # aten::slice(t[] l, int start, int end, int step) -> t[]
         start, end, step = args
         dim = 0
@@ -3909,12 +3884,12 @@ def to(g: jit_utils.GraphContext, self, *args):
                 or args[0].type().isSubtypeOf(_C.ListType.ofInts())
                 or isinstance(args[0].type(), _C.DeviceObjType)
             )
-        elif len(args) == 5:
+        if len(args) == 5:
             # aten::to(Tensor, Device, ScalarType, bool, bool, memory_format)
             # When dtype is None, this is a aten::to(device) call
             dtype = symbolic_helper._get_const(args[1], "i", "dtype")
             return dtype is None
-        elif len(args) in (6, 7):
+        if len(args) in (6, 7):
             # aten::to(Tensor, ScalarType, Layout, Device, bool, bool, memory_format) -> Tensor
             # aten::to(Tensor, ScalarType, Layout, Device, bool, bool, bool, memory_format) -> Tensor
             # When dtype is None, this is a aten::to(device) call
@@ -3951,21 +3926,20 @@ def to(g: jit_utils.GraphContext, self, *args):
                 self,
                 to_i=dtype.onnx_type(),
             )
-        else:
-            # aten::to(Tensor, ScalarType, bool, bool, memory_format)
-            # memory_format is ignored
-            return g.op("Cast", self, to_i=_type_utils.JitScalarType(dtype).onnx_type())
-    elif len(args) == 5:
+        # aten::to(Tensor, ScalarType, bool, bool, memory_format)
+        # memory_format is ignored
+        return g.op("Cast", self, to_i=_type_utils.JitScalarType(dtype).onnx_type())
+    if len(args) == 5:
         # aten::to(Tensor, Device, ScalarType, bool, bool, memory_format)
         dtype = symbolic_helper._get_const(args[1], "i", "dtype")
         # memory_format is ignored
         return g.op("Cast", self, to_i=_type_utils.JitScalarType(dtype).onnx_type())
-    elif len(args) == 6:
+    if len(args) == 6:
         # aten::to(Tensor, ScalarType, Layout, Device, bool, bool, memory_format) -> Tensor
         dtype = symbolic_helper._get_const(args[0], "i", "dtype")
         # Layout, device and memory_format are ignored
         return g.op("Cast", self, to_i=_type_utils.JitScalarType(dtype).onnx_type())
-    elif len(args) == 7:
+    if len(args) == 7:
         # aten::to(Tensor, ScalarType, Layout, Device, bool, bool, bool, memory_format) -> Tensor
         dtype = symbolic_helper._get_const(args[0], "i", "dtype")
         # Layout, device and memory_format are ignored
@@ -4039,7 +4013,7 @@ def repeat_interleave(
         )
 
     # Cases where repeats is a 1 dim Tensor
-    elif repeats_dim == 1:
+    if repeats_dim == 1:
         if input_sizes[dim] == 0:
             return symbolic_helper._onnx_opset_unsupported_detailed(
                 "repeat_interleave",
@@ -4119,43 +4093,42 @@ def pixel_shuffle(g: jit_utils.GraphContext, self, upscale_factor):
             allowzero=0,
         )
         return symbolic_helper._squeeze_helper(g, reshape_w, [3, 5])
-    else:
-        output_channel = dims[1] // upscale_factor // upscale_factor
-        after_view = symbolic_helper._reshape_helper(
-            g,
-            self,
-            g.op(
-                "Constant",
-                value_t=torch.tensor(
-                    [
-                        -1,
-                        output_channel,
-                        upscale_factor,
-                        upscale_factor,
-                        dims[2],
-                        dims[3],
-                    ]
-                ),
+    output_channel = dims[1] // upscale_factor // upscale_factor
+    after_view = symbolic_helper._reshape_helper(
+        g,
+        self,
+        g.op(
+            "Constant",
+            value_t=torch.tensor(
+                [
+                    -1,
+                    output_channel,
+                    upscale_factor,
+                    upscale_factor,
+                    dims[2],
+                    dims[3],
+                ]
             ),
-            allowzero=0,
-        )
-        after_transpose = g.op("Transpose", after_view, perm_i=[0, 1, 4, 2, 5, 3])
-        return symbolic_helper._reshape_helper(
-            g,
-            after_transpose,
-            g.op(
-                "Constant",
-                value_t=torch.tensor(
-                    [
-                        -1,
-                        output_channel,
-                        dims[2] * upscale_factor,
-                        dims[3] * upscale_factor,
-                    ]
-                ),
+        ),
+        allowzero=0,
+    )
+    after_transpose = g.op("Transpose", after_view, perm_i=[0, 1, 4, 2, 5, 3])
+    return symbolic_helper._reshape_helper(
+        g,
+        after_transpose,
+        g.op(
+            "Constant",
+            value_t=torch.tensor(
+                [
+                    -1,
+                    output_channel,
+                    dims[2] * upscale_factor,
+                    dims[3] * upscale_factor,
+                ]
             ),
-            allowzero=0,
-        )
+        ),
+        allowzero=0,
+    )
 
 
 @_onnx_symbolic("aten::pixel_unshuffle")
@@ -4188,43 +4161,42 @@ def pixel_unshuffle(g: jit_utils.GraphContext, self, downscale_factor):
             allowzero=0,
         )
         return symbolic_helper._squeeze_helper(g, final_reshape, [2, 3])
-    else:
-        output_channel = dims[1] * downscale_factor * downscale_factor
-        after_view = symbolic_helper._reshape_helper(
-            g,
-            self,
-            g.op(
-                "Constant",
-                value_t=torch.tensor(
-                    [
-                        -1,
-                        dims[1],
-                        dims[2] // downscale_factor,
-                        downscale_factor,
-                        dims[3] // downscale_factor,
-                        downscale_factor,
-                    ]
-                ),
+    output_channel = dims[1] * downscale_factor * downscale_factor
+    after_view = symbolic_helper._reshape_helper(
+        g,
+        self,
+        g.op(
+            "Constant",
+            value_t=torch.tensor(
+                [
+                    -1,
+                    dims[1],
+                    dims[2] // downscale_factor,
+                    downscale_factor,
+                    dims[3] // downscale_factor,
+                    downscale_factor,
+                ]
             ),
-            allowzero=0,
-        )
-        after_transpose = g.op("Transpose", after_view, perm_i=[0, 1, 3, 5, 2, 4])
-        return symbolic_helper._reshape_helper(
-            g,
-            after_transpose,
-            g.op(
-                "Constant",
-                value_t=torch.tensor(
-                    [
-                        -1,
-                        output_channel,
-                        dims[2] // downscale_factor,
-                        dims[3] // downscale_factor,
-                    ]
-                ),
+        ),
+        allowzero=0,
+    )
+    after_transpose = g.op("Transpose", after_view, perm_i=[0, 1, 3, 5, 2, 4])
+    return symbolic_helper._reshape_helper(
+        g,
+        after_transpose,
+        g.op(
+            "Constant",
+            value_t=torch.tensor(
+                [
+                    -1,
+                    output_channel,
+                    dims[2] // downscale_factor,
+                    dims[3] // downscale_factor,
+                ]
             ),
-            allowzero=0,
-        )
+        ),
+        allowzero=0,
+    )
 
 
 def _generic_rnn(
@@ -4265,7 +4237,11 @@ def _generic_rnn(
         "Softplus",
     ]
     variantToOnnxActivationMap = dict(
-        zip([act_fun.lower() for act_fun in onnxActivations], onnxActivations)
+        zip(
+            [act_fun.lower() for act_fun in onnxActivations],
+            onnxActivations,
+            strict=False,
+        )
     )
     weights_per_layer = 4 if has_biases else 2
     # this means that projections are used inside LSTM, so need to tell user that it's not supported
@@ -4448,7 +4424,7 @@ def _generic_rnn(
     h_outs = h_out if num_layers == 1 else g.op("Concat", *h_outs, axis_i=0)  # type: ignore[possibly-undefined]
     if variant == "RNN" or variant == "GRU":
         return prev_output, h_outs
-    elif variant == "LSTM":
+    if variant == "LSTM":
         c_outs = c_out if num_layers == 1 else g.op("Concat", *c_outs, axis_i=0)  # type: ignore[possibly-undefined]
         return prev_output, h_outs, c_outs
 
@@ -4521,8 +4497,7 @@ def _lstm_packed(
 def lstm(g: jit_utils.GraphContext, *args):
     if symbolic_helper._is_tensor_list(args[3]):
         return _lstm_packed(g, *args)
-    else:
-        return _lstm_full(g, *args)
+    return _lstm_full(g, *args)
 
 
 @_onnx_symbolic("aten::lstm_cell")
@@ -4623,8 +4598,7 @@ def _one_hidden_rnn(kind: str):
     def symbolic(g, *args):
         if symbolic_helper._is_tensor_list(args[3]):
             return _rnn_packed(g, *args)
-        else:
-            return _rnn_full(g, *args)
+        return _rnn_full(g, *args)
 
     return symbolic
 
@@ -4994,8 +4968,7 @@ def _all(g: jit_utils.GraphContext, *args):
     if len(args) == 1:
         return g.op("Not", _any(g, input))
     # aten::all(Tensor self, int[]? dim, bool keepdim)
-    else:
-        return g.op("Not", _any(g, input, args[1], args[2]))
+    return g.op("Not", _any(g, input, args[1], args[2]))
 
 
 @_onnx_symbolic("aten::narrow")
@@ -5037,13 +5010,12 @@ def scatter(g: jit_utils.GraphContext, self, dim, index, src):
     src = symbolic_helper._maybe_get_scalar(src)
     if symbolic_helper._is_value(src):
         return g.op("Scatter", self, index, src, axis_i=dim)
-    else:
-        # Check if scalar "src" has same type as self (PyTorch allows different
-        # type for scalar src (but not when src is tensor)). If not, insert Cast node.
-        self_scalar_type = _type_utils.JitScalarType.from_value(self)
-        if self_scalar_type != src_type:
-            src = g.op("Cast", src, to_i=self_scalar_type.onnx_type())
-        return g.op("Scatter", self, index, expand_as(g, src, index), axis_i=dim)
+    # Check if scalar "src" has same type as self (PyTorch allows different
+    # type for scalar src (but not when src is tensor)). If not, insert Cast node.
+    self_scalar_type = _type_utils.JitScalarType.from_value(self)
+    if self_scalar_type != src_type:
+        src = g.op("Cast", src, to_i=self_scalar_type.onnx_type())
+    return g.op("Scatter", self, index, expand_as(g, src, index), axis_i=dim)
 
 
 @_onnx_symbolic("aten::scatter_add")
@@ -5147,8 +5119,7 @@ def var(g: jit_utils.GraphContext, input, *args):
 def var_mean(g: jit_utils.GraphContext, input, *args):
     if len(args) == 1:
         return _var_mean(g, input, None, args[0], None)
-    else:
-        return _var_mean(g, input, *args)
+    return _var_mean(g, input, *args)
 
 
 @_onnx_symbolic("aten::std_mean")
@@ -5196,7 +5167,7 @@ def arange(g: jit_utils.GraphContext, *args):
         return g.op(
             "Cast", arange_tensor, to_i=_type_utils.JitScalarType(dtype).onnx_type()
         )
-    elif len(args) == 4 or len(args) == 7:
+    if len(args) == 4 or len(args) == 7:
         if len(args) == 4:
             # aten::arange(Scalar start, Scalar end, Scalar step, Tensor out)
             dtype = None
@@ -5217,7 +5188,7 @@ def arange(g: jit_utils.GraphContext, *args):
         return g.op(
             "Cast", arange_tensor, to_i=_type_utils.JitScalarType(dtype).onnx_type()
         )
-    elif len(args) == 6:
+    if len(args) == 6:
         # aten::arange(Scalar start, Scalar end, ScalarType dtype, Layout, Device, bool pin_memory)
         dtype = _get_arange_dtype(args[2])
         dtype, end, start, step = symbolic_helper._arange_cast_helper(
@@ -5308,135 +5279,118 @@ def index(g: jit_utils.GraphContext, self, index):
         return symbolic_helper._select_helper(
             g, self, 0, indices[0], apply_reshape=False
         )
-    else:
-        # Multiple tensors as indices. Each tensor could either be
-        #   1. prim::Constant()
-        #           representing ":" in python indexing. E.g. tensor[:, :]
-        #   2. prim::Constant[value=...] or tensor output
-        #           representing advanced indexing. E.g. tensor[[0, 1], [2, 0]].
-        # For more info on advanced indexing,
-        # check https://numpy.org/doc/stable/user/basics.indexing.html#advanced-indexing
+    # Multiple tensors as indices. Each tensor could either be
+    #   1. prim::Constant()
+    #           representing ":" in python indexing. E.g. tensor[:, :]
+    #   2. prim::Constant[value=...] or tensor output
+    #           representing advanced indexing. E.g. tensor[[0, 1], [2, 0]].
+    # For more info on advanced indexing,
+    # check https://numpy.org/doc/stable/user/basics.indexing.html#advanced-indexing
 
-        # Consider a general case of
-        #       t: [x_1, y_1, y_2, ..., x_m, ..., y_n]
-        # where t is a tensor of rank m+n, {x_i} are axes where tensor index is provided, and {y_i} are axes for ":".
-        # Same results can be achieved through transposing t into
-        #       t: [x_1, x_2, ..., x_m, y_1, y_2, ..., y_n]
-        # and use gatherND. However ONNX does not have gatherND, to use 1d gather we'll need to flatten t
-        # and process the tensor indices.
-        #       t: [x_1 * x_2 * ... * x_m, y_1 * y_2 * ... * y_n]
-        #       tensor index = \sum_{i=1}^m (ind_i * \prod_{j=i+1}^m (x_j))
-        # After gather, reshape and transpose back.
-        adv_idx_indices = [
-            i for i, idx in enumerate(indices) if not symbolic_helper._is_none(idx)
-        ]
+    # Consider a general case of
+    #       t: [x_1, y_1, y_2, ..., x_m, ..., y_n]
+    # where t is a tensor of rank m+n, {x_i} are axes where tensor index is provided, and {y_i} are axes for ":".
+    # Same results can be achieved through transposing t into
+    #       t: [x_1, x_2, ..., x_m, y_1, y_2, ..., y_n]
+    # and use gatherND. However ONNX does not have gatherND, to use 1d gather we'll need to flatten t
+    # and process the tensor indices.
+    #       t: [x_1 * x_2 * ... * x_m, y_1 * y_2 * ... * y_n]
+    #       tensor index = \sum_{i=1}^m (ind_i * \prod_{j=i+1}^m (x_j))
+    # After gather, reshape and transpose back.
+    adv_idx_indices = [
+        i for i, idx in enumerate(indices) if not symbolic_helper._is_none(idx)
+    ]
 
-        if len(adv_idx_indices) == 0:
-            return self
-        elif len(adv_idx_indices) == 1:
-            return index_select(
-                g, self, adv_idx_indices[0], indices[adv_idx_indices[0]]
-            )
-        else:
-            rank = symbolic_helper._get_tensor_rank(self)
-            if rank is None:
-                return symbolic_helper._unimplemented(
-                    "aten::index",
-                    "operator of advanced indexing on tensor of unknown rank. ",
-                    self,
-                )
-            # TODO: If indexing is supported natively in ONNX in future opsets,
-            #       update the warning to recommend exporting with higher opset version.
-            warnings.warn(
-                "Exporting aten::index operator of advanced indexing in opset "
-                f"{GLOBALS.export_onnx_opset_version}"
-                " is achieved by combination of multiple ONNX operators, "
-                "including Reshape, Transpose, Concat, and Gather. "
-                "If indices include negative values, the exported graph will produce incorrect results."
-            )
-            adv_idx_count = len(adv_idx_indices)
-            shape_tensor = _shape_as_tensor(g, self)
-            dim_tensor_list = [
-                g.op(
-                    "Gather",
-                    shape_tensor,
-                    g.op("Constant", value_t=torch.LongTensor([dim])),
-                    axis_i=0,
-                )
-                for dim in range(rank)
+    if len(adv_idx_indices) == 0:
+        return self
+    if len(adv_idx_indices) == 1:
+        return index_select(g, self, adv_idx_indices[0], indices[adv_idx_indices[0]])
+    rank = symbolic_helper._get_tensor_rank(self)
+    if rank is None:
+        return symbolic_helper._unimplemented(
+            "aten::index",
+            "operator of advanced indexing on tensor of unknown rank. ",
+            self,
+        )
+    # TODO: If indexing is supported natively in ONNX in future opsets,
+    #       update the warning to recommend exporting with higher opset version.
+    warnings.warn(
+        "Exporting aten::index operator of advanced indexing in opset "
+        f"{GLOBALS.export_onnx_opset_version}"
+        " is achieved by combination of multiple ONNX operators, "
+        "including Reshape, Transpose, Concat, and Gather. "
+        "If indices include negative values, the exported graph will produce incorrect results."
+    )
+    adv_idx_count = len(adv_idx_indices)
+    shape_tensor = _shape_as_tensor(g, self)
+    dim_tensor_list = [
+        g.op(
+            "Gather",
+            shape_tensor,
+            g.op("Constant", value_t=torch.LongTensor([dim])),
+            axis_i=0,
+        )
+        for dim in range(rank)
+    ]
+
+    self = g.op(
+        "Transpose",
+        self,
+        perm_i=adv_idx_indices + [i for i in range(rank) if i not in adv_idx_indices],
+    )
+    self = g.op("Flatten", self, axis_i=adv_idx_count)
+
+    # Note that tensor indices will be broadcasted while accumulating. Thus we get the final subarray shape as well.
+    cum_adv_index = indices[adv_idx_indices[-1]]
+    multiplier = dim_tensor_list[adv_idx_indices[-1]]
+    for i in range(adv_idx_count - 2, -1, -1):
+        adv_index = g.op("Mul", indices[adv_idx_indices[i]], multiplier)
+        cum_adv_index = g.op("Add", cum_adv_index, adv_index)
+        multiplier = g.op("Mul", multiplier, dim_tensor_list[adv_idx_indices[i]])
+
+    # perform gather
+    self = index_select(g, self, 0, cum_adv_index)
+
+    cum_adv_index_shape_tensor = _shape_as_tensor(g, cum_adv_index)
+    # check if all advanced indices are consecutive.
+    # Refer to https://numpy.org/doc/stable/user/basics.indexing.html#combining-advanced-and-basic-indexing
+    # to understand how the subarray position is decided.
+    if adv_idx_indices == list(range(adv_idx_indices[0], adv_idx_indices[-1] + 1)):
+        # unfold regular index axes
+        folded_adv_idx_shape_list = [
+            g.op("Constant", value_t=torch.LongTensor([-1]))
+        ] + [dim_tensor_list[i] for i in range(rank) if i not in adv_idx_indices]
+        folded_adv_idx_shape = g.op("Concat", *folded_adv_idx_shape_list, axis_i=0)
+        self = symbolic_helper._reshape_helper(g, self, folded_adv_idx_shape)
+
+        # Transpose folded advanced indexed axis to its original location.
+        adv_idx_permute = (
+            list(range(1, adv_idx_indices[0] + 1))
+            + [0]
+            + list(range(adv_idx_indices[0] + 1, rank - adv_idx_count + 1))
+        )
+        self = g.op("Transpose", self, perm_i=adv_idx_permute)
+
+        # unfold advanced index axes
+        final_shape_list = (
+            [dim_tensor_list[i] for i in range(adv_idx_indices[0])]
+            + [cum_adv_index_shape_tensor]
+            + [
+                dim_tensor_list[i]
+                for i in range(adv_idx_indices[0], rank)
+                if i not in adv_idx_indices
             ]
+        )
+        final_shape = g.op("Concat", *final_shape_list, axis_i=0)
+    else:
+        final_shape = g.op(
+            "Concat",
+            cum_adv_index_shape_tensor,
+            *[dim_tensor_list[i] for i in range(rank) if i not in adv_idx_indices],
+            axis_i=0,
+        )
 
-            self = g.op(
-                "Transpose",
-                self,
-                perm_i=adv_idx_indices
-                + [i for i in range(rank) if i not in adv_idx_indices],
-            )
-            self = g.op("Flatten", self, axis_i=adv_idx_count)
-
-            # Note that tensor indices will be broadcasted while accumulating. Thus we get the final subarray shape as well.
-            cum_adv_index = indices[adv_idx_indices[-1]]
-            multiplier = dim_tensor_list[adv_idx_indices[-1]]
-            for i in range(adv_idx_count - 2, -1, -1):
-                adv_index = g.op("Mul", indices[adv_idx_indices[i]], multiplier)
-                cum_adv_index = g.op("Add", cum_adv_index, adv_index)
-                multiplier = g.op(
-                    "Mul", multiplier, dim_tensor_list[adv_idx_indices[i]]
-                )
-
-            # perform gather
-            self = index_select(g, self, 0, cum_adv_index)
-
-            cum_adv_index_shape_tensor = _shape_as_tensor(g, cum_adv_index)
-            # check if all advanced indices are consecutive.
-            # Refer to https://numpy.org/doc/stable/user/basics.indexing.html#combining-advanced-and-basic-indexing
-            # to understand how the subarray position is decided.
-            if adv_idx_indices == list(
-                range(adv_idx_indices[0], adv_idx_indices[-1] + 1)
-            ):
-                # unfold regular index axes
-                folded_adv_idx_shape_list = [
-                    g.op("Constant", value_t=torch.LongTensor([-1]))
-                ] + [
-                    dim_tensor_list[i] for i in range(rank) if i not in adv_idx_indices
-                ]
-                folded_adv_idx_shape = g.op(
-                    "Concat", *folded_adv_idx_shape_list, axis_i=0
-                )
-                self = symbolic_helper._reshape_helper(g, self, folded_adv_idx_shape)
-
-                # Transpose folded advanced indexed axis to its original location.
-                adv_idx_permute = (
-                    list(range(1, adv_idx_indices[0] + 1))
-                    + [0]
-                    + list(range(adv_idx_indices[0] + 1, rank - adv_idx_count + 1))
-                )
-                self = g.op("Transpose", self, perm_i=adv_idx_permute)
-
-                # unfold advanced index axes
-                final_shape_list = (
-                    [dim_tensor_list[i] for i in range(adv_idx_indices[0])]
-                    + [cum_adv_index_shape_tensor]
-                    + [
-                        dim_tensor_list[i]
-                        for i in range(adv_idx_indices[0], rank)
-                        if i not in adv_idx_indices
-                    ]
-                )
-                final_shape = g.op("Concat", *final_shape_list, axis_i=0)
-            else:
-                final_shape = g.op(
-                    "Concat",
-                    cum_adv_index_shape_tensor,
-                    *[
-                        dim_tensor_list[i]
-                        for i in range(rank)
-                        if i not in adv_idx_indices
-                    ],
-                    axis_i=0,
-                )
-
-            return symbolic_helper._reshape_helper(g, self, final_shape)
+    return symbolic_helper._reshape_helper(g, self, final_shape)
 
 
 @_onnx_symbolic("aten::linalg_norm")
@@ -5501,51 +5455,50 @@ def linalg_matrix_norm(
     ord_value = symbolic_helper._parse_arg(ord, "s")
     if ord_value == "fro":
         return frobenius_norm(g, self, dim, keepdim)
-    elif ord_value == "nuc":
+    if ord_value == "nuc":
         return symbolic_helper._unimplemented("linalg.matrix_norm", "ord==nuc", self)
-    else:
-        ord_value = symbolic_helper._parse_arg(ord, "f")
-        if ord_value is None:
-            return frobenius_norm(g, self, dim, keepdim)
-        if ord_value == 2 or ord_value == -2:
-            # ord = 2/-2 unimplemented due to lack of operators
-            # used to calculate singular values
-            return symbolic_helper._unimplemented("linalg.matrix_norm", "ord==2", self)
-        # Wrap the dim vector to handle negative dim values
-        self_dim = symbolic_helper._get_tensor_rank(self)
-        if self_dim is None:
-            return symbolic_helper._unimplemented(
-                "linalg.matrix_norm", "Input rank must be known at export time.", self
-            )
-        # Common implementation for cases with
-        # ord = 1/-1 and ord = inf/-inf
-        if dim[0] < 0:
-            dim[0] += self_dim
-        if dim[1] < 0:
-            dim[1] += self_dim
-
-        if ord_value == math.inf or ord_value == -math.inf:
-            dim[0], dim[1] = dim[1], dim[0]
-        if dim[1] > dim[0] and not keepdim:
-            dim[1] -= 1
-        sum = symbolic_helper._reducesum_helper(
-            g, g.op("Abs", self), axes_i=[dim[0]], keepdims_i=keepdim
+    ord_value = symbolic_helper._parse_arg(ord, "f")
+    if ord_value is None:
+        return frobenius_norm(g, self, dim, keepdim)
+    if ord_value == 2 or ord_value == -2:
+        # ord = 2/-2 unimplemented due to lack of operators
+        # used to calculate singular values
+        return symbolic_helper._unimplemented("linalg.matrix_norm", "ord==2", self)
+    # Wrap the dim vector to handle negative dim values
+    self_dim = symbolic_helper._get_tensor_rank(self)
+    if self_dim is None:
+        return symbolic_helper._unimplemented(
+            "linalg.matrix_norm", "Input rank must be known at export time.", self
         )
-        if ord_value > 0:
-            result, _indices = max(
-                g,
-                sum,
-                dim_or_y=g.op("Constant", value_t=torch.LongTensor([dim[1]])),
-                keepdim=keepdim,
-            )
-        else:
-            result, _indices = min(
-                g,
-                sum,
-                dim_or_y=g.op("Constant", value_t=torch.LongTensor([dim[1]])),
-                keepdim=keepdim,
-            )
-        return result
+    # Common implementation for cases with
+    # ord = 1/-1 and ord = inf/-inf
+    if dim[0] < 0:
+        dim[0] += self_dim
+    if dim[1] < 0:
+        dim[1] += self_dim
+
+    if ord_value == math.inf or ord_value == -math.inf:
+        dim[0], dim[1] = dim[1], dim[0]
+    if dim[1] > dim[0] and not keepdim:
+        dim[1] -= 1
+    sum = symbolic_helper._reducesum_helper(
+        g, g.op("Abs", self), axes_i=[dim[0]], keepdims_i=keepdim
+    )
+    if ord_value > 0:
+        result, _indices = max(
+            g,
+            sum,
+            dim_or_y=g.op("Constant", value_t=torch.LongTensor([dim[1]])),
+            keepdim=keepdim,
+        )
+    else:
+        result, _indices = min(
+            g,
+            sum,
+            dim_or_y=g.op("Constant", value_t=torch.LongTensor([dim[1]])),
+            keepdim=keepdim,
+        )
+    return result
 
 
 @_onnx_symbolic("aten::linalg_cross")
@@ -5659,17 +5612,16 @@ def gelu(g: jit_utils.GraphContext, self: torch._C.Value, approximate: str = "no
         self_cube = mul(g, self, mul(g, self, self))
         inner = mul(g, beta, add(g, self, mul(g, kappa, self_cube)))
         return mul(g, half, mul(g, self, add(g, one, g.op("Tanh", inner))))
-    else:
-        _sqrt2 = 1.4142135623730951
-        erf = g.op("Erf", g.op("Div", self, torch.tensor(_sqrt2, dtype=torch.double)))
-        erf_plusone = add(
-            g, erf, g.op("Constant", value_t=torch.tensor(1, dtype=torch.double))
-        )
-        return mul(
-            g,
-            mul(g, self, erf_plusone),
-            g.op("Constant", value_t=torch.tensor(0.5, dtype=torch.double)),
-        )
+    _sqrt2 = 1.4142135623730951
+    erf = g.op("Erf", g.op("Div", self, torch.tensor(_sqrt2, dtype=torch.double)))
+    erf_plusone = add(
+        g, erf, g.op("Constant", value_t=torch.tensor(1, dtype=torch.double))
+    )
+    return mul(
+        g,
+        mul(g, self, erf_plusone),
+        g.op("Constant", value_t=torch.tensor(0.5, dtype=torch.double)),
+    )
 
 
 @_onnx_symbolic("aten::group_norm")
@@ -5833,14 +5785,13 @@ def kl_div(g: jit_utils.GraphContext, input, target, reduction, log_target):
 
     if reduction == 0:
         return output
-    elif reduction == 1:
+    if reduction == 1:
         return g.op("ReduceMean", output, keepdims_i=0)
-    elif reduction == 2:
+    if reduction == 2:
         return symbolic_helper._reducesum_helper(g, output, keepdims_i=0)
-    else:
-        return symbolic_helper._onnx_unsupported(
-            "kl_div with reduction other than none, mean, or sum.", input
-        )
+    return symbolic_helper._onnx_unsupported(
+        "kl_div with reduction other than none, mean, or sum.", input
+    )
 
 
 @_onnx_symbolic("aten::mse_loss")
@@ -5849,14 +5800,13 @@ def mse_loss(g: jit_utils.GraphContext, input, target, reduction):
     output = mul(g, sub(g, input, target), sub(g, input, target))
     if reduction == 0:
         return output
-    elif reduction == 1:
+    if reduction == 1:
         return g.op("ReduceMean", output, keepdims_i=0)
-    elif reduction == 2:
+    if reduction == 2:
         return symbolic_helper._reducesum_helper(g, output, keepdims_i=0)
-    else:
-        return symbolic_helper._onnx_unsupported(
-            "mse_loss with reduction other than none, mean, or sum.", input
-        )
+    return symbolic_helper._onnx_unsupported(
+        "mse_loss with reduction other than none, mean, or sum.", input
+    )
 
 
 @_onnx_symbolic("aten::as_strided")
@@ -5871,39 +5821,36 @@ def as_strided(g: jit_utils.GraphContext, self, sizes, strides, offset=None):
     ind: torch.Tensor | None
     if not symbolic_helper._is_value(sizes):
         ind = torch.tensor([0], dtype=torch.long)
-        for i, (size, stride) in enumerate(zip(sizes, strides)):
+        for i, (size, stride) in enumerate(zip(sizes, strides, strict=False)):
             r_size = [1] * rank
             r_size[i] = -1
             ind = ind + torch.arange(size).view(r_size) * stride
         if offset:
             ind = ind + offset
         return g.op("Gather", self_1d, g.op("Constant", value_t=ind))
-    else:
-        ind = None
-        for i, stride in enumerate(strides):
-            r_size = [1] * rank
-            r_size[i] = -1
-            size = select(
-                g,
-                sizes,
-                g.op("Constant", value_t=torch.tensor([0])),
-                g.op("Constant", value_t=torch.tensor(i)),
-            )
-            tmp_ind = symbolic_helper._reshape_helper(
-                g,
-                arange(g, size, 4, None, None, None),
-                g.op("Constant", value_t=torch.tensor(r_size)),
-            )
-            tmp_ind = g.op(
-                "Mul", tmp_ind, g.op("Constant", value_t=torch.tensor([stride]))
-            )
-            if ind is None:
-                ind = tmp_ind
-            else:
-                ind = g.op("Add", ind, tmp_ind)
-        if offset:
-            ind = g.op("Add", ind, g.op("Constant", torch.tensor([offset])))
-        return g.op("Gather", self_1d, ind)
+    ind = None
+    for i, stride in enumerate(strides):
+        r_size = [1] * rank
+        r_size[i] = -1
+        size = select(
+            g,
+            sizes,
+            g.op("Constant", value_t=torch.tensor([0])),
+            g.op("Constant", value_t=torch.tensor(i)),
+        )
+        tmp_ind = symbolic_helper._reshape_helper(
+            g,
+            arange(g, size, 4, None, None, None),
+            g.op("Constant", value_t=torch.tensor(r_size)),
+        )
+        tmp_ind = g.op("Mul", tmp_ind, g.op("Constant", value_t=torch.tensor([stride])))
+        if ind is None:
+            ind = tmp_ind
+        else:
+            ind = g.op("Add", ind, tmp_ind)
+    if offset:
+        ind = g.op("Add", ind, g.op("Constant", torch.tensor([offset])))
+    return g.op("Gather", self_1d, ind)
 
 
 @_onnx_symbolic("aten::__derive_index")
@@ -6012,7 +5959,7 @@ def movedim(g: jit_utils.GraphContext, self, source, destination):
     src_dims = perm.copy()
     dst_dims = perm.copy()
 
-    for src, dst in zip(source.tolist(), destination.tolist()):
+    for src, dst in zip(source.tolist(), destination.tolist(), strict=False):
         perm[dst] = src
         src_dims[src] = -1
         dst_dims[dst] = -1
@@ -6020,7 +5967,7 @@ def movedim(g: jit_utils.GraphContext, self, source, destination):
     src_dims = [dim for dim in src_dims if dim != -1]
     dst_dims = [dim for dim in dst_dims if dim != -1]
 
-    for src, dst in zip(src_dims, dst_dims):
+    for src, dst in zip(src_dims, dst_dims, strict=False):
         perm[dst] = src
 
     return g.op("Transpose", self, perm_i=perm)
@@ -6411,7 +6358,9 @@ def prim_loop(g: jit_utils.GraphContext, *inputs, **attrs) -> list[_C.Value]:
         g, "Loop", *inputs, outputs=node.outputsSize(), n_blocks=len(old_blocks)
     )
 
-    for old_block, new_block_context in zip(old_blocks, new_block_contexts):
+    for old_block, new_block_context in zip(
+        old_blocks, new_block_contexts, strict=False
+    ):
         # Copy input metadata to subblock
         #
         #   prim::Loop(iter, cond, input_1, ..., input_n)
@@ -6514,30 +6463,31 @@ def prim_if(g: jit_utils.GraphContext, *inputs, **attrs) -> list[_C.Value]:
             onnx_b = env[current_b_list[idx]]
             final_b_list.append(onnx_b)
         return final_b_list
-    else:
-        old_blocks = tuple(n.blocks())
-        _new_op_outputs, new_block_contexts, new_node = jit_utils.add_op_with_blocks(
-            g, "If", *inputs, outputs=n.outputsSize(), n_blocks=len(old_blocks)
-        )
+    old_blocks = tuple(n.blocks())
+    _new_op_outputs, new_block_contexts, new_node = jit_utils.add_op_with_blocks(
+        g, "If", *inputs, outputs=n.outputsSize(), n_blocks=len(old_blocks)
+    )
 
-        for old_block, new_block_context in zip(old_blocks, new_block_contexts):
-            torch._C._jit_pass_onnx_block(
-                old_block,
-                new_block_context.block,
-                operator_export_type,
-                env,
-                values_in_env,
-                False,
-            )
-        fixed_outputs = torch._C._jit_pass_fixup_onnx_controlflow_node(
-            new_node, opset_version
+    for old_block, new_block_context in zip(
+        old_blocks, new_block_contexts, strict=False
+    ):
+        torch._C._jit_pass_onnx_block(
+            old_block,
+            new_block_context.block,
+            operator_export_type,
+            env,
+            values_in_env,
+            False,
         )
-        # Run shape type inference for If after subblock is converted.
-        if GLOBALS.onnx_shape_inference:
-            torch._C._jit_pass_onnx_node_shape_type_inference(
-                new_node, params_dict, opset_version
-            )
-        return fixed_outputs
+    fixed_outputs = torch._C._jit_pass_fixup_onnx_controlflow_node(
+        new_node, opset_version
+    )
+    # Run shape type inference for If after subblock is converted.
+    if GLOBALS.onnx_shape_inference:
+        torch._C._jit_pass_onnx_node_shape_type_inference(
+            new_node, params_dict, opset_version
+        )
+    return fixed_outputs
 
 
 @_onnx_symbolic("prim::Constant")

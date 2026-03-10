@@ -31,9 +31,7 @@ class BiasDetectionEngine:
         self.bias_patterns = self._initialize_bias_patterns()
         self.detection_history = []
 
-    def detect_bias(
-        self, content: str, context: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+    def detect_bias(self, content: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Detect potential bias in content.
 

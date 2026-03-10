@@ -7,13 +7,13 @@ import os
 import pickletools
 import platform
 import types
-from collections import defaultdict, OrderedDict
-from collections.abc import Sequence
+from collections import OrderedDict, defaultdict
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from enum import Enum
 from importlib.machinery import SourceFileLoader
 from pathlib import Path
-from typing import Any, Callable, cast, IO, Optional, Union
+from typing import IO, Any, cast
 
 import torch
 from torch.serialization import location_tag, normalize_storage_type
@@ -28,7 +28,6 @@ from ._stdlib import is_stdlib_module
 from .find_file_dependencies import find_files_source_depends_on
 from .glob_group import GlobGroup, GlobPattern
 from .importer import Importer, OrderedImporter, sys_importer
-
 
 __all__ = [
     "PackagingErrorReason",
@@ -203,7 +202,7 @@ class PackageExporter:
     def __init__(
         self,
         f: FileLike,
-        importer: Union[Importer, Sequence[Importer]] = sys_importer,
+        importer: Importer | Sequence[Importer] = sys_importer,
         debug: bool = False,
     ) -> None:
         """
@@ -220,7 +219,7 @@ class PackageExporter:
         self.debug = debug
         if isinstance(f, (str, os.PathLike)):
             f = os.fspath(f)
-            self.buffer: Optional[IO[bytes]] = None
+            self.buffer: IO[bytes] | None = None
         else:  # is a byte buffer
             self.buffer = f
 
@@ -433,7 +432,7 @@ class PackageExporter:
         except Exception:
             return False
 
-    def _get_source_of_module(self, module: types.ModuleType) -> Optional[str]:
+    def _get_source_of_module(self, module: types.ModuleType) -> str | None:
         filename = None
         spec = getattr(module, "__spec__", None)
         if spec is not None:
@@ -605,9 +604,9 @@ class PackageExporter:
             dependencies (bool, optional): If ``True``, we scan the source for dependencies.
         """
 
-        assert (pickle_protocol == 4) or (
-            pickle_protocol == 3
-        ), "torch.package only supports pickle protocols 3 and 4"
+        assert (pickle_protocol == 4) or (pickle_protocol == 3), (
+            "torch.package only supports pickle protocols 3 and 4"
+        )
 
         filename = self._filename(package, resource)
         # Write the pickle data for `obj`
@@ -625,7 +624,7 @@ class PackageExporter:
             is_pickle=True,
         )
 
-        def _check_mocked_error(module: Optional[str], field: Optional[str]):
+        def _check_mocked_error(module: str | None, field: str | None):
             """
             checks if an object (field) comes from a mocked module and then adds
             the pair to mocked_modules which contains mocked modules paired with their
@@ -1104,7 +1103,7 @@ class PackageExporter:
         return self.dependency_graph.to_dot()
 
     def _nodes_with_action_type(
-        self, action: Optional[_ModuleProviderAction]
+        self, action: _ModuleProviderAction | None
     ) -> list[str]:
         result = []
         for name, node_dict in self.dependency_graph.nodes.items():
@@ -1158,8 +1157,7 @@ class PackageExporter:
         """
         if module_name in self.dependency_graph._pred.keys():
             return list(self.dependency_graph._pred[module_name].keys())
-        else:
-            return []
+        return []
 
     def all_paths(self, src: str, dst: str) -> str:
         """Return a dot representation of the subgraph

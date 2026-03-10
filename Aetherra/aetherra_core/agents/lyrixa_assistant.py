@@ -164,25 +164,21 @@ class LyrixaAssistant:
             if self.lyrixa_core:
                 response = await self.lyrixa_core.chat(message, merged_context)
             else:
-                response = await self._generate_fallback_response(
-                    message, merged_context
-                )
+                response = await self._generate_fallback_response(message, merged_context)
 
             # Add response to conversation history
             conversation_entry["assistant_response"] = response
 
-            logger.info(
-                f"💬 Chat processed: {len(message)} chars -> {len(response)} chars"
-            )
+            logger.info(f"💬 Chat processed: {len(message)} chars -> {len(response)} chars")
             return response
 
         except Exception as e:
             logger.error(f"❌ Chat processing failed: {e}")
-            return f"I apologize, but I encountered an error while processing your message: {str(e)}"
+            return (
+                f"I apologize, but I encountered an error while processing your message: {str(e)}"
+            )
 
-    async def _generate_fallback_response(
-        self, message: str, context: Dict[str, Any]
-    ) -> str:
+    async def _generate_fallback_response(self, message: str, context: Dict[str, Any]) -> str:
         """Generate a fallback response when core is not available"""
         responses = [
             f"I understand you're asking about: {message}",
@@ -358,9 +354,7 @@ class LyrixaAssistant:
             {"code": code, "language": language},
         )
 
-    async def ask_question(
-        self, question: str, context: Optional[Dict[str, Any]] = None
-    ) -> str:
+    async def ask_question(self, question: str, context: Optional[Dict[str, Any]] = None) -> str:
         """
         Ask a question to the assistant
 
@@ -373,9 +367,7 @@ class LyrixaAssistant:
         """
         return await self.chat(question, context)
 
-    async def suggest_improvements(
-        self, target: str, target_type: str = "code"
-    ) -> Dict[str, Any]:
+    async def suggest_improvements(self, target: str, target_type: str = "code") -> Dict[str, Any]:
         """
         Get improvement suggestions
 
@@ -392,9 +384,7 @@ class LyrixaAssistant:
             {"target": target, "target_type": target_type},
         )
 
-    def get_conversation_history(
-        self, limit: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
+    def get_conversation_history(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         """
         Get conversation history
 

@@ -79,7 +79,13 @@ class PluginInterface:
 
     async def execute(self, input_data: Any, context: Dict[str, Any]) -> PluginResult:
         """Execute the plugin"""
-        raise NotImplementedError("Subclasses must implement execute method")
+        return PluginResult(
+            success=False,
+            data=None,
+            error="Plugin interface execute() is not implemented for this plugin",
+            execution_time=0.0,
+            metadata={"plugin_id": self.plugin_id, "fallback": True},
+        )
 
     async def validate_input(self, input_data: Any) -> bool:
         """Validate input data"""
@@ -87,7 +93,8 @@ class PluginInterface:
 
     async def cleanup(self):
         """Cleanup resources"""
-        pass
+        self.dependencies = []
+        self.capabilities = []
 
 
 class ConditionalExecutor:
@@ -153,9 +160,7 @@ class ChainOptimizer:
 
         # Keep only recent history
         if len(self.performance_history[plugin_id]) > 100:
-            self.performance_history[plugin_id] = self.performance_history[plugin_id][
-                -100:
-            ]
+            self.performance_history[plugin_id] = self.performance_history[plugin_id][-100:]
 
 
 class PluginChainExecutor:
@@ -256,9 +261,7 @@ class PluginChainExecutor:
         self.active_executions[chain_id] = execution
 
         try:
-            logger.info(
-                f"Starting chain execution {chain_id} with strategy {strategy.value}"
-            )
+            logger.info(f"Starting chain execution {chain_id} with strategy {strategy.value}")
             execution.status = ExecutionStatus.RUNNING
 
             # Validate all plugins are registered
@@ -268,25 +271,15 @@ class PluginChainExecutor:
 
             # Execute based on strategy
             if strategy == ChainStrategy.SEQUENTIAL:
-                results = await self._execute_sequential(
-                    plugins, execution.context, conditions
-                )
+                results = await self._execute_sequential(plugins, execution.context, conditions)
             elif strategy == ChainStrategy.PARALLEL:
-                results = await self._execute_parallel(
-                    plugins, execution.context, conditions
-                )
+                results = await self._execute_parallel(plugins, execution.context, conditions)
             elif strategy == ChainStrategy.CONDITIONAL:
-                results = await self._execute_conditional(
-                    plugins, execution.context, conditions
-                )
+                results = await self._execute_conditional(plugins, execution.context, conditions)
             elif strategy == ChainStrategy.PIPELINE:
-                results = await self._execute_pipeline(
-                    plugins, execution.context, conditions
-                )
+                results = await self._execute_pipeline(plugins, execution.context, conditions)
             elif strategy == ChainStrategy.ADAPTIVE:
-                results = await self._execute_adaptive(
-                    plugins, execution.context, conditions
-                )
+                results = await self._execute_adaptive(plugins, execution.context, conditions)
             else:
                 raise ValueError(f"Unsupported strategy: {strategy}")
 
@@ -321,9 +314,7 @@ class PluginChainExecutor:
 
         for plugin_id in plugins:
             if conditions and plugin_id in conditions:
-                if not self.conditional_executor.evaluate_condition(
-                    conditions[plugin_id], context
-                ):
+                if not self.conditional_executor.evaluate_condition(conditions[plugin_id], context):
                     logger.info(f"Skipping plugin {plugin_id} due to condition")
                     continue
 
@@ -345,9 +336,7 @@ class PluginChainExecutor:
                 self.optimizer.record_performance(plugin_id, execution_time)
 
                 results.append(result)
-                logger.debug(
-                    f"Plugin {plugin_id} executed successfully in {execution_time:.2f}s"
-                )
+                logger.debug(f"Plugin {plugin_id} executed successfully in {execution_time:.2f}s")
 
             except Exception as e:
                 execution_time = asyncio.get_event_loop().time() - start_time
@@ -377,16 +366,12 @@ class PluginChainExecutor:
 
         for plugin_id in plugins:
             if conditions and plugin_id in conditions:
-                if not self.conditional_executor.evaluate_condition(
-                    conditions[plugin_id], context
-                ):
+                if not self.conditional_executor.evaluate_condition(conditions[plugin_id], context):
                     continue
 
             plugin = self.registered_plugins[plugin_id]
             task = asyncio.create_task(
-                self._execute_single_plugin(
-                    plugin, context.get("initial_input"), context
-                )
+                self._execute_single_plugin(plugin, context.get("initial_input"), context)
             )
             tasks.append((plugin_id, task))
 
@@ -456,17 +441,13 @@ class PluginChainExecutor:
 
         for plugin_id in plugins:
             if conditions and plugin_id in conditions:
-                if not self.conditional_executor.evaluate_condition(
-                    conditions[plugin_id], context
-                ):
+                if not self.conditional_executor.evaluate_condition(conditions[plugin_id], context):
                     continue
 
             plugin = self.registered_plugins[plugin_id]
 
             try:
-                result = await self._execute_single_plugin(
-                    plugin, current_data, context
-                )
+                result = await self._execute_single_plugin(plugin, current_data, context)
                 results.append(result)
 
                 # Pipeline: output becomes input for next stage
@@ -505,9 +486,7 @@ class PluginChainExecutor:
             return await self._execute_parallel(optimized_plugins, context, conditions)
         except Exception:
             logger.warning("Parallel execution failed, falling back to sequential")
-            return await self._execute_sequential(
-                optimized_plugins, context, conditions
-            )
+            return await self._execute_sequential(optimized_plugins, context, conditions)
 
     async def _execute_single_plugin(
         self, plugin: PluginInterface, input_data: Any, context: Dict[str, Any]
@@ -560,9 +539,7 @@ class PluginChainExecutor:
                     execution.start_time.isoformat(),
                     execution.end_time.isoformat() if execution.end_time else None,
                     json.dumps(
-                        [asdict(r) for r in execution.results]
-                        if execution.results
-                        else [],
+                        [asdict(r) for r in execution.results] if execution.results else [],
                         default=str,
                     ),
                     json.dumps(execution.context, default=str),
@@ -670,9 +647,7 @@ async def test_plugin_chain_executor():
     print(f"Sequential execution: {execution.status.value}")
     if execution.results:
         for result in execution.results:
-            print(
-                f"  {result.plugin_id}: {result.success} ({result.execution_time:.2f}s)"
-            )
+            print(f"  {result.plugin_id}: {result.success} ({result.execution_time:.2f}s)")
 
     # Test parallel execution
     execution = await executor.execute_chain(
@@ -684,9 +659,7 @@ async def test_plugin_chain_executor():
     print(f"Parallel execution: {execution.status.value}")
     if execution.results:
         for result in execution.results:
-            print(
-                f"  {result.plugin_id}: {result.success} ({result.execution_time:.2f}s)"
-            )
+            print(f"  {result.plugin_id}: {result.success} ({result.execution_time:.2f}s)")
 
 
 if __name__ == "__main__":

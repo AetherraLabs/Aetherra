@@ -4,25 +4,25 @@ import inspect
 import logging
 import sys
 from collections import defaultdict
-from enum import auto, Enum
-from typing import Any, Callable, Optional, TYPE_CHECKING, Union
+from collections.abc import Callable
+from enum import Enum, auto
+from typing import TYPE_CHECKING, Any, Union
 
 import torch
 from torch.utils._pytree import (
-    _get_node_type,
     BUILTIN_TYPES,
-    keystr,
+    SUPPORTED_NODES,
     LeafSpec,
     MappingKey,
     SequenceKey,
-    SUPPORTED_NODES,
+    _get_node_type,
+    keystr,
     tree_flatten,
     tree_map,
     tree_map_with_path,
 )
 
 from .exported_program import ExportedProgram
-
 
 if TYPE_CHECKING:
     from sympy import Symbol
@@ -58,9 +58,9 @@ class _DimHintType(Enum):
 @dataclasses.dataclass
 class _DimHint:
     type: _DimHintType
-    min: Optional[int] = None
-    max: Optional[int] = None
-    _factory: Optional[bool] = True
+    min: int | None = None
+    max: int | None = None
+    _factory: bool | None = True
 
     @staticmethod
     def AUTO():
@@ -146,9 +146,7 @@ class Dim:
     DYNAMIC = _DimHint.DYNAMIC()
     STATIC = _DimHint.STATIC()
 
-    def __init__(
-        self, name: str, *, min: Optional[int] = None, max: Optional[int] = None
-    ):
+    def __init__(self, name: str, *, min: int | None = None, max: int | None = None):
         from torch.utils._sympy.numbers import int_oo
 
         _min = 0 if min is None else min
@@ -326,7 +324,7 @@ class _DerivedDim(Dim):
 
 
 def dims(
-    *names: str, min: Optional[int] = None, max: Optional[int] = None
+    *names: str, min: int | None = None, max: int | None = None
 ) -> tuple[Dim, ...]:
     """
     Util to create multiple :func:`Dim` types.
@@ -450,7 +448,7 @@ class _DerivedConstraint(_ConstraintTarget):
 
     name: str
     constraint_range: "StrictMinMaxConstraint"
-    root: Union[_ConstraintTarget, _PhantomRoot]
+    root: _ConstraintTarget | _PhantomRoot
     fn: Callable
 
     @property
@@ -494,9 +492,7 @@ class _IntWrapper:
 
     val: int
     # Disallow specifying dynamism
-    dynamism: Optional[Union[_DimHint, int]] = dataclasses.field(
-        init=False, default=None
-    )
+    dynamism: _DimHint | int | None = dataclasses.field(init=False, default=None)
 
 
 def _process_equalities(
@@ -562,7 +558,7 @@ def _tree_map_with_path(
     func: Callable[..., Any],
     tree: Any,
     *dynamic_shapes: Any,
-    tree_name: Optional[str] = None,
+    tree_name: str | None = None,
 ) -> Any:
     """
     Customized tree_map for mapping pytrees to dynamic_shapes.
@@ -602,8 +598,7 @@ def _tree_map_with_path(
                 *dynamic_shapes,
                 is_leaf=is_leaf,
             )
-        else:
-            return func(path, t, *dynamic_shapes)
+        return func(path, t, *dynamic_shapes)
 
     try:
         return tree_map_with_path(f, tree, *dynamic_shapes, is_leaf=is_leaf)
@@ -661,13 +656,19 @@ def _tree_map_with_path(
                             f"but `dynamic_shapes{rendered_path}` has keys {dynamic_shapes.context}"
                         )
                     _remap = dict(
-                        zip(dynamic_shapes.context, dynamic_shapes.children_specs)
+                        zip(
+                            dynamic_shapes.context,
+                            dynamic_shapes.children_specs,
+                            strict=False,
+                        )
                     )
                     dynamic_shapes_children_specs = [_remap[k] for k in tree.context]
                 else:
                     dynamic_shapes_children_specs = dynamic_shapes.children_specs
                 for i, (tree_, dynamic_shapes_) in enumerate(
-                    zip(tree.children_specs, dynamic_shapes_children_specs)
+                    zip(
+                        tree.children_specs, dynamic_shapes_children_specs, strict=False
+                    )
                 ):
                     _compare(
                         tree_,
@@ -779,8 +780,7 @@ class ShapesCollection:
             if t_id in self._shapes:
                 t_ids.add(t_id)
                 return self._shapes[t_id]
-            else:
-                return None
+            return None
 
         combined_args = _combine_args(m, args, kwargs)
         dynamic_shapes = _tree_map_with_path(find_shape, combined_args)
@@ -859,15 +859,13 @@ class AdditionalInputs:
             if isinstance(v, int) and not isinstance(v, bool):
                 if all(other_v == v for other_v in other_vs):
                     return None
-                else:
-                    return Dim.DYNAMIC
-            else:
-                if not all(other_v == v for other_v in other_vs):
-                    raise ValueError(
-                        "The following inputs were found to have differing values, "
-                        f"but they cannot be marked as dynamic: {(v,) + other_vs}."
-                    )
-                return None
+                return Dim.DYNAMIC
+            if not all(other_v == v for other_v in other_vs):
+                raise ValueError(
+                    "The following inputs were found to have differing values, "
+                    f"but they cannot be marked as dynamic: {(v,) + other_vs}."
+                )
+            return None
 
         return tree_map(
             _mark_dynamism,
@@ -899,7 +897,7 @@ def _warn_on_None_dynamic_shape_dimension():
 
 def _check_dynamic_shapes(
     combined_args: dict[str, Any],
-    dynamic_shapes: Union[dict[str, Any], tuple[Any], list[Any], None],
+    dynamic_shapes: dict[str, Any] | tuple[Any] | list[Any] | None,
 ):
     """
     Checks the dynamic_shapes specification for correctness,
@@ -1029,7 +1027,7 @@ def _check_dynamic_shapes(
 
 def _process_dynamic_shapes(
     combined_args: dict[str, Any],
-    dynamic_shapes: Union[dict[str, Any], tuple[Any], list[Any], None],
+    dynamic_shapes: dict[str, Any] | tuple[Any] | list[Any] | None,
 ) -> list[Constraint]:
     """
     Reads the dynamic_shapes specification and produces a list of constraints.
@@ -1065,12 +1063,11 @@ def _process_dynamic_shapes(
             solution = try_solve(sympy.Eq(expr, tensor.shape[i]), symbol)
             if solution is not None:
                 return int(solution[1])
-            else:
-                raise UserError(  # noqa: B904
-                    UserErrorType.CONSTRAINT_VIOLATION,
-                    f"Expected shape[{i}] = {tensor.shape[i]} of input Tensor to be "
-                    f"of the form {expr}, where {symbol} is an integer",
-                )
+            raise UserError(  # noqa: B904
+                UserErrorType.CONSTRAINT_VIOLATION,
+                f"Expected shape[{i}] = {tensor.shape[i]} of input Tensor to be "
+                f"of the form {expr}, where {symbol} is an integer",
+            )
 
         if isinstance(dim, _DerivedDim):
             # generate a _DerivedConstraint where the root is:
@@ -1206,7 +1203,7 @@ def _process_dynamic_shapes(
 
 
 def _get_dim_name_mapping(
-    dynamic_shapes: Union[dict[str, Any], tuple[Any], list[Any], None],
+    dynamic_shapes: dict[str, Any] | tuple[Any] | list[Any] | None,
 ):
     name_to_dim = {}
     for dim in tree_flatten(
@@ -1218,7 +1215,7 @@ def _get_dim_name_mapping(
             continue
         if isinstance(dim, int):
             continue
-        elif isinstance(dim, Dim):
+        if isinstance(dim, Dim):
             name_to_dim[dim.__name__] = dim
             if isinstance(dim, _DerivedDim):
                 name_to_dim[dim.root.__name__] = dim.root  # type: ignore[attr-defined]
@@ -1229,8 +1226,8 @@ def _get_dim_name_mapping(
 
 def refine_dynamic_shapes_from_suggested_fixes(
     msg: str,
-    dynamic_shapes: Union[dict[str, Any], tuple[Any], list[Any]],
-) -> Union[dict[str, Any], tuple[Any], list[Any]]:
+    dynamic_shapes: dict[str, Any] | tuple[Any] | list[Any],
+) -> dict[str, Any] | tuple[Any] | list[Any]:
     """
     When exporting with :func:`dynamic_shapes`, export may fail with a ConstraintViolation error if the specification
     doesn't match the constraints inferred from tracing the model. The error message may provide suggested fixes -
@@ -1319,37 +1316,35 @@ def refine_dynamic_shapes_from_suggested_fixes(
     def apply_fixes(path, dim, dummy):
         if dim is None or isinstance(dim, int):  # not dynamic
             return dim
-        elif dim.__name__ in shape_fixes:  # directly fix
+        if dim.__name__ in shape_fixes:  # directly fix
             fix = shape_fixes[dim.__name__]
             if isinstance(fix, sympy.Expr):  # now derived or related
                 if str(fix) in derived_dim_cache:
                     return derived_dim_cache[str(fix)]
+                symbol = next(iter(fix.free_symbols))
+                # try to locate symbol
+                if symbol.name in shape_fixes:
+                    root = shape_fixes[symbol.name]
                 else:
-                    symbol = next(iter(fix.free_symbols))
-                    # try to locate symbol
-                    if symbol.name in shape_fixes:
-                        root = shape_fixes[symbol.name]
-                    else:
-                        assert symbol.name in name_to_dim
-                        root = name_to_dim[symbol.name]
-                    # figure out value of fix
-                    modulus, remainder = sympy.polys.polytools.div(fix, symbol)
-                    dim = root
-                    if modulus != 1:
-                        dim = int(modulus) * dim
-                    if remainder != 0:
-                        dim = dim + int(remainder)
-                    derived_dim_cache[str(fix)] = dim
-                    return dim
-            else:
-                return fix
-        elif isinstance(dim, _DerivedDim) and dim.root.__name__ in shape_fixes:  # type: ignore[attr-defined]
+                    assert symbol.name in name_to_dim
+                    root = name_to_dim[symbol.name]
+                # figure out value of fix
+                modulus, remainder = sympy.polys.polytools.div(fix, symbol)
+                dim = root
+                if modulus != 1:
+                    dim = int(modulus) * dim
+                if remainder != 0:
+                    dim = dim + int(remainder)
+                derived_dim_cache[str(fix)] = dim
+                return dim
+            return fix
+        if isinstance(dim, _DerivedDim) and dim.root.__name__ in shape_fixes:  # type: ignore[attr-defined]
             if dim.__name__ in derived_dim_cache:
                 return derived_dim_cache[dim.__name__]
-            else:  # evaluate new derived value based on root
-                _dim = dim.fn(shape_fixes[dim.root.__name__])  # type: ignore[attr-defined]
-                derived_dim_cache[dim.__name__] = _dim
-                return _dim
+            # evaluate new derived value based on root
+            _dim = dim.fn(shape_fixes[dim.root.__name__])  # type: ignore[attr-defined]
+            derived_dim_cache[dim.__name__] = _dim
+            return _dim
         return dim  # unchanged dim
 
     return _tree_map_with_path(apply_fixes, dynamic_shapes, dynamic_shapes)

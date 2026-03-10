@@ -59,12 +59,10 @@ class MemorySystemAdapter:
 
                 # Enhanced data with quantum metrics
                 enhanced_data = self._mock_data.copy()
-                enhanced_data["memory"]["quantum_nodes"] = quantum_status.get(
-                    "nodes", 0
+                enhanced_data["memory"]["quantum_nodes"] = quantum_status.get("nodes", 0)
+                enhanced_data["memory"]["coherence"] = quantum_status.get("coherence", {}).get(
+                    "average", 0.75
                 )
-                enhanced_data["memory"]["coherence"] = quantum_status.get(
-                    "coherence", {}
-                ).get("average", 0.75)
                 enhanced_data["memory"]["type"] = "quantum"
 
                 # Add some variation to make it more realistic
@@ -73,9 +71,7 @@ class MemorySystemAdapter:
                 enhanced_data["system"]["uptime"] = int(time.time() - self._start_time)
 
                 return enhanced_data
-            elif self.memory_system and hasattr(
-                self.memory_system, "get_system_metrics"
-            ):
+            elif self.memory_system and hasattr(self.memory_system, "get_system_metrics"):
                 return self.memory_system.get_system_metrics()
 
             # Fallback: return mock data with dynamic values
@@ -98,9 +94,7 @@ class MemorySystemAdapter:
     def get_network_info(self) -> Dict[str, Any]:
         """Get network-specific information"""
         status = self.get_system_status()
-        return status.get(
-            "network", {"connected": True, "speed": "high", "latency": 12}
-        )
+        return status.get("network", {"connected": True, "speed": "high", "latency": 12})
 
     def update_memory_system(self, memory_system):
         """Update the underlying memory system"""

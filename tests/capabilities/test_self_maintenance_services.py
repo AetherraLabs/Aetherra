@@ -27,7 +27,7 @@ async def test_self_maintenance_services_registration_and_basic_ops():
     # Give the launcher a brief moment to register services without hanging the test
     try:
         await asyncio.wait_for(asyncio.shield(task), timeout=2.5)
-    except asyncio.TimeoutError:
+    except TimeoutError:
         pass
 
     reg = await get_service_registry()

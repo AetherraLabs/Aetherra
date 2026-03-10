@@ -34,8 +34,9 @@ import sys
 import tempfile
 import textwrap
 from collections import Counter
+from collections.abc import Callable
 from importlib import import_module
-from typing import Any, Callable, Optional, TypeVar
+from typing import Any, Optional, TypeVar
 
 import torch
 import torch._prims_common as utils
@@ -48,7 +49,6 @@ from torch.utils._content_store import ContentStoreReader, ContentStoreWriter
 
 from . import config
 from .utils import clone_inputs, get_debug_dir
-
 
 log = logging.getLogger(__name__)
 
@@ -530,7 +530,7 @@ def _stride_or_default(
     return stride if stride is not None else utils.make_contiguous_strides_for(shape)
 
 
-def _mk_defaulter(d: T) -> Callable[[Optional[T]], T]:
+def _mk_defaulter(d: T) -> Callable[[T | None], T]:
     return lambda x: x if x is not None else d
 
 
@@ -762,8 +762,8 @@ class InputWriter:
 def aot_graph_input_parser(
     func: Callable[[list[Tensor]], list[Tensor]],
     device: str = "cuda",
-    sym_shapes: Optional[dict[str, int]] = None,
-    default_sym_shape: Optional[int] = None,
+    sym_shapes: dict[str, int] | None = None,
+    default_sym_shape: int | None = None,
 ) -> dict[str, Any]:
     """
     Takes in a function which has been printed with print_readable() and constructs kwargs to run it.

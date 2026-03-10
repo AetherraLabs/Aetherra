@@ -1,7 +1,5 @@
 import os
 import sys
-from typing import Optional
-
 
 # [@compile_ignored: debug] Fails hard instead of graph breaking on guard on data dependent errors.
 no_data_dependent_graph_break = (
@@ -81,7 +79,7 @@ validate_shape_env_version_key = False
 # issued (as we test if we've hit the limit on-the-fly, whereas we may
 # do further simplifications at final guard issuance time that make guards
 # irrelevant.)
-symbol_guard_limit_before_specialize: Optional[int] = None
+symbol_guard_limit_before_specialize: int | None = None
 
 # This flag changes whether we should use the same symbolic variable to represent input sizes that are the same.
 use_duck_shape = True
@@ -101,6 +99,5 @@ backed_size_oblivious = False
 skip_dtype_check_in_meta_registrations = False
 
 from torch.utils._config_module import install_config_module
-
 
 install_config_module(sys.modules[__name__])

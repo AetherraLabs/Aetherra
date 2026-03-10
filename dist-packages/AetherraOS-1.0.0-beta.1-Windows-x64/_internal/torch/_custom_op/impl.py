@@ -7,12 +7,6 @@ import typing
 import warnings
 import weakref
 
-import torch
-import torch._C as _C
-import torch._library.infer_schema
-import torch.library as library
-from torch._library.infer_schema import infer_schema
-from torch.library import get_ctx
 from torchgen.model import (
     BaseTy,
     BaseType,
@@ -22,8 +16,14 @@ from torchgen.model import (
     SchemaKind,
 )
 
-from .autograd import autograd_kernel_indirection, construct_autograd_kernel
+import torch
+import torch._C as _C
+import torch._library.infer_schema
+import torch.library as library
+from torch._library.infer_schema import infer_schema
+from torch.library import get_ctx
 
+from .autograd import autograd_kernel_indirection, construct_autograd_kernel
 
 """
 torch._custom_op is deprecated. We shipped a production-ready version of it into torch.library.
@@ -58,9 +58,7 @@ def warn_deprecated():
     )
 
 
-def custom_op(
-    qualname: str, manual_schema: typing.Optional[str] = None
-) -> typing.Callable:
+def custom_op(qualname: str, manual_schema: str | None = None) -> typing.Callable:
     r"""
     This API is deprecated, please use torch.library.custom_op instead
     """
@@ -154,7 +152,7 @@ class CustomOp:
         self.__name__ = None  # mypy requires this
         # NB: Some of these impls are registered as kernels to DispatchKeys.
         # Modifying the _impls dict directly won't do anything in that case.
-        self._impls: dict[str, typing.Optional[FuncAndLocation]] = {}
+        self._impls: dict[str, FuncAndLocation | None] = {}
         # See NOTE [CustomOp autograd kernel indirection]
         self._registered_autograd_kernel_indirection = False
 
@@ -217,7 +215,7 @@ class CustomOp:
 
     def impl(
         self,
-        device_types: typing.Union[str, typing.Iterable[str]],
+        device_types: str | typing.Iterable[str],
         _stacklevel=2,
     ) -> typing.Callable:
         r"""
@@ -602,7 +600,7 @@ def validate_function_matches_schema(
     def compare(sig_args, schema_args):
         if len(sig_args) != len(schema_args):
             error()
-        for (name, param), arg in zip(sig_args, schema_args):
+        for (name, param), arg in zip(sig_args, schema_args, strict=False):
             if name != arg.name:
                 error()
             if param.default is not inspect.Parameter.empty or arg.default is not None:

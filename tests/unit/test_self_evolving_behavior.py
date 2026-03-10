@@ -18,7 +18,6 @@ As described in the Aetherra specification:
 "Lyrixa continuously reflects, adapts traits, tunes memory structures, and improves her own reasoning through night_cycle.aether."
 """
 
-
 # Standard library imports
 import sys
 import unittest

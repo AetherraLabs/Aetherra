@@ -19,9 +19,7 @@ from typing import List, Optional
 # Local imports
 from .schemas.episodic_event import EpisodicEvent, EventAttribution
 
-DEFAULT_EVENTS_PATH = os.getenv(
-    "AETHERRA_EPISODIC_PATH", ".aetherra/episodic_events.jsonl"
-)
+DEFAULT_EVENTS_PATH = os.getenv("AETHERRA_EPISODIC_PATH", ".aetherra/episodic_events.jsonl")
 MAX_EVENTS = int(os.getenv("AETHERRA_EPISODIC_MAX_EVENTS", "5000"))
 RETENTION_HOURS = int(os.getenv("AETHERRA_EPISODIC_RETENTION_HOURS", "24"))
 LOCK = threading.Lock()

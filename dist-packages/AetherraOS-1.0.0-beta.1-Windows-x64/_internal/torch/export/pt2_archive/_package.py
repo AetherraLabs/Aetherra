@@ -6,18 +6,17 @@ import os
 import tempfile
 import zipfile
 from dataclasses import dataclass
-from typing import Any, IO, Optional, TYPE_CHECKING, Union
-from typing_extensions import TypeAlias
+from typing import IO, TYPE_CHECKING, Any, TypeAlias
 
 import torch
 import torch.utils._pytree as pytree
-from torch._export.serde.serialize import deserialize, serialize, SerializedArtifact
+from torch._export.serde.serialize import SerializedArtifact, deserialize, serialize
 from torch.export._tree_utils import reorder_kwargs
 from torch.export.exported_program import ExportedProgram
 from torch.export.pt2_archive._package_weights import (
+    Weights,
     get_complete,
     group_weights,
-    Weights,
 )
 from torch.export.pt2_archive.constants import (
     AOTINDUCTOR_DIR,
@@ -36,21 +35,18 @@ from torch.export.pt2_archive.constants import (
 )
 from torch.types import FileLike
 
-
 if TYPE_CHECKING:
     from torch.utils._ordered_set import OrderedSet
 
 
 DEFAULT_PICKLE_PROTOCOL = 2
-AOTI_FILES: TypeAlias = Union[
-    list[Union[str, Weights]], dict[str, list[Union[str, Weights]]]
-]
+AOTI_FILES: TypeAlias = list[str | Weights] | dict[str, list[str | Weights]]
 
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def is_pt2_package(serialized_model: Union[bytes, str]) -> bool:
+def is_pt2_package(serialized_model: bytes | str) -> bool:
     """
     Check if the serialized model is a PT2 Archive package.
     """
@@ -218,7 +214,7 @@ class PT2ArchiveReader:
 
 def _package_aoti_files(
     archive_writer: PT2ArchiveWriter,
-    aoti_files: Optional[AOTI_FILES],
+    aoti_files: AOTI_FILES | None,
     pickle_protocol: int = DEFAULT_PICKLE_PROTOCOL,
 ) -> None:
     if aoti_files is None:
@@ -300,8 +296,8 @@ def _package_aoti_files(
 
 def _package_exported_programs(
     archive_writer: PT2ArchiveWriter,
-    exported_programs: Optional[Union[ExportedProgram, dict[str, ExportedProgram]]],
-    opset_version: Optional[dict[str, int]] = None,
+    exported_programs: ExportedProgram | dict[str, ExportedProgram] | None,
+    opset_version: dict[str, int] | None = None,
     pickle_protocol: int = DEFAULT_PICKLE_PROTOCOL,
 ) -> None:
     if exported_programs is None:
@@ -330,7 +326,7 @@ def _package_exported_programs(
 
 
 def _package_extra_files(
-    archive_writer: PT2ArchiveWriter, extra_files: Optional[dict[str, Any]]
+    archive_writer: PT2ArchiveWriter, extra_files: dict[str, Any] | None
 ) -> None:
     if extra_files is None:
         return
@@ -342,12 +338,10 @@ def _package_extra_files(
 def package_pt2(
     f: FileLike,
     *,
-    exported_programs: Optional[
-        Union[ExportedProgram, dict[str, ExportedProgram]]
-    ] = None,
-    aoti_files: Optional[AOTI_FILES] = None,
-    extra_files: Optional[dict[str, Any]] = None,
-    opset_version: Optional[dict[str, int]] = None,
+    exported_programs: ExportedProgram | dict[str, ExportedProgram] | None = None,
+    aoti_files: AOTI_FILES | None = None,
+    extra_files: dict[str, Any] | None = None,
+    opset_version: dict[str, int] | None = None,
     pickle_protocol: int = DEFAULT_PICKLE_PROTOCOL,
 ) -> FileLike:
     """
@@ -462,7 +456,7 @@ class AOTICompiledModel:
     def get_constant_fqns(self) -> list[str]:
         return self.loader.get_constant_fqns()
 
-    def __deepcopy__(self, memo: Optional[dict[Any, Any]]) -> "AOTICompiledModel":
+    def __deepcopy__(self, memo: dict[Any, Any] | None) -> "AOTICompiledModel":
         logger.warning(
             "AOTICompiledModel deepcopy warning: AOTICompiledModel.loader is not deepcopied."
         )
@@ -479,7 +473,7 @@ class PT2ArchiveContents:
 def _load_exported_programs(
     archive_reader: PT2ArchiveReader,
     file_names: list[str],
-    expected_opset_version: Optional[dict[str, int]],
+    expected_opset_version: dict[str, int] | None,
 ) -> dict[str, ExportedProgram]:
     exported_program_files = [
         file for file in file_names if file.startswith(MODELS_DIR)
@@ -532,7 +526,7 @@ def _load_extra_files(
 def load_pt2(
     f: FileLike,
     *,
-    expected_opset_version: Optional[dict[str, int]] = None,
+    expected_opset_version: dict[str, int] | None = None,
     run_single_threaded: bool = False,
     num_runners: int = 1,
     device_index: int = -1,

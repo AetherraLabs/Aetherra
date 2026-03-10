@@ -17,7 +17,6 @@ from .rmsprop import rmsprop  # type: ignore[attr-defined]  # noqa: F401
 from .rprop import rprop  # type: ignore[attr-defined]  # noqa: F401
 from .sgd import sgd  # type: ignore[attr-defined]  # noqa: F401
 
-
 # TODO: use foreach API in optim._functional to do all the computation
 
 

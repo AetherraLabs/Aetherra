@@ -2,8 +2,9 @@
 import math
 import operator
 import traceback
+from collections.abc import Callable
 from functools import partial
-from typing import Callable, NamedTuple
+from typing import NamedTuple
 
 import sympy
 
@@ -13,7 +14,6 @@ from torch.fx.experimental.symbolic_shapes import free_unbacked_symbols
 from torch.fx.passes.infra.pass_base import PassBase, PassResult
 from torch.utils._sympy.numbers import int_oo
 from torch.utils._sympy.value_ranges import ValueRanges
-
 
 __all__ = ["InputDim"]
 
@@ -139,7 +139,7 @@ class _AddRuntimeAssertionsForInlineConstraintsPass(PassBase):
                     elif isinstance(val, torch.Tensor):
                         for i, sym in enumerate(val.shape):
                             cbs, msgs = add_assertions(sym)
-                            for cb, msg in zip(cbs, msgs):
+                            for cb, msg in zip(cbs, msgs, strict=False):
 
                                 def sym_size_cb(node, assert_msg, dim):
                                     with node.graph.inserting_after(node):
@@ -155,7 +155,7 @@ class _AddRuntimeAssertionsForInlineConstraintsPass(PassBase):
                     return call_backs, messages
 
                 callbacks, messages = add_assertions(val)
-                for cb, msg in zip(callbacks, messages):
+                for cb, msg in zip(callbacks, messages, strict=False):
                     cb(node=node, assert_msg=f"{node}" + msg)
 
             module.recompile()

@@ -125,9 +125,7 @@ class ResponseQuality:
         )
 
         # Generate suggestions
-        analysis["suggestions"] = self._generate_suggestions(
-            analysis, response, user_input
-        )
+        analysis["suggestions"] = self._generate_suggestions(analysis, response, user_input)
 
         # Identify strengths and areas for improvement
         analysis["strengths"] = self._identify_strengths(analysis)
@@ -290,9 +288,7 @@ class ResponseQuality:
         if user_is_excited and enthusiasm_count > 0:
             base_score = min(1.0, base_score + 0.3)
         elif user_is_negative and enthusiasm_count > 2:
-            base_score = max(
-                0.0, base_score - 0.4
-            )  # Too much enthusiasm for negative context
+            base_score = max(0.0, base_score - 0.4)  # Too much enthusiasm for negative context
         elif not user_is_excited and not user_is_negative:
             base_score = min(1.0, base_score + 0.1)  # Moderate enthusiasm is good
 
@@ -320,34 +316,26 @@ class ResponseQuality:
 
         # Engagement suggestions
         if analysis["engagement_score"] < 0.4:
-            suggestions.append(
-                "Ask a follow-up question to keep the conversation going"
-            )
+            suggestions.append("Ask a follow-up question to keep the conversation going")
             suggestions.append("Invite the user to share more about their thoughts")
 
         # Empathy suggestions
         if analysis["empathy_score"] < 0.4:
             user_lower = user_input.lower()
             if any(word in user_lower for word in ["frustrated", "confused", "stuck"]):
-                suggestions.append(
-                    "Acknowledge the user's frustration with empathetic language"
-                )
+                suggestions.append("Acknowledge the user's frustration with empathetic language")
                 suggestions.append(
                     "Use phrases like 'I understand' or 'I can see how that would be...'"
                 )
 
         # Enthusiasm suggestions
         if analysis["enthusiasm_score"] < 0.3:
-            suggestions.append(
-                "Show more enthusiasm about the topic or user's progress"
-            )
+            suggestions.append("Show more enthusiasm about the topic or user's progress")
             suggestions.append("Use exclamation marks sparingly but effectively")
         elif analysis["enthusiasm_score"] > 0.8:
             user_lower = user_input.lower()
             if any(word in user_lower for word in ["problem", "broken", "frustrated"]):
-                suggestions.append(
-                    "Tone down enthusiasm to match user's emotional state"
-                )
+                suggestions.append("Tone down enthusiasm to match user's emotional state")
 
         return suggestions
 

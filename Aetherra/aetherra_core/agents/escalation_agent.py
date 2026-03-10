@@ -63,9 +63,7 @@ class EscalationAgent(AgentBase):
                 metadata={"error": str(e)},
             )
 
-    async def _create_escalation(
-        self, input_text: str, context: Dict[str, Any]
-    ) -> AgentResponse:
+    async def _create_escalation(self, input_text: str, context: Dict[str, Any]) -> AgentResponse:
         """Create a new escalation"""
         escalation_id = f"esc_{self.escalation_counter}"
         self.escalation_counter += 1
@@ -115,9 +113,7 @@ class EscalationAgent(AgentBase):
                 metadata={"escalation_count": 0},
             )
 
-        open_escalations = [
-            e for e in self.escalations.values() if e["status"] == "open"
-        ]
+        open_escalations = [e for e in self.escalations.values() if e["status"] == "open"]
 
         status_text = "Escalation Status:\n\n"
         status_text += f"Open Escalations: {len(open_escalations)}\n"
@@ -129,9 +125,7 @@ class EscalationAgent(AgentBase):
             metadata={"open_count": len(open_escalations)},
         )
 
-    async def _resolve_escalation(
-        self, input_text: str, context: Dict[str, Any]
-    ) -> AgentResponse:
+    async def _resolve_escalation(self, input_text: str, context: Dict[str, Any]) -> AgentResponse:
         """Resolve an escalation"""
         escalation_id = context.get("escalation_id")
 

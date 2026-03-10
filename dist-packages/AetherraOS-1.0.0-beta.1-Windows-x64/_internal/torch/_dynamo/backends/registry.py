@@ -63,13 +63,12 @@ optimized_model = torch.compile(model, backend="my_compiler")
 import functools
 import logging
 import sys
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from importlib.metadata import EntryPoint
-from typing import Callable, Optional, Protocol
+from typing import Protocol
 
 import torch
 from torch import fx
-
 
 log = logging.getLogger(__name__)
 
@@ -80,13 +79,13 @@ class CompiledFn(Protocol):
 
 CompilerFn = Callable[[fx.GraphModule, list[torch.Tensor]], CompiledFn]
 
-_BACKENDS: dict[str, Optional[EntryPoint]] = {}
+_BACKENDS: dict[str, EntryPoint | None] = {}
 _COMPILER_FNS: dict[str, CompilerFn] = {}
 
 
 def register_backend(
-    compiler_fn: Optional[CompilerFn] = None,
-    name: Optional[str] = None,
+    compiler_fn: CompilerFn | None = None,
+    name: str | None = None,
     tags: Sequence[str] = (),
 ):
     """
@@ -147,7 +146,7 @@ def list_backends(exclude_tags=("debug", "experimental")) -> list[str]:
 
     backends = [
         name
-        for name in _BACKENDS.keys()
+        for name in _BACKENDS
         if name not in _COMPILER_FNS
         or not exclude_tags.intersection(_COMPILER_FNS[name]._tags)
     ]

@@ -1,9 +1,8 @@
 # mypy: allow-untyped-defs
-from typing import Callable, Optional
+from collections.abc import Callable
 
 from .fake_impl import FakeImplHolder
 from .utils import RegistrationHandle
-
 
 __all__ = ["SimpleLibraryRegistry", "SimpleOperatorEntry", "singleton"]
 
@@ -79,7 +78,7 @@ class GenericTorchDispatchRuleHolder:
         return self._data.get(torch_dispatch_class, None)
 
 
-def find_torch_dispatch_rule(op, torch_dispatch_class: type) -> Optional[Callable]:
+def find_torch_dispatch_rule(op, torch_dispatch_class: type) -> Callable | None:
     return singleton.find(op.__qualname__).torch_dispatch_rules.find(
         torch_dispatch_class
     )

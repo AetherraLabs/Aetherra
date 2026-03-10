@@ -4,7 +4,6 @@ import torch.ao.nn.intrinsic as nni
 import torch.ao.nn.quantized as nnq
 from torch.ao.nn.quantized.modules.utils import _quantize_weight
 
-
 __all__ = [
     "LinearReLU",
     "LinearLeakyReLU",

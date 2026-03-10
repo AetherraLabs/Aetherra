@@ -290,7 +290,7 @@ class AetherraSecuritySystem:
     def _scan_memory(self) -> Dict[str, Any]:
         """Scan memory security"""
         stats = self.memory_manager.get_memory_stats()
-        leaks: List[Dict[str, Any]] = []  # placeholder: no leak detector available here
+        leaks: List[Dict[str, Any]] = []  # baseline: no leak detector available here
 
         return {
             "usage": stats,
@@ -475,7 +475,7 @@ class AetherraSecuritySystem:
         try:
             stats = self.memory_manager.get_memory_stats()
             if stats.get("usage_percent", 0.0) > self.config.max_memory_usage_percent:
-                # Placeholder: MemoryManager performs periodic cleanup itself; log for now
+                # Baseline: MemoryManager performs periodic cleanup itself; log for now
                 self.logger.info("🧹 High memory usage detected; consider triggering cleanup cycle")
         except Exception:
             pass

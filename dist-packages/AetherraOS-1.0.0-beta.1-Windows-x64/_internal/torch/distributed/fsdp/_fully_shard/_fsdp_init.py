@@ -1,6 +1,5 @@
 import itertools
 import logging
-from typing import Optional, Union
 
 import torch
 import torch.distributed as dist
@@ -10,16 +9,15 @@ from torch.distributed.device_mesh import _get_device_handle
 from torch.distributed.tensor import DeviceMesh, DTensor, init_device_mesh
 from torch.utils._python_dispatch import is_traceable_wrapper_subclass
 
-from ._fsdp_common import _is_composable_with_fsdp, FSDPMeshInfo, HSDPMeshInfo
+from ._fsdp_common import FSDPMeshInfo, HSDPMeshInfo, _is_composable_with_fsdp
 from ._fsdp_state import _get_module_fsdp_state
-
 
 logger = logging.getLogger("torch.distributed.fsdp.fully_shard")
 
 
 def _get_post_forward_mesh_info(
-    reshard_after_forward: Union[bool, int], mesh_info: FSDPMeshInfo
-) -> Optional[FSDPMeshInfo]:
+    reshard_after_forward: bool | int, mesh_info: FSDPMeshInfo
+) -> FSDPMeshInfo | None:
     shard_mesh_size = mesh_info.shard_mesh_size
     if not isinstance(reshard_after_forward, (bool, int)):
         raise ValueError(
@@ -39,7 +37,7 @@ def _get_post_forward_mesh_info(
                 "If passing reshard_after_forward as an int, it should be a "
                 f"factor of {shard_mesh_size}, not {reshard_after_forward}"
             )
-        elif reshard_after_forward == 1:
+        if reshard_after_forward == 1:
             msg = (
                 "reshard_after_forward=1 (int) means resharding parameters to world size 1, "
                 "instead of reshard_after_forward=True (bool)"
@@ -132,7 +130,7 @@ def _adjust_managed_modules(
 
 def _get_managed_modules(
     root_modules: tuple[nn.Module, ...],
-    ignored_params: Optional[set[nn.Parameter]] = None,
+    ignored_params: set[nn.Parameter] | None = None,
 ) -> list[nn.Module]:
     modules: list[nn.Module] = []
     root_modules_set = set(root_modules)
@@ -146,7 +144,7 @@ def _get_managed_modules(
         """
         if not _is_composable_with_fsdp(module):
             return
-        elif (
+        if (
             module not in root_modules_set
             and _get_module_fsdp_state(module) is not None
         ):
@@ -181,7 +179,7 @@ def _verify_managed_param(name: str, param: nn.Parameter) -> None:
 
 
 def _get_managed_states(
-    modules: list[nn.Module], ignored_params: Optional[set[nn.Parameter]] = None
+    modules: list[nn.Module], ignored_params: set[nn.Parameter] | None = None
 ) -> tuple[list[nn.Parameter], list[torch.Tensor]]:
     params: list[nn.Parameter] = []
     buffers: list[torch.Tensor] = []

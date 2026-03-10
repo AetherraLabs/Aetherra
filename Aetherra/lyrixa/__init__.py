@@ -33,13 +33,9 @@ class LyrixaIntelligenceStack:
 
     def __init__(self, workspace_path="", *args, **kwargs):
         self.workspace_path = workspace_path
-        self.intelligence_core = (
-            LyrixaIntelligenceCore() if LyrixaIntelligenceCore else None
-        )
+        self.intelligence_core = LyrixaIntelligenceCore() if LyrixaIntelligenceCore else None
         self.lyrixa_core = get_lyrixa_core() if get_lyrixa_core else None
-        self.is_available = (
-            self.intelligence_core is not None or self.lyrixa_core is not None
-        )
+        self.is_available = self.intelligence_core is not None or self.lyrixa_core is not None
 
     def get_conversation_manager(self):
         """Get conversation management capabilities"""
@@ -64,20 +60,14 @@ class LyrixaConversationManager:
 
     def __init__(self, *args, **kwargs):
         self.lyrixa_core = get_lyrixa_core() if get_lyrixa_core else None
-        self.intelligence_core = (
-            LyrixaIntelligenceCore() if LyrixaIntelligenceCore else None
-        )
-        self.is_available = (
-            self.lyrixa_core is not None or self.intelligence_core is not None
-        )
+        self.intelligence_core = LyrixaIntelligenceCore() if LyrixaIntelligenceCore else None
+        self.is_available = self.lyrixa_core is not None or self.intelligence_core is not None
 
     def process_message(self, message, user_id="user", context=None):
         """Process a message with full consciousness integration"""
         if self.lyrixa_core:
             # Use the consciousness-integrated core if available
-            result = self.lyrixa_core.process_user_interaction(
-                user_id, message, context
-            )
+            result = self.lyrixa_core.process_user_interaction(user_id, message, context)
             return result.get("response", "Processed through Lyrixa Core")
         elif self.intelligence_core:
             # Fall back to basic intelligence processing

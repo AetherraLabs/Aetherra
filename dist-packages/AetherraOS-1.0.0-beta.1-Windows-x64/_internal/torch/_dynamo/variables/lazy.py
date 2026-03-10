@@ -1,8 +1,8 @@
 import collections
 import functools
 import inspect
-from typing import Any, Callable, final, Optional, Union
-from typing_extensions import Self
+from collections.abc import Callable
+from typing import Any, Self, final
 
 from ..utils import is_function_or_wrapper
 from .base import VariableTracker
@@ -17,7 +17,7 @@ class LazyCache:
             assert source
         self.value = value
         self.source = source
-        self.vt: Optional[VariableTracker] = None
+        self.vt: VariableTracker | None = None
 
     def realize(self) -> None:
         assert self.vt is None
@@ -68,7 +68,7 @@ class LazyVariableTracker(VariableTracker):
             assert self._cache.vt is not None
         return self._cache.vt
 
-    def unwrap(self) -> Union[VariableTracker, Self]:
+    def unwrap(self) -> VariableTracker | Self:
         """Return the real VariableTracker if it already exists"""
         if self.is_realized():
             assert self._cache.vt is not None
@@ -108,7 +108,7 @@ class LazyVariableTracker(VariableTracker):
     def realize_all(
         cls,
         value: Any,
-        cache: Optional[dict[int, tuple[Any, Any]]] = None,
+        cache: dict[int, tuple[Any, Any]] | None = None,
     ) -> Any:
         """
         Walk an object and realize all LazyVariableTrackers inside it.

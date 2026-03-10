@@ -1,14 +1,15 @@
 # mypy: allow-untyped-defs
-from collections import OrderedDict
 import contextlib
+from collections import OrderedDict
 from typing import Any
 
 from tensorboard.compat.proto.config_pb2 import RunMetadata
 from tensorboard.compat.proto.graph_pb2 import GraphDef
-from tensorboard.compat.proto.step_stats_pb2 import StepStats, DeviceStepStats
+from tensorboard.compat.proto.step_stats_pb2 import DeviceStepStats, StepStats
 from tensorboard.compat.proto.versions_pb2 import VersionDef
 
 import torch
+
 from ._proto_graph import node_proto
 
 methods_OP = [
@@ -167,7 +168,9 @@ class GraphPy:
 
     def populate_namespace_from_OP_to_IO(self):
         for node in self.nodes_op:
-            for node_output, outputSize in zip(node.outputs, node.outputstensor_size):
+            for node_output, outputSize in zip(
+                node.outputs, node.outputstensor_size, strict=False
+            ):
                 self.scope_name_appeared.append(node.scopeName)
                 self.nodes_io[node_output] = NodeBase(
                     node_output,

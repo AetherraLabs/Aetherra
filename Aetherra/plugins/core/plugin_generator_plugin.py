@@ -498,9 +498,7 @@ class {class_name}Auth:
             raise ValueError(f"Template '{template_id}' not found")
 
         template = self.templates[template_id]
-        plugin_id = (
-            f"gen_{len(self.generated_plugins) + 1}_{int(datetime.now().timestamp())}"
-        )
+        plugin_id = f"gen_{len(self.generated_plugins) + 1}_{int(datetime.now().timestamp())}"
 
         generated = GeneratedPlugin(plugin_id, plugin_name, template_id)
 
@@ -530,9 +528,7 @@ class {class_name}Auth:
             return False
 
         plugin = self.generated_plugins[plugin_id]
-        plugin_dir = (
-            Path(output_dir) / f"{plugin.name.lower().replace(' ', '_')}_plugin"
-        )
+        plugin_dir = Path(output_dir) / f"{plugin.name.lower().replace(' ', '_')}_plugin"
         plugin_dir.mkdir(parents=True, exist_ok=True)
 
         for filename, content in plugin.files.items():

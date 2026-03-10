@@ -2,7 +2,7 @@
 
 r"""This package adds support for device memory management implemented in MTIA."""
 
-from typing import Any, Optional
+from typing import Any
 
 import torch
 
@@ -10,7 +10,7 @@ from . import _device_t, is_initialized
 from ._utils import _get_device_index
 
 
-def memory_stats(device: Optional[_device_t] = None) -> dict[str, Any]:
+def memory_stats(device: _device_t | None = None) -> dict[str, Any]:
     r"""Return a dictionary of MTIA memory allocator statistics for a given device.
 
     Args:
@@ -23,7 +23,7 @@ def memory_stats(device: Optional[_device_t] = None) -> dict[str, Any]:
     return torch._C._mtia_memoryStats(_get_device_index(device, optional=True))
 
 
-def max_memory_allocated(device: Optional[_device_t] = None) -> int:
+def max_memory_allocated(device: _device_t | None = None) -> int:
     r"""Return the maximum memory allocated in bytes for a given device.
 
     Args:
@@ -36,7 +36,7 @@ def max_memory_allocated(device: Optional[_device_t] = None) -> int:
     return memory_stats(device).get("dram", 0).get("peak_bytes", 0)
 
 
-def reset_peak_memory_stats(device: Optional[_device_t] = None) -> None:
+def reset_peak_memory_stats(device: _device_t | None = None) -> None:
     r"""Reset the peak memory stats for a given device.
 
 

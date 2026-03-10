@@ -9,7 +9,6 @@ from __future__ import annotations
 # Standard library imports
 import time
 from dataclasses import dataclass, field
-from typing import Dict
 
 # Local imports
 from ..config import settings
@@ -19,7 +18,7 @@ from ..config import settings
 class IdempotencyManager:
     ttl_sec: int
     enforce: bool
-    _cache: Dict[str, float] = field(default_factory=dict)
+    _cache: dict[str, float] = field(default_factory=dict)
 
     def _key(self, principal: str, client_id: str) -> str:
         return f"{principal}|{client_id}"

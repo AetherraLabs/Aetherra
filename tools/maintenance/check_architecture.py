@@ -15,7 +15,6 @@ Purpose: Ensure Aetherra OS and Lyrixa maintain proper separation
 import os
 import re
 from pathlib import Path
-from typing import Dict, List
 
 
 class ArchitecturalChecker:
@@ -26,7 +25,7 @@ class ArchitecturalChecker:
         self.aetherra_root = self.project_root / "Aetherra"
         self.lyrixa_root = self.aetherra_root / "lyrixa"
 
-    def check_critical_violations(self) -> Dict[str, List[str]]:
+    def check_critical_violations(self) -> dict[str, list[str]]:
         """Check for critical architectural violations"""
         violations = {
             "core_imports_interface": [],
@@ -58,7 +57,7 @@ class ArchitecturalChecker:
 
         return violations
 
-    def _check_import_violations(self, file_path: Path, content: str, violations: Dict):
+    def _check_import_violations(self, file_path: Path, content: str, violations: dict):
         """Check for improper import patterns"""
         is_in_lyrixa = self.lyrixa_root in file_path.parents
 
@@ -67,7 +66,7 @@ class ArchitecturalChecker:
             violations["core_imports_interface"].append(str(file_path))
 
     def _check_misplaced_components(
-        self, file_path: Path, content: str, violations: Dict
+        self, file_path: Path, content: str, violations: dict
     ):
         """Check for components in wrong directories"""
         is_in_lyrixa = self.lyrixa_root in file_path.parents
@@ -105,7 +104,7 @@ class ArchitecturalChecker:
         if has_engine and is_in_lyrixa:
             violations["engines_in_interface"].append(str(file_path))
 
-    def _check_duplicate_dashboards(self, violations: Dict):
+    def _check_duplicate_dashboards(self, violations: dict):
         """Check for duplicate consciousness dashboard files"""
         dashboard_files = [
             "evolution_monitoring_system.py",
@@ -120,7 +119,7 @@ class ArchitecturalChecker:
             if gui_path.exists() and consciousness_path.exists():
                 violations["duplicates"].append(f"Duplicate: {dashboard}")
 
-    def generate_simple_report(self, violations: Dict) -> str:
+    def generate_simple_report(self, violations: dict) -> str:
         """Generate simple, actionable report"""
         report = []
         report.append("# 🎯 AETHERRA ARCHITECTURAL COMPLIANCE REPORT")

@@ -1,11 +1,11 @@
 # mypy: allow-untyped-defs
 import logging
-from typing import Optional
 
 import torch
 import torch.nn
 import torch.nn.functional as F
 from torch.backends.cuda import (
+    SDPAParams,
     can_use_cudnn_attention,
     can_use_efficient_attention,
     can_use_flash_attention,
@@ -13,12 +13,10 @@ from torch.backends.cuda import (
     flash_sdp_enabled,
     math_sdp_enabled,
     mem_efficient_sdp_enabled,
-    SDPAParams,
 )
 from torch.nn.attention import SDPBackend
 
 from .nested_tensor import NestedTensor
-
 
 log = logging.getLogger(__name__)
 
@@ -27,7 +25,7 @@ def _validate_sdpa_input(
     query: torch.Tensor,
     key: torch.Tensor,
     value: torch.Tensor,
-    attn_mask: Optional[torch.Tensor] = None,
+    attn_mask: torch.Tensor | None = None,
     dropout_p=0.0,
     is_causal=False,
     scale=None,
@@ -668,8 +666,8 @@ def _autocast(
     query: torch.Tensor,
     key: torch.Tensor,
     value: torch.Tensor,
-    attn_mask: Optional[torch.Tensor],
-) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, Optional[torch.Tensor]]:
+    attn_mask: torch.Tensor | None,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor | None]:
     """
     [Autocasting SDPA for NJT]
 
@@ -714,7 +712,7 @@ def jagged_scaled_dot_product_attention(
     query: torch.Tensor,
     key: torch.Tensor,
     value: torch.Tensor,
-    attn_mask: Optional[torch.Tensor] = None,
+    attn_mask: torch.Tensor | None = None,
     dropout_p=0.0,
     is_causal=False,
     scale=None,
@@ -810,7 +808,7 @@ def jagged_scaled_dot_product_attention(
             **output_nt_info,
         ).transpose(1, 2)
         return _post_process_flash_output(attention, og_size)
-    elif backend_choice == SDPBackend.EFFICIENT_ATTENTION:
+    if backend_choice == SDPBackend.EFFICIENT_ATTENTION:
         (
             query_reshaped,
             key_reshaped,
@@ -847,7 +845,7 @@ def jagged_scaled_dot_product_attention(
             attention.squeeze(0),
             **output_nt_info,
         ).transpose(1, 2)
-    elif backend_choice == SDPBackend.CUDNN_ATTENTION:
+    if backend_choice == SDPBackend.CUDNN_ATTENTION:
         (
             query_reshaped,
             key_reshaped,
@@ -887,7 +885,7 @@ def jagged_scaled_dot_product_attention(
             attention,
             **output_nt_info,
         ).transpose(1, 2)
-    elif backend_choice == SDPBackend.MATH:
+    if backend_choice == SDPBackend.MATH:
         # save the offsets and shape of the inputs, so we can reshape the final output
         # query @ key = attn: [B, D1, j0, D'] @ [B, D1, D' j1] = [B, D1, j0, j1]
         # attn @ value = out: [B, D1, j0, j1] @ [B, D1, j1, D2] = [B, D1, j0, D2]
@@ -928,7 +926,4 @@ def jagged_scaled_dot_product_attention(
         ).transpose(1, 2)
 
         return attn_out
-    else:
-        raise RuntimeError(
-            "No viable backend for scaled_dot_product_attention was found."
-        )
+    raise RuntimeError("No viable backend for scaled_dot_product_attention was found.")

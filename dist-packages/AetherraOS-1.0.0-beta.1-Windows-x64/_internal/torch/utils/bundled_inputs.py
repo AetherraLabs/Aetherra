@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 # mypy: allow-untyped-defs
-from typing import Any, TypeVar, Optional, NamedTuple, Union, Callable
-from collections.abc import Sequence
 import textwrap
-import torch
-from torch._C import TupleType, ListType
-from torch.jit._recursive import wrap_cpp_module
+from collections.abc import Callable, Sequence
+from typing import Any, NamedTuple, TypeVar
 
+import torch
+from torch._C import ListType, TupleType
+from torch.jit._recursive import wrap_cpp_module
 
 T = TypeVar("T")
 
 MAX_RAW_TENSOR_SIZE = 16
+
 
 class InflatableArg(NamedTuple):
     """Helper type for bundled inputs.
@@ -39,11 +40,13 @@ class InflatableArg(NamedTuple):
 
 
 def bundle_inputs(
-        model: torch.jit.ScriptModule,
-        inputs: Union[Optional[Sequence[tuple[Any, ...]]], dict[Callable, Optional[Sequence[tuple[Any, ...]]]]],
-        info: Optional[Union[list[str], dict[Callable, list[str]]]] = None,
-        *,
-        _receive_inflate_expr: Optional[list[str]] = None,
+    model: torch.jit.ScriptModule,
+    inputs: Sequence[tuple[Any, ...]]
+    | None
+    | dict[Callable, Sequence[tuple[Any, ...]] | None],
+    info: list[str] | dict[Callable, list[str]] | None = None,
+    *,
+    _receive_inflate_expr: list[str] | None = None,
 ) -> torch.jit.ScriptModule:
     """Create and return a copy of the specified model with inputs attached.
 
@@ -120,18 +123,24 @@ def bundle_inputs(
     cloned_module = wrap_cpp_module(clone)
     if isinstance(inputs, dict):
         assert isinstance(info, dict) or info is None
-        augment_many_model_functions_with_bundled_inputs(cloned_module, inputs, _receive_inflate_expr, info)
+        augment_many_model_functions_with_bundled_inputs(
+            cloned_module, inputs, _receive_inflate_expr, info
+        )
     else:
         assert isinstance(info, list) or info is None
-        augment_model_with_bundled_inputs(cloned_module, inputs, _receive_inflate_expr, info)
+        augment_model_with_bundled_inputs(
+            cloned_module, inputs, _receive_inflate_expr, info
+        )
     return cloned_module
 
+
 def augment_model_with_bundled_inputs(
-        model: torch.jit.ScriptModule,
-        inputs: Optional[Sequence[tuple[Any, ...]]] = None,
-        _receive_inflate_expr: Optional[list[str]] = None,  # For debugging.
-        info: Optional[list[str]] = None,  # Optional argument to provide info about forward or its inputs
-        skip_size_check=False,
+    model: torch.jit.ScriptModule,
+    inputs: Sequence[tuple[Any, ...]] | None = None,
+    _receive_inflate_expr: list[str] | None = None,  # For debugging.
+    info: list[str]
+    | None = None,  # Optional argument to provide info about forward or its inputs
+    skip_size_check=False,
 ) -> None:
     """Add bundled sample inputs to a model for the forward function.
 
@@ -170,22 +179,23 @@ def augment_model_with_bundled_inputs(
 
     # Sometimes forward won't have a name attached so just in case
     if not hasattr(forward, "__name__"):
-        forward.__name__ = 'forward'
+        forward.__name__ = "forward"
     augment_many_model_functions_with_bundled_inputs(
         model,
-        inputs={forward : inputs},
+        inputs={forward: inputs},
         _receive_inflate_expr=_receive_inflate_expr,
-        info={forward : info} if info else None,
+        info={forward: info} if info else None,
         skip_size_check=skip_size_check,
     )
 
 
 def augment_many_model_functions_with_bundled_inputs(
-        model: torch.jit.ScriptModule,
-        inputs: dict[Callable, Optional[Sequence[tuple[Any, ...]]]],
-        _receive_inflate_expr: Optional[list[str]] = None,  # For debugging.
-        info: Optional[dict[Callable, list[str]]] = None,  # Optional argument to provide info about the function or its inputs
-        skip_size_check=False,
+    model: torch.jit.ScriptModule,
+    inputs: dict[Callable, Sequence[tuple[Any, ...]] | None],
+    _receive_inflate_expr: list[str] | None = None,  # For debugging.
+    info: dict[Callable, list[str]]
+    | None = None,  # Optional argument to provide info about the function or its inputs
+    skip_size_check=False,
 ) -> None:
     """Add bundled sample inputs to a model for an arbitrary list of public functions.
 
@@ -242,7 +252,9 @@ def augment_many_model_functions_with_bundled_inputs(
     if not inputs:
         raise Exception("Please provide inputs for at least 1 function")  # noqa: TRY002
 
-    if hasattr(model, "get_all_bundled_inputs") or hasattr(model, "get_bundled_inputs_functions_and_info"):
+    if hasattr(model, "get_all_bundled_inputs") or hasattr(
+        model, "get_bundled_inputs_functions_and_info"
+    ):
         raise Exception(  # noqa: TRY002
             "Models can only be augmented with bundled inputs once. "
             "This Model seems to have already been augmented with "
@@ -260,15 +272,19 @@ def augment_many_model_functions_with_bundled_inputs(
                 function_name = function.name  # type: ignore[attr-defined]
             else:
                 raise Exception(  # noqa: TRY002
-                    'At least one of your functions has no attribute name please ensure all have one. m.foo.name = "foo"')
-
+                    'At least one of your functions has no attribute name please ensure all have one. m.foo.name = "foo"'
+                )
 
         if input_list is not None and not isinstance(input_list, Sequence):
-            raise TypeError(f"Error inputs for function {function_name} is not a Sequence")
+            raise TypeError(
+                f"Error inputs for function {function_name} is not a Sequence"
+            )
 
         function_arg_types = [arg.type for arg in function.schema.arguments[1:]]  # type: ignore[attr-defined]
         deflated_inputs_type: ListType = ListType(TupleType(function_arg_types))
-        model._c._register_attribute(f"_bundled_inputs_deflated_{function_name}", deflated_inputs_type, [])
+        model._c._register_attribute(
+            f"_bundled_inputs_deflated_{function_name}", deflated_inputs_type, []
+        )
 
         if hasattr(model, "_generate_bundled_inputs_for_" + function_name):
             if input_list is not None:
@@ -295,7 +311,9 @@ def augment_many_model_functions_with_bundled_inputs(
                 deflated_args = []
                 parts.append("(")
                 for arg_idx, arg in enumerate(args):
-                    inflate_helper_fn_name = _get_inflate_helper_fn_name(arg_idx, inp_idx, function_name)
+                    inflate_helper_fn_name = _get_inflate_helper_fn_name(
+                        arg_idx, inp_idx, function_name
+                    )
                     deflated, inflater, helper_definition = _inflate_expr(
                         arg,
                         f"deflated[{inp_idx}][{arg_idx}]",
@@ -325,15 +343,17 @@ def augment_many_model_functions_with_bundled_inputs(
             model.define(definition)
 
         # Define get_all_bundled_inputs_for_<function_name> that caches the generated inputs.
-        model.define(textwrap.dedent("""
+        model.define(
+            textwrap.dedent("""
             def get_all_bundled_inputs_for_{name}(self):
                 all_inputs = self._generate_bundled_inputs_for_{name}()
                 assert all_inputs is not None
                 return all_inputs
-            """).format(name=function_name))
+            """).format(name=function_name)
+        )
 
         # Add to the high level helper methods
-        inputs_info = repr(info[function]) if info and function in info else '[]'
+        inputs_info = repr(info[function]) if info and function in info else "[]"
         get_bundled_inputs_functions_and_info_template += f"""
             temp_dict : Dict[str,List[str]] = {{}}
             info: List[str] = {inputs_info}
@@ -344,27 +364,34 @@ def augment_many_model_functions_with_bundled_inputs(
             """
 
         # To ensure backwards compatibility and a streamlined api for forward these wrappers are provided
-        if function_name == 'forward':
-            model.define(textwrap.dedent("""
+        if function_name == "forward":
+            model.define(
+                textwrap.dedent("""
                 def get_all_bundled_inputs(self):
                     return self.get_all_bundled_inputs_for_forward()
-                """))
-            model.define(textwrap.dedent("""
+                """)
+            )
+            model.define(
+                textwrap.dedent("""
                 def get_num_bundled_inputs(self):
                     return len(self.get_all_bundled_inputs_for_forward())
-                """))
+                """)
+            )
 
     # Define some high level helper methods that act on all bundled inputs
-    model.define(textwrap.dedent(f"""
+    model.define(
+        textwrap.dedent(f"""
         def get_bundled_inputs_functions_and_info(self):
             all_inputs : Dict[str, Dict[str,List[str]]] = {{}}
             {get_bundled_inputs_functions_and_info_template}
             return all_inputs
-        """))
+        """)
+    )
+
 
 def _inflate_expr(
     arg: T, ref: str, inflate_helper_fn_name: str, skip_size_check: bool = False
-) -> tuple[Union[T, torch.Tensor], str, Optional[str]]:
+) -> tuple[T | torch.Tensor, str, str | None]:
     # Allow custom inflation expressions any object.
     # For example, calling custom image-decoding ops.
     # Or just use "{}" as the format string to ignore size limits.
@@ -383,8 +410,7 @@ def _inflate_expr(
             expr = f"self.{inflate_helper_fn_name}({ref})"
 
             return arg.value, expr, helper_definition
-        else:
-            return arg.value, arg.fmt.format(ref), None
+        return arg.value, arg.fmt.format(ref), None
 
     if isinstance(arg, torch.Tensor):
         # Small-storage tensors can just be saved directly.
@@ -397,9 +423,15 @@ def _inflate_expr(
         # Example inputs commonly come from torch.zeros, torch.ones, or torch.full.
         # These can be represented compactly.
         for fmt in [torch.contiguous_format, torch.channels_last]:
-            if arg.is_contiguous(memory_format=fmt) and (arg == arg.flatten()[0]).all().item():
-                return (arg.flatten()[0].clone().expand(*arg.size()),
-                        f"{ref}.contiguous(memory_format={fmt})", None)
+            if (
+                arg.is_contiguous(memory_format=fmt)
+                and (arg == arg.flatten()[0]).all().item()
+            ):
+                return (
+                    arg.flatten()[0].clone().expand(*arg.size()),
+                    f"{ref}.contiguous(memory_format={fmt})",
+                    None,
+                )
         # Prevent big tensors from being bundled by default.
         # TODO: Provide more useful diagnostics.
         raise Exception(  # noqa: TRY002
@@ -407,21 +439,23 @@ def _inflate_expr(
             f"a tensor with storage size {arg._typed_storage().size()}. "
             f"You probably don't want to bundle this as an input. "
         )
-    else:
-        return arg, ref, None
+    return arg, ref, None
 
-def _get_bundled_inputs_attributes_and_methods(script_module: torch.jit.ScriptModule) -> tuple[list[str], list[str]]:
+
+def _get_bundled_inputs_attributes_and_methods(
+    script_module: torch.jit.ScriptModule,
+) -> tuple[list[str], list[str]]:
     methods: list[str] = []
     attributes: list[str] = []
 
     # Has bundled inputs for forward
-    if hasattr(script_module, 'get_all_bundled_inputs'):
-        methods.append('get_all_bundled_inputs')
-        methods.append('get_num_bundled_inputs')
-        methods.append('run_on_bundled_input')
+    if hasattr(script_module, "get_all_bundled_inputs"):
+        methods.append("get_all_bundled_inputs")
+        methods.append("get_num_bundled_inputs")
+        methods.append("run_on_bundled_input")
 
-    if hasattr(script_module, 'get_bundled_inputs_functions_and_info'):
-        methods.append('get_bundled_inputs_functions_and_info')
+    if hasattr(script_module, "get_bundled_inputs_functions_and_info"):
+        methods.append("get_bundled_inputs_functions_and_info")
         all_info = script_module.get_bundled_inputs_functions_and_info()
         for function_name in all_info:
             methods.append("get_all_bundled_inputs_for_" + function_name)
@@ -429,8 +463,7 @@ def _get_bundled_inputs_attributes_and_methods(script_module: torch.jit.ScriptMo
             attributes.append("_bundled_inputs_deflated_" + function_name)
 
             bundled_inputs_fn = getattr(
-                script_module,
-                f"get_all_bundled_inputs_for_{function_name}"
+                script_module, f"get_all_bundled_inputs_for_{function_name}"
             )
             num_bundled_inputs: int = len(bundled_inputs_fn())
 
@@ -441,7 +474,7 @@ def _get_bundled_inputs_attributes_and_methods(script_module: torch.jit.ScriptMo
                     helper_fn_name = _get_inflate_helper_fn_name(
                         arg_idx=arg_idx,
                         input_idx=input_idx,
-                        function_name=function_name
+                        function_name=function_name,
                     )
                     # if the arg has an InflatableArg with fmt_fn, add the helper function name
                     if hasattr(script_module, helper_fn_name):
@@ -456,7 +489,6 @@ def _get_inflate_helper_fn_name(
     function_name: str,
 ) -> str:
     return f"_inflate_helper_for_{function_name}_input_{input_idx}_arg_{arg_idx}"
-
 
 
 def bundle_randn(*size, dtype=None):

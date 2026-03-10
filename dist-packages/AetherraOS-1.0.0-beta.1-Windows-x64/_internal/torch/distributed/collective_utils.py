@@ -9,30 +9,30 @@ Each should also handle single rank scenario.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, cast, Generic, Optional, TypeVar, Union
+from typing import Any, Generic, TypeVar, cast
 
 import torch.distributed as dist
-
 
 T = TypeVar("T")
 
 
 @dataclass
 class SyncPayload(Generic[T]):
-    stage_name: Optional[str]
+    stage_name: str | None
     success: bool
     payload: T
-    exception: Optional[Exception] = None
+    exception: Exception | None = None
 
 
 def broadcast(
-    data_or_fn: Union[T, Callable[[], T]],
+    data_or_fn: T | Callable[[], T],
     *,
     success: bool = True,
-    stage_name: Optional[str] = None,
+    stage_name: str | None = None,
     rank: int = 0,
-    pg: Optional[dist.ProcessGroup] = None,
+    pg: dist.ProcessGroup | None = None,
 ) -> T:
     """
     Broadcasts the data payload from rank 0 to all other ranks.
@@ -62,8 +62,8 @@ def broadcast(
             "Data or Function is expected to be None if not successful"
         )
 
-    payload: Optional[T] = None
-    exception: Optional[Exception] = None
+    payload: T | None = None
+    exception: Exception | None = None
     # if no pg is passed then execute if rank is 0
     if (pg is None and rank == 0) or (pg is not None and pg.rank() == rank):
         # determine if it is an executable function or data payload only
@@ -103,9 +103,9 @@ def broadcast(
 
 
 def all_gather(
-    data_or_fn: Union[T, Callable[[], T]],
-    stage_name: Optional[str] = None,
-    pg: Optional[dist.ProcessGroup] = None,
+    data_or_fn: T | Callable[[], T],
+    stage_name: str | None = None,
+    pg: dist.ProcessGroup | None = None,
 ) -> list[T]:
     """
     A simple all_gather primitive with basic synchronization guard logic,
@@ -123,8 +123,8 @@ def all_gather(
     Example usage:
     >> all_ids = all_gather(data_or_fn=allocate_id, pg=ext_pg.my_pg)
     """
-    payload: Optional[T] = None
-    exception: Optional[Exception] = None
+    payload: T | None = None
+    exception: Exception | None = None
     success = True
     # determine if it is an executable function or data payload only
     if callable(data_or_fn):
@@ -169,12 +169,11 @@ def all_gather(
                 error_msg, exception_list
             ) from exception_list[0]
         return ret_list
-    else:
-        if not sync_obj.success:
-            raise RuntimeError(
-                f"all_gather failed with exception {sync_obj.exception}",
-            ) from sync_obj.exception
-        return [sync_obj.payload]  # type: ignore[list-item]
+    if not sync_obj.success:
+        raise RuntimeError(
+            f"all_gather failed with exception {sync_obj.exception}",
+        ) from sync_obj.exception
+    return [sync_obj.payload]  # type: ignore[list-item]
 
 
 # Note: use Any for typing for now so users can pass in

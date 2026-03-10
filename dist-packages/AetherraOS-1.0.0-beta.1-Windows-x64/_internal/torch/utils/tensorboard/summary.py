@@ -3,14 +3,10 @@ import json
 import logging
 import os
 import struct
+from typing import Any
 
-from typing import Any, Optional
-
-import torch
 import numpy as np
-
 from google.protobuf import struct_pb2
-
 from tensorboard.compat.proto.summary_pb2 import (
     HistogramProto,
     Summary,
@@ -21,6 +17,8 @@ from tensorboard.compat.proto.tensor_shape_pb2 import TensorShapeProto
 from tensorboard.plugins.custom_scalar import layout_pb2
 from tensorboard.plugins.pr_curve.plugin_data_pb2 import PrCurvePluginData
 from tensorboard.plugins.text.plugin_data_pb2 import TextPluginData
+
+import torch
 
 from ._convert_np import make_np
 from ._utils import _prepare_video, convert_to_HWC
@@ -51,6 +49,7 @@ __all__ = [
 
 logger = logging.getLogger(__name__)
 
+
 def half_to_int(f: float) -> int:
     """Casts a half-precision float value into an integer.
 
@@ -64,6 +63,7 @@ def half_to_int(f: float) -> int:
     buf = struct.pack("f", f)
     return struct.unpack("i", buf)[0]
 
+
 def int_to_half(i: int) -> float:
     """Casts an integer value to a half-precision float.
 
@@ -74,14 +74,18 @@ def int_to_half(i: int) -> float:
     buf = struct.pack("i", i)
     return struct.unpack("f", buf)[0]
 
+
 def _tensor_to_half_val(t: torch.Tensor) -> list[int]:
     return [half_to_int(x) for x in t.flatten().tolist()]
+
 
 def _tensor_to_complex_val(t: torch.Tensor) -> list[float]:
     return torch.view_as_real(t).flatten().tolist()
 
+
 def _tensor_to_list(t: torch.Tensor) -> list[Any]:
     return t.flatten().tolist()
+
 
 # type maps: torch.Tensor type -> (protobuf type, protobuf val field)
 _TENSOR_TYPE_MAP = {
@@ -182,7 +186,6 @@ def hparams(hparam_dict=None, metric_dict=None, hparam_domain_discrete=None):
       The `Summary` protobufs for Experiment, SessionStartInfo and
         SessionEndInfo
     """
-    import torch
     from tensorboard.plugins.hparams.api_pb2 import (
         DataType,
         Experiment,
@@ -203,6 +206,8 @@ def hparams(hparam_dict=None, metric_dict=None, hparam_domain_discrete=None):
         SessionEndInfo,
         SessionStartInfo,
     )
+
+    import torch
 
     # TODO: expose other parameters in the future.
     # hp = HParamInfo(name='lr',display_name='learning rate',
@@ -248,7 +253,7 @@ def hparams(hparam_dict=None, metric_dict=None, hparam_domain_discrete=None):
             ssi.hparams[k].number_value = v
 
             if k in hparam_domain_discrete:
-                domain_discrete: Optional[struct_pb2.ListValue] = struct_pb2.ListValue(
+                domain_discrete: struct_pb2.ListValue | None = struct_pb2.ListValue(
                     values=[
                         struct_pb2.Value(number_value=d)
                         for d in hparam_domain_discrete[k]
@@ -369,9 +374,9 @@ def scalar(name, tensor, collections=None, new_style=False, double_precision=Fal
       ValueError: If tensor has the wrong shape or type.
     """
     tensor = make_np(tensor).squeeze()
-    assert (
-        tensor.ndim == 0
-    ), f"Tensor should contain one element (0 dimensions). Was given size: {tensor.size} and {tensor.ndim} dimensions."
+    assert tensor.ndim == 0, (
+        f"Tensor should contain one element (0 dimensions). Was given size: {tensor.size} and {tensor.ndim} dimensions."
+    )
     # python float is double precision in numpy
     scalar = float(tensor)
     if new_style:
@@ -390,8 +395,7 @@ def scalar(name, tensor, collections=None, new_style=False, double_precision=Fal
                 )
             ]
         )
-    else:
-        return Summary(value=[Summary.Value(tag=name, simple_value=scalar)])
+    return Summary(value=[Summary.Value(tag=name, simple_value=scalar)])
 
 
 def tensor_proto(tag, tensor):
@@ -654,7 +658,7 @@ def make_video(tensor, fps):
         import moviepy  # noqa: F401
     except ImportError:
         print("add_video needs package moviepy")
-        return
+        return None
     try:
         from moviepy import editor as mpy
     except ImportError:
@@ -662,7 +666,7 @@ def make_video(tensor, fps):
             "moviepy is installed, but can't import moviepy.editor.",
             "Some packages could be missing [imageio, requests]",
         )
-        return
+        return None
     import tempfile
 
     _t, h, w, c = tensor.shape
@@ -883,8 +887,9 @@ def _get_tensor_summary(
     Returns:
       Tensor summary with metadata.
     """
-    import torch
     from tensorboard.plugins.mesh import metadata
+
+    import torch
 
     tensor = torch.as_tensor(tensor)
 

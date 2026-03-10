@@ -6,7 +6,6 @@ import warnings
 import torch
 from torch.distributed._shard.sharding_spec import *  # noqa: F403
 
-
 with warnings.catch_warnings():
     warnings.simplefilter("always")
     warnings.warn(
@@ -17,6 +16,5 @@ with warnings.catch_warnings():
     )
 
 import torch.distributed._shard.sharding_spec as _sharding_spec
-
 
 sys.modules["torch.distributed._sharding_spec"] = _sharding_spec

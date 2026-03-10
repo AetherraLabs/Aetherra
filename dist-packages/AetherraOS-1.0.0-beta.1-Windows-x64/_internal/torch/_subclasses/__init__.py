@@ -7,7 +7,6 @@ from torch._subclasses.fake_tensor import (
 )
 from torch._subclasses.fake_utils import CrossRefFakeMode
 
-
 __all__ = [
     "FakeTensor",
     "FakeTensorMode",

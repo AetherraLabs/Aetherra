@@ -1,7 +1,7 @@
 # mypy: allow-untyped-defs
 import inspect
 from contextlib import contextmanager
-from typing import Any, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any
 
 import torch
 import torch.fx.traceback as fx_traceback
@@ -13,9 +13,8 @@ from ._lazy_graph_module import _make_graph_module
 from ._symbolic_trace import Tracer
 from .graph import Graph
 from .graph_module import GraphModule
-from .node import Argument, map_aggregate, map_arg, Node, Target
+from .node import Argument, Node, Target, map_aggregate, map_arg
 from .proxy import Proxy
-
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -90,7 +89,7 @@ class Interpreter:
         self,
         module: torch.nn.Module,
         garbage_collect_values: bool = True,
-        graph: Optional[Graph] = None,
+        graph: Graph | None = None,
     ):
         self.module = module
         self.submodules = dict(self.module.named_modules())
@@ -124,7 +123,7 @@ class Interpreter:
     def run(
         self,
         *args,
-        initial_env: Optional[dict[Node, Any]] = None,
+        initial_env: dict[Node, Any] | None = None,
         enable_io_processing: bool = True,
     ) -> Any:
         """
@@ -267,16 +266,14 @@ class Interpreter:
             # For a starred parameter e.g. `*args`, retrieve all
             # remaining values from the args list.
             return list(self.args_iter)
-        else:
-            try:
-                return next(self.args_iter)
-            except StopIteration as si:
-                if len(args) > 0:
-                    return args[0]
-                else:
-                    raise RuntimeError(
-                        f"Expected positional argument for parameter {target}, but one was not passed in!"
-                    ) from si
+        try:
+            return next(self.args_iter)
+        except StopIteration as si:
+            if len(args) > 0:
+                return args[0]
+            raise RuntimeError(
+                f"Expected positional argument for parameter {target}, but one was not passed in!"
+            ) from si
 
     @compatibility(is_backward_compatible=True)
     def get_attr(
@@ -590,7 +587,7 @@ class Transformer(Interpreter):
             result = super().run(enable_io_processing=False)
         if result is not None:
 
-            def strip_proxy(a: Union[Argument, Proxy]) -> Any:
+            def strip_proxy(a: Argument | Proxy) -> Any:
                 return a.node if isinstance(a, Proxy) else a
 
             new_output_node = self.new_graph.output(map_aggregate(result, strip_proxy))

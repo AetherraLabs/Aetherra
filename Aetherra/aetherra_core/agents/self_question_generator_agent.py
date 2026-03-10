@@ -51,9 +51,7 @@ class GeneratedQuestion:
     urgency: str  # "immediate", "short_term", "long_term"
     context: Dict[str, Any]
     expected_insights: List[str]
-    exploration_methods: List[
-        str
-    ]  # "reflection", "experimentation", "research", "observation"
+    exploration_methods: List[str]  # "reflection", "experimentation", "research", "observation"
     timestamp: str
     status: str = "pending"  # "pending", "exploring", "answered", "archived"
 
@@ -105,9 +103,7 @@ class SelfQuestionGeneratorAgent(AgentBase):
         # Load existing data
         self._load_persistence_data()
 
-        self.log(
-            "❓ SelfQuestionGeneratorAgent initialized with narrative question generation"
-        )
+        self.log("❓ SelfQuestionGeneratorAgent initialized with narrative question generation")
 
     def _initialize_memory_components(self):
         """Initialize memory system components"""
@@ -131,14 +127,10 @@ class SelfQuestionGeneratorAgent(AgentBase):
             input_lower = input_text.lower()
 
             # Handle different question generation commands
-            if (
-                "generate from stories" in input_lower
-                or "story questions" in input_lower
-            ):
+            if "generate from stories" in input_lower or "story questions" in input_lower:
                 result = await self._handle_story_questions(context)
             elif (
-                "generate from reflections" in input_lower
-                or "reflection questions" in input_lower
+                "generate from reflections" in input_lower or "reflection questions" in input_lower
             ):
                 result = await self._handle_reflection_questions(context)
             elif "cluster questions" in input_lower:
@@ -171,9 +163,7 @@ class SelfQuestionGeneratorAgent(AgentBase):
         """Handle question generation from narrative stories"""
         timeframe_hours = context.get("timeframe_hours", 48)
 
-        self.log(
-            f"📖 Generating questions from stories in the last {timeframe_hours} hours"
-        )
+        self.log(f"📖 Generating questions from stories in the last {timeframe_hours} hours")
 
         questions = await self.generate_questions_from_stories(timeframe_hours)
 
@@ -207,21 +197,15 @@ class SelfQuestionGeneratorAgent(AgentBase):
             metadata={
                 "questions_generated": len(questions),
                 "categories": list(set(q.category for q in questions)),
-                "high_priority_questions": len(
-                    [q for q in questions if q.priority_score > 0.7]
-                ),
+                "high_priority_questions": len([q for q in questions if q.priority_score > 0.7]),
             },
         )
 
-    async def _handle_reflection_questions(
-        self, context: Dict[str, Any]
-    ) -> AgentResponse:
+    async def _handle_reflection_questions(self, context: Dict[str, Any]) -> AgentResponse:
         """Handle question generation from reflection insights"""
         timeframe_hours = context.get("timeframe_hours", 24)
 
-        self.log(
-            f"🤔 Generating questions from reflections in the last {timeframe_hours} hours"
-        )
+        self.log(f"🤔 Generating questions from reflections in the last {timeframe_hours} hours")
 
         questions = await self.generate_questions_from_reflections(timeframe_hours)
 
@@ -256,16 +240,12 @@ class SelfQuestionGeneratorAgent(AgentBase):
             },
         )
 
-    async def _handle_question_clustering(
-        self, context: Dict[str, Any]
-    ) -> AgentResponse:
+    async def _handle_question_clustering(self, context: Dict[str, Any]) -> AgentResponse:
         """Handle clustering of related questions"""
         self.log("🔗 Clustering related questions for batch exploration")
 
         # Get pending questions
-        pending_questions = [
-            q for q in self.generated_questions.values() if q.status == "pending"
-        ]
+        pending_questions = [q for q in self.generated_questions.values() if q.status == "pending"]
 
         if len(pending_questions) < 2:
             return AgentResponse(
@@ -306,9 +286,7 @@ class SelfQuestionGeneratorAgent(AgentBase):
             },
         )
 
-    async def _handle_question_prioritization(
-        self, context: Dict[str, Any]
-    ) -> AgentResponse:
+    async def _handle_question_prioritization(self, context: Dict[str, Any]) -> AgentResponse:
         """Handle question prioritization and ranking"""
         self.log("📊 Prioritizing questions based on potential impact and urgency")
 
@@ -340,9 +318,7 @@ class SelfQuestionGeneratorAgent(AgentBase):
             agent_name=self.name,
             metadata={
                 "prioritized_questions": len(prioritized),
-                "high_priority_count": len(
-                    [q for q in prioritized if q.priority_score > 0.7]
-                ),
+                "high_priority_count": len([q for q in prioritized if q.priority_score > 0.7]),
                 "categories_covered": list(set(q.category for q in prioritized[:10])),
             },
         )
@@ -511,7 +487,9 @@ class SelfQuestionGeneratorAgent(AgentBase):
             ]
 
             for category, question_text in story_questions:
-                question_id = f"sq_{story['story_id']}_{category}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                question_id = (
+                    f"sq_{story['story_id']}_{category}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                )
 
                 question = GeneratedQuestion(
                     question_id=question_id,
@@ -519,8 +497,7 @@ class SelfQuestionGeneratorAgent(AgentBase):
                     category=category,
                     source_type="story",
                     source_id=story["story_id"],
-                    priority_score=0.7
-                    + (len(story["gaps"]) * 0.1),  # More gaps = higher priority
+                    priority_score=0.7 + (len(story["gaps"]) * 0.1),  # More gaps = higher priority
                     urgency="short_term",
                     context={
                         "story_theme": story["theme"],
@@ -637,9 +614,7 @@ class SelfQuestionGeneratorAgent(AgentBase):
 
         for category, group_questions in category_groups.items():
             if len(group_questions) >= 2:  # Only cluster if we have multiple questions
-                cluster_id = (
-                    f"cluster_{category}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-                )
+                cluster_id = f"cluster_{category}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
                 # Calculate cluster priority as average of question priorities
                 cluster_priority = sum(q.priority_score for q in group_questions) / len(
@@ -664,9 +639,7 @@ class SelfQuestionGeneratorAgent(AgentBase):
 
     async def prioritize_questions(self) -> List[GeneratedQuestion]:
         """Prioritize questions based on multiple factors"""
-        pending_questions = [
-            q for q in self.generated_questions.values() if q.status == "pending"
-        ]
+        pending_questions = [q for q in self.generated_questions.values() if q.status == "pending"]
 
         # Sort by priority score, then by timestamp (newer first)
         prioritized = sorted(
@@ -681,18 +654,10 @@ class SelfQuestionGeneratorAgent(AgentBase):
     def get_question_summary(self) -> Dict[str, Any]:
         """Get summary of question generation status"""
         total_questions = len(self.generated_questions)
-        pending = len(
-            [q for q in self.generated_questions.values() if q.status == "pending"]
-        )
-        exploring = len(
-            [q for q in self.generated_questions.values() if q.status == "exploring"]
-        )
-        answered = len(
-            [q for q in self.generated_questions.values() if q.status == "answered"]
-        )
-        archived = len(
-            [q for q in self.generated_questions.values() if q.status == "archived"]
-        )
+        pending = len([q for q in self.generated_questions.values() if q.status == "pending"])
+        exploring = len([q for q in self.generated_questions.values() if q.status == "exploring"])
+        answered = len([q for q in self.generated_questions.values() if q.status == "answered"])
+        archived = len([q for q in self.generated_questions.values() if q.status == "archived"])
 
         # Category breakdown
         category_breakdown = {}
@@ -724,9 +689,7 @@ class SelfQuestionGeneratorAgent(AgentBase):
             return "• No categories yet"
 
         lines = []
-        for category, count in sorted(
-            breakdown.items(), key=lambda x: x[1], reverse=True
-        ):
+        for category, count in sorted(breakdown.items(), key=lambda x: x[1], reverse=True):
             lines.append(f"• {category.replace('_', ' ').title()}: {count}")
 
         return "\n".join(lines)
@@ -763,17 +726,13 @@ class SelfQuestionGeneratorAgent(AgentBase):
             # Save questions
             questions_file = self.data_dir / "generated_questions.json"
             with open(questions_file, "w") as f:
-                questions_data = {
-                    q_id: asdict(q) for q_id, q in self.generated_questions.items()
-                }
+                questions_data = {q_id: asdict(q) for q_id, q in self.generated_questions.items()}
                 json.dump(questions_data, f, indent=2)
 
             # Save clusters
             clusters_file = self.data_dir / "question_clusters.json"
             with open(clusters_file, "w") as f:
-                clusters_data = {
-                    c_id: asdict(c) for c_id, c in self.question_clusters.items()
-                }
+                clusters_data = {c_id: asdict(c) for c_id, c in self.question_clusters.items()}
                 json.dump(clusters_data, f, indent=2)
 
             self.log("💾 Saved question data to persistence")

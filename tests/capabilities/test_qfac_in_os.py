@@ -34,7 +34,7 @@ async def test_qfac_optional_service_registration():
 
     try:
         await asyncio.wait_for(asyncio.shield(task), timeout=2.5)
-    except asyncio.TimeoutError:
+    except TimeoutError:
         pass
 
     reg = await get_service_registry()

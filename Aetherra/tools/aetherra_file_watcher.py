@@ -35,9 +35,7 @@ except ImportError:
     # Aetherra imports
     from aetherra_self_organizer import AetherraFileIntelligence
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -143,15 +141,10 @@ class AetherraFileWatcher(FileSystemEventHandler):
             current_dir = os.path.dirname(file_path)
 
             if suggested_dir and suggested_dir != current_dir:
-                logger.info(
-                    f"💡 Suggestion: {file_path} might belong in {suggested_dir}"
-                )
+                logger.info(f"💡 Suggestion: {file_path} might belong in {suggested_dir}")
 
                 # Auto-relocate if confidence is high and enabled
-                if (
-                    self.config.get("auto_relocate", False)
-                    and metadata.risk_level == "low"
-                ):
+                if self.config.get("auto_relocate", False) and metadata.risk_level == "low":
                     self._auto_relocate_file(file_path, suggested_dir)
 
         except Exception as e:
@@ -168,9 +161,7 @@ class AetherraFileWatcher(FileSystemEventHandler):
 
                 # Check for new issues
                 if updated_metadata.risk_level == "high":
-                    logger.warning(
-                        f"[WARN] High risk detected in modified file: {file_path}"
-                    )
+                    logger.warning(f"[WARN] High risk detected in modified file: {file_path}")
 
             except Exception as e:
                 logger.warning(f"Failed to update metadata for {file_path}: {e}")
@@ -308,29 +299,19 @@ class AetherraFileWatcher(FileSystemEventHandler):
                         current_time - self.last_analysis_time > self.analysis_interval
                         and len(self.pending_changes) > 0
                     ):
-                        logger.info(
-                            f"🔄 Processing {len(self.pending_changes)} pending changes..."
-                        )
+                        logger.info(f"🔄 Processing {len(self.pending_changes)} pending changes...")
 
                         # Batch process changes
-                        changes_to_process = list(self.pending_changes)[
-                            : self.batch_size
-                        ]
+                        changes_to_process = list(self.pending_changes)[: self.batch_size]
                         self.pending_changes.clear()
 
                         for file_path in changes_to_process:
                             if os.path.exists(file_path):
                                 try:
-                                    metadata = self.intelligence._analyze_file(
-                                        Path(file_path)
-                                    )
-                                    self.intelligence.file_registry[
-                                        file_path
-                                    ] = metadata
+                                    metadata = self.intelligence._analyze_file(Path(file_path))
+                                    self.intelligence.file_registry[file_path] = metadata
                                 except Exception as e:
-                                    logger.warning(
-                                        f"Failed to process {file_path}: {e}"
-                                    )
+                                    logger.warning(f"Failed to process {file_path}: {e}")
 
                         self.last_analysis_time = current_time
 
@@ -417,15 +398,11 @@ class AetherraFileWatcherDaemon:
         self.intelligence.scan_project_files()
         initial_analysis = self.intelligence.analyze_system_health()
 
-        logger.info(
-            f"Initial scan complete: {initial_analysis.total_files} files analyzed"
-        )
+        logger.info(f"Initial scan complete: {initial_analysis.total_files} files analyzed")
         if initial_analysis.orphaned_files:
             logger.info(f"Found {len(initial_analysis.orphaned_files)} orphaned files")
         if initial_analysis.duplicate_logic:
-            logger.info(
-                f"Found {len(initial_analysis.duplicate_logic)} potential duplicates"
-            )
+            logger.info(f"Found {len(initial_analysis.duplicate_logic)} potential duplicates")
 
         # Start file system monitoring
         self.observer.start()
@@ -516,14 +493,10 @@ def main():
     parser.add_argument("--start", action="store_true", help="Start the daemon")
     parser.add_argument("--stop", action="store_true", help="Stop the daemon")
     parser.add_argument("--status", action="store_true", help="Show daemon status")
-    parser.add_argument(
-        "--analyze", action="store_true", help="Trigger manual analysis"
-    )
+    parser.add_argument("--analyze", action="store_true", help="Trigger manual analysis")
     parser.add_argument("--project-root", default=".", help="Project root directory")
     parser.add_argument("--config", help="Configuration file path")
-    parser.add_argument(
-        "--daemon", action="store_true", help="Run as background daemon"
-    )
+    parser.add_argument("--daemon", action="store_true", help="Run as background daemon")
 
     args = parser.parse_args()
 

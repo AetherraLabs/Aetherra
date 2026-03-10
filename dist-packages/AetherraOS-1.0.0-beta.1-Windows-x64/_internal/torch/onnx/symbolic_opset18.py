@@ -21,13 +21,12 @@ New operators:
 
 import functools
 from collections.abc import Sequence
-from typing import Optional
 
 import torch
 from torch import _C
-from torch.onnx import _type_utils, symbolic_helper, symbolic_opset9 as opset9
+from torch.onnx import _type_utils, symbolic_helper
+from torch.onnx import symbolic_opset9 as opset9
 from torch.onnx._internal import jit_utils, registration
-
 
 # EDITING THIS FILE? READ THIS FIRST!
 # see Note [Edit Symbolic Files] in symbolic_helper.py
@@ -187,18 +186,16 @@ def aminmax(g: jit_utils.GraphContext, self, dim, keepdim):
         return g.op("ReduceMin", self, axes, keepdims_i=keepdim), g.op(
             "ReduceMax", self, axes, keepdims_i=keepdim
         )
-    else:
-        return g.op("ReduceMin", self, keepdims_i=keepdim), g.op(
-            "ReduceMax", self, keepdims_i=keepdim
-        )
+    return g.op("ReduceMin", self, keepdims_i=keepdim), g.op(
+        "ReduceMax", self, keepdims_i=keepdim
+    )
 
 
 @_onnx_symbolic("aten::var_mean")
 def _var_mean(g: jit_utils.GraphContext, input, *args):
     if len(args) == 1:
         return symbolic_helper._var_mean_helper(g, input, None, args[0], None)
-    else:
-        return symbolic_helper._var_mean_helper(g, input, *args)
+    return symbolic_helper._var_mean_helper(g, input, *args)
 
 
 @_onnx_symbolic("aten::logsumexp")
@@ -206,9 +203,8 @@ def _var_mean(g: jit_utils.GraphContext, input, *args):
 def _logsumexp(g: jit_utils.GraphContext, input, dim, keepdim):
     if dim is None:
         return g.op("ReduceLogSumExp", input, keepdims_i=0)
-    else:
-        axes = g.op("Constant", value_t=torch.tensor(dim, dtype=torch.long))
-        return g.op("ReduceLogSumExp", input, axes, keepdims_i=keepdim)
+    axes = g.op("Constant", value_t=torch.tensor(dim, dtype=torch.long))
+    return g.op("ReduceLogSumExp", input, axes, keepdims_i=keepdim)
 
 
 @_onnx_symbolic("aten::linalg_matrix_norm")
@@ -258,7 +254,7 @@ def linalg_vector_norm(
     g: jit_utils.GraphContext,
     self: torch._C.Value,
     ord: float,
-    dim: Optional[Sequence[int]],
+    dim: Sequence[int] | None,
     keepdim: bool,
     dtype: torch._C.Value,
 ):

@@ -6,7 +6,7 @@ import operator
 import typing
 from collections import Counter
 from collections.abc import Sequence
-from typing import Any, Union
+from typing import Any
 
 import torch
 import torch._guards
@@ -25,19 +25,18 @@ from torch.utils._ordered_set import OrderedSet
 
 from .. import config
 from ..pattern_matcher import (
+    MULTIPLE,
     Arg,
     CallFunction,
-    init_once_fakemode,
     KeywordArg,
     Match,
-    MULTIPLE,
     PatternMatcherPass,
+    init_once_fakemode,
     register_graph_pattern,
     stable_topological_sort,
 )
 from .decompose_mem_bound_mm import check_device
 from .replace_random import replace_random_passes
-
 
 log = logging.getLogger(__name__)
 patterns = PatternMatcherPass()
@@ -440,7 +439,7 @@ def constant_fold_uniform_value(gm: torch.fx.GraphModule):
 
                 # refines symints, see [constant folding refining of symints] above
                 for runtime_size, compile_time_size in zip(
-                    node_replacements_shapes[node], fake_tensor.shape
+                    node_replacements_shapes[node], fake_tensor.shape, strict=False
                 ):
                     torch._check(runtime_size == compile_time_size)
 
@@ -699,8 +698,8 @@ def pointless_convert(match: Match, arg, dtype1: torch.dtype, dtype2: torch.dtyp
 
 
 def definitely_equal(
-    old_sizes: Sequence[Union[torch.SymInt, int]],
-    new_sizes: Sequence[Union[torch.SymInt, torch.fx.Node, int]],
+    old_sizes: Sequence[torch.SymInt | int],
+    new_sizes: Sequence[torch.SymInt | torch.fx.Node | int],
 ) -> bool:
     """
     Leverage guard_or_true/false to compare if two lists of int/symint are equal.
@@ -719,7 +718,7 @@ def definitely_equal(
     if len(old_sizes) != len(new_sizes):
         return False
 
-    for lhs_item, rhs_item in zip(old_sizes, new_sizes):
+    for lhs_item, rhs_item in zip(old_sizes, new_sizes, strict=False):
         if isinstance(rhs_item, torch.fx.Node):
             rhs_item = rhs_item.meta["val"]
 
@@ -894,7 +893,7 @@ def mul_softmax_pattern(match: Match, *, inp, other, dim, keepdim, dtype=None):
         if dtype is not None:
             inp = inp.to(dtype)
 
-        sign: Union[int, float, torch.Tensor]
+        sign: int | float | torch.Tensor
         if isinstance(other, (int, float, torch.SymInt, torch.SymFloat)):
             sign = 1 if other >= 0 else -1
         else:
@@ -921,7 +920,7 @@ def div_softmax_pattern(match: Match, *, inp, other, dim, keepdim, dtype=None):
         if dtype is not None:
             inp = inp.to(dtype)
 
-        sign: Union[int, float, torch.Tensor]
+        sign: int | float | torch.Tensor
         if isinstance(other, (int, float, torch.SymInt, torch.SymFloat)):
             sign = 1 if other >= 0 else -1
         else:

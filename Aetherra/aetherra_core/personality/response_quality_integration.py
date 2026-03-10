@@ -103,14 +103,14 @@ class AdvancedPersonalityIntegration:
         try:
             # Step 1: Get style recommendation from memory learning
             print("📚 Getting style recommendations from memory...")
-            style_recommendation = await get_style_recommendation(
-                user_input, context, user_id
-            )
+            style_recommendation = await get_style_recommendation(user_input, context, user_id)
 
             # Step 2: Generate initial response with Phase 1 personality system
             print("🎭 Generating response with personality enhancement...")
             # For integration, we need a basic response first, then enhance it
-            basic_response = f"I understand you're asking about: {user_input}. Let me help you with that."
+            basic_response = (
+                f"I understand you're asking about: {user_input}. Let me help you with that."
+            )
             initial_response_data = await enhance_lyrixa_response(
                 basic_response, user_input, context
             )
@@ -138,9 +138,7 @@ class AdvancedPersonalityIntegration:
             effectiveness_score = critique_analysis["basic_critique"]["overall_score"]
             style_data = {
                 "styles_detected": style_recommendation.get("style_adjustments", {}),
-                "dominant_style": style_recommendation.get(
-                    "recommended_style", "neutral"
-                ),
+                "dominant_style": style_recommendation.get("recommended_style", "neutral"),
                 "trait_expressions": critique_analysis.get("enhanced_analysis", {})
                 .get("personality_consistency", {})
                 .get("trait_expressions", {}),
@@ -178,10 +176,10 @@ class AdvancedPersonalityIntegration:
         except Exception as e:
             print(f"⚠️ Error in integration processing: {e}")
             # Return fallback response
-            basic_fallback = f"I understand you're asking about: {user_input}. Let me help you with that."
-            fallback_data = await enhance_lyrixa_response(
-                basic_fallback, user_input, context
+            basic_fallback = (
+                f"I understand you're asking about: {user_input}. Let me help you with that."
             )
+            fallback_data = await enhance_lyrixa_response(basic_fallback, user_input, context)
             return {
                 "enhanced_response": fallback_data["text"],
                 "processing_error": str(e),
@@ -210,9 +208,7 @@ class AdvancedPersonalityIntegration:
 
         # Apply style-specific enhancements
         if recommended_style == "empathetic" and confidence > 0.7:
-            enhanced_response = self._add_empathetic_elements(
-                enhanced_response, user_input
-            )
+            enhanced_response = self._add_empathetic_elements(enhanced_response, user_input)
         elif recommended_style == "enthusiastic" and confidence > 0.7:
             enhanced_response = self._add_enthusiastic_elements(enhanced_response)
         elif recommended_style == "technical" and confidence > 0.7:
@@ -263,8 +259,7 @@ class AdvancedPersonalityIntegration:
 
         # Add enthusiastic markers if not already present
         if not any(
-            marker in response
-            for marker in ["!", "exciting", "amazing", "fantastic", "love"]
+            marker in response for marker in ["!", "exciting", "amazing", "fantastic", "love"]
         ):
             # Convert some periods to exclamation marks
             if ". " in response:
@@ -374,9 +369,7 @@ class AdvancedPersonalityIntegration:
         processing_time = (datetime.now() - start_time).total_seconds()
 
         # Calculate overall improvement score
-        original_quality = critique_analysis.get("basic_critique", {}).get(
-            "overall_score", 0.5
-        )
+        original_quality = critique_analysis.get("basic_critique", {}).get("overall_score", 0.5)
         enhancement_score = critique_analysis.get("enhanced_analysis", {}).get(
             "overall_enhancement_score", 0.5
         )
@@ -399,13 +392,9 @@ class AdvancedPersonalityIntegration:
             },
             # System analysis
             "style_analysis": {
-                "recommended_style": style_recommendation.get(
-                    "recommended_style", "neutral"
-                ),
+                "recommended_style": style_recommendation.get("recommended_style", "neutral"),
                 "style_reasoning": style_recommendation.get("reasoning", []),
-                "applied_adjustments": style_recommendation.get(
-                    "style_adjustments", {}
-                ),
+                "applied_adjustments": style_recommendation.get("style_adjustments", {}),
             },
             "critique_summary": {
                 "quality_score": original_quality,
@@ -418,14 +407,10 @@ class AdvancedPersonalityIntegration:
                 "empathy_score": critique_analysis.get("basic_critique", {}).get(
                     "empathy_score", 0.5
                 ),
-                "improvements_applied": critique_analysis.get(
-                    "improvements_applied", {}
-                ),
+                "improvements_applied": critique_analysis.get("improvements_applied", {}),
             },
             "reflection_summary": {
-                "reflection_performed": reflection_result.get(
-                    "reflection_performed", False
-                ),
+                "reflection_performed": reflection_result.get("reflection_performed", False),
                 "patterns_updated": reflection_result.get("patterns_updated", False),
                 "analysis_insights": reflection_result.get("interaction_analysis", {}),
                 "reflection_data": reflection_result.get("reflection_result", {}),
@@ -434,9 +419,7 @@ class AdvancedPersonalityIntegration:
                 "patterns_learned": learning_result.get("patterns_learned", 0),
                 "preferences_updated": learning_result.get("preferences_updated", 0),
                 "memories_stored": learning_result.get("memories_stored", 0),
-                "adaptations_identified": learning_result.get(
-                    "adaptations_identified", 0
-                ),
+                "adaptations_identified": learning_result.get("adaptations_identified", 0),
             },
             # System status
             "system_status": await self._get_system_status(),
@@ -484,9 +467,7 @@ class AdvancedPersonalityIntegration:
             self.performance_history = self.performance_history[-50:]
 
         # Update quality trends
-        self.quality_trends.append(
-            {"timestamp": result["timestamp"], "score": improvement_score}
-        )
+        self.quality_trends.append({"timestamp": result["timestamp"], "score": improvement_score})
 
         if len(self.quality_trends) > 50:
             self.quality_trends = self.quality_trends[-25:]
@@ -501,9 +482,9 @@ class AdvancedPersonalityIntegration:
         # Calculate system performance score
         if len(self.quality_trends) >= 5:
             recent_scores = [item["score"] for item in self.quality_trends[-5:]]
-            self.integration_metrics["system_performance_score"] = sum(
+            self.integration_metrics["system_performance_score"] = sum(recent_scores) / len(
                 recent_scores
-            ) / len(recent_scores)
+            )
 
     async def _get_system_status(self) -> Dict[str, Any]:
         """Get comprehensive system status"""
@@ -517,12 +498,8 @@ class AdvancedPersonalityIntegration:
         self.system_health.update(
             {
                 "critique_agent_status": critique_status.get("agent_status", "unknown"),
-                "reflection_system_status": reflection_status.get(
-                    "system_status", "unknown"
-                ),
-                "memory_learning_status": learning_status.get(
-                    "system_status", "unknown"
-                ),
+                "reflection_system_status": reflection_status.get("system_status", "unknown"),
+                "memory_learning_status": learning_status.get("system_status", "unknown"),
                 "last_health_check": datetime.now().isoformat(),
             }
         )
@@ -548,9 +525,7 @@ class AdvancedPersonalityIntegration:
                 "memory_learning": learning_status,
             },
             "integration_metrics": self.integration_metrics,
-            "recent_performance": self.performance_history[-5:]
-            if self.performance_history
-            else [],
+            "recent_performance": self.performance_history[-5:] if self.performance_history else [],
         }
 
     async def get_comprehensive_status(self) -> Dict[str, Any]:
@@ -593,23 +568,17 @@ class AdvancedPersonalityIntegration:
         recommendations = []
 
         if self.integration_metrics["system_performance_score"] < 0.7:
-            recommendations.append(
-                "Consider adjusting learning rates for better performance"
-            )
+            recommendations.append("Consider adjusting learning rates for better performance")
 
         if self.system_health["integration_health"] < 0.8:
-            recommendations.append(
-                "Check subsystem health - some components may need attention"
-            )
+            recommendations.append("Check subsystem health - some components may need attention")
 
         if len(self.performance_history) > 20:
             avg_processing_time = (
                 sum(p["processing_time"] for p in self.performance_history[-10:]) / 10
             )
             if avg_processing_time > 2.0:
-                recommendations.append(
-                    "Processing time is high - consider optimization"
-                )
+                recommendations.append("Processing time is high - consider optimization")
 
         if self.integration_metrics["learning_insights_generated"] < 5:
             recommendations.append("Increase interaction volume to improve learning")
@@ -648,9 +617,7 @@ async def get_integration_status() -> Dict[str, Any]:
 
 
 # Phase 2 Quick Enhancement Function
-def enhance_response_phase2(
-    user_input: str, context: Optional[Dict[str, Any]] = None
-) -> str:
+def enhance_response_phase2(user_input: str, context: Optional[Dict[str, Any]] = None) -> str:
     """
     Quick synchronous enhancement using Phase 2 improvements
     (For compatibility with existing systems that need immediate response)
@@ -664,17 +631,12 @@ def enhance_response_phase2(
         primary_emotion = user_emotion.get("primary_emotion", "neutral")
 
         # Quick empathetic enhancement based on emotion
-        if (
-            primary_emotion == "frustration"
-            and "understand" not in basic_response.lower()
-        ):
+        if primary_emotion == "frustration" and "understand" not in basic_response.lower():
             enhanced = "I understand how that can be frustrating. " + basic_response
         elif primary_emotion == "excitement" and "!" not in basic_response:
             enhanced = basic_response.replace(".", "!", 1)
         elif primary_emotion == "confusion" and "clarify" not in basic_response.lower():
-            enhanced = (
-                basic_response + " Let me know if you'd like me to clarify anything!"
-            )
+            enhanced = basic_response + " Let me know if you'd like me to clarify anything!"
         else:
             enhanced = basic_response
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
@@ -202,9 +201,7 @@ Available commands:
 
             archetype_name = safe_get(persona, "archetype", "Unknown")
             voice = persona.get("voice", {}) if isinstance(persona, dict) else {}
-            mindprint = (
-                persona.get("mindprint", {}) if isinstance(persona, dict) else {}
-            )
+            mindprint = persona.get("mindprint", {}) if isinstance(persona, dict) else {}
 
             # Extract voice details
             formality = safe_get(voice, "formality", "neutral")
@@ -254,9 +251,7 @@ Available commands:
 """
         return status
 
-    def set_persona_configuration(
-        self, archetype_name: str, voice_tone: str = "neutral"
-    ):
+    def set_persona_configuration(self, archetype_name: str, voice_tone: str = "neutral"):
         """Set persona archetype and voice configuration"""
         try:
             # Map archetype names to enums
@@ -415,9 +410,7 @@ Available commands:
         ):
             base_response = response_templates[archetype_enum][situation.context_type]
         else:
-            base_response = (
-                "I'm here to help you with this task. Let's work through it together."
-            )
+            base_response = "I'm here to help you with this task. Let's work through it together."
 
         # Adjust for emotional state
         if situation.frustration_level > 0.7:
@@ -483,15 +476,9 @@ Examples:
         """,
     )
 
-    parser.add_argument(
-        "command", nargs="*", help="Command to process with persona adaptation"
-    )
-    parser.add_argument(
-        "--status", action="store_true", help="Show current persona status"
-    )
-    parser.add_argument(
-        "--interactive", action="store_true", help="Enter interactive mode"
-    )
+    parser.add_argument("command", nargs="*", help="Command to process with persona adaptation")
+    parser.add_argument("--status", action="store_true", help="Show current persona status")
+    parser.add_argument("--interactive", action="store_true", help="Enter interactive mode")
 
     args = parser.parse_args()
 
@@ -508,9 +495,7 @@ Examples:
             try:
                 user_input = input("\naetherra> ").strip()
                 if user_input.lower() in ["quit", "exit", "q"]:
-                    print(
-                        "[WAVE] Farewell! The persona remembers our interaction for next time."
-                    )
+                    print("[WAVE] Farewell! The persona remembers our interaction for next time.")
                     break
 
                 if user_input:

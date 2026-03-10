@@ -3,12 +3,12 @@ This package introduces support for the current :ref:`accelerator<accelerators>`
 """
 
 from typing import Optional
+
 from typing_extensions import deprecated
 
 import torch
 
 from ._utils import _device_t, _get_device_index
-
 
 __all__ = [
     "current_accelerator",
@@ -73,7 +73,7 @@ def is_available() -> bool:
     return mod.is_available()
 
 
-def current_accelerator(check_available: bool = False) -> Optional[torch.device]:
+def current_accelerator(check_available: bool = False) -> torch.device | None:
     r"""Return the device of the accelerator available at compilation time.
     If no accelerator were available at compilation time, returns None.
     See :ref:`accelerator<accelerators>` for details.
@@ -216,7 +216,7 @@ class device_index:
         ...     pass
     """
 
-    def __init__(self, device: Optional[int], /) -> None:
+    def __init__(self, device: int | None, /) -> None:
         self.idx = device
         self.prev_idx = -1
 

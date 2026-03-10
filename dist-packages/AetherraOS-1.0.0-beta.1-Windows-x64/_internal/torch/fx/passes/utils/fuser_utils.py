@@ -1,13 +1,12 @@
 import copy
 from queue import SimpleQueue
-from typing import Optional as _Optional
 
 import torch.fx
 from torch.fx._compatibility import compatibility
 from torch.fx.graph import Graph
 from torch.fx.graph_module import GraphModule
 from torch.fx.node import Node
-from torch.fx.passes.tools_common import legalize_graph, NodeList, NodeSet
+from torch.fx.passes.tools_common import NodeList, NodeSet, legalize_graph
 from torch.fx.passes.utils import lift_subgraph_as_module  # type: ignore[attr-defined]
 
 
@@ -96,7 +95,7 @@ def fuse_as_graphmodule(
     gm: GraphModule,
     nodes: NodeList,
     module_name: str,
-    partition_lookup_table: _Optional[dict[Node, None]] = None,
+    partition_lookup_table: dict[Node, None] | None = None,
     *,
     always_return_tuple: bool = False,
 ) -> tuple[GraphModule, tuple[Node, ...], tuple[Node, ...]]:

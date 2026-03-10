@@ -14,9 +14,9 @@ Updated operators:
 import functools
 import warnings
 
-from torch.onnx import symbolic_helper, symbolic_opset9 as opset9
+from torch.onnx import symbolic_helper
+from torch.onnx import symbolic_opset9 as opset9
 from torch.onnx._internal import jit_utils, registration
-
 
 _onnx_symbolic = functools.partial(registration.onnx_symbolic, opset=7)
 

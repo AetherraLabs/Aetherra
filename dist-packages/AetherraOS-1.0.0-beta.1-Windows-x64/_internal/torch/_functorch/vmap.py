@@ -11,8 +11,9 @@ import functools
 import itertools
 import os
 import threading
+from collections.abc import Callable
 from functools import partial
-from typing import Any, Callable, Optional, Union
+from typing import Any, Union
 
 import torch
 from torch import Tensor
@@ -24,13 +25,12 @@ from torch._C._functorch import (
     is_batchedtensor,
 )
 from torch.utils._pytree import (
+    TreeSpec,
     _broadcast_to_and_flatten,
     tree_flatten,
     tree_map_,
     tree_unflatten,
-    TreeSpec,
 )
-
 
 in_dims_t = Union[int, tuple]
 out_dims_t = Union[int, tuple[int, ...]]
@@ -52,11 +52,11 @@ def doesnt_support_saved_tensors_hooks(f):
 
 # Checks that all args-to-be-batched have the same batch dim size
 def _validate_and_get_batch_size(
-    flat_in_dims: list[Optional[int]], flat_args: list
+    flat_in_dims: list[int | None], flat_args: list
 ) -> int:
     batch_sizes = [
         arg.size(in_dim)
-        for in_dim, arg in zip(flat_in_dims, flat_args)
+        for in_dim, arg in zip(flat_in_dims, flat_args, strict=False)
         if in_dim is not None
     ]
     if len(batch_sizes) == 0:
@@ -69,7 +69,7 @@ def _validate_and_get_batch_size(
     return batch_sizes[0]
 
 
-def _num_outputs(batched_outputs: Union[Tensor, tuple[Tensor, ...]]) -> int:
+def _num_outputs(batched_outputs: Tensor | tuple[Tensor, ...]) -> int:
     if isinstance(batched_outputs, tuple):
         return len(batched_outputs)
     return 1
@@ -115,7 +115,7 @@ def _process_batched_inputs(
             f"has structure {args_spec}."
         )
 
-    for i, (arg, in_dim) in enumerate(zip(flat_args, flat_in_dims)):
+    for i, (arg, in_dim) in enumerate(zip(flat_args, flat_in_dims, strict=False)):
         if not isinstance(in_dim, int) and in_dim is not None:
             raise ValueError(
                 f"vmap({_get_name(func)}, in_dims={in_dims}, ...)(<inputs>): "
@@ -157,7 +157,7 @@ def _create_batched_inputs(
     # See NOTE [Ignored _remove_batch_dim, _add_batch_dim]
     batched_inputs = [
         arg if in_dim is None else _add_batch_dim(arg, in_dim, vmap_level)
-        for in_dim, arg in zip(flat_in_dims, flat_args)
+        for in_dim, arg in zip(flat_in_dims, flat_args, strict=False)
     ]
     return tree_unflatten(batched_inputs, args_spec)
 
@@ -186,7 +186,7 @@ def _maybe_remove_batch_dim(name, batched_output, vmap_level, batch_size, out_di
 
 # Undos the batching (and any batch dimensions) associated with the `vmap_level`.
 def _unwrap_batched(
-    batched_outputs: Union[Tensor, tuple[Tensor, ...]],
+    batched_outputs: Tensor | tuple[Tensor, ...],
     out_dims: out_dims_t,
     vmap_level: int,
     batch_size: int,
@@ -222,7 +222,9 @@ def _unwrap_batched(
         _maybe_remove_batch_dim(
             _get_name(func), batched_output, vmap_level, batch_size, out_dim
         )
-        for batched_output, out_dim in zip(flat_batched_outputs, flat_out_dims)
+        for batched_output, out_dim in zip(
+            flat_batched_outputs, flat_out_dims, strict=False
+        )
     ]
     return tree_unflatten(flat_outputs, output_spec)
 
@@ -368,12 +370,12 @@ def _get_chunked_inputs(flat_args, flat_in_dims, batch_size, chunk_size):
             ]
             * len(split_idxs)
         )
-        for t, in_dim in zip(flat_args, flat_in_dims)
+        for t, in_dim in zip(flat_args, flat_in_dims, strict=False)
     )
 
     # transpose chunk dim and flatten structure
     # chunks_flat_args is a list of flatten args
-    chunks_flat_args = zip(*flat_args_chunks)
+    chunks_flat_args = zip(*flat_args_chunks, strict=False)
     return chunks_flat_args
 
 
@@ -390,7 +392,7 @@ def _flatten_chunks_output(chunks_output_):
 
     # transpose chunk dim and flatten structure
     # flat_output_chunks is flat list of chunks
-    flat_output_chunks = list(zip(*flat_chunks_output))
+    flat_output_chunks = list(zip(*flat_chunks_output, strict=False))
     return flat_output_chunks, arg_spec
 
 
@@ -535,5 +537,5 @@ def unwrap_batched(args, level):
         )
         for arg in flat_args
     ]
-    output, bdims = zip(*result)
+    output, bdims = zip(*result, strict=False)
     return tree_unflatten(output, spec), tree_unflatten(bdims, spec)

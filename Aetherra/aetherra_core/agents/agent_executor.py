@@ -10,7 +10,8 @@ Stub implementation. Replace with full logic as needed.
 
 class AgentExecutor:
     def __init__(self, *args, **kwargs):
-        pass
+        self.args = args
+        self.kwargs = kwargs
 
     def execute(self, *args, **kwargs):
         # Implement agent execution logic here

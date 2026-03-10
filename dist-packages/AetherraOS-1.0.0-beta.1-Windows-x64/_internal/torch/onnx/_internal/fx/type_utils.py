@@ -4,14 +4,13 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from typing import Any, Optional, TYPE_CHECKING, Union
-from typing_extensions import Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import onnx
+from typing_extensions import Protocol, runtime_checkable
 
 import torch
 from torch._subclasses import fake_tensor
-
 
 if TYPE_CHECKING:
     import onnx.defs  # noqa: TCH004

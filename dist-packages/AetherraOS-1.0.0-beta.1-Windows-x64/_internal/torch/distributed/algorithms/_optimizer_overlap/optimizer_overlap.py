@@ -12,7 +12,6 @@ from torch.distributed.optim import as_functional_optim
 from torch.nn.parallel import DistributedDataParallel
 from torch.optim import Optimizer
 
-
 # Contains the mappings between the regular and overlapped optimizer types.
 _registered_overlapped_optims: dict[type, type] = {}
 

@@ -22,12 +22,10 @@ import torch
 
 from .reductions import init_reductions
 
-
 __all__ = ["set_sharing_strategy", "get_sharing_strategy", "get_all_sharing_strategies"]
 
 
 from multiprocessing import *  # noqa: F403
-
 
 __all__ += multiprocessing.__all__  # noqa: PLE0605 type: ignore[attr-defined]
 
@@ -44,11 +42,10 @@ from .spawn import (
     ProcessContext,
     ProcessExitedException,
     ProcessRaisedException,
-    spawn,
     SpawnContext,
+    spawn,
     start_processes,
 )
-
 
 if sys.platform == "darwin" or sys.platform == "win32":
     _sharing_strategy = "file_system"
@@ -104,7 +101,6 @@ init_reductions()
 # See https://github.com/pytorch/pytorch/issues/153050 and
 # https://github.com/python/cpython/issues/88887 for more details
 from multiprocessing.resource_tracker import ResourceTracker as _RT
-
 
 if (
     sys.platform == "darwin"

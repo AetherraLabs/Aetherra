@@ -14,11 +14,9 @@
 
 import warnings
 from dataclasses import dataclass, field
-from typing import Optional
 
 from .training_args import TrainingArguments
 from .utils import cached_property, is_tf_available, logging, requires_backends
-
 
 logger = logging.get_logger(__name__)
 
@@ -166,17 +164,17 @@ class TFTrainingArguments(TrainingArguments):
     """
 
     framework = "tf"
-    tpu_name: Optional[str] = field(
+    tpu_name: str | None = field(
         default=None,
         metadata={"help": "Name of TPU"},
     )
 
-    tpu_zone: Optional[str] = field(
+    tpu_zone: str | None = field(
         default=None,
         metadata={"help": "Zone of TPU"},
     )
 
-    gcp_project: Optional[str] = field(
+    gcp_project: str | None = field(
         default=None,
         metadata={"help": "Name of Cloud TPU-enabled project"},
     )
@@ -186,7 +184,10 @@ class TFTrainingArguments(TrainingArguments):
         metadata={"help": "Power for the Polynomial decay LR scheduler."},
     )
 
-    xla: bool = field(default=False, metadata={"help": "Whether to activate the XLA compilation or not"})
+    xla: bool = field(
+        default=False,
+        metadata={"help": "Whether to activate the XLA compilation or not"},
+    )
 
     @cached_property
     def _setup_strategy(self) -> tuple["tf.distribute.Strategy", int]:
@@ -212,8 +213,7 @@ class TFTrainingArguments(TrainingArguments):
             except ValueError:
                 if self.tpu_name:
                     raise RuntimeError(f"Couldn't connect to TPU {self.tpu_name}!")
-                else:
-                    tpu = None
+                tpu = None
 
             if tpu:
                 # Set to bfloat16 in case of TPU
@@ -233,7 +233,9 @@ class TFTrainingArguments(TrainingArguments):
                 # If you only want to use a specific subset of GPUs use `CUDA_VISIBLE_DEVICES=0`
                 strategy = tf.distribute.MirroredStrategy()
             else:
-                raise ValueError("Cannot find the proper strategy, please check your environment properties.")
+                raise ValueError(
+                    "Cannot find the proper strategy, please check your environment properties."
+                )
 
         return strategy
 
@@ -270,7 +272,9 @@ class TFTrainingArguments(TrainingArguments):
                 "Using deprecated `--per_gpu_train_batch_size` argument which will be removed in a future "
                 "version. Using `--per_device_train_batch_size` is preferred."
             )
-        per_device_batch_size = self.per_gpu_train_batch_size or self.per_device_train_batch_size
+        per_device_batch_size = (
+            self.per_gpu_train_batch_size or self.per_device_train_batch_size
+        )
         return per_device_batch_size * self.n_replicas
 
     @property
@@ -283,7 +287,9 @@ class TFTrainingArguments(TrainingArguments):
                 "Using deprecated `--per_gpu_eval_batch_size` argument which will be removed in a future "
                 "version. Using `--per_device_eval_batch_size` is preferred."
             )
-        per_device_batch_size = self.per_gpu_eval_batch_size or self.per_device_eval_batch_size
+        per_device_batch_size = (
+            self.per_gpu_eval_batch_size or self.per_device_eval_batch_size
+        )
         return per_device_batch_size * self.n_replicas
 
     @property

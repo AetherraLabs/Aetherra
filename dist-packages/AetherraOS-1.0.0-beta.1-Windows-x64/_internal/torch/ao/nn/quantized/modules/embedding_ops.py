@@ -6,7 +6,6 @@ from torch._jit_internal import List, Optional  # noqa: F401
 
 from .utils import _hide_packed_params_repr, _quantize_weight
 
-
 __all__ = ["EmbeddingPackedParams", "Embedding", "EmbeddingBag"]
 
 
@@ -45,10 +44,9 @@ class EmbeddingPackedParams(torch.nn.Module):
     def _weight(self):
         if self.dtype in [torch.quint8, torch.quint4x2]:
             return torch.ops.quantized.embedding_bag_unpack(self._packed_weight)
-        else:
-            raise NotImplementedError(
-                "Unsupported dtype for quantized embedding unpack! Supports quint8 and quint4x2."
-            )
+        raise NotImplementedError(
+            "Unsupported dtype for quantized embedding unpack! Supports quint8 and quint4x2."
+        )
 
     def forward(self, x):
         return x
@@ -162,10 +160,9 @@ class Embedding(torch.nn.Module):
             return torch.ops.quantized.embedding_4bit(
                 self._packed_params._packed_weight, indices
             )
-        else:
-            return torch.ops.quantized.embedding_byte(
-                self._packed_params._packed_weight, indices
-            )
+        return torch.ops.quantized.embedding_byte(
+            self._packed_params._packed_weight, indices
+        )
 
     def _get_name(self):
         return "QuantizedEmbedding"
@@ -322,18 +319,17 @@ class EmbeddingBag(Embedding):
                 compressed_indices_mapping,
                 self.include_last_offset,
             )
-        else:
-            return torch.ops.quantized.embedding_bag_byte(
-                self._packed_params._packed_weight,
-                indices,
-                offsets,
-                False,
-                0,
-                self.pruned_weights,
-                per_sample_weights,
-                compressed_indices_mapping,
-                self.include_last_offset,
-            )
+        return torch.ops.quantized.embedding_bag_byte(
+            self._packed_params._packed_weight,
+            indices,
+            offsets,
+            False,
+            0,
+            self.pruned_weights,
+            per_sample_weights,
+            compressed_indices_mapping,
+            self.include_last_offset,
+        )
 
     def _get_name(self):
         return "QuantizedEmbeddingBag"

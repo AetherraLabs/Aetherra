@@ -11,7 +11,6 @@ from .core import (
     is_masked_tensor,
 )
 
-
 __all__ = []  # type: ignore[var-annotated]
 
 BINARY_NAMES = [
@@ -150,12 +149,11 @@ def _binary_helper(fn, args, kwargs, inplace):
     if inplace:
         args[0]._set_data_mask(result_data, mask_args[0])
         return args[0]
-    else:
-        result_mask = _get_at_least_one_mask(*args[:2])
-        # sparse tensors don't have strides so we can only expand if the layout is strided
-        if args0_layout == torch.strided:
-            result_mask = result_mask.expand_as(result_data)
-        return _wrap_result(result_data, result_mask)
+    result_mask = _get_at_least_one_mask(*args[:2])
+    # sparse tensors don't have strides so we can only expand if the layout is strided
+    if args0_layout == torch.strided:
+        result_mask = result_mask.expand_as(result_data)
+    return _wrap_result(result_data, result_mask)
 
 
 def _torch_binary(fn_name):

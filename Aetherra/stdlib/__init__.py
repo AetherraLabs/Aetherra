@@ -91,9 +91,7 @@ class StandardLibraryManager:
         return {
             "name": plugin.name,
             "description": plugin.description,
-            "available_actions": getattr(
-                plugin, "available_actions", ["execute_action"]
-            ),
+            "available_actions": getattr(plugin, "available_actions", ["execute_action"]),
             "loaded": True,
         }
 

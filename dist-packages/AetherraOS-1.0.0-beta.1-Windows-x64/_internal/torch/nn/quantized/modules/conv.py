@@ -9,15 +9,14 @@ while adding an import statement here.
 """
 
 from torch.ao.nn.quantized.modules.conv import (
-    _reverse_repeat_padding,
     Conv1d,
     Conv2d,
     Conv3d,
     ConvTranspose1d,
     ConvTranspose2d,
     ConvTranspose3d,
+    _reverse_repeat_padding,
 )
-
 
 __all__ = [
     "Conv1d",

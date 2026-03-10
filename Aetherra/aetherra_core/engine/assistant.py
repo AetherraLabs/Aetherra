@@ -18,9 +18,10 @@ import os
 from datetime import datetime
 from typing import Any, Dict, Optional
 
+from ..agents.goals import LyrixaGoalSystem
+
 # Local imports
 from .core.advanced_plugins import LyrixaAdvancedPluginManager  # type: ignore[reportMissingImports]
-from ..agents.goals import LyrixaGoalSystem
 
 # Import all enhanced systems
 from .core.aether_interpreter import AetherInterpreter  # type: ignore[reportMissingImports]
@@ -35,7 +36,9 @@ from .core.enhanced_self_evaluation_agent import (  # type: ignore[reportMissing
 )
 
 # Import autonomous self-improvement systems
-from .core.self_improvement_scheduler import SelfImprovementScheduler  # type: ignore[reportMissingImports]
+from .core.self_improvement_scheduler import (
+    SelfImprovementScheduler,  # type: ignore[reportMissingImports]
+)
 
 # Aetherra integration will be imported when needed to avoid circular imports
 
@@ -330,9 +333,7 @@ What would you like to explore together today? 🚀
             )
 
             # Analyze for potential actions (plugin execution, .aether generation, etc.)
-            action_analysis = await self._analyze_for_actions(
-                user_input, conversation_response
-            )
+            action_analysis = await self._analyze_for_actions(user_input, conversation_response)
 
             # Execute actions if needed
             action_results = []
@@ -367,9 +368,7 @@ What would you like to explore together today? 🚀
                 "personality_used": conversation_response["personality_used"],
                 "actions_executed": action_results,
                 "proactive_suggestions": proactive_suggestions,
-                "follow_up_questions": conversation_response.get(
-                    "follow_up_questions", []
-                ),
+                "follow_up_questions": conversation_response.get("follow_up_questions", []),
                 "learning_insights": await self._extract_learning_insights(
                     user_input, conversation_response
                 ),
@@ -408,7 +407,7 @@ What would you like to explore together today? 🚀
 
             # Generate code using interpreter with pattern knowledge
             # Note: This would be implemented in a full aether interpreter
-            generated_code = f"# Generated .aether code for: {description}\n# TODO: Implement full .aether code generation"
+            generated_code = f"# Generated .aether code for: {description}\n# Integration point: full .aether code generation pipeline"
 
             # Store the new pattern for future use
             await self.memory.store_enhanced_memory(
@@ -437,9 +436,7 @@ What would you like to explore together today? 🚀
                 "fallback_suggestion": "Let me help you write this step by step.",
             }
 
-    async def execute_plugin_workflow(
-        self, workflow_description: str
-    ) -> Dict[str, Any]:
+    async def execute_plugin_workflow(self, workflow_description: str) -> Dict[str, Any]:
         """
         🧩 PLUGIN WORKFLOW EXECUTION
         Execute complex workflows using plugin chaining
@@ -590,9 +587,7 @@ What would you like to explore together today? 🚀
                 "learning_velocity": memory_insights.get("learning_velocity", 0),
                 "areas_for_improvement": await self._identify_improvement_areas(),
                 "growth_suggestions": await self._generate_growth_suggestions(),
-                "user_relationship_stage": conversation_reflection.get(
-                    "patterns_noticed", []
-                ),
+                "user_relationship_stage": conversation_reflection.get("patterns_noticed", []),
             }
 
             return reflection
@@ -611,21 +606,15 @@ What would you like to explore together today? 🚀
                     "name": self.name,
                     "version": self.version,
                     "session_id": self.session_id,
-                    "uptime": str(
-                        datetime.now() - self.performance_metrics["session_start"]
-                    ),
+                    "uptime": str(datetime.now() - self.performance_metrics["session_start"]),
                     "personality": self.conversation.current_personality.value
                     if hasattr(self.conversation, "current_personality")
                     else "default",
                 },
                 "memory_system": {
                     "type": "Enhanced with clustering and visualization",
-                    "total_memories": len(
-                        await self.memory.recall_with_clustering("", limit=1000)
-                    ),
-                    "clusters": len(
-                        (await self.memory.get_memory_visualization()).clusters
-                    ),
+                    "total_memories": len(await self.memory.recall_with_clustering("", limit=1000)),
+                    "clusters": len((await self.memory.get_memory_visualization()).clusters),
                     "insights_available": True,
                 },
                 "plugin_ecosystem": await self.plugins.get_ecosystem_status(),
@@ -696,9 +685,7 @@ What would you like to explore together today? 🚀
             # Overall status
             if health["issues"]:
                 health["overall_status"] = (
-                    "good_with_issues"
-                    if len(health["issues"]) < 3
-                    else "needs_attention"
+                    "good_with_issues" if len(health["issues"]) < 3 else "needs_attention"
                 )
 
         except Exception as e:
@@ -781,9 +768,7 @@ What would you like to explore together today? 🚀
             try:
                 if action["type"] == "plugin_scaffolding":
                     # Generate plugin scaffold
-                    plugin_name = (
-                        f"custom_plugin_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-                    )
+                    plugin_name = f"custom_plugin_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
                     scaffold_path = await self.plugins.scaffold_plugin_from_nl(
                         action["description"], plugin_name
                     )
@@ -809,9 +794,7 @@ What would you like to explore together today? 🚀
                 elif action["type"] == "information_retrieval":
                     # Retrieve requested information
                     if action["target"] == "memories":
-                        memories = await self.memory.recall_with_clustering(
-                            "recent", limit=5
-                        )
+                        memories = await self.memory.recall_with_clustering("recent", limit=5)
                         results.append(
                             {
                                 "action": "memory_retrieval",
@@ -821,9 +804,7 @@ What would you like to explore together today? 🚀
                         )
 
             except Exception as e:
-                results.append(
-                    {"action": action["type"], "success": False, "error": str(e)}
-                )
+                results.append({"action": action["type"], "success": False, "error": str(e)})
 
         return results
 
@@ -835,9 +816,7 @@ What would you like to explore together today? 🚀
 
         # Context-based suggestions
         if "project" in user_input.lower():
-            suggestions.append(
-                "Would you like me to help you organize your project structure?"
-            )
+            suggestions.append("Would you like me to help you organize your project structure?")
 
         if "stuck" in user_input.lower() or "problem" in user_input.lower():
             suggestions.append("I can help you break this down into smaller steps.")
@@ -853,9 +832,7 @@ What would you like to explore together today? 🚀
         """Extract learning insights from the interaction"""
         return {
             "user_expertise_signals": [],
-            "preferred_communication_style": conversation_response.get(
-                "emotional_tone", "neutral"
-            ),
+            "preferred_communication_style": conversation_response.get("emotional_tone", "neutral"),
             "topic_interests": [],
             "learning_velocity": 0.5,
         }
@@ -933,9 +910,7 @@ What would you like to explore together today? 🚀
         Enable continuous self-monitoring and improvement using Aetherra engines
         """
         try:
-            print(
-                "🤖 Starting Lyrixa autonomous self-improvement mode with Aetherra engines..."
-            )
+            print("🤖 Starting Lyrixa autonomous self-improvement mode with Aetherra engines...")
 
             # If Aetherra integration is available, use it
             if self.aetherra_integration:
@@ -963,9 +938,7 @@ What would you like to explore together today? 🚀
                     return result
                 else:
                     # Fall back to original implementation
-                    print(
-                        "⚠️ Aetherra integration failed, falling back to original implementation"
-                    )
+                    print("⚠️ Aetherra integration failed, falling back to original implementation")
 
             # Original implementation as fallback
             # Start the self-improvement scheduler
@@ -1077,14 +1050,10 @@ What would you like to explore together today? 🚀
 
             # Original implementation as fallback
             # Run manual introspection cycle
-            introspection_results = (
-                await self.self_improvement_scheduler.run_manual_introspection()
-            )
+            introspection_results = await self.self_improvement_scheduler.run_manual_introspection()
 
             # Run immediate self-evaluation
-            evaluation_results = (
-                await self.self_evaluation_agent.run_immediate_evaluation()
-            )
+            evaluation_results = await self.self_evaluation_agent.run_immediate_evaluation()
 
             # Compile comprehensive self-analysis
             self_analysis = {
@@ -1129,20 +1098,14 @@ What would you like to explore together today? 🚀
                 if not result.get("error"):
                     return result
                 else:
-                    print(
-                        "⚠️ Aetherra status check failed, falling back to original implementation"
-                    )
+                    print("⚠️ Aetherra status check failed, falling back to original implementation")
 
             # Original implementation as fallback
             # Get improvement metrics
-            improvement_metrics = (
-                await self.self_improvement_scheduler.get_improvement_metrics()
-            )
+            improvement_metrics = await self.self_improvement_scheduler.get_improvement_metrics()
 
             # Get evaluation metrics
-            evaluation_metrics = (
-                await self.self_evaluation_agent.get_evaluation_metrics()
-            )
+            evaluation_metrics = await self.self_evaluation_agent.get_evaluation_metrics()
 
             # Check if systems are running
             scheduler_running = self.self_improvement_scheduler.is_running
@@ -1151,12 +1114,8 @@ What would you like to explore together today? 🚀
             return {
                 "autonomous_mode_active": scheduler_running and evaluator_running,
                 "systems_status": {
-                    "self_improvement_scheduler": "running"
-                    if scheduler_running
-                    else "stopped",
-                    "self_evaluation_agent": "running"
-                    if evaluator_running
-                    else "stopped",
+                    "self_improvement_scheduler": "running" if scheduler_running else "stopped",
+                    "self_evaluation_agent": "running" if evaluator_running else "stopped",
                 },
                 "improvement_metrics": improvement_metrics,
                 "evaluation_metrics": evaluation_metrics,

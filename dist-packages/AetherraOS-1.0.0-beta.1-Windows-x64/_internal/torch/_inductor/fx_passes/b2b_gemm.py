@@ -25,14 +25,13 @@ from ..pattern_matcher import (
     register_graph_pattern,
 )
 from ..select_algorithm import (
-    autotune_select_algorithm,
     ExternKernelChoice,
     SymbolicGridFn,
     TritonTemplate,
     TritonTemplateCaller,
+    autotune_select_algorithm,
 )
 from ..utils import ceildiv
-
 
 B2B_GEMM_PASS = PatternMatcherPass(
     pass_name="b2b_gemm_pass",
@@ -600,10 +599,9 @@ def b2b_gemm_handler(match: Match, mat1: torch.fx.Node, mat2: torch.fx.Node) -> 
         if is_mm(node):
             outer_mm = node
             break
-        elif is_pointwise_node(node):
+        if is_pointwise_node(node):
             continue
-        else:
-            break
+        break
     if not outer_mm:
         return
 

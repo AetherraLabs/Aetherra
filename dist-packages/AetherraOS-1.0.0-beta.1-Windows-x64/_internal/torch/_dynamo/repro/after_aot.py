@@ -30,32 +30,33 @@ import subprocess
 import sys
 import textwrap
 import uuid
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from importlib import import_module
 from tempfile import TemporaryFile
-from typing import Any, Callable, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any
+
 from typing_extensions import Unpack
 
 import torch
 import torch.fx as fx
 import torch.nn as nn
 from torch._dynamo.debug_utils import (
-    _cuda_system_info_comment,
+    MAX_CONSTANT_NUMEL_INLINE,
     AccuracyError,
-    backend_accuracy_fails,
     BuckTargetWriter,
+    InputReader,
+    InputWriter,
+    NNModuleToString,
+    NopInputReader,
+    _cuda_system_info_comment,
+    backend_accuracy_fails,
     cast_to_fp64,
     extra_deps,
     extra_imports,
     generate_config_string,
     generate_env_vars_string,
     helper_for_dump_minify,
-    InputReader,
-    InputWriter,
-    MAX_CONSTANT_NUMEL_INLINE,
     minifier_dir,
-    NNModuleToString,
-    NopInputReader,
     same_two_models,
 )
 from torch._dynamo.utils import clone_inputs, counters, same
@@ -70,7 +71,6 @@ from torch.fx.experimental.symbolic_shapes import (
 from torch.hub import tqdm
 
 from .. import config
-
 
 if TYPE_CHECKING:
     from torch._inductor.compile_fx import _CompileFxCallable, _CompileFxKwargs
@@ -206,40 +206,37 @@ def wrap_compiler_debug(
                         f"{compiler_name}_accuracy",
                     )
                     raise AccuracyError("Bad accuracy detected")
-                else:
-                    # Call the compiled function with real inputs
-                    return inner_compiled_fn(real_inputs)  # type: ignore[operator]
-            else:
-                try:
-                    # Call the compiled function with real inputs
-                    out = inner_compiled_fn(real_inputs)  # type: ignore[operator]
-                    # sync cuda kernels to ensure IMA detection
-                    for arg in example_inputs:
-                        if isinstance(arg, torch.Tensor) and arg.is_cuda:
-                            torch.cuda.synchronize()
-                            break
-                    return out
-                except Exception:
-                    if config.repro_level == 1:
-                        dump_compiler_graph_state(
-                            fx.GraphModule(gm, orig_graph),
-                            copy_tensor_attrs,
-                            compiler_name,
-                        )
-                    elif config.repro_level == 2:
-                        dump_to_minify(
-                            fx.GraphModule(gm, orig_graph),
-                            copy_tensor_attrs,
-                            compiler_name,
-                        )
-                    raise
+                # Call the compiled function with real inputs
+                return inner_compiled_fn(real_inputs)  # type: ignore[operator]
+            try:
+                # Call the compiled function with real inputs
+                out = inner_compiled_fn(real_inputs)  # type: ignore[operator]
+                # sync cuda kernels to ensure IMA detection
+                for arg in example_inputs:
+                    if isinstance(arg, torch.Tensor) and arg.is_cuda:
+                        torch.cuda.synchronize()
+                        break
+                return out
+            except Exception:
+                if config.repro_level == 1:
+                    dump_compiler_graph_state(
+                        fx.GraphModule(gm, orig_graph),
+                        copy_tensor_attrs,
+                        compiler_name,
+                    )
+                elif config.repro_level == 2:
+                    dump_to_minify(
+                        fx.GraphModule(gm, orig_graph),
+                        copy_tensor_attrs,
+                        compiler_name,
+                    )
+                raise
 
         if config.repro_after == "aot":
             compiled_fn = deferred_for_real_inputs
             compiled_fn._boxed_call = True  # type: ignore[attr-defined]
             return compiled_fn  # type: ignore[return-value]
-        else:
-            return inner_compiled_fn
+        return inner_compiled_fn
 
     return debug_wrapper
 
@@ -277,8 +274,7 @@ python_binary(
 ```
 \"\"\"
 """
-    else:
-        return ""
+    return ""
 
 
 def generate_compiler_repro_string(
@@ -318,7 +314,7 @@ isolate_fails_code_str = None
         return tuple(i.node.hint if isinstance(i, torch.SymInt) else i for i in x)
 
     writer = InputWriter(save_dir, stable_hash=stable_hash)
-    for placeholder, arg in zip(fx_placeholder_targets(gm), args):
+    for placeholder, arg in zip(fx_placeholder_targets(gm), args, strict=False):
         if isinstance(arg, (int, torch.SymInt)):
             writer.symint(placeholder, arg)
         elif isinstance(arg, torch.Tensor):
@@ -700,8 +696,7 @@ def repro_analyze(options, mod, load_args):
 
         if not diff_values:
             return None
-        else:
-            return " and ".join(f"{a} != {b}" for a, b in diff_values)
+        return " and ".join(f"{a} != {b}" for a, b in diff_values)
 
     def check_hook(name, val):
         meta = writer.compute_tensor_metadata(val)
@@ -841,7 +836,7 @@ def run_repro(
     load_args,
     *,
     command="run",
-    accuracy: Union[bool, str] = "",
+    accuracy: bool | str = "",
     save_dir=None,
     tracing_mode=None,
     patch_code=None,

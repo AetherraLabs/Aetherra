@@ -21,7 +21,6 @@ Key Features:
 from __future__ import annotations
 
 # Standard library imports
-import asyncio
 import hashlib
 import json
 import logging
@@ -29,7 +28,6 @@ import zipfile
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any
 from uuid import uuid4
 
 # Third party imports
@@ -513,23 +511,17 @@ class PluginInstallerManager(QObject):
         downloader.start()
 
     @Slot(str, int, int)
-    def _on_download_progress(
-        self, plugin_id: str, downloaded: int, total: int
-    ) -> None:
+    def _on_download_progress(self, plugin_id: str, downloaded: int, total: int) -> None:
         """Handle download progress updates."""
         progress = self._installation_progress.get(plugin_id)
         if progress:
             progress.downloaded_size = downloaded
             progress.download_size = total
-            progress.progress_percent = int(
-                (downloaded / total) * 30
-            )  # Download is 30% of total
+            progress.progress_percent = int((downloaded / total) * 30)  # Download is 30% of total
             self.installation_progress.emit(plugin_id, progress)
 
     @Slot(str, str)
-    def _on_download_completed(
-        self, request: InstallationRequest, package_path: str
-    ) -> None:
+    def _on_download_completed(self, request: InstallationRequest, package_path: str) -> None:
         """Handle download completion."""
         plugin_id = request.package.id
 
@@ -562,9 +554,7 @@ class PluginInstallerManager(QObject):
             self.installation_progress.emit(plugin_id, progress)
 
     @Slot(str, object)
-    def _on_installation_progress(
-        self, plugin_id: str, progress: InstallationProgress
-    ) -> None:
+    def _on_installation_progress(self, plugin_id: str, progress: InstallationProgress) -> None:
         """Handle installation progress updates."""
         # Adjust progress percentage (download was 0-30%, installation is 30-100%)
         if progress.total_steps > 0:

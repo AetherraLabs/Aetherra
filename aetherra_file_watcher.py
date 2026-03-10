@@ -17,9 +17,10 @@ import os
 import sys
 import threading
 import time
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, Set
+from typing import Any
 
 # Third party imports
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
@@ -49,12 +50,12 @@ class AetherraFileWatcher(FileSystemEventHandler):
     and autonomous optimization decisions.
     """
 
-    def __init__(self, intelligence: AetherraFileIntelligence, config: Dict[str, Any]):
+    def __init__(self, intelligence: AetherraFileIntelligence, config: dict[str, Any]):
         self.intelligence = intelligence
         self.config = config
 
         # Tracking state
-        self.pending_changes: Set[str] = set()
+        self.pending_changes: set[str] = set()
         self.last_analysis_time = 0
         self.analysis_interval = config.get("analysis_interval", 30)  # seconds
         self.batch_size = config.get("batch_size", 10)
@@ -70,7 +71,7 @@ class AetherraFileWatcher(FileSystemEventHandler):
         }
 
         # Event handlers
-        self.event_handlers: Dict[str, Callable] = {
+        self.event_handlers: dict[str, Callable] = {
             "file_added": self._handle_file_added,
             "file_modified": self._handle_file_modified,
             "file_deleted": self._handle_file_deleted,
@@ -338,9 +339,9 @@ class AetherraFileWatcher(FileSystemEventHandler):
                                     metadata = self.intelligence._analyze_file(
                                         Path(file_path)
                                     )
-                                    self.intelligence.file_registry[
-                                        file_path
-                                    ] = metadata
+                                    self.intelligence.file_registry[file_path] = (
+                                        metadata
+                                    )
                                 except Exception as e:
                                     logger.warning(
                                         f"Failed to process {file_path}: {e}"
@@ -386,7 +387,7 @@ class AetherraFileWatcherDaemon:
         self.is_running = False
         self.start_time = None
 
-    def _load_config(self, config_file: str | None = None) -> Dict[str, Any]:
+    def _load_config(self, config_file: str | None = None) -> dict[str, Any]:
         """Load configuration from file or use defaults."""
         default_config = {
             "analysis_interval": 30,
@@ -471,7 +472,7 @@ class AetherraFileWatcherDaemon:
         runtime = datetime.now() - self.start_time if self.start_time else None
         logger.info(f"[OK] Daemon stopped. Runtime: {runtime}")
 
-    def status(self) -> Dict[str, Any]:
+    def status(self) -> dict[str, Any]:
         """Get daemon status information."""
         return {
             "is_running": self.is_running,

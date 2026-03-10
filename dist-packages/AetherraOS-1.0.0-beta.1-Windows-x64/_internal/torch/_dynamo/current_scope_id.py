@@ -19,7 +19,6 @@ import contextlib
 import threading
 from collections.abc import Generator
 
-
 # Global variable to identify which SubgraphTracer we are in.
 # It is sometimes difficult to find an InstructionTranslator to use.
 _current_scope_id = threading.local()

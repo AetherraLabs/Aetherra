@@ -94,9 +94,7 @@ class AetherraComponentDiscovery:
         for agent_dir in agent_dirs:
             if agent_dir.exists():
                 agents.extend(
-                    self._scan_directory_for_classes(
-                        agent_dir, "agents", ["Agent", "AI", "Bot"]
-                    )
+                    self._scan_directory_for_classes(agent_dir, "agents", ["Agent", "AI", "Bot"])
                 )
 
         return agents
@@ -269,9 +267,7 @@ class AetherraComponentDiscovery:
         for file_path in directory.rglob("*.py"):
             if file_path.name.startswith("__"):
                 continue
-            components.extend(
-                self._scan_file_for_classes(file_path, component_type, keywords)
-            )
+            components.extend(self._scan_file_for_classes(file_path, component_type, keywords))
 
         return components
 
@@ -290,21 +286,14 @@ class AetherraComponentDiscovery:
             for line_num, line in enumerate(lines, 1):
                 line = line.strip()
                 if line.startswith("class ") and ":" in line:
-                    class_def = (
-                        line.split("class ")[1].split(":")[0].split("(")[0].strip()
-                    )
+                    class_def = line.split("class ")[1].split(":")[0].split("(")[0].strip()
 
                     # Check if class matches keywords
-                    if any(
-                        keyword.lower() in class_def.lower() for keyword in keywords
-                    ):
+                    if any(keyword.lower() in class_def.lower() for keyword in keywords):
                         # Extract module path
                         rel_path = file_path.relative_to(self.project_root)
                         module_path = (
-                            str(rel_path)
-                            .replace("\\", ".")
-                            .replace("/", ".")
-                            .replace(".py", "")
+                            str(rel_path).replace("\\", ".").replace("/", ".").replace(".py", "")
                         )
 
                         # Extract capabilities from docstring or comments
@@ -332,9 +321,7 @@ class AetherraComponentDiscovery:
 
         # Look for docstring after class definition
         class_section = (
-            content.split(f"class {class_name}")[1]
-            if f"class {class_name}" in content
-            else ""
+            content.split(f"class {class_name}")[1] if f"class {class_name}" in content else ""
         )
 
         # Extract from docstring
@@ -434,9 +421,7 @@ class AetherraComponentDiscovery:
         total_discovered = sum(
             len(components) for components in self.discovered_components.values()
         )
-        total_loaded = sum(
-            len(components) for components in self.loaded_components.values()
-        )
+        total_loaded = sum(len(components) for components in self.loaded_components.values())
 
         report.append("📊 SUMMARY:")
         report.append(f"   Total Components Discovered: {total_discovered}")
@@ -454,22 +439,16 @@ class AetherraComponentDiscovery:
                         if component.status == "available"
                         else "❌"
                     )
-                    report.append(
-                        f"   {status_icon} {component.name} ({component.status})"
-                    )
+                    report.append(f"   {status_icon} {component.name} ({component.status})")
                     if component.capabilities:
-                        report.append(
-                            f"      Capabilities: {', '.join(component.capabilities)}"
-                        )
+                        report.append(f"      Capabilities: {', '.join(component.capabilities)}")
                     if component.error_message and len(component.error_message) < 100:
                         report.append(f"      Error: {component.error_message}")
                 report.append("")
 
         return "\n".join(report)
 
-    def save_discovery_results(
-        self, filename: str = "component_discovery_results.json"
-    ):
+    def save_discovery_results(self, filename: str = "component_discovery_results.json"):
         """Save discovery results to JSON file"""
         results = {
             "discovery_timestamp": str(Path().absolute()),

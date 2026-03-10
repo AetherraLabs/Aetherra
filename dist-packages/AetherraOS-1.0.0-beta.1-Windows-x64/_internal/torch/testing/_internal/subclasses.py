@@ -1,5 +1,5 @@
 # mypy: ignore-errors
-from typing import Any, Optional
+from typing import Any
 
 import torch
 import torch.utils._pytree as pytree
@@ -64,15 +64,14 @@ class WrapperSubclass(torch.Tensor):
 
         if func is cond_op:
             return out
-        else:
-            return return_and_correct_aliasing(func, args, kwargs, out)
+        return return_and_correct_aliasing(func, args, kwargs, out)
 
     def __coerce_same_metadata_as_tangent__(
-        self, expected_metadata: Any, expected_type: Optional[type] = None
+        self, expected_metadata: Any, expected_type: type | None = None
     ):
         if expected_type == type(self.a):
             return self.a
-        elif expected_type is TwoTensor:
+        if expected_type is TwoTensor:
             return TwoTensor(self.a, self.a.clone())
 
         return None

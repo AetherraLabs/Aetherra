@@ -76,9 +76,7 @@ class AetherraFileAuditor:
             if file_count % 1000 == 0:
                 print(f"   Scanning... found {file_count} files so far")
 
-        print(
-            f"📁 Found {len(self.python_files)} active Python files (excluding backups)"
-        )
+        print(f"📁 Found {len(self.python_files)} active Python files (excluding backups)")
 
         # Analyze imports and references with progress
         print("🔍 Analyzing file imports and dependencies...")
@@ -189,13 +187,12 @@ class AetherraFileAuditor:
             )
 
             # Various matching strategies
-            if parts[-1] == py_file.stem:  # Module name matches file name
-                potential_files.append(py_file)
-            elif (
-                len(parts) > 1 and parts[-2:] == file_parts[-2:]
-            ):  # Package.module match
-                potential_files.append(py_file)
-            elif import_name.replace(".", "/") in str(py_file):  # Direct path match
+            if (
+                parts[-1] == py_file.stem
+                or len(parts) > 1
+                and parts[-2:] == file_parts[-2:]
+                or import_name.replace(".", "/") in str(py_file)
+            ):  # Module name matches file name
                 potential_files.append(py_file)
 
         return potential_files
@@ -207,13 +204,9 @@ class AetherraFileAuditor:
                 "total_files": len(self.python_files),
                 "used_files": len(self.used_files),
                 "unused_files": len(self.unused_files),
-                "usage_percentage": round(
-                    (len(self.used_files) / len(self.python_files)) * 100, 2
-                ),
+                "usage_percentage": round((len(self.used_files) / len(self.python_files)) * 100, 2),
             },
-            "used_files": [
-                str(f.relative_to(self.project_root)) for f in sorted(self.used_files)
-            ],
+            "used_files": [str(f.relative_to(self.project_root)) for f in sorted(self.used_files)],
             "unused_files": [
                 str(f.relative_to(self.project_root)) for f in sorted(self.unused_files)
             ],

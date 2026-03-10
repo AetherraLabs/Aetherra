@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
-# Minimal stub for quantum_memory_state
+# Minimal baseline for quantum_memory_state
 
 
 def get_quantum_metrics():

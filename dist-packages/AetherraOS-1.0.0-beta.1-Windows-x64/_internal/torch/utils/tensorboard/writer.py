@@ -3,7 +3,7 @@
 
 import os
 import time
-from typing import Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Union
 
 import torch
 
@@ -724,9 +724,9 @@ class SummaryWriter:
         self,
         tag: str,
         figure: Union["Figure", list["Figure"]],
-        global_step: Optional[int] = None,
+        global_step: int | None = None,
         close: bool = True,
-        walltime: Optional[float] = None,
+        walltime: float | None = None,
     ) -> None:
         """Render matplotlib figure into an image and add it to summary.
 
@@ -924,20 +924,20 @@ class SummaryWriter:
             fs.makedirs(save_path)
 
         if metadata is not None:
-            assert mat.shape[0] == len(
-                metadata
-            ), "#labels should equal with #data points"
+            assert mat.shape[0] == len(metadata), (
+                "#labels should equal with #data points"
+            )
             make_tsv(metadata, save_path, metadata_header=metadata_header)
 
         if label_img is not None:
-            assert (
-                mat.shape[0] == label_img.shape[0]
-            ), "#images should equal with #data points"
+            assert mat.shape[0] == label_img.shape[0], (
+                "#images should equal with #data points"
+            )
             make_sprite(label_img, save_path)
 
-        assert (
-            mat.ndim == 2
-        ), "mat should be 2D, where mat.size(0) is the number of data points"
+        assert mat.ndim == 2, (
+            "mat should be 2D, where mat.size(0) is the number of data points"
+        )
         make_mat(mat, save_path)
 
         # Filesystem doesn't necessarily have append semantics, so we store an

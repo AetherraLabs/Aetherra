@@ -26,7 +26,7 @@ from contextlib import ExitStack, contextmanager
 from dataclasses import fields, is_dataclass
 from enum import Enum
 from functools import partial, wraps
-from typing import Any, ContextManager, Optional, TypedDict
+from typing import Any, ContextManager, TypedDict
 
 import numpy as np
 from packaging import version
@@ -39,7 +39,6 @@ from .import_utils import (
     is_torch_available,
     is_torch_fx_proxy,
 )
-
 
 if is_torch_available():
     # required for @can_return_tuple decorator to work with torchdynamo
@@ -92,13 +91,13 @@ def infer_framework_from_repr(x):
     representation = str(type(x))
     if representation.startswith("<class 'torch."):
         return "pt"
-    elif representation.startswith("<class 'tensorflow."):
+    if representation.startswith("<class 'tensorflow."):
         return "tf"
-    elif representation.startswith("<class 'jax"):
+    if representation.startswith("<class 'jax"):
         return "jax"
-    elif representation.startswith("<class 'numpy."):
+    if representation.startswith("<class 'numpy."):
         return "np"
-    elif representation.startswith("<class 'mlx."):
+    if representation.startswith("<class 'mlx."):
         return "mlx"
 
 
@@ -119,7 +118,9 @@ def _get_frameworks_and_test_func(x):
     frameworks = [] if preferred_framework is None else [preferred_framework]
     if preferred_framework != "np":
         frameworks.append("np")
-    frameworks.extend([f for f in framework_to_test if f not in [preferred_framework, "np"]])
+    frameworks.extend(
+        [f for f in framework_to_test if f not in [preferred_framework, "np"]]
+    )
     return {f: framework_to_test[f] for f in frameworks}
 
 
@@ -264,12 +265,14 @@ def to_py_obj(obj):
     """
     if isinstance(obj, (int, float)):
         return obj
-    elif isinstance(obj, (dict, UserDict)):
+    if isinstance(obj, (dict, UserDict)):
         return {k: to_py_obj(v) for k, v in obj.items()}
-    elif isinstance(obj, (list, tuple)):
+    if isinstance(obj, (list, tuple)):
         try:
             arr = np.array(obj)
-            if np.issubdtype(arr.dtype, np.integer) or np.issubdtype(arr.dtype, np.floating):
+            if np.issubdtype(arr.dtype, np.integer) or np.issubdtype(
+                arr.dtype, np.floating
+            ):
                 return arr.tolist()
         except Exception:
             pass
@@ -291,8 +294,7 @@ def to_py_obj(obj):
     # tolist also works on 0d np arrays
     if isinstance(obj, np.number):
         return obj.tolist()
-    else:
-        return obj
+    return obj
 
 
 def to_numpy(obj):
@@ -309,7 +311,7 @@ def to_numpy(obj):
 
     if isinstance(obj, (dict, UserDict)):
         return {k: to_numpy(v) for k, v in obj.items()}
-    elif isinstance(obj, (list, tuple)):
+    if isinstance(obj, (list, tuple)):
         return np.array(obj)
 
     # This gives us a smart order to test the frameworks with the corresponding tests.
@@ -386,10 +388,14 @@ class ModelOutput(OrderedDict):
         if not len(class_fields):
             raise ValueError(f"{self.__class__.__name__} has no fields.")
         if not all(field.default is None for field in class_fields[1:]):
-            raise ValueError(f"{self.__class__.__name__} should not have more than one required field.")
+            raise ValueError(
+                f"{self.__class__.__name__} should not have more than one required field."
+            )
 
         first_field = getattr(self, class_fields[0].name)
-        other_fields_are_none = all(getattr(self, field.name) is None for field in class_fields[1:])
+        other_fields_are_none = all(
+            getattr(self, field.name) is None for field in class_fields[1:]
+        )
 
         if other_fields_are_none and not is_tensor(first_field):
             if isinstance(first_field, dict):
@@ -432,23 +438,30 @@ class ModelOutput(OrderedDict):
                     self[field.name] = v
 
     def __delitem__(self, *args, **kwargs):
-        raise Exception(f"You cannot use ``__delitem__`` on a {self.__class__.__name__} instance.")
+        raise Exception(
+            f"You cannot use ``__delitem__`` on a {self.__class__.__name__} instance."
+        )
 
     def setdefault(self, *args, **kwargs):
-        raise Exception(f"You cannot use ``setdefault`` on a {self.__class__.__name__} instance.")
+        raise Exception(
+            f"You cannot use ``setdefault`` on a {self.__class__.__name__} instance."
+        )
 
     def pop(self, *args, **kwargs):
-        raise Exception(f"You cannot use ``pop`` on a {self.__class__.__name__} instance.")
+        raise Exception(
+            f"You cannot use ``pop`` on a {self.__class__.__name__} instance."
+        )
 
     def update(self, *args, **kwargs):
-        raise Exception(f"You cannot use ``update`` on a {self.__class__.__name__} instance.")
+        raise Exception(
+            f"You cannot use ``update`` on a {self.__class__.__name__} instance."
+        )
 
     def __getitem__(self, k):
         if isinstance(k, str):
             inner_dict = dict(self.items())
             return inner_dict[k]
-        else:
-            return self.to_tuple()[k]
+        return self.to_tuple()[k]
 
     def __setattr__(self, name, value):
         if name in self.keys() and value is not None:
@@ -479,7 +492,9 @@ class ModelOutput(OrderedDict):
 if is_torch_available():
     import torch.utils._pytree as _torch_pytree
 
-    def _model_output_flatten(output: ModelOutput) -> tuple[list[Any], "_torch_pytree.Context"]:
+    def _model_output_flatten(
+        output: ModelOutput,
+    ) -> tuple[list[Any], "_torch_pytree.Context"]:
         return list(output.values()), list(output.keys())
 
     def _model_output_unflatten(
@@ -487,7 +502,7 @@ if is_torch_available():
         context: "_torch_pytree.Context",
         output_type=None,
     ) -> ModelOutput:
-        return output_type(**dict(zip(context, values)))
+        return output_type(**dict(zip(context, values, strict=False)))
 
     if version.parse(get_torch_version()) >= version.parse("2.2"):
         _torch_pytree.register_pytree_node(
@@ -597,9 +612,12 @@ def find_labels(model_class):
         signature = inspect.signature(model_class.__call__)  # Flax models
 
     if "QuestionAnswering" in model_name:
-        return [p for p in signature.parameters if "label" in p or p in ("start_positions", "end_positions")]
-    else:
-        return [p for p in signature.parameters if "label" in p]
+        return [
+            p
+            for p in signature.parameters
+            if "label" in p or p in ("start_positions", "end_positions")
+        ]
+    return [p for p in signature.parameters if "label" in p]
 
 
 def flatten_dict(d: MutableMapping, parent_key: str = "", delimiter: str = "."):
@@ -632,18 +650,17 @@ def transpose(array, axes=None):
     """
     if is_numpy_array(array):
         return np.transpose(array, axes=axes)
-    elif is_torch_tensor(array):
+    if is_torch_tensor(array):
         return array.T if axes is None else array.permute(*axes)
-    elif is_tf_tensor(array):
+    if is_tf_tensor(array):
         import tensorflow as tf
 
         return tf.transpose(array, perm=axes)
-    elif is_jax_tensor(array):
+    if is_jax_tensor(array):
         import jax.numpy as jnp
 
         return jnp.transpose(array, axes=axes)
-    else:
-        raise ValueError(f"Type not supported for transpose: {type(array)}.")
+    raise ValueError(f"Type not supported for transpose: {type(array)}.")
 
 
 def reshape(array, newshape):
@@ -653,18 +670,17 @@ def reshape(array, newshape):
     """
     if is_numpy_array(array):
         return np.reshape(array, newshape)
-    elif is_torch_tensor(array):
+    if is_torch_tensor(array):
         return array.reshape(*newshape)
-    elif is_tf_tensor(array):
+    if is_tf_tensor(array):
         import tensorflow as tf
 
         return tf.reshape(array, newshape)
-    elif is_jax_tensor(array):
+    if is_jax_tensor(array):
         import jax.numpy as jnp
 
         return jnp.reshape(array, newshape)
-    else:
-        raise ValueError(f"Type not supported for reshape: {type(array)}.")
+    raise ValueError(f"Type not supported for reshape: {type(array)}.")
 
 
 def squeeze(array, axis=None):
@@ -674,18 +690,17 @@ def squeeze(array, axis=None):
     """
     if is_numpy_array(array):
         return np.squeeze(array, axis=axis)
-    elif is_torch_tensor(array):
+    if is_torch_tensor(array):
         return array.squeeze() if axis is None else array.squeeze(dim=axis)
-    elif is_tf_tensor(array):
+    if is_tf_tensor(array):
         import tensorflow as tf
 
         return tf.squeeze(array, axis=axis)
-    elif is_jax_tensor(array):
+    if is_jax_tensor(array):
         import jax.numpy as jnp
 
         return jnp.squeeze(array, axis=axis)
-    else:
-        raise ValueError(f"Type not supported for squeeze: {type(array)}.")
+    raise ValueError(f"Type not supported for squeeze: {type(array)}.")
 
 
 def expand_dims(array, axis):
@@ -695,18 +710,17 @@ def expand_dims(array, axis):
     """
     if is_numpy_array(array):
         return np.expand_dims(array, axis)
-    elif is_torch_tensor(array):
+    if is_torch_tensor(array):
         return array.unsqueeze(dim=axis)
-    elif is_tf_tensor(array):
+    if is_tf_tensor(array):
         import tensorflow as tf
 
         return tf.expand_dims(array, axis=axis)
-    elif is_jax_tensor(array):
+    if is_jax_tensor(array):
         import jax.numpy as jnp
 
         return jnp.expand_dims(array, axis=axis)
-    else:
-        raise ValueError(f"Type not supported for expand_dims: {type(array)}.")
+    raise ValueError(f"Type not supported for expand_dims: {type(array)}.")
 
 
 def tensor_size(array):
@@ -715,16 +729,15 @@ def tensor_size(array):
     """
     if is_numpy_array(array):
         return np.size(array)
-    elif is_torch_tensor(array):
+    if is_torch_tensor(array):
         return array.numel()
-    elif is_tf_tensor(array):
+    if is_tf_tensor(array):
         import tensorflow as tf
 
         return tf.size(array)
-    elif is_jax_tensor(array):
+    if is_jax_tensor(array):
         return array.size
-    else:
-        raise ValueError(f"Type not supported for tensor_size: {type(array)}.")
+    raise ValueError(f"Type not supported for tensor_size: {type(array)}.")
 
 
 def add_model_info_to_auto_map(auto_map, repo_id):
@@ -733,7 +746,10 @@ def add_model_info_to_auto_map(auto_map, repo_id):
     """
     for key, value in auto_map.items():
         if isinstance(value, (tuple, list)):
-            auto_map[key] = [f"{repo_id}--{v}" if (v is not None and "--" not in v) else v for v in value]
+            auto_map[key] = [
+                f"{repo_id}--{v}" if (v is not None and "--" not in v) else v
+                for v in value
+            ]
         elif value is not None and "--" not in value:
             auto_map[key] = f"{repo_id}--{value}"
 
@@ -761,11 +777,19 @@ def infer_framework(model_class):
     for base_class in inspect.getmro(model_class):
         module = base_class.__module__
         name = base_class.__name__
-        if module.startswith("tensorflow") or module.startswith("keras") or name == "TFPreTrainedModel":
+        if (
+            module.startswith("tensorflow")
+            or module.startswith("keras")
+            or name == "TFPreTrainedModel"
+        ):
             return "tf"
-        elif module.startswith("torch") or name == "PreTrainedModel":
+        if module.startswith("torch") or name == "PreTrainedModel":
             return "pt"
-        elif module.startswith("flax") or module.startswith("jax") or name == "FlaxPreTrainedModel":
+        if (
+            module.startswith("flax")
+            or module.startswith("jax")
+            or name == "FlaxPreTrainedModel"
+        ):
             return "flax"
     else:
         raise TypeError(f"Could not infer framework from class {model_class}.")
@@ -780,7 +804,11 @@ def torch_int(x):
 
     import torch
 
-    return x.to(torch.int64) if torch.jit.is_tracing() and isinstance(x, torch.Tensor) else int(x)
+    return (
+        x.to(torch.int64)
+        if torch.jit.is_tracing() and isinstance(x, torch.Tensor)
+        else int(x)
+    )
 
 
 def torch_float(x):
@@ -792,10 +820,14 @@ def torch_float(x):
 
     import torch
 
-    return x.to(torch.float32) if torch.jit.is_tracing() and isinstance(x, torch.Tensor) else int(x)
+    return (
+        x.to(torch.float32)
+        if torch.jit.is_tracing() and isinstance(x, torch.Tensor)
+        else int(x)
+    )
 
 
-def filter_out_non_signature_kwargs(extra: Optional[list] = None):
+def filter_out_non_signature_kwargs(extra: list | None = None):
     """
     Decorator to filter out named arguments that are not in the function signature.
 
@@ -849,7 +881,7 @@ def filter_out_non_signature_kwargs(extra: Optional[list] = None):
                     invalid_kwargs[k] = v
 
             if invalid_kwargs:
-                invalid_kwargs_names = [f"'{k}'" for k in invalid_kwargs.keys()]
+                invalid_kwargs_names = [f"'{k}'" for k in invalid_kwargs]
                 invalid_kwargs_names = ", ".join(invalid_kwargs_names)
 
                 # Get the class name for better warning message
@@ -884,7 +916,7 @@ class LossKwargs(TypedDict, total=False):
             you are doing gradient accumulation.
     """
 
-    num_items_in_batch: Optional[int]
+    num_items_in_batch: int | None
 
 
 def is_timm_config_dict(config_dict: dict[str, Any]) -> bool:
@@ -953,7 +985,9 @@ def can_return_tuple(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         is_requested_to_return_tuple = kwargs.pop("return_dict", True) is False
-        is_configured_to_return_tuple = self.config.use_return_dict is False if hasattr(self, "config") else False
+        is_configured_to_return_tuple = (
+            self.config.use_return_dict is False if hasattr(self, "config") else False
+        )
 
         # The following allows to convert output to tuple ONLY on top level forward call,
         # while internal modules of the model will return Output objects
@@ -967,7 +1001,9 @@ def can_return_tuple(func):
 
         try:
             output = func(self, *args, **kwargs)
-            if is_requested_to_return_tuple or (is_configured_to_return_tuple and is_top_level_module):
+            if is_requested_to_return_tuple or (
+                is_configured_to_return_tuple and is_top_level_module
+            ):
                 output = output.to_tuple()
         finally:
             # Remove the flag after the model forward call is finished.

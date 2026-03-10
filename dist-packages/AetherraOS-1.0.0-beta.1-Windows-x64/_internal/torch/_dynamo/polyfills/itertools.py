@@ -6,11 +6,10 @@ from __future__ import annotations
 
 import itertools
 import sys
-from typing import Callable, overload, TYPE_CHECKING, TypeVar
-from typing_extensions import TypeAlias
+from collections.abc import Callable
+from typing import TYPE_CHECKING, TypeAlias, TypeVar, overload
 
 from ..decorators import substitute_in_graph
-
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator
@@ -52,7 +51,7 @@ chain.from_iterable = chain_from_iterable  # type: ignore[attr-defined]
 # Reference: https://docs.python.org/3/library/itertools.html#itertools.compress
 @substitute_in_graph(itertools.compress, is_embedded_type=True)  # type: ignore[arg-type]
 def compress(data: Iterable[_T], selectors: Iterable[_U], /) -> Iterator[_T]:
-    return (datum for datum, selector in zip(data, selectors) if selector)
+    return (datum for datum, selector in zip(data, selectors, strict=False) if selector)
 
 
 # Reference: https://docs.python.org/3/library/itertools.html#itertools.dropwhile
@@ -92,7 +91,7 @@ def islice(iterable: Iterable[_T], /, *args: int | None) -> Iterator[_T]:
     else:
         indices = range(max(start, stop))
         next_i = start
-        for i, element in zip(indices, iterable):
+        for i, element in zip(indices, iterable, strict=False):
             if i == next_i:
                 yield element
                 next_i += step

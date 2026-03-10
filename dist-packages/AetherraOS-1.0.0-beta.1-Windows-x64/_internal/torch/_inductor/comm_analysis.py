@@ -28,13 +28,12 @@ def get_gpu_type() -> NVIDIA_GPU_TYPE:
     gpu_info = torch.utils.collect_env.get_gpu_info(torch.utils.collect_env.run) or ""
     if "V100" in gpu_info:
         return NVIDIA_GPU_TYPE.VOLTA
-    elif "A100" in gpu_info:
+    if "A100" in gpu_info:
         return NVIDIA_GPU_TYPE.AMPERE
-    elif "H100" in gpu_info:
+    if "H100" in gpu_info:
         return NVIDIA_GPU_TYPE.HOPPER
-    else:
-        # for other gpu types, assume Ampere
-        return NVIDIA_GPU_TYPE.AMPERE
+    # for other gpu types, assume Ampere
+    return NVIDIA_GPU_TYPE.AMPERE
 
 
 def get_collective_type(node: ir.IRNode) -> NCCL_COLL:
@@ -45,12 +44,11 @@ def get_collective_type(node: ir.IRNode) -> NCCL_COLL:
     assert kernel_name is not None
     if "all_reduce" in kernel_name:
         return NCCL_COLL.ALL_REDUCE
-    elif "all_gather" in kernel_name:
+    if "all_gather" in kernel_name:
         return NCCL_COLL.ALL_GATHER
-    elif "reduce_scatter" in kernel_name:
+    if "reduce_scatter" in kernel_name:
         return NCCL_COLL.REDUCE_SCATTER
-    else:
-        raise ValueError(f"Unsupported collective kernel: {kernel_name}")
+    raise ValueError(f"Unsupported collective kernel: {kernel_name}")
 
 
 def get_collective_input_size_bytes(node: ir.IRNode) -> int:
@@ -71,8 +69,7 @@ def get_collective_group_size(node: ir.IRNode) -> int:
         from torch.distributed.distributed_c10d import _get_group_size_by_name
 
         return _get_group_size_by_name(node.constant_args[-1])
-    else:
-        raise TypeError(f"Unsupported collective type: {node}")
+    raise TypeError(f"Unsupported collective type: {node}")
 
 
 ####################################################################################################################

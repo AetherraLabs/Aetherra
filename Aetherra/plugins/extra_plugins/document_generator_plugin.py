@@ -13,13 +13,10 @@ This plugin provides comprehensive document generation capabilities including:
 """
 
 # Standard library imports
-import json
 import logging
 import os
-import sys
 from dataclasses import asdict, dataclass
 from datetime import datetime
-from pathlib import Path
 from typing import Any
 
 try:
@@ -444,24 +441,21 @@ GPA: {edu.gpa}
         # This is a simplified implementation
         # In production, use a proper template engine like Jinja2
 
-        def replace_simple_vars(
-            text: str, data_dict: dict[str, Any], prefix: str = ""
-        ) -> str:
+        def replace_simple_vars(text: str, data_dict: dict[str, Any], prefix: str = "") -> str:
             for key, value in data_dict.items():
                 var_name = f"{prefix}.{key}" if prefix else key
-                placeholder = "{" + var_name + "}"
+                token = "{" + var_name + "}"
 
                 if isinstance(value, dict):
                     text = replace_simple_vars(text, value, var_name)
                 elif isinstance(value, list):
-                    # Simple list handling
                     if all(isinstance(item, str) for item in value):
                         list_content = "\n".join(f"- {item}" for item in value)
-                        text = text.replace(placeholder, list_content)
+                        text = text.replace(token, list_content)
+                    else:
+                        text = text.replace(token, str(value))
                 else:
-                    text = text.replace(
-                        placeholder, str(value) if value is not None else ""
-                    )
+                    text = text.replace(token, str(value) if value is not None else "")
 
             return text
 
@@ -508,9 +502,7 @@ class DocumentExporter:
             logger.error(f"Markdown export failed: {e}")
             return False
 
-    def _export_html(
-        self, content: str, output_path: str, style_config: dict[str, Any]
-    ) -> bool:
+    def _export_html(self, content: str, output_path: str, style_config: dict[str, Any]) -> bool:
         """Export as HTML file."""
         try:
             if not markdown:
@@ -551,9 +543,7 @@ class DocumentExporter:
             logger.error(f"HTML export failed: {e}")
             return False
 
-    def _export_pdf(
-        self, content: str, output_path: str, style_config: dict[str, Any]
-    ) -> bool:
+    def _export_pdf(self, content: str, output_path: str, style_config: dict[str, Any]) -> bool:
         """Export as PDF file."""
         try:
             if not REPORTLAB_AVAILABLE:
@@ -604,9 +594,7 @@ class DocumentExporter:
             logger.error(f"PDF export failed: {e}")
             return False
 
-    def _export_docx(
-        self, content: str, output_path: str, style_config: dict[str, Any]
-    ) -> bool:
+    def _export_docx(self, content: str, output_path: str, style_config: dict[str, Any]) -> bool:
         """Export as Word document."""
         try:
             if not DOCX_AVAILABLE:
@@ -692,9 +680,7 @@ class DocumentGeneratorPlugin:
             "markdown_conversion",
         ]
 
-    async def invoke(
-        self, action: str, payload: dict[str, Any], context=None
-    ) -> dict[str, Any]:
+    async def invoke(self, action: str, payload: dict[str, Any], context=None) -> dict[str, Any]:
         """Main plugin invocation method."""
         try:
             if action == "list_templates":
@@ -802,7 +788,7 @@ class DocumentGeneratorPlugin:
             if success:
                 return {
                     "status": "success",
-                    "message": f"Document generated successfully",
+                    "message": "Document generated successfully",
                     "data": {
                         "output_path": output_path,
                         "format": output_format,
@@ -834,9 +820,7 @@ class DocumentGeneratorPlugin:
         except Exception as e:
             return {"status": "error", "message": f"Markdown conversion failed: {e}"}
 
-    async def create_custom_template(
-        self, template_data: dict[str, Any]
-    ) -> dict[str, Any]:
+    async def create_custom_template(self, template_data: dict[str, Any]) -> dict[str, Any]:
         """Create a custom document template."""
         try:
             # Validate template data
@@ -857,9 +841,7 @@ class DocumentGeneratorPlugin:
                 fields=template_data.get("fields", []),
                 content_template=template_data["content_template"],
                 style_config=template_data.get("style_config", {}),
-                output_formats=template_data.get(
-                    "output_formats", ["pdf", "docx", "html"]
-                ),
+                output_formats=template_data.get("output_formats", ["pdf", "docx", "html"]),
                 created_date=datetime.now().isoformat(),
                 author=template_data.get("author", "User"),
             )
@@ -890,9 +872,7 @@ class DocumentGeneratorPlugin:
         """Validate that required template fields are present in data."""
         missing_fields = []
 
-        def check_fields(
-            fields: list[dict[str, Any]], data_dict: dict[str, Any], prefix: str = ""
-        ):
+        def check_fields(fields: list[dict[str, Any]], data_dict: dict[str, Any], prefix: str = ""):
             for field in fields:
                 field_name = field["name"]
                 full_name = f"{prefix}.{field_name}" if prefix else field_name
@@ -963,9 +943,7 @@ if __name__ == "__main__":
             "certifications": ["AWS Certified Developer"],
         }
 
-        result = await plugin.generate_document(
-            "professional_resume", resume_data, "pdf"
-        )
+        result = await plugin.generate_document("professional_resume", resume_data, "pdf")
         print("Resume generation:", result)
 
         await plugin.cleanup()

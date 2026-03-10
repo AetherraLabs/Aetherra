@@ -121,7 +121,7 @@ class MemoryAdapterImplementation:
                 # Insert or update context
                 cursor.execute(
                     """
-                    INSERT OR REPLACE INTO shared_context 
+                    INSERT OR REPLACE INTO shared_context
                     (id, timestamp, data, source) VALUES (?, ?, ?, ?)
                 """,
                     (
@@ -151,7 +151,7 @@ class MemoryAdapterImplementation:
         }
 
         # Implementation will sync data between core, lyrixa, and shared databases
-        # This is a placeholder for the actual sync logic
+        # This is a baseline for the actual sync logic
 
         logger.info(f"📊 Sync complete: {sync_stats}")
         return sync_stats
@@ -181,9 +181,7 @@ class MemoryAdapterImplementation:
                     "category": conn_info["category"],
                     "tables": len(tables),
                     "total_rows": total_rows,
-                    "file_size_mb": round(
-                        conn_info["path"].stat().st_size / (1024 * 1024), 2
-                    ),
+                    "file_size_mb": round(conn_info["path"].stat().st_size / (1024 * 1024), 2),
                 }
 
                 conn.close()

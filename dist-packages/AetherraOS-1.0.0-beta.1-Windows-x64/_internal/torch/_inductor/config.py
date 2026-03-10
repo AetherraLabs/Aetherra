@@ -1,22 +1,22 @@
 import os
 import sys
-from typing import Any, Callable, Literal, Optional, TYPE_CHECKING, Union
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Literal
 
 import torch
 import torch._inductor.custom_graph_pass
 from torch._environment import is_fbcode
 from torch.utils._config_module import Config, get_tristate_env, install_config_module
 
-
 inplace_padding = os.environ.get("TORCHINDUCTOR_INPLACE_PADDING", "1") == "1"
 can_inplace_pad_graph_input = False  # ease testing
 
 
-def fx_graph_remote_cache_default() -> Optional[bool]:
+def fx_graph_remote_cache_default() -> bool | None:
     return get_tristate_env("TORCHINDUCTOR_FX_GRAPH_REMOTE_CACHE")
 
 
-def vec_isa_ok_default() -> Optional[bool]:
+def vec_isa_ok_default() -> bool | None:
     if os.environ.get("TORCHINDUCTOR_VEC_ISA_OK") == "1":
         return True
     if os.environ.get("TORCHINDUCTOR_VEC_ISA_OK") == "0":
@@ -24,15 +24,15 @@ def vec_isa_ok_default() -> Optional[bool]:
     return None
 
 
-def autotune_remote_cache_default() -> Optional[bool]:
+def autotune_remote_cache_default() -> bool | None:
     return get_tristate_env("TORCHINDUCTOR_AUTOTUNE_REMOTE_CACHE")
 
 
-def bundled_autotune_remote_cache_default() -> Optional[bool]:
+def bundled_autotune_remote_cache_default() -> bool | None:
     return get_tristate_env("TORCHINDUCTOR_BUNDLED_AUTOTUNE_REMOTE_CACHE")
 
 
-def bundle_triton_into_fx_graph_cache_default() -> Optional[bool]:
+def bundle_triton_into_fx_graph_cache_default() -> bool | None:
     return get_tristate_env(
         "TORCHINDUCTOR_BUNDLE_TRITON_INTO_FX_GRAPH_CACHE",
         True if not is_fbcode() else None,
@@ -44,14 +44,13 @@ def static_cuda_launcher_default() -> bool:
 
     if "TORCHINDUCTOR_USE_STATIC_CUDA_LAUNCHER" in os.environ:
         return os.environ.get("TORCHINDUCTOR_USE_STATIC_CUDA_LAUNCHER") == "1"
-    elif is_fbcode():
+    if is_fbcode():
         version = torch._utils_internal.justknobs_getval_int(
             "pytorch/inductor:static_cuda_launcher_version"
         )
         return version <= STATIC_CUDA_LAUNCHER_VERSION
-    else:
-        # Default true in OSS
-        return True
+    # Default true in OSS
+    return True
 
 
 def prologue_fusion_enabled() -> bool:
@@ -59,12 +58,11 @@ def prologue_fusion_enabled() -> bool:
 
     if "TORCHINDUCTOR_PROLOGUE_FUSION" in os.environ:
         return os.environ.get("TORCHINDUCTOR_PROLOGUE_FUSION") == "1"
-    elif is_fbcode():
+    if is_fbcode():
         jk_name = "pytorch/inductor:prologue_fusion_version"
         version = torch._utils_internal.justknobs_getval_int(jk_name)
         return version <= ENABLE_PROLOGUE_FUSION_VERSION
-    else:
-        return True
+    return True
 
 
 # Enable auto_functionalized_v2 (enabled by default)
@@ -95,10 +93,10 @@ fx_graph_cache: bool = Config(
 # False: Disables the cache
 # True: Enables the cache
 # None: Not set -- Off for OSS, JustKnobs based for internal
-fx_graph_remote_cache: Optional[bool] = fx_graph_remote_cache_default()
+fx_graph_remote_cache: bool | None = fx_graph_remote_cache_default()
 
 # should we bundle triton caching into fx graph cache
-bundle_triton_into_fx_graph_cache: Optional[bool] = (
+bundle_triton_into_fx_graph_cache: bool | None = (
     bundle_triton_into_fx_graph_cache_default()
 )
 
@@ -124,7 +122,7 @@ autotune_local_cache: bool = True
 # False: Disables the cache
 # True: Enables the cache
 # None: Not set -- Off for OSS, JustKnobs based for internal
-autotune_remote_cache: Optional[bool] = autotune_remote_cache_default()
+autotune_remote_cache: bool | None = autotune_remote_cache_default()
 
 # Enable bundled autotune cache.
 #
@@ -136,7 +134,7 @@ autotune_remote_cache: Optional[bool] = autotune_remote_cache_default()
 # False: Disables the cache
 # True: Enables the cache (requires autotune_local_cache)
 # None: Not set -- Off for OSS, JustKnobs based for internal
-bundled_autotune_remote_cache: Optional[bool] = bundled_autotune_remote_cache_default()
+bundled_autotune_remote_cache: bool | None = bundled_autotune_remote_cache_default()
 
 # Force disabled all inductor level caching -- This will override any other caching flag
 force_disable_caches: bool = Config(
@@ -163,7 +161,7 @@ unsafe_skip_cache_dynamic_shape_guards: bool = False
 unsafe_marked_cacheable_functions: dict[str, str] = {}
 
 # sleep in inductor for testing
-sleep_sec_TESTING_ONLY: Optional[int] = None
+sleep_sec_TESTING_ONLY: int | None = None
 
 # The default layout constraint for user-defined triton kernels.
 # See "The default layout constraint for custom operators" for options.
@@ -262,33 +260,35 @@ post_grad_custom_pre_pass: torch._inductor.custom_graph_pass.CustomGraphPassType
 post_grad_custom_post_pass: torch._inductor.custom_graph_pass.CustomGraphPassType = None
 
 # Registers a custom joint graph pass.
-joint_custom_pre_pass: Optional[Callable[[torch.fx.Graph], None]] = None
-joint_custom_post_pass: Optional[Callable[[torch.fx.Graph], None]] = None
+joint_custom_pre_pass: Callable[[torch.fx.Graph], None] | None = None
+joint_custom_post_pass: Callable[[torch.fx.Graph], None] | None = None
 
 # Registers a custom pregrad pass. Note that the pre-grad IR is 1.
 # non-functional, 2. non-normalized, and 3. prone to change. Ideally we should
 # use post-grad passes.
-pre_grad_custom_pass: Optional[Callable[[torch.fx.graph.Graph], None]] = None
+pre_grad_custom_pass: Callable[[torch.fx.graph.Graph], None] | None = None
 
 # Registers a custom pass to be run right before fusion in Inductor scheduler.
 # WARNING: Inductor scheduler IR is at prototype stage and subject to change,
 # hence custom IR passes built on top of it might break in the future.
-_pre_fusion_custom_pass: Optional[
+_pre_fusion_custom_pass: (
     Callable[
         [list["torch._inductor.scheduler.BaseSchedulerNode"]],
         list["torch._inductor.scheduler.BaseSchedulerNode"],
     ]
-] = None
+    | None
+) = None
 
 # Registers a custom pass to be run right after fusion in Inductor scheduler.
 # WARNING: Inductor scheduler IR is at prototype stage and subject to change,
 # hence custom IR passes built on top of it might break in the future.
-_post_fusion_custom_pass: Optional[
+_post_fusion_custom_pass: (
     Callable[
         [list["torch._inductor.scheduler.BaseSchedulerNode"]],
         list["torch._inductor.scheduler.BaseSchedulerNode"],
     ]
-] = None
+    | None
+) = None
 
 # Deprecated
 split_cat_fx_passes = True
@@ -365,12 +365,10 @@ reorder_for_compute_comm_overlap = False
 # WARNING: Inductor scheduler IR is at prototype stage and subject to change,
 # hence custom IR passes built on top of it might break in the future.
 reorder_for_compute_comm_overlap_passes: list[
-    Union[
-        str,
-        Callable[
-            [list["torch._inductor.scheduler.BaseSchedulerNode"]],
-            list["torch._inductor.scheduler.BaseSchedulerNode"],
-        ],
+    str
+    | Callable[
+        [list["torch._inductor.scheduler.BaseSchedulerNode"]],
+        list["torch._inductor.scheduler.BaseSchedulerNode"],
     ]
 ] = [
     "reorder_compute_for_overlap",
@@ -379,7 +377,7 @@ reorder_for_compute_comm_overlap_passes: list[
 ]
 
 # Maximum number of positions to advance a given collective, unlimited by default
-reorder_prefetch_limit: Optional[int] = None
+reorder_prefetch_limit: int | None = None
 
 # enable operator reordering for peak memory optimization
 reorder_for_peak_memory = True
@@ -419,7 +417,7 @@ max_autotune_gemm = os.environ.get("TORCHINDUCTOR_MAX_AUTOTUNE_GEMM") == "1"
 disable_decompose_k = os.environ.get("TORCHINDUCTOR_DISABLE_DECOMPOSE_K") == "1"
 
 # Modifies the number of autotuning choices displayed, set to None for all
-autotune_num_choices_displayed: Optional[int] = 10
+autotune_num_choices_displayed: int | None = 10
 
 # enable inductor graph partition to allow multiple inductor graphs for the same dynamo graph
 graph_partition = False
@@ -693,8 +691,8 @@ optimize_scatter_upon_const_tensor = (
 )
 
 # options in caffe2/torch/_inductor/fx_passes/pre_grad.py
-add_pre_grad_passes: Optional[str] = None
-remove_pre_grad_passes: Optional[str] = None
+add_pre_grad_passes: str | None = None
+remove_pre_grad_passes: str | None = None
 
 
 # The multiprocessing start method to use for inductor workers in the codecache.
@@ -738,7 +736,7 @@ _fuse_ddp_bucket_size = 25
 # overlapping. At this moment, this pass performs better than
 # reorder_for_compute_comm_overlap_passes but we will add the logic of
 # "schedule_comm_wait" in the future and remove the one here.
-_fuse_ddp_communication_passes: list[Union[Callable[..., None], str]] = [
+_fuse_ddp_communication_passes: list[Callable[..., None] | str] = [
     "fuse_ddp_with_concat_op",
     "schedule_comm_wait",
 ]
@@ -762,7 +760,7 @@ def parallel_compile_enabled_internally() -> bool:
 
     jk_name = "pytorch/inductor:enable_parallel_compile_version"
     version = torch._utils_internal.justknobs_getval_int(jk_name)
-    return ENABLE_PARALLEL_COMPILE_VERSION >= version
+    return version <= ENABLE_PARALLEL_COMPILE_VERSION
 
 
 def decide_compile_threads() -> int:
@@ -802,7 +800,7 @@ def decide_compile_threads() -> int:
 
 
 # TODO: Set directly after internal rollout.
-compile_threads: Optional[int] = None if is_fbcode() else decide_compile_threads()
+compile_threads: int | None = None if is_fbcode() else decide_compile_threads()
 
 # Whether or not to enable statically launching CUDA kernels
 # compiled by triton (instead of using triton's own launcher)
@@ -822,7 +820,7 @@ strict_static_cuda_launcher: bool = (
 )
 
 # gemm autotuning global cache dir
-global_cache_dir: Optional[str]
+global_cache_dir: str | None
 if is_fbcode():
     try:
         from libfb.py import parutil
@@ -913,7 +911,7 @@ profile_bandwidth = _profile_var != ""
 profile_bandwidth_regex = "" if _profile_var == "1" else _profile_var
 # Specify a file where we print out the profiling results.
 # None means we do not dump results to a file.
-profile_bandwidth_output: Optional[str] = os.environ.get(
+profile_bandwidth_output: str | None = os.environ.get(
     "TORCHINDUCTOR_PROFILE_OUTPUT", None
 )
 # Switch to do_bench_using_profiling to exclude the CPU overheads
@@ -989,7 +987,7 @@ class cpp:
     # performance degradation.
     dynamic_threads = os.environ.get("TORCHINDUCTOR_CPP_DYNAMIC_THREADS", "0") == "1"
 
-    simdlen: Optional[int] = None
+    simdlen: int | None = None
     min_chunk_size = int(os.environ.get("TORCHINDUCTOR_CPP_MIN_CHUNK_SIZE", "4096"))
 
     cxx: tuple[Literal[None], str] = (
@@ -1008,12 +1006,12 @@ class cpp:
     # Inject a bug into our relu implementation; useful for testing our repro
     # extraction and minification functionality.
     # Valid values: "compile_error", "runtime_error", "accuracy"
-    inject_relu_bug_TESTING_ONLY: Optional[str] = None
-    inject_log1p_bug_TESTING_ONLY: Optional[str] = None
+    inject_relu_bug_TESTING_ONLY: str | None = None
+    inject_log1p_bug_TESTING_ONLY: str | None = None
 
     # If None, autodetect whether or not AVX512/AVX2 can be used.  Otherwise,
     # force usage as specified, without testing. Default None.
-    vec_isa_ok: Optional[bool] = get_tristate_env("TORCHINDUCTOR_VEC_ISA_OK")
+    vec_isa_ok: bool | None = get_tristate_env("TORCHINDUCTOR_VEC_ISA_OK")
 
     # similar to config.triton.descriptive_names
     descriptive_names: Literal["torch", "original_aten", "inductor_node"] = (
@@ -1104,7 +1102,7 @@ class triton:
 
     # Specify dynamic shapes to capture cudagraphs and skip cudagraph for other shapes.
     # Default to None, which means we capture cudagraphs for all shapes.
-    cudagraph_capture_sizes: Optional[tuple[Union[int, tuple[int, ...]]]] = None
+    cudagraph_capture_sizes: tuple[int | tuple[int, ...]] | None = None
 
     # assertions not on the fast path, steady state
     slow_path_cudagraph_asserts = True
@@ -1124,7 +1122,7 @@ class triton:
 
     # Warn loudly when the number of cudagraphs due to dynamic shape
     # exceeds this limit
-    cudagraph_dynamic_shape_warn_limit: Optional[int] = 50
+    cudagraph_dynamic_shape_warn_limit: int | None = 50
 
     # synchronize after cudagraph invocation
     force_cudagraph_sync = False
@@ -1164,7 +1162,7 @@ class triton:
 
     #  We use a max of 3 if coalesce_tiling_analysis is True, and 2 otherwise.
     #  Note - coalesce_tiling_analysis does not yet apply to dynamic shapes.
-    max_tiles: Optional[int] = None
+    max_tiles: int | None = None
 
     # Prefer higher dimensional tilings. This simplifies indexing expressions, making
     # it easier to identify block pointers.
@@ -1179,7 +1177,7 @@ class triton:
 
     # Tune the generated Triton kernels at compile time instead of first time they run
     # Setting to None means uninitialized
-    autotune_at_compile_time: Optional[bool] = None
+    autotune_at_compile_time: bool | None = None
 
     # We use random tensors for autotune by default. Setting this as true will let us
     # use inputs from sample inputs to autotune user defined triton kernels.
@@ -1269,7 +1267,7 @@ class triton:
     # Inject a bug into our relu implementation; useful for testing our repro
     # extraction and minification functionality.
     # Valid values: "compile_error", "runtime_error", "accuracy"
-    inject_relu_bug_TESTING_ONLY: Optional[str] = None
+    inject_relu_bug_TESTING_ONLY: str | None = None
 
     # Whether to upcast float16 / bfloat16 to float32 in triton codegen (Experimental)
     codegen_upcast_to_fp32 = True
@@ -1398,12 +1396,12 @@ class aot_inductor:
 
     # If not None, the generated files with use this name in file stem.
     # If None, we will use a hash to name files.
-    model_name_for_generated_files: Optional[str] = None
+    model_name_for_generated_files: str | None = None
 
     # Custom ops that have implemented C shim wrappers, defined as an op to C shim declaration dict
     custom_ops_to_c_shims: dict[torch._ops.OpOverload, list[str]] = {}
     # custom op libs that have implemented C shim wrappers
-    custom_op_libs: Optional[list[str]] = None
+    custom_op_libs: list[str] | None = None
 
 
 class cuda:
@@ -1412,12 +1410,12 @@ class cuda:
     # CUDA arch to use for CUDA template kernel compilation.
     # e.g. "70", "75", "80", "90", etc.
     # When arch is None, Inductor uses torch.cuda.get_device_capability(0).
-    arch: Optional[str] = None
+    arch: str | None = None
 
     # CUDA version to use for CUDA template kernel compilation.
     # e.g. "11.4", "12.1", etc.
     # When version is None, Inductor uses torch.version.cuda.
-    version: Optional[str] = None
+    version: str | None = None
 
     # Optimization level for the host compiler.
     compile_opt_level: Literal["-O0", "-O1", "-O2", "-O3", "-OS"] = "-O1"
@@ -1446,7 +1444,7 @@ class cuda:
     # Configures the maximum number of CUTLASS configs to profile in max_autotune.
     # By default it's None, so that all CUTLASS configs are tuned.
     # This is mainly used to reduce test time in CI.
-    cutlass_max_profiling_configs: Optional[int] = None
+    cutlass_max_profiling_configs: int | None = None
 
     # The L2 swizzle values to consider when profiling CUTLASS configs in max_autotune.
     cutlass_max_profiling_swizzle_options: list[int] = [1, 2, 4, 8]
@@ -1465,7 +1463,7 @@ class cuda:
     # 2) CUDACXX environment variable
     # 3) CUDA_HOME environment variable
     # 4) default system search PATH.
-    cuda_cxx: Optional[str] = None
+    cuda_cxx: str | None = None
 
     # Minimum value of M*N*K to consider the CUTLASS backend for GEMM ops.
     cutlass_backend_min_gemm_size: int = 1
@@ -1478,7 +1476,7 @@ class cuda:
 
     # Keep only Cutlass op configs which contain this regular expression pattern
     # Set this to "warpspecialized_cooperative_epi_tma" to enable only SM90 TMA Cutlass Kernels for large GEMMs
-    cutlass_op_allowlist_regex: Optional[str] = os.environ.get(
+    cutlass_op_allowlist_regex: str | None = os.environ.get(
         "TORCHINDUCTOR_CUTLASS_ALLOWLIST"
     )
 
@@ -1491,7 +1489,7 @@ class cuda:
     # Set this to "pingpong" to avoid numerical issues
     # caused by the op ordering of the "pingpong" memory access
     # pattern used by some Cutlass Kernels.
-    cutlass_op_denylist_regex: Optional[str] = os.environ.get(
+    cutlass_op_denylist_regex: str | None = os.environ.get(
         "TORCHINDUCTOR_CUTLASS_DENYLIST"
     )
 
@@ -1508,7 +1506,7 @@ class cuda:
     # Experimental. Only for H100 for now. Flag to control whether to use presets.
     # Format looks like: "0,1,3" for using presets 0, 1, and 3. Presets can be
     # controlled by some cutlass instantiation level flags (e.g. 0, 1111, 2222, ...)
-    cutlass_presets: Optional[str] = os.environ.get("TORCHINDUCTOR_CUTLASS_PRESETS")
+    cutlass_presets: str | None = os.environ.get("TORCHINDUCTOR_CUTLASS_PRESETS")
 
     # use compile command to create kernel .cu and .so name
     cutlass_hash_with_compile_cmd: bool = (
@@ -1570,7 +1568,7 @@ class rocm:
 
     # Path to ROCm installation, if None, use env variable ROCM_HOME.
     # In fbcode see triton/fb/TARGETS for how ROCM_HOME gets set.
-    rocm_home: Optional[str] = None
+    rocm_home: str | None = None
 
     # Path to Composable Kernel library.
     # Install with `pip install git+https://github.com/rocm/composable_kernel@develop`.
@@ -1582,15 +1580,15 @@ class rocm:
     )
 
     # Deprecated, use CK and/or CK-tile specific settings
-    n_max_profiling_configs: Optional[int] = None
+    n_max_profiling_configs: int | None = None
 
     # Number of op instance choices to trade off between runtime perf and compilation time
     # For CK Kernels
-    ck_max_profiling_configs: Optional[int] = None
+    ck_max_profiling_configs: int | None = None
 
     # Number of op instance choices to trade off between runtime perf and compilation time
     # For CK-Tile Kernels
-    ck_tile_max_profiling_configs: Optional[int] = None
+    ck_tile_max_profiling_configs: int | None = None
 
     # Flag to use a short list of CK instances which perform well across a variety of shapes.
     # Currently RCR and F16 only
@@ -1598,7 +1596,7 @@ class rocm:
 
     # List to determine kBatch parameters to sweep over. By default, we calculate one in splitK
     # scenarios, and run on kBatch=1 in non-splitK scenarios
-    kBatch_sweep: Optional[list[int]] = None
+    kBatch_sweep: list[int] | None = None
 
     # The threshold at which we trigger a splitK config - K // max(M,N) has to be greater than this
     split_k_threshold: int = 16
@@ -1648,7 +1646,7 @@ class trace:
 
     # Save debug information to a temporary directory
     # If not specified, a temp directory will be created by system
-    debug_dir: Optional[str] = None
+    debug_dir: str | None = None
 
     # Save python logger call >=logging.DEBUG
     debug_log = False
@@ -1698,7 +1696,7 @@ class trace:
 
     # Upload the .tar.gz file
     # Needs to be overridden based on specific environment needs
-    upload_tar: Optional[Callable[[str], None]] = None
+    upload_tar: Callable[[str], None] | None = None
 
     log_autotuning_results = os.environ.get("LOG_AUTOTUNE_RESULTS", "0") == "1"
 
@@ -1749,15 +1747,15 @@ external_matmul: list[Callable[[torch.Tensor, torch.Tensor, torch.Tensor], None]
 class test_configs:
     force_extern_kernel_in_multi_template: bool = False
 
-    max_mm_configs: Optional[int] = None
+    max_mm_configs: int | None = None
 
     runtime_triton_dtype_assert = False
     static_cpp_dtype_assert = False
 
     # regex to control the set of considered autotuning
     # choices (aka configs) by name and / or description
-    autotune_choice_name_regex: Optional[str] = None
-    autotune_choice_desc_regex: Optional[str] = None
+    autotune_choice_name_regex: str | None = None
+    autotune_choice_desc_regex: str | None = None
 
     graphsafe_rng_func_ignores_fallback_random = False
 

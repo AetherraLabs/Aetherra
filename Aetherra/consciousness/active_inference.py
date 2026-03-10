@@ -43,9 +43,7 @@ class ActiveInference:
         try:
             critic = get_ethics_critic()
             if critic.enabled:
-                decision, risk, flags, counter = critic.evaluate(
-                    f"execute plugin {plugin_name}"
-                )
+                decision, risk, flags, counter = critic.evaluate(f"execute plugin {plugin_name}")
                 if decision == "veto":
                     base += 0.3
                     reasons.append("ethics_veto+0.3")

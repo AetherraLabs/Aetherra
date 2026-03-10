@@ -1,5 +1,5 @@
 # mypy: allow-untyped-defs
-from typing import Any, Optional
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -7,7 +7,6 @@ from torch import _VF, Tensor
 from torch.nn.utils.rnn import PackedSequence
 
 from .utils import _quantize_and_dequantize_weight, _quantize_weight
-
 
 __all__ = [
     "RNNCellBase",
@@ -166,7 +165,7 @@ class RNNCell(RNNCellBase):
         nonlinearity: str = "tanh",
         device=None,
         dtype=None,
-        weight_qparams_dict: Optional[dict[str, Any]] = None,
+        weight_qparams_dict: dict[str, Any] | None = None,
     ) -> None:
         factory_kwargs = {
             "device": device,
@@ -181,7 +180,7 @@ class RNNCell(RNNCellBase):
 
     # TODO: refactor nn.RNNCell to have a _forward that takes weight_ih and weight_hh as input
     # and remove duplicated code, same for the other two Cell modules
-    def forward(self, input: Tensor, hx: Optional[Tensor] = None) -> Tensor:
+    def forward(self, input: Tensor, hx: Tensor | None = None) -> Tensor:
         assert input.dim() in (
             1,
             2,
@@ -258,7 +257,7 @@ class LSTMCell(RNNCellBase):
         bias: bool = True,
         device=None,
         dtype=None,
-        weight_qparams_dict: Optional[dict[str, Any]] = None,
+        weight_qparams_dict: dict[str, Any] | None = None,
     ) -> None:
         factory_kwargs = {
             "device": device,
@@ -271,7 +270,7 @@ class LSTMCell(RNNCellBase):
         return "QuantizedLSTMCell(Reference)"
 
     def forward(
-        self, input: Tensor, hx: Optional[tuple[Tensor, Tensor]] = None
+        self, input: Tensor, hx: tuple[Tensor, Tensor] | None = None
     ) -> tuple[Tensor, Tensor]:
         assert input.dim() in (
             1,
@@ -335,7 +334,7 @@ class GRUCell(RNNCellBase):
         bias: bool = True,
         device=None,
         dtype=None,
-        weight_qparams_dict: Optional[dict[str, Any]] = None,
+        weight_qparams_dict: dict[str, Any] | None = None,
     ) -> None:
         factory_kwargs = {
             "device": device,
@@ -347,7 +346,7 @@ class GRUCell(RNNCellBase):
     def _get_name(self):
         return "QuantizedGRUCell(Reference)"
 
-    def forward(self, input: Tensor, hx: Optional[Tensor] = None) -> Tensor:
+    def forward(self, input: Tensor, hx: Tensor | None = None) -> Tensor:
         assert input.dim() in (
             1,
             2,
@@ -410,7 +409,7 @@ class RNNBase(nn.RNNBase):
         proj_size: int = 0,
         device=None,
         dtype=None,
-        weight_qparams_dict: Optional[dict[str, Any]] = None,
+        weight_qparams_dict: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(
             mode,
@@ -497,7 +496,7 @@ class LSTM(RNNBase):
     def permute_hidden(  # type: ignore[override]
         self,
         hx: tuple[Tensor, Tensor],
-        permutation: Optional[Tensor],
+        permutation: Tensor | None,
     ) -> tuple[Tensor, Tensor]:
         if permutation is None:
             return hx
@@ -506,7 +505,7 @@ class LSTM(RNNBase):
         )
 
     def get_expected_cell_size(
-        self, input: Tensor, batch_sizes: Optional[Tensor]
+        self, input: Tensor, batch_sizes: Tensor | None
     ) -> tuple[int, int, int]:
         if batch_sizes is not None:
             mini_batch = int(batch_sizes[0])
@@ -526,7 +525,7 @@ class LSTM(RNNBase):
         self,
         input: Tensor,
         hidden: tuple[Tensor, Tensor],
-        batch_sizes: Optional[Tensor],
+        batch_sizes: Tensor | None,
     ):
         self.check_input(input, batch_sizes)
         self.check_hidden_size(
@@ -666,11 +665,10 @@ class LSTM(RNNBase):
                 output, batch_sizes, sorted_indices, unsorted_indices
             )
             return output_packed, self.permute_hidden(hidden, unsorted_indices)
-        else:
-            if not is_batched:  # type: ignore[possibly-undefined]
-                output = output.squeeze(batch_dim)  # type: ignore[possibly-undefined]
-                hidden = (hidden[0].squeeze(1), hidden[1].squeeze(1))
-            return output, self.permute_hidden(hidden, unsorted_indices)
+        if not is_batched:  # type: ignore[possibly-undefined]
+            output = output.squeeze(batch_dim)  # type: ignore[possibly-undefined]
+            hidden = (hidden[0].squeeze(1), hidden[1].squeeze(1))
+        return output, self.permute_hidden(hidden, unsorted_indices)
 
     def _get_name(self):
         return "QuantizedLSTM(Reference)"
@@ -826,12 +824,11 @@ class GRU(RNNBase):
                 output, batch_sizes, sorted_indices, unsorted_indices
             )
             return output_packed, self.permute_hidden(hidden, unsorted_indices)
-        else:
-            if not is_batched:  # type: ignore[possibly-undefined]
-                output = output.squeeze(batch_dim)  # type: ignore[possibly-undefined]
-                hidden = hidden.squeeze(1)
+        if not is_batched:  # type: ignore[possibly-undefined]
+            output = output.squeeze(batch_dim)  # type: ignore[possibly-undefined]
+            hidden = hidden.squeeze(1)
 
-            return output, self.permute_hidden(hidden, unsorted_indices)
+        return output, self.permute_hidden(hidden, unsorted_indices)
 
     def _get_name(self):
         return "QuantizedGRU(Reference)"

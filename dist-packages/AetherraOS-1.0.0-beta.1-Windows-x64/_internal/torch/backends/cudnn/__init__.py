@@ -6,8 +6,7 @@ from contextlib import contextmanager
 from typing import Optional
 
 import torch
-from torch.backends import __allow_nonbracketed_mutation, ContextProp, PropModule
-
+from torch.backends import ContextProp, PropModule, __allow_nonbracketed_mutation
 
 try:
     from torch._C import _cudnn
@@ -20,7 +19,7 @@ except ImportError:
 #
 # to globally disable CuDNN/MIOpen
 
-__cudnn_version: Optional[int] = None
+__cudnn_version: int | None = None
 
 if _cudnn is not None:
 
@@ -63,14 +62,12 @@ if _cudnn is not None:
                             f"Looks like your LD_LIBRARY_PATH contains incompatible version of cudnn. "
                             f"Please either remove it from the path or install cudnn {compile_version}"
                         )
-                    else:
-                        raise RuntimeError(
-                            f"{base_error_msg}"
-                            f"one possibility is that there is a "
-                            f"conflicting cuDNN in LD_LIBRARY_PATH."
-                        )
-                else:
-                    raise RuntimeError(base_error_msg)
+                    raise RuntimeError(
+                        f"{base_error_msg}"
+                        f"one possibility is that there is a "
+                        f"conflicting cuDNN in LD_LIBRARY_PATH."
+                    )
+                raise RuntimeError(base_error_msg)
 
         return True
 

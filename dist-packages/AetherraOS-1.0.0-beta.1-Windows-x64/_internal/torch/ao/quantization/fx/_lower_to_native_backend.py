@@ -1,6 +1,7 @@
 # mypy: allow-untyped-defs
 import operator
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable
+from typing import Any
 
 import torch
 import torch.ao.nn.intrinsic as nni
@@ -15,7 +16,7 @@ from torch.ao.nn.quantized.modules.utils import WeightedQuantizedModule
 from torch.ao.quantization.qconfig import QConfigAny
 from torch.ao.quantization.quantization_mappings import get_quantized_operator
 from torch.ao.quantization.utils import _parent_name
-from torch.fx import GraphModule, map_arg, Node
+from torch.fx import GraphModule, Node, map_arg
 from torch.fx.graph import Graph
 
 from .utils import (
@@ -26,7 +27,6 @@ from .utils import (
     get_qconv_prepack_op,
     graph_module_from_producer_nodes,
 )
-
 
 QOP_TO_ARG_NAMES_TO_SKIP: dict[Callable[..., Any], list[str]] = {
     torch._ops.ops.quantized.hardswish: ["inplace"],
@@ -333,7 +333,7 @@ DYNAMIC_LOWER_FUSED_MODULE_MAP: dict[
 # Mapping from a functional to lower to a 2-tuple of
 #   1) The quantized version of the op
 #   2) The quantized version of the op fused with relu, if it exists, else None
-STATIC_LOWER_FUNCTIONAL_MAP: dict[Callable, tuple[Callable, Optional[Callable]]] = {
+STATIC_LOWER_FUNCTIONAL_MAP: dict[Callable, tuple[Callable, Callable | None]] = {
     F.linear: (torch.ops.quantized.linear, torch.ops.quantized.linear_relu),
     F.conv1d: (torch.ops.quantized.conv1d, torch.ops.quantized.conv1d_relu),
     F.conv2d: (torch.ops.quantized.conv2d, torch.ops.quantized.conv2d_relu),
@@ -359,7 +359,7 @@ WEIGHT_PREPACK_OPS: set[Callable] = {
 #   1) The dynamically quantized version of the op
 #   2) The dynamically quantized version of the op fused with relu, if it exists, else None
 DYNAMIC_LOWER_FUNCTIONAL_MAP: dict[
-    Callable, dict[tuple[torch.dtype, torch.dtype], tuple[Callable, Optional[Callable]]]
+    Callable, dict[tuple[torch.dtype, torch.dtype], tuple[Callable, Callable | None]]
 ] = {
     F.linear: {
         (torch.quint8, torch.qint8): (
@@ -396,7 +396,7 @@ CONV_TRANSPOSE_FUNCTIONAL_OPS: set[Callable] = {
 }
 
 # TODO: add tests for lowering these ops
-QBIN_OP_MAPPING: dict[Union[Callable, str], Callable] = {
+QBIN_OP_MAPPING: dict[Callable | str, Callable] = {
     operator.add: torch.ops.quantized.add,
     torch.add: torch.ops.quantized.add,
     operator.mul: torch.ops.quantized.mul,
@@ -404,7 +404,7 @@ QBIN_OP_MAPPING: dict[Union[Callable, str], Callable] = {
     torch.mul: torch.ops.quantized.mul,
     torch.matmul: torch.ops.quantized.matmul,
 }
-QBIN_RELU_OP_MAPPING: dict[Union[Callable, str], Callable] = {
+QBIN_RELU_OP_MAPPING: dict[Callable | str, Callable] = {
     operator.add: torch.ops.quantized.add_relu,
     torch.add: torch.ops.quantized.add_relu,
     operator.mul: torch.ops.quantized.mul_relu,
@@ -540,15 +540,14 @@ def fold_weight(
     return quantized_model
 
 
-def _get_module(node: Node, modules: dict[str, nn.Module]) -> Optional[nn.Module]:
+def _get_module(node: Node, modules: dict[str, nn.Module]) -> nn.Module | None:
     """
     Return the `torch.nn.Module` that corresponds to the specified node's target.
     If no such node exists, return None.
     """
     if node.op == "call_module" and str(node.target) in modules:
         return modules[str(node.target)]
-    else:
-        return None
+    return None
 
 
 def _match_static_pattern(
@@ -557,7 +556,7 @@ def _match_static_pattern(
     qconfig_map: dict[str, QConfigAny],
     matching_modules_or_ops: list[Callable],
     dequantize_node_arg_indices: list[int],
-) -> Union[tuple[Node, Node, Node], tuple[None, None, None]]:
+) -> tuple[Node, Node, Node] | tuple[None, None, None]:
     """
     Match the pattern (dequantize - ref node - quantize) against the node provided.
 
@@ -634,7 +633,7 @@ def _match_static_pattern_with_two_inputs(
     modules: dict[str, nn.Module],
     qconfig_map: dict[str, QConfigAny],
     matching_modules_or_ops: list[Callable],
-) -> Union[tuple[Node, Node], tuple[None, None]]:
+) -> tuple[Node, Node] | tuple[None, None]:
     """
                       (dequantize \
     Match the pattern (dequantize - ref node - quantize) against the node provided.

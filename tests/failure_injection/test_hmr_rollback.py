@@ -51,7 +51,7 @@ async def test_hmr_reload_failure(monkeypatch):
 
     # If HMR controller not enabled, kernel logs a warning and returns early.
     # Treat that as a PASS (system safely ignores unsupported task).
-    if hasattr(kernel, "hmr_controller") and not getattr(kernel, "hmr_controller"):
+    if hasattr(kernel, "hmr_controller") and not kernel.hmr_controller:
         launcher.running = False
         await asyncio.sleep(0.05)
         return

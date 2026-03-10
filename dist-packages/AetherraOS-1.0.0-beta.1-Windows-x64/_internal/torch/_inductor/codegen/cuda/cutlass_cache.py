@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import time
-from typing import Any, Optional
+from typing import Any
 
 import torch._inductor.config as config
 from torch._inductor.codecache import cutlass_key
@@ -13,7 +13,6 @@ from torch._inductor.codegen.cuda.cuda_env import get_cuda_arch, get_cuda_versio
 from torch._inductor.codegen.cuda.serialization import get_cutlass_operation_serializer
 from torch._inductor.runtime.cache_dir_utils import cache_dir
 from torch._inductor.utils import clear_on_fresh_cache
-
 
 log = logging.getLogger(__name__)
 
@@ -49,7 +48,7 @@ def _generate_config_filename(request_key: str) -> str:
 
 @clear_on_fresh_cache
 @functools.cache
-def maybe_fetch_ops() -> Optional[list[Any]]:
+def maybe_fetch_ops() -> list[Any] | None:
     """
     Fetch ops from databases.
     """
@@ -69,7 +68,7 @@ def maybe_fetch_ops() -> Optional[list[Any]]:
     filepath: str = os.path.join(cache_dir(), filename)
 
     # try fetch
-    serialized_ops: Optional[list[str]] = None
+    serialized_ops: list[str] | None = None
     start_time = time.time()
     if os.path.isfile(filepath):
         # locally

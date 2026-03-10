@@ -225,7 +225,7 @@ class IntrospectorUI(QWidget):
         time_controls.addWidget(refresh_btn)
         history_layout.addLayout(time_controls)
 
-        # Performance chart placeholder
+        # Performance chart baseline widget
         self.performance_chart = QTextEdit()
         self.performance_chart.setReadOnly(True)
         self.performance_chart.setMaximumHeight(200)

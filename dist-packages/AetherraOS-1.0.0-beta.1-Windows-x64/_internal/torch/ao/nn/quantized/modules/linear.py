@@ -1,7 +1,6 @@
 # mypy: allow-untyped-decorators
 # mypy: allow-untyped-defs
 from collections.abc import Iterable
-from typing import Optional
 
 import torch
 import torch.ao.nn.intrinsic as nni
@@ -10,8 +9,7 @@ import torch.nn as nn
 from torch.nn.utils.fusion import fuse_linear_bn_weights
 from torch.nn.utils.parametrize import type_before_parametrizations
 
-from .utils import _hide_packed_params_repr, _quantize_weight, WeightedQuantizedModule
-
+from .utils import WeightedQuantizedModule, _hide_packed_params_repr, _quantize_weight
 
 __all__ = ["LinearPackedParams", "Linear"]
 
@@ -31,9 +29,7 @@ class LinearPackedParams(torch.nn.Module):
         self.set_weight_bias(wq, None)  # type: ignore[possibly-undefined]
 
     @torch.jit.export
-    def set_weight_bias(
-        self, weight: torch.Tensor, bias: Optional[torch.Tensor]
-    ) -> None:
+    def set_weight_bias(self, weight: torch.Tensor, bias: torch.Tensor | None) -> None:
         if self.dtype == torch.qint8:
             self._packed_params = torch.ops.quantized.linear_prepack(weight, bias)
         elif self.dtype == torch.float16:
@@ -45,10 +41,9 @@ class LinearPackedParams(torch.nn.Module):
     def _weight_bias(self):
         if self.dtype == torch.qint8:
             return torch.ops.quantized.linear_unpack(self._packed_params)
-        elif self.dtype == torch.float16:
+        if self.dtype == torch.float16:
             return torch.ops.quantized.linear_unpack_fp16(self._packed_params)
-        else:
-            raise RuntimeError("Unsupported dtype on dynamic quantized linear!")
+        raise RuntimeError("Unsupported dtype on dynamic quantized linear!")
 
     def forward(self, x):
         return x
@@ -279,7 +274,7 @@ class Linear(WeightedQuantizedModule):
     def bias(self):
         return self._weight_bias()[1]
 
-    def set_weight_bias(self, w: torch.Tensor, b: Optional[torch.Tensor]) -> None:
+    def set_weight_bias(self, w: torch.Tensor, b: torch.Tensor | None) -> None:
         self._packed_params.set_weight_bias(w, b)
 
     @classmethod

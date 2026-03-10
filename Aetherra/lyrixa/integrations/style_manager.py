@@ -44,9 +44,7 @@ class JavaScriptStyleManager:
         sanitized_css = css_content
         for unsupported, replacement in css_replacements.items():
             if unsupported in sanitized_css:
-                if unsupported.startswith("box-shadow") or unsupported.startswith(
-                    "text-shadow"
-                ):
+                if unsupported.startswith("box-shadow") or unsupported.startswith("text-shadow"):
                     # Remove entire property declarations
                     # Standard library imports
                     import re
@@ -106,9 +104,7 @@ def get_style_manager():
     return style_manager
 
 
-def create_safe_css_injection(
-    css_content: str, component_name: str = "component"
-) -> str:
+def create_safe_css_injection(css_content: str, component_name: str = "component") -> str:
     """Create safe CSS injection JavaScript code"""
     manager = get_style_manager()
     style_id = f"lyrixa_{component_name}_{manager.style_counter}"

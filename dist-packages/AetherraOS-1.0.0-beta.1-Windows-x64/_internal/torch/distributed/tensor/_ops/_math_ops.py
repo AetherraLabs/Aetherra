@@ -4,7 +4,7 @@ import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum
-from typing import cast, Optional, Union
+from typing import Union, cast
 
 import torch
 from torch.distributed.device_mesh import DeviceMesh
@@ -34,7 +34,6 @@ from torch.distributed.tensor.placement_types import (
     Shard,
 )
 
-
 aten = torch.ops.aten
 
 
@@ -46,7 +45,7 @@ class Reduction(Enum):
 
 @dataclass(frozen=True)
 class NormReduction:
-    norm_type: Union[int, float, str]
+    norm_type: int | float | str
 
 
 ReductionOpType = Union[NormReduction, str]
@@ -70,7 +69,7 @@ class _NormPartial(Partial):
     similarly for inf and -inf norm. For 0-norm, the reduction op is sum.
     """
 
-    norm_type: Union[int, float, str] = 2
+    norm_type: int | float | str = 2
 
     def __post_init__(self):
         """Set the appropriate reduce op based on the norm type."""
@@ -98,10 +97,10 @@ class _NormPartial(Partial):
         """
         if self.reduce_op in ("max", "min"):
             return tensor
-        elif self.reduce_op == "sum":
+        if self.reduce_op == "sum":
             if self.norm_type == 0:
                 raise NotImplementedError(f"Unsupported norm type:: {self.norm_type}")
-            elif self.norm_type == 1:
+            if self.norm_type == 1:
                 return tensor / mesh.size(mesh_dim)
             assert isinstance(self.norm_type, (int, float))
             return tensor / math.pow(mesh.size(mesh_dim), 1 / self.norm_type)
@@ -149,7 +148,7 @@ class _NormPartial(Partial):
         return 1 + hash(self.norm_type)
 
 
-def _infer_reduction_dims(dims_arg: object, ndim: int) -> Optional[list[int]]:
+def _infer_reduction_dims(dims_arg: object, ndim: int) -> list[int] | None:
     if dims_arg is None:
         return None
     dims = cast(list[int], as_list(dims_arg))
@@ -209,9 +208,7 @@ def replicate_reduction_dims(
     new_placements: list[Placement] = []
 
     for p in placements:
-        if p.is_partial():
-            new_placements.append(Replicate())
-        elif isinstance(p, Shard) and p.dim in reduction_dims:
+        if p.is_partial() or isinstance(p, Shard) and p.dim in reduction_dims:
             new_placements.append(Replicate())
         else:
             new_placements.append(p)
@@ -540,7 +537,7 @@ def softmax_backward_strategy(op_schema: OpSchema) -> OpStrategy:
 
     grad_in_strategy = OpStrategy([])
     for grad_out_placement_strat, out_placement_strat in zip(
-        grad_out_strategy.strategies, out_strategy.strategies
+        grad_out_strategy.strategies, out_strategy.strategies, strict=False
     ):
         # follow the sharding of the grad_out or out depending on which has more shards
         grad_out_src_spec = grad_out_placement_strat.output_spec
@@ -945,7 +942,7 @@ def layer_norm_bwd_strategy(op_schema: OpSchema) -> OpStrategy:
     out_tuple_strategy = OpStrategy([])
     for idx, input_placement_strategy in enumerate(input_strategy.strategies):
         # args for OpSpec
-        output_specs_list: list[Optional[DTensorSpec]] = []
+        output_specs_list: list[DTensorSpec | None] = []
         input_specs_list: list[DTensorSpec] = []
         redistribute_costs = []
 

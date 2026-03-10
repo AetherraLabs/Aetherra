@@ -1,12 +1,14 @@
 # mypy: allow-untyped-defs
 r"""Implementation for the RMSprop algorithm."""
 
-from typing import cast, Optional, Union
+from typing import cast
 
 import torch
 from torch import Tensor
 
 from .optimizer import (
+    Optimizer,
+    ParamsT,
     _capturable_doc,
     _default_to_fused_or_foreach,
     _differentiable_doc,
@@ -19,10 +21,7 @@ from .optimizer import (
     _to_scalar,
     _use_grad_for_differentiable,
     _view_as_real,
-    Optimizer,
-    ParamsT,
 )
-
 
 __all__ = ["RMSprop", "rmsprop"]
 
@@ -31,28 +30,28 @@ class RMSprop(Optimizer):  # noqa: D101
     def __init__(
         self,
         params: ParamsT,
-        lr: Union[float, Tensor] = 1e-2,
+        lr: float | Tensor = 1e-2,
         alpha: float = 0.99,
         eps: float = 1e-8,
         weight_decay: float = 0,
         momentum: float = 0,
         centered: bool = False,
         capturable: bool = False,
-        foreach: Optional[bool] = None,
+        foreach: bool | None = None,
         maximize: bool = False,
         differentiable: bool = False,
     ):  # noqa: D107
         if isinstance(lr, Tensor) and lr.numel() != 1:
             raise ValueError("Tensor lr must be 1-element")
-        if not 0.0 <= lr:
+        if not lr >= 0.0:
             raise ValueError(f"Invalid learning rate: {lr}")
-        if not 0.0 <= eps:
+        if not eps >= 0.0:
             raise ValueError(f"Invalid epsilon value: {eps}")
-        if not 0.0 <= momentum:
+        if not momentum >= 0.0:
             raise ValueError(f"Invalid momentum value: {momentum}")
-        if not 0.0 <= weight_decay:
+        if not weight_decay >= 0.0:
             raise ValueError(f"Invalid weight_decay value: {weight_decay}")
-        if not 0.0 <= alpha:
+        if not alpha >= 0.0:
             raise ValueError(f"Invalid alpha value: {alpha}")
 
         defaults = dict(
@@ -368,7 +367,7 @@ def _multi_tensor_rmsprop(
         assert all(
             p.device.type == step.device.type
             and p.device.type in capturable_supported_devices
-            for p, step in zip(params, state_steps)
+            for p, step in zip(params, state_steps, strict=False)
         ), (
             f"If capturable=True, params and state_steps must be on supported devices: {capturable_supported_devices}."
         )
@@ -480,7 +479,7 @@ def rmsprop(
     state_steps: list[Tensor],
     # kwonly args with defaults are not supported by functions compiled with torchscript issue #70627
     # setting this as kwarg for now as functional API is compiled by torch/distributed/optim
-    foreach: Optional[bool] = None,
+    foreach: bool | None = None,
     maximize: bool = False,
     differentiable: bool = False,
     capturable: bool = False,

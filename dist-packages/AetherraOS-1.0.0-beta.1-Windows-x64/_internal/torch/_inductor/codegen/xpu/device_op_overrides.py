@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from typing import Optional
-
 from ..common import (
     DeviceOpOverrides,
-    register_device_op_overrides,
     TritonScratchWorkspace,
+    register_device_op_overrides,
 )
 
 
@@ -60,7 +58,7 @@ class XPUDeviceOpOverrides(DeviceOpOverrides):
 
     def cpp_global_scratch(
         self, idx: int, workspace: TritonScratchWorkspace
-    ) -> Optional[tuple[list[str], str]]:
+    ) -> tuple[list[str], str] | None:
         return None
 
 

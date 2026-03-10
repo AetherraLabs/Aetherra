@@ -196,6 +196,7 @@ class ConceptClusteringEngine:
         # Standard library imports
         import hashlib
         import random
+
         # Create deterministic embedding based on text hash (secure deterministic hash)
         text_hash = hashlib.sha256(text.encode()).hexdigest()
         random.seed(text_hash)
@@ -207,14 +208,12 @@ class ConceptClusteringEngine:
         norm = sum(x * x for x in embedding) ** 0.5
         return [x / norm for x in embedding]
 
-    def _calculate_similarity(
-        self, embedding1: List[float], embedding2: List[float]
-    ) -> float:
+    def _calculate_similarity(self, embedding1: List[float], embedding2: List[float]) -> float:
         """Calculate cosine similarity between two embeddings"""
         if len(embedding1) != len(embedding2):
             return 0.0
 
-        dot_product = sum(a * b for a, b in zip(embedding1, embedding2))
+        dot_product = sum(a * b for a, b in zip(embedding1, embedding2, strict=False))
         norm1 = sum(a * a for a in embedding1) ** 0.5
         norm2 = sum(b * b for b in embedding2) ** 0.5
 
@@ -227,7 +226,9 @@ class ConceptClusteringEngine:
         """Add a new concept to the clustering system"""
         try:
             # Generate concept ID
-            concept_id = f"concept_{len(self.concepts) + 1}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            concept_id = (
+                f"concept_{len(self.concepts) + 1}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            )
 
             # Generate embedding
             embedding = self._generate_embedding(text)
@@ -235,9 +236,7 @@ class ConceptClusteringEngine:
             # Check for similar existing concepts
             similar_concepts = []
             for existing_id, existing_concept in self.concepts.items():
-                similarity = self._calculate_similarity(
-                    embedding, existing_concept.embedding
-                )
+                similarity = self._calculate_similarity(embedding, existing_concept.embedding)
                 if similarity > self.similarity_threshold:
                     similar_concepts.append((existing_id, similarity))
 
@@ -347,9 +346,7 @@ class ConceptClusteringEngine:
                     cluster_id = f"cluster_{len(new_clusters) + 1}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
                     # Calculate centroid
-                    embeddings = [
-                        self.concepts[cid].embedding for cid in cluster_concepts
-                    ]
+                    embeddings = [self.concepts[cid].embedding for cid in cluster_concepts]
                     centroid = [
                         sum(emb[i] for emb in embeddings) / len(embeddings)
                         for i in range(len(embeddings[0]))
@@ -366,9 +363,7 @@ class ConceptClusteringEngine:
                         name=f"Cluster: {primary_concept.name[:30]}...",
                         concepts=cluster_concepts,
                         centroid=centroid,
-                        coherence_score=self._calculate_cluster_coherence(
-                            cluster_concepts
-                        ),
+                        coherence_score=self._calculate_cluster_coherence(cluster_concepts),
                     )
 
                     new_clusters[cluster_id] = cluster
@@ -395,9 +390,7 @@ class ConceptClusteringEngine:
 
         for i, concept1 in enumerate(concepts):
             for concept2 in concepts[i + 1 :]:
-                similarity = self._calculate_similarity(
-                    concept1.embedding, concept2.embedding
-                )
+                similarity = self._calculate_similarity(concept1.embedding, concept2.embedding)
                 similarities.append(similarity)
 
         return sum(similarities) / len(similarities) if similarities else 0.0
@@ -427,9 +420,7 @@ class ConceptClusteringEngine:
         except Exception as e:
             logger.error(f"❌ Failed to save cluster: {e}")
 
-    async def get_related_concepts(
-        self, concept_id: str, limit: int = 10
-    ) -> List[Dict[str, Any]]:
+    async def get_related_concepts(self, concept_id: str, limit: int = 10) -> List[Dict[str, Any]]:
         """Get concepts related to the given concept"""
         try:
             if concept_id not in self.concepts:
@@ -536,9 +527,7 @@ async def main():
 
     print("Adding test concepts...")
     for concept_text in test_concepts:
-        concept_id = await engine.add_concept(
-            concept_text, ["technology", "programming"]
-        )
+        concept_id = await engine.add_concept(concept_text, ["technology", "programming"])
         print(f"  ✅ Added: {concept_text}")
 
     # Wait for clustering to complete

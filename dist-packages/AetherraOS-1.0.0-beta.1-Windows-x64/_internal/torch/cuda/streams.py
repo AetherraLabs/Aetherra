@@ -4,7 +4,6 @@ import ctypes
 import torch
 from torch._utils import _dummy_type
 
-
 if not hasattr(torch._C, "_CudaStreamBase"):
     # Define dummy base classes
     torch._C.__dict__["_CudaStreamBase"] = _dummy_type("_CudaStreamBase")
@@ -35,9 +34,8 @@ class Stream(torch._C._CudaStreamBase):
         # setting device manager is expensive, so we avoid it unless necessary
         if device is None or ("stream_id" in kwargs and "device_index" in kwargs):
             return super().__new__(cls, priority=priority, **kwargs)
-        else:
-            with torch.cuda.device(device):
-                return super().__new__(cls, priority=priority, **kwargs)
+        with torch.cuda.device(device):
+            return super().__new__(cls, priority=priority, **kwargs)
 
     def wait_event(self, event) -> None:
         r"""Make all future work submitted to the stream wait for an event.
@@ -244,5 +242,4 @@ class Event(torch._C._CudaEventBase):
     def __repr__(self) -> str:
         if self.cuda_event:
             return f"<torch.cuda.Event {self._as_parameter_.value:#x}>"
-        else:
-            return "<torch.cuda.Event uninitialized>"
+        return "<torch.cuda.Event uninitialized>"

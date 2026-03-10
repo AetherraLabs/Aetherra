@@ -2,7 +2,6 @@
 import torch
 import torch.ao.nn.intrinsic as nni
 
-
 __all__ = ["BatchNorm2d", "BatchNorm3d"]
 
 

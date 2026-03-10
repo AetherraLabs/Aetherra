@@ -10,7 +10,6 @@ from torch.utils._ordered_set import OrderedSet
 from . import config, ir
 from .virtualized import V
 
-
 log = logging.getLogger(__name__)
 
 
@@ -115,14 +114,13 @@ def _get_data(x: ir.TensorBox) -> ir.IRNode:
     if isinstance(x.data, ir.BaseView):
         # TensorBox -> *View -> StorageBox -> IRNode
         return x.data.unwrap_view().data
-    elif isinstance(x.data, ir.StorageBox):
+    if isinstance(x.data, ir.StorageBox):
         # TensorBox -> StorageBox -> IRNode
         return cast(ir.Buffer, x.data.data)
-    else:
-        raise AssertionError(
-            "Expect the data attr of a `TensorBox` to be either "
-            f"an `ir.BaseView` or `ir.StorageBox` (got {x.data})."
-        )
+    raise AssertionError(
+        "Expect the data attr of a `TensorBox` to be either "
+        f"an `ir.BaseView` or `ir.StorageBox` (got {x.data})."
+    )
 
 
 _bufs_to_skip_wait = OrderedSet[tuple[int, str]]()

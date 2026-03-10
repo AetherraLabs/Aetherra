@@ -16,7 +16,6 @@ import sys
 from contextlib import contextmanager
 from functools import partial
 
-
 IS_WINDOWS = sys.platform == "win32"
 IS_MACOS = sys.platform == "darwin"
 
@@ -30,8 +29,7 @@ def get_libc():
             "NOTE: Redirects are currently not supported in Windows or MacOs."
         )
         return None
-    else:
-        return ctypes.CDLL("libc.so.6")
+    return ctypes.CDLL("libc.so.6")
 
 
 libc = get_libc()

@@ -3,7 +3,6 @@
 import torch
 from torch.nn.parameter import Parameter
 
-
 __all__: list[str] = []
 
 

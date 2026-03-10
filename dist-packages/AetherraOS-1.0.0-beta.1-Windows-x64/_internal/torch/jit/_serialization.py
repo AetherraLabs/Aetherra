@@ -198,8 +198,7 @@ def jit_module_from_flatbuffer(f):
     if isinstance(f, (str, os.PathLike)):
         f = os.fspath(f)
         return wrap_cpp_module(torch._C._load_jit_module_from_file(f))
-    else:
-        return wrap_cpp_module(torch._C._load_jit_module_from_bytes(f.read()))
+    return wrap_cpp_module(torch._C._load_jit_module_from_bytes(f.read()))
 
 
 def save_jit_module_to_flatbuffer(m, f, _extra_files=None):

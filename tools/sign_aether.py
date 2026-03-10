@@ -18,8 +18,8 @@ from __future__ import annotations
 
 # Standard library imports
 import sys
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 # Aetherra imports
 from Aetherra.security.script_signing import embed_signature  # type: ignore

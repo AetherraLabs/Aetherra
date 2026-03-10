@@ -10,7 +10,6 @@ from torch.utils._typing_utils import not_none
 
 from . import default_hooks as default
 
-
 __all__ = ["PowerSGDState", "powerSGD_hook", "batched_powerSGD_hook"]
 
 logger = logging.getLogger(__name__)
@@ -560,7 +559,7 @@ def powerSGD_hook(
                 _orthogonalize(q, state.orthogonalization_epsilon)
 
     # Compute Ps.
-    for tensor, q, p in zip(tensors_to_compress, qs, ps):
+    for tensor, q, p in zip(tensors_to_compress, qs, ps, strict=False):
         torch.bmm(tensor, q, out=p)
 
     # This allreduce is only applied to uncompressed tensors,
@@ -594,7 +593,7 @@ def powerSGD_hook(
             _orthogonalize(p, state.orthogonalization_epsilon)
 
         # Compute Qs.
-        for tensor, p, q in zip(tensors_to_compress, ps, qs):
+        for tensor, p, q in zip(tensors_to_compress, ps, qs, strict=False):
             torch.bmm(tensor.transpose(1, 2), p, out=q)
 
         # TODO: The above procedure does two matmul+allreduce steps per iteration --
@@ -613,7 +612,7 @@ def powerSGD_hook(
     def decompress(fut):
         state.q_memory_dict[bucket_index] = fut.value().div_(world_size)
 
-        for p, q, tensor in zip(ps, qs, tensors_to_compress):
+        for p, q, tensor in zip(ps, qs, tensors_to_compress, strict=False):
             torch.bmm(p, q.transpose(1, 2), out=tensor)
 
         # Copy batched tensors back to original buffer.

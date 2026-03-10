@@ -1,6 +1,7 @@
 # mypy: allow-untyped-defs
 import numbers
 import warnings
+
 from typing_extensions import deprecated
 
 import torch
@@ -9,7 +10,6 @@ from torch import Tensor  # noqa: F401
 from torch._jit_internal import Dict, List, Optional, Tuple, Union  # noqa: F401
 from torch.ao.nn.quantized.modules.utils import _quantize_weight
 from torch.nn.utils.rnn import PackedSequence
-
 
 __all__ = [
     "pack_weight_bias",
@@ -46,14 +46,13 @@ def pack_weight_bias(qweight, bias, dtype):
         packed_weight = torch.ops.quantized.linear_prepack(qweight, bias)
 
         return packed_weight
-    else:
-        # for each layer, for each direction we need to quantize and pack
-        # weights and pack parameters in this order:
-        #
-        #   packed_ih, packed_hh, b_ih, b_hh
-        packed_weight = torch.ops.quantized.linear_prepack_fp16(qweight, bias)
+    # for each layer, for each direction we need to quantize and pack
+    # weights and pack parameters in this order:
+    #
+    #   packed_ih, packed_hh, b_ih, b_hh
+    packed_weight = torch.ops.quantized.linear_prepack_fp16(qweight, bias)
 
-        return packed_weight
+    return packed_weight
 
 
 class PackedParameter(torch.nn.Module):
@@ -652,8 +651,7 @@ class LSTM(RNNBase):
     def forward(self, input, hx=None):
         if isinstance(input, PackedSequence):
             return self.forward_packed(input, hx)
-        else:
-            return self.forward_tensor(input, hx)
+        return self.forward_tensor(input, hx)
 
     @classmethod
     def from_float(cls, mod, use_precomputed_fake_quant=False):
@@ -918,8 +916,7 @@ class GRU(RNNBase):
     def forward(self, input, hx=None):
         if isinstance(input, PackedSequence):
             return self.forward_packed(input, hx)
-        else:
-            return self.forward_tensor(input, hx)
+        return self.forward_tensor(input, hx)
 
     @classmethod
     def from_float(cls, mod, use_precomputed_fake_quant=False):
@@ -1092,8 +1089,7 @@ class RNNCellBase(torch.nn.Module):
                 weight_observer(weight)
                 qweight = _quantize_weight(weight.float(), weight_observer)
                 return qweight
-            else:
-                return weight.float()
+            return weight.float()
 
         qRNNCellBase._packed_weight_ih = pack_weight_bias(
             _observe_and_quantize_weight(mod.weight_ih), mod.bias_ih, dtype

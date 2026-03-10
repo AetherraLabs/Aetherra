@@ -2,8 +2,8 @@
 import math
 import traceback
 from dataclasses import dataclass
-from enum import auto, Enum
-from typing import Any, Optional
+from enum import Enum, auto
+from typing import Any
 
 import torch
 import torch.distributed as dist
@@ -11,7 +11,6 @@ import torch.nn as nn
 from torch.distributed._composable.contract import _get_registry
 from torch.distributed.tensor import DeviceMesh, DTensor
 from torch.distributed.tensor._dtensor_spec import DTensorSpec
-
 
 _compiled_autograd_enabled: bool = False
 
@@ -46,8 +45,8 @@ else:
 @dataclass
 class DataParallelMeshInfo:
     mesh: DeviceMesh
-    shard_mesh_dim: Optional[int] = None
-    replicate_mesh_dim: Optional[int] = None
+    shard_mesh_dim: int | None = None
+    replicate_mesh_dim: int | None = None
 
     def __post_init__(self):
         if self.shard_mesh_dim is None and self.replicate_mesh_dim is None:
@@ -153,18 +152,17 @@ def _from_local_no_grad(
             sharding_spec,
             requires_grad=local_tensor.requires_grad,
         )
-    else:
-        return DTensor.from_local(
-            local_tensor,
-            sharding_spec.mesh,
-            sharding_spec.placements,
-            shape=sharding_spec.shape,
-            stride=sharding_spec.stride,
-        )
+    return DTensor.from_local(
+        local_tensor,
+        sharding_spec.mesh,
+        sharding_spec.placements,
+        shape=sharding_spec.shape,
+        stride=sharding_spec.stride,
+    )
 
 
 def _to_dtype_if_needed(
-    tensor: torch.Tensor, dtype: Optional[torch.dtype]
+    tensor: torch.Tensor, dtype: torch.dtype | None
 ) -> torch.Tensor:
     if dtype is not None and tensor.dtype != dtype:
         return tensor.to(dtype)

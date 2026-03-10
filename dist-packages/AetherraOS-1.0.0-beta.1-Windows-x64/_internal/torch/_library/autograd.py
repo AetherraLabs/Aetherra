@@ -1,23 +1,24 @@
 # mypy: allow-untyped-defs
 import dataclasses
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Optional, Protocol
+from typing import Any, Protocol
 
-from torch import _C, _ops, autograd, Tensor
+from torch import _C, Tensor, _ops, autograd
 from torch.utils import _pytree
 
 from . import utils
 
 
 class InfoProtocol(Protocol):
-    _backward_fn: Optional[Callable]
-    _setup_context_fn: Optional[Callable]
+    _backward_fn: Callable | None
+    _setup_context_fn: Callable | None
 
 
 @dataclasses.dataclass
 class Info:
-    _backward_fn: Optional[Callable]
-    _setup_context_fn: Optional[Callable]
+    _backward_fn: Callable | None
+    _setup_context_fn: Callable | None
 
 
 def make_autograd_impl(op: _ops.OpOverload, info: InfoProtocol) -> Callable:
@@ -128,8 +129,8 @@ def supports_tensorlist(cls: Any) -> Any:
     @dataclass
     class Metadata:
         input_spec: spec_t
-        output_spec: Optional[spec_t] = None
-        result_is_tuple: Optional[bool] = None
+        output_spec: spec_t | None = None
+        result_is_tuple: bool | None = None
 
     def new_forward(ctx, *args):
         metadata = args[-1]

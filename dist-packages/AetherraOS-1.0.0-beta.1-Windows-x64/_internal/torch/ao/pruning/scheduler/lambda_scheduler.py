@@ -3,7 +3,6 @@ import warnings
 
 from .base_scheduler import BaseScheduler
 
-
 __all__ = ["LambdaSL"]
 
 
@@ -51,5 +50,5 @@ class LambdaSL(BaseScheduler):
             )
         return [
             base_sl * lmbda(self.last_epoch)
-            for lmbda, base_sl in zip(self.sl_lambdas, self.base_sl)
+            for lmbda, base_sl in zip(self.sl_lambdas, self.base_sl, strict=False)
         ]

@@ -3,12 +3,10 @@
 # Author: Pearu Peterson
 # Created: February 2020
 
-from typing import Optional
-
 import torch
-from torch import _linalg_utils as _utils, Tensor
+from torch import Tensor
+from torch import _linalg_utils as _utils
 from torch.overrides import handle_torch_function, has_torch_function
-
 
 __all__ = ["lobpcg"]
 
@@ -249,8 +247,7 @@ def _symeig_backward(D_grad, U_grad, A, D, U, largest):
     # if `U` is square, then the columns of `U` is a complete eigenspace
     if U.size(-1) == U.size(-2):
         return _symeig_backward_complete_eigenspace(D_grad, U_grad, A, D, U)
-    else:
-        return _symeig_backward_partial_eigenspace(D_grad, U_grad, A, D, U, largest)
+    return _symeig_backward_partial_eigenspace(D_grad, U_grad, A, D, U, largest)
 
 
 class LOBPCGAutogradFunction(torch.autograd.Function):
@@ -258,19 +255,19 @@ class LOBPCGAutogradFunction(torch.autograd.Function):
     def forward(  # type: ignore[override]
         ctx,
         A: Tensor,
-        k: Optional[int] = None,
-        B: Optional[Tensor] = None,
-        X: Optional[Tensor] = None,
-        n: Optional[int] = None,
-        iK: Optional[Tensor] = None,
-        niter: Optional[int] = None,
-        tol: Optional[float] = None,
-        largest: Optional[bool] = None,
-        method: Optional[str] = None,
+        k: int | None = None,
+        B: Tensor | None = None,
+        X: Tensor | None = None,
+        n: int | None = None,
+        iK: Tensor | None = None,
+        niter: int | None = None,
+        tol: float | None = None,
+        largest: bool | None = None,
+        method: str | None = None,
         tracker: None = None,
-        ortho_iparams: Optional[dict[str, int]] = None,
-        ortho_fparams: Optional[dict[str, float]] = None,
-        ortho_bparams: Optional[dict[str, bool]] = None,
+        ortho_iparams: dict[str, int] | None = None,
+        ortho_fparams: dict[str, float] | None = None,
+        ortho_bparams: dict[str, bool] | None = None,
     ) -> tuple[Tensor, Tensor]:
         # makes sure that input is contiguous for efficiency.
         # Note: autograd does not support dense gradients for sparse input yet.
@@ -344,19 +341,19 @@ class LOBPCGAutogradFunction(torch.autograd.Function):
 
 def lobpcg(
     A: Tensor,
-    k: Optional[int] = None,
-    B: Optional[Tensor] = None,
-    X: Optional[Tensor] = None,
-    n: Optional[int] = None,
-    iK: Optional[Tensor] = None,
-    niter: Optional[int] = None,
-    tol: Optional[float] = None,
-    largest: Optional[bool] = None,
-    method: Optional[str] = None,
+    k: int | None = None,
+    B: Tensor | None = None,
+    X: Tensor | None = None,
+    n: int | None = None,
+    iK: Tensor | None = None,
+    niter: int | None = None,
+    tol: float | None = None,
+    largest: bool | None = None,
+    method: str | None = None,
     tracker: None = None,
-    ortho_iparams: Optional[dict[str, int]] = None,
-    ortho_fparams: Optional[dict[str, float]] = None,
-    ortho_bparams: Optional[dict[str, bool]] = None,
+    ortho_iparams: dict[str, int] | None = None,
+    ortho_fparams: dict[str, float] | None = None,
+    ortho_bparams: dict[str, bool] | None = None,
 ) -> tuple[Tensor, Tensor]:
     """Find the k largest (or smallest) eigenvalues and the corresponding
     eigenvectors of a symmetric positive definite generalized
@@ -581,19 +578,19 @@ def lobpcg(
 
 def _lobpcg(
     A: Tensor,
-    k: Optional[int] = None,
-    B: Optional[Tensor] = None,
-    X: Optional[Tensor] = None,
-    n: Optional[int] = None,
-    iK: Optional[Tensor] = None,
-    niter: Optional[int] = None,
-    tol: Optional[float] = None,
-    largest: Optional[bool] = None,
-    method: Optional[str] = None,
+    k: int | None = None,
+    B: Tensor | None = None,
+    X: Tensor | None = None,
+    n: int | None = None,
+    iK: Tensor | None = None,
+    niter: int | None = None,
+    tol: float | None = None,
+    largest: bool | None = None,
+    method: str | None = None,
     tracker: None = None,
-    ortho_iparams: Optional[dict[str, int]] = None,
-    ortho_fparams: Optional[dict[str, float]] = None,
-    ortho_bparams: Optional[dict[str, bool]] = None,
+    ortho_iparams: dict[str, int] | None = None,
+    ortho_fparams: dict[str, float] | None = None,
+    ortho_bparams: dict[str, bool] | None = None,
 ) -> tuple[Tensor, Tensor]:
     # A must be square:
     assert A.shape[-2] == A.shape[-1], A.shape
@@ -693,10 +690,10 @@ class LOBPCG:
 
     def __init__(
         self,
-        A: Optional[Tensor],
-        B: Optional[Tensor],
+        A: Tensor | None,
+        B: Tensor | None,
         X: Tensor,
-        iK: Optional[Tensor],
+        iK: Tensor | None,
         iparams: dict[str, int],
         fparams: dict[str, float],
         bparams: dict[str, bool],
@@ -1037,13 +1034,13 @@ class LOBPCG:
         E, Z = _utils.symeig(DUBUD)
         t = tau * abs(E).max()
         if drop:
-            keep = torch.where(E > t)
+            keep = torch.where(t < E)
             assert len(keep) == 1, keep
             E = E[keep[0]]
             Z = Z[:, keep[0]]
             d_col = d_col[keep[0]]
         else:
-            E[(torch.where(E < t))[0]] = t
+            E[(torch.where(t > E))[0]] = t
 
         return torch.matmul(U * d_col.mT, Z * E**-0.5)
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 # Standard library imports
 import asyncio
 import threading
-from typing import Any, Dict
+from typing import Any
 
 
 def run_coro_blocking(coro):
@@ -20,7 +20,7 @@ def run_coro_blocking(coro):
     except RuntimeError:
         loop = None
     if loop and loop.is_running():
-        holder: Dict[str, Any] = {}
+        holder: dict[str, Any] = {}
 
         def _runner():
             try:

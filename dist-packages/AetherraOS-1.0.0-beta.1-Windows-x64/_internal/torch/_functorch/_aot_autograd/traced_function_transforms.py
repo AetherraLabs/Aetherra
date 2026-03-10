@@ -12,9 +12,10 @@ It does so by:
 """
 
 import warnings
+from collections.abc import Callable
 from contextlib import contextmanager, nullcontext
 from functools import wraps
-from typing import Any, Callable, Union
+from typing import Any
 from unittest.mock import patch
 
 import torch
@@ -29,8 +30,8 @@ from torch.fx.experimental.proxy_tensor import (
     maybe_enable_thunkify,
 )
 from torch.fx.experimental.symbolic_shapes import (
-    guard_or_true,
     PropagateUnbackedSymInts,
+    guard_or_true,
     sym_eq,
 )
 from torch.nn.utils import stateless
@@ -127,7 +128,7 @@ def fn_prepped_for_autograd(
         ]
 
         intermediate_bases = []
-        for i, (o, info) in enumerate(zip(outs, meta.output_info)):
+        for i, (o, info) in enumerate(zip(outs, meta.output_info, strict=False)):
             if info.output_type == OutputType.alias_of_intermediate_save_as_output:
                 intermediate_bases.append(o._base)
 
@@ -198,7 +199,9 @@ def create_joint(fn: Callable, *, aot_config: AOTConfig) -> Any:
 
         assert len(tangent_mask) == len(outs)
         outs_to_grad = [
-            o for needs_tangent, o in zip(tangent_mask, outs) if needs_tangent
+            o
+            for needs_tangent, o in zip(tangent_mask, outs, strict=False)
+            if needs_tangent
         ]
         assert len(outs_to_grad) == len(tangents)
 
@@ -216,7 +219,7 @@ def create_joint(fn: Callable, *, aot_config: AOTConfig) -> Any:
         # Get the outputs that need gradients
         needed_outs = []
         needed_tangents = []
-        for out, tangent in zip(outs_to_grad, tangents):
+        for out, tangent in zip(outs_to_grad, tangents, strict=False):
             if isinstance(out, Tensor) and out.requires_grad:
                 # A bit sketchy, but fixes e.g. test_aot_autograd_exhaustive_matmul_cpu_float32
                 # The issue is that we are sensitive to decomps that don't accurately maintain
@@ -297,11 +300,11 @@ def create_functionalized_rng_ops_wrapper(func, args, trace_joint=True) -> Any:
     if fake_mode is None:
         fake_mode = nullcontext()
 
-    def override_get_rng_state(device: Union[int, str, torch.device] = "cuda"):
+    def override_get_rng_state(device: int | str | torch.device = "cuda"):
         out = PhiloxStateTracker.get_state_as_tensor()
         return out
 
-    def override_set_rng_state(x, device: Union[int, str, torch.device] = "cuda"):
+    def override_set_rng_state(x, device: int | str | torch.device = "cuda"):
         PhiloxStateTracker.set_state_from_tensor(x)
 
     def append_rng_offsets(args):
@@ -312,23 +315,24 @@ def create_functionalized_rng_ops_wrapper(func, args, trace_joint=True) -> Any:
                 (*args[0], PhiloxStateTracker.get_updated_fwd_offset()),
                 (*args[1], PhiloxStateTracker.get_updated_bwd_offset()),
             )
-        else:
-            # args signature before: Tuple(fwd_outputs)
-            # args signature after: Tuple(fwd_outputs, new_fwd_rng_offset)
-            return (*args, PhiloxStateTracker.get_updated_fwd_offset())
+        # args signature before: Tuple(fwd_outputs)
+        # args signature after: Tuple(fwd_outputs, new_fwd_rng_offset)
+        return (*args, PhiloxStateTracker.get_updated_fwd_offset())
 
     def traced_joint(
         primals, tangents, fwd_seed, fwd_base_offset, bwd_seed, bwd_base_offset
     ):
-        with patch("torch.cuda.get_rng_state", override_get_rng_state), patch(
-            "torch.cuda.set_rng_state", override_set_rng_state
+        with (
+            patch("torch.cuda.get_rng_state", override_get_rng_state),
+            patch("torch.cuda.set_rng_state", override_set_rng_state),
         ):
             return append_rng_offsets(func(primals, tangents))
 
     def traced_forward(*primals_fwd_seed_fwd_base_offset):
         # The signature is (*primals, seed, offset)
-        with patch("torch.cuda.get_rng_state", override_get_rng_state), patch(
-            "torch.cuda.set_rng_state", override_set_rng_state
+        with (
+            patch("torch.cuda.get_rng_state", override_get_rng_state),
+            patch("torch.cuda.set_rng_state", override_set_rng_state),
         ):
             return append_rng_offsets(func(*primals_fwd_seed_fwd_base_offset[:-2]))
 
@@ -349,13 +353,10 @@ def create_functionalized_rng_ops_wrapper(func, args, trace_joint=True) -> Any:
             bwd_seed,
             bwd_base_offset,
         )
-    else:
-        # Get the current seed and offset to setup tracing.
-        fwd_seed, fwd_base_offset = CUDARngStateHelper.get_torch_state_as_tuple(
-            fake_mode
-        )
-        PhiloxStateTracker.record_state(fwd_seed, fwd_base_offset, "forward")
-        return traced_forward, (*args, fwd_seed, fwd_base_offset)
+    # Get the current seed and offset to setup tracing.
+    fwd_seed, fwd_base_offset = CUDARngStateHelper.get_torch_state_as_tuple(fake_mode)
+    PhiloxStateTracker.record_state(fwd_seed, fwd_base_offset, "forward")
+    return traced_forward, (*args, fwd_seed, fwd_base_offset)
 
 
 @contextmanager
@@ -439,7 +440,13 @@ def create_functionalized_fn(
                 primals_before = args[0]
                 primals_after = pytree.tree_map(from_fun, f_args[0])
                 for idx, (f_inpt, before, after, inpt_info) in enumerate(
-                    zip(f_args[0], primals_before, primals_after, meta.input_info)
+                    zip(
+                        f_args[0],
+                        primals_before,
+                        primals_after,
+                        meta.input_info,
+                        strict=False,
+                    )
                 ):
                     # Store information about mutations in joint(for backward analysis)
                     joint_mutates_data = has_data_mutation(f_inpt)
@@ -450,15 +457,15 @@ def create_functionalized_fn(
 
                     # Ban metadata mutations on fw inputs during the bw
                     if not inpt_info.mutates_metadata:
-                        assert (
-                            not joint_mutates_metadata
-                        ), "Found a graph input that had its metadata mutated in the backward. This is not supported"
+                        assert not joint_mutates_metadata, (
+                            "Found a graph input that had its metadata mutated in the backward. This is not supported"
+                        )
 
                     # Ban storage resizing on fw inputs during the bw
                     if not inpt_info.mutation_inductor_storage_resize:
-                        assert not was_inductor_storage_resized(
-                            f_inpt
-                        ), "Found a graph input that had storage resizing in the backward. This is not supported"
+                        assert not was_inductor_storage_resized(f_inpt), (
+                            "Found a graph input that had storage resizing in the backward. This is not supported"
+                        )
 
                     # Allow data mutations on fw inputs during the bw, but only if they do not require grad
                     # So we can guarantee that we can keep the mutations in the graph
@@ -470,7 +477,10 @@ def create_functionalized_fn(
                         # Not banning here mutations on inpt_info.requires_grad -
                         # we'll check at runtime and fail only when backward is under torch.is_grad_enabled (create_graph)
                         # Add node meta for copy_ for partitioner that this node should be in backward graph.
-                        with torch.fx.traceback.preserve_node_meta(), set_partitioner_tag_must_be_in_backward():
+                        with (
+                            torch.fx.traceback.preserve_node_meta(),
+                            set_partitioner_tag_must_be_in_backward(),
+                        ):
                             before.copy_(after)
                         meta.indices_of_inputs_that_requires_grad_with_mutations_in_bw.append(
                             idx
@@ -481,11 +491,13 @@ def create_functionalized_fn(
                 tangents_before = args[1]
                 tangents_after = pytree.tree_map(from_fun, f_args[1])
                 for f_inpt, before, after in zip(
-                    f_args[1], tangents_before, tangents_after
+                    f_args[1], tangents_before, tangents_after, strict=False
                 ):
                     assert not has_metadata_mutation(
                         f_inpt, before, check_only_storage_mutation=False
-                    ), "Found an input to the backward that had metadata mutated during the backward pass. This is not supported"
+                    ), (
+                        "Found an input to the backward that had metadata mutated during the backward pass. This is not supported"
+                    )
                     if has_data_mutation(f_inpt):
                         can_be_in_graph = _check_if_mutation_can_be_in_graph(
                             keep_input_mutations=True,
@@ -503,9 +515,9 @@ def create_functionalized_fn(
                             ),
                             requires_grad=f_inpt.requires_grad,
                         )
-                        assert (
-                            can_be_in_graph
-                        ), "a backward input that had data mutated in an autograd-aware way. This is not supported"
+                        assert can_be_in_graph, (
+                            "a backward input that had data mutated in an autograd-aware way. This is not supported"
+                        )
                         # Perform the input mutation
                         with torch.fx.traceback.preserve_node_meta():
                             before.copy_(after)
@@ -536,7 +548,9 @@ def create_functionalized_fn(
                 # This allows us to factor aot autograd much more nicely, since only one area of the code needs to worry
                 # about synthetic bases.
                 for i, (inpt_old, inpt_f) in enumerate(
-                    zip(args, f_args) if not trace_joint else zip(args[0], f_args[0])
+                    zip(args, f_args, strict=False)
+                    if not trace_joint
+                    else zip(args[0], f_args[0], strict=False)
                 ):
                     if not isinstance(inpt_f, torch.Tensor):
                         continue
@@ -621,8 +635,10 @@ def create_functionalized_fn(
                             if inpt_old.is_inference():
                                 maybe_preserve_vc = nullcontext()
                             else:
-                                maybe_preserve_vc = torch.autograd._unsafe_preserve_version_counter(
-                                    inpt_old  # type: ignore[assignment]
+                                maybe_preserve_vc = (
+                                    torch.autograd._unsafe_preserve_version_counter(
+                                        inpt_old  # type: ignore[assignment]
+                                    )
                                 )
                             with torch.no_grad(), maybe_preserve_vc:
                                 inpt_old.copy_(inpt_new)
@@ -889,9 +905,12 @@ def create_functional_call(mod, params_spec, params_len, store_orig_mod=False):
     # https://github.com/pytorch/pytorch/issues/103569
 
     def functional_call(*args, **kwargs):
-        with stateless._reparametrize_module(
-            mod, pytree.tree_unflatten(args[:params_len], params_spec)
-        ), maybe_disable_thunkify():
+        with (
+            stateless._reparametrize_module(
+                mod, pytree.tree_unflatten(args[:params_len], params_spec)
+            ),
+            maybe_disable_thunkify(),
+        ):
             if isinstance(mod, torch.fx.GraphModule):
                 with fx_traceback.preserve_node_meta(), warnings.catch_warnings():
                     warnings.filterwarnings(

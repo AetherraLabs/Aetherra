@@ -1,6 +1,5 @@
 from ..utils import is_accelerate_available, is_torch_available, logging
 
-
 if is_accelerate_available():
     from accelerate import init_empty_weights
 
@@ -42,7 +41,9 @@ def pack_weights(quantized_weights: torch.Tensor) -> torch.Tensor:
         packed_tensor_shape = (row_dim, *original_shape[1:])
 
     quantized_weights += 1
-    packed = torch.zeros(packed_tensor_shape, device=quantized_weights.device, dtype=torch.uint8)
+    packed = torch.zeros(
+        packed_tensor_shape, device=quantized_weights.device, dtype=torch.uint8
+    )
     unpacked = quantized_weights.to(torch.uint8)
 
     it = min(VALUES_PER_ITEM, (original_shape[0] // row_dim) + 1)
@@ -155,7 +156,9 @@ class BitLinear(nn.Module):
             ),
         )
         if bias:
-            self.register_buffer("bias", torch.zeros((out_features), dtype=dtype, device=device))
+            self.register_buffer(
+                "bias", torch.zeros((out_features), dtype=dtype, device=device)
+            )
         else:
             self.bias = None
 
@@ -294,8 +297,12 @@ class AutoBitLinear(nn.Linear):
         *args,
         **kwargs,
     ):
-        if (prefix + "weight") in state_dict and state_dict[prefix + "weight"].dtype != self.weight.dtype:
-            state_dict[prefix + "weight"] = unpack_weights(state_dict[prefix + "weight"], dtype=self.weight.dtype)
+        if (prefix + "weight") in state_dict and state_dict[
+            prefix + "weight"
+        ].dtype != self.weight.dtype:
+            state_dict[prefix + "weight"] = unpack_weights(
+                state_dict[prefix + "weight"], dtype=self.weight.dtype
+            )
         return state_dict
 
     def forward(self, input):
@@ -342,14 +349,19 @@ def _replace_with_bitnet_linear(
                 if isinstance(module, nn.Linear) and name not in modules_to_not_convert:
                     in_features = module.in_features
                     out_features = module.out_features
-                    if quantization_config and quantization_config.linear_class == "autobitlinear":
+                    if (
+                        quantization_config
+                        and quantization_config.linear_class == "autobitlinear"
+                    ):
                         model._modules[name] = AutoBitLinear(
                             in_features=in_features,
                             out_features=out_features,
                             bias=module.bias is not None,
                             device=module.weight.device,
                             dtype=module.weight.dtype,
-                            online_quant=(quantization_config.quantization_mode == "online"),
+                            online_quant=(
+                                quantization_config.quantization_mode == "online"
+                            ),
                             use_rms_norm=quantization_config.use_rms_norm,
                             rms_norm_eps=quantization_config.rms_norm_eps,
                         )
@@ -362,8 +374,12 @@ def _replace_with_bitnet_linear(
                             bias=module.bias is not None,
                             device=module.weight.device,
                             dtype=module.weight.dtype,
-                            use_rms_norm=quantization_config.use_rms_norm if quantization_config else False,
-                            rms_norm_eps=quantization_config.rms_norm_eps if quantization_config else 1e-6,
+                            use_rms_norm=quantization_config.use_rms_norm
+                            if quantization_config
+                            else False,
+                            rms_norm_eps=quantization_config.rms_norm_eps
+                            if quantization_config
+                            else 1e-6,
                         )
                         model._modules[name].requires_grad_(False)
                     has_been_replaced = True
@@ -406,7 +422,9 @@ def replace_with_bitnet_linear(
             it) is not in the list of modules to not convert (for instances modules that are offloaded to `cpu` or
             `disk`).
     """
-    modules_to_not_convert = ["lm_head"] if modules_to_not_convert is None else modules_to_not_convert
+    modules_to_not_convert = (
+        ["lm_head"] if modules_to_not_convert is None else modules_to_not_convert
+    )
     if quantization_config and quantization_config.modules_to_not_convert is not None:
         modules_to_not_convert.extend(quantization_config.modules_to_not_convert)
     modules_to_not_convert = list(set(modules_to_not_convert))

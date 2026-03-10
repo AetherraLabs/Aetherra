@@ -4,7 +4,6 @@ import ctypes
 import torch
 from torch._utils import _dummy_type
 
-
 if not hasattr(torch._C, "_XpuStreamBase"):
     # Define dummy base classes
     torch._C.__dict__["_XpuStreamBase"] = _dummy_type("_XpuStreamBase")
@@ -34,9 +33,8 @@ class Stream(torch._C._XpuStreamBase):
         # setting device manager is expensive, so we avoid it unless necessary
         if device is None or ("stream_id" in kwargs and "device_index" in kwargs):
             return super().__new__(cls, priority=priority, **kwargs)
-        else:
-            with torch.xpu.device(device):
-                return super().__new__(cls, priority=priority, **kwargs)
+        with torch.xpu.device(device):
+            return super().__new__(cls, priority=priority, **kwargs)
 
     def wait_event(self, event) -> None:
         r"""Make all future work submitted to the stream wait for an event.
@@ -169,5 +167,4 @@ class Event(torch._C._XpuEventBase):
     def __repr__(self):
         if self.sycl_event:
             return f"torch.xpu.Event(sycl_event={self.sycl_event:#x})"
-        else:
-            return "torch.xpu.Event(uninitialized)"
+        return "torch.xpu.Event(uninitialized)"

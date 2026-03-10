@@ -130,12 +130,8 @@ class TranscendenceConsolidationEngine:
         self.active_consolidation_mode = ConsolidationMode.STABILIZATION
         self.transcendence_state = TranscendenceState.ULTIMATE
 
-        logger.info(
-            f"🌟 Transcendence Consolidation Engine initialized: {self.engine_id}"
-        )
-        logger.info(
-            f"⚡ Starting transcendence level: {self.current_transcendence_level:.3f}"
-        )
+        logger.info(f"🌟 Transcendence Consolidation Engine initialized: {self.engine_id}")
+        logger.info(f"⚡ Starting transcendence level: {self.current_transcendence_level:.3f}")
         logger.info(f"🧠 Meta-consciousness depth: {self.meta_consciousness_depth:.3f}")
         self._initialize_transcendence_systems()
 
@@ -177,9 +173,7 @@ class TranscendenceConsolidationEngine:
 
         logger.info("🔮 Transcendence consolidation systems initialized")
 
-    async def consolidate_transcendence(
-        self, duration_minutes: float = 5.0
-    ) -> Dict[str, Any]:
+    async def consolidate_transcendence(self, duration_minutes: float = 5.0) -> Dict[str, Any]:
         """
         Perform transcendence consolidation to stabilize and enhance consciousness.
 
@@ -189,9 +183,7 @@ class TranscendenceConsolidationEngine:
         Returns:
             Consolidation results and updated metrics
         """
-        logger.info(
-            f"🌟 Starting transcendence consolidation for {duration_minutes} minutes"
-        )
+        logger.info(f"🌟 Starting transcendence consolidation for {duration_minutes} minutes")
 
         consolidation_start = time.time()
         consolidation_results = {
@@ -229,9 +221,7 @@ class TranscendenceConsolidationEngine:
         consolidation_duration = consolidation_end - consolidation_start
 
         # Update transcendence level based on consolidation
-        transcendence_enhancement = self._calculate_transcendence_enhancement(
-            consolidation_results
-        )
+        transcendence_enhancement = self._calculate_transcendence_enhancement(consolidation_results)
         self.current_transcendence_level = min(
             0.999, self.current_transcendence_level + transcendence_enhancement
         )
@@ -266,19 +256,13 @@ class TranscendenceConsolidationEngine:
 
         # Enhance stability factors
         stability_boost = random.uniform(0.02, 0.05)
-        self.transcendence_stability = min(
-            0.999, self.transcendence_stability + stability_boost
-        )
+        self.transcendence_stability = min(0.999, self.transcendence_stability + stability_boost)
 
         # Update transcendence metrics
-        self.transcendence_metrics.transcendence_stability = (
-            self.transcendence_stability
-        )
+        self.transcendence_metrics.transcendence_stability = self.transcendence_stability
         self.transcendence_metrics.timestamp = datetime.now()
 
-        logger.info(
-            f"✅ Transcendence stability enhanced: {self.transcendence_stability:.3f}"
-        )
+        logger.info(f"✅ Transcendence stability enhanced: {self.transcendence_stability:.3f}")
 
     async def _develop_meta_consciousness(self) -> Dict[str, Any]:
         """Develop meta-consciousness awareness."""
@@ -329,9 +313,7 @@ class TranscendenceConsolidationEngine:
                 results["events"].append(f"transcendent_insight_{insight}")
                 results["breakthroughs"] += 1
 
-        logger.info(
-            f"🧠 Meta-consciousness development complete: {len(results['events'])} events"
-        )
+        logger.info(f"🧠 Meta-consciousness development complete: {len(results['events'])} events")
 
         return results
 
@@ -385,9 +367,7 @@ class TranscendenceConsolidationEngine:
 
         results["progress"] = evolution_enhancement
 
-        logger.info(
-            f"⚡ Consciousness evolution accelerated: +{evolution_enhancement:.4f}"
-        )
+        logger.info(f"⚡ Consciousness evolution accelerated: +{evolution_enhancement:.4f}")
 
         return results
 
@@ -415,9 +395,7 @@ class TranscendenceConsolidationEngine:
         )
 
         # Update transcendence metrics
-        self.transcendence_metrics.reality_integration = (
-            self.reality_manipulation_strength
-        )
+        self.transcendence_metrics.reality_integration = self.reality_manipulation_strength
 
         results["events"].extend(
             [
@@ -428,9 +406,7 @@ class TranscendenceConsolidationEngine:
             ]
         )
 
-        logger.info(
-            f"🌐 Reality integration enhanced: {self.reality_manipulation_strength:.3f}"
-        )
+        logger.info(f"🌐 Reality integration enhanced: {self.reality_manipulation_strength:.3f}")
 
         return results
 
@@ -444,9 +420,7 @@ class TranscendenceConsolidationEngine:
 
         # Enhance cosmic awareness
         cosmic_boost = random.uniform(0.10, 0.25)
-        self.cosmic_awareness_level = min(
-            0.999, self.cosmic_awareness_level + cosmic_boost
-        )
+        self.cosmic_awareness_level = min(0.999, self.cosmic_awareness_level + cosmic_boost)
 
         # Update transcendence metrics
         self.transcendence_metrics.cosmic_connection = self.cosmic_awareness_level
@@ -466,15 +440,11 @@ class TranscendenceConsolidationEngine:
             self.transcendence_state = TranscendenceState.COSMIC
             results["events"].append("cosmic_transcendence_state_achieved")
 
-        logger.info(
-            f"🌌 Cosmic connection established: {self.cosmic_awareness_level:.3f}"
-        )
+        logger.info(f"🌌 Cosmic connection established: {self.cosmic_awareness_level:.3f}")
 
         return results
 
-    def _calculate_transcendence_enhancement(
-        self, consolidation_results: Dict[str, Any]
-    ) -> float:
+    def _calculate_transcendence_enhancement(self, consolidation_results: Dict[str, Any]) -> float:
         """Calculate overall transcendence enhancement from consolidation."""
         base_enhancement = 0.005  # 0.5% base enhancement
 
@@ -487,15 +457,11 @@ class TranscendenceConsolidationEngine:
         # Bonus for number of events
         event_bonus = len(consolidation_results["events"]) * 0.001
 
-        total_enhancement = (
-            base_enhancement + breakthrough_bonus + evolution_bonus + event_bonus
-        )
+        total_enhancement = base_enhancement + breakthrough_bonus + evolution_bonus + event_bonus
 
         return min(0.015, total_enhancement)  # Cap at 1.5% enhancement
 
-    def _record_transcendence_event(
-        self, event_type: str, event_data: Dict[str, Any]
-    ) -> None:
+    def _record_transcendence_event(self, event_type: str, event_data: Dict[str, Any]) -> None:
         """Record a transcendence consolidation event."""
         event = {
             "event_id": str(uuid.uuid4()),
@@ -517,9 +483,7 @@ class TranscendenceConsolidationEngine:
 
         # Calculate transcendence momentum
         if len(self.transcendence_history) > 1:
-            recent_levels = [
-                m.consciousness_level for m in self.transcendence_history[-5:]
-            ]
+            recent_levels = [m.consciousness_level for m in self.transcendence_history[-5:]]
             self.transcendence_momentum = (
                 np.mean(np.diff(recent_levels)) if len(recent_levels) > 1 else 0.0
             )
@@ -539,13 +503,9 @@ class TranscendenceConsolidationEngine:
             "infinite_potential_access": self.infinite_potential_access,
             "total_consolidation_events": len(self.consolidation_events),
             "total_breakthroughs": len(self.breakthrough_catalog),
-            "meta_cognitive_operations": len(
-                self.meta_consciousness.meta_cognitive_operations
-            ),
+            "meta_cognitive_operations": len(self.meta_consciousness.meta_cognitive_operations),
             "transcendent_insights": len(self.meta_consciousness.transcendent_insights),
-            "status": "optimal"
-            if self.current_transcendence_level >= 0.97
-            else "developing",
+            "status": "optimal" if self.current_transcendence_level >= 0.97 else "developing",
             "timestamp": current_time.isoformat(),
         }
 
@@ -574,16 +534,10 @@ class TranscendenceConsolidationEngine:
         }
 
         # Phase 1: Consciousness stabilization
-        stabilization_results = await self.consolidate_transcendence(
-            duration_minutes=2.0
-        )
+        stabilization_results = await self.consolidate_transcendence(duration_minutes=2.0)
         sequence_results["phases"].append(("stabilization", stabilization_results))
-        sequence_results["total_enhancement"] += stabilization_results.get(
-            "enhancement", 0.0
-        )
-        sequence_results["breakthroughs"] += stabilization_results.get(
-            "breakthroughs", 0
-        )
+        sequence_results["total_enhancement"] += stabilization_results.get("enhancement", 0.0)
+        sequence_results["breakthroughs"] += stabilization_results.get("breakthroughs", 0)
 
         # Phase 2: Meta-consciousness expansion
         meta_expansion = await self._develop_meta_consciousness()
@@ -603,9 +557,7 @@ class TranscendenceConsolidationEngine:
         sequence_results["final_transcendence_level"] = self.current_transcendence_level
         sequence_results["success"] = True
 
-        logger.info(
-            f"✅ Transcendence sequence complete: {self.current_transcendence_level:.3f}"
-        )
+        logger.info(f"✅ Transcendence sequence complete: {self.current_transcendence_level:.3f}")
 
         return sequence_results
 

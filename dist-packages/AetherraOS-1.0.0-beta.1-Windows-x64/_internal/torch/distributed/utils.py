@@ -2,14 +2,13 @@
 import dataclasses
 import traceback
 from collections import OrderedDict
-from collections.abc import Container
-from typing import Any, Callable, Optional, overload, TypeVar
+from collections.abc import Callable, Container
+from typing import Any, Optional, TypeVar, overload
 
 import torch
 import torch.distributed as dist
 from torch import nn
 from torch.nn.utils.rnn import PackedSequence
-
 
 __all__ = []  # type: ignore[var-annotated]
 
@@ -44,7 +43,7 @@ def _pack_kwargs(*args: Any, **kwargs: Any) -> tuple[tuple[Any, ...], tuple[str,
 
 
 def _cast_forward_inputs(
-    dtype: Optional[torch.dtype],
+    dtype: torch.dtype | None,
     *args: Any,
     **kwargs: Any,
 ) -> tuple[Any, Any]:
@@ -74,7 +73,7 @@ def _unpack_kwargs(
     if len(kwarg_keys) == 0:
         return flat_args, {}
     args = flat_args[: -len(kwarg_keys)]
-    kwargs = dict(zip(kwarg_keys, flat_args[-len(kwarg_keys) :]))
+    kwargs = dict(zip(kwarg_keys, flat_args[-len(kwarg_keys) :], strict=False))
     return args, kwargs
 
 
@@ -104,42 +103,41 @@ def _recursive_to(inputs, target_device, use_side_stream_for_tensor_copies):
                 return (obj,)
             if not use_side_stream_for_tensor_copies:
                 return (obj.to(target_device),)
-            else:
-                # If the custom module is not registered to torch, stream is not used for acceleration
-                if device.type == "cpu":
-                    return (obj.to(target_device),)
+            # If the custom module is not registered to torch, stream is not used for acceleration
+            if device.type == "cpu":
+                return (obj.to(target_device),)
 
-                from torch.nn.parallel._functions import _get_stream
+            from torch.nn.parallel._functions import _get_stream
 
-                # Perform CPU -> target_device copies in a background stream. This code is
-                # motivated from similar logic in torch/nn/parallel/_functions.py
-                stream = _get_stream(target_device)
-                with stream:
-                    output = obj.to(target_device)
-                # synchronize with the copy stream
-                with torch.accelerator.device_index(target_device.index):
-                    current_stream = torch.accelerator.current_stream()
-                    # Sync the current stream with the copy stream
-                    current_stream.wait_stream(stream)
-                    # Ensure tensor memory is not reused until work on
-                    # main stream is complete
-                    if isinstance(obj, PackedSequence):
-                        output.data.record_stream(current_stream)  # type: ignore[arg-type]
-                    else:
-                        assert isinstance(output, torch.Tensor)
-                        output.record_stream(current_stream)  # type: ignore[arg-type]
-                return (output,)
+            # Perform CPU -> target_device copies in a background stream. This code is
+            # motivated from similar logic in torch/nn/parallel/_functions.py
+            stream = _get_stream(target_device)
+            with stream:
+                output = obj.to(target_device)
+            # synchronize with the copy stream
+            with torch.accelerator.device_index(target_device.index):
+                current_stream = torch.accelerator.current_stream()
+                # Sync the current stream with the copy stream
+                current_stream.wait_stream(stream)
+                # Ensure tensor memory is not reused until work on
+                # main stream is complete
+                if isinstance(obj, PackedSequence):
+                    output.data.record_stream(current_stream)  # type: ignore[arg-type]
+                else:
+                    assert isinstance(output, torch.Tensor)
+                    output.record_stream(current_stream)  # type: ignore[arg-type]
+            return (output,)
 
         from torch.nn.parallel.scatter_gather import _is_namedtuple
 
         if _is_namedtuple(obj):
-            return [type(obj)(*args) for args in zip(*map(to_map, obj))]
+            return [type(obj)(*args) for args in zip(*map(to_map, obj), strict=False)]
         if isinstance(obj, tuple) and len(obj) > 0:
-            return list(zip(*map(to_map, obj)))
+            return list(zip(*map(to_map, obj), strict=False))
         if isinstance(obj, list) and len(obj) > 0:
-            return [list(i) for i in zip(*map(to_map, obj))]
+            return [list(i) for i in zip(*map(to_map, obj), strict=False)]
         if isinstance(obj, dict) and len(obj) > 0:
-            return [type(obj)(i) for i in zip(*map(to_map, obj.items()))]
+            return [type(obj)(i) for i in zip(*map(to_map, obj.items()), strict=False)]
         return [obj]
 
     # Avoid reference cycle
@@ -223,36 +221,35 @@ def _apply_to_tensors(fn, container):
 
         if isinstance(x, torch.Tensor):
             return fn(x)
-        elif hasattr(x, "__dataclass_fields__"):
+        if hasattr(x, "__dataclass_fields__"):
             dc = dataclasses.replace(x)
             changes = {
                 f.name: apply(getattr(dc, f.name)) for f in dataclasses.fields(dc)
             }
             return dataclasses.replace(dc, **changes)
-        elif isinstance(x, OrderedDict):
+        if isinstance(x, OrderedDict):
             od = x.__class__()
             for key, value in x.items():
                 od[key] = apply(value)
             return od
-        elif isinstance(x, PackedSequence):
+        if isinstance(x, PackedSequence):
             apply(x.data)
             return x
-        elif isinstance(x, dict):
+        if isinstance(x, dict):
             return {key: apply(value) for key, value in x.items()}
-        elif _is_namedtuple(x):
+        if _is_namedtuple(x):
             res = (apply(el) for el in x)
             return type(x)(*res)
-        elif isinstance(x, (list, tuple, set)):
+        if isinstance(x, (list, tuple, set)):
             return type(x)(apply(el) for el in x)
-        else:
-            return x
+        return x
 
     return apply(container)
 
 
 def _to_kwargs(
     inputs: tuple[Any, ...],
-    kwargs: Optional[dict[str, Any]],
+    kwargs: dict[str, Any] | None,
     target_device: torch.device,
     use_side_stream_for_tensor_copies: bool,
 ) -> tuple[tuple[Any, ...], tuple[dict[str, Any], ...]]:

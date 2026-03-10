@@ -8,7 +8,6 @@ Please, use `torch.ao.nn.qat.dynamic` instead.
 from torch.nn.qat import dynamic, modules  # noqa: F403
 from torch.nn.qat.modules import *  # noqa: F403
 
-
 __all__ = [
     "Linear",
     "Conv1d",

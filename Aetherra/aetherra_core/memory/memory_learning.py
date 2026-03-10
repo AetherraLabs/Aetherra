@@ -101,9 +101,7 @@ class MemoryBasedStyleLearning:
         }
 
         # Classify interaction type
-        interaction_type = self._classify_interaction_type(
-            user_input, lyrixa_response, context
-        )
+        interaction_type = self._classify_interaction_type(user_input, lyrixa_response, context)
 
         # Extract style patterns
         style_patterns = self._extract_style_patterns(lyrixa_response, style_data)
@@ -165,9 +163,7 @@ class MemoryBasedStyleLearning:
             self.interaction_history = self.interaction_history[-250:]
 
         # Identify new adaptations
-        new_adaptations = await self._identify_adaptation_opportunities(
-            interaction_record
-        )
+        new_adaptations = await self._identify_adaptation_opportunities(interaction_record)
         learning_result["adaptations_identified"] = len(new_adaptations)
 
         return learning_result
@@ -181,31 +177,24 @@ class MemoryBasedStyleLearning:
 
         # Greeting detection
         if any(
-            word in user_lower
-            for word in ["hello", "hi", "hey", "good morning", "good afternoon"]
+            word in user_lower for word in ["hello", "hi", "hey", "good morning", "good afternoon"]
         ):
             return "greeting"
 
         # Question detection
         if "?" in user_input:
-            if any(
-                word in user_lower for word in ["how", "what", "why", "when", "where"]
-            ):
+            if any(word in user_lower for word in ["how", "what", "why", "when", "where"]):
                 return "question"
             else:
                 return "clarification"
 
         # Help request detection
-        if any(
-            word in user_lower
-            for word in ["help", "assist", "support", "guide", "teach"]
-        ):
+        if any(word in user_lower for word in ["help", "assist", "support", "guide", "teach"]):
             return "help_request"
 
         # Technical discussion detection
         if any(
-            word in user_lower
-            for word in ["code", "function", "class", "algorithm", "programming"]
+            word in user_lower for word in ["code", "function", "class", "algorithm", "programming"]
         ):
             return "technical_discussion"
 
@@ -215,23 +204,16 @@ class MemoryBasedStyleLearning:
             return "emotional_expression"
 
         # Problem solving detection
-        if any(
-            word in user_lower for word in ["problem", "issue", "error", "bug", "fix"]
-        ):
+        if any(word in user_lower for word in ["problem", "issue", "error", "bug", "fix"]):
             return "problem_solving"
 
         # Casual conversation
-        if any(
-            word in user_lower
-            for word in ["think", "feel", "opinion", "like", "prefer"]
-        ):
+        if any(word in user_lower for word in ["think", "feel", "opinion", "like", "prefer"]):
             return "casual_conversation"
 
         return "general_interaction"
 
-    def _extract_style_patterns(
-        self, response: str, style_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _extract_style_patterns(self, response: str, style_data: Dict[str, Any]) -> Dict[str, Any]:
         """Extract key style patterns from the response and analysis data"""
 
         patterns = {
@@ -326,9 +308,7 @@ class MemoryBasedStyleLearning:
 
         return {
             "sentence_count": len([s for s in sentences if s.strip()]),
-            "average_sentence_length": sum(
-                len(s.split()) for s in sentences if s.strip()
-            )
+            "average_sentence_length": sum(len(s.split()) for s in sentences if s.strip())
             / max(len(sentences), 1),
             "has_compound_sentences": any("," in s for s in sentences),
             "has_questions": any("?" in s for s in sentences),
@@ -337,9 +317,7 @@ class MemoryBasedStyleLearning:
             .startswith(("i", "that", "yes", "of course")),
         }
 
-    def _extract_context_features(
-        self, user_input: str, context: Dict[str, Any]
-    ) -> List[str]:
+    def _extract_context_features(self, user_input: str, context: Dict[str, Any]) -> List[str]:
         """Extract key features from the interaction context"""
 
         features = []
@@ -410,9 +388,9 @@ class MemoryBasedStyleLearning:
 
         # Keep only recent successful patterns
         if len(self.successful_patterns[interaction_type]) > 50:
-            self.successful_patterns[interaction_type] = self.successful_patterns[
-                interaction_type
-            ][-25:]
+            self.successful_patterns[interaction_type] = self.successful_patterns[interaction_type][
+                -25:
+            ]
 
         # Update learned patterns for this interaction type
         if interaction_type in self.learned_patterns:
@@ -455,12 +433,12 @@ class MemoryBasedStyleLearning:
                         current_sub_value = self.learned_patterns[interaction_type][
                             pattern_key
                         ].get(sub_key, sub_value)
-                        new_sub_value = (
-                            current_sub_value * (1 - self.learning_rate)
-                        ) + (sub_value * self.learning_rate * weight)
-                        self.learned_patterns[interaction_type][pattern_key][
-                            sub_key
-                        ] = new_sub_value
+                        new_sub_value = (current_sub_value * (1 - self.learning_rate)) + (
+                            sub_value * self.learning_rate * weight
+                        )
+                        self.learned_patterns[interaction_type][pattern_key][sub_key] = (
+                            new_sub_value
+                        )
 
     async def _learn_user_preferences(
         self,
@@ -495,9 +473,7 @@ class MemoryBasedStyleLearning:
         if effectiveness_score >= self.success_threshold:
             if "dominant_style" in style_patterns:
                 style = style_patterns["dominant_style"]
-                user_prefs["preferred_styles"][style] += (
-                    effectiveness_score * self.learning_rate
-                )
+                user_prefs["preferred_styles"][style] += effectiveness_score * self.learning_rate
                 updates.append(f"Updated preference for {style} style")
 
             # Update preferred patterns
@@ -604,8 +580,7 @@ class MemoryBasedStyleLearning:
                 # Analyze what made successful interactions work
                 successful_patterns = self.successful_patterns[interaction_type]
                 avg_effectiveness = (
-                    sum(p["effectiveness_score"] for p in successful_patterns)
-                    / successful_count
+                    sum(p["effectiveness_score"] for p in successful_patterns) / successful_count
                 )
 
                 current_effectiveness = interaction_record["effectiveness_score"]
@@ -656,16 +631,12 @@ class MemoryBasedStyleLearning:
             if "dominant_style" in learned:
                 recommendations["recommended_style"] = learned["dominant_style"]
                 recommendations["confidence"] += 0.2
-                recommendations["reasoning"].append(
-                    f"Learned style for {interaction_type}"
-                )
+                recommendations["reasoning"].append(f"Learned style for {interaction_type}")
 
             # Extract pattern recommendations
             for pattern_key, pattern_value in learned.items():
                 if isinstance(pattern_value, (int, float)):
-                    recommendations["pattern_recommendations"][
-                        pattern_key
-                    ] = pattern_value
+                    recommendations["pattern_recommendations"][pattern_key] = pattern_value
 
         # Check context-based style mappings
         context_style_scores = defaultdict(float)
@@ -688,15 +659,11 @@ class MemoryBasedStyleLearning:
             user_prefs = self.user_preferences[user_id]
 
             if user_prefs["preferred_styles"]:
-                preferred_style = max(
-                    user_prefs["preferred_styles"].items(), key=lambda x: x[1]
-                )
+                preferred_style = max(user_prefs["preferred_styles"].items(), key=lambda x: x[1])
                 if preferred_style[1] > 0.3:
                     recommendations["recommended_style"] = preferred_style[0]
                     recommendations["confidence"] += 0.25
-                    recommendations["reasoning"].append(
-                        f"User prefers {preferred_style[0]} style"
-                    )
+                    recommendations["reasoning"].append(f"User prefers {preferred_style[0]} style")
 
             # Add pattern preferences
             for pattern, score in user_prefs["preferred_patterns"].items():
@@ -726,9 +693,7 @@ class MemoryBasedStyleLearning:
         # Find most successful patterns
         for interaction_type, patterns in self.successful_patterns.items():
             if patterns:
-                avg_score = sum(p["effectiveness_score"] for p in patterns) / len(
-                    patterns
-                )
+                avg_score = sum(p["effectiveness_score"] for p in patterns) / len(patterns)
                 insights["most_successful_patterns"][interaction_type] = {
                     "count": len(patterns),
                     "average_effectiveness": avg_score,
@@ -739,36 +704,28 @@ class MemoryBasedStyleLearning:
         if self.interaction_history:
             recent_interactions = self.interaction_history[-20:]
             older_interactions = (
-                self.interaction_history[-40:-20]
-                if len(self.interaction_history) >= 40
-                else []
+                self.interaction_history[-40:-20] if len(self.interaction_history) >= 40 else []
             )
 
             if recent_interactions:
-                recent_avg = sum(
-                    i["effectiveness_score"] for i in recent_interactions
-                ) / len(recent_interactions)
+                recent_avg = sum(i["effectiveness_score"] for i in recent_interactions) / len(
+                    recent_interactions
+                )
                 insights["learning_trends"]["recent_average_effectiveness"] = recent_avg
 
                 if older_interactions:
-                    older_avg = sum(
-                        i["effectiveness_score"] for i in older_interactions
-                    ) / len(older_interactions)
+                    older_avg = sum(i["effectiveness_score"] for i in older_interactions) / len(
+                        older_interactions
+                    )
                     trend = recent_avg - older_avg
                     insights["learning_trends"]["effectiveness_trend"] = (
-                        "improving"
-                        if trend > 0.05
-                        else "declining"
-                        if trend < -0.05
-                        else "stable"
+                        "improving" if trend > 0.05 else "declining" if trend < -0.05 else "stable"
                     )
                     insights["learning_trends"]["trend_magnitude"] = abs(trend)
 
         # Generate recommendations
         if insights["total_patterns_learned"] < 10:
-            insights["recommendations"].append(
-                "Need more interaction data to improve learning"
-            )
+            insights["recommendations"].append("Need more interaction data to improve learning")
 
         if len(insights["interaction_types_covered"]) < 5:
             insights["recommendations"].append(
@@ -834,9 +791,7 @@ async def get_style_recommendation(
     user_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Get style recommendation for a given input and context"""
-    return await memory_style_learning.recommend_style_for_context(
-        user_input, context, user_id
-    )
+    return await memory_style_learning.recommend_style_for_context(user_input, context, user_id)
 
 
 def get_learning_system_status() -> Dict[str, Any]:

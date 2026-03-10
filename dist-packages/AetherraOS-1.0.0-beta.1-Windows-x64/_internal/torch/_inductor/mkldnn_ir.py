@@ -12,18 +12,18 @@ from .ir import (
     ExternKernelAlloc,
     FixedLayout,
     FlexibleLayout,
-    get_device_type,
-    ir_node_to_tensor,
-    is_contiguous_storage_and_layout,
     Layout,
-    may_convert_to_optional,
     MultiOutput,
     MultiOutputLayout,
     MutationOutput,
     NoneLayout,
     TensorBox,
+    get_device_type,
+    ir_node_to_tensor,
+    is_contiguous_storage_and_layout,
+    may_convert_to_optional,
 )
-from .utils import convert_shape_to_inductor, pad_listlike, SUPPORTED_MKLDNN_DEVICES
+from .utils import SUPPORTED_MKLDNN_DEVICES, convert_shape_to_inductor, pad_listlike
 from .virtualized import V
 
 
@@ -37,8 +37,8 @@ def _prepare_convolution_fusion_create(
     dilation: Sequence[int],
     groups: int,
     transposed: bool = False,
-    output_padding: Optional[Sequence[int]] = None,
-    quantize_args: Optional[list["TensorBox"]] = None,
+    output_padding: Sequence[int] | None = None,
+    quantize_args: list["TensorBox"] | None = None,
     other: Optional["TensorBox"] = None,
 ):
     """
@@ -173,16 +173,11 @@ def _prepare_convolution_fusion_create(
     # To align the behavior of the Conv kernel, we set the output_stride in such case to be contiguous instead of channels last.
     dynamic_shapes = not all(isinstance(i, int) for i in (output_size))
     if (
-        dynamic_shapes or get_device_type(x) == "xpu"
-    ) and is_contiguous_storage_and_layout(x):
-        output_stride = FlexibleLayout.contiguous_strides(output_size)
-    # Currently we don't support channel last for the situation that stride of input's batch dim is 0,
-    # eg. input_size = (1, 1280, 64, 64), but input_stride=(0, 1, 81920, 1280).
-    # So we use NCHW hear instead.
-    # Different with cpu, cpu conv always use channels_last for convolution when weight is prepacked,
-    # but xpu does not do the prepack, so the problem exposed here is only for xpu.
-    # TODO support channels_last for such zero stride input.
-    elif get_device_type(x) == "xpu" and x.get_stride()[0] == 0:
+        (dynamic_shapes or get_device_type(x) == "xpu")
+        and is_contiguous_storage_and_layout(x)
+        or get_device_type(x) == "xpu"
+        and x.get_stride()[0] == 0
+    ):
         output_stride = FlexibleLayout.contiguous_strides(output_size)
     else:
         output_stride = make_channels_last_strides_for(output_size)
@@ -228,7 +223,7 @@ def _prepare_linear_fusion_create(
     x: "TensorBox",
     weight: "TensorBox",
     bias: "TensorBox",
-    quantize_args: Optional[list["TensorBox"]] = None,
+    quantize_args: list["TensorBox"] | None = None,
     other: Optional["TensorBox"] = None,
     binary_sum: bool = False,
 ):
@@ -331,7 +326,7 @@ class ConvolutionUnary(ExternKernelAlloc):
         dilation_: list[int],
         groups: int,
         attr,
-        scalars: Optional[list[Any]],
+        scalars: list[Any] | None,
         algorithm,
     ):
         (
@@ -393,10 +388,10 @@ class ConvolutionBinary(ExternKernelAlloc):
         dilation_: list[int],
         groups: int,
         binary_attr: str,
-        binary_alpha: Optional[float],
-        unary_attr: Optional[str],
-        unary_scalars: Optional[list[Any]],
-        unary_algorithm: Optional[str],
+        binary_alpha: float | None,
+        unary_attr: str | None,
+        unary_scalars: list[Any] | None,
+        unary_algorithm: str | None,
     ):
         (
             inputs,
@@ -470,10 +465,10 @@ class ConvolutionBinaryInplace(ExternKernelAlloc):
         dilation_: list[int],
         groups: int,
         binary_attr: str,
-        binary_alpha: Optional[float],
-        unary_attr: Optional[str],
-        unary_scalars: Optional[list[Any]],
-        unary_algorithm: Optional[str],
+        binary_alpha: float | None,
+        unary_attr: str | None,
+        unary_scalars: list[Any] | None,
+        unary_algorithm: str | None,
     ):
         (
             inputs,
@@ -536,7 +531,7 @@ class ConvolutionTransposeUnary(ExternKernelAlloc):
         dilation_: list[int],
         groups_: int,
         attr,
-        scalars: Optional[list[Any]],
+        scalars: list[Any] | None,
         algorithm,
     ):
         transposed = True
@@ -1068,8 +1063,7 @@ class QLinearPointwiseBinaryPT2E(ExternKernelAlloc):
         binary_post_op = self.constant_args[-5]
         if binary_post_op == "sum":
             return [self.inputs[self.idx_for_inplace_sum].get_name()]
-        else:
-            return []
+        return []
 
     @classmethod
     def create(
@@ -1249,7 +1243,7 @@ class MkldnnRnnLayer(ExternKernelAlloc):
                 [(tuple, i)],
             )
             for i, (output_size, output_stride) in enumerate(
-                zip(output_sizes, output_strides)
+                zip(output_sizes, output_strides, strict=False)
             )
         ]
         packed.outputs = output_ir

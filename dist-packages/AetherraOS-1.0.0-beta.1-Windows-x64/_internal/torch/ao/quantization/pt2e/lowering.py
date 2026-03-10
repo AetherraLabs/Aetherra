@@ -2,7 +2,6 @@ import torch
 from torch._inductor.constant_folding import constant_fold
 from torch._inductor.fx_passes.freezing_patterns import freezing_passes
 
-
 __all__ = [
     "lower_pt2e_quantized_to_x86",
 ]

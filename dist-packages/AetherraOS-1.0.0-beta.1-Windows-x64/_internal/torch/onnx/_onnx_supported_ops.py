@@ -1,6 +1,5 @@
 # mypy: allow-untyped-defs
 import inspect
-from typing import Union
 
 from torch import _C
 from torch.onnx import _constants
@@ -8,7 +7,7 @@ from torch.onnx._internal import registration
 
 
 class _TorchSchema:
-    def __init__(self, schema: Union[_C.FunctionSchema, str]) -> None:
+    def __init__(self, schema: _C.FunctionSchema | str) -> None:
         if isinstance(schema, _C.FunctionSchema):
             self.name: str = schema.name
             self.overload_name: str = schema.overload_name

@@ -7,9 +7,17 @@ import weakref
 import torch
 from torch.utils import (
     backcompat as backcompat,
+)
+from torch.utils import (
     collect_env as collect_env,
+)
+from torch.utils import (
     data as data,
+)
+from torch.utils import (
     deterministic as deterministic,
+)
+from torch.utils import (
     hooks as hooks,
 )
 from torch.utils.backend_registration import (

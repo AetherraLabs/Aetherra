@@ -1,13 +1,14 @@
 # mypy: allow-untyped-defs
-from typing import Callable, Optional, Union
+from collections.abc import Callable
+
 from typing_extensions import deprecated
 
 from torch import Tensor
-from torch.nn import _reduction as _Reduction, functional as F
+from torch.nn import _reduction as _Reduction
+from torch.nn import functional as F
 
 from .distance import PairwiseDistance
 from .module import Module
-
 
 __all__ = [
     "L1Loss",
@@ -49,14 +50,14 @@ class _Loss(Module):
 class _WeightedLoss(_Loss):
     def __init__(
         self,
-        weight: Optional[Tensor] = None,
+        weight: Tensor | None = None,
         size_average=None,
         reduce=None,
         reduction: str = "mean",
     ) -> None:
         super().__init__(size_average, reduce, reduction)
         self.register_buffer("weight", weight)
-        self.weight: Optional[Tensor]
+        self.weight: Tensor | None
 
 
 class L1Loss(_Loss):
@@ -240,7 +241,7 @@ class NLLLoss(_WeightedLoss):
 
     def __init__(
         self,
-        weight: Optional[Tensor] = None,
+        weight: Tensor | None = None,
         size_average=None,
         ignore_index: int = -100,
         reduce=None,
@@ -268,7 +269,7 @@ class NLLLoss(_WeightedLoss):
 class NLLLoss2d(NLLLoss):
     def __init__(
         self,
-        weight: Optional[Tensor] = None,
+        weight: Tensor | None = None,
         size_average=None,
         ignore_index: int = -100,
         reduce=None,
@@ -442,9 +443,7 @@ class GaussianNLLLoss(_Loss):
         self.full = full
         self.eps = eps
 
-    def forward(
-        self, input: Tensor, target: Tensor, var: Union[Tensor, float]
-    ) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, var: Tensor | float) -> Tensor:
         return F.gaussian_nll_loss(
             input, target, var, full=self.full, eps=self.eps, reduction=self.reduction
         )
@@ -695,7 +694,7 @@ class BCELoss(_WeightedLoss):
 
     def __init__(
         self,
-        weight: Optional[Tensor] = None,
+        weight: Tensor | None = None,
         size_average=None,
         reduce=None,
         reduction: str = "mean",
@@ -812,17 +811,17 @@ class BCEWithLogitsLoss(_Loss):
 
     def __init__(
         self,
-        weight: Optional[Tensor] = None,
+        weight: Tensor | None = None,
         size_average=None,
         reduce=None,
         reduction: str = "mean",
-        pos_weight: Optional[Tensor] = None,
+        pos_weight: Tensor | None = None,
     ) -> None:
         super().__init__(size_average, reduce, reduction)
         self.register_buffer("weight", weight)
         self.register_buffer("pos_weight", pos_weight)
-        self.weight: Optional[Tensor]
-        self.pos_weight: Optional[Tensor]
+        self.weight: Tensor | None
+        self.pos_weight: Tensor | None
 
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
         return F.binary_cross_entropy_with_logits(
@@ -1295,7 +1294,7 @@ class CrossEntropyLoss(_WeightedLoss):
 
     def __init__(
         self,
-        weight: Optional[Tensor] = None,
+        weight: Tensor | None = None,
         size_average=None,
         ignore_index: int = -100,
         reduce=None,
@@ -1360,7 +1359,7 @@ class MultiLabelSoftMarginLoss(_WeightedLoss):
 
     def __init__(
         self,
-        weight: Optional[Tensor] = None,
+        weight: Tensor | None = None,
         size_average=None,
         reduce=None,
         reduction: str = "mean",
@@ -1579,7 +1578,7 @@ class MultiMarginLoss(_WeightedLoss):
         self,
         p: int = 1,
         margin: float = 1.0,
-        weight: Optional[Tensor] = None,
+        weight: Tensor | None = None,
         size_average=None,
         reduce=None,
         reduction: str = "mean",
@@ -1820,7 +1819,7 @@ class TripletMarginWithDistanceLoss(_Loss):
     def __init__(
         self,
         *,
-        distance_function: Optional[Callable[[Tensor, Tensor], Tensor]] = None,
+        distance_function: Callable[[Tensor, Tensor], Tensor] | None = None,
         margin: float = 1.0,
         swap: bool = False,
         reduction: str = "mean",
@@ -1830,7 +1829,7 @@ class TripletMarginWithDistanceLoss(_Loss):
             raise ValueError(
                 f"TripletMarginWithDistanceLoss: expected margin to be greater than 0, got {margin} instead"
             )
-        self.distance_function: Optional[Callable[[Tensor, Tensor], Tensor]] = (
+        self.distance_function: Callable[[Tensor, Tensor], Tensor] | None = (
             distance_function if distance_function is not None else PairwiseDistance()
         )
         self.margin = margin

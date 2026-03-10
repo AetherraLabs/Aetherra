@@ -6,10 +6,10 @@ This file contains utilities related to functionalization in AOTAutograd:
 3. regenerating/replaying views from their base
 4. checking if a graph is functional i.e. whether it contains any mutation ops
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
 import torch
 from torch import Tensor
@@ -17,13 +17,12 @@ from torch._logging import getArtifactLogger
 from torch._subclasses.fake_tensor import FakeTensor
 from torch._subclasses.functional_tensor import FunctionalTensor
 from torch._subclasses.meta_utils import is_sparse_any
-from torch.fx.experimental.symbolic_shapes import guard_or_false, sym_eq, SymIntEqByExpr
+from torch.fx.experimental.symbolic_shapes import SymIntEqByExpr, guard_or_false, sym_eq
 from torch.multiprocessing.reductions import StorageWeakRef
 from torch.utils._python_dispatch import (
     is_traceable_wrapper_subclass,
     transform_subclass,
 )
-
 
 aot_joint_log = getArtifactLogger(__name__, "aot_joint_graph")
 
@@ -38,10 +37,8 @@ def to_fun(t):
             out = transform_subclass(t, lambda _, inner_t: to_fun(inner_t))
             torch._mirror_autograd_meta_to(t, out)  # type: ignore[attr-defined]
             return out
-        else:
-            return FunctionalTensor.to_functional(t)
-    else:
-        return t
+        return FunctionalTensor.to_functional(t)
+    return t
 
 
 def sync_functional_tensor(t):
@@ -99,11 +96,10 @@ def has_data_mutation(t):
         attrs, _ = t.__tensor_flatten__()
         # A tensor subclass was updated if any of its inner elements were updated
         return any(has_data_mutation(getattr(t, attr)) for attr in attrs)
-    else:
-        if isinstance(t, torch.Tensor):
-            assert isinstance(t, FunctionalTensor)
-            return torch._functionalize_has_data_mutation(t.elem)  # type: ignore[attr-defined]
-        return False
+    if isinstance(t, torch.Tensor):
+        assert isinstance(t, FunctionalTensor)
+        return torch._functionalize_has_data_mutation(t.elem)  # type: ignore[attr-defined]
+    return False
 
 
 def are_all_mutations_hidden_from_autograd(t):
@@ -113,11 +109,10 @@ def are_all_mutations_hidden_from_autograd(t):
         return all(
             are_all_mutations_hidden_from_autograd(getattr(t, attr)) for attr in attrs
         )
-    elif isinstance(t, torch.Tensor):
+    if isinstance(t, torch.Tensor):
         assert isinstance(t, FunctionalTensor)
         return torch._functionalize_are_all_mutations_hidden_from_autograd(t.elem)
-    else:
-        return False
+    return False
 
 
 def are_all_mutations_under_no_grad_or_inference_mode(t):
@@ -127,11 +122,10 @@ def are_all_mutations_under_no_grad_or_inference_mode(t):
             are_all_mutations_under_no_grad_or_inference_mode(getattr(t, attr))
             for attr in attrs
         )
-    else:
-        assert isinstance(t, FunctionalTensor)
-        return torch._functionalize_are_all_mutations_under_no_grad_or_inference_mode(
-            t.elem
-        )
+    assert isinstance(t, FunctionalTensor)
+    return torch._functionalize_are_all_mutations_under_no_grad_or_inference_mode(
+        t.elem
+    )
 
 
 def was_inductor_storage_resized(t):
@@ -168,62 +162,61 @@ def has_metadata_mutation(f_arg, arg, *, check_only_storage_mutation: bool):
                 inner_t,
                 check_only_storage_mutation=check_only_storage_mutation,
             )
-            for f_inner_t, inner_t in zip(f_inner_ts, inner_ts)
+            for f_inner_t, inner_t in zip(f_inner_ts, inner_ts, strict=False)
         )
+    if not isinstance(f_arg, torch.Tensor):
+        assert not isinstance(arg, torch.Tensor)
+        return False
+    assert isinstance(f_arg, FunctionalTensor)
+    assert isinstance(arg, FakeTensor)
+
+    arg_after = torch._from_functional_tensor(f_arg.elem)
+    # This is true if the current tensor experienced at least one set_() call
+    maybe_storage_changed = torch._functionalize_was_storage_changed(f_arg.elem)  # type: ignore[attr-defined]
+    # However, multiple set_() calls can cancel out. So we also check whether the
+    # storage of the tensor has changed.
+    # Note: if an input experienced two set_() calls that cancel out, **and**
+    # it experiences an data mutation, we pessimistically think that the set_()
+    # call is necessary here. We could in theory fix this, but this will
+    # hopefully never happen in user code, and is not needed for fsdp.
+    if is_sparse_any(arg):
+        # TODO:add sparse tensors support to functionalization
+        same_storages = False
     else:
-        if not isinstance(f_arg, torch.Tensor):
-            assert not isinstance(arg, torch.Tensor)
-            return False
-        assert isinstance(f_arg, FunctionalTensor)
-        assert isinstance(arg, FakeTensor)
-
-        arg_after = torch._from_functional_tensor(f_arg.elem)
-        # This is true if the current tensor experienced at least one set_() call
-        maybe_storage_changed = torch._functionalize_was_storage_changed(f_arg.elem)  # type: ignore[attr-defined]
-        # However, multiple set_() calls can cancel out. So we also check whether the
-        # storage of the tensor has changed.
-        # Note: if an input experienced two set_() calls that cancel out, **and**
-        # it experiences an data mutation, we pessimistically think that the set_()
-        # call is necessary here. We could in theory fix this, but this will
-        # hopefully never happen in user code, and is not needed for fsdp.
-        if is_sparse_any(arg):
-            # TODO:add sparse tensors support to functionalization
-            same_storages = False
-        else:
-            same_storages = StorageWeakRef(arg.untyped_storage()) == StorageWeakRef(
-                arg_after.untyped_storage()
-            )
-        has_storage_metadata_mutation = maybe_storage_changed and not same_storages
-        if check_only_storage_mutation:
-            return has_storage_metadata_mutation
-
-        # storage metadata mutation is a type of metadata mutation, so return true if we saw one
-        if has_storage_metadata_mutation:
-            return True
-
-        maybe_metadata_mutated = torch._functionalize_has_metadata_mutation(f_arg.elem)  # type: ignore[attr-defined]
-        # This is true if the current tensor experienced at least one metadata mutation.
-        # So if false, we know there was no metadata mutation
-        if not maybe_metadata_mutated:
-            return False
-
-        # However, multi metadata mutations can cancel out.
-        # So we also check if the concrete sizes/strides on the tensor have changed.
-        same_sizes = arg.shape == arg_after.shape
-        same_strides = arg.stride() == arg_after.stride()
-        same_offsets = arg.storage_offset() == arg_after.storage_offset()
-        has_metadata_mutation_ = maybe_metadata_mutated and not (
-            same_sizes and same_strides and same_offsets
+        same_storages = StorageWeakRef(arg.untyped_storage()) == StorageWeakRef(
+            arg_after.untyped_storage()
         )
-        # We consider a tensor to have been metadata mutated if its storage was mutated through a set_() call.
-        return has_metadata_mutation_
+    has_storage_metadata_mutation = maybe_storage_changed and not same_storages
+    if check_only_storage_mutation:
+        return has_storage_metadata_mutation
+
+    # storage metadata mutation is a type of metadata mutation, so return true if we saw one
+    if has_storage_metadata_mutation:
+        return True
+
+    maybe_metadata_mutated = torch._functionalize_has_metadata_mutation(f_arg.elem)  # type: ignore[attr-defined]
+    # This is true if the current tensor experienced at least one metadata mutation.
+    # So if false, we know there was no metadata mutation
+    if not maybe_metadata_mutated:
+        return False
+
+    # However, multi metadata mutations can cancel out.
+    # So we also check if the concrete sizes/strides on the tensor have changed.
+    same_sizes = arg.shape == arg_after.shape
+    same_strides = arg.stride() == arg_after.stride()
+    same_offsets = arg.storage_offset() == arg_after.storage_offset()
+    has_metadata_mutation_ = maybe_metadata_mutated and not (
+        same_sizes and same_strides and same_offsets
+    )
+    # We consider a tensor to have been metadata mutated if its storage was mutated through a set_() call.
+    return has_metadata_mutation_
 
 
 def gen_alias_from_base(
     aliased_base_tensor,
     target_meta_tensor,
     target_requires_grad,
-    target_functional_tensor: Optional[FunctionalTensorMetadataEq] = None,
+    target_functional_tensor: FunctionalTensorMetadataEq | None = None,
     *,
     replay_views,
 ):
@@ -337,8 +330,8 @@ class MetadataKey:
     layout: torch.layout
     is_sparse: bool
     # these are empty when is_sparse
-    stride: Optional[tuple[SymIntEqByExpr, ...]]
-    storage_offset: Optional[SymIntEqByExpr]
+    stride: tuple[SymIntEqByExpr, ...] | None
+    storage_offset: SymIntEqByExpr | None
     is_conj: bool
     is_neg: bool
 
@@ -401,8 +394,7 @@ def was_tensor_updated(arg, new_arg):
             was_tensor_updated(getattr(arg, attr), getattr(new_arg, attr))
             for attr in attrs
         )
-    else:
-        return arg is not new_arg
+    return arg is not new_arg
 
 
 # new_arg and arg here are either:
@@ -423,10 +415,9 @@ def was_tensor_metadata_updated(arg, new_arg):
             was_tensor_metadata_updated(getattr(arg, attr), getattr(new_arg, attr))
             for attr in attrs
         )
-    else:
-        return arg is not new_arg and StorageWeakRef(
-            arg.untyped_storage()
-        ) == StorageWeakRef(new_arg.untyped_storage())
+    return arg is not new_arg and StorageWeakRef(
+        arg.untyped_storage()
+    ) == StorageWeakRef(new_arg.untyped_storage())
 
 
 # Returns the number of detected copy_
@@ -452,14 +443,14 @@ def assert_functional_graph(fx_g: torch.fx.Graph) -> int:
                 # this is mostly a hack to avoid failing XLA tests.
                 # See https://github.com/pytorch/pytorch/pull/122434#issuecomment-2101012113
                 if "set_buffer_donor_" not in str(n.args[0]):
-                    assert (
-                        n.args[0] in placeholders
-                    ), f"n={str(n)}, n.args[0]={str(n.args[0])}, placeholders={str(placeholders)}, graph={str(fx_g)}"
+                    assert n.args[0] in placeholders, (
+                        f"n={str(n)}, n.args[0]={str(n.args[0])}, placeholders={str(placeholders)}, graph={str(fx_g)}"
+                    )
                 mutation_count += 1
             else:
-                assert (
-                    not n.target._schema.is_mutable
-                ), f"aot_autograd expected to have an entirely functional graph, but found {n.format_node()}"
+                assert not n.target._schema.is_mutable, (
+                    f"aot_autograd expected to have an entirely functional graph, but found {n.format_node()}"
+                )
     return mutation_count
 
 
@@ -472,9 +463,9 @@ def propagate_input_mutation_stacktraces(fx_g: torch.fx.Graph) -> None:
             if n.target is torch.ops.aten.copy_.default:
                 # Can only copy_ into an input, and can only do so once
                 if "set_buffer_donor_" not in str(n.args[0]):
-                    assert (
-                        n.args[0] in placeholders
-                    ), f"n={str(n)}, n.args[0]={str(n.args[0])}, placeholders={str(placeholders)}, graph={str(fx_g)}"
+                    assert n.args[0] in placeholders, (
+                        f"n={str(n)}, n.args[0]={str(n.args[0])}, placeholders={str(placeholders)}, graph={str(fx_g)}"
+                    )
                     placeholders.remove(n.args[0])
                 copy_from_node = n.args[1]
                 # Pre-condition: every node has a "stack_trace" field in its meta,

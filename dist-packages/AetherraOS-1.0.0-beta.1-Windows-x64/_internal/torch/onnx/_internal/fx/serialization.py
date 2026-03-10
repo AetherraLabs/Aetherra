@@ -9,7 +9,6 @@ from typing import IO, TYPE_CHECKING
 import torch
 from torch.onnx import _type_utils as jit_type_utils
 
-
 if TYPE_CHECKING:
     import onnx
 

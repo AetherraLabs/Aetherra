@@ -16,8 +16,8 @@ This module provides:
 
 # Standard library imports
 import asyncio
-import sys
 import importlib
+import sys
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -95,7 +95,7 @@ class QFACIntegrationManager:
 
             # Import and initialize dynamically
             fractal_encoder = importlib.import_module("fractal_encoder")
-            self.fractal_encoder = getattr(fractal_encoder, "FractalEncoder")(data_dir=data_dir)
+            self.fractal_encoder = fractal_encoder.FractalEncoder(data_dir=data_dir)
             print(f"🧬 Phase 2 initialized: {data_dir or 'default'}")
             return self.fractal_encoder
 
@@ -117,7 +117,7 @@ class QFACIntegrationManager:
 
             # Import and initialize dynamically
             observer_effect_simulator = importlib.import_module("observer_effect_simulator")
-            self.observer_simulator = getattr(observer_effect_simulator, "ObserverEffectSimulator")(
+            self.observer_simulator = observer_effect_simulator.ObserverEffectSimulator(
                 data_dir=data_dir,
                 fractal_encoder=fractal_encoder or self.fractal_encoder,
             )
@@ -141,7 +141,7 @@ class QFACIntegrationManager:
         try:
             # Import and initialize dynamically
             causal_branch_simulator = importlib.import_module("causal_branch_simulator")
-            self.causal_simulator = getattr(causal_branch_simulator, "CausalBranchSimulator")(
+            self.causal_simulator = causal_branch_simulator.CausalBranchSimulator(
                 data_dir=data_dir,
                 fractal_encoder=fractal_encoder or self.fractal_encoder,
                 observer_simulator=observer_simulator or self.observer_simulator,
@@ -153,9 +153,7 @@ class QFACIntegrationManager:
             print(f"❌ Phase 4 initialization failed: {e}")
             return None
 
-    async def initialize_full_pipeline(
-        self, base_data_dir: Optional[str] = None
-    ) -> Dict[str, Any]:
+    async def initialize_full_pipeline(self, base_data_dir: Optional[str] = None) -> Dict[str, Any]:
         """Initialize complete Phase 2-3-4 pipeline"""
         print("🚀 Initializing QFAC Full Pipeline...")
 
@@ -229,9 +227,7 @@ class QFACIntegrationManager:
                     content=memory_content.get("content", ""),
                     metadata=memory_content,
                 )
-                print(
-                    f"   [OK] Fractal patterns: {results['phase2_result'].pattern_count}"
-                )
+                print(f"   [OK] Fractal patterns: {results['phase2_result'].pattern_count}")
 
             # Phase 3: Observer Access
             if self.observer_simulator:
@@ -287,9 +283,7 @@ class QFACIntegrationManager:
 
     def _calculate_integration_level(self) -> str:
         """Calculate current integration level"""
-        available = sum(
-            [self.phase2_available, self.phase3_available, self.phase4_available]
-        )
+        available = sum([self.phase2_available, self.phase3_available, self.phase4_available])
 
         if available == 3:
             return "Full Integration (Phases 2-3-4)"
@@ -345,9 +339,7 @@ async def demonstrate_full_integration():
         print(f"   🧬 Phase 2 Success: {'[OK]' if results['phase2_result'] else '❌'}")
         print(f"   👁️ Phase 3 Success: {'[OK]' if results['phase3_result'] else '❌'}")
         print(f"   🧿 Phase 4 Success: {'[OK]' if results['phase4_result'] else '❌'}")
-        print(
-            f"   🔗 Pipeline Success: {'[OK]' if results['pipeline_success'] else '❌'}"
-        )
+        print(f"   🔗 Pipeline Success: {'[OK]' if results['pipeline_success'] else '❌'}")
 
     print("\n🚀 Integration demonstration complete!")
     return manager

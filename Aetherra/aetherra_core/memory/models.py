@@ -10,15 +10,32 @@ from typing import Any, Dict, List, Literal, Optional
 
 # Exceptions (explicit error model)
 class MemoryNotFound(Exception):
-    pass
+    def __init__(self, memory_id: str | None = None):
+        message = (
+            "Memory record not found"
+            if memory_id is None
+            else f"Memory record not found: {memory_id}"
+        )
+        super().__init__(message)
+        self.memory_id = memory_id
 
 
 class QuantumBridgeUnavailable(Exception):
-    pass
+    def __init__(self, detail: str | None = None):
+        message = "Quantum bridge is unavailable"
+        if detail:
+            message = f"{message}: {detail}"
+        super().__init__(message)
+        self.detail = detail
 
 
 class CompressionFailure(Exception):
-    pass
+    def __init__(self, detail: str | None = None):
+        message = "Memory compression failed"
+        if detail:
+            message = f"{message}: {detail}"
+        super().__init__(message)
+        self.detail = detail
 
 
 class PolicyViolation(Exception):

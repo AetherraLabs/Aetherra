@@ -148,7 +148,10 @@ class ClusterDiscovery:
     """
 
     def __init__(
-        self, node_id: Optional[str] = None, discovery_port: int = 8765, heartbeat_interval: float = 30.0
+        self,
+        node_id: Optional[str] = None,
+        discovery_port: int = 8765,
+        heartbeat_interval: float = 30.0,
     ):
         self.node_id = node_id or f"aetherra_node_{uuid.uuid4().hex[:8]}"
         self.discovery_port = discovery_port
@@ -243,12 +246,14 @@ class ClusterDiscovery:
         if self.discovery_task:
             self.discovery_task.cancel()
             import contextlib
+
             with contextlib.suppress(asyncio.CancelledError):
                 await self.discovery_task
 
         if self.heartbeat_task:
             self.heartbeat_task.cancel()
             import contextlib
+
             with contextlib.suppress(asyncio.CancelledError):
                 await self.heartbeat_task
 
@@ -305,7 +310,9 @@ class ClusterDiscovery:
                 and node.stability_score >= min_stability
             ):
                 # Check capabilities if specified
-                if required_capabilities and not all(cap in node.capabilities for cap in required_capabilities):
+                if required_capabilities and not all(
+                    cap in node.capabilities for cap in required_capabilities
+                ):
                     continue
 
                 candidates.append(node)
@@ -631,6 +638,7 @@ class DistributedHomeostasisCoordinator:
         if self.coordination_task:
             self.coordination_task.cancel()
             import contextlib
+
             with contextlib.suppress(asyncio.CancelledError):
                 await self.coordination_task
 
@@ -846,7 +854,13 @@ class DistributedHomeostasisCoordinator:
     async def _process_assistance_offers(self):
         """Process assistance offers for acceptance/decline."""
         # This would handle the logic for accepting offers and coordinating assistance
-        pass
+        if not self.active_signals:
+            return 0
+        accepted = 0
+        for signal in self.active_signals.values():
+            if signal.status == "active" and signal.severity >= 0.5:
+                accepted += 1
+        return accepted
 
     async def _cleanup_expired_items(self):
         """Clean up expired signals and offers."""

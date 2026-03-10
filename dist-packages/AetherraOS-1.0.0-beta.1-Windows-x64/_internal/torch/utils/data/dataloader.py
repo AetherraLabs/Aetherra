@@ -5,6 +5,7 @@ To support these two classes, in `./_utils` we define many utility methods and
 functions to be run in multiprocessing. E.g., the data loading worker loop is
 in `./_utils/worker.py`.
 """
+
 from __future__ import annotations
 
 import functools
@@ -15,8 +16,8 @@ import os
 import queue
 import threading
 import warnings
-from typing import Any, Callable, Generic, Optional, TYPE_CHECKING, TypeVar, Union
-from typing_extensions import Self
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Generic, Self, TypeVar
 
 import torch
 import torch.distributed as dist
@@ -24,10 +25,10 @@ import torch.utils.data.graph_settings
 from torch._utils import ExceptionWrapper
 from torch.utils.data import _utils
 from torch.utils.data.datapipes.datapipe import (
-    _IterDataPipeSerializationWrapper,
-    _MapDataPipeSerializationWrapper,
     IterDataPipe,
     MapDataPipe,
+    _IterDataPipeSerializationWrapper,
+    _MapDataPipeSerializationWrapper,
 )
 from torch.utils.data.dataset import Dataset, IterableDataset
 from torch.utils.data.sampler import (
@@ -36,7 +37,6 @@ from torch.utils.data.sampler import (
     Sampler,
     SequentialSampler,
 )
-
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -82,10 +82,9 @@ class _DatasetKind:
             return _utils.fetch._MapDatasetFetcher(
                 dataset, auto_collation, collate_fn, drop_last
             )
-        else:
-            return _utils.fetch._IterableDatasetFetcher(
-                dataset, auto_collation, collate_fn, drop_last
-            )
+        return _utils.fetch._IterableDatasetFetcher(
+            dataset, auto_collation, collate_fn, drop_last
+        )
 
 
 class _InfiniteConstantSampler(Sampler):
@@ -102,8 +101,7 @@ class _InfiniteConstantSampler(Sampler):
 def _get_distributed_settings():
     if dist.is_available() and dist.is_initialized():
         return dist.get_world_size(), dist.get_rank()
-    else:
-        return 1, 0
+    return 1, 0
 
 
 def _sharding_worker_init_fn(worker_init_fn, world_size, rank_id, worker_id):
@@ -228,34 +226,34 @@ class DataLoader(Generic[_T_co]):
     """
 
     dataset: Dataset[_T_co]
-    batch_size: Optional[int]
+    batch_size: int | None
     num_workers: int
     pin_memory: bool
     drop_last: bool
     timeout: float
-    sampler: Union[Sampler, Iterable]
+    sampler: Sampler | Iterable
     pin_memory_device: str
-    prefetch_factor: Optional[int]
-    _iterator: Optional[_BaseDataLoaderIter]
+    prefetch_factor: int | None
+    _iterator: _BaseDataLoaderIter | None
     __initialized = False
 
     def __init__(
         self,
         dataset: Dataset[_T_co],
-        batch_size: Optional[int] = 1,
-        shuffle: Optional[bool] = None,
-        sampler: Union[Sampler, Iterable, None] = None,
-        batch_sampler: Union[Sampler[list], Iterable[list], None] = None,
+        batch_size: int | None = 1,
+        shuffle: bool | None = None,
+        sampler: Sampler | Iterable | None = None,
+        batch_sampler: Sampler[list] | Iterable[list] | None = None,
         num_workers: int = 0,
-        collate_fn: Optional[_collate_fn_t] = None,
+        collate_fn: _collate_fn_t | None = None,
         pin_memory: bool = False,
         drop_last: bool = False,
         timeout: float = 0,
-        worker_init_fn: Optional[_worker_init_fn_t] = None,
+        worker_init_fn: _worker_init_fn_t | None = None,
         multiprocessing_context=None,
         generator=None,
         *,
-        prefetch_factor: Optional[int] = None,
+        prefetch_factor: int | None = None,
         persistent_workers: bool = False,
         pin_memory_device: str = "",
         in_order: bool = True,
@@ -276,7 +274,7 @@ class DataLoader(Generic[_T_co]):
                 "prefetch_factor option could only be specified in multiprocessing."
                 "let num_workers > 0 to enable multiprocessing, otherwise set prefetch_factor to None."
             )
-        elif num_workers > 0 and prefetch_factor is None:
+        if num_workers > 0 and prefetch_factor is None:
             prefetch_factor = 2
         elif prefetch_factor is not None and prefetch_factor < 0:
             raise ValueError("prefetch_factor option should be non-negative")
@@ -348,7 +346,7 @@ class DataLoader(Generic[_T_co]):
                 raise ValueError(
                     f"DataLoader with IterableDataset: expected unspecified sampler option, but got sampler={sampler}"
                 )
-            elif batch_sampler is not None:
+            if batch_sampler is not None:
                 # See NOTE [ Custom Samplers and IterableDataset ]
                 raise ValueError(
                     "DataLoader with IterableDataset: expected unspecified "
@@ -422,9 +420,8 @@ class DataLoader(Generic[_T_co]):
     def _get_iterator(self) -> _BaseDataLoaderIter:
         if self.num_workers == 0:
             return _SingleProcessDataLoaderIter(self)
-        else:
-            self.check_worker_number_rationality()
-            return _MultiProcessingDataLoaderIter(self)
+        self.check_worker_number_rationality()
+        return _MultiProcessingDataLoaderIter(self)
 
     @property
     def multiprocessing_context(self):
@@ -490,8 +487,7 @@ class DataLoader(Generic[_T_co]):
             else:
                 self._iterator._reset(self)
             return self._iterator
-        else:
-            return self._get_iterator()
+        return self._get_iterator()
 
     @property
     def _auto_collation(self):
@@ -506,8 +502,7 @@ class DataLoader(Generic[_T_co]):
         # reasons.
         if self._auto_collation:
             return self.batch_sampler
-        else:
-            return self.sampler
+        return self.sampler
 
     def __len__(self) -> int:
         if self._dataset_kind == _DatasetKind.Iterable:
@@ -538,8 +533,7 @@ class DataLoader(Generic[_T_co]):
                 else:
                     length = ceil(length / self.batch_size)
             return length
-        else:
-            return len(self._index_sampler)
+        return len(self._index_sampler)
 
     def check_worker_number_rationality(self):
         # This function check whether the dataloader's worker number is rational based on
@@ -1222,7 +1216,9 @@ class _MultiProcessingDataLoaderIter(_BaseDataLoaderIter):
                 atexit.register(_MultiProcessingDataLoaderIter._clean_up_worker, w)
 
         # .pid can be None only before process is spawned (not the case, so ignore)
-        _utils.signal_handling._set_worker_pids(id(self), tuple(w.pid for w in self._workers))  # type: ignore[misc]
+        _utils.signal_handling._set_worker_pids(
+            id(self), tuple(w.pid for w in self._workers)
+        )  # type: ignore[misc]
         _utils.signal_handling._set_SIGCHLD_handler()
         self._worker_pids_set = True
         self._reset(loader, first_iter=True)
@@ -1435,11 +1431,8 @@ class _MultiProcessingDataLoaderIter(_BaseDataLoaderIter):
             success, data = self._try_get_data(self._timeout)
             if success:
                 return data
-            else:
-                raise RuntimeError(
-                    f"DataLoader timed out after {self._timeout} seconds"
-                )
-        elif self._pin_memory:
+            raise RuntimeError(f"DataLoader timed out after {self._timeout} seconds")
+        if self._pin_memory:
             while self._pin_memory_thread.is_alive():
                 success, data = self._try_get_data()
                 if success:
@@ -1528,7 +1521,7 @@ class _MultiProcessingDataLoaderIter(_BaseDataLoaderIter):
             if self._workers_status[worker_queue_idx]:
                 if self._in_order:
                     break
-                elif self._workers_num_tasks[worker_queue_idx] < max_tasks // sum(
+                if self._workers_num_tasks[worker_queue_idx] < max_tasks // sum(
                     self._workers_status
                 ):
                     # when self._in_order is False, distribute work to a worker if it has capacity

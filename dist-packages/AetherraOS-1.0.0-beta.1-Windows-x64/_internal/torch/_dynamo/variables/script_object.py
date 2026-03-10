@@ -25,7 +25,7 @@ import functools
 
 import torch
 
-from ..exc import unimplemented, UnsafeScriptObjectError, Unsupported
+from ..exc import UnsafeScriptObjectError, Unsupported, unimplemented
 from .base import VariableTracker
 from .user_defined import UserDefinedObjectVariable
 

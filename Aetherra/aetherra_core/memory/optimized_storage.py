@@ -68,9 +68,7 @@ class OptimizedMemoryStorage:
         self.buffer_lock = Lock()
 
         # Background processing
-        self.executor = ThreadPoolExecutor(
-            max_workers=3, thread_name_prefix="memory_storage"
-        )
+        self.executor = ThreadPoolExecutor(max_workers=3, thread_name_prefix="memory_storage")
         self.processing_queue = Queue()
 
         # Timing control
@@ -309,9 +307,7 @@ class OptimizedMemoryStorage:
 
         # Associative links
         for i, link in enumerate(fragment.associative_links):
-            tag_data.append(
-                (fragment.fragment_id, "associative", f"link_{i}", str(link))
-            )
+            tag_data.append((fragment.fragment_id, "associative", f"link_{i}", str(link)))
 
         return tag_data
 
@@ -465,7 +461,7 @@ class AsyncMemoryProcessor:
                 # Wait for processing task with timeout
                 task = await asyncio.wait_for(self.processing_queue.get(), timeout=1.0)
                 await self._process_task(task)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 continue  # Continue loop even if no tasks
             except Exception as e:
                 print(f"Processing error: {e}")
@@ -506,9 +502,7 @@ class AsyncMemoryProcessor:
         # Update access pattern
         current_time = datetime.now()
         fragment.access_pattern["last_accessed"] = current_time.isoformat()
-        fragment.access_pattern["access_count"] = (
-            fragment.access_pattern.get("access_count", 0) + 1
-        )
+        fragment.access_pattern["access_count"] = fragment.access_pattern.get("access_count", 0) + 1
 
     async def _index_concepts_async(self, fragment: MemoryFragment):
         """

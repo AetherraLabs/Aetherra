@@ -1,5 +1,7 @@
 # mypy: ignore-errors
 
+from math import e, pi  # usort: skip
+
 from . import fft, linalg, random
 from ._dtypes import *  # noqa: F403
 from ._funcs import *  # noqa: F403
@@ -16,10 +18,6 @@ from ._ndarray import (
 )
 from ._ufuncs import *  # noqa: F403
 from ._util import AxisError, UFuncTypeError
-
-
-from math import pi, e  # usort: skip
-
 
 all = all
 alltrue = all

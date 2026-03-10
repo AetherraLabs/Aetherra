@@ -7,8 +7,9 @@ import os
 import sys
 import traceback
 import warnings
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -18,14 +19,13 @@ from torch.package import Importer, PackageExporter, PackageImporter, sys_import
 
 from ._compatibility import compatibility
 from .graph import (
+    Graph,
+    PythonCode,
     _custom_builtins,
     _is_from_torch,
     _override_sym_repr,
     _PyTreeCodeGen,
-    Graph,
-    PythonCode,
 )
-
 
 __all__ = [
     "reduce_graph_module",
@@ -76,7 +76,7 @@ class _EvalCacheLoader:
 
     # Part of the loader protocol (PEP 302)
     # linecache will use this method when trying to find source code
-    def get_source(self, module_name) -> Optional[str]:
+    def get_source(self, module_name) -> str | None:
         if module_name in self.eval_cache:
             return self.eval_cache[module_name]
         return None
@@ -205,7 +205,7 @@ def _deserialize_graph_module(
     graph = KeepModules().trace(com, **tracer_extras)
 
     # Recover node.meta["stack_trace"] after re-tracing
-    node_meta_stack_trace = body.get("_graphmodule_graph_node_meta_stack_trace", None)
+    node_meta_stack_trace = body.get("_graphmodule_graph_node_meta_stack_trace")
     if node_meta_stack_trace is not None:
         del body["_graphmodule_graph_node_meta_stack_trace"]
         for node in graph.nodes:
@@ -407,8 +407,7 @@ class _WrappedCall:
         try:
             if self.cls_call is not None:
                 return self.cls_call(obj, *args, **kwargs)
-            else:
-                return super(self.cls, obj).__call__(*args, **kwargs)  # type: ignore[misc]
+            return super(self.cls, obj).__call__(*args, **kwargs)  # type: ignore[misc]
         except Exception as e:
             assert e.__traceback__
             topmost_framesummary: traceback.FrameSummary = (
@@ -420,8 +419,7 @@ class _WrappedCall:
                     file=sys.stderr,
                 )
                 raise e.with_traceback(None)  # noqa: B904
-            else:
-                raise e
+            raise e
 
 
 @compatibility(is_backward_compatible=True)
@@ -461,7 +459,7 @@ class GraphModule(torch.nn.Module):
     @compatibility(is_backward_compatible=True)
     def __init__(
         self,
-        root: Union[torch.nn.Module, dict[str, Any]],
+        root: torch.nn.Module | dict[str, Any],
         graph: Graph,
         class_name: str = "GraphModule",
     ):
@@ -584,7 +582,7 @@ class GraphModule(torch.nn.Module):
         self.recompile()
 
     @compatibility(is_backward_compatible=False)
-    def to_folder(self, folder: Union[str, os.PathLike], module_name: str = "FxModule"):
+    def to_folder(self, folder: str | os.PathLike, module_name: str = "FxModule"):
         """Dumps out module to ``folder`` with ``module_name`` so that it can be
         imported with ``from <folder> import <module_name>``
 
@@ -610,7 +608,7 @@ class {module_name}(torch.nn.Module):
         super().__init__()
 """
 
-        def _gen_model_repr(module_name: str, module: torch.nn.Module) -> Optional[str]:
+        def _gen_model_repr(module_name: str, module: torch.nn.Module) -> str | None:
             safe_reprs = [
                 nn.Linear,
                 nn.Conv1d,
@@ -622,8 +620,7 @@ class {module_name}(torch.nn.Module):
             ]
             if type(module) in safe_reprs:
                 return f"{module.__repr__()}"
-            else:
-                return None
+            return None
 
         blobified_modules = []
         for module_name, module in self.named_children():

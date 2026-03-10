@@ -25,7 +25,7 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 SKIP_DIRS = {
     ".git",
@@ -64,13 +64,13 @@ REGISTER_SERVICE_RE = re.compile(r"register_service\(\s*['\"]([^'\"]+)['\"]\s*\)
 @dataclass
 class ModuleInfo:
     path: str
-    doc: Optional[str]
-    classes: List[tuple[str, Optional[str]]]
-    functions: List[tuple[str, Optional[str]]]
+    doc: str | None
+    classes: list[tuple[str, str | None]]
+    functions: list[tuple[str, str | None]]
 
 
-def walk_files(root: Path) -> List[Path]:
-    out: List[Path] = []
+def walk_files(root: Path) -> list[Path]:
+    out: list[Path] = []
     for dirpath, dirnames, filenames in os.walk(root):
         dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
         for fn in filenames:
@@ -93,8 +93,8 @@ def parse_py(text: str) -> ModuleInfo:
     except Exception:
         return ModuleInfo(path="", doc=None, classes=[], functions=[])
     doc = ast.get_docstring(tree)
-    classes: List[tuple[str, Optional[str]]] = []
-    functions: List[tuple[str, Optional[str]]] = []
+    classes: list[tuple[str, str | None]] = []
+    functions: list[tuple[str, str | None]] = []
     for node in ast.walk(tree):
         if isinstance(node, ast.ClassDef):
             classes.append((node.name, ast.get_docstring(node)))
@@ -105,26 +105,26 @@ def parse_py(text: str) -> ModuleInfo:
     return ModuleInfo(path="", doc=doc, classes=classes, functions=functions)
 
 
-def extract_env_vars(text: str) -> Set[str]:
+def extract_env_vars(text: str) -> set[str]:
     found = set(ENV_VAR_RE.findall(text))
     found |= set(ENV_GET_RE.findall(text))
     return found
 
 
-def extract_flask_routes(text: str) -> List[str]:
+def extract_flask_routes(text: str) -> list[str]:
     return sorted(set(FLASK_ROUTE_RE.findall(text)))
 
 
-def extract_express_routes(text: str) -> List[tuple[str, str]]:
+def extract_express_routes(text: str) -> list[tuple[str, str]]:
     return EXPRESS_ROUTE_RE.findall(text)
 
 
-def extract_services(text: str) -> List[str]:
+def extract_services(text: str) -> list[str]:
     return sorted(set(REGISTER_SERVICE_RE.findall(text)))
 
 
-def collect_tests(root: Path) -> Dict[str, List[str]]:
-    tests: Dict[str, List[str]] = {"capabilities": [], "unit": []}
+def collect_tests(root: Path) -> dict[str, list[str]]:
+    tests: dict[str, list[str]] = {"capabilities": [], "unit": []}
     for p in root.rglob("tests/**/*.py"):
         rel = str(p.relative_to(root)).replace("\\", "/")
         if "/capabilities/" in rel:
@@ -136,7 +136,7 @@ def collect_tests(root: Path) -> Dict[str, List[str]]:
     return tests
 
 
-def categorize_env_vars(envs: List[str]) -> Dict[str, List[str]]:
+def categorize_env_vars(envs: list[str]) -> dict[str, list[str]]:
     cats = {"QFAC": [], "HUB": [], "GENERAL": []}
     for e in envs:
         if "QFAC" in e:
@@ -150,7 +150,7 @@ def categorize_env_vars(envs: List[str]) -> Dict[str, List[str]]:
     return cats
 
 
-def summarize_presence(root: Path) -> Dict[str, Any]:
+def summarize_presence(root: Path) -> dict[str, Any]:
     """Detect key subsystems by presence of canonical files and dirs."""
 
     def exists(rel: str) -> bool:
@@ -186,7 +186,7 @@ def summarize_presence(root: Path) -> Dict[str, Any]:
     return {"core": core, "lyrixa": lyrixa, "hub": hub, "qfac": qfac}
 
 
-def read_snippet(path: Path, needle: str) -> Optional[str]:
+def read_snippet(path: Path, needle: str) -> str | None:
     """Read file and return a small snippet line containing needle, if any."""
     try:
         for i, line in enumerate(
@@ -199,7 +199,7 @@ def read_snippet(path: Path, needle: str) -> Optional[str]:
     return None
 
 
-def build_narrative(root: Path, analysis: Dict[str, Any]) -> str:
+def build_narrative(root: Path, analysis: dict[str, Any]) -> str:
     pres = summarize_presence(root)
     envs = analysis.get("env_vars", [])
     env_cats = categorize_env_vars(envs)
@@ -258,7 +258,7 @@ def build_narrative(root: Path, analysis: Dict[str, Any]) -> str:
     caps_count = len(tests.get("capabilities", []))
     unit_count = len(tests.get("unit", []))
 
-    lines: List[str] = []
+    lines: list[str] = []
     lines.append("### Auto-Generated Overview (Repository Analysis)\n")
     lines.append(
         f"This repository contains the Aetherra AI Operating System and Lyrixa assistant. "
@@ -330,12 +330,12 @@ def build_narrative(root: Path, analysis: Dict[str, Any]) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def analyze(root: Path) -> Dict[str, Any]:
-    env_vars: Set[str] = set()
-    flask_routes: Set[str] = set()
-    express_routes: Set[tuple[str, str]] = set()
-    services: Set[str] = set()
-    modules: Dict[str, ModuleInfo] = {}
+def analyze(root: Path) -> dict[str, Any]:
+    env_vars: set[str] = set()
+    flask_routes: set[str] = set()
+    express_routes: set[tuple[str, str]] = set()
+    services: set[str] = set()
+    modules: dict[str, ModuleInfo] = {}
 
     for p in walk_files(root):
         text = safe_read(p)
@@ -367,7 +367,7 @@ def analyze(root: Path) -> Dict[str, Any]:
 
 
 def append_appendix(
-    overview_path: Path, narrative: str, analysis: Dict[str, Any]
+    overview_path: Path, narrative: str, analysis: dict[str, Any]
 ) -> None:
     stamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(analysis["generated_at"]))
     content = safe_read(overview_path)
@@ -434,7 +434,7 @@ def append_appendix(
     overview_path.write_text(updated, encoding="utf-8")
 
 
-def main(argv: List[str]) -> int:
+def main(argv: list[str]) -> int:
     # Standard library imports
     import argparse
 

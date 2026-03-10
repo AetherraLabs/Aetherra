@@ -11,7 +11,6 @@ from __future__ import annotations
 # Standard library imports
 import threading
 import time
-from typing import Optional
 
 # Third party imports
 from werkzeug.serving import make_server
@@ -36,7 +35,7 @@ class AetherraHubServer:  # minimal subset used in tests/tools
     def __init__(self, port: int = 3001):
         self.port = port
         self._srv = None
-        self._thread: Optional[threading.Thread] = None
+        self._thread: threading.Thread | None = None
         self.server_running = False
         # Simple plugin store reference
         self._plugin_store = getattr(_plugins, "store", None)

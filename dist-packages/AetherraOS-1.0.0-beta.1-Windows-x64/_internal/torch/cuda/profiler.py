@@ -6,7 +6,6 @@ import torch
 
 from . import check_error, cudart
 
-
 __all__ = ["init", "start", "stop", "profile"]
 
 DEFAULT_FLAGS = [

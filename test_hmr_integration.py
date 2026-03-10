@@ -62,9 +62,9 @@ async def test_hmr_integration() -> bool:
             )
             logger.info(f"✅ Rollback token generated: {rollback_token}")
 
-            assert rollback_token.startswith(
-                "rb_register_plugin_"
-            ), f"Invalid token format: {rollback_token}"
+            assert rollback_token.startswith("rb_register_plugin_"), (
+                f"Invalid token format: {rollback_token}"
+            )
 
             # Test HMR routing logic
             should_use_hmr_plugin = integrator._should_use_hmr(
@@ -91,9 +91,9 @@ async def test_hmr_integration() -> bool:
             # In test environment, HMR controller may not be available
             expected_errors = ["rollback_token_not_found", "hmr_controller_unavailable"]
             actual_error = rollback_result.get("error")
-            assert (
-                actual_error in expected_errors
-            ), f"Expected one of {expected_errors}, got: {rollback_result}"
+            assert actual_error in expected_errors, (
+                f"Expected one of {expected_errors}, got: {rollback_result}"
+            )
 
             # Test API integration patterns
             logger.info("✅ Testing integration with HMR...")
@@ -115,9 +115,9 @@ async def test_hmr_integration() -> bool:
             integration_result = await integrator.execute_plan(test_plan, dry_run=True)
             logger.info(f"✅ Dry-run integration result: {integration_result}")
 
-            assert (
-                integration_result.get("ok") is not None
-            ), "Integration should return ok status"
+            assert integration_result.get("ok") is not None, (
+                "Integration should return ok status"
+            )
 
         logger.info("🎉 All HMR integration tests passed!")
         return True

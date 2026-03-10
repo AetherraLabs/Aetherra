@@ -15,13 +15,14 @@ import time
 import traceback
 import types
 import unittest
+from collections.abc import Callable
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import timedelta
 from enum import Enum
 from functools import partial, reduce, wraps
 from io import StringIO
-from typing import Any, Callable, NamedTuple, Optional, Union
+from typing import Any, NamedTuple
 from unittest.mock import patch
 
 import torch
@@ -34,24 +35,23 @@ from torch._C._distributed_c10d import _SymmetricMemory
 from torch._logging._internal import trace_log
 from torch.testing._internal.common_utils import (
     FILE_SCHEMA,
-    find_free_port,
     IS_SANDCASTLE,
-    retry_on_connect_failures,
-    skip_but_pass_in_sandcastle,
-    skip_but_pass_in_sandcastle_if,
     TEST_CUDA,
     TEST_HPU,
     TEST_WITH_ROCM,
     TEST_WITH_TSAN,
     TEST_XPU,
     TestCase,
+    find_free_port,
+    retry_on_connect_failures,
+    skip_but_pass_in_sandcastle,
+    skip_but_pass_in_sandcastle_if,
 )
 from torch.testing._internal.distributed.multi_threaded_pg import (
+    ProcessLocalGroup,
     _install_threaded_pg,
     _uninstall_threaded_pg,
-    ProcessLocalGroup,
 )
-
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -253,9 +253,9 @@ def verify_ddp_error_logged(model_DDP, err_substr):
         if err_substr.find("\nException raised from ") == -1
         else err_substr.split("\nException raised from ")[0]
     )
-    assert (
-        actual in logging_err
-    ), f"Did not find expected {actual} in ddp logging data error: {logging_err}"
+    assert actual in logging_err, (
+        f"Did not find expected {actual} in ddp logging data error: {logging_err}"
+    )
 
 
 def with_nccl_blocking_wait(func):
@@ -270,7 +270,7 @@ def with_nccl_blocking_wait(func):
     def wrapper(*args, **kwargs):
         # Save and unset TORCH_NCCL_ASYNC_ERROR_HANDLING
         try:
-            cached_nccl_async_error_handling: Union[str, None] = os.environ[
+            cached_nccl_async_error_handling: str | None = os.environ[
                 "TORCH_NCCL_ASYNC_ERROR_HANDLING"
             ]
             del os.environ["TORCH_NCCL_ASYNC_ERROR_HANDLING"]
@@ -280,7 +280,7 @@ def with_nccl_blocking_wait(func):
 
         # Save val of TORCH_NCCL_BLOCKING_WAIT and set it.
         try:
-            cached_nccl_blocking_wait: Union[str, None] = os.environ[
+            cached_nccl_blocking_wait: str | None = os.environ[
                 "TORCH_NCCL_BLOCKING_WAIT"
             ]
         except KeyError:
@@ -294,9 +294,9 @@ def with_nccl_blocking_wait(func):
         finally:
             # restore old values.
             if cached_nccl_async_error_handling is not None:
-                os.environ[
-                    "TORCH_NCCL_ASYNC_ERROR_HANDLING"
-                ] = cached_nccl_async_error_handling
+                os.environ["TORCH_NCCL_ASYNC_ERROR_HANDLING"] = (
+                    cached_nccl_async_error_handling
+                )
 
             if cached_nccl_blocking_wait is not None:
                 os.environ["TORCH_NCCL_BLOCKING_WAIT"] = cached_nccl_blocking_wait
@@ -342,11 +342,10 @@ def requires_nccl_version(version, msg):
         return skip_but_pass_in_sandcastle(
             "c10d was not compiled with the NCCL backend",
         )
-    else:
-        return skip_but_pass_in_sandcastle_if(
-            torch.cuda.nccl.version() < version,
-            f"Requires NCCL version greater than or equal to: {version}, found: {torch.cuda.nccl.version()}, reason: {msg}",
-        )
+    return skip_but_pass_in_sandcastle_if(
+        torch.cuda.nccl.version() < version,
+        f"Requires NCCL version greater than or equal to: {version}, found: {torch.cuda.nccl.version()}, reason: {msg}",
+    )
 
 
 def requires_nccl():
@@ -465,15 +464,14 @@ def create_tcp_store(
         return torch.classes.dist_c10d.TCPStore(
             addr, port, world_size, is_master, timeout_millisecond
         )
-    else:
-        return c10d.TCPStore(
-            addr,
-            port,
-            world_size,
-            is_master,
-            wait_for_workers=wait_for_workers,
-            use_libuv=use_libuv,
-        )
+    return c10d.TCPStore(
+        addr,
+        port,
+        world_size,
+        is_master,
+        wait_for_workers=wait_for_workers,
+        use_libuv=use_libuv,
+    )
 
 
 if TEST_WITH_TSAN:
@@ -494,10 +492,7 @@ def create_device(interface=None, lazy_init: bool = False):
         return c10d.ProcessGroupGloo.create_device(
             hostname="127.0.0.1", lazy_init=lazy_init
         )
-    else:
-        return c10d.ProcessGroupGloo.create_device(
-            interface=interface, lazy_init=lazy_init
-        )
+    return c10d.ProcessGroupGloo.create_device(interface=interface, lazy_init=lazy_init)
 
 
 def get_timeout(test_id) -> int:
@@ -584,10 +579,10 @@ def init_multigpu_helper(world_size: int, backend: str):
     return rank_to_GPU
 
 
-tmp_dir: Optional[tempfile.TemporaryDirectory] = None
+tmp_dir: tempfile.TemporaryDirectory | None = None
 
 
-def initialize_temp_directories(init_method: Optional[str] = None) -> None:
+def initialize_temp_directories(init_method: str | None = None) -> None:
     global tmp_dir
     tmp_dir = tempfile.TemporaryDirectory()
     os.environ["TEMP_DIR"] = tmp_dir.name
@@ -812,7 +807,7 @@ class MultiProcessTestCase(TestCase):
             sys.exit(TEST_SKIPS["generic"].exit_code)
         except Exception:
             logger.error(
-                "Caught exception: \n%s exiting " "process %s with exit code: %s",
+                "Caught exception: \n%s exiting process %s with exit code: %s",
                 traceback.format_exc(),
                 self.rank,
                 MultiProcessTestCase.TEST_ERROR_EXIT_CODE,
@@ -983,8 +978,7 @@ class MultiProcessTestCase(TestCase):
                         skip.message,
                     )
                     return
-                else:
-                    raise unittest.SkipTest(skip.message)
+                raise unittest.SkipTest(skip.message)
 
         # In most cases, we expect test to return exit code 0, standing for success.
         expected_return_code = 0
@@ -1028,12 +1022,11 @@ class DistributedTestBase(MultiProcessTestCase):
     def backend(self, device) -> str:
         if "cuda" in device:
             return "nccl"
-        elif "hpu" in device:  # intel gaudi
+        if "hpu" in device:  # intel gaudi
             return "hccl"
-        elif "xpu" in device:
+        if "xpu" in device:
             return "xccl"
-        else:
-            return "gloo"
+        return "gloo"
 
     def create_pg(self, device, world_size=None):
         if world_size is None:
@@ -1081,7 +1074,7 @@ def run_subtests(
     subtest_config_values: list[list[Any]] = [item[1] for item in subtest_config_items]
     for values in itertools.product(*subtest_config_values):
         # Map keyword to chosen value
-        subtest_kwargs = dict(zip(subtest_config_keys, values))
+        subtest_kwargs = dict(zip(subtest_config_keys, values, strict=False))
         with cls_inst.subTest(**subtest_kwargs):
             torch._dynamo.reset()
             test_fn(*test_args, **test_kwargs, **subtest_kwargs)
@@ -1396,8 +1389,7 @@ class MultiThreadedTestCase(TestCase):
                             skip.message,
                         )
                         return
-                    else:
-                        raise unittest.SkipTest(skip.message)
+                    raise unittest.SkipTest(skip.message)
 
     @property
     def world_size(self) -> int:
@@ -1554,14 +1546,14 @@ class MultiProcContinousTest(TestCase):
     # rank of the current process
     rank: int = -2  # unset state
     # Rendezvous file
-    rdvz_file: Optional[str] = None
+    rdvz_file: str | None = None
     # timeout configured per class
     timeout: timedelta = timedelta(seconds=120)
     # Poison pill for rest of tests if one of them fails
     poison_pill: bool = False
 
     @classmethod
-    def backend_str(cls) -> Optional[str]:
+    def backend_str(cls) -> str | None:
         """
         ProcessGroup backend str.
         To be customized by sub test classes, e.g. "nccl".
@@ -1584,7 +1576,7 @@ class MultiProcContinousTest(TestCase):
         To be customized by sub test classes, e.g. ProcessGroupNCCLOpTest
         Here we return None.
         """
-        return None
+        return
 
     @classmethod
     def _init_pg(cls, rank, world_size, rdvz_file):
@@ -1677,9 +1669,7 @@ class MultiProcContinousTest(TestCase):
             cls.processes.append(process)
             cls.task_queues.append(task_queue)
             cls.completion_queues.append(completion_queue)
-            logger.info(
-                "Started process %s with pid %s", rank, process.pid
-            )  # noqa: UP031
+            logger.info("Started process %s with pid %s", rank, process.pid)  # noqa: UP031
 
     @classmethod
     def setUpClass(cls):

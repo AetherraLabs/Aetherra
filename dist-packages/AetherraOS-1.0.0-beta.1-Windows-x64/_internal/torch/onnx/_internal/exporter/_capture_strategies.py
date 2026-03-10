@@ -9,11 +9,11 @@ import dataclasses
 import datetime
 import logging
 import pathlib
-from typing import Any, Callable, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch.export import _draft_export
-
 
 if TYPE_CHECKING:
     import os

@@ -156,34 +156,30 @@ class IntInfinity(Number, metaclass=Singleton):
     def __gt__(self, other):
         if other is S.Infinity:
             return sympy.false  # sympy.oo > int_oo
-        elif other is S.IntInfinity:
+        if other is S.IntInfinity:
             return sympy.false  # consistency with sympy.oo
-        else:
-            return sympy.true
+        return sympy.true
 
     def __ge__(self, other):
         if other is S.Infinity:
             return sympy.false  # sympy.oo > int_oo
-        elif other is S.IntInfinity:
+        if other is S.IntInfinity:
             return sympy.true  # consistency with sympy.oo
-        else:
-            return sympy.true
+        return sympy.true
 
     def __lt__(self, other):
         if other is S.Infinity:
             return sympy.true  # sympy.oo > int_oo
-        elif other is S.IntInfinity:
+        if other is S.IntInfinity:
             return sympy.false  # consistency with sympy.oo
-        else:
-            return sympy.false
+        return sympy.false
 
     def __le__(self, other):
         if other is S.Infinity:
             return sympy.true  # sympy.oo > int_oo
-        elif other is S.IntInfinity:
+        if other is S.IntInfinity:
             return sympy.true  # consistency with sympy.oo
-        else:
-            return sympy.false
+        return sympy.false
 
     @_sympifyit("other", NotImplemented)
     def __mod__(self, other):
@@ -320,8 +316,7 @@ class NegativeIntInfinity(Number, metaclass=Singleton):
             if isinstance(expt, sympy.Integer) and expt.is_extended_positive:
                 if expt.is_odd:
                     return S.NegativeIntInfinity
-                else:
-                    return S.IntInfinity
+                return S.IntInfinity
 
             inf_part = S.IntInfinity**expt
             s_part = S.NegativeOne**expt
@@ -350,34 +345,30 @@ class NegativeIntInfinity(Number, metaclass=Singleton):
     def __gt__(self, other):
         if other is S.NegativeInfinity:
             return sympy.true  # -sympy.oo < -int_oo
-        elif other is S.NegativeIntInfinity:
+        if other is S.NegativeIntInfinity:
             return sympy.false  # consistency with sympy.oo
-        else:
-            return sympy.false
+        return sympy.false
 
     def __ge__(self, other):
         if other is S.NegativeInfinity:
             return sympy.true  # -sympy.oo < -int_oo
-        elif other is S.NegativeIntInfinity:
+        if other is S.NegativeIntInfinity:
             return sympy.true  # consistency with sympy.oo
-        else:
-            return sympy.false
+        return sympy.false
 
     def __lt__(self, other):
         if other is S.NegativeInfinity:
             return sympy.false  # -sympy.oo < -int_oo
-        elif other is S.NegativeIntInfinity:
+        if other is S.NegativeIntInfinity:
             return sympy.false  # consistency with sympy.oo
-        else:
-            return sympy.true
+        return sympy.true
 
     def __le__(self, other):
         if other is S.NegativeInfinity:
             return sympy.false  # -sympy.oo < -int_oo
-        elif other is S.NegativeIntInfinity:
+        if other is S.NegativeIntInfinity:
             return sympy.true  # consistency with sympy.oo
-        else:
-            return sympy.true
+        return sympy.true
 
     @_sympifyit("other", NotImplemented)
     def __mod__(self, other):

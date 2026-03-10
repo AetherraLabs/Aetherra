@@ -5,7 +5,6 @@ from enum import IntEnum
 from torch.utils.data.datapipes._decorator import functional_datapipe
 from torch.utils.data.datapipes.datapipe import IterDataPipe
 
-
 __all__ = [
     "SHARDING_PRIORITIES",
     "ShardingFilterIterDataPipe",

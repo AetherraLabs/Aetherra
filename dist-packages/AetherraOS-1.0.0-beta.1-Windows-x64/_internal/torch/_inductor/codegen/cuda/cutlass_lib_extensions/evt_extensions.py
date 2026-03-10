@@ -1,4 +1,5 @@
-from typing import Any, Callable, Union
+from collections.abc import Callable
+from typing import Any, Union
 
 from sympy import Expr
 
@@ -10,7 +11,6 @@ from torch._inductor.ir import (
 from torch.utils._ordered_set import OrderedSet
 
 from ..cutlass_utils import torch_dtype_to_cutlass_type, try_import_cutlass
-
 
 EpilogueFunctor = Any  # EpilogueFunctor local class defined in _trace
 Buffer = Union[ComputedBuffer, InputBuffer]
@@ -63,7 +63,7 @@ if try_import_cutlass():
     def create_example_tensors(
         var_name_to_buffer_name: dict[str, str],
         name_to_buffer: dict[str, Buffer],
-        size_hint_fn: Callable[[Union[Expr, int]], int],
+        size_hint_fn: Callable[[Expr | int], int],
     ) -> dict[str, CutlassTensor]:
         def cutlass_tensor_from_buffer(buffer: Buffer) -> CutlassTensor:
             shape = buffer.get_layout().size
@@ -101,7 +101,7 @@ non-contiguous layout, received stride: {stride} and shape: {shape}"
         tile_description: TileDescription,
         epilogue_schedule: EpilogueScheduleType,
         name_to_buffer: dict[str, Buffer],
-        size_hint_fn: Callable[[Union[Expr, int]], int],
+        size_hint_fn: Callable[[Expr | int], int],
         **kwargs: dict[str, Any],
     ) -> tuple[str, str, str]:
         cuda_arch = int(cuda_env.get_cuda_arch())  # type: ignore[arg-type]
@@ -145,7 +145,7 @@ non-contiguous layout, received stride: {stride} and shape: {shape}"
     def _render_argument_type(
         epilogue_functor: EpilogueFunctor,
         name_to_buffer: dict[str, Buffer],
-        size_hint_fn: Callable[[Union[Expr, int]], int],
+        size_hint_fn: Callable[[Expr | int], int],
     ) -> str:
         epilogue_thread_type = epilogue_functor.epilogue_thread_type
 
@@ -200,7 +200,7 @@ non-contiguous layout, received stride: {stride} and shape: {shape}"
         return buffer.getvalue()
 
     def _get_arg_from_node(
-        arg_ty: type, node: Buffer, size_hint_fn: Callable[[Union[Expr, int]], int]
+        arg_ty: type, node: Buffer, size_hint_fn: Callable[[Expr | int], int]
     ) -> str:
         from ..cuda_template import CUTLASSTemplate
 
@@ -221,20 +221,19 @@ non-contiguous layout, received stride: {stride} and shape: {shape}"
                 # Handle EBO for 0 and 1
                 if x == 0:
                     return "_0{}"
-                elif x == 1:
+                if x == 1:
                     return "_1{}"
-                else:
-                    return str(x)
+                return str(x)
 
             return f"{{{', '.join([render_stride(x) for x in stride])}}}"
 
-        elif issubclass(arg_ty, ctypes.c_void_p):
+        if issubclass(arg_ty, ctypes.c_void_p):
             return f"({CUTLASSTemplate._DTYPE_TO_CUTLASS[node.get_layout().dtype]}*) {node.get_name()}"
-        elif (
+        if (
             arg_ty in _CUTLASS_C_DTYPES
         ):  # Assumption: this is the element dtype, this holds for all cutlass ir nodes currently
             return f"{CUTLASSTemplate._DTYPE_TO_CUTLASS[node.get_layout().dtype]}(0)"
-        elif issubclass(arg_ty, EmptyByte):
+        if issubclass(arg_ty, EmptyByte):
             return "{}"
 
         raise NotImplementedError(f"Unsupported arg type: {arg_ty}")

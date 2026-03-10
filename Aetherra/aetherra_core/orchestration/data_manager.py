@@ -6,7 +6,6 @@ Real-time Data Manager for Aetherra GUI
 Connects to actual LyrixaCore systems and provides live data feeds
 """
 
-
 # Standard library imports
 import time
 from typing import Any, Dict
@@ -145,18 +144,12 @@ class AetherraDataManager(QObject):
             # Get real data from context bridge if available
             if self.context_bridge and ContextType:
                 try:
-                    context = self.context_bridge.get_context_summary(
-                        ContextType.MEMORY_UPDATE
-                    )
+                    context = self.context_bridge.get_context_summary(ContextType.MEMORY_UPDATE)
                     if "memory" in context:
                         memory_data.update(
                             {
-                                "memory_coherence": context["memory"].get(
-                                    "health_score", 0.87
-                                ),
-                                "recent_interactions": context["memory"].get(
-                                    "recent_entries", 15
-                                ),
+                                "memory_coherence": context["memory"].get("health_score", 0.87),
+                                "recent_interactions": context["memory"].get("recent_entries", 15),
                                 "retrieval_efficiency": context["memory"].get(
                                     "confidence_avg", 0.92
                                 ),
@@ -204,9 +197,7 @@ class AetherraDataManager(QObject):
                         }
                     )
                     if hasattr(self.self_model, "beliefs") and self.self_model.beliefs:
-                        identity_data["active_beliefs"] = len(
-                            self.self_model.beliefs.values
-                        )
+                        identity_data["active_beliefs"] = len(self.self_model.beliefs.values)
                 except Exception as e:
                     print(f"Identity model error: {e}")
 
@@ -239,14 +230,11 @@ class AetherraDataManager(QObject):
                 try:
                     if hasattr(self.reflection_system, "self_awareness_metrics"):
                         metrics = self.reflection_system.self_awareness_metrics
-                        total_attempts = metrics.get(
-                            "successful_adaptations", 0
-                        ) + metrics.get("failed_adaptations", 0)
+                        total_attempts = metrics.get("successful_adaptations", 0) + metrics.get(
+                            "failed_adaptations", 0
+                        )
                         if total_attempts > 0:
-                            success_rate = (
-                                metrics.get("successful_adaptations", 0)
-                                / total_attempts
-                            )
+                            success_rate = metrics.get("successful_adaptations", 0) / total_attempts
                             reflection_data["adaptation_success"] = success_rate
 
                         reflection_data["pattern_recognition"] = min(
@@ -323,12 +311,10 @@ class AetherraDataManager(QObject):
             if self.context_bridge:
                 try:
                     context = self.context_bridge.get_context_summary()
-                    system_data["overall_coherence"] = context.get(
-                        "system_coherence", 0.91
+                    system_data["overall_coherence"] = context.get("system_coherence", 0.91)
+                    system_data["response_time"] = (
+                        f"{context.get('response_time', 0.127) * 1000:.0f}ms"
                     )
-                    system_data[
-                        "response_time"
-                    ] = f"{context.get('response_time', 0.127)*1000:.0f}ms"
                 except Exception as e:
                     print(f"System context error: {e}")
 
@@ -408,16 +394,12 @@ class AetherraDataManager(QObject):
         try:
             if self.context_bridge and ContextType:
                 # This would route through actual Lyrixa processing
-                context = self.context_bridge.get_context_summary(
-                    ContextType.DECISION_SUPPORT
-                )
+                context = self.context_bridge.get_context_summary(ContextType.DECISION_SUPPORT)
 
-                # Placeholder response - would integrate with actual LLM/reasoning
+                # Baseline response - integrate with actual LLM/reasoning when available.
                 response = f"I understand you're asking about: '{user_input}'. "
                 response += f"Based on my current coherence level of {context.get('system_coherence', 0.91):.1%}, "
-                response += (
-                    "I'm processing this through my unified cognitive framework."
-                )
+                response += "I'm processing this through my unified cognitive framework."
 
                 return response
             else:

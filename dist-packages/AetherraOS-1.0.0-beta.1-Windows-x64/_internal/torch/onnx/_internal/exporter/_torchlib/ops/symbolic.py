@@ -12,7 +12,6 @@ from torch.onnx._internal.exporter import _core
 from torch.onnx._internal.exporter._torchlib._torchlib_registry import onnx_impl
 from torch.onnx.ops import _symbolic_impl
 
-
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
@@ -65,7 +64,7 @@ def _call_symbolic_op(
     # Set the dtypes for the outputs. We set them here because the graph builder
     # Uses PyTorch types which are sometimes inaccurate when they are ONNX only
     # types like float4e2m1.
-    for value, dtype in zip(node.outputs, dtypes):
+    for value, dtype in zip(node.outputs, dtypes, strict=False):
         value.dtype = ir.DataType(dtype)
         # The shape is set by the graph builder. We don't need to set it here.
     return node.outputs
@@ -106,7 +105,9 @@ def onnx_symbolic_symbolic(
         attrs,
         dtypes=[onnx_dtype],
         version=version,
-        metadata_props=dict(zip(metadata_props_keys, metadata_props_values)),
+        metadata_props=dict(
+            zip(metadata_props_keys, metadata_props_values, strict=False)
+        ),
     )[0]
 
 
@@ -145,5 +146,7 @@ def onnx_symbolic_symbolic_multi_out(
         attrs,
         dtypes=onnx_dtypes,
         version=version,
-        metadata_props=dict(zip(metadata_props_keys, metadata_props_values)),
+        metadata_props=dict(
+            zip(metadata_props_keys, metadata_props_values, strict=False)
+        ),
     )

@@ -11,7 +11,6 @@ import torch
 from . import _dtypes_impl, _util
 from ._normalizations import ArrayLike, KeepDims, normalizer
 
-
 if TYPE_CHECKING:
     from collections.abc import Sequence
 

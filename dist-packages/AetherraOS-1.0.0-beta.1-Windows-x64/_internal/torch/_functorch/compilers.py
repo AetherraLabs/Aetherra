@@ -5,9 +5,9 @@ import logging
 import os
 import pickle
 import random
+from collections.abc import Callable
 from contextlib import contextmanager
 from functools import partial
-from typing import Callable, Union
 
 import sympy
 
@@ -26,7 +26,6 @@ from .partitioners import (
     draw_graph,
     min_cut_rematerialization_partition,
 )
-
 
 log = logging.getLogger(__name__)
 
@@ -150,13 +149,13 @@ class DebugInterpreter(fx.Interpreter):
         def check(nv, rv, desc):
             assert callable(desc)
             assert nv.dtype == rv.dtype, f"{desc()}: {nv.dtype} != {rv.dtype}"
-            assert (
-                subst_symint_tuple(nv.size()) == rv.size()
-            ), f"{desc()}: {nv.size()} aka {subst_symint_tuple(nv.size())} != {rv.size()}"
+            assert subst_symint_tuple(nv.size()) == rv.size(), (
+                f"{desc()}: {nv.size()} aka {subst_symint_tuple(nv.size())} != {rv.size()}"
+            )
             same_strides = check_significant_strides(nv, rv)
-            assert (
-                same_strides
-            ), f"{desc()}: {nv.stride()} aka {subst_symint_tuple(nv.stride())} != {rv.stride()}"
+            assert same_strides, (
+                f"{desc()}: {nv.stride()} aka {subst_symint_tuple(nv.stride())} != {rv.stride()}"
+            )
 
         r = super().run_node(n)
         if "val" in n.meta:
@@ -169,7 +168,7 @@ class DebugInterpreter(fx.Interpreter):
             # harmless enough as we only getitem out the outputs.
             # assert n_spec == r_spec, f"{n_spec} != {r_spec}"
             assert len(n_vals) == len(r_vals), f"{len(n_vals)} != {len(r_vals)}"
-            for i, nv, rv in zip(range(len(n_vals)), n_vals, r_vals):
+            for i, nv, rv in zip(range(len(n_vals)), n_vals, r_vals, strict=False):
                 if not isinstance(rv, torch.Tensor):
                     continue
                 check(nv, rv, lambda: f"output {i} where {self.symbol_mapping}")
@@ -234,7 +233,7 @@ def print_compile(fx_g, _):
 
 
 def memory_efficient_fusion(
-    fn: Union[Callable, nn.Module],
+    fn: Callable | nn.Module,
     **kwargs,
 ):
     """
@@ -268,8 +267,7 @@ def memory_efficient_fusion(
     config.update(kwargs)
     if isinstance(fn, torch.nn.Module):
         return aot_module(fn, **config)
-    else:
-        return aot_function(fn, **config)
+    return aot_function(fn, **config)
 
 
 def debug_compile(fx_g, inps):

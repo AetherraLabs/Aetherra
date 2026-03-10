@@ -42,8 +42,7 @@ def broadcast(tensor, devices=None, *, out=None):
     if devices is not None:
         devices = [_get_device_index(d) for d in devices]
         return torch._C._broadcast(tensor, devices)
-    else:
-        return torch._C._broadcast_out(tensor, out)
+    return torch._C._broadcast_out(tensor, out)
 
 
 def broadcast_coalesced(tensors, devices, buffer_size=10485760):
@@ -140,18 +139,18 @@ def reduce_add_coalesced(inputs, destination=None, buffer_size=10485760):
     output = []
     ref_order = []
     # process sparse ones first since they may have different sizes on different gpus
-    for tensor_at_gpus in zip(*inputs):
+    for tensor_at_gpus in zip(*inputs, strict=False):
         if all(t.is_sparse for t in tensor_at_gpus):
             result = reduce_add(tensor_at_gpus, destination)  # this will be sparse too
             output.append(result)
             ref_order.append(tensor_at_gpus[0])
         else:
-            for coll, t in zip(dense_tensors, tensor_at_gpus):
+            for coll, t in zip(dense_tensors, tensor_at_gpus, strict=False):
                 coll.append(t.to_dense() if t.is_sparse else t)
             ref_order.append(dense_tensors[0][-1])
     itrs = [_take_tensors(tensors, buffer_size) for tensors in dense_tensors]
     # now the dense ones, which have consistent sizes
-    for chunks in zip(*itrs):
+    for chunks in zip(*itrs, strict=False):
         flat_tensors = [
             _flatten_dense_tensors(chunk) for chunk in chunks
         ]  # (num_gpus,)
@@ -202,16 +201,15 @@ def scatter(tensor, devices=None, chunk_sizes=None, dim=0, streams=None, *, out=
     if out is None:
         devices = [_get_device_index(d) for d in devices]
         return tuple(torch._C._scatter(tensor, devices, chunk_sizes, dim, streams))
-    else:
-        if devices is not None:
-            raise RuntimeError(
-                f"'devices' must not be specified when 'out' is specified, but got devices={devices}"
-            )
-        if chunk_sizes is not None:
-            raise RuntimeError(
-                f"'chunk_sizes' must not be specified when 'out' is specified, but got chunk_sizes={chunk_sizes}"
-            )
-        return tuple(torch._C._scatter_out(tensor, out, dim, streams))
+    if devices is not None:
+        raise RuntimeError(
+            f"'devices' must not be specified when 'out' is specified, but got devices={devices}"
+        )
+    if chunk_sizes is not None:
+        raise RuntimeError(
+            f"'chunk_sizes' must not be specified when 'out' is specified, but got chunk_sizes={chunk_sizes}"
+        )
+    return tuple(torch._C._scatter_out(tensor, out, dim, streams))
 
 
 def gather(tensors, dim=0, destination=None, *, out=None):
@@ -251,9 +249,8 @@ def gather(tensors, dim=0, destination=None, *, out=None):
             )
         destination = _get_device_index(destination, allow_cpu=True, optional=True)
         return torch._C._gather(tensors, dim, destination)
-    else:
-        if destination is not None:
-            raise RuntimeError(
-                f"'destination' must not be specified when 'out' is specified, but got destination={destination}"
-            )
-        return torch._C._gather_out(tensors, out, dim)
+    if destination is not None:
+        raise RuntimeError(
+            f"'destination' must not be specified when 'out' is specified, but got destination={destination}"
+        )
+    return torch._C._gather_out(tensors, out, dim)

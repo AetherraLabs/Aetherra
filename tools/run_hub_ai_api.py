@@ -6,13 +6,14 @@
 Start Aetherra Hub with AI API enabled for local testing.
 
 Usage:
-  python tools/run_hub_ai_api.py --port 3012 [--require-token] [--token SECRET]
+    python tools/run_hub_ai_api.py --port 3012 [--require-token] [--token SECRET] [--control-token SECRET]
 
 This sets in-process environment flags:
   AETHERRA_AI_API_ENABLED=1
   AETHERRA_AI_API_STREAM=1
   AETHERRA_AI_API_REQUIRE_TOKEN=0 or 1
   AETHERRA_AI_API_TOKEN=... (if provided)
+    AETHERRA_HUB_CONTROL_TOKEN=... (empty by default unless --control-token is passed)
 
 Then starts the Hub on the given port and keeps it running.
 """
@@ -46,6 +47,7 @@ def main() -> int:
     )
     p.add_argument("--require-token", action="store_true")
     p.add_argument("--token", default="")
+    p.add_argument("--control-token", default="")
     args = p.parse_args()
 
     # Desired flags for this run (store first; some loaders may override later)
@@ -53,6 +55,9 @@ def main() -> int:
         "AETHERRA_AI_API_ENABLED": "1",
         "AETHERRA_AI_API_STREAM": "1",
         "AETHERRA_AI_API_REQUIRE_TOKEN": "1" if args.require_token else "0",
+        # Keep Hub control plane auth deterministic for this runner. Callers can
+        # opt in by passing --control-token.
+        "AETHERRA_HUB_CONTROL_TOKEN": args.control_token,
     }
     if args.token:
         desired_flags["AETHERRA_AI_API_TOKEN"] = args.token

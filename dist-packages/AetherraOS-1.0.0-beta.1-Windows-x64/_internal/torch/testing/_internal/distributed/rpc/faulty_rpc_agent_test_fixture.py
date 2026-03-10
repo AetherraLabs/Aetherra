@@ -6,7 +6,6 @@ from torch.testing._internal.distributed.rpc.rpc_agent_test_fixture import (
     RpcAgentTestFixture,
 )
 
-
 # The following message types are currently retried in the RREF protocol and
 # distributed autograd. Thus only these messages should be tested with the
 # Faulty RPC Agent.

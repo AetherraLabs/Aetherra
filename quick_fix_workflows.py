@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Quick Fix Script for Aetherra Workflow Failures
 ==============================================
@@ -9,7 +8,7 @@ that are causing workflow failures in the Aetherra repository.
 
 Usage:
     python quick_fix_workflows.py [scope]
-    
+
     scope options:
     - critical: Fix only critical files (default)
     - all: Fix all files with Unicode issues

@@ -10,17 +10,16 @@ import torch.distributed._functional_collectives as funcol
 import torch.distributed.tensor._dtensor_spec as dtensor_spec
 from torch._C._distributed_c10d import _resolve_process_group
 from torch._logging import warning_once
-from torch.distributed.device_mesh import _mesh_resources, DeviceMesh
+from torch.distributed.device_mesh import DeviceMesh, _mesh_resources
 from torch.distributed.distributed_c10d import (
+    ProcessGroup,
+    Work,
     _get_group_size_by_name,
     broadcast,
     get_group_rank,
     get_rank,
-    ProcessGroup,
     scatter,
-    Work,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +78,7 @@ def mesh_scatter(
     async_op: bool = False,
     *,
     group_src: int = 0,
-) -> Optional[Work]:
+) -> Work | None:
     """
     scatter a list of tensors to a device mesh dimension. We by default
     use the first rank of the mesh dimension as the source of truth, i.e
@@ -140,7 +139,7 @@ def mesh_broadcast(
     async_op: bool = False,
     *,
     group_src: int = 0,
-) -> Optional[Work]:
+) -> Work | None:
     """
     broadcast the tensor to a device mesh dimension. We by default
     use the first rank of the mesh dimension as the source of truth, i.e
@@ -348,7 +347,7 @@ def redistribute_cost(
     # 1. allgather 2. alltoall
     # 3. allreduce 4. reduce_scatter
     for i, (current, target) in enumerate(
-        zip(current_spec.placements, target_spec.placements)
+        zip(current_spec.placements, target_spec.placements, strict=False)
     ):
         if current == target:
             continue

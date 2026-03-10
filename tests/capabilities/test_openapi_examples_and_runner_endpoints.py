@@ -31,6 +31,9 @@ BASE = f"http://localhost:{PORT}"
 @pytest.fixture(scope="module")
 def hub_proc() -> Generator[object, None, None]:
     env = os.environ.copy()
+    # Keep this suite deterministic: force-disable control token for the
+    # spawned Hub process so dotenv/non-override loaders cannot re-enable it.
+    env["AETHERRA_HUB_CONTROL_TOKEN"] = ""
     # Short-circuit if port already bound (another test run / developer instance)
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         if s.connect_ex(("localhost", PORT)) == 0:
@@ -185,8 +188,17 @@ def test_qfac_admin_openapi_and_endpoint(hub_proc):  # noqa: ARG001
     assert "retrieval_policy" in props
     assert "parity_counters" in props
 
-    # Hit the endpoint (auth optional when token not configured)
+    # Hit the endpoint. In tokenless mode this should be open; if this
+    # environment enables a control token, authenticate and continue.
     r2 = requests.get(f"{BASE}/api/qfac/admin/show", timeout=3)
+    if r2.status_code == 401:
+        token = (os.environ.get("AETHERRA_HUB_CONTROL_TOKEN") or "").strip()
+        assert token, "QFAC admin returned 401 but no control token is configured"
+        r2 = requests.get(
+            f"{BASE}/api/qfac/admin/show",
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=3,
+        )
     assert r2.status_code == 200
     body = r2.json()
     assert isinstance(body, dict)

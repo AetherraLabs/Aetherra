@@ -28,7 +28,6 @@ import argparse
 import json
 import os
 import sys
-from typing import Dict, Optional
 
 try:
     # Third party imports
@@ -58,14 +57,14 @@ def resolve_base_url() -> str:
     return f"http://{host}:{port}"
 
 
-def get_headers() -> Dict[str, str]:
+def get_headers() -> dict[str, str]:
     token = os.environ.get("AETHERRA_AI_API_TOKEN") or os.environ.get(
         "AETHERRA_HUB_CONTROL_TOKEN"
     )
     return {"X-Aetherra-Token": token} if token else {}
 
 
-def _print_awareness(aw: Optional[dict]):
+def _print_awareness(aw: dict | None):
     """Pretty-print awareness to stdout in a compact, UI-friendly format.
 
     Emits optional lines prefixed so consumers (like the PySide log pane)
@@ -106,7 +105,7 @@ def _print_awareness(aw: Optional[dict]):
             print(line)
 
 
-def _print_persona(persona: Optional[object]):
+def _print_persona(persona: object | None):
     if persona is None:
         return
     # Accept string or dict with name/id
@@ -120,12 +119,12 @@ def _print_persona(persona: Optional[object]):
             print(f"[PERSONA] {name}")
 
 
-def _print_model(model: Optional[str]):
+def _print_model(model: str | None):
     if isinstance(model, str) and model.strip():
         print(f"[MODEL] {model.strip()}")
 
 
-def _print_suggestions(suggestions: Optional[object]):
+def _print_suggestions(suggestions: object | None):
     if not isinstance(suggestions, list):
         return
     for i, s in enumerate(suggestions[:5], start=1):
@@ -138,7 +137,7 @@ def _print_suggestions(suggestions: Optional[object]):
             print(f"[SUG {i}] {str(text)}")
 
 
-def _print_applied_changes(changes: Optional[object]):
+def _print_applied_changes(changes: object | None):
     if not isinstance(changes, list):
         return
     for i, ch in enumerate(changes[:5], start=1):
@@ -153,7 +152,7 @@ def _print_applied_changes(changes: Optional[object]):
             print(f"[APPLIED {i}] {str(ch)}")
 
 
-def _print_usage(usage: Optional[object]):
+def _print_usage(usage: object | None):
     if not isinstance(usage, dict):
         return
     try:
@@ -176,7 +175,7 @@ def _print_usage(usage: Optional[object]):
         pass
 
 
-def try_stream(base: str, prompt: str) -> Optional[int]:
+def try_stream(base: str, prompt: str) -> int | None:
     url = base.rstrip("/") + "/api/ai/stream"
     payload = {"message": prompt}
     headers = get_headers()

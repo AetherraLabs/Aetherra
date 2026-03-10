@@ -134,12 +134,8 @@ class PluginMetricsCollector:
             self._apply_migrations(conn)
 
             # Create indexes (safe & idempotent)
-            conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_plugin_id ON plugin_executions(plugin_id)"
-            )
-            conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_timestamp ON plugin_executions(timestamp)"
-            )
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_plugin_id ON plugin_executions(plugin_id)")
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_timestamp ON plugin_executions(timestamp)")
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_plugin_usage ON plugin_usage(plugin_id, timestamp)"
             )
@@ -162,9 +158,7 @@ class PluginMetricsCollector:
 
     def _set_version(self, conn: sqlite3.Connection, version: int):
         conn.execute("DELETE FROM plugin_schema_version")
-        conn.execute(
-            "INSERT INTO plugin_schema_version (version) VALUES (?)", (version,)
-        )
+        conn.execute("INSERT INTO plugin_schema_version (version) VALUES (?)", (version,))
 
     def _detect_latency_ms(self, conn: sqlite3.Connection) -> bool:
         try:
@@ -211,9 +205,7 @@ class PluginMetricsCollector:
                 timestamp = datetime.now().isoformat()
                 context_hash = self._hash_context(context or {})
                 latency_ms = (
-                    int(round(execution_time * 1000))
-                    if execution_time is not None
-                    else None
+                    int(round(execution_time * 1000)) if execution_time is not None else None
                 )
 
                 with sqlite3.connect(self.db_path) as conn:
@@ -505,16 +497,14 @@ class PluginAnalyticsDashboard:
                         "system_success_rate": round(system_stats[2] or 100, 2),
                     },
                     "most_used_plugins": [
-                        {"plugin_id": row[0], "usage_count": row[1]}
-                        for row in most_used
+                        {"plugin_id": row[0], "usage_count": row[1]} for row in most_used
                     ],
                     "slowest_plugins": [
                         {"plugin_id": row[0], "avg_time": round(row[1], 3)}
                         for row in slowest_plugins
                     ],
                     "error_prone_plugins": [
-                        {"plugin_id": row[0], "error_count": row[1]}
-                        for row in error_prone
+                        {"plugin_id": row[0], "error_count": row[1]} for row in error_prone
                     ],
                     "period_days": days,
                     "generated_at": datetime.now().isoformat(),
@@ -633,9 +623,7 @@ class PluginAnalyticsIntegration:
 
     def track_plugin_execution(self, plugin_id: str):
         """Context manager for tracking plugin execution."""
-        return PluginExecutionTracker(
-            self.metrics_collector, plugin_id, self.session_id
-        )
+        return PluginExecutionTracker(self.metrics_collector, plugin_id, self.session_id)
 
     def record_plugin_action(
         self, plugin_id: str, action: str, context: Optional[Dict[str, Any]] = None
@@ -690,9 +678,7 @@ class PluginAnalyticsIntegration:
 class PluginExecutionTracker:
     """Context manager for tracking plugin execution time and outcomes."""
 
-    def __init__(
-        self, metrics_collector: PluginMetricsCollector, plugin_id: str, session_id: str
-    ):
+    def __init__(self, metrics_collector: PluginMetricsCollector, plugin_id: str, session_id: str):
         self.metrics = metrics_collector
         self.plugin_id = plugin_id
         self.session_id = session_id

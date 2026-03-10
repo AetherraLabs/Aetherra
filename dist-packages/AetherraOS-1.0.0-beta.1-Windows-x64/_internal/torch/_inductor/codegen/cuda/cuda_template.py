@@ -3,11 +3,11 @@ import functools
 import hashlib
 import itertools
 from dataclasses import dataclass
-from typing import Any, Optional, TYPE_CHECKING
-from typing_extensions import override
+from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 
 import sympy
+from typing_extensions import override
 
 import torch
 from torch._inductor.utils import Placeholder
@@ -20,7 +20,6 @@ from ...virtualized import V
 from ..common import KernelTemplate
 from .cuda_kernel import CUDATemplateCaller, CUDATemplateKernel
 from .cutlass_utils import DTYPE_TO_CUTLASS_TYPE
-
 
 if TYPE_CHECKING:
     from ...scheduler import BaseSchedulerNode  # noqa: TC004
@@ -46,7 +45,7 @@ class CUDATemplate(KernelTemplate):
         name: str,
         input_nodes: list[Buffer],
         layout: Layout,
-        input_reorder: Optional[list[int]] = None,
+        input_reorder: list[int] | None = None,
     ) -> None:
         """
 
@@ -142,7 +141,7 @@ class CUDATemplate(KernelTemplate):
 
         def make_kernel_render(
             template_node: CUDATemplateBuffer,
-            epilogue_nodes: Optional[list[BaseSchedulerNode]] = None,
+            epilogue_nodes: list[BaseSchedulerNode] | None = None,
         ) -> tuple[CUDATemplateKernel, functools.partial[str]]:
             assert supports_epilogue_fusion or not epilogue_nodes, (
                 "epilogue fusion is not supported for this kernel"
@@ -295,16 +294,12 @@ class CUTLASSTemplate(CUDATemplate):
     def cutlass_type_cast(self, node: IRNode, ptr: str) -> str:
         if node is None:
             return ptr
-        else:
-            return f"({self._DTYPE_TO_CUTLASS.get(node.get_dtype())}*)({ptr})"
+        return f"({self._DTYPE_TO_CUTLASS.get(node.get_dtype())}*)({ptr})"
 
     def cutlass_sparse_meta_type_cast(self, node: IRNode, ptr: str) -> str:
         if node is None:
             return ptr
-        else:
-            return (
-                f"({self._DTYPE_TO_CUTLASS_SPARSE_META.get(node.get_dtype())}*)({ptr})"
-            )
+        return f"({self._DTYPE_TO_CUTLASS_SPARSE_META.get(node.get_dtype())}*)({ptr})"
 
     @override
     def get_runtime_arg_info(self) -> list[ArgInfo]:

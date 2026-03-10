@@ -7,7 +7,7 @@ import os
 import time
 
 import torch
-from torch.profiler import profile, ProfilerActivity
+from torch.profiler import ProfilerActivity, profile
 
 
 def synchronize():

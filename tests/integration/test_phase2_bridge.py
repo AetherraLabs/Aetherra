@@ -10,7 +10,6 @@ Demonstrates the real-time bidirectional communication between
 Python backend and web panels with live data updates.
 """
 
-
 # Standard library imports
 import sys
 import time
@@ -22,9 +21,10 @@ sys.path.insert(0, str(project_root / "Aetherra"))
 
 try:
     # Third party imports
-    from lyrixa.gui.main_window import LyrixaHybridWindow
     from PySide6.QtCore import QTimer
     from PySide6.QtWidgets import QApplication
+
+    from lyrixa.gui.main_window import LyrixaHybridWindow
 
     def simulate_backend_data(window):
         """Simulate live backend data updates"""

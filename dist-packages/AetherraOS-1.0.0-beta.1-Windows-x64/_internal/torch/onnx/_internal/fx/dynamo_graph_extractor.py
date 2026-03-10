@@ -9,7 +9,8 @@ from __future__ import annotations
 import contextlib
 import functools
 import inspect
-from typing import Any, Callable, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 import torch._dynamo
 import torch.export as torch_export
@@ -17,7 +18,6 @@ import torch.fx
 import torch.onnx
 from torch.onnx._internal import _exporter_legacy, io_adapter
 from torch.utils import _pytree as pytree
-
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -84,7 +84,7 @@ class _PyTreeExtensionContext:
             values: list[Any], context: pytree.Context
         ) -> modeling_outputs.ModelOutput:
             output_type, keys = context
-            return output_type(**dict(zip(keys, values)))
+            return output_type(**dict(zip(keys, values, strict=False)))
 
         # All 'ModelOutput' subclasses are defined under module 'modeling_outputs'.
         named_model_output_classes = inspect.getmembers(

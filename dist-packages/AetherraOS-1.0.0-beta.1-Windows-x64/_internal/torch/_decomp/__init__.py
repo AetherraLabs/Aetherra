@@ -1,12 +1,12 @@
 # mypy: allow-untyped-defs
 import inspect
 from collections import defaultdict
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from functools import lru_cache, partial, wraps
 from itertools import chain
-from typing import Callable, Optional, TYPE_CHECKING, TypeVar, Union
-from typing_extensions import ParamSpec
+from typing import TYPE_CHECKING, Optional, TypeVar, Union
 
+from typing_extensions import ParamSpec
 
 if TYPE_CHECKING:
     from torch.export.decomp_utils import CustomDecompTable
@@ -17,7 +17,6 @@ from torch._ops import HigherOrderOperator, OperatorBase, OpOverload, OpOverload
 from torch._prims_common import CustomOutParamAnnotation
 from torch._subclasses.functional_tensor import FunctionalTensor
 from torch.utils import _pytree as pytree
-
 
 __all__ = [
     "decomposition_table",
@@ -68,12 +67,12 @@ def _add_op_to_registry(registry, op, fn):
     If op is OpOverload, it will be added to the registry directly.
     If op is OpOverloadPacket, all the valid op_overloads in the packet will be added to the registry.
     """
-    overloads: list[Union[torch._ops.OperatorBase]] = []
+    overloads: list[torch._ops.OperatorBase] = []
     if isinstance(op, HigherOrderOperator):
         # There's no concept of overloads for HigherOrderOperator
         registry[op] = fn
         return
-    elif isinstance(op, OpOverload):
+    if isinstance(op, OpOverload):
         overloads.append(op)
     else:
         assert isinstance(op, OpOverloadPacket)
@@ -119,7 +118,7 @@ def _convert_out_params(f):
                 default=None,
                 annotation=t,
             )
-            for o, t in zip(out_names, out_annotation.__args__)
+            for o, t in zip(out_names, out_annotation.__args__, strict=False)
         ]
         # Drop the out parameter and concatenate the new kwargs in the signature
         params = chain((v for k, v in sig.parameters.items() if k != "out"), out_params)
@@ -222,7 +221,7 @@ def register_decomposition(
 
 
 def get_decompositions(
-    aten_ops: Sequence[Union[torch._ops.OperatorBase, OpOverloadPacket]],
+    aten_ops: Sequence[torch._ops.OperatorBase | OpOverloadPacket],
     type: str = "post_autograd",
 ) -> dict[torch._ops.OperatorBase, Callable]:
     """
@@ -255,7 +254,7 @@ def get_decompositions(
 
 def remove_decompositions(
     decompositions: dict[torch._ops.OperatorBase, Callable],
-    aten_ops: Sequence[Union[OpOverload, OpOverloadPacket]],
+    aten_ops: Sequence[OpOverload | OpOverloadPacket],
 ) -> None:
     """
     Given a dictionary of decompositions obtained from get_decompositions(), removes

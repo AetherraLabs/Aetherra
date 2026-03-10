@@ -39,7 +39,7 @@ MAX_PATTERN_KEYS = 30  # styles(7)+traits(7)+elements(9)+conversation types(5)+s
 MAX_MEMORY_GROWTH_BYTES = 150_000  # ~150 KB attributed lines growth heuristic
 
 
-def _sample_inputs() -> List[str]:
+def _sample_inputs() -> list[str]:
     return [
         "Can you help me with some code?",
         "I feel a bit frustrated with this function design",
@@ -51,7 +51,7 @@ def _sample_inputs() -> List[str]:
     ]
 
 
-def _sample_responses() -> List[str]:
+def _sample_responses() -> list[str]:
     return [
         "Certainly, let's analyze the function and optimize the algorithm further.",
         "I understand how you feel; it's challenging but we can improve it together.",
@@ -83,18 +83,18 @@ async def test_reflection_memory_and_pattern_stability():
 
         # Quick sanity mid-run: no unbounded explosion of pattern keys
         if (i + 1) % 100 == 0:
-            assert (
-                len(system.communication_patterns) <= MAX_PATTERN_KEYS
-            ), f"Pattern key count exceeded early ({len(system.communication_patterns)})"
+            assert len(system.communication_patterns) <= MAX_PATTERN_KEYS, (
+                f"Pattern key count exceeded early ({len(system.communication_patterns)})"
+            )
 
     # Post-run structural invariants
-    assert (
-        len(system.reflection_history) <= 200
-    ), "reflection_history exceeded maxlen bound"
+    assert len(system.reflection_history) <= 200, (
+        "reflection_history exceeded maxlen bound"
+    )
     assert len(system.communication_styles) == 7, "communication_styles mutated size"
-    assert (
-        len(system.communication_patterns) <= MAX_PATTERN_KEYS
-    ), f"communication_patterns exceeded bounded taxonomy: {len(system.communication_patterns)}"
+    assert len(system.communication_patterns) <= MAX_PATTERN_KEYS, (
+        f"communication_patterns exceeded bounded taxonomy: {len(system.communication_patterns)}"
+    )
 
     # Memory growth heuristic: compare warm snapshot vs final snapshot
     warm_snapshot = tracemalloc.take_snapshot()
@@ -116,9 +116,9 @@ async def test_reflection_memory_and_pattern_stability():
             reflection_growth += stat.size_diff
 
     # Heuristic threshold assertion
-    assert (
-        reflection_growth <= MAX_MEMORY_GROWTH_BYTES
-    ), f"Reflection system retained {reflection_growth} bytes (> {MAX_MEMORY_GROWTH_BYTES}) after extended run"
+    assert reflection_growth <= MAX_MEMORY_GROWTH_BYTES, (
+        f"Reflection system retained {reflection_growth} bytes (> {MAX_MEMORY_GROWTH_BYTES}) after extended run"
+    )
 
     # Clean up tracing
     tracemalloc.stop()

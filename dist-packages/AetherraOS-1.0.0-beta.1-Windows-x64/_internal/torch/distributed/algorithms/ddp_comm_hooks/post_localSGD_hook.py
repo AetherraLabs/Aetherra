@@ -6,7 +6,6 @@ import torch.distributed as dist
 
 from . import default_hooks as default
 
-
 logger = logging.getLogger(__name__)
 
 

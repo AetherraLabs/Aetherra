@@ -1,9 +1,8 @@
 import os
 from collections.abc import Generator
-from contextlib import contextmanager, ExitStack
+from contextlib import ExitStack, contextmanager
 
 from torch.distributed.elastic.multiprocessing.errors import record
-
 
 __all__ = [
     "worker_main",

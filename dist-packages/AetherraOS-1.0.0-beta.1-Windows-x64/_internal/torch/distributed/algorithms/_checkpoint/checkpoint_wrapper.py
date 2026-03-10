@@ -1,17 +1,16 @@
 # mypy: allow-untyped-defs
 import warnings
 from abc import ABC, abstractmethod
-from collections.abc import Iterator
-from enum import auto, Enum
+from collections.abc import Callable, Iterator
+from enum import Enum, auto
 from functools import partial
-from typing import Any, Callable, Optional
+from typing import Any
 
 import torch
 import torch.nn as nn
 from torch.autograd.graph import save_on_cpu
 from torch.distributed.utils import _pack_kwargs, _replace_by_prefix, _unpack_kwargs
 from torch.utils.checkpoint import checkpoint as torch_utils_checkpoint
-
 
 _CHECKPOINT_WRAPPED_MODULE = "_checkpoint_wrapped_module"
 _CHECKPOINT_PREFIX = _CHECKPOINT_WRAPPED_MODULE + "."
@@ -167,10 +166,9 @@ class CheckpointWrapper(ActivationWrapper):
                 my_function,
                 *flat_args,
             )
-        else:
-            return self.checkpoint_fn(  # type: ignore[misc]
-                self._checkpoint_wrapped_module, *args, **kwargs
-            )
+        return self.checkpoint_fn(  # type: ignore[misc]
+            self._checkpoint_wrapped_module, *args, **kwargs
+        )
 
 
 def offload_wrapper(module: torch.nn.Module) -> torch.nn.Module:
@@ -251,7 +249,7 @@ def apply_activation_checkpointing(
     model,
     checkpoint_wrapper_fn=checkpoint_wrapper,
     check_fn=lambda _: True,
-    auto_wrap_policy: Optional[Callable[[nn.Module, bool, int], bool]] = None,
+    auto_wrap_policy: Callable[[nn.Module, bool, int], bool] | None = None,
 ):
     """
     Apply :func:`checkpoint_wrapper` to modules within `model` based on a user-defined configuration.

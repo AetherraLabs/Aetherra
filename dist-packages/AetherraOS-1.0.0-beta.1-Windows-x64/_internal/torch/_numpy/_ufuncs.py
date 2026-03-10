@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 import torch
 
 from . import _binary_ufuncs_impl, _dtypes_impl, _unary_ufuncs_impl, _util
@@ -12,9 +10,9 @@ from ._normalizations import (
     ArrayLikeOrScalar,
     CastingModes,
     DTypeLike,
-    normalizer,
     NotImplementedType,
     OutArray,
+    normalizer,
 )
 
 
@@ -76,12 +74,12 @@ def deco_binary_ufunc(torch_func):
         x1: ArrayLikeOrScalar,
         x2: ArrayLikeOrScalar,
         /,
-        out: Optional[OutArray] = None,
+        out: OutArray | None = None,
         *,
         where: NotImplementedType = True,
-        casting: Optional[CastingModes] = "same_kind",
+        casting: CastingModes | None = "same_kind",
         order: NotImplementedType = "K",
-        dtype: Optional[DTypeLike] = None,
+        dtype: DTypeLike | None = None,
         subok: NotImplementedType = False,
         signature: NotImplementedType = None,
         extobj: NotImplementedType = None,
@@ -91,8 +89,7 @@ def deco_binary_ufunc(torch_func):
             def cast(x, dtype):
                 if isinstance(x, torch.Tensor):
                     return _util.typecast_tensor(x, dtype, casting)
-                else:
-                    return torch.as_tensor(x, dtype=dtype)
+                return torch.as_tensor(x, dtype=dtype)
 
             x1 = cast(x1, dtype)
             x2 = cast(x2, dtype)
@@ -123,11 +120,11 @@ def matmul(
     x1: ArrayLike,
     x2: ArrayLike,
     /,
-    out: Optional[OutArray] = None,
+    out: OutArray | None = None,
     *,
-    casting: Optional[CastingModes] = "same_kind",
+    casting: CastingModes | None = "same_kind",
     order: NotImplementedType = "K",
-    dtype: Optional[DTypeLike] = None,
+    dtype: DTypeLike | None = None,
     subok: NotImplementedType = False,
     signature: NotImplementedType = None,
     extobj: NotImplementedType = None,
@@ -150,12 +147,12 @@ def ldexp(
     x1: ArrayLikeOrScalar,
     x2: ArrayLikeOrScalar,
     /,
-    out: Optional[OutArray] = None,
+    out: OutArray | None = None,
     *,
     where: NotImplementedType = True,
-    casting: Optional[CastingModes] = "same_kind",
+    casting: CastingModes | None = "same_kind",
     order: NotImplementedType = "K",
-    dtype: Optional[DTypeLike] = None,
+    dtype: DTypeLike | None = None,
     subok: NotImplementedType = False,
     signature: NotImplementedType = None,
     extobj: NotImplementedType = None,
@@ -189,15 +186,15 @@ def ldexp(
 def divmod(
     x1: ArrayLike,
     x2: ArrayLike,
-    out1: Optional[OutArray] = None,
-    out2: Optional[OutArray] = None,
+    out1: OutArray | None = None,
+    out2: OutArray | None = None,
     /,
-    out: tuple[Optional[OutArray], Optional[OutArray]] = (None, None),
+    out: tuple[OutArray | None, OutArray | None] = (None, None),
     *,
     where: NotImplementedType = True,
-    casting: Optional[CastingModes] = "same_kind",
+    casting: CastingModes | None = "same_kind",
     order: NotImplementedType = "K",
-    dtype: Optional[DTypeLike] = None,
+    dtype: DTypeLike | None = None,
     subok: NotImplementedType = False,
     signature: NotImplementedType = None,
     extobj: NotImplementedType = None,
@@ -207,7 +204,7 @@ def divmod(
     num_outs = sum(x is not None for x in [out1, out2])
     if num_outs == 1:
         raise ValueError("both out1 and out2 need to be provided")
-    elif num_outs == 2:
+    if num_outs == 2:
         o1, o2 = out
         if o1 is not None or o2 is not None:
             raise TypeError(
@@ -297,12 +294,12 @@ def deco_unary_ufunc(torch_func):
     def wrapped(
         x: ArrayLike,
         /,
-        out: Optional[OutArray] = None,
+        out: OutArray | None = None,
         *,
         where=True,
-        casting: Optional[CastingModes] = "same_kind",
+        casting: CastingModes | None = "same_kind",
         order="K",
-        dtype: Optional[DTypeLike] = None,
+        dtype: DTypeLike | None = None,
         subok: NotImplementedType = False,
         signature=None,
         extobj=None,

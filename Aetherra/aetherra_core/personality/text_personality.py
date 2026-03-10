@@ -72,9 +72,7 @@ class TextPersonalityInterface:
             # Extract user emotional context
             user_input = context.get("user_input", "")
             user_emotion = (
-                detect_user_emotion(user_input)
-                if user_input
-                else {"primary_emotion": "neutral"}
+                detect_user_emotion(user_input) if user_input else {"primary_emotion": "neutral"}
             )
 
             # Get base traits
@@ -89,9 +87,7 @@ class TextPersonalityInterface:
                 adapted_traits[trait_name] = adapted_value
 
             # Generate writing style parameters
-            writing_style = self._generate_writing_style(
-                adapted_traits, user_emotion, context
-            )
+            writing_style = self._generate_writing_style(adapted_traits, user_emotion, context)
 
             # Create text personality configuration
             text_personality = {
@@ -106,9 +102,7 @@ class TextPersonalityInterface:
             response_time = (datetime.now() - start_time).total_seconds() * 1000
             self.metrics["response_time_ms"].append(response_time)
             if len(self.metrics["response_time_ms"]) > 100:
-                self.metrics["response_time_ms"] = self.metrics["response_time_ms"][
-                    -50:
-                ]
+                self.metrics["response_time_ms"] = self.metrics["response_time_ms"][-50:]
 
             return text_personality
 
@@ -195,14 +189,10 @@ class TextPersonalityInterface:
             # Tone and voice
             "warmth_level": empathy * 0.8 + 0.2,  # Base warmth plus empathy
             "energy_level": enthusiasm * 0.7 + 0.3,  # Energy from enthusiasm
-            "formality_level": max(
-                0.1, 1.0 - playfulness * 0.6
-            ),  # Less formal = more playful
+            "formality_level": max(0.1, 1.0 - playfulness * 0.6),  # Less formal = more playful
             "thoughtfulness_level": thoughtfulness,
             # Text formatting and structure
-            "emoji_usage": min(
-                0.7, playfulness * 0.8 + 0.1
-            ),  # Playfulness drives emoji usage
+            "emoji_usage": min(0.7, playfulness * 0.8 + 0.1),  # Playfulness drives emoji usage
             "exclamation_frequency": enthusiasm * 0.5,  # Enthusiasm drives exclamations
             "question_frequency": (adapted_traits.get("curiosity", 0.5) * 0.4) + 0.1,
             "paragraph_length": "medium" if thoughtfulness > 0.6 else "short",
@@ -220,19 +210,13 @@ class TextPersonalityInterface:
         # Adjust for user emotional state
         primary_emotion = user_emotion.get("primary_emotion", "neutral")
         if primary_emotion == "frustration":
-            writing_style["warmth_level"] = min(
-                1.0, writing_style["warmth_level"] + 0.2
-            )
+            writing_style["warmth_level"] = min(1.0, writing_style["warmth_level"] + 0.2)
             writing_style["empathy_expressions"] = min(
                 1.0, writing_style["empathy_expressions"] + 0.3
             )
-            writing_style["formality_level"] = min(
-                1.0, writing_style["formality_level"] + 0.1
-            )
+            writing_style["formality_level"] = min(1.0, writing_style["formality_level"] + 0.1)
         elif primary_emotion == "excitement":
-            writing_style["energy_level"] = min(
-                1.0, writing_style["energy_level"] + 0.2
-            )
+            writing_style["energy_level"] = min(1.0, writing_style["energy_level"] + 0.2)
             writing_style["emoji_usage"] = min(1.0, writing_style["emoji_usage"] + 0.2)
             writing_style["exclamation_frequency"] = min(
                 1.0, writing_style["exclamation_frequency"] + 0.3
@@ -304,9 +288,7 @@ class TextPersonalityInterface:
             # Adjust emoji usage
             emoji_usage = writing_style.get("emoji_usage", 0.3)
             if emoji_usage > 0.5:
-                optimized_response = self._add_appropriate_emojis(
-                    optimized_response, emoji_usage
-                )
+                optimized_response = self._add_appropriate_emojis(optimized_response, emoji_usage)
 
             # Adjust formality
             formality_level = writing_style.get("formality_level", 0.4)
@@ -324,10 +306,7 @@ class TextPersonalityInterface:
     def _add_warmth_expressions(self, text: str) -> str:
         """Add warmth expressions to text"""
         # Simple warmth additions (in a real implementation, this would be more sophisticated)
-        if not any(
-            word in text.lower()
-            for word in ["i understand", "i hear you", "that sounds"]
-        ):
+        if not any(word in text.lower() for word in ["i understand", "i hear you", "that sounds"]):
             if "." in text:
                 # Add understanding expression after first sentence
                 sentences = text.split(".", 1)
@@ -340,10 +319,7 @@ class TextPersonalityInterface:
         # Simple energy additions
         if not text.strip().endswith("!") and len(text) > 20:
             # Add excitement to appropriate responses
-            if any(
-                word in text.lower()
-                for word in ["great", "excellent", "wonderful", "amazing"]
-            ):
+            if any(word in text.lower() for word in ["great", "excellent", "wonderful", "amazing"]):
                 text = text.rstrip(".") + "!"
         return text
 

@@ -9,6 +9,9 @@ here.
 
 from torch.ao.quantization.fx.graph_module import ObservedGraphModule
 from torch.ao.quantization.quantize_fx import (
+    QuantizationTracer,
+    Scope,
+    ScopeContextManager,
     _check_is_graph_module,
     _convert_fx,
     _convert_standalone_module_fx,
@@ -20,7 +23,4 @@ from torch.ao.quantization.quantize_fx import (
     fuse_fx,
     prepare_fx,
     prepare_qat_fx,
-    QuantizationTracer,
-    Scope,
-    ScopeContextManager,
 )

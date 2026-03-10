@@ -3,8 +3,9 @@ import copy
 import operator
 import warnings
 from collections import namedtuple
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -15,9 +16,9 @@ from torch.ao.quantization.fake_quantize import (
     FixedQParamsFakeQuantize,
 )
 from torch.ao.quantization.observer import (
-    _is_activation_post_process,
     FixedQParamsObserver,
     ObserverBase,
+    _is_activation_post_process,
 )
 from torch.ao.quantization.qconfig import (
     float16_dynamic_qconfig,
@@ -36,7 +37,6 @@ from torch.fx.graph import Graph, Node
 # importing the lib so that the quantized_decomposed ops are registered
 from ._decomposed import quantized_decomposed_lib  # noqa: F401
 from .custom_config import PrepareCustomConfig
-
 
 # TODO: revisit this list. Many helper methods shouldn't be public
 __all__ = [
@@ -81,8 +81,8 @@ class ObservedGraphModuleAttrs:
     is_qat: bool
     observed_node_names: set[str]
     is_observed_standalone_module: bool = False
-    standalone_module_input_quantized_idxs: Optional[list[int]] = None
-    standalone_module_output_quantized_idxs: Optional[list[int]] = None
+    standalone_module_input_quantized_idxs: list[int] | None = None
+    standalone_module_output_quantized_idxs: list[int] | None = None
 
 
 def node_arg_is_weight(node: Node, arg: Any) -> bool:
@@ -147,10 +147,9 @@ def get_custom_module_class_keys(
 def get_linear_prepack_op_for_dtype(dtype):
     if dtype == torch.float16:
         return torch.ops.quantized.linear_prepack_fp16
-    elif dtype == torch.qint8:
+    if dtype == torch.qint8:
         return torch.ops.quantized.linear_prepack
-    else:
-        raise Exception("can't get linear prepack op for dtype:", dtype)  # noqa: TRY002
+    raise Exception("can't get linear prepack op for dtype:", dtype)  # noqa: TRY002
 
 
 def get_qconv_prepack_op(conv_op: Callable) -> Callable:
@@ -162,7 +161,7 @@ def get_qconv_prepack_op(conv_op: Callable) -> Callable:
         torch.nn.functional.conv_transpose2d: torch.ops.quantized.conv_transpose2d_prepack,
         torch.nn.functional.conv_transpose3d: torch.ops.quantized.conv_transpose3d_prepack,
     }
-    prepack_op = prepack_ops.get(conv_op, None)
+    prepack_op = prepack_ops.get(conv_op)
     assert prepack_op, f"Didn't find prepack op for {conv_op}"
     return prepack_op
 
@@ -189,7 +188,7 @@ def get_new_attr_name_with_prefix(prefix: str) -> Callable:
     return get_new_attr_name
 
 
-def collect_producer_nodes(node: Node) -> Optional[list[Node]]:
+def collect_producer_nodes(node: Node) -> list[Node] | None:
     r"""Starting from a target node, trace back until we hit inpu or
     getattr node. This is used to extract the chain of operators
     starting from getattr to the target node, for example
@@ -383,7 +382,7 @@ NodeInfo = namedtuple("NodeInfo", "op target")
 # for them would cause errors
 
 NON_OBSERVABLE_ARG_DICT: dict[
-    NodeInfo, dict[Union[type, torch.dtype], Callable[[Node], list[int]]]
+    NodeInfo, dict[type | torch.dtype, Callable[[Node], list[int]]]
 ] = {
     NodeInfo("call_method", "masked_fill"): {
         torch.bool: return_arg_list([1]),
@@ -401,12 +400,12 @@ NON_OBSERVABLE_ARG_DICT: dict[
     NodeInfo("call_method", "view"): {int: all_node_args_except_first},
 }
 
-EMPTY_ARG_DICT: dict[Union[type, torch.dtype], Callable[[Node], list[int]]] = {}
+EMPTY_ARG_DICT: dict[type | torch.dtype, Callable[[Node], list[int]]] = {}
 
 
 def get_non_observable_arg_indexes_and_types(
     node: Node,
-) -> dict[Union[type, torch.dtype], Callable[[Node], list[int]]]:
+) -> dict[type | torch.dtype, Callable[[Node], list[int]]]:
     """
     Returns a dict with of non float tensor types as keys and values which correspond to a
     function to retrieve the list (which takes the node as an argument)
@@ -419,9 +418,9 @@ def get_non_observable_arg_indexes_and_types(
 def maybe_get_next_module(
     node: Node,
     modules: dict[str, nn.Module],
-    target_module_type: Optional[type[nn.Module]] = None,
+    target_module_type: type[nn.Module] | None = None,
     target_functional_type: Any = None,
-) -> Optional[Node]:
+) -> Node | None:
     """Gets the next module that matches what is needed in
     is_target_module_type if it exists
 
@@ -436,9 +435,7 @@ def maybe_get_next_module(
             user.op == "call_module"
             and target_module_type is not None
             and isinstance(modules[str(user.target)], target_module_type)
-        ):
-            return user
-        elif (
+        ) or (
             user.op == "call_function"
             and target_functional_type is not None
             and user.target == target_functional_type
@@ -488,7 +485,7 @@ def _is_custom_module_lstm(
     named_modules: dict[str, torch.nn.Module],
     qconfig: QConfigAny = None,
     # QuantizeHandler, but we cannot include the type here due to circular imports
-    qhandler: Optional[Any] = None,
+    qhandler: Any | None = None,
 ) -> bool:
     """
     Return whether this refers to the custom module LSTM flow.
@@ -503,8 +500,7 @@ def _is_custom_module_lstm(
             and activation_is_statically_quantized(qconfig)
             and qhandler.is_custom_module()
         )
-    else:
-        return isinstance(mod, torch.ao.nn.quantizable.LSTM)
+    return isinstance(mod, torch.ao.nn.quantizable.LSTM)
 
 
 def _is_custom_module_mha(
@@ -512,7 +508,7 @@ def _is_custom_module_mha(
     named_modules: dict[str, torch.nn.Module],
     qconfig: QConfigAny = None,
     # QuantizeHandler, but we cannot include the type here due to circular imports
-    qhandler: Optional[Any] = None,
+    qhandler: Any | None = None,
 ) -> bool:
     """
     Return whether this refers to the custom module MultiheadAttention flow.
@@ -527,20 +523,18 @@ def _is_custom_module_mha(
             and activation_is_statically_quantized(qconfig)
             and qhandler.is_custom_module()
         )
-    else:
-        return isinstance(mod, torch.ao.nn.quantizable.MultiheadAttention)
+    return isinstance(mod, torch.ao.nn.quantizable.MultiheadAttention)
 
 
 def _get_module(
     node: Node, named_modules: dict[str, torch.nn.Module]
-) -> Optional[torch.nn.Module]:
+) -> torch.nn.Module | None:
     """
     If `node` refers to a call_module node, return the module, else None.
     """
     if node.op == "call_module" and str(node.target) in named_modules:
         return named_modules[str(node.target)]
-    else:
-        return None
+    return None
 
 
 def _insert_dequant_stub(
@@ -661,7 +655,7 @@ def _insert_dequant_stubs_for_custom_module_lstm_output(
 def _maybe_get_custom_module_lstm_from_node_arg(
     arg: Node,
     named_modules: dict[str, torch.nn.Module],
-) -> Optional[Node]:
+) -> Node | None:
     """
     Given an argument of a node, if the argument refers to the path through which the node
     is a consumer of custom module LSTM, return the custom module LSTM node, or None otherwise.
@@ -698,7 +692,7 @@ def _maybe_get_custom_module_lstm_from_node_arg(
     def match_tuple(a):
         return a.op == "call_function" and a.target == tuple
 
-    def _match_pattern(match_pattern: list[Callable]) -> Optional[Node]:
+    def _match_pattern(match_pattern: list[Callable]) -> Node | None:
         """
         Traverse up the graph and match the args one by one.
         If there is a match, return the last matched node, or None otherwise.
@@ -783,7 +777,7 @@ def _reroute_tuple_getitem_pattern(graph: Graph):
         # Avoid duplicating work
         state = (node, tuple(index_stack))
         if state in seen:
-            return
+            return None
         seen.add(state)
 
         # Iterate through users of this node to find tuple/getitem nodes to match
@@ -829,7 +823,7 @@ def _reroute_tuple_getitem_pattern(graph: Graph):
 
 
 def _get_observer_from_activation_post_process(
-    activation_post_process: Union[ObserverBase, FakeQuantizeBase],
+    activation_post_process: ObserverBase | FakeQuantizeBase,
 ) -> ObserverBase:
     """
     If `activation_post_process` is an observer, return the observer.
@@ -837,9 +831,8 @@ def _get_observer_from_activation_post_process(
     """
     if isinstance(activation_post_process, ObserverBase):
         return activation_post_process
-    else:
-        assert isinstance(activation_post_process, FakeQuantizeBase)
-        return activation_post_process.activation_post_process  # type: ignore[return-value]
+    assert isinstance(activation_post_process, FakeQuantizeBase)
+    return activation_post_process.activation_post_process  # type: ignore[return-value]
 
 
 def _qconfig_satisfies_dtype_config_constraints(
@@ -862,7 +855,7 @@ def _qconfig_satisfies_dtype_config_constraints(
 
     # TODO: log warnings only when the user enabled a debug flag
     def _activation_post_process_satisfies_dtype_config_constraints(
-        activation_post_process: Union[ObserverBase, FakeQuantizeBase],
+        activation_post_process: ObserverBase | FakeQuantizeBase,
         dtype_with_constraints: DTypeWithConstraints,
         debug_string: str,
     ) -> bool:
@@ -884,7 +877,7 @@ def _qconfig_satisfies_dtype_config_constraints(
                     f"QConfig {debug_string} must specify 'quant_min' and 'quant_max', ignoring {qconfig}"
                 )
                 return False
-            elif app_quant_min < backend_quant_min or app_quant_max > backend_quant_max:
+            if app_quant_min < backend_quant_min or app_quant_max > backend_quant_max:
                 warnings.warn(
                     f"QConfig {debug_string} quantization range must fall within the backend's:\n"
                     f"QConfig range = ({app_quant_min}, {app_quant_max}), "

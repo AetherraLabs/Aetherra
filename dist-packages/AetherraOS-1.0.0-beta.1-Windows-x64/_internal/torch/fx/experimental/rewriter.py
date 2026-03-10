@@ -5,8 +5,9 @@ import copy
 import functools
 import inspect
 import textwrap
+from collections.abc import Callable
 from types import FunctionType
-from typing import Any, Callable, cast, Optional, Union
+from typing import Any, cast
 
 import torch
 from torch._sources import normalize_source_lines
@@ -111,13 +112,13 @@ class AST_Rewriter(ast.NodeTransformer):
 class RewritingTracer(Tracer):
     def trace(
         self,
-        root: Union[torch.nn.Module, Callable],
-        concrete_args: Optional[dict[str, Any]] = None,
+        root: torch.nn.Module | Callable,
+        concrete_args: dict[str, Any] | None = None,
     ) -> Graph:
         return super().trace(_rewrite(root), concrete_args)
 
 
-def _rewrite(fn: Union[torch.nn.Module, Callable]) -> Union[torch.nn.Module, Callable]:
+def _rewrite(fn: torch.nn.Module | Callable) -> torch.nn.Module | Callable:
     if isinstance(fn, torch.nn.Module):
         # Rewrite this module's `forward` as well as the `forward`s of
         # all of this module's recursive descendents. Return the new,
@@ -138,6 +139,5 @@ def _rewrite(fn: Union[torch.nn.Module, Callable]) -> Union[torch.nn.Module, Cal
             return RewrittenModule(m)
 
         return rewrite_module(fn)
-    else:
-        # Rewrite this single free function
-        return AST_Rewriter().rewrite(cast(FunctionType, fn))
+    # Rewrite this single free function
+    return AST_Rewriter().rewrite(cast(FunctionType, fn))

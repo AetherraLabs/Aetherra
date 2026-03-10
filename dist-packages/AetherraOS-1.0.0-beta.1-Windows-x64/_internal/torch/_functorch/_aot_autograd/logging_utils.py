@@ -10,7 +10,6 @@ from contextlib import contextmanager
 import torch
 import torch.fx.traceback as fx_traceback
 
-
 # This is a list since looking forward, we can have this arbitrarily nested.
 graph_being_compiled: list[str] = []
 # TODO: It would be nice to reset the numbering every time aot_id goes
@@ -134,8 +133,7 @@ def setup_stacktrace_preservation_hooks(roots: list):
 def describe_input(i, aot_config):
     if i < aot_config.num_params_buffers:
         return f"parameter/buffer {i}"
-    else:
-        return f"input {i - aot_config.num_params_buffers}"
+    return f"input {i - aot_config.num_params_buffers}"
 
 
 def format_guard_bug_msg(aot_config, expected):

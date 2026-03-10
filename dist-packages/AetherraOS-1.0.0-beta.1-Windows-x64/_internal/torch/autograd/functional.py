@@ -5,7 +5,6 @@ from torch._vmap_internals import _vmap
 
 from . import forward_ad as fwAD
 
-
 __all__ = ["vjp", "jvp", "jacobian", "hessian", "hvp", "vhp"]
 
 # Utility functions
@@ -14,10 +13,9 @@ __all__ = ["vjp", "jvp", "jacobian", "hessian", "hvp", "vhp"]
 def _as_tuple_nocheck(x):
     if isinstance(x, tuple):
         return x
-    elif isinstance(x, list):
+    if isinstance(x, list):
         return tuple(x)
-    else:
-        return (x,)
+    return (x,)
 
 
 def _as_tuple(inp, arg_name=None, fn_name=None):
@@ -38,11 +36,10 @@ def _as_tuple(inp, arg_name=None, fn_name=None):
                     f"The {arg_name} given to {fn_name} must be either a Tensor or a tuple of Tensors but the"
                     f" value at index {i} has type {type(el)}."
                 )
-            else:
-                raise TypeError(
-                    f"The {arg_name} given to {fn_name} must be either a Tensor or a tuple of Tensors but the"
-                    f" given {arg_name} has type {type(el)}."
-                )
+            raise TypeError(
+                f"The {arg_name} given to {fn_name} must be either a Tensor or a tuple of Tensors but the"
+                f" given {arg_name} has type {type(el)}."
+            )
 
     return is_inp_tuple, inp
 
@@ -94,10 +91,8 @@ def _grad_postprocess(inputs, create_graph):
     if isinstance(inputs[0], torch.Tensor):
         if not create_graph:
             return tuple(inp.detach() for inp in inputs)
-        else:
-            return inputs
-    else:
-        return tuple(_grad_postprocess(inp, create_graph) for inp in inputs)
+        return inputs
+    return tuple(_grad_postprocess(inp, create_graph) for inp in inputs)
 
 
 def _validate_v(v, other, is_other_tuple):
@@ -108,10 +103,9 @@ def _validate_v(v, other, is_other_tuple):
             raise RuntimeError(
                 f"v is a tuple of invalid length: should be {len(other)} but got {len(v)}."
             )
-        else:
-            raise RuntimeError("The given v should contain a single Tensor.")
+        raise RuntimeError("The given v should contain a single Tensor.")
 
-    for idx, (el_v, el_other) in enumerate(zip(v, other)):
+    for idx, (el_v, el_other) in enumerate(zip(v, other, strict=False)):
         if el_v.size() != el_other.size():
             prepend = ""
             if is_other_tuple:
@@ -143,7 +137,7 @@ def _check_requires_grad(inputs, input_type, strict):
                     " You should ensure that your function is thrice differentiable and that"
                     " the hessian depends on the inputs."
                 )
-            elif input_type == "jacobian":
+            if input_type == "jacobian":
                 raise RuntimeError(
                     "While computing the hessian, found that the jacobian of the user-provided"
                     f" function with respect to input {i} is independent of the input. This is not"
@@ -151,17 +145,16 @@ def _check_requires_grad(inputs, input_type, strict):
                     " differentiable and that the jacobian depends on the inputs (this would be"
                     " violated by a linear function for example)."
                 )
-            elif input_type == "grad_inputs":
+            if input_type == "grad_inputs":
                 raise RuntimeError(
                     f"The gradient with respect to input {i} is independent of the inputs of the"
                     " user-provided function. This is not allowed in strict mode."
                 )
-            else:
-                raise RuntimeError(
-                    f"Output {i} of the user-provided function does not require gradients."
-                    " The outputs must be computed in a differentiable manner from the input"
-                    " when running in strict mode."
-                )
+            raise RuntimeError(
+                f"Output {i} of the user-provided function does not require gradients."
+                " The outputs must be computed in a differentiable manner from the input"
+                " when running in strict mode."
+            )
 
 
 def _autograd_grad(
@@ -182,7 +175,7 @@ def _autograd_grad(
 
     new_outputs: tuple[torch.Tensor, ...] = ()
     new_grad_outputs: tuple[torch.Tensor, ...] = ()
-    for out, grad_out in zip(outputs, grad_outputs):
+    for out, grad_out in zip(outputs, grad_outputs, strict=False):
         if out is not None and out.requires_grad:
             new_outputs += (out,)
             new_grad_outputs += (grad_out,)
@@ -190,16 +183,15 @@ def _autograd_grad(
     if len(new_outputs) == 0:
         # No differentiable output, we don't need to call the autograd engine
         return (None,) * len(inputs)
-    else:
-        return torch.autograd.grad(
-            new_outputs,
-            inputs,
-            new_grad_outputs,
-            allow_unused=True,
-            create_graph=create_graph,
-            retain_graph=retain_graph,
-            is_grads_batched=is_grads_batched,
-        )
+    return torch.autograd.grad(
+        new_outputs,
+        inputs,
+        new_grad_outputs,
+        allow_unused=True,
+        create_graph=create_graph,
+        retain_graph=retain_graph,
+        is_grads_batched=is_grads_batched,
+    )
 
 
 def _fill_in_zeros(grads, refs, strict, create_graph, stage):
@@ -219,24 +211,23 @@ def _fill_in_zeros(grads, refs, strict, create_graph, stage):
                         "The output of the user-provided function is independent of "
                         f"input {i}. This is not allowed in strict mode."
                     )
-                elif stage == "back_trick":
+                if stage == "back_trick":
                     raise RuntimeError(
                         f"The gradient with respect to the input is independent of entry {i}"
                         " in the grad_outputs when using the double backward trick to compute"
                         " forward mode gradients. This is not allowed in strict mode."
                     )
-                elif stage == "double_back":
+                if stage == "double_back":
                     raise RuntimeError(
                         "The jacobian of the user-provided function is independent of "
                         f"input {i}. This is not allowed in strict mode."
                     )
-                else:
-                    raise RuntimeError(
-                        "The hessian of the user-provided function is independent of "
-                        f"entry {i} in the grad_jacobian. This is not allowed in strict "
-                        "mode as it prevents from using the double backward trick to "
-                        "replace forward mode AD."
-                    )
+                raise RuntimeError(
+                    "The hessian of the user-provided function is independent of "
+                    f"entry {i} in the grad_jacobian. This is not allowed in strict "
+                    "mode as it prevents from using the double backward trick to "
+                    "replace forward mode AD."
+                )
 
             grads_i = torch.zeros_like(refs[i])
         else:
@@ -246,11 +237,10 @@ def _fill_in_zeros(grads, refs, strict, create_graph, stage):
                         "The jacobian of the user-provided function is independent of "
                         f"input {i}. This is not allowed in strict mode when create_graph=True."
                     )
-                else:
-                    raise RuntimeError(
-                        "The hessian of the user-provided function is independent of "
-                        f"input {i}. This is not allowed in strict mode when create_graph=True."
-                    )
+                raise RuntimeError(
+                    "The hessian of the user-provided function is independent of "
+                    f"input {i}. This is not allowed in strict mode when create_graph=True."
+                )
 
         res += (grads_i,)
 
@@ -494,10 +484,10 @@ def _construct_standard_basis_for(
     total_numel = sum(tensor_numels)
     chunks = tuple(
         tensor.new_zeros(total_numel, tensor_numel)
-        for tensor, tensor_numel in zip(tensors, tensor_numels)
+        for tensor, tensor_numel in zip(tensors, tensor_numels, strict=False)
     )
     diag_start_idx = 0
-    for chunk, numel in zip(chunks, tensor_numels):
+    for chunk, numel in zip(chunks, tensor_numels, strict=False):
         chunk.diagonal(diag_start_idx).fill_(1)
         diag_start_idx -= numel
     return chunks
@@ -526,7 +516,7 @@ def _jacfwd(func, inputs, strict=False, vectorize=False):
             with fwAD.dual_level():
                 dual_inputs = tuple(
                     fwAD.make_dual(input, tangent.view_as(input))
-                    for input, tangent in zip(inputs, tangents)
+                    for input, tangent in zip(inputs, tangents, strict=False)
                 )
                 _is_outputs_tuple, dual_outputs = _as_tuple(
                     func(*dual_inputs), "outputs"
@@ -548,9 +538,11 @@ def _jacfwd(func, inputs, strict=False, vectorize=False):
         is_outputs_tuple, outputs = output_info
         # Step 3: for each of the output tangents, split along dim 0
         jacobian_input_output = []
-        for jac_output_i, output_i in zip(outputs_before_split, outputs):
+        for jac_output_i, output_i in zip(outputs_before_split, outputs, strict=False):
             jacobian_output_i_output = []
-            for jac, input_j in zip(jac_output_i.split(input_numels, dim=0), inputs):
+            for jac, input_j in zip(
+                jac_output_i.split(input_numels, dim=0), inputs, strict=False
+            ):
                 # We need to transpose the Jacobian because in forward AD, the
                 # batch dimension represents that of the inputs
                 jacobian_input_i_output_j = jac.permute(*range(1, jac.ndim), 0).reshape(
@@ -564,11 +556,10 @@ def _jacfwd(func, inputs, strict=False, vectorize=False):
         return _tuple_postprocess(
             jacobian_input_output, (is_outputs_tuple, is_inputs_tuple)
         )
-    else:
-        raise NotImplementedError(
-            "Computing Jacobian using forward-AD or forward-over-reverse Hessian is"
-            "only implemented for `vectorize=True`."
-        )
+    raise NotImplementedError(
+        "Computing Jacobian using forward-AD or forward-over-reverse Hessian is"
+        "only implemented for `vectorize=True`."
+    )
 
 
 def jacobian(
@@ -766,10 +757,12 @@ def jacobian(
             # Step 3: The returned jacobian is one big tensor per input. In this step,
             # we split each Tensor by output.
             jacobian_input_output = []
-            for jac_input_i, input_i in zip(jacobians_of_flat_output, inputs):
+            for jac_input_i, input_i in zip(
+                jacobians_of_flat_output, inputs, strict=False
+            ):
                 jacobian_input_i_output = []
                 for jac, output_j in zip(
-                    jac_input_i.split(output_numels, dim=0), outputs
+                    jac_input_i.split(output_numels, dim=0), outputs, strict=False
                 ):
                     jacobian_input_i_output_j = jac.view(output_j.shape + input_i.shape)
                     jacobian_input_i_output.append(jacobian_input_i_output_j)
@@ -780,7 +773,7 @@ def jacobian(
             # the inner List corresponds to the number of outputs.
             # We need to exchange the order of these and convert to tuples
             # before returning.
-            jacobian_output_input = tuple(zip(*jacobian_input_output))
+            jacobian_output_input = tuple(zip(*jacobian_input_output, strict=False))
 
             jacobian_output_input = _grad_postprocess(
                 jacobian_output_input, create_graph
@@ -803,7 +796,7 @@ def jacobian(
                 )
 
                 for el_idx, (jac_i_el, vj_el, inp_el) in enumerate(
-                    zip(jac_i, vj, inputs)
+                    zip(jac_i, vj, inputs, strict=False)
                 ):
                     if vj_el is not None:
                         if strict and create_graph and not vj_el.requires_grad:

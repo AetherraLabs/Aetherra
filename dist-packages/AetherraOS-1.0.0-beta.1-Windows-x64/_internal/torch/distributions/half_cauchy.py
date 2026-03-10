@@ -1,14 +1,12 @@
 # mypy: allow-untyped-defs
 import math
-from typing import Optional, Union
 
 import torch
-from torch import inf, Tensor
+from torch import Tensor, inf
 from torch.distributions import constraints
 from torch.distributions.cauchy import Cauchy
 from torch.distributions.transformed_distribution import TransformedDistribution
 from torch.distributions.transforms import AbsTransform
-
 
 __all__ = ["HalfCauchy"]
 
@@ -38,8 +36,8 @@ class HalfCauchy(TransformedDistribution):
 
     def __init__(
         self,
-        scale: Union[Tensor, float],
-        validate_args: Optional[bool] = None,
+        scale: Tensor | float,
+        validate_args: bool | None = None,
     ) -> None:
         base_dist = Cauchy(0, scale, validate_args=False)
         super().__init__(base_dist, AbsTransform(), validate_args=validate_args)

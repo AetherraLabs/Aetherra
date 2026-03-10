@@ -11,7 +11,6 @@ from .container import ModuleList, Sequential
 from .linear import Linear
 from .module import Module
 
-
 __all__ = ["AdaptiveLogSoftmaxWithLoss"]
 
 _ASMoutput = namedtuple("_ASMoutput", ["output", "loss"])
@@ -267,7 +266,9 @@ class AdaptiveLogSoftmaxWithLoss(Module):
 
         out[:, : self.shortlist_size] = head_logprob[:, : self.shortlist_size]
 
-        for i, (start_idx, stop_idx) in enumerate(zip(self.cutoffs, self.cutoffs[1:])):
+        for i, (start_idx, stop_idx) in enumerate(
+            zip(self.cutoffs, self.cutoffs[1:], strict=False)
+        ):
             cluster_output = self.tail[i](input)
             cluster_logprob = F.log_softmax(cluster_output, dim=1)
             output_logprob = cluster_logprob + head_logprob[
@@ -320,13 +321,12 @@ class AdaptiveLogSoftmaxWithLoss(Module):
         if all_in_shortlist:
             return output
 
-        elif not_in_shortlist.all():
+        if not_in_shortlist.all():
             log_prob = self._get_full_log_prob(input, head_output)
             return torch.argmax(log_prob, dim=1)
 
-        else:
-            log_prob = self._get_full_log_prob(
-                input[not_in_shortlist], head_output[not_in_shortlist]
-            )
-            output[not_in_shortlist] = torch.argmax(log_prob, dim=1)
-            return output
+        log_prob = self._get_full_log_prob(
+            input[not_in_shortlist], head_output[not_in_shortlist]
+        )
+        output[not_in_shortlist] = torch.argmax(log_prob, dim=1)
+        return output

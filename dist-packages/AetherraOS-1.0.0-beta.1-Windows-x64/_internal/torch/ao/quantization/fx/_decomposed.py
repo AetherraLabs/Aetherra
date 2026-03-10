@@ -1,12 +1,10 @@
 # mypy: allow-untyped-defs
 import math
-from typing import Optional
 
 import torch
 from torch._refs import _unsqueeze_multiple
 from torch.ao.quantization.utils import determine_qparams, validate_qmin_qmax
-from torch.library import impl, Library
-
+from torch.library import Library, impl
 
 # Note: decomposed means decomposed quantized tensor, using decomposed so that the
 # name is not too long
@@ -238,7 +236,7 @@ def dequantize_per_tensor(
     quant_max: int,
     dtype: torch.dtype,
     *,
-    out_dtype: Optional[torch.dtype] = None,
+    out_dtype: torch.dtype | None = None,
 ) -> torch.Tensor:
     """Affine dequantization for the Tensor using the same quantization parameters to map
     from quantized values to floating point values
@@ -276,8 +274,7 @@ def dequantize_per_tensor(
         # (input - zero_point).to(torch.float32) * scale
         # failed the test
         return (input.to(out_dtype) - zero_point) * scale
-    else:
-        raise ValueError(f"Unsupported dtype in dequantize_per_tensor: {dtype}")
+    raise ValueError(f"Unsupported dtype in dequantize_per_tensor: {dtype}")
 
 
 @impl(quantized_decomposed_lib, "dequantize_per_tensor", "Meta")
@@ -289,7 +286,7 @@ def dequantize_per_tensor_meta(
     quant_max: int,
     dtype: torch.dtype,
     *,
-    out_dtype: Optional[torch.dtype] = None,
+    out_dtype: torch.dtype | None = None,
 ) -> torch.Tensor:
     if out_dtype is None:
         out_dtype = torch.float32
@@ -315,7 +312,7 @@ def dequantize_per_tensor_tensor(
     quant_max: int,
     dtype: torch.dtype,
     *,
-    out_dtype: Optional[torch.dtype] = None,
+    out_dtype: torch.dtype | None = None,
 ) -> torch.Tensor:
     """Affine dequantization for the Tensor using the same quantization parameters to map
     from quantized values to floating point values
@@ -348,7 +345,7 @@ def dequantize_per_tensor_tensor_meta(
     quant_max: int,
     dtype: torch.dtype,
     *,
-    out_dtype: Optional[torch.dtype] = None,
+    out_dtype: torch.dtype | None = None,
 ) -> torch.Tensor:
     if out_dtype is None:
         out_dtype = torch.float32
@@ -361,8 +358,7 @@ def dequantize_per_tensor_tensor_meta(
     assert input.dtype == dtype, f"Expecting input to have dtype: {dtype}"
     if dtype in _DTYPE_TO_QVALUE_BOUNDS:
         return torch.empty_like(input, dtype=out_dtype)
-    else:
-        raise ValueError(f"Unsupported dtype in dequantize_per_tensor: {dtype}")
+    raise ValueError(f"Unsupported dtype in dequantize_per_tensor: {dtype}")
 
 
 # TODO: remove other variants and keep this one
@@ -385,7 +381,7 @@ def dequantize_per_tensor_tensor2(
     quant_max: torch.Tensor,
     dtype: torch.dtype,
     *,
-    out_dtype: Optional[torch.dtype] = None,
+    out_dtype: torch.dtype | None = None,
 ) -> torch.Tensor:
     """Affine dequantization for the Tensor using the same quantization parameters to map
     from quantized values to floating point values
@@ -418,7 +414,7 @@ def dequantize_per_tensor_tensor2_meta(
     quant_max,
     dtype,
     *,
-    out_dtype: Optional[torch.dtype] = None,
+    out_dtype: torch.dtype | None = None,
 ) -> torch.Tensor:
     return dequantize_per_tensor_tensor_meta(
         input, scale, zero_point, quant_min, quant_max, dtype, out_dtype=out_dtype
@@ -651,13 +647,13 @@ quantized_decomposed_lib.define(
 def dequantize_per_channel(
     input: torch.Tensor,
     scales: torch.Tensor,
-    zero_points: Optional[torch.Tensor],
+    zero_points: torch.Tensor | None,
     axis: int,
     quant_min: int,
     quant_max: int,
     dtype: torch.dtype,
     *,
-    out_dtype: Optional[torch.dtype] = None,
+    out_dtype: torch.dtype | None = None,
 ) -> torch.Tensor:
     """Affine per channel dequantization for the Tensor using the same quantization
     parameters for each channel/axis to map from quantized values to floating point values
@@ -714,13 +710,13 @@ def dequantize_per_channel(
 def dequantize_per_channel_meta(
     input: torch.Tensor,
     scales: torch.Tensor,
-    zero_points: Optional[torch.Tensor],
+    zero_points: torch.Tensor | None,
     axis: int,
     quant_min: int,
     quant_max: int,
     dtype: torch.dtype,
     *,
-    out_dtype: Optional[torch.dtype] = None,
+    out_dtype: torch.dtype | None = None,
 ) -> torch.Tensor:
     assert input.dtype == dtype, (
         f"Expecting input to have dtype {dtype}, but got dtype: {input.dtype}"
@@ -1098,7 +1094,7 @@ quantized_decomposed_lib.define(
 def dequantize_per_channel_group(
     w_int8: torch.Tensor,
     scales: torch.Tensor,
-    zero_points: Optional[torch.Tensor],
+    zero_points: torch.Tensor | None,
     quant_min: int,
     quant_max: int,
     dtype: torch.dtype,

@@ -3,9 +3,10 @@ from __future__ import annotations
 import dataclasses
 import itertools
 import math
+from collections.abc import Callable
 from functools import partial
 from threading import Lock
-from typing import Any, Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch.utils._ordered_set import OrderedSet
@@ -13,7 +14,6 @@ from torch.utils._ordered_set import OrderedSet
 from . import config
 from .utils import get_backend_num_stages
 from .virtualized import V
-
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -544,10 +544,10 @@ class BaseConfigHeuristic(metaclass=BaseHeuristicSingleton):
             )
 
             # Will use more shared memory than available
-            if shared_mem_accum * gemm_config.num_stages > sm_available:
-                continue
-            # Lower bound for register spillage, if exceeds the kernel will certainly spill
-            elif acc_regs > NUM_REG:
+            if (
+                shared_mem_accum * gemm_config.num_stages > sm_available
+                or acc_regs > NUM_REG
+            ):
                 continue
 
             pruned_configs.append(gemm_config)

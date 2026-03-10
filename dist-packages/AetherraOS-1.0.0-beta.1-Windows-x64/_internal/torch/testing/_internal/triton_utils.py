@@ -5,7 +5,6 @@ import unittest
 from torch.testing._internal.inductor_utils import HAS_CUDA, HAS_GPU
 from torch.utils._triton import has_triton
 
-
 requires_cuda = unittest.skipUnless(HAS_CUDA, "requires cuda")
 requires_gpu = unittest.skipUnless(HAS_GPU, "requires gpu")
 
@@ -936,21 +935,19 @@ if has_triton():
             return triton.tools.tensor_descriptor.TensorDescriptor.from_tensor(
                 tensor, block_sizes
             )
-        else:
-            if len(block_sizes) == 1:
-                return triton.tools.experimental_descriptor.create_1d_tma_descriptor(
-                    tensor.data_ptr(),
-                    tensor.size(0),
-                    block_sizes[0],
-                    tensor.element_size(),
-                )
-            else:
-                assert len(block_sizes) == 2
-                return triton.tools.experimental_descriptor.create_2d_tma_descriptor(
-                    tensor.data_ptr(),
-                    tensor.size(0),
-                    tensor.size(1),
-                    block_sizes[0],
-                    block_sizes[1],
-                    tensor.element_size(),
-                )
+        if len(block_sizes) == 1:
+            return triton.tools.experimental_descriptor.create_1d_tma_descriptor(
+                tensor.data_ptr(),
+                tensor.size(0),
+                block_sizes[0],
+                tensor.element_size(),
+            )
+        assert len(block_sizes) == 2
+        return triton.tools.experimental_descriptor.create_2d_tma_descriptor(
+            tensor.data_ptr(),
+            tensor.size(0),
+            tensor.size(1),
+            block_sizes[0],
+            block_sizes[1],
+            tensor.element_size(),
+        )

@@ -7,11 +7,11 @@ All memory operations are delegated to the canonical engine.
 """
 
 # Standard library imports
+import json
 import math
+import random
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-import json
-import random
 from typing import Any, Dict, List, Optional
 
 # Third party imports - Qt GUI framework

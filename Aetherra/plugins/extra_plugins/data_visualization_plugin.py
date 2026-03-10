@@ -18,10 +18,9 @@ import io
 import json
 import logging
 import os
-import sys
 from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
 
 # Third party imports
 import numpy as np
@@ -346,9 +345,7 @@ class StatisticalAnalyzer:
                 "outlier_values": outliers.tolist()[:50],
             }
 
-    def trend_analysis(
-        self, df: pd.DataFrame, x_column: str, y_column: str
-    ) -> Dict[str, Any]:
+    def trend_analysis(self, df: pd.DataFrame, x_column: str, y_column: str) -> Dict[str, Any]:
         """Analyze trends between two variables."""
         if x_column not in df.columns or y_column not in df.columns:
             return {"error": "One or both columns not found"}
@@ -379,9 +376,7 @@ class StatisticalAnalyzer:
             return {"error": "Not enough valid numeric data for trend analysis"}
 
         # Linear regression
-        slope, intercept, r_value, p_value, std_err = stats.linregress(
-            x_numeric, y_numeric
-        )
+        slope, intercept, r_value, p_value, std_err = stats.linregress(x_numeric, y_numeric)
 
         # Trend direction
         if slope > 0:
@@ -427,9 +422,7 @@ class ChartGenerator:
         if not MATPLOTLIB_AVAILABLE:
             raise ImportError("Matplotlib is required for line charts")
 
-        fig, ax = plt.subplots(
-            figsize=(config.width / 100, config.height / 100), dpi=self.dpi
-        )
+        fig, ax = plt.subplots(figsize=(config.width / 100, config.height / 100), dpi=self.dpi)
 
         if config.group_by and config.group_by in df.columns:
             # Multiple lines grouped by category
@@ -465,9 +458,7 @@ class ChartGenerator:
 
         # Convert to base64
         img_buffer = io.BytesIO()
-        plt.savefig(
-            img_buffer, format=config.export_format, dpi=self.dpi, bbox_inches="tight"
-        )
+        plt.savefig(img_buffer, format=config.export_format, dpi=self.dpi, bbox_inches="tight")
         img_buffer.seek(0)
         img_base64 = base64.b64encode(img_buffer.getvalue()).decode()
         plt.close(fig)
@@ -479,9 +470,7 @@ class ChartGenerator:
         if not MATPLOTLIB_AVAILABLE:
             raise ImportError("Matplotlib is required for bar charts")
 
-        fig, ax = plt.subplots(
-            figsize=(config.width / 100, config.height / 100), dpi=self.dpi
-        )
+        fig, ax = plt.subplots(figsize=(config.width / 100, config.height / 100), dpi=self.dpi)
 
         if config.group_by and config.group_by in df.columns:
             # Grouped bar chart
@@ -521,9 +510,7 @@ class ChartGenerator:
 
         # Convert to base64
         img_buffer = io.BytesIO()
-        plt.savefig(
-            img_buffer, format=config.export_format, dpi=self.dpi, bbox_inches="tight"
-        )
+        plt.savefig(img_buffer, format=config.export_format, dpi=self.dpi, bbox_inches="tight")
         img_buffer.seek(0)
         img_base64 = base64.b64encode(img_buffer.getvalue()).decode()
         plt.close(fig)
@@ -535,9 +522,7 @@ class ChartGenerator:
         if not MATPLOTLIB_AVAILABLE:
             raise ImportError("Matplotlib is required for scatter plots")
 
-        fig, ax = plt.subplots(
-            figsize=(config.width / 100, config.height / 100), dpi=self.dpi
-        )
+        fig, ax = plt.subplots(figsize=(config.width / 100, config.height / 100), dpi=self.dpi)
 
         # Prepare data
         x_data = df[config.x_column]
@@ -555,9 +540,7 @@ class ChartGenerator:
             # Normalize sizes
             s = (s - s.min()) / (s.max() - s.min()) * 200 + 20
 
-        scatter = ax.scatter(
-            x_data, y_data, c=c, s=s, alpha=0.6, cmap=config.color_palette
-        )
+        scatter = ax.scatter(x_data, y_data, c=c, s=s, alpha=0.6, cmap=config.color_palette)
 
         if config.color_column and c is not None:
             cbar = plt.colorbar(scatter, ax=ax)
@@ -574,9 +557,7 @@ class ChartGenerator:
 
         # Convert to base64
         img_buffer = io.BytesIO()
-        plt.savefig(
-            img_buffer, format=config.export_format, dpi=self.dpi, bbox_inches="tight"
-        )
+        plt.savefig(img_buffer, format=config.export_format, dpi=self.dpi, bbox_inches="tight")
         img_buffer.seek(0)
         img_base64 = base64.b64encode(img_buffer.getvalue()).decode()
         plt.close(fig)
@@ -588,9 +569,7 @@ class ChartGenerator:
         if not SEABORN_AVAILABLE:
             raise ImportError("Seaborn is required for heatmaps")
 
-        fig, ax = plt.subplots(
-            figsize=(config.width / 100, config.height / 100), dpi=self.dpi
-        )
+        fig, ax = plt.subplots(figsize=(config.width / 100, config.height / 100), dpi=self.dpi)
 
         # If specific columns not provided, use correlation matrix of numeric columns
         if config.x_column == "correlation" or config.y_column == "correlation":
@@ -605,9 +584,7 @@ class ChartGenerator:
                 square=True,
                 fmt=".2f",
             )
-            ax.set_title(
-                config.title or "Correlation Matrix", fontsize=14, fontweight="bold"
-            )
+            ax.set_title(config.title or "Correlation Matrix", fontsize=14, fontweight="bold")
         else:
             # Pivot table heatmap
             pivot_data = df.pivot_table(
@@ -616,18 +593,14 @@ class ChartGenerator:
                 columns=config.group_by or config.color_column,
                 aggfunc="mean",
             )
-            sns.heatmap(
-                pivot_data, annot=True, cmap=config.color_palette, ax=ax, fmt=".1f"
-            )
+            sns.heatmap(pivot_data, annot=True, cmap=config.color_palette, ax=ax, fmt=".1f")
             ax.set_title(config.title, fontsize=14, fontweight="bold")
 
         plt.tight_layout()
 
         # Convert to base64
         img_buffer = io.BytesIO()
-        plt.savefig(
-            img_buffer, format=config.export_format, dpi=self.dpi, bbox_inches="tight"
-        )
+        plt.savefig(img_buffer, format=config.export_format, dpi=self.dpi, bbox_inches="tight")
         img_buffer.seek(0)
         img_base64 = base64.b64encode(img_buffer.getvalue()).decode()
         plt.close(fig)
@@ -639,9 +612,7 @@ class ChartGenerator:
         if not SEABORN_AVAILABLE:
             raise ImportError("Seaborn is required for box plots")
 
-        fig, ax = plt.subplots(
-            figsize=(config.width / 100, config.height / 100), dpi=self.dpi
-        )
+        fig, ax = plt.subplots(figsize=(config.width / 100, config.height / 100), dpi=self.dpi)
 
         if config.group_by and config.group_by in df.columns:
             sns.boxplot(
@@ -673,9 +644,7 @@ class ChartGenerator:
 
         # Convert to base64
         img_buffer = io.BytesIO()
-        plt.savefig(
-            img_buffer, format=config.export_format, dpi=self.dpi, bbox_inches="tight"
-        )
+        plt.savefig(img_buffer, format=config.export_format, dpi=self.dpi, bbox_inches="tight")
         img_buffer.seek(0)
         img_base64 = base64.b64encode(img_buffer.getvalue()).decode()
         plt.close(fig)
@@ -687,16 +656,12 @@ class ChartGenerator:
         if not MATPLOTLIB_AVAILABLE:
             raise ImportError("Matplotlib is required for histograms")
 
-        fig, ax = plt.subplots(
-            figsize=(config.width / 100, config.height / 100), dpi=self.dpi
-        )
+        fig, ax = plt.subplots(figsize=(config.width / 100, config.height / 100), dpi=self.dpi)
 
         if config.group_by and config.group_by in df.columns:
             # Multiple histograms
             for group_name, group_df in df.groupby(config.group_by):
-                ax.hist(
-                    group_df[config.x_column], alpha=0.7, label=str(group_name), bins=30
-                )
+                ax.hist(group_df[config.x_column], alpha=0.7, label=str(group_name), bins=30)
         else:
             # Single histogram
             ax.hist(df[config.x_column], bins=30, alpha=0.7, edgecolor="black")
@@ -715,9 +680,7 @@ class ChartGenerator:
 
         # Convert to base64
         img_buffer = io.BytesIO()
-        plt.savefig(
-            img_buffer, format=config.export_format, dpi=self.dpi, bbox_inches="tight"
-        )
+        plt.savefig(img_buffer, format=config.export_format, dpi=self.dpi, bbox_inches="tight")
         img_buffer.seek(0)
         img_base64 = base64.b64encode(img_buffer.getvalue()).decode()
         plt.close(fig)
@@ -827,19 +790,13 @@ class DataVisualizationPlugin:
             "export_capabilities",
         ]
 
-    async def invoke(
-        self, action: str, payload: Dict[str, Any], context=None
-    ) -> Dict[str, Any]:
+    async def invoke(self, action: str, payload: Dict[str, Any], context=None) -> Dict[str, Any]:
         """Main plugin invocation method."""
         try:
             if action == "load_data":
-                return await self.load_data(
-                    payload.get("file_path"), payload.get("options", {})
-                )
+                return await self.load_data(payload.get("file_path"), payload.get("options", {}))
             elif action == "create_chart":
-                return await self.create_chart(
-                    payload.get("data"), payload.get("config")
-                )
+                return await self.create_chart(payload.get("data"), payload.get("config"))
             elif action == "analyze_data":
                 return await self.analyze_data(
                     payload.get("data"),
@@ -847,9 +804,7 @@ class DataVisualizationPlugin:
                     payload.get("options", {}),
                 )
             elif action == "generate_dashboard":
-                return await self.generate_dashboard(
-                    payload.get("data"), payload.get("charts")
-                )
+                return await self.generate_dashboard(payload.get("data"), payload.get("charts"))
             elif action == "export_visualization":
                 return await self.export_visualization(
                     payload.get("visualization"),
@@ -868,9 +823,7 @@ class DataVisualizationPlugin:
             logger.error(f"Plugin invocation failed: {e}")
             return {"status": "error", "message": str(e)}
 
-    async def load_data(
-        self, file_path: str, options: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def load_data(self, file_path: str, options: Dict[str, Any]) -> Dict[str, Any]:
         """Load data from file or database."""
         try:
             if not file_path:
@@ -919,9 +872,7 @@ class DataVisualizationPlugin:
         except Exception as e:
             return {"status": "error", "message": f"Data loading failed: {e}"}
 
-    async def create_chart(
-        self, data: Union[str, Dict], config: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def create_chart(self, data: str | Dict, config: Dict[str, Any]) -> Dict[str, Any]:
         """Create a chart from data."""
         try:
             # Parse data
@@ -951,9 +902,9 @@ class DataVisualizationPlugin:
             elif chart_type == "histogram":
                 image_data = self.chart_generator.create_histogram(df, chart_config)
             elif chart_type in ["interactive_scatter", "interactive_line"]:
-                html_content = getattr(
-                    self.interactive_generator, f"create_{chart_type}"
-                )(df, chart_config)
+                html_content = getattr(self.interactive_generator, f"create_{chart_type}")(
+                    df, chart_config
+                )
                 image_data = ""  # No static image for interactive charts
             else:
                 return {
@@ -964,17 +915,13 @@ class DataVisualizationPlugin:
             # Statistical analysis if enabled
             statistical_analysis = None
             if self.config["enable_statistical_analysis"]:
-                statistical_analysis = await self._perform_chart_analysis(
-                    df, chart_config
-                )
+                statistical_analysis = await self._perform_chart_analysis(df, chart_config)
 
             # Create result
             result = VisualizationResult(
                 chart_config=chart_config,
                 image_data=image_data,
-                html_content=html_content
-                if chart_type.startswith("interactive")
-                else None,
+                html_content=html_content if chart_type.startswith("interactive") else None,
                 statistical_analysis=statistical_analysis,
                 creation_date=datetime.now().isoformat(),
                 data_summary=self.data_processor.get_data_summary(df),
@@ -990,7 +937,7 @@ class DataVisualizationPlugin:
             return {"status": "error", "message": f"Chart creation failed: {e}"}
 
     async def analyze_data(
-        self, data: Union[str, Dict], analysis_type: str, options: Dict[str, Any]
+        self, data: str | Dict, analysis_type: str, options: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Perform statistical analysis on data."""
         try:
@@ -1015,9 +962,7 @@ class DataVisualizationPlugin:
                         "status": "error",
                         "message": "Column required for distribution analysis",
                     }
-                analysis_results = self.statistical_analyzer.distribution_analysis(
-                    df, column
-                )
+                analysis_results = self.statistical_analyzer.distribution_analysis(df, column)
             elif analysis_type == "outliers":
                 column = options.get("column")
                 method = options.get("method", "iqr")
@@ -1026,9 +971,7 @@ class DataVisualizationPlugin:
                         "status": "error",
                         "message": "Column required for outlier analysis",
                     }
-                analysis_results = self.statistical_analyzer.outlier_detection(
-                    df, column, method
-                )
+                analysis_results = self.statistical_analyzer.outlier_detection(df, column, method)
             elif analysis_type == "trend":
                 x_col = options.get("x_column")
                 y_col = options.get("y_column")
@@ -1037,9 +980,7 @@ class DataVisualizationPlugin:
                         "status": "error",
                         "message": "Both x_column and y_column required for trend analysis",
                     }
-                analysis_results = self.statistical_analyzer.trend_analysis(
-                    df, x_col, y_col
-                )
+                analysis_results = self.statistical_analyzer.trend_analysis(df, x_col, y_col)
             elif analysis_type == "summary":
                 analysis_results = self.data_processor.get_data_summary(df)
             else:
@@ -1062,7 +1003,7 @@ class DataVisualizationPlugin:
             return {"status": "error", "message": f"Analysis failed: {e}"}
 
     async def generate_dashboard(
-        self, data: Union[str, Dict], charts: List[Dict[str, Any]]
+        self, data: str | Dict, charts: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """Generate dashboard with multiple charts."""
         try:
@@ -1077,9 +1018,7 @@ class DataVisualizationPlugin:
             dashboard_charts = []
 
             for chart_config in charts:
-                result = await self.create_chart(
-                    df.to_json(orient="records"), chart_config
-                )
+                result = await self.create_chart(df.to_json(orient="records"), chart_config)
                 if result["status"] == "success":
                     dashboard_charts.append(result["data"])
 
@@ -1153,7 +1092,7 @@ class DataVisualizationPlugin:
         except Exception as e:
             return {"status": "error", "message": f"Export failed: {e}"}
 
-    async def get_data_summary(self, data: Union[str, Dict]) -> Dict[str, Any]:
+    async def get_data_summary(self, data: str | Dict) -> Dict[str, Any]:
         """Get comprehensive data summary."""
         try:
             # Parse data
@@ -1194,14 +1133,14 @@ class DataVisualizationPlugin:
         # Correlation analysis for numeric columns
         numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
         if len(numeric_cols) >= 2:
-            analysis.correlation_matrix = (
-                self.statistical_analyzer.correlation_analysis(df, numeric_cols)
+            analysis.correlation_matrix = self.statistical_analyzer.correlation_analysis(
+                df, numeric_cols
             )
 
         # Distribution analysis for y-column
         if config.y_column in df.columns:
-            analysis.distribution_analysis = (
-                self.statistical_analyzer.distribution_analysis(df, config.y_column)
+            analysis.distribution_analysis = self.statistical_analyzer.distribution_analysis(
+                df, config.y_column
             )
 
         # Outlier analysis for numeric columns
@@ -1235,7 +1174,7 @@ class DataVisualizationPlugin:
             "</style>",
             "</head>",
             "<body>",
-            f"<h1>Data Visualization Dashboard</h1>",
+            "<h1>Data Visualization Dashboard</h1>",
             f"<p>Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>",
             "<div class='dashboard'>",
         ]
@@ -1307,9 +1246,7 @@ if __name__ == "__main__":
             "color_column": "category",
         }
 
-        result = await plugin.create_chart(
-            sample_data.to_json(orient="records"), config
-        )
+        result = await plugin.create_chart(sample_data.to_json(orient="records"), config)
         print("Chart creation result:", result["status"])
 
         await plugin.cleanup()

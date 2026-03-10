@@ -8,7 +8,6 @@
 
 import logging
 
-
 _log_handlers: dict[str, logging.Handler] = {
     "console": logging.StreamHandler(),
     "dynamic_rendezvous": logging.NullHandler(),

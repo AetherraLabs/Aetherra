@@ -3,7 +3,6 @@ from typing import *  # noqa: F403
 import torch
 from torch.fx.experimental._constant_symnode import ConstantIntNode
 
-
 __all__ = ["NestedIntNode"]
 
 
@@ -22,16 +21,15 @@ def _ge(lhs: Any, rhs: Any) -> bool:
         if lhs.t_id == rhs.t_id:
             return lhs.coeff >= rhs.coeff
         raise ValueError("ge: relation is indeterminate")
-    elif isinstance(lhs, NestedIntNode):
+    if isinstance(lhs, NestedIntNode):
         if rhs.is_constant() and rhs.constant_int() <= 2:
             return True
         raise ValueError("ge: relation is indeterminate")
-    elif isinstance(rhs, NestedIntNode):
+    if isinstance(rhs, NestedIntNode):
         if lhs.is_constant() and lhs.constant_int() < 2:
             return False
         raise ValueError("ge: relation is indeterminate")
-    else:
-        raise ValueError("inputs unsupported")
+    raise ValueError("inputs unsupported")
 
 
 class NestedIntNode:

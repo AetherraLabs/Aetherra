@@ -2,14 +2,14 @@
 import inspect
 import logging
 from collections import OrderedDict
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 import torch
 from torch.fx._compatibility import compatibility
 from torch.fx._utils import lazy_format_graph_code
 from torch.fx.graph_module import GraphModule
 from torch.fx.node import Node
-
 
 __all__ = ["Partition", "split_module"]
 log = _LOGGER = logging.getLogger(__name__)
@@ -55,9 +55,9 @@ def split_module(
     m: GraphModule,
     root_m: torch.nn.Module,
     split_callback: Callable[[Node], int],
-    qualname_map: Optional[dict[str, str]] = None,
-    keep_original_order: Optional[bool] = False,
-    keep_original_node_name: Optional[bool] = False,
+    qualname_map: dict[str, str] | None = None,
+    keep_original_order: bool | None = False,
+    keep_original_node_name: bool | None = False,
     keep_original_input_name: bool = True,
 ):
     """
@@ -203,7 +203,7 @@ def split_module(
     orig_nodes: dict[str, Node] = {}
     symbol_to_node: dict[sympy.Symbol, Node] = {}
 
-    def record_cross_partition_use(def_node: Node, use_node: Optional[Node]):
+    def record_cross_partition_use(def_node: Node, use_node: Node | None):
         from torch.fx.experimental.symbolic_shapes import free_symbols
 
         defined = getattr(def_node, "_fx_partition", None)
@@ -287,7 +287,7 @@ def split_module(
     # 3. last region: we will only insert _enter at the beginning
     # We will do so in the order in which the autocasts were instantiated.
     autocast_regions: OrderedDict[Node, set[int]] = OrderedDict()
-    autocast_exits: dict[Node, Optional[Node]] = {}
+    autocast_exits: dict[Node, Node | None] = {}
 
     active_grad = None
     active_autocasts = set()

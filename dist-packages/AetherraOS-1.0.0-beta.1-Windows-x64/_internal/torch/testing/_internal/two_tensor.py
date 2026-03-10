@@ -78,15 +78,14 @@ class TwoTensor(torch.Tensor):
         # our two inner tensors return the same value
         out_flat = [
             cls(o_a, o_b) if isinstance(o_a, torch.Tensor) else o_a
-            for o_a, o_b in zip(out_a_flat, out_b_flat)
+            for o_a, o_b in zip(out_a_flat, out_b_flat, strict=False)
         ]
         out = pytree.tree_unflatten(out_flat, spec)
         from torch._higher_order_ops.cond import cond_op
 
         if func is cond_op:
             return out
-        else:
-            return return_and_correct_aliasing(func, args, kwargs, out)
+        return return_and_correct_aliasing(func, args, kwargs, out)
 
     def get_elem_a(self):
         return self.a

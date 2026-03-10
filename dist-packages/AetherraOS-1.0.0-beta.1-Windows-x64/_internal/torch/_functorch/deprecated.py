@@ -10,7 +10,8 @@ documentation.
 
 import textwrap
 import warnings
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable
+from typing import Any
 
 import torch._functorch.apis as apis
 import torch._functorch.eager_transforms as _impl
@@ -98,10 +99,10 @@ def jvp(
 
 def jacrev(
     func: Callable,
-    argnums: Union[int, tuple[int]] = 0,
+    argnums: int | tuple[int] = 0,
     *,
     has_aux=False,
-    chunk_size: Optional[int] = None,
+    chunk_size: int | None = None,
     _preallocate_and_copy=False,
 ):
     warn_deprecated("jacrev")

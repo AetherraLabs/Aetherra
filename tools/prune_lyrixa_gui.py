@@ -25,6 +25,7 @@ Additionally removes the legacy directory Aetherra/lyrixa/ui entirely.
 
 Run with --apply to actually delete; default is dry-run.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -94,14 +95,15 @@ def remove_legacy_ui(apply: bool) -> tuple[list[str], bool]:
             removed.append(f"FAILED: {LEGACY_UI_DIR} -> {e}")
             return removed, False
         return removed, True
-    else:
-        removed.append(f"DRY-RUN: {LEGACY_UI_DIR}")
-        return removed, True
+    removed.append(f"DRY-RUN: {LEGACY_UI_DIR}")
+    return removed, True
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="Prune Lyrixa GUI to only React app")
-    ap.add_argument("--apply", action="store_true", help="Actually delete files (not dry-run)")
+    ap.add_argument(
+        "--apply", action="store_true", help="Actually delete files (not dry-run)"
+    )
     args = ap.parse_args()
 
     if not GUI_DIR.exists():

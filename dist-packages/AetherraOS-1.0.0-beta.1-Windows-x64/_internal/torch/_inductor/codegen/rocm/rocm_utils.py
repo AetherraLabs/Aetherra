@@ -5,7 +5,6 @@ import torch
 
 from ..cpp_utils import DTYPE_TO_CPP
 
-
 DTYPE_TO_ROCM_TYPE = {
     **DTYPE_TO_CPP,
     torch.float16: "uint16_t",

@@ -8,6 +8,9 @@ here.
 """
 
 from torch.ao.ns._numeric_suite_fx import (
+    NSTracer,
+    OutputLogger,
+    RNNReturnType,
     _add_loggers_impl,
     _add_loggers_one_model,
     _add_shadow_loggers_impl,
@@ -20,7 +23,4 @@ from torch.ao.ns._numeric_suite_fx import (
     extract_logger_info,
     extract_shadow_logger_info,
     extract_weights,
-    NSTracer,
-    OutputLogger,
-    RNNReturnType,
 )

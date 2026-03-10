@@ -1,8 +1,8 @@
 # mypy: allow-untyped-defs
 import functools
 from collections import namedtuple
-from collections.abc import Iterator, Sized
-from typing import Any, Callable, Optional, TypeVar, Union
+from collections.abc import Callable, Iterator, Sized
+from typing import Any, TypeVar
 
 from torch.utils.data._utils.collate import default_collate
 from torch.utils.data.datapipes._decorator import functional_datapipe
@@ -12,7 +12,6 @@ from torch.utils.data.datapipes.utils.common import (
     _check_unpickable_fn,
     validate_input_col,
 )
-
 
 __all__ = [
     "CollatorIterDataPipe",
@@ -224,10 +223,10 @@ class CollatorIterDataPipe(MapperIterDataPipe):
     def __init__(
         self,
         datapipe: IterDataPipe,
-        conversion: Union[
-            Callable[..., Any], dict[Union[str, Any], Union[Callable, Any]], None
-        ] = default_collate,
-        collate_fn: Optional[Callable] = None,
+        conversion: Callable[..., Any]
+        | dict[str | Any, Callable | Any]
+        | None = default_collate,
+        collate_fn: Callable | None = None,
     ) -> None:
         # TODO(VitalyFedyunin): Replace `Callable[..., Any]` with `Callable[[IColumn], Any]`
         # TODO(VitalyFedyunin): Replace with `Dict[Union[str, IColumn], Union[Callable, Enum]]`

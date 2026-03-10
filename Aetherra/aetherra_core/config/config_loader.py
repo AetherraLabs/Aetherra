@@ -34,7 +34,10 @@ logger = logging.getLogger(__name__)
 class ConfigurationError(Exception):
     """Custom exception for configuration-related errors"""
 
-    pass
+    def __init__(self, message: str, config_path: str | None = None):
+        full_message = message if config_path is None else f"{message} ({config_path})"
+        super().__init__(full_message)
+        self.config_path = config_path
 
 
 class AetherraConfigLoader:
@@ -43,9 +46,7 @@ class AetherraConfigLoader:
     """
 
     def __init__(self, config_path: Optional[str] = None):
-        self.config_path = (
-            Path(config_path) if config_path else self._find_config_file()
-        )
+        self.config_path = Path(config_path) if config_path else self._find_config_file()
         self.config_data = {}
         self.environment_overrides = {}
         self.default_config = self._get_default_config()
@@ -278,9 +279,7 @@ class AetherraConfigLoader:
                 # Convert string values to appropriate types
                 converted_value = self._convert_env_value(env_value)
                 self._set_nested_config(config_path, converted_value)
-                logger.debug(
-                    f"🌍 Environment override: {config_path} = {converted_value}"
-                )
+                logger.debug(f"🌍 Environment override: {config_path} = {converted_value}")
 
     def _convert_env_value(self, value: str) -> Any:
         """Convert environment variable string to appropriate type"""
@@ -322,11 +321,7 @@ class AetherraConfigLoader:
         result = base.copy()
 
         for key, value in override.items():
-            if (
-                key in result
-                and isinstance(result[key], dict)
-                and isinstance(value, dict)
-            ):
+            if key in result and isinstance(result[key], dict) and isinstance(value, dict):
                 result[key] = self._deep_merge(result[key], value)
             else:
                 result[key] = value
@@ -366,9 +361,7 @@ class AetherraConfigLoader:
             value = self._get_nested_value(field)
             if value is not None:
                 if not isinstance(value, expected_type):
-                    errors.append(
-                        f"Invalid type for {field}: expected {expected_type.__name__}"
-                    )
+                    errors.append(f"Invalid type for {field}: expected {expected_type.__name__}")
                 elif not validator(value):
                     errors.append(f"Invalid value for {field}: {value}")
 
@@ -488,9 +481,7 @@ class AetherraConfigLoader:
         return {
             "config_file": str(self.config_path),
             "config_exists": self.config_path.exists(),
-            "config_size": self.config_path.stat().st_size
-            if self.config_path.exists()
-            else 0,
+            "config_size": self.config_path.stat().st_size if self.config_path.exists() else 0,
             "sections": list(self.config_data.keys()),
             "environment_overrides": len(self.environment_overrides),
             "cache_valid": self._cache_valid,

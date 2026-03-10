@@ -214,11 +214,7 @@ class AetherraScheduler:
 
         # Find tasks ready to run
         for task in self.tasks.values():
-            if (
-                task.status == TaskStatus.PENDING
-                and task.next_run
-                and task.next_run <= now
-            ):
+            if task.status == TaskStatus.PENDING and task.next_run and task.next_run <= now:
                 ready_tasks.append(task)
 
         # Sort by priority (higher value first)
@@ -251,9 +247,7 @@ class AetherraScheduler:
             if task.interval and (not task.max_runs or task.run_count < task.max_runs):
                 task.next_run = datetime.now() + timedelta(seconds=task.interval)
                 task.status = TaskStatus.PENDING
-                logger.debug(
-                    f"[LOOP] Rescheduled recurring task '{task.name}' for {task.next_run}"
-                )
+                logger.debug(f"[LOOP] Rescheduled recurring task '{task.name}' for {task.next_run}")
         except Exception as e:  # pragma: no cover - defensive
             task.status = TaskStatus.FAILED
             logger.error(f"[ERROR] Task '{task.name}' failed: {e}")
@@ -294,7 +288,8 @@ class AetherraScheduler:
 class Scheduler(AetherraScheduler):
     """Compatibility alias class (no additional behavior)."""
 
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 # Default scheduler instance

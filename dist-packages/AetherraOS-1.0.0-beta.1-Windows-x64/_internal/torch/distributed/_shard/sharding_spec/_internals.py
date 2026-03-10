@@ -1,6 +1,5 @@
 # mypy: allow-untyped-defs
 import math
-from typing import Optional
 
 from torch.distributed._shard.metadata import ShardMetadata
 
@@ -26,7 +25,7 @@ def _check_shard_metadata_pair_overlap(shard1: ShardMetadata, shard2: ShardMetad
 
 def _find_nd_overlapping_shards(
     shards: list[ShardMetadata], sharded_dims: list[int]
-) -> Optional[tuple[int, int]]:
+) -> tuple[int, int] | None:
     # Each rank has len(sharded_dims) tuples. Each tuple represent the
     # [begin, end] (inclusive) pair of that dimension.
     shard_intervals = [
@@ -46,7 +45,7 @@ def _find_nd_overlapping_shards(
             # shard, we would check if one shard is above or on the left of the
             # other shard.
             overlap = True
-            for interval_i, interval_j in zip(shard_i, shard_j):
+            for interval_i, interval_j in zip(shard_i, shard_j, strict=False):
                 if interval_i[0] > interval_j[1] or interval_j[0] > interval_i[1]:
                     overlap = False
                     break
@@ -57,7 +56,7 @@ def _find_nd_overlapping_shards(
 
 def _find_1d_overlapping_shards(
     shards: list[ShardMetadata], dim: int
-) -> Optional[tuple[int, int]]:
+) -> tuple[int, int] | None:
     # (begin, end, index_in_shards). Begin and end are inclusive.
     intervals = [
         (s.shard_offsets[dim], s.shard_offsets[dim] + s.shard_sizes[dim] - 1, i)
@@ -93,7 +92,7 @@ def validate_non_overlapping_shards_metadata(shards: list[ShardMetadata]):
                 sharded_dims.append(dim)
                 break
 
-    pair: Optional[tuple[int, int]] = None
+    pair: tuple[int, int] | None = None
     if len(sharded_dims) == 0:
         # if shard is all zeros, we should consider as pass
         all_zeros: bool = all(

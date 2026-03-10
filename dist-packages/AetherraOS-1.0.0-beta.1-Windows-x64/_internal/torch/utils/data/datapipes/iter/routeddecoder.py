@@ -1,17 +1,20 @@
-from collections.abc import Iterable, Iterator, Sized
+from collections.abc import Callable, Iterable, Iterator, Sized
 from io import BufferedIOBase
-from typing import Any, Callable
+from typing import Any
 
 from torch.utils.data.datapipes._decorator import functional_datapipe
 from torch.utils.data.datapipes.datapipe import IterDataPipe
 from torch.utils.data.datapipes.utils.common import _deprecation_warning
 from torch.utils.data.datapipes.utils.decoder import (
-    basichandlers as decoder_basichandlers,
     Decoder,
     extension_extract_fn,
+)
+from torch.utils.data.datapipes.utils.decoder import (
+    basichandlers as decoder_basichandlers,
+)
+from torch.utils.data.datapipes.utils.decoder import (
     imagehandler as decoder_imagehandler,
 )
-
 
 __all__ = ["RoutedDecoderIterDataPipe"]
 

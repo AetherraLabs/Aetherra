@@ -1,12 +1,12 @@
 # mypy: allow-untyped-defs
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
-from typing import Any, Callable, no_type_check
+from typing import Any, no_type_check
 
 import torch
 import torch.distributed as dist
 from torch.autograd import Variable
-
 
 __all__: list[str] = []
 
@@ -82,7 +82,7 @@ def _apply_optim_in_backward_hook(
             grads = bucket.gradients()
             # TODO (rohan-varma): upcast as needed for DDP mixed precision,
             # once optimizer in backward + DDP mixed precision is supported.
-            for p, g in zip(model_params, grads):
+            for p, g in zip(model_params, grads, strict=False):
                 if hasattr(p, "_in_backward_optimizers"):
                     # Note: need to set grad to the bucket's grad, because
                     # running allreduce results in the bucket's grad being
@@ -146,7 +146,9 @@ def _hook_then_optimizer(
         def optimizer_step(fut):
             gradient_tensors = bucket.gradients()
             model_params = bucket.parameters()
-            for grad_tensor, model_param in zip(gradient_tensors, model_params):
+            for grad_tensor, model_param in zip(
+                gradient_tensors, model_params, strict=False
+            ):
                 if (
                     not has_set_params
                     or model_param in optimizer_state.params_to_optimize

@@ -1,6 +1,6 @@
 # mypy: allow-untyped-defs
 import copy
-from typing import Any, cast, Optional
+from typing import Any, cast
 
 import torch
 import torch.distributed as dist
@@ -19,12 +19,12 @@ from torch.distributed.fsdp._common_utils import _set_fsdp_flattened
 from torch.distributed.fsdp._fsdp_extensions import FSDPExtensions
 from torch.distributed.fsdp._shard_utils import _create_chunk_sharded_tensor
 from torch.distributed.remote_device import _remote_device
-from torch.distributed.tensor import DeviceMesh, DTensor, Replicate, Shard as DShard
+from torch.distributed.tensor import DeviceMesh, DTensor, Replicate
+from torch.distributed.tensor import Shard as DShard
 from torch.distributed.tensor.parallel._data_parallel_utils import (
     _flatten_tensor,
     _unflatten_tensor,
 )
-
 
 __all__ = ["DTensorExtensions"]
 
@@ -176,7 +176,7 @@ def _chunk_tensor(
             init_rrefs=False,
         )
         return st_outer
-    elif type(tensor) is DTensor:
+    if type(tensor) is DTensor:
         device_mesh = tensor.device_mesh
         assert device_mesh.ndim == 1, "Only 1D DeviceMeshes currently handled"
 
@@ -207,14 +207,13 @@ def _chunk_tensor(
         )
 
         return st_outer
-    else:
-        return _create_chunk_sharded_tensor(
-            tensor,
-            rank,
-            world_size,
-            num_devices_per_node,
-            pg,
-        )
+    return _create_chunk_sharded_tensor(
+        tensor,
+        rank,
+        world_size,
+        num_devices_per_node,
+        pg,
+    )
 
 
 def _chunk_dtensor(
@@ -257,29 +256,28 @@ def _chunk_dtensor(
             placements=shard_placements,
         )
 
-    else:
-        tp_placements = tensor.placements
-        tp_placement = tp_placements[0]
+    tp_placements = tensor.placements
+    tp_placement = tp_placements[0]
 
-        tensor = tensor.to_local()
+    tensor = tensor.to_local()
 
-        # For DTensors, it is sharded across tp dimension first and then sharded across FSDP dimension.
-        # TP is the inner dimension and FSDP is the outer dimension.
-        # Therefore, shard placements for tensor is (Shard(0), tp_placement).
-        # For higher dimensional meshes, it is replicated across other dimensions. For example, with
-        # HSDP the shard placements for tensor is (Replicate, Shard(0), tp_placement).
-        replicate_placements = [Replicate() for _ in range(root_mesh.ndim)]
-        replicate_placements[-1] = tp_placement  # type: ignore[call-overload]
-        shard_placements = [Replicate() for i in range(root_mesh.ndim)]  # type: ignore[misc]
-        shard_placements[-2] = DShard(0)  # type: ignore[call-overload]
-        shard_placements[-1] = tp_placement  # type: ignore[call-overload]
+    # For DTensors, it is sharded across tp dimension first and then sharded across FSDP dimension.
+    # TP is the inner dimension and FSDP is the outer dimension.
+    # Therefore, shard placements for tensor is (Shard(0), tp_placement).
+    # For higher dimensional meshes, it is replicated across other dimensions. For example, with
+    # HSDP the shard placements for tensor is (Replicate, Shard(0), tp_placement).
+    replicate_placements = [Replicate() for _ in range(root_mesh.ndim)]
+    replicate_placements[-1] = tp_placement  # type: ignore[call-overload]
+    shard_placements = [Replicate() for i in range(root_mesh.ndim)]  # type: ignore[misc]
+    shard_placements[-2] = DShard(0)  # type: ignore[call-overload]
+    shard_placements[-1] = tp_placement  # type: ignore[call-overload]
 
-        return DTensor.from_local(
-            tensor, root_mesh, replicate_placements, run_check=False
-        ).redistribute(
-            device_mesh=root_mesh,
-            placements=shard_placements,
-        )
+    return DTensor.from_local(
+        tensor, root_mesh, replicate_placements, run_check=False
+    ).redistribute(
+        device_mesh=root_mesh,
+        placements=shard_placements,
+    )
 
 
 def _pre_load_state_dict(
@@ -296,7 +294,7 @@ def _pre_load_state_dict(
 
 def _all_gather_dtensor(
     tensor: DTensor,
-    parent_mesh: Optional[DeviceMesh],
+    parent_mesh: DeviceMesh | None,
 ) -> torch.Tensor:
     """All gather a DTensor in its FSDP dimension and return the local tensor."""
     assert parent_mesh == tensor.device_mesh
@@ -335,7 +333,7 @@ class DTensorExtensions(FSDPExtensions):
     def pre_flatten_transform(
         self,
         tensor: torch.Tensor,
-    ) -> tuple[torch.Tensor, Optional[Any]]:
+    ) -> tuple[torch.Tensor, Any | None]:
         return _flatten_tensor(tensor)
 
     def post_unflatten_transform(
@@ -364,7 +362,7 @@ class DTensorExtensions(FSDPExtensions):
         world_size: int,
         num_devices_per_node: int,
         pg: dist.ProcessGroup,
-        device: Optional[torch.device] = None,
+        device: torch.device | None = None,
     ) -> torch.Tensor:
         return _chunk_tensor(tensor, rank, world_size, num_devices_per_node, pg)
 
@@ -385,6 +383,6 @@ class DTensorExtensions(FSDPExtensions):
     def all_gather_dtensor(
         self,
         tensor: DTensor,
-        parent_mesh: Optional[DeviceMesh],
+        parent_mesh: DeviceMesh | None,
     ) -> torch.Tensor:
         return _all_gather_dtensor(tensor, parent_mesh)

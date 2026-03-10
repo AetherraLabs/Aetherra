@@ -125,16 +125,12 @@ class LyrixaPersonality:
             return "supportive"
 
         # Curiosity indicators
-        elif any(
-            word in user_input_lower
-            for word in ["how", "why", "what", "curious", "explore"]
-        ):
+        elif any(word in user_input_lower for word in ["how", "why", "what", "curious", "explore"]):
             return "curious"
 
         # Technical focus
         elif any(
-            word in user_input_lower
-            for word in ["implement", "code", "fix", "debug", "analyze"]
+            word in user_input_lower for word in ["implement", "code", "fix", "debug", "analyze"]
         ):
             return "analytical"
 
@@ -153,13 +149,9 @@ class LyrixaPersonality:
             "neutral": EmotionalState.FOCUSED,
         }
 
-        self.current_emotion = emotion_mapping.get(
-            detected_emotion, EmotionalState.FOCUSED
-        )
+        self.current_emotion = emotion_mapping.get(detected_emotion, EmotionalState.FOCUSED)
 
-    def get_personality_modifier(
-        self, response_type: str = "general"
-    ) -> Dict[str, Any]:
+    def get_personality_modifier(self, response_type: str = "general") -> Dict[str, Any]:
         """
         Generate personality modifiers for response generation
 
@@ -224,9 +216,7 @@ class LyrixaPersonality:
         Returns:
             Enhanced response with personality
         """
-        modifier = self.get_personality_modifier(
-            context.get("response_type", "general")
-        )
+        modifier = self.get_personality_modifier(context.get("response_type", "general"))
         wrapped_response = base_response
 
         # Add personality intro if appropriate
@@ -248,7 +238,9 @@ class LyrixaPersonality:
 
         # Add collaborative elements
         if modifier.get("thinking_style") == "collaborative":
-            collaborative_ending = "\n\nLet me know if you'd like me to explore any particular aspect in more detail!"
+            collaborative_ending = (
+                "\n\nLet me know if you'd like me to explore any particular aspect in more detail!"
+            )
             wrapped_response += collaborative_ending
 
         # Combine intro with main response
@@ -284,8 +276,7 @@ class LyrixaPersonality:
 
         # If positive feedback, remember this pattern
         if feedback and any(
-            positive in feedback.lower()
-            for positive in ["good", "great", "helpful", "perfect"]
+            positive in feedback.lower() for positive in ["good", "great", "helpful", "perfect"]
         ):
             self.successful_patterns.append(
                 {
@@ -325,9 +316,7 @@ class LyrixaPersonality:
             "active_traits": self._get_active_traits(),
             "interaction_count": len(self.interaction_history),
             "successful_patterns": len(self.successful_patterns),
-            "trait_levels": {
-                trait.value: level for trait, level in self.base_traits.items()
-            },
+            "trait_levels": {trait.value: level for trait, level in self.base_traits.items()},
         }
 
 

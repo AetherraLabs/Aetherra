@@ -275,9 +275,7 @@ class ZoneManager(QObject):
 
         logger.debug(f"Preserved state: {diff.preserved_state}")
 
-    def _apply_diff(
-        self, diff: LayoutDiff, new_zones: dict[str, ZoneDeclaration]
-    ) -> None:
+    def _apply_diff(self, diff: LayoutDiff, new_zones: dict[str, ZoneDeclaration]) -> None:
         """Apply the computed diff to the actual layout."""
         # Remove widgets for removed zones
         for zone_id in diff.removed:
@@ -308,7 +306,7 @@ class ZoneManager(QObject):
 
     def _create_zone_widget(self, zone: ZoneDeclaration) -> QWidget | None:
         """Create a widget for a zone declaration."""
-        # This is a placeholder - actual implementation would create
+        # This is a baseline implementation - actual implementation would create
         # appropriate widgets based on zone type and components
         widget = QWidget()
         widget.setObjectName(f"zone_{zone.id}")

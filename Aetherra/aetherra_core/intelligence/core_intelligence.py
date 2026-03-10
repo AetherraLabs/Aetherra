@@ -69,9 +69,7 @@ class LyrixaIntelligence:
                     self.memory_patterns = data.get("memory_patterns", {})
                     self.learned_behaviors = data.get("learned_behaviors", {})
                     self.decision_history = data.get("decision_history", [])
-                    self.cognitive_metrics = data.get(
-                        "cognitive_metrics", self.cognitive_metrics
-                    )
+                    self.cognitive_metrics = data.get("cognitive_metrics", self.cognitive_metrics)
                 logger.info(f"📚 Loaded {len(self.memory_patterns)} memory patterns")
         except Exception as e:
             logger.warning(f"⚠️ Could not load intelligence data: {e}")
@@ -82,9 +80,7 @@ class LyrixaIntelligence:
             data = {
                 "memory_patterns": self.memory_patterns,
                 "learned_behaviors": self.learned_behaviors,
-                "decision_history": self.decision_history[
-                    -1000:
-                ],  # Keep last 1000 decisions
+                "decision_history": self.decision_history[-1000:],  # Keep last 1000 decisions
                 "cognitive_metrics": self.cognitive_metrics,
                 "last_updated": datetime.now().isoformat(),
             }
@@ -176,9 +172,7 @@ class LyrixaIntelligence:
                 )
 
         # Sort by similarity and success rate
-        similar_patterns.sort(
-            key=lambda x: (x["similarity"], x["success_rate"]), reverse=True
-        )
+        similar_patterns.sort(key=lambda x: (x["similarity"], x["success_rate"]), reverse=True)
         return similar_patterns[:5]  # Return top 5 patterns
 
     def _calculate_similarity(self, text1: str, text2: str) -> float:
@@ -232,9 +226,7 @@ class LyrixaIntelligence:
 
         # Complexity-based recommendations
         if complexity > 0.7:
-            recommendations.append(
-                "High complexity detected - consider step-by-step approach"
-            )
+            recommendations.append("High complexity detected - consider step-by-step approach")
         elif complexity < 0.3:
             recommendations.append("Low complexity - can proceed with direct approach")
 
@@ -436,9 +428,7 @@ class LyrixaIntelligence:
         else:
             return "novice"
 
-    def predict_outcome(
-        self, proposed_action: str, context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def predict_outcome(self, proposed_action: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """
         Predict the likely outcome of a proposed action in the given context.
 
@@ -461,9 +451,7 @@ class LyrixaIntelligence:
                 p["success_rate"] * p["similarity"] for p in relevant_patterns
             ) / sum(p["similarity"] for p in relevant_patterns)
 
-            confidence = sum(p["similarity"] for p in relevant_patterns) / len(
-                relevant_patterns
-            )
+            confidence = sum(p["similarity"] for p in relevant_patterns) / len(relevant_patterns)
         else:
             # Use base prediction
             complexity = analysis["complexity_score"]
@@ -475,14 +463,10 @@ class LyrixaIntelligence:
         prediction = {
             "predicted_success_probability": max(0.1, min(0.9, weighted_success)),
             "confidence_level": min(confidence, 1.0),
-            "reasoning": self._generate_prediction_reasoning(
-                analysis, relevant_patterns
-            ),
+            "reasoning": self._generate_prediction_reasoning(analysis, relevant_patterns),
             "recommendations": analysis["recommended_actions"],
             "risk_factors": self._identify_risk_factors(context, analysis),
-            "mitigation_strategies": self._suggest_mitigation_strategies(
-                context, analysis
-            ),
+            "mitigation_strategies": self._suggest_mitigation_strategies(context, analysis),
         }
 
         return prediction
@@ -499,15 +483,11 @@ class LyrixaIntelligence:
                 f"Based on {len(patterns)} similar patterns with {best_pattern['success_rate']:.1%} average success rate"
             )
         else:
-            reasoning_parts.append(
-                "No similar patterns found, using baseline prediction"
-            )
+            reasoning_parts.append("No similar patterns found, using baseline prediction")
 
         complexity = analysis["complexity_score"]
         if complexity > 0.7:
-            reasoning_parts.append(
-                "High complexity detected, which may reduce success probability"
-            )
+            reasoning_parts.append("High complexity detected, which may reduce success probability")
         elif complexity < 0.3:
             reasoning_parts.append("Low complexity favors successful outcome")
 
@@ -527,9 +507,7 @@ class LyrixaIntelligence:
 
         context_type = analysis["context_type"]
         if context_type == "programming":
-            risks.append(
-                "Code changes may introduce bugs or break existing functionality"
-            )
+            risks.append("Code changes may introduce bugs or break existing functionality")
         elif context_type == "goal_oriented":
             risks.append("Goal dependencies may not be fully understood")
 
@@ -629,9 +607,7 @@ class LyrixaIntelligence:
         status = self.get_intelligence_status()
 
         if status["memory_patterns_count"] < 20:
-            recommendations.append(
-                "Increase pattern collection by engaging with diverse contexts"
-            )
+            recommendations.append("Increase pattern collection by engaging with diverse contexts")
 
         if status["overall_success_rate"] < 0.7:
             recommendations.append("Focus on improving decision-making accuracy")
@@ -769,9 +745,7 @@ def record_outcome(
     details: Optional[Dict[str, Any]] = None,
 ):
     """Record decision outcome using the global intelligence instance."""
-    return get_intelligence().record_decision_outcome(
-        decision, context, success, details
-    )
+    return get_intelligence().record_decision_outcome(decision, context, success, details)
 
 
 if __name__ == "__main__":

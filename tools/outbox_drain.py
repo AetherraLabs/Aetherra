@@ -27,7 +27,7 @@ import argparse
 import asyncio
 import json
 import sys
-from typing import Any, Dict, List
+from typing import Any
 
 
 async def _get_fabric():
@@ -46,13 +46,13 @@ async def _get_fabric():
     return fabric
 
 
-async def _status_summary() -> Dict[str, Any]:
+async def _status_summary() -> dict[str, Any]:
     fabric = await _get_fabric()
     st = await fabric.handle_message("agents.status", {})
     return {k: st.get(k) for k in ("mode", "read_only", "outbox", "outbox_size")}
 
 
-def _summarize_entry(obj: Dict[str, Any]) -> Dict[str, Any]:
+def _summarize_entry(obj: dict[str, Any]) -> dict[str, Any]:
     key = obj.get("key")
     ts = obj.get("ts")
     p = obj.get("payload") or {}
@@ -70,7 +70,7 @@ def _summarize_entry(obj: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-async def main(argv: List[str]) -> int:
+async def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(
         description="Drain deferred entries from the Aetherra Outbox/WAL"
     )

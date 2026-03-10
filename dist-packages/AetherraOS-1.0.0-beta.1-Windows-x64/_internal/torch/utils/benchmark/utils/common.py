@@ -8,14 +8,21 @@ import shutil
 import tempfile
 import textwrap
 import time
-from typing import cast, Any, Optional
-from collections.abc import Iterable, Iterator
 import uuid
+from collections.abc import Iterable, Iterator
+from typing import Any, cast
 
 import torch
 
-
-__all__ = ["TaskSpec", "Measurement", "select_unit", "unit_to_english", "trim_sigfig", "ordered_unique", "set_torch_threads"]
+__all__ = [
+    "TaskSpec",
+    "Measurement",
+    "select_unit",
+    "unit_to_english",
+    "trim_sigfig",
+    "ordered_unique",
+    "set_torch_threads",
+]
 
 
 _MAX_SIGNIFICANT_FIGURES = 4
@@ -31,13 +38,14 @@ _IQR_GROSS_WARN_THRESHOLD = 0.25
 @dataclasses.dataclass(init=True, repr=False, eq=True, frozen=True)
 class TaskSpec:
     """Container for information used to define a Timer. (except globals)"""
+
     stmt: str
     setup: str
     global_setup: str = ""
-    label: Optional[str] = None
-    sub_label: Optional[str] = None
-    description: Optional[str] = None
-    env: Optional[str] = None
+    label: str | None = None
+    sub_label: str | None = None
+    description: str | None = None
+    env: str | None = None
     num_threads: int = 1
 
     @property
@@ -45,7 +53,7 @@ class TaskSpec:
         """Best effort attempt at a string label for the measurement."""
         if self.label is not None:
             return self.label + (f": {self.sub_label}" if self.sub_label else "")
-        elif "\n" not in self.stmt:
+        if "\n" not in self.stmt:
             return self.stmt + (f": {self.sub_label}" if self.sub_label else "")
         return (
             f"stmt:{f' ({self.sub_label})' if self.sub_label else ''}\n"
@@ -54,8 +62,10 @@ class TaskSpec:
 
     def setup_str(self) -> str:
         return (
-            "" if (self.setup == "pass" or not self.setup)
-            else f"setup:\n{textwrap.indent(self.setup, '  ')}" if "\n" in self.setup
+            ""
+            if (self.setup == "pass" or not self.setup)
+            else f"setup:\n{textwrap.indent(self.setup, '  ')}"
+            if "\n" in self.setup
             else f"setup: {self.setup}"
         )
 
@@ -68,6 +78,7 @@ class TaskSpec:
         ]
         return "\n".join([f"{i}\n" if "\n" in i else i for i in sections if i])
 
+
 _TASKSPEC_FIELDS = tuple(i.name for i in dataclasses.fields(TaskSpec))
 
 
@@ -79,10 +90,11 @@ class Measurement:
     serializable and provides several convenience methods
     (including a detailed __repr__) for downstream consumers.
     """
+
     number_per_run: int
     raw_times: list[float]
     task_spec: TaskSpec
-    metadata: Optional[dict[Any, Any]] = None  # Reserved for user payloads.
+    metadata: dict[Any, Any] | None = None  # Reserved for user payloads.
 
     def __post_init__(self) -> None:
         self._sorted_times: tuple[float, ...] = ()
@@ -145,7 +157,9 @@ class Measurement:
         n_total = len(self._sorted_times)
         lower_bound = int(n_total // 4)
         upper_bound = int(torch.tensor(3 * n_total / 4).ceil())
-        interquartile_points: tuple[float, ...] = self._sorted_times[lower_bound:upper_bound]
+        interquartile_points: tuple[float, ...] = self._sorted_times[
+            lower_bound:upper_bound
+        ]
         std = torch.tensor(interquartile_points).std(unbiased=False).item()
         sqrt_n = torch.tensor(len(interquartile_points)).sqrt().item()
 
@@ -164,10 +178,10 @@ class Measurement:
         if self.raw_times and not self._sorted_times:
             self._sorted_times = tuple(sorted(self.times))
             _sorted_times = torch.tensor(self._sorted_times, dtype=torch.float64)
-            self._median = _sorted_times.quantile(.5).item()
+            self._median = _sorted_times.quantile(0.5).item()
             self._mean = _sorted_times.mean().item()
-            self._p25 = _sorted_times.quantile(.25).item()
-            self._p75 = _sorted_times.quantile(.75).item()
+            self._p25 = _sorted_times.quantile(0.25).item()
+            self._p75 = _sorted_times.quantile(0.75).item()
 
             def add_warning(msg: str) -> None:
                 rel_iqr = self.iqr / self.median * 100
@@ -181,7 +195,6 @@ class Measurement:
             elif not self.meets_confidence(_IQR_WARN_THRESHOLD):
                 add_warning("This could indicate system fluctuation.")
 
-
     def meets_confidence(self, threshold: float = _IQR_WARN_THRESHOLD) -> bool:
         return self.iqr / self.median < threshold
 
@@ -192,7 +205,8 @@ class Measurement:
     @property
     def env(self) -> str:
         return (
-            "Unspecified env" if self.taskspec.env is None
+            "Unspecified env"
+            if self.taskspec.env is None
             else cast(str, self.taskspec.env)
         )
 
@@ -215,17 +229,19 @@ class Measurement:
         skip_line, newline = "MEASUREMENT_REPR_SKIP_LINE", "\n"
         n = len(self._sorted_times)
         time_unit, time_scale = select_unit(self._median)
-        iqr_filter = '' if n >= 4 else skip_line
+        iqr_filter = "" if n >= 4 else skip_line
 
         repr_str = f"""
 {super().__repr__()}
 {self.task_spec.summarize()}
-  {'Median: ' if n > 1 else ''}{self._median / time_scale:.2f} {time_unit}
+  {"Median: " if n > 1 else ""}{self._median / time_scale:.2f} {time_unit}
   {iqr_filter}IQR:    {self.iqr / time_scale:.2f} {time_unit} ({self._p25 / time_scale:.2f} to {self._p75 / time_scale:.2f})
-  {n} measurement{'s' if n > 1 else ''}, {self.number_per_run} runs {'per measurement,' if n > 1 else ','} {self.num_threads} thread{'s' if self.num_threads > 1 else ''}
+  {n} measurement{"s" if n > 1 else ""}, {self.number_per_run} runs {"per measurement," if n > 1 else ","} {self.num_threads} thread{"s" if self.num_threads > 1 else ""}
 {newline.join(self._warnings)}""".strip()  # noqa: B950
 
-        return "\n".join(l for l in repr_str.splitlines(keepends=False) if skip_line not in l)
+        return "\n".join(
+            l for l in repr_str.splitlines(keepends=False) if skip_line not in l
+        )
 
     @staticmethod
     def merge(measurements: Iterable["Measurement"]) -> list["Measurement"]:
@@ -234,11 +250,15 @@ class Measurement:
         Merge will extrapolate times to `number_per_run=1` and will not
         transfer any metadata. (Since it might differ between replicates)
         """
-        grouped_measurements: collections.defaultdict[TaskSpec, list[Measurement]] = collections.defaultdict(list)
+        grouped_measurements: collections.defaultdict[TaskSpec, list[Measurement]] = (
+            collections.defaultdict(list)
+        )
         for m in measurements:
             grouped_measurements[m.task_spec].append(m)
 
-        def merge_group(task_spec: TaskSpec, group: list["Measurement"]) -> "Measurement":
+        def merge_group(
+            task_spec: TaskSpec, group: list["Measurement"]
+        ) -> "Measurement":
             times: list[float] = []
             for m in group:
                 # Different measurements could have different `number_per_run`,
@@ -260,7 +280,9 @@ def select_unit(t: float) -> tuple[str, float]:
 
     This utility is used to format numbers for human consumption.
     """
-    time_unit = {-3: "ns", -2: "us", -1: "ms"}.get(int(torch.tensor(t).log10().item() // 3), "s")
+    time_unit = {-3: "ns", -2: "us", -1: "ms"}.get(
+        int(torch.tensor(t).log10().item() // 3), "s"
+    )
     time_scale = {"ns": 1e-9, "us": 1e-6, "ms": 1e-3, "s": 1}[time_unit]
     return time_unit, time_scale
 
@@ -296,7 +318,7 @@ def set_torch_threads(n: int) -> Iterator[None]:
         torch.set_num_threads(prior_num_threads)
 
 
-def _make_temp_dir(prefix: Optional[str] = None, gc_dev_shm: bool = False) -> str:
+def _make_temp_dir(prefix: str | None = None, gc_dev_shm: bool = False) -> str:
     """Create a temporary directory. The caller is responsible for cleanup.
 
     This function is conceptually similar to `tempfile.mkdtemp`, but with
@@ -309,11 +331,18 @@ def _make_temp_dir(prefix: Optional[str] = None, gc_dev_shm: bool = False) -> st
     This is an internal utility, and is exported solely so that microbenchmarks
     can reuse the util.
     """
-    use_dev_shm: bool = (os.getenv("BENCHMARK_USE_DEV_SHM") or "").lower() in ("1", "true")
+    use_dev_shm: bool = (os.getenv("BENCHMARK_USE_DEV_SHM") or "").lower() in (
+        "1",
+        "true",
+    )
     if use_dev_shm:
         root = "/dev/shm/pytorch_benchmark_utils"
-        assert os.name == "posix", f"tmpfs (/dev/shm) is POSIX only, current platform is {os.name}"
-        assert os.path.exists("/dev/shm"), "This system does not appear to support tmpfs (/dev/shm)."
+        assert os.name == "posix", (
+            f"tmpfs (/dev/shm) is POSIX only, current platform is {os.name}"
+        )
+        assert os.path.exists("/dev/shm"), (
+            "This system does not appear to support tmpfs (/dev/shm)."
+        )
         os.makedirs(root, exist_ok=True)
 
         # Because we're working in shared memory, it is more important than
@@ -337,7 +366,9 @@ def _make_temp_dir(prefix: Optional[str] = None, gc_dev_shm: bool = False) -> st
                     os.kill(owner_pid, 0)
 
                 except OSError:
-                    print(f"Detected that {os.path.join(root, i)} was orphaned in shared memory. Cleaning up.")
+                    print(
+                        f"Detected that {os.path.join(root, i)} was orphaned in shared memory. Cleaning up."
+                    )
                     shutil.rmtree(os.path.join(root, i))
 
     else:

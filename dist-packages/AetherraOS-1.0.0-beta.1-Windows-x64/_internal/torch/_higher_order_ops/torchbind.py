@@ -7,16 +7,15 @@ from torch._C import DispatchKey  # @manual
 from torch._functorch._aot_autograd.utils import KNOWN_TYPES
 from torch._higher_order_ops.utils import autograd_not_implemented
 from torch._library.fake_class_registry import (
+    FakeScriptObject,
     _is_script_object,
     _ns_and_class_name,
-    FakeScriptObject,
 )
 from torch._ops import HigherOrderOperator
 from torch._subclasses.fake_tensor import FakeTensorMode
 from torch.fx.experimental.proxy_tensor import ProxyTorchDispatchMode, track_tensor_tree
 from torch.fx.node import has_side_effect
 from torch.utils import _pytree as pytree
-
 
 log = logging.getLogger(__name__)
 
@@ -81,9 +80,9 @@ def enable_torchbind_tracing():
         torch.ScriptMethod.__call__ = torchbind_method_redispatch  # type: ignore[method-assign]
         yield
     finally:
-        assert (
-            KNOWN_TYPES.pop() is torch.ScriptObject
-        ), "Someone else messed with KNOWN_TYPES during tracing, exploding."
+        assert KNOWN_TYPES.pop() is torch.ScriptObject, (
+            "Someone else messed with KNOWN_TYPES during tracing, exploding."
+        )
         torch.ScriptMethod.__call__ = _orig_scriptmethod_call  # type: ignore[method-assign]
 
 
@@ -91,10 +90,9 @@ def enable_torchbind_tracing():
 def call_torchbind_impl(obj, method, *args, **kwargs):
     if isinstance(obj, torch.ScriptObject):
         return _orig_scriptmethod_call(getattr(obj, method), *args, **kwargs)
-    elif isinstance(obj, FakeScriptObject):
+    if isinstance(obj, FakeScriptObject):
         return getattr(obj.wrapped_obj, method)(*args, **kwargs)
-    else:
-        raise RuntimeError(f"Unsupported first arg type {type(obj)} for call_torchbind")
+    raise RuntimeError(f"Unsupported first arg type {type(obj)} for call_torchbind")
 
 
 @call_torchbind.py_impl(ProxyTorchDispatchMode)
@@ -127,9 +125,9 @@ def inner(mode, *args, **kwargs):
 
     ret = track_tensor_tree(out, out_proxy, constant=None, tracer=mode.tracer)
     if "val" not in out_proxy.node.meta:
-        assert out is None or isinstance(
-            out, (int, float, bool)
-        ), "Currently, only these constant dtypes are supported to be returned from torchbind methods."
+        assert out is None or isinstance(out, (int, float, bool)), (
+            "Currently, only these constant dtypes are supported to be returned from torchbind methods."
+        )
         out_proxy.node.meta["val"] = out
     return ret
 

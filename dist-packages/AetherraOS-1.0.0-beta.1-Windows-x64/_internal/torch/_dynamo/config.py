@@ -15,12 +15,12 @@ import getpass
 import os
 import sys
 import tempfile
+from collections.abc import Callable
 from os.path import abspath, dirname
-from typing import Any, Callable, Literal, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Literal
 
 from torch._environment import is_fbcode
 from torch.utils._config_module import Config, get_tristate_env, install_config_module
-
 
 # to configure logging for dynamo, aot, and inductor
 # use the following API in the torch._logging module
@@ -30,7 +30,7 @@ from torch.utils._config_module import Config, get_tristate_env, install_config_
 # Design doc: https://docs.google.com/document/d/1ZRfTWKa8eaPq1AxaiHrq4ASTPouzzlPiuquSBEJYwS8/edit#
 # the name of a file to write the logs to
 # [@compile_ignored: debug]
-log_file_name: Optional[str] = None
+log_file_name: str | None = None
 
 # [@compile_ignored: debug] Verbose will print full stack traces on warnings and errors
 verbose = os.environ.get("TORCHDYNAMO_VERBOSE", "0") == "1"
@@ -300,15 +300,15 @@ allow_unspec_int_on_nn_module = False
 # Note that to avoid breaking the existing usage, mode 1 and mode 4 can be
 # specified with a boolean value. True is using ddp_optimizer and False is
 # no optimization.
-optimize_ddp: Union[
-    bool,
-    Literal[
+optimize_ddp: (
+    bool
+    | Literal[
         "ddp_optimizer",
         "python_reducer",
         "python_reducer_without_compiled_forward",
         "no_optimization",
-    ],
-] = True
+    ]
+) = True
 
 # By default, Dynamo emits runtime asserts (e.g. torch._check, torch._check_is_size) in the graph.
 # In some cases those asserts could be performance costly
@@ -455,12 +455,11 @@ def default_debug_dir_root():
     DEBUG_DIR_VAR_NAME = "TORCH_COMPILE_DEBUG_DIR"
     if DEBUG_DIR_VAR_NAME in os.environ:
         return os.path.join(os.environ[DEBUG_DIR_VAR_NAME], "torch_compile_debug")
-    elif is_fbcode():
+    if is_fbcode():
         return os.path.join(
             tempfile.gettempdir(), getpass.getuser(), "torch_compile_debug"
         )
-    else:
-        return os.path.join(os.getcwd(), "torch_compile_debug")
+    return os.path.join(os.getcwd(), "torch_compile_debug")
 
 
 # [@compile_ignored: debug]
@@ -595,7 +594,7 @@ automatic_dynamic_local_pgo: bool = Config(
 )
 
 # Like above, but using remote cache
-automatic_dynamic_remote_pgo: Optional[bool] = get_tristate_env(
+automatic_dynamic_remote_pgo: bool | None = get_tristate_env(
     "TORCH_DYNAMO_AUTOMATIC_DYNAMIC_REMOTE_PGO"
 )
 
@@ -620,7 +619,7 @@ wrap_top_frame = False
 record_runtime_overhead = True
 
 # HACK: this is for testing custom ops profiling only
-_custom_ops_profile: Optional[Any] = None
+_custom_ops_profile: Any | None = None
 
 if TYPE_CHECKING:
     from torch.utils._config_typing import *  # noqa: F401, F403

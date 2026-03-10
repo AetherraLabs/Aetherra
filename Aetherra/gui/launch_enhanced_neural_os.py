@@ -24,7 +24,6 @@ This creates a single, unified Aetherra OS window that represents
 the complete neural processing dashboard experience.
 """
 
-
 # Standard library imports
 import sys
 from pathlib import Path

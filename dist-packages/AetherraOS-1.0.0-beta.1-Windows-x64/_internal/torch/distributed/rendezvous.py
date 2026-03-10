@@ -9,14 +9,12 @@ except ImportError as e:
 import numbers
 import os
 import sys
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from datetime import timedelta
-from typing import Callable, Optional
 
 from torch.distributed import FileStore, Store, TCPStore
 
 from .constants import default_pg_timeout
-
 
 _rendezvous_handlers: dict[str, Callable[..., Iterator[tuple[Store, int, int]]]] = {}
 
@@ -71,7 +69,7 @@ def _get_use_libuv_from_query_dict(query_dict: dict[str, str]) -> bool:
     return query_dict.get("use_libuv", os.environ.get("USE_LIBUV", "1")) == "1"
 
 
-def _rendezvous_helper(url: str, rank: int, world_size_opt: Optional[int], **kwargs):
+def _rendezvous_helper(url: str, rank: int, world_size_opt: int | None, **kwargs):
     result = urlparse(url)
     if world_size_opt is None:
         world_size = -1
@@ -193,17 +191,16 @@ def _create_c10d_store(
             is_master=False,
             timeout=timeout,
         )
-    else:
-        start_daemon = rank == 0
-        return TCPStore(
-            host_name=hostname,
-            port=port,
-            world_size=world_size,
-            is_master=start_daemon,
-            timeout=timeout,
-            multi_tenant=True,
-            use_libuv=use_libuv,
-        )
+    start_daemon = rank == 0
+    return TCPStore(
+        host_name=hostname,
+        port=port,
+        world_size=world_size,
+        is_master=start_daemon,
+        timeout=timeout,
+        multi_tenant=True,
+        use_libuv=use_libuv,
+    )
 
 
 def _tcp_rendezvous_handler(
@@ -250,8 +247,7 @@ def _env_rendezvous_handler(
         env_val = os.environ.get(env_var, None)
         if not env_val:
             raise _env_error(env_var)
-        else:
-            return env_val
+        return env_val
 
     result = urlparse(url)
     query_dict = _query_to_dict(result.query)

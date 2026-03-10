@@ -14,7 +14,7 @@ import warnings
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 from functools import partial
-from typing import Any, Optional
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -26,7 +26,6 @@ from torch.ao.quantization.utils import (
     validate_qmin_qmax,
 )
 from torch.fx import Node
-
 
 __all__ = [
     "default_affine_fixed_qparams_observer",
@@ -803,7 +802,7 @@ class PerChannelMinMaxObserver(UniformQuantizationObserverBase):
         unexpected_keys: list[str],
         error_msgs: list[str],
     ):
-        version = local_metadata.get("version", None)
+        version = local_metadata.get("version")
         if version is not None and version < 3:
             local_state = ["min_vals", "max_vals"]
             expected_min_name = "min_vals"
@@ -1533,7 +1532,7 @@ class RecordingObserver(ObserverBase):
         reduce_range: Reduces the range of the quantized data type by 1 bit
     """
 
-    __annotations__ = {"tensor_val": list[Optional[torch.Tensor]]}
+    __annotations__ = {"tensor_val": list[torch.Tensor | None]}
 
     def __init__(self, dtype=torch.quint8):
         super().__init__(dtype=dtype, is_dynamic=False)
@@ -1616,7 +1615,7 @@ We plan to merge the following with torchao repo after we move pt2e flow to torc
 copied from https://github.com/pytorch/ao/blob/main/torchao/quantization/observer.py
 """
 from dataclasses import dataclass
-from enum import auto, Enum
+from enum import Enum, auto
 
 
 class MappingType(Enum):
@@ -1787,18 +1786,18 @@ def get_block_size(
     )
     if isinstance(granularity, PerTensor):
         return input_shape
-    elif isinstance(granularity, PerAxis):
+    if isinstance(granularity, PerAxis):
         block_size = list(input_shape)
         block_size[granularity.axis] = 1
         return tuple(block_size)
-    elif isinstance(granularity, PerRow):
+    if isinstance(granularity, PerRow):
         return (1,) * (len(input_shape) - 1) + (input_shape[-1],)
-    elif isinstance(granularity, PerGroup):
+    if isinstance(granularity, PerGroup):
         assert len(input_shape) == 2, (
             f"Expecting input shape dim to be 2 for per group quantization, gotinput shape: {input_shape}"
         )
         return (1, granularity.group_size)
-    elif isinstance(granularity, PerToken):
+    if isinstance(granularity, PerToken):
         block_size = [1] * len(input_shape)
         block_size[-1] = input_shape[-1]
         return tuple(block_size)
@@ -1822,13 +1821,13 @@ class AffineQuantizedObserverBase(ABC, torch.nn.Module):
         mapping_type: MappingType,
         target_dtype: torch.dtype,
         granularity: Granularity,
-        quant_min: Optional[int] = None,
-        quant_max: Optional[int] = None,
-        eps: Optional[float] = None,
-        scale_dtype: Optional[torch.dtype] = None,
-        zero_point_dtype: Optional[torch.dtype] = None,
+        quant_min: int | None = None,
+        quant_max: int | None = None,
+        eps: float | None = None,
+        scale_dtype: torch.dtype | None = None,
+        zero_point_dtype: torch.dtype | None = None,
         preserve_zero: bool = True,
-        zero_point_domain: Optional[ZeroPointDomain] = ZeroPointDomain.INT,
+        zero_point_domain: ZeroPointDomain | None = ZeroPointDomain.INT,
         # there could be some extra args that's ignored
         **kwargs,
     ):

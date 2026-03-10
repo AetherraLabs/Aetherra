@@ -4,8 +4,8 @@ import re
 import string
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Optional
 from types import ModuleType
+from typing import Any
 
 import torch
 
@@ -47,26 +47,21 @@ ArgsType = tuple[Any, ...]
 
 def check_inputs_type(args, kwargs):
     if not isinstance(args, tuple):
-        raise ValueError(
-            f"Expecting args type to be a tuple, got: {type(args)}"
-        )
+        raise ValueError(f"Expecting args type to be a tuple, got: {type(args)}")
     if not isinstance(kwargs, dict):
-        raise ValueError(
-            f"Expecting kwargs type to be a dict, got: {type(kwargs)}"
-        )
+        raise ValueError(f"Expecting kwargs type to be a dict, got: {type(kwargs)}")
     for key in kwargs:
         if not isinstance(key, str):
-            raise ValueError(
-                f"Expecting kwargs keys to be a string, got: {type(key)}"
-            )
+            raise ValueError(f"Expecting kwargs keys to be a string, got: {type(key)}")
+
 
 def _validate_tag(tag: str):
     parts = tag.split(".")
     t = _TAGS
     for part in parts:
-        assert set(part) <= set(
-            string.ascii_lowercase + "-"
-        ), f"Tag contains invalid characters: {part}"
+        assert set(part) <= set(string.ascii_lowercase + "-"), (
+            f"Tag contains invalid characters: {part}"
+        )
         if part in t:
             t = t[part]
         else:
@@ -80,11 +75,11 @@ class ExportCase:
     model: torch.nn.Module
     name: str
     example_kwargs: dict[str, Any] = field(default_factory=dict)
-    extra_args: Optional[ArgsType] = None  # For testing graph generalization.
+    extra_args: ArgsType | None = None  # For testing graph generalization.
     # Tags associated with the use case. (e.g dynamic-shape, escape-hatch)
     tags: set[str] = field(default_factory=set)
     support_level: SupportLevel = SupportLevel.SUPPORTED
-    dynamic_shapes: Optional[dict[str, Any]] = None
+    dynamic_shapes: dict[str, Any] | None = None
 
     def __post_init__(self):
         check_inputs_type(self.example_args, self.example_kwargs)
@@ -128,9 +123,9 @@ def _make_export_case(m, name, configs):
 
     if "description" not in configs:
         # Fallback to docstring if description is missing.
-        assert (
-            m.__doc__ is not None
-        ), f"Could not find description or docstring for export case: {m}"
+        assert m.__doc__ is not None, (
+            f"Could not find description or docstring for export case: {m}"
+        )
         configs = {**configs, "description": m.__doc__}
     return ExportCase(**{**configs, "model": m, "name": name})
 

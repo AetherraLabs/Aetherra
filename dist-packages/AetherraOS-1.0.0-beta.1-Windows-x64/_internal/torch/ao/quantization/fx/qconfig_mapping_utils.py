@@ -1,7 +1,8 @@
 # mypy: allow-untyped-defs
 import re
-from collections import defaultdict, OrderedDict
-from typing import Any, Callable, Union
+from collections import OrderedDict, defaultdict
+from collections.abc import Callable
+from typing import Any
 
 import torch
 from torch.ao.nn.intrinsic import _FusedModule
@@ -10,9 +11,9 @@ from torch.ao.quantization.backend_config import BackendConfig, DTypeConfig
 from torch.ao.quantization.backend_config.utils import get_module_to_qat_module
 from torch.ao.quantization.observer import _is_activation_post_process
 from torch.ao.quantization.qconfig import (
+    QConfigAny,
     _add_module_to_qconfig_obs_ctr,
     qconfig_equals,
-    QConfigAny,
 )
 from torch.ao.quantization.qconfig_mapping import (
     _MODULE_NAME_DICT_KEY,
@@ -23,7 +24,6 @@ from torch.ao.quantization.qconfig_mapping import (
 from torch.ao.quantization.utils import _parent_name, get_qconfig_dtypes
 from torch.fx import GraphModule
 from torch.fx.graph import Graph
-
 
 __all__: list[str] = []
 
@@ -308,7 +308,7 @@ def _is_qconfig_supported_by_dtype_configs(
 
 def _get_object_type_qconfig(
     qconfig_mapping: QConfigMapping,
-    object_type: Union[Callable, str],
+    object_type: Callable | str,
     fallback_qconfig: QConfigAny,
 ) -> QConfigAny:
     return qconfig_mapping.object_type_qconfigs.get(object_type, fallback_qconfig)
@@ -328,9 +328,8 @@ def _get_module_name_qconfig(qconfig_mapping, module_name, fallback_qconfig):
         return fallback_qconfig
     if module_name in qconfig_mapping.module_name_qconfigs:
         return qconfig_mapping.module_name_qconfigs[module_name]
-    else:
-        parent, _ = _parent_name(module_name)
-        return _get_module_name_qconfig(qconfig_mapping, parent, fallback_qconfig)
+    parent, _ = _parent_name(module_name)
+    return _get_module_name_qconfig(qconfig_mapping, parent, fallback_qconfig)
 
 
 def _maybe_adjust_qconfig_for_module_type_or_name(
@@ -353,7 +352,7 @@ def _maybe_adjust_qconfig_for_module_type_or_name(
 
 def _get_flattened_qconfig_dict(
     qconfig_mapping: QConfigMapping,
-) -> dict[Union[Callable, str], QConfigAny]:
+) -> dict[Callable | str, QConfigAny]:
     """flatten the global, object_type and module_name qconfig
     to the same qconfig_dict so that it can be used by
     propagate_qconfig_ function.
@@ -377,9 +376,7 @@ def _get_flattened_qconfig_dict(
       "conv": qconfig
     }
     """
-    flattened: dict[Union[Callable, str], QConfigAny] = {
-        "": qconfig_mapping.global_qconfig
-    }
+    flattened: dict[Callable | str, QConfigAny] = {"": qconfig_mapping.global_qconfig}
     flattened.update(qconfig_mapping.object_type_qconfigs)
     flattened.update(qconfig_mapping.module_name_qconfigs)  # type: ignore[arg-type]
     return flattened

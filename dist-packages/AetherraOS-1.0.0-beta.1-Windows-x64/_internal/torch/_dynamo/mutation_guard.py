@@ -23,7 +23,6 @@ from torch.nn import Module
 from . import config
 from .utils import ExactWeakKeyDictionary, nn_module_has_global_hooks
 
-
 unpatched_nn_module_init = torch.nn.Module.__init__
 
 

@@ -1,19 +1,19 @@
 # mypy: allow-untyped-defs
 import contextlib
+import enum
 import platform
 import uuid
 import warnings
 import weakref
 from collections import defaultdict
 from typing import *  # noqa: F403
-import enum
 from weakref import ReferenceType
 
 import torch
 import torch.fx.traceback as fx_traceback
-from torch.utils._pytree import tree_map
-from torch.testing._internal.logging_tensor import capture_logs, LoggingTensorMode
+from torch.testing._internal.logging_tensor import LoggingTensorMode, capture_logs
 from torch.utils._python_dispatch import TorchDispatchMode
+from torch.utils._pytree import tree_map
 
 __all__ = [
     "checkpoint",
@@ -73,11 +73,10 @@ def detach_variable(inputs: Tuple[Any, ...]) -> Tuple[torch.Tensor, ...]:
             x.requires_grad = inp.requires_grad
             out.append(x)
         return tuple(out)
-    else:
-        raise RuntimeError(
-            "Only tuple of tensors is supported. Got Unsupported input type: ",
-            type(inputs).__name__,
-        )
+    raise RuntimeError(
+        "Only tuple of tensors is supported. Got Unsupported input type: ",
+        type(inputs).__name__,
+    )
 
 
 def check_backward_validity(inputs: Iterable[Any]) -> None:
@@ -134,6 +133,7 @@ def _infer_device_type(*args):
         nonlocal device_types
         if isinstance(arg, torch.Tensor) and not arg.device.type == "cpu":
             device_types.append(arg.device.type)
+
     tree_map(add_device_types, args)
 
     device_types_set = set(device_types)
@@ -148,10 +148,9 @@ def _infer_device_type(*args):
         )
     if len(device_types) == 0:
         return DefaultDeviceType.get_device_type()
-    elif "cuda" in device_types_set:
+    if "cuda" in device_types_set:
         return "cuda"
-    else:
-        return device_types[0]
+    return device_types[0]
 
 
 # We can't know if the run_fn will internally move some args to different devices,
@@ -170,6 +169,7 @@ def get_device_states(*args) -> Tuple[List[int], List[torch.Tensor]]:
         nonlocal fwd_device_ids
         if isinstance(arg, torch.Tensor) and arg.device.type not in {"cpu", "meta"}:
             fwd_device_ids.append(arg.get_device())
+
     tree_map(add_device_ids, args)
 
     fwd_device_states = []
@@ -196,7 +196,7 @@ def set_device_states(devices, states, *, device_type=None) -> None:
     if device_type == "meta":
         return
     device_module = _get_device_module(device_type)
-    for device, state in zip(devices, states):
+    for device, state in zip(devices, states, strict=False):
         with device_module.device(device):
             device_module.set_rng_state(state)
 
@@ -212,8 +212,8 @@ def _get_autocast_kwargs(device_type="cuda"):
         device_autocast_kwargs = None
 
     cpu_autocast_kwargs = {
-        "enabled": torch.is_autocast_enabled('cpu'),
-        "dtype": torch.get_autocast_dtype('cpu'),
+        "enabled": torch.is_autocast_enabled("cpu"),
+        "dtype": torch.get_autocast_dtype("cpu"),
         "cache_enabled": torch.is_autocast_cache_enabled(),
     }
 
@@ -287,18 +287,32 @@ class CheckpointFunction(torch.autograd.Function):
         if ctx.preserve_rng_state and ctx.had_device_in_fwd:
             rng_devices = ctx.fwd_devices
         with torch.random.fork_rng(
-            devices=rng_devices, enabled=ctx.preserve_rng_state, device_type=ctx.device_type
+            devices=rng_devices,
+            enabled=ctx.preserve_rng_state,
+            device_type=ctx.device_type,
         ):
             if ctx.preserve_rng_state:
                 torch.set_rng_state(ctx.fwd_cpu_state)
                 if ctx.had_device_in_fwd:
-                    set_device_states(ctx.fwd_devices, ctx.fwd_device_states, device_type=ctx.device_type)
+                    set_device_states(
+                        ctx.fwd_devices,
+                        ctx.fwd_device_states,
+                        device_type=ctx.device_type,
+                    )
             detached_inputs = detach_variable(tuple(inputs))
 
-            device_autocast_ctx = torch.amp.autocast(
-                device_type=ctx.device_type, **ctx.device_autocast_kwargs
-            ) if torch.amp.is_autocast_available(ctx.device_type) else contextlib.nullcontext()
-            with torch.enable_grad(), device_autocast_ctx, torch.amp.autocast("cpu", **ctx.cpu_autocast_kwargs):  # type: ignore[attr-defined]
+            device_autocast_ctx = (
+                torch.amp.autocast(
+                    device_type=ctx.device_type, **ctx.device_autocast_kwargs
+                )
+                if torch.amp.is_autocast_available(ctx.device_type)
+                else contextlib.nullcontext()
+            )
+            with (
+                torch.enable_grad(),
+                device_autocast_ctx,
+                torch.amp.autocast("cpu", **ctx.cpu_autocast_kwargs),
+            ):  # type: ignore[attr-defined]
                 outputs = ctx.run_function(*detached_inputs)
 
         if isinstance(outputs, torch.Tensor):
@@ -328,6 +342,7 @@ class CheckpointFunction(torch.autograd.Function):
 def noop_context_fn():
     return contextlib.nullcontext(), contextlib.nullcontext()
 
+
 # Note: [torch.compile and checkpoint]
 # TorchDynamo does not step inside utils.checkpoint function.  The flow
 # looks likes this
@@ -347,7 +362,7 @@ def checkpoint(
     context_fn: Callable[[], Tuple[ContextManager, ContextManager]] = noop_context_fn,
     determinism_check: str = _DEFAULT_DETERMINISM_MODE,
     debug: bool = False,
-    **kwargs
+    **kwargs,
 ):
     r"""Checkpoint a model or part of the model.
 
@@ -468,7 +483,7 @@ def checkpoint(
             "recommended, but if you need to preserve the current default "
             "behavior, you can pass use_reentrant=True. Refer to docs for more "
             "details on the differences between the two variants.",
-            stacklevel=2
+            stacklevel=2,
         )
         use_reentrant = True
 
@@ -486,18 +501,17 @@ def checkpoint(
                 "use_reentrant=False."
             )
         return CheckpointFunction.apply(function, preserve, *args)
-    else:
-        gen = _checkpoint_without_reentrant_generator(
-            function, preserve, context_fn, determinism_check, debug, *args, **kwargs
-        )
-        # Runs pre-forward logic
+    gen = _checkpoint_without_reentrant_generator(
+        function, preserve, context_fn, determinism_check, debug, *args, **kwargs
+    )
+    # Runs pre-forward logic
+    next(gen)
+    ret = function(*args, **kwargs)
+    # Runs post-forward logic
+    try:
         next(gen)
-        ret = function(*args, **kwargs)
-        # Runs post-forward logic
-        try:
-            next(gen)
-        except StopIteration:
-            return ret
+    except StopIteration:
+        return ret
 
 
 def checkpoint_sequential(functions, segments, input, use_reentrant=None, **kwargs):
@@ -784,7 +798,8 @@ class _NoopSaveInputs(torch.autograd.Function):
         # Only tensors can be saved with ctx.save_for_backward, everything else
         # is captured by get_args, which is saved directly on ctx
         tensor_indices, tensors = zip(
-            *[(i, o) for i, o in enumerate(inputs) if isinstance(o, torch.Tensor)]
+            *[(i, o) for i, o in enumerate(inputs) if isinstance(o, torch.Tensor)],
+            strict=False,
         )
         idx2saved_idx = {b: a for a, b in enumerate(tensor_indices)}
         # args but with tensors replaced with None as placeholders
@@ -976,17 +991,20 @@ Operations executed during recomputation:
 --------------------------------------------------------------------------------
 """
 
+
 class CheckpointError(RuntimeError):
     pass
 
 
-def _get_debug_context_and_cb() -> Tuple[Callable[[], Any], Callable[[CheckpointError], None]]:
+def _get_debug_context_and_cb() -> Tuple[
+    Callable[[], Any], Callable[[CheckpointError], None]
+]:
     # This function returns the context_fn and error_cb to be used by the
     # checkpointing mechanism. error_cb is invoked when an error is detected
     # during unpack.
 
     # record_context_cpp is not support on non-linux non-x86_64 platforms
-    cpp_tb = platform.machine() == 'x86_64' and platform.system() == 'Linux'
+    cpp_tb = platform.machine() == "x86_64" and platform.system() == "Linux"
 
     class CaptureLogs:
         def __init__(self):
@@ -996,10 +1014,15 @@ def _get_debug_context_and_cb() -> Tuple[Callable[[], Any], Callable[[Checkpoint
         def get_context_manager(self):
             @contextlib.contextmanager
             def logging_mode():
-                with LoggingTensorMode(), \
-                     capture_logs(True, python_tb=True, script_tb=True, cpp_tb=cpp_tb) as logs_and_tb:
+                with (
+                    LoggingTensorMode(),
+                    capture_logs(
+                        True, python_tb=True, script_tb=True, cpp_tb=cpp_tb
+                    ) as logs_and_tb,
+                ):
                     self.logs, self.tbs = logs_and_tb
                     yield logs_and_tb
+
             return logging_mode()
 
     capture_logs_fwd = CaptureLogs()
@@ -1009,20 +1032,23 @@ def _get_debug_context_and_cb() -> Tuple[Callable[[], Any], Callable[[Checkpoint
         def get_str_tb(label, capture_logs):
             out = ""
             total_len = len(capture_logs.logs)
-            for i, (log, tb) in enumerate(zip(capture_logs.logs, capture_logs.tbs)):
+            for i, (log, tb) in enumerate(
+                zip(capture_logs.logs, capture_logs.tbs, strict=False)
+            ):
                 out += f"{log}   ({i + 1} of {total_len} in {label})\n\n"
                 found_torch_dispatch = False
                 for line in tb:
                     # Start printing stack trace only after __torch_dispatch__ is found
-                    is_torch_dispatch = line['name'] == '__torch_dispatch__'
+                    is_torch_dispatch = line["name"] == "__torch_dispatch__"
                     if not found_torch_dispatch and not is_torch_dispatch:
                         continue
-                    elif is_torch_dispatch:
+                    if is_torch_dispatch:
                         found_torch_dispatch = True
                         continue
                     out += f"{line['filename']}:{line['line']}:{line['name']}\n"
                 out += "\n\n"
             return out
+
         assert capture_logs_fwd.logs is not None
         assert capture_logs_recompute.logs is not None
         raise CheckpointError(
@@ -1030,27 +1056,29 @@ def _get_debug_context_and_cb() -> Tuple[Callable[[], Any], Callable[[Checkpoint
                 forward_traces=get_str_tb("original", capture_logs_fwd),
                 recompute_traces=get_str_tb("recompute", capture_logs_recompute),
                 forward_ops="\n".join(capture_logs_fwd.logs),
-                recompute_ops="\n".join(capture_logs_recompute.logs)
+                recompute_ops="\n".join(capture_logs_recompute.logs),
             )
         ) from e
 
     def context_fn():
-        return capture_logs_fwd.get_context_manager(), capture_logs_recompute.get_context_manager()
+        return (
+            capture_logs_fwd.get_context_manager(),
+            capture_logs_recompute.get_context_manager(),
+        )
 
     return context_fn, unpack_error_cb
 
+
 def _default_meta_extractor(x: torch.Tensor) -> Dict[str, Any]:
     # These properties are fast to check, easy to understand
-    return {
-        "shape": x.shape,
-        "dtype": x.dtype,
-        "device": x.device
-    }
+    return {"shape": x.shape, "dtype": x.dtype, "device": x.device}
+
 
 _allowed_determinism_checks_to_fns: Dict[str, Callable[[torch.Tensor], Any]] = {
     _DEFAULT_DETERMINISM_MODE: _default_meta_extractor,
     "none": lambda _: None,
 }
+
 
 # See Rule 5
 class _StopRecomputationError(Exception):
@@ -1139,9 +1167,10 @@ class _checkpoint_hook(torch.autograd.graph.saved_tensors_hooks):
                 args = ctx.get_args(ctx.saved_tensors)
 
                 try:
-                    with _recomputation_hook(
-                        weakref.ref(frame), gid
-                    ), torch.autograd.enable_grad():
+                    with (
+                        _recomputation_hook(weakref.ref(frame), gid),
+                        torch.autograd.enable_grad(),
+                    ):
                         # See Note: [compiled autograd and checkpoint unpack hook]
                         _run_fn_with_dynamo_disabled(frame.recompute_fn, *args)
                 except _StopRecomputationError:
@@ -1163,11 +1192,13 @@ class _checkpoint_hook(torch.autograd.graph.saved_tensors_hooks):
             return ret
 
         if frame.unpack_error_cb is not None:
+
             def unpack_hook_with_error_cb(holder):
                 try:
                     return unpack_hook(holder)
                 except CheckpointError as e:
                     frame.unpack_error_cb(e)
+
             super().__init__(pack_hook, unpack_hook_with_error_cb)
         else:
             super().__init__(pack_hook, unpack_hook)
@@ -1176,14 +1207,19 @@ class _checkpoint_hook(torch.autograd.graph.saved_tensors_hooks):
 def _is_compiling(func, args, kwargs):
     # Check if we are under AOTAutograd tracing
     # Checking that a functional mode is active should always do what we want
-    return torch._C._get_dispatch_mode(torch._C._TorchDispatchModeKey.FUNCTIONAL) is not None
+    return (
+        torch._C._get_dispatch_mode(torch._C._TorchDispatchModeKey.FUNCTIONAL)
+        is not None
+    )
 
 
 class _VersionWrapper:
     # Check that cached tensors are not mutated.
     def __init__(self, val):
         self.val: Union[torch.Tensor, Any] = val
-        self.version: Optional[int] = val._version if isinstance(val, torch.Tensor) else None
+        self.version: Optional[int] = (
+            val._version if isinstance(val, torch.Tensor) else None
+        )
 
     def get_val(self, allow_cache_entry_mutation):
         if self.version is not None and not allow_cache_entry_mutation:
@@ -1203,8 +1239,12 @@ def _maybe_detach(x, any_ret_has_alias_info):
     # For case 1, it is not enough to check whether x has differentiable dtype
     # because non-differentiable dtype can have non-nullptr AutogradMeta, e.g.
     # when the tensor is a view.
-    if isinstance(x, torch.Tensor) and (x.is_floating_point() or x.is_complex() or any_ret_has_alias_info):
-        with torch._C._SetExcludeDispatchKeyGuard(torch._C.DispatchKey.ADInplaceOrView, False):
+    if isinstance(x, torch.Tensor) and (
+        x.is_floating_point() or x.is_complex() or any_ret_has_alias_info
+    ):
+        with torch._C._SetExcludeDispatchKeyGuard(
+            torch._C.DispatchKey.ADInplaceOrView, False
+        ):
             # Ensure that view performed beneath autograd properly propagates
             # version counter. TODO: Use reentrant_dispatch instead of
             # manually manipulating dispatch keys. Using reentrant_dispatch
@@ -1236,6 +1276,7 @@ class SelectiveCheckpointContext:
         >>>     context_fn=context_fn,
         >>> )
     """
+
     def __init__(self, *, is_recompute):
         self.is_recompute = is_recompute
 
@@ -1263,6 +1304,7 @@ class CheckpointPolicy(enum.Enum):
         save additional tensors not limited to ones that are actually needed for
         gradient computation.
     """
+
     MUST_SAVE = 0
     PREFER_SAVE = 1
     MUST_RECOMPUTE = 2
@@ -1295,8 +1337,9 @@ class _CachingTorchDispatchMode(TorchDispatchMode):
             return func(*args, **kwargs)
 
         kwargs = {} if kwargs is None else kwargs
-        policy = self.policy_fn(SelectiveCheckpointContext(is_recompute=False),
-                                func, *args, **kwargs)
+        policy = self.policy_fn(
+            SelectiveCheckpointContext(is_recompute=False), func, *args, **kwargs
+        )
         if isinstance(policy, bool):
             policy = _policy_from_bool(policy)
 
@@ -1314,11 +1357,22 @@ class _CachingTorchDispatchMode(TorchDispatchMode):
         if isinstance(func, torch._ops.HigherOrderOperator):
             any_ret_has_alias_info = False
         else:
-            any_ret_has_alias_info = any(ret.alias_info is not None for ret in func._schema.returns)
+            any_ret_has_alias_info = any(
+                ret.alias_info is not None for ret in func._schema.returns
+            )
 
-        if policy in (CheckpointPolicy.MUST_SAVE, CheckpointPolicy.PREFER_SAVE) or is_compiling:
-            self.storage[func].append(tree_map(lambda x: _VersionWrapper(_maybe_detach(x, any_ret_has_alias_info)), out))
+        if (
+            policy in (CheckpointPolicy.MUST_SAVE, CheckpointPolicy.PREFER_SAVE)
+            or is_compiling
+        ):
+            self.storage[func].append(
+                tree_map(
+                    lambda x: _VersionWrapper(_maybe_detach(x, any_ret_has_alias_info)),
+                    out,
+                )
+            )
         return out
+
 
 class _CachedTorchDispatchMode(TorchDispatchMode):
     # Used together with _CachedTorchDispatchMode to implement SAC.
@@ -1332,29 +1386,39 @@ class _CachedTorchDispatchMode(TorchDispatchMode):
             return func(*args, **kwargs)
 
         kwargs = {} if kwargs is None else kwargs
-        policy = self.policy_fn(SelectiveCheckpointContext(is_recompute=True),
-                                func, *args, **kwargs)
+        policy = self.policy_fn(
+            SelectiveCheckpointContext(is_recompute=True), func, *args, **kwargs
+        )
         if isinstance(policy, bool):
             policy = _policy_from_bool(policy)
 
         is_compiling = _is_compiling(func, args, kwargs)
 
-        if policy in (CheckpointPolicy.MUST_SAVE, CheckpointPolicy.PREFER_SAVE) or is_compiling:
+        if (
+            policy in (CheckpointPolicy.MUST_SAVE, CheckpointPolicy.PREFER_SAVE)
+            or is_compiling
+        ):
             storage = self.storage.get(func)
             if storage is None:
-                raise RuntimeError(f"{func} encountered during backward, but not found in storage")
+                raise RuntimeError(
+                    f"{func} encountered during backward, but not found in storage"
+                )
             if len(storage) == 0:
                 raise RuntimeError(
                     "Trying to backward an extra time. You are only allowed to backward once "
                     "on any region computed under selective activation checkpoint."
                 )
-            out = tree_map(lambda x: x.get_val(self.allow_cache_entry_mutation), storage.pop(0))
+            out = tree_map(
+                lambda x: x.get_val(self.allow_cache_entry_mutation), storage.pop(0)
+            )
         else:
             out = func(*args, **kwargs)
         return out
 
 
-def create_selective_checkpoint_contexts(policy_fn_or_list, allow_cache_entry_mutation=False):
+def create_selective_checkpoint_contexts(
+    policy_fn_or_list, allow_cache_entry_mutation=False
+):
     """
     Helper to avoid recomputing certain ops during activation checkpointing.
 
@@ -1413,11 +1477,17 @@ def create_selective_checkpoint_contexts(policy_fn_or_list, allow_cache_entry_mu
     #     context_fn anyway, so proceed as usual.
     if isinstance(policy_fn_or_list, list):
         for op in policy_fn_or_list:
-            if not isinstance(op, (torch._ops.OpOverload, torch._ops.HigherOrderOperator)):
+            if not isinstance(
+                op, (torch._ops.OpOverload, torch._ops.HigherOrderOperator)
+            ):
                 _extra_msg = (
-                    "Please update the OpOverloadPacket to a specific OpOverload."
-                    "For example, if you have `torch.ops.aten.mm`, change it to `torch.ops.aten.mm.default`."
-                ) if isinstance(op, torch._ops.OpOverloadPacket) else ""
+                    (
+                        "Please update the OpOverloadPacket to a specific OpOverload."
+                        "For example, if you have `torch.ops.aten.mm`, change it to `torch.ops.aten.mm.default`."
+                    )
+                    if isinstance(op, torch._ops.OpOverloadPacket)
+                    else ""
+                )
                 raise ValueError(
                     f"Expected op in `op_list` to be an OpOverload but got: {op} "
                     f"of type {type(op)}. {_extra_msg}"
@@ -1426,8 +1496,7 @@ def create_selective_checkpoint_contexts(policy_fn_or_list, allow_cache_entry_mu
         def policy_fn(ctx, op, *args, **kwargs):
             if op in policy_fn_or_list:
                 return CheckpointPolicy.MUST_SAVE
-            else:
-                return CheckpointPolicy.PREFER_RECOMPUTE
+            return CheckpointPolicy.PREFER_RECOMPUTE
     elif callable(policy_fn_or_list):
         policy_fn = policy_fn_or_list
     else:
@@ -1439,8 +1508,10 @@ def create_selective_checkpoint_contexts(policy_fn_or_list, allow_cache_entry_mu
         _CachedTorchDispatchMode(policy_fn, storage, allow_cache_entry_mutation),
     )
 
+
 # NB: this helper wraps fn before calling checkpoint_impl. kwargs and
 #     saving/restoring of global state is handled here.
+
 
 def _checkpoint_without_reentrant_generator(
     fn,
@@ -1449,7 +1520,7 @@ def _checkpoint_without_reentrant_generator(
     determinism_check: str = _DEFAULT_DETERMINISM_MODE,
     debug: bool = False,
     *args,
-    **kwargs
+    **kwargs,
 ):
     """Checkpointing without reentrant autograd.
 
@@ -1482,9 +1553,7 @@ def _checkpoint_without_reentrant_generator(
 
     if _checkpoint_debug_enabled if _checkpoint_debug_enabled is not None else debug:
         if context_fn != noop_context_fn:
-            raise ValueError(
-                "debug=True is incompatible with non-default context_fn"
-            )
+            raise ValueError("debug=True is incompatible with non-default context_fn")
         context_fn, unpack_error_cb = _get_debug_context_and_cb()
 
     if determinism_check in _allowed_determinism_checks_to_fns:
@@ -1499,14 +1568,16 @@ def _checkpoint_without_reentrant_generator(
     device_module = _get_device_module(device_type)
     forward_context, recompute_context = context_fn()
     if _is_compiling(fn, args, kwargs) and context_fn != noop_context_fn:
-        assert (
-            isinstance(forward_context, TorchDispatchMode) and
-            isinstance(recompute_context, TorchDispatchMode)
-        ), \
-            "In torch.compile mode, `context_fn` arg passed to `torch.utils.checkpoint` " + \
-            "must generate a tuple of two `TorchDispatchMode`s."
+        assert isinstance(forward_context, TorchDispatchMode) and isinstance(
+            recompute_context, TorchDispatchMode
+        ), (
+            "In torch.compile mode, `context_fn` arg passed to `torch.utils.checkpoint` "
+            + "must generate a tuple of two `TorchDispatchMode`s."
+        )
     # Accommodates the (remote) possibility that autocast is enabled for cpu AND gpu.
-    device_autocast_kwargs, cpu_autocast_kwargs = _get_autocast_kwargs(device_type=device_type)
+    device_autocast_kwargs, cpu_autocast_kwargs = _get_autocast_kwargs(
+        device_type=device_type
+    )
 
     if preserve_rng_state:
         fwd_cpu_state = torch.get_rng_state()
@@ -1533,19 +1604,24 @@ def _checkpoint_without_reentrant_generator(
             if preserve_rng_state:
                 torch.set_rng_state(fwd_cpu_state)
                 if had_device_in_fwd:
-                    set_device_states(fwd_devices, fwd_device_states, device_type=device_type)
+                    set_device_states(
+                        fwd_devices, fwd_device_states, device_type=device_type
+                    )
 
-            device_autocast_ctx = torch.amp.autocast(
-                device_type=device_type, **device_autocast_kwargs
-            ) if torch.amp.is_autocast_available(device_type) else contextlib.nullcontext()
-            with device_autocast_ctx, torch.amp.autocast("cpu", **cpu_autocast_kwargs), recompute_context:  # type: ignore[attr-defined]
+            device_autocast_ctx = (
+                torch.amp.autocast(device_type=device_type, **device_autocast_kwargs)
+                if torch.amp.is_autocast_available(device_type)
+                else contextlib.nullcontext()
+            )
+            with (
+                device_autocast_ctx,
+                torch.amp.autocast("cpu", **cpu_autocast_kwargs),
+                recompute_context,
+            ):  # type: ignore[attr-defined]
                 fn(*args, **kwargs)
 
     new_frame = _CheckpointFrame(
-        recompute_fn,
-        _enable_checkpoint_early_stop,
-        unpack_error_cb,
-        metadata_fn
+        recompute_fn, _enable_checkpoint_early_stop, unpack_error_cb, metadata_fn
     )
     dummy = torch.empty((0,), requires_grad=True)
     new_frame.input_saver = _NoopSaveInputs.apply(dummy, kwargs, *args)
@@ -1559,8 +1635,11 @@ def _checkpoint_without_reentrant_generator(
         yield
     new_frame.forward_completed = True
 
-    if getattr(device_module, "_initialized", False) and \
-       preserve_rng_state and not had_device_in_fwd:  # type: ignore[possibly-undefined]
+    if (
+        getattr(device_module, "_initialized", False)
+        and preserve_rng_state
+        and not had_device_in_fwd
+    ):  # type: ignore[possibly-undefined]
         # Device was not initialized before running the forward, so we didn't
         # stash the device state.
         raise RuntimeError(
@@ -1570,6 +1649,7 @@ def _checkpoint_without_reentrant_generator(
         )
 
     return
+
 
 # Note: [compiled autograd and checkpoint unpack hook]
 # When tracing via compiled autograd, this hook will be visible to the

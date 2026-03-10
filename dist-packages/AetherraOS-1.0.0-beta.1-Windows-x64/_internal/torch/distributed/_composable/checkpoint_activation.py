@@ -1,20 +1,20 @@
 # mypy: allow-untyped-defs
 from collections.abc import Generator
 from contextlib import AbstractContextManager, contextmanager, nullcontext
-from typing import Any, Optional
+from typing import Any
 
 import torch
 import torch.nn as nn
 from torch.utils.checkpoint import (
-    _checkpoint_without_reentrant_generator,
     _DEFAULT_DETERMINISM_MODE,
+    _checkpoint_without_reentrant_generator,
 )
 
 from .contract import _State, contract
 
 
 @contextmanager
-def _no_hook(module: nn.Module, user_ctx: Optional[AbstractContextManager] = None):
+def _no_hook(module: nn.Module, user_ctx: AbstractContextManager | None = None):
     r"""
     Disable hooks installed by checkpoint to avoid unintentional recursion
     during backward recomputation.
@@ -31,7 +31,7 @@ def _no_hook(module: nn.Module, user_ctx: Optional[AbstractContextManager] = Non
 
 class _CheckpointState(_State):
     enable_hook: bool = False
-    _ac_generator: Optional[Generator[None, None, None]]
+    _ac_generator: Generator[None, None, None] | None
 
 
 @contract(_CheckpointState)
@@ -94,8 +94,7 @@ def checkpoint(module: nn.Module, **kwargs) -> nn.Module:
                 if user_context_fns is not None:
                     ctx1, ctx2 = user_context_fns()
                     return ctx1, _no_hook(module, ctx2)
-                else:
-                    return nullcontext(), _no_hook(module)
+                return nullcontext(), _no_hook(module)
 
             gen = _checkpoint_without_reentrant_generator(
                 module,

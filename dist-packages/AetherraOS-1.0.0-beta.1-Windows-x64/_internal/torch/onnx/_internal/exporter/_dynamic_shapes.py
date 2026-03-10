@@ -5,13 +5,12 @@ from __future__ import annotations
 
 import inspect
 import warnings
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
-from torch.export.dynamic_shapes import _DimHint, Dim
+from torch.export.dynamic_shapes import Dim, _DimHint
 from torch.onnx._internal._lazy_import import onnxscript_ir as ir
 from torch.utils import _pytree
-
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -134,7 +133,7 @@ def from_dynamic_shapes_to_dynamic_axes(
 
     dynamic_axes: dict[str, list[int]] = {}
     # input names are assigned in order
-    for input_name, axes in zip(input_names, flat_dynamic_shapes):
+    for input_name, axes in zip(input_names, flat_dynamic_shapes, strict=False):
         if axes is None:
             continue
 

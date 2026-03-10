@@ -14,7 +14,7 @@ import copy
 import inspect
 import logging
 from collections.abc import Iterable, Mapping, Sequence
-from typing import Any, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Union
 
 import onnxscript
 from onnxscript import evaluator, ir
@@ -22,7 +22,6 @@ from onnxscript.ir import convenience as ir_convenience
 
 import torch
 from torch.onnx._internal.exporter import _errors, _schemas, _tensors
-
 
 if TYPE_CHECKING:
     import onnx
@@ -35,7 +34,7 @@ ValidAttributeType = Union[
 ]
 
 AllowedArgType = Union[
-    ir.Value, Sequence[Union[ir.Value, ValidAttributeType]], ValidAttributeType
+    ir.Value, Sequence[ir.Value | ValidAttributeType], ValidAttributeType
 ]
 
 
@@ -117,13 +116,12 @@ def _construct_named_inputs_and_attrs(
                         f"Required attribute '{param.name}' is not provided. "
                         f"Signature: {signature}. Args: {args}. Kwargs: {kwargs}."
                     )
-                else:
-                    logger.debug(
-                        "Optional attribute '%s' is None. Dropped. Signature: %s",
-                        param.name,
-                        signature,
-                    )
-                    continue
+                logger.debug(
+                    "Optional attribute '%s' is None. Dropped. Signature: %s",
+                    param.name,
+                    signature,
+                )
+                continue
 
             if isinstance(attribute, ir.Attr):
                 # Turn the attribute from an default value into an actual parameter for the node
@@ -172,7 +170,7 @@ def _resolve_parameter_dtypes(
         if isinstance(arg, (int, float, bool, str, Sequence, torch.Tensor)):
             # Skip the Python constants because we do not know what dtype they should take yet
             continue
-        elif isinstance(arg, ir.Value):
+        if isinstance(arg, ir.Value):
             if arg.type is None:
                 # Skip the ir.Value if the type is not set
                 continue
@@ -227,7 +225,7 @@ def _determine_input_dtype(
         if any(isinstance(val, float) for val in arg):
             # If any float is present, the dtype is float
             return ir.DataType.FLOAT
-        elif any(isinstance(val, int) for val in arg):
+        if any(isinstance(val, int) for val in arg):
             # Otherwise if any int is present, the dtype is int
             return ir.DataType.INT64
 
@@ -423,38 +421,35 @@ def _process_python_sequences(
                     new_args.append(constant_value)
             named_inputs[name] = new_args
             continue
-        else:
-            # 3. Concat the list as a single input
-            # E.g. [Value, 42] should be converted to op.Concat(Value, Constant(42))
-            # when the expected input type is INT64
-            # We assume this only happens for 0D cases
-            if all(isinstance(val, ir.Value) for val in arg):
-                expanded_args = [_reshape_to_1d_tensor(opset, val) for val in arg]
-                named_inputs[name] = opset.Concat(*expanded_args, axis=0)
-                continue
-
-            dtype = _determine_input_dtype(param, arg, type_binding)
-            new_args = []
-            for val in arg:
-                if isinstance(val, ir.Value):
-                    new_args.append(_reshape_to_1d_tensor(opset, val))
-                elif val is None:
-                    # Skip None values
-                    continue
-                elif isinstance(val, (ir.Tensor, ir.TensorProtocol)):
-                    new_args.append(
-                        _reshape_to_1d_tensor(opset, opset.Constant(value=val))
-                    )
-                else:
-                    # Turn the Python constant into 1D tensor for the constant
-                    assert isinstance(val, (bool, int, float)), (
-                        f"Expected int or float, got {type(val)}"
-                    )
-                    new_args.append(
-                        _get_or_create_constant(constant_farm, [val], dtype, opset)  # type: ignore[arg-type]
-                    )
-            named_inputs[name] = opset.Concat(*new_args, axis=0)
+        # 3. Concat the list as a single input
+        # E.g. [Value, 42] should be converted to op.Concat(Value, Constant(42))
+        # when the expected input type is INT64
+        # We assume this only happens for 0D cases
+        if all(isinstance(val, ir.Value) for val in arg):
+            expanded_args = [_reshape_to_1d_tensor(opset, val) for val in arg]
+            named_inputs[name] = opset.Concat(*expanded_args, axis=0)
             continue
+
+        dtype = _determine_input_dtype(param, arg, type_binding)
+        new_args = []
+        for val in arg:
+            if isinstance(val, ir.Value):
+                new_args.append(_reshape_to_1d_tensor(opset, val))
+            elif val is None:
+                # Skip None values
+                continue
+            elif isinstance(val, (ir.Tensor, ir.TensorProtocol)):
+                new_args.append(_reshape_to_1d_tensor(opset, opset.Constant(value=val)))
+            else:
+                # Turn the Python constant into 1D tensor for the constant
+                assert isinstance(val, (bool, int, float)), (
+                    f"Expected int or float, got {type(val)}"
+                )
+                new_args.append(
+                    _get_or_create_constant(constant_farm, [val], dtype, opset)  # type: ignore[arg-type]
+                )
+        named_inputs[name] = opset.Concat(*new_args, axis=0)
+        continue
     return named_inputs
 
 
@@ -470,11 +465,10 @@ def _determine_output_number(
             num_outputs = named_attrs.get("num_outputs")
             if num_outputs is not None and isinstance(num_outputs, int):
                 return num_outputs
-            else:
-                raise ValueError(
-                    "Could not determine the number of outputs for Split. "
-                    "num_outputs must be provided"
-                )
+            raise ValueError(
+                "Could not determine the number of outputs for Split. "
+                "num_outputs must be provided"
+            )
     return len(signature.outputs)
 
 
@@ -622,9 +616,8 @@ class OpRecorder(evaluator.Evaluator):
                     if src_input.dtype == target_type.dtype:
                         # Same type. No cast needed
                         return src_input  # type: ignore[return-value]
-                    else:
-                        # Create a Cast node
-                        return self.opset.Cast(src_input, to=target_type.dtype)  # type: ignore[union-attr,return-value]
+                    # Create a Cast node
+                    return self.opset.Cast(src_input, to=target_type.dtype)  # type: ignore[union-attr,return-value]
 
             num_outputs = _determine_output_number(op_signature, named_attrs)
             outputs = self._call_op(
@@ -655,9 +648,8 @@ class OpRecorder(evaluator.Evaluator):
                 if isinstance(args[0], _tensors.SymbolicTensor):
                     if args[0].rank is not None:
                         return args[0].rank == 0
-                    else:
-                        # Fall to call add_function_call
-                        pass
+                    # Fall to call add_function_call
+                    pass
                 elif isinstance(args[0], Sequence):
                     return False
                 else:
@@ -671,15 +663,13 @@ class OpRecorder(evaluator.Evaluator):
                 if isinstance(args[0], _tensors.SymbolicTensor):
                     if args[0].rank is not None:
                         return args[0].rank
-                    else:
-                        # Fall to call add_function_call
-                        pass
+                    # Fall to call add_function_call
+                    pass
                 elif isinstance(args[0], Sequence):
                     if all(isinstance(arg, (int, float)) for arg in args[0]):
                         return 1
-                    else:
-                        # Fall to call add_function_call
-                        pass
+                    # Fall to call add_function_call
+                    pass
                 else:
                     # Python constants are scalars
                     return 0

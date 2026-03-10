@@ -7,12 +7,12 @@ import dataclasses
 import difflib
 import io
 import sys
-from typing import Any, Callable, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 import torch
 import torch.fx
 from torch._subclasses.fake_tensor import unset_fake_temporarily
-
 
 if TYPE_CHECKING:
     from torch._subclasses import fake_tensor

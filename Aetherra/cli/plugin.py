@@ -77,9 +77,7 @@ def format_plugin_list(plugins, detailed=False):
             )
 
             if hasattr(plugin, "download_count") and plugin.download_count > 0:
-                output.append(
-                    f"    Downloads: {plugin.download_count:,} | Rating: {rating_stars}"
-                )
+                output.append(f"    Downloads: {plugin.download_count:,} | Rating: {rating_stars}")
 
             if plugin.manifest.keywords:
                 output.append(f"    Keywords: {', '.join(plugin.manifest.keywords)}")
@@ -173,9 +171,7 @@ def cmd_install(args, manager):
             return 1
 
     print(f"🔄 Installing plugin: {name} ({version})")
-    success = manager.install_plugin(
-        name, version, force=force, skip_security=skip_security
-    )
+    success = manager.install_plugin(name, version, force=force, skip_security=skip_security)
 
     if success:
         print(f"✅ Successfully installed {name}")
@@ -263,9 +259,7 @@ def cmd_info(args, manager):
 
     try:
         # Check if installed locally first
-        installed_plugins = {
-            p.manifest.name: p for p in manager.list_installed_plugins()
-        }
+        installed_plugins = {p.manifest.name: p for p in manager.list_installed_plugins()}
 
         if name in installed_plugins:
             plugin = installed_plugins[name]
@@ -348,9 +342,7 @@ def cmd_popular(args, manager):
                 rating_stars = "⭐" * int(plugin.rating) if plugin.rating > 0 else ""
                 print(f"{i:2d}. {plugin.manifest.name} v{plugin.manifest.version}")
                 print(f"     {plugin.manifest.description}")
-                print(
-                    f"     Downloads: {plugin.download_count:,} | Rating: {rating_stars}"
-                )
+                print(f"     Downloads: {plugin.download_count:,} | Rating: {rating_stars}")
                 print()
         else:
             print("No popular plugins found")

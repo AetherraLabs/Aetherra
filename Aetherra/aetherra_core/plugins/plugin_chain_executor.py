@@ -120,9 +120,7 @@ class PluginChainExecutor:
             result.status = ChainStatus.COMPLETED
             result.execution_time = (datetime.now() - start_time).total_seconds()
 
-            logger.info(
-                f"✅ Chain '{chain_id}' completed in {result.execution_time:.2f}s"
-            )
+            logger.info(f"✅ Chain '{chain_id}' completed in {result.execution_time:.2f}s")
 
         except Exception as e:
             result.status = ChainStatus.FAILED
@@ -133,14 +131,12 @@ class PluginChainExecutor:
 
         return result
 
-    async def _execute_sequential(
-        self, steps: List[PluginChainStep], result: ChainResult
-    ):
+    async def _execute_sequential(self, steps: List[PluginChainStep], result: ChainResult):
         """Execute steps sequentially."""
 
         for i, step in enumerate(steps):
             logger.debug(
-                f"🔗 Executing step {i+1}/{len(steps)}: {step.plugin_name}.{step.method_name}"
+                f"🔗 Executing step {i + 1}/{len(steps)}: {step.plugin_name}.{step.method_name}"
             )
 
             step_result = await self._execute_step(step)
@@ -149,13 +145,9 @@ class PluginChainExecutor:
 
             # Check if step failed and should stop chain
             if not step_result.get("success", True):
-                raise Exception(
-                    f"Step {i+1} failed: {step_result.get('error', 'Unknown error')}"
-                )
+                raise Exception(f"Step {i + 1} failed: {step_result.get('error', 'Unknown error')}")
 
-    async def _execute_parallel(
-        self, steps: List[PluginChainStep], result: ChainResult
-    ):
+    async def _execute_parallel(self, steps: List[PluginChainStep], result: ChainResult):
         """Execute steps in parallel."""
 
         logger.debug(f"🔗 Executing {len(steps)} steps in parallel")
@@ -169,9 +161,7 @@ class PluginChainExecutor:
         # Process results
         for i, step_result in enumerate(step_results):
             if isinstance(step_result, Exception):
-                result.results.append(
-                    {"success": False, "error": str(step_result), "step": i}
-                )
+                result.results.append({"success": False, "error": str(step_result), "step": i})
             else:
                 # step_result should be Dict[str, Any] from _execute_step
                 if isinstance(step_result, dict):
@@ -188,9 +178,7 @@ class PluginChainExecutor:
                         }
                     )
 
-    async def _execute_conditional(
-        self, steps: List[PluginChainStep], result: ChainResult
-    ):
+    async def _execute_conditional(self, steps: List[PluginChainStep], result: ChainResult):
         """Execute steps with conditional logic."""
 
         context = {}  # Shared context for conditions
@@ -198,16 +186,14 @@ class PluginChainExecutor:
         for i, step in enumerate(steps):
             # Check condition if specified
             if step.condition and not self._evaluate_condition(step.condition, context):
-                logger.debug(
-                    f"⏭️ Skipping step {i+1}: condition '{step.condition}' not met"
-                )
+                logger.debug(f"⏭️ Skipping step {i + 1}: condition '{step.condition}' not met")
                 result.results.append(
                     {"success": True, "skipped": True, "condition": step.condition}
                 )
                 continue
 
             logger.debug(
-                f"🔗 Executing conditional step {i+1}/{len(steps)}: {step.plugin_name}.{step.method_name}"
+                f"🔗 Executing conditional step {i + 1}/{len(steps)}: {step.plugin_name}.{step.method_name}"
             )
 
             step_result = await self._execute_step(step)

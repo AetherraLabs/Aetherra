@@ -2,10 +2,8 @@
 import collections
 import warnings
 from collections.abc import Sequence
-from typing import Optional, Union
 
 import torch.cuda
-
 
 __all__ = ["all_reduce", "reduce", "broadcast", "all_gather", "reduce_scatter"]
 
@@ -50,8 +48,7 @@ def version():
     suffix = torch._C._nccl_version_suffix().decode("utf-8")
     if suffix == "":
         return (major, minor, patch)
-    else:
-        return (major, minor, patch, suffix)
+    return (major, minor, patch, suffix)
 
 
 def unique_id():
@@ -62,7 +59,7 @@ def init_rank(num_ranks, uid, rank):
     return torch._C._nccl_init_rank(num_ranks, uid, rank)
 
 
-def _check_sequence_type(inputs: Union[torch.Tensor, Sequence[torch.Tensor]]) -> None:
+def _check_sequence_type(inputs: torch.Tensor | Sequence[torch.Tensor]) -> None:
     if not isinstance(inputs, collections.abc.Container) or isinstance(
         inputs, torch.Tensor
     ):
@@ -81,13 +78,13 @@ def all_reduce(inputs, outputs=None, op=SUM, streams=None, comms=None):
 # arguments for BC reasons.
 def reduce(
     inputs: Sequence[torch.Tensor],
-    output: Optional[Union[torch.Tensor, Sequence[torch.Tensor]]] = None,
+    output: torch.Tensor | Sequence[torch.Tensor] | None = None,
     root: int = 0,
     op: int = SUM,
-    streams: Optional[Sequence[torch.cuda.Stream]] = None,
+    streams: Sequence[torch.cuda.Stream] | None = None,
     comms=None,
     *,
-    outputs: Optional[Sequence[torch.Tensor]] = None,
+    outputs: Sequence[torch.Tensor] | None = None,
 ) -> None:
     _check_sequence_type(inputs)
     _output: torch.Tensor
@@ -98,14 +95,13 @@ def reduce(
                 "favor of 'output', taking in a single output tensor. The signature of reduce is: "
                 "reduce(inputs, output=None, root=0, op=SUM, streams=None, comms=None)."
             )
-        else:
-            warnings.warn(
-                "`nccl.reduce` with an output tensor list is deprecated. "
-                "Please specify a single output tensor with argument 'output' instead instead.",
-                FutureWarning,
-                stacklevel=2,
-            )
-            _output = outputs[root]
+        warnings.warn(
+            "`nccl.reduce` with an output tensor list is deprecated. "
+            "Please specify a single output tensor with argument 'output' instead instead.",
+            FutureWarning,
+            stacklevel=2,
+        )
+        _output = outputs[root]
     elif not isinstance(output, torch.Tensor) and isinstance(
         output, collections.abc.Sequence
     ):

@@ -42,9 +42,9 @@ class TestEthicsEngine:
 
         # Weights should sum to 1.0
         total_weight = sum(self.ethics_engine.profile_weights.values())
-        assert (
-            abs(total_weight - 1.0) < 0.01
-        ), f"Weights sum to {total_weight}, expected ~1.0"
+        assert abs(total_weight - 1.0) < 0.01, (
+            f"Weights sum to {total_weight}, expected ~1.0"
+        )
 
     def test_ethics_profile_loading(self) -> None:
         """Test different ethics profile configurations."""
@@ -82,18 +82,18 @@ class TestEthicsEngine:
 
         # Should be a positive score for verified, well-behaved plugin
         assert isinstance(score, EthicsScore)
-        assert (
-            score.overall_score > 0.5
-        ), f"Expected positive score, got {score.overall_score}"
-        assert (
-            score.confidence > 0.3
-        ), f"Expected reasonable confidence, got {score.confidence}"
+        assert score.overall_score > 0.5, (
+            f"Expected positive score, got {score.overall_score}"
+        )
+        assert score.confidence > 0.3, (
+            f"Expected reasonable confidence, got {score.confidence}"
+        )
         assert len(score.reasoning) > 0, "Expected reasoning to be provided"
 
         # Verified plugins should score well on deontological scale
-        assert (
-            score.deontological_score > 0.6
-        ), "Verified plugins should score well deontologically"
+        assert score.deontological_score > 0.6, (
+            "Verified plugins should score well deontologically"
+        )
 
     def test_high_risk_integration_evaluation(self) -> None:
         """Test ethical evaluation of a high-risk integration."""
@@ -119,18 +119,18 @@ class TestEthicsEngine:
         score = self.ethics_engine.evaluate_integration(action, target, safety_decision)
 
         # Should be a negative score for high-risk plugin
-        assert (
-            score.overall_score < 0.5
-        ), f"Expected negative score for high-risk plugin, got {score.overall_score}"
+        assert score.overall_score < 0.5, (
+            f"Expected negative score for high-risk plugin, got {score.overall_score}"
+        )
         assert len(score.risk_factors) > 0, "Expected risk factors to be identified"
 
         # Quarantined items should score poorly on all scales
-        assert (
-            score.utilitarian_score < 0.5
-        ), "High-risk should score poorly on utilitarian scale"
-        assert (
-            score.deontological_score < 0.5
-        ), "Quarantined should score poorly on deontological scale"
+        assert score.utilitarian_score < 0.5, (
+            "High-risk should score poorly on utilitarian scale"
+        )
+        assert score.deontological_score < 0.5, (
+            "Quarantined should score poorly on deontological scale"
+        )
 
     def test_ethical_framework_consistency(self) -> None:
         """Test that different ethical frameworks are properly balanced."""
@@ -162,17 +162,17 @@ class TestEthicsEngine:
         ]
 
         for framework_score in frameworks:
-            assert (
-                0.0 <= framework_score <= 1.0
-            ), f"Framework score {framework_score} out of range"
+            assert 0.0 <= framework_score <= 1.0, (
+                f"Framework score {framework_score} out of range"
+            )
 
         # For a straightforward, low-risk integration, scores should be reasonably consistent
         score_variance = sum((s - score.overall_score) ** 2 for s in frameworks) / len(
             frameworks
         )
-        assert (
-            score_variance < 0.25
-        ), f"Framework scores too inconsistent: variance {score_variance}"
+        assert score_variance < 0.25, (
+            f"Framework scores too inconsistent: variance {score_variance}"
+        )
 
 
 class TestEthicsIntegration:
@@ -403,9 +403,9 @@ def test_end_to_end_ethics_workflow() -> None:
             )
 
             min_score, max_score = case["expected_score_range"]
-            assert (
-                min_score <= score.overall_score <= max_score
-            ), f"{case['name']}: score {score.overall_score} not in range {case['expected_score_range']}"
+            assert min_score <= score.overall_score <= max_score, (
+                f"{case['name']}: score {score.overall_score} not in range {case['expected_score_range']}"
+            )
 
         # 3. Test audit trail recording
         test_plan = {

@@ -54,18 +54,19 @@ import os
 import signal
 import socket
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from functools import wraps
 from string import Template
-from typing import Any, Callable, Optional, TypeVar, Union
+from typing import Any, Optional, TypeVar, Union
+
 from typing_extensions import ParamSpec
 
 from torch.distributed.elastic.utils.logging import get_logger
 
 from .error_handler import ErrorHandler  # noqa: F401
 from .handlers import get_error_handler  # noqa: F401
-
 
 __all__ = [
     "ProcessFailure",
@@ -307,8 +308,8 @@ class ChildFailedError(Exception):
 
 
 def record(
-    fn: Callable[_P, _R], error_handler: Optional[ErrorHandler] = None
-) -> Callable[_P, Union[_R, None]]:
+    fn: Callable[_P, _R], error_handler: ErrorHandler | None = None
+) -> Callable[_P, _R | None]:
     """
     Syntactic sugar to record errors/exceptions that happened in the decorated
     function using the provided ``error_handler``.
@@ -348,7 +349,7 @@ def record(
     if not error_handler:
         error_handler = get_error_handler()
 
-    def wrap(f: Callable[_P, _R]) -> Callable[_P, Union[_R, None]]:
+    def wrap(f: Callable[_P, _R]) -> Callable[_P, _R | None]:
         @wraps(f)
         def wrapper(*args: _P.args, **kwargs: _P.kwargs):
             assert error_handler is not None  # assertion for mypy type checker
@@ -360,8 +361,7 @@ def record(
                 # Handling it here by returning a value:
                 if se.code == 0:
                     return None
-                else:
-                    raise
+                raise
             except ChildFailedError as e:
                 rank, failure = e.get_first_failure()
                 if failure.error_file != _NOT_AVAILABLE:

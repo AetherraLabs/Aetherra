@@ -1,7 +1,7 @@
 # mypy: allow-untyped-defs
 import collections
 import enum
-from typing import Any, Optional
+from typing import Any
 
 import torch
 from torch.ao.quantization import FakeQuantizeBase, ObserverBase
@@ -16,7 +16,6 @@ from .pattern_utils import (
     get_reversed_fusions,
     get_type_a_related_to_b,
 )
-
 
 toq = torch.ops.quantized
 
@@ -143,17 +142,16 @@ class _NSGraphMatchableSubgraphsIterator:
     def _is_matchable(self, node: Node) -> bool:
         if node.op == "call_function":
             return node.target not in self.non_matchable_functions
-        elif node.op == "call_module":
+        if node.op == "call_module":
             assert isinstance(node.target, str)
             target_mod = getattr_from_fqn(self.gm, node.target)
             return not any(
                 isinstance(target_mod, t)  # type: ignore[arg-type]
                 for t in self.non_matchable_modules
             )
-        elif node.op == "call_method":
+        if node.op == "call_method":
             return node.target not in self.non_matchable_methods
-        else:
-            return False
+        return False
 
 
 class GraphMatchingException(Exception):
@@ -200,28 +198,28 @@ def _get_subgraph_relationship_type(
         if key not in type_a_related_to_b:
             if node_a.target == node_b.target:
                 return SubgraphTypeRelationship.EQUAL_BUT_UKNOWN
-            else:
-                return SubgraphTypeRelationship.NOT_RELATED
+            return SubgraphTypeRelationship.NOT_RELATED
         # after this point, we are dealing with known types
 
         if node_a.target == node_b.target:
             node_a_has_prev = subgraph_a.base_op_node == subgraph_a.start_node
             node_b_has_prev = subgraph_b.base_op_node == subgraph_b.start_node
-            if node_a_has_prev and (not node_b_has_prev):
+            if (
+                node_a_has_prev
+                and (not node_b_has_prev)
+                or (not node_a_has_prev)
+                and node_b_has_prev
+            ):
                 return SubgraphTypeRelationship.RELATED_BUT_NOT_EQUAL
-            elif (not node_a_has_prev) and node_b_has_prev:
-                return SubgraphTypeRelationship.RELATED_BUT_NOT_EQUAL
-            elif (not node_a_has_prev) and (not node_b_has_prev):
+            if (not node_a_has_prev) and (not node_b_has_prev):
                 return SubgraphTypeRelationship.EQUAL
-            else:
-                # TODO(future PR): check for matches start_op_node and base_op_node
-                return SubgraphTypeRelationship.EQUAL
+            # TODO(future PR): check for matches start_op_node and base_op_node
+            return SubgraphTypeRelationship.EQUAL
 
         if key in type_a_related_to_b:
             return SubgraphTypeRelationship.RELATED_BUT_NOT_EQUAL
-        else:
-            return SubgraphTypeRelationship.NOT_RELATED
-    elif node_a.op == "call_module":
+        return SubgraphTypeRelationship.NOT_RELATED
+    if node_a.op == "call_module":
         assert (
             subgraph_a.base_op_node == subgraph_a.start_node
             and subgraph_b.base_op_node == subgraph_b.start_node
@@ -239,12 +237,10 @@ def _get_subgraph_relationship_type(
         if key not in type_a_related_to_b:
             if type(mod_a) == type(mod_b):
                 return SubgraphTypeRelationship.EQUAL_BUT_UKNOWN
-            else:
-                return SubgraphTypeRelationship.NOT_RELATED
-        elif type(mod_a) == type(mod_b):
+            return SubgraphTypeRelationship.NOT_RELATED
+        if type(mod_a) == type(mod_b):
             return SubgraphTypeRelationship.EQUAL
-        else:
-            return SubgraphTypeRelationship.RELATED_BUT_NOT_EQUAL
+        return SubgraphTypeRelationship.RELATED_BUT_NOT_EQUAL
 
     return SubgraphTypeRelationship.NOT_RELATED
 
@@ -302,10 +298,10 @@ def _get_name_for_subgraph(
     return proposed_name
 
 
-def _get_node_target_type(node: Node, gm: GraphModule) -> Optional[NSNodeTargetType]:
+def _get_node_target_type(node: Node, gm: GraphModule) -> NSNodeTargetType | None:
     if node.op in ("call_function", "call_method"):
         return node.target
-    elif node.op == "call_module":
+    if node.op == "call_module":
         assert isinstance(node.target, str)
         mod = getattr_from_fqn(gm, node.target)
         return type(mod)
@@ -315,8 +311,8 @@ def _get_node_target_type(node: Node, gm: GraphModule) -> Optional[NSNodeTargetT
 def get_matching_subgraph_pairs(
     gm_a: GraphModule,
     gm_b: GraphModule,
-    base_name_to_sets_of_related_ops: Optional[dict[str, set[NSNodeTargetType]]] = None,
-    unmatchable_types_map: Optional[dict[str, set[NSNodeTargetType]]] = None,
+    base_name_to_sets_of_related_ops: dict[str, set[NSNodeTargetType]] | None = None,
+    unmatchable_types_map: dict[str, set[NSNodeTargetType]] | None = None,
 ) -> dict[str, tuple[NSSubgraph, NSSubgraph]]:
     """
     Matches matchable subgraphs of graph_a to graph_b.
@@ -437,7 +433,7 @@ The subgraphs
 are not related. Please ensure that the two models you pass in have the same number
 of subgraphs, and each pair of subgraphs is related to each other."""
                 raise GraphMatchingException(msg)
-            elif subgraph_relationship == SubgraphTypeRelationship.EQUAL_BUT_UKNOWN:
+            if subgraph_relationship == SubgraphTypeRelationship.EQUAL_BUT_UKNOWN:
                 # skip matching but unknown types
                 continue
             key_name_a = _get_name_for_subgraph(
@@ -451,18 +447,17 @@ of subgraphs, and each pair of subgraphs is related to each other."""
             )
             results[key_name_a] = (cur_subgraph_a, cur_subgraph_b)
             continue
-        elif cur_subgraph_a is None and cur_subgraph_b is None:
+        if cur_subgraph_a is None and cur_subgraph_b is None:
             # we reached the end of both graphs
             break
-        else:
-            # only one node was fetched, no match possible, throw error
-            msg = f"""
+        # only one node was fetched, no match possible, throw error
+        msg = f"""
 Attempting to match
 ({cur_subgraph_a}, {type_start_a}) and
 ({cur_subgraph_b}, {type_start_b}),
 one of which is empty. Please ensure that the two models you pass in have the same number
 of subgraphs."""
-            raise GraphMatchingException(msg)
+        raise GraphMatchingException(msg)
 
     # The subgraph pairs are originally created by traversing the two graphs
     # from the outputs to the inputs. Reverse the results to return the

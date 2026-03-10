@@ -16,8 +16,8 @@ def figure_to_image(figures, close=True):
     Returns:
         numpy.array: image in [CHW] order
     """
-    import matplotlib.pyplot as plt
     import matplotlib.backends.backend_agg as plt_backend_agg
+    import matplotlib.pyplot as plt
 
     def render_to_rgb(figure):
         canvas = plt_backend_agg.FigureCanvasAgg(figure)
@@ -33,9 +33,8 @@ def figure_to_image(figures, close=True):
     if isinstance(figures, list):
         images = [render_to_rgb(figure) for figure in figures]
         return np.stack(images)
-    else:
-        image = render_to_rgb(figures)
-        return image
+    image = render_to_rgb(figures)
+    return image
 
 
 def _prepare_video(V):
@@ -98,13 +97,13 @@ def make_grid(I, ncols=8):
 
 
 def convert_to_HWC(tensor, input_format):  # tensor: numpy array
-    assert len(set(input_format)) == len(
-        input_format
-    ), f"You can not use the same dimension shordhand twice.         input_format: {input_format}"
-    assert len(tensor.shape) == len(
-        input_format
-    ), f"size of input tensor and input format are different. \
+    assert len(set(input_format)) == len(input_format), (
+        f"You can not use the same dimension shordhand twice.         input_format: {input_format}"
+    )
+    assert len(tensor.shape) == len(input_format), (
+        f"size of input tensor and input format are different. \
         tensor shape: {tensor.shape}, input_format: {input_format}"
+    )
     input_format = input_format.upper()
 
     if len(input_format) == 4:

@@ -1,12 +1,11 @@
 # mypy: allow-untyped-defs
 import copy
 import logging
-from typing import Any, Optional, Protocol, Union
+from typing import Any, Protocol
 
 import torch
 from torch._library.utils import parse_namespace
 from torch.utils._python_dispatch import _disable_current_modes
-
 
 log = logging.getLogger(__name__)
 
@@ -36,7 +35,7 @@ class FakeScriptMethod:
         self,
         self_fake_obj: FakeScriptObject,
         method_name: str,
-        schema: Optional[torch.FunctionSchema],
+        schema: torch.FunctionSchema | None,
     ):
         self.self_fake_obj = self_fake_obj
         self.method_name = method_name
@@ -125,7 +124,7 @@ def tracing_with_real(x: torch.ScriptObject) -> bool:
 
 def maybe_to_fake_obj(
     fake_mode, x: torch.ScriptObject
-) -> Union[FakeScriptObject, torch.ScriptObject]:
+) -> FakeScriptObject | torch.ScriptObject:
     import torch.utils._pytree as pytree
     from torch.utils._python_dispatch import _disable_current_modes
 
@@ -162,7 +161,7 @@ def maybe_to_fake_obj(
             real_attr = getattr(x, name)  # type: ignore[attr-defined]
 
             # real attr sometimes is not torch.ScriptMethod thus doesn't have schema e.g. __init___ or __eq__
-            method_schema: Optional[torch.FunctionSchema] = None
+            method_schema: torch.FunctionSchema | None = None
             if isinstance(real_attr, torch.ScriptMethod):
                 method_schema = real_attr.schema  # type: ignore[attr-defined]
 
@@ -178,7 +177,7 @@ def maybe_to_fake_obj(
     return fake_x_wrapped
 
 
-def register_fake_class(qualname, fake_class: Optional[HasStaticMethodFromReal] = None):
+def register_fake_class(qualname, fake_class: HasStaticMethodFromReal | None = None):
     r"""Register a fake implementation for this class.
 
     It's in the same spirit of registering a fake implementation for
@@ -278,7 +277,7 @@ def has_fake_class(full_qualname) -> bool:
     return global_fake_class_registry.has_impl(full_qualname)
 
 
-def find_fake_class(full_qualname) -> Optional[Any]:
+def find_fake_class(full_qualname) -> Any | None:
     if not has_fake_class(full_qualname):
         return None
     return global_fake_class_registry.get_impl(full_qualname)

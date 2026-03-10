@@ -24,7 +24,7 @@ from typing import Any, Dict, List
 
 class QFACRetrievalPipeline:
     def __init__(self) -> None:
-        pass
+        self.query_count = 0
 
     def _content_text(self, obj: Any) -> str:
         try:

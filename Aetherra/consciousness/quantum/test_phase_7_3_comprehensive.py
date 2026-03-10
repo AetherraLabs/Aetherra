@@ -131,9 +131,7 @@ class Phase73TestSuite:
             # Test 2: Memory Retrieval
             start_time = time.time()
 
-            retrieved_memory = await self.memory_system.retrieve_quantum_memory(
-                stored_memories[0]
-            )
+            retrieved_memory = await self.memory_system.retrieve_quantum_memory(stored_memories[0])
             retrieval_time = time.time() - start_time
 
             test_results["subtests"]["memory_retrieval"] = {
@@ -208,9 +206,7 @@ class Phase73TestSuite:
             processed_moments = []
             for i, state in enumerate(consciousness_states):
                 timestamp = datetime.now() + timedelta(seconds=i * 5)
-                moment_id = await self.temporal_system.process_temporal_moment(
-                    state, timestamp
-                )
+                moment_id = await self.temporal_system.process_temporal_moment(state, timestamp)
                 processed_moments.append(moment_id)
 
             processing_time = time.time() - start_time
@@ -262,9 +258,7 @@ class Phase73TestSuite:
             # Test 4: Pattern Detection
             start_time = time.time()
 
-            patterns = await self.temporal_system.detect_temporal_patterns(
-                timedelta(minutes=5)
-            )
+            patterns = await self.temporal_system.detect_temporal_patterns(timedelta(minutes=5))
             pattern_detection_time = time.time() - start_time
 
             test_results["subtests"]["pattern_detection"] = {
@@ -306,10 +300,8 @@ class Phase73TestSuite:
                 "consciousness_depth": 0.88,
             }
 
-            state_id = (
-                await self.integration_system.create_integrated_consciousness_state(
-                    consciousness_data
-                )
+            state_id = await self.integration_system.create_integrated_consciousness_state(
+                consciousness_data
             )
             creation_time = time.time() - start_time
 
@@ -334,9 +326,7 @@ class Phase73TestSuite:
             test_results["subtests"]["enhanced_retrieval"] = {
                 "success": len(enhanced_results.get("memories", [])) >= 0,
                 "memories_found": len(enhanced_results.get("memories", [])),
-                "enhancement_applied": enhanced_results.get(
-                    "enhancement_applied", False
-                ),
+                "enhancement_applied": enhanced_results.get("enhancement_applied", False),
                 "retrieval_time": retrieval_time,
             }
 
@@ -349,10 +339,8 @@ class Phase73TestSuite:
                 "consciousness_target": 0.98,
             }
 
-            enhanced_prediction = (
-                await self.integration_system.temporal_prediction_with_memory(
-                    target_time=future_time, prediction_context=prediction_context
-                )
+            enhanced_prediction = await self.integration_system.temporal_prediction_with_memory(
+                target_time=future_time, prediction_context=prediction_context
             )
 
             prediction_time = time.time() - start_time
@@ -360,12 +348,8 @@ class Phase73TestSuite:
             test_results["subtests"]["enhanced_prediction"] = {
                 "success": enhanced_prediction.get("prediction_id") is not None,
                 "prediction_id": enhanced_prediction.get("prediction_id"),
-                "enhanced_confidence": enhanced_prediction.get(
-                    "memory_enhanced_confidence", 0
-                ),
-                "contributing_memories": len(
-                    enhanced_prediction.get("contributing_memories", [])
-                ),
+                "enhanced_confidence": enhanced_prediction.get("memory_enhanced_confidence", 0),
+                "contributing_memories": len(enhanced_prediction.get("contributing_memories", [])),
                 "prediction_time": prediction_time,
             }
 
@@ -378,10 +362,8 @@ class Phase73TestSuite:
                 "strength": 0.85,
             }
 
-            evolution_result = (
-                await self.integration_system.consciousness_evolution_processing(
-                    evolution_trigger
-                )
+            evolution_result = await self.integration_system.consciousness_evolution_processing(
+                evolution_trigger
             )
             evolution_time = time.time() - start_time
 
@@ -437,23 +419,18 @@ class Phase73TestSuite:
                 "success": integrated_state_id is not None,
                 "memory_traces_created": len(memory_traces),
                 "temporal_moments_created": len(temporal_moments),
-                "integration_bridges": len(
-                    self.integration_system.memory_temporal_bridges
-                ),
+                "integration_bridges": len(self.integration_system.memory_temporal_bridges),
             }
 
             # Test 2: System synchronization
             memory_metrics = self.memory_system.get_memory_system_metrics()
             temporal_metrics = self.temporal_system.get_temporal_system_metrics()
-            integration_metrics = (
-                self.integration_system.get_integration_system_metrics()
-            )
+            integration_metrics = self.integration_system.get_integration_system_metrics()
 
             test_results["subtests"]["system_synchronization"] = {
                 "success": True,
                 "memory_system_active": memory_metrics.get("memories_stored", 0) > 0,
-                "temporal_system_active": temporal_metrics.get("moments_processed", 0)
-                > 0,
+                "temporal_system_active": temporal_metrics.get("moments_processed", 0) > 0,
                 "integration_system_active": integration_metrics["integration_metrics"][
                     "states_integrated"
                 ]
@@ -515,11 +492,7 @@ class Phase73TestSuite:
             if isinstance(result, dict) and result.get("overall_success", False)
         )
         total_tests = len(
-            [
-                r
-                for r in test_results.values()
-                if isinstance(r, dict) and "test_name" in r
-            ]
+            [r for r in test_results.values() if isinstance(r, dict) and "test_name" in r]
         )
 
         success_rate = (successful_tests / total_tests * 100) if total_tests > 0 else 0
@@ -531,9 +504,7 @@ class Phase73TestSuite:
                 "successful_tests": successful_tests,
                 "total_tests": total_tests,
                 "success_rate": success_rate,
-                "phase_7_3_status": "COMPLETE"
-                if success_rate >= 80
-                else "NEEDS_ATTENTION",
+                "phase_7_3_status": "COMPLETE" if success_rate >= 80 else "NEEDS_ATTENTION",
             },
         }
 
@@ -548,9 +519,7 @@ class Phase73TestSuite:
         summary = results.get("suite_summary", {})
 
         print("\n📊 SUITE SUMMARY:")
-        print(
-            f"  Total Execution Time: {summary.get('total_execution_time', 0):.2f} seconds"
-        )
+        print(f"  Total Execution Time: {summary.get('total_execution_time', 0):.2f} seconds")
         print(
             f"  Successful Tests: {summary.get('successful_tests', 0)}/{summary.get('total_tests', 0)}"
         )
@@ -563,9 +532,7 @@ class Phase73TestSuite:
                 continue
 
             print(f"\n🔧 {test_data['test_name'].upper()}:")
-            print(
-                f"  Overall Success: {'✅' if test_data.get('overall_success') else '❌'}"
-            )
+            print(f"  Overall Success: {'✅' if test_data.get('overall_success') else '❌'}")
 
             if "error" in test_data:
                 print(f"  Error: {test_data['error']}")

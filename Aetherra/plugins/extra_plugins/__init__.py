@@ -15,12 +15,13 @@ except ImportError:
         # Aetherra imports
         from Aetherra.lyrixa.plugins.enhanced_plugin_manager import PluginManager
     except ImportError:
-        # If that fails too, provide a placeholder
+        # If that fails too, provide a fallback manager
         class PluginManager:
-            """Placeholder PluginManager when imports fail."""
+            """Fallback PluginManager when imports fail."""
 
             def __init__(self, *args, **kwargs):
-                pass
+                self.args = args
+                self.kwargs = kwargs
 
 
 __all__ = ["PluginManager"]

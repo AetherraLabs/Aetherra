@@ -8,10 +8,10 @@ import types
 # Third party imports
 import pytest
 import requests
-from schema_validators import validate_lyrixa_chat_response
 
 # Aetherra imports
 from aetherra_hub.compat import start_hub_server
+from schema_validators import validate_lyrixa_chat_response
 
 HAS_FLASK = True
 try:

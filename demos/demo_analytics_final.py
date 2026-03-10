@@ -488,9 +488,12 @@ async def run_final_demo():
         health_status = health.get("status", "unknown")
         health_score = health.get("score", 0)
 
-        health_emoji = {"excellent": "🟢", "good": "🟡", "fair": "🟠", "poor": "🔴"}.get(
-            health_status, "⚪"
-        )
+        health_emoji = {
+            "excellent": "🟢",
+            "good": "🟡",
+            "fair": "🟠",
+            "poor": "🔴",
+        }.get(health_status, "⚪")
 
         print(
             f"🏥 Overall System Health: {health_emoji} {health_status.upper()} ({health_score:.0f}%)"

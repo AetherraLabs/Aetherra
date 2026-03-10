@@ -1,5 +1,4 @@
 from torch.nn.intrinsic.modules.fused import (
-    _FusedModule,
     BNReLU2d,
     BNReLU3d,
     ConvBn1d,
@@ -13,8 +12,8 @@ from torch.nn.intrinsic.modules.fused import (
     ConvReLU3d,
     LinearBn1d,
     LinearReLU,
+    _FusedModule,
 )
-
 
 __all__ = [
     "BNReLU2d",

@@ -37,22 +37,22 @@ from torch.testing._internal.common_dtype import (
 )
 from torch.testing._internal.common_utils import (
     GRADCHECK_NONDET_TOL,
+    TEST_WITH_ROCM,
     make_fullrank_matrices_with_distinct_singular_values,
     skipIfSlowGradcheckEnv,
     slowTest,
-    TEST_WITH_ROCM,
 )
 from torch.testing._internal.opinfo.core import (
-    clone_sample,
     DecorateInfo,
     ErrorInput,
-    gradcheck_wrapper_hermitian_input,
     L,
     M,
     OpInfo,
     ReductionOpInfo,
     S,
     SampleInput,
+    clone_sample,
+    gradcheck_wrapper_hermitian_input,
 )
 from torch.testing._internal.opinfo.refs import PythonRefInfo, ReductionPythonRefInfo
 
@@ -292,7 +292,7 @@ def sample_inputs_linalg_multi_dot(op_info, device, dtype, requires_grad, **kwar
 
     for sizes in test_cases:
         tensors = []
-        for size in zip(sizes[:-1], sizes[1:]):
+        for size in zip(sizes[:-1], sizes[1:], strict=False):
             t = make_tensor(
                 size, dtype=dtype, device=device, requires_grad=requires_grad
             )
@@ -566,11 +566,10 @@ def np_vander_batched(x, N=None):
     if x.ndim == 1:
         y = np.vander(x, N=N, increasing=True)
         return y
-    else:
-        if N is None:
-            N = x.shape[-1]
-        y = np.vander(x.ravel(), N=N, increasing=True).reshape((*x.shape, N))
-        return y
+    if N is None:
+        N = x.shape[-1]
+    y = np.vander(x.ravel(), N=N, increasing=True).reshape((*x.shape, N))
+    return y
 
 
 def sample_inputs_linalg_cholesky_inverse(
@@ -895,9 +894,8 @@ def sample_inputs_linalg_eigh(op_info, device, dtype, requires_grad=False, **kwa
         if isinstance(output, tuple):
             # eigh function
             return output[0], abs(output[1])
-        else:
-            # eigvalsh function
-            return output
+        # eigvalsh function
+        return output
 
     # Samples do not need to be Hermitian, as we're using gradcheck_wrapper_hermitian_input
     samples = sample_inputs_linalg_invertible(op_info, device, dtype, requires_grad)
@@ -1058,8 +1056,7 @@ def sample_inputs_linalg_lu(op_info, device, dtype, requires_grad=False, **kwarg
     def out_fn(output):
         if op_info.name == "linalg.lu":
             return output[1], output[2]
-        else:
-            return output
+        return output
 
     batch_shapes = ((), (3,), (3, 3))
     # pivot=False only supported in CUDA

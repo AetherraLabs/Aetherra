@@ -880,7 +880,11 @@ class HomeostasisAuditLayer:
         """Check if a correlation chain should be marked as completed."""
         # This is a simplified version - in practice, you'd have more sophisticated
         # logic to determine when a chain is "complete"
-        pass
+        actions = self.correlation_chains.get(trace_id, [])
+        if not actions:
+            return False
+        completion_threshold = 3
+        return len(actions) >= completion_threshold
 
     def _calculate_chain_duration(self, actions: List[Dict[str, Any]]) -> Optional[float]:
         """Calculate the duration of a correlation chain."""

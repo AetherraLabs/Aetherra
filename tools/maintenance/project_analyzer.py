@@ -31,7 +31,7 @@ class AetherraProjectAnalyzer:
         try:
             with open(filepath, "rb") as f:
                 return hashlib.sha256(f.read()).hexdigest()
-        except (IOError, PermissionError):
+        except (OSError, PermissionError):
             return None
 
     def analyze_python_file(self, filepath):
@@ -74,7 +74,7 @@ class AetherraProjectAnalyzer:
             except SyntaxError:
                 return {"error": "Syntax error in Python file"}
 
-        except (IOError, UnicodeDecodeError):
+        except (OSError, UnicodeDecodeError):
             return {"error": "Could not read file"}
 
     def categorize_file(self, filepath):
@@ -85,34 +85,32 @@ class AetherraProjectAnalyzer:
         if name.endswith((".py",)):
             if "test" in name:
                 return "test"
-            elif "demo" in name:
+            if "demo" in name:
                 return "demo"
-            elif "launcher" in name:
+            if "launcher" in name:
                 return "launcher"
-            elif name.startswith("__"):
+            if name.startswith("__"):
                 return "python_special"
-            else:
-                return "python_module"
-        elif name.endswith((".md",)):
+            return "python_module"
+        if name.endswith((".md",)):
             return "documentation"
-        elif name.endswith((".json",)):
+        if name.endswith((".json",)):
             return "configuration"
-        elif name.endswith((".db",)):
+        if name.endswith((".db",)):
             return "database"
-        elif name.endswith((".log",)):
+        if name.endswith((".log",)):
             return "log"
-        elif name.endswith((".yml", ".yaml")):
+        if name.endswith((".yml", ".yaml")):
             return "configuration"
-        elif name.endswith((".txt",)):
+        if name.endswith((".txt",)):
             return "text"
-        else:
-            return "other"
+        return "other"
 
     def scan_directory(self, directory):
         """Scan a directory and analyze all files"""
         dir_path = Path(directory)
         if not dir_path.exists():
-            return
+            return None
 
         analysis = {
             "path": str(dir_path),

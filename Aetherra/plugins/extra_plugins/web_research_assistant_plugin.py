@@ -14,14 +14,12 @@ This plugin provides comprehensive web research capabilities including:
 
 # Standard library imports
 import asyncio
-import json
 import logging
 import os
-import sys
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from typing import Any
-from urllib.parse import quote, urljoin, urlparse
+from urllib.parse import quote, urlparse
 
 # Third party imports
 import aiohttp
@@ -203,7 +201,7 @@ class WebExtractor:
                 status="success",
             )
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             return self._create_error_source(url, "timeout")
         except Exception as e:
             logger.error(f"Error extracting content from {url}: {e}")
@@ -319,9 +317,7 @@ class WebExtractor:
                 if date_elem.name == "meta":
                     date = date_elem.get("content", "")
                 elif date_elem.name == "time":
-                    date = date_elem.get("datetime", "") or date_elem.get_text(
-                        strip=True
-                    )
+                    date = date_elem.get("datetime", "") or date_elem.get_text(strip=True)
                 else:
                     date = date_elem.get_text(strip=True)
 
@@ -336,9 +332,7 @@ class WebExtractor:
         import re
 
         # Extract title from HTML
-        title_match = re.search(
-            r"<title>(.*?)</title>", html, re.IGNORECASE | re.DOTALL
-        )
+        title_match = re.search(r"<title>(.*?)</title>", html, re.IGNORECASE | re.DOTALL)
         if title_match:
             return title_match.group(1).strip()
 
@@ -595,7 +589,7 @@ class SearchEngine:
 
     async def _search_bing(self, query: str, max_results: int) -> list[str]:
         """Search using Bing (requires API key)."""
-        # Placeholder for Bing API integration
+        # Baseline hook for Bing API integration
         # Would require Bing Search API key
         return []
 
@@ -673,9 +667,7 @@ class ReportGenerator:
             "academic": self._generate_academic_report,
         }
 
-    def generate_report(
-        self, research_data: ResearchReport, report_type: str = "summary"
-    ) -> str:
+    def generate_report(self, research_data: ResearchReport, report_type: str = "summary") -> str:
         """Generate research report in specified format."""
         if report_type not in self.templates:
             report_type = "summary"
@@ -717,7 +709,9 @@ class ReportGenerator:
         for source in data.sources[:5]:
             if source.status == "success":
                 report += f"- **{source.title}** ({source.domain})\n"
-                report += f"  Credibility: {source.credibility_score:.2f} | Words: {source.word_count}\n"
+                report += (
+                    f"  Credibility: {source.credibility_score:.2f} | Words: {source.word_count}\n"
+                )
                 report += f"  {source.excerpt[:150]}...\n\n"
 
         return report
@@ -872,15 +866,11 @@ class WebResearchAssistantPlugin:
         except Exception:
             return False
 
-    async def invoke(
-        self, action: str, payload: dict[str, Any], context=None
-    ) -> dict[str, Any]:
+    async def invoke(self, action: str, payload: dict[str, Any], context=None) -> dict[str, Any]:
         """Main plugin invocation method."""
         try:
             if action == "research":
-                return await self.conduct_research(
-                    payload.get("query"), payload.get("options", {})
-                )
+                return await self.conduct_research(payload.get("query"), payload.get("options", {}))
             elif action == "extract_content":
                 return await self.extract_single_source(payload.get("url"))
             elif action == "search_sources":
@@ -903,9 +893,7 @@ class WebResearchAssistantPlugin:
             logger.error(f"Plugin invocation failed: {e}")
             return {"status": "error", "message": str(e)}
 
-    async def conduct_research(
-        self, query: str, options: dict[str, Any]
-    ) -> dict[str, Any]:
+    async def conduct_research(self, query: str, options: dict[str, Any]) -> dict[str, Any]:
         """Conduct comprehensive research on a topic."""
         try:
             if not query:
@@ -948,9 +936,7 @@ class WebResearchAssistantPlugin:
             insights = self._extract_key_insights(all_content, successful_sources)
 
             # Assess credibility
-            credibility_assessment = self._assess_overall_credibility(
-                successful_sources
-            )
+            credibility_assessment = self._assess_overall_credibility(successful_sources)
 
             # Fact checking (if enabled)
             fact_checks = []
@@ -1049,9 +1035,7 @@ class WebResearchAssistantPlugin:
 
             # Convert dict back to ResearchReport object (simplified)
             # In production, use proper deserialization
-            report_content = self.report_generator.generate_report(
-                research_data, format_type
-            )
+            report_content = self.report_generator.generate_report(research_data, format_type)
 
             # Save report
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -1110,9 +1094,7 @@ class WebResearchAssistantPlugin:
 
         return summary.strip() or "Unable to generate summary"
 
-    def _extract_key_insights(
-        self, content: str, sources: list[WebSource]
-    ) -> list[str]:
+    def _extract_key_insights(self, content: str, sources: list[WebSource]) -> list[str]:
         """Extract key insights from research content."""
         insights = []
 
@@ -1126,14 +1108,12 @@ class WebResearchAssistantPlugin:
 
         # Quality insight
         high_quality = [s for s in sources if s.credibility_score > 0.7]
-        insights.append(
-            f"High-credibility sources: {len(high_quality)} out of {len(sources)}"
-        )
+        insights.append(f"High-credibility sources: {len(high_quality)} out of {len(sources)}")
 
         # Reading level insight
         levels = [s.reading_level for s in sources if s.reading_level != "Unknown"]
         if levels:
-            insights.append(f"Content reading levels range from basic to advanced")
+            insights.append("Content reading levels range from basic to advanced")
 
         return insights
 
@@ -1173,9 +1153,7 @@ class WebResearchAssistantPlugin:
         recommendations = []
 
         if credibility["average_score"] < 0.6:
-            recommendations.append(
-                "Consider seeking additional high-credibility sources"
-            )
+            recommendations.append("Consider seeking additional high-credibility sources")
 
         if len(sources) < 5:
             recommendations.append("Expand research with more diverse sources")
@@ -1187,9 +1165,7 @@ class WebResearchAssistantPlugin:
             )
 
         if not any("edu" in s.domain for s in sources):
-            recommendations.append(
-                "Consider including academic sources for scholarly perspective"
-            )
+            recommendations.append("Consider including academic sources for scholarly perspective")
 
         return recommendations
 

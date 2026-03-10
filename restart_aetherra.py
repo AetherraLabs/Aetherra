@@ -28,7 +28,6 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List
 
 # Third party imports
 import psutil
@@ -174,7 +173,7 @@ class AetherraRestartManager:
         logger.info("✅ Pre-restart checks completed")
         return True
 
-    async def _find_aetherra_processes(self) -> List[psutil.Process]:
+    async def _find_aetherra_processes(self) -> list[psutil.Process]:
         """Find all running Aetherra processes"""
         aetherra_processes = []
 
@@ -418,12 +417,11 @@ class AetherraRestartManager:
             if process.poll() is None:
                 logger.info("✅ System startup initiated successfully")
                 return True
-            else:
-                stdout, stderr = process.communicate()
-                logger.error("❌ System startup failed")
-                logger.error(f"STDOUT: {stdout.decode()}")
-                logger.error(f"STDERR: {stderr.decode()}")
-                return False
+            stdout, stderr = process.communicate()
+            logger.error("❌ System startup failed")
+            logger.error(f"STDOUT: {stdout.decode()}")
+            logger.error(f"STDERR: {stderr.decode()}")
+            return False
 
         except Exception as e:
             logger.error(f"❌ Failed to start system: {e}")
@@ -480,7 +478,7 @@ class AetherraRestartManager:
             mode="maintenance", no_gui=True, force=False, preserve_memory=True
         )
 
-    def get_system_status(self) -> Dict:
+    def get_system_status(self) -> dict:
         """Get current system status"""
         processes = []
 

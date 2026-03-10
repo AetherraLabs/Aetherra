@@ -24,9 +24,9 @@
 
 import functools as _functools
 import warnings
-
 from _codecs import encode
 from collections import Counter, OrderedDict
+from collections.abc import Callable
 from pickle import (
     APPEND,
     APPENDS,
@@ -39,8 +39,6 @@ from pickle import (
     BINPUT,
     BINUNICODE,
     BUILD,
-    bytes_types,
-    decode_long,
     EMPTY_DICT,
     EMPTY_LIST,
     EMPTY_SET,
@@ -65,14 +63,15 @@ from pickle import (
     TUPLE2,
     TUPLE3,
     UnpicklingError,
+    bytes_types,
+    decode_long,
 )
 from struct import unpack
 from sys import maxsize
-from typing import Any, Callable, Union
+from typing import Any
 
 import torch
-from torch._utils import _sparse_tensors_to_validate, IMPORT_MAPPING, NAME_MAPPING
-
+from torch._utils import IMPORT_MAPPING, NAME_MAPPING, _sparse_tensors_to_validate
 
 # modules in this list are never allowed, even if the user attempts to allowlist
 # functions/classes from them
@@ -83,15 +82,15 @@ _blocklisted_modules = [
     "nt",
 ]
 
-_marked_safe_globals_set: set[Union[Callable, tuple[Callable, str]]] = set()
+_marked_safe_globals_set: set[Callable | tuple[Callable, str]] = set()
 
 
-def _add_safe_globals(safe_globals: list[Union[Callable, tuple[Callable, str]]]):
+def _add_safe_globals(safe_globals: list[Callable | tuple[Callable, str]]):
     global _marked_safe_globals_set
     _marked_safe_globals_set = _marked_safe_globals_set.union(set(safe_globals))
 
 
-def _get_safe_globals() -> list[Union[Callable, tuple[Callable, str]]]:
+def _get_safe_globals() -> list[Callable | tuple[Callable, str]]:
     global _marked_safe_globals_set
     return list(_marked_safe_globals_set)
 
@@ -102,14 +101,14 @@ def _clear_safe_globals():
 
 
 def _remove_safe_globals(
-    globals_to_remove: list[Union[Callable, tuple[Callable, str]]],
+    globals_to_remove: list[Callable | tuple[Callable, str]],
 ):
     global _marked_safe_globals_set
     _marked_safe_globals_set = _marked_safe_globals_set - set(globals_to_remove)
 
 
 class _safe_globals:
-    def __init__(self, safe_globals: list[Union[Callable, tuple[Callable, str]]]):
+    def __init__(self, safe_globals: list[Callable | tuple[Callable, str]]):
         self.safe_globals = safe_globals
 
     def __enter__(self):

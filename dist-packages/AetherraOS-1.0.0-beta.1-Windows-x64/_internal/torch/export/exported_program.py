@@ -8,11 +8,11 @@ import operator
 import types
 import warnings
 from collections import defaultdict, namedtuple
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
-from typing import Any, Callable, final, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, final
 
-from torch._guards import tracing, TracingContext
+from torch._guards import TracingContext, tracing
 from torch._higher_order_ops.utils import autograd_not_implemented
 from torch._library.fake_class_registry import FakeScriptObject
 from torch._subclasses.fake_impls import (
@@ -26,7 +26,6 @@ from torch.fx._utils import first_call_function_nn_module_stack
 from torch.fx.graph import _PyTreeCodeGen, _PyTreeInfo
 from torch.fx.immutable_collections import immutable_dict, immutable_list
 from torch.fx.passes.runtime_assert import insert_deferred_runtime_asserts
-
 
 if TYPE_CHECKING:
     # Import the following modules during type checking to enable code intelligence features,
@@ -81,7 +80,6 @@ from .graph_signature import (  # noqa: F401
     TokenArgument,
 )
 
-
 __all__ = [
     "ExportedProgram",
     "ModuleCallEntry",
@@ -90,7 +88,7 @@ __all__ = [
 ]
 
 
-PassType = Callable[[torch.fx.GraphModule], Optional[PassResult]]
+PassType = Callable[[torch.fx.GraphModule], PassResult | None]
 
 
 @dataclasses.dataclass
@@ -99,7 +97,7 @@ class ModuleCallSignature:
     outputs: list[ArgumentSpec]
     in_spec: pytree.TreeSpec
     out_spec: pytree.TreeSpec
-    forward_arg_names: Optional[list[str]] = None
+    forward_arg_names: list[str] | None = None
 
     def replace_all_uses_with(self, original_node, new_node):
         for i in self.inputs:
@@ -113,7 +111,7 @@ class ModuleCallSignature:
 @dataclasses.dataclass
 class ModuleCallEntry:
     fqn: str
-    signature: Optional[ModuleCallSignature] = None
+    signature: ModuleCallSignature | None = None
 
 
 def _disable_prexisiting_fake_mode(fn):
@@ -126,9 +124,9 @@ def _disable_prexisiting_fake_mode(fn):
 
 
 def _fx_collection_equivalence_fn(
-    spec1_type: Optional[type],
+    spec1_type: type | None,
     spec1_context: pytree.Context,
-    spec2_type: Optional[type],
+    spec2_type: type | None,
     spec2_context: pytree.Context,
 ) -> bool:
     """Treat containers and their immutable variants as the same type. Otherwise
@@ -329,7 +327,7 @@ def _decompose_and_get_gm_with_new_signature_constants(
     *,
     cia_to_decomp: dict[torch._ops.OperatorBase, Callable],
     python_decomp_table: dict[torch._ops.OperatorBase, Callable],
-    joint_loss_index: Optional[int],
+    joint_loss_index: int | None,
     decompose_custom_triton_ops,
 ):
     from torch._export.passes.lift_constants_pass import _materialize_and_lift_constants
@@ -600,13 +598,13 @@ def _decompose_and_get_gm_with_new_signature_constants(
     def update_arg(old_arg, new_ph):
         if isinstance(old_arg, ConstantArgument):
             return old_arg
-        elif isinstance(old_arg, TensorArgument):
+        if isinstance(old_arg, TensorArgument):
             return TensorArgument(name=new_ph.name)
-        elif isinstance(old_arg, SymIntArgument):
+        if isinstance(old_arg, SymIntArgument):
             return SymIntArgument(name=new_ph.name)
-        elif isinstance(old_arg, SymFloatArgument):
+        if isinstance(old_arg, SymFloatArgument):
             return SymFloatArgument(name=new_ph.name)
-        elif isinstance(old_arg, SymBoolArgument):
+        if isinstance(old_arg, SymBoolArgument):
             return SymBoolArgument(name=new_ph.name)
         raise RuntimeError(f"Type of old_arg not supported: {type(old_arg)}")
 
@@ -615,7 +613,7 @@ def _decompose_and_get_gm_with_new_signature_constants(
 
     # rename the placeholders
     assert len(new_placeholders) == len(old_placeholders)
-    for old_ph, new_ph in zip(old_placeholders, new_placeholders):
+    for old_ph, new_ph in zip(old_placeholders, new_placeholders, strict=False):
         new_ph.name = new_ph.target = old_ph.name
 
     # handle name collisions with newly decomposed graph nodes
@@ -756,7 +754,7 @@ def _decompose_and_get_gm_with_new_signature_constants(
     # values; since these become specialized, we replace such metadata with
     # the original values.
     # Also, set the param/buffer metadata back to the placeholders.
-    for old_node, new_node in zip(old_placeholders, new_placeholders):
+    for old_node, new_node in zip(old_placeholders, new_placeholders, strict=False):
         if not isinstance(old_node.meta["val"], torch.Tensor):
             new_node.meta["val"] = old_node.meta["val"]
 
@@ -945,7 +943,7 @@ def _decompose_exported_program(
     *,
     cia_to_decomp: dict[torch._ops.OperatorBase, Callable],
     python_decomp_table: dict[torch._ops.OperatorBase, Callable],
-    joint_loss_index: Optional[int],
+    joint_loss_index: int | None,
     decompose_custom_triton_ops: bool,
 ):
     (
@@ -1013,16 +1011,16 @@ class ExportedProgram:
 
     def __init__(
         self,
-        root: Union[torch.nn.Module, dict[str, Any]],
+        root: torch.nn.Module | dict[str, Any],
         graph: torch.fx.Graph,
         graph_signature: ExportGraphSignature,
-        state_dict: dict[str, Union[torch.Tensor, torch.nn.Parameter]],
+        state_dict: dict[str, torch.Tensor | torch.nn.Parameter],
         range_constraints: "dict[sympy.Symbol, Any]",
         module_call_graph: list[ModuleCallEntry],
-        example_inputs: Optional[tuple[tuple[Any, ...], dict[str, Any]]] = None,
-        constants: Optional[dict[str, _ConstantAttributeType]] = None,
+        example_inputs: tuple[tuple[Any, ...], dict[str, Any]] | None = None,
+        constants: dict[str, _ConstantAttributeType] | None = None,
         *,
-        verifiers: Optional[list[type[Verifier]]] = None,
+        verifiers: list[type[Verifier]] | None = None,
     ):
         # Remove codegen related things from the graph. It should just be a flat graph.
         graph._codegen = torch.fx.graph.CodeGen()
@@ -1301,7 +1299,7 @@ class ExportedProgram:
         for input_ in self.graph_signature.input_specs:
             if input_.kind == InputKind.USER_INPUT:
                 continue
-            elif input_.kind in (
+            if input_.kind in (
                 InputKind.PARAMETER,
                 InputKind.BUFFER,
             ):
@@ -1427,7 +1425,7 @@ class ExportedProgram:
     @_disable_prexisiting_fake_mode
     def run_decompositions(
         self,
-        decomp_table: Optional[dict[torch._ops.OperatorBase, Callable]] = None,
+        decomp_table: dict[torch._ops.OperatorBase, Callable] | None = None,
         decompose_custom_triton_ops: bool = False,
     ) -> "ExportedProgram":
         """
@@ -1593,7 +1591,9 @@ class ExportedProgram:
         placeholders = [p for p in self.graph.nodes if p.op == "placeholder"]
         input_placeholders = [
             p
-            for p, s in zip(placeholders, self.graph_signature.input_specs)
+            for p, s in zip(
+                placeholders, self.graph_signature.input_specs, strict=False
+            )
             if s.kind == InputKind.USER_INPUT
         ]
         _check_input_constraints_for_graph(
@@ -1654,7 +1654,7 @@ def _get_shape_env(gm):
 
 def _get_updated_range_constraints(
     gm: torch.fx.GraphModule,
-    old_range_constraints: "Optional[dict[sympy.Symbol, Any]]" = None,
+    old_range_constraints: "dict[sympy.Symbol, Any] | None" = None,
 ) -> "dict[sympy.Symbol, Any]":
     assert old_range_constraints is not None
 

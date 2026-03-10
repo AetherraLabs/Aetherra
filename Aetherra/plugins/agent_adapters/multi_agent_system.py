@@ -37,9 +37,7 @@ class TaskStatus(Enum):
 class Agent:
     """Individual agent in the multi-agent system"""
 
-    def __init__(
-        self, name: str, role: AgentRole, capabilities: Optional[List[str]] = None
-    ):
+    def __init__(self, name: str, role: AgentRole, capabilities: Optional[List[str]] = None):
         self.name = name
         self.role = role
         self.capabilities = capabilities or []
@@ -82,9 +80,7 @@ class Agent:
 class Task:
     """Task in the multi-agent system"""
 
-    def __init__(
-        self, task_id: str, description: str, task_type: str, priority: int = 1
-    ):
+    def __init__(self, task_id: str, description: str, task_type: str, priority: int = 1):
         self.id = task_id
         self.description = description
         self.task_type = task_type
@@ -126,9 +122,7 @@ class Task:
             "assigned_agent": self.assigned_agent.name if self.assigned_agent else None,
             "created_at": self.created_at.isoformat(),
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": self.completed_at.isoformat()
-            if self.completed_at
-            else None,
+            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
             "result": self.result,
             "error": self.error,
         }
@@ -298,9 +292,7 @@ class LyrixaMultiAgentSystem:
             "completed_tasks": len(
                 [t for t in self.tasks.values() if t.status == TaskStatus.COMPLETED]
             ),
-            "failed_tasks": len(
-                [t for t in self.tasks.values() if t.status == TaskStatus.FAILED]
-            ),
+            "failed_tasks": len([t for t in self.tasks.values() if t.status == TaskStatus.FAILED]),
             "recent_activity": self._get_recent_activity(),
         }
 
@@ -310,21 +302,15 @@ class LyrixaMultiAgentSystem:
 
         # Recent completed tasks
         recent_completed = [
-            t
-            for t in self.tasks.values()
-            if t.status == TaskStatus.COMPLETED and t.completed_at
+            t for t in self.tasks.values() if t.status == TaskStatus.COMPLETED and t.completed_at
         ]
-        recent_completed.sort(
-            key=lambda t: t.completed_at or datetime.min, reverse=True
-        )
+        recent_completed.sort(key=lambda t: t.completed_at or datetime.min, reverse=True)
 
         for task in recent_completed[:3]:
             activities.append(f"Completed: {task.description}")
 
         # Active tasks
-        active_tasks = [
-            t for t in self.tasks.values() if t.status == TaskStatus.IN_PROGRESS
-        ]
+        active_tasks = [t for t in self.tasks.values() if t.status == TaskStatus.IN_PROGRESS]
         for task in active_tasks[:2]:
             activities.append(f"In Progress: {task.description}")
 

@@ -4,12 +4,11 @@ import functools
 import inspect
 import os
 import warnings
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from io import IOBase
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 from torch.utils._import_utils import dill_available
-
 
 __all__ = [
     "validate_input_col",
@@ -25,7 +24,7 @@ __all__ = [
 DILL_AVAILABLE = dill_available()
 
 
-def validate_input_col(fn: Callable, input_col: Optional[Union[int, tuple, list]]):
+def validate_input_col(fn: Callable, input_col: int | tuple | list | None):
     """
     Check that function used in a callable datapipe works with the input column.
 
@@ -122,12 +121,11 @@ def _is_local_fn(fn):
     if hasattr(fn, "__code__"):
         return fn.__code__.co_flags & inspect.CO_NESTED
     # Callable Objects
-    else:
-        if hasattr(fn, "__qualname__"):
-            return "<locals>" in fn.__qualname__
-        fn_type = type(fn)
-        if hasattr(fn_type, "__qualname__"):
-            return "<locals>" in fn_type.__qualname__
+    if hasattr(fn, "__qualname__"):
+        return "<locals>" in fn.__qualname__
+    fn_type = type(fn)
+    if hasattr(fn_type, "__qualname__"):
+        return "<locals>" in fn_type.__qualname__
     return False
 
 
@@ -162,7 +160,7 @@ def _check_unpickable_fn(fn: Callable):
         return
 
 
-def match_masks(name: str, masks: Union[str, list[str]]) -> bool:
+def match_masks(name: str, masks: str | list[str]) -> bool:
     # empty mask matches any input name
     if not masks:
         return True
@@ -178,7 +176,7 @@ def match_masks(name: str, masks: Union[str, list[str]]) -> bool:
 
 def get_file_pathnames_from_root(
     root: str,
-    masks: Union[str, list[str]],
+    masks: str | list[str],
     recursive: bool = False,
     abspath: bool = False,
     non_deterministic: bool = False,
@@ -214,7 +212,7 @@ def get_file_pathnames_from_root(
 
 
 def get_file_binaries_from_pathnames(
-    pathnames: Iterable, mode: str, encoding: Optional[str] = None
+    pathnames: Iterable, mode: str, encoding: str | None = None
 ):
     if not isinstance(pathnames, Iterable):
         pathnames = [
@@ -402,8 +400,7 @@ class StreamWrapper:
     def __repr__(self):
         if self.name is None:
             return f"StreamWrapper<{self.file_obj!r}>"
-        else:
-            return f"StreamWrapper<{self.name},{self.file_obj!r}>"
+        return f"StreamWrapper<{self.name},{self.file_obj!r}>"
 
     def __getstate__(self):
         return self.file_obj

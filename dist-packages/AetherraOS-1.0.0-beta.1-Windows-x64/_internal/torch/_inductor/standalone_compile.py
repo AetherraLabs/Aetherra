@@ -5,8 +5,9 @@ import logging
 import os
 import pickle
 import shutil
+from collections.abc import Callable
 from contextlib import AbstractContextManager, nullcontext
-from typing import Any, Callable, Literal, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Literal
 
 import torch.fx
 from torch._dynamo.utils import dynamo_timed
@@ -17,7 +18,6 @@ from torch._subclasses import FakeTensorMode
 from torch.fx.experimental.symbolic_shapes import ShapeEnv
 
 from . import config
-
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -48,12 +48,12 @@ class CompiledArtifact:
     """
 
     _compiled_fn: Callable[..., Any]
-    _artifacts: Optional[tuple[bytes, CacheInfo]]
+    _artifacts: tuple[bytes, CacheInfo] | None
 
     def __init__(
         self,
         compiled_fn: Callable[..., Any],
-        artifacts: Optional[tuple[bytes, CacheInfo]],
+        artifacts: tuple[bytes, CacheInfo] | None,
     ):
         self._compiled_fn = compiled_fn
         self._artifacts = artifacts

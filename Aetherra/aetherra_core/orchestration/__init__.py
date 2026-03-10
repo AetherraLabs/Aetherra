@@ -34,9 +34,7 @@ except ImportError as e:
         """Mock AetherraScheduler for development when actual scheduler isn't available."""
 
         def __init__(self, *args, **kwargs):
-            logger.warning(
-                "Using mock AetherraScheduler - actual scheduler not available"
-            )
+            logger.warning("Using mock AetherraScheduler - actual scheduler not available")
 
         async def schedule_task(self, *args, **kwargs):
             return {"status": "mock", "message": "AetherraScheduler not available"}

@@ -1,15 +1,14 @@
 import logging
 import warnings
-from collections.abc import Collection, Mapping
+from collections.abc import Callable, Collection, Mapping
 from copy import deepcopy
-from typing import Any, Callable, Optional, overload, Union
+from typing import Any, overload
 
 import torch
 import torch.nn as nn
 from torch import optim
 from torch.distributed._shard.sharded_tensor import ShardedTensor
 from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
-
 
 __all__: list[str] = []
 
@@ -62,10 +61,10 @@ class _NamedOptimizer(optim.Optimizer):
 
     def __init__(
         self,
-        named_parameters: Mapping[str, Union[torch.Tensor, ShardedTensor]],
+        named_parameters: Mapping[str, torch.Tensor | ShardedTensor],
         optimizer_class: optim.Optimizer,
-        param_groups: Optional[Collection[Mapping[str, Any]]] = None,
-        module: Optional[nn.Module] = None,
+        param_groups: Collection[Mapping[str, Any]] | None = None,
+        module: nn.Module | None = None,
         *args: tuple[Any, ...],
         **kwargs: dict[str, Any],
     ) -> None:
@@ -151,7 +150,7 @@ class _NamedOptimizer(optim.Optimizer):
     @overload
     def step(self, closure: Callable[[], float]) -> float: ...
 
-    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
+    def step(self, closure: Callable[[], float] | None = None) -> float | None:
         """
         Perform a single optimization step.
 
@@ -225,7 +224,9 @@ class _NamedOptimizer(optim.Optimizer):
                             f"Expects equal number of shards as {num_new_shards} but found {num_shards} for {param_key}/{state_key}"
                         )
                     for shard, src_shard in zip(
-                        state_val.local_shards(), src_state_val.local_shards()
+                        state_val.local_shards(),
+                        src_state_val.local_shards(),
+                        strict=False,
                     ):
                         shard.tensor.detach().copy_(src_shard.tensor)
                 elif isinstance(state_val, torch.Tensor):

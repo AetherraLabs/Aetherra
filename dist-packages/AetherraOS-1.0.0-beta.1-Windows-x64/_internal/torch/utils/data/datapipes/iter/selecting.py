@@ -1,16 +1,15 @@
 # mypy: allow-untyped-defs
-from collections.abc import Iterator
-from typing import Callable, TypeVar
+from collections.abc import Callable, Iterator
+from typing import TypeVar
 
 from torch.utils.data.datapipes._decorator import functional_datapipe
 from torch.utils.data.datapipes.dataframe import dataframe_wrapper as df_wrapper
 from torch.utils.data.datapipes.datapipe import IterDataPipe
 from torch.utils.data.datapipes.utils.common import (
-    _check_unpickable_fn,
     StreamWrapper,
+    _check_unpickable_fn,
     validate_input_col,
 )
-
 
 __all__ = ["FilterIterDataPipe"]
 
@@ -65,11 +64,10 @@ class FilterIterDataPipe(IterDataPipe[_T_co]):
     def _apply_filter_fn(self, data) -> bool:
         if self.input_col is None:
             return self.filter_fn(data)
-        elif isinstance(self.input_col, (list, tuple)):
+        if isinstance(self.input_col, (list, tuple)):
             args = tuple(data[col] for col in self.input_col)
             return self.filter_fn(*args)
-        else:
-            return self.filter_fn(data[self.input_col])
+        return self.filter_fn(data[self.input_col])
 
     def __iter__(self) -> Iterator[_T_co]:
         for data in self.datapipe:
@@ -90,8 +88,7 @@ class FilterIterDataPipe(IterDataPipe[_T_co]):
                     result.append(df_wrapper.get_item(data, idx))
             if len(result):
                 return True, df_wrapper.concat(result)
-            else:
-                return False, None  # type: ignore[return-value]
+            return False, None  # type: ignore[return-value]
 
         if not isinstance(condition, bool):
             raise ValueError(

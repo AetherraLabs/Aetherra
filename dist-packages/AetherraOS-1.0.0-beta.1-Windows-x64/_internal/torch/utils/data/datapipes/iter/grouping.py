@@ -1,14 +1,13 @@
 # mypy: allow-untyped-defs
 import warnings
 from collections import defaultdict
-from collections.abc import Iterator, Sized
-from typing import Any, Callable, Optional, TypeVar
+from collections.abc import Callable, Iterator, Sized
+from typing import Any, TypeVar
 
 import torch.utils.data.datapipes.iter.sharding
 from torch.utils.data.datapipes._decorator import functional_datapipe
 from torch.utils.data.datapipes.datapipe import DataChunk, IterDataPipe
 from torch.utils.data.datapipes.utils.common import _check_unpickable_fn
-
 
 __all__ = [
     "BatcherIterDataPipe",
@@ -91,10 +90,8 @@ class BatcherIterDataPipe(IterDataPipe[DataChunk]):
         if isinstance(self.datapipe, Sized):
             if self.drop_last:
                 return len(self.datapipe) // self.batch_size
-            else:
-                return (len(self.datapipe) + self.batch_size - 1) // self.batch_size
-        else:
-            raise TypeError(f"{type(self).__name__} instance doesn't have valid length")
+            return (len(self.datapipe) + self.batch_size - 1) // self.batch_size
+        raise TypeError(f"{type(self).__name__} instance doesn't have valid length")
 
 
 @functional_datapipe("unbatch")
@@ -203,8 +200,8 @@ class GrouperIterDataPipe(IterDataPipe[DataChunk]):
         *,
         keep_key: bool = False,
         buffer_size: int = 10000,
-        group_size: Optional[int] = None,
-        guaranteed_group_size: Optional[int] = None,
+        group_size: int | None = None,
+        guaranteed_group_size: int | None = None,
         drop_remaining: bool = False,
     ):
         _check_unpickable_fn(group_key_fn)

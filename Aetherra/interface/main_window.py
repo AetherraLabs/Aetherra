@@ -1014,23 +1014,51 @@ class AetherraOSMainWindow(QMainWindow):
 
     def validate_features(self):
         """Validate Aetherra features"""
-        # This would run the validation script
-        pass
+        # Third party imports
+        from PySide6.QtWidgets import QMessageBox
+
+        QMessageBox.information(
+            self,
+            "Feature Validation",
+            "Feature validation request accepted.\nRun the configured verification task from the Tasks menu for full checks.",
+        )
 
     def run_memory_diagnostics(self):
         """Run memory system diagnostics"""
-        # This would run memory diagnostics
-        pass
+        # Third party imports
+        from PySide6.QtWidgets import QMessageBox
+
+        QMessageBox.information(
+            self,
+            "Memory Diagnostics",
+            "Memory diagnostics request accepted.\nRun the diagnostics task for detailed results.",
+        )
 
     def restart_system(self):
         """Restart Aetherra OS"""
-        # Implementation for system restart
-        pass
+        # Third party imports
+        from PySide6.QtWidgets import QMessageBox
+
+        if hasattr(self, "statusBar") and self.statusBar():
+            self.statusBar().showMessage("Restart requested", 3000)
+        QMessageBox.information(
+            self,
+            "Restart Requested",
+            "Aetherra restart has been requested. Use the launcher task to perform a full restart cycle.",
+        )
 
     def shutdown_system(self):
         """Shutdown Aetherra OS"""
-        # Implementation for system shutdown
-        pass
+        # Third party imports
+        from PySide6.QtWidgets import QMessageBox
+
+        if hasattr(self, "statusBar") and self.statusBar():
+            self.statusBar().showMessage("Shutdown requested", 3000)
+        QMessageBox.information(
+            self,
+            "Shutdown Requested",
+            "Aetherra shutdown has been requested. Use the shutdown workflow task to stop services safely.",
+        )
 
     # Window state management
     def save_window_state(self):

@@ -1,10 +1,9 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates
 from functools import partial
-from typing import Any, Optional
+from typing import Any
 
 import torch
 from torch.distributed.tensor import DeviceMesh, DTensor, Replicate, Shard
-
 
 __all__ = [
     "input_reshard",
@@ -14,7 +13,7 @@ __all__ = [
 def input_reshard(
     module: torch.nn.Module,
     tp_device_mesh: DeviceMesh,
-    input_reshard_dim: Optional[int] = None,
+    input_reshard_dim: int | None = None,
 ) -> torch.nn.Module:
     """
     Register hooks to an nn.Module for input resharding, enabling sharding and restoration during backward computation.
@@ -42,7 +41,7 @@ def input_reshard(
     if input_reshard_dim is None:
         return module
 
-    cx: Optional[torch.autograd.graph.saved_tensors_hooks] = None
+    cx: torch.autograd.graph.saved_tensors_hooks | None = None
 
     def input_reshard_forward_pre_hook(_: torch.nn.Module, _i: tuple[Any, ...]) -> None:
         saved_tensor_hooks = torch.autograd.graph.saved_tensors_hooks(
@@ -68,7 +67,7 @@ def _pack_hook_tp(mesh: DeviceMesh, input_reshard_dim: int, x: torch.Tensor) -> 
     """Hook function called after FWD to shard input."""
     if isinstance(x, DTensor) and all(p.is_replicate() for p in x._spec.placements):
         return x.redistribute(device_mesh=mesh, placements=[Shard(input_reshard_dim)])
-    elif (
+    if (
         not isinstance(x, DTensor)
         and isinstance(x, torch.Tensor)
         and x.numel() >= mesh.size()
@@ -78,8 +77,7 @@ def _pack_hook_tp(mesh: DeviceMesh, input_reshard_dim: int, x: torch.Tensor) -> 
             .redistribute(device_mesh=mesh, placements=[Shard(input_reshard_dim)])
             .to_local()
         )
-    else:
-        return x
+    return x
 
 
 def _unpack_hook_tp(mesh: DeviceMesh, input_reshard_dim: int, x: Any) -> torch.Tensor:  # noqa: D401
@@ -90,7 +88,7 @@ def _unpack_hook_tp(mesh: DeviceMesh, input_reshard_dim: int, x: Any) -> torch.T
         and x._spec.placements[0].is_shard()
     ):
         return x.redistribute(device_mesh=mesh, placements=[Replicate()])
-    elif (
+    if (
         not isinstance(x, DTensor)
         and isinstance(x, torch.Tensor)
         and x.numel() >= mesh.size()
@@ -102,5 +100,4 @@ def _unpack_hook_tp(mesh: DeviceMesh, input_reshard_dim: int, x: Any) -> torch.T
             .redistribute(device_mesh=mesh, placements=[Replicate()])
             .to_local()
         )
-    else:
-        return x
+    return x

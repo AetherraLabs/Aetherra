@@ -2,12 +2,12 @@
 from __future__ import annotations
 
 import copy
-from typing import Any, Callable, TYPE_CHECKING, Union
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch.ao.quantization import QConfigMapping
 from torch.ao.quantization.qconfig_mapping import _QCONFIG_STYLE_ORDER
-
 
 if TYPE_CHECKING:
     from torch.ao.quantization.qconfig import QConfigAny
@@ -124,7 +124,7 @@ class QConfigMultiMapping:
     def _insert_qconfig_list(
         self,
         style: str,
-        args: list[Union[str, int, Callable]],
+        args: list[str | int | Callable],
         qconfig_list: list[QConfigAny],
     ) -> None:
         # we remove duplicates and None to make the ordering of qconfigs
@@ -133,7 +133,9 @@ class QConfigMultiMapping:
 
         self._handle_list_size_mismatch(qconfig_list, style)
         method_name = _QCONFIG_STYLE_TO_METHOD[style]
-        for qconfig_mapping, qconfig in zip(self.qconfig_mappings_list, qconfig_list):
+        for qconfig_mapping, qconfig in zip(
+            self.qconfig_mappings_list, qconfig_list, strict=False
+        ):
             # uses QConfigMapping set method to insert qconfig
             set_method = getattr(qconfig_mapping, method_name)
             set_method(*args, qconfig)
@@ -147,7 +149,7 @@ class QConfigMultiMapping:
         return self
 
     def set_object_type(
-        self, object_type: Union[Callable, str], qconfig_list: list[QConfigAny]
+        self, object_type: Callable | str, qconfig_list: list[QConfigAny]
     ) -> QConfigMultiMapping:
         """
         Set object type QConfigs

@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-
 __all__ = ["assert_onnx_program"]
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch.utils import _pytree
-
 
 if TYPE_CHECKING:
     from torch.onnx._internal.exporter import _onnx_program

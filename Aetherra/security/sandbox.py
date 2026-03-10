@@ -35,21 +35,29 @@ SAFE_BUILTINS = {
 class SandboxViolation(Exception):
     """Base sandbox violation."""
 
-    pass
+    def __init__(self, message: str = "Sandbox policy violation"):
+        super().__init__(message)
 
 
 class SandboxViolationError(Exception):
     """Base sandbox violation."""
 
-    pass
+    def __init__(self, message: str = "Sandbox execution violation"):
+        super().__init__(message)
 
 
 class TimeBudgetExceeded(SandboxViolation):
-    pass
+    """Raised when execution exceeds configured time budget."""
+
+    def __init__(self, message: str = "Time budget exceeded"):
+        super().__init__(message)
 
 
 class MemoryBudgetExceeded(SandboxViolation):
-    pass
+    """Raised when execution exceeds configured memory budget."""
+
+    def __init__(self, message: str = "Memory budget exceeded"):
+        super().__init__(message)
 
 
 def safe_eval(expr: str, variables: dict[str, Any] | None = None) -> Any:

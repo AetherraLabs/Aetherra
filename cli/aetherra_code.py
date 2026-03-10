@@ -236,7 +236,7 @@ def main(argv: list[str] | None = None) -> int:
                 for d in pr.diagnostics:
                     print(d)
             return 0 if pr.applied else 1
-        elif args.plugin_cmd == "list":
+        if args.plugin_cmd == "list":
             # Aetherra imports
             from Aetherra.plugins.core import plugin_registry as _preg
 
@@ -251,9 +251,8 @@ def main(argv: list[str] | None = None) -> int:
                     warns = meta.get("validation_warnings") or []
                     print(f"{name} v{meta.get('version', '?')} warnings={len(warns)}")
             return 0
-        else:
-            print("Unknown plugin subcommand")
-            return 1
+        print("Unknown plugin subcommand")
+        return 1
 
     print("Unknown command")
     return 1

@@ -6,8 +6,9 @@ import io
 import os
 import shutil
 import tempfile
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, cast, IO, Optional
+from typing import IO, Any, cast
 
 # introduced as collections.abc.Buffer in Python 3.12
 from typing_extensions import Buffer
@@ -62,7 +63,7 @@ class Rot13Example(StreamTransformExtension):
             def writeable(self) -> bool:
                 return True
 
-            def write(self, b: Buffer) -> Optional[int]:
+            def write(self, b: Buffer) -> int | None:
                 # Don't mutate the input
                 chunk = bytearray(b)
                 Rot13Example._rot13bytes(chunk, len(chunk))
@@ -81,7 +82,7 @@ class Rot13Example(StreamTransformExtension):
             def readable(self) -> bool:
                 return True
 
-            def readinto(self, b: Buffer) -> Optional[int]:
+            def readinto(self, b: Buffer) -> int | None:
                 if hasattr(self.input, "readinto"):
                     count = self.input.readinto(b)
                 else:
@@ -120,8 +121,8 @@ def get_test_extension_registry() -> ExtensionRegistry:
 
 
 def with_temp_dir(
-    func: Optional[Callable] = None,
-) -> Optional[Callable]:
+    func: Callable | None = None,
+) -> Callable | None:
     """
     Wrapper to initialize temp directory for distributed checkpoint.
     """

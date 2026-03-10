@@ -130,15 +130,16 @@ import platform
 import re
 import subprocess
 import sys
-from argparse import ArgumentParser, RawTextHelpFormatter, REMAINDER
+from argparse import REMAINDER, ArgumentParser, RawTextHelpFormatter
 from os.path import expanduser
 
 from torch.distributed.elastic.multiprocessing import (
     DefaultLogsSpecs as _DefaultLogsSpecs,
-    start_processes,
-    Std,
 )
-
+from torch.distributed.elastic.multiprocessing import (
+    Std,
+    start_processes,
+)
 
 format_str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 logging.basicConfig(level=logging.INFO, format=format_str)
@@ -152,7 +153,7 @@ class _CPUinfo:
         self.cpuinfo = []
         if platform.system() in ["Windows", "Darwin"]:
             raise RuntimeError(f"{platform.system()} is not supported!!!")
-        elif platform.system() == "Linux":
+        if platform.system() == "Linux":
             # Sample output of: `lscpu --parse=CPU,Core,Socket,Node`
             #
             # # The following is the parsable format, which can be fed to other
@@ -262,9 +263,11 @@ instance. Alternatively, please use --skip-cross-node-cores knob.",
 class _Launcher:
     r"""Class for launcher."""
 
-    msg_lib_notfound = f"Unable to find the {{0}} library file lib{{1}}.so in $CONDA_PREFIX/lib or $VIRTUAL_ENV/lib \
+    msg_lib_notfound = (
+        f"Unable to find the {{0}} library file lib{{1}}.so in $CONDA_PREFIX/lib or $VIRTUAL_ENV/lib \
 or /.local/lib/ or /usr/local/lib/ or /usr/local/lib64/ or /usr/lib or /usr/lib64 or \
 {expanduser('~')}/.local/lib/ so the LD_PRELOAD environment variable will not be set."
+    )
 
     def __init__(self) -> None:
         self.cpuinfo = _CPUinfo()
@@ -442,9 +445,8 @@ Value applied: %s. Value ignored: %s",
                 raise RuntimeError(
                     'please specify the "--ncores-per-instance" if you have pass the --core-list params'
                 )
-            elif (
-                args.ninstances > 1
-                and args.ncores_per_instance * args.ninstances < len(cores)
+            if args.ninstances > 1 and args.ncores_per_instance * args.ninstances < len(
+                cores
             ):
                 logger.warning(
                     "only first %s cores will be used, \
@@ -488,8 +490,7 @@ but you specify %s cores in core_list",
                         f"there are {len(cores)} total cores but you specify {args.ninstances} ninstances; \
 please make sure ninstances <= total_cores)"
                     )
-                else:
-                    args.ncores_per_instance = len(cores) // args.ninstances
+                args.ncores_per_instance = len(cores) // args.ninstances
             elif args.ncores_per_instance != -1 and args.ninstances == -1:
                 if not args.skip_cross_node_cores:
                     args.ninstances = len(cores) // args.ncores_per_instance
@@ -611,14 +612,12 @@ won't take effect even if it is set explicitly."
                     args.rank == -1
                 ):  # sequentially assign ncores_per_instance to ninstances
                     core_list = cores[
-                        i
-                        * args.ncores_per_instance : (i + 1)
+                        i * args.ncores_per_instance : (i + 1)
                         * args.ncores_per_instance
                     ]
                 else:  # assign ncores_per_instance from rank
                     core_list = cores[
-                        args.rank
-                        * args.ncores_per_instance : (args.rank + 1)
+                        args.rank * args.ncores_per_instance : (args.rank + 1)
                         * args.ncores_per_instance
                     ]
 
@@ -626,9 +625,9 @@ won't take effect even if it is set explicitly."
                 if local_size > 1:
                     total_num_cores = len(core_list)
                     cores_per_rank = total_num_cores // local_size
-                    assert (
-                        cores_per_rank >= 1
-                    ), "At least one core needs to be assigned to each rank"
+                    assert cores_per_rank >= 1, (
+                        "At least one core needs to be assigned to each rank"
+                    )
                     core_list = core_list[
                         cores_per_rank * local_rank : cores_per_rank * (local_rank + 1)
                     ]

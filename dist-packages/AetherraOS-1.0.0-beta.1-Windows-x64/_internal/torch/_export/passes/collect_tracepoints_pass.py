@@ -2,12 +2,11 @@
 from __future__ import annotations
 
 import operator
-from typing import Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import torch
 from torch.export.exported_program import ConstantArgument, TensorArgument
 from torch.fx.passes.infra.pass_base import PassBase, PassResult
-
 
 if TYPE_CHECKING:
     from torch.export.exported_program import ModuleCallSignature
@@ -29,17 +28,15 @@ class CollectTracepointsPass(PassBase):
         self.specs = specs
         self.sig = sig
 
-    def call(self, gm: torch.fx.GraphModule) -> Optional[PassResult]:
-        def get_arg_spec(arg) -> Union[TensorArgument, ConstantArgument]:
+    def call(self, gm: torch.fx.GraphModule) -> PassResult | None:
+        def get_arg_spec(arg) -> TensorArgument | ConstantArgument:
             if isinstance(arg, torch.fx.Node):
                 if isinstance(arg.meta.get("val"), torch.Tensor):
                     return TensorArgument(name=arg.name)
-                else:
-                    raise AssertionError(
-                        "Symint input is not implemented yet for submodule call signature."
-                    )
-            else:
-                return ConstantArgument(name="", value=arg)
+                raise AssertionError(
+                    "Symint input is not implemented yet for submodule call signature."
+                )
+            return ConstantArgument(name="", value=arg)
 
         for module in gm.modules():
             if not isinstance(module, torch.fx.GraphModule):

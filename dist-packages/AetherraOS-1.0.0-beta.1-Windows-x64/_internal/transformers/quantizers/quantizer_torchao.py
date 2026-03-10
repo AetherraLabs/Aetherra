@@ -14,22 +14,20 @@
 import importlib
 import re
 import types
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 from packaging import version
 
 from .base import HfQuantizer
 from .quantizers_utils import get_module_from_name
 
-
 if TYPE_CHECKING:
     from ..modeling_utils import PreTrainedModel
 
-from typing import Any, Dict, List
+from typing import Any
 
 from ..utils import is_torch_available, is_torchao_available, logging
 from ..utils.quantization_config import TorchAoConfig
-
 
 if is_torch_available():
     import torch
@@ -38,7 +36,7 @@ if is_torch_available():
 logger = logging.get_logger(__name__)
 
 
-def fuzzy_match_size(config_name: str) -> Optional[str]:
+def fuzzy_match_size(config_name: str) -> str | None:
     """
     Extract the size digit from strings like "4weight", "8weight".
     Returns the digit as an integer if found, otherwise None.
@@ -64,7 +62,9 @@ def find_parent(model, name):
 
 def _quantization_type(weight):
     from torchao.dtypes import AffineQuantizedTensor
-    from torchao.quantization.linear_activation_quantized_tensor import LinearActivationQuantizedTensor
+    from torchao.quantization.linear_activation_quantized_tensor import (
+        LinearActivationQuantizedTensor,
+    )
 
     if isinstance(weight, AffineQuantizedTensor):
         return f"{weight.__class__.__name__}({weight._quantization_type()})"
@@ -77,8 +77,7 @@ def _linear_extra_repr(self):
     weight = _quantization_type(self.weight)
     if weight is None:
         return f"in_features={self.weight.shape[1]}, out_features={self.weight.shape[0]}, weight=None"
-    else:
-        return f"in_features={self.weight.shape[1]}, out_features={self.weight.shape[0]}, weight={weight}"
+    return f"in_features={self.weight.shape[1]}, out_features={self.weight.shape[0]}, weight={weight}"
 
 
 class TorchAoHfQuantizer(HfQuantizer):
@@ -95,10 +94,12 @@ class TorchAoHfQuantizer(HfQuantizer):
 
     def validate_environment(self, *args, **kwargs):
         if not is_torchao_available():
-            raise ImportError("Loading an torchao quantized model requires torchao library (`pip install torchao`)")
+            raise ImportError(
+                "Loading an torchao quantized model requires torchao library (`pip install torchao`)"
+            )
 
         self.offload = False
-        device_map = kwargs.get("device_map", None)
+        device_map = kwargs.get("device_map")
         if isinstance(device_map, dict):
             if "cpu" in device_map.values() or "disk" in device_map.values():
                 if self.pre_quantized:
@@ -106,10 +107,9 @@ class TorchAoHfQuantizer(HfQuantizer):
                         "You are attempting to perform cpu/disk offload with a pre-quantized torchao model "
                         "This is not supported yet . Please remove the CPU or disk device from the device_map."
                     )
-                else:
-                    self.offload = True
+                self.offload = True
         if self.pre_quantized:
-            weights_only = kwargs.get("weights_only", None)
+            weights_only = kwargs.get("weights_only")
             if weights_only:
                 torch_version = version.parse(importlib.metadata.version("torch"))
                 if torch_version < version.parse("2.5.0"):
@@ -139,7 +139,9 @@ class TorchAoHfQuantizer(HfQuantizer):
         return torch_dtype
 
     def adjust_target_dtype(self, torch_dtype: "torch.dtype") -> "torch.dtype":
-        if version.parse(importlib.metadata.version("accelerate")) > version.parse("0.19.0"):
+        if version.parse(importlib.metadata.version("accelerate")) > version.parse(
+            "0.19.0"
+        ):
             from accelerate.utils import CustomDtype
 
             # Import AOBaseConfig directly since we know we have the right version
@@ -155,9 +157,8 @@ class TorchAoHfQuantizer(HfQuantizer):
                     # Map the extracted digit to appropriate dtype
                     if size_digit == "4":
                         return CustomDtype.INT4
-                    else:
-                        # Default to int8
-                        return torch.int8
+                    # Default to int8
+                    return torch.int8
 
             # Original mapping for non-AOBaseConfig types
             map_to_target_dtype = {
@@ -167,31 +168,45 @@ class TorchAoHfQuantizer(HfQuantizer):
                 "autoquant": None,
             }
             return map_to_target_dtype[self.quantization_config.quant_type]
-        else:
-            raise ValueError(
-                "You are using `device_map='auto'` on a torchao quantized model. To automatically compute"
-                " the appropriate device map, you should upgrade your `accelerate` library with "
-                "`pip install --upgrade accelerate`"
-            )
+        raise ValueError(
+            "You are using `device_map='auto'` on a torchao quantized model. To automatically compute"
+            " the appropriate device map, you should upgrade your `accelerate` library with "
+            "`pip install --upgrade accelerate`"
+        )
 
-    def adjust_max_memory(self, max_memory: Dict[str, Union[int, str]]) -> Dict[str, Union[int, str]]:
+    def adjust_max_memory(
+        self, max_memory: dict[str, int | str]
+    ) -> dict[str, int | str]:
         # need more space for the quantization parameters (e.g. scale). Tested with int4 wo and group size = 128
         max_memory = {key: val * 0.9 for key, val in max_memory.items()}
         return max_memory
 
     def _process_model_before_weight_loading(
-        self, model: "PreTrainedModel", keep_in_fp32_modules: Optional[List[str]] = None, **kwargs
+        self,
+        model: "PreTrainedModel",
+        keep_in_fp32_modules: list[str] | None = None,
+        **kwargs,
     ):
         self.modules_to_not_convert = self.get_modules_to_not_convert(
             model, self.quantization_config.modules_to_not_convert, keep_in_fp32_modules
         )
         if self.quantization_config.include_input_output_embeddings:
             input_emb = model.get_input_embeddings()
-            input_emb_names = [name for name, module in model.named_modules() if id(module) == id(input_emb)]
+            input_emb_names = [
+                name
+                for name, module in model.named_modules()
+                if id(module) == id(input_emb)
+            ]
             output_emb = model.get_output_embeddings()
-            output_emb_names = [name for name, module in model.named_modules() if id(module) == id(output_emb)]
+            output_emb_names = [
+                name
+                for name, module in model.named_modules()
+                if id(module) == id(output_emb)
+            ]
             self.modules_to_not_convert = [
-                x for x in self.modules_to_not_convert if x not in input_emb_names + output_emb_names
+                x
+                for x in self.modules_to_not_convert
+                if x not in input_emb_names + output_emb_names
             ]
         return
 
@@ -200,7 +215,7 @@ class TorchAoHfQuantizer(HfQuantizer):
         model: "PreTrainedModel",
         param_value: "torch.Tensor",
         param_name: str,
-        state_dict: Dict[str, Any],
+        state_dict: dict[str, Any],
         **kwargs,
     ) -> bool:
         if self.quantization_config.quant_type == "autoquant":
@@ -208,18 +223,20 @@ class TorchAoHfQuantizer(HfQuantizer):
 
         param_device = kwargs.pop("param_device", None)
         # check if the param_name is not in self.modules_to_not_convert
-        if any((key + "." in param_name) or (key == param_name) for key in self.modules_to_not_convert):
+        if any(
+            (key + "." in param_name) or (key == param_name)
+            for key in self.modules_to_not_convert
+        ):
             return False
-        elif param_device == "cpu" and self.offload:
+        if param_device == "cpu" and self.offload:
             # We don't quantize weights that we offload
             return False
-        else:
-            # we only quantize the weight of nn.Linear and nn.Embedding
-            module, tensor_name = get_module_from_name(model, param_name)
-            _QUANTIZABLE = [torch.nn.Linear]
-            if self.quantization_config.include_input_output_embeddings:
-                _QUANTIZABLE.append(torch.nn.Embedding)
-            return isinstance(module, tuple(_QUANTIZABLE)) and (tensor_name == "weight")
+        # we only quantize the weight of nn.Linear and nn.Embedding
+        module, tensor_name = get_module_from_name(model, param_name)
+        _QUANTIZABLE = [torch.nn.Linear]
+        if self.quantization_config.include_input_output_embeddings:
+            _QUANTIZABLE.append(torch.nn.Embedding)
+        return isinstance(module, tuple(_QUANTIZABLE)) and (tensor_name == "weight")
 
     def create_quantized_param(
         self,
@@ -227,8 +244,8 @@ class TorchAoHfQuantizer(HfQuantizer):
         param_value: "torch.Tensor",
         param_name: str,
         target_device: "torch.device",
-        state_dict: Dict[str, Any],
-        unexpected_keys: List[str],
+        state_dict: dict[str, Any],
+        unexpected_keys: list[str],
     ):
         """
         Each nn.Linear layer that needs to be quantized is processed here.
@@ -242,7 +259,8 @@ class TorchAoHfQuantizer(HfQuantizer):
         module, tensor_name = get_module_from_name(model, param_name)
         if self.pre_quantized:
             module._parameters[tensor_name] = torch.nn.Parameter(
-                param_value.to(device=target_device), requires_grad=param_value.requires_grad
+                param_value.to(device=target_device),
+                requires_grad=param_value.requires_grad,
             )
             if isinstance(module, nn.Linear):
                 module.extra_repr = types.MethodType(_linear_extra_repr, module)
@@ -257,9 +275,11 @@ class TorchAoHfQuantizer(HfQuantizer):
             # 2. run tie_weights to populate the weights
             # 3. quantize
             input_embed = model.get_input_embeddings()
-            if self.quantization_config.untie_embedding_weights and id(module) == id(input_embed):
+            if self.quantization_config.untie_embedding_weights and id(module) == id(
+                input_embed
+            ):
                 model.tie_weights()
-                setattr(model.config.get_text_config(decoder=True), "tie_word_embeddings", False)
+                model.config.get_text_config(decoder=True).tie_word_embeddings = False
 
             # handle AOPerModuleConfig, introduced in torchao 0.11.0+
             if self.quantization_config._get_ao_version() > version.Version("0.10.0"):
@@ -294,7 +314,7 @@ class TorchAoHfQuantizer(HfQuantizer):
                 **self.quantization_config.quant_type_kwargs,
             )
             return model
-        return
+        return None
 
     def is_serializable(self, safe_serialization=None) -> bool:
         if safe_serialization:
@@ -302,11 +322,13 @@ class TorchAoHfQuantizer(HfQuantizer):
                 "torchao quantized model does not support safe serialization, please set `safe_serialization` to False"
             )
             return False
-        _is_torchao_serializable = version.parse(importlib.metadata.version("huggingface_hub")) >= version.parse(
-            "0.25.0"
-        )
+        _is_torchao_serializable = version.parse(
+            importlib.metadata.version("huggingface_hub")
+        ) >= version.parse("0.25.0")
         if not _is_torchao_serializable:
-            logger.warning("torchao quantized model is only serializable after huggingface_hub >= 0.25.0 ")
+            logger.warning(
+                "torchao quantized model is only serializable after huggingface_hub >= 0.25.0 "
+            )
         if self.offload and self.quantization_config.modules_to_not_convert is None:
             logger.warning(
                 "The model contains offloaded modules and these modules are not quantized. We don't recommend saving the model as we won't be able to reload them."
@@ -341,8 +363,7 @@ class TorchAoHfQuantizer(HfQuantizer):
 
                 if size_digit == "4":
                     return 8
-                else:
-                    return 4
+                return 4
 
         # Original mapping for non-AOBaseConfig types
         map_to_target_dtype = {

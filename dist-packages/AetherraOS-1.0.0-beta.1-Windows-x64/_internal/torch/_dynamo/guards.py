@@ -36,10 +36,11 @@ import textwrap
 import types
 import warnings
 import weakref
+from collections.abc import Callable
 from contextlib import contextmanager
 from copy import deepcopy
 from inspect import currentframe
-from typing import Any, Callable, NoReturn, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, NoReturn
 from weakref import ReferenceType
 
 import torch
@@ -47,26 +48,26 @@ import torch.overrides
 import torch.utils._device
 from torch._C._dynamo.eval_frame import code_framelocals_names
 from torch._C._dynamo.guards import (
+    DictGuardManager,
+    RootGuardManager,
     check_obj_id,
     check_type_id,
     dict_version,
-    DictGuardManager,
     install_no_tensor_aliasing_guard,
     install_object_aliasing_guard,
     install_storage_overlapping_guard,
     install_symbolic_shape_guard,
     profile_guard_manager,
-    RootGuardManager,
 )
 from torch._dynamo.source import (
+    IndexedSource,
+    TensorProperty,
+    TensorPropertySource,
     get_global_source_name,
     get_local_source_name,
-    IndexedSource,
     is_from_flatten_script_object_source,
     is_from_local_source,
     is_from_optimizer_source,
-    TensorProperty,
-    TensorPropertySource,
 )
 from torch._dynamo.utils import CompileEventLogger, get_metrics_context
 from torch._guards import (
@@ -83,11 +84,11 @@ from torch._guards import (
 from torch._logging import structured
 from torch._utils_internal import justknobs_check
 from torch.fx.experimental.symbolic_shapes import (
+    SYMPY_INTERP,
+    EqualityConstraint,
     _CppShapeGuardsHelper,
     _ShapeGuardsHelper,
-    EqualityConstraint,
     is_symbolic,
-    SYMPY_INTERP,
 )
 from torch.utils import _pytree as pytree
 from torch.utils._ordered_set import OrderedSet
@@ -163,8 +164,7 @@ from .utils import (
     verify_guard_fn_signature,
 )
 
-
-guard_manager_testing_hook_fn: Optional[Callable[[Any, Any], Any]] = None
+guard_manager_testing_hook_fn: Callable[[Any, Any], Any] | None = None
 
 try:
     import numpy as np
@@ -345,7 +345,7 @@ class GuardManagerWrapper:
 
             # General case of GuardManager/RootGuardManager
             for accessor, child_mgr in zip(
-                mgr.get_accessors(), mgr.get_child_managers()
+                mgr.get_accessors(), mgr.get_child_managers(), strict=False
             ):
                 body.writeline(
                     self.get_manager_line(child_mgr, f"accessed_by={accessor.repr()}")
@@ -435,7 +435,7 @@ def uninteresting_files():
     return {inspect.getfile(m) for m in mods}
 
 
-_CLOSURE_VARS: Optional[dict[str, object]] = None
+_CLOSURE_VARS: dict[str, object] | None = None
 
 
 def _get_closure_vars():
@@ -491,22 +491,19 @@ def get_verbose_code_part(code_part: str, guard: Guard) -> str:
     return f"{code_part:<60}{extra}"
 
 
-def get_verbose_code_parts(
-    code_parts: Union[str | list[str]], guard: Guard
-) -> list[str]:
+def get_verbose_code_parts(code_parts: str | list[str], guard: Guard) -> list[str]:
     if not isinstance(code_parts, list):
         code_parts = [code_parts]
     return [get_verbose_code_part(code_part, guard) for code_part in code_parts]
 
 
-def convert_int_to_concrete_values(dim) -> Optional[int]:
+def convert_int_to_concrete_values(dim) -> int | None:
     if dim is None:
         return None
     if not is_symbolic(dim):
         return dim
-    else:
-        assert isinstance(dim, torch.SymInt)
-        return dim.node.maybe_as_int()
+    assert isinstance(dim, torch.SymInt)
+    return dim.node.maybe_as_int()
 
 
 def convert_to_concrete_values(size_or_stride):
@@ -556,10 +553,10 @@ class NNModuleAttrAccessorInfo:
     present_in_generic_dict: bool = False
 
     # Either the actual name or _parameters/_buffers/_modules
-    l1_key: Optional[str] = None
+    l1_key: str | None = None
 
     # Actual parameter/buffer/submodule name
-    l2_key: Optional[str] = None
+    l2_key: str | None = None
 
 
 def getitem_on_dict_manager(
@@ -645,7 +642,7 @@ class GuardBuilder(GuardBuilderBase):
         global_scope: dict[str, object],
         guard_manager: GuardManagerWrapper,
         check_fn_manager: CheckFunctionManager,
-        serialization_mode: Optional[str] = None,
+        serialization_mode: str | None = None,
     ):
         self.f_code = f_code
         self.id_ref = id_ref
@@ -835,13 +832,12 @@ class GuardBuilder(GuardBuilderBase):
                     example_value=example_value,
                     guard_manager_enum=guard_manager_enum,
                 )
-            else:
-                return mgr.dict_getitem_manager(
-                    key=key,
-                    source=source_name,
-                    example_value=example_value,
-                    guard_manager_enum=guard_manager_enum,
-                )
+            return mgr.dict_getitem_manager(
+                key=key,
+                source=source_name,
+                example_value=example_value,
+                guard_manager_enum=guard_manager_enum,
+            )
 
         attr_name = source.member
         mod_dict = base_example_value.__dict__
@@ -875,63 +871,58 @@ class GuardBuilder(GuardBuilderBase):
                 example_value=example_value,
                 guard_manager_enum=guard_manager_enum,
             )
+        assert accessor_info.l1_key
+        l1_key = accessor_info.l1_key
+        l2_key = accessor_info.l2_key
+
+        # Set source strings for debug info
+        mod_dict_source = f"{base_source_name}.__dict__"
+        l1_source_name = l2_source_name = None
+        l1_value = l2_value = None
+        l1_guard_manager_enum = l2_guard_manager_enum = None
+        if l2_key:
+            l1_source = AttrSource(source.base, l1_key)
+            l1_source_name = l1_source.name()
+            l1_value = mod_dict[l1_key]
+            # do not guard on key order for _parameters etc unless the user code
+            # actually needs the key order (e.g. calling named_parameters)
+            l1_guard_manager_enum = self.get_guard_manager_type(l1_source, l1_value)
+
+            l2_source_name = source_name
+            l2_value = example_value
+            l2_guard_manager_enum = self.get_guard_manager_type(source, example_value)
         else:
-            assert accessor_info.l1_key
-            l1_key = accessor_info.l1_key
-            l2_key = accessor_info.l2_key
+            l1_source_name = source_name
+            l1_value = example_value
+            l1_guard_manager_enum = self.get_guard_manager_type(source, example_value)
 
-            # Set source strings for debug info
-            mod_dict_source = f"{base_source_name}.__dict__"
-            l1_source_name = l2_source_name = None
-            l1_value = l2_value = None
-            l1_guard_manager_enum = l2_guard_manager_enum = None
-            if l2_key:
-                l1_source = AttrSource(source.base, l1_key)
-                l1_source_name = l1_source.name()
-                l1_value = mod_dict[l1_key]
-                # do not guard on key order for _parameters etc unless the user code
-                # actually needs the key order (e.g. calling named_parameters)
-                l1_guard_manager_enum = self.get_guard_manager_type(l1_source, l1_value)
+        # Get __dict__ accessor. No need to guard on dict key order, so use base
+        # Guard Manager
+        mod_generic_dict_manager = base_guard_manager.get_generic_dict_manager(
+            source=mod_dict_source,
+            example_value=self._get_generic_dict_manager_example_value(mod_dict),
+            guard_manager_enum=GuardManagerType.GUARD_MANAGER,
+        )
 
-                l2_source_name = source_name
-                l2_value = example_value
-                l2_guard_manager_enum = self.get_guard_manager_type(
-                    source, example_value
-                )
-            else:
-                l1_source_name = source_name
-                l1_value = example_value
-                l1_guard_manager_enum = self.get_guard_manager_type(
-                    source, example_value
-                )
+        l1_mgr = getitem_on_dict_mgr(
+            mgr=mod_generic_dict_manager,
+            key=l1_key,
+            source_name=l1_source_name,
+            base_example_value=mod_dict,
+            example_value=l1_value,
+            guard_manager_enum=l1_guard_manager_enum,
+        )
 
-            # Get __dict__ accessor. No need to guard on dict key order, so use base
-            # Guard Manager
-            mod_generic_dict_manager = base_guard_manager.get_generic_dict_manager(
-                source=mod_dict_source,
-                example_value=self._get_generic_dict_manager_example_value(mod_dict),
-                guard_manager_enum=GuardManagerType.GUARD_MANAGER,
+        if l2_key:
+            return getitem_on_dict_mgr(
+                mgr=l1_mgr,
+                key=l2_key,
+                source_name=l2_source_name,
+                base_example_value=l1_value,
+                example_value=l2_value,
+                guard_manager_enum=l2_guard_manager_enum,
             )
-
-            l1_mgr = getitem_on_dict_mgr(
-                mgr=mod_generic_dict_manager,
-                key=l1_key,
-                source_name=l1_source_name,
-                base_example_value=mod_dict,
-                example_value=l1_value,
-                guard_manager_enum=l1_guard_manager_enum,
-            )
-
-            if l2_key:
-                return getitem_on_dict_mgr(
-                    mgr=l1_mgr,
-                    key=l2_key,
-                    source_name=l2_source_name,
-                    base_example_value=l1_value,
-                    example_value=l2_value,
-                    guard_manager_enum=l2_guard_manager_enum,
-                )
-            return l1_mgr
+        return l1_mgr
 
     def requires_key_order_guarding(self, source):
         source_name = source.name()
@@ -1358,7 +1349,7 @@ class GuardBuilder(GuardBuilderBase):
     # to this frame!)  Instead, you should be reading out some property
     # (like its type) which is what you permanently install into the
     # guard code.
-    def get(self, name: str, closure_vars: Optional[dict[str, Any]] = None) -> Any:
+    def get(self, name: str, closure_vars: dict[str, Any] | None = None) -> Any:
         if closure_vars is None:
             closure_vars = _get_closure_vars()
         return eval(name, self.scope, closure_vars)
@@ -1368,7 +1359,7 @@ class GuardBuilder(GuardBuilderBase):
     # to call this before generating some code that makes use of 'guard',
     # because without this call, we won't actually bind the variable
     # you reference in the actual guard closure (oops!)
-    def arg_ref(self, guard: Union[str, Guard]) -> str:
+    def arg_ref(self, guard: str | Guard) -> str:
         name: str
         if isinstance(guard, str):
             name = guard
@@ -1437,13 +1428,12 @@ class GuardBuilder(GuardBuilderBase):
                     source.name(),
                     guard_manager_enum,
                 )
-            else:
-                base_manager.getattr_manager(
-                    attr=attr,
-                    source=guard.name,
-                    example_value=example_value,
-                    guard_manager_enum=guard_manager_enum,
-                )
+            base_manager.getattr_manager(
+                attr=attr,
+                source=guard.name,
+                example_value=example_value,
+                guard_manager_enum=guard_manager_enum,
+            )
         else:
             base_manager.add_no_hasattr_guard(attr, get_verbose_code_parts(code, guard))
 
@@ -1683,7 +1673,7 @@ class GuardBuilder(GuardBuilderBase):
             metadata_checker, get_verbose_code_parts(global_name, guard)
         )
 
-    def EQUALS_MATCH(self, guard: Guard, recompile_hint: Optional[str] = None):
+    def EQUALS_MATCH(self, guard: Guard, recompile_hint: str | None = None):
         ref = self.arg_ref(guard)
         val = self.get(guard.name)
         if np:
@@ -1723,10 +1713,10 @@ class GuardBuilder(GuardBuilderBase):
         if torch.distributed.is_available():
             from torch.distributed.device_mesh import DeviceMesh
             from torch.distributed.tensor.placement_types import (
-                _StridedShard,
                 Partial,
                 Replicate,
                 Shard,
+                _StridedShard,
             )
 
             ok_types = ok_types + (
@@ -2052,7 +2042,7 @@ class GuardBuilder(GuardBuilderBase):
                 names: dict[str, tuple[int, int]] = {}
                 source_pairs: list[tuple[Source, Source]] = []
                 derived_equalities: list[  # type: ignore[type-arg]
-                    tuple[Source, Union[Source, Symbol], Callable]
+                    tuple[Source, Source | Symbol, Callable]
                 ] = []
                 phantom_symbols: dict[str, Symbol] = {}
                 relaxed_sources: set[Source] = set()
@@ -2604,7 +2594,7 @@ class DeletedGuardManagerWrapper(GuardManagerWrapper):
 class ShapeCodeParts:
     python_code_parts: _ShapeGuardsHelper
     verbose_code_parts: _ShapeGuardsHelper
-    cpp_code_parts: Optional[_CppShapeGuardsHelper]
+    cpp_code_parts: _CppShapeGuardsHelper | None
     python_fallback: bool
     shape_env_sources: list[Source]
 
@@ -2612,7 +2602,7 @@ class ShapeCodeParts:
 @dataclasses.dataclass
 class GuardsState:
     output_graph: OutputGraphGuardsState
-    shape_code_parts: Optional[ShapeCodeParts]
+    shape_code_parts: ShapeCodeParts | None
 
 
 class GuardsStatePickler(pickle.Pickler):
@@ -2706,7 +2696,7 @@ class GuardsStatePickler(pickle.Pickler):
                 torch._C._dispatch_keys(obj).raw_repr(),
             )
 
-        elif isinstance(obj, torch.nn.Module):
+        if isinstance(obj, torch.nn.Module):
             if type(obj).__qualname__ == type(obj).__name__:
                 return NotImplemented
             if obj.__class__.__getstate__ == torch.nn.Module.__getstate__:
@@ -2766,12 +2756,10 @@ class CheckFunctionManager:
         f_code,
         output_graph=None,
         cache_entry=None,
-        guard_fail_fn: Optional[Callable[[GuardFail], None]] = None,
-        guard_filter_fn: Optional[
-            Callable[[list[GuardFilterEntry]], list[bool]]
-        ] = None,
-        guards_serialization_mode: Optional[str] = None,
-        shape_code_parts: Optional[ShapeCodeParts] = None,
+        guard_fail_fn: Callable[[GuardFail], None] | None = None,
+        guard_filter_fn: Callable[[list[GuardFilterEntry]], list[bool]] | None = None,
+        guards_serialization_mode: str | None = None,
+        shape_code_parts: ShapeCodeParts | None = None,
     ):
         guards = output_graph.guards if output_graph else None
         self._weakrefs: dict[int, ReferenceType[object]] = {}
@@ -2903,7 +2891,7 @@ class CheckFunctionManager:
             # account for, we simply increment at the toplevel instead.
             CompileEventLogger.increment_toplevel("guard_latency_us", int(latency))
 
-        self.guards_state: Optional[bytes] = None
+        self.guards_state: bytes | None = None
         if self.guards_serialization_mode == "save":
             used_global_vars = set()
             used_local_vars = set()
@@ -3332,7 +3320,7 @@ def make_torch_function_mode_stack_guard(initial_stack):
         if len(cur_stack) != len(types):
             return False
 
-        for ty, mode in zip(types, cur_stack):
+        for ty, mode in zip(types, cur_stack, strict=False):
             if ty != type(mode):
                 return False
 
@@ -3421,8 +3409,7 @@ def get_guard_fail_reason_helper(
                 except Exception:
                     if is_recompiles_verbose_enabled():
                         continue
-                    else:
-                        raise
+                    raise
             # Only ___check_tensors knows how to return a fancy fail reason;
             # for everything else we just report the code that failed
 

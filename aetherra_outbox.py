@@ -19,32 +19,32 @@ import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 @dataclass
 class OutboxEntry:
     key: str
     ts: float
-    payload: Dict[str, Any]
+    payload: dict[str, Any]
 
 
 class Outbox:
-    def __init__(self, root: Optional[str] = None) -> None:
+    def __init__(self, root: str | None = None) -> None:
         base = Path(root or os.getcwd()) / "outbox"
         base.mkdir(parents=True, exist_ok=True)
         self._path = base / "outbox.jsonl"
         # Use a lock to serialize appends across threads
         self._lock = threading.Lock()
 
-    def _make_key(self, payload: Dict[str, Any]) -> str:
+    def _make_key(self, payload: dict[str, Any]) -> str:
         # Stable hash over canonical JSON representation
         blob = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode(
             "utf-8"
         )
         return hashlib.sha256(blob).hexdigest()[:16]
 
-    def enqueue(self, payload: Dict[str, Any]) -> OutboxEntry:
+    def enqueue(self, payload: dict[str, Any]) -> OutboxEntry:
         ts = time.time()
         key = self._make_key(payload | {"ts": ts})
         entry = {"key": key, "ts": ts, "payload": payload}

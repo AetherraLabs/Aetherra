@@ -1,5 +1,4 @@
 # mypy: allow-untyped-defs
-from typing import Optional
 
 import torch
 import torch.optim._functional as F
@@ -7,7 +6,6 @@ from torch import Tensor
 from torch.distributed.optim._deprecation_warning import (
     _scripted_functional_optimizer_deprecation_warning,
 )
-
 
 __all__: list[str] = []
 
@@ -35,15 +33,15 @@ class _FunctionalAdamax:
         _allow_empty_param_list: bool = False,
     ):
         _scripted_functional_optimizer_deprecation_warning(stacklevel=2)
-        if not 0.0 <= lr:
+        if not lr >= 0.0:
             raise ValueError(f"Invalid learning rate: {lr}")
-        if not 0.0 <= eps:
+        if not eps >= 0.0:
             raise ValueError(f"Invalid epsilon value: {eps}")
         if not 0.0 <= betas[0] < 1.0:
             raise ValueError(f"Invalid beta parameter at index 0: {betas[0]}")
         if not 0.0 <= betas[1] < 1.0:
             raise ValueError(f"Invalid beta parameter at index 1: {betas[1]}")
-        if not 0.0 <= weight_decay:
+        if not weight_decay >= 0.0:
             raise ValueError(f"Invalid weight_decay value: {weight_decay}")
 
         self.defaults = {
@@ -64,7 +62,7 @@ class _FunctionalAdamax:
         # param group as it's not a common use case.
         self.param_group = {"params": params}
 
-    def step(self, gradients: list[Optional[Tensor]]):
+    def step(self, gradients: list[Tensor | None]):
         params = self.param_group["params"]
         params_with_grad = []
         grads = []
@@ -80,7 +78,7 @@ class _FunctionalAdamax:
             )
 
         has_complex = False
-        for param, gradient in zip(self.param_group["params"], gradients):
+        for param, gradient in zip(self.param_group["params"], gradients, strict=False):
             if gradient is not None:
                 has_complex |= torch.is_complex(param)
                 params_with_grad.append(param)

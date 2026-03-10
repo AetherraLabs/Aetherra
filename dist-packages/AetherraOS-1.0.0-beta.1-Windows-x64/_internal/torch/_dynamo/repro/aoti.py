@@ -27,24 +27,23 @@ import shutil
 import sys
 import textwrap
 from importlib import import_module
-from typing import Any, Optional, Union
+from typing import Any
 
 import torch
 from torch._dynamo.debug_utils import (
-    _cuda_system_info_comment,
     BuckTargetWriter,
+    InputReader,
+    NNModuleToString,
+    NopInputReader,
+    _cuda_system_info_comment,
     extra_imports,
     generate_config_string,
     generate_env_vars_string,
     helper_for_dump_minify,
-    InputReader,
     minifier_dir,
-    NNModuleToString,
-    NopInputReader,
 )
 from torch.export import ExportedProgram
 from torch.hub import tqdm
-
 
 log = logging.getLogger(__name__)
 
@@ -65,7 +64,7 @@ def dump_to_minify(
     exported_program: ExportedProgram,
     compiler_name: str,
     command: str = "minify",
-    options: Optional[dict[str, Any]] = None,
+    options: dict[str, Any] | None = None,
 ):
     """
     If command is "minify":
@@ -90,25 +89,24 @@ def dump_to_minify(
             config_patches=options,
         )
         return helper_for_dump_minify(out.getvalue())
-    else:
-        curdir = os.getcwd()
-        file_name = os.path.join(curdir, "repro.py")
-        try:
-            with open(file_name, "w") as fd:
-                save_graph_repro_ep(
-                    fd,
-                    compiler_name,
-                    exported_program=exported_program,
-                    config_patches=options,
-                    save_dir=subdir,
-                    command="run",
-                    module_in_comment=True,
-                )
-            log.warning("Writing repro file to %s", file_name)
-            if use_buck:
-                BuckTargetWriter(file_name).write()
-        except OSError:
-            log.warning("No write permissions for %s", file_name)
+    curdir = os.getcwd()
+    file_name = os.path.join(curdir, "repro.py")
+    try:
+        with open(file_name, "w") as fd:
+            save_graph_repro_ep(
+                fd,
+                compiler_name,
+                exported_program=exported_program,
+                config_patches=options,
+                save_dir=subdir,
+                command="run",
+                module_in_comment=True,
+            )
+        log.warning("Writing repro file to %s", file_name)
+        if use_buck:
+            BuckTargetWriter(file_name).write()
+    except OSError:
+        log.warning("No write permissions for %s", file_name)
 
 
 def get_module_string(gm):
@@ -135,10 +133,10 @@ def save_graph_repro_ep(
     fd,
     compiler_name,
     *,
-    exported_program: Optional[ExportedProgram] = None,
-    gm: Optional[torch.nn.Module] = None,
-    args: Optional[tuple[Any]] = None,
-    config_patches: Optional[dict[str, str]] = None,
+    exported_program: ExportedProgram | None = None,
+    gm: torch.nn.Module | None = None,
+    args: tuple[Any] | None = None,
+    config_patches: dict[str, str] | None = None,
     stable_output=False,
     save_dir=None,
     command="run",
@@ -236,7 +234,7 @@ def dump_compiler_graph_state(
 def generate_compiler_repro_exported_program(
     exported_program,
     *,
-    options: Optional[dict[str, str]] = None,
+    options: dict[str, str] | None = None,
     stable_output=False,
     save_dir=None,
 ):
@@ -338,7 +336,7 @@ def repro_run(options, exported_program, config_patches):
 
 def export_for_aoti_minifier(
     gm, tuple_inputs, strict=False, skip_export_error=True
-) -> Optional[torch.nn.Module]:
+) -> torch.nn.Module | None:
     # Some graphs cannot be used for AOTI/export (illegal graphs), these should be
     # considered as graphs that don't fail in the minifier, so the minifier keeps searching.
     # In these case, we return None. Otherwise, we return the exported graph module.
@@ -374,6 +372,7 @@ def export_for_aoti_minifier(
 
 def repro_minify(options, exported_program, config_patches):
     from functorch.compile import minifier
+
     from torch._inductor import _aoti_compile_and_package_inner
     from torch._inductor.compile_fx import _aoti_flatten_inputs
 
@@ -449,9 +448,9 @@ def repro_minify(options, exported_program, config_patches):
 def run_repro(
     exported_program,
     *,
-    config_patches: Optional[dict[str, str]] = None,
+    config_patches: dict[str, str] | None = None,
     command="run",
-    accuracy: Union[bool, str] = "",
+    accuracy: bool | str = "",
     save_dir=None,
     tracing_mode=None,
     check_str=None,

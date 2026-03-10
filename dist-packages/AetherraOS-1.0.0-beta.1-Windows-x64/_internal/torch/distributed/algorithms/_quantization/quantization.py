@@ -5,7 +5,6 @@ from enum import Enum
 import torch
 import torch.distributed as dist
 
-
 TORCH_HALF_MIN = torch.finfo(torch.float16).min
 TORCH_HALF_MAX = torch.finfo(torch.float16).max
 
@@ -35,10 +34,9 @@ def _quantize_tensor(tensor, qtype):
         )
     if qtype == DQuantType.FP16:
         return _fp32_to_fp16_with_clamp(tensor)
-    elif qtype == DQuantType.BFP16:
+    if qtype == DQuantType.BFP16:
         return torch.ops.quantization._FloatToBfloat16Quantized(tensor)
-    else:
-        raise RuntimeError(f"Quantization type {qtype} is not supported")
+    raise RuntimeError(f"Quantization type {qtype} is not supported")
 
 
 def _quantize_tensor_list(tensor_list, qtype):
@@ -62,19 +60,16 @@ def _dequantize_tensor(tensor, qtype, quant_loss=None):
             raise RuntimeError(
                 f"tensor dtype is {tensor.dtype} while expected to be FP16."
             )
-        elif tensor.dtype == torch.float16 and quant_loss is None:
+        if tensor.dtype == torch.float16 and quant_loss is None:
             return tensor.float()
-        else:
-            return tensor.float() / quant_loss
-    elif qtype == DQuantType.BFP16:
+        return tensor.float() / quant_loss
+    if qtype == DQuantType.BFP16:
         if tensor.dtype != torch.float16:
             raise RuntimeError(
                 f"tensor dtype is {tensor.dtype} while expected to be FP16."
             )
-        else:
-            return torch.ops.quantization._Bfloat16QuantizedToFloat(tensor)
-    else:
-        raise RuntimeError(f"Quantization type {qtype} is not supported")
+        return torch.ops.quantization._Bfloat16QuantizedToFloat(tensor)
+    raise RuntimeError(f"Quantization type {qtype} is not supported")
 
 
 def _dequantize_tensor_list(tensor_list, qtype, quant_loss=None):
@@ -106,7 +101,7 @@ def auto_quantize(func, qtype, quant_loss=None):
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        group = kwargs.get("group", None)
+        group = kwargs.get("group")
         async_op = kwargs.get("async_op", False)
         if async_op is True:
             raise RuntimeError("The async_op=True mode is not supported yet.")
@@ -132,8 +127,8 @@ def auto_quantize(func, qtype, quant_loss=None):
 
         elif func == dist.all_to_all_single:
             tensors = args[0]
-            out_splits = kwargs.get("out_splits", None)
-            in_splits = kwargs.get("in_splits", None)
+            out_splits = kwargs.get("out_splits")
+            in_splits = kwargs.get("in_splits")
             # Quantizing the input/output tensor
             input_tensors = _quantize_tensor(args[1], qtype)
             out_tensors = _quantize_tensor(tensors, qtype)

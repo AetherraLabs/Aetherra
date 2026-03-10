@@ -9,7 +9,6 @@ from torch.nn.utils.parametrize import (
     type_before_parametrizations,
 )
 
-
 __all__ = ["Linear"]
 
 

@@ -52,5 +52,4 @@ class CKTileTemplate(ROCmTemplate):
     def torch_type_to_ck(self, node: IRNode, ptr: str) -> str:
         if node is None:
             return ptr
-        else:
-            return f"({self._TORCH_DTYPE_TO_CK.get(node.get_dtype())}*)({ptr})"
+        return f"({self._TORCH_DTYPE_TO_CK.get(node.get_dtype())}*)({ptr})"

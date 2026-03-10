@@ -21,7 +21,6 @@ import os
 import re
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Set
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -33,7 +32,7 @@ ENGINE_CLASS_RE = re.compile(r"class\s+(\w+Engine)\b")
 class EngineUsage:
     file: str
     module_hint: str
-    classes: List[str]
+    classes: list[str]
     used_by_os: bool
     used_by_lyrixa: bool
     notes: str = ""
@@ -62,8 +61,8 @@ def _should_skip_dir(root: str) -> bool:
     )
 
 
-def discover_engine_files() -> List[Path]:
-    candidates: List[Path] = []
+def discover_engine_files() -> list[Path]:
+    candidates: list[Path] = []
     for root, _dirs, files in os.walk(REPO_ROOT):
         if _should_skip_dir(root):
             continue
@@ -77,8 +76,8 @@ def discover_engine_files() -> List[Path]:
     return candidates
 
 
-def discover_all_py_files() -> List[Path]:
-    files_list: List[Path] = []
+def discover_all_py_files() -> list[Path]:
+    files_list: list[Path] = []
     for root, _dirs, files in os.walk(REPO_ROOT):
         if _should_skip_dir(root):
             continue
@@ -89,8 +88,8 @@ def discover_all_py_files() -> List[Path]:
 
 
 def classify_usage(
-    file_text_index: Dict[Path, str], engine_path: Path
-) -> Dict[str, bool]:
+    file_text_index: dict[Path, str], engine_path: Path
+) -> dict[str, bool]:
     used_by_os = False
     used_by_lyrixa = False
 
@@ -98,7 +97,7 @@ def classify_usage(
     engine_base = engine_path.stem
 
     # Simple reference keys
-    keys: Set[str] = {
+    keys: set[str] = {
         engine_base,
         engine_mod_hint.replace(os.sep, "."),
     }
@@ -133,13 +132,13 @@ def main() -> int:
 
     # Pre-index all texts for faster search (index ALL python files for usage detection)
     all_py_files = discover_all_py_files()
-    file_text_index: Dict[Path, str] = {p: read_text(p) for p in all_py_files}
+    file_text_index: dict[Path, str] = {p: read_text(p) for p in all_py_files}
     # Include entrypoints explicitly
     for extra in [REPO_ROOT / "aetherra_os.py", REPO_ROOT / "aetherra_os_launcher.py"]:
         if extra.exists():
             file_text_index[extra] = read_text(extra)
 
-    usages: List[EngineUsage] = []
+    usages: list[EngineUsage] = []
 
     for p in engine_files:
         text = file_text_index.get(p) or read_text(p)

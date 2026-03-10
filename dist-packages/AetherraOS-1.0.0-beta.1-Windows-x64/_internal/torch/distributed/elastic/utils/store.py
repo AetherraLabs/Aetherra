@@ -7,13 +7,11 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from contextlib import contextmanager
 from datetime import timedelta
-from typing import Callable, Optional
 
 import torch
-
 
 DistStoreError = torch._C._DistStoreError
 
@@ -109,7 +107,7 @@ def _try_detecting_missing_ranks(
     rank: int,
     rank_decoder: Callable[[int], str],
     trace_timeout: float,
-) -> Optional[Iterable[str]]:
+) -> Iterable[str] | None:
     store.set(f"{key_prefix}{rank}{_TRACE}", "<val_ignored>")
 
     def _find_missing_ranks():
@@ -145,8 +143,7 @@ def _try_detecting_missing_ranks(
         missing_rank_info = _find_missing_ranks()
         store.set(f"{key_prefix}{_TRACING_GATE}", "<val_ignored>")
         return missing_rank_info
-    else:
-        return _checkin()
+    return _checkin()
 
 
 def _barrier_nonblocking(store, world_size: int, key_prefix: str) -> str:
@@ -169,8 +166,8 @@ def barrier(
     world_size: int,
     key_prefix: str,
     barrier_timeout: float = 300,
-    rank: Optional[int] = None,
-    rank_tracing_decoder: Optional[Callable[[int], str]] = None,
+    rank: int | None = None,
+    rank_tracing_decoder: Callable[[int], str] | None = None,
     trace_timeout: float = 10,
 ) -> None:
     """
@@ -202,25 +199,23 @@ def barrier(
         except DistStoreError as e:
             if rank is None:
                 raise e
-            else:
-                missing_ranks = _try_detecting_missing_ranks(
-                    store,
-                    world_size,
-                    key_prefix,
-                    rank,
-                    rank_tracing_decoder or (lambda x: str(x)),
-                    trace_timeout,
-                )
-                if missing_ranks is not None:
-                    raise DistStoreError(
-                        "Timed out waiting on barrier on "
-                        "rank {}, for key prefix: {} (world_size={}, missing_ranks={}, timeout={})".format(
-                            rank,
-                            key_prefix,
-                            world_size,
-                            f"[{', '.join(missing_ranks)}]",
-                            barrier_timeout,
-                        )
-                    ) from None
-                else:
-                    raise e
+            missing_ranks = _try_detecting_missing_ranks(
+                store,
+                world_size,
+                key_prefix,
+                rank,
+                rank_tracing_decoder or (lambda x: str(x)),
+                trace_timeout,
+            )
+            if missing_ranks is not None:
+                raise DistStoreError(
+                    "Timed out waiting on barrier on "
+                    "rank {}, for key prefix: {} (world_size={}, missing_ranks={}, timeout={})".format(
+                        rank,
+                        key_prefix,
+                        world_size,
+                        f"[{', '.join(missing_ranks)}]",
+                        barrier_timeout,
+                    )
+                ) from None
+            raise e

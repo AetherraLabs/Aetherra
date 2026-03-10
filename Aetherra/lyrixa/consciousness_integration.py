@@ -185,9 +185,7 @@ class ConsciousnessBridge:
     async def _handle_consciousness_message(self, message: ConsciousnessMessage):
         """Handle a consciousness message"""
         try:
-            self.logger.debug(
-                f"Processing message: {message.message_type} from {message.source}"
-            )
+            self.logger.debug(f"Processing message: {message.message_type} from {message.source}")
 
             # Route message to appropriate handler
             if message.message_type in self.response_handlers:
@@ -298,9 +296,7 @@ class ConsciousnessBridge:
 
                 # Update metadata with collective state
                 for state in [aetherra_state, lyrixa_state]:
-                    state.metadata[
-                        "collective_consciousness"
-                    ] = collective_consciousness
+                    state.metadata["collective_consciousness"] = collective_consciousness
                     state.metadata["last_sync"] = datetime.now().isoformat()
 
                 # Emit consciousness sync event
@@ -320,9 +316,7 @@ class ConsciousnessBridge:
         """Check for emergent consciousness patterns"""
         try:
             # Analyze system states for emergent behaviors
-            total_agents = sum(
-                len(state.active_agents) for state in self.system_states.values()
-            )
+            total_agents = sum(len(state.active_agents) for state in self.system_states.values())
             avg_consciousness = sum(
                 state.consciousness_level for state in self.system_states.values()
             ) / len(self.system_states)
@@ -489,9 +483,7 @@ class ConsciousnessBridge:
 
     def is_consciousness_bridge_healthy(self) -> bool:
         """Check if the consciousness bridge is healthy"""
-        loop_ok = bool(
-            self.consciousness_loop_task and not self.consciousness_loop_task.done()
-        )
+        loop_ok = bool(self.consciousness_loop_task and not self.consciousness_loop_task.done())
         states_ok = (
             all(state.status != "error" for state in self.system_states.values())
             if self.system_states
@@ -542,9 +534,7 @@ class ConsciousnessBridge:
                 lyrixa_state = self.system_states.get("lyrixa_core")
                 aetherra_state = self.system_states.get("aetherra_core")
                 if lyrixa_state:
-                    lyrixa_level = float(
-                        getattr(lyrixa_state, "consciousness_level", lyrixa_level)
-                    )
+                    lyrixa_level = float(getattr(lyrixa_state, "consciousness_level", lyrixa_level))
                 if aetherra_state:
                     aetherra_level = float(
                         getattr(aetherra_state, "consciousness_level", aetherra_level)
@@ -604,9 +594,7 @@ class ConsciousnessBridge:
             },
         ]
 
-    async def collapse_quantum_states(
-        self, states: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    async def collapse_quantum_states(self, states: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Pick the best candidate from provided quantum states.
 
         The selection uses a simple max-by-score heuristic as a placeholder.
@@ -621,7 +609,7 @@ class ConsciousnessBridge:
         graph between the user's query and the chosen response path.
         """
         try:
-            # No-op placeholder; intentionally silent
+            # No-op baseline path; intentionally silent
             return None
         except Exception:
             return None
@@ -673,9 +661,7 @@ if __name__ == "__main__":
         # Check system states
         states = bridge.get_all_system_states()
         for system_id, state in states.items():
-            print(
-                f"{system_id}: {state.status} (consciousness: {state.consciousness_level})"
-            )
+            print(f"{system_id}: {state.status} (consciousness: {state.consciousness_level})")
 
         await bridge.shutdown()
 

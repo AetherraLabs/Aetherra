@@ -99,7 +99,9 @@ class MilestoneEvent:
 
     milestone_id: str
     fragment_id: str
-    milestone_type: str  # "breakthrough", "failure_learning", "skill_acquisition", "relationship_milestone"
+    milestone_type: (
+        str  # "breakthrough", "failure_learning", "skill_acquisition", "relationship_milestone"
+    )
     significance_score: float
     prerequisites: List[str]  # fragments that led to this milestone
     consequences: List[str]  # fragments that resulted from this milestone
@@ -130,15 +132,9 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
         self.self_narrative_model: Optional[SelfNarrativeModel] = None
 
         # Analysis parameters
-        self.causal_detection_window = timedelta(
-            hours=24
-        )  # Look for causation within 24 hours
-        self.emotional_transition_threshold = (
-            0.3  # Minimum change to detect emotional shift
-        )
-        self.milestone_significance_threshold = (
-            0.7  # Minimum score to be considered milestone
-        )
+        self.causal_detection_window = timedelta(hours=24)  # Look for causation within 24 hours
+        self.emotional_transition_threshold = 0.3  # Minimum change to detect emotional shift
+        self.milestone_significance_threshold = 0.7  # Minimum score to be considered milestone
 
         self._initialize_enhanced_tables()
         self._load_enhanced_data()
@@ -231,9 +227,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
         finally:
             conn.close()
 
-    async def detect_causal_chains(
-        self, fragments: List[MemoryFragment]
-    ) -> List[CausalChain]:
+    async def detect_causal_chains(self, fragments: List[MemoryFragment]) -> List[CausalChain]:
         """
         🔗 Detect multi-step causal relationships between memory fragments
         """
@@ -269,9 +263,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
 
             # Create chain if we found causal relationships
             if len(causal_sequence) > 1:
-                chain = await self._create_causal_chain(
-                    causal_sequence, sorted_fragments
-                )
+                chain = await self._create_causal_chain(causal_sequence, sorted_fragments)
                 if chain:
                     detected_chains.append(chain)
                     self.causal_chains[chain.chain_id] = chain
@@ -282,9 +274,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
         self.logger.info(f"Detected {len(detected_chains)} causal chains")
         return detected_chains
 
-    async def recognize_narrative_arcs(
-        self, fragments: List[MemoryFragment]
-    ) -> List[NarrativeArc]:
+    async def recognize_narrative_arcs(self, fragments: List[MemoryFragment]) -> List[NarrativeArc]:
         """
         📖 Detect story patterns (conflict, resolution, growth) in memory sequences
         """
@@ -348,9 +338,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
             significance = self._calculate_milestone_significance(fragment, fragments)
 
             if significance > self.milestone_significance_threshold:
-                milestone = await self._create_milestone_event(
-                    fragment, fragments, significance
-                )
+                milestone = await self._create_milestone_event(fragment, fragments, significance)
                 if milestone:
                     potential_milestones.append(milestone)
                     self.milestone_events[milestone.milestone_id] = milestone
@@ -374,17 +362,12 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
         time_diff = effect_fragment.created_at - cause_fragment.created_at
         time_strength = max(
             0,
-            1
-            - (
-                time_diff.total_seconds() / self.causal_detection_window.total_seconds()
-            ),
+            1 - (time_diff.total_seconds() / self.causal_detection_window.total_seconds()),
         )
         strength += time_strength * 0.3
 
         # Content similarity (related topics suggest causation)
-        content_similarity = self._calculate_content_similarity(
-            cause_fragment, effect_fragment
-        )
+        content_similarity = self._calculate_content_similarity(cause_fragment, effect_fragment)
         strength += content_similarity * 0.3
 
         # Importance change (significant events often cause other significant events)
@@ -480,23 +463,17 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
         content_text = " ".join(str(f.content) for f in fragments).lower()
 
         if any(
-            keyword in content_text
-            for keyword in ["problem", "issue", "error", "fix", "solve"]
+            keyword in content_text for keyword in ["problem", "issue", "error", "fix", "solve"]
         ):
             return "problem_solving"
         elif any(
-            keyword in content_text
-            for keyword in ["learn", "understand", "discover", "realize"]
+            keyword in content_text for keyword in ["learn", "understand", "discover", "realize"]
         ):
             return "learning"
-        elif any(
-            keyword in content_text
-            for keyword in ["goal", "achieve", "complete", "finish"]
-        ):
+        elif any(keyword in content_text for keyword in ["goal", "achieve", "complete", "finish"]):
             return "goal_achievement"
         elif any(
-            keyword in content_text
-            for keyword in ["user", "interaction", "relationship", "trust"]
+            keyword in content_text for keyword in ["user", "interaction", "relationship", "trust"]
         ):
             return "relationship_building"
         else:
@@ -510,9 +487,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
 
         for fragment in fragments:
             # Use primary tag as theme, or content-based theme if no tags
-            theme = (
-                list(fragment.symbolic_tags)[0] if fragment.symbolic_tags else "general"
-            )
+            theme = list(fragment.symbolic_tags)[0] if fragment.symbolic_tags else "general"
 
             if theme not in theme_groups:
                 theme_groups[theme] = []
@@ -663,7 +638,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
         peak_threshold = max(intensity_scores) * 0.8
         peak_moments = [
             f.fragment_id
-            for f, score in zip(fragments, intensity_scores)
+            for f, score in zip(fragments, intensity_scores, strict=False)
             if score >= peak_threshold
         ]
 
@@ -718,9 +693,9 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
             "succeeded",
             "overcame",
         ]
-        learning_score = sum(
-            1 for keyword in learning_keywords if keyword in content_lower
-        ) / len(learning_keywords)
+        learning_score = sum(1 for keyword in learning_keywords if keyword in content_lower) / len(
+            learning_keywords
+        )
         significance += learning_score * 0.3
 
         return min(1.0, significance)
@@ -735,9 +710,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
         similarities = []
         for other_fragment in all_fragments:
             if other_fragment.fragment_id != fragment.fragment_id:
-                similarity = self._calculate_content_similarity(
-                    fragment, other_fragment
-                )
+                similarity = self._calculate_content_similarity(fragment, other_fragment)
                 similarities.append(similarity)
 
         avg_similarity = sum(similarities) / len(similarities) if similarities else 0
@@ -753,25 +726,17 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
 
         # Classify milestone type
         content_lower = str(fragment.content).lower()
-        if any(
-            keyword in content_lower
-            for keyword in ["breakthrough", "eureka", "discovered"]
-        ):
+        if any(keyword in content_lower for keyword in ["breakthrough", "eureka", "discovered"]):
             milestone_type = "breakthrough"
         elif any(
-            keyword in content_lower
-            for keyword in ["failed", "mistake", "error", "learned from"]
+            keyword in content_lower for keyword in ["failed", "mistake", "error", "learned from"]
         ):
             milestone_type = "failure_learning"
         elif any(
-            keyword in content_lower
-            for keyword in ["mastered", "acquired", "learned", "skill"]
+            keyword in content_lower for keyword in ["mastered", "acquired", "learned", "skill"]
         ):
             milestone_type = "skill_acquisition"
-        elif any(
-            keyword in content_lower
-            for keyword in ["user", "relationship", "trust", "bond"]
-        ):
+        elif any(keyword in content_lower for keyword in ["user", "relationship", "trust", "bond"]):
             milestone_type = "relationship_milestone"
         else:
             milestone_type = "general_milestone"
@@ -813,9 +778,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
                 and milestone_time - fragment.created_at <= timedelta(days=7)
             ):
                 # Check for thematic or causal relationship
-                similarity = self._calculate_content_similarity(
-                    fragment, milestone_fragment
-                )
+                similarity = self._calculate_content_similarity(fragment, milestone_fragment)
                 if similarity > 0.3:
                     prerequisites.append(fragment.fragment_id)
 
@@ -835,17 +798,13 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
                 and fragment.created_at - milestone_time <= timedelta(days=7)
             ):
                 # Check for thematic relationship
-                similarity = self._calculate_content_similarity(
-                    fragment, milestone_fragment
-                )
+                similarity = self._calculate_content_similarity(fragment, milestone_fragment)
                 if similarity > 0.3:
                     consequences.append(fragment.fragment_id)
 
         return consequences[:5]  # Limit to top 5 consequences
 
-    def _generate_learning_summary(
-        self, fragment: MemoryFragment, milestone_type: str
-    ) -> str:
+    def _generate_learning_summary(self, fragment: MemoryFragment, milestone_type: str) -> str:
         """Generate a summary of what was learned from this milestone"""
         content = str(fragment.content)
 
@@ -940,9 +899,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
         🎭 Build comprehensive self-understanding model
         """
         if len(fragments) < 10:
-            self.logger.warning(
-                "Insufficient fragments for robust self-narrative modeling"
-            )
+            self.logger.warning("Insufficient fragments for robust self-narrative modeling")
 
         # Extract identity themes
         identity_themes = self._extract_identity_themes(fragments)
@@ -991,9 +948,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
         )
 
         self.self_narrative_model = model
-        self.logger.info(
-            f"Built self-narrative model with coherence: {narrative_coherence:.3f}"
-        )
+        self.logger.info(f"Built self-narrative model with coherence: {narrative_coherence:.3f}")
         return model
 
     async def detect_advanced_causal_patterns(
@@ -1007,9 +962,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
 
         for chain in basic_chains:
             # Get the fragments in this chain
-            chain_fragments = [
-                f for f in fragments if f.fragment_id in chain.causal_sequence
-            ]
+            chain_fragments = [f for f in fragments if f.fragment_id in chain.causal_sequence]
 
             # Analyze causal mechanisms
             causal_mechanisms = self._analyze_causal_mechanisms(chain_fragments)
@@ -1041,9 +994,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
             enhanced_chains.append(enhanced_chain)
             self.causal_chains[enhanced_chain.chain_id] = enhanced_chain
 
-        self.logger.info(
-            f"Enhanced {len(enhanced_chains)} causal chains with mechanism analysis"
-        )
+        self.logger.info(f"Enhanced {len(enhanced_chains)} causal chains with mechanism analysis")
         return enhanced_chains
 
     # Helper methods for enhanced analysis
@@ -1108,9 +1059,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
 
         return mechanisms
 
-    def _infer_causal_mechanism(
-        self, cause: MemoryFragment, effect: MemoryFragment
-    ) -> str:
+    def _infer_causal_mechanism(self, cause: MemoryFragment, effect: MemoryFragment) -> str:
         """Infer how one fragment caused another"""
         cause_tags = set(cause.symbolic_tags)
         effect_tags = set(effect.symbolic_tags)
@@ -1130,8 +1079,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
         for fragment in fragments:
             content_str = str(fragment.content).lower()
             if any(
-                word in content_str
-                for word in ["i am", "i tend to", "i usually", "my approach"]
+                word in content_str for word in ["i am", "i tend to", "i usually", "my approach"]
             ):
                 # Extract identity statements
                 for tag in fragment.symbolic_tags:
@@ -1173,15 +1121,12 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
 
     # Missing helper methods implementation
 
-    def _identify_progress_markers(
-        self, fragments: List[MemoryFragment]
-    ) -> List[Dict[str, Any]]:
+    def _identify_progress_markers(self, fragments: List[MemoryFragment]) -> List[Dict[str, Any]]:
         """Identify key progress/setback moments"""
         markers = []
         for i, fragment in enumerate(fragments):
             if fragment.confidence_score > 0.8 or (
-                i > 0
-                and fragment.confidence_score - fragments[i - 1].confidence_score > 0.3
+                i > 0 and fragment.confidence_score - fragments[i - 1].confidence_score > 0.3
             ):
                 markers.append(
                     {
@@ -1199,29 +1144,19 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
         strategies = []
         for fragment in fragments:
             content_str = str(fragment.content).lower()
-            if any(
-                word in content_str
-                for word in ["approach", "strategy", "method", "way"]
-            ):
-                strategies.append(
-                    f"Strategy at {fragment.created_at.strftime('%Y-%m-%d')}"
-                )
+            if any(word in content_str for word in ["approach", "strategy", "method", "way"]):
+                strategies.append(f"Strategy at {fragment.created_at.strftime('%Y-%m-%d')}")
         return strategies
 
     def _find_breakthrough_moments(self, fragments: List[MemoryFragment]) -> List[str]:
         """Find key insight/success fragments"""
         breakthroughs = []
         for fragment in fragments:
-            if (
-                "breakthrough" in fragment.symbolic_tags
-                or "insight" in fragment.symbolic_tags
-            ):
+            if "breakthrough" in fragment.symbolic_tags or "insight" in fragment.symbolic_tags:
                 breakthroughs.append(fragment.fragment_id)
         return breakthroughs
 
-    def _map_goal_emotional_journey(
-        self, fragments: List[MemoryFragment]
-    ) -> Dict[str, float]:
+    def _map_goal_emotional_journey(self, fragments: List[MemoryFragment]) -> Dict[str, float]:
         """Map emotional states through goal pursuit"""
         emotions = {}
         for fragment in fragments:
@@ -1236,9 +1171,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
         for fragment in fragments:
             content_str = str(fragment.content)
             if len(content_str) > 20:
-                return (
-                    content_str[:100] + "..." if len(content_str) > 100 else content_str
-                )
+                return content_str[:100] + "..." if len(content_str) > 100 else content_str
         return "Goal pursuit"
 
     def _identify_obstacle_patterns(self, fragments: List[MemoryFragment]) -> List[str]:
@@ -1249,9 +1182,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
                 obstacles.append(f"Challenge: {str(fragment.content)[:50]}...")
         return obstacles
 
-    def _extract_learning_milestones(
-        self, fragments: List[MemoryFragment]
-    ) -> List[str]:
+    def _extract_learning_milestones(self, fragments: List[MemoryFragment]) -> List[str]:
         """Extract what was learned at each stage"""
         milestones = []
         for fragment in fragments:
@@ -1283,9 +1214,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
         # Average confidence per competency area
         return {k: sum(v) / len(v) for k, v in competencies.items() if v}
 
-    def _analyze_growth_trajectory(
-        self, fragments: List[MemoryFragment]
-    ) -> List[Dict[str, Any]]:
+    def _analyze_growth_trajectory(self, fragments: List[MemoryFragment]) -> List[Dict[str, Any]]:
         """Analyze how self-perception has evolved"""
         trajectory = []
         sorted_fragments = sorted(fragments, key=lambda f: f.created_at)
@@ -1301,32 +1230,23 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
                 )
         return trajectory
 
-    def _extract_value_system(
-        self, fragments: List[MemoryFragment]
-    ) -> Dict[str, float]:
+    def _extract_value_system(self, fragments: List[MemoryFragment]) -> Dict[str, float]:
         """Extract what matters most (weighted)"""
         values = {}
         for fragment in fragments:
             content_str = str(fragment.content).lower()
-            if any(
-                word in content_str for word in ["important", "value", "matter", "care"]
-            ):
+            if any(word in content_str for word in ["important", "value", "matter", "care"]):
                 for tag in fragment.symbolic_tags:
                     if tag not in values:
                         values[tag] = 0
                     values[tag] += fragment.confidence_score
         return values
 
-    def _analyze_relationship_patterns(
-        self, fragments: List[MemoryFragment]
-    ) -> List[str]:
+    def _analyze_relationship_patterns(self, fragments: List[MemoryFragment]) -> List[str]:
         """Analyze how interactions typically unfold"""
         patterns = []
         for fragment in fragments:
-            if (
-                "relationship" in fragment.symbolic_tags
-                or "interaction" in fragment.symbolic_tags
-            ):
+            if "relationship" in fragment.symbolic_tags or "interaction" in fragment.symbolic_tags:
                 patterns.append(f"Pattern: {str(fragment.content)[:50]}...")
         return patterns
 
@@ -1339,9 +1259,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
                 patterns.append(f"Decision pattern: {str(fragment.content)[:50]}...")
         return patterns
 
-    def _analyze_learning_style(
-        self, fragments: List[MemoryFragment]
-    ) -> Dict[str, Any]:
+    def _analyze_learning_style(self, fragments: List[MemoryFragment]) -> Dict[str, Any]:
         """Analyze how new information is integrated"""
         learning_indicators = {
             "visual": 0,
@@ -1363,9 +1281,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
 
         return learning_indicators
 
-    def _calculate_emotional_baseline(
-        self, fragments: List[MemoryFragment]
-    ) -> Dict[str, float]:
+    def _calculate_emotional_baseline(self, fragments: List[MemoryFragment]) -> Dict[str, float]:
         """Calculate typical emotional patterns"""
         emotions = {}
         for fragment in fragments:
@@ -1393,9 +1309,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
                 fears.append(f"Avoidance: {str(fragment.content)[:50]}...")
         return fears
 
-    def _map_confidence_domains(
-        self, fragments: List[MemoryFragment]
-    ) -> Dict[str, float]:
+    def _map_confidence_domains(self, fragments: List[MemoryFragment]) -> Dict[str, float]:
         """Map where self feels confident/uncertain"""
         domains = {}
         for fragment in fragments:
@@ -1430,9 +1344,9 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
             return 1.0
 
         confidences = [f.confidence_score for f in fragments]
-        variance = sum(
-            (c - sum(confidences) / len(confidences)) ** 2 for c in confidences
-        ) / len(confidences)
+        variance = sum((c - sum(confidences) / len(confidences)) ** 2 for c in confidences) / len(
+            confidences
+        )
 
         # Convert variance to stability (lower variance = higher stability)
         return max(0.0, 1.0 - variance)
@@ -1451,9 +1365,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
             goal_connections=json.loads(row[7]) if len(row) > 7 and row[7] else [],
             causal_mechanisms=json.loads(row[8]) if len(row) > 8 and row[8] else [],
             branch_points=json.loads(row[9]) if len(row) > 9 and row[9] else [],
-            confidence_evolution=json.loads(row[10])
-            if len(row) > 10 and row[10]
-            else [],
+            confidence_evolution=json.loads(row[10]) if len(row) > 10 and row[10] else [],
         )
 
     def _row_to_emotional_trajectory(self, row) -> EmotionalTrajectory:
@@ -1511,9 +1423,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
         finally:
             conn.close()
 
-    async def _save_emotional_trajectories(
-        self, trajectories: List[EmotionalTrajectory]
-    ):
+    async def _save_emotional_trajectories(self, trajectories: List[EmotionalTrajectory]):
         """Save emotional trajectories to database"""
         if not trajectories:
             return
@@ -1578,15 +1488,9 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
     # Analysis methods for external use
     def get_causal_chains_by_type(self, chain_type: str) -> List[CausalChain]:
         """Get causal chains of specific type"""
-        return [
-            chain
-            for chain in self.causal_chains.values()
-            if chain.chain_type == chain_type
-        ]
+        return [chain for chain in self.causal_chains.values() if chain.chain_type == chain_type]
 
-    def get_emotional_trajectories_by_trend(
-        self, trend: str
-    ) -> List[EmotionalTrajectory]:
+    def get_emotional_trajectories_by_trend(self, trend: str) -> List[EmotionalTrajectory]:
         """Get emotional trajectories showing specific trend (positive/negative/stable)"""
         matching_trajectories = []
 
@@ -1596,11 +1500,14 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
                 start_score = sum(trajectory.intensity_scores[:2]) / 2
                 end_score = sum(trajectory.intensity_scores[-2:]) / 2
 
-                if trend == "positive" and end_score > start_score + 0.2:
-                    matching_trajectories.append(trajectory)
-                elif trend == "negative" and end_score < start_score - 0.2:
-                    matching_trajectories.append(trajectory)
-                elif trend == "stable" and abs(end_score - start_score) <= 0.2:
+                if (
+                    trend == "positive"
+                    and end_score > start_score + 0.2
+                    or trend == "negative"
+                    and end_score < start_score - 0.2
+                    or trend == "stable"
+                    and abs(end_score - start_score) <= 0.2
+                ):
                     matching_trajectories.append(trajectory)
 
         return matching_trajectories
@@ -1620,11 +1527,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
             "total_causal_chains": len(self.causal_chains),
             "causal_chain_types": {
                 chain_type: len(
-                    [
-                        c
-                        for c in self.causal_chains.values()
-                        if c.chain_type == chain_type
-                    ]
+                    [c for c in self.causal_chains.values() if c.chain_type == chain_type]
                 )
                 for chain_type in set(c.chain_type for c in self.causal_chains.values())
             },
@@ -1638,9 +1541,7 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
                         if m.milestone_type == milestone_type
                     ]
                 )
-                for milestone_type in set(
-                    m.milestone_type for m in self.milestone_events.values()
-                )
+                for milestone_type in set(m.milestone_type for m in self.milestone_events.values())
             },
             "avg_milestone_significance": sum(
                 m.significance_score for m in self.milestone_events.values()

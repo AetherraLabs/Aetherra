@@ -8,10 +8,10 @@ import json
 import math
 import operator
 import re
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from contextlib import contextmanager
-from inspect import ismethod, Parameter
-from typing import Any, Callable, Optional, TYPE_CHECKING, Union
+from inspect import Parameter, ismethod
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch._guards import detect_fake_mode
@@ -19,7 +19,6 @@ from torch._subclasses.fake_tensor import FakeTensor, FakeTensorMode
 from torch._subclasses.functional_tensor import FunctionalTensor
 from torch.fx._utils import first_call_function_nn_module_stack
 from torch.fx.passes.runtime_assert import insert_deferred_runtime_asserts
-
 
 if TYPE_CHECKING:
     from torch._export.passes.lift_constants_pass import ConstantAttrMap
@@ -33,21 +32,20 @@ from torch.fx._pytree import (
     register_pytree_flatten_spec,
 )
 from torch.utils._pytree import (
-    _deregister_pytree_node,
-    _register_pytree_node,
     Context,
     FlattenFunc,
     FromDumpableContextFn,
     GetAttrKey,
     KeyPath,
-    keystr,
     MappingKey,
     SequenceKey,
     ToDumpableContextFn,
-    tree_flatten_with_path,
     UnflattenFunc,
+    _deregister_pytree_node,
+    _register_pytree_node,
+    keystr,
+    tree_flatten_with_path,
 )
-
 
 placeholder_prefixes = {
     InputKind.USER_INPUT: "",
@@ -293,20 +291,19 @@ def get_keystr(key_path: KeyPath) -> str:
     assert isinstance(args_kwargs_key_path, SequenceKey)
     if args_kwargs_key_path.idx == 0:
         return f"*args{keystr(key_path[1:])}"
-    else:
-        kwarg_key = key_path[1]
-        assert isinstance(kwarg_key, MappingKey)
-        name = str(kwarg_key)[1:-1]  # get rid of the enclosed []
-        return f"{name}{keystr(key_path[2:])}"
+    kwarg_key = key_path[1]
+    assert isinstance(kwarg_key, MappingKey)
+    name = str(kwarg_key)[1:-1]  # get rid of the enclosed []
+    return f"{name}{keystr(key_path[2:])}"
 
 
 def _check_symint(
-    symint: Union[int, torch.SymInt],
+    symint: int | torch.SymInt,
     arg: int,
     range_constraints,
     unification_map,
     keypath: KeyPath,
-    i: Optional[int] = None,
+    i: int | None = None,
 ) -> None:
     from torch.export.dynamic_shapes import _IntWrapper
 
@@ -355,8 +352,7 @@ def _check_symint(
                         f"Expected input {path} = {arg} to be "
                         f"of the form {symint.node.expr}, where {symbol} is an integer"
                     )
-                else:
-                    unification_map[symbol] = int(solution[1])
+                unification_map[symbol] = int(solution[1])
 
         if symint.node.expr in range_constraints:
             min_val, max_val = _convert_range_to_int(
@@ -408,7 +404,9 @@ def _check_input_constraints_for_graph(
     # for all InputDims related by equality constraints, so we can just unify
     # symbols with given input dimension values to check equality constraints.
     unification_map: dict[sympy.Symbol, Any] = {}
-    for (key_path, arg), node in zip(flat_args_with_path, input_placeholders):
+    for (key_path, arg), node in zip(
+        flat_args_with_path, input_placeholders, strict=False
+    ):
         node_val = node.meta.get("val")
         if isinstance(node_val, FakeTensor):
             if not isinstance(arg, torch.Tensor):
@@ -422,7 +420,9 @@ def _check_input_constraints_for_graph(
                     f"(expected {node_val.shape}, got {arg.shape})"
                 )
 
-            for j, (arg_dim, node_dim) in enumerate(zip(arg.shape, node_val.shape)):
+            for j, (arg_dim, node_dim) in enumerate(
+                zip(arg.shape, node_val.shape, strict=False)
+            ):
                 _check_symint(
                     node_dim, arg_dim, range_constraints, unification_map, key_path, j
                 )
@@ -440,17 +440,17 @@ def _check_input_constraints_for_graph(
 
 def register_dataclass_as_pytree_node(
     cls: type[Any],
-    flatten_fn: Optional[FlattenFunc] = None,
-    unflatten_fn: Optional[UnflattenFunc] = None,
+    flatten_fn: FlattenFunc | None = None,
+    unflatten_fn: UnflattenFunc | None = None,
     *,
-    serialized_type_name: Optional[str] = None,
-    to_dumpable_context: Optional[ToDumpableContextFn] = None,
-    from_dumpable_context: Optional[FromDumpableContextFn] = None,
+    serialized_type_name: str | None = None,
+    to_dumpable_context: ToDumpableContextFn | None = None,
+    from_dumpable_context: FromDumpableContextFn | None = None,
     return_none_fields: bool = False,
 ) -> None:
-    assert dataclasses.is_dataclass(
-        cls
-    ), f"Only dataclasses can be registered with this function: {cls}"
+    assert dataclasses.is_dataclass(cls), (
+        f"Only dataclasses can be registered with this function: {cls}"
+    )
 
     def default_flatten_fn(obj: Any) -> tuple[list[Any], Context]:
         flattened = []
@@ -467,11 +467,15 @@ def register_dataclass_as_pytree_node(
 
     def default_unflatten_fn(values: Iterable[Any], context: Context) -> Any:
         flat_names, none_names = context
-        return cls(**dict(zip(flat_names, values)), **dict.fromkeys(none_names))
+        return cls(
+            **dict(zip(flat_names, values, strict=False)), **dict.fromkeys(none_names)
+        )
 
     def default_flatten_fn_with_keys(obj: Any) -> tuple[list[Any], Context]:
         flattened, (flat_names, _none_names) = flatten_fn(obj)  # type: ignore[misc]
-        return [(MappingKey(k), v) for k, v in zip(flat_names, flattened)], flat_names
+        return [
+            (MappingKey(k), v) for k, v in zip(flat_names, flattened, strict=False)
+        ], flat_names
 
     flatten_fn = flatten_fn if flatten_fn is not None else default_flatten_fn
     unflatten_fn = unflatten_fn if unflatten_fn is not None else default_unflatten_fn
@@ -504,7 +508,7 @@ def is_param(program: "ExportedProgram", node: torch.fx.Node) -> bool:
 def get_param(
     program: "ExportedProgram",
     node: torch.fx.Node,
-) -> Optional[torch.nn.Parameter]:
+) -> torch.nn.Parameter | None:
     """
     Returns the parameter associated with the given node in the exported program.
     Returns None if the node is not a parameter within the exported program
@@ -528,7 +532,7 @@ def is_buffer(program: "ExportedProgram", node: torch.fx.Node) -> bool:
 def get_buffer(
     program: "ExportedProgram",
     node: torch.fx.Node,
-) -> Optional[torch.Tensor]:
+) -> torch.Tensor | None:
     """
     Returns the buffer associated with the given node in the exported program.
     Returns None if the node is not a buffer within the exported program
@@ -538,8 +542,7 @@ def get_buffer(
         buffer_name = program.graph_signature.inputs_to_buffers[node.name]
         if buffer_name in program.graph_signature.non_persistent_buffers:
             return program.constants[buffer_name]
-        else:
-            return program.state_dict[buffer_name]
+        return program.state_dict[buffer_name]
 
     return None
 
@@ -558,7 +561,7 @@ def is_lifted_tensor_constant(
 def get_lifted_tensor_constant(
     program: "ExportedProgram",
     node: torch.fx.Node,
-) -> Optional[torch.Tensor]:
+) -> torch.Tensor | None:
     """
     Returns the lifted tensor constant associated with the given node in the exported program.
     Returns None if the node is not a lifted tensor constant within the exported program
@@ -575,7 +578,7 @@ def get_lifted_tensor_constant(
 
 def sequential_split(
     gm: torch.fx.GraphModule,
-    node_call_back: Callable[[torch.fx.Node], Union[torch.fx.Node, bool]],
+    node_call_back: Callable[[torch.fx.Node], torch.fx.Node | bool],
 ) -> torch.fx.GraphModule:
     """
     sequential_split creates a new graph module that splits the input graph module into multiple submodules
@@ -644,11 +647,14 @@ def _insert_aten_to_metadata_assert_pass(gm: torch.fx.GraphModule) -> None:
                 continue
 
             if (tensor_val := node.args[0].meta.get("val")) is not None:
-                with gm.graph.inserting_before(node), _set_node_metadata_hook(
-                    gm,
-                    functools.partial(
-                        _node_metadata_hook,
-                        stack_trace=node.meta.get("stack_trace"),
+                with (
+                    gm.graph.inserting_before(node),
+                    _set_node_metadata_hook(
+                        gm,
+                        functools.partial(
+                            _node_metadata_hook,
+                            stack_trace=node.meta.get("stack_trace"),
+                        ),
                     ),
                 ):
                     gm.graph.call_function(
@@ -697,7 +703,7 @@ def apply_runtime_assertion_pass(gm: torch.fx.GraphModule, graph_signature):
 
 def nodes_first(
     nodes: list[torch.fx.Node], node_call_back=None
-) -> Optional[torch.fx.Node]:
+) -> torch.fx.Node | None:
     """
     Returns the first node that matches the node_call_back. If no node matches, returns None.
     When node_call_back is None, returns the first node in the node list.
@@ -741,7 +747,7 @@ def _update_gm_meta_if_possible(gm: torch.fx.GraphModule, mod: torch.nn.Module) 
         gm.meta.update({"custom": mod.meta["custom"]})
 
 
-def node_inline_(call_mod_node: torch.fx.Node) -> Optional[torch.fx.GraphModule]:
+def node_inline_(call_mod_node: torch.fx.Node) -> torch.fx.GraphModule | None:
     """
     Inline the submodule of the given node into the parent module.
     Note: we only support the case where submodule takes tensors inputs.
@@ -759,7 +765,7 @@ def node_inline_(call_mod_node: torch.fx.Node) -> Optional[torch.fx.GraphModule]
     )
     output = [node for node in sub_gm.graph.nodes if node.op == "output"]
 
-    for ph, arg in zip(phs, call_mod_node.args):
+    for ph, arg in zip(phs, call_mod_node.args, strict=False):
         assert isinstance(arg, torch.fx.Node)
         node_replace_(ph, arg)
 
@@ -951,12 +957,11 @@ def placeholder_naming_pass(
         if isinstance(x, MappingKey):
             x = re.sub(r"[^a-zA-Z0-9]", "_", str(x.key))
             return x
-        elif isinstance(x, SequenceKey):
+        if isinstance(x, SequenceKey):
             return str(x.idx)
-        elif isinstance(x, GetAttrKey):
+        if isinstance(x, GetAttrKey):
             return x.name
-        else:
-            raise RuntimeError(f"Pytree key of type {type(x)} not handled for {x}")
+        raise RuntimeError(f"Pytree key of type {type(x)} not handled for {x}")
 
     name_map: dict[str, str] = {}
 
@@ -971,7 +976,9 @@ def placeholder_naming_pass(
     ]
 
     # use pytree path to name nested user inputs
-    for (arg_path, _arg), user_input_name in zip(flat_args_with_path, user_input_names):
+    for (arg_path, _arg), user_input_name in zip(
+        flat_args_with_path, user_input_names, strict=False
+    ):
         if user_input_name:
             _rename_without_collisions(
                 name_map,
@@ -1079,14 +1086,13 @@ def remove_proxy_from_state_dict(state_dict: dict, in_place: bool) -> dict:
             if hasattr(v, "proxy"):
                 delattr(state_dict[k], "proxy")
         return state_dict
-    else:
-        new_state_dict = {}
-        for k, v in state_dict.items():
-            if hasattr(v, "proxy"):
-                new_state_dict[k] = v.detach().clone()
-            else:
-                new_state_dict[k] = v
-        return new_state_dict
+    new_state_dict = {}
+    for k, v in state_dict.items():
+        if hasattr(v, "proxy"):
+            new_state_dict[k] = v.detach().clone()
+        else:
+            new_state_dict[k] = v
+    return new_state_dict
 
 
 def _detect_fake_mode_from_gm(
@@ -1286,10 +1292,9 @@ def _get_decomp_for_cia(op: "OperatorBase"):
             kernel.name(), torch._C.DispatchKey.CompositeImplicitAutograd
         ):
             return kernel._op_dk(dk, *args, **kwargs)
-        else:
-            raise AssertionError(
-                f"Expected {kernel} to have CompositeImplicitAutograd kernel"
-            )
+        raise AssertionError(
+            f"Expected {kernel} to have CompositeImplicitAutograd kernel"
+        )
 
     return functools.partial(_special_op_to_decompose_cia, kernel=op)
 
@@ -1310,7 +1315,7 @@ def _compiling_state_context():
 def _fakify_params_buffers(
     fake_mode: FakeTensorMode,
     mod: torch.nn.Module,
-) -> dict[str, Union[torch.Tensor, torch.nn.Parameter]]:
+) -> dict[str, torch.Tensor | torch.nn.Parameter]:
     params_buffers = {
         **dict(mod.named_parameters(remove_duplicate=False)),
         **dict(mod.named_buffers(remove_duplicate=False)),
@@ -1405,9 +1410,12 @@ def register_module_as_pytree_input_node(cls: type[torch.nn.Module]) -> None:
                 setattr(ret, name, copy_module(child))
             return ret
 
-        if any(v is not o for v, o in zip(values, flattened)):
+        if any(v is not o for v, o in zip(values, flattened, strict=False)):
             with torch.nn.utils.stateless._reparametrize_module(
-                obj, dict(zip(flat_names, values)), tie_weights=True, strict=True
+                obj,
+                dict(zip(flat_names, values, strict=False)),
+                tie_weights=True,
+                strict=True,
             ):
                 ret = copy_module(obj)
         else:
@@ -1416,7 +1424,9 @@ def register_module_as_pytree_input_node(cls: type[torch.nn.Module]) -> None:
 
     def default_flatten_fn_with_keys(obj: Any) -> tuple[list[Any], Context]:
         flattened, [flat_names, *args] = flatten_fn(obj)  # type: ignore[misc]
-        return [(MappingKey(k), v) for k, v in zip(flat_names, flattened)], [
+        return [
+            (MappingKey(k), v) for k, v in zip(flat_names, flattened, strict=False)
+        ], [
             flat_names,
             *args,
         ]

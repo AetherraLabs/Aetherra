@@ -4,7 +4,6 @@ import torch
 from torch import Tensor
 from torch._ops import ops
 
-
 __all__ = ["FloatFunctional", "FXFloatFunctional", "QFunctional"]
 
 

@@ -1,7 +1,7 @@
 # mypy: allow-untyped-defs
 # The Tensor classes are added to this module by python_tensor.cpp
 # A workaround to support both TorchScript and MyPy:
-from typing import Any, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -15,11 +15,10 @@ from .semi_structured import (
     to_sparse_semi_structured,
 )
 
-
 if TYPE_CHECKING:
     from torch.types import _dtype as DType
 
-    DimOrDims = Optional[Union[int, tuple[int, ...], list[int]]]
+    DimOrDims = Optional[int | tuple[int, ...] | list[int]]
 else:
     # The JIT doesn't understand Union, nor torch.dtype here
     DType = int
@@ -198,7 +197,7 @@ Examples::
 )
 
 
-def sum(input: Tensor, dim: DimOrDims = None, dtype: Optional[DType] = None) -> Tensor:
+def sum(input: Tensor, dim: DimOrDims = None, dtype: DType | None = None) -> Tensor:
     r"""Return the sum of each row of the given sparse tensor.
 
     Returns the sum of each row of the sparse tensor :attr:`input` in the given
@@ -258,13 +257,10 @@ def sum(input: Tensor, dim: DimOrDims = None, dtype: Optional[DType] = None) -> 
     if dtype is None:
         if dim is not None:
             return torch._sparse_sum(input, dim)
-        else:
-            return torch._sparse_sum(input)
-    else:
-        if dim is not None:
-            return torch._sparse_sum(input, dim, dtype=dtype)
-        else:
-            return torch._sparse_sum(input, dtype=dtype)
+        return torch._sparse_sum(input)
+    if dim is not None:
+        return torch._sparse_sum(input, dim, dtype=dtype)
+    return torch._sparse_sum(input, dtype=dtype)
 
 
 softmax = _add_docstr(
@@ -521,7 +517,7 @@ class check_sparse_tensor_invariants:
     # context manager support
     def __init__(self, enable=True):
         self.state = enable
-        self.saved_state: Optional[bool] = None
+        self.saved_state: bool | None = None
 
     def __enter__(self):
         if self.saved_state is not None:
@@ -664,7 +660,7 @@ def as_sparse_gradcheck(gradcheck):
                         )
                     else:
                         raise NotImplementedError(
-                            f'conversion of {d["layout"]} strided representation to tensor'
+                            f"conversion of {d['layout']} strided representation to tensor"
                         )
                 new_args.append(a)
             return tuple(new_args)

@@ -26,12 +26,8 @@ class ScriptRegistryLoader:
             with open(self.registry_path, encoding="utf-8") as f:
                 registry = json.load(f)
 
-            print(
-                f"✅ Script registry loaded successfully: {registry['registry_info']['name']}"
-            )
-            print(
-                f"📊 Total scripts: {registry['execution_statistics']['total_scripts']}"
-            )
+            print(f"✅ Script registry loaded successfully: {registry['registry_info']['name']}")
+            print(f"📊 Total scripts: {registry['execution_statistics']['total_scripts']}")
 
             # Store in memory for quick access
             self.registry = registry

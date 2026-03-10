@@ -4,7 +4,6 @@ import math
 import operator
 import weakref
 from collections.abc import Sequence
-from typing import Optional, Union
 
 import torch
 import torch.nn.functional as F
@@ -20,7 +19,6 @@ from torch.distributions.utils import (
 )
 from torch.nn.functional import pad, softplus
 from torch.types import _Number
-
 
 __all__ = [
     "AbsTransform",
@@ -97,7 +95,7 @@ class Transform:
 
     def __init__(self, cache_size: int = 0) -> None:
         self._cache_size = cache_size
-        self._inv: Optional[weakref.ReferenceType[Transform]] = None
+        self._inv: weakref.ReferenceType[Transform] | None = None
         if cache_size == 0:
             pass  # default behavior
         elif cache_size == 1:
@@ -373,7 +371,7 @@ class ComposeTransform(Transform):
 
         terms = []
         event_dim = self.domain.event_dim
-        for part, x, y in zip(self.parts, xs[:-1], xs[1:]):
+        for part, x, y in zip(self.parts, xs[:-1], xs[1:], strict=False):
             terms.append(
                 _sum_rightmost(
                     part.log_abs_det_jacobian(x, y), event_dim - part.domain.event_dim
@@ -749,8 +747,8 @@ class AffineTransform(Transform):
 
     def __init__(
         self,
-        loc: Union[Tensor, float],
-        scale: Union[Tensor, float],
+        loc: Tensor | float,
+        scale: Tensor | float,
         event_dim: int = 0,
         cache_size: int = 0,
     ) -> None:
@@ -803,7 +801,7 @@ class AffineTransform(Transform):
         return True
 
     @property
-    def sign(self) -> Union[Tensor, int]:  # type: ignore[override]
+    def sign(self) -> Tensor | int:  # type: ignore[override]
         if isinstance(self.scale, _Number):
             return 1 if float(self.scale) > 0 else -1 if float(self.scale) < 0 else 0
         return self.scale.sign()
@@ -1076,7 +1074,7 @@ class CatTransform(Transform):
         self,
         tseq: Sequence[Transform],
         dim: int = 0,
-        lengths: Optional[Sequence[int]] = None,
+        lengths: Sequence[int] | None = None,
         cache_size: int = 0,
     ) -> None:
         assert all(isinstance(t, Transform) for t in tseq)
@@ -1108,7 +1106,7 @@ class CatTransform(Transform):
         assert x.size(self.dim) == self.length
         yslices = []
         start = 0
-        for trans, length in zip(self.transforms, self.lengths):
+        for trans, length in zip(self.transforms, self.lengths, strict=False):
             xslice = x.narrow(self.dim, start, length)
             yslices.append(trans(xslice))
             start = start + length  # avoid += for jit compat
@@ -1119,7 +1117,7 @@ class CatTransform(Transform):
         assert y.size(self.dim) == self.length
         xslices = []
         start = 0
-        for trans, length in zip(self.transforms, self.lengths):
+        for trans, length in zip(self.transforms, self.lengths, strict=False):
             yslice = y.narrow(self.dim, start, length)
             xslices.append(trans.inv(yslice))
             start = start + length  # avoid += for jit compat
@@ -1132,7 +1130,7 @@ class CatTransform(Transform):
         assert y.size(self.dim) == self.length
         logdetjacs = []
         start = 0
-        for trans, length in zip(self.transforms, self.lengths):
+        for trans, length in zip(self.transforms, self.lengths, strict=False):
             xslice = x.narrow(self.dim, start, length)
             yslice = y.narrow(self.dim, start, length)
             logdetjac = trans.log_abs_det_jacobian(xslice, yslice)
@@ -1147,8 +1145,7 @@ class CatTransform(Transform):
         dim = dim + self.event_dim
         if dim < 0:
             return torch.cat(logdetjacs, dim=dim)
-        else:
-            return sum(logdetjacs)
+        return sum(logdetjacs)
 
     @property
     def bijective(self) -> bool:  # type: ignore[override]
@@ -1204,7 +1201,7 @@ class StackTransform(Transform):
         assert -x.dim() <= self.dim < x.dim()
         assert x.size(self.dim) == len(self.transforms)
         yslices = []
-        for xslice, trans in zip(self._slice(x), self.transforms):
+        for xslice, trans in zip(self._slice(x), self.transforms, strict=False):
             yslices.append(trans(xslice))
         return torch.stack(yslices, dim=self.dim)
 
@@ -1212,7 +1209,7 @@ class StackTransform(Transform):
         assert -y.dim() <= self.dim < y.dim()
         assert y.size(self.dim) == len(self.transforms)
         xslices = []
-        for yslice, trans in zip(self._slice(y), self.transforms):
+        for yslice, trans in zip(self._slice(y), self.transforms, strict=False):
             xslices.append(trans.inv(yslice))
         return torch.stack(xslices, dim=self.dim)
 
@@ -1224,7 +1221,9 @@ class StackTransform(Transform):
         logdetjacs = []
         yslices = self._slice(y)
         xslices = self._slice(x)
-        for xslice, yslice, trans in zip(xslices, yslices, self.transforms):
+        for xslice, yslice, trans in zip(
+            xslices, yslices, self.transforms, strict=False
+        ):
             logdetjacs.append(trans.log_abs_det_jacobian(xslice, yslice))
         return torch.stack(logdetjacs, dim=self.dim)
 
@@ -1269,7 +1268,7 @@ class CumulativeDistributionTransform(Transform):
         self.distribution = distribution
 
     @property
-    def domain(self) -> Optional[constraints.Constraint]:  # type: ignore[override]
+    def domain(self) -> constraints.Constraint | None:  # type: ignore[override]
         return self.distribution.support
 
     def _call(self, x):

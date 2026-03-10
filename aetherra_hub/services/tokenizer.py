@@ -4,7 +4,7 @@ from __future__ import annotations
 
 # Standard library imports
 import os
-from typing import Callable
+from collections.abc import Callable
 
 # Local imports
 from ..config import settings

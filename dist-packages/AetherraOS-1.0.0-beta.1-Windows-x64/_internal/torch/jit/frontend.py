@@ -58,20 +58,21 @@ from torch._C._jit_tree_views import (
     WithItem,
 )
 from torch._jit_internal import (  # noqa: F401
-    _is_drop_fn,
     FunctionModifiers,
+    _is_drop_fn,
     is_static_fn,
     should_drop,
+)
+from torch._sources import (
+    ParsedDef as _ParsedDef,
 )
 from torch._sources import (
     get_source_lines_and_file,
     make_source_context,
     parse_def,
-    ParsedDef as _ParsedDef,
 )
 from torch.jit._dataclass_impls import DATACLASS_MAGIC_METHODS
 from torch.jit._monkeytype_config import get_qualified_name, monkeytype_trace
-
 
 _IS_ASTUNPARSE_INSTALLED = False
 try:
@@ -699,8 +700,7 @@ class StmtBuilder(Builder):
             # If a statement is a string literal expression,
             # then it is a docstring. Just ignore it.
             return None
-        else:
-            return ExprStmt(build_expr(ctx, value))
+        return ExprStmt(build_expr(ctx, value))
 
     @staticmethod
     def build_Assign(ctx, stmt):
@@ -947,11 +947,11 @@ class ExprBuilder(Builder):
             )
         if expr.id == "True":
             return TrueLiteral(r)
-        elif expr.id == "False":
+        if expr.id == "False":
             return FalseLiteral(r)
-        elif expr.id == "None":
+        if expr.id == "None":
             return NoneLiteral(r)
-        elif expr.id == "Ellipsis":
+        if expr.id == "Ellipsis":
             return Dots(r)
         return Var(Ident(r, expr.id))
 
@@ -962,14 +962,13 @@ class ExprBuilder(Builder):
         )
         if expr.value is True:
             return TrueLiteral(r)
-        elif expr.value is False:
+        if expr.value is False:
             return FalseLiteral(r)
-        elif expr.value is None:
+        if expr.value is None:
             return NoneLiteral(r)
-        elif expr.value == Ellipsis:
+        if expr.value == Ellipsis:
             return Dots(r)
-        else:
-            raise ValueError("Name constant value unsupported: " + str(expr.value))
+        raise ValueError("Name constant value unsupported: " + str(expr.value))
 
     @staticmethod
     def build_BinOp(ctx, expr):
@@ -1040,7 +1039,7 @@ class ExprBuilder(Builder):
     def build_Compare(ctx, expr):
         operands = [build_expr(ctx, e) for e in [expr.left] + list(expr.comparators)]
         result = None
-        for lhs, op_, rhs in zip(operands, expr.ops, operands[1:]):
+        for lhs, op_, rhs in zip(operands, expr.ops, operands[1:], strict=False):
             op = type(op_)
             op_token = ExprBuilder.cmpop_map.get(op)
             r = ctx.make_raw_range(lhs.range().end, rhs.range().start)
@@ -1129,31 +1128,30 @@ class ExprBuilder(Builder):
                     tup = TupleLiteral(r, [])
                     indices.append(tup)
                 return Subscript(base, indices)
-            else:
-                return Subscript(base, [build_expr(ctx, expr.slice.value)])
-        elif sub_type is ast.Slice:
+            return Subscript(base, [build_expr(ctx, expr.slice.value)])
+        if sub_type is ast.Slice:
             return Subscript(base, [build_SliceExpr(ctx, base, expr.slice)])
-        elif sub_type is ast.ExtSlice:
+        if sub_type is ast.ExtSlice:
             return Subscript(base, build_ExtSlice(ctx, base, expr.slice))
-        else:  # In Python3.9 array indicies are not wrapped in ast.Index
-            if sub_type is ast.Tuple:
-                # N-dimensional indexing using Tuple: x[(i, j, k)] is equivalent to x[i, j, k]
-                indices = []
-                for index_expr in expr.slice.elts:
-                    if isinstance(index_expr, ast.Slice):
-                        indices.append(build_SliceExpr(ctx, base, index_expr))
-                    else:
-                        indices.append(build_expr(ctx, index_expr))
-                # Special-case logic for `typing.Tuple[()]`
-                if not indices:
-                    # See note above r.e. magic number
-                    r = ctx.make_range(
-                        expr.lineno, expr.slice.col_offset, expr.slice.col_offset + 2
-                    )
-                    tup = TupleLiteral(r, [])
-                    indices.append(tup)
-                return Subscript(base, indices)
-            return Subscript(base, [build_expr(ctx, expr.slice)])
+        # In Python3.9 array indicies are not wrapped in ast.Index
+        if sub_type is ast.Tuple:
+            # N-dimensional indexing using Tuple: x[(i, j, k)] is equivalent to x[i, j, k]
+            indices = []
+            for index_expr in expr.slice.elts:
+                if isinstance(index_expr, ast.Slice):
+                    indices.append(build_SliceExpr(ctx, base, index_expr))
+                else:
+                    indices.append(build_expr(ctx, index_expr))
+            # Special-case logic for `typing.Tuple[()]`
+            if not indices:
+                # See note above r.e. magic number
+                r = ctx.make_range(
+                    expr.lineno, expr.slice.col_offset, expr.slice.col_offset + 2
+                )
+                tup = TupleLiteral(r, [])
+                indices.append(tup)
+            return Subscript(base, indices)
+        return Subscript(base, [build_expr(ctx, expr.slice)])
 
     @staticmethod
     def build_List(ctx, expr):
@@ -1197,15 +1195,14 @@ class ExprBuilder(Builder):
             return ExprBuilder.build_NameConstant(ctx, expr)
         if isinstance(value, (int, float, complex)):
             return ExprBuilder.build_Num(ctx, expr)
-        elif isinstance(value, str):
+        if isinstance(value, str):
             return ExprBuilder.build_Str(ctx, expr)
-        elif isinstance(value, type(Ellipsis)):
+        if isinstance(value, type(Ellipsis)):
             return ExprBuilder.build_Ellipsis(ctx, expr)
-        else:
-            error_range = ctx.make_range(
-                expr.lineno, expr.col_offset, expr.col_offset + len(str(value))
-            )
-            raise FrontendError(error_range, "Unknown Constant expression type")
+        error_range = ctx.make_range(
+            expr.lineno, expr.col_offset, expr.col_offset + len(str(value))
+        )
+        raise FrontendError(error_range, "Unknown Constant expression type")
 
     @staticmethod
     def build_Str(ctx, expr):

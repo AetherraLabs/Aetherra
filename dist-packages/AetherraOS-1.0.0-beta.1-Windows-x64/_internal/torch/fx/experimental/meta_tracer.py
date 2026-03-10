@@ -2,7 +2,8 @@
 import builtins
 import functools
 import warnings
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable
+from typing import Any
 
 import torch
 import torch.fx
@@ -66,8 +67,7 @@ def gen_constructor_wrapper(target):
 
         if proxy is not None:
             return proxy.tracer.create_proxy("call_function", target, args, kwargs)
-        else:
-            return target(*args, **kwargs)
+        return target(*args, **kwargs)
 
     return wrapper, target
 
@@ -236,8 +236,7 @@ class MetaTracer(torch.fx.Tracer):
     def getattr(self, attr, attr_val, parameter_proxy_cache):
         if getattr(self, "_disable_module_getattr", False):
             return attr_val
-        else:
-            return super().getattr(attr, attr_val, parameter_proxy_cache)
+        return super().getattr(attr, attr_val, parameter_proxy_cache)
 
     def call_module(self, m, forward, args, kwargs):
         self.orig_forward = forward
@@ -298,9 +297,9 @@ class MetaTracer(torch.fx.Tracer):
 
 
 def symbolic_trace(
-    root: Union[torch.nn.Module, Callable[..., Any]],
-    meta_args: Optional[dict[str, torch.Tensor]] = None,
-    concrete_args: Optional[dict[str, Any]] = None,
+    root: torch.nn.Module | Callable[..., Any],
+    meta_args: dict[str, torch.Tensor] | None = None,
+    concrete_args: dict[str, Any] | None = None,
 ) -> torch.fx.GraphModule:
     tracer = MetaTracer()
     graph = tracer.trace(root, meta_args, concrete_args)  # type: ignore[arg-type]

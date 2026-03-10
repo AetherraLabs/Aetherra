@@ -7,10 +7,10 @@ from torch.testing import make_tensor  # noqa: F401
 from torch.testing._internal.opinfo.core import (  # noqa: F401
     BinaryUfuncInfo,
     ErrorInput,
-    generate_elementwise_binary_tensors,
     ReductionOpInfo,
-    sample_inputs_reduction,
     SampleInput,
+    generate_elementwise_binary_tensors,
+    sample_inputs_reduction,
 )
 
 
@@ -580,21 +580,21 @@ def _validate_sample_input_elementwise_binary_sparse_mul(sample):
                 " tensors with sparse_dim[(][)]!=2 is not supported"
             ),
         )
-    elif layout is torch.sparse_csc and t_args[0].ndim > 0:
+    if layout is torch.sparse_csc and t_args[0].ndim > 0:
         return ErrorInput(
             sample, error_regex="Expected result Tensor to be of format CSR"
         )
-    elif layout is torch.sparse_bsr and t_args[0].ndim > 0:
+    if layout is torch.sparse_bsr and t_args[0].ndim > 0:
         return ErrorInput(
             sample,
             error_regex="empty_sparse_compressed expected sparse compressed [(]non-block[)] tensor layout but got SparseBsr",
         )
-    elif layout is torch.sparse_bsc and t_args[0].ndim > 0:
+    if layout is torch.sparse_bsc and t_args[0].ndim > 0:
         return ErrorInput(
             sample,
             error_regex="empty_sparse_compressed expected sparse compressed [(]non-block[)] tensor layout but got SparseBsc",
         )
-    elif (
+    if (
         layout is torch.sparse_coo
         and dtype is torch.bool
         and t_args[0].ndim > 0
@@ -605,7 +605,7 @@ def _validate_sample_input_elementwise_binary_sparse_mul(sample):
         return ErrorInput(
             sample, error_regex="\"addcmul_cpu_out\" not implemented for 'Bool'"
         )
-    elif (
+    if (
         layout in {torch.sparse_coo, torch.sparse_csr}
         and dtype is torch.bool
         and t_inp._nnz() > 0
@@ -616,17 +616,17 @@ def _validate_sample_input_elementwise_binary_sparse_mul(sample):
         return ErrorInput(
             sample, error_regex="\"mul_out_sparse\" not implemented for 'Bool'"
         )
-    elif (
+    if (
         layout is torch.sparse_csr
         and t_args[0].layout is torch.strided
-        and 0 < t_args[0].ndim
+        and t_args[0].ndim > 0
         and t_args[0].ndim < t_inp.ndim
     ):
         return ErrorInput(
             sample, error_regex="sparse_mask_sparse_csr expects self to be 2D"
         )
-    elif layout is torch.sparse_csr and (
-        (t_args[0].layout is torch.strided and 0 < t_args[0].ndim)
+    if layout is torch.sparse_csr and (
+        (t_args[0].layout is torch.strided and t_args[0].ndim > 0)
         or (t_args[0].layout is layout and t_inp.shape != t_args[0].shape)
     ):
         return ErrorInput(
@@ -636,7 +636,7 @@ def _validate_sample_input_elementwise_binary_sparse_mul(sample):
                 " and shape of sparse dimensions"
             ),
         )
-    elif (
+    if (
         layout is torch.sparse_csr
         and t_inp.dense_dim() > 0
         and t_inp._nnz() > 0
@@ -914,11 +914,10 @@ def validate_sample_input_sparse(op_info, sample, check_validate=False):
         return _validate_sample_input_sparse_reduction(
             op_info, sample, check_validate=check_validate
         )
-    elif isinstance(op_info, BinaryUfuncInfo):
+    if isinstance(op_info, BinaryUfuncInfo):
         return _validate_sample_input_sparse_elementwise_binary_operation(
             op_info, sample, check_validate=check_validate
         )
-    else:
-        return _validate_sample_input_sparse_default(
-            op_info, sample, check_validate=check_validate
-        )
+    return _validate_sample_input_sparse_default(
+        op_info, sample, check_validate=check_validate
+    )

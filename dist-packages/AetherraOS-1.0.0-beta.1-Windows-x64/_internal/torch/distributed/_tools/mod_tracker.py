@@ -1,7 +1,7 @@
 # mypy: allow-untyped-defs
 import warnings
 import weakref
-from typing import Callable, Optional
+from collections.abc import Callable
 
 import torch
 from torch.autograd.graph import register_multi_grad_hook
@@ -10,7 +10,6 @@ from torch.nn.modules.module import (
     register_module_forward_pre_hook,
 )
 from torch.utils._pytree import tree_flatten
-
 
 __all__ = ["ModTracker"]
 
@@ -97,10 +96,10 @@ class ModTracker:
 
     def register_user_hooks(
         self,
-        pre_fw_hook: Optional[Callable] = None,
-        post_fw_hook: Optional[Callable] = None,
-        pre_bw_hook: Optional[Callable] = None,
-        post_bw_hook: Optional[Callable] = None,
+        pre_fw_hook: Callable | None = None,
+        post_fw_hook: Callable | None = None,
+        pre_bw_hook: Callable | None = None,
+        post_bw_hook: Callable | None = None,
     ):
         """
         Registers user-specified hooks to be called before/after the forward/backward pass for each

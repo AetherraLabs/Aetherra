@@ -17,7 +17,7 @@ cognitive evolution in the Aetherra AI Operating System.
 import math
 import time
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 
 class QuantumMetaState:
@@ -26,7 +26,7 @@ class QuantumMetaState:
     """
 
     def __init__(
-        self, state_id: str, amplitude: complex, meta_knowledge: Dict[str, Any]
+        self, state_id: str, amplitude: complex, meta_knowledge: dict[str, Any]
     ):
         self.state_id = state_id
         self.amplitude = amplitude
@@ -39,7 +39,7 @@ class QuantumMetaState:
         """Calculate measurement probability for this state."""
         return abs(self.amplitude) ** 2
 
-    def collapse(self) -> Dict[str, Any]:
+    def collapse(self) -> dict[str, Any]:
         """Collapse quantum state to classical meta-knowledge."""
         self.measurement_count += 1
         return {
@@ -71,7 +71,7 @@ class QuantumMetaLearner:
         self.decoherence_rate = 0.05
         self.entanglement_network = {}
 
-    def create_quantum_superposition(self, meta_concepts: List[Dict[str, Any]]) -> str:
+    def create_quantum_superposition(self, meta_concepts: list[dict[str, Any]]) -> str:
         """
         Create a quantum superposition of meta-cognitive concepts.
         """
@@ -147,7 +147,7 @@ class QuantumMetaLearner:
 
         return interference_id
 
-    def measure_quantum_knowledge(self, state_id: str) -> List[Dict[str, Any]]:
+    def measure_quantum_knowledge(self, state_id: str) -> list[dict[str, Any]]:
         """
         Perform quantum measurement to collapse superposition into classical knowledge.
         """
@@ -191,8 +191,8 @@ class QuantumMetaLearner:
         return measured_knowledge
 
     def quantum_entanglement_learning(
-        self, concept_pairs: List[tuple[str, str]]
-    ) -> Dict[str, Any]:
+        self, concept_pairs: list[tuple[str, str]]
+    ) -> dict[str, Any]:
         """
         Create quantum entanglement between related meta-cognitive concepts.
         """
@@ -250,7 +250,7 @@ class QuantumMetaLearner:
 
         return entanglement_results
 
-    def quantum_meta_evolution(self) -> Dict[str, Any]:
+    def quantum_meta_evolution(self) -> dict[str, Any]:
         """
         Evolve quantum meta-learning capabilities through quantum evolution.
         """
@@ -301,7 +301,7 @@ class QuantumMetaLearner:
 
         return evolution_metrics
 
-    def generate_quantum_meta_summary(self) -> Dict[str, Any]:
+    def generate_quantum_meta_summary(self) -> dict[str, Any]:
         """Generate comprehensive summary of quantum meta-learning capabilities."""
         total_concepts = sum(len(state) for state in self.quantum_states.values())
         total_entanglements = sum(
@@ -333,12 +333,11 @@ class QuantumMetaLearner:
 
         if score >= 80:
             return "quantum_transcendent"
-        elif score >= 60:
+        if score >= 60:
             return "quantum_advanced"
-        elif score >= 40:
+        if score >= 40:
             return "quantum_intermediate"
-        else:
-            return "quantum_developing"
+        return "quantum_developing"
 
     def _calculate_quantum_advantage(self) -> float:
         """Calculate quantum advantage over classical meta-learning."""

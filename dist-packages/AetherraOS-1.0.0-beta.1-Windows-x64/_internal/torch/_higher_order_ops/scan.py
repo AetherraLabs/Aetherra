@@ -1,8 +1,8 @@
 # mypy: allow-untyped-defs
 import functools
 import itertools
-from collections.abc import Sequence
-from typing import Any, Callable, Optional
+from collections.abc import Callable, Sequence
+from typing import Any
 
 import torch
 import torch._prims_common as utils
@@ -23,12 +23,11 @@ from torch._higher_order_ops.utils import (
 from torch._ops import HigherOrderOperator
 from torch._subclasses.fake_tensor import FakeTensorMode
 from torch.fx.experimental.proxy_tensor import (
-    disable_proxy_modes_tracing,
     ProxyTorchDispatchMode,
+    disable_proxy_modes_tracing,
     track_tensor_tree,
 )
 from torch.utils._python_dispatch import _get_current_dispatch_mode
-
 
 aten = torch._ops.ops.aten
 
@@ -36,9 +35,9 @@ aten = torch._ops.ops.aten
 def wrap_combine_fn_flat(
     *args, combine_fn, spec_init, spec_xs, num_init_leaves, num_inp_leaves
 ):
-    assert len(args) == (
-        num_init_leaves + num_inp_leaves
-    ), f"Combin_fn received wrong number of arguments, expected {num_init_leaves + num_inp_leaves}, but got {len(args)}"
+    assert len(args) == (num_init_leaves + num_inp_leaves), (
+        f"Combin_fn received wrong number of arguments, expected {num_init_leaves + num_inp_leaves}, but got {len(args)}"
+    )
     carry = pytree.tree_unflatten(args[:num_init_leaves], spec_init)
     xs = pytree.tree_unflatten(args[num_init_leaves:], spec_xs)
     return combine_fn(carry, xs)
@@ -67,22 +66,21 @@ def get_tensor_mask(tensor_list: list[Any]) -> list[bool]:
 
 
 def mask_list(
-    mask: list[bool], inp: list[Any], other: Optional[list[Any]] = None
+    mask: list[bool], inp: list[Any], other: list[Any] | None = None
 ) -> list[Any]:
     # Masks elements on an `inp` list.
     # If other is None, then the elements of the `inp` list where the mask is False are removed
     # If other is not None, then the elements of the `inp` list where the mask is False are
     # replaced with the elements of the `other` list
-    assert len(mask) == len(
-        inp
-    ), "The length of the mask needs to be identical to the length of the input"
+    assert len(mask) == len(inp), (
+        "The length of the mask needs to be identical to the length of the input"
+    )
     if other is not None:
-        assert len(inp) == len(
-            other
-        ), "If an input and an other list is provided, they need to have the same length"
-        return [i if m else o for m, i, o in zip(mask, inp, other)]
-    else:
-        return [i for m, i in zip(mask, inp) if m]
+        assert len(inp) == len(other), (
+            "If an input and an other list is provided, they need to have the same length"
+        )
+        return [i if m else o for m, i, o in zip(mask, inp, other, strict=False)]
+    return [i for m, i in zip(mask, inp, strict=False) if m]
 
 
 def first_slice_copy_with_grad(li: list[Any]) -> list[Any]:
@@ -97,9 +95,9 @@ def first_slice_copy_with_grad(li: list[Any]) -> list[Any]:
 
 def split_into_chunks(iterable: Sequence[Any], chunk_sizes: list[int]) -> list[Any]:
     it = iter(iterable)
-    assert sum(chunk_sizes) == len(
-        iterable
-    ), "the sum of all chunks needs to match the length of the iterable."
+    assert sum(chunk_sizes) == len(iterable), (
+        "the sum of all chunks needs to match the length of the iterable."
+    )
     return [list(itertools.islice(it, size)) for size in chunk_sizes]
 
 
@@ -262,9 +260,9 @@ class ScanOp(HigherOrderOperator):
         # the additional_inputs being a list. See https://github.com/pytorch/pytorch/issues/145785
         # Once this issue is resolved, the assertion should only allow tuples
         # and the tuple cast should be removed
-        assert isinstance(
-            additional_inputs, (tuple, list)
-        ), "additional_inputs must be a tuple."
+        assert isinstance(additional_inputs, (tuple, list)), (
+            "additional_inputs must be a tuple."
+        )
         additional_inputs = (
             tuple(additional_inputs)
             if isinstance(additional_inputs, list)
@@ -322,7 +320,7 @@ def generic_scan(operator, init, xs, dim=0, additional_inputs=()):
 
         def store_out_in_outs(out, ind):
             # Store the intermediate out in the outs matrix
-            for o, x, idx in zip(outs, out, idxs):
+            for o, x, idx in zip(outs, out, idxs, strict=False):
                 # o: (num_elems, M, N ...)
                 # x: (M, N, ...) -> (1, M, N)
                 # ind * idx: (1, M, N,) with values to be ind
@@ -635,7 +633,7 @@ class ScanAutogradOp(torch.autograd.Function):
             # This requires to concatenate the init and the carries
             return [
                 torch.cat([torch.unsqueeze(i, 0), c[:-1]], dim=0)
-                for i, c in zip(init, carries)
+                for i, c in zip(init, carries, strict=False)
             ]
 
         def initialize_g_additional_inputs(
@@ -644,7 +642,9 @@ class ScanAutogradOp(torch.autograd.Function):
             # The initial gradients for the additional_inputs are all zeros
             g_additional_inputs = [
                 torch.zeros_like(ai) if ai_tm else None
-                for ai_tm, ai in zip(additional_inputs_tensor_mask, additional_inputs)
+                for ai_tm, ai in zip(
+                    additional_inputs_tensor_mask, additional_inputs, strict=False
+                )
             ]
             return g_additional_inputs
 
@@ -700,6 +700,7 @@ class ScanAutogradOp(torch.autograd.Function):
                     additional_inputs_tensor_mask,
                     carried_g_additional_input,
                     g_additional_inputs_t,
+                    strict=False,
                 )
             ]
 
@@ -721,7 +722,7 @@ class ScanAutogradOp(torch.autograd.Function):
             masked_additional_inputs = [
                 a.clone() if add_inp_tm else None
                 for add_inp_tm, a in zip(
-                    additional_inputs_tensor_mask, additional_inputs
+                    additional_inputs_tensor_mask, additional_inputs, strict=False
                 )
             ]
 

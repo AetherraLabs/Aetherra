@@ -2,12 +2,12 @@
 r"""Weight Normalization from https://arxiv.org/abs/1602.07868."""
 
 from typing import Any, TypeVar
+
 from typing_extensions import deprecated
 
 from torch import _weight_norm, norm_except_dim
 from torch.nn.modules import Module
 from torch.nn.parameter import Parameter, UninitializedParameter
-
 
 __all__ = ["WeightNorm", "weight_norm", "remove_weight_norm"]
 

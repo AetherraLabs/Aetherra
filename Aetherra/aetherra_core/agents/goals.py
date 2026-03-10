@@ -122,9 +122,7 @@ class LyrixaGoalSystem:
                             due_date=datetime.fromisoformat(goal_data["due_date"])
                             if goal_data.get("due_date")
                             else None,
-                            completion_date=datetime.fromisoformat(
-                                goal_data["completion_date"]
-                            )
+                            completion_date=datetime.fromisoformat(goal_data["completion_date"])
                             if goal_data.get("completion_date")
                             else None,
                             progress=goal_data.get("progress", 0.0),
@@ -144,20 +142,14 @@ class LyrixaGoalSystem:
                             title=subtask_data["title"],
                             description=subtask_data["description"],
                             completed=subtask_data.get("completed", False),
-                            created_at=datetime.fromisoformat(
-                                subtask_data["created_at"]
-                            ),
-                            completed_at=datetime.fromisoformat(
-                                subtask_data["completed_at"]
-                            )
+                            created_at=datetime.fromisoformat(subtask_data["created_at"]),
+                            completed_at=datetime.fromisoformat(subtask_data["completed_at"])
                             if subtask_data.get("completed_at")
                             else None,
                         )
                         self.subtasks[subtask.id] = subtask
 
-                print(
-                    f"✅ Loaded {len(self.goals)} goals and {len(self.subtasks)} subtasks"
-                )
+                print(f"✅ Loaded {len(self.goals)} goals and {len(self.subtasks)} subtasks")
 
             except Exception as e:
                 print(f"❌ Failed to load goals: {e}")
@@ -285,9 +277,7 @@ class LyrixaGoalSystem:
         goal = self.goals[goal_id]
 
         # Delete associated subtasks
-        subtasks_to_delete = [
-            st_id for st_id, st in self.subtasks.items() if st.goal_id == goal_id
-        ]
+        subtasks_to_delete = [st_id for st_id, st in self.subtasks.items() if st.goal_id == goal_id]
         for subtask_id in subtasks_to_delete:
             del self.subtasks[subtask_id]
 
@@ -302,13 +292,9 @@ class LyrixaGoalSystem:
         if goal_id not in self.goals:
             return ""
 
-        subtask_id = (
-            f"subtask_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{len(self.subtasks)}"
-        )
+        subtask_id = f"subtask_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{len(self.subtasks)}"
 
-        subtask = Subtask(
-            id=subtask_id, goal_id=goal_id, title=title, description=description
-        )
+        subtask = Subtask(id=subtask_id, goal_id=goal_id, title=title, description=description)
 
         self.subtasks[subtask_id] = subtask
 
@@ -346,9 +332,7 @@ class LyrixaGoalSystem:
             return
 
         goal = self.goals[goal_id]
-        goal_subtasks = [
-            self.subtasks[st_id] for st_id in goal.subtasks if st_id in self.subtasks
-        ]
+        goal_subtasks = [self.subtasks[st_id] for st_id in goal.subtasks if st_id in self.subtasks]
 
         if goal_subtasks:
             completed_count = sum(1 for st in goal_subtasks if st.completed)
@@ -390,9 +374,7 @@ class LyrixaGoalSystem:
             GoalPriority.MEDIUM: 2,
             GoalPriority.LOW: 1,
         }
-        goals.sort(
-            key=lambda g: (priority_order[g.priority], g.created_at), reverse=True
-        )
+        goals.sort(key=lambda g: (priority_order[g.priority], g.created_at), reverse=True)
 
         return goals
 
@@ -412,22 +394,14 @@ class LyrixaGoalSystem:
     def get_goal_statistics(self) -> Dict[str, Any]:
         """Get goal statistics"""
         total_goals = len(self.goals)
-        active_goals = len(
-            [g for g in self.goals.values() if g.status == GoalStatus.ACTIVE]
-        )
-        completed_goals = len(
-            [g for g in self.goals.values() if g.status == GoalStatus.COMPLETED]
-        )
+        active_goals = len([g for g in self.goals.values() if g.status == GoalStatus.ACTIVE])
+        completed_goals = len([g for g in self.goals.values() if g.status == GoalStatus.COMPLETED])
         overdue_goals = len(self.get_overdue_goals())
 
         avg_progress = 0.0
         if active_goals > 0:
             avg_progress = (
-                sum(
-                    g.progress
-                    for g in self.goals.values()
-                    if g.status == GoalStatus.ACTIVE
-                )
+                sum(g.progress for g in self.goals.values() if g.status == GoalStatus.ACTIVE)
                 / active_goals
             )
 
@@ -436,9 +410,7 @@ class LyrixaGoalSystem:
             "active_goals": active_goals,
             "completed_goals": completed_goals,
             "overdue_goals": overdue_goals,
-            "completion_rate": completed_goals / total_goals
-            if total_goals > 0
-            else 0.0,
+            "completion_rate": completed_goals / total_goals if total_goals > 0 else 0.0,
             "average_progress": avg_progress,
             "total_subtasks": len(self.subtasks),
         }

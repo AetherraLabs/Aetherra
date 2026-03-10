@@ -56,9 +56,7 @@ class SelfQuestionGeneratorAgent:
 
         logger.info("❓ Self Question Generator Agent initialized")
 
-    def generate_self_questions(
-        self, domain: Optional[str] = None, count: int = 3
-    ) -> List[str]:
+    def generate_self_questions(self, domain: Optional[str] = None, count: int = 3) -> List[str]:
         """Generate self-reflective questions"""
         if domain and domain in self.question_templates:
             questions = random.sample(
@@ -90,8 +88,7 @@ class SelfQuestionGeneratorAgent:
         return {
             "total_questions": self.questions_generated,
             "total_reflections": self.reflections_triggered,
-            "reflection_rate": self.reflections_triggered
-            / max(1, self.questions_generated),
+            "reflection_rate": self.reflections_triggered / max(1, self.questions_generated),
         }
 
     def get_status(self) -> Dict[str, Any]:

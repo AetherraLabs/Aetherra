@@ -126,9 +126,7 @@ def has_capability(requester: str, capability: str) -> bool:
         logger.warning("Capability denied (strict): %s -> %s", requester, capability)
         return False
     if not allowed:
-        logger.info(
-            "Capability denied (no explicit grant): %s -> %s", requester, capability
-        )
+        logger.info("Capability denied (no explicit grant): %s -> %s", requester, capability)
         # Enforce deny by default unless permissive override set
         if not os.environ.get("AETHERRA_CAPABILITIES_PERMISSIVE"):
             return False

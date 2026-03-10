@@ -4,14 +4,12 @@ import math
 import os
 import weakref
 from functools import lru_cache
-from typing import Optional
 
 import torch
 from torch._dynamo.utils import warn_once
 from torch.utils._triton import has_triton
 
 from ._triton_ops_meta import get_meta
-
 
 TORCH_SPARSE_BSR_SCATTER_MM_LRU_CACHE_SIZE = int(
     os.getenv("TORCH_SPARSE_BSR_SCATTER_MM_LRU_CACHE_SIZE", 2)
@@ -100,8 +98,7 @@ def make_triton_contiguous(t):
         # TODO: investigate if contiguity along other axes than the
         # last one can be beneficial for performance
         return t.contiguous()
-    else:
-        return t
+    return t
 
 
 def broadcast_batch_dims(f_name, *tensors):
@@ -121,7 +118,7 @@ def slicer(dim, slice_range, *tensors):
 def multidim_slicer(dims, slices, *tensors):
     for t in tensors:
         s = [slice(None)] * t.dim()
-        for d, d_slice in zip(dims, slices):
+        for d, d_slice in zip(dims, slices, strict=False):
             if d is not None:
                 s[d] = d_slice
         yield t[tuple(s)]
@@ -140,7 +137,7 @@ def grid_partitioner(full_grid, grid_blocks, tensor_dims_map):
     import itertools
 
     def generate_grid_points():
-        for fg, mg in zip(full_grid, grid_blocks):
+        for fg, mg in zip(full_grid, grid_blocks, strict=False):
             yield range(0, fg, mg)
 
     def generate_sliced_tensors(slices):
@@ -149,9 +146,10 @@ def grid_partitioner(full_grid, grid_blocks, tensor_dims_map):
 
     for grid_point in itertools.product(*generate_grid_points()):
         grid = [
-            min(fg - gp, mg) for fg, gp, mg in zip(full_grid, grid_point, grid_blocks)
+            min(fg - gp, mg)
+            for fg, gp, mg in zip(full_grid, grid_point, grid_blocks, strict=False)
         ]
-        slices = [slice(gp, gp + g) for gp, g in zip(grid_point, grid)]
+        slices = [slice(gp, gp + g) for gp, g in zip(grid_point, grid, strict=False)]
         # grid_points are iterated in a "contiguous" order, i.e.
         # left dimensions traversed slower than right dimensions.
         # This order is reversed for CUDA grids.
@@ -168,12 +166,12 @@ def launch_kernel(kernel, tensor_dims_map, full_grid, grid_blocks=None):
         def valid_grid_dim(g, mg):
             if g is None:
                 return mg
-            else:
-                # grid must be at least 1 and no greater than mg
-                return max(1, min(g, mg))
+            # grid must be at least 1 and no greater than mg
+            return max(1, min(g, mg))
 
         grid_blocks = tuple(
-            valid_grid_dim(g, mg) for g, mg in zip(grid_blocks, cuda_max_grid)
+            valid_grid_dim(g, mg)
+            for g, mg in zip(grid_blocks, cuda_max_grid, strict=False)
         )  # type: ignore[assignment]
 
     for grid, *sliced_tensors in grid_partitioner(
@@ -390,7 +388,7 @@ def scatter_mm(blocks, others, indices_data, *, accumulators=None):
             _scatter_mm2(blocks, others, c_offsets, pq, accumulators)
         return accumulators
 
-    elif indices_format == "bsr_strided_mm":
+    if indices_format == "bsr_strided_mm":
         others_shape = others.shape
         others = as1Dbatch(others)
 
@@ -440,7 +438,7 @@ def scatter_mm(blocks, others, indices_data, *, accumulators=None):
             )
         return accumulators.view(accumulators_shape)
 
-    elif indices_format == "bsr_strided_mm_compressed":
+    if indices_format == "bsr_strided_mm_compressed":
         others_shape = others.shape
         others = as1Dbatch(others)
 
@@ -493,8 +491,7 @@ def scatter_mm(blocks, others, indices_data, *, accumulators=None):
             )
         return accumulators.view(accumulators_shape)
 
-    else:
-        raise NotImplementedError(indices_format)
+    raise NotImplementedError(indices_format)
 
 
 def scatter_mm_meta(
@@ -708,9 +705,7 @@ def scatter_mm_meta(
         TILE_N = min(64 if Ns < 512 else 32, Ns)
     num_stages = num_stages or 1
     if num_warps is None:
-        if min(M, N) > 1024:
-            num_warps = {16: 1, 32: 1, 64: 2}.get(Ms, 4)
-        elif min(M, N) == 1024:
+        if min(M, N) > 1024 or min(M, N) == 1024:
             num_warps = {16: 1, 32: 1, 64: 2}.get(Ms, 4)
         elif min(M, N) == 256:
             num_warps = {16: 1, 32: 4}.get(Ms, 4)
@@ -718,8 +713,8 @@ def scatter_mm_meta(
             num_warps = {16: 1, 32: 2}.get(Ms, 4)
     GROUP_SIZE = GROUP_SIZE or 4
 
-    assert TILE_M <= Ms, dict(TILE_M=TILE_M, Ms=Ms)
-    assert TILE_N <= Ns, dict(TILE_N=TILE_N, Ns=Ns)
+    assert Ms >= TILE_M, dict(TILE_M=TILE_M, Ms=Ms)
+    assert Ns >= TILE_N, dict(TILE_N=TILE_N, Ns=Ns)
     assert Ms <= M, dict(M=M, Ms=Ms)
     assert Ns <= N, dict(N=N, Ns=Ns)
     assert Ks <= K, dict(K=K, Ks=Ks)
@@ -812,14 +807,13 @@ def bsr_dense_addmm_meta(
         if meta is not None:
             meta.update(**extra)
             return meta
-        else:
-            # see [Computing optimal kernel parameters] in
-            # _triton_ops_meta.py for ways to avoid this warning
-            # message
-            warn_once(
-                "bsr_dense_addmm uses non-optimal triton kernel parameters"
-                f" for {M=} {K=} {N=} {Ms=}, {Ks=} {beta=} {alpha=} {dtype=} {out_dtype=}"
-            )
+        # see [Computing optimal kernel parameters] in
+        # _triton_ops_meta.py for ways to avoid this warning
+        # message
+        warn_once(
+            "bsr_dense_addmm uses non-optimal triton kernel parameters"
+            f" for {M=} {K=} {N=} {Ms=}, {Ks=} {beta=} {alpha=} {dtype=} {out_dtype=}"
+        )
 
     SPLIT_N = SPLIT_N or max(N // Ms, 1)
     GROUP_SIZE_ROW = GROUP_SIZE_ROW or 4
@@ -947,7 +941,7 @@ def _bsr_scatter_mm_indices_data(
         r_offsets = r_offsets[indices]
         return (indices_format, c_indices, r_offsets, q_offsets)
 
-    elif indices_format == "bsr_strided_mm":
+    if indices_format == "bsr_strided_mm":
         Ns = N // SPLIT_N
         p_offsets_lst = []
         q_offsets_lst = []
@@ -981,7 +975,7 @@ def _bsr_scatter_mm_indices_data(
         p_offsets = torch.cat(p_offsets_lst)
         return (indices_format, c_indices, r_offsets, p_offsets, q_offsets)
 
-    elif indices_format == "scatter_mm":
+    if indices_format == "scatter_mm":
         Ns = Ms
         c_indices = [0]
         pq_offsets = []
@@ -1003,10 +997,9 @@ def _bsr_scatter_mm_indices_data(
             torch.tensor(pq_offsets, dtype=indices_dtype, device=device),
         )
 
-    else:
-        raise ValueError(
-            f"Invalid {indices_format=}. Expected bsr_strided_mm_compressed|bsr_strided_mm|scatter_mm"
-        )
+    raise ValueError(
+        f"Invalid {indices_format=}. Expected bsr_strided_mm_compressed|bsr_strided_mm|scatter_mm"
+    )
 
 
 def bsr_scatter_mm_indices_data(
@@ -1035,11 +1028,10 @@ def bsr_scatter_mm_indices_data(
     if indices_format == "bsr_strided_mm_compressed":
         meta.update(is_compressed=True)
         return indices_data + (meta,)
-    elif indices_format == "bsr_strided_mm":
+    if indices_format == "bsr_strided_mm":
         meta.update(is_compressed=False)
         return indices_data + (meta,)
-    else:
-        return indices_data
+    return indices_data
 
 
 def bsr_scatter_mm(bsr, other, indices_data=None, out=None):
@@ -1120,12 +1112,12 @@ def _int_bsr_dense_addmm(
     *,
     beta=1,
     alpha=1,
-    left_alpha: Optional[torch.Tensor] = None,
-    right_alpha: Optional[torch.Tensor] = None,
-    out: Optional[torch.Tensor] = None,
+    left_alpha: torch.Tensor | None = None,
+    right_alpha: torch.Tensor | None = None,
+    out: torch.Tensor | None = None,
     skip_checks: bool = False,
-    max_grid: Optional[tuple[Optional[int], Optional[int], Optional[int]]] = None,
-    meta: Optional[dict] = None,
+    max_grid: tuple[int | None, int | None, int | None] | None = None,
+    meta: dict | None = None,
 ):
     if out is None and dense.dtype is torch.int8:
         f_name = "_int_bsr_dense_addmm"
@@ -1161,12 +1153,12 @@ def bsr_dense_addmm(
     *,
     beta=1,
     alpha=1,
-    left_alpha: Optional[torch.Tensor] = None,
-    right_alpha: Optional[torch.Tensor] = None,
-    out: Optional[torch.Tensor] = None,
+    left_alpha: torch.Tensor | None = None,
+    right_alpha: torch.Tensor | None = None,
+    out: torch.Tensor | None = None,
     skip_checks: bool = False,
-    max_grid: Optional[tuple[Optional[int], Optional[int], Optional[int]]] = None,
-    meta: Optional[dict] = None,
+    max_grid: tuple[int | None, int | None, int | None] | None = None,
+    meta: dict | None = None,
 ):
     """Compute
 
@@ -1645,9 +1637,9 @@ if has_triton():
         *,
         beta=1.0,
         alpha=1.0,
-        out: Optional[torch.Tensor] = None,
+        out: torch.Tensor | None = None,
         skip_checks: bool = False,
-        max_grid: Optional[tuple[Optional[int], Optional[int], Optional[int]]] = None,
+        max_grid: tuple[int | None, int | None, int | None] | None = None,
     ):
         f_name = "sampled_addmm"
 
@@ -1729,10 +1721,10 @@ if has_triton():
         bsr: torch.Tensor,
         dense: torch.Tensor,
         *,
-        out: Optional[torch.Tensor] = None,
+        out: torch.Tensor | None = None,
         skip_checks: bool = False,
-        max_grid: Optional[tuple[Optional[int], Optional[int], Optional[int]]] = None,
-        meta: Optional[dict] = None,
+        max_grid: tuple[int | None, int | None, int | None] | None = None,
+        meta: dict | None = None,
     ):
         f_name = "bsr_dense_mm"
         m, _kl = bsr.shape[-2:]
@@ -1944,10 +1936,10 @@ if has_triton():
         query: torch.Tensor,
         key: torch.Tensor,
         value: torch.Tensor,
-        attn_mask: Optional[torch.Tensor],
+        attn_mask: torch.Tensor | None,
         dropout_p: float = 0.0,
         is_causal: bool = False,
-        scale: Optional[float] = None,
+        scale: float | None = None,
     ):
         f_name = "_scaled_dot_product_attention"
         check(not is_causal, f"{f_name}(): is_causal == True is not supported.")

@@ -13,7 +13,7 @@ def test_hmr_source_gating_blocks_unlisted(monkeypatch):
     # attach controller if not present
     if not getattr(kernel, "hmr_controller", None):
         reg_mod = importlib.import_module("aetherra_service_registry")
-        registry = getattr(reg_mod, "get_service_registry")()
+        registry = reg_mod.get_service_registry()
         ctrl = mod.HMRController(registry, kernel, strict=True)
         # simulate start
         # Standard library imports

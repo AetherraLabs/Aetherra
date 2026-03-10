@@ -30,7 +30,6 @@ import subprocess
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional
 
 # Local imports
 from . import audit, ops_engine, safety
@@ -91,7 +90,7 @@ class CodeOrchestrator:
         self._rollback_store.mkdir(parents=True, exist_ok=True)
 
     # ---- Public API ----
-    def plan(self, intent: str, scope: Optional[List[str]] = None) -> PlanResult:
+    def plan(self, intent: str, scope: list[str] | None = None) -> PlanResult:
         # Simple heuristic: every listed scope file becomes one step
         steps: list[PlanStep] = []
         files = scope or []
@@ -454,9 +453,11 @@ class CodeOrchestrator:
         RESET = "\x1b[0m"
         out_lines: list[str] = []
         for line in diff_text.splitlines():
-            if line.startswith("@@"):
-                out_lines.append(CYAN + line + RESET)
-            elif line.startswith("+++") or line.startswith("---"):
+            if (
+                line.startswith("@@")
+                or line.startswith("+++")
+                or line.startswith("---")
+            ):
                 out_lines.append(CYAN + line + RESET)
             elif line.startswith("+") and not line.startswith("+++ "):
                 out_lines.append(GREEN + line + RESET)

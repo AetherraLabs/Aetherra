@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 __all__ = [
     "VerificationInfo",
     "verify_onnx_program",
@@ -9,11 +8,10 @@ __all__ = [
 import dataclasses
 import logging
 import math
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch.utils import _pytree
-
 
 if TYPE_CHECKING:
     from onnxscript import ir
@@ -194,7 +192,7 @@ def verify_onnx_program(
         onnx_outputs = onnx_program(*flat_args)
         results = []
         for torch_output, onnx_output, output_val in zip(
-            torch_outputs, onnx_outputs, onnx_program.model.graph.outputs
+            torch_outputs, onnx_outputs, onnx_program.model.graph.outputs, strict=False
         ):
             results.append(
                 VerificationInfo.from_tensors(

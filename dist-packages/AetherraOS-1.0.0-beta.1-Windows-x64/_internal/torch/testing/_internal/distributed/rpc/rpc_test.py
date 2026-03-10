@@ -20,17 +20,17 @@ import torch.distributed.rpc as rpc
 import torch.nn as nn
 from torch.autograd.profiler_legacy import profile as _profile
 from torch.distributed.rpc import (
-    _get_debug_info,
-    _rref_context_get_debug_info,
     RRef,
     WorkerInfo,
+    _get_debug_info,
+    _rref_context_get_debug_info,
 )
 from torch.distributed.rpc.api import _thread_local_var, _use_rpc_pickler, _wait_all
 from torch.distributed.rpc.internal import (
-    _build_rpc_profiling_key,
-    _internal_rpc_pickler,
     PythonUDF,
     RPCExecMode,
+    _build_rpc_profiling_key,
+    _internal_rpc_pickler,
 )
 from torch.futures import Future
 from torch.testing._internal.common_distributed import (
@@ -39,11 +39,11 @@ from torch.testing._internal.common_distributed import (
     tp_transports,
 )
 from torch.testing._internal.common_utils import (
-    get_cycles_per_ms,
     IS_MACOS,
+    TemporaryFileName,
+    get_cycles_per_ms,
     load_tests,
     skip_but_pass_in_sandcastle_if,
-    TemporaryFileName,
 )
 from torch.testing._internal.dist_utils import (
     dist_init,
@@ -366,8 +366,7 @@ def rref_forward_chain(dst, world_size, rref, ttl):
             current_dst, rref_forward_chain, args=(next_dst, world_size, rref, ttl - 1)
         )
         return [ret_rref]
-    else:
-        return rref.to_here()
+    return rref.to_here()
 
 
 def rpc_return_rref(dst):
@@ -747,9 +746,9 @@ class RpcTestCommon:
     def _run_func_in_mode(self, to, fn, mode, args=None, kwargs=None):
         if mode == RPCExecMode.SYNC:
             return rpc.rpc_sync(to, fn, args=args, kwargs=kwargs)
-        elif mode == RPCExecMode.ASYNC:
+        if mode == RPCExecMode.ASYNC:
             return rpc.rpc_async(to, fn, args=args, kwargs=kwargs).wait()
-        elif mode == RPCExecMode.REMOTE:
+        if mode == RPCExecMode.REMOTE:
             return rpc.remote(to, fn, args=args, kwargs=kwargs).to_here()
 
     def _self_py_udf_remote(self, worker_info, x, y, z):
@@ -2694,8 +2693,7 @@ class RpcTest(RpcAgentTestFixture, RpcTestCommon):
     def _multi_args_fn(n, sparse=False):
         if sparse:
             return (build_sparse_tensor(), build_sparse_tensor())
-        else:
-            return (torch.ones(n, n), torch.ones(n, n))
+        return (torch.ones(n, n), torch.ones(n, n))
 
     @dist_init
     def test_multi_builtin_remote_ret(self):
@@ -2720,8 +2718,7 @@ class RpcTest(RpcAgentTestFixture, RpcTestCommon):
                 "b": build_sparse_tensor(),
                 "c": build_sparse_tensor(),
             }
-        else:
-            return {"a": torch.ones(n, n), "b": torch.ones(n, n), "c": torch.ones(n, n)}
+        return {"a": torch.ones(n, n), "b": torch.ones(n, n), "c": torch.ones(n, n)}
 
     @dist_init
     def test_multi_py_udf_remote(self):
@@ -3282,7 +3279,7 @@ class RpcTest(RpcAgentTestFixture, RpcTestCommon):
         expected.update(autograd_info)
         # NB: Key ordering is only preserved in python 3.6+. So here, we
         # manually check keys are equal.
-        for key in expected.keys():
+        for key in expected:
             self.assertIn(key, info.keys())
 
         for key in info.keys():
@@ -5178,8 +5175,7 @@ class TensorPipeAgentCudaRpcTest(RpcAgentTestFixture, RpcTestCommon):
     def _gpu_add(x, y):
         if all([x.is_cuda, x.device.index == 1, y.is_cuda, y.device.index == 1]):
             return (x + y).to(0)
-        else:
-            raise ValueError("Wrong device affinity")
+        raise ValueError("Wrong device affinity")
 
     @skip_if_lt_x_gpu(2)
     def test_device_maps_gpu(self):
@@ -5210,8 +5206,7 @@ class TensorPipeAgentCudaRpcTest(RpcAgentTestFixture, RpcTestCommon):
         y_device = "cpu" if y.device.type == "cpu" else y.device.index
         if x_device == x_to and y_device == y_to:
             return x.to(z_to) + y.to(z_to)
-        else:
-            raise ValueError("Wrong device affinity")
+        raise ValueError("Wrong device affinity")
 
     def _test_device_maps_gpu(
         self, x_from, y_from, z_to, device_map, dst=None, fn=None
@@ -5427,8 +5422,7 @@ class TensorPipeAgentCudaRpcTest(RpcAgentTestFixture, RpcTestCommon):
     def _gpu_add_multi_gpu(x, y):
         if all([x.is_cuda, x.device.index == 1, y.is_cuda, y.device.index == 0]):
             return x.to(0) + y, x - y.to(1)
-        else:
-            raise ValueError("Wrong device affinity")
+        raise ValueError("Wrong device affinity")
 
     def _test_device_maps_multi_gpu(self, dst):
         options = self.rpc_backend_options
@@ -5469,8 +5463,7 @@ class TensorPipeAgentCudaRpcTest(RpcAgentTestFixture, RpcTestCommon):
     def _gpu_add_return_to_gpu(x, y):
         if x.device.type == "cpu" and y.device.type == "cpu":
             return (x + y).to(0), (x - y).to(1), (x * y).to(2), (x / y).to(3)
-        else:
-            raise ValueError("Wrong device affinity")
+        raise ValueError("Wrong device affinity")
 
     @skip_if_lt_x_gpu(2)
     def test_device_maps_in_options(self):
@@ -5783,8 +5776,7 @@ class TensorPipeAgentCudaRpcTest(RpcAgentTestFixture, RpcTestCommon):
     def _gpu_add_wrong_gpus(x, y):
         if x.is_cuda and y.is_cuda:
             return x.cpu() + y.cuda()
-        else:
-            raise ValueError("Wrong device affinity")
+        raise ValueError("Wrong device affinity")
 
     @skip_if_lt_x_gpu(1)
     def test_device_mismatch(self):

@@ -1,5 +1,4 @@
 # mypy: allow-untyped-defs
-from typing import Optional, Union
 
 import torch
 from torch import Tensor
@@ -9,7 +8,6 @@ from torch.distributions.independent import Independent
 from torch.distributions.transforms import ComposeTransform, Transform
 from torch.distributions.utils import _sum_rightmost
 from torch.types import _size
-
 
 __all__ = ["TransformedDistribution"]
 
@@ -53,8 +51,8 @@ class TransformedDistribution(Distribution):
     def __init__(
         self,
         base_distribution: Distribution,
-        transforms: Union[Transform, list[Transform]],
-        validate_args: Optional[bool] = None,
+        transforms: Transform | list[Transform],
+        validate_args: bool | None = None,
     ) -> None:
         if isinstance(transforms, Transform):
             self.transforms = [

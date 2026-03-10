@@ -1,9 +1,9 @@
 # mypy: allow-untyped-defs
-from typing import Any, Callable, cast
+from collections.abc import Callable
+from typing import Any, cast
 
 import torch
 import torch.distributed as dist
-
 
 __all__ = [
     "allreduce_hook",
@@ -80,11 +80,10 @@ def _compress_hook(
             compressed_tensor, "sum", group_to_use
         )
         return decompress(grad)
-    else:
-        fut = dist.all_reduce(
-            compressed_tensor, group=group_to_use, async_op=True
-        ).get_future()
-        return fut.then(decompress)
+    fut = dist.all_reduce(
+        compressed_tensor, group=group_to_use, async_op=True
+    ).get_future()
+    return fut.then(decompress)
 
 
 def fp16_compress_hook(

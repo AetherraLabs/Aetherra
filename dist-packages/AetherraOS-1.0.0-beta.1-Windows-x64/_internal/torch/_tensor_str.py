@@ -3,7 +3,7 @@ import contextlib
 import dataclasses
 import math
 import textwrap
-from typing import Any, Optional
+from typing import Any
 
 import torch
 from torch import inf
@@ -15,7 +15,7 @@ class __PrinterOptions:
     threshold: float = 1000
     edgeitems: int = 3
     linewidth: int = 80
-    sci_mode: Optional[bool] = None
+    sci_mode: bool | None = None
 
 
 PRINT_OPTS = __PrinterOptions()
@@ -237,10 +237,8 @@ def _scalar_str(self, formatter1, formatter2=None):
         # handles negative numbers, +0.0, -0.0
         if imag_str[0] == "+" or imag_str[0] == "-":
             return real_str + imag_str
-        else:
-            return real_str + "+" + imag_str
-    else:
-        return formatter1.format(self.item())
+        return real_str + "+" + imag_str
+    return formatter1.format(self.item())
 
 
 def _vector_str(self, indent, summarize, formatter1, formatter2=None):
@@ -261,10 +259,8 @@ def _vector_str(self, indent, summarize, formatter1, formatter2=None):
             # handles negative numbers, +0.0, -0.0
             if imag_str[0] == "+" or imag_str[0] == "-":
                 return real_str + imag_str
-            else:
-                return real_str + "+" + imag_str
-        else:
-            return formatter1.format(val)
+            return real_str + "+" + imag_str
+        return formatter1.format(val)
 
     if self.dtype == torch.float4_e2m1fn_x2:  # type: ignore[attr-defined]
         # torch.float4_e2m1fn_x2 is special and does not support the casts necessary
@@ -375,9 +371,8 @@ def _tensor_str(self, indent):
         return _tensor_str_with_formatter(
             self, indent, summarize, real_formatter, imag_formatter
         )
-    else:
-        formatter = _Formatter(get_summarized_data(self) if summarize else self)
-        return _tensor_str_with_formatter(self, indent, summarize, formatter)
+    formatter = _Formatter(get_summarized_data(self) if summarize else self)
+    return _tensor_str_with_formatter(self, indent, summarize, formatter)
 
 
 def _add_suffixes(tensor_str, suffixes, indent, force_newline):
@@ -405,16 +400,14 @@ def get_summarized_data(self):
             return torch.cat(
                 (self[: PRINT_OPTS.edgeitems], self[-PRINT_OPTS.edgeitems :])
             )
-        else:
-            return self
+        return self
     if not PRINT_OPTS.edgeitems:
         return self.new_empty([0] * self.dim())
-    elif self.size(0) > 2 * PRINT_OPTS.edgeitems:
+    if self.size(0) > 2 * PRINT_OPTS.edgeitems:
         start = [self[i] for i in range(0, PRINT_OPTS.edgeitems)]
         end = [self[i] for i in range(len(self) - PRINT_OPTS.edgeitems, len(self))]
         return torch.stack([get_summarized_data(x) for x in (start + end)])
-    else:
-        return torch.stack([get_summarized_data(x) for x in self])
+    return torch.stack([get_summarized_data(x) for x in self])
 
 
 def _str_intern(inp, *, tensor_contents=None):

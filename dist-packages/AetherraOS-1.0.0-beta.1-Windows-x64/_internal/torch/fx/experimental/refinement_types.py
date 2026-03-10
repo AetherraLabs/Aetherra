@@ -12,5 +12,4 @@ class Equality:
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Equality):
             return self.lhs == other.lhs and self.rhs == other.rhs
-        else:
-            return False
+        return False

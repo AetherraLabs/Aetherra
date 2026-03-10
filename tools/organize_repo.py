@@ -22,7 +22,6 @@ import json
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -70,7 +69,7 @@ CORE_FILES = {
 }
 
 # Patterns mapping (only matches files in ROOT)
-PATTERNS: List[tuple[List[str], Path]] = [
+PATTERNS: list[tuple[list[str], Path]] = [
     # Logs
     (["*.log"], DEST["logs"]),
     # Data
@@ -160,8 +159,8 @@ def should_skip_file(p: Path) -> bool:
     return False
 
 
-def plan_moves() -> List[MoveAction]:
-    actions: List[MoveAction] = []
+def plan_moves() -> list[MoveAction]:
+    actions: list[MoveAction] = []
     for child in ROOT.iterdir():
         if child.is_dir():
             if child.name in CORE_KEEP or child.name.startswith("."):
@@ -188,9 +187,9 @@ def plan_moves() -> List[MoveAction]:
 
 
 def apply_moves(
-    actions: List[MoveAction], dry_run: bool = True
-) -> Dict[str, List[str]]:
-    report: Dict[str, List[str]] = {}
+    actions: list[MoveAction], dry_run: bool = True
+) -> dict[str, list[str]]:
+    report: dict[str, list[str]] = {}
     for act in actions:
         act.dest.parent.mkdir(parents=True, exist_ok=True)
         report.setdefault(str(act.dest.parent.relative_to(ROOT)), []).append(

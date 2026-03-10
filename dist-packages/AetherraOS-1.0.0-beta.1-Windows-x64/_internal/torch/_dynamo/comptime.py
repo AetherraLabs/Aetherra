@@ -40,7 +40,6 @@ import builtins
 import dis
 import time
 import traceback
-from typing import Optional, Union
 
 import torch
 from torch.fx.experimental.symbolic_shapes import free_symbols
@@ -97,7 +96,7 @@ class ComptimeVar:
         """
         return self.__variable.as_proxy().node.meta["example_value"]
 
-    def size(self, dim: Optional[int] = None) -> Union[int, torch.SymInt]:
+    def size(self, dim: int | None = None) -> int | torch.SymInt:
         """
         Returns the size of the tensor (if dim is None) or the size
         at the dimension dim.  The returned size may be a SymInt.

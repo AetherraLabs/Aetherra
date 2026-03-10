@@ -24,12 +24,13 @@ Key functionality groups:
 
 import functools
 import warnings
-from typing import Any, Callable, Optional, TYPE_CHECKING, TypeVar, Union
-from typing_extensions import deprecated, ParamSpec
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, TypeVar
+
+from typing_extensions import ParamSpec, deprecated
 
 import torch
 import torch.utils._pytree as pytree
-
 
 try:
     import numpy as np
@@ -73,7 +74,7 @@ def wrap_inline(fn: Callable[_P, _R]) -> Callable[_P, _R]:
 
 
 def call_hook(
-    hook: Callable[..., Optional[torch.Tensor]], *args: Any, **kwargs: Any
+    hook: Callable[..., torch.Tensor | None], *args: Any, **kwargs: Any
 ) -> torch.Tensor:
     """
     Used by compiled autograd to handle hook returning None.
@@ -81,7 +82,7 @@ def call_hook(
     result = hook(*args)
     if result is None:
         return args[0]
-    elif kwargs.get("hook_type") == "post_acc_grad_hook":
+    if kwargs.get("hook_type") == "post_acc_grad_hook":
         raise RuntimeError("Tensor post accumulate grad hooks should return None.")
     return result
 
@@ -128,7 +129,7 @@ def call_backward(
     backward_c_function: torch.autograd.function.BackwardCFunction,
     saved_tensors: list[torch.Tensor],
     *args: Any,
-) -> Union[torch.Tensor, tuple[torch.Tensor, ...]]:
+) -> torch.Tensor | tuple[torch.Tensor, ...]:
     fake = FakeBackwardCFunction(backward_c_function, saved_tensors)
     grads = fake._forward_cls.backward(fake, *args)  # type: ignore[attr-defined]
 
@@ -141,7 +142,7 @@ def call_backward(
 def normalize_as_list(x: Any) -> list[Any]:
     if isinstance(x, tuple):
         return list(x)
-    elif isinstance(x, list):
+    if isinstance(x, list):
         return x
     return [x]
 
@@ -213,7 +214,7 @@ def _dynamo_config_patch_proxy_dunder_call(
 
 # Use only on ints marked dynamic via torch.empty(0, integer)
 # Currently only way to mark ints as dynamic: https://github.com/pytorch/pytorch/issues/129623
-def unwrap_maybe_dynamic_int(x: Union[torch.Tensor, int]) -> int:
+def unwrap_maybe_dynamic_int(x: torch.Tensor | int) -> int:
     if isinstance(x, torch.Tensor):
         # x.size() is expected to be [0, dynamic_int]
         return x.size(1)

@@ -1,6 +1,6 @@
 # mypy: allow-untyped-defs
 from enum import Enum
-from typing import Any, Optional, Union
+from typing import Any, Union
 from weakref import WeakKeyDictionary
 
 import torch
@@ -11,8 +11,8 @@ from torch._library.fake_class_registry import FakeScriptObject
 from torch._ops import HigherOrderOperator
 from torch._subclasses.fake_tensor import FakeTensorMode
 from torch.fx.experimental.proxy_tensor import (
-    disable_proxy_modes_tracing,
     ProxyTorchDispatchMode,
+    disable_proxy_modes_tracing,
     track_tensor_tree,
 )
 
@@ -112,7 +112,7 @@ def has_effects(op, args, kwargs) -> bool:
     )
 
 
-def get_effect_key(op, args, kwargs) -> Optional[_EffectType]:
+def get_effect_key(op, args, kwargs) -> _EffectType | None:
     if op in SIDE_EFFECTS:
         return SIDE_EFFECTS[op]
 
@@ -208,10 +208,9 @@ with_effects.fallthrough(DispatchKey.AutogradCUDA)
 def _get_schema(op, args) -> torch.FunctionSchema:
     if isinstance(op, torch._ops.OpOverload):
         return op._schema
-    elif op == call_torchbind:
+    if op == call_torchbind:
         return getattr(args[0], args[1]).schema
-    else:
-        raise RuntimeError(f"Unable to get schema for op {op}")
+    raise RuntimeError(f"Unable to get schema for op {op}")
 
 
 def handle_effects(
@@ -240,9 +239,9 @@ def handle_effects(
     key = get_effect_key(op, args, kwargs)
     assert key is not None
     if key not in tokens:
-        assert (
-            allow_token_discovery
-        ), f"Could not find a token for effect {key} which came from the function {op}"
+        assert allow_token_discovery, (
+            f"Could not find a token for effect {key} which came from the function {op}"
+        )
         proxy_tensor_mode = torch._C._get_dispatch_mode(
             torch._C._TorchDispatchModeKey.PROXY
         )

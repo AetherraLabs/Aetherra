@@ -16,7 +16,6 @@ from torch.export.pt2_archive._package import (
 )
 from torch.types import FileLike
 
-
 log = logging.getLogger(__name__)
 
 

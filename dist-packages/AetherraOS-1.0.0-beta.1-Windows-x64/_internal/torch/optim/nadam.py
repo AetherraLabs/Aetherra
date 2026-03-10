@@ -1,12 +1,14 @@
 # mypy: allow-untyped-defs
 r"""Implementation for the NAdam algorithm."""
 
-from typing import cast, Optional, Union
+from typing import cast
 
 import torch
 from torch import Tensor
 
 from .optimizer import (
+    Optimizer,
+    ParamsT,
     _capturable_doc,
     _default_to_fused_or_foreach,
     _differentiable_doc,
@@ -21,10 +23,7 @@ from .optimizer import (
     _to_scalar,
     _use_grad_for_differentiable,
     _view_as_real,
-    Optimizer,
-    ParamsT,
 )
-
 
 __all__ = ["NAdam", "nadam"]
 
@@ -33,31 +32,31 @@ class NAdam(Optimizer):  # noqa: D101
     def __init__(
         self,
         params: ParamsT,
-        lr: Union[float, Tensor] = 2e-3,
+        lr: float | Tensor = 2e-3,
         betas: tuple[float, float] = (0.9, 0.999),
         eps: float = 1e-8,
         weight_decay: float = 0,
         momentum_decay: float = 4e-3,
         decoupled_weight_decay: bool = False,
         *,
-        foreach: Optional[bool] = None,
+        foreach: bool | None = None,
         maximize: bool = False,
         capturable: bool = False,
         differentiable: bool = False,
     ):  # noqa: D107
         if isinstance(lr, Tensor) and lr.numel() != 1:
             raise ValueError("Tensor lr must be 1-element")
-        if not 0.0 <= lr:
+        if not lr >= 0.0:
             raise ValueError(f"Invalid learning rate: {lr}")
-        if not 0.0 <= eps:
+        if not eps >= 0.0:
             raise ValueError(f"Invalid epsilon value: {eps}")
         if not 0.0 <= betas[0] < 1.0:
             raise ValueError(f"Invalid beta parameter at index 0: {betas[0]}")
         if not 0.0 <= betas[1] < 1.0:
             raise ValueError(f"Invalid beta parameter at index 1: {betas[1]}")
-        if not 0.0 <= weight_decay:
+        if not weight_decay >= 0.0:
             raise ValueError(f"Invalid weight_decay value: {weight_decay}")
-        if not 0.0 <= momentum_decay:
+        if not momentum_decay >= 0.0:
             raise ValueError(f"Invalid momentum_decay value: {momentum_decay}")
         defaults = dict(
             lr=lr,
@@ -408,7 +407,7 @@ def _multi_tensor_nadam(
         assert all(
             p.device.type == mp.device.type == step.device.type
             and p.device.type in capturable_supported_devices
-            for p, mp, step in zip(params, mu_products, state_steps)
+            for p, mp, step in zip(params, mu_products, state_steps, strict=False)
         ), (
             "If capturable=True, "
             "params, mu_products, and state_steps must be on supported devices: "
@@ -480,9 +479,9 @@ def _multi_tensor_nadam(
 
         exp_avg_sq_sqrt = torch._foreach_sqrt(grouped_exp_avg_sqs)
 
-        bias_correction_sqrt: Union[tuple[Tensor, ...], list[Tensor]]
-        mus: Union[tuple[Tensor, ...], list[Tensor]]
-        mu_nexts: Union[tuple[Tensor, ...], list[Tensor]]
+        bias_correction_sqrt: tuple[Tensor, ...] | list[Tensor]
+        mus: tuple[Tensor, ...] | list[Tensor]
+        mu_nexts: tuple[Tensor, ...] | list[Tensor]
         if capturable:
             # mus will be beta1 * (1 - 0.5 * 0.96 ** (step * momentum_decay))
             exponent = torch._foreach_mul(grouped_state_steps, momentum_decay)
@@ -565,7 +564,7 @@ def _multi_tensor_nadam(
             step_size_grads = _stack_if_compiling(
                 [
                     (_get_value(lr) * (1.0 - mu) / (1.0 - _get_value(mu_product))) * -1
-                    for mu_product, mu in zip(grouped_mu_products, mus)
+                    for mu_product, mu in zip(grouped_mu_products, mus, strict=False)
                 ]
             )
             step_size_expavg = _stack_if_compiling(
@@ -576,7 +575,9 @@ def _multi_tensor_nadam(
                         / (1.0 - _get_value(mu_product) * mu_next)
                     )
                     * -1
-                    for mu_product, mu_next in zip(grouped_mu_products, mu_nexts)
+                    for mu_product, mu_next in zip(
+                        grouped_mu_products, mu_nexts, strict=False
+                    )
                 ]
             )
 
@@ -605,7 +606,7 @@ def nadam(
     # kwonly args with defaults are not supported by functions compiled with torchscript issue #70627
     # setting this as kwarg for now as functional API is compiled by torch/distributed/optim
     decoupled_weight_decay: bool = False,
-    foreach: Optional[bool] = None,
+    foreach: bool | None = None,
     capturable: bool = False,
     differentiable: bool = False,
     has_complex: bool = False,

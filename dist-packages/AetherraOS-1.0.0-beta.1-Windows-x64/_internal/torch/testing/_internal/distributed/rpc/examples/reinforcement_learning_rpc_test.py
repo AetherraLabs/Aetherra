@@ -11,13 +11,12 @@ import torch.distributed.rpc as rpc
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from torch.distributed.rpc import remote, rpc_async, rpc_sync, RRef
+from torch.distributed.rpc import RRef, remote, rpc_async, rpc_sync
 from torch.distributions import Categorical
 from torch.testing._internal.dist_utils import dist_init, worker_name
 from torch.testing._internal.distributed.rpc.rpc_agent_test_fixture import (
     RpcAgentTestFixture,
 )
-
 
 TOTAL_EPISODE_STEP = 5000
 GAMMA = 0.1
@@ -216,7 +215,7 @@ class Agent:
             returns.insert(0, R)
         returns = torch.tensor(returns)
         returns = (returns - returns.mean()) / (returns.std() + self.eps)
-        for log_prob, R in zip(probs, returns):
+        for log_prob, R in zip(probs, returns, strict=False):
             policy_loss.append(-log_prob * R)
         self.optimizer.zero_grad()
         policy_loss = torch.cat(policy_loss).sum()

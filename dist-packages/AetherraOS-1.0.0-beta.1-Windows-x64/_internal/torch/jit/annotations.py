@@ -11,7 +11,6 @@ from textwrap import dedent
 
 import torch
 from torch._C import (
-    _GeneratorType,
     AnyType,
     AwaitType,
     BoolType,
@@ -32,16 +31,21 @@ from torch._C import (
     TensorType,
     TupleType,
     UnionType,
+    _GeneratorType,
 )
 from torch._jit_internal import (  # type: ignore[attr-defined]
-    _Await,
-    _qualified_name,
     Any,
     BroadcastingList1,
     BroadcastingList2,
     BroadcastingList3,
     Dict,
     Future,
+    List,
+    Optional,
+    Tuple,
+    Union,
+    _Await,
+    _qualified_name,
     is_await,
     is_dict,
     is_future,
@@ -50,19 +54,14 @@ from torch._jit_internal import (  # type: ignore[attr-defined]
     is_optional,
     is_tuple,
     is_union,
-    List,
-    Optional,
-    Tuple,
-    Union,
 )
 from torch._sources import get_source_lines_and_file
 
 from ._state import _get_script_class
 
-
 if torch.distributed.rpc.is_available():
     from torch._C import RRefType
-    from torch._jit_internal import is_rref, RRef
+    from torch._jit_internal import RRef, is_rref
 
 from torch._ops import OpOverloadPacket
 
@@ -151,8 +150,7 @@ def is_vararg(the_callable):
 
     if is_function_or_method(the_callable):
         return inspect.getfullargspec(the_callable).varargs is not None
-    else:
-        return False
+    return False
 
 
 def get_param_names(fn, n_args):
@@ -171,10 +169,9 @@ def get_param_names(fn, n_args):
         if is_ignored_fn(fn):
             fn = inspect.unwrap(fn)
         return inspect.getfullargspec(fn).args
-    else:
-        # The `fn` was not a method or function (maybe a class with a __call__
-        # method, so use a default param name list)
-        return [str(i) for i in range(n_args)]
+    # The `fn` was not a method or function (maybe a class with a __call__
+    # method, so use a default param name list)
+    return [str(i) for i in range(n_args)]
 
 
 def check_fn(fn, loc):
@@ -274,7 +271,7 @@ def get_type_line(source):
                 + "\nfor examples"
             )
         return None
-    elif len(type_lines) == 1:
+    if len(type_lines) == 1:
         # Only 1 type line, quit now
         return type_lines[0][1].strip()
 
@@ -286,7 +283,7 @@ def get_type_line(source):
         if "# type: (...) -> " in line:
             return_line = (line_num, line)
             break
-        elif type_comment in line:
+        if type_comment in line:
             parameter_type_lines.append(line)
     if return_line is None:
         raise RuntimeError(

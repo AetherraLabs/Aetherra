@@ -647,7 +647,13 @@ class AdvancedMemorySystemUI(QWidget):
     def filter_memories(self, filter_text):
         """Filter memories by importance."""
         # Implementation for filtering memories
-        pass
+        text = (filter_text or "").strip().lower()
+        self.current_filter_text = text
+        if hasattr(self, "memory_table") and self.memory_table is not None:
+            for row in range(self.memory_table.rowCount()):
+                item = self.memory_table.item(row, 0)
+                content = item.text().lower() if item else ""
+                self.memory_table.setRowHidden(row, text not in content)
 
     def update_analytics(self):
         """Update the analytics dashboard."""

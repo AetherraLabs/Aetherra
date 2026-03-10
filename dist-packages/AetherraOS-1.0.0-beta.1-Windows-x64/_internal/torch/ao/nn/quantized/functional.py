@@ -2,7 +2,6 @@
 r"""Functional interface (quantized)."""
 
 import warnings
-from typing import Optional
 
 import torch
 from torch import Tensor
@@ -10,7 +9,6 @@ from torch.jit.annotations import BroadcastingList2
 from torch.nn.modules.utils import _pair, _triple
 
 from .modules.utils import _pair_from_first
-
 
 # Although some of the functions and docstrings are mirrored from the torch.nn,
 # we want to have them here for future changes.
@@ -439,9 +437,9 @@ def interpolate(
 def linear(
     input: Tensor,
     weight: Tensor,
-    bias: Optional[Tensor] = None,
-    scale: Optional[float] = None,
-    zero_point: Optional[int] = None,
+    bias: Tensor | None = None,
+    scale: float | None = None,
+    zero_point: int | None = None,
 ) -> Tensor:
     r"""
     Applies a linear transformation to the incoming quantized data:
@@ -558,8 +556,8 @@ def leaky_relu(
     input: Tensor,
     negative_slope: float = 0.01,
     inplace: bool = False,
-    scale: Optional[float] = None,
-    zero_point: Optional[int] = None,
+    scale: float | None = None,
+    zero_point: int | None = None,
 ):
     r"""
     Quantized version of the.

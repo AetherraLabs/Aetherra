@@ -4,8 +4,7 @@ from __future__ import annotations
 import dataclasses
 import re
 from itertools import count, zip_longest
-from typing import Any, Optional, Union
-from typing_extensions import Self
+from typing import Any, Self
 
 import sympy
 
@@ -22,16 +21,15 @@ from ..ir import (
     TMADescriptorExperimental,
     TMADescriptorStable,
 )
-from ..utils import cache_on_self, get_gpu_type, GPU_ALIGN_BYTES, IndentedBuffer
+from ..utils import GPU_ALIGN_BYTES, IndentedBuffer, cache_on_self, get_gpu_type
 from ..virtualized import V
 from .aoti_hipify_utils import maybe_hipify_code_wrapper
-from .common import get_device_op_overrides, TritonScratchWorkspace
+from .common import TritonScratchWorkspace, get_device_op_overrides
 from .cpp_utils import cexpr
 from .cpp_wrapper_cpu import CppWrapperCpu
 from .multi_kernel import MultiKernelCall
 from .triton_utils import should_unwrap_unspec_arg
 from .wrapper import PythonWrapperCodegen, SymbolicCallArg
-
 
 _cpp_string_literal_escapes = {
     "\\": "\\\\",
@@ -99,7 +97,7 @@ class DeferredTritonCallWrapper:
         # tensors can be RAIIAtenTensorHandle or ConstantHandle, so make them template types
         template_types = [
             f"typename {name}_type_"
-            for name, arg_type in zip(def_args, arg_types)
+            for name, arg_type in zip(def_args, arg_types, strict=False)
             if isinstance(arg_type, (torch_dtype, UnwrapUnspecArg))
         ]
         if V.graph.aot_mode:
@@ -109,7 +107,7 @@ class DeferredTritonCallWrapper:
         prefix.writeline(f"static inline void {self.wrapper_name}(")
         with prefix.indent():
             assert len(def_args) == len(arg_types), (def_args, arg_types)
-            for name, arg_type in zip(def_args, arg_types):
+            for name, arg_type in zip(def_args, arg_types, strict=False):
                 if isinstance(arg_type, (torch_dtype, UnwrapUnspecArg)):
                     prefix.writeline(f"const {name}_type_& {name},")
                 elif issubclass(arg_type, (SymbolicCallArg, sympy.Expr, int)):
@@ -204,7 +202,7 @@ class DeferredTritonCallWrapper:
             self.arg_types,
             params["def_args"],
         )
-        arg_type_loookup = dict(zip(params["def_args"], self.arg_types))
+        arg_type_loookup = dict(zip(params["def_args"], self.arg_types, strict=False))
         # difference between Python and C++ wrapper: C++ wrapper strips out equal_to_1 constants
         call_args = [
             name for name in params["call_args"] if name not in triton_meta["constants"]
@@ -249,9 +247,9 @@ class CppWrapperGpu(CppWrapperCpu):
     @staticmethod
     def create(
         is_subgraph: bool,
-        subgraph_name: Optional[str],
-        parent_wrapper: Optional[PythonWrapperCodegen],
-        partition_signatures: Optional[GraphPartitionSignature] = None,
+        subgraph_name: str | None,
+        parent_wrapper: PythonWrapperCodegen | None,
+        partition_signatures: GraphPartitionSignature | None = None,
     ):
         # TODO - support subgraph codegen by lifting functions. Check the
         # comment at CppWrapperCpu `codegen_subgraph` function.
@@ -329,9 +327,9 @@ class CppWrapperGpu(CppWrapperCpu):
         self,
         kernel_name: str,
         kernel_body: str,
-        metadata: Optional[str] = None,
+        metadata: str | None = None,
         gpu: bool = True,
-        cpp_definition: Optional[str] = None,
+        cpp_definition: str | None = None,
     ):
         if gpu:
             self._kernel_name_to_body[kernel_name] = kernel_body
@@ -449,7 +447,7 @@ class CppWrapperGpu(CppWrapperCpu):
 
     def generate_args_decl(
         self,
-        code: Union[IndentedBuffer, Self],
+        code: IndentedBuffer | Self,
         call_args,
         arg_types,
         arg_signatures,
@@ -553,7 +551,7 @@ class CppWrapperGpu(CppWrapperCpu):
             elif (
                 isinstance(arg_type, type(SymbolicCallArg))
                 and arg_signature is not None
-                and arg_signature in signature2dtype.keys()
+                and arg_signature in signature2dtype
             ):
                 code.writeline(
                     f"{signature2dtype[arg_signature]} {var_name} = {cexpr(arg)};"
@@ -676,7 +674,7 @@ class CppWrapperGpu(CppWrapperCpu):
                 self.writeline(f"{wrapper_name}({', '.join(call_args)});")
         else:
             casted = []
-            for arg_type, arg in zip(arg_types, call_args):
+            for arg_type, arg in zip(arg_types, call_args, strict=False):
                 new_arg = arg
                 if arg_type.endswith("*") and arg != "nullptr":
                     new_arg = f"{arg}.data_ptr()"
@@ -691,7 +689,7 @@ class CppWrapperGpu(CppWrapperCpu):
         assert len(call_args) == len(arg_types), (call_args, arg_types)
         new_args = []
         new_args_types = []
-        for arg, arg_type in zip(call_args, arg_types):
+        for arg, arg_type in zip(call_args, arg_types, strict=False):
             if isinstance(arg, str):
                 if isinstance(arg_type, torch_dtype) and should_unwrap_unspec_arg(arg):
                     # dynamo wraps unspec variable as 0d CPU tensor, need convert to scalar

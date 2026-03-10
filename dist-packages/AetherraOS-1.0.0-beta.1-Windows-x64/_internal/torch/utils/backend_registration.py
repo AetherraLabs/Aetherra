@@ -1,10 +1,8 @@
 # mypy: allow-untyped-defs
-from typing import Optional, Union
 
 import torch
 from torch._C import _get_privateuse1_backend_name, _rename_privateuse1_backend
 from torch.overrides import handle_torch_function, has_torch_function_unary
-
 
 __all__ = ["rename_privateuse1_backend", "generate_methods_for_privateuse1_backend"]
 
@@ -87,7 +85,7 @@ def _check_register_once(module, attr):
 
 
 def _normalization_device(
-    custom_backend_name: str, device: Optional[Union[int, str, torch.device]] = None
+    custom_backend_name: str, device: int | str | torch.device | None = None
 ) -> int:
     def _get_current_device_index():
         _get_device_index = "current_device"
@@ -95,22 +93,21 @@ def _normalization_device(
             getattr(torch, custom_backend_name), _get_device_index
         ):
             return getattr(getattr(torch, custom_backend_name), _get_device_index)()
-        else:
-            # The default device index is 0.
-            return 0
+        # The default device index is 0.
+        return 0
 
     if device is None:
         return _get_current_device_index()
     # if isinstance(device, str), this means that the parameter passed in is in the string format "foo:0"
     # convert str object to torch.device object, and then process it uniformly
-    elif isinstance(device, str):
+    if isinstance(device, str):
         device = torch.device(device)
 
     # variable devcie can only be torch.device type or int type
     if isinstance(device, torch.device):
         if device.type != custom_backend_name:
             raise RuntimeError(f"Invalid device, must be {custom_backend_name} device")
-        elif device.index is None:
+        if device.index is None:
             device_idx = _get_current_device_index()
         else:
             device_idx = device.index
@@ -134,7 +131,7 @@ def _generate_tensor_methods_for_privateuse1_backend(custom_backend_name: str) -
 
     def wrap_tensor_to(
         self: torch.Tensor,
-        device: Optional[Union[int, torch.device]] = None,
+        device: int | torch.device | None = None,
         non_blocking=False,
         **kwargs,
     ) -> torch.Tensor:
@@ -185,7 +182,7 @@ def _generate_module_methods_for_privateuse1_backend(custom_backend_name: str) -
 
     def wrap_module_to(
         self: torch.nn.modules.module.T,
-        device: Optional[Union[int, torch.device]] = None,
+        device: int | torch.device | None = None,
     ) -> torch.nn.modules.module.T:
         r"""Move all model parameters and buffers to the custom device.
 
@@ -260,7 +257,7 @@ def _generate_packed_sequence_methods_for_privateuse1_backend(
 
 
 def _generate_storage_methods_for_privateuse1_backend(
-    custom_backend_name: str, unsupported_dtype: Optional[list[torch.dtype]] = None
+    custom_backend_name: str, unsupported_dtype: list[torch.dtype] | None = None
 ) -> None:
     # Attribute is registered in the _StorageBase class
     # and UntypedStorage obtains through inheritance.
@@ -347,7 +344,7 @@ def generate_methods_for_privateuse1_backend(
     for_module: bool = True,
     for_packed_sequence: bool = True,
     for_storage: bool = False,
-    unsupported_dtype: Optional[list[torch.dtype]] = None,
+    unsupported_dtype: list[torch.dtype] | None = None,
 ) -> None:
     r"""
     Automatically generate attributes and methods for the custom backend after rename privateuse1 backend.
@@ -426,9 +423,9 @@ def _get_custom_mod_func(func_name: str):
     it is marked as private. It is a convenience function for backend implementers to
     more easily call the hooks into their backend extensions.
     """
-    assert isinstance(
-        func_name, str
-    ), f"func_name must be `str`, but got `{type(func_name)}`."
+    assert isinstance(func_name, str), (
+        f"func_name must be `str`, but got `{type(func_name)}`."
+    )
     backend_name = _get_privateuse1_backend_name()
     custom_device_mod = getattr(torch, backend_name, None)  # type: ignore[arg-type]
     function = getattr(custom_device_mod, func_name, None)  # type: ignore[arg-type]

@@ -2,7 +2,6 @@
 
 from .glob_group import GlobGroup, GlobPattern
 
-
 __all__ = ["Directory"]
 
 
@@ -58,8 +57,7 @@ class Directory:
         if child in self.children.keys():
             if grandchildren is None:
                 return True
-            else:
-                return self.children[child].has_file(grandchildren)
+            return self.children[child].has_file(grandchildren)
         return False
 
     def __str__(self):

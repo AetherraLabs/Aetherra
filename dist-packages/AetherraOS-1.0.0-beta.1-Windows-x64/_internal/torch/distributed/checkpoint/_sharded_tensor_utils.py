@@ -8,9 +8,8 @@ from torch.distributed._shard.sharded_tensor import Shard, ShardedTensor, ShardM
 from torch.distributed.checkpoint.metadata import STATE_DICT_TYPE
 from torch.distributed.remote_device import _remote_device
 
-from ._traverse import OBJ_PATH, set_element, STATE_DICT_ITEM, traverse_state_dict
+from ._traverse import OBJ_PATH, STATE_DICT_ITEM, set_element, traverse_state_dict
 from .utils import _element_wise_add, _normalize_device_info
-
 
 if TYPE_CHECKING:
     from torch.distributed._shard.sharded_tensor.metadata import ShardedTensorMetadata

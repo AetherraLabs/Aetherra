@@ -11,10 +11,10 @@ import os
 import tempfile
 from base64 import b64decode, b64encode
 from datetime import timedelta
-from typing import Any, cast, Optional
+from typing import Any, cast
 
 from torch.distributed import FileStore, Store, TCPStore
-from torch.distributed.elastic.events import construct_and_record_rdzv_event, NodeState
+from torch.distributed.elastic.events import NodeState, construct_and_record_rdzv_event
 
 from .api import (
     RendezvousConnectionError,
@@ -24,7 +24,6 @@ from .api import (
 )
 from .dynamic_rendezvous import RendezvousBackend, Token
 from .utils import _matches_machine_hostname, parse_rendezvous_endpoint
-
 
 logger = logging.getLogger(__name__)
 
@@ -70,15 +69,15 @@ class C10dRendezvousBackend(RendezvousBackend):
         """See base class."""
         return "c10d"
 
-    def get_state(self) -> Optional[tuple[bytes, Token]]:
+    def get_state(self) -> tuple[bytes, Token] | None:
         """See base class."""
         base64_state: bytes = self._call_store("get", self._key)
 
         return self._decode_state(base64_state)
 
     def set_state(
-        self, state: bytes, token: Optional[Token] = None
-    ) -> Optional[tuple[bytes, Token, bool]]:
+        self, state: bytes, token: Token | None = None
+    ) -> tuple[bytes, Token, bool] | None:
         """See base class."""
         base64_state_str: str = b64encode(state).decode()
 
@@ -120,7 +119,7 @@ class C10dRendezvousBackend(RendezvousBackend):
                 "The connection to the C10d store has failed. See inner exception for details."
             ) from exc
 
-    def _decode_state(self, base64_state: bytes) -> Optional[tuple[bytes, Token]]:
+    def _decode_state(self, base64_state: bytes) -> tuple[bytes, Token] | None:
         if base64_state == self._NULL_SENTINEL.encode():
             return None
 

@@ -36,9 +36,7 @@ except Exception:
             return f"mem_{len(self._memories)}"
 
         async def recall_memories(self, query_text: str = "", limit: int = 5, **kwargs):
-            return [
-                _MemoryRecord(m.get("content", {})) for m in self._memories[-limit:]
-            ]
+            return [_MemoryRecord(m.get("content", {})) for m in self._memories[-limit:]]
 
         async def get_memory_stats(self):
             return {"total_memories": len(self._memories)}
@@ -94,13 +92,12 @@ except Exception:
 
     class ReasoningEngine:
         def __init__(self, *args, **kwargs):
-            pass
+            self._fallback_args = args
+            self._fallback_kwargs = kwargs
 
         async def reason(self, ctx: ReasoningContext):
             q = getattr(ctx, "payload", {}).get("query")
-            return ReasoningResult(
-                conclusion=f"Baseline reasoning about: {q}", confidence=0.75
-            )
+            return ReasoningResult(conclusion=f"Baseline reasoning about: {q}", confidence=0.75)
 
 
 try:
@@ -132,7 +129,8 @@ except Exception:
 
     class PluginChainExecutor:
         def __init__(self, *args, **kwargs):
-            pass
+            self._fallback_args = args
+            self._fallback_kwargs = kwargs
 
         async def execute_chain(self, *args, **kwargs):
             return {"status": "mock", "results": []}
@@ -440,9 +438,7 @@ class AetherraEngine:
 
                 reasoning_result = _RR()
 
-            response = self._generate_response(
-                message, reasoning_result, relevant_memories
-            )
+            response = self._generate_response(message, reasoning_result, relevant_memories)
 
             await self.memory_system.store_memory(
                 content={"role": "assistant", "content": response},
@@ -476,9 +472,7 @@ class AetherraEngine:
                 "timestamp": datetime.now().isoformat(),
             }
 
-    def _generate_response(
-        self, message: str, reasoning_result, relevant_memories: List
-    ) -> str:
+    def _generate_response(self, message: str, reasoning_result, relevant_memories: List) -> str:
         """Generate response based on message and context (placeholder)."""
         if "hello" in message.lower():
             return (
@@ -505,16 +499,13 @@ class AetherraEngine:
     async def get_conversation_summary(self) -> Dict[str, Any]:
         if not self.session_id:
             return {"status": "no_active_session"}
-        memories = await self.memory_system.get_conversation_context(
-            self.session_id, limit=20
-        )
+        memories = await self.memory_system.get_conversation_context(self.session_id, limit=20)
         return {
             "session_id": self.session_id,
             "context": self.conversation_context,
             "message_count": len(memories),
             "duration_minutes": (
-                datetime.now()
-                - self.conversation_context.get("start_time", datetime.now())
+                datetime.now() - self.conversation_context.get("start_time", datetime.now())
             ).total_seconds()
             / 60,
             "topics": self.conversation_context.get("topics", []),
@@ -527,9 +518,7 @@ class AetherraEngine:
         improvement_status = getattr(
             self.improvement_engine, "get_improvement_status", lambda: {}
         )()
-        orchestrator_status = getattr(
-            self.agent_orchestrator, "get_system_status", lambda: {}
-        )()
+        orchestrator_status = getattr(self.agent_orchestrator, "get_system_status", lambda: {})()
         health_status = getattr(
             self.introspection, "get_health_status", lambda: {"status": "unknown"}
         )()

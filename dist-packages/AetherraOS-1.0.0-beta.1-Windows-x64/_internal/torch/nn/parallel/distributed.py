@@ -9,10 +9,11 @@ import sys
 import warnings
 import weakref
 from collections import defaultdict, deque
+from collections.abc import Callable
 from contextlib import contextmanager
 from dataclasses import dataclass, fields, is_dataclass
-from enum import auto, Enum
-from typing import Any, Callable, Optional, TYPE_CHECKING
+from enum import Enum, auto
+from typing import TYPE_CHECKING, Any, Optional
 
 import torch
 import torch.distributed as dist
@@ -23,13 +24,12 @@ from torch.nn.modules import Module
 from torch.nn.parallel.scatter_gather import gather, scatter_kwargs
 from torch.utils._pytree import tree_flatten, tree_unflatten
 
-
 RPC_AVAILABLE = False
 if dist.is_available():
     from torch.distributed.distributed_c10d import (
+        ReduceOp,
         _get_default_group,
         _rank_not_in_group,
-        ReduceOp,
     )
     from torch.distributed.utils import (
         _alloc_storage,
@@ -86,9 +86,9 @@ class _MixedPrecision:
         would result in communication occurring in fp16.
     """
 
-    param_dtype: Optional[torch.dtype] = None
-    reduce_dtype: Optional[torch.dtype] = None
-    buffer_dtype: Optional[torch.dtype] = None
+    param_dtype: torch.dtype | None = None
+    reduce_dtype: torch.dtype | None = None
+    buffer_dtype: torch.dtype | None = None
     # TODO (rohan-varma): keep_low_precision_grads: bool = False
     # TODO (rohan-varma): APIs to allow users to run batchnorm and layernorm
     # in full precision. For DDP, this can be implemented by not performing the
@@ -651,7 +651,7 @@ class DistributedDataParallel(Module, Joinable):
         static_graph=False,
         delay_all_reduce_named_params=None,
         param_to_hook_all_reduce=None,
-        mixed_precision: Optional[_MixedPrecision] = None,
+        mixed_precision: _MixedPrecision | None = None,
         device_mesh=None,
         skip_all_reduce_unused_params=False,
     ):
@@ -660,7 +660,7 @@ class DistributedDataParallel(Module, Joinable):
         self._use_python_reducer = (
             torch._dynamo.utils.get_optimize_ddp_mode() == "python_reducer"
         )
-        self.logger: Optional[dist.Logger] = None
+        self.logger: dist.Logger | None = None
         if bool(delay_all_reduce_named_params is not None) != bool(
             param_to_hook_all_reduce is not None
         ):
@@ -674,7 +674,7 @@ class DistributedDataParallel(Module, Joinable):
             raise RuntimeError(
                 "Cannot specify both process_group and device_mesh arguments."
             )
-        elif process_group is None and device_mesh is None:
+        if process_group is None and device_mesh is None:
             self.process_group = _get_default_group()
         elif device_mesh is None:
             self.process_group = process_group
@@ -822,7 +822,7 @@ class DistributedDataParallel(Module, Joinable):
         )
 
         # Initialize gradient buffers and register all reduce hook
-        self._delay_grad_buffer: Optional[torch.Tensor] = None
+        self._delay_grad_buffer: torch.Tensor | None = None
         self._delay_grad_views: list[torch.Tensor] = []
         self._delay_all_reduce_all_params = False
         if len(self._delay_all_reduce_params) != 0:
@@ -1469,9 +1469,8 @@ class DistributedDataParallel(Module, Joinable):
     def _run_ddp_forward(self, *inputs, **kwargs):
         if self._use_python_reducer:
             return self.module(*inputs, **kwargs)  # type: ignore[index]
-        else:
-            with self._inside_ddp_forward():
-                return self.module(*inputs, **kwargs)  # type: ignore[index]
+        with self._inside_ddp_forward():
+            return self.module(*inputs, **kwargs)  # type: ignore[index]
 
     def _clear_grad_buffer(self):
         # Making param.grad points to the grad buffers before backward is based on the
@@ -1559,16 +1558,15 @@ class DistributedDataParallel(Module, Joinable):
                     **kwargs,
                 )
             return args, kwargs
-        else:
-            # Cast inputs to reduced precision if needed.
-            # TODO (rohan-varma) test this codepath.
-            if self.mixed_precision is not None:
-                inputs, kwargs = _cast_forward_inputs(
-                    self.mixed_precision.param_dtype,
-                    *inputs,
-                    **kwargs,
-                )
-            return inputs, kwargs
+        # Cast inputs to reduced precision if needed.
+        # TODO (rohan-varma) test this codepath.
+        if self.mixed_precision is not None:
+            inputs, kwargs = _cast_forward_inputs(
+                self.mixed_precision.param_dtype,
+                *inputs,
+                **kwargs,
+            )
+        return inputs, kwargs
 
     def _post_forward(self, output):
         if self._use_python_reducer:
@@ -1608,7 +1606,7 @@ class DistributedDataParallel(Module, Joinable):
                 treespec,
                 output_is_rref,
             ) = _tree_flatten_with_rref(output)
-            output_placeholders: list[Optional[torch.Tensor]] = [
+            output_placeholders: list[torch.Tensor | None] = [
                 None for _ in range(len(output_tensor_list))
             ]
             # Do not touch tensors that have no grad_fn, which can cause issues
@@ -1689,8 +1687,7 @@ class DistributedDataParallel(Module, Joinable):
             work.wait()
             should_sync_backwards = requires_sync_tensor.item() != 0
             return should_sync_backwards
-        else:
-            return None  # Return value is not/should not be used.
+        return None  # Return value is not/should not be used.
 
     # When running in join mode, checks and performs sync of module buffers if
     # the models have buffers that should be synchronized in the forward pass.

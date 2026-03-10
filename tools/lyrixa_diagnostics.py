@@ -31,7 +31,6 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict
 
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
@@ -49,7 +48,7 @@ class CheckResult:
 class DiagnosticsReport:
     critical_pass: bool
     degraded: bool
-    results: Dict[str, CheckResult]
+    results: dict[str, CheckResult]
     summary: str
 
 
@@ -67,7 +66,7 @@ async def check_port(host: str, port: int, timeout: float = 1.5) -> bool:
 async def run_checks(
     verbose: bool = False, skip_advanced: bool = False
 ) -> DiagnosticsReport:
-    results: Dict[str, CheckResult] = {}
+    results: dict[str, CheckResult] = {}
 
     async def record(name: str, coro, critical: bool = False, warn_only: bool = False):
         start = time.time()
@@ -395,17 +394,16 @@ async def main():
         if report.critical_pass and report.degraded:
             return 2
         return 1
-    else:
-        print("=== Lyrixa Diagnostics ===")
-        print(report.summary)
-        if report.critical_pass and not report.degraded:
-            print("\nStatus: ALL CRITICAL SYSTEMS PASS ✅")
-            return 0
-        if report.critical_pass and report.degraded:
-            print("\nStatus: DEGRADED (non-critical components failed) ⚠️")
-            return 2
-        print("\nStatus: CRITICAL FAILURE ❌")
-        return 1
+    print("=== Lyrixa Diagnostics ===")
+    print(report.summary)
+    if report.critical_pass and not report.degraded:
+        print("\nStatus: ALL CRITICAL SYSTEMS PASS ✅")
+        return 0
+    if report.critical_pass and report.degraded:
+        print("\nStatus: DEGRADED (non-critical components failed) ⚠️")
+        return 2
+    print("\nStatus: CRITICAL FAILURE ❌")
+    return 1
 
 
 if __name__ == "__main__":

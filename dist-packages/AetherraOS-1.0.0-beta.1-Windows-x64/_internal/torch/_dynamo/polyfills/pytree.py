@@ -5,8 +5,10 @@ Python polyfills for torch.utils.pytree
 from __future__ import annotations
 
 from collections import deque
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Literal, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Literal
+
 from typing_extensions import TypeIs
 
 import torch.utils._pytree as python_pytree
@@ -14,11 +16,10 @@ from torch.utils._pytree import BUILTIN_TYPES, STANDARD_DICT_TYPES
 
 from ..decorators import substitute_in_graph
 
-
 if TYPE_CHECKING:
     import builtins
     from collections.abc import Iterable
-    from typing_extensions import Self
+    from typing import Self
 
 
 __all__: list[str] = []
@@ -288,7 +289,7 @@ if python_pytree._cxx_pytree_dynamo_traceable:
                                 f"expected {treespec._metadata!r}, but got {metadata!r}.",  # namedtuple type mismatch
                             )
 
-                for subtree, subspec in zip(children, treespec._children):
+                for subtree, subspec in zip(children, treespec._children, strict=False):
                     helper(subspec, subtree, subtrees)
 
             subtrees: list[PyTree] = []

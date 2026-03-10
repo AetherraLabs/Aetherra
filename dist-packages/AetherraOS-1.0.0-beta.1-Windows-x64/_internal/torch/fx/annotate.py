@@ -29,8 +29,6 @@ def annotate(val, type):
                 f"on the function signature) or you called "
                 f"annotate on the same value twice"
             )
-        else:
-            val.node.type = type
+        val.node.type = type
         return val
-    else:
-        return val
+    return val

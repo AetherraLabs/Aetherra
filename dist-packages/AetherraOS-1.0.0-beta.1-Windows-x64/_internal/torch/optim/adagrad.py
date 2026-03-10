@@ -1,10 +1,12 @@
 # mypy: allow-untyped-defs
-from typing import cast, Optional, Union
+from typing import cast
 
 import torch
 from torch import Tensor
 
 from .optimizer import (
+    Optimizer,
+    ParamsT,
     _default_to_fused_or_foreach,
     _device_dtype_check_for_fused,
     _differentiable_doc,
@@ -16,10 +18,7 @@ from .optimizer import (
     _to_scalar,
     _use_grad_for_differentiable,
     _view_as_real,
-    Optimizer,
-    ParamsT,
 )
-
 
 __all__ = ["Adagrad", "adagrad"]
 
@@ -28,30 +27,30 @@ class Adagrad(Optimizer):
     def __init__(
         self,
         params: ParamsT,
-        lr: Union[float, Tensor] = 1e-2,
+        lr: float | Tensor = 1e-2,
         lr_decay: float = 0,
         weight_decay: float = 0,
         initial_accumulator_value: float = 0,
         eps: float = 1e-10,
-        foreach: Optional[bool] = None,
+        foreach: bool | None = None,
         *,
         maximize: bool = False,
         differentiable: bool = False,
-        fused: Optional[bool] = None,
+        fused: bool | None = None,
     ):
         if isinstance(lr, Tensor) and lr.numel() != 1:
             raise ValueError("Tensor lr must be 1-element")
-        if not 0.0 <= lr:
+        if not lr >= 0.0:
             raise ValueError(f"Invalid learning rate: {lr}")
-        if not 0.0 <= lr_decay:
+        if not lr_decay >= 0.0:
             raise ValueError(f"Invalid lr_decay value: {lr_decay}")
-        if not 0.0 <= weight_decay:
+        if not weight_decay >= 0.0:
             raise ValueError(f"Invalid weight_decay value: {weight_decay}")
-        if not 0.0 <= initial_accumulator_value:
+        if not initial_accumulator_value >= 0.0:
             raise ValueError(
                 f"Invalid initial_accumulator_value value: {initial_accumulator_value}"
             )
-        if not 0.0 <= eps:
+        if not eps >= 0.0:
             raise ValueError(f"Invalid epsilon value: {eps}")
 
         defaults = dict(
@@ -245,13 +244,13 @@ def adagrad(
     grads: list[Tensor],
     state_sums: list[Tensor],
     state_steps: list[Tensor],
-    fused: Optional[bool] = None,
-    grad_scale: Optional[Tensor] = None,
-    found_inf: Optional[Tensor] = None,
+    fused: bool | None = None,
+    grad_scale: Tensor | None = None,
+    found_inf: Tensor | None = None,
     # kwonly args with defaults are not supported by functions compiled with torchscript issue #70627
     # setting these as kwargs for now as functional API is compiled by torch/distributed/optim
     has_sparse_grad: bool = False,
-    foreach: Optional[bool] = None,
+    foreach: bool | None = None,
     differentiable: bool = False,
     has_complex: bool = False,
     *,
@@ -324,8 +323,8 @@ def _single_tensor_adagrad(
     grads: list[Tensor],
     state_sums: list[Tensor],
     state_steps: list[Tensor],
-    grad_scale: Optional[Tensor],
-    found_inf: Optional[Tensor],
+    grad_scale: Tensor | None,
+    found_inf: Tensor | None,
     *,
     lr: float,
     weight_decay: float,
@@ -341,7 +340,9 @@ def _single_tensor_adagrad(
     if not torch.jit.is_scripting():
         lr = _to_scalar(lr)
 
-    for param, grad, state_sum, step_t in zip(params, grads, state_sums, state_steps):
+    for param, grad, state_sum, step_t in zip(
+        params, grads, state_sums, state_steps, strict=False
+    ):
         # update step
         step_t += 1
         step = _get_value(step_t)
@@ -389,8 +390,8 @@ def _multi_tensor_adagrad(
     grads: list[Tensor],
     state_sums: list[Tensor],
     state_steps: list[Tensor],
-    grad_scale: Optional[Tensor],
-    found_inf: Optional[Tensor],
+    grad_scale: Tensor | None,
+    found_inf: Tensor | None,
     *,
     lr: float,
     weight_decay: float,
@@ -498,8 +499,8 @@ def _fused_adagrad(
     grads: list[Tensor],
     state_sums: list[Tensor],
     state_steps: list[Tensor],
-    grad_scale: Optional[Tensor],
-    found_inf: Optional[Tensor],
+    grad_scale: Tensor | None,
+    found_inf: Tensor | None,
     *,
     lr: float,
     weight_decay: float,

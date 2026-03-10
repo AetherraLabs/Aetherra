@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import torch
 from torch import SymInt
 from torch.fx.experimental.sym_node import SymNode
-from torch.types import py_sym_types, PySymType
+from torch.types import PySymType, py_sym_types
 from torch.utils._backport_slots import dataclass_slots
-
 
 if TYPE_CHECKING:
     import sympy
@@ -28,8 +27,8 @@ class _DeconstructedSymNode:
     # n.b. keep the same protocol as SymNode
     _expr: sympy.Expr
     pytype: type
-    _hint: Optional[Union[int, float, bool]]
-    constant: Optional[Union[int, float, bool]]
+    _hint: int | float | bool | None
+    constant: int | float | bool | None
     fx_node: torch.fx.Node
 
     @staticmethod
@@ -65,8 +64,7 @@ class _DeconstructedSymNode:
                 and self.constant == other.constant
                 and self.fx_node == other.fx_node
             )
-        else:
-            return False
+        return False
 
     # _value_hash to match SymNode
     def _value_hash(self) -> int:
@@ -125,10 +123,10 @@ class _PySymInputStub:
     #                          the cache to avoid cyclic ShapeEnv references.
     #   _InputBackref: This is a back-reference to a previous _PySymInputStub in
     #                  the key.
-    value: Union[PySymType, _DeconstructedSymType, _InputBackref]
+    value: PySymType | _DeconstructedSymType | _InputBackref
 
     def __init__(
-        self, value: Union[PySymType, _DeconstructedSymType, _InputBackref]
+        self, value: PySymType | _DeconstructedSymType | _InputBackref
     ) -> None:
         # For inputs (values in the `key`) we need to keep the PySymType intact
         # - this way if we need to reuse it as an output we can properly copy
@@ -142,12 +140,11 @@ class _PySymInputStub:
     def extract(self, shape_env: ShapeEnv) -> PySymType:
         if isinstance(self.value, _DeconstructedSymType):
             return self.value.extract(shape_env)
-        else:
-            # We should never see an _InputBackref here - anyone extracting a
-            # value should be pulling from the original entry (the one this
-            # backref points at).
-            assert not isinstance(self.value, _InputBackref)
-            return self.value
+        # We should never see an _InputBackref here - anyone extracting a
+        # value should be pulling from the original entry (the one this
+        # backref points at).
+        assert not isinstance(self.value, _InputBackref)
+        return self.value
 
     def __str__(self) -> str:
         return str(self.value)
@@ -158,18 +155,16 @@ class _PySymInputStub:
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, _PySymInputStub):
             return False
-        elif isinstance(self.value, _InputBackref) or isinstance(
+        if isinstance(self.value, _InputBackref) or isinstance(
             other.value, _InputBackref
         ):
             return self.value == other.value
-        else:
-            return self.value.node._value_eq(other.value.node)
+        return self.value.node._value_eq(other.value.node)
 
     def __hash__(self) -> int:
         if isinstance(self.value, _InputBackref):
             return hash(self.value)
-        else:
-            return self.value.node._value_hash()
+        return self.value.node._value_hash()
 
 
 @dataclass_slots
@@ -181,9 +176,9 @@ class _SymIntOutputStub:
 
     # This is either an `int` which represents the index in the key to copy the
     # SymNode from or it's the deconstructed SymNode itself.
-    value: Union[int, _DeconstructedSymNode]
+    value: int | _DeconstructedSymNode
 
-    def __init__(self, value: SymInt, key_path: Optional[int]) -> None:
+    def __init__(self, value: SymInt, key_path: int | None) -> None:
         if key_path is None:
             self.value = _DeconstructedSymNode.from_node(value.node)
         else:
@@ -192,10 +187,9 @@ class _SymIntOutputStub:
     def extract(self, key: _DispatchCacheKey, shape_env: ShapeEnv) -> SymInt:
         if isinstance(self.value, _DeconstructedSymNode):
             return SymInt(self.value.extract(shape_env))
-        else:
-            src = key.key[self.value]
-            assert isinstance(src, _PySymInputStub) and isinstance(src.value, SymInt)
-            return src.value
+        src = key.key[self.value]
+        assert isinstance(src, _PySymInputStub) and isinstance(src.value, SymInt)
+        return src.value
 
     def __repr__(self) -> str:
         return f"_SymIntOutputStub({self.value!r})"
@@ -227,9 +221,9 @@ class _CacheKeyState:
     # ShapeEnv on the FakeTensorMode - but for SymNodes we MUST have a
     # ShapeEnv. So as we scan if we see a SymNode (with a ShapeEnv) we record it
     # here.
-    shape_env: Optional[ShapeEnv]
+    shape_env: ShapeEnv | None
 
-    def __init__(self, shape_env: Optional[ShapeEnv] = None) -> None:
+    def __init__(self, shape_env: ShapeEnv | None = None) -> None:
         self.sym_node_lookup = {}
         self.known_symbols = set()
         self.shape_env = shape_env
@@ -261,5 +255,4 @@ class _CacheKeyState:
     def convert_output(self, arg: _MetadataIntLike) -> _MetadataIntLike:
         if isinstance(arg, SymInt):
             return _SymIntOutputStub(arg, self.sym_node_lookup.get(id(arg.node), None))
-        else:
-            return arg
+        return arg

@@ -74,9 +74,7 @@ class PluginQualityControl:
             "min_structure_score": 60,
         }
 
-    def validate_plugin(
-        self, plugin_path: str, plugin_name: str | None = None
-    ) -> QualityMetrics:
+    def validate_plugin(self, plugin_path: str, plugin_name: str | None = None) -> QualityMetrics:
         """Comprehensive plugin validation."""
         metrics = QualityMetrics()
 
@@ -119,18 +117,14 @@ class PluginQualityControl:
             metrics.errors.append(f"Validation error: {e}")
             return metrics
 
-    def _validate_structure(
-        self, tree: ast.Module, content: str, metrics: QualityMetrics
-    ):
+    def _validate_structure(self, tree: ast.Module, content: str, metrics: QualityMetrics):
         """Validate plugin structure and organization."""
         score = 0
         max_score = 25
 
         # Check for required classes/functions
         classes = [node for node in ast.walk(tree) if isinstance(node, ast.ClassDef)]
-        functions = [
-            node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
-        ]
+        functions = [node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
 
         # Plugin class check
         plugin_classes = [cls for cls in classes if "plugin" in cls.name.lower()]
@@ -140,9 +134,7 @@ class PluginQualityControl:
             # Check for required methods
             for plugin_class in plugin_classes:
                 methods = [
-                    node.name
-                    for node in plugin_class.body
-                    if isinstance(node, ast.FunctionDef)
+                    node.name for node in plugin_class.body if isinstance(node, ast.FunctionDef)
                 ]
 
                 if "execute" in methods:
@@ -156,8 +148,7 @@ class PluginQualityControl:
                 if "__doc__" in [
                     node.targets[0].id
                     for node in plugin_class.body
-                    if isinstance(node, ast.Assign)
-                    and isinstance(node.targets[0], ast.Name)
+                    if isinstance(node, ast.Assign) and isinstance(node.targets[0], ast.Name)
                 ]:
                     score += 2
         else:
@@ -169,9 +160,7 @@ class PluginQualityControl:
                 metrics.warnings.append("No plugin class or main function found")
 
         # Check imports organization
-        imports = [
-            node for node in tree.body if isinstance(node, (ast.Import, ast.ImportFrom))
-        ]
+        imports = [node for node in tree.body if isinstance(node, (ast.Import, ast.ImportFrom))]
         if imports:
             score += 2
 
@@ -207,9 +196,7 @@ class PluginQualityControl:
         # Normalize score
         metrics.categories["structure"] = min(100, (score / max_score) * 100)
 
-    def _validate_documentation(
-        self, tree: ast.Module, content: str, metrics: QualityMetrics
-    ):
+    def _validate_documentation(self, tree: ast.Module, content: str, metrics: QualityMetrics):
         """Validate plugin documentation quality."""
         score = 0
         max_score = 20
@@ -267,9 +254,7 @@ class PluginQualityControl:
 
         metrics.categories["documentation"] = min(100, (score / max_score) * 100)
 
-    def _validate_security(
-        self, tree: ast.Module, content: str, metrics: QualityMetrics
-    ):
+    def _validate_security(self, tree: ast.Module, content: str, metrics: QualityMetrics):
         """Validate plugin security practices."""
         score = 100  # Start with perfect score, deduct for issues
 
@@ -327,9 +312,7 @@ class PluginQualityControl:
 
         metrics.categories["security"] = max(0, score)
 
-    def _validate_compatibility(
-        self, tree: ast.Module, content: str, metrics: QualityMetrics
-    ):
+    def _validate_compatibility(self, tree: ast.Module, content: str, metrics: QualityMetrics):
         """Validate plugin compatibility and dependencies."""
         score = 0
         max_score = 15
@@ -349,9 +332,7 @@ class PluginQualityControl:
         if has_type_hints:
             score += 4
         else:
-            metrics.suggestions.append(
-                "Consider adding type hints for better compatibility"
-            )
+            metrics.suggestions.append("Consider adding type hints for better compatibility")
 
         # Check for exception handling
         try_blocks = [node for node in ast.walk(tree) if isinstance(node, ast.Try)]
@@ -375,14 +356,10 @@ class PluginQualityControl:
 
         # Check for third-party dependencies
         third_party = [
-            imp
-            for imp in imports
-            if imp not in standard_libs and not imp.startswith(".")
+            imp for imp in imports if imp not in standard_libs and not imp.startswith(".")
         ]
         if len(third_party) > 5:
-            metrics.suggestions.append(
-                "Many third-party dependencies - consider minimizing"
-            )
+            metrics.suggestions.append("Many third-party dependencies - consider minimizing")
 
         metrics.categories["compatibility"] = min(100, (score / max_score) * 100)
 
@@ -393,9 +370,7 @@ class PluginQualityControl:
         score = 100  # Start high, deduct for potential issues
 
         # Check for loops
-        loops = [
-            node for node in ast.walk(tree) if isinstance(node, (ast.For, ast.While))
-        ]
+        loops = [node for node in ast.walk(tree) if isinstance(node, (ast.For, ast.While))]
         nested_loops = 0
 
         for loop in loops:
@@ -405,14 +380,10 @@ class PluginQualityControl:
 
         if nested_loops > 2:
             score -= 15
-            metrics.warnings.append(
-                "Multiple nested loops detected - may impact performance"
-            )
+            metrics.warnings.append("Multiple nested loops detected - may impact performance")
 
         # Check for recursion
-        functions = [
-            node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
-        ]
+        functions = [node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
         for func in functions:
             for node in ast.walk(func):
                 if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
@@ -422,9 +393,7 @@ class PluginQualityControl:
                         )
 
         # Check for large data structures
-        lists_comps = [
-            node for node in ast.walk(tree) if isinstance(node, ast.ListComp)
-        ]
+        lists_comps = [node for node in ast.walk(tree) if isinstance(node, ast.ListComp)]
         if len(lists_comps) > 3:
             metrics.suggestions.append(
                 "Multiple list comprehensions - consider generator expressions for large data"
@@ -438,9 +407,7 @@ class PluginQualityControl:
                     metrics.warnings.append("Blocking sleep operation found")
                 elif isinstance(node.func, ast.Name) and node.func.id == "input":
                     score -= 5
-                    metrics.warnings.append(
-                        "User input operation found - may block execution"
-                    )
+                    metrics.warnings.append("User input operation found - may block execution")
 
         metrics.categories["performance"] = max(0, score)
 
@@ -466,9 +433,7 @@ class PluginQualityControl:
 
         metrics.score = max(0, total_score - error_penalty - warning_penalty)
 
-    def test_plugin_performance(
-        self, plugin_instance: Any, test_args: List | None = None
-    ) -> Dict:
+    def test_plugin_performance(self, plugin_instance: Any, test_args: List | None = None) -> Dict:
         """Test plugin performance with benchmarks."""
         if not test_args:
             test_args = []
@@ -525,9 +490,7 @@ class PluginQualityControl:
 
         return results
 
-    def generate_quality_report(
-        self, plugin_path: str, plugin_name: Optional[str] = None
-    ) -> Dict:
+    def generate_quality_report(self, plugin_path: str, plugin_name: Optional[str] = None) -> Dict:
         """Generate comprehensive quality report."""
         metrics = self.validate_plugin(plugin_path, plugin_name)
 
@@ -542,8 +505,7 @@ class PluginQualityControl:
             quality_level = "Poor"
 
         return {
-            "plugin_name": plugin_name
-            or os.path.basename(plugin_path).replace(".py", ""),
+            "plugin_name": plugin_name or os.path.basename(plugin_path).replace(".py", ""),
             "plugin_path": plugin_path,
             "overall_score": metrics.score,
             "quality_level": quality_level,
@@ -552,8 +514,7 @@ class PluginQualityControl:
             "warnings": metrics.warnings,
             "suggestions": metrics.suggestions,
             "timestamp": datetime.now().isoformat(),
-            "standards_met": metrics.score
-            >= self.quality_standards["min_structure_score"],
+            "standards_met": metrics.score >= self.quality_standards["min_structure_score"],
         }
 
     def get_quality_standards(self) -> Dict:
@@ -573,15 +534,11 @@ class PluginQualityControl:
 quality_control = PluginQualityControl()
 
 
-def validate_plugin(
-    plugin_path: str, plugin_name: Optional[str] = None
-) -> QualityMetrics:
+def validate_plugin(plugin_path: str, plugin_name: Optional[str] = None) -> QualityMetrics:
     """Convenience function for plugin validation."""
     return quality_control.validate_plugin(plugin_path, plugin_name)
 
 
-def generate_quality_report(
-    plugin_path: str, plugin_name: Optional[str] = None
-) -> Dict:
+def generate_quality_report(plugin_path: str, plugin_name: Optional[str] = None) -> Dict:
     """Convenience function for quality report generation."""
     return quality_control.generate_quality_report(plugin_path, plugin_name)

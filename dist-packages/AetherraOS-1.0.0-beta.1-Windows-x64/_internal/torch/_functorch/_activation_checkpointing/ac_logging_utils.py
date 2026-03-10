@@ -5,7 +5,6 @@ from typing import Any
 from torch._logging import trace_structured
 from torch.fx import Graph, Node
 
-
 log: logging.Logger = logging.getLogger(__name__)
 
 

@@ -7,12 +7,12 @@
 """
 Global flags for aot autograd
 """
+
 import os
 import sys
-from typing import Literal, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from torch.utils._config_module import Config, install_config_module
-
 
 # Converts torch rng ops to their functional philox rng equivalents. Note that
 # we functionalize only CUDA rng ops today.
@@ -43,7 +43,6 @@ cse = True
 
 from torch._environment import is_fbcode
 
-
 enable_autograd_cache: bool = Config(
     justknob="pytorch/remote_cache:enable_local_autograd_cache",
     env_name_force="TORCHINDUCTOR_AUTOGRAD_CACHE",
@@ -61,7 +60,7 @@ autograd_cache_allow_custom_autograd_functions: bool = Config(
 bundled_autograd_cache: bool = False
 
 
-def remote_autograd_cache_default() -> Optional[bool]:
+def remote_autograd_cache_default() -> bool | None:
     if os.environ.get("TORCHINDUCTOR_AUTOGRAD_REMOTE_CACHE") == "1":
         return True
     if os.environ.get("TORCHINDUCTOR_AUTOGRAD_REMOTE_CACHE") == "0":

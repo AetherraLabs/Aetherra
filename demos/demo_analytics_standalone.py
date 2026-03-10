@@ -18,7 +18,7 @@ import sqlite3
 import time
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 # Set up logging
 logging.basicConfig(
@@ -35,7 +35,7 @@ class SimpleAnalyticsMetric:
     value: float
     timestamp: datetime
     category: str
-    metadata: Dict[str, Any] = None
+    metadata: dict[str, Any] = None
 
     def __post_init__(self):
         if self.metadata is None:
@@ -52,7 +52,7 @@ class SimpleInsightPattern:
     impact_score: float
     category: str
     discovered_at: datetime
-    evidence: List[Dict[str, Any]] = None
+    evidence: list[dict[str, Any]] = None
 
     def __post_init__(self):
         if self.evidence is None:
@@ -126,7 +126,7 @@ class SimpleAnalyticsEngine:
         name: str,
         value: float,
         category: str = "general",
-        metadata: Dict[str, Any] = None,
+        metadata: dict[str, Any] = None,
     ) -> bool:
         """Collect a metric for analysis"""
 
@@ -174,7 +174,7 @@ class SimpleAnalyticsEngine:
             logger.info(f"📊 Flushed {len(self.metrics_buffer)} metrics to database")
             self.metrics_buffer.clear()
 
-    async def analyze_patterns(self) -> List[SimpleInsightPattern]:
+    async def analyze_patterns(self) -> list[SimpleInsightPattern]:
         """Analyze collected data for patterns and insights"""
 
         insights = []
@@ -326,7 +326,7 @@ class SimpleAnalyticsEngine:
 
         return insights
 
-    async def _store_insights(self, insights: List[SimpleInsightPattern]):
+    async def _store_insights(self, insights: list[SimpleInsightPattern]):
         """Store discovered insights in database"""
 
         with sqlite3.connect(self.db_path) as conn:
@@ -352,7 +352,7 @@ class SimpleAnalyticsEngine:
 
             conn.commit()
 
-    async def get_insights(self, limit: int = 10) -> List[Dict[str, Any]]:
+    async def get_insights(self, limit: int = 10) -> list[dict[str, Any]]:
         """Retrieve insights from database"""
 
         with sqlite3.connect(self.db_path) as conn:
@@ -387,7 +387,7 @@ class SimpleAnalyticsEngine:
 
             return insights
 
-    async def get_performance_snapshot(self) -> Dict[str, Any]:
+    async def get_performance_snapshot(self) -> dict[str, Any]:
         """Get current performance snapshot"""
 
         with sqlite3.connect(self.db_path) as conn:
@@ -430,7 +430,7 @@ class SimpleAnalyticsEngine:
 
             return snapshot
 
-    async def _calculate_system_health(self) -> Dict[str, Any]:
+    async def _calculate_system_health(self) -> dict[str, Any]:
         """Calculate overall system health score"""
 
         health_score = 100.0
@@ -491,7 +491,7 @@ class SimpleAnalyticsEngine:
             "factors": health_factors,
         }
 
-    def get_analytics_statistics(self) -> Dict[str, Any]:
+    def get_analytics_statistics(self) -> dict[str, Any]:
         """Get analytics engine statistics"""
 
         stats = self.stats.copy()
@@ -704,9 +704,12 @@ class AnalyticsInsightsDemo:
         health_status = health.get("status", "unknown")
         health_score = health.get("score", 0)
 
-        health_emoji = {"excellent": "🟢", "good": "🟡", "fair": "🟠", "poor": "🔴"}.get(
-            health_status, "⚪"
-        )
+        health_emoji = {
+            "excellent": "🟢",
+            "good": "🟡",
+            "fair": "🟠",
+            "poor": "🔴",
+        }.get(health_status, "⚪")
 
         print(
             f"🏥 System health: {health_emoji} {health_status.upper()} ({health_score:.0f}%)"

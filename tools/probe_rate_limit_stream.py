@@ -1,8 +1,6 @@
 # Standard library imports
 import asyncio
-import json
 import os
-import time
 
 # Third party imports
 import requests

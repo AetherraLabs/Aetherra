@@ -5,8 +5,8 @@ import functools
 import math
 import sys
 from collections import namedtuple
-from collections.abc import Sequence
-from typing import Any, Callable, Optional
+from collections.abc import Callable, Sequence
+from typing import Any
 from unittest.mock import patch
 
 import sympy
@@ -15,7 +15,7 @@ import torch
 from torch._prims_common import is_integer_dtype
 from torch.utils._ordered_set import OrderedSet
 from torch.utils._sympy.printers import CppPrinter as _CppPrinter
-from torch.utils._sympy.symbol import symbol_is_type, SymT
+from torch.utils._sympy.symbol import SymT, symbol_is_type
 from torch.utils._sympy.value_ranges import ValueRanges
 
 from .. import ir
@@ -23,9 +23,8 @@ from ..dependencies import Dep
 from ..loop_body import LoopBody
 from ..scheduler import BaseSchedulerNode, SchedulerBuffer
 from ..utils import IndentedBuffer, sympy_index_symbol_with_prefix, sympy_subs
-from ..virtualized import ops, OpsValue, V
+from ..virtualized import OpsValue, V, ops
 from .common import CSEVariable, Kernel, KernelArgs, OptimizationContext
-
 
 DTYPE_TO_CPP = {
     torch.float32: "float",
@@ -144,7 +143,7 @@ class CppCSEVariable(CSEVariable):
         self,
         name,
         bounds: ValueRanges[Any],
-        dtype: Optional[torch.dtype] = None,
+        dtype: torch.dtype | None = None,
     ) -> None:
         super().__init__(name, bounds, dtype)
         self.is_vec = False
@@ -211,14 +210,13 @@ def cexpr_index(index):
 def value_to_cpp(value, cpp_type):
     if value == float("-inf"):
         return f"-std::numeric_limits<{cpp_type}>::infinity()"
-    elif value == float("inf"):
+    if value == float("inf"):
         return f"std::numeric_limits<{cpp_type}>::infinity()"
-    elif isinstance(value, bool):
+    if isinstance(value, bool):
         return f"static_cast<{cpp_type}>({str(value).lower()})"
-    elif math.isnan(value):
+    if math.isnan(value):
         return f"std::numeric_limits<{cpp_type}>::quiet_NaN()"
-    else:
-        return f"static_cast<{cpp_type}>({repr(value)})"
+    return f"static_cast<{cpp_type}>({repr(value)})"
 
 
 def rewrite_index_for_function(
@@ -365,7 +363,7 @@ class LocalBufferContext:
         self.exit_stack.__exit__(exc_type, exc_val, exc_tb)
 
     def add_local_buffer(
-        self, local_buffer: ir.Buffer, global_buffers: Optional[list[ir.Buffer]] = None
+        self, local_buffer: ir.Buffer, global_buffers: list[ir.Buffer] | None = None
     ):
         assert local_buffer.get_name() not in self.local_buffers
         self.local_buffers[local_buffer.get_name()] = local_buffer
@@ -505,8 +503,7 @@ def codegen_rand(offset, code, rand_function, dst_dtype=torch.float32):
 def get_gemm_template_output_and_compute_dtype(input_dtype):
     if input_dtype in [torch.uint8, torch.int8]:
         return (torch.int32, torch.int32)
-    else:
-        return (torch.float32, torch.float32)
+    return (torch.float32, torch.float32)
 
 
 def create_epilogue_with_attr(input_buffer, attr, **kwargs):
@@ -644,8 +641,7 @@ def create_epilogue_with_attr(input_buffer, attr, **kwargs):
             op = getattr(ops, attr)
             if dims_diff != 0:
                 return op(input_loader(index), other_loader(index[dims_diff:]))
-            else:
-                return op(input_loader(index), other_loader(index))
+            return op(input_loader(index), other_loader(index))
 
     elif attr == "bias_add":
         assert "other" in kwargs
@@ -758,10 +754,10 @@ def template_fusion_with_epilogues_supported(
         results = [
             _check_supported_and_same_indexes(reads, writes)
             for reads, writes in zip(
-                indexes_of_template_buf_reads, epilogue_nodes_writes
+                indexes_of_template_buf_reads, epilogue_nodes_writes, strict=False
             )
         ]
-        supported, same_indexes = zip(*results)
+        supported, same_indexes = zip(*results, strict=False)
         return all(supported), all(same_indexes)
 
     assert template.is_template()

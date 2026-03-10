@@ -173,7 +173,17 @@ class AgentInterface:
 
     async def execute_task(self, task: Task) -> Any:
         """Execute a task"""
-        raise NotImplementedError("Subclasses must implement execute_task")
+        logger.warning(
+            "AgentInterface fallback execute_task invoked for agent '%s' task '%s'",
+            self.agent.agent_id,
+            task.task_id,
+        )
+        return {
+            "status": "unsupported",
+            "agent_id": self.agent.agent_id,
+            "task_id": task.task_id,
+            "message": "No concrete agent interface implementation available",
+        }
 
     async def health_check(self) -> bool:
         """Check if agent is healthy"""
@@ -181,11 +191,14 @@ class AgentInterface:
 
     async def initialize(self):
         """Initialize the agent"""
-        pass
+        self.agent.status = AgentStatus.IDLE
+        self.agent.last_activity = datetime.now()
 
     async def shutdown(self):
         """Shutdown the agent"""
-        pass
+        self.agent.status = AgentStatus.OFFLINE
+        self.agent.current_task = None
+        self.agent.last_activity = datetime.now()
 
 
 class LoadBalancer:
@@ -218,9 +231,7 @@ class LoadBalancer:
                 1 + len([t for t in agent.current_task] if agent.current_task else [])
             )
             capability_match = sum(
-                1
-                for cap in agent.capabilities
-                if cap.name in task.required_capabilities
+                1 for cap in agent.capabilities if cap.name in task.required_capabilities
             ) / len(task.required_capabilities)
 
             return performance * load_factor * capability_match
@@ -262,9 +273,7 @@ class PerformanceMonitor:
         # Update throughput
         elapsed_time = time.time() - self.start_time
         if elapsed_time > 0:
-            self.metrics["system_throughput"] = (
-                self.metrics["completed_tasks"] / elapsed_time
-            )
+            self.metrics["system_throughput"] = self.metrics["completed_tasks"] / elapsed_time
 
     def get_metrics(self) -> Dict[str, float]:
         """Get current performance metrics"""
@@ -347,9 +356,7 @@ class AgentOrchestrator:
         finally:
             conn.close()
 
-    def register_agent(
-        self, *args, **kwargs
-    ):  # flexible signature (sync in plugin variant)
+    def register_agent(self, *args, **kwargs):  # flexible signature (sync in plugin variant)
         """Register an agent with the orchestrator (flexible signature).
 
         Supports:
@@ -380,9 +387,7 @@ class AgentOrchestrator:
                 if not isinstance(raw_caps, (list, tuple, set)):
                     raw_caps = []
                 capabilities = list(raw_caps)
-                description = description or getattr(
-                    agent_obj, "description", "Test Agent (auto)"
-                )
+                description = description or getattr(agent_obj, "description", "Test Agent (auto)")
             else:
                 # Pattern: kwargs first
                 agent_id = kwargs.get("agent_id")
@@ -409,7 +414,7 @@ class AgentOrchestrator:
                 for c in capabilities:
                     try:
                         if hasattr(c, "name"):
-                            norm_caps.append(getattr(c, "name"))
+                            norm_caps.append(c.name)
                         else:
                             norm_caps.append(str(c))
                     except Exception:
@@ -429,14 +434,12 @@ class AgentOrchestrator:
             if agent_obj and isinstance(agent_obj, Agent):
                 agent = agent_obj
             else:
-                # Build AgentCapability objects with placeholder types
+                # Build AgentCapability objects with baseline I/O type hints
                 cap_objs = []
                 for cap in capabilities:
                     try:
                         cap_objs.append(
-                            AgentCapability(
-                                cap, f"Capability {cap}", ["input"], ["output"]
-                            )
+                            AgentCapability(cap, f"Capability {cap}", ["input"], ["output"])
                         )
                     except Exception:
                         pass
@@ -594,18 +597,14 @@ class AgentOrchestrator:
             agent.performance_metrics["total_tasks"] += 1
             success_rate = agent.performance_metrics.get("success_rate", 1.0)
             total = agent.performance_metrics["total_tasks"]
-            agent.performance_metrics["success_rate"] = (
-                success_rate * (total - 1) + 1.0
-            ) / total
+            agent.performance_metrics["success_rate"] = (success_rate * (total - 1) + 1.0) / total
 
             # Update system metrics
             self.performance_monitor.record_task_completion(task, execution_time, True)
 
-            logger.info(
-                f"Task {task.name} completed by {agent.name} in {execution_time:.2f}s"
-            )
+            logger.info(f"Task {task.name} completed by {agent.name} in {execution_time:.2f}s")
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             execution_time = time.time() - start_time
             task.status = TaskStatus.FAILED
             task.completed_at = datetime.now()
@@ -652,9 +651,7 @@ class AgentOrchestrator:
                     if task and task.started_at:
                         elapsed = (datetime.now() - task.started_at).total_seconds()
                         if elapsed > task.max_execution_time * 1.5:  # 50% buffer
-                            logger.warning(
-                                f"Task {task.name} appears stuck, may need intervention"
-                            )
+                            logger.warning(f"Task {task.name} appears stuck, may need intervention")
 
             except Exception as e:
                 agent.status = AgentStatus.ERROR
@@ -696,9 +693,7 @@ class AgentOrchestrator:
             "current_task": agent.current_task,
             "capabilities": [cap.name for cap in agent.capabilities],
             "performance_metrics": agent.performance_metrics,
-            "last_activity": agent.last_activity.isoformat()
-            if agent.last_activity
-            else None,
+            "last_activity": agent.last_activity.isoformat() if agent.last_activity else None,
         }
 
     def get_task_status(self, task_id: str) -> Dict[str, Any] | None:
@@ -715,9 +710,7 @@ class AgentOrchestrator:
             "priority": task.priority.value,
             "created_at": task.created_at.isoformat() if task.created_at else None,
             "started_at": task.started_at.isoformat() if task.started_at else None,
-            "completed_at": task.completed_at.isoformat()
-            if task.completed_at
-            else None,
+            "completed_at": task.completed_at.isoformat() if task.completed_at else None,
             "error_message": task.error_message,
         }
 
@@ -810,12 +803,8 @@ async def test_agent_orchestrator():
             name="Text Analyzer",
             description="Analyzes text content",
             capabilities=[
-                AgentCapability(
-                    "text_analysis", "Analyze text", ["text"], ["analysis"]
-                ),
-                AgentCapability(
-                    "sentiment", "Sentiment analysis", ["text"], ["sentiment"]
-                ),
+                AgentCapability("text_analysis", "Analyze text", ["text"], ["analysis"]),
+                AgentCapability("sentiment", "Sentiment analysis", ["text"], ["sentiment"]),
             ],
             status=AgentStatus.IDLE,
         ),
@@ -824,12 +813,8 @@ async def test_agent_orchestrator():
             name="Data Processor",
             description="Processes data",
             capabilities=[
-                AgentCapability(
-                    "data_processing", "Process data", ["data"], ["processed_data"]
-                ),
-                AgentCapability(
-                    "validation", "Data validation", ["data"], ["validation_result"]
-                ),
+                AgentCapability("data_processing", "Process data", ["data"], ["processed_data"]),
+                AgentCapability("validation", "Data validation", ["data"], ["validation_result"]),
             ],
             status=AgentStatus.IDLE,
         ),

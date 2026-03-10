@@ -3,7 +3,6 @@ import torch
 import torch.ao.nn.intrinsic as nni
 import torch.ao.nn.quantized.dynamic as nnqd
 
-
 __all__ = ["LinearReLU"]
 
 

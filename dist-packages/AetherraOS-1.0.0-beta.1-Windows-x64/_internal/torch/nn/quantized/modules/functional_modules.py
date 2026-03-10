@@ -14,5 +14,4 @@ from torch.ao.nn.quantized.modules.functional_modules import (
     QFunctional,
 )
 
-
 __all__ = ["FloatFunctional", "FXFloatFunctional", "QFunctional"]

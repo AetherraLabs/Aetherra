@@ -3,13 +3,12 @@ import collections
 import operator
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 import torch
 import torch.fx
 from torch.fx._compatibility import compatibility
 from torch.fx.node import _get_qualified_name
-
 
 __all__ = [
     "get_acc_ops_name",
@@ -31,13 +30,12 @@ CALLABLE_NODE_OPS = {"call_module", "call_function", "call_method"}
 def get_acc_ops_name(k):
     if isinstance(k, str):
         return k
-    elif k.__module__ and "acc_ops" in k.__module__:
+    if k.__module__ and "acc_ops" in k.__module__:
         return f"acc_ops.{k.__name__}"
-    else:
-        module = k.__module__.replace(
-            "torch._ops", "torch.ops"
-        )  # WAR for bug in how torch.ops assigns module
-        return f"{module if module else ''}.{k.__name__}"
+    module = k.__module__.replace(
+        "torch._ops", "torch.ops"
+    )  # WAR for bug in how torch.ops assigns module
+    return f"{module if module else ''}.{k.__name__}"
 
 
 @compatibility(is_backward_compatible=False)
@@ -67,16 +65,15 @@ def get_node_target(
         submod = submodules[node.target]
         submod_type = getattr(submod, "_base_class_origin", type(submod))
         return get_acc_ops_name(submod_type)
-    elif node.op == "call_function":
+    if node.op == "call_function":
         target: Any = node.target
         return (
             f"acc_ops.{target.__name__}"
             if target.__module__ is not None and "acc_ops" in target.__module__
             else _get_qualified_name(target)
         )
-    else:
-        assert isinstance(node.target, str)
-        return node.target
+    assert isinstance(node.target, str)
+    return node.target
 
 
 @compatibility(is_backward_compatible=False)
@@ -138,8 +135,8 @@ class FxNetAccFusionsFinder:
     def recursive_add_node(
         self,
         fusion_group: "FxNetAccFusionsFinder.FusionGroup",
-        inputs: Union[NodeSet, NodeList],
-        visited: Optional[NodeSet] = None,
+        inputs: NodeSet | NodeList,
+        visited: NodeSet | None = None,
     ):
         """
         Start from inputs and going reverse topological order. If any upstream node

@@ -208,9 +208,7 @@ class PluginStateMemory:
             print(f"[WARN] Error setting plugin state: {e}")
             return False
 
-    def get_plugin_state(
-        self, plugin_name: str, state_key: str, default: Any = None
-    ) -> Any:
+    def get_plugin_state(self, plugin_name: str, state_key: str, default: Any = None) -> Any:
         """
         Retrieve plugin state with caching.
 
@@ -223,10 +221,7 @@ class PluginStateMemory:
             The stored value or default
         """
         # Check cache first
-        if (
-            plugin_name in self.memory_cache
-            and state_key in self.memory_cache[plugin_name]
-        ):
+        if plugin_name in self.memory_cache and state_key in self.memory_cache[plugin_name]:
             return self.memory_cache[plugin_name][state_key]
 
         try:
@@ -275,9 +270,7 @@ class PluginStateMemory:
             print(f"[WARN] Error getting plugin state: {e}")
             return default
 
-    def delete_plugin_state(
-        self, plugin_name: str, state_key: Optional[str] = None
-    ) -> bool:
+    def delete_plugin_state(self, plugin_name: str, state_key: Optional[str] = None) -> bool:
         """
         Delete plugin state(s).
 
@@ -299,10 +292,7 @@ class PluginStateMemory:
                 )
 
                 # Remove from cache
-                if (
-                    plugin_name in self.memory_cache
-                    and state_key in self.memory_cache[plugin_name]
-                ):
+                if plugin_name in self.memory_cache and state_key in self.memory_cache[plugin_name]:
                     del self.memory_cache[plugin_name][state_key]
             else:
                 self.connection.execute(
@@ -323,9 +313,7 @@ class PluginStateMemory:
             print(f"[WARN] Error deleting plugin state: {e}")
             return False
 
-    def get_plugin_context(
-        self, plugin_name: str, context_id: str = "default"
-    ) -> Dict[str, Any]:
+    def get_plugin_context(self, plugin_name: str, context_id: str = "default") -> Dict[str, Any]:
         """
         Get plugin conversation context and learning data.
 
@@ -748,9 +736,7 @@ class CognitivePluginMemory:
 
         # Keep only last 20 interactions in memory
         if len(self.conversation_context[plugin_name]) > 20:
-            self.conversation_context[plugin_name] = self.conversation_context[
-                plugin_name
-            ][-20:]
+            self.conversation_context[plugin_name] = self.conversation_context[plugin_name][-20:]
 
         # Update persistent context
         context_data = self.state_memory.get_plugin_context(plugin_name)
@@ -758,9 +744,7 @@ class CognitivePluginMemory:
 
         # Keep only last 100 interactions in persistent storage
         if len(context_data["conversation_history"]) > 100:
-            context_data["conversation_history"] = context_data["conversation_history"][
-                -100:
-            ]
+            context_data["conversation_history"] = context_data["conversation_history"][-100:]
 
         # Update success/failure patterns
         if success:
@@ -773,9 +757,7 @@ class CognitivePluginMemory:
 
             # Keep only last 50 success patterns
             if len(context_data["success_patterns"]) > 50:
-                context_data["success_patterns"] = context_data["success_patterns"][
-                    -50:
-                ]
+                context_data["success_patterns"] = context_data["success_patterns"][-50:]
         else:
             pattern = {
                 "input_pattern": user_input[:100],
@@ -786,9 +768,7 @@ class CognitivePluginMemory:
 
             # Keep only last 30 failure patterns
             if len(context_data["failure_patterns"]) > 30:
-                context_data["failure_patterns"] = context_data["failure_patterns"][
-                    -30:
-                ]
+                context_data["failure_patterns"] = context_data["failure_patterns"][-30:]
 
         self.state_memory.update_plugin_context(plugin_name, "default", context_data)
 
@@ -811,18 +791,12 @@ class CognitivePluginMemory:
             1 for i in context_data["conversation_history"] if i["success"]
         )
         success_rate = (
-            successful_interactions / total_interactions
-            if total_interactions > 0
-            else 0.0
+            successful_interactions / total_interactions if total_interactions > 0 else 0.0
         )
 
         # Find common success patterns
-        success_inputs = [
-            p["input_pattern"] for p in context_data["success_patterns"][-10:]
-        ]
-        failure_inputs = [
-            p["input_pattern"] for p in context_data["failure_patterns"][-10:]
-        ]
+        success_inputs = [p["input_pattern"] for p in context_data["success_patterns"][-10:]]
+        failure_inputs = [p["input_pattern"] for p in context_data["failure_patterns"][-10:]]
 
         return {
             "total_interactions": total_interactions,
@@ -849,24 +823,16 @@ class CognitivePluginMemory:
         suggestions = []
 
         if insights["success_rate"] < 0.7:
-            suggestions.append(
-                "Consider reviewing error patterns and improving error handling"
-            )
+            suggestions.append("Consider reviewing error patterns and improving error handling")
 
         if insights["total_interactions"] > 100 and insights["session_count"] < 5:
             suggestions.append("Plugin may need better session state management")
 
-        if len(insights["recent_failure_patterns"]) > len(
-            insights["recent_success_patterns"]
-        ):
-            suggestions.append(
-                "Recent performance decline detected - review recent changes"
-            )
+        if len(insights["recent_failure_patterns"]) > len(insights["recent_success_patterns"]):
+            suggestions.append("Recent performance decline detected - review recent changes")
 
         memory_size = insights["memory_usage"].get("total_state_size_bytes", 0)
         if memory_size > 1024 * 1024:  # 1MB
-            suggestions.append(
-                "Consider implementing state cleanup to reduce memory usage"
-            )
+            suggestions.append("Consider implementing state cleanup to reduce memory usage")
 
         return suggestions

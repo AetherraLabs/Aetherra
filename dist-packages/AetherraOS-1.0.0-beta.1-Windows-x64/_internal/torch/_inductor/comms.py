@@ -10,7 +10,7 @@ import sys
 import time
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch._logging import trace_structured
@@ -19,7 +19,7 @@ from torch.utils._ordered_set import OrderedSet
 
 from . import config, ir
 from .dependencies import WeakDep
-from .memory import estimate_peak_memory, FreeableInputBuffer, get_freeable_input_buf
+from .memory import FreeableInputBuffer, estimate_peak_memory, get_freeable_input_buf
 from .utils import (
     contains_collective,
     contains_wait,
@@ -30,7 +30,6 @@ from .utils import (
     is_wait,
 )
 from .virtualized import V
-
 
 log = logging.getLogger(__name__)
 overlap_log = torch._logging.getArtifactLogger(__name__, "overlap")
@@ -621,7 +620,7 @@ Skipping `remove_fsdp2_unsharded_param_graph_input_usage` FX graph pass.
 
         # Check the sequence: (resize_to_full -> resize_to_0)+
         for resize_to_full_idx, resize_to_0_idx in zip(
-            resized_to_full_idxes, resized_to_0_idxes
+            resized_to_full_idxes, resized_to_0_idxes, strict=False
         ):
             if resize_to_full_idx >= resize_to_0_idx:
                 log.warning(

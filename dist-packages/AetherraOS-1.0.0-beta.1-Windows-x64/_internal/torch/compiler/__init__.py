@@ -1,11 +1,12 @@
 # mypy: allow-untyped-defs
-from typing import Any, Callable, Optional, TYPE_CHECKING, TypeVar
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Optional, TypeVar
+
 from typing_extensions import ParamSpec
 
 import torch
 
 from . import config
-
 
 if TYPE_CHECKING:
     from ._cache import CacheInfo
@@ -353,8 +354,7 @@ def set_enable_guard_collectives(enabled: bool):
 
     if enabled:
         return set_guard_complete_hook(guard_collectives_hook) is not None
-    else:
-        return set_guard_complete_hook(None) is not None
+    return set_guard_complete_hook(None) is not None
 
 
 set_enable_guard_collectives._dynamo_forbidden = True  # type: ignore[attr-defined]
@@ -440,8 +440,7 @@ def is_compiling() -> bool:
     """
     if torch.jit.is_scripting():
         return False
-    else:
-        return _is_compiling_flag
+    return _is_compiling_flag
 
 
 def is_dynamo_compiling() -> bool:
@@ -480,7 +479,7 @@ def is_exporting() -> bool:
     return _is_exporting_flag
 
 
-def save_cache_artifacts() -> Optional[tuple[bytes, "CacheInfo"]]:
+def save_cache_artifacts() -> tuple[bytes, "CacheInfo"] | None:
     """
     Serializes all the cache artifacts that were created during the compilation
 
@@ -573,9 +572,7 @@ def keep_tensor_guards_unsafe(guard_entries, keep_parameters=False):
     keep_flags = []
     for entry in guard_entries:
         if entry.guard_type == "TENSOR_MATCH":
-            if not isinstance(entry.value, torch.nn.Parameter):
-                keep_flags.append(True)
-            elif keep_parameters:
+            if not isinstance(entry.value, torch.nn.Parameter) or keep_parameters:
                 keep_flags.append(True)
             else:
                 keep_flags.append(False)

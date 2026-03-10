@@ -3,8 +3,8 @@ import contextlib
 import logging
 import math
 import warnings
-from collections.abc import Generator, Iterator
-from typing import Any, Callable, cast, no_type_check
+from collections.abc import Callable, Generator, Iterator
+from typing import Any, cast, no_type_check
 
 import torch
 import torch.distributed as dist
@@ -12,20 +12,20 @@ import torch.distributed.algorithms._checkpoint.checkpoint_wrapper as checkpoint
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributed._shard.sharded_tensor import (
-    init_from_local_shards,
     Shard,
     ShardedTensor,
+    init_from_local_shards,
 )
 from torch.distributed.device_mesh import _mesh_resources
 from torch.distributed.fsdp._common_utils import (
+    FSDP_PREFIX,
+    FSDP_WRAPPED_MODULE,
     _FSDPState,
     _get_module_fsdp_state_if_fully_sharded_module,
     _has_fsdp_params,
     _is_composable,
     _module_handle,
     clean_tensor_name,
-    FSDP_PREFIX,
-    FSDP_WRAPPED_MODULE,
 )
 from torch.distributed.fsdp._debug_utils import SimpleProfiler
 from torch.distributed.fsdp._runtime_utils import (
@@ -49,8 +49,7 @@ from ._fsdp_extensions import (
     _ext_post_unflatten_transform,
     _ext_pre_load_state_dict_transform,
 )
-from ._unshard_param_utils import _unshard_fsdp_state_params, FLAT_PARAM
-
+from ._unshard_param_utils import FLAT_PARAM, _unshard_fsdp_state_params
 
 logger = logging.getLogger(__name__)
 
@@ -266,7 +265,7 @@ def _common_unshard_post_state_dict_hook(
             _cast_buffers_to_dtype_and_device(
                 buffers, buffer_dtypes, fsdp_state.compute_device
             )
-            for buffer, clean_fqn in zip(buffers, buffer_clean_fqns):
+            for buffer, clean_fqn in zip(buffers, buffer_clean_fqns, strict=False):
                 fqn = f"{prefix}{clean_fqn}"
                 logger.info("FSDP is casting the dtype of %s to %s", fqn, buffer.dtype)
                 state_dict[fqn] = buffer.clone()
@@ -594,7 +593,7 @@ def _sharded_pre_load_state_dict_hook(
             "are flattened and sharded."
         )
     fqn_to_param_ext = dict(
-        zip(handle.flat_param._fqns, handle.flat_param._param_extensions)
+        zip(handle.flat_param._fqns, handle.flat_param._param_extensions, strict=False)
     )
 
     for fqn, _, _ in _param_name_infos(module, fsdp_state):
@@ -794,8 +793,7 @@ def _set_use_dtensor(fsdp_state: _FSDPState) -> None:
                 "DeviceMesh is not compatible with LOCAL_STATE_DICT.",
                 "Please set state_dict_type to SHARDED_STATE_DICT to get DTensor state_dict.",
             )
-        else:
-            fsdp_state._state_dict_config._use_dtensor = True
+        fsdp_state._state_dict_config._use_dtensor = True
 
 
 @no_type_check

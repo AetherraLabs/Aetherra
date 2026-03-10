@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 SPDX-License-Identifier: GPL-3.0-or-later
 SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
@@ -189,13 +188,12 @@ Examples:
 
     if args.interface == "hybrid":
         return launch_hybrid_interface()
-    elif args.interface == "web":
+    if args.interface == "web":
         return launch_web_interface()
-    elif args.interface == "gui":
+    if args.interface == "gui":
         return launch_gui_interface()
-    else:
-        print(f"[ERROR] Unknown interface type: {args.interface}")
-        return 1
+    print(f"[ERROR] Unknown interface type: {args.interface}")
+    return 1
 
 
 if __name__ == "__main__":

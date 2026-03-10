@@ -4,23 +4,22 @@ import operator
 from collections import defaultdict
 from dataclasses import dataclass, field
 from math import prod
-from typing import Any, cast, Optional
+from typing import Any, cast
 
 import torch
 from torch.utils._ordered_set import OrderedSet
 
 from .. import config, inductor_prims
 from ..pattern_matcher import (
+    MULTIPLE,
     CallFunction,
     Ignored,
     KeywordArg,
     ListOf,
     Match,
-    MULTIPLE,
     PatternExpr,
     PatternMatcherPass,
 )
-
 
 log = logging.getLogger(__name__)
 aten = torch.ops.aten
@@ -374,8 +373,8 @@ class _Matmul:
     arg_ancestor_nodes: OrderedSet[torch.fx.Node] = field(init=False)
     A_node: torch.fx.Node
     B_node: torch.fx.Node
-    pre_mm_reshape: Optional[torch.fx.Node]
-    post_mm_reshape: Optional[torch.fx.Node]
+    pre_mm_reshape: torch.fx.Node | None
+    post_mm_reshape: torch.fx.Node | None
 
     def __post_init__(self):
         assert len(self.nodes) in (1, 3)
@@ -450,12 +449,12 @@ class _Matmul:
 class _ScaledMatmul(_Matmul):
     A_scale_node: torch.fx.Node
     B_scale_node: torch.fx.Node
-    bias_node: Optional[torch.fx.Node]
-    result_scale_node: Optional[torch.fx.Node]
-    out_dtype: Optional[torch.dtype]
+    bias_node: torch.fx.Node | None
+    result_scale_node: torch.fx.Node | None
+    out_dtype: torch.dtype | None
     use_fast_accum: bool
-    pre_mm_reshape: Optional[torch.fx.Node]
-    post_mm_reshape: Optional[torch.fx.Node]
+    pre_mm_reshape: torch.fx.Node | None
+    post_mm_reshape: torch.fx.Node | None
 
     def __post_init__(self):
         super().__post_init__()
@@ -586,7 +585,7 @@ def _insert_fused_all_gather_matmul(
             args=(shard_node, B_nodes, gather_dim, group_name),
             kwargs={"return_A": True},
         )
-    elif mm_type == _ScaledMatmul:
+    if mm_type == _ScaledMatmul:
         scaled_matmuls = cast("list[_ScaledMatmul]", matmuls)
         return graph.call_function(
             torch.ops.symm_mem.fused_all_gather_scaled_matmul.default,
@@ -603,8 +602,7 @@ def _insert_fused_all_gather_matmul(
                 [matmul.use_fast_accum for matmul in scaled_matmuls],
             ),
         )
-    else:
-        raise AssertionError(f"Unexpected matmul match type: {mm_type}")
+    raise AssertionError(f"Unexpected matmul match type: {mm_type}")
 
 
 def fuse_all_gather_matmul(all_gather: _AllGatherMatch) -> None:
@@ -763,15 +761,15 @@ def _scatter_dim_after_reshape(
     return 0 if leading_dims_collapsed else 1
 
 
-def _find_producer_matmul(node: torch.fx.Node) -> Optional[_Matmul]:
+def _find_producer_matmul(node: torch.fx.Node) -> _Matmul | None:
     """
     Returns producer matmul node if found, otherwise returns None.
     """
     if node.target == aten.mm.default:
         return _Matmul.from_match(match=[node])
-    elif node.target == aten._scaled_mm.default:
+    if node.target == aten._scaled_mm.default:
         return _ScaledMatmul.from_match(match=[node])
-    elif node.target == aten.reshape.default:
+    if node.target == aten.reshape.default:
         reshape_node_1 = node
 
         mm_node = reshape_node_1.args[0]
@@ -786,7 +784,7 @@ def _find_producer_matmul(node: torch.fx.Node) -> Optional[_Matmul]:
 
         if mm_node.target == aten.mm.default:
             return _Matmul.from_match(match=[reshape_node_0, mm_node, reshape_node_1])
-        elif mm_node.target == aten._scaled_mm.default:
+        if mm_node.target == aten._scaled_mm.default:
             return _ScaledMatmul.from_match(
                 match=[reshape_node_0, mm_node, reshape_node_1]
             )
@@ -813,7 +811,7 @@ def _insert_fused_matmul_reduce_scatter(
                 group_name,
             ),
         )
-    elif type(matmul) == _ScaledMatmul:
+    if type(matmul) == _ScaledMatmul:
         return graph.call_function(
             torch.ops.symm_mem.fused_scaled_matmul_reduce_scatter.default,
             args=(
@@ -832,8 +830,7 @@ def _insert_fused_matmul_reduce_scatter(
                 matmul.use_fast_accum,
             ),
         )
-    else:
-        raise AssertionError(f"Unexpected matmul match type: {type(matmul)}")
+    raise AssertionError(f"Unexpected matmul match type: {type(matmul)}")
 
 
 def fuse_matmul_reduce_scatter(reduce_scatter: _ReduceScatterMatch) -> None:

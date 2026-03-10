@@ -1,13 +1,13 @@
 from collections import OrderedDict
 from collections.abc import Iterator, Sequence
-from typing import cast, Optional, TYPE_CHECKING, TypeVar, Union
+from typing import TYPE_CHECKING, TypeVar, cast
+
 from typing_extensions import TypeIs
 
 import torch
 from torch._utils import _get_device_index
 from torch.nn.modules import Module
 from torch.nn.parallel import comm
-
 
 if TYPE_CHECKING:
     from torch._C import ScriptMethod
@@ -49,7 +49,7 @@ def _is_jit_enabled() -> "EnabledProxy":
 #
 # currently a module cannot be replicated properly if the descendants of
 # any ScriptModule contains python module (type 1 above)
-def _replicatable_module(module: Module, memo: Optional[set[Module]] = None) -> bool:
+def _replicatable_module(module: Module, memo: set[Module] | None = None) -> bool:
     # module.modules() contains module itself as the first element
     def descendant_modules(module: Module) -> Iterator[Module]:
         gen = module.modules()
@@ -82,23 +82,21 @@ def _replicatable_module(module: Module, memo: Optional[set[Module]] = None) -> 
 
 def _broadcast_coalesced_reshape(
     tensors: Sequence[torch.Tensor],
-    devices: Sequence[Union[int, torch.device]],
+    devices: Sequence[int | torch.device],
     detach: bool = False,
 ) -> list[list[torch.Tensor]]:
     from torch.nn.parallel._functions import Broadcast
 
     if detach:
         return comm.broadcast_coalesced(tensors, devices)
-    else:
-        # Use the autograd function to broadcast if not detach
-        if len(tensors) > 0:
-            tensor_copies = Broadcast.apply(devices, *tensors)
-            return [
-                tensor_copies[i : i + len(tensors)]
-                for i in range(0, len(tensor_copies), len(tensors))
-            ]
-        else:
-            return []
+    # Use the autograd function to broadcast if not detach
+    if len(tensors) > 0:
+        tensor_copies = Broadcast.apply(devices, *tensors)
+        return [
+            tensor_copies[i : i + len(tensors)]
+            for i in range(0, len(tensor_copies), len(tensors))
+        ]
+    return []
 
 
 T = TypeVar("T", bound=Module)
@@ -106,7 +104,7 @@ T = TypeVar("T", bound=Module)
 
 def replicate(
     network: T,
-    devices: Sequence[Union[int, torch.device]],
+    devices: Sequence[int | torch.device],
     detach: bool = False,
 ) -> list[T]:
     if not _replicatable_module(network):

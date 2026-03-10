@@ -18,8 +18,7 @@ import bisect
 import dataclasses
 import dis
 import sys
-from typing import Any, Union
-
+from typing import Any
 
 TERMINAL_OPCODES = {
     dis.opmap["RETURN_VALUE"],
@@ -106,7 +105,7 @@ def remove_pointless_jumps(instructions):
     """Eliminate jumps to the next instruction"""
     pointless_jumps = {
         id(a)
-        for a, b in zip(instructions, instructions[1:])
+        for a, b in zip(instructions, instructions[1:], strict=False)
         if a.opname == "JUMP_ABSOLUTE" and a.target is b
     }
     return [inst for inst in instructions if id(inst) not in pointless_jumps]
@@ -136,7 +135,7 @@ def remove_extra_line_nums(instructions):
         nonlocal cur_line_no
         if inst.starts_line is None:
             return
-        elif inst.starts_line == cur_line_no:
+        if inst.starts_line == cur_line_no:
             inst.starts_line = None
         else:
             cur_line_no = inst.starts_line
@@ -193,8 +192,8 @@ class FixedPointBox:
 
 @dataclasses.dataclass
 class StackSize:
-    low: Union[int, float]
-    high: Union[int, float]
+    low: int | float
+    high: int | float
     fixed_point: FixedPointBox
 
     def zero(self):
@@ -217,7 +216,7 @@ class StackSize:
             self.fixed_point.value = False
 
 
-def stacksize_analysis(instructions) -> Union[int, float]:
+def stacksize_analysis(instructions) -> int | float:
     assert instructions
     fixed_point = FixedPointBox()
     stack_sizes = {
@@ -231,7 +230,9 @@ def stacksize_analysis(instructions) -> Union[int, float]:
             break
         fixed_point.value = True
 
-        for inst, next_inst in zip(instructions, instructions[1:] + [None]):
+        for inst, next_inst in zip(
+            instructions, instructions[1:] + [None], strict=False
+        ):
             stack_size = stack_sizes[inst]
             if inst.opcode not in TERMINAL_OPCODES:
                 assert next_inst is not None, f"missing next inst: {inst}"

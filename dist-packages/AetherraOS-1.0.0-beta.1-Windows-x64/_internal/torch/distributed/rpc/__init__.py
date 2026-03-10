@@ -10,7 +10,6 @@ from urllib.parse import urlparse
 import torch
 import torch.distributed as dist
 
-
 __all__ = ["is_available"]
 
 
@@ -39,9 +38,15 @@ if is_available():
     import torch.distributed.autograd as dist_autograd
     from torch._C._distributed_c10d import Store
     from torch._C._distributed_rpc import (  # noqa: F401
-        _cleanup_python_rpc_handler,
         _DEFAULT_INIT_METHOD,
         _DEFAULT_RPC_TIMEOUT_SEC,
+        _UNSET_RPC_TIMEOUT,
+        PyRRef,
+        RemoteProfilerManager,
+        RpcAgent,
+        RpcBackendOptions,
+        WorkerInfo,
+        _cleanup_python_rpc_handler,
         _delete_all_user_and_unforked_owner_rrefs,
         _destroy_rref_context,
         _disable_jit_rref_pickle,
@@ -61,21 +66,15 @@ if is_available():
         _set_and_start_rpc_agent,
         _set_profiler_node_id,
         _set_rpc_timeout,
-        _UNSET_RPC_TIMEOUT,
         enable_gil_profiling,
         get_rpc_timeout,
-        PyRRef,
-        RemoteProfilerManager,
-        RpcAgent,
-        RpcBackendOptions,
-        WorkerInfo,
     )
 
     if _is_tensorpipe_available:
         from torch._C._distributed_rpc import (  # noqa: F401
             _DEFAULT_NUM_WORKER_THREADS,
-            _TensorPipeRpcBackendOptionsBase,
             TensorPipeAgent,
+            _TensorPipeRpcBackendOptionsBase,
         )
 
     from . import api, backend_registry, functions

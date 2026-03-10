@@ -47,7 +47,6 @@ from .lists import ListVariable
 from .misc import GetAttrVariable
 from .user_defined import UserDefinedObjectVariable
 
-
 if TYPE_CHECKING:
     from torch._dynamo.symbolic_convert import InstructionTranslator
 
@@ -74,11 +73,9 @@ def _is_static_for_cudagraphs(x):
                 is_static_address
                 or manager.current_node._is_cuda_graph_recorded_tensor(x)
             )
-        else:
-            return is_static_address
-    else:
-        # Don't print a warning for non-cuda tensors
-        return True
+        return is_static_address
+    # Don't print a warning for non-cuda tensors
+    return True
 
 
 class OptimizerVariable(UserDefinedObjectVariable):
@@ -205,9 +202,9 @@ class OptimizerVariable(UserDefinedObjectVariable):
         def map_arg(arg):
             if isinstance(arg, ConstantVariable):
                 return arg.as_python_constant()
-            elif isinstance(arg, ListVariable) and not arg.items:
+            if isinstance(arg, ListVariable) and not arg.items:
                 return []
-            elif (
+            if (
                 isinstance(arg, ConstDictVariable)
                 and isinstance(arg.source, GetItemSource)
                 and isinstance(arg.source.base, AttrSource)
@@ -270,7 +267,9 @@ class OptimizerVariable(UserDefinedObjectVariable):
 
         # Populate self.grad_to_source and self.tensor_to_source so that we can
         # manually update_list_args
-        for group, group_vt in zip(self.value.param_groups, param_groups_vt.items):
+        for group, group_vt in zip(
+            self.value.param_groups, param_groups_vt.items, strict=False
+        ):
             # we assume here that all params within a param group
             # are initialized similarly
             if len(group["params"]) > 0:
@@ -298,7 +297,7 @@ class OptimizerVariable(UserDefinedObjectVariable):
             all_static = True
             non_static_grads = []
             for p_ind, (p, p_vt) in enumerate(
-                zip(group["params"], params_vt.unpack_var_sequence(tx))
+                zip(group["params"], params_vt.unpack_var_sequence(tx), strict=False)
             ):
                 param_source = p_vt.source
                 self.tensor_to_source[p] = param_source
@@ -375,7 +374,7 @@ class OptimizerVariable(UserDefinedObjectVariable):
         self, tx: "InstructionTranslator", args, kwargs, py_args, py_kwargs
     ):
         """Update the args and kwargs to the traced optimizer call"""
-        for arg, py_arg in zip(args, py_args):
+        for arg, py_arg in zip(args, py_args, strict=False):
             if isinstance(arg, ListVariable):
                 assert isinstance(py_arg, list), (
                     "py_arg should be a list in optimizer variable"

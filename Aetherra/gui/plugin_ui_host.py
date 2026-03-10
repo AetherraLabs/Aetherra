@@ -428,7 +428,7 @@ class PluginUIManager(QObject):
                         manifest = PluginManifest.from_file(manifest_path)
                     except Exception:
                         continue
-                    # Simple permission gate stub (extend later)
+                    # Simple permission gate baseline (extend later)
                     if not self._check_permissions(manifest):
                         logger.warning("Denied plugin %s due to permission policy", manifest.id)
                         continue

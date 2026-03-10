@@ -1,9 +1,7 @@
 # mypy: allow-untyped-defs
-from typing import Optional
 
 import torch
 import torch.distributed.distributed_c10d as c10d
-
 
 """
 This file contains the op impls for the legacy (c10d_functional) functional collectives.
@@ -90,8 +88,8 @@ def _reduce_scatter_tensor_coalesced(
 
 def _all_to_all_single(
     input: torch.Tensor,
-    output_split_sizes: Optional[list[int]],
-    input_split_sizes: Optional[list[int]],
+    output_split_sizes: list[int] | None,
+    input_split_sizes: list[int] | None,
     tag: str,
     ranks: list[int],
     group_size: int,

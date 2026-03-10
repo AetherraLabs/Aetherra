@@ -17,8 +17,7 @@
 import enum
 import inspect
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, Optional, Union
-
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from ..configuration_utils import PretrainedConfig
@@ -30,7 +29,9 @@ class BackboneType(enum.Enum):
 
 
 def verify_out_features_out_indices(
-    out_features: Optional[Iterable[str]], out_indices: Optional[Iterable[int]], stage_names: Optional[Iterable[str]]
+    out_features: Iterable[str] | None,
+    out_indices: Iterable[int] | None,
+    stage_names: Iterable[str] | None,
 ):
     """
     Verify that out_indices and out_features are valid for the given stage_names.
@@ -42,10 +43,16 @@ def verify_out_features_out_indices(
         if not isinstance(out_features, (list,)):
             raise ValueError(f"out_features must be a list got {type(out_features)}")
         if any(feat not in stage_names for feat in out_features):
-            raise ValueError(f"out_features must be a subset of stage_names: {stage_names} got {out_features}")
+            raise ValueError(
+                f"out_features must be a subset of stage_names: {stage_names} got {out_features}"
+            )
         if len(out_features) != len(set(out_features)):
-            raise ValueError(f"out_features must not contain any duplicates, got {out_features}")
-        if out_features != (sorted_feats := [feat for feat in stage_names if feat in out_features]):
+            raise ValueError(
+                f"out_features must not contain any duplicates, got {out_features}"
+            )
+        if out_features != (
+            sorted_feats := [feat for feat in stage_names if feat in out_features]
+        ):
             raise ValueError(
                 f"out_features must be in the same order as stage_names, expected {sorted_feats} got {out_features}"
             )
@@ -54,29 +61,46 @@ def verify_out_features_out_indices(
         if not isinstance(out_indices, list):
             raise ValueError(f"out_indices must be a list, got {type(out_indices)}")
         # Convert negative indices to their positive equivalent: [-1,] -> [len(stage_names) - 1,]
-        positive_indices = tuple(idx % len(stage_names) if idx < 0 else idx for idx in out_indices)
+        positive_indices = tuple(
+            idx % len(stage_names) if idx < 0 else idx for idx in out_indices
+        )
         if any(idx for idx in positive_indices if idx not in range(len(stage_names))):
-            raise ValueError(f"out_indices must be valid indices for stage_names {stage_names}, got {out_indices}")
+            raise ValueError(
+                f"out_indices must be valid indices for stage_names {stage_names}, got {out_indices}"
+            )
         if len(positive_indices) != len(set(positive_indices)):
             msg = f"out_indices must not contain any duplicates, got {out_indices}"
-            msg += f"(equivalent to {positive_indices}))" if positive_indices != out_indices else ""
+            msg += (
+                f"(equivalent to {positive_indices}))"
+                if positive_indices != out_indices
+                else ""
+            )
             raise ValueError(msg)
         if positive_indices != tuple(sorted(positive_indices)):
-            sorted_negative = [idx for _, idx in sorted(zip(positive_indices, out_indices), key=lambda x: x[0])]
+            sorted_negative = [
+                idx
+                for _, idx in sorted(
+                    zip(positive_indices, out_indices, strict=False), key=lambda x: x[0]
+                )
+            ]
             raise ValueError(
                 f"out_indices must be in the same order as stage_names, expected {sorted_negative} got {out_indices}"
             )
 
     if out_features is not None and out_indices is not None:
         if len(out_features) != len(out_indices):
-            raise ValueError("out_features and out_indices should have the same length if both are set")
+            raise ValueError(
+                "out_features and out_indices should have the same length if both are set"
+            )
         if out_features != [stage_names[idx] for idx in out_indices]:
-            raise ValueError("out_features and out_indices should correspond to the same stages if both are set")
+            raise ValueError(
+                "out_features and out_indices should correspond to the same stages if both are set"
+            )
 
 
 def _align_output_features_output_indices(
-    out_features: Optional[list[str]],
-    out_indices: Optional[Union[list[int], tuple[int]]],
+    out_features: list[str] | None,
+    out_indices: list[int] | tuple[int] | None,
     stage_names: list[str],
 ):
     """
@@ -106,8 +130,8 @@ def _align_output_features_output_indices(
 
 
 def get_aligned_output_features_output_indices(
-    out_features: Optional[list[str]],
-    out_indices: Optional[Union[list[int], tuple[int]]],
+    out_features: list[str] | None,
+    out_indices: list[int] | tuple[int] | None,
     stage_names: list[str],
 ) -> tuple[list[str], list[int]]:
     """
@@ -128,30 +152,42 @@ def get_aligned_output_features_output_indices(
     """
     out_indices = list(out_indices) if out_indices is not None else None
     # First verify that the out_features and out_indices are valid
-    verify_out_features_out_indices(out_features=out_features, out_indices=out_indices, stage_names=stage_names)
+    verify_out_features_out_indices(
+        out_features=out_features, out_indices=out_indices, stage_names=stage_names
+    )
     output_features, output_indices = _align_output_features_output_indices(
         out_features=out_features, out_indices=out_indices, stage_names=stage_names
     )
     # Verify that the aligned out_features and out_indices are valid
-    verify_out_features_out_indices(out_features=output_features, out_indices=output_indices, stage_names=stage_names)
+    verify_out_features_out_indices(
+        out_features=output_features,
+        out_indices=output_indices,
+        stage_names=stage_names,
+    )
     return output_features, output_indices
 
 
 class BackboneMixin:
-    backbone_type: Optional[BackboneType] = None
+    backbone_type: BackboneType | None = None
 
     def _init_timm_backbone(self, config) -> None:
         """
         Initialize the backbone model from timm The backbone must already be loaded to self._backbone
         """
         if getattr(self, "_backbone", None) is None:
-            raise ValueError("self._backbone must be set before calling _init_timm_backbone")
+            raise ValueError(
+                "self._backbone must be set before calling _init_timm_backbone"
+            )
 
         # These will diagree with the defaults for the transformers models e.g. for resnet50
         # the transformer model has out_features = ['stem', 'stage1', 'stage2', 'stage3', 'stage4']
         # the timm model has out_features = ['act', 'layer1', 'layer2', 'layer3', 'layer4']
-        self.stage_names = [stage["module"] for stage in self._backbone.feature_info.info]
-        self.num_features = [stage["num_chs"] for stage in self._backbone.feature_info.info]
+        self.stage_names = [
+            stage["module"] for stage in self._backbone.feature_info.info
+        ]
+        self.num_features = [
+            stage["num_chs"] for stage in self._backbone.feature_info.info
+        ]
 
         # In some timm versions, out_indices reflects the input type of out_indices on the `create_model` call,
         # in later versions >= 1, it is always a tuple
@@ -160,18 +196,24 @@ class BackboneMixin:
 
         # We verify the out indices and out features are valid
         verify_out_features_out_indices(
-            out_features=out_features, out_indices=out_indices, stage_names=self.stage_names
+            out_features=out_features,
+            out_indices=out_indices,
+            stage_names=self.stage_names,
         )
         self._out_features, self._out_indices = out_features, out_indices
 
     def _init_transformers_backbone(self, config) -> None:
-        stage_names = getattr(config, "stage_names")
+        stage_names = config.stage_names
         out_features = getattr(config, "out_features", None)
         out_indices = getattr(config, "out_indices", None)
 
         self.stage_names = stage_names
-        self._out_features, self._out_indices = get_aligned_output_features_output_indices(
-            out_features=out_features, out_indices=out_indices, stage_names=stage_names
+        self._out_features, self._out_indices = (
+            get_aligned_output_features_output_indices(
+                out_features=out_features,
+                out_indices=out_indices,
+                stage_names=stage_names,
+            )
         )
         # Number of channels for each stage. This is set in the transformer backbone model init
         self.num_features = None
@@ -184,7 +226,9 @@ class BackboneMixin:
         self.config = config
 
         self.use_timm_backbone = getattr(config, "use_timm_backbone", False)
-        self.backbone_type = BackboneType.TIMM if self.use_timm_backbone else BackboneType.TRANSFORMERS
+        self.backbone_type = (
+            BackboneType.TIMM if self.use_timm_backbone else BackboneType.TRANSFORMERS
+        )
 
         if self.backbone_type == BackboneType.TIMM:
             self._init_timm_backbone(config)
@@ -202,8 +246,12 @@ class BackboneMixin:
         """
         Set the out_features attribute. This will also update the out_indices attribute to match the new out_features.
         """
-        self._out_features, self._out_indices = get_aligned_output_features_output_indices(
-            out_features=out_features, out_indices=None, stage_names=self.stage_names
+        self._out_features, self._out_indices = (
+            get_aligned_output_features_output_indices(
+                out_features=out_features,
+                out_indices=None,
+                stage_names=self.stage_names,
+            )
         )
 
     @property
@@ -211,12 +259,14 @@ class BackboneMixin:
         return self._out_indices
 
     @out_indices.setter
-    def out_indices(self, out_indices: Union[tuple[int], list[int]]):
+    def out_indices(self, out_indices: tuple[int] | list[int]):
         """
         Set the out_indices attribute. This will also update the out_features attribute to match the new out_indices.
         """
-        self._out_features, self._out_indices = get_aligned_output_features_output_indices(
-            out_features=None, out_indices=out_indices, stage_names=self.stage_names
+        self._out_features, self._out_indices = (
+            get_aligned_output_features_output_indices(
+                out_features=None, out_indices=out_indices, stage_names=self.stage_names
+            )
         )
 
     @property
@@ -237,11 +287,13 @@ class BackboneMixin:
     def forward(
         self,
         pixel_values,
-        output_hidden_states: Optional[bool] = None,
-        output_attentions: Optional[bool] = None,
-        return_dict: Optional[bool] = None,
+        output_hidden_states: bool | None = None,
+        output_attentions: bool | None = None,
+        return_dict: bool | None = None,
     ):
-        raise NotImplementedError("This method should be implemented by the derived class.")
+        raise NotImplementedError(
+            "This method should be implemented by the derived class."
+        )
 
     def to_dict(self):
         """
@@ -268,8 +320,12 @@ class BackboneConfigMixin:
         """
         Set the out_features attribute. This will also update the out_indices attribute to match the new out_features.
         """
-        self._out_features, self._out_indices = get_aligned_output_features_output_indices(
-            out_features=out_features, out_indices=None, stage_names=self.stage_names
+        self._out_features, self._out_indices = (
+            get_aligned_output_features_output_indices(
+                out_features=out_features,
+                out_indices=None,
+                stage_names=self.stage_names,
+            )
         )
 
     @property
@@ -277,12 +333,14 @@ class BackboneConfigMixin:
         return self._out_indices
 
     @out_indices.setter
-    def out_indices(self, out_indices: Union[tuple[int], list[int]]):
+    def out_indices(self, out_indices: tuple[int] | list[int]):
         """
         Set the out_indices attribute. This will also update the out_features attribute to match the new out_indices.
         """
-        self._out_features, self._out_indices = get_aligned_output_features_output_indices(
-            out_features=None, out_indices=out_indices, stage_names=self.stage_names
+        self._out_features, self._out_indices = (
+            get_aligned_output_features_output_indices(
+                out_features=None, out_indices=out_indices, stage_names=self.stage_names
+            )
         )
 
     def to_dict(self):
@@ -316,12 +374,20 @@ def load_backbone(config):
     backbone_kwargs = {} if backbone_kwargs is None else backbone_kwargs
 
     if backbone_kwargs and backbone_config is not None:
-        raise ValueError("You can't specify both `backbone_kwargs` and `backbone_config`.")
+        raise ValueError(
+            "You can't specify both `backbone_kwargs` and `backbone_config`."
+        )
 
     # If there is a backbone_config and a backbone checkpoint, and use_pretrained_backbone=False then the desired
     # behaviour is ill-defined: do you want to load from the checkpoint's config or the backbone_config?
-    if backbone_config is not None and backbone_checkpoint is not None and use_pretrained_backbone is not None:
-        raise ValueError("Cannot specify both config.backbone_config and config.backbone")
+    if (
+        backbone_config is not None
+        and backbone_checkpoint is not None
+        and use_pretrained_backbone is not None
+    ):
+        raise ValueError(
+            "Cannot specify both config.backbone_config and config.backbone"
+        )
 
     # If any of thhe following are set, then the config passed in is from a model which contains a backbone.
     if (
@@ -346,13 +412,19 @@ def load_backbone(config):
         )
     elif use_pretrained_backbone:
         if backbone_checkpoint is None:
-            raise ValueError("config.backbone must be set if use_pretrained_backbone is True")
+            raise ValueError(
+                "config.backbone must be set if use_pretrained_backbone is True"
+            )
         backbone = AutoBackbone.from_pretrained(backbone_checkpoint, **backbone_kwargs)
     else:
         if backbone_config is None and backbone_checkpoint is None:
-            raise ValueError("Either config.backbone_config or config.backbone must be set")
+            raise ValueError(
+                "Either config.backbone_config or config.backbone must be set"
+            )
         if backbone_config is None:
-            backbone_config = AutoConfig.from_pretrained(backbone_checkpoint, **backbone_kwargs)
+            backbone_config = AutoConfig.from_pretrained(
+                backbone_checkpoint, **backbone_kwargs
+            )
         backbone = AutoBackbone.from_config(config=backbone_config)
     return backbone
 
@@ -360,9 +432,9 @@ def load_backbone(config):
 def verify_backbone_config_arguments(
     use_timm_backbone: bool,
     use_pretrained_backbone: bool,
-    backbone: Optional[str],
-    backbone_config: Optional[Union[dict, "PretrainedConfig"]],
-    backbone_kwargs: Optional[dict],
+    backbone: str | None,
+    backbone_config: Union[dict, "PretrainedConfig"] | None,
+    backbone_kwargs: dict | None,
 ):
     """
     Verify that the config arguments to be passed to load_backbone are valid
@@ -371,7 +443,11 @@ def verify_backbone_config_arguments(
         raise ValueError("You can't specify both `backbone` and `backbone_config`.")
 
     if backbone_config is not None and use_timm_backbone:
-        raise ValueError("You can't specify both `backbone_config` and `use_timm_backbone`.")
+        raise ValueError(
+            "You can't specify both `backbone_config` and `use_timm_backbone`."
+        )
 
     if backbone_kwargs is not None and backbone_kwargs and backbone_config is not None:
-        raise ValueError("You can't specify both `backbone_kwargs` and `backbone_config`.")
+        raise ValueError(
+            "You can't specify both `backbone_kwargs` and `backbone_config`."
+        )

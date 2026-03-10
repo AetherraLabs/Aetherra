@@ -24,5 +24,5 @@ def test_plugin_scaffold():
         assert spec and spec.loader
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)  # type: ignore
-    cls = getattr(mod, "DemoScaffoldPlugin")
+    cls = mod.DemoScaffoldPlugin
     assert cls().run() == "ok"

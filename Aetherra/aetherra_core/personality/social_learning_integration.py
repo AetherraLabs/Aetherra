@@ -102,9 +102,7 @@ class SocialLearningIntegration:
                 and "emotional_intelligence" in emotional_intelligence_data
             ):
                 # Extract emotional state from Phase 3.2 results
-                emotional_state = self._extract_emotional_state(
-                    emotional_intelligence_data
-                )
+                emotional_state = self._extract_emotional_state(emotional_intelligence_data)
                 current_personality = self._get_current_personality_traits()
 
                 social_learning_result = await process_with_social_learning(
@@ -145,9 +143,7 @@ class SocialLearningIntegration:
                     "social_learning_applied": social_learning_result.get(
                         "social_learning_applied", False
                     ),
-                    "privacy_preserved": social_learning_result.get(
-                        "privacy_preserved", True
-                    ),
+                    "privacy_preserved": social_learning_result.get("privacy_preserved", True),
                     "community_learning_effectiveness": social_learning_result.get(
                         "learning_effectiveness", 0.0
                     ),
@@ -192,10 +188,7 @@ class SocialLearningIntegration:
                     "social_learning": {"status": "error"},
                     "community_recommendations": {},
                     "integration_metrics": {
-                        "processing_time_ms": (
-                            datetime.now() - start_time
-                        ).total_seconds()
-                        * 1000,
+                        "processing_time_ms": (datetime.now() - start_time).total_seconds() * 1000,
                         "social_learning_applied": False,
                         "privacy_preserved": True,
                         "community_learning_effectiveness": 0.0,
@@ -208,13 +201,9 @@ class SocialLearningIntegration:
         """Determine interaction context type"""
         user_input_lower = user_input.lower()
 
-        if any(
-            word in user_input_lower for word in ["error", "bug", "problem", "issue"]
-        ):
+        if any(word in user_input_lower for word in ["error", "bug", "problem", "issue"]):
             return "technical_support"
-        elif any(
-            word in user_input_lower for word in ["learn", "understand", "explain"]
-        ):
+        elif any(word in user_input_lower for word in ["learn", "understand", "explain"]):
             return "learning"
         elif any(word in user_input_lower for word in ["create", "build", "make"]):
             return "creative"
@@ -274,9 +263,7 @@ class SocialLearningIntegration:
                 phrase in enhanced_response.lower()
                 for phrase in ["understand", "feel", "appreciate"]
             ):
-                enhanced_response = (
-                    f"I understand this can be challenging. {enhanced_response}"
-                )
+                enhanced_response = f"I understand this can be challenging. {enhanced_response}"
 
         # Enhance enthusiasm if community prefers it for this context
         if recommendations.get("enthusiasm", 0.5) > 0.7 and context_type in [
@@ -284,8 +271,7 @@ class SocialLearningIntegration:
             "learning",
         ]:
             if not any(
-                phrase in enhanced_response.lower()
-                for phrase in ["exciting", "great", "wonderful"]
+                phrase in enhanced_response.lower() for phrase in ["exciting", "great", "wonderful"]
             ):
                 enhanced_response = enhanced_response.replace(
                     "I can help", "I'd be excited to help"
@@ -314,18 +300,14 @@ class SocialLearningIntegration:
 
         # Update processing time average
         current_avg = self.integration_metrics["avg_processing_time"]
-        new_avg = (
-            (current_avg * (total_interactions - 1)) + processing_time
-        ) / total_interactions
+        new_avg = ((current_avg * (total_interactions - 1)) + processing_time) / total_interactions
         self.integration_metrics["avg_processing_time"] = new_avg
 
         # Update success rate
         if social_learning_result.get("social_learning_applied", False):
             self.integration_metrics["community_patterns_learned"] += 1
             current_success = self.integration_metrics["social_learning_success_rate"]
-            new_success = (
-                (current_success * (total_interactions - 1)) + 1.0
-            ) / total_interactions
+            new_success = ((current_success * (total_interactions - 1)) + 1.0) / total_interactions
             self.integration_metrics["social_learning_success_rate"] = new_success
 
     def get_integration_status(self) -> Dict[str, Any]:
@@ -336,15 +318,11 @@ class SocialLearningIntegration:
 
         return {
             "integration_metrics": {
-                "total_interactions": self.integration_metrics[
-                    "total_social_interactions"
-                ],
+                "total_interactions": self.integration_metrics["total_social_interactions"],
                 "success_rate_percent": round(
                     self.integration_metrics["social_learning_success_rate"] * 100, 1
                 ),
-                "avg_processing_time_ms": round(
-                    self.integration_metrics["avg_processing_time"], 1
-                ),
+                "avg_processing_time_ms": round(self.integration_metrics["avg_processing_time"], 1),
                 "privacy_preservation_rate": round(
                     self.integration_metrics["privacy_preservation_rate"] * 100, 1
                 ),

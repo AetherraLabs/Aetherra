@@ -8,11 +8,11 @@ from torch._higher_order_ops.utils import _set_compilation_env, autograd_not_imp
 from torch._ops import HigherOrderOperator
 from torch._subclasses.fake_tensor import FakeTensorMode
 from torch.fx.experimental.proxy_tensor import (
+    ProxyTorchDispatchMode,
     _temp_remove_metadata_torch_function_mode,
     _temp_remove_pre_dispatch_torch_function_mode,
     disable_proxy_modes_tracing,
     make_fx,
-    ProxyTorchDispatchMode,
     track_tensor_tree,
 )
 from torch.utils._python_dispatch import _get_current_dispatch_mode

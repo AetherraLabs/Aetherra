@@ -2,15 +2,14 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Sequence
-from typing import Any, Callable
+from collections.abc import Callable, Sequence
+from typing import Any
 
 from onnxscript import ir
 
 import torch
 import torch.fx
 from torch.onnx._internal.exporter import _registration, _schemas
-
 
 logger = logging.getLogger(__name__)
 
@@ -210,7 +209,7 @@ def _get_named_fx_node_args(node: torch.fx.Node) -> dict[str, torch.fx.node.Argu
     assert hasattr(node.target, "_schema")
     torch_schema: torch.FunctionSchema = node.target._schema  # type: ignore[union-attr]
     node_args = {}
-    for arg, schema_arg in zip(node.args, torch_schema.arguments):
+    for arg, schema_arg in zip(node.args, torch_schema.arguments, strict=False):
         node_args[schema_arg.name] = arg
 
     node_args.update(node.kwargs)
@@ -307,10 +306,9 @@ def get_matching_overload(
                 raise TypeError(f"Unknown parameter type: {type(param)}")
         if not fail_reason:
             return overload.onnx_function, "Successfully matched overload"
-        else:
-            failure_messages.append(
-                f"- Failed to match overload `{overload}`: {fail_reason}"
-            )
+        failure_messages.append(
+            f"- Failed to match overload `{overload}`: {fail_reason}"
+        )
     return (
         None,
         f"All overloads did not match the node `{node.format_node()}`.\n"
@@ -327,7 +325,7 @@ def _arg_has_complex_dtype(arg) -> bool:
         and torch.is_complex(arg.meta["val"])
     ):
         return True
-    elif isinstance(arg, list):
+    if isinstance(arg, list):
         return any(_arg_has_complex_dtype(item) for item in arg)
     return False
 

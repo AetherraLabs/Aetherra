@@ -1,5 +1,4 @@
 # mypy: allow-untyped-defs
-from typing import Optional, Union
 
 import torch
 from torch import Tensor
@@ -14,8 +13,7 @@ from torch.distributions.utils import (
     logits_to_probs,
     probs_to_logits,
 )
-from torch.types import _Number, _size, Number
-
+from torch.types import Number, _Number, _size
 
 __all__ = ["LogitRelaxedBernoulli", "RelaxedBernoulli"]
 
@@ -46,9 +44,9 @@ class LogitRelaxedBernoulli(Distribution):
     def __init__(
         self,
         temperature: Tensor,
-        probs: Optional[Union[Tensor, Number]] = None,
-        logits: Optional[Union[Tensor, Number]] = None,
-        validate_args: Optional[bool] = None,
+        probs: Tensor | Number | None = None,
+        logits: Tensor | Number | None = None,
+        validate_args: bool | None = None,
     ) -> None:
         self.temperature = temperature
         if (probs is None) == (logits is None):
@@ -145,9 +143,9 @@ class RelaxedBernoulli(TransformedDistribution):
     def __init__(
         self,
         temperature: Tensor,
-        probs: Optional[Union[Tensor, Number]] = None,
-        logits: Optional[Union[Tensor, Number]] = None,
-        validate_args: Optional[bool] = None,
+        probs: Tensor | Number | None = None,
+        logits: Tensor | Number | None = None,
+        validate_args: bool | None = None,
     ) -> None:
         base_dist = LogitRelaxedBernoulli(temperature, probs, logits)
         super().__init__(base_dist, SigmoidTransform(), validate_args=validate_args)

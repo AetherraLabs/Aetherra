@@ -2,7 +2,6 @@
 # mypy: allow-untyped-defs
 import os
 from concurrent.futures import Future, ThreadPoolExecutor
-from typing import Optional, Union
 
 import torch.distributed as dist
 from torch.distributed.checkpoint._async_executor import _AsyncCheckpointExecutor
@@ -19,10 +18,10 @@ class _ThreadBasedAsyncCheckpointExecutor(_AsyncCheckpointExecutor):
         self,
         staged_state_dict: STATE_DICT_TYPE,
         *,
-        checkpoint_id: Union[str, os.PathLike, None] = None,
-        storage_writer: Optional[StorageWriter] = None,
-        planner: Optional[SavePlanner] = None,
-        process_group: Optional[dist.ProcessGroup] = None,
+        checkpoint_id: str | os.PathLike | None = None,
+        storage_writer: StorageWriter | None = None,
+        planner: SavePlanner | None = None,
+        process_group: dist.ProcessGroup | None = None,
     ) -> Future:
         from torch.distributed.checkpoint.state_dict_saver import save
 

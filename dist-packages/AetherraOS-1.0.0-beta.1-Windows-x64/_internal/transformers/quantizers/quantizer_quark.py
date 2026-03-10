@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2025 Advanced Micro Devices, Inc. and The HuggingFace Inc. team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any
 
 from ..file_utils import is_torch_available
 from .base import HfQuantizer
-
 
 if TYPE_CHECKING:
     from ..modeling_utils import PreTrainedModel
@@ -26,7 +24,6 @@ if TYPE_CHECKING:
         import torch
 
 from ..utils import is_accelerate_available, is_quark_available, logging
-
 
 if is_accelerate_available():
     from accelerate.utils import set_module_tensor_to_device
@@ -51,7 +48,9 @@ class QuarkHfQuantizer(HfQuantizer):
     Quark quantizer (https://quark.docs.amd.com/latest/).
     """
 
-    requires_calibration = True  # On-the-fly quantization with quark is not supported for now.
+    requires_calibration = (
+        True  # On-the-fly quantization with quark is not supported for now.
+    )
     required_packages = ["quark"]
 
     # Checkpoints are expected to be already quantized when loading a quark model. However, as some keys from
@@ -87,7 +86,7 @@ class QuarkHfQuantizer(HfQuantizer):
         model: "PreTrainedModel",
         param_value: "torch.Tensor",
         param_name: str,
-        state_dict: Dict[str, Any],
+        state_dict: dict[str, Any],
         **kwargs,
     ) -> bool:
         return True

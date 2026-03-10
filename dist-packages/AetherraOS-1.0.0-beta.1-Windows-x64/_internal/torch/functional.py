@@ -2,13 +2,14 @@
 import itertools
 import operator
 from collections.abc import Sequence
-from typing import Any, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any
 
 import torch
 import torch.nn.functional as F
 from torch import _VF, Tensor
 from torch._C import _add_docstr
-from torch._jit_internal import _overload as overload, boolean_dispatch
+from torch._jit_internal import _overload as overload
+from torch._jit_internal import boolean_dispatch
 from torch._lowrank import pca_lowrank, svd_lowrank
 from torch.overrides import (
     handle_torch_function,
@@ -16,7 +17,6 @@ from torch.overrides import (
     has_torch_function_unary,
     has_torch_function_variadic,
 )
-
 
 __all__ = [
     "atleast_1d",
@@ -158,18 +158,17 @@ def broadcast_shapes(*shapes):
                     shape,
                 )
         return torch.Size(result)
-    else:
-        # with implementation above, torch.jit.trace hardcodes the sizes which makes subsequent replays fail
-        with torch.no_grad():
-            scalar = torch.zeros((), device="cpu")
-            tensors = [scalar.expand(shape) for shape in shapes]
-            tensors = broadcast_tensors(*tensors)
-            return tensors[0].shape
+    # with implementation above, torch.jit.trace hardcodes the sizes which makes subsequent replays fail
+    with torch.no_grad():
+        scalar = torch.zeros((), device="cpu")
+        tensors = [scalar.expand(shape) for shape in shapes]
+        tensors = broadcast_tensors(*tensors)
+        return tensors[0].shape
 
 
 def split(
     tensor: Tensor,
-    split_size_or_sections: Union[int, list[int]],
+    split_size_or_sections: int | list[int],
     dim: int = 0,
 ) -> tuple[Tensor, ...]:
     r"""Splits the tensor into chunks. Each chunk is a view of the original tensor.
@@ -436,13 +435,13 @@ def einsum(*args: Any) -> Tensor:
 if TYPE_CHECKING:
     # The JIT doesn't understand Union, so only add type annotation for mypy
     def meshgrid(
-        *tensors: Union[Tensor, list[Tensor]], indexing: Optional[str] = None
+        *tensors: Tensor | list[Tensor], indexing: str | None = None
     ) -> tuple[Tensor, ...]:
         return _meshgrid(*tensors, indexing=indexing)
 
 else:
 
-    def meshgrid(*tensors, indexing: Optional[str] = None) -> tuple[Tensor, ...]:
+    def meshgrid(*tensors, indexing: str | None = None) -> tuple[Tensor, ...]:
         r"""Creates grids of coordinates specified by the 1D inputs in `attr`:tensors.
 
         This is helpful when you want to visualize data over some
@@ -539,7 +538,7 @@ else:
         return _meshgrid(*tensors, indexing=indexing)
 
 
-def _meshgrid(*tensors, indexing: Optional[str]):
+def _meshgrid(*tensors, indexing: str | None):
     if has_torch_function(tensors):
         return handle_torch_function(meshgrid, tensors, *tensors, indexing=indexing)
     if len(tensors) == 1 and isinstance(tensors[0], (list, tuple)):
@@ -557,15 +556,15 @@ def _meshgrid(*tensors, indexing: Optional[str]):
 def stft(
     input: Tensor,
     n_fft: int,
-    hop_length: Optional[int] = None,
-    win_length: Optional[int] = None,
-    window: Optional[Tensor] = None,
+    hop_length: int | None = None,
+    win_length: int | None = None,
+    window: Tensor | None = None,
     center: bool = True,
     pad_mode: str = "reflect",
     normalized: bool = False,
-    onesided: Optional[bool] = None,
-    return_complex: Optional[bool] = None,
-    align_to_window: Optional[bool] = None,
+    onesided: bool | None = None,
+    return_complex: bool | None = None,
+    align_to_window: bool | None = None,
 ) -> Tensor:
     r"""Short-time Fourier transform (STFT).
 
@@ -837,7 +836,7 @@ def _unique_impl(
     sorted: bool = True,
     return_inverse: bool = False,
     return_counts: bool = False,
-    dim: Optional[int] = None,
+    dim: int | None = None,
 ) -> _unique_impl_out:
     r"""unique(input, sorted=True, return_inverse=False, return_counts=False, dim=None) -> tuple[Tensor, Tensor, Tensor]
 
@@ -1005,7 +1004,7 @@ def _unique_consecutive_impl(
     input: Tensor,
     return_inverse: bool = False,
     return_counts: bool = False,
-    dim: Optional[int] = None,
+    dim: int | None = None,
 ) -> _unique_impl_out:
     r"""Eliminates all but the first element from every consecutive group of equivalent elements.
 
@@ -1250,7 +1249,7 @@ else:
         a,
         b,
         dims: int = 2,
-        out: Optional[torch.Tensor] = None,
+        out: torch.Tensor | None = None,
     ):
         pass
 
@@ -1259,7 +1258,7 @@ else:
         a,
         b,
         dims: tuple[list[int], list[int]],
-        out: Optional[torch.Tensor] = None,
+        out: torch.Tensor | None = None,
     ):
         pass
 
@@ -1268,7 +1267,7 @@ else:
         a,
         b,
         dims: list[list[int]],
-        out: Optional[torch.Tensor] = None,
+        out: torch.Tensor | None = None,
     ):
         pass
 
@@ -1277,7 +1276,7 @@ else:
         a,
         b,
         dims: torch.Tensor,
-        out: Optional[torch.Tensor] = None,
+        out: torch.Tensor | None = None,
     ):
         pass
 
@@ -1286,7 +1285,7 @@ def tensordot(  # noqa: F811
     a,
     b,
     dims=2,
-    out: Optional[torch.Tensor] = None,
+    out: torch.Tensor | None = None,
 ):
     r"""Returns a contraction of a and b over multiple dimensions.
 
@@ -1380,8 +1379,7 @@ def tensordot(  # noqa: F811
 
     if out is None:
         return _VF.tensordot(a, b, dims_a, dims_b)  # type: ignore[attr-defined]
-    else:
-        return _VF.tensordot(a, b, dims_a, dims_b, out=out)  # type: ignore[attr-defined]
+    return _VF.tensordot(a, b, dims_a, dims_b, out=out)  # type: ignore[attr-defined]
 
 
 def cartesian_prod(*tensors: Tensor) -> Tensor:
@@ -1508,12 +1506,11 @@ def cdist(x1, x2, p=2.0, compute_mode="use_mm_for_euclid_dist_if_necessary"):
         )
     if compute_mode == "use_mm_for_euclid_dist_if_necessary":
         return _VF.cdist(x1, x2, p, None)  # type: ignore[attr-defined]
-    elif compute_mode == "use_mm_for_euclid_dist":
+    if compute_mode == "use_mm_for_euclid_dist":
         return _VF.cdist(x1, x2, p, 1)  # type: ignore[attr-defined]
-    elif compute_mode == "donot_use_mm_for_euclid_dist":
+    if compute_mode == "donot_use_mm_for_euclid_dist":
         return _VF.cdist(x1, x2, p, 2)  # type: ignore[attr-defined]
-    else:
-        raise ValueError(f"{compute_mode} is not a valid value for compute_mode")
+    raise ValueError(f"{compute_mode} is not a valid value for compute_mode")
 
 
 def atleast_1d(*tensors):
@@ -1702,7 +1699,7 @@ else:
 
 def norm(  # noqa: F811
     input,
-    p: Optional[Union[float, str]] = "fro",
+    p: float | str | None = "fro",
     dim=None,
     keepdim=False,
     out=None,
@@ -1833,10 +1830,9 @@ def norm(  # noqa: F811
                     return torch.linalg.vector_norm(
                         input, 2, _dim, keepdim, dtype=dtype
                     )
-                else:
-                    return torch.linalg.vector_norm(
-                        input, 2, _dim, keepdim, dtype=dtype, out=out
-                    )
+                return torch.linalg.vector_norm(
+                    input, 2, _dim, keepdim, dtype=dtype, out=out
+                )
 
             # Here we either call the nuclear norm, or we call matrix_norm with some arguments
             # that will throw an error
@@ -1844,19 +1840,14 @@ def norm(  # noqa: F811
                 _dim = list(range(input.ndim))
             if out is None:
                 return torch.linalg.matrix_norm(input, p, _dim, keepdim, dtype=dtype)
-            else:
-                return torch.linalg.matrix_norm(
-                    input, p, _dim, keepdim, dtype=dtype, out=out
-                )
-        else:
-            # NB. p should be Union[str, number], not Optional!
-            _p = 2.0 if p is None else p
-            if out is None:
-                return torch.linalg.vector_norm(input, _p, _dim, keepdim, dtype=dtype)
-            else:
-                return torch.linalg.vector_norm(
-                    input, _p, _dim, keepdim, dtype=dtype, out=out
-                )
+            return torch.linalg.matrix_norm(
+                input, p, _dim, keepdim, dtype=dtype, out=out
+            )
+        # NB. p should be Union[str, number], not Optional!
+        _p = 2.0 if p is None else p
+        if out is None:
+            return torch.linalg.vector_norm(input, _p, _dim, keepdim, dtype=dtype)
+        return torch.linalg.vector_norm(input, _p, _dim, keepdim, dtype=dtype, out=out)
 
     ndim = input.dim()
 
@@ -1889,41 +1880,33 @@ def norm(  # noqa: F811
                 _dim = list(range(ndim))
             if out is None:
                 return _VF.frobenius_norm(input, _dim, keepdim=keepdim)  # type: ignore[arg-type]
-            else:
-                return _VF.frobenius_norm(input, _dim, keepdim=keepdim, out=out)  # type: ignore[arg-type]
-        elif p == "nuc":
+            return _VF.frobenius_norm(input, _dim, keepdim=keepdim, out=out)  # type: ignore[arg-type]
+        if p == "nuc":
             if dtype is not None:
                 raise ValueError("dtype argument is not supported in nuclear norm")
             if _dim is None:
                 if out is None:
                     return _VF.nuclear_norm(input, keepdim=keepdim)  # type: ignore[arg-type]
-                else:
-                    return _VF.nuclear_norm(input, keepdim=keepdim, out=out)  # type: ignore[arg-type]
-            else:
-                if out is None:
-                    return _VF.nuclear_norm(input, _dim, keepdim=keepdim)  # type: ignore[arg-type]
-                else:
-                    return _VF.nuclear_norm(input, _dim, keepdim=keepdim, out=out)  # type: ignore[arg-type]
+                return _VF.nuclear_norm(input, keepdim=keepdim, out=out)  # type: ignore[arg-type]
+            if out is None:
+                return _VF.nuclear_norm(input, _dim, keepdim=keepdim)  # type: ignore[arg-type]
+            return _VF.nuclear_norm(input, _dim, keepdim=keepdim, out=out)  # type: ignore[arg-type]
         raise RuntimeError(f"only valid string values are 'fro' and 'nuc', found {p}")
-    else:
-        if _dim is None:
-            _dim = list(range(ndim))
+    if _dim is None:
+        _dim = list(range(ndim))
 
-        if out is None:
-            if dtype is None:
-                return _VF.norm(input, p, _dim, keepdim=keepdim)  # type: ignore[attr-defined]
-            else:
-                return _VF.norm(input, p, _dim, keepdim=keepdim, dtype=dtype)  # type: ignore[attr-defined]
-        else:
-            if dtype is None:
-                return _VF.norm(input, p, _dim, keepdim=keepdim, out=out)  # type: ignore[attr-defined]
-            else:
-                return _VF.norm(input, p, _dim, keepdim=keepdim, dtype=dtype, out=out)  # type: ignore[attr-defined]
+    if out is None:
+        if dtype is None:
+            return _VF.norm(input, p, _dim, keepdim=keepdim)  # type: ignore[attr-defined]
+        return _VF.norm(input, p, _dim, keepdim=keepdim, dtype=dtype)  # type: ignore[attr-defined]
+    if dtype is None:
+        return _VF.norm(input, p, _dim, keepdim=keepdim, out=out)  # type: ignore[attr-defined]
+    return _VF.norm(input, p, _dim, keepdim=keepdim, dtype=dtype, out=out)  # type: ignore[attr-defined]
 
 
 def unravel_index(
     indices: Tensor,
-    shape: Union[int, Sequence[int], torch.Size],
+    shape: int | Sequence[int] | torch.Size,
 ) -> tuple[Tensor, ...]:
     r"""Converts a tensor of flat indices into a tuple of coordinate tensors that
     index into an arbitrary tensor of the specified shape.
@@ -1979,7 +1962,7 @@ def unravel_index(
     return res_tensor.unbind(-1)
 
 
-def _unravel_index(indices: Tensor, shape: Union[int, Sequence[int]]) -> Tensor:
+def _unravel_index(indices: Tensor, shape: int | Sequence[int]) -> Tensor:
     torch._check_type(
         not indices.is_complex()
         and not indices.is_floating_point()
@@ -2064,8 +2047,7 @@ def chain_matmul(*matrices, out=None):
 
     if out is None:
         return _VF.chain_matmul(matrices)  # type: ignore[attr-defined]
-    else:
-        return _VF.chain_matmul(matrices, out=out)  # type: ignore[attr-defined]
+    return _VF.chain_matmul(matrices, out=out)  # type: ignore[attr-defined]
 
 
 def _lu_impl(A, pivot=True, get_infos=False, out=None):
@@ -2198,8 +2180,7 @@ def _lu_with_infos(A, pivot=True, get_infos=False, out=None):
         for i in range(len(out)):
             out[i].resize_as_(result[i]).copy_(result[i])
         return out
-    else:
-        return result  # A_LU, pivots, infos
+    return result  # A_LU, pivots, infos
 
 
 def _lu_no_infos(A, pivot=True, get_infos=False, out=None):
@@ -2215,8 +2196,7 @@ def _lu_no_infos(A, pivot=True, get_infos=False, out=None):
         for i in range(len(out)):
             out[i].resize_as_(result[i]).copy_(result[i])
         return out
-    else:
-        return result[0], result[1]  # A_LU, pivots
+    return result[0], result[1]  # A_LU, pivots
 
 
 # The return type of lu depends on `get_infos`, so in order to resolve the output type

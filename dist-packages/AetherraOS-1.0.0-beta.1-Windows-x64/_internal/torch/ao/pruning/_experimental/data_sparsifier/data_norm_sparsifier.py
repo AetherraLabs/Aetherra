@@ -1,13 +1,12 @@
 # mypy: allow-untyped-defs
 import operator
 from functools import reduce
-from typing import Any, Optional
+from typing import Any
 
 import torch
 from torch.nn import functional as F
 
 from .base_data_sparsifier import BaseDataSparsifier
-
 
 __all__ = ["DataNormSparsifier"]
 
@@ -38,10 +37,10 @@ class DataNormSparsifier(BaseDataSparsifier):
 
     def __init__(
         self,
-        data_list: Optional[list[tuple[str, Any]]] = None,
+        data_list: list[tuple[str, Any]] | None = None,
         sparsity_level: float = 0.5,
         sparse_block_shape: tuple[int, int] = (1, 4),
-        zeros_per_block: Optional[int] = None,
+        zeros_per_block: int | None = None,
         norm: str = "L1",
     ):
         if zeros_per_block is None:
@@ -176,7 +175,7 @@ class DataNormSparsifier(BaseDataSparsifier):
         if len(data_norm.shape) > 2:  # only supports 2 dimensional data at the moment
             raise ValueError("only supports 2-D at the moment")
 
-        elif len(data_norm.shape) == 1:  # in case the data is bias (or 1D)
+        if len(data_norm.shape) == 1:  # in case the data is bias (or 1D)
             data_norm = data_norm[None, :]
 
         mask = self.get_mask(name)

@@ -1,5 +1,5 @@
 # mypy: allow-untyped-defs
-from typing import Callable
+from collections.abc import Callable
 
 import torch
 from torch._export.utils import (
@@ -8,7 +8,6 @@ from torch._export.utils import (
     _get_decomp_for_cia,
     _is_aten_op,
 )
-
 
 __all__ = ["CustomDecompTable"]
 
@@ -140,11 +139,9 @@ class CustomDecompTable(dict[torch._ops.OperatorBase, Callable]):
 
     def materialize(self) -> dict[torch._ops.OperatorBase, Callable]:
         for op in _collect_all_valid_cia_ops():
-            if _is_aten_op(op):
+            if _is_aten_op(op) or op in self.decomp_table:
                 continue
-            elif op in self.decomp_table:
-                continue
-            elif op not in self.deleted_custom_ops:
+            if op not in self.deleted_custom_ops:
                 self.decomp_table[op] = _get_decomp_for_cia(op)
 
         self.has_materialized = True

@@ -8,11 +8,12 @@ import sys
 import time
 import warnings
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from contextlib import nullcontext
 from copy import deepcopy
-from enum import auto, Enum
+from enum import Enum, auto
 from functools import wraps
-from typing import Any, Callable, cast, no_type_check, Optional, Union
+from typing import Any, cast, no_type_check
 from unittest import mock
 
 import torch
@@ -24,6 +25,8 @@ from torch.distributed.device_mesh import DeviceMesh
 from torch.distributed.fsdp import (
     CPUOffload,
     fully_shard,
+)
+from torch.distributed.fsdp import (
     FullyShardedDataParallel as FSDP,
 )
 from torch.distributed.fsdp._common_utils import TrainingState
@@ -38,31 +41,30 @@ from torch.distributed.fsdp.fully_sharded_data_parallel import (
     ShardingStrategy,
 )
 from torch.distributed.fsdp.sharded_grad_scaler import ShardedGradScaler
-from torch.distributed.fsdp.wrap import always_wrap_policy, ModuleWrapPolicy, wrap
-from torch.distributed.tensor import distribute_tensor, DTensor, Shard
+from torch.distributed.fsdp.wrap import ModuleWrapPolicy, always_wrap_policy, wrap
+from torch.distributed.tensor import DTensor, Shard, distribute_tensor
 from torch.distributed.tensor.parallel import (
     ColwiseParallel,
-    parallelize_module,
     RowwiseParallel,
     SequenceParallel,
+    parallelize_module,
 )
 from torch.nn import TransformerDecoderLayer, TransformerEncoderLayer
 from torch.nn.parallel.distributed import DistributedDataParallel as DDP
 from torch.testing._internal.common_distributed import (
+    TEST_SKIPS,
     MultiProcessTestCase,
     MultiThreadedTestCase,
     run_subtests,
-    TEST_SKIPS,
 )
 from torch.testing._internal.common_utils import (
     FILE_SCHEMA,
-    get_cycles_per_ms,
     TEST_CUDA,
     TEST_HPU,
     TEST_XPU,
+    get_cycles_per_ms,
 )
 from torch.utils._triton import has_triton
-
 
 DEVICE_COUNT = 4  # default
 
@@ -154,7 +156,7 @@ def _assert_module_states(
     assert rank0_states is not None  # mypy
     for state in olist[1:]:
         assert state is not None  # mypy
-        for (_, p1), (_, p2) in zip(rank0_states, state):
+        for (_, p1), (_, p2) in zip(rank0_states, state, strict=False):
             assert_fn(p1, p2)
 
 
@@ -327,10 +329,10 @@ class TransformerWithSharedParams(FSDPTestModel):
         group: dist.ProcessGroup,
         fsdp_init_mode: FSDPInitMode,
         device_init_mode: DEVICEInitMode,
-        fsdp_kwargs: Optional[dict[str, Any]] = None,
+        fsdp_kwargs: dict[str, Any] | None = None,
         deterministic: bool = False,
         add_bn: bool = True,
-    ) -> Union[nn.Module, FSDP]:
+    ) -> nn.Module | FSDP:
         """
         Initializes a :class:`TransformerWithSharedParams` instance.
 
@@ -359,7 +361,7 @@ class TransformerWithSharedParams(FSDPTestModel):
             return TransformerWithSharedParams(
                 pg, device_init_mode, add_bn, deterministic
             )
-        elif fsdp_init_mode == FSDPInitMode.RECURSIVE:
+        if fsdp_init_mode == FSDPInitMode.RECURSIVE:
             # Default to the `ModuleWrapPolicy`
             if "auto_wrap_policy" not in fsdp_kwargs:
                 auto_wrap_policy = ModuleWrapPolicy(
@@ -456,7 +458,7 @@ class NestedWrappedModule(FSDPTestModel):
         group: dist.ProcessGroup,
         fsdp_init_mode: FSDPInitMode,
         device_init_mode: DEVICEInitMode,
-        fsdp_kwargs: Optional[dict[str, Any]] = None,
+        fsdp_kwargs: dict[str, Any] | None = None,
         deterministic: bool = False,
     ) -> nn.Module:
         """
@@ -483,7 +485,7 @@ class NestedWrappedModule(FSDPTestModel):
                 device_init_mode=device_init_mode,
                 deterministic=deterministic,
             )
-        elif fsdp_init_mode == FSDPInitMode.RECURSIVE:
+        if fsdp_init_mode == FSDPInitMode.RECURSIVE:
             # Does not wrap with top-level FSDP
             fsdp_model = NestedWrappedModule(
                 group,
@@ -504,7 +506,7 @@ class AlwaysWrapNestedWrappedModule(NestedWrappedModule):
         group: dist.ProcessGroup,
         fsdp_init_mode: FSDPInitMode,
         device_init_mode: DEVICEInitMode,
-        fsdp_kwargs: Optional[dict[str, Any]] = None,
+        fsdp_kwargs: dict[str, Any] | None = None,
         deterministic: bool = False,
     ):
         """
@@ -524,7 +526,7 @@ class AlwaysWrapNestedWrappedModule(NestedWrappedModule):
         )
         if fsdp_init_mode == FSDPInitMode.NO_FSDP:
             return model
-        elif fsdp_init_mode == FSDPInitMode.RECURSIVE:
+        if fsdp_init_mode == FSDPInitMode.RECURSIVE:
             fsdp_kwargs = fsdp_kwargs or {}
             fsdp_model = FSDP(model, auto_wrap_policy=always_wrap_policy, **fsdp_kwargs)
             if device_init_mode == DEVICEInitMode.DEVICE_AFTER:
@@ -586,7 +588,7 @@ class NonUniformReqGradNWM(NestedWrappedModule):
         group: dist.ProcessGroup,
         fsdp_init_mode: FSDPInitMode,
         device_init_mode: DEVICEInitMode,
-        fsdp_kwargs: Optional[dict[str, Any]] = None,
+        fsdp_kwargs: dict[str, Any] | None = None,
         deterministic: bool = False,
     ):
         """
@@ -611,7 +613,7 @@ class NonUniformReqGradNWM(NestedWrappedModule):
             )
             NonUniformReqGradNWM._set_nonuniform_req_grad(ddp_model, req_grad_pattern)
             return ddp_model
-        elif fsdp_init_mode == FSDPInitMode.RECURSIVE:
+        if fsdp_init_mode == FSDPInitMode.RECURSIVE:
             if fsdp_kwargs is None:
                 fsdp_kwargs = {}
             fsdp_model = NonUniformReqGradNWM(
@@ -711,7 +713,7 @@ class NestedWrappedModuleWithDelay(ModuleWithDelay):
         group: dist.ProcessGroup,
         fsdp_init_mode: FSDPInitMode,
         device_init_mode: DEVICEInitMode = DEVICEInitMode.DEVICE_AFTER,
-        fsdp_kwargs: Optional[dict[str, Any]] = None,
+        fsdp_kwargs: dict[str, Any] | None = None,
         deterministic: bool = False,
         delay_after_loss_ms: int = 0,
         delay_before_reduction_ms: int = 0,
@@ -831,7 +833,7 @@ class MixtureOfExperts(NestedWrappedModule):
         group: dist.ProcessGroup,
         fsdp_init_mode: FSDPInitMode,
         device_init_mode: DEVICEInitMode,
-        fsdp_kwargs: Optional[dict[str, Any]] = None,
+        fsdp_kwargs: dict[str, Any] | None = None,
         deterministic: bool = False,
         delay_before_free_ms: int = 0,
     ):
@@ -862,7 +864,7 @@ class MixtureOfExperts(NestedWrappedModule):
                 delay_before_free_ms=delay_before_free_ms,
                 deterministic=deterministic,
             )
-        elif fsdp_init_mode == FSDPInitMode.RECURSIVE:
+        if fsdp_init_mode == FSDPInitMode.RECURSIVE:
             # Does not wrap with top-level FSDP
             fsdp_model = MixtureOfExperts(
                 group,
@@ -882,7 +884,7 @@ class MLP(nn.Module):
     def __init__(
         self,
         dim: int,
-        device: Optional[torch.device] = None,
+        device: torch.device | None = None,
         *,
         bias: bool = True,
         with_buffer: bool = False,
@@ -970,7 +972,7 @@ class DoubleLinear(nn.Module):
 
     def forward(
         self, x: torch.Tensor
-    ) -> Union[tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor] | torch.Tensor:
         if self.use_second_linear:
             return self.relu(self.lin1(x)), self.relu(self.lin2(x))
         return self.relu(self.lin1(x))
@@ -1096,7 +1098,9 @@ def check_sharded_parity(
     prefixes_to_ignore: tuple[str, ...] = (),
 ):
     for (replicated_name, replicated_param), (sharded_name, sharded_param) in zip(
-        replicated_module.named_parameters(), sharded_module.named_parameters()
+        replicated_module.named_parameters(),
+        sharded_module.named_parameters(),
+        strict=False,
     ):
         clean_sharded_name = sharded_name
         for prefix in prefixes_to_ignore:
@@ -1237,12 +1241,12 @@ class FSDPTest(MultiProcessTestCase):
         num_steps: int,
         autocast: bool,
         lr: float = 0.01,
-        fsdp_cpu_offload: Optional[CPUOffload] = None,
+        fsdp_cpu_offload: CPUOffload | None = None,
         save_model: bool = False,
-        mixed_precision: Optional[MixedPrecision] = None,
+        mixed_precision: MixedPrecision | None = None,
         enable_sharded_grad_scaler: bool = False,
         use_pure_fp16: bool = False,
-        sharded_grad_scaler_kwargs: Optional[dict[str, Any]] = None,
+        sharded_grad_scaler_kwargs: dict[str, Any] | None = None,
     ):
         cpu_offload_params = fsdp_cpu_offload and fsdp_cpu_offload.offload_params
 
@@ -1283,10 +1287,10 @@ class FSDPTest(MultiProcessTestCase):
             loss = sharded_grad_scaler.scale(loss)
 
             if not mixed_precision and not use_pure_fp16:
-                assert (
-                    loss.dtype == torch.float32
-                ), "loss data type should be float32, as the original \
+                assert loss.dtype == torch.float32, (
+                    "loss data type should be float32, as the original \
                     parameter data type is float32."
+                )
             else:
                 if use_pure_fp16:
                     self.assertEqual(loss.dtype, torch.float16)
@@ -1323,19 +1327,19 @@ class FSDPTest(MultiProcessTestCase):
         model_class: type[FSDPTestModel],
         fsdp_init_mode: FSDPInitMode,
         device_init_mode: DEVICEInitMode,
-        ref_init_fn: Optional[Callable] = None,
+        ref_init_fn: Callable | None = None,
         num_iters: int = 2,
         save_model: bool = True,
         cpu_offload: CPUOffload = CPUOffload(),
-        backward_prefetch: Optional[BackwardPrefetch] = None,
-        sharding_strategy: Optional[ShardingStrategy] = None,
-        mixed_precision: Optional[MixedPrecision] = None,
+        backward_prefetch: BackwardPrefetch | None = None,
+        sharding_strategy: ShardingStrategy | None = None,
+        mixed_precision: MixedPrecision | None = None,
         forward_prefetch: bool = False,
         use_orig_params: bool = False,
         enable_sharded_grad_scaler: bool = False,
         use_pure_fp16: bool = False,
-        init_kwargs: Optional[dict[str, Any]] = None,
-        sharded_grad_scaler_kwargs: Optional[dict[str, Any]] = None,
+        init_kwargs: dict[str, Any] | None = None,
+        sharded_grad_scaler_kwargs: dict[str, Any] | None = None,
         **fsdp_kwargs,
     ):
         """
@@ -1352,9 +1356,9 @@ class FSDPTest(MultiProcessTestCase):
                 wrapper should provide data parallel semantics. If ``None``,
                 then the callable defaults to the DDP constructor.
         """
-        assert (
-            fsdp_init_mode != FSDPInitMode.NO_FSDP
-        ), "Expects an FSDP init mode that wraps with FSDP"
+        assert fsdp_init_mode != FSDPInitMode.NO_FSDP, (
+            "Expects an FSDP init mode that wraps with FSDP"
+        )
         if init_kwargs is None:
             init_kwargs = {}
         lr = 1e-2
@@ -1488,7 +1492,7 @@ class FSDPTest(MultiProcessTestCase):
             )
 
 
-def compiled_fsdp_test(compile_compute_on_module: Optional[type] = None):
+def compiled_fsdp_test(compile_compute_on_module: type | None = None):
     def fully_shard_with_compiled_compute(*args, **kwargs):
         torch.distributed.fsdp.fully_shard(*args, **kwargs)  # type: ignore[operator]
         if compile_compute_on_module is None or isinstance(

@@ -2,8 +2,9 @@
 import _operator
 import itertools
 from collections import defaultdict
+from collections.abc import Callable
 from enum import Enum
-from typing import Any, Callable
+from typing import Any
 
 import torch
 from torch._subclasses.fake_tensor import FakeTensor, FakeTensorMode
@@ -12,7 +13,6 @@ from torch.fx._compatibility import compatibility
 from torch.multiprocessing.reductions import StorageWeakRef
 from torch.utils import _pytree as pytree
 from torch.utils._pytree import tree_map_only
-
 
 __all__ = ["reinplace"]
 
@@ -44,8 +44,7 @@ def _get_view_type(tgt) -> _ViewType:
                 # check if op is a multi-output view
                 if "*" in first_arg.alias_info.after_set:
                     return _ViewType.MultiOutputView
-                else:
-                    return _ViewType.SingleOutputView
+                return _ViewType.SingleOutputView
     return _ViewType.NonView
 
 
@@ -134,7 +133,9 @@ def _schemas_match(functional_schema, inplace_schema):
         inplace_schema.arguments
     ) and all(
         a1.type == a2.type
-        for a1, a2 in zip(functional_schema.arguments, inplace_schema.arguments)
+        for a1, a2 in zip(
+            functional_schema.arguments, inplace_schema.arguments, strict=False
+        )
     )
     # for the inplace op, its first argument should be mutable
     assert (
@@ -556,7 +557,9 @@ def reinplace(gm, *sample_args):
             node_flattened = pytree.tree_leaves(node.meta["fake_result"])
             self_has_wrong_metadata = False
             if len(self_flattened) == len(node_flattened):
-                for self_meta, node_meta in zip(self_flattened, node_flattened):
+                for self_meta, node_meta in zip(
+                    self_flattened, node_flattened, strict=False
+                ):
                     if self_meta.numel() != node_meta.numel():
                         self_has_wrong_metadata = True
                     if self_meta.dtype != node_meta.dtype:

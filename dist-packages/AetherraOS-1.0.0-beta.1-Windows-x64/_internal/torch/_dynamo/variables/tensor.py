@@ -34,21 +34,21 @@ import torch.random
 from torch._dynamo import compiled_autograd
 from torch._subclasses.meta_utils import is_sparse_any
 from torch.fx.experimental.symbolic_shapes import (
-    guard_scalar,
     GuardOnDataDependentSymNode,
+    SymTypes,
+    guard_scalar,
     has_free_symbols,
     is_symbolic,
-    SymTypes,
 )
 from torch.utils._python_dispatch import is_traceable_wrapper_subclass
 
 from .. import config, graph_break_hints, variables
 from .._trace_wrapped_higher_order_op import trace_wrapped
 from ..exc import (
-    unimplemented_v2,
     UnknownPropertiesDuringBackwardTrace,
     UserError,
     UserErrorType,
+    unimplemented_v2,
 )
 from ..external_utils import call_hook_from_backward_state
 from ..guards import GuardBuilder, install_guard
@@ -69,7 +69,6 @@ from .base import AttributeMutationNew, VariableTracker
 from .constant import ConstantVariable
 from .lists import SizeVariable
 from .user_defined import UserDefinedClassVariable
-
 
 try:
     import numpy as np
@@ -282,7 +281,7 @@ class TensorVariable(VariableTracker):
                 return wrap_fx_proxy(tx=tx, proxy=proxy, example_value=example_value)
             # any other attributes on the subclass (that are not methods)
             # are assumed to be constant metadata.
-            elif not callable(example_value):
+            if not callable(example_value):
                 return VariableTracker.build(tx, example_value)
 
         if not (self.source and self.source.subguards_allowed()):
@@ -332,8 +331,7 @@ class TensorVariable(VariableTracker):
     def method_attr_ndim(self, tx):
         if self.ndim is not None:
             return ConstantVariable.create(self.ndim)
-        else:
-            return self.call_method(tx, "dim", [], {})
+        return self.call_method(tx, "dim", [], {})
 
     def method_attr_dtype(self, tx):
         if self.dtype is not None:
@@ -355,8 +353,7 @@ class TensorVariable(VariableTracker):
         if self.valid_size():
             sizes = [variables.ConstantVariable.create(x) for x in self.size]
             return SizeVariable(sizes)
-        else:
-            return self.call_method(tx, "size", [], {})
+        return self.call_method(tx, "size", [], {})
 
     def method_attr_requires_grad(self, tx):
         if self.requires_grad is not None:
@@ -512,8 +509,7 @@ class TensorVariable(VariableTracker):
                     return wrap_fx_proxy(
                         tx=tx, proxy=proxy, source=AttrSource(self.source, name)
                     )
-                else:
-                    return wrap_fx_proxy(tx=tx, proxy=proxy)
+                return wrap_fx_proxy(tx=tx, proxy=proxy)
 
             result = try_generic_attr_handling()
 
@@ -749,8 +745,7 @@ class TensorVariable(VariableTracker):
         if r is not None:
             if dim is None:
                 return RetVariable(r)
-            else:
-                return ConstantVariable.create(r[dim])
+            return ConstantVariable.create(r[dim])
 
         # It might still be constant!  Consult the fake tensor and see
         if (fake := self.proxy.node.meta.get("example_value")) is not None:
@@ -813,7 +808,7 @@ class TensorVariable(VariableTracker):
         )
         if self.is_contiguous is not None:
             return ConstantVariable.create(memory_format in self.is_contiguous)
-        elif (fake := self.proxy.node.meta.get("example_value")) is not None:
+        if (fake := self.proxy.node.meta.get("example_value")) is not None:
             return ConstantVariable.create(
                 fake.is_contiguous(memory_format=memory_format)
             )
@@ -829,11 +824,10 @@ class TensorVariable(VariableTracker):
             )
             if self.device.type == "cpu":
                 return ConstantVariable.create(f"torch.{tensortype.__name__}")
-            else:
-                return ConstantVariable.create(
-                    f"torch.{self.device.type}.{tensortype.__name__}"
-                )
-        elif (
+            return ConstantVariable.create(
+                f"torch.{self.device.type}.{tensortype.__name__}"
+            )
+        if (
             dtype is not None
             and fqn(type(dtype.as_python_constant())) == "torch.tensortype"
         ):
@@ -1288,7 +1282,7 @@ class TensorVariable(VariableTracker):
                 # TODO(jansel): returning None here is wrong, it should be
                 # RemovableHandle, but we need some extra work to support
                 # this properly.
-                return None
+                return
 
             from .builder import wrap_fx_proxy
 
@@ -1392,8 +1386,7 @@ class SymNodeVariable(VariableTracker):
     def python_type(self):
         if isinstance(self.sym_num, SymTypes):
             return self.sym_num.node.pytype
-        else:
-            return type(self.sym_num)
+        return type(self.sym_num)
 
     def as_proxy(self):
         return self.proxy
@@ -1699,19 +1692,18 @@ class UntypedStorageVariable(VariableTracker):
             if not has_free_symbols(result):
                 # avoid creating a node in the graph
                 return ConstantVariable.create(int(result))
-            else:
-                from ..external_utils import untyped_storage_size
-                from .builder import wrap_fx_proxy
+            from ..external_utils import untyped_storage_size
+            from .builder import wrap_fx_proxy
 
-                return wrap_fx_proxy(
-                    tx,
-                    tx.output.create_proxy(
-                        "call_function",
-                        untyped_storage_size,
-                        (self.from_tensor.as_proxy(),),
-                        {},
-                    ),
-                )
+            return wrap_fx_proxy(
+                tx,
+                tx.output.create_proxy(
+                    "call_function",
+                    untyped_storage_size,
+                    (self.from_tensor.as_proxy(),),
+                    {},
+                ),
+            )
         if name == "resize_" and len(args) == 1:
             assert not kwargs
             tx.output.create_proxy(

@@ -39,11 +39,13 @@ import time
 import traceback
 import typing
 import weakref
+from collections.abc import Callable
 from pathlib import Path
 from types import CellType, CodeType, FunctionType, ModuleType
-from typing import Any, Callable, Optional, TypeVar, Union
-from typing_extensions import ParamSpec
+from typing import Any, TypeVar
 from weakref import ReferenceType
+
+from typing_extensions import ParamSpec
 
 import torch
 import torch._logging
@@ -51,7 +53,7 @@ from torch._C._dynamo.guards import GlobalStateGuard
 from torch._dynamo.callback import CallbackTrigger
 from torch._dynamo.distributed import get_compile_pg
 from torch._dynamo.symbolic_convert import TensorifyState
-from torch._guards import compile_context, CompileContext, CompileId, tracing
+from torch._guards import CompileContext, CompileId, compile_context, tracing
 from torch._logging import structured
 from torch._utils_internal import (
     compile_time_strobelight_meta,
@@ -76,8 +78,8 @@ from torch.utils._traceback import CapturedTraceback, format_traceback_short
 from . import config, decorators, exc, graph_break_hints, trace_rules
 from .bytecode_analysis import remove_dead_code, remove_pointless_jumps
 from .bytecode_transformation import (
-    check_inst_exn_tab_entries_valid,
     Instruction,
+    check_inst_exn_tab_entries_valid,
     is_generator,
     propagate_inst_exn_table_entries,
     transform_code_object,
@@ -89,16 +91,14 @@ from .cache_size import (
     is_recompilation,
 )
 from .eval_frame import (
+    TorchPatcher,
     always_optimize_code_objects,
     dynamo_tls,
     skip_code,
-    TorchPatcher,
 )
 from .exc import (
-    augment_exc_message,
     BackendCompilerFailed,
     FailOnRecompileLimitHit,
-    format_error_msg,
     InternalTorchDynamoError,
     PackageError,
     RecompileLimitExceeded,
@@ -106,13 +106,15 @@ from .exc import (
     SkipCodeRecursiveException,
     TorchRuntimeError,
     UncapturedHigherOrderOpError,
-    unimplemented_v2,
     Unsupported,
+    augment_exc_message,
+    format_error_msg,
+    unimplemented_v2,
 )
 from .guards import (
     CheckFunctionManager,
-    get_and_maybe_log_recompilation_reasons,
     GuardedCode,
+    get_and_maybe_log_recompilation_reasons,
 )
 from .hooks import Hooks
 from .pgo import log_frame_dynamic_whitelist, put_code_state
@@ -128,9 +130,10 @@ from .symbolic_convert import (
 from .trace_rules import is_numpy
 from .types import ConvertFrameReturn, FrameAction, FrameExecStrategy, wrap_guarded_code
 from .utils import (
-    chromium_event_timed,
     CleanupManager,
     CompileTimeInstructionCounter,
+    LazyString,
+    chromium_event_timed,
     counters,
     dynamo_timed,
     format_bytecode,
@@ -139,7 +142,6 @@ from .utils import (
     increment_frame,
     is_namedtuple,
     istype,
-    LazyString,
     maybe_disable_inference_mode,
     maybe_disable_inference_mode_for_fake_prop,
     orig_code_map,
@@ -151,8 +153,7 @@ from .utils import (
 )
 from .variables.torch_function import torch_function_mode_stack_state_mgr
 
-
-np: Optional[ModuleType]
+np: ModuleType | None
 try:
     import numpy as np
 except ModuleNotFoundError:
@@ -205,12 +206,12 @@ class Tracker:
 input_codes = Tracker()
 output_codes = Tracker()
 
-initial_global_state: Optional[GlobalStateGuard] = None
+initial_global_state: GlobalStateGuard | None = None
 
 
 @functools.wraps(original_forward_from_src)
 def fx_forward_from_src_skip_result(
-    src: str, globals: dict[str, Any], co_fields: Optional[dict[str, str]] = None
+    src: str, globals: dict[str, Any], co_fields: dict[str, str] | None = None
 ) -> FunctionType:
     # we monkey patch FX to prevent infinite loop of trying to convert
     # our generated code
@@ -324,40 +325,38 @@ def has_tensor_in_frame(frame: DynamoFrameType) -> bool:
             return seen_ids[obj_id]
         seen_ids[obj_id] = False
 
-        if isinstance(obj, (torch.Tensor, torch.nn.Module)) or (
-            istype(obj, type) and issubclass(obj, torch.nn.Module)
+        if (
+            isinstance(obj, (torch.Tensor, torch.nn.Module))
+            or (istype(obj, type) and issubclass(obj, torch.nn.Module))
+            or (
+                config.trace_numpy
+                and np
+                and (istype(obj, np.ndarray) or isinstance(obj, np.generic))
+            )
         ):
             seen_ids[obj_id] = True
             return seen_ids[obj_id]
-        elif (
-            config.trace_numpy
-            and np
-            and (istype(obj, np.ndarray) or isinstance(obj, np.generic))
-        ):
-            seen_ids[obj_id] = True
-            return seen_ids[obj_id]
-        elif istype(obj, (list, tuple)):
+        if istype(obj, (list, tuple)):
             seen_ids[obj_id] = any(has_tensor(v) for v in obj)
             return seen_ids[obj_id]
-        elif istype(obj, dict):
+        if istype(obj, dict):
             # Some packages like pytest can be updated during runtime. So, make a
             # copy of values to avoid issues like "RuntimeError: dictionary
             # changed size during iteration"
             values = list(obj.values())
             seen_ids[obj_id] = any(has_tensor(v) for v in values)
             return seen_ids[obj_id]
-        elif istype(obj, (str, int, float, type(None), bool)):
+        if istype(obj, (str, int, float, type(None), bool)):
             seen_ids[obj_id] = False
             return seen_ids[obj_id]
-        elif is_namedtuple(obj) and hasattr(obj, "_fields"):
+        if is_namedtuple(obj) and hasattr(obj, "_fields"):
             seen_ids[obj_id] = any(has_tensor(getattr(obj, v)) for v in obj._fields)
             return seen_ids[obj_id]
-        else:
-            # if config.debug:
-            #     print(
-            #         f"Assuming that object of type {type(obj)} does not have a tensor"
-            #     )
-            return False
+        # if config.debug:
+        #     print(
+        #         f"Assuming that object of type {type(obj)} does not have a tensor"
+        #     )
+        return False
 
     # Check if the passed arguments are of type Tensor
     for value in frame.f_locals.values():
@@ -378,7 +377,7 @@ def has_tensor_in_frame(frame: DynamoFrameType) -> bool:
 def exception_handler(
     e: Exception,
     code: CodeType,
-    frame: Optional[DynamoFrameType] = None,
+    frame: DynamoFrameType | None = None,
     export: bool = False,
 ) -> None:
     record_filename = None
@@ -391,9 +390,7 @@ def exception_handler(
 
 
 FRAME_COUNTER = 0
-FRAME_COMPILE_COUNTER: typing.Counter[Union[int, FrameStateSizeEntry]] = (
-    collections.Counter()
-)
+FRAME_COMPILE_COUNTER: typing.Counter[int | FrameStateSizeEntry] = collections.Counter()
 
 
 def maybe_cprofile(func: Callable[_P, _T]) -> Callable[_P, _T]:
@@ -478,8 +475,8 @@ class ConvertFrameAssert:
         compiler_fn: CompilerFn,
         one_graph: bool = True,
         export: bool = False,
-        export_constraints: Optional[typing.Never] = None,
-        package: Optional[CompilePackage] = None,
+        export_constraints: typing.Never | None = None,
+        package: CompilePackage | None = None,
     ) -> None:
         # assert export_constraints is None
         reset_graph_break_dup_checker()
@@ -501,9 +498,9 @@ class ConvertFrameAssert:
     def __call__(
         self,
         frame: DynamoFrameType,
-        cache_entry: Optional[CacheEntry],
+        cache_entry: CacheEntry | None,
         hooks: Hooks,
-        frame_state: dict[str, Union[int, FrameStateSizeEntry]],
+        frame_state: dict[str, int | FrameStateSizeEntry],
         *,
         skip: int = 0,
     ) -> ConvertFrameReturn:
@@ -651,8 +648,8 @@ def convert_frame_assert(
     compiler_fn: CompilerFn,
     one_graph: bool = True,
     export: bool = False,
-    export_constraints: Optional[typing.Never] = None,
-    package: Optional[CompilePackage] = None,
+    export_constraints: typing.Never | None = None,
+    package: CompilePackage | None = None,
 ) -> ConvertFrameAssert:
     """Fully convert a frame into an FX graph"""
     return ConvertFrameAssert(
@@ -663,7 +660,6 @@ def convert_frame_assert(
 from collections import OrderedDict
 
 from torch.utils.hooks import RemovableHandle
-
 
 if typing.TYPE_CHECKING:
     from .output_graph import OutputGraph
@@ -691,29 +687,29 @@ def _compile(
     compiler_fn: CompilerFn,
     one_graph: bool,
     export: bool,
-    export_constraints: Optional[typing.Never],
+    export_constraints: typing.Never | None,
     hooks: Hooks,
-    cache_entry: Optional[CacheEntry],
+    cache_entry: CacheEntry | None,
     cache_size: CacheSizeRelevantForFrame,
-    frame: Optional[DynamoFrameType] = None,
-    frame_state: Optional[dict[str, Union[int, FrameStateSizeEntry]]] = None,
+    frame: DynamoFrameType | None = None,
+    frame_state: dict[str, int | FrameStateSizeEntry] | None = None,
     *,
     compile_id: CompileId,
     skip: int = 0,
-    package: Optional[CompilePackage] = None,
+    package: CompilePackage | None = None,
 ) -> ConvertFrameReturn:
     from torch.fx.experimental.validator import (
-        bisect,
         BisectValidationException,
-        translation_validation_enabled,
         ValidationException,
+        bisect,
+        translation_validation_enabled,
     )
 
     # Only nonlocal defs here please!
     # Time spent compiling this frame before restarting or failing analysis
     dynamo_time_before_restart: float = 0.0
-    output: Optional[OutputGraph] = None
-    tracer: Optional[InstructionTranslator] = None
+    output: OutputGraph | None = None
+    tracer: InstructionTranslator | None = None
 
     tf_mode_stack: list[torch.overrides.TorchFunctionMode] = (
         torch.overrides._get_current_function_mode_stack()
@@ -999,7 +995,7 @@ def _compile(
             distributed_state = None
 
         # Check recompilations
-        recompile_reason: Optional[str] = None
+        recompile_reason: str | None = None
         if is_recompilation(cache_size) and frame:
             reasons = get_and_maybe_log_recompilation_reasons(cache_entry, frame)
             recompile_reason = (
@@ -1029,28 +1025,27 @@ def _compile(
                 raise FailOnRecompileLimitHit(
                     f"{limit_type} reached, because fail_on_recompile_limit_hit = True this is a HARD failure"
                 )
-            elif one_graph:
+            if one_graph:
                 raise FailOnRecompileLimitHit(
                     f"{limit_type} reached with one_graph=True. Excessive recompilations can degrade "
                     "performance due to the compilation overhead of each recompilation. To monitor "
                     "recompilations, enable TORCH_LOGS=recompiles. If recompilations are expected, consider "
                     "increasing torch._dynamo.config.cache_size_limit to an appropriate value."
                 )
-            elif justknobs_check(
+            if justknobs_check(
                 "pytorch/compiler:skip_code_recursive_on_recompile_limit_hit"
             ):
                 raise RecompileLimitExceeded(f"{limit_type} reached")
-            else:
-                # do not recursively skip frames
-                unimplemented_v2(
-                    gb_type="Dynamo cache limit exceeded",
-                    context=f"Limit type: {limit_type}",
-                    explanation="Dynamo attempted to recompile the code object too many times, "
-                    f"exceeding the {limit_type} cache size limit."
-                    "Giving up on compiling as the compile time tradeoff is likely not "
-                    "worth the performance gain.",
-                    hints=[],
-                )
+            # do not recursively skip frames
+            unimplemented_v2(
+                gb_type="Dynamo cache limit exceeded",
+                context=f"Limit type: {limit_type}",
+                explanation="Dynamo attempted to recompile the code object too many times, "
+                f"exceeding the {limit_type} cache size limit."
+                "Giving up on compiling as the compile time tradeoff is likely not "
+                "worth the performance gain.",
+                hints=[],
+            )
 
         log.debug(
             "torchdynamo start compiling %s %s:%s, stack (elided %s frames):\n%s",
@@ -1101,10 +1096,10 @@ def _compile(
             },
         )
         start_time_ns = time.time_ns()
-        fail_type: Optional[str] = None
-        fail_reason: Optional[str] = None
-        fail_user_frame_filename: Optional[str] = None
-        fail_user_frame_lineno: Optional[int] = None
+        fail_type: str | None = None
+        fail_reason: str | None = None
+        fail_user_frame_filename: str | None = None
+        fail_user_frame_lineno: int | None = None
         torch._dynamo.utils.ReinplaceCounters.clear()
         guarded_code = None
         try:
@@ -1159,11 +1154,10 @@ def _compile(
                 ),
             ):
                 raise
-            else:
-                # Rewrap for clarity
-                raise InternalTorchDynamoError(
-                    f"{type(e).__qualname__}: {str(e)}"
-                ).with_traceback(e.__traceback__) from None
+            # Rewrap for clarity
+            raise InternalTorchDynamoError(
+                f"{type(e).__qualname__}: {str(e)}"
+            ).with_traceback(e.__traceback__) from None
         finally:
             # === WARNING WARNING WARNING ===
             # If you commit a bug here, it will suppress writing to
@@ -1246,7 +1240,7 @@ class ConvertFrame:
         self,
         compiler_fn: CompilerFn,
         hooks: Hooks,
-        package: Optional[CompilePackage] = None,
+        package: CompilePackage | None = None,
     ) -> None:
         self._torchdynamo_orig_callable = compiler_fn
         self._inner_convert = convert_frame_assert(
@@ -1261,9 +1255,9 @@ class ConvertFrame:
     def __call__(
         self,
         frame: DynamoFrameType,
-        cache_entry: Optional[CacheEntry],
+        cache_entry: CacheEntry | None,
         hooks: Hooks,
-        frame_state: dict[str, Union[int, FrameStateSizeEntry]],
+        frame_state: dict[str, int | FrameStateSizeEntry],
         skip: int = 0,
     ) -> ConvertFrameReturn:
         input_codes.add(frame.f_code)
@@ -1344,7 +1338,7 @@ class ConvertFrame:
                         FrameAction.SKIP, FrameAction.SKIP
                     )
                 )
-            elif isinstance(e, RecompileLimitExceeded):
+            if isinstance(e, RecompileLimitExceeded):
                 return ConvertFrameReturn(
                     frame_exec_strategy=FrameExecStrategy(
                         FrameAction.RUN_ONLY, FrameAction.RUN_ONLY
@@ -1355,7 +1349,7 @@ class ConvertFrame:
 
 
 def convert_frame(
-    compiler_fn: CompilerFn, hooks: Hooks, package: Optional[CompilePackage] = None
+    compiler_fn: CompilerFn, hooks: Hooks, package: CompilePackage | None = None
 ) -> ConvertFrame:
     """Try to convert a frame into an FX graph, if error leave frame unmodified"""
     return ConvertFrame(compiler_fn, hooks, package=package)
@@ -1406,9 +1400,9 @@ class ConvertFrameProtocol(typing.Protocol):
     def __call__(
         self,
         frame: DynamoFrameType,
-        cache_entry: Optional[CacheEntry],
+        cache_entry: CacheEntry | None,
         hooks: Hooks,
-        frame_state: dict[str, Union[int, FrameStateSizeEntry]],
+        frame_state: dict[str, int | FrameStateSizeEntry],
         *,
         skip: int = 0,
     ) -> ConvertFrameReturn: ...
@@ -1423,8 +1417,8 @@ class CatchErrorsWrapper:
     def __call__(
         self,
         frame: DynamoFrameType,
-        cache_entry: Optional[CacheEntry],
-        frame_state: dict[str, Union[int, FrameStateSizeEntry]],
+        cache_entry: CacheEntry | None,
+        frame_state: dict[str, int | FrameStateSizeEntry],
     ) -> ConvertFrameReturn:
         assert frame_state is not None
 

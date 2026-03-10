@@ -1,6 +1,6 @@
 # Standard library imports
 import asyncio
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 
 # Third party imports
 import pytest
@@ -13,7 +13,7 @@ from aetherra_kernel_loop import AetherraKernelLoop
 async def test_prod_blocks_without_tz(monkeypatch):
     monkeypatch.setenv("AETHERRA_PROFILE", "prod")
     # Force window to include current UTC hour
-    now_utc = datetime.now(timezone.utc)
+    now_utc = datetime.now(UTC)
     monkeypatch.setenv("AETHERRA_NIGHT_START_HOUR", str(now_utc.hour))
     monkeypatch.setenv("AETHERRA_NIGHT_END_HOUR", str(now_utc.hour))
     # Ensure no explicit TZ variables
@@ -32,7 +32,7 @@ async def test_prod_blocks_without_tz(monkeypatch):
 async def test_utc_allows_in_window(monkeypatch):
     monkeypatch.setenv("AETHERRA_PROFILE", "test")
     monkeypatch.setenv("AETHERRA_NIGHT_UTC", "1")
-    now_utc = datetime.now(timezone.utc)
+    now_utc = datetime.now(UTC)
     monkeypatch.setenv("AETHERRA_NIGHT_START_HOUR", str(now_utc.hour))
     monkeypatch.setenv("AETHERRA_NIGHT_END_HOUR", str(now_utc.hour))
     # No staggering for determinism in test

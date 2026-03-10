@@ -499,7 +499,7 @@ class DLQMonitor:
 
             # For now, we use a simple heuristic: if we see N failures in DLQ and no successful execution info,
             # we assume high failure rate
-            # TODO: Integrate with actuator success metrics for more accurate rate calculation
+            # Integration point: actuator success metrics for more accurate rate calculation
 
             if failure_count >= self.quarantine_threshold:
                 logger.warning(

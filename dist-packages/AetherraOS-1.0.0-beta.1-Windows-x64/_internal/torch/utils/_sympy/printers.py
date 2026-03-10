@@ -1,10 +1,8 @@
 import sys
-from typing import Optional
 
 import sympy
 from sympy.printing.precedence import PRECEDENCE, precedence
 from sympy.printing.str import StrPrinter
-
 
 INDEX_TYPE = "int64_t"
 INDEX_TYPE_MAX = (1 << 63) - 1
@@ -20,7 +18,7 @@ class ExprPrinter(StrPrinter):
     def _print_Mul(self, expr: sympy.Expr) -> str:
         return self.stringify(expr.args, "*", precedence(expr))
 
-    def _print_Add(self, expr: sympy.Expr, order: Optional[str] = None) -> str:
+    def _print_Add(self, expr: sympy.Expr, order: str | None = None) -> str:
         return self.stringify(expr.args, " + ", precedence(expr))
 
     def _print_Relational(self, expr: sympy.Expr) -> str:
@@ -52,9 +50,8 @@ class ExprPrinter(StrPrinter):
             # IEEE-754 double precision have 53 bits. SymPy prints them with
             # 15 digits, but we need 17 for round-trip correctness
             return str(sympy.Float(expr, dps=17))
-        else:
-            # We don't use other precisions in pytorch
-            return str(expr)
+        # We don't use other precisions in pytorch
+        return str(expr)
 
     # This must be implemented because sympy will collect x * x into Pow(x, 2), without
     # any explicit intervention.  We print it just like x * x, notably, we
@@ -285,7 +282,7 @@ class CppPrinter(ExprPrinter):
         i = int(expr)
         if i > INDEX_TYPE_MAX or i < INDEX_TYPE_MIN:
             raise OverflowError(f"{i} too big to convert to {INDEX_TYPE}")
-        elif i == INDEX_TYPE_MIN:
+        if i == INDEX_TYPE_MIN:
             assert i == (-1) << 63
             # Writing -9223372036854775808L makes the value overflow
             # as it is parsed as -(9223372036854775808L) by the C/C++ compiler
@@ -390,9 +387,8 @@ class CppPrinter(ExprPrinter):
                 r = "1.0"
 
             return f"static_cast<{INDEX_TYPE}>({r})" if expr.is_integer else r
-        else:
-            # TODO: float vs double
-            return f"std::pow({base}, {float(exp)})"
+        # TODO: float vs double
+        return f"std::pow({base}, {float(exp)})"
 
     def _print_Rational(self, expr: sympy.Expr) -> str:
         # Uses float constants to perform FP div
@@ -416,19 +412,17 @@ class CppPrinter(ExprPrinter):
         args = [self._print(a) for a in expr.args]
         if len(args) == 2:
             return f"std::min(static_cast<{INDEX_TYPE}>({args[0]}), static_cast<{INDEX_TYPE}>({args[1]}))"
-        else:
-            # Initializer list overload
-            il = "{" + ", ".join(args) + "}"
-            return f"std::min<{INDEX_TYPE}>({il})"
+        # Initializer list overload
+        il = "{" + ", ".join(args) + "}"
+        return f"std::min<{INDEX_TYPE}>({il})"
 
     def _print_Max(self, expr: sympy.Expr) -> str:
         args = [self._print(a) for a in expr.args]
         if len(args) == 2:
             return f"std::max(static_cast<{INDEX_TYPE}>({args[0]}), static_cast<{INDEX_TYPE}>({args[1]}))"
-        else:
-            # Initializer list overload
-            il = "{" + ", ".join(args) + "}"
-            return f"std::max<{INDEX_TYPE}>({il})"
+        # Initializer list overload
+        il = "{" + ", ".join(args) + "}"
+        return f"std::max<{INDEX_TYPE}>({il})"
 
     def _print_Abs(self, expr: sympy.Expr) -> str:
         assert len(expr.args) == 1

@@ -16,12 +16,15 @@ from torch.onnx import (
     _type_utils,
     errors,
     symbolic_helper,
-    symbolic_opset10 as opset10,
-    symbolic_opset9 as opset9,
     utils,
 )
+from torch.onnx import (
+    symbolic_opset9 as opset9,
+)
+from torch.onnx import (
+    symbolic_opset10 as opset10,
+)
 from torch.onnx._internal import jit_utils, registration
-
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -122,8 +125,7 @@ def clamp(g: jit_utils.GraphContext, self, min, max):
                 tensor,
                 to_i=dtype.onnx_type(),
             )
-        else:
-            return tensor
+        return tensor
 
     scalar_type = _type_utils.JitScalarType.from_value(
         self, _type_utils.JitScalarType.UNDEFINED
@@ -134,18 +136,16 @@ def clamp(g: jit_utils.GraphContext, self, min, max):
 
     if symbolic_helper._is_none(min):
         return clamp_max(g, self, max)
-    elif symbolic_helper._is_none(max):
+    if symbolic_helper._is_none(max):
         return clamp_min(g, self, min)
-    else:
-        if (
-            symbolic_helper._get_tensor_rank(min) == 0
-            and symbolic_helper._get_tensor_rank(max) == 0
-        ):
-            return symbolic_helper._op_with_optional_float_cast(
-                g, "Clip", self, min, max, opset_before=12
-            )
-        else:
-            return clamp_max(g, clamp_min(g, self, min), max)
+    if (
+        symbolic_helper._get_tensor_rank(min) == 0
+        and symbolic_helper._get_tensor_rank(max) == 0
+    ):
+        return symbolic_helper._op_with_optional_float_cast(
+            g, "Clip", self, min, max, opset_before=12
+        )
+    return clamp_max(g, clamp_min(g, self, min), max)
 
 
 @_onnx_symbolic("aten::clamp_min")
@@ -157,10 +157,9 @@ def clamp_min(g: jit_utils.GraphContext, self, min):
         return symbolic_helper._op_with_optional_float_cast(
             g, "Clip", self, min, max, opset_before=12
         )
-    else:
-        return symbolic_helper._op_with_optional_float_cast(
-            g, "Max", self, min, opset_before=12
-        )
+    return symbolic_helper._op_with_optional_float_cast(
+        g, "Max", self, min, opset_before=12
+    )
 
 
 @_onnx_symbolic("aten::clamp_max")
@@ -172,10 +171,9 @@ def clamp_max(g: jit_utils.GraphContext, self, max):
         return symbolic_helper._op_with_optional_float_cast(
             g, "Clip", self, min, max, opset_before=12
         )
-    else:
-        return symbolic_helper._op_with_optional_float_cast(
-            g, "Min", self, max, opset_before=12
-        )
+    return symbolic_helper._op_with_optional_float_cast(
+        g, "Min", self, max, opset_before=12
+    )
 
 
 @_onnx_symbolic("aten::relu6")
@@ -399,18 +397,17 @@ def scatter(g: jit_utils.GraphContext, self, dim, index, src):
     src = symbolic_helper._maybe_get_scalar(src)
     if symbolic_helper._is_value(src):
         return g.op("ScatterElements", self, index, src, axis_i=dim)
-    else:
-        # Check if scalar "src" has same type as self (PyTorch allows different
-        # type for scalar src (but not when src is tensor)). If not, insert Cast node.
-        if _type_utils.JitScalarType.from_value(self) != src_type:
-            src = g.op(
-                "Cast",
-                src,
-                to_i=_type_utils.JitScalarType.from_value(self).onnx_type(),
-            )
-        return g.op(
-            "ScatterElements", self, index, opset9.expand_as(g, src, index), axis_i=dim
+    # Check if scalar "src" has same type as self (PyTorch allows different
+    # type for scalar src (but not when src is tensor)). If not, insert Cast node.
+    if _type_utils.JitScalarType.from_value(self) != src_type:
+        src = g.op(
+            "Cast",
+            src,
+            to_i=_type_utils.JitScalarType.from_value(self).onnx_type(),
         )
+    return g.op(
+        "ScatterElements", self, index, opset9.expand_as(g, src, index), axis_i=dim
+    )
 
 
 @_onnx_symbolic("aten::cumsum")
@@ -467,10 +464,9 @@ def __getitem_(g: jit_utils.GraphContext, self, i):
     if symbolic_helper._is_tensor_list(self):
         # SequenceAt requires that the input be a List of Tensors
         return g.op("SequenceAt", self, i)
-    else:
-        from torch.onnx.symbolic_opset9 import __getitem_ as getitem
+    from torch.onnx.symbolic_opset9 import __getitem_ as getitem
 
-        return getitem(g, self, i)
+    return getitem(g, self, i)
 
 
 @_onnx_symbolic("aten::_set_item")
@@ -521,18 +517,16 @@ def Delete(g: jit_utils.GraphContext, tensor_list, dim):
 def cat(g: jit_utils.GraphContext, tensor_list, dim):
     if symbolic_helper._is_packed_list(tensor_list):
         return opset9.cat(g, tensor_list, dim)
-    else:
-        dim = symbolic_helper._get_const(dim, "i", "dim")
-        return g.op("ConcatFromSequence", tensor_list, axis_i=dim)
+    dim = symbolic_helper._get_const(dim, "i", "dim")
+    return g.op("ConcatFromSequence", tensor_list, axis_i=dim)
 
 
 @_onnx_symbolic("aten::stack")
 def stack(g: jit_utils.GraphContext, tensor_list, dim):
     if symbolic_helper._is_packed_list(tensor_list):
         return opset9.stack(g, tensor_list, dim)
-    else:
-        dim = symbolic_helper._get_const(dim, "i", "dim")
-        return g.op("ConcatFromSequence", tensor_list, axis_i=dim, new_axis_i=1)
+    dim = symbolic_helper._get_const(dim, "i", "dim")
+    return g.op("ConcatFromSequence", tensor_list, axis_i=dim, new_axis_i=1)
 
 
 @_onnx_symbolic("aten::_unique2")
@@ -633,8 +627,7 @@ def split(g: jit_utils.GraphContext, self, split_size_or_sizes, dim, _outputs=No
             )
             for i in range(_outputs)
         ]
-    else:
-        return opset9.split(g, self, split_size_or_sizes, dim, _outputs)
+    return opset9.split(g, self, split_size_or_sizes, dim, _outputs)
 
 
 @_onnx_symbolic("aten::split_with_sizes")
@@ -654,8 +647,7 @@ def unbind(g: jit_utils.GraphContext, self, dim=0, _outputs=None):
             axis_i=dim,
             keepdims_i=0,
         )
-    else:
-        return opset9.unbind(g, self, dim, _outputs)
+    return opset9.unbind(g, self, dim, _outputs)
 
 
 def _prepare_onnx_paddings(g: jit_utils.GraphContext, input, pad):
@@ -753,14 +745,13 @@ def pad(
     mode = symbolic_helper._parse_arg(mode, "s")
     if mode == "replicate":
         return replication_pad(g, input, pad)
-    elif mode == "reflect":
+    if mode == "reflect":
         return reflection_pad(g, input, pad)
-    elif mode == "constant":
+    if mode == "constant":
         return constant_pad_nd(g, input, pad, value)
-    elif mode == "circular":
+    if mode == "circular":
         return opset9._pad_circular(g, input, pad)
-    else:
-        raise errors.SymbolicValueError(f"Unrecognized padding mode {mode}", input)
+    raise errors.SymbolicValueError(f"Unrecognized padding mode {mode}", input)
 
 
 @_onnx_symbolic("aten::linalg_det")
@@ -798,7 +789,7 @@ def arange(g: jit_utils.GraphContext, *args):
             value_t=torch.tensor(1, dtype=dtype),
         )
         return g.op("Range", start, end, delta_default)
-    elif len(args) == 2 or len(args) == 5:
+    if len(args) == 2 or len(args) == 5:
         if len(args) == 2:
             # aten::arange(Scalar end, Tensor out)
             dtype = None
@@ -817,7 +808,7 @@ def arange(g: jit_utils.GraphContext, *args):
             value_t=torch.tensor(1, dtype=type_.dtype()),
         )
         return g.op("Range", start_default, end, delta_default)
-    elif len(args) == 4 or len(args) == 7:
+    if len(args) == 4 or len(args) == 7:
         if len(args) == 4:
             # aten::arange(Scalar start, Scalar end, Scalar step, Tensor out)
             dtype = None
@@ -828,7 +819,7 @@ def arange(g: jit_utils.GraphContext, *args):
             g, start=args[0], end=args[1], step=args[2], dtype=dtype
         )
         return g.op("Range", start, end, step)
-    elif len(args) == 6:
+    if len(args) == 6:
         # aten::arange(Scalar start, Scalar end, ScalarType dtype, Layout, Device, bool pin_memory)
         dtype = _get_arange_dtype(args[2])
         type_, end, start, step = symbolic_helper._arange_cast_helper(
@@ -839,10 +830,7 @@ def arange(g: jit_utils.GraphContext, *args):
             value_t=torch.tensor(1, dtype=type_.dtype()),
         )
         return g.op("Range", start, end, delta_default)
-    else:
-        return symbolic_helper._unimplemented(
-            "aten::arange", f"with {len(args)} arguments"
-        )
+    return symbolic_helper._unimplemented("aten::arange", f"with {len(args)} arguments")
 
 
 @_onnx_symbolic("aten::_dim_arange")

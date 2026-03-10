@@ -1,13 +1,11 @@
 # mypy: allow-untyped-defs
 import math
 import operator
-from typing import Union
 
 import sympy
 
 import torch
 from torch.utils._sympy.functions import (
-    _keep_float,
     BitwiseFn_bitwise_and,
     BitwiseFn_bitwise_or,
     FloatPow,
@@ -26,6 +24,7 @@ from torch.utils._sympy.functions import (
     RoundToInt,
     ToFloat,
     TruncToInt,
+    _keep_float,
 )
 
 
@@ -214,12 +213,11 @@ class PythonReferenceAnalysis(ReferenceAnalysis):
     def constant(c, dtype):
         if dtype is torch.int64:
             return int(c)
-        elif dtype is torch.double:
+        if dtype is torch.double:
             return float(c)
-        elif dtype is torch.bool:
+        if dtype is torch.bool:
             return bool(c)
-        else:
-            raise AssertionError(f"unrecognized dtype {dtype}")
+        raise AssertionError(f"unrecognized dtype {dtype}")
 
     @staticmethod
     def not_(a):
@@ -357,7 +355,7 @@ class TensorReferenceAnalysis:
     # function isn't traced correctly.  Here for completeness.
     @staticmethod
     def constant(c, dtype):
-        d: Union[int, float, bool]
+        d: int | float | bool
         if dtype is torch.int64:
             d = int(c)
         elif dtype is torch.double:

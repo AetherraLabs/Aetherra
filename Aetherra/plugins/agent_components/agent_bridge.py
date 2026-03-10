@@ -17,9 +17,7 @@ class AgentIntegrationBridge:
 
     def __init__(self, aetherra_v2_root: Path):
         self.aetherra_v2_root = Path(aetherra_v2_root)
-        self.registry_file = (
-            self.aetherra_v2_root / "integration" / "agent_registry.json"
-        )
+        self.registry_file = self.aetherra_v2_root / "integration" / "agent_registry.json"
         self.agents = {}
         self.loaded_agents = {}
 

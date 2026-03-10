@@ -90,13 +90,9 @@ class IntrospectorPlugin:
             ],
         }
 
-    async def main(
-        self, target_files: List[str], analysis_depth: str = "medium"
-    ) -> Dict[str, Any]:
+    async def main(self, target_files: List[str], analysis_depth: str = "medium") -> Dict[str, Any]:
         """Main introspection analysis function (now supports more file types and directories)"""
-        print(
-            f"🔍 Starting introspection analysis on {len(target_files)} files/directories..."
-        )
+        print(f"🔍 Starting introspection analysis on {len(target_files)} files/directories...")
 
         insights = []
         metrics = {"total_files": 0, "total_lines": 0, "issues_found": 0}
@@ -158,9 +154,7 @@ class IntrospectorPlugin:
             "analysis_timestamp": datetime.now().isoformat(),
         }
 
-    async def _analyze_file(
-        self, file_path: str, depth: str
-    ) -> Optional[Dict[str, Any]]:
+    async def _analyze_file(self, file_path: str, depth: str) -> Optional[Dict[str, Any]]:
         """Analyze a single file for insights"""
         path = Path(file_path)
 
@@ -175,7 +169,7 @@ class IntrospectorPlugin:
             insights = []
             recommendations = []
 
-            # Basic analysis: TODO/FIXME detection
+            # Basic analysis: task-marker detection
             todo_matches = re.finditer(self.analysis_patterns["todo_fixme"], content)
             for match in todo_matches:
                 insights.append(
@@ -229,9 +223,7 @@ class IntrospectorPlugin:
                 "line_count": 0,
             }
 
-    async def _analyze_python_file(
-        self, content: str, file_path: str
-    ) -> List[Dict[str, Any]]:
+    async def _analyze_python_file(self, content: str, file_path: str) -> List[Dict[str, Any]]:
         """Perform Python-specific analysis"""
         insights = []
 
@@ -316,9 +308,7 @@ class IntrospectorPlugin:
 
         return insights
 
-    async def _deep_analysis(
-        self, content: str, file_path: str
-    ) -> List[Dict[str, Any]]:
+    async def _deep_analysis(self, content: str, file_path: str) -> List[Dict[str, Any]]:
         """Perform deep analysis for advanced insights"""
         insights = []
 
@@ -382,14 +372,10 @@ class IntrospectorPlugin:
             )
 
         if insight_types.get("complexity", 0) > 2:
-            recommendations.append(
-                f"File {file_path} has complex functions - consider refactoring"
-            )
+            recommendations.append(f"File {file_path} has complex functions - consider refactoring")
 
         if insight_types.get("documentation", 0) > 5:
-            recommendations.append(
-                f"File {file_path} needs better documentation coverage"
-            )
+            recommendations.append(f"File {file_path} needs better documentation coverage")
 
         return recommendations
 
@@ -403,23 +389,17 @@ class IntrospectorPlugin:
         total_files = metrics.get("total_files", 1)
 
         if total_issues > total_files * 5:  # More than 5 issues per file on average
-            recommendations.append(
-                "High number of issues detected - consider code quality review"
-            )
+            recommendations.append("High number of issues detected - consider code quality review")
 
         # Count severity levels
-        high_severity = sum(
-            1 for insight in insights if insight.get("severity") == "high"
-        )
+        high_severity = sum(1 for insight in insights if insight.get("severity") == "high")
         if high_severity > 0:
             recommendations.append(
                 f"Found {high_severity} high-severity issues requiring immediate attention"
             )
 
         # Check for patterns across files
-        todo_count = sum(
-            1 for insight in insights if insight.get("type") == "todo_fixme"
-        )
+        todo_count = sum(1 for insight in insights if insight.get("type") == "todo_fixme")
         if todo_count > 10:
             recommendations.append("Consider creating a TODO cleanup sprint")
 
@@ -453,9 +433,7 @@ class IntrospectorPlugin:
         except Exception as e:
             print(f"[WARN] Failed to store insights in memory: {e}")
 
-    async def get_historical_insights(
-        self, days_back: int = 30
-    ) -> List[Dict[str, Any]]:
+    async def get_historical_insights(self, days_back: int = 30) -> List[Dict[str, Any]]:
         """Retrieve historical insights for trend analysis"""
         if not self.memory_system:
             return []
@@ -473,9 +451,7 @@ class IntrospectorPlugin:
                 created_at = memory.get("created_at", "")
                 if (
                     created_at
-                    and datetime.fromisoformat(
-                        created_at.replace("Z", "+00:00")
-                    ).timestamp()
+                    and datetime.fromisoformat(created_at.replace("Z", "+00:00")).timestamp()
                     > cutoff_date
                 ):
                     content = memory.get("content", {})

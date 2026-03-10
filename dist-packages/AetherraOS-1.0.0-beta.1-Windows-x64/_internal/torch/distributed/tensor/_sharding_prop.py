@@ -1,9 +1,9 @@
 # mypy: allow-untyped-defs
 import threading
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from functools import lru_cache
 from itertools import chain
-from typing import Callable, cast, Optional, Union
+from typing import cast
 
 import torch
 from torch._ops import OpOverload
@@ -24,7 +24,6 @@ from torch.distributed.tensor._utils import (
     compute_local_shape_and_global_offset,
     compute_local_stride,
 )
-
 
 aten = torch.ops.aten
 
@@ -63,9 +62,7 @@ class ShardingPropagator:
         )
         # op map to save indices of shape (and stride) args which may need to be
         # modified in sharding prop
-        self.op_to_shape_and_stride_idx: dict[
-            OpOverload, Union[int, tuple[int, int]]
-        ] = {
+        self.op_to_shape_and_stride_idx: dict[OpOverload, int | tuple[int, int]] = {
             # new factory ops
             aten.new_empty.default: 1,
             aten.new_full.default: 1,
@@ -85,7 +82,7 @@ class ShardingPropagator:
         self,
         op_overload: OpOverload,
         rule_func: Callable[[OpSchema], OutputSharding],
-        schema_info: Optional[RuntimeSchemaInfo] = None,
+        schema_info: RuntimeSchemaInfo | None = None,
     ):
         """
         Register a sharding propagation rule for an operator.
@@ -98,7 +95,7 @@ class ShardingPropagator:
         self,
         op_overload: OpOverload,
         strategy_func: Callable[[OpSchema], StrategyType],
-        schema_info: Optional[RuntimeSchemaInfo] = None,
+        schema_info: RuntimeSchemaInfo | None = None,
     ):
         """
         Register a sharding strategy generator for an operator.
@@ -109,7 +106,7 @@ class ShardingPropagator:
 
     def _propagate_tensor_meta_non_cached(
         self, op_schema: OpSchema
-    ) -> Union[None, TensorMeta, Sequence[Optional[TensorMeta]]]:
+    ) -> None | TensorMeta | Sequence[TensorMeta | None]:
         """
         Propagate the tensor metadata, it could either return a TensorMeta
         or a list/tuple of TensorMetas
@@ -130,8 +127,8 @@ class ShardingPropagator:
                 shape=fake_out.shape, stride=fake_out.stride(), dtype=fake_out.dtype
             )
 
-        elif isinstance(fake_out, (tuple, list)):
-            tensor_meta_list: list[Optional[TensorMeta]] = []
+        if isinstance(fake_out, (tuple, list)):
+            tensor_meta_list: list[TensorMeta | None] = []
             for fake_out_item in fake_out:
                 if isinstance(fake_out_item, torch.Tensor):
                     tensor_meta_list.append(
@@ -148,21 +145,20 @@ class ShardingPropagator:
                 if isinstance(fake_out, tuple)
                 else tensor_meta_list
             )
-        else:
-            # if fake is not a tensor or tuple of tensor, return as none
-            return None
+        # if fake is not a tensor or tuple of tensor, return as none
+        return None
 
     @lru_cache  # noqa: B019
     def _propagate_tensor_meta(
         self, op_schema: OpSchema
-    ) -> Union[None, TensorMeta, Sequence[Optional[TensorMeta]]]:
+    ) -> None | TensorMeta | Sequence[TensorMeta | None]:
         return self._propagate_tensor_meta_non_cached(op_schema)
 
     def _wrap_output_spec_tensor_meta(
         self,
         op: OpOverload,
         output_specs: OutputSpecType,
-        output_tensor_meta: Union[None, TensorMeta, Sequence[Optional[TensorMeta]]],
+        output_tensor_meta: None | TensorMeta | Sequence[TensorMeta | None],
     ) -> None:
         """
         Wrap the output_specs with the tensor metadata from the output.
@@ -210,11 +206,10 @@ class ShardingPropagator:
                             assert isinstance(output_specs, list)
                             output_specs[i] = None
                             continue
-                        else:
-                            raise ValueError(
-                                f"ShardingPropagator error: output {i} of {op.name()} "
-                                "does not have an associated TensorMeta"
-                            )
+                        raise ValueError(
+                            f"ShardingPropagator error: output {i} of {op.name()} "
+                            "does not have an associated TensorMeta"
+                        )
 
                     spec.tensor_meta = output_tensor_meta_i
 
@@ -228,7 +223,7 @@ class ShardingPropagator:
         def spec_to_strategy(spec: object) -> object:
             if isinstance(spec, DTensorSpec):
                 return OpStrategy([OpSpec(spec)])
-            elif (
+            if (
                 isinstance(spec, (list, tuple))
                 and len(spec) > 0
                 and isinstance(spec[0], DTensorSpec)
@@ -239,8 +234,7 @@ class ShardingPropagator:
                 return TupleStrategy(
                     tuple(tuple_strategy) if isinstance(spec, tuple) else tuple_strategy
                 )
-            else:
-                return spec
+            return spec
 
         args_op_strategy = [spec_to_strategy(i) for i in op_schema.args_schema]
 
@@ -439,7 +433,7 @@ class ShardingPropagator:
                 op_schema.op, output_sharding.output_spec, out_tensor_meta
             )
             return output_sharding
-        elif op_schema.op in self.op_to_rules:
+        if op_schema.op in self.op_to_rules:
             # propagate the sharding with rule
             sharding_prop_func = self.op_to_rules[op_schema.op]
 
@@ -464,17 +458,16 @@ class ShardingPropagator:
                     raise RuntimeError(
                         f"Sharding propagation failed on op {op_schema}!"
                     )
-                else:
-                    # we do auto redistribute on inputs if necessary
-                    # run sharding propagation again with suggested schema
-                    propagation_res = sharding_prop_func(
-                        output_sharding.redistribute_schema
-                    )
-                    # we set the output sharding with the new propagation result
-                    # so that dispatching know both output_spec and redistribute_schema
-                    # exist, which indicates a reshard is needed
-                    output_sharding.output_spec = propagation_res.output_spec
-                    output_sharding.needs_redistribute = True
+                # we do auto redistribute on inputs if necessary
+                # run sharding propagation again with suggested schema
+                propagation_res = sharding_prop_func(
+                    output_sharding.redistribute_schema
+                )
+                # we set the output sharding with the new propagation result
+                # so that dispatching know both output_spec and redistribute_schema
+                # exist, which indicates a reshard is needed
+                output_sharding.output_spec = propagation_res.output_spec
+                output_sharding.needs_redistribute = True
 
             # associate the output sharding with the output tensor metadata
             self._wrap_output_spec_tensor_meta(
@@ -482,10 +475,9 @@ class ShardingPropagator:
             )
 
             return output_sharding
-        else:
-            raise NotImplementedError(
-                f"Operator {op_schema.op} does not have a sharding strategy registered."
-            )
+        raise NotImplementedError(
+            f"Operator {op_schema.op} does not have a sharding strategy registered."
+        )
 
     def _select_strategy(self, strategy: OpStrategy) -> OpSpec:
         if len(strategy.strategies) == 1:

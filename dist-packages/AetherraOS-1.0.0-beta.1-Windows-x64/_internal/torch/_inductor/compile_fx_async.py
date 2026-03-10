@@ -1,15 +1,16 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Optional, TYPE_CHECKING
-from typing_extensions import final, override
+from typing import TYPE_CHECKING, Any, final
+
+from typing_extensions import override
 
 import torch._inductor.async_compile  # noqa: F401 required to warm up AsyncCompile pools
 from torch._inductor.output_code import CompiledFxGraphConstants, OutputCode
 
-from .compile_fx import _CompileFxKwargs, _InProcessFxCompile, FxCompile
+from .compile_fx import FxCompile, _CompileFxKwargs, _InProcessFxCompile
 from .output_code import complex_memory_overlap as complex_memory_overlap  # noqa: F401
-
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -32,11 +33,11 @@ class _PostCompileData:
 # out-of-process compile to finish and then switching over to it.
 @final
 class _AsyncOutputCode(OutputCode):
-    _eager_forward: Optional[Callable[..., Any]]
-    _output_code: Optional[OutputCode]
-    _future: Optional[Future[_WireProtocolPickledOutput]]
+    _eager_forward: Callable[..., Any] | None
+    _output_code: OutputCode | None
+    _future: Future[_WireProtocolPickledOutput] | None
     _callback: Callable[[_WireProtocolPickledOutput], OutputCode]
-    _post_compile_data: Optional[_PostCompileData] = None
+    _post_compile_data: _PostCompileData | None = None
     _boxed_call: bool  # Copied from the forward/output_code
 
     def __init__(
@@ -65,10 +66,9 @@ class _AsyncOutputCode(OutputCode):
             _AsyncFxCompile._stat_eager_runs += 1
             return eager_forward(*args)
 
-        else:
-            _AsyncFxCompile._stat_compiled_runs += 1
-            assert self._output_code is not None
-            return self._output_code.__call__(*args)
+        _AsyncFxCompile._stat_compiled_runs += 1
+        assert self._output_code is not None
+        return self._output_code.__call__(*args)
 
     # Takes and returns the args (converted to the "right" boxed mode)
     def _switch_to_compiled_forward(self, args: tuple[Any, ...]) -> tuple[Any, ...]:

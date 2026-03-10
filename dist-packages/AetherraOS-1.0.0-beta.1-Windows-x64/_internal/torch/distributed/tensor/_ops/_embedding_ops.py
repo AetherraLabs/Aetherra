@@ -2,7 +2,7 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates
 # implement matrix related ops for distributed tensor
 from dataclasses import dataclass, field
-from typing import cast, Optional
+from typing import cast
 
 import torch
 import torch.distributed._functional_collectives as funcol
@@ -24,13 +24,12 @@ from torch.distributed.tensor.placement_types import (
     Shard,
 )
 
-
 aten = torch.ops.aten
 
 
 @dataclass
 class MaskBuffer:
-    data: Optional[torch.Tensor] = None
+    data: torch.Tensor | None = None
     # refcount allows shared usage of the MaskBuffer, as long as all users have the same data
     refcount: int = 0
 
@@ -80,7 +79,7 @@ class _MaskPartial(Partial):
     mask_buffer: MaskBuffer = field(default_factory=MaskBuffer)
 
     # required fields for computing the local offset and deriving the mask
-    offset_shape: Optional[torch.Size] = None
+    offset_shape: torch.Size | None = None
     offset_dim: int = 0
 
     def _partition_value(

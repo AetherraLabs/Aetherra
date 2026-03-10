@@ -10,21 +10,21 @@ import operator
 import sys
 import traceback
 from collections import OrderedDict
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from dataclasses import fields, is_dataclass
-from typing import Any, Callable, Optional
+from typing import Any
 
 import torch
 import torch.fx.traceback as fx_traceback
-from torch._C import _fx_map_aggregate as map_aggregate, _fx_map_arg as map_arg
+from torch._C import _fx_map_aggregate as map_aggregate
+from torch._C import _fx_map_arg as map_arg
 from torch.utils._traceback import CapturedTraceback
 
 from ._compatibility import compatibility
 from .graph import Graph, magic_methods, reflectable_magic_methods
 from .immutable_collections import immutable_dict, immutable_list
-from .node import Argument, base_types, Node, Target
+from .node import Argument, Node, Target, base_types
 from .operator_schemas import check_for_mutable_operation
-
 
 __all__ = [
     "TracerBase",
@@ -152,8 +152,8 @@ class TracerBase:
         target: Target,
         args: tuple[Argument, ...],
         kwargs: dict[str, Argument],
-        name: Optional[str] = None,
-        type_expr: Optional[Any] = None,
+        name: str | None = None,
+        type_expr: Any | None = None,
     ) -> Node:
         """
         Inserts a graph node given target, args, kwargs, and name.
@@ -218,8 +218,8 @@ class TracerBase:
         target: Target,
         args: tuple[Any, ...],
         kwargs: dict[str, Any],
-        name: Optional[str] = None,
-        type_expr: Optional[Any] = None,
+        name: str | None = None,
+        type_expr: Any | None = None,
         # fix noqa when updating bc tests
         proxy_factory_fn: Callable[[Node], "Proxy"] = None,  # noqa: RUF013
     ):
@@ -334,10 +334,10 @@ class TracerBase:
 
         if isinstance(a, Proxy):
             return a.node  # most common arg type goes first
-        elif hasattr(a, "__fx_create_arg__"):
+        if hasattr(a, "__fx_create_arg__"):
             return a.__fx_create_arg__(self)
         # aggregates
-        elif isinstance(a, tuple):
+        if isinstance(a, tuple):
             if hasattr(a, "_fields"):
                 # NamedTuple constructors don't seem to like getting a generator
                 # expression as an argument to their constructor, so build this
@@ -345,35 +345,35 @@ class TracerBase:
                 args = [self.create_arg(elem) for elem in a]
                 return type(a)(*args)  # type: ignore[arg-type]
             return type(a)([self.create_arg(elem) for elem in a])
-        elif isinstance(a, list):
+        if isinstance(a, list):
             return [self.create_arg(elem) for elem in a]
-        elif isinstance(a, dict):
+        if isinstance(a, dict):
             return _create_arg_dict(self, a)
-        elif isinstance(a, slice):
+        if isinstance(a, slice):
             return slice(
                 self.create_arg(a.start),
                 self.create_arg(a.stop),
                 self.create_arg(a.step),
             )
 
-        elif isinstance(a, range):
+        if isinstance(a, range):
             return range(
                 self.create_arg(a.start),
                 self.create_arg(a.stop),
                 self.create_arg(a.step),
             )
 
-        elif isinstance(a, (torch._ops.OpOverload, torch._ops.HigherOrderOperator)):
+        if isinstance(a, (torch._ops.OpOverload, torch._ops.HigherOrderOperator)):
             return a
 
-        elif is_dataclass(a):
+        if is_dataclass(a):
             kwargs = {
                 field.name: self.create_arg(getattr(a, field.name))
                 for field in fields(a)
             }
             return self.create_node("call_function", a.__class__, (), kwargs)
 
-        elif isinstance(a, (*base_types, enum.Enum)) or a is None or a is ...:
+        if isinstance(a, (*base_types, enum.Enum)) or a is None or a is ...:
             return a
 
         raise NotImplementedError(f"argument of type: {type(a)}")
@@ -468,7 +468,7 @@ class Proxy:
     """
 
     @compatibility(is_backward_compatible=True)
-    def __init__(self, node: Node, tracer: "Optional[TracerBase]" = None):
+    def __init__(self, node: Node, tracer: "TracerBase | None" = None):
         if tracer is None:
             # This allows you to create a Proxy object around a raw Node
             tracer = GraphAppendingTracer(node.graph)
@@ -615,17 +615,16 @@ class Proxy:
             return tracer.create_proxy(
                 "call_method", orig_method.__name__, args, kwargs
             )
-        else:
-            if isinstance(orig_method, torch._ops.HigherOrderOperator):
-                # TODO: Define how to symbolically trace HigherOrderOperators
-                raise RuntimeError("Unable to symbolically trace HigherOrderOperators")
-            return tracer.create_proxy(
-                "call_function",
-                orig_method,
-                args,
-                kwargs,
-                name=tracer.graph._target_to_str(orig_method.__name__),
-            )
+        if isinstance(orig_method, torch._ops.HigherOrderOperator):
+            # TODO: Define how to symbolically trace HigherOrderOperators
+            raise RuntimeError("Unable to symbolically trace HigherOrderOperators")
+        return tracer.create_proxy(
+            "call_function",
+            orig_method,
+            args,
+            kwargs,
+            name=tracer.graph._target_to_str(orig_method.__name__),
+        )
 
 
 @compatibility(is_backward_compatible=False)
@@ -634,9 +633,7 @@ class MetaProxy(Proxy):
     A Proxy subclass that propagates metadata (meta['val']) during graph tracing.
     """
 
-    def __init__(
-        self, node: Node, tracer: "Optional[TracerBase]" = None, fake_mode=None
-    ):
+    def __init__(self, node: Node, tracer: "TracerBase | None" = None, fake_mode=None):
         super().__init__(node, tracer)
         self.fake_mode = fake_mode
 
@@ -674,7 +671,7 @@ class Attribute(Proxy):
         self.root = root
         self.attr = attr
         self.tracer = root.tracer
-        self._node: Optional[Node] = None
+        self._node: Node | None = None
 
     @property
     def node(self):

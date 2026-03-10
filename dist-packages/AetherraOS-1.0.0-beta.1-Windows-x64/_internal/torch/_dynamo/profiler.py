@@ -14,8 +14,7 @@ by tracking both captured and total operations, timing, and graph statistics.
 
 import dataclasses
 import os
-from typing import Any
-from typing_extensions import Self
+from typing import Any, Self
 
 import torch
 

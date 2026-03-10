@@ -4,6 +4,7 @@
 Utility function to facilitate testing.
 
 """
+
 import contextlib
 import gc
 import operator
@@ -20,8 +21,8 @@ from tempfile import mkdtemp, mkstemp
 from warnings import WarningMessage
 
 import torch._numpy as np
-from torch._numpy import arange, asarray as asanyarray, empty, float32, intp, ndarray
-
+from torch._numpy import arange, empty, float32, intp, ndarray
+from torch._numpy import asarray as asanyarray
 
 __all__ = [
     "assert_equal",
@@ -187,7 +188,7 @@ def assert_equal(actual, desired, err_msg="", verbose=True):
     num_nones = sum([actual is None, desired is None])
     if num_nones == 1:
         raise AssertionError(f"Not equal: {actual} != {desired}")
-    elif num_nones == 2:
+    if num_nones == 2:
         return True
     # else, carry on
 
@@ -195,12 +196,11 @@ def assert_equal(actual, desired, err_msg="", verbose=True):
         result = actual == desired
         if not result:
             raise AssertionError(f"Not equal: {actual} != {desired}")
-        else:
-            return True
+        return True
 
     if isinstance(desired, str) and isinstance(actual, str):
         assert actual == desired
-        return
+        return None
 
     if isinstance(desired, dict):
         if not isinstance(actual, dict):
@@ -210,12 +210,12 @@ def assert_equal(actual, desired, err_msg="", verbose=True):
             if k not in actual:
                 raise AssertionError(repr(k))
             assert_equal(actual[k], desired[k], f"key={k!r}\n{err_msg}", verbose)
-        return
+        return None
     if isinstance(desired, (list, tuple)) and isinstance(actual, (list, tuple)):
         assert_equal(len(actual), len(desired), err_msg, verbose)
         for k in range(len(desired)):
             assert_equal(actual[k], desired[k], f"item={k!r}\n{err_msg}", verbose)
-        return
+        return None
 
     from torch._numpy import imag, iscomplexobj, isscalar, ndarray, real, signbit
 
@@ -259,7 +259,7 @@ def assert_equal(actual, desired, err_msg="", verbose=True):
         isdesnan = gisnan(desired)
         isactnan = gisnan(actual)
         if isdesnan and isactnan:
-            return  # both nan, so equal
+            return None  # both nan, so equal
 
         if desired == 0 and actual == 0:
             if not signbit(desired) == signbit(actual):
@@ -277,8 +277,7 @@ def assert_equal(actual, desired, err_msg="", verbose=True):
         # this handles the case when the two types are not even comparable
         if "elementwise == comparison" in e.args[0]:
             raise AssertionError(msg)  # noqa: B904
-        else:
-            raise
+        raise
 
 
 def print_assert_equal(test_string, actual, desired):
@@ -440,7 +439,7 @@ def assert_almost_equal(actual, desired, decimal=7, err_msg="", verbose=True):
             else:
                 if not desired == actual:
                     raise AssertionError(_build_err_msg())
-            return
+            return None
     except (NotImplementedError, TypeError):
         pass
     if abs(desired - actual) >= np.float64(1.5 * 10.0 ** (-decimal)):
@@ -607,10 +606,9 @@ def assert_array_compare(
         # flag as it everywhere, so we should return the scalar flag.
         if isinstance(x_id, bool) or x_id.ndim == 0:
             return bool_(x_id)
-        elif isinstance(y_id, bool) or y_id.ndim == 0:
+        if isinstance(y_id, bool) or y_id.ndim == 0:
             return bool_(y_id)
-        else:
-            return y_id
+        return y_id
 
     try:
         if strict:
@@ -910,7 +908,8 @@ def assert_array_almost_equal(x, y, decimal=6, err_msg="", verbose=True):
 
     """
     __tracebackhide__ = True  # Hide traceback for py.test
-    from torch._numpy import any as npany, float_, issubdtype, number, result_type
+    from torch._numpy import any as npany
+    from torch._numpy import float_, issubdtype, number, result_type
 
     def compare(x, y):
         try:
@@ -1505,12 +1504,11 @@ def integer_repr(x):
 
     if x.dtype == np.float16:
         return _integer_repr(x, np.int16, np.int16(-(2**15)))
-    elif x.dtype == np.float32:
+    if x.dtype == np.float32:
         return _integer_repr(x, np.int32, np.int32(-(2**31)))
-    elif x.dtype == np.float64:
+    if x.dtype == np.float64:
         return _integer_repr(x, np.int64, np.int64(-(2**63)))
-    else:
-        raise ValueError(f"Unsupported dtype {x.dtype}")
+    raise ValueError(f"Unsupported dtype {x.dtype}")
 
 
 @contextlib.contextmanager
@@ -1663,19 +1661,29 @@ def _gen_alignment_data(dtype=float32, type="binary", max_size=24):
                 yield out, inp(), ufmt % (o, o, s, dtype, "out of place")
                 d = inp()
                 yield d, d, ufmt % (o, o, s, dtype, "in place")
-                yield out[1:], inp()[:-1], ufmt % (
-                    o + 1,
-                    o,
-                    s - 1,
-                    dtype,
-                    "out of place",
+                yield (
+                    out[1:],
+                    inp()[:-1],
+                    ufmt
+                    % (
+                        o + 1,
+                        o,
+                        s - 1,
+                        dtype,
+                        "out of place",
+                    ),
                 )
-                yield out[:-1], inp()[1:], ufmt % (
-                    o,
-                    o + 1,
-                    s - 1,
-                    dtype,
-                    "out of place",
+                yield (
+                    out[:-1],
+                    inp()[1:],
+                    ufmt
+                    % (
+                        o,
+                        o + 1,
+                        s - 1,
+                        dtype,
+                        "out of place",
+                    ),
                 )
                 yield inp()[:-1], inp()[1:], ufmt % (o, o + 1, s - 1, dtype, "aliased")
                 yield inp()[1:], inp()[:-1], ufmt % (o + 1, o, s - 1, dtype, "aliased")
@@ -1691,53 +1699,89 @@ def _gen_alignment_data(dtype=float32, type="binary", max_size=24):
                 yield d, d, inp2(), bfmt % (o, o, o, s, dtype, "in place1")
                 d = inp2()
                 yield d, inp1(), d, bfmt % (o, o, o, s, dtype, "in place2")
-                yield out[1:], inp1()[:-1], inp2()[:-1], bfmt % (
-                    o + 1,
-                    o,
-                    o,
-                    s - 1,
-                    dtype,
-                    "out of place",
+                yield (
+                    out[1:],
+                    inp1()[:-1],
+                    inp2()[:-1],
+                    bfmt
+                    % (
+                        o + 1,
+                        o,
+                        o,
+                        s - 1,
+                        dtype,
+                        "out of place",
+                    ),
                 )
-                yield out[:-1], inp1()[1:], inp2()[:-1], bfmt % (
-                    o,
-                    o + 1,
-                    o,
-                    s - 1,
-                    dtype,
-                    "out of place",
+                yield (
+                    out[:-1],
+                    inp1()[1:],
+                    inp2()[:-1],
+                    bfmt
+                    % (
+                        o,
+                        o + 1,
+                        o,
+                        s - 1,
+                        dtype,
+                        "out of place",
+                    ),
                 )
-                yield out[:-1], inp1()[:-1], inp2()[1:], bfmt % (
-                    o,
-                    o,
-                    o + 1,
-                    s - 1,
-                    dtype,
-                    "out of place",
+                yield (
+                    out[:-1],
+                    inp1()[:-1],
+                    inp2()[1:],
+                    bfmt
+                    % (
+                        o,
+                        o,
+                        o + 1,
+                        s - 1,
+                        dtype,
+                        "out of place",
+                    ),
                 )
-                yield inp1()[1:], inp1()[:-1], inp2()[:-1], bfmt % (
-                    o + 1,
-                    o,
-                    o,
-                    s - 1,
-                    dtype,
-                    "aliased",
+                yield (
+                    inp1()[1:],
+                    inp1()[:-1],
+                    inp2()[:-1],
+                    bfmt
+                    % (
+                        o + 1,
+                        o,
+                        o,
+                        s - 1,
+                        dtype,
+                        "aliased",
+                    ),
                 )
-                yield inp1()[:-1], inp1()[1:], inp2()[:-1], bfmt % (
-                    o,
-                    o + 1,
-                    o,
-                    s - 1,
-                    dtype,
-                    "aliased",
+                yield (
+                    inp1()[:-1],
+                    inp1()[1:],
+                    inp2()[:-1],
+                    bfmt
+                    % (
+                        o,
+                        o + 1,
+                        o,
+                        s - 1,
+                        dtype,
+                        "aliased",
+                    ),
                 )
-                yield inp1()[:-1], inp1()[:-1], inp2()[1:], bfmt % (
-                    o,
-                    o,
-                    o + 1,
-                    s - 1,
-                    dtype,
-                    "aliased",
+                yield (
+                    inp1()[:-1],
+                    inp1()[:-1],
+                    inp2()[1:],
+                    bfmt
+                    % (
+                        o,
+                        o,
+                        o + 1,
+                        s - 1,
+                        dtype,
+                        "aliased",
+                    ),
                 )
 
 
@@ -2082,7 +2126,7 @@ class suppress_warnings:
                     return
                 # Use startswith, because warnings strips the c or o from
                 # .pyc/.pyo files.
-                elif mod.__file__.startswith(filename):
+                if mod.__file__.startswith(filename):
                     # The message and module (filename) match
                     if rec is not None:
                         msg = WarningMessage(
@@ -2342,8 +2386,7 @@ def _get_mem_available():
         if "memavailable" in info:
             # Linux >= 3.14
             return info["memavailable"]
-        else:
-            return info["memfree"] + info["cached"]
+        return info["memfree"] + info["cached"]
 
     return None
 
@@ -2356,18 +2399,17 @@ def _no_tracing(func):
     """
     if not hasattr(sys, "gettrace"):
         return func
-    else:
 
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            original_trace = sys.gettrace()
-            try:
-                sys.settrace(None)
-                return func(*args, **kwargs)
-            finally:
-                sys.settrace(original_trace)
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        original_trace = sys.gettrace()
+        try:
+            sys.settrace(None)
+            return func(*args, **kwargs)
+        finally:
+            sys.settrace(original_trace)
 
-        return wrapper
+    return wrapper
 
 
 def _get_glibc_version():

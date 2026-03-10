@@ -1,7 +1,7 @@
 # mypy: ignore-errors
 
-""" "Normalize" arguments: convert array_likes to tensors, dtypes to torch dtypes and so on.
-"""
+""" "Normalize" arguments: convert array_likes to tensors, dtypes to torch dtypes and so on."""
+
 from __future__ import annotations
 
 import functools
@@ -12,7 +12,6 @@ import typing
 import torch
 
 from . import _dtypes, _dtypes_impl, _util
-
 
 ArrayLike = typing.TypeVar("ArrayLike")
 Scalar = typing.Union[int, float, complex, bool]
@@ -158,7 +157,7 @@ def maybe_copy_to(out, result, promote_scalar_result=False):
     # NB: here out is either an ndarray or None
     if out is None:
         return result
-    elif isinstance(result, torch.Tensor):
+    if isinstance(result, torch.Tensor):
         if result.shape != out.shape:
             can_fit = result.numel() == 1 and out.ndim == 0
             if promote_scalar_result and can_fit:
@@ -170,12 +169,12 @@ def maybe_copy_to(out, result, promote_scalar_result=False):
                 )
         out.tensor.copy_(result)
         return out
-    elif isinstance(result, (tuple, list)):
+    if isinstance(result, (tuple, list)):
         return type(result)(
-            maybe_copy_to(o, r, promote_scalar_result) for o, r in zip(out, result)
+            maybe_copy_to(o, r, promote_scalar_result)
+            for o, r in zip(out, result, strict=False)
         )
-    else:
-        raise AssertionError  # We should never hit this path
+    raise AssertionError  # We should never hit this path
 
 
 def wrap_tensors(result):
@@ -183,7 +182,7 @@ def wrap_tensors(result):
 
     if isinstance(result, torch.Tensor):
         return ndarray(result)
-    elif isinstance(result, (tuple, list)):
+    if isinstance(result, (tuple, list)):
         result = type(result)(wrap_tensors(x) for x in result)
     return result
 
@@ -191,10 +190,9 @@ def wrap_tensors(result):
 def array_or_scalar(values, py_type=float, return_scalar=False):
     if return_scalar:
         return py_type(values.item())
-    else:
-        from ._ndarray import ndarray
+    from ._ndarray import ndarray
 
-        return ndarray(values)
+    return ndarray(values)
 
 
 # ### The main decorator to normalize arguments / postprocess the output ###
@@ -216,7 +214,7 @@ def normalizer(_func=None, *, promote_scalar_result=False):
                 args = (
                     tuple(
                         maybe_normalize(arg, parm)
-                        for arg, parm in zip(args, params.values())
+                        for arg, parm in zip(args, params.values(), strict=False)
                     )
                     + args[len(params.values()) :]
                 )
@@ -255,5 +253,4 @@ def normalizer(_func=None, *, promote_scalar_result=False):
 
     if _func is None:
         return normalizer_inner
-    else:
-        return normalizer_inner(_func)
+    return normalizer_inner(_func)

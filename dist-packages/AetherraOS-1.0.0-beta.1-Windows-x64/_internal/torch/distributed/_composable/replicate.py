@@ -1,7 +1,7 @@
 # mypy: allow-untyped-defs
 import weakref
 from collections.abc import Iterable
-from typing import Any, NoReturn, Optional
+from typing import Any, NoReturn
 
 import torch
 import torch.nn as nn
@@ -9,7 +9,6 @@ from torch.distributed._composable_state import _State
 from torch.nn.parallel import DistributedDataParallel
 
 from .contract import _get_registry, contract
-
 
 _ROOT_MODULE_PREFIX = ""
 
@@ -27,7 +26,7 @@ class _ReplicateState(_State):
         self._orig_module = self.module
         self._param_names: list[str] = []
         self._no_sync: bool = False
-        self._init_args: Optional[tuple[Any, ...]] = None
+        self._init_args: tuple[Any, ...] | None = None
         self._init_kwargs: dict[str, Any] = {}
         self._comm_hook_args: list[Any] = []
 
@@ -178,7 +177,7 @@ class DDP:
 @contract(state_cls=_ReplicateState)
 def replicate(
     module: nn.Module,
-    ignored_modules: Optional[Iterable[torch.nn.Module]] = None,
+    ignored_modules: Iterable[torch.nn.Module] | None = None,
     **kwargs,
 ) -> nn.Module:
     r"""Replicates a module
@@ -214,7 +213,7 @@ def replicate(
 
     state = replicate.state(module)
     module.register_forward_pre_hook(state.forward_pre_hook, with_kwargs=True)
-    device_mesh = kwargs.get("device_mesh", None)
+    device_mesh = kwargs.get("device_mesh")
     if device_mesh is not None:
         from torch.distributed.device_mesh import _mesh_resources
 

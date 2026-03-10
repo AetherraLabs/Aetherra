@@ -38,9 +38,7 @@ class SupportAgent(AgentBase):
         super().__init__()
         self.agent_type = "user_support"
         self.name = "SupportAgent"
-        self.description = (
-            "Comprehensive user support and assistance coordination specialist"
-        )
+        self.description = "Comprehensive user support and assistance coordination specialist"
         self.capabilities = [
             "user_assistance",
             "ticket_management",
@@ -80,9 +78,7 @@ class SupportAgent(AgentBase):
             logger.error(f"❌ SupportAgent error: {e}")
             return {"success": False, "error": str(e), "timestamp": time.time()}
 
-    async def _provide_assistance(
-        self, query: str, context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def _provide_assistance(self, query: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Provide direct user assistance"""
         assistance_start = time.time()
 
@@ -298,9 +294,7 @@ class SupportAgent(AgentBase):
 
         return analytics
 
-    async def _general_support(
-        self, query: str, context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def _general_support(self, query: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """General support assistance"""
         support_start = time.time()
 
@@ -372,9 +366,7 @@ class SupportAgent(AgentBase):
         query_lower = query.lower()
         if any(word in query_lower for word in ["how", "tutorial", "guide", "learn"]):
             return "guidance"
-        elif any(
-            word in query_lower for word in ["error", "problem", "issue", "broken"]
-        ):
+        elif any(word in query_lower for word in ["error", "problem", "issue", "broken"]):
             return "troubleshooting"
         elif any(word in query_lower for word in ["what", "explain", "about"]):
             return "information"
@@ -384,10 +376,7 @@ class SupportAgent(AgentBase):
     def _assess_urgency(self, query: str, context: Dict[str, Any]) -> str:
         """Assess the urgency of a support request"""
         query_lower = query.lower()
-        if any(
-            word in query_lower
-            for word in ["urgent", "critical", "emergency", "broken"]
-        ):
+        if any(word in query_lower for word in ["urgent", "critical", "emergency", "broken"]):
             return "high"
         elif any(word in query_lower for word in ["soon", "important", "issue"]):
             return "medium"
@@ -419,9 +408,13 @@ class SupportAgent(AgentBase):
     def _generate_response(self, query: str, intent: str) -> str:
         """Generate an appropriate response based on query and intent"""
         if intent == "guidance":
-            return "I'd be happy to guide you through this! Let me provide step-by-step instructions."
+            return (
+                "I'd be happy to guide you through this! Let me provide step-by-step instructions."
+            )
         elif intent == "troubleshooting":
-            return "I understand you're experiencing an issue. Let me help you resolve this quickly."
+            return (
+                "I understand you're experiencing an issue. Let me help you resolve this quickly."
+            )
         elif intent == "information":
             return "Great question! I'll explain this feature and how you can make the most of it."
         else:

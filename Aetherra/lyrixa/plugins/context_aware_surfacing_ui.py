@@ -655,7 +655,11 @@ class ContextAwareSurfacingUI(QWidget):
     def filter_recommendations(self):
         """Filter recommendations based on current filters."""
         # Implementation for filtering recommendations
-        pass
+        query = ""
+        if hasattr(self, "search_input") and self.search_input is not None:
+            query = self.search_input.text().strip().lower()
+        self.active_filter_query = query
+        self.update_context_patterns()
 
     def update_context_patterns(self):
         """Update context pattern analysis."""

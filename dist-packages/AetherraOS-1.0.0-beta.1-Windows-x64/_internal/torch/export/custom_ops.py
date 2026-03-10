@@ -1,6 +1,5 @@
 import torch
 
-
 lib = torch.library.Library("export", "FRAGMENT")  # noqa: TOR901
 
 lib.define(

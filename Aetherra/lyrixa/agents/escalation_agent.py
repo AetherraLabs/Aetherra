@@ -86,9 +86,7 @@ class EscalationAgent(AgentBase):
         else:
             return await self._handle_complex_routing(content, priority)
 
-    async def _handle_escalation(
-        self, content: Dict[str, Any], priority: str
-    ) -> Dict[str, Any]:
+    async def _handle_escalation(self, content: Dict[str, Any], priority: str) -> Dict[str, Any]:
         """Handle escalation workflow."""
         escalation_id = f"esc_{len(self.escalation_queue) + 1:04d}"
 
@@ -272,11 +270,7 @@ class EscalationAgent(AgentBase):
                 detected_complexity.append(indicator)
 
         complexity_level = (
-            "high"
-            if len(detected_complexity) > 2
-            else "medium"
-            if detected_complexity
-            else "low"
+            "high" if len(detected_complexity) > 2 else "medium" if detected_complexity else "low"
         )
 
         return {

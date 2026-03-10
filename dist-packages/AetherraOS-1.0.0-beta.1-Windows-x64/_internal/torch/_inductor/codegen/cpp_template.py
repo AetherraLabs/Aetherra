@@ -4,8 +4,7 @@ import functools
 import itertools
 import logging
 import sys
-from collections.abc import Iterable
-from typing import Callable, Optional, Union
+from collections.abc import Callable, Iterable
 from unittest.mock import patch
 
 import sympy
@@ -16,7 +15,6 @@ from ..utils import IndentedBuffer, Placeholder, unique
 from ..virtualized import V
 from .common import KernelTemplate
 from .cpp_template_kernel import CppTemplateCaller, CppTemplateKernel
-
 
 log = logging.getLogger(__name__)
 
@@ -30,12 +28,12 @@ class CppTemplate(KernelTemplate):
         input_nodes,
         layout: ir.Layout,
         num_threads: int,
-        epilogue_creator: Optional[Callable[[ir.Buffer], ir.Pointwise]] = None,
+        epilogue_creator: Callable[[ir.Buffer], ir.Pointwise] | None = None,
     ) -> None:
         super().__init__(name)
         self.input_nodes = input_nodes
         self.index = next(self.index_counter)
-        self.output_node: Union[ir.Buffer, list[ir.Buffer]] = ir.Buffer(
+        self.output_node: ir.Buffer | list[ir.Buffer] = ir.Buffer(
             name=f"buf_out{self.index}", layout=layout
         )
         self.layout = layout
@@ -93,7 +91,7 @@ class CppTemplate(KernelTemplate):
         def make_kernel_render(
             template_node: ir.CppTemplateBuffer,
             flag_template_buffer_has_other_users: bool,
-            epilogue_nodes: Optional[list[ir.IRNode]] = None,
+            epilogue_nodes: list[ir.IRNode] | None = None,
         ):
             kernel = CppTemplateKernel(
                 kernel_name=str(Placeholder.KERNEL_NAME), num_threads=self.num_threads

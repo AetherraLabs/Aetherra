@@ -3,13 +3,12 @@ from typing import Any
 
 import torch
 from torch._C._distributed_c10d import (
-    _resolve_process_group,
     FakeWork,
     ProcessGroup,
     Work,
+    _resolve_process_group,
 )
 from torch.utils._pytree import tree_map_only
-
 
 torch.distributed.batch_isend_irecv
 
@@ -302,6 +301,6 @@ class CollectiveOp:
     def get_work(func, res) -> Work:  # type: ignore[no-untyped-def]
         if func in CollectiveOp.WK:
             return FakeWork.unbox(res)
-        elif func in CollectiveOp.WK_ARG_1:
+        if func in CollectiveOp.WK_ARG_1:
             return FakeWork.unbox(res[1])
         raise TypeError(f"Func {func} not found in {collective_ops}")

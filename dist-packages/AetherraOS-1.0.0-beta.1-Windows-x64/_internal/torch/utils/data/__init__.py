@@ -1,6 +1,6 @@
 from torch.utils.data.dataloader import (
-    _DatasetKind,
     DataLoader,
+    _DatasetKind,
     default_collate,
     default_convert,
     get_worker_info,
@@ -24,10 +24,10 @@ from torch.utils.data.dataset import (
     ConcatDataset,
     Dataset,
     IterableDataset,
-    random_split,
     StackDataset,
     Subset,
     TensorDataset,
+    random_split,
 )
 from torch.utils.data.distributed import DistributedSampler
 from torch.utils.data.sampler import (
@@ -38,7 +38,6 @@ from torch.utils.data.sampler import (
     SubsetRandomSampler,
     WeightedRandomSampler,
 )
-
 
 __all__ = [
     "BatchSampler",

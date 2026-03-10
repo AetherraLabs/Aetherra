@@ -3,7 +3,8 @@
 import importlib
 import inspect
 
-from torch.onnx import symbolic_helper, symbolic_opset9 as opset9
+from torch.onnx import symbolic_helper
+from torch.onnx import symbolic_opset9 as opset9
 from torch.onnx._internal import jit_utils, registration
 
 

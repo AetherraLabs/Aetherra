@@ -2,15 +2,15 @@
 import torch
 from torch import Tensor
 
-
 aten = torch.ops.aten
 import inspect
 import warnings
-from typing import Callable, Optional, TypeVar
+from collections.abc import Callable
+from typing import TypeVar
+
 from typing_extensions import ParamSpec
 
 from torch.types import Number
-
 
 decomposition_table: dict[str, torch.jit.ScriptFunction] = {}
 function_name_set: set[str] = set()
@@ -39,7 +39,9 @@ def signatures_match(decomposition_sig, torch_op_sig):
     if len(decomp_params) != len(op_params):
         return False
 
-    for decomp_param, op_param in zip(decomp_params.values(), op_params.values()):
+    for decomp_param, op_param in zip(
+        decomp_params.values(), op_params.values(), strict=False
+    ):
         # can't check full equality yet because not all fields are correcly deduced
         # in the torch_op_sig - like default value
         # can't check 'kind' bc
@@ -65,7 +67,7 @@ def signatures_match(decomposition_sig, torch_op_sig):
 
 def register_decomposition(
     aten_op: torch._ops.OpOverload,
-    registry: Optional[dict[str, torch.jit.ScriptFunction]] = None,
+    registry: dict[str, torch.jit.ScriptFunction] | None = None,
 ) -> Callable[[Callable[_P, _T]], Callable[_P, _T]]:
     def decomposition_decorator(f: Callable[_P, _T]) -> Callable[_P, _T]:
         nonlocal registry
@@ -99,8 +101,8 @@ def register_decomposition(
 @register_decomposition(aten.var.correction)
 def var_decomposition(
     input: Tensor,
-    dim: Optional[list[int]] = None,
-    correction: Optional[Number] = None,
+    dim: list[int] | None = None,
+    correction: Number | None = None,
     keepdim: bool = False,
 ) -> Tensor:
     if dim is None:

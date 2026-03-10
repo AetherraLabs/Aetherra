@@ -27,25 +27,24 @@ import shutil
 import sys
 import textwrap
 from importlib import import_module
-from typing import Union
 
 import torch
 import torch.fx as fx
 from torch._dynamo.backends.registry import CompiledFn
 from torch._dynamo.debug_utils import (
-    AccuracyError,
-    backend_accuracy_fails,
     BUCK_CMD_PREFIX,
+    AccuracyError,
     BuckTargetWriter,
+    InputReader,
+    InputWriter,
+    NNModuleToString,
+    NopInputReader,
+    backend_accuracy_fails,
     extra_imports,
     generate_config_string,
     generate_env_vars_string,
     helper_for_dump_minify,
-    InputReader,
-    InputWriter,
     minifier_dir,
-    NNModuleToString,
-    NopInputReader,
     run_fwd_maybe_bwd,
     same_two_models,
 )
@@ -55,7 +54,6 @@ from torch.hub import tqdm
 from .. import config
 from ..backends.registry import lookup_backend, register_debug_backend
 from ..debug_utils import clone_inputs_retaining_gradness
-
 
 log = logging.getLogger(__name__)
 
@@ -187,7 +185,7 @@ def generate_dynamo_fx_repro_string(
 
     # TODO: Figure out why torch.compile'd hash isn't work on this codepath
     writer = InputWriter(save_dir, stable_hash=True)
-    for placeholder, arg in zip(fx_placeholder_targets(gm), args):
+    for placeholder, arg in zip(fx_placeholder_targets(gm), args, strict=False):
         if isinstance(arg, (int, torch.SymInt)):
             writer.symint(placeholder, arg)
         elif isinstance(arg, torch.Tensor):
@@ -486,7 +484,7 @@ def run_repro(
     load_args,
     *,
     command="run",
-    accuracy: Union[bool, str] = "",
+    accuracy: bool | str = "",
     save_dir=None,
     autocast=False,
     backend="inductor",

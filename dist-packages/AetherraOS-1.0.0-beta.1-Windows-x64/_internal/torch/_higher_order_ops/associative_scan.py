@@ -1,7 +1,8 @@
 # mypy: allow-untyped-defs
 import functools
 import itertools
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import torch
 import torch._prims_common as utils
@@ -21,19 +22,18 @@ from torch._higher_order_ops.utils import (
 from torch._ops import HigherOrderOperator
 from torch._subclasses.fake_tensor import FakeTensorMode
 from torch.fx.experimental.proxy_tensor import (
-    disable_proxy_modes_tracing,
     ProxyTorchDispatchMode,
+    disable_proxy_modes_tracing,
     track_tensor_tree,
 )
-
 
 aten = torch._ops.ops.aten
 
 
 def wrap_combine_fn_flat(*args, combine_fn, spec, num_leaves):
-    assert (
-        len(args) == 2 * num_leaves
-    ), f"Combin_fn received wrong number of arguments, expected {2 * num_leaves}, but got {len(args)}"
+    assert len(args) == 2 * num_leaves, (
+        f"Combin_fn received wrong number of arguments, expected {2 * num_leaves}, but got {len(args)}"
+    )
     lhs = pytree.tree_unflatten(args[:num_leaves], spec)
     rhs = pytree.tree_unflatten(args[num_leaves:], spec)
     return combine_fn(lhs, rhs)
@@ -67,7 +67,7 @@ def safe_map(f, *args):
     def nf(a):
         return f(*a)
 
-    return list(map(nf, zip(*args)))
+    return list(map(nf, zip(*args, strict=False)))
 
 
 class AssociativeScanOp(HigherOrderOperator):
@@ -79,9 +79,9 @@ class AssociativeScanOp(HigherOrderOperator):
         # the additional_inputs being a list. See https://github.com/pytorch/pytorch/issues/145785
         # Once this issue is resolved, the assertion should only allow tuples
         # and the tuple cast should be removed
-        assert isinstance(
-            additional_inputs, (tuple, list)
-        ), "additional_inputs must be a tuple."
+        assert isinstance(additional_inputs, (tuple, list)), (
+            "additional_inputs must be a tuple."
+        )
         additional_inputs = (
             tuple(additional_inputs)
             if isinstance(additional_inputs, list)
@@ -337,7 +337,7 @@ def generic_associative_scan(operator, leaves, dim=0, additional_inputs=()):
             else aten.slice(
                 elem, dim, 0, 1
             )  # Jax allows/ignores concat with 0-dim, Pytorch does not
-            for (elem, result) in zip(elems, even_elems)
+            for (elem, result) in zip(elems, even_elems, strict=False)
         ]
 
         return list(
@@ -377,9 +377,9 @@ def trace_associative_scan(
 
     assert outputs is not None
     outputs = pytree.tree_leaves(outputs)
-    assert len(outputs) == len(
-        xs
-    ), f"expected combine_fn to return {len(xs)} results but got {len(outputs)}"
+    assert len(outputs) == len(xs), (
+        f"expected combine_fn to return {len(xs)} results but got {len(outputs)}"
+    )
 
     xs_fake_tensors: list[torch.Tensor | torch.SymInt | int] = [
         first_slice_copy(x) for x in xs

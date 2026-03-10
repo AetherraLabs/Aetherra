@@ -2,12 +2,13 @@
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
 
-# Minimal ObserverMemoryManager stub for integration test compatibility
+# Minimal ObserverMemoryManager baseline for integration test compatibility
 class ObserverMemoryManager:
     def __init__(self):
-        pass
+        self.observations = 0
 
     def observe(self, memory):
+        self.observations += 1
         return memory
 
 
@@ -30,9 +31,7 @@ class ObserverEffectEngine:
         mutation_factor = random()
         self.access_log[key] = {"time": time.time(), "mutation": mutation_factor}
         mutated = memory_entry.copy()
-        mutated["confidence"] = memory_entry.get("confidence", 1.0) * (
-            0.9 + mutation_factor * 0.1
-        )
+        mutated["confidence"] = memory_entry.get("confidence", 1.0) * (0.9 + mutation_factor * 0.1)
         mutated["observer_effect"] = True
         return mutated
 

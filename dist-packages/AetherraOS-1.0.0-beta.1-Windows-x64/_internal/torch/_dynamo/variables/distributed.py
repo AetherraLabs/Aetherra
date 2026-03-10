@@ -37,7 +37,6 @@ from ..utils import istype
 from .base import VariableTracker
 from .constant import ConstantVariable, EnumVariable
 
-
 if TYPE_CHECKING:
     from torch._dynamo.symbolic_convert import InstructionTranslator
 
@@ -126,7 +125,7 @@ class WorldMetaClassVariable(DistributedVariable):
             source = AttrSource(base=self.source, member="WORLD")
             install_guard(source.make_guard(GuardBuilder.ID_MATCH))
             return ProcessGroupVariable(self.value.WORLD)
-        elif name == "NON_GROUP_MEMBER":
+        if name == "NON_GROUP_MEMBER":
             source = AttrSource(base=self.source, member="NON_GROUP_MEMBER")
             install_guard(source.make_guard(GuardBuilder.ID_MATCH))
             return EnumVariable(self.value.NON_GROUP_MEMBER)

@@ -1,14 +1,14 @@
 # mypy: ignore-errors
 
-""" Define analogs of numpy dtypes supported by pytorch.
+"""Define analogs of numpy dtypes supported by pytorch.
 Define the scalar types and supported dtypes and numpy <--> torch dtype mappings.
 """
+
 import builtins
 
 import torch
 
 from . import _dtypes_impl
-
 
 # ### Scalar types ###
 
@@ -27,8 +27,7 @@ class generic:
 
         if isinstance(value, ndarray):
             return value.astype(cls)
-        else:
-            return asarray(value, dtype=cls)
+        return asarray(value, dtype=cls)
 
 
 ##################
@@ -247,7 +246,7 @@ def sctype_from_string(s):
     """Normalize a string value: a type 'name' or a typecode or a width alias."""
     if s in _names:
         return _names[s]
-    if s in _name_aliases.keys():
+    if s in _name_aliases:
         return _name_aliases[s]
     if s in _typecodes:
         return _typecodes[s]

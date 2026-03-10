@@ -4,11 +4,9 @@ import os
 import threading
 from multiprocessing import reduction
 from multiprocessing.util import register_after_fork
-from typing import Union
 
 import torch
 from torch._namedtensor_internals import check_serializing_named_tensor
-
 
 try:
     # Early load resource_sharer to prevent a partially initialized instance
@@ -376,7 +374,7 @@ def reduce_tensor(tensor):
                 event_sync_required,
             ),
         )
-    elif storage._untyped_storage.device.type == "meta":
+    if storage._untyped_storage.device.type == "meta":
         return (
             rebuild_meta_tensor,
             (
@@ -490,36 +488,35 @@ def reduce_sparse_tensor(sparse):
                 sparse.is_coalesced(),
             ),
         )
+    if sparse.layout in {torch.sparse_csr, torch.sparse_bsr}:
+        compressed_indices = sparse.crow_indices()
+        plain_indices = sparse.col_indices()
+    elif sparse.layout in {torch.sparse_csc, torch.sparse_bsc}:
+        compressed_indices = sparse.ccol_indices()
+        plain_indices = sparse.row_indices()
     else:
-        if sparse.layout in {torch.sparse_csr, torch.sparse_bsr}:
-            compressed_indices = sparse.crow_indices()
-            plain_indices = sparse.col_indices()
-        elif sparse.layout in {torch.sparse_csc, torch.sparse_bsc}:
-            compressed_indices = sparse.ccol_indices()
-            plain_indices = sparse.row_indices()
-        else:
-            raise NotImplementedError(sparse.layout)
+        raise NotImplementedError(sparse.layout)
+    (
+        rebuild_compressed_indices_func,
+        rebuild_compressed_indices_args,
+    ) = reduce_tensor(compressed_indices)
+    rebuild_plain_indices_func, rebuild_plain_indices_args = reduce_tensor(
+        plain_indices
+    )
+    rebuild_values_func, rebuild_values_args = reduce_tensor(sparse.values())
+    return (
+        rebuild_sparse_compressed_tensor,
         (
             rebuild_compressed_indices_func,
             rebuild_compressed_indices_args,
-        ) = reduce_tensor(compressed_indices)
-        rebuild_plain_indices_func, rebuild_plain_indices_args = reduce_tensor(
-            plain_indices
-        )
-        rebuild_values_func, rebuild_values_args = reduce_tensor(sparse.values())
-        return (
-            rebuild_sparse_compressed_tensor,
-            (
-                rebuild_compressed_indices_func,
-                rebuild_compressed_indices_args,
-                rebuild_plain_indices_func,
-                rebuild_plain_indices_args,
-                rebuild_values_func,
-                rebuild_values_args,
-                sparse.shape,
-                sparse.layout,
-            ),
-        )
+            rebuild_plain_indices_func,
+            rebuild_plain_indices_args,
+            rebuild_values_func,
+            rebuild_values_args,
+            sparse.shape,
+            sparse.layout,
+        ),
+    )
 
 
 def fd_id(fd):
@@ -551,9 +548,7 @@ def rebuild_storage_fd(cls, df, size):
 
 
 def rebuild_storage_filename(cls, manager, handle, size, dtype=None):
-    storage: Union[torch.TypedStorage, torch.UntypedStorage] = storage_from_cache(
-        cls, handle
-    )
+    storage: torch.TypedStorage | torch.UntypedStorage = storage_from_cache(cls, handle)
     if storage is not None:
         return storage._shared_decref()
     if dtype is None:
@@ -599,11 +594,11 @@ def reduce_storage(storage):
         raise RuntimeError(
             "Cannot pickle CUDA storage; try pickling a CUDA tensor instead"
         )
-    elif storage.device.type == "meta":
+    if storage.device.type == "meta":
         raise RuntimeError(
             "Cannot pickle meta storage; try pickling a meta tensor instead"
         )
-    elif get_sharing_strategy() == "file_system":
+    if get_sharing_strategy() == "file_system":
         metadata = storage._share_filename_cpu_()
         cache_key = metadata[1]
         rebuild = rebuild_storage_filename

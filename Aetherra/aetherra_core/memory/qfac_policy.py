@@ -135,9 +135,7 @@ class QFACPolicy:
                 return {
                     "mode": dm,
                     "allowed": True,
-                    "reason": f"shadow-would-deny:{cause}"
-                    if would_deny
-                    else "shadow-allow",
+                    "reason": f"shadow-would-deny:{cause}" if would_deny else "shadow-allow",
                     "policy": policy_mode,
                     "thresholds": self._thresholds_dict(),
                     "metrics_used": m,
@@ -167,9 +165,7 @@ class QFACPolicy:
             return {
                 "mode": dm,
                 "allowed": True,
-                "reason": f"shadow-would-deny:{cause}"
-                if would_deny
-                else "shadow-allow",
+                "reason": f"shadow-would-deny:{cause}" if would_deny else "shadow-allow",
                 "policy": policy_mode,
                 "thresholds": self._thresholds_dict(),
                 "metrics_used": m,

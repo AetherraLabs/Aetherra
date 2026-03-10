@@ -12,11 +12,9 @@ and intelligent chat responses powered by Lyrixa.
 
 # Standard library imports
 import asyncio
-import json
 import logging
-import re
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any
 from urllib.parse import urlencode
 
@@ -30,9 +28,7 @@ logger = logging.getLogger(__name__)
 class TwitchAPI:
     """Twitch API client for authentication and data retrieval."""
 
-    def __init__(
-        self, client_id: str, client_secret: str, access_token: str | None = None
-    ):
+    def __init__(self, client_id: str, client_secret: str, access_token: str | None = None):
         self.client_id = client_id
         self.client_secret = client_secret
         self.access_token = access_token
@@ -168,9 +164,7 @@ class TwitchChatBot:
 
     async def timeout_user(self, username: str, duration: int = 600):
         """Timeout a user for specified duration (seconds)."""
-        await self.websocket.send(
-            f"PRIVMSG #{self.channel} :/timeout {username} {duration}"
-        )
+        await self.websocket.send(f"PRIVMSG #{self.channel} :/timeout {username} {duration}")
 
     async def ban_user(self, username: str):
         """Ban a user from the channel."""
@@ -308,13 +302,11 @@ class TwitchChatBot:
             while self.connected:
                 if self.websocket:
                     try:
-                        message = await asyncio.wait_for(
-                            self.websocket.recv(), timeout=1.0
-                        )
+                        message = await asyncio.wait_for(self.websocket.recv(), timeout=1.0)
                         parsed = self.parse_message(message)
                         if parsed:
                             await self.handle_message(parsed)
-                    except asyncio.TimeoutError:
+                    except TimeoutError:
                         continue
                     except Exception as e:
                         logger.error(f"Error in bot loop: {e}")
@@ -330,7 +322,9 @@ class TwitchBotPlugin:
 
     # Required plugin metadata
     name = "twitch_bot_plugin"
-    description = "Advanced Twitch bot with chat moderation, custom commands, and intelligent responses"
+    description = (
+        "Advanced Twitch bot with chat moderation, custom commands, and intelligent responses"
+    )
     version = "1.0.0"
 
     input_schema = {
@@ -395,13 +389,18 @@ class TwitchBotPlugin:
 
     async def load_config(self):
         """Load plugin configuration."""
-        # In a real implementation, this would load from a config file
-        pass
+        if not hasattr(self, "config") or not isinstance(self.config, dict):
+            self.config = {}
+        self.config.setdefault("enabled", True)
+        self.config.setdefault("channel", getattr(self, "channel", ""))
+        return self.config
 
     async def save_config(self):
         """Save plugin configuration."""
-        # In a real implementation, this would save to a config file
-        pass
+        if not hasattr(self, "config"):
+            self.config = {}
+        self.config["saved_at"] = datetime.now().isoformat()
+        return True
 
     def capabilities(self) -> list[str]:
         """Return plugin capabilities."""
@@ -413,9 +412,7 @@ class TwitchBotPlugin:
             "intelligent_responses",
         ]
 
-    async def invoke(
-        self, action: str, payload: dict[str, Any], context=None
-    ) -> dict[str, Any]:
+    async def invoke(self, action: str, payload: dict[str, Any], context=None) -> dict[str, Any]:
         """Main plugin invocation method."""
         try:
             if action == "connect":

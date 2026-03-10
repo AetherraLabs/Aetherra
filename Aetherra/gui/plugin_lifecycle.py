@@ -24,8 +24,6 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-import shutil
-import tempfile
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -463,9 +461,7 @@ class PluginLifecycleManager(QObject):
             if conflict_id in self._plugins:
                 conflict_plugin = self._plugins[conflict_id]
                 if conflict_plugin.status == PluginStatus.LOADED:
-                    logger.error(
-                        f"Plugin conflict: {metadata.id} conflicts with {conflict_id}"
-                    )
+                    logger.error(f"Plugin conflict: {metadata.id} conflicts with {conflict_id}")
                     return False
 
         return True

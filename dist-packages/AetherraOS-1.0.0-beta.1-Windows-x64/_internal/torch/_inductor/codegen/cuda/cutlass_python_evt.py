@@ -2,7 +2,7 @@ import itertools
 from collections.abc import Generator, Iterable, Iterator, Sequence
 from contextlib import contextmanager
 from os import linesep
-from typing import Any, Optional
+from typing import Any
 
 import sympy
 
@@ -16,12 +16,11 @@ from torch._inductor.virtualized import OpsValue
 
 from ...virtualized import V
 
-
 _ACCUMULATOR_ARG_NAME = "accum"
 
 
 def scaled_mm_evt(
-    scale_A_name: str, scale_B_name: str, bias_name: Optional[str], output_name: str
+    scale_A_name: str, scale_B_name: str, bias_name: str | None, output_name: str
 ) -> tuple[list[str], dict[str, Any], str]:
     evt_read_names = [scale_A_name, scale_B_name]
     var_name_to_buffer_name = {n: n for n in [scale_A_name, scale_B_name]}
@@ -57,7 +56,7 @@ class CutlassEVTOpsMixIn:
     def to_dtype(
         x: str,
         dtype: Any,
-        src_dtype: Optional[torch.dtype] = None,
+        src_dtype: torch.dtype | None = None,
         use_compute_types: bool = False,
     ) -> str:
         return x
@@ -114,19 +113,15 @@ class _AssignmentFormatter(DefaultHandler):
             line = fn(*args, **kwargs)
             if name in ("load", "store"):
                 return OpsValue(line)
-            else:
-                var = self.parent_handler._tmp_var()
-                line = DelayReplaceLine(
-                    var,
-                    lambda: "D"
-                    if var == self.parent_handler.last_stored_var_name
-                    else var,
-                    f"{var} = {line}",
-                )
-                self.parent_handler.body.writeline(line)
-                return OpsValue(var)
-        else:
-            raise NotImplementedError(name)
+            var = self.parent_handler._tmp_var()
+            line = DelayReplaceLine(
+                var,
+                lambda: "D" if var == self.parent_handler.last_stored_var_name else var,
+                f"{var} = {line}",
+            )
+            self.parent_handler.body.writeline(line)
+            return OpsValue(var)
+        raise NotImplementedError(name)
 
 
 class CutlassEVTCodegen(CutlassEVTOpsMixIn):
@@ -162,7 +157,7 @@ class CutlassEVTCodegen(CutlassEVTOpsMixIn):
             _ACCUMULATOR_ARG_NAME: accumulator_node_name
         }
         self.removed_buffers: OrderedSet[str] = removed_buffers
-        self.cur_node: Optional[ComputedBuffer] = None
+        self.cur_node: ComputedBuffer | None = None
         self.name_to_buffer = V.graph.name_to_buffer | V.graph.graph_inputs
         for name in V.graph.constants.keys():
             self.name_to_buffer[name] = V.graph.add_tensor_constant(
@@ -245,12 +240,11 @@ class CutlassEVTCodegen(CutlassEVTOpsMixIn):
         self._check_indexing(name, index)
         if name in self.store_name_to_value:
             return self.store_name_to_value[name].value
-        elif name == self.accumulator_node_name:
+        if name == self.accumulator_node_name:
             return _ACCUMULATOR_ARG_NAME
-        else:
-            self.reads.add(name)
-            self.var_name_to_buffer_name[name] = name
-            return name
+        self.reads.add(name)
+        self.var_name_to_buffer_name[name] = name
+        return name
 
     def store(
         self, name: Any, index: Any = None, value: Any = None, mode: Any = None
@@ -264,7 +258,7 @@ class CutlassEVTCodegen(CutlassEVTOpsMixIn):
             self.var_name_to_buffer_name[value.value] = name
             self.store_name_to_value[name] = value
             self.last_stored_var_name = value.value
-        return None
+        return
 
     def _get_cur_node(self) -> ComputedBuffer:
         assert self.cur_node
@@ -301,7 +295,7 @@ class CutlassEVTCodegen(CutlassEVTOpsMixIn):
     ) -> bool:
         return all(
             sympy.Eq(l, r) or sympy.Eq(l, 0) or sympy.Eq(r, 0)
-            for l, r in (zip(left, right))
+            for l, r in (zip(left, right, strict=False))
         )
 
     def _render_input_signature(self) -> str:

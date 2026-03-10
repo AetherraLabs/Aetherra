@@ -1,9 +1,10 @@
 # mypy: allow-untyped-defs
 import contextlib
 import functools
-from contextlib import contextmanager, ExitStack, nullcontext
+from collections.abc import Callable
+from contextlib import ExitStack, contextmanager, nullcontext
 from dataclasses import dataclass
-from typing import Any, Callable, Optional, overload, TypeVar, Union
+from typing import Any, TypeVar, overload
 
 import torch
 import torch.fx.traceback as fx_traceback
@@ -14,8 +15,8 @@ from torch._higher_order_ops.schema import HopSchema
 from torch._ops import HigherOrderOperator, OperatorBase, OpOverload
 from torch._subclasses.fake_tensor import FakeTensor
 from torch._subclasses.functional_tensor import (
-    disable_functional_mode,
     FunctionalTensor,
+    disable_functional_mode,
 )
 from torch.fx.experimental.proxy_tensor import (
     _temp_remove_metadata_torch_function_mode,
@@ -23,7 +24,7 @@ from torch.fx.experimental.proxy_tensor import (
     make_fx,
 )
 from torch.fx.passes.runtime_assert import insert_deferred_runtime_asserts
-from torch.fx.passes.shape_prop import _extract_tensor_metadata, TensorMetadata
+from torch.fx.passes.shape_prop import TensorMetadata, _extract_tensor_metadata
 from torch.multiprocessing.reductions import StorageWeakRef
 
 
@@ -69,8 +70,7 @@ def autograd_not_implemented_inner(
                 return pytree.tree_map_only(
                     torch.Tensor, lambda x: err_fn(fake_requires_grad(x)), result
                 )
-            else:
-                raise RuntimeError(f"Autograd not implemented for {str(operator)}")
+            raise RuntimeError(f"Autograd not implemented for {str(operator)}")
         return result
 
 
@@ -115,9 +115,9 @@ def reenter_make_fx(fn):
 
     @functools.wraps(fn)
     def wrapped(*args):
-        assert (
-            _CURRENT_MAKE_FX_TRACER is not None
-        ), "Cannot reenter make_fx when we're not under a make_fx tracing session"
+        assert _CURRENT_MAKE_FX_TRACER is not None, (
+            "Cannot reenter make_fx when we're not under a make_fx tracing session"
+        )
         return _CURRENT_MAKE_FX_TRACER.trace_subgraph(
             _maybe_run_with_interpreter(fn), *args
         )
@@ -130,40 +130,39 @@ def _maybe_reenter_make_fx(fn):
 
     if _CURRENT_MAKE_FX_TRACER is not None:
         return reenter_make_fx(fn)
-    else:
 
-        def _maybe_make_fx_with_fake_mode(fn):
-            @functools.wraps(fn)
-            def wrapped(*args):
-                from torch._guards import detect_fake_mode
+    def _maybe_make_fx_with_fake_mode(fn):
+        @functools.wraps(fn)
+        def wrapped(*args):
+            from torch._guards import detect_fake_mode
 
-                fake_mode = detect_fake_mode(args)
-                if fake_mode is None:
-                    # we creaeta a fake_mode here to make sure we could
-                    # trace the graph with data-dependent calls e.g. .item()
-                    return make_fx(fn, tracing_mode="fake")(*args)
-                # Tracing with real if all inputs have been fakfied
-                return make_fx(fn)(*args)
+            fake_mode = detect_fake_mode(args)
+            if fake_mode is None:
+                # we creaeta a fake_mode here to make sure we could
+                # trace the graph with data-dependent calls e.g. .item()
+                return make_fx(fn, tracing_mode="fake")(*args)
+            # Tracing with real if all inputs have been fakfied
+            return make_fx(fn)(*args)
 
-            return wrapped
+        return wrapped
 
-        return _maybe_make_fx_with_fake_mode(fn)
+    return _maybe_make_fx_with_fake_mode(fn)
 
 
 def check_meta_consistency(
-    lhs_list: list[Union[torch.Tensor, torch.SymInt, int]],
-    rhs_list: list[Union[torch.Tensor, torch.SymInt, int]],
+    lhs_list: list[torch.Tensor | torch.SymInt | int],
+    rhs_list: list[torch.Tensor | torch.SymInt | int],
     lhs_name: str,
     rhs_name: str,
     include_contiguity: bool = True,
 ) -> None:
     def diff_meta_pairs(
-        lhs_list: list[Union[torch.Tensor, torch.SymInt, int]],
-        rhs_list: list[Union[torch.Tensor, torch.SymInt, int]],
+        lhs_list: list[torch.Tensor | torch.SymInt | int],
+        rhs_list: list[torch.Tensor | torch.SymInt | int],
     ) -> list[str]:
         def diff_meta(
-            lhs: Union[torch.Tensor, torch.SymInt, int],
-            rhs: Union[torch.Tensor, torch.SymInt, int],
+            lhs: torch.Tensor | torch.SymInt | int,
+            rhs: torch.Tensor | torch.SymInt | int,
         ) -> str:
             if isinstance(lhs, torch.Tensor) and isinstance(rhs, torch.Tensor):
                 return ", ".join(
@@ -177,27 +176,24 @@ def check_meta_consistency(
                         check_grad=False,
                     )
                 )
-            else:
 
-                def _both_int_types(lhs, rhs):
-                    return isinstance(lhs, (int, torch.SymInt)) and isinstance(
-                        rhs, (int, torch.SymInt)
-                    )
+            def _both_int_types(lhs, rhs):
+                return isinstance(lhs, (int, torch.SymInt)) and isinstance(
+                    rhs, (int, torch.SymInt)
+                )
 
-                def _both_tensor(lhs, rhs):
-                    return isinstance(lhs, torch.Tensor) and isinstance(
-                        rhs, torch.Tensor
-                    )
+            def _both_tensor(lhs, rhs):
+                return isinstance(lhs, torch.Tensor) and isinstance(rhs, torch.Tensor)
 
-                if not _both_int_types(lhs, rhs) and not _both_tensor(lhs, rhs):
-                    return f"type: {lhs} vs {rhs}"
+            if not _both_int_types(lhs, rhs) and not _both_tensor(lhs, rhs):
+                return f"type: {lhs} vs {rhs}"
 
             return ""
 
         # Manually check the device of lhs and rhs as this field is currently not part of TensorMetadata
         def diff_device(
-            lhs: Union[torch.Tensor, torch.SymInt, int],
-            rhs: Union[torch.Tensor, torch.SymInt, int],
+            lhs: torch.Tensor | torch.SymInt | int,
+            rhs: torch.Tensor | torch.SymInt | int,
         ) -> str:
             if isinstance(lhs, torch.Tensor) and isinstance(rhs, torch.Tensor):
                 if (
@@ -205,8 +201,7 @@ def check_meta_consistency(
                     and rhs.device.index == lhs.device.index
                 ):
                     return ""
-                else:
-                    return "device"
+                return "device"
             return ""
 
         if len(lhs_list) != len(rhs_list):
@@ -214,7 +209,7 @@ def check_meta_consistency(
                 f"Expected {lhs_name} and {rhs_name} to have same number of outputs but got lhs:{lhs_list} and rhs:{rhs_list}"
             )
         all_diffs = []
-        for i, (lhs, rhs) in enumerate(zip(lhs_list, rhs_list)):
+        for i, (lhs, rhs) in enumerate(zip(lhs_list, rhs_list, strict=False)):
             if diff := diff_meta(lhs, rhs):
                 all_diffs.append(
                     f"pair[{i}] differ in {diff}, where lhs is {lhs} and rhs is {rhs}"
@@ -323,20 +318,26 @@ def analyze_potential_input_alias_or_mutation(name, aliases, input_mutations):
 
 def _has_potential_branch_input_mutation(gm, inputs, pre_dispatch=False):
     (
-        _,
-        _,
-        _,
-    ), inp_mutation = potential_input_alias_or_mutation(gm, inputs, pre_dispatch)
+        (
+            _,
+            _,
+            _,
+        ),
+        inp_mutation,
+    ) = potential_input_alias_or_mutation(gm, inputs, pre_dispatch)
 
     return len(inp_mutation) > 0
 
 
 def has_potential_input_alias_or_mutation(gm, inputs, pre_dispatch=False):
     (
-        inp_inp_alias_map,
-        inp_out_alias_map,
-        out_out_alias_map,
-    ), inp_mutation = potential_input_alias_or_mutation(gm, inputs, pre_dispatch)
+        (
+            inp_inp_alias_map,
+            inp_out_alias_map,
+            out_out_alias_map,
+        ),
+        inp_mutation,
+    ) = potential_input_alias_or_mutation(gm, inputs, pre_dispatch)
     return (
         any(
             (
@@ -353,7 +354,7 @@ def _collect_fake_inputs(inputs):
     from torch._subclasses.fake_tensor import FakeTensor
 
     # Get the example values of the inputs.
-    inputs_fake: list[Union[FakeTensor, torch.Tensor, int]] = []
+    inputs_fake: list[FakeTensor | torch.Tensor | int] = []
     for inp in inputs:
         if isinstance(inp, (torch.fx.proxy.Proxy, torch.fx.node.Node)):
             inp = inp.node if isinstance(inp, torch.fx.proxy.Proxy) else inp
@@ -392,9 +393,7 @@ def _check_alias_and_mutation(graph_module, inputs_fake, name, pre_dispatch):
         graph_module, inputs_fake, pre_dispatch=pre_dispatch
     )
     if aliases:
-        raise RuntimeError(
-            f"{name} might be aliasing the input or the output!"
-        )  # noqa: F541
+        raise RuntimeError(f"{name} might be aliasing the input or the output!")  # noqa: F541
     if inp_mutation:
         raise RuntimeError(f"{name} might be modifying the input!")  # noqa: F541
 
@@ -433,20 +432,19 @@ def _from_fun(t):
                 requires_grad=t.requires_grad,
                 device=t.device,
             )
-        else:
-            # clone of a functional tensor produces a functional tensor
-            # but we want to avoid it so we clone a non-functional version
-            maybe_unfunc_t = t
-            if isinstance(t, FunctionalTensor):
-                torch._sync(t)
-                maybe_unfunc_t = from_fun(t)
-            elif torch._is_functional_tensor(t):
-                # need to handle both types of functionalization here:
-                # these are the tensors that came from the user,
-                # which could be either FunctionalTensorWrapper or FunctionalTensor
-                torch._sync(t)
-                maybe_unfunc_t = torch._from_functional_tensor(t)
-            return maybe_unfunc_t.clone()
+        # clone of a functional tensor produces a functional tensor
+        # but we want to avoid it so we clone a non-functional version
+        maybe_unfunc_t = t
+        if isinstance(t, FunctionalTensor):
+            torch._sync(t)
+            maybe_unfunc_t = from_fun(t)
+        elif torch._is_functional_tensor(t):
+            # need to handle both types of functionalization here:
+            # these are the tensors that came from the user,
+            # which could be either FunctionalTensorWrapper or FunctionalTensor
+            torch._sync(t)
+            maybe_unfunc_t = torch._from_functional_tensor(t)
+        return maybe_unfunc_t.clone()
     return t
 
 
@@ -504,12 +502,12 @@ def prepare_fw_with_masks_all_requires_grad(fn):
 # replaced with an all-zero tensor for better optimization
 def unmask_none_gradients(grads, operands):
     allowed_types = (torch.Tensor, int, torch.SymInt)
-    assert all(
-        isinstance(o, allowed_types) for o in operands
-    ), f"operands can only be of {allowed_types} but got {[type(o) for o in operands]}"
+    assert all(isinstance(o, allowed_types) for o in operands), (
+        f"operands can only be of {allowed_types} but got {[type(o) for o in operands]}"
+    )
 
     unmasked_grads = []
-    for g, o in zip(grads, operands):
+    for g, o in zip(grads, operands, strict=False):
         if g is not None:
             unmasked_grads.append(g)
         else:
@@ -633,7 +631,7 @@ def _unstack_pytree(xs):
             f"Leaves of xs must have same leading dimension size {[xs.shape for xs in flat_xs]}"
         )
 
-    a = zip(*flat_xs)
+    a = zip(*flat_xs, strict=False)
 
     pytrees = [pytree.tree_unflatten(tuple, inspec) for tuple in a]
     return pytrees
@@ -646,7 +644,7 @@ def _stack_pytree(pytrees):
         flat_pt, out_spec = pytree.tree_flatten(pt)
         flat_out.append(flat_pt)
     assert out_spec is not None
-    b = zip(*flat_out)
+    b = zip(*flat_out, strict=False)
     stacked_out = []
     for leaves in b:
         if all(isinstance(leaf, torch.Tensor) for leaf in leaves):
@@ -758,11 +756,13 @@ def diff_tensor_meta(
 #      to support int arguments. In the eager run case, we re-trace the subgraph in AutogradKey, so inner
 #      hops may receive int inputs from the shape of outer tensor inputs.
 #      However, CompositeExplicitAutograd won't receive SymInt inputs because it only accepts real tensor inputs.
-def validate_subgraph_args_types(lifted_args: Union[tuple[Any, ...], list[Any]]):
+def validate_subgraph_args_types(lifted_args: tuple[Any, ...] | list[Any]):
     allowed_types = (torch.Tensor, int, torch.SymInt)
     assert all(
         isinstance(arg, (torch.Tensor, int, torch.SymInt)) for arg in lifted_args
-    ), f"{lifted_args} can only be of {allowed_types} but got {tuple(type(arg) for arg in lifted_args)}"
+    ), (
+        f"{lifted_args} can only be of {allowed_types} but got {tuple(type(arg) for arg in lifted_args)}"
+    )
 
 
 # TODO: Return a more detailed information as to which node
@@ -782,18 +782,22 @@ def check_input_alias_and_mutation(
 
 def check_input_alias_and_mutation_return_outputs(
     gm: torch.fx.GraphModule,
-    fake_args: Union[list[FakeTensor], tuple[FakeTensor, ...]],
+    fake_args: list[FakeTensor] | tuple[FakeTensor, ...],
 ) -> tuple[
     dict[int, int],
     dict[int, int],
     dict[int, int],
     list[int],
-    Union[tuple[Any, ...], list[Any]],
+    tuple[Any, ...] | list[Any],
 ]:
     # This function can be called under autograd, functional, proxy and fake tensor mode.
     # We need to return either a fake tensor or a real tensor depending on the mode.
     # to detect the input mutation/aliasing.
-    with disable_proxy_modes_tracing(), disable_functional_mode(), suspend_functionalization():
+    with (
+        disable_proxy_modes_tracing(),
+        disable_functional_mode(),
+        suspend_functionalization(),
+    ):
 
         def _from_functional_tensor(t: torch.Tensor) -> torch.Tensor:
             if isinstance(t, FunctionalTensor) or torch._is_functional_tensor(t):
@@ -818,7 +822,7 @@ def check_input_alias_and_mutation_return_outputs(
         to detect alias.
         """
 
-        def _tensor_version(t) -> Optional[int]:
+        def _tensor_version(t) -> int | None:
             if isinstance(t, torch.Tensor):
                 if not isinstance(t, FakeTensor):
                     raise RuntimeError("Only fake tensor is allowed")
@@ -830,7 +834,7 @@ def check_input_alias_and_mutation_return_outputs(
 
         def _get_shape_env(
             fake_args,
-        ) -> Optional[torch.fx.experimental.symbolic_shapes.ShapeEnv]:
+        ) -> torch.fx.experimental.symbolic_shapes.ShapeEnv | None:
             # detect_fake_mode requires there could be only one active fake mode. This
             # restricts the usage of this function because the global TracingContext
             # has a persistent fake mode but fake tensors can be created
@@ -881,7 +885,9 @@ def check_input_alias_and_mutation_return_outputs(
             outputs = [outputs] if not isinstance(outputs, (list, tuple)) else outputs
             after = [_tensor_version(arg) for arg in cloned]
             mutated_inputs = [
-                i for i, (v1, v2) in enumerate(zip(before, after)) if v1 != v2
+                i
+                for i, (v1, v2) in enumerate(zip(before, after, strict=False))
+                if v1 != v2
             ]
         # We need to analyze the original fake_args to detect
         # inp-inp alias.
@@ -928,13 +934,11 @@ F = TypeVar("F", bound=Callable)
 
 
 @overload
-def register_fake(hop, fn: None = None) -> Callable[[F], F]:
-    ...
+def register_fake(hop, fn: None = None) -> Callable[[F], F]: ...
 
 
 @overload
-def register_fake(hop, fn: F) -> F:
-    ...
+def register_fake(hop, fn: F) -> F: ...
 
 
 def register_fake(hop, fn=None):
@@ -1012,7 +1016,7 @@ class HopInstance:
 # This call_op can be used to call a HopInstance with
 # flat args and kwargs. We need to make use of the hop's schema's tree_spec
 # to unflatten the args and kwargs before calling the hop.
-def call_op(op: Union[OpOverload, HopInstance], args, kwargs):
+def call_op(op: OpOverload | HopInstance, args, kwargs):
     if isinstance(op, OpOverload):
         return op(*args, **kwargs)
 
@@ -1032,16 +1036,15 @@ def call_op(op: Union[OpOverload, HopInstance], args, kwargs):
         assert len(bound_args) == len(schema.arguments) and len(bound_kwargs) == 0
         args, kwargs = pytree.tree_unflatten(bound_args, schema.tree_spec)
         return op(*args, **kwargs)
-    else:
-        assert len(bound_args) + len(bound_kwargs) == len(schema.arguments)
-        return op(*bound_args, **bound_kwargs)
+    assert len(bound_args) + len(bound_kwargs) == len(schema.arguments)
+    return op(*bound_args, **bound_kwargs)
 
 
 def materialize_as_graph(
     fn: Callable,
     args: tuple[Any],
-    include_key_set: Optional[torch._C.DispatchKeySet] = None,
-    exclude_key_set: Optional[torch._C.DispatchKeySet] = None,
+    include_key_set: torch._C.DispatchKeySet | None = None,
+    exclude_key_set: torch._C.DispatchKeySet | None = None,
     force_enable_grad=False,
 ) -> torch.fx.GraphModule:
     if include_key_set is None:
@@ -1086,7 +1089,7 @@ def materialize_callable_in_args(op: HopInstance, args, kwargs):
 
     # call_op preserves ordering of proxies via schema
     materialized_args = []
-    for i, (proxy, arg) in enumerate(zip(arg_proxies, schema.arguments)):
+    for i, (proxy, arg) in enumerate(zip(arg_proxies, schema.arguments, strict=False)):
         if (
             isinstance(proxy, torch.fx.Node)
             and proxy.op == "get_attr"

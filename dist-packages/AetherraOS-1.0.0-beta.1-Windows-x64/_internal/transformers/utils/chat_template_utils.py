@@ -16,17 +16,17 @@ import inspect
 import json
 import re
 import types
+from collections.abc import Callable
 from contextlib import contextmanager
 from datetime import datetime
 from functools import lru_cache
 from inspect import isfunction
-from typing import Any, Callable, Optional, Union, get_args, get_origin, get_type_hints
+from typing import Any, Union, get_args, get_origin, get_type_hints
 
 from packaging import version
 
 from . import logging
 from .import_utils import is_jinja_available, is_torch_available, is_vision_available
-
 
 logger = logging.get_logger(__name__)
 
@@ -100,7 +100,8 @@ def _parse_type_hint(hint: str) -> dict:
             return _get_json_schema_type(hint)
         except KeyError:
             raise TypeHintParsingException(
-                "Couldn't parse this type hint, likely due to a custom class or object: ", hint
+                "Couldn't parse this type hint, likely due to a custom class or object: ",
+                hint,
             )
 
     elif origin is Union or (hasattr(types, "UnionType") and origin is types.UnionType):
@@ -122,9 +123,8 @@ def _parse_type_hint(hint: str) -> dict:
     elif origin is list:
         if not args:
             return {"type": "array"}
-        else:
-            # Lists can only have a single type argument, so recurse into it
-            return {"type": "array", "items": _parse_type_hint(args[0])}
+        # Lists can only have a single type argument, so recurse into it
+        return {"type": "array", "items": _parse_type_hint(args[0])}
 
     elif origin is tuple:
         if not args:
@@ -153,7 +153,9 @@ def _parse_type_hint(hint: str) -> dict:
             out["additionalProperties"] = _parse_type_hint(args[1])
         return out
 
-    raise TypeHintParsingException("Couldn't parse this type hint, likely due to a custom class or object: ", hint)
+    raise TypeHintParsingException(
+        "Couldn't parse this type hint, likely due to a custom class or object: ", hint
+    )
 
 
 def _convert_type_hints_to_json_schema(func: Callable) -> dict:
@@ -162,7 +164,9 @@ def _convert_type_hints_to_json_schema(func: Callable) -> dict:
     required = []
     for param_name, param in signature.parameters.items():
         if param.annotation == inspect.Parameter.empty:
-            raise TypeHintParsingException(f"Argument {param.name} is missing a type hint in function {func.__name__}")
+            raise TypeHintParsingException(
+                f"Argument {param.name} is missing a type hint in function {func.__name__}"
+            )
         if param.default == inspect.Parameter.empty:
             required.append(param_name)
 
@@ -177,7 +181,9 @@ def _convert_type_hints_to_json_schema(func: Callable) -> dict:
     return schema
 
 
-def parse_google_format_docstring(docstring: str) -> tuple[Optional[str], Optional[dict], Optional[str]]:
+def parse_google_format_docstring(
+    docstring: str,
+) -> tuple[str | None, dict | None, str | None]:
     """
     Parses a Google-style docstring to extract the function description,
     argument descriptions, and return description.
@@ -201,9 +207,13 @@ def parse_google_format_docstring(docstring: str) -> tuple[Optional[str], Option
 
     # Parsing the arguments into a dictionary
     if docstring_args is not None:
-        docstring_args = "\n".join([line for line in docstring_args.split("\n") if line.strip()])  # Remove blank lines
+        docstring_args = "\n".join(
+            [line for line in docstring_args.split("\n") if line.strip()]
+        )  # Remove blank lines
         matches = args_split_re.findall(docstring_args)
-        args_dict = {match[0]: re.sub(r"\s*\n+\s*", " ", match[1].strip()) for match in matches}
+        args_dict = {
+            match[0]: re.sub(r"\s*\n+\s*", " ", match[1].strip()) for match in matches
+        }
     else:
         args_dict = {}
 
@@ -327,7 +337,9 @@ def get_json_schema(func: Callable) -> dict:
 
     json_schema = _convert_type_hints_to_json_schema(func)
     if (return_dict := json_schema["properties"].pop("return", None)) is not None:
-        if return_doc is not None:  # We allow a missing return docstring since most templates ignore it
+        if (
+            return_doc is not None
+        ):  # We allow a missing return docstring since most templates ignore it
             return_dict["description"] = return_doc
     for arg, schema in json_schema["properties"].items():
         if arg not in param_descriptions:
@@ -348,11 +360,18 @@ def get_json_schema(func: Callable) -> dict:
 
 
 def _render_with_assistant_indices(
-    compiled_template, messages, tools, documents, add_generation_prompt, **template_kwargs
+    compiled_template,
+    messages,
+    tools,
+    documents,
+    add_generation_prompt,
+    **template_kwargs,
 ):
     rendered_blocks = []
     generation_indices = []
-    with compiled_template.environment.activate_tracker(rendered_blocks, generation_indices):
+    with compiled_template.environment.activate_tracker(
+        rendered_blocks, generation_indices
+    ):
         for block in compiled_template.generate(
             messages=messages,
             tools=tools,
@@ -386,10 +405,14 @@ def _compile_jinja_template(chat_template):
         def parse(self, parser: jinja2.parser.Parser) -> jinja2.nodes.CallBlock:
             lineno = next(parser.stream).lineno
             body = parser.parse_statements(["name:endgeneration"], drop_needle=True)
-            return jinja2.nodes.CallBlock(self.call_method("_generation_support"), [], [], body).set_lineno(lineno)
+            return jinja2.nodes.CallBlock(
+                self.call_method("_generation_support"), [], [], body
+            ).set_lineno(lineno)
 
         @jinja2.pass_eval_context
-        def _generation_support(self, context: jinja2.nodes.EvalContext, caller: jinja2.runtime.Macro) -> str:
+        def _generation_support(
+            self, context: jinja2.nodes.EvalContext, caller: jinja2.runtime.Macro
+        ) -> str:
             rv = caller()
             if self.is_active():
                 # Only track generation indices if the tracker is active
@@ -402,10 +425,14 @@ def _compile_jinja_template(chat_template):
             return self._rendered_blocks or self._generation_indices
 
         @contextmanager
-        def activate_tracker(self, rendered_blocks: list[int], generation_indices: list[int]):
+        def activate_tracker(
+            self, rendered_blocks: list[int], generation_indices: list[int]
+        ):
             try:
                 if self.is_active():
-                    raise ValueError("AssistantTracker should not be reused before closed")
+                    raise ValueError(
+                        "AssistantTracker should not be reused before closed"
+                    )
                 self._rendered_blocks = rendered_blocks
                 self._generation_indices = generation_indices
 
@@ -425,13 +452,21 @@ def _compile_jinja_template(chat_template):
     def tojson(x, ensure_ascii=False, indent=None, separators=None, sort_keys=False):
         # We override the built-in tojson filter because Jinja's default filter escapes HTML characters
         # We also expose some options like custom indents and separators
-        return json.dumps(x, ensure_ascii=ensure_ascii, indent=indent, separators=separators, sort_keys=sort_keys)
+        return json.dumps(
+            x,
+            ensure_ascii=ensure_ascii,
+            indent=indent,
+            separators=separators,
+            sort_keys=sort_keys,
+        )
 
     def strftime_now(format):
         return datetime.now().strftime(format)
 
     jinja_env = ImmutableSandboxedEnvironment(
-        trim_blocks=True, lstrip_blocks=True, extensions=[AssistantTracker, jinja2.ext.loopcontrols]
+        trim_blocks=True,
+        lstrip_blocks=True,
+        extensions=[AssistantTracker, jinja2.ext.loopcontrols],
     )
     jinja_env.filters["tojson"] = tojson
     jinja_env.globals["raise_exception"] = raise_exception
@@ -441,15 +476,17 @@ def _compile_jinja_template(chat_template):
 
 def render_jinja_template(
     conversations: list[list[dict[str, str]]],
-    tools: Optional[list[Union[dict, Callable]]] = None,
-    documents: Optional[list[dict[str, str]]] = None,
-    chat_template: Optional[str] = None,
-    return_assistant_tokens_mask: Optional[bool] = False,
-    continue_final_message: Optional[bool] = False,
-    add_generation_prompt: Optional[bool] = False,
+    tools: list[dict | Callable] | None = None,
+    documents: list[dict[str, str]] | None = None,
+    chat_template: str | None = None,
+    return_assistant_tokens_mask: bool | None = False,
+    continue_final_message: bool | None = False,
+    add_generation_prompt: bool | None = False,
     **kwargs,
 ) -> str:
-    if return_assistant_tokens_mask and not re.search(r"\{\%-?\s*generation\s*-?\%\}", chat_template):
+    if return_assistant_tokens_mask and not re.search(
+        r"\{\%-?\s*generation\s*-?\%\}", chat_template
+    ):
         logger.warning_once(
             "return_assistant_tokens_mask==True but chat template does not contain `{% generation %}` keyword."
         )
@@ -476,7 +513,9 @@ def render_jinja_template(
     if documents is not None:
         for document in documents:
             if not isinstance(document, dict):
-                raise TypeError("Documents should be a list of dicts with 'title' and 'text' keys!")
+                raise TypeError(
+                    "Documents should be a list of dicts with 'title' and 'text' keys!"
+                )
 
     rendered = []
     all_generation_indices = []
@@ -522,12 +561,21 @@ def render_jinja_template(
                     "ensure they are compatible."
                 )
             final_msg_loc = rendered_chat.rindex(final_message.strip())
-            if rendered_chat[final_msg_loc : final_msg_loc + len(final_message.lstrip())] == final_message:
+            if (
+                rendered_chat[
+                    final_msg_loc : final_msg_loc + len(final_message.lstrip())
+                ]
+                == final_message
+            ):
                 # The template preserves spacing or the message doesn't have trailing spacing, so things are simple
-                rendered_chat = rendered_chat[: final_msg_loc + len(final_message.lstrip())]
+                rendered_chat = rendered_chat[
+                    : final_msg_loc + len(final_message.lstrip())
+                ]
             else:
                 # The message has trailing spacing that was trimmed, so we must be more cautious
-                rendered_chat = rendered_chat[: final_msg_loc + len(final_message.strip())]
+                rendered_chat = rendered_chat[
+                    : final_msg_loc + len(final_message.strip())
+                ]
         rendered.append(rendered_chat)
 
     return rendered, all_generation_indices

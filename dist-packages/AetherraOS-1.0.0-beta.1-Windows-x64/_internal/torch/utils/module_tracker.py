@@ -11,7 +11,6 @@ from torch.nn.modules.module import (
 )
 from torch.utils._pytree import tree_flatten
 
-
 if TYPE_CHECKING:
     from torch.utils.hooks import RemovableHandle
 

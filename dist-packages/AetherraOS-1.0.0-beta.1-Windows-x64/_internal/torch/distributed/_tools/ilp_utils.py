@@ -1,15 +1,15 @@
 import copy
 from collections import OrderedDict
-from typing import cast, TypedDict
+from typing import TypedDict, cast
 
 import numpy as np
 
 import torch
 from torch.distributed._tools.mem_tracker import (
+    MemTracker,
     _MemRefType,
     _ModMemStats,
     _ModState,
-    MemTracker,
 )
 from torch.distributed._tools.runtime_estimator import RuntimeEstimator
 from torch.distributed._tools.sac_estimator import SACEstimator, SACTradeOffStats
@@ -127,7 +127,7 @@ def aggregate_stats(
     }
 
     for mod in model.modules():
-        if mod_mem_stat := mod_mem_stats.get(mod, None):
+        if mod_mem_stat := mod_mem_stats.get(mod):
             if tradeoff_stats := mod_sac_tradeoff_stats.get(mod_mem_stat.mod_fqn, None):
                 sac_runtime = tradeoff_stats.sac_runtime
                 sac_memory = tradeoff_stats.sac_memory

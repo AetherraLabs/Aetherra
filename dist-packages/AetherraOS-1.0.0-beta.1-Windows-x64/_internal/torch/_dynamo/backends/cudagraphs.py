@@ -25,7 +25,6 @@ Key components:
 
 import functools
 from collections import defaultdict
-from typing import Optional
 
 import torch
 from torch._dynamo import config
@@ -101,7 +100,7 @@ def get_device_node_mapping(gm: torch.fx.GraphModule):
 
 def check_for_mutation_ignore_cuda_graph_managed_tensor(
     aot_model: torch.fx.GraphModule, num_fixed
-) -> Optional[str]:
+) -> str | None:
     mutation_indices = find_input_mutations(aot_model.graph) - set(range(num_fixed))
     if not mutation_indices:
         return None
@@ -110,7 +109,7 @@ def check_for_mutation_ignore_cuda_graph_managed_tensor(
     return get_mutation_stack_trace(placeholders, mutation_indices)
 
 
-def check_for_skip(aot_model: torch.fx.GraphModule, num_fixed) -> Optional[str]:
+def check_for_skip(aot_model: torch.fx.GraphModule, num_fixed) -> str | None:
     if not config.cudagraph_backend_support_input_mutation:
         if mut_skip := check_for_mutation_ignore_cuda_graph_managed_tensor(
             aot_model, num_fixed
@@ -134,7 +133,7 @@ def get_device_index(gm) -> int:
     return device.index
 
 
-def get_stack_traces(gm) -> list[Optional[str]]:
+def get_stack_traces(gm) -> list[str | None]:
     output = output_node(gm)
     assert len(output.args) == 1
     return [
@@ -268,12 +267,11 @@ def cudagraphs_inner(model, inputs, copy_outputs=True, copy_inputs=True):
     def run(*new_inputs):
         assert len(static_inputs) == len(new_inputs)
         if copy_inputs:
-            for dst, src in zip(static_inputs, new_inputs):
+            for dst, src in zip(static_inputs, new_inputs, strict=False):
                 dst.copy_(src)
         graph.replay()
         if copy_outputs:
             return [x.clone() for x in static_outputs]
-        else:
-            return static_outputs
+        return static_outputs
 
     return run

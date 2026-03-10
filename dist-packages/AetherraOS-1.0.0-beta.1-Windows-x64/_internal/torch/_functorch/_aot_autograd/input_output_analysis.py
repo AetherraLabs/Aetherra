@@ -12,7 +12,7 @@ In particular, the following analyses are provided:
 
 import contextlib
 import itertools
-from typing import Any, Optional, Union
+from typing import Any
 
 import torch
 import torch.utils._pytree as pytree
@@ -34,7 +34,6 @@ from .schemas import (
     ViewAndMutationMeta,
 )
 from .utils import strict_zip
-
 
 zip = strict_zip
 
@@ -107,7 +106,7 @@ def create_synthetic_base_metadata(
     m: ViewAndMutationMeta,
     # Maps each outer argument idx to its inner idx (or, if this outer arg is generated from a
     # synthetic base, you get a tuple of (i, TensorMeta), telling you the base tensor idx, and view metadata)
-    synthetic_base_info: list[Union[int, tuple[int, torch.Tensor]]],
+    synthetic_base_info: list[int | tuple[int, torch.Tensor]],
     outer_args: list[Any],
     inner_args: list[Any],
 ) -> tuple[ViewAndMutationMeta, list[int]]:
@@ -371,8 +370,8 @@ def create_graph_signature(
     param_names: list[str],
     buffer_names: list[str],
     trace_joint: bool,
-    num_user_fw_outs: Optional[int],
-    loss_index: Optional[int],
+    num_user_fw_outs: int | None,
+    loss_index: int | None,
 ) -> GraphSignature:
     # Retrieve graph input names
     graph_input_names = _graph_input_names(fx_g)

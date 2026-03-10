@@ -22,7 +22,6 @@ from torch._refs import (
     _make_elementwise_unary_reference,
 )
 
-
 __all__ = [
     "bessel_j0",
     "bessel_j1",
@@ -132,7 +131,7 @@ def log_ndtr(a: TensorLikeType) -> TensorLikeType:
     type_promoting_args=("self",),
     type_promotion_kind=utils.ELEMENTWISE_TYPE_PROMOTION_KIND.INT_TO_FLOAT,
 )
-def logit(self: TensorLikeType, eps: Optional[float] = None) -> TensorLikeType:
+def logit(self: TensorLikeType, eps: float | None = None) -> TensorLikeType:
     if eps is None:
         eps = -1.0
     lo = eps
@@ -147,7 +146,7 @@ def logit(self: TensorLikeType, eps: Optional[float] = None) -> TensorLikeType:
     type_promoting_args=("a", "b"),
     type_promotion_kind=ELEMENTWISE_TYPE_PROMOTION_KIND.INT_TO_FLOAT,
 )
-def xlog1py(a: Union[TensorLikeType, NumberType], b: Union[TensorLikeType, NumberType]):
+def xlog1py(a: TensorLikeType | NumberType, b: TensorLikeType | NumberType):
     torch._check(
         isinstance(a, TensorLike) or isinstance(b, TensorLike),
         lambda: 'Expected either argument a or b to be a Tensor"',
@@ -206,7 +205,7 @@ def ndtri(a: TensorLikeType) -> TensorLikeType:
 def log_softmax(
     a: TensorLikeType,
     dim: int,
-    dtype: Optional[torch.dtype] = None,
+    dtype: torch.dtype | None = None,
 ) -> TensorLikeType:
     return torch.log_softmax(a=a, dim=dim, dtype=dtype)  # type: ignore[call-overload]
 
@@ -216,7 +215,7 @@ def log_softmax(
 def softmax(
     a: TensorLikeType,
     dim: int,
-    dtype: Optional[torch.dtype] = None,
+    dtype: torch.dtype | None = None,
 ) -> TensorLikeType:
     return torch.softmax(a=a, dim=dim, dtype=dtype)  # type: ignore[call-overload]
 

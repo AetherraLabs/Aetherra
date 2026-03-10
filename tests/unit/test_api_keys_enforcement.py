@@ -30,7 +30,7 @@ def clean_env(monkeypatch, tmp_path):
     monkeypatch.delenv("AETHERRA_ALLOW_UNBOUNDED", raising=False)
     monkeypatch.delenv("AETHERRA_KEYS_MASTER", raising=False)
     monkeypatch.delenv("AETHERRA_KEYS_ALLOW_PLAINTEXT", raising=False)
-    yield
+    return
 
 
 def _keys_file(root: Path) -> Path:

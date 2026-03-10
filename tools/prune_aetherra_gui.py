@@ -15,6 +15,7 @@ Keeps:
 Deletes everything else in Aetherra/gui, including subfolders like web_* and dashboards.
 Use --apply to actually delete; otherwise runs in dry-run mode.
 """
+
 from __future__ import annotations
 
 # Standard library imports

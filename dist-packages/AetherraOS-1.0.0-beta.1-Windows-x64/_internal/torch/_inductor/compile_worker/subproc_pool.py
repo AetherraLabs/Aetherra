@@ -11,11 +11,13 @@ import sys
 import threading
 import traceback
 import typing
+from collections.abc import Callable
 from concurrent.futures import Future, ProcessPoolExecutor
 from concurrent.futures.process import BrokenProcessPool
 from enum import Enum
-from typing import Any, Callable, IO, Optional, TypeVar
-from typing_extensions import Never, ParamSpec
+from typing import IO, Any, Never, TypeVar
+
+from typing_extensions import ParamSpec
 
 # _thread_safe_fork is needed because the subprocesses in the pool can read
 # justknobs, e.g., in the Triton compiler. For internal, the import installs
@@ -28,7 +30,6 @@ from torch._inductor.compile_worker.tracked_process_pool import (
 )
 from torch._inductor.compile_worker.utils import _async_compile_initializer
 from torch._inductor.utils import get_ld_library_path
-
 
 log = logging.getLogger(__name__)
 
@@ -110,7 +111,7 @@ class SubprocPool:
     def __init__(
         self,
         nprocs: int,
-        pickler: Optional[SubprocPickler] = None,
+        pickler: SubprocPickler | None = None,
         kind: SubprocKind = SubprocKind.FORK,
     ) -> None:
         entry = os.path.join(os.path.dirname(__file__), "__main__.py")

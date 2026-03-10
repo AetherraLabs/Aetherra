@@ -21,7 +21,7 @@ of compilation.
 import logging
 import traceback
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 from unittest import mock
 
 import torch
@@ -30,7 +30,6 @@ from torch._dynamo.output_graph import GraphCompileReason
 from torch._dynamo.utils import deepcopy_to_fake_tensor, detect_fake_mode
 from torch._logging import trace_structured
 from torch.fx.node import Node
-
 
 # Regular log messages should go through 'log'.
 # ddp_graph_log is a separate artifact logger reserved for dumping graphs.
@@ -43,12 +42,11 @@ def args_str(args):
     # a debug helper
     if torch.is_tensor(args):
         return f"T[{args.shape}]"
-    elif isinstance(args, tuple):
+    if isinstance(args, tuple):
         return f"tuple({', '.join([args_str(x) for x in args])})"
-    elif isinstance(args, list):
+    if isinstance(args, list):
         return f"list({', '.join([args_str(x) for x in args])})"
-    else:
-        return str(args)
+    return str(args)
 
 
 @dataclass
@@ -327,8 +325,7 @@ class SubmodCompiler(torch.fx.interpreter.Interpreter):
                         for t in (out if isinstance(out, (list, tuple)) else [out])
                     )
                     return out
-                else:
-                    return curr_submod(*new_args, **kwargs)
+                return curr_submod(*new_args, **kwargs)
         else:
             # placeholder or output nodes don't need to get compiled, just executed
             return getattr(self, n.op)(n.target, new_args, kwargs)
@@ -399,7 +396,7 @@ class DDPOptimizer:
         self,
         bucket_bytes_cap: int,
         backend_compile_fn,
-        first_bucket_cap: Optional[int] = None,
+        first_bucket_cap: int | None = None,
     ) -> None:
         if first_bucket_cap is not None:
             self.first_bucket_cap = first_bucket_cap

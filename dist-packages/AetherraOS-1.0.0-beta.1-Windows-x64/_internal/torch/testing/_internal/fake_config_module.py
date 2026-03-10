@@ -1,8 +1,6 @@
 import sys
-from typing import Optional
 
 from torch.utils._config_module import Config, install_config_module
-
 
 e_bool = True
 e_int = 1
@@ -12,8 +10,8 @@ e_list = [1]
 e_set = {1}
 e_tuple = (1,)
 e_dict = {1: 2}
-e_none: Optional[bool] = None
-e_optional: Optional[bool] = True
+e_none: bool | None = None
+e_optional: bool | None = True
 e_ignored = True
 _e_ignored = True
 magic_cache_config_ignored = True

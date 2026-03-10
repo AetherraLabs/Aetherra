@@ -9,7 +9,6 @@ Generates coherent narratives from memory fragments.
 Transforms factual memory logs into story-like recollections.
 """
 
-
 # Standard library imports
 import uuid
 from dataclasses import dataclass
@@ -52,9 +51,7 @@ class MemoryNarrator:
             "growth": "Growth in {area} demonstrated {summary}. Milestones achieved: {highlights}.",
         }
 
-    def generate_daily_narrative(
-        self, fragments: List[MemoryFragment]
-    ) -> MemoryNarrative:
+    def generate_daily_narrative(self, fragments: List[MemoryFragment]) -> MemoryNarrative:
         """Generate a narrative for a day's worth of fragments"""
         if not fragments:
             return self._empty_narrative("daily")
@@ -75,9 +72,7 @@ class MemoryNarrator:
         summary = self._generate_summary(sorted_fragments, "daily")
         highlights = self._extract_highlights(sorted_fragments)
 
-        story = self.narrative_templates["daily"].format(
-            summary=summary, highlights=highlights
-        )
+        story = self.narrative_templates["daily"].format(summary=summary, highlights=highlights)
 
         return MemoryNarrative(
             narrative_id=str(uuid.uuid4()),
@@ -91,9 +86,7 @@ class MemoryNarrator:
             confidence=self._calculate_narrative_confidence(fragments),
         )
 
-    def generate_weekly_narrative(
-        self, fragments: List[MemoryFragment]
-    ) -> MemoryNarrative:
+    def generate_weekly_narrative(self, fragments: List[MemoryFragment]) -> MemoryNarrative:
         """Generate a narrative for a week's worth of fragments"""
         if not fragments:
             return self._empty_narrative("weekly")
@@ -117,9 +110,7 @@ class MemoryNarrator:
         summary = f"progressed through themes of {', '.join(list(overall_themes)[:5])}"
         highlights = "; ".join(weekly_progression[:5])
 
-        story = self.narrative_templates["weekly"].format(
-            summary=summary, highlights=highlights
-        )
+        story = self.narrative_templates["weekly"].format(summary=summary, highlights=highlights)
 
         return MemoryNarrative(
             narrative_id=str(uuid.uuid4()),
@@ -150,10 +141,7 @@ class MemoryNarrator:
         theme_evolution = self._analyze_theme_evolution(relevant_fragments, theme)
 
         # Generate narrative based on theme type
-        if any(
-            keyword in theme.lower()
-            for keyword in ["problem", "issue", "error", "fail"]
-        ):
+        if any(keyword in theme.lower() for keyword in ["problem", "issue", "error", "fail"]):
             template_type = "struggle"
             story = self.narrative_templates["struggle"].format(
                 topic=theme,
@@ -161,8 +149,7 @@ class MemoryNarrator:
                 highlights=theme_evolution["highlights"],
             )
         elif any(
-            keyword in theme.lower()
-            for keyword in ["learn", "improve", "success", "achieve"]
+            keyword in theme.lower() for keyword in ["learn", "improve", "success", "achieve"]
         ):
             template_type = "growth"
             story = self.narrative_templates["growth"].format(
@@ -226,9 +213,7 @@ class MemoryNarrator:
             confidence=chain.significance_score,
         )
 
-    def _generate_summary(
-        self, fragments: List[MemoryFragment], narrative_type: str
-    ) -> str:
+    def _generate_summary(self, fragments: List[MemoryFragment], narrative_type: str) -> str:
         """Generate a summary of fragments"""
         if not fragments:
             return "nothing significant occurred"
@@ -253,9 +238,7 @@ class MemoryNarrator:
             elif len(theme_names) == 2:
                 return f"involved work with {theme_names[0]} and {theme_names[1]}"
             else:
-                return (
-                    f"covered {theme_names[0]}, {theme_names[1]}, and {theme_names[2]}"
-                )
+                return f"covered {theme_names[0]}, {theme_names[1]}, and {theme_names[2]}"
 
         return f"involved {len(fragments)} different activities"
 
@@ -304,15 +287,9 @@ class MemoryNarrator:
                         emotion_scores[emotion] += 1
 
         # Combine keyword analysis with confidence
-        if (
-            avg_confidence > 0.7
-            and emotion_scores["positive"] > emotion_scores["negative"]
-        ):
+        if avg_confidence > 0.7 and emotion_scores["positive"] > emotion_scores["negative"]:
             return "positive"
-        elif (
-            avg_confidence < 0.4
-            or emotion_scores["negative"] > emotion_scores["positive"]
-        ):
+        elif avg_confidence < 0.4 or emotion_scores["negative"] > emotion_scores["positive"]:
             return "negative"
         elif emotion_scores["positive"] > 0 and emotion_scores["negative"] > 0:
             return "mixed"
@@ -356,15 +333,11 @@ class MemoryNarrator:
 
         # Based on fragment confidence and quantity
         avg_confidence = sum(f.confidence_score for f in fragments) / len(fragments)
-        quantity_factor = min(
-            len(fragments) / 10, 1.0
-        )  # More fragments = more confident
+        quantity_factor = min(len(fragments) / 10, 1.0)  # More fragments = more confident
 
         return avg_confidence * 0.7 + quantity_factor * 0.3
 
-    def _group_by_day(
-        self, fragments: List[MemoryFragment]
-    ) -> Dict[str, List[MemoryFragment]]:
+    def _group_by_day(self, fragments: List[MemoryFragment]) -> Dict[str, List[MemoryFragment]]:
         """Group fragments by day"""
         groups = {}
 

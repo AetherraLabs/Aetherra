@@ -20,24 +20,18 @@ EVENT_SCHEMA_VERSION = 1
 class EventAttribution(BaseModel):
     source: str = Field(..., description="Origin component or module name")
     agent: Optional[str] = Field(None, description="If multi-agent, the agent identity")
-    confidence: float = Field(
-        1.0, ge=0.0, le=1.0, description="Confidence in attribution"
-    )
+    confidence: float = Field(1.0, ge=0.0, le=1.0, description="Confidence in attribution")
 
 
 class EpisodicEvent(BaseModel):
     schema_version: int = Field(EVENT_SCHEMA_VERSION, description="Schema version")
     id: str = Field(..., description="Stable unique event id (UUID)")
-    ts: datetime = Field(
-        default_factory=datetime.utcnow, description="Event timestamp UTC"
-    )
+    ts: datetime = Field(default_factory=datetime.utcnow, description="Event timestamp UTC")
     type: str = Field(
         ...,
         description="Event category (thought, action, perception, affect, ethics, narrative)",
     )
-    sub_type: Optional[str] = Field(
-        None, description="Optional refined type classification"
-    )
+    sub_type: Optional[str] = Field(None, description="Optional refined type classification")
     content: str = Field(..., description="Primary textual/structured content summary")
     raw: Optional[dict] = Field(None, description="Raw payload or data fragment")
     importance: float = Field(

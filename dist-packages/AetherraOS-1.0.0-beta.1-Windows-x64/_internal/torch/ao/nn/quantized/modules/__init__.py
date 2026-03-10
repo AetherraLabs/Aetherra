@@ -41,7 +41,6 @@ from .normalization import (
 )
 from .rnn import LSTM
 
-
 __all__ = [
     "BatchNorm2d",
     "BatchNorm3d",

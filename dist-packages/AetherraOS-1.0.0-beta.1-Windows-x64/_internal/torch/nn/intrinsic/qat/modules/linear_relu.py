@@ -10,7 +10,6 @@ while adding an import statement here.
 
 from torch.ao.nn.intrinsic.qat import LinearReLU
 
-
 __all__ = [
     "LinearReLU",
 ]

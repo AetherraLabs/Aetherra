@@ -1,5 +1,4 @@
 # mypy: allow-untyped-defs
-from typing import Optional
 
 import torch
 from torch import Tensor
@@ -8,7 +7,6 @@ from torch.autograd.function import once_differentiable
 from torch.distributions import constraints
 from torch.distributions.exp_family import ExponentialFamily
 from torch.types import _size
-
 
 __all__ = ["Dirichlet"]
 
@@ -59,7 +57,7 @@ class Dirichlet(ExponentialFamily):
     def __init__(
         self,
         concentration: Tensor,
-        validate_args: Optional[bool] = None,
+        validate_args: bool | None = None,
     ) -> None:
         if concentration.dim() < 1:
             raise ValueError(

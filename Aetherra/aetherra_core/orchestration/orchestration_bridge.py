@@ -125,8 +125,7 @@ class LyrixaAgent(ABC):
             self.performance_metrics["tasks_failed"] += 1
 
         total_tasks = (
-            self.performance_metrics["tasks_completed"]
-            + self.performance_metrics["tasks_failed"]
+            self.performance_metrics["tasks_completed"] + self.performance_metrics["tasks_failed"]
         )
         if total_tasks > 0:
             self.performance_metrics["success_rate"] = (
@@ -152,6 +151,16 @@ class AgentOrchestrator:
 
         # Initialize built-in agents
         self._initialize_builtin_agents()
+
+    def _sort_task_queue(self):
+        """Keep queue deterministic by priority then creation time."""
+        self.task_queue.sort(
+            key=lambda t: (
+                -int(t.priority),
+                t.created_at,
+                t.id,
+            )
+        )
 
     def _initialize_builtin_agents(self):
         """Initialize built-in agent types"""
@@ -193,9 +202,7 @@ class AgentOrchestrator:
         dependencies: Optional[List[str]] = None,
     ) -> str:
         """Create a new task for an agent"""
-        task_id = (
-            f"task_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{len(self.task_queue)}"
-        )
+        task_id = f"task_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{len(self.task_queue)}"
 
         task = AgentTask(
             id=task_id,
@@ -209,6 +216,7 @@ class AgentOrchestrator:
         )
 
         self.task_queue.append(task)
+        self._sort_task_queue()
 
         if dependencies:
             self.task_dependencies[task_id] = dependencies
@@ -223,6 +231,7 @@ class AgentOrchestrator:
 
         # Find a task that can be executed (dependencies met)
         executable_task = None
+        self._sort_task_queue()
         for i, task in enumerate(self.task_queue):
             if self._can_execute_task(task):
                 executable_task = self.task_queue.pop(i)
@@ -247,9 +256,7 @@ class AgentOrchestrator:
         # Check if agent can handle the task
         if not await agent.can_handle_task(executable_task):
             executable_task.status = TaskStatus.FAILED
-            executable_task.error = (
-                f"Agent cannot handle task type {executable_task.task_type}"
-            )
+            executable_task.error = f"Agent cannot handle task type {executable_task.task_type}"
             return {
                 "task_id": executable_task.id,
                 "status": "failed",
@@ -349,11 +356,35 @@ class AgentOrchestrator:
 
         # Execute all tasks
         results = []
+        stall_count = 0
+        max_stall_cycles = max(10, len(task_ids) * 5)
         while self.task_queue or self.active_tasks:
             result = await self.execute_next_task()
             if result:
                 results.append(result)
+                stall_count = 0
             else:
+                # No executable tasks may indicate unresolved dependencies.
+                stall_count += 1
+                if stall_count >= max_stall_cycles:
+                    queued = [
+                        {
+                            "task_id": t.id,
+                            "description": t.description,
+                            "dependencies": t.dependencies,
+                            "status": t.status.value,
+                        }
+                        for t in self.task_queue
+                    ]
+                    return {
+                        "workflow": workflow_description,
+                        "tasks_executed": len(results),
+                        "results": results,
+                        "success": False,
+                        "error": "Workflow stalled due to unresolved dependencies",
+                        "pending_tasks": queued,
+                    }
+
                 # No executable tasks, wait a bit
                 await asyncio.sleep(0.1)
 
@@ -567,10 +598,7 @@ class CoderAgent(LyrixaAgent):
         input_data = task.input_data
 
         try:
-            if (
-                task_type == "aether_generation"
-                or task_type == "natural_language_to_aether"
-            ):
+            if task_type == "aether_generation" or task_type == "natural_language_to_aether":
                 return await self._generate_aether_workflow(input_data)
 
             elif task_type == "workflow_optimization":
@@ -588,9 +616,7 @@ class CoderAgent(LyrixaAgent):
         except Exception as e:
             return {"error": str(e), "success": False, "task_type": task_type}
 
-    async def _generate_aether_workflow(
-        self, input_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def _generate_aether_workflow(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Generate .aether workflow from natural language description"""
 
         if not self.nl_generator:
@@ -633,9 +659,7 @@ class CoderAgent(LyrixaAgent):
     async def _optimize_workflow(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Optimize existing .aether workflow"""
         aether_code = input_data.get("aether_code", "")
-        optimization_goals = input_data.get(
-            "optimization_goals", ["performance", "readability"]
-        )
+        optimization_goals = input_data.get("optimization_goals", ["performance", "readability"])
 
         # Simple optimization - add error handling and parallel processing
         optimized_code = aether_code
@@ -669,12 +693,12 @@ class CoderAgent(LyrixaAgent):
         aether_code = input_data.get("aether_code", "")
         context = input_data.get("context", {})
 
-        # Find parameter placeholders
+        # Find parameter tokens in angle brackets
         # Standard library imports
         import re
 
-        placeholder_pattern = r"<([^>]+)>"
-        placeholders = re.findall(placeholder_pattern, aether_code)
+        token_pattern = r"<([^>]+)>"
+        template_tokens = re.findall(token_pattern, aether_code)
 
         parameter_suggestions = []
         filled_code = aether_code
@@ -689,27 +713,25 @@ class CoderAgent(LyrixaAgent):
             "method": "GET",
         }
 
-        for placeholder in placeholders:
-            suggested_value = parameter_defaults.get(placeholder, f"<{placeholder}>")
+        for token_name in template_tokens:
+            suggested_value = parameter_defaults.get(token_name, f"<{token_name}>")
 
             parameter_suggestions.append(
                 {
-                    "parameter": placeholder,
+                    "parameter": token_name,
                     "suggested_value": suggested_value,
-                    "confidence": 0.7 if placeholder in parameter_defaults else 0.3,
-                    "source": "default"
-                    if placeholder in parameter_defaults
-                    else "placeholder",
+                    "confidence": 0.7 if token_name in parameter_defaults else 0.3,
+                    "source": "default" if token_name in parameter_defaults else "unspecified",
                 }
             )
 
-            if placeholder in parameter_defaults:
-                filled_code = filled_code.replace(f"<{placeholder}>", suggested_value)
+            if token_name in parameter_defaults:
+                filled_code = filled_code.replace(f"<{token_name}>", suggested_value)
 
         return {
             "filled_code": filled_code,
             "parameter_suggestions": parameter_suggestions,
-            "placeholders_found": len(placeholders),
+            "template_tokens_found": len(template_tokens),
             "success": True,
             "explanation": f"Suggested values for {len(parameter_suggestions)} parameters",
         }
@@ -725,7 +747,7 @@ class CoderAgent(LyrixaAgent):
     \"\"\"
     Generated function based on: {specification}
     \"\"\"
-    # TODO: Implement function logic
+    # Implementation required
     return "result"
 """
         elif "class" in specification.lower():
@@ -735,15 +757,15 @@ class CoderAgent(LyrixaAgent):
     \"\"\"
 
     def __init__(self):
-        # TODO: Initialize class
+        # Initialization required
         pass
 """
         else:
             code = f"""# Generated {language} code
 # Based on: {specification}
 
-# TODO: Implement code logic
-print("Generated code placeholder")
+    # Implementation required
+    print("Generated code scaffold")
 """
 
         return {

@@ -38,9 +38,7 @@ class PluginTemplate:
     }
     created_by = "Plugin System Auto-Fixer"
 
-    def __init__(
-        self, name: str, description: str, template_code: str, category: str = "general"
-    ):
+    def __init__(self, name: str, description: str, template_code: str, category: str = "general"):
         self.name = name
         self.description = description
         self.template_code = template_code
@@ -426,15 +424,11 @@ def main(endpoint, method="GET", data=None, **kwargs):
         )
         self.title_label.pack()
 
-        self.subtitle_label = ttk.Label(
-            self.header_frame, text="Step 1 of 7: Basic Information"
-        )
+        self.subtitle_label = ttk.Label(self.header_frame, text="Step 1 of 7: Basic Information")
         self.subtitle_label.pack()
 
         # Progress bar
-        self.progress = ttk.Progressbar(
-            self.header_frame, length=400, mode="determinate"
-        )
+        self.progress = ttk.Progressbar(self.header_frame, length=400, mode="determinate")
         self.progress.pack(pady=10)
         self.progress["value"] = (1 / len(self.steps)) * 100
 
@@ -454,14 +448,10 @@ def main(endpoint, method="GET", data=None, **kwargs):
         )
         self.prev_button.pack(side=tk.LEFT)
 
-        self.next_button = ttk.Button(
-            self.nav_frame, text="Next", command=self._next_step
-        )
+        self.next_button = ttk.Button(self.nav_frame, text="Next", command=self._next_step)
         self.next_button.pack(side=tk.RIGHT)
 
-        self.cancel_button = ttk.Button(
-            self.nav_frame, text="Cancel", command=self._cancel
-        )
+        self.cancel_button = ttk.Button(self.nav_frame, text="Cancel", command=self._cancel)
         self.cancel_button.pack(side=tk.RIGHT, padx=(0, 10))
 
     def _show_step(self, step_num: int):
@@ -514,32 +504,24 @@ def main(endpoint, method="GET", data=None, **kwargs):
         ttk.Label(self.content_frame, text="Description:").grid(
             row=1, column=0, sticky=tk.W + tk.N, pady=5
         )
-        self.description_text = scrolledtext.ScrolledText(
-            self.content_frame, width=50, height=4
-        )
+        self.description_text = scrolledtext.ScrolledText(self.content_frame, width=50, height=4)
         self.description_text.grid(row=1, column=1, padx=10, pady=5)
         self.description_text.insert("1.0", self.plugin_data["description"])
 
         # Author
-        ttk.Label(self.content_frame, text="Author:").grid(
-            row=2, column=0, sticky=tk.W, pady=5
-        )
+        ttk.Label(self.content_frame, text="Author:").grid(row=2, column=0, sticky=tk.W, pady=5)
         self.author_entry = ttk.Entry(self.content_frame, width=50)
         self.author_entry.grid(row=2, column=1, padx=10, pady=5)
         self.author_entry.insert(0, self.plugin_data["author"])
 
         # Version
-        ttk.Label(self.content_frame, text="Version:").grid(
-            row=3, column=0, sticky=tk.W, pady=5
-        )
+        ttk.Label(self.content_frame, text="Version:").grid(row=3, column=0, sticky=tk.W, pady=5)
         self.version_entry = ttk.Entry(self.content_frame, width=20)
         self.version_entry.grid(row=3, column=1, sticky=tk.W, padx=10, pady=5)
         self.version_entry.insert(0, self.plugin_data["version"])
 
         # Category
-        ttk.Label(self.content_frame, text="Category:").grid(
-            row=4, column=0, sticky=tk.W, pady=5
-        )
+        ttk.Label(self.content_frame, text="Category:").grid(row=4, column=0, sticky=tk.W, pady=5)
         self.category_combo = ttk.Combobox(
             self.content_frame,
             width=47,
@@ -584,22 +566,18 @@ def main(endpoint, method="GET", data=None, **kwargs):
 
     def _show_capabilities_step(self):
         """Show capabilities and features step."""
-        ttk.Label(
-            self.content_frame, text="Plugin Capabilities:", font=("Arial", 12, "bold")
-        ).pack(pady=10)
+        ttk.Label(self.content_frame, text="Plugin Capabilities:", font=("Arial", 12, "bold")).pack(
+            pady=10
+        )
 
         # Tags
-        ttk.Label(self.content_frame, text="Tags (comma-separated):").pack(
-            anchor=tk.W, padx=20
-        )
+        ttk.Label(self.content_frame, text="Tags (comma-separated):").pack(anchor=tk.W, padx=20)
         self.tags_entry = ttk.Entry(self.content_frame, width=60)
         self.tags_entry.pack(fill=tk.X, padx=20, pady=5)
         self.tags_entry.insert(0, ", ".join(self.plugin_data["tags"]))
 
         # Capabilities checkboxes
-        ttk.Label(self.content_frame, text="Capabilities:").pack(
-            anchor=tk.W, padx=20, pady=(10, 5)
-        )
+        ttk.Label(self.content_frame, text="Capabilities:").pack(anchor=tk.W, padx=20, pady=(10, 5))
 
         self.capabilities_frame = ttk.Frame(self.content_frame)
         self.capabilities_frame.pack(fill=tk.X, padx=20)
@@ -635,13 +613,9 @@ def main(endpoint, method="GET", data=None, **kwargs):
         ttk.Label(self.content_frame, text="Python Dependencies (one per line):").pack(
             anchor=tk.W, padx=20
         )
-        self.dependencies_text = scrolledtext.ScrolledText(
-            self.content_frame, width=60, height=8
-        )
+        self.dependencies_text = scrolledtext.ScrolledText(self.content_frame, width=60, height=8)
         self.dependencies_text.pack(fill=tk.X, padx=20, pady=5)
-        self.dependencies_text.insert(
-            "1.0", "\n".join(self.plugin_data["dependencies"])
-        )
+        self.dependencies_text.insert("1.0", "\n".join(self.plugin_data["dependencies"]))
 
         # Common dependencies checkboxes
         ttk.Label(self.content_frame, text="Common Dependencies:").pack(
@@ -672,9 +646,9 @@ def main(endpoint, method="GET", data=None, **kwargs):
 
     def _show_code_step(self):
         """Show code implementation step."""
-        ttk.Label(
-            self.content_frame, text="Code Implementation:", font=("Arial", 12, "bold")
-        ).pack(pady=10)
+        ttk.Label(self.content_frame, text="Code Implementation:", font=("Arial", 12, "bold")).pack(
+            pady=10
+        )
 
         # Template preview
         template_frame = ttk.LabelFrame(self.content_frame, text="Template Preview")
@@ -759,9 +733,7 @@ def main(endpoint, method="GET", data=None, **kwargs):
             command=self._choose_output_dir,
         ).pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.output_dir_label = ttk.Label(
-            output_frame, text="Output: Current directory"
-        )
+        self.output_dir_label = ttk.Label(output_frame, text="Output: Current directory")
         self.output_dir_label.pack(side=tk.LEFT, padx=10)
 
         self.output_dir = os.getcwd()
@@ -841,11 +813,7 @@ Generated Code Preview:
         if self.plugin_data["template"] in self.templates:
             template = self.templates[self.plugin_data["template"]]
             formatted_code = self._format_template(template.template_code)
-            summary += (
-                formatted_code[:500] + "..."
-                if len(formatted_code) > 500
-                else formatted_code
-            )
+            summary += formatted_code[:500] + "..." if len(formatted_code) > 500 else formatted_code
 
         self.summary_text.delete("1.0", tk.END)
         self.summary_text.insert("1.0", summary)
@@ -855,9 +823,7 @@ Generated Code Preview:
         if self.current_step == 0:  # Basic info
             if hasattr(self, "name_entry"):
                 self.plugin_data["name"] = self.name_entry.get()
-                self.plugin_data["description"] = self.description_text.get(
-                    "1.0", tk.END
-                ).strip()
+                self.plugin_data["description"] = self.description_text.get("1.0", tk.END).strip()
                 self.plugin_data["author"] = self.author_entry.get()
                 self.plugin_data["version"] = self.version_entry.get()
                 self.plugin_data["category"] = self.category_combo.get()
@@ -880,21 +846,15 @@ Generated Code Preview:
         elif self.current_step == 3:  # Dependencies
             if hasattr(self, "dependencies_text"):
                 deps_text = self.dependencies_text.get("1.0", tk.END).strip()
-                manual_deps = [
-                    dep.strip() for dep in deps_text.split("\n") if dep.strip()
-                ]
+                manual_deps = [dep.strip() for dep in deps_text.split("\n") if dep.strip()]
 
-                common_deps = [
-                    dep for dep, var in self.common_dep_vars.items() if var.get()
-                ]
+                common_deps = [dep for dep, var in self.common_dep_vars.items() if var.get()]
 
                 self.plugin_data["dependencies"] = list(set(manual_deps + common_deps))
 
         elif self.current_step == 4:  # Code
             if hasattr(self, "custom_code_text"):
-                self.plugin_data["custom_code"] = self.custom_code_text.get(
-                    "1.0", tk.END
-                ).strip()
+                self.plugin_data["custom_code"] = self.custom_code_text.get("1.0", tk.END).strip()
 
         elif self.current_step == 5:  # UI
             if hasattr(self, "ui_vars"):
@@ -936,9 +896,7 @@ Generated Code Preview:
                 messagebox.showerror("Validation Error", "Plugin name is required.")
                 return False
             if not self.plugin_data["description"].strip():
-                messagebox.showerror(
-                    "Validation Error", "Plugin description is required."
-                )
+                messagebox.showerror("Validation Error", "Plugin description is required.")
                 return False
 
         return True
@@ -955,12 +913,8 @@ Generated Code Preview:
                 return
 
             # Generate filename
-            plugin_filename = (
-                self.plugin_data["name"].lower().replace(" ", "_").replace("-", "_")
-            )
-            plugin_filename = "".join(
-                c for c in plugin_filename if c.isalnum() or c == "_"
-            )
+            plugin_filename = self.plugin_data["name"].lower().replace(" ", "_").replace("-", "_")
+            plugin_filename = "".join(c for c in plugin_filename if c.isalnum() or c == "_")
             plugin_file = os.path.join(self.output_dir, f"{plugin_filename}.py")
 
             # Generate plugin code
@@ -976,9 +930,7 @@ Generated Code Preview:
                 f.write(plugin_code)
 
             # Generate metadata file
-            metadata_file = os.path.join(
-                self.output_dir, f"{plugin_filename}_metadata.json"
-            )
+            metadata_file = os.path.join(self.output_dir, f"{plugin_filename}_metadata.json")
             metadata = {
                 "name": self.plugin_data["name"],
                 "description": self.plugin_data["description"],
@@ -1009,15 +961,11 @@ Generated Code Preview:
             self.root.destroy()
 
         except Exception as e:
-            messagebox.showerror(
-                "Generation Error", f"Failed to generate plugin: {str(e)}"
-            )
+            messagebox.showerror("Generation Error", f"Failed to generate plugin: {str(e)}")
 
     def _cancel(self):
         """Cancel wizard."""
-        if messagebox.askyesno(
-            "Cancel", "Are you sure you want to cancel plugin creation?"
-        ):
+        if messagebox.askyesno("Cancel", "Are you sure you want to cancel plugin creation?"):
             self.root.destroy()
 
     def run(self):

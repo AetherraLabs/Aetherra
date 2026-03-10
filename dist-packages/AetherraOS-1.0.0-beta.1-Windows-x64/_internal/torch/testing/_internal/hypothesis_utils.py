@@ -2,18 +2,20 @@
 
 from collections import defaultdict
 from collections.abc import Iterable
-import numpy as np
-import torch
+from functools import reduce
 
 import hypothesis
-from functools import reduce
-from hypothesis import assume
-from hypothesis import settings
+import numpy as np
+from hypothesis import assume, settings
 from hypothesis import strategies as st
 from hypothesis.extra import numpy as stnp
 from hypothesis.strategies import SearchStrategy
 
-from torch.testing._internal.common_quantized import _calculate_dynamic_qparams, _calculate_dynamic_per_channel_qparams
+import torch
+from torch.testing._internal.common_quantized import (
+    _calculate_dynamic_per_channel_qparams,
+    _calculate_dynamic_qparams,
+)
 
 # Setup for the hypothesis tests.
 # The tuples are (torch_quantized_dtype, zero_point_enforce), where the last
@@ -29,56 +31,61 @@ _ALL_QINT_TYPES = (
 
 # Enforced zero point for every quantized data type.
 # If None, any zero_point point within the range of the data type is OK.
-_ENFORCED_ZERO_POINT = defaultdict(lambda: None, {
-    torch.quint8: None,
-    torch.qint8: None,
-    torch.qint32: 0
-})
+_ENFORCED_ZERO_POINT = defaultdict(
+    lambda: None, {torch.quint8: None, torch.qint8: None, torch.qint32: 0}
+)
+
 
 def _get_valid_min_max(qparams):
     scale, zero_point, _quantized_type = qparams
     adjustment = 1 + torch.finfo(torch.float).eps
     _long_type_info = torch.iinfo(torch.long)
-    long_min, long_max = _long_type_info.min / adjustment, _long_type_info.max / adjustment
+    long_min, long_max = (
+        _long_type_info.min / adjustment,
+        _long_type_info.max / adjustment,
+    )
     # make sure intermediate results are within the range of long
     min_value = max((long_min - zero_point) * scale, (long_min / scale + zero_point))
     max_value = min((long_max - zero_point) * scale, (long_max / scale + zero_point))
     return np.float32(min_value), np.float32(max_value)
 
+
 # This wrapper wraps around `st.floats` and checks the version of `hypothesis`, if
 # it is too old, removes the `width` parameter (which was introduced)
 # in 3.67.0
 def _floats_wrapper(*args, **kwargs):
-    if 'width' in kwargs and hypothesis.version.__version_info__ < (3, 67, 0):
+    if "width" in kwargs and hypothesis.version.__version_info__ < (3, 67, 0):
         # As long as nan, inf, min, max are not specified, reimplement the width
         # parameter for older versions of hypothesis.
         no_nan_and_inf = (
-            (('allow_nan' in kwargs and not kwargs['allow_nan']) or
-             'allow_nan' not in kwargs) and
-            (('allow_infinity' in kwargs and not kwargs['allow_infinity']) or
-             'allow_infinity' not in kwargs))
+            ("allow_nan" in kwargs and not kwargs["allow_nan"])
+            or "allow_nan" not in kwargs
+        ) and (
+            ("allow_infinity" in kwargs and not kwargs["allow_infinity"])
+            or "allow_infinity" not in kwargs
+        )
         min_and_max_not_specified = (
-            len(args) == 0 and
-            'min_value' not in kwargs and
-            'max_value' not in kwargs
+            len(args) == 0 and "min_value" not in kwargs and "max_value" not in kwargs
         )
         if no_nan_and_inf and min_and_max_not_specified:
-            if kwargs['width'] == 16:
-                kwargs['min_value'] = torch.finfo(torch.float16).min
-                kwargs['max_value'] = torch.finfo(torch.float16).max
-            elif kwargs['width'] == 32:
-                kwargs['min_value'] = torch.finfo(torch.float32).min
-                kwargs['max_value'] = torch.finfo(torch.float32).max
-            elif kwargs['width'] == 64:
-                kwargs['min_value'] = torch.finfo(torch.float64).min
-                kwargs['max_value'] = torch.finfo(torch.float64).max
-        kwargs.pop('width')
+            if kwargs["width"] == 16:
+                kwargs["min_value"] = torch.finfo(torch.float16).min
+                kwargs["max_value"] = torch.finfo(torch.float16).max
+            elif kwargs["width"] == 32:
+                kwargs["min_value"] = torch.finfo(torch.float32).min
+                kwargs["max_value"] = torch.finfo(torch.float32).max
+            elif kwargs["width"] == 64:
+                kwargs["min_value"] = torch.finfo(torch.float64).min
+                kwargs["max_value"] = torch.finfo(torch.float64).max
+        kwargs.pop("width")
     return st.floats(*args, **kwargs)
 
+
 def floats(*args, **kwargs):
-    if 'width' not in kwargs:
-        kwargs['width'] = 32
+    if "width" not in kwargs:
+        kwargs["width"] = 32
     return _floats_wrapper(*args, **kwargs)
+
 
 """Hypothesis filter to avoid overflows with quantized tensors.
 
@@ -95,11 +102,14 @@ Raises:
 Note: This filter is slow. Use it only when filtering of the test cases is
       absolutely necessary!
 """
+
+
 def assume_not_overflowing(tensor, qparams):
     min_value, max_value = _get_valid_min_max(qparams)
     assume(tensor.min() >= min_value)
     assume(tensor.max() <= max_value)
     return True
+
 
 """Strategy for generating the quantization parameters.
 
@@ -116,9 +126,17 @@ Generates:
     zero_point: Sampled zero point.
     quantized_type: Sampled quantized type.
 """
+
+
 @st.composite
-def qparams(draw, dtypes=None, scale_min=None, scale_max=None,
-            zero_point_min=None, zero_point_max=None):
+def qparams(
+    draw,
+    dtypes=None,
+    scale_min=None,
+    scale_max=None,
+    zero_point_min=None,
+    zero_point_max=None,
+):
     if dtypes is None:
         dtypes = _ALL_QINT_TYPES
     if not isinstance(dtypes, (list, tuple)):
@@ -145,6 +163,7 @@ def qparams(draw, dtypes=None, scale_min=None, scale_max=None,
 
     return scale, zero_point, quantized_type
 
+
 """Strategy to create different shapes.
 Args:
     min_dims / max_dims: minimum and maximum rank.
@@ -158,8 +177,12 @@ Example:
     @given(Q = qtensor(shapes=array_shapes(min_dims=3, max_dims=4))
     some_test(self, Q):...
 """
+
+
 @st.composite
-def array_shapes(draw, min_dims=1, max_dims=None, min_side=1, max_side=None, max_numel=None):
+def array_shapes(
+    draw, min_dims=1, max_dims=None, min_side=1, max_side=None, max_numel=None
+):
     """Return a strategy for array shapes (tuples of int >= 1)."""
     assert min_dims < 32
     if max_dims is None:
@@ -167,7 +190,9 @@ def array_shapes(draw, min_dims=1, max_dims=None, min_side=1, max_side=None, max
     assert max_dims < 32
     if max_side is None:
         max_side = min_side + 5
-    candidate = st.lists(st.integers(min_side, max_side), min_size=min_dims, max_size=max_dims)
+    candidate = st.lists(
+        st.integers(min_side, max_side), min_size=min_dims, max_size=max_dims
+    )
     if max_numel is not None:
         candidate = candidate.filter(lambda x: reduce(int.__mul__, x, 1) <= max_numel)
     return draw(candidate.map(tuple))
@@ -190,6 +215,8 @@ Generates:
         The returned parameters are `(scale, zero_point, quantization_type)`.
         (If `qparams` arg is None), returns None.
 """
+
+
 @st.composite
 def tensor(draw, shapes=None, elements=None, qparams=None, dtype=np.float32):
     if isinstance(shapes, SearchStrategy):
@@ -205,8 +232,9 @@ def tensor(draw, shapes=None, elements=None, qparams=None, dtype=np.float32):
     qparams = draw(qparams)
     if elements is None:
         min_value, max_value = _get_valid_min_max(qparams)
-        elements = floats(min_value, max_value, allow_infinity=False,
-                          allow_nan=False, width=32)
+        elements = floats(
+            min_value, max_value, allow_infinity=False, allow_nan=False, width=32
+        )
     X = draw(stnp.arrays(dtype=dtype, elements=elements, shape=_shape))
     # Recompute the scale and zero_points according to the X statistics.
     scale, zp = _calculate_dynamic_qparams(X, qparams[2])
@@ -214,6 +242,7 @@ def tensor(draw, shapes=None, elements=None, qparams=None, dtype=np.float32):
     if enforced_zp is not None:
         zp = enforced_zp
     return X, (scale, zp, qparams[2])
+
 
 @st.composite
 def per_channel_tensor(draw, shapes=None, elements=None, qparams=None):
@@ -230,8 +259,9 @@ def per_channel_tensor(draw, shapes=None, elements=None, qparams=None):
     qparams = draw(qparams)
     if elements is None:
         min_value, max_value = _get_valid_min_max(qparams)
-        elements = floats(min_value, max_value, allow_infinity=False,
-                          allow_nan=False, width=32)
+        elements = floats(
+            min_value, max_value, allow_infinity=False, allow_nan=False, width=32
+        )
     X = draw(stnp.arrays(dtype=np.float32, elements=elements, shape=_shape))
     # Recompute the scale and zero_points according to the X statistics.
     scale, zp = _calculate_dynamic_per_channel_qparams(X, qparams[2])
@@ -246,6 +276,7 @@ def per_channel_tensor(draw, shapes=None, elements=None, qparams=None):
     X = np.transpose(X, permute_axes)
 
     return X, (scale, zp, axis, qparams[2])
+
 
 """Strategy for generating test cases for tensors used in Conv.
 The resulting tensors is in float32 format.
@@ -294,21 +325,26 @@ Example:
         qparams=qparams()
     ))
 """
+
+
 @st.composite
 def tensor_conv(
-    draw, spatial_dim=2, batch_size_range=(1, 4),
+    draw,
+    spatial_dim=2,
+    batch_size_range=(1, 4),
     input_channels_per_group_range=(3, 7),
-    output_channels_per_group_range=(3, 7), feature_map_range=(6, 12),
-    kernel_range=(3, 7), max_groups=1, can_be_transposed=False,
-    elements=None, qparams=None
+    output_channels_per_group_range=(3, 7),
+    feature_map_range=(6, 12),
+    kernel_range=(3, 7),
+    max_groups=1,
+    can_be_transposed=False,
+    elements=None,
+    qparams=None,
 ):
-
     # Resolve the minibatch, in_channels, out_channels, iH/iW, iK/iW
     batch_size = draw(st.integers(*batch_size_range))
-    input_channels_per_group = draw(
-        st.integers(*input_channels_per_group_range))
-    output_channels_per_group = draw(
-        st.integers(*output_channels_per_group_range))
+    input_channels_per_group = draw(st.integers(*input_channels_per_group_range))
+    output_channels_per_group = draw(st.integers(*output_channels_per_group_range))
     groups = draw(st.integers(1, max_groups))
     input_channels = input_channels_per_group * groups
     output_channels = output_channels_per_group * groups
@@ -316,7 +352,9 @@ def tensor_conv(
     if isinstance(spatial_dim, Iterable):
         spatial_dim = draw(st.sampled_from(spatial_dim))
 
-    feature_map_shape = [draw(st.integers(*feature_map_range)) for _ in range(spatial_dim)]
+    feature_map_shape = [
+        draw(st.integers(*feature_map_range)) for _ in range(spatial_dim)
+    ]
 
     kernels = [draw(st.integers(*kernel_range)) for _ in range(spatial_dim)]
 
@@ -336,27 +374,33 @@ def tensor_conv(
         else:
             qparams = [qparams] * 3
 
-    X = draw(tensor(shapes=(
-        (batch_size, input_channels) + tuple(feature_map_shape),),
-        elements=elements, qparams=qparams[0]))
-    W = draw(tensor(shapes=(weight_shape,), elements=elements,
-                    qparams=qparams[1]))
-    b = draw(tensor(shapes=(bias_shape,), elements=elements,
-                    qparams=qparams[2]))
+    X = draw(
+        tensor(
+            shapes=((batch_size, input_channels) + tuple(feature_map_shape),),
+            elements=elements,
+            qparams=qparams[0],
+        )
+    )
+    W = draw(tensor(shapes=(weight_shape,), elements=elements, qparams=qparams[1]))
+    b = draw(tensor(shapes=(bias_shape,), elements=elements, qparams=qparams[2]))
 
     return X, W, b, groups, tr
+
 
 # We set the deadline in the currently loaded profile.
 # Creating (and loading) a separate profile overrides any settings the user
 # already specified.
 hypothesis_version = hypothesis.version.__version_info__
 current_settings = settings._profiles[settings._current_profile].__dict__
-current_settings['deadline'] = None
+current_settings["deadline"] = None
 if hypothesis_version >= (3, 16, 0) and hypothesis_version < (5, 0, 0):
-    current_settings['timeout'] = hypothesis.unlimited
+    current_settings["timeout"] = hypothesis.unlimited
+
+
 def assert_deadline_disabled():
     if hypothesis_version < (3, 27, 0):
         import warnings
+
         warning_message = (
             "Your version of hypothesis is outdated. "
             "To avoid `DeadlineExceeded` errors, please update. "

@@ -19,12 +19,10 @@ import os
 import re
 from contextlib import contextmanager, redirect_stdout
 from io import StringIO
-from typing import Optional
 
 from transformers.utils.import_utils import requires
 
 from .utils import is_torch_available
-
 
 if is_torch_available():
     import torch
@@ -32,7 +30,6 @@ if is_torch_available():
 
 
 from .utils import logging
-
 
 logger = logging.get_logger(__name__)
 
@@ -153,7 +150,9 @@ def prune_outputs_if_children(node):
             prune_outputs_if_children(child)
 
 
-LAYER_SUFFIX_RE = re.compile(r"(.*)\.(\d+)$")  # should be generic enough, ends with a number
+LAYER_SUFFIX_RE = re.compile(
+    r"(.*)\.(\d+)$"
+)  # should be generic enough, ends with a number
 
 
 def is_layer_block(node):
@@ -170,7 +169,9 @@ def is_layer_block(node):
     if not match or not node.get("children"):
         return False
     number = match.group(2)
-    return any(f".{number}." in child.get("module_path", "") for child in node["children"])
+    return any(
+        f".{number}." in child.get("module_path", "") for child in node["children"]
+    )
 
 
 def prune_intermediate_layers(node):
@@ -183,11 +184,15 @@ def prune_intermediate_layers(node):
     """
     if not node.get("children"):
         return
-    layer_blocks = [(i, child) for i, child in enumerate(node["children"]) if is_layer_block(child)]
+    layer_blocks = [
+        (i, child) for i, child in enumerate(node["children"]) if is_layer_block(child)
+    ]
 
     if len(layer_blocks) > 2:
         to_remove = [i for i, _ in layer_blocks[1:-1]]
-        node["children"] = [child for i, child in enumerate(node["children"]) if i not in to_remove]
+        node["children"] = [
+            child for i, child in enumerate(node["children"]) if i not in to_remove
+        ]
 
     for child in node["children"]:
         prune_intermediate_layers(child)
@@ -197,7 +202,9 @@ def log_model_debug_trace(debug_path, model):
     if debug_path:
         try:
             os.makedirs(debug_path, exist_ok=True)
-            base = os.path.join(debug_path, model._debugger_module_dump_name + "_debug_tree")
+            base = os.path.join(
+                debug_path, model._debugger_module_dump_name + "_debug_tree"
+            )
         except Exception as e:
             raise ValueError(f"Unexpected or existing debug_path={debug_path}. {e}")
     else:
@@ -238,8 +245,8 @@ def log_model_debug_trace(debug_path, model):
 
 def _attach_debugger_logic(
     model,
-    debug_path: Optional[str] = ".",
-    do_prune_layers: Optional[bool] = True,
+    debug_path: str | None = ".",
+    do_prune_layers: bool | None = True,
 ):
     """
     Attaches a debugging wrapper to every module in the model.
@@ -254,7 +261,12 @@ def _attach_debugger_logic(
     class_name = model.__class__.__name__
 
     # Prepare data structures on the model object
-    model._call_tree = {"module_path": class_name, "inputs": None, "outputs": None, "children": []}
+    model._call_tree = {
+        "module_path": class_name,
+        "inputs": None,
+        "outputs": None,
+        "children": [],
+    }
     model._debugger_model_call_stack = []
     model._debugger_module_dump_name = class_name  # used for final JSON filename
 
@@ -265,7 +277,9 @@ def _attach_debugger_logic(
         def wrapped_forward(*inps, **kws):
             if _is_rank_zero():
                 dict_inputs = {"args": inps, "kwargs": kws}
-                dict_inputs = {k: dict_inputs[k] for k in dict_inputs if len(dict_inputs[k]) > 0}
+                dict_inputs = {
+                    k: dict_inputs[k] for k in dict_inputs if len(dict_inputs[k]) > 0
+                }
                 node = {
                     "module_path": full_path,
                     "inputs": _serialize_io(dict_inputs),
@@ -321,7 +335,11 @@ def _attach_debugger_logic(
             model._call_tree["outputs"] = finished["outputs"]
             model._call_tree["children"] = finished["children"]
             # prune empty stuff for visibility
-            [model._call_tree.pop(k, None) for k in list(model._call_tree.keys()) if not model._call_tree[k]]
+            [
+                model._call_tree.pop(k, None)
+                for k in list(model._call_tree.keys())
+                if not model._call_tree[k]
+            ]
 
             # prune layers that are not 0 or last
             if do_prune_layers:
@@ -335,7 +353,9 @@ def _attach_debugger_logic(
 
 @requires(backends=("torch",))
 @contextmanager
-def model_addition_debugger_context(model, debug_path: Optional[str] = None, do_prune_layers: Optional[bool] = True):
+def model_addition_debugger_context(
+    model, debug_path: str | None = None, do_prune_layers: bool | None = True
+):
     """
     # Model addition debugger - context manager for model adders
     This context manager is a power user tool intended for model adders.

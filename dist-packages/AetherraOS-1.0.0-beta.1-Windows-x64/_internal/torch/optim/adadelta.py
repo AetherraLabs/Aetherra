@@ -1,10 +1,12 @@
 # mypy: allow-untyped-defs
-from typing import Any, cast, Optional, Union
+from typing import Any, cast
 
 import torch
 from torch import Tensor
 
 from .optimizer import (
+    Optimizer,
+    ParamsT,
     _capturable_doc,
     _default_to_fused_or_foreach,
     _differentiable_doc,
@@ -17,10 +19,7 @@ from .optimizer import (
     _to_scalar,
     _use_grad_for_differentiable,
     _view_as_real,
-    Optimizer,
-    ParamsT,
 )
-
 
 __all__ = ["Adadelta", "adadelta"]
 
@@ -29,11 +28,11 @@ class Adadelta(Optimizer):
     def __init__(
         self,
         params: ParamsT,
-        lr: Union[float, Tensor] = 1.0,
+        lr: float | Tensor = 1.0,
         rho: float = 0.9,
         eps: float = 1e-6,
         weight_decay: float = 0,
-        foreach: Optional[bool] = None,
+        foreach: bool | None = None,
         *,
         capturable: bool = False,
         maximize: bool = False,
@@ -41,13 +40,13 @@ class Adadelta(Optimizer):
     ):
         if isinstance(lr, Tensor) and lr.numel() != 1:
             raise ValueError("Tensor lr must be 1-element")
-        if not 0.0 <= lr:
+        if not lr >= 0.0:
             raise ValueError(f"Invalid learning rate: {lr}")
         if not 0.0 <= rho <= 1.0:
             raise ValueError(f"Invalid rho value: {rho}")
-        if not 0.0 <= eps:
+        if not eps >= 0.0:
             raise ValueError(f"Invalid epsilon value: {eps}")
-        if not 0.0 <= weight_decay:
+        if not weight_decay >= 0.0:
             raise ValueError(f"Invalid weight_decay value: {weight_decay}")
 
         defaults = dict(
@@ -266,7 +265,7 @@ def _single_tensor_adadelta(
         assert all(
             p.device.type == step.device.type
             and p.device.type in capturable_supported_devices
-            for p, step in zip(params, state_steps)
+            for p, step in zip(params, state_steps, strict=False)
         ), (
             f"If capturable=True, params and state_steps must be on supported devices: {capturable_supported_devices}."
         )
@@ -275,7 +274,7 @@ def _single_tensor_adadelta(
         lr = _to_scalar(lr)
 
     for param, grad, square_avg, acc_delta, step in zip(
-        params, grads, square_avgs, acc_deltas, state_steps
+        params, grads, square_avgs, acc_deltas, state_steps, strict=False
     ):
         step += 1
         grad = grad if not maximize else -grad
@@ -327,7 +326,7 @@ def _multi_tensor_adadelta(
         assert all(
             p.device.type == step.device.type
             and p.device.type in capturable_supported_devices
-            for p, step in zip(params, state_steps)
+            for p, step in zip(params, state_steps, strict=False)
         ), (
             f"If capturable=True, params and state_steps must be on supported devices: {capturable_supported_devices}."
         )
@@ -415,7 +414,7 @@ def adadelta(
     # kwonly args with defaults are not supported by functions compiled with torchscript issue #70627
     # setting this as kwarg for now as functional API is compiled by torch/distributed/optim
     capturable: bool = False,
-    foreach: Optional[bool] = None,
+    foreach: bool | None = None,
     differentiable: bool = False,
     has_complex: bool = False,
     *,

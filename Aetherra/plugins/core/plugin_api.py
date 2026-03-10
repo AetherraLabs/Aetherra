@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
 
-# Stub for PluginManager for modular plugin integration
+# Baseline PluginManager for modular plugin integration
 class PluginManager:
     def __init__(self, *args, **kwargs):
         self.plugins = []

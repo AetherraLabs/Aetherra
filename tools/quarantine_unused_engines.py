@@ -20,7 +20,6 @@ import json
 import os
 import shutil
 from pathlib import Path
-from typing import List
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 LEGACY_DIR = REPO_ROOT / "Aetherra" / "legacy"
@@ -31,9 +30,9 @@ EXCLUDE_PREFIXES = [
 ]
 
 
-def plan_moves() -> List[tuple[Path, Path]]:
+def plan_moves() -> list[tuple[Path, Path]]:
     data = json.loads(MATRIX_JSON.read_text(encoding="utf-8"))
-    moves: List[tuple[Path, Path]] = []
+    moves: list[tuple[Path, Path]] = []
     for item in data:
         file_rel = item.get("file")
         used_by_os = item.get("used_by_os", False)

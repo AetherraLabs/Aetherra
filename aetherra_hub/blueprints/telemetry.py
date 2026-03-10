@@ -9,7 +9,7 @@ from __future__ import annotations
 
 # Standard library imports
 import threading
-from typing import Any, Dict
+from typing import Any
 
 # Third party imports
 from flask import Blueprint, jsonify, request
@@ -23,8 +23,8 @@ except Exception:  # pragma: no cover
 bp = Blueprint("telemetry", __name__)
 
 _lock = threading.Lock()
-_state: Dict[str, Any] = {"telemetry_received": 0}
-_events: list[Dict[str, Any]] = []  # future: ring buffer / size limit
+_state: dict[str, Any] = {"telemetry_received": 0}
+_events: list[dict[str, Any]] = []  # future: ring buffer / size limit
 
 
 @bp.post("/api/telemetry")

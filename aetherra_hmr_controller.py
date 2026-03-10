@@ -21,7 +21,7 @@ import importlib.util
 import logging
 import os
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ class HMRController:
         self.kernel = kernel
         self.strict = bool(strict)
         self.running = False
-        self.state: Dict[str, Any] = {"status": "idle"}
+        self.state: dict[str, Any] = {"status": "idle"}
         # Allowed sources (module names or approved paths). Comma-separated env, optional.
         self.allowed_sources = set(
             s.strip()
@@ -62,7 +62,7 @@ class HMRController:
         except Exception:
             self.audit_max_backups = 3
         # In-memory audit counters by event for Prometheus exposure
-        self.audit_counters: Dict[str, int] = {}
+        self.audit_counters: dict[str, int] = {}
 
     async def start(self):
         self.running = True
@@ -81,7 +81,7 @@ class HMRController:
         self.running = False
 
     # ---------------- Kernel task entry ----------------
-    async def handle_kernel_task(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    async def handle_kernel_task(self, payload: dict[str, Any]) -> dict[str, Any]:
         t = (payload or {}).get("type")
         data = (payload or {}).get("data") or {}
         if t == "hmr_reload":
@@ -98,7 +98,7 @@ class HMRController:
     # ---------------- Core flow ----------------
     async def _reload_target(
         self, target: str, source: str, mode: str = "safe"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Prepare → Verify → Quiesce → Swap → Resume | Rollback"""
         start = time.time()
         self.state = {
@@ -293,7 +293,7 @@ class HMRController:
             pass
         return True
 
-    def _resolve_current_target(self, target: str) -> Optional[Any]:
+    def _resolve_current_target(self, target: str) -> Any | None:
         if target in ("engine", "aetherra_engine"):
             return getattr(self.kernel, "aetherra_engine", None)
         if target in ("adapter:memory", "memory"):
@@ -304,7 +304,7 @@ class HMRController:
             return getattr(self.kernel, "lyrixa_chat", None)
         return None
 
-    async def _broadcast(self, message_type: str, data: Dict[str, Any]):
+    async def _broadcast(self, message_type: str, data: dict[str, Any]):
         try:
             if hasattr(self.registry, "broadcast_message"):
                 await self.registry.broadcast_message(message_type, data)
@@ -317,8 +317,8 @@ class HMRController:
         target: str,
         source: str,
         ok: bool,
-        reason: Optional[str] = None,
-        extra: Optional[Dict[str, Any]] = None,
+        reason: str | None = None,
+        extra: dict[str, Any] | None = None,
     ):
         try:
             record = {
@@ -352,13 +352,13 @@ class HMRController:
         except Exception:
             pass
 
-    def get_audit_counters(self) -> Dict[str, int]:
+    def get_audit_counters(self) -> dict[str, int]:
         try:
             return dict(self.audit_counters)
         except Exception:
             return {}
 
-    def get_config_metrics(self) -> Dict[str, Any]:
+    def get_config_metrics(self) -> dict[str, Any]:
         """Return a small set of HMR config metrics for observability surfaces.
 
         Keys:

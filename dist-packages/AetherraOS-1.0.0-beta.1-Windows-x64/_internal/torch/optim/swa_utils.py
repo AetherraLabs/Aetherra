@@ -4,18 +4,17 @@ r"""Implementation for Stochastic Weight Averaging implementation."""
 import itertools
 import math
 import warnings
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from copy import deepcopy
-from typing import Any, Callable, Literal, Optional, Union
+from typing import Any, Literal, Union
 
 import torch
 from torch import Tensor
 from torch.nn import Module
-from torch.optim.lr_scheduler import _format_param, LRScheduler
+from torch.optim.lr_scheduler import LRScheduler, _format_param
 from torch.utils._foreach_utils import _get_foreach_kernels_supported_devices
 
 from .optimizer import Optimizer
-
 
 __all__ = [
     "AveragedModel",
@@ -28,7 +27,6 @@ __all__ = [
 ]
 
 from torch.utils._foreach_utils import _group_tensors_by_device_and_dtype
-
 
 PARAM_LIST = Union[tuple[Tensor, ...], list[Tensor]]
 
@@ -49,7 +47,7 @@ def get_ema_multi_avg_fn(decay=0.999):
         ):
             torch._foreach_lerp_(ema_param_list, current_param_list, 1 - decay)
         else:
-            for p_ema, p_model in zip(ema_param_list, current_param_list):
+            for p_ema, p_model in zip(ema_param_list, current_param_list, strict=False):
                 p_ema.copy_(p_ema * decay + p_model * (1 - decay))
 
     return ema_update
@@ -62,7 +60,7 @@ def get_swa_multi_avg_fn():
     def swa_update(
         averaged_param_list: PARAM_LIST,
         current_param_list: PARAM_LIST,
-        num_averaged: Union[Tensor, int],
+        num_averaged: Tensor | int,
     ):
         # foreach lerp only handles float and complex
         if torch.is_floating_point(averaged_param_list[0]) or torch.is_complex(
@@ -107,7 +105,7 @@ def get_swa_avg_fn():
 
     @torch.no_grad()
     def swa_update(
-        averaged_param: Tensor, current_param: Tensor, num_averaged: Union[Tensor, int]
+        averaged_param: Tensor, current_param: Tensor, num_averaged: Tensor | int
     ):
         return averaged_param + (current_param - averaged_param) / (num_averaged + 1)
 
@@ -218,11 +216,10 @@ class AveragedModel(Module):
     def __init__(
         self,
         model: Module,
-        device: Optional[Union[int, torch.device]] = None,
-        avg_fn: Optional[Callable[[Tensor, Tensor, Union[Tensor, int]], Tensor]] = None,
-        multi_avg_fn: Optional[
-            Callable[[PARAM_LIST, PARAM_LIST, Union[Tensor, int]], None]
-        ] = None,
+        device: int | torch.device | None = None,
+        avg_fn: Callable[[Tensor, Tensor, Tensor | int], Tensor] | None = None,
+        multi_avg_fn: Callable[[PARAM_LIST, PARAM_LIST, Tensor | int], None]
+        | None = None,
         use_buffers=False,
     ):  # noqa: D107
         super().__init__()
@@ -255,9 +252,9 @@ class AveragedModel(Module):
             if self.use_buffers
             else model.parameters()
         )
-        self_param_detached: list[Optional[Tensor]] = []
-        model_param_detached: list[Optional[Tensor]] = []
-        for p_averaged, p_model in zip(self_param, model_param):
+        self_param_detached: list[Tensor | None] = []
+        model_param_detached: list[Tensor | None] = []
+        for p_averaged, p_model in zip(self_param, model_param, strict=False):
             p_model_ = p_model.detach().to(p_averaged.device)
             self_param_detached.append(p_averaged.detach())
             model_param_detached.append(p_model_)
@@ -290,11 +287,13 @@ class AveragedModel(Module):
                     else:
                         avg_fn = get_swa_avg_fn()
                         n_averaged = self.n_averaged.to(device)
-                        for p_averaged, p_model in zip(self_params, model_params):  # type: ignore[assignment]
+                        for p_averaged, p_model in zip(
+                            self_params, model_params, strict=False
+                        ):  # type: ignore[assignment]
                             p_averaged.copy_(avg_fn(p_averaged, p_model, n_averaged))
             else:
                 for p_averaged, p_model in zip(  # type: ignore[assignment]
-                    self_param_detached, model_param_detached
+                    self_param_detached, model_param_detached, strict=False
                 ):
                     n_averaged = self.n_averaged.to(p_averaged.device)
                     p_averaged.detach().copy_(
@@ -304,7 +303,9 @@ class AveragedModel(Module):
         if not self.use_buffers:
             # If not apply running averages to the buffers,
             # keep the buffers in sync with the source model.
-            for b_swa, b_model in zip(self.module.buffers(), model.buffers()):
+            for b_swa, b_model in zip(
+                self.module.buffers(), model.buffers(), strict=False
+            ):
                 b_swa.detach().copy_(b_model.detach().to(b_swa.device))
         self.n_averaged += 1
 
@@ -313,7 +314,7 @@ class AveragedModel(Module):
 def update_bn(
     loader: Iterable[Any],
     model: Module,
-    device: Optional[Union[int, torch.device]] = None,
+    device: int | torch.device | None = None,
 ):
     r"""Update BatchNorm running_mean, running_var buffers in the model.
 
@@ -352,7 +353,7 @@ def update_bn(
 
     was_training = model.training
     model.train()
-    for module in momenta.keys():
+    for module in momenta:
         module.momentum = None
 
     for input in loader:
@@ -363,7 +364,7 @@ def update_bn(
 
         model(input)
 
-    for bn_module in momenta.keys():
+    for bn_module in momenta:
         bn_module.momentum = momenta[bn_module]
     model.train(was_training)
 
@@ -421,14 +422,14 @@ class SWALR(LRScheduler):
         last_epoch=-1,
     ):  # noqa: D107
         swa_lrs = _format_param("swa_lr", optimizer, swa_lr)
-        for swa_lr, group in zip(swa_lrs, optimizer.param_groups):
+        for swa_lr, group in zip(swa_lrs, optimizer.param_groups, strict=False):
             group["swa_lr"] = swa_lr
         if anneal_strategy not in ["cos", "linear"]:
             raise ValueError(
                 "anneal_strategy must by one of 'cos' or 'linear', "
                 f"instead got {anneal_strategy}"
             )
-        elif anneal_strategy == "cos":
+        if anneal_strategy == "cos":
             self.anneal_func = self._cosine_anneal
         elif anneal_strategy == "linear":
             self.anneal_func = self._linear_anneal
@@ -477,5 +478,5 @@ class SWALR(LRScheduler):
         alpha = self.anneal_func(t)
         return [
             group["swa_lr"] * alpha + lr * (1 - alpha)
-            for group, lr in zip(self.optimizer.param_groups, prev_lrs)
+            for group, lr in zip(self.optimizer.param_groups, prev_lrs, strict=False)
         ]

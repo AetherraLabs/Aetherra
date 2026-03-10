@@ -23,8 +23,8 @@ import itertools
 import sys
 import types
 import uuid
-from collections.abc import Iterator, Sequence
-from typing import Any, Callable, cast, Optional, Union
+from collections.abc import Callable, Iterator, Sequence
+from typing import Any, Optional, cast
 
 from ..utils._backport_slots import dataclass_slots
 from .bytecode_analysis import (
@@ -70,16 +70,16 @@ class Instruction:
 
     opcode: int
     opname: str
-    arg: Optional[int]
+    arg: int | None
     argval: Any
-    offset: Optional[int] = None
-    starts_line: Optional[int] = None
+    offset: int | None = None
+    starts_line: int | None = None
     is_jump_target: bool = False
     positions: Optional["dis.Positions"] = None
     # extra fields to make modification easier:
     target: Optional["Instruction"] = None
-    exn_tab_entry: Optional[InstructionExnTabEntry] = None
-    argrepr: Optional[str] = None
+    exn_tab_entry: InstructionExnTabEntry | None = None
+    argrepr: str | None = None
 
     def __hash__(self) -> int:
         return id(self)
@@ -248,7 +248,7 @@ def create_rot_n(n) -> list[Instruction]:
 
 
 def add_push_null(
-    inst_or_insts: Union[Instruction, list[Instruction]],
+    inst_or_insts: Instruction | list[Instruction],
 ) -> list[Instruction]:
     """
     Appends or prepends a PUSH_NULL instruction to `inst_or_insts`,
@@ -306,7 +306,7 @@ def add_push_null(
 
 
 def add_push_null_call_function_ex(
-    inst_or_insts: Union[Instruction, list[Instruction]],
+    inst_or_insts: Instruction | list[Instruction],
 ) -> list[Instruction]:
     """Like add_push_null, but the low bit of LOAD_ATTR/LOAD_SUPER_ATTR
     is not set, due to an expected CALL_FUNCTION_EX instruction.
@@ -1218,7 +1218,7 @@ def debug_bytes(*args) -> str:
         " ".join(f"{x:03}" for x in arg)
         for arg in [index]
         + list(args)
-        + [[int(a != b) for a, b in zip(args[-1], args[-2])]]
+        + [[int(a != b) for a, b in zip(args[-1], args[-2], strict=False)]]
     ]
 
     return "bytes mismatch\n" + "\n".join(result)
@@ -1502,7 +1502,7 @@ def _clone_instructions(instructions):
         for i in instructions
     ]
 
-    remap = dict(zip(instructions, copied))
+    remap = dict(zip(instructions, copied, strict=False))
     # Handle `None` in the remapper so we don't need an extra `if`.
     remap[None] = None
 

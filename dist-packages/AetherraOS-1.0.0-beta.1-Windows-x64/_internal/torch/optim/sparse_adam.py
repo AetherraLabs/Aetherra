@@ -1,12 +1,10 @@
 # mypy: allow-untyped-defs
-from typing import Union
 
 import torch
 from torch import Tensor
 
 from . import _functional as F
-from .optimizer import _maximize_doc, _params_doc, _to_scalar, Optimizer, ParamsT
-
+from .optimizer import Optimizer, ParamsT, _maximize_doc, _params_doc, _to_scalar
 
 __all__ = ["SparseAdam"]
 
@@ -15,16 +13,16 @@ class SparseAdam(Optimizer):
     def __init__(
         self,
         params: ParamsT,
-        lr: Union[float, Tensor] = 1e-3,
+        lr: float | Tensor = 1e-3,
         betas: tuple[float, float] = (0.9, 0.999),
         eps: float = 1e-8,
         maximize: bool = False,
     ):
         if isinstance(lr, Tensor) and lr.numel() != 1:
             raise ValueError("Tensor lr must be 1-element")
-        if not 0.0 < lr:
+        if not lr > 0.0:
             raise ValueError(f"Invalid learning rate: {lr}")
-        if not 0.0 < eps:
+        if not eps > 0.0:
             raise ValueError(f"Invalid epsilon value: {eps}")
         if not 0.0 <= betas[0] < 1.0:
             raise ValueError(f"Invalid beta parameter at index 0: {betas[0]}")

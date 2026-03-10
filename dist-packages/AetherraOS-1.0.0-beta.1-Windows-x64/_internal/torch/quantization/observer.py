@@ -6,14 +6,24 @@ If you are adding a new entry/functionality, please, add it to the
 `torch/ao/quantization/observer.py`, while adding an import statement
 here.
 """
+
 from torch.ao.quantization.observer import (
+    ABC,
+    HistogramObserver,
+    MinMaxObserver,
+    MovingAverageMinMaxObserver,
+    MovingAveragePerChannelMinMaxObserver,
+    NoopObserver,
+    ObserverBase,
+    PerChannelMinMaxObserver,
+    PlaceholderObserver,
+    RecordingObserver,
     _is_activation_post_process,
     _is_per_channel_script_obs_instance,
     _ObserverBase,
     _PartialWrapper,
     _with_args,
     _with_callable_args,
-    ABC,
     default_debug_observer,
     default_dynamic_quant_observer,
     default_float_qparams_observer,
@@ -23,14 +33,5 @@ from torch.ao.quantization.observer import (
     default_placeholder_observer,
     default_weight_observer,
     get_observer_state_dict,
-    HistogramObserver,
     load_observer_state_dict,
-    MinMaxObserver,
-    MovingAverageMinMaxObserver,
-    MovingAveragePerChannelMinMaxObserver,
-    NoopObserver,
-    ObserverBase,
-    PerChannelMinMaxObserver,
-    PlaceholderObserver,
-    RecordingObserver,
 )

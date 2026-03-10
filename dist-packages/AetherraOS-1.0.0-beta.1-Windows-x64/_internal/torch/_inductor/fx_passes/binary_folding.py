@@ -9,7 +9,6 @@ from .. import config
 from ..pattern_matcher import Arg, CallFunction, KeywordArg
 from .freezing_patterns import register_binary_folding_pattern
 
-
 aten = torch.ops.aten
 prims = torch.ops.prims
 
@@ -297,7 +296,7 @@ def binary_folding_init():
             has_reshape = False
         if computation_node.target == aten.convolution.default:
             return _check_conv_and_broadcast_op(computation_node, other)
-        elif computation_node.target in [aten.addmm.default, aten.mm.default]:
+        if computation_node.target in [aten.addmm.default, aten.mm.default]:
             return (
                 config.enable_linear_binary_folding
                 and _check_linear_and_broadcast_op(computation_node, other, has_reshape)
@@ -423,39 +422,37 @@ def binary_folding_init():
                 aten.addmm.default,
                 (new_bias_node, input_node, weight_node),
             )
-        else:
-            assert binary_node.target in [aten.mul.Tensor, aten.div.Tensor]
-            weight_broadcast_shape = [1, weight_meta_value.size(1)]
-            other_reshape1 = resize_scalar_or_tensor_to_shape(
+        assert binary_node.target in [aten.mul.Tensor, aten.div.Tensor]
+        weight_broadcast_shape = [1, weight_meta_value.size(1)]
+        other_reshape1 = resize_scalar_or_tensor_to_shape(
+            graph,
+            other,
+            tuple(weight_broadcast_shape),
+            weight_meta_value,
+        )
+        new_weight_node = graph.create_node(
+            "call_function", binary_node.target, (weight_node, other_reshape1)
+        )
+        new_weight_node.meta.update(weight_node.meta)
+        if bias_node is not None:
+            other_reshape = resize_scalar_or_tensor_to_shape(
                 graph,
                 other,
-                tuple(weight_broadcast_shape),
+                (weight_meta_value.size(1),),
                 weight_meta_value,
             )
-            new_weight_node = graph.create_node(
-                "call_function", binary_node.target, (weight_node, other_reshape1)
+            new_bias_node = graph.create_node(
+                "call_function", binary_node.target, (bias_node, other_reshape)
             )
-            new_weight_node.meta.update(weight_node.meta)
-            if bias_node is not None:
-                other_reshape = resize_scalar_or_tensor_to_shape(
-                    graph,
-                    other,
-                    (weight_meta_value.size(1),),
-                    weight_meta_value,
-                )
-                new_bias_node = graph.create_node(
-                    "call_function", binary_node.target, (bias_node, other_reshape)
-                )
-                new_bias_node.meta.update(bias_node.meta)
-                return graph.create_node(
-                    "call_function",
-                    linear_node.target,
-                    (new_bias_node, input_node, new_weight_node),
-                )
-            else:
-                return graph.create_node(
-                    "call_function", linear_node.target, (input_node, new_weight_node)
-                )
+            new_bias_node.meta.update(bias_node.meta)
+            return graph.create_node(
+                "call_function",
+                linear_node.target,
+                (new_bias_node, input_node, new_weight_node),
+            )
+        return graph.create_node(
+            "call_function", linear_node.target, (input_node, new_weight_node)
+        )
 
     for _computation_call, binary_op in itertools.product(
         _computation_calls, _binary_ops

@@ -7,7 +7,6 @@ from torch._prims_common import is_expandable_to
 from torch.nested._internal.nested_int import NestedIntNode
 from torch.utils.weak import WeakTensorKeyDictionary
 
-
 _tensor_id_counter = 0
 _tensor_symint_registry = WeakTensorKeyDictionary()
 
@@ -99,7 +98,7 @@ class NestedTensor(torch.Tensor):
         _ragged_idx = kwargs.get("_ragged_idx", 1)
         B = offsets.shape[0] - 1
         if lengths is not None:
-            assert B == lengths.shape[0]
+            assert lengths.shape[0] == B
 
         # subtract 1 to convert to values dim space
         r = _ragged_idx - 1

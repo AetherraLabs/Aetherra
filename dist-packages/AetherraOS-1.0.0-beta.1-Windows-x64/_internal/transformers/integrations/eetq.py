@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2024 NetEase, Inc. and the HuggingFace Inc. team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from ..utils import is_accelerate_available, is_eetq_available, logging
-
 
 if is_eetq_available():
     import eetq
@@ -48,13 +46,17 @@ def _replace_with_eetq_linear(
             # Check if the current key is not in the `modules_to_not_convert`
             current_key_name_str = ".".join(current_key_name)
             if not any(
-                (key + "." in current_key_name_str) or (key == current_key_name_str) for key in modules_to_not_convert
+                (key + "." in current_key_name_str) or (key == current_key_name_str)
+                for key in modules_to_not_convert
             ):
                 with init_empty_weights():
                     in_features = module.in_features
                     out_features = module.out_features
                     model._modules[name] = eetq.EetqLinear(
-                        in_features, out_features, module.bias is not None, module.weight.device
+                        in_features,
+                        out_features,
+                        module.bias is not None,
+                        module.weight.device,
                     )
                     if pre_quantized:
                         model._modules[name].register_scale(module.weight.device)
@@ -77,7 +79,11 @@ def _replace_with_eetq_linear(
 
 
 def replace_with_eetq_linear(
-    model, modules_to_not_convert=None, current_key_name=None, quantization_config=None, pre_quantized=False
+    model,
+    modules_to_not_convert=None,
+    current_key_name=None,
+    quantization_config=None,
+    pre_quantized=False,
 ):
     """
     A helper function to replace all `torch.nn.Linear` modules by `eetq.EetqLinear` modules from the `eetq`
@@ -102,13 +108,19 @@ def replace_with_eetq_linear(
             `disk`).
     """
 
-    modules_to_not_convert = ["lm_head"] if modules_to_not_convert is None else modules_to_not_convert
+    modules_to_not_convert = (
+        ["lm_head"] if modules_to_not_convert is None else modules_to_not_convert
+    )
 
     if quantization_config.modules_to_not_convert is not None:
         modules_to_not_convert.extend(quantization_config.modules_to_not_convert)
     modules_to_not_convert = list(set(modules_to_not_convert))
     model, has_been_replaced = _replace_with_eetq_linear(
-        model, modules_to_not_convert, current_key_name, quantization_config, pre_quantized=pre_quantized
+        model,
+        modules_to_not_convert,
+        current_key_name,
+        quantization_config,
+        pre_quantized=pre_quantized,
     )
 
     if not has_been_replaced:

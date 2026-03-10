@@ -5,11 +5,11 @@ import io
 import itertools
 import os
 import warnings
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from contextlib import contextmanager
 from functools import wraps
 from pstats import Stats
-from typing import Any, Callable, cast, Optional, TypeVar, Union
+from typing import Any, TypeVar, cast
 
 import torch
 import torch.distributed as dist
@@ -17,13 +17,12 @@ from torch.distributed._shard.sharded_tensor import ShardedTensor
 from torch.distributed._shard.sharded_tensor.shard import Shard
 
 from .api import (
+    WRAPPED_EXCEPTION,
+    CheckpointException,
     _is_wrapped_exception,
     _wrap_exception,
-    CheckpointException,
-    WRAPPED_EXCEPTION,
 )
-from .metadata import MetadataIndex, STATE_DICT_TYPE
-
+from .metadata import STATE_DICT_TYPE, MetadataIndex
 
 __all__ = ["find_tensor_shard", "find_state_dict_object"]
 
@@ -32,7 +31,7 @@ R = TypeVar("R")
 
 
 def _get_failure_dict(
-    results: list[Union[T, WRAPPED_EXCEPTION]],
+    results: list[T | WRAPPED_EXCEPTION],
 ) -> dict[int, WRAPPED_EXCEPTION]:
     return cast(
         dict[int, WRAPPED_EXCEPTION],
@@ -41,7 +40,7 @@ def _get_failure_dict(
 
 
 def _all_gather_keys(
-    local_dict: dict[str, Any], group: Optional[dist.ProcessGroup] = None
+    local_dict: dict[str, Any], group: dist.ProcessGroup | None = None
 ) -> set[str]:
     """Gathers all keys, and returns them sorted."""
     keys = list(local_dict.keys())
@@ -52,7 +51,7 @@ def _all_gather_keys(
 
 
 def _assert_same_keys(
-    state_dict: dict[str, Any], process_group: Optional[dist.ProcessGroup] = None
+    state_dict: dict[str, Any], process_group: dist.ProcessGroup | None = None
 ) -> None:
     """
     Asserts that all ranks have the same keys in their state dict.
@@ -84,7 +83,7 @@ class _DistWrapper:
 
     def __init__(
         self,
-        group: Optional[dist.ProcessGroup],
+        group: dist.ProcessGroup | None,
         use_dist: bool,
         coordinator_rank: int,
     ):
@@ -112,7 +111,7 @@ class _DistWrapper:
             return dist.get_world_size(self.group)
         return 1
 
-    def broadcast_object(self, object: Optional[T]) -> T:
+    def broadcast_object(self, object: T | None) -> T:
         """Implement functionality similar to c10d::broadcast_object_list but without distributed enabled."""
         object_list = [object]
         if self.use_dist:
@@ -123,7 +122,7 @@ class _DistWrapper:
             )
         return cast(T, object_list[0])
 
-    def gather_object(self, object: T) -> Optional[list[T]]:
+    def gather_object(self, object: T) -> list[T] | None:
         """Implement functionality similar to c10d::gather_object but without distributed enabled."""
         if self.use_dist:
             gather_objs = (
@@ -155,7 +154,7 @@ class _DistWrapper:
             gather_objs = [object]
         return gather_objs
 
-    def scatter_object(self, object_list: Optional[list[T]]) -> T:
+    def scatter_object(self, object_list: list[T] | None) -> T:
         """Implement functionality similar to c10d::scatter_object but without distributed enabled."""
         if self.use_dist:
             gather_result = cast(list[T], [None])
@@ -187,14 +186,14 @@ class _DistWrapper:
             Call ``reduce_fun`` on all those values
             Scatter to each rank part of the result.
         """
-        local_data: Union[WRAPPED_EXCEPTION, T]
+        local_data: WRAPPED_EXCEPTION | T
         try:
             local_data = map_fun()
         except BaseException as e:
             local_data = _wrap_exception(e)
 
         all_data = self.gather_object(local_data)
-        all_results: Optional[list[Union[R, CheckpointException]]] = None
+        all_results: list[R | CheckpointException] | None = None
         if self.is_coordinator:
             assert all_data is not None
             node_failures = _get_failure_dict(all_data)
@@ -203,7 +202,7 @@ class _DistWrapper:
                 try:
                     # N.B. why can't mypy cast List[R] to List[Union[R, WRAPPED_EXCEPTION]]?
                     all_results = cast(
-                        list[Union[R, CheckpointException]],
+                        list[R | CheckpointException],
                         reduce_fun(cast(list[T], all_data)),
                     )
                 except BaseException as e:
@@ -234,14 +233,14 @@ class _DistWrapper:
             Call ``reduce_fun`` on all those values
             Broadcast the reduced value to all ranks.
         """
-        local_data: Union[T, WRAPPED_EXCEPTION]
+        local_data: T | WRAPPED_EXCEPTION
         try:
             local_data = map_fun()
         except BaseException as e:
             local_data = _wrap_exception(e)
 
         all_data = self.gather_object(local_data)
-        result: Optional[Union[R, CheckpointException]] = None
+        result: R | CheckpointException | None = None
         if self.is_coordinator:
             assert all_data is not None
             node_failures = _get_failure_dict(all_data)
@@ -271,7 +270,7 @@ class _DistWrapper:
             Run ``map_cp`` on all ranks
             all_gather the values to all ranks
         """
-        result: Union[T, WRAPPED_EXCEPTION]
+        result: T | WRAPPED_EXCEPTION
         try:
             result = map_fun()
         except BaseException as e:
@@ -296,7 +295,7 @@ class _DistWrapper:
             Run ``map_cp`` on rank 0
             broadcast the value
         """
-        result: Optional[Union[T, CheckpointException]] = None
+        result: T | CheckpointException | None = None
         if self.is_coordinator:
             try:
                 result = map_fun()
@@ -362,7 +361,7 @@ def find_state_dict_object(state_dict: STATE_DICT_TYPE, index: MetadataIndex) ->
 
     if isinstance(obj, torch.Tensor):
         return find_tensor_shard(obj, index)
-    elif index.offset is not None:
+    if index.offset is not None:
         raise ValueError(
             f"FQN: '{index.fqn}' is not a ShardedTensor, can't find by offset: '{index.offset}'"
         )
@@ -370,11 +369,11 @@ def find_state_dict_object(state_dict: STATE_DICT_TYPE, index: MetadataIndex) ->
 
 
 def _element_wise_add(a: Sequence[int], b: Sequence[int]) -> list[int]:
-    return [i_a + i_b for i_a, i_b in zip(a, b)]
+    return [i_a + i_b for i_a, i_b in zip(a, b, strict=False)]
 
 
 def _element_wise_sub(a: Sequence[int], b: Sequence[int]) -> list[int]:
-    return [i_a - i_b for i_a, i_b in zip(a, b)]
+    return [i_a - i_b for i_a, i_b in zip(a, b, strict=False)]
 
 
 class _ReaderView(io.IOBase):
@@ -471,7 +470,6 @@ def _api_bc_check(func):
             else:
                 raise RuntimeError(f"Unexpected kwonlyargs = {kwonlyargs}")
             return func(args[0], **kwargs)
-        else:
-            return func(*args, **kwargs)
+        return func(*args, **kwargs)
 
     return inner_func

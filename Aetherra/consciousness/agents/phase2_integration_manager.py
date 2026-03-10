@@ -145,8 +145,7 @@ class Phase2IntegrationManager:
 
                 # Check if agent matches priority keywords
                 is_priority = any(
-                    keyword in agent_id or keyword in agent_name
-                    for keyword in priority_keywords
+                    keyword in agent_id or keyword in agent_name for keyword in priority_keywords
                 )
 
                 if is_priority:
@@ -190,9 +189,7 @@ class Phase2IntegrationManager:
                             "priority": True,
                         }
                     )
-                    logger.warning(
-                        f"⚠️ Failed to integrate {agent_id}: {result.error_message}"
-                    )
+                    logger.warning(f"⚠️ Failed to integrate {agent_id}: {result.error_message}")
 
                 # Brief pause between integrations
                 await asyncio.sleep(0.1)
@@ -220,10 +217,7 @@ class Phase2IntegrationManager:
         for category_agents in discovered.values():
             for agent in category_agents:
                 agent_id = agent.get("id")
-                if (
-                    agent_id
-                    and agent_id not in self.integration_progress["priority_agents"]
-                ):
+                if agent_id and agent_id not in self.integration_progress["priority_agents"]:
                     all_agents.append(agent_id)
 
         # Integrate up to 20 additional agents
@@ -264,11 +258,7 @@ class Phase2IntegrationManager:
 
         # Calculate totals
         priority_integrated = len(
-            [
-                i
-                for i in self.integration_progress["successful_integrations"]
-                if i["priority"]
-            ]
+            [i for i in self.integration_progress["successful_integrations"] if i["priority"]]
         )
         total_integrated = priority_integrated + remaining_count
 
@@ -314,9 +304,7 @@ class Phase2IntegrationManager:
                 ),
             },
             "capability_distribution": capability_counts,
-            "successful_integrations": self.integration_progress[
-                "successful_integrations"
-            ],
+            "successful_integrations": self.integration_progress["successful_integrations"],
             "failed_integrations": self.integration_progress["failed_integrations"],
         }
 
@@ -388,9 +376,7 @@ async def run_phase_2_integration():
 
         if summary["by_capability"]:
             print("\n🎯 Top Capabilities:")
-            sorted_caps = sorted(
-                summary["by_capability"].items(), key=lambda x: x[1], reverse=True
-            )
+            sorted_caps = sorted(summary["by_capability"].items(), key=lambda x: x[1], reverse=True)
             for cap, count in sorted_caps[:5]:
                 print(f"    {cap}: {count} agents")
 
@@ -402,7 +388,5 @@ async def run_phase_2_integration():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-    )
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     asyncio.run(run_phase_2_integration())

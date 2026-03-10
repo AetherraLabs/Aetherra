@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2024 The HuggingFace Inc. team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +14,7 @@
 
 import enum
 from collections.abc import Iterable  # pylint: disable=g-importing-member
-from typing import Dict, List, Optional, Union
+from typing import Union
 
 from ..generation import GenerationConfig
 from ..processing_utils import ProcessingKwargs, Unpack
@@ -27,7 +26,6 @@ from ..utils import (
     requires_backends,
 )
 from .base import Pipeline, build_pipeline_init_args
-
 
 if is_vision_available():
     from PIL import Image
@@ -56,18 +54,23 @@ class Chat:
     actually a batch of samples rather than messages in the same conversation."""
 
     def __init__(
-        self, messages: Dict, images: Optional[Union[str, List[str], "Image.Image", List["Image.Image"]]] = None
+        self,
+        messages: dict,
+        images: Union[str, list[str], "Image.Image", list["Image.Image"]] | None = None,
     ):
         for message in messages:
             if not ("role" in message and "content" in message):
-                raise ValueError("When passing chat dicts as input, each dict must have a 'role' and 'content' key.")
+                raise ValueError(
+                    "When passing chat dicts as input, each dict must have a 'role' and 'content' key."
+                )
         messages = add_images_to_messages(messages, images)
 
         self.messages = messages
 
 
 def add_images_to_messages(
-    messages: dict, images: Optional[Union[str, List[str], "Image.Image", List["Image.Image"]]]
+    messages: dict,
+    images: Union[str, list[str], "Image.Image", list["Image.Image"]] | None,
 ):
     """
     Retrieve and combine images from the chat and the images passed as input.
@@ -83,7 +86,9 @@ def add_images_to_messages(
                 continue
             content_type = content.get("type")
             if content_type == "image":
-                if not any(key in content for key in ["image", "url", "path", "base64"]):
+                if not any(
+                    key in content for key in ["image", "url", "path", "base64"]
+                ):
                     if idx_images < len(images):
                         # Insert the image passed as argument in the chat message
                         content["image"] = images[idx_images]
@@ -94,7 +99,10 @@ def add_images_to_messages(
                         )
             # Add support for OpenAI/TGI chat format
             elif content_type == "image_url":
-                if isinstance(content.get("image_url"), dict) and "url" in content["image_url"]:
+                if (
+                    isinstance(content.get("image_url"), dict)
+                    and "url" in content["image_url"]
+                ):
                     # Rewrite content to be in the Transformers chat format
                     content["type"] = "image"
                     content["image"] = content["image_url"]["url"]
@@ -231,8 +239,12 @@ class ImageTextToTextPipeline(Pipeline):
 
         if return_full_text is not None and return_type is None:
             if return_tensors is not None:
-                raise ValueError("`return_full_text` is mutually exclusive with `return_tensors`")
-            return_type = ReturnType.FULL_TEXT if return_full_text else ReturnType.NEW_TEXT
+                raise ValueError(
+                    "`return_full_text` is mutually exclusive with `return_tensors`"
+                )
+            return_type = (
+                ReturnType.FULL_TEXT if return_full_text else ReturnType.NEW_TEXT
+            )
         if return_tensors is not None and return_type is None:
             return_type = ReturnType.TENSORS
         if return_type is not None:
@@ -240,9 +252,13 @@ class ImageTextToTextPipeline(Pipeline):
         if continue_final_message is not None:
             postprocess_params["continue_final_message"] = continue_final_message
         if clean_up_tokenization_spaces is not None:
-            postprocess_params["clean_up_tokenization_spaces"] = clean_up_tokenization_spaces
+            postprocess_params["clean_up_tokenization_spaces"] = (
+                clean_up_tokenization_spaces
+            )
         if stop_sequence is not None:
-            stop_sequence_ids = self.processor.tokenizer.encode(stop_sequence, add_special_tokens=False)
+            stop_sequence_ids = self.processor.tokenizer.encode(
+                stop_sequence, add_special_tokens=False
+            )
             if len(stop_sequence_ids) > 1:
                 logger.warning_once(
                     "Stopping on a multiple token sequence is not yet supported on transformers. The first token of"
@@ -253,18 +269,17 @@ class ImageTextToTextPipeline(Pipeline):
 
     def __call__(
         self,
-        images: Optional[
-            Union[
-                str,
-                List[str],
-                List[List[str]],
-                "Image.Image",
-                List["Image.Image"],
-                List[List["Image.Image"]],
-                List[dict],
-            ]
-        ] = None,
-        text: Optional[Union[str, List[str], List[dict]]] = None,
+        images: Union[
+            str,
+            list[str],
+            list[list[str]],
+            "Image.Image",
+            list["Image.Image"],
+            list[list["Image.Image"]],
+            list[dict],
+        ]
+        | None = None,
+        text: str | list[str] | list[dict] | None = None,
         **kwargs,
     ):
         """
@@ -315,29 +330,31 @@ class ImageTextToTextPipeline(Pipeline):
             raise ValueError("You must at least provide either text or images.")
 
         def _is_chat(arg):
-            return isinstance(arg, (list, tuple, KeyDataset)) and isinstance(arg[0], (list, tuple, dict))
+            return isinstance(arg, (list, tuple, KeyDataset)) and isinstance(
+                arg[0], (list, tuple, dict)
+            )
 
         if _is_chat(text):
             # We have one or more prompts in list-of-dicts format, so this is chat mode
             if isinstance(text[0], dict):
                 return super().__call__(Chat(text, images), **kwargs)
-            else:
-                if images is None:
-                    images = [None] * len(text)
-                chats = [Chat(chat, image) for chat, image in zip(text, images)]  # 🐈 🐈 🐈
-                return super().__call__(chats, **kwargs)
+            if images is None:
+                images = [None] * len(text)
+            chats = [
+                Chat(chat, image) for chat, image in zip(text, images, strict=False)
+            ]  # 🐈 🐈 🐈
+            return super().__call__(chats, **kwargs)
 
         # Same as above, but the `images` argument contains the chat. This can happen e.g. is the user only passes a
         # chat as a positional argument.
-        elif text is None and _is_chat(images):
+        if text is None and _is_chat(images):
             # We have one or more prompts in list-of-dicts format, so this is chat mode
             if isinstance(images[0], dict):
                 return super().__call__(Chat(images), **kwargs)
-            else:
-                chats = [Chat(image) for image in images]  # 🐈 🐈 🐈
-                return super().__call__(chats, **kwargs)
+            chats = [Chat(image) for image in images]  # 🐈 🐈 🐈
+            return super().__call__(chats, **kwargs)
 
-        elif images is not None and text is None and not valid_images(images):
+        if images is not None and text is None and not valid_images(images):
             """
             Supports the following format
             - {"image": image, "text": text}
@@ -363,7 +380,13 @@ class ImageTextToTextPipeline(Pipeline):
 
         return super().__call__({"images": images, "text": text}, **kwargs)
 
-    def preprocess(self, inputs=None, timeout=None, continue_final_message=None, **processing_kwargs):
+    def preprocess(
+        self,
+        inputs=None,
+        timeout=None,
+        continue_final_message=None,
+        **processing_kwargs,
+    ):
         if isinstance(inputs, Chat):
             # If the user passes a chat that ends in an assistant message, we treat it as a prefill by default
             # because very few models support multiple separate, consecutive assistant messages
@@ -392,9 +415,9 @@ class ImageTextToTextPipeline(Pipeline):
         # if batched text inputs, we set padding to True unless specified otherwise
         if isinstance(text, (list, tuple)) and len(text) > 1:
             processing_kwargs.setdefault("padding", True)
-        model_inputs = self.processor(images=images, text=text, return_tensors=self.framework, **processing_kwargs).to(
-            dtype=self.torch_dtype
-        )
+        model_inputs = self.processor(
+            images=images, text=text, return_tensors=self.framework, **processing_kwargs
+        ).to(dtype=self.torch_dtype)
 
         model_inputs["text"] = inputs_text
 
@@ -404,54 +427,81 @@ class ImageTextToTextPipeline(Pipeline):
         generate_kwargs = {} if generate_kwargs is None else generate_kwargs
         prompt_text = model_inputs.pop("text")
         input_ids = (
-            model_inputs["input_ids"] if "input_ids" in model_inputs else model_inputs["decoder_input_ids"]
+            model_inputs["input_ids"]
+            if "input_ids" in model_inputs
+            else model_inputs["decoder_input_ids"]
         )  # for decoder-only models
         generated_sequence = self.model.generate(**model_inputs, **generate_kwargs)
 
-        return {"generated_sequence": generated_sequence, "prompt_text": prompt_text, "input_ids": input_ids}
+        return {
+            "generated_sequence": generated_sequence,
+            "prompt_text": prompt_text,
+            "input_ids": input_ids,
+        }
 
     def postprocess(
-        self, model_outputs, return_type=ReturnType.FULL_TEXT, continue_final_message=None, **postprocess_kwargs
+        self,
+        model_outputs,
+        return_type=ReturnType.FULL_TEXT,
+        continue_final_message=None,
+        **postprocess_kwargs,
     ):
         input_texts = model_outputs["prompt_text"]
-        input_texts = [input_texts] if isinstance(input_texts, (str, Chat)) else input_texts
+        input_texts = (
+            [input_texts] if isinstance(input_texts, (str, Chat)) else input_texts
+        )
         generated_sequence = model_outputs["generated_sequence"]
         input_ids = model_outputs["input_ids"]
         if return_type == ReturnType.TENSORS:
             return [
-                {"input_text": input_texts[i], "generated_token_ids": generated_sequence[i]}
+                {
+                    "input_text": input_texts[i],
+                    "generated_token_ids": generated_sequence[i],
+                }
                 for i in range(len(input_texts))
             ]
 
         # Decode inputs and outputs the same way to remove input text from generated text if present
-        generated_texts = self.processor.post_process_image_text_to_text(generated_sequence, **postprocess_kwargs)
-        decoded_inputs = self.processor.post_process_image_text_to_text(input_ids, **postprocess_kwargs)
+        generated_texts = self.processor.post_process_image_text_to_text(
+            generated_sequence, **postprocess_kwargs
+        )
+        decoded_inputs = self.processor.post_process_image_text_to_text(
+            input_ids, **postprocess_kwargs
+        )
 
         # Force consistent behavior for including the input text in the output
         if return_type in {ReturnType.NEW_TEXT, ReturnType.FULL_TEXT}:
             # Remove the input text from the generated text if the generated text starts with the input text
             # (accounting for the possibility of a space between the input and generated text)
             new_generated_texts = []
-            for text_generated, decoded_input in zip(generated_texts, decoded_inputs):
+            for text_generated, decoded_input in zip(
+                generated_texts, decoded_inputs, strict=False
+            ):
                 # There can be added characters before the input text, so we need to find the beginning of the input text in the generated text
                 index_input_text = text_generated.find(decoded_input)
                 # Limit the search to 2 residual characters, like spaces or new lines, to avoid removing a large part of the answer
                 if 0 <= index_input_text <= 2:
                     # If the input text is found, we remove it
-                    new_generated_texts.append(text_generated[index_input_text + len(decoded_input) :])
+                    new_generated_texts.append(
+                        text_generated[index_input_text + len(decoded_input) :]
+                    )
                 else:
                     new_generated_texts.append(text_generated)
             generated_texts = new_generated_texts
         if return_type == ReturnType.FULL_TEXT:
             full_texts = []
-            for prompt_text, generated_text in zip(input_texts, generated_texts):
+            for prompt_text, generated_text in zip(
+                input_texts, generated_texts, strict=False
+            ):
                 if isinstance(prompt_text, str):
                     generated_text = prompt_text + generated_text
                 elif isinstance(prompt_text, Chat):
                     if continue_final_message is None:
                         # If the user passes a chat ending in an assistant message, we treat it as a prefill by
                         # default because very few models support multiple separate, consecutive assistant messages
-                        continue_final_message = prompt_text.messages[-1]["role"] == "assistant"
+                        continue_final_message = (
+                            prompt_text.messages[-1]["role"] == "assistant"
+                        )
                     if continue_final_message:
                         # With assistant prefill, concat onto the end of the last message
                         new_text = dict(prompt_text.messages[-1]["content"][-1].items())
@@ -459,7 +509,8 @@ class ImageTextToTextPipeline(Pipeline):
                         generated_text = list(prompt_text.messages)[:-1] + [
                             {
                                 "role": prompt_text.messages[-1]["role"],
-                                "content": prompt_text.messages[-1]["content"][:-1] + [new_text],
+                                "content": prompt_text.messages[-1]["content"][:-1]
+                                + [new_text],
                             }
                         ]
                     else:
@@ -472,10 +523,14 @@ class ImageTextToTextPipeline(Pipeline):
 
         records = [
             {
-                "input_text": input_text.messages if isinstance(input_text, Chat) else input_text,
+                "input_text": input_text.messages
+                if isinstance(input_text, Chat)
+                else input_text,
                 "generated_text": generated_text,
             }
-            for input_text, generated_text in zip(input_texts, generated_texts)
+            for input_text, generated_text in zip(
+                input_texts, generated_texts, strict=False
+            )
         ]
 
         return records

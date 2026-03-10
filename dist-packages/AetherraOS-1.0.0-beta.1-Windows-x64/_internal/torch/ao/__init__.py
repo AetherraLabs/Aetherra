@@ -3,14 +3,19 @@
 
 from typing import TYPE_CHECKING as _TYPE_CHECKING
 
-
 if _TYPE_CHECKING:
     from types import ModuleType
 
     from torch.ao import (  # noqa: TC004
         nn as nn,
+    )
+    from torch.ao import (
         ns as ns,
+    )
+    from torch.ao import (
         pruning as pruning,
+    )
+    from torch.ao import (
         quantization as quantization,
     )
 

@@ -109,8 +109,7 @@ def edge(a, b, tie_breaker=hash):
     if supercedes(a, b):
         if supercedes(b, a):
             return tie_breaker(a) > tie_breaker(b)
-        else:
-            return True
+        return True
     return False
 
 

@@ -62,9 +62,7 @@ async def launch_quantum_dashboard(port: int = 8080, mode: str = "web"):
 
 def main():
     """Main launcher function"""
-    parser = argparse.ArgumentParser(
-        description="Launch Aetherra Quantum Memory Dashboard"
-    )
+    parser = argparse.ArgumentParser(description="Launch Aetherra Quantum Memory Dashboard")
     parser.add_argument(
         "--port", type=int, default=8080, help="Port for web dashboard (default: 8080)"
     )

@@ -6,7 +6,6 @@ import itertools
 from . import _funcs_impl, _reductions_impl
 from ._normalizations import normalizer
 
-
 # _funcs_impl.py contains functions which mimic NumPy's eponymous equivalents,
 # and consume/return PyTorch tensors/dtypes.
 # They are also type annotated.
@@ -65,8 +64,7 @@ class IndexExpression:
     def __getitem__(self, item):
         if self.maketuple and not isinstance(item, tuple):
             return (item,)
-        else:
-            return item
+        return item
 
 
 index_exp = IndexExpression(maketuple=True)

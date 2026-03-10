@@ -1,8 +1,8 @@
 import hashlib
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from functools import lru_cache
-from typing import Any, Callable, Optional, Union
-from typing_extensions import TypeAlias
+from typing import Any, TypeAlias
 
 import torch.fx.graph
 
@@ -46,7 +46,7 @@ class CustomGraphPass(ABC):
         """
 
     @abstractmethod
-    def uuid(self) -> Optional[Any]:
+    def uuid(self) -> Any | None:
         """
         Return an ID to uniquely identify your custom pass implementation. Return None
         to skip inductor code caching entirely.
@@ -78,16 +78,16 @@ class CustomGraphModulePass(ABC):
         """
 
     @abstractmethod
-    def uuid(self) -> Optional[Any]:
+    def uuid(self) -> Any | None:
         """
         Return an ID to uniquely identify your custom pass implementation. Return None
         to skip inductor code caching entirely.
         """
 
 
-CustomGraphPassType: TypeAlias = Optional[
-    Union[CustomGraphPass, Callable[[torch.fx.graph.Graph], None]]
-]
+CustomGraphPassType: TypeAlias = (
+    CustomGraphPass | Callable[[torch.fx.graph.Graph], None] | None
+)
 
 
 @lru_cache(1)

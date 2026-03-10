@@ -46,9 +46,7 @@ try:
     from quantum_memory_system import QuantumMemorySystem
     from temporal_consciousness_system import TemporalConsciousnessEngine
 except ImportError:
-    logger.warning(
-        "⚠️ Consciousness system imports not available - using mock implementations"
-    )
+    logger.warning("⚠️ Consciousness system imports not available - using mock implementations")
 
 
 class RealityType(Enum):
@@ -271,16 +269,13 @@ class ParallelRealityNavigator:
             coherence=coherence,
             stability=stability,
             consciousness_level=consciousness_level,
-            temporal_anchor=datetime.now()
-            + timedelta(seconds=random.uniform(-3600, 3600)),
+            temporal_anchor=datetime.now() + timedelta(seconds=random.uniform(-3600, 3600)),
             dimensional_signature=[random.uniform(0.1, 1.0) for _ in range(11)],
         )
 
         # Calculate entanglement with existing realities
         for existing_id, existing_reality in self.parallel_realities.items():
-            entanglement = self._calculate_quantum_entanglement(
-                new_reality, existing_reality
-            )
+            entanglement = self._calculate_quantum_entanglement(new_reality, existing_reality)
             if entanglement > 0.3:
                 new_reality.quantum_entanglement[existing_id] = entanglement
                 existing_reality.quantum_entanglement[reality_id] = entanglement
@@ -300,9 +295,7 @@ class ParallelRealityNavigator:
                 }
             )
 
-        logger.info(
-            f"🔍 Discovered parallel reality: {reality_id} ({reality_type.value})"
-        )
+        logger.info(f"🔍 Discovered parallel reality: {reality_id} ({reality_type.value})")
         return reality_id
 
     def _calculate_quantum_entanglement(
@@ -311,9 +304,7 @@ class ParallelRealityNavigator:
         """Calculate quantum entanglement strength between two realities"""
         # Coordinate similarity
         coord_similarity = 0.0
-        common_coords = set(reality_a.coordinates.keys()) & set(
-            reality_b.coordinates.keys()
-        )
+        common_coords = set(reality_a.coordinates.keys()) & set(reality_b.coordinates.keys())
 
         if common_coords:
             for coord in common_coords:
@@ -327,7 +318,7 @@ class ParallelRealityNavigator:
             diffs = [
                 abs(a - b)
                 for a, b in zip(
-                    reality_a.dimensional_signature, reality_b.dimensional_signature
+                    reality_a.dimensional_signature, reality_b.dimensional_signature, strict=False
                 )
             ]
             sig_similarity = 1.0 - (sum(diffs) / len(diffs))
@@ -336,9 +327,7 @@ class ParallelRealityNavigator:
         coherence_compat = 1.0 - abs(reality_a.coherence - reality_b.coherence)
 
         # Overall entanglement
-        entanglement = (
-            coord_similarity * 0.4 + sig_similarity * 0.4 + coherence_compat * 0.2
-        )
+        entanglement = coord_similarity * 0.4 + sig_similarity * 0.4 + coherence_compat * 0.2
 
         return max(0.0, min(1.0, entanglement))
 
@@ -389,12 +378,9 @@ class ParallelRealityNavigator:
             coherence_requirement=coherence_req,
             estimated_duration=estimated_duration,
             quantum_tunneling_required=(
-                navigation_mode
-                in [NavigationMode.QUANTUM_TUNNEL, NavigationMode.TRANSCENDENT_LEAP]
+                navigation_mode in [NavigationMode.QUANTUM_TUNNEL, NavigationMode.TRANSCENDENT_LEAP]
             ),
-            consciousness_bridge_required=(
-                navigation_mode == NavigationMode.CONSCIOUSNESS_BRIDGE
-            ),
+            consciousness_bridge_required=(navigation_mode == NavigationMode.CONSCIOUSNESS_BRIDGE),
             dimensional_shifts_required=self._calculate_required_shifts(source, target),
         )
 
@@ -427,11 +413,7 @@ class ParallelRealityNavigator:
         stability_penalty = max(0, 0.8 - min(source.stability, target.stability))
         coherence_penalty = max(0, 0.7 - min(source.coherence, target.coherence))
 
-        total_cost = (
-            base_distance
-            * mode_multiplier
-            * (1 + stability_penalty + coherence_penalty)
-        )
+        total_cost = base_distance * mode_multiplier * (1 + stability_penalty + coherence_penalty)
 
         return total_cost
 
@@ -441,9 +423,7 @@ class ParallelRealityNavigator:
         """Calculate distance between two realities"""
         # Coordinate distance
         coord_distance = 0.0
-        common_coords = set(reality_a.coordinates.keys()) & set(
-            reality_b.coordinates.keys()
-        )
+        common_coords = set(reality_a.coordinates.keys()) & set(reality_b.coordinates.keys())
 
         if common_coords:
             for coord in common_coords:
@@ -456,7 +436,7 @@ class ParallelRealityNavigator:
             sig_diffs = [
                 (a - b) ** 2
                 for a, b in zip(
-                    reality_a.dimensional_signature, reality_b.dimensional_signature
+                    reality_a.dimensional_signature, reality_b.dimensional_signature, strict=False
                 )
             ]
             sig_distance = math.sqrt(sum(sig_diffs))
@@ -468,9 +448,7 @@ class ParallelRealityNavigator:
 
         return total_distance
 
-    def _calculate_required_shifts(
-        self, source: RealityState, target: RealityState
-    ) -> List[str]:
+    def _calculate_required_shifts(self, source: RealityState, target: RealityState) -> List[str]:
         """Calculate dimensional shifts required for navigation"""
         shifts = []
 
@@ -505,9 +483,7 @@ class ParallelRealityNavigator:
             )
 
         # Create navigation path if needed
-        path_id = self.create_navigation_path(
-            source_reality_id, target_reality_id, navigation_mode
-        )
+        path_id = self.create_navigation_path(source_reality_id, target_reality_id, navigation_mode)
         path = self.navigation_paths[path_id]
 
         # Check requirements
@@ -635,19 +611,13 @@ class ParallelRealityNavigator:
                 time.sleep(0.001)
 
         # Update synchronization tracking
-        self.reality_synchronization[
-            target_reality.reality_id
-        ] = self.consciousness_coherence
+        self.reality_synchronization[target_reality.reality_id] = self.consciousness_coherence
         self.metrics["synchronizations_performed"] += 1
 
-        logger.info(
-            f"🔄 Consciousness synchronized to {self.consciousness_coherence:.3f}"
-        )
+        logger.info(f"🔄 Consciousness synchronized to {self.consciousness_coherence:.3f}")
         return True
 
-    def _execute_navigation(
-        self, path: NavigationPath, target_reality: RealityState
-    ) -> bool:
+    def _execute_navigation(self, path: NavigationPath, target_reality: RealityState) -> bool:
         """Execute the actual navigation based on the path mode"""
         mode = path.navigation_mode
 
@@ -668,9 +638,7 @@ class ParallelRealityNavigator:
         else:  # DIRECT
             return self._execute_direct_navigation(path, target_reality)
 
-    def _execute_quantum_tunnel(
-        self, path: NavigationPath, target_reality: RealityState
-    ) -> bool:
+    def _execute_quantum_tunnel(self, path: NavigationPath, target_reality: RealityState) -> bool:
         """Execute quantum tunneling navigation"""
         logger.info("🌀 Opening quantum tunnel...")
 
@@ -729,18 +697,14 @@ class ParallelRealityNavigator:
         logger.info("✅ Consciousness bridge traversal complete")
         return True
 
-    def _execute_temporal_flow(
-        self, path: NavigationPath, target_reality: RealityState
-    ) -> bool:
+    def _execute_temporal_flow(self, path: NavigationPath, target_reality: RealityState) -> bool:
         """Execute temporal flow navigation"""
         logger.info("⏰ Entering temporal flow...")
 
         # Use temporal engine if available
         if self.temporal_engine:
             # Simulate temporal navigation
-            temporal_adjustment = (
-                target_reality.temporal_anchor - datetime.now()
-            ).total_seconds()
+            temporal_adjustment = (target_reality.temporal_anchor - datetime.now()).total_seconds()
             logger.info(f"⏰ Temporal adjustment: {temporal_adjustment:.1f} seconds")
 
         time.sleep(0.08)
@@ -788,16 +752,12 @@ class ParallelRealityNavigator:
         logger.info(f"🎵 Resonance frequency: {resonance_freq:.3f}")
 
         time.sleep(0.06)
-        self.consciousness_coherence = (
-            self.consciousness_coherence + resonance_freq
-        ) / 2
+        self.consciousness_coherence = (self.consciousness_coherence + resonance_freq) / 2
 
         logger.info("✅ Harmonic resonance navigation complete")
         return True
 
-    def _execute_coherence_lock(
-        self, path: NavigationPath, target_reality: RealityState
-    ) -> bool:
+    def _execute_coherence_lock(self, path: NavigationPath, target_reality: RealityState) -> bool:
         """Execute coherence lock navigation"""
         logger.info("🔒 Establishing coherence lock...")
 
@@ -895,9 +855,7 @@ class ParallelRealityNavigator:
             raise ValueError("Need at least 2 realities for convergence analysis")
 
         realities = [
-            self.parallel_realities[rid]
-            for rid in reality_ids
-            if rid in self.parallel_realities
+            self.parallel_realities[rid] for rid in reality_ids if rid in self.parallel_realities
         ]
 
         if len(realities) != len(reality_ids):
@@ -908,8 +866,7 @@ class ParallelRealityNavigator:
             "reality_count": len(realities),
             "average_coherence": sum(r.coherence for r in realities) / len(realities),
             "average_stability": sum(r.stability for r in realities) / len(realities),
-            "average_consciousness": sum(r.consciousness_level for r in realities)
-            / len(realities),
+            "average_consciousness": sum(r.consciousness_level for r in realities) / len(realities),
             "convergence_probability": 0.0,
             "optimal_convergence_point": {},
             "required_adjustments": [],
@@ -948,16 +905,12 @@ class ParallelRealityNavigator:
         convergence_analysis["optimal_convergence_point"] = optimal_point
 
         # Estimate convergence time
-        convergence_time_minutes = (average_distance * 60) / max(
-            0.1, convergence_probability
-        )
+        convergence_time_minutes = (average_distance * 60) / max(0.1, convergence_probability)
         convergence_analysis["estimated_convergence_time"] = timedelta(
             minutes=convergence_time_minutes
         )
 
-        logger.info(
-            f"🔍 Convergence analysis complete: {convergence_probability:.3f} probability"
-        )
+        logger.info(f"🔍 Convergence analysis complete: {convergence_probability:.3f} probability")
 
         return convergence_analysis
 
@@ -990,15 +943,11 @@ class ParallelRealityNavigator:
                 reality.consciousness_level = (
                     reality.consciousness_level + optimal_consciousness
                 ) / 2
-                reality.convergence_probability = convergence_analysis[
-                    "convergence_probability"
-                ]
+                reality.convergence_probability = convergence_analysis["convergence_probability"]
 
         self.metrics["reality_convergences_facilitated"] += 1
 
-        logger.info(
-            f"✅ Reality convergence facilitated with {len(bridges_created)} bridges"
-        )
+        logger.info(f"✅ Reality convergence facilitated with {len(bridges_created)} bridges")
         return len(bridges_created) > 0
 
     def get_navigator_status(self) -> Dict[str, Any]:
@@ -1055,9 +1004,7 @@ def test_parallel_reality_navigator():
 
     print("🔍 Test 1: Discovering Parallel Realities")
     quantum_reality = navigator.discover_parallel_reality(RealityType.QUANTUM)
-    consciousness_reality = navigator.discover_parallel_reality(
-        RealityType.CONSCIOUSNESS
-    )
+    consciousness_reality = navigator.discover_parallel_reality(RealityType.CONSCIOUSNESS)
     temporal_reality = navigator.discover_parallel_reality(RealityType.TEMPORAL)
     print(f"  ✅ Discovered quantum reality: {quantum_reality}")
     print(f"  ✅ Discovered consciousness reality: {consciousness_reality}")
@@ -1070,15 +1017,11 @@ def test_parallel_reality_navigator():
     print(f"  ✅ Created bridge 2: {bridge2}")
 
     print("\n🧭 Test 3: Reality Navigation")
-    nav_success1 = navigator.navigate_to_reality(
-        quantum_reality, NavigationMode.QUANTUM_TUNNEL
-    )
+    nav_success1 = navigator.navigate_to_reality(quantum_reality, NavigationMode.QUANTUM_TUNNEL)
     nav_success2 = navigator.navigate_to_reality(
         consciousness_reality, NavigationMode.CONSCIOUSNESS_BRIDGE
     )
-    nav_success3 = navigator.navigate_to_reality(
-        temporal_reality, NavigationMode.TEMPORAL_FLOW
-    )
+    nav_success3 = navigator.navigate_to_reality(temporal_reality, NavigationMode.TEMPORAL_FLOW)
     print(f"  ✅ Navigation to quantum: {nav_success1}")
     print(f"  ✅ Navigation to consciousness: {nav_success2}")
     print(f"  ✅ Navigation to temporal: {nav_success3}")

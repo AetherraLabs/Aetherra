@@ -1,5 +1,6 @@
 # mypy: allow-untyped-defs
-from typing import Any, Callable, Union
+from collections.abc import Callable
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -8,7 +9,6 @@ from torch.ao.quantization.fuser_method_mappings import _reverse2, _reverse3
 from torch.ao.quantization.utils import Pattern
 
 from .backend_config import BackendConfig, BackendPatternConfig, DTypeConfig
-
 
 __all__ = [
     "get_pattern_to_dtype_configs",
@@ -77,8 +77,8 @@ def get_root_module_to_quantized_reference_module(
 
 def get_fuser_method_mapping(
     backend_config: BackendConfig,
-) -> dict[Pattern, Union[nn.Sequential, Callable]]:
-    fuser_method_mapping: dict[Pattern, Union[nn.Sequential, Callable]] = {}
+) -> dict[Pattern, nn.Sequential | Callable]:
+    fuser_method_mapping: dict[Pattern, nn.Sequential | Callable] = {}
     for pattern, config in backend_config._pattern_complex_format_to_config.items():
         if config.fuser_method is not None:
             # Note: both the fuser method and the pattern are specified in forward order in the
@@ -149,19 +149,19 @@ def remove_boolean_dispatch_from_name(p) -> Any:
     """
     if p is F.fractional_max_pool2d:
         return "torch.nn.functional.fractional_max_pool2d"
-    elif p is F.fractional_max_pool3d:
+    if p is F.fractional_max_pool3d:
         return "torch.nn.functional.fractional_max_pool3d"
-    elif p is F.max_pool1d:
+    if p is F.max_pool1d:
         return "torch.nn.functional.max_pool1d"
-    elif p is F.max_pool2d:
+    if p is F.max_pool2d:
         return "torch.nn.functional.max_pool2d"
-    elif p is F.max_pool3d:
+    if p is F.max_pool3d:
         return "torch.nn.functional.max_pool3d"
-    elif p is F.adaptive_max_pool1d:
+    if p is F.adaptive_max_pool1d:
         return "torch.nn.functional.adaptive_max_pool1d"
-    elif p is F.adaptive_max_pool2d:
+    if p is F.adaptive_max_pool2d:
         return "torch.nn.functional.adaptive_max_pool2d"
-    elif p is F.adaptive_max_pool3d:
+    if p is F.adaptive_max_pool3d:
         return "torch.nn.functional.adaptive_max_pool3d"
     assert "boolean_dispatch" not in str(p), (
         f"{p} does not have a human readable representation in "
@@ -174,12 +174,11 @@ def pattern_to_human_readable(p) -> Any:
     if isinstance(p, tuple):
         # nested patterns, recurse
         return tuple(pattern_to_human_readable(inner_p) for inner_p in p)
-    elif isinstance(p, str):
+    if isinstance(p, str):
         # method names are already human readable
         return p
-    else:
-        p = remove_boolean_dispatch_from_name(p)
-        return p
+    p = remove_boolean_dispatch_from_name(p)
+    return p
 
 
 # TODO(future PR): move backend_config_dict to use dataclass and move this logic to
@@ -274,11 +273,10 @@ def _get_pattern_in_reversed_nested_tuple_format(
     if len(config.pattern) == 2:
         (a, b) = config.pattern
         return (b, a)
-    elif len(config.pattern) == 3:
+    if len(config.pattern) == 3:
         (a, b, c) = config.pattern
         return (c, (b, a))
-    else:
-        raise ValueError("Expected a tuple with 2 or 3 elements, got: ", config.pattern)
+    raise ValueError("Expected a tuple with 2 or 3 elements, got: ", config.pattern)
 
 
 def _get_fuser_method_in_reversed_nested_tuple_format(
@@ -308,7 +306,6 @@ def _get_fuser_method_in_reversed_nested_tuple_format(
     # Pattern is specified in the simple tuple format, need to convert
     if len(config.pattern) == 2:
         return _reverse2(config.fuser_method)
-    elif len(config.pattern) == 3:
+    if len(config.pattern) == 3:
         return _reverse3(config.fuser_method)
-    else:
-        raise ValueError("Expected a tuple with 2 or 3 elements, got: ", config.pattern)
+    raise ValueError("Expected a tuple with 2 or 3 elements, got: ", config.pattern)

@@ -150,9 +150,7 @@ class AgentRegistry:
         # Core registry data
         self.agents: Dict[str, AgentRegistration] = {}
         self.services: Dict[str, ServiceDefinition] = {}
-        self.capabilities_index: Dict[str, Set[str]] = defaultdict(
-            set
-        )  # capability -> agent_ids
+        self.capabilities_index: Dict[str, Set[str]] = defaultdict(set)  # capability -> agent_ids
         self.category_index: Dict[AgentCategory, Set[str]] = defaultdict(
             set
         )  # category -> agent_ids
@@ -295,8 +293,7 @@ class AgentRegistry:
                     success_rate = 0.0
                     if registration.total_requests_handled > 0:
                         success_rate = (
-                            registration.successful_requests
-                            / registration.total_requests_handled
+                            registration.successful_requests / registration.total_requests_handled
                         )
 
                     # Add to performance history
@@ -316,9 +313,9 @@ class AgentRegistry:
                     # Keep only recent history
                     max_history = self.config["max_performance_history"]
                     if len(self.performance_history[agent_id]) > max_history:
-                        self.performance_history[agent_id] = self.performance_history[
-                            agent_id
-                        ][-max_history:]
+                        self.performance_history[agent_id] = self.performance_history[agent_id][
+                            -max_history:
+                        ]
 
         except Exception as e:
             self.logger.error(f"Error updating performance analytics: {e}")
@@ -386,9 +383,7 @@ class AgentRegistry:
             # Rebuild from current agent relationships
             for agent_id, registration in self.agents.items():
                 if registration.status == RegistrationStatus.ACTIVE:
-                    self.collaboration_graph[
-                        agent_id
-                    ] = registration.collaborating_agents.copy()
+                    self.collaboration_graph[agent_id] = registration.collaborating_agents.copy()
 
         except Exception as e:
             self.logger.error(f"Error updating collaboration graph: {e}")
@@ -399,31 +394,18 @@ class AgentRegistry:
             stats = {
                 "total_agents": len(self.agents),
                 "active_agents": len(
-                    [
-                        a
-                        for a in self.agents.values()
-                        if a.status == RegistrationStatus.ACTIVE
-                    ]
+                    [a for a in self.agents.values() if a.status == RegistrationStatus.ACTIVE]
                 ),
                 "inactive_agents": len(
-                    [
-                        a
-                        for a in self.agents.values()
-                        if a.status == RegistrationStatus.INACTIVE
-                    ]
+                    [a for a in self.agents.values() if a.status == RegistrationStatus.INACTIVE]
                 ),
                 "archived_agents": len(
-                    [
-                        a
-                        for a in self.agents.values()
-                        if a.status == RegistrationStatus.ARCHIVED
-                    ]
+                    [a for a in self.agents.values() if a.status == RegistrationStatus.ARCHIVED]
                 ),
                 "total_services": len(self.services),
                 "unique_capabilities": len(self.capabilities_index),
                 "collaboration_connections": sum(
-                    len(connections)
-                    for connections in self.collaboration_graph.values()
+                    len(connections) for connections in self.collaboration_graph.values()
                 ),
                 "timestamp": datetime.now().isoformat(),
             }
@@ -483,9 +465,7 @@ class AgentRegistry:
                         "agent_id": registration.agent_id,
                         "success": success,
                         "status": registration.status.value,
-                        "message": "Registration successful"
-                        if success
-                        else "Registration failed",
+                        "message": "Registration successful" if success else "Registration failed",
                     },
                     timestamp=datetime.now(),
                     correlation_id=message.correlation_id,
@@ -505,9 +485,7 @@ class AgentRegistry:
             if agent_id in self.agents:
                 existing = self.agents[agent_id]
                 if existing.status == RegistrationStatus.ACTIVE:
-                    self.logger.warning(
-                        f"Agent {agent_id} already registered and active"
-                    )
+                    self.logger.warning(f"Agent {agent_id} already registered and active")
                     return False
                 else:
                     # Reactivating existing agent
@@ -565,9 +543,7 @@ class AgentRegistry:
         self.services[service_id] = service
         self.logger.debug(f"Registered service {service_id}")
 
-    async def _update_indices_for_agent(
-        self, agent_id: str, registration: AgentRegistration
-    ):
+    async def _update_indices_for_agent(self, agent_id: str, registration: AgentRegistration):
         """Update search indices for an agent"""
         # Remove from old indices first
         await self._remove_from_indices(agent_id, registration)
@@ -584,9 +560,7 @@ class AgentRegistry:
             # System index
             self.system_index[registration.system_origin].add(agent_id)
 
-    async def _remove_from_indices(
-        self, agent_id: str, registration: AgentRegistration
-    ):
+    async def _remove_from_indices(self, agent_id: str, registration: AgentRegistration):
         """Remove agent from all search indices"""
         # Remove from capabilities index
         for capability in registration.capabilities:
@@ -647,9 +621,7 @@ class AgentRegistry:
 
                     self.consciousness_bridge.send_message(response)
             else:
-                self.logger.warning(
-                    f"Attempted to unregister unknown agent: {agent_id}"
-                )
+                self.logger.warning(f"Attempted to unregister unknown agent: {agent_id}")
 
         except Exception as e:
             self.logger.error(f"Error handling agent unregistration: {e}")
@@ -662,15 +634,12 @@ class AgentRegistry:
             # Create query object
             query = AgentQuery(
                 capabilities=query_data.get("capabilities"),
-                categories=[
-                    AgentCategory(cat) for cat in query_data.get("categories", [])
-                ]
+                categories=[AgentCategory(cat) for cat in query_data.get("categories", [])]
                 if query_data.get("categories")
                 else None,
                 system_origins=query_data.get("system_origins"),
                 status_filter=[
-                    RegistrationStatus(status)
-                    for status in query_data.get("status_filter", [])
+                    RegistrationStatus(status) for status in query_data.get("status_filter", [])
                 ]
                 if query_data.get("status_filter")
                 else None,
@@ -678,9 +647,7 @@ class AgentRegistry:
                 min_uptime=query_data.get("min_uptime"),
                 max_response_time=query_data.get("max_response_time"),
                 provides_services=query_data.get("provides_services"),
-                available_for_collaboration=query_data.get(
-                    "available_for_collaboration", False
-                ),
+                available_for_collaboration=query_data.get("available_for_collaboration", False),
                 exclude_agents=query_data.get("exclude_agents"),
             )
 
@@ -727,9 +694,7 @@ class AgentRegistry:
             if query.capabilities:
                 capability_matches = set()
                 for capability in query.capabilities:
-                    capability_matches.update(
-                        self.capabilities_index.get(capability, set())
-                    )
+                    capability_matches.update(self.capabilities_index.get(capability, set()))
                 candidate_agents &= capability_matches
 
             # Filter by categories
@@ -755,23 +720,15 @@ class AgentRegistry:
                 registration = self.agents[agent_id]
 
                 # Status filter
-                if (
-                    query.status_filter
-                    and registration.status not in query.status_filter
-                ):
+                if query.status_filter and registration.status not in query.status_filter:
                     continue
 
                 # Tags filter
-                if query.tags and not any(
-                    tag in registration.tags for tag in query.tags
-                ):
+                if query.tags and not any(tag in registration.tags for tag in query.tags):
                     continue
 
                 # Uptime filter
-                if (
-                    query.min_uptime
-                    and registration.uptime_percentage < query.min_uptime
-                ):
+                if query.min_uptime and registration.uptime_percentage < query.min_uptime:
                     continue
 
                 # Response time filter
@@ -783,8 +740,7 @@ class AgentRegistry:
 
                 # Services filter
                 if query.provides_services and not any(
-                    service in registration.provides_services
-                    for service in query.provides_services
+                    service in registration.provides_services for service in query.provides_services
                 ):
                     continue
 
@@ -837,9 +793,7 @@ class AgentRegistry:
             "categories": sorted([cat.value for cat in query.categories])
             if query.categories
             else None,
-            "system_origins": sorted(query.system_origins)
-            if query.system_origins
-            else None,
+            "system_origins": sorted(query.system_origins) if query.system_origins else None,
             "status_filter": sorted([status.value for status in query.status_filter])
             if query.status_filter
             else None,
@@ -850,9 +804,7 @@ class AgentRegistry:
             if query.provides_services
             else None,
             "available_for_collaboration": query.available_for_collaboration,
-            "exclude_agents": sorted(query.exclude_agents)
-            if query.exclude_agents
-            else None,
+            "exclude_agents": sorted(query.exclude_agents) if query.exclude_agents else None,
         }
 
         # Convert to string and hash
@@ -973,15 +925,11 @@ class AgentRegistry:
                     registration.status = RegistrationStatus.ACTIVE
                     await self._update_indices_for_agent(agent_id, registration)
 
-                    await self._emit_registry_event(
-                        "agent_reactivated", {"agent_id": agent_id}
-                    )
+                    await self._emit_registry_event("agent_reactivated", {"agent_id": agent_id})
 
                 self.logger.debug(f"Received heartbeat from agent: {agent_id}")
             else:
-                self.logger.warning(
-                    f"Received heartbeat from unregistered agent: {agent_id}"
-                )
+                self.logger.warning(f"Received heartbeat from unregistered agent: {agent_id}")
 
         except Exception as e:
             self.logger.error(f"Error handling agent heartbeat: {e}")
@@ -1048,11 +996,7 @@ class AgentRegistry:
     ) -> Dict[str, AgentRegistration]:
         """Get all agents, optionally filtered by status"""
         if status_filter:
-            return {
-                aid: reg
-                for aid, reg in self.agents.items()
-                if reg.status == status_filter
-            }
+            return {aid: reg for aid, reg in self.agents.items() if reg.status == status_filter}
         return self.agents.copy()
 
     def get_agents_by_capability(self, capability: str) -> List[AgentRegistration]:
@@ -1060,9 +1004,7 @@ class AgentRegistry:
         agent_ids = self.capabilities_index.get(capability, set())
         return [self.agents[aid] for aid in agent_ids if aid in self.agents]
 
-    def get_agents_by_category(
-        self, category: AgentCategory
-    ) -> List[AgentRegistration]:
+    def get_agents_by_category(self, category: AgentCategory) -> List[AgentRegistration]:
         """Get all agents in a specific category"""
         agent_ids = self.category_index.get(category, set())
         return [self.agents[aid] for aid in agent_ids if aid in self.agents]
@@ -1070,9 +1012,7 @@ class AgentRegistry:
     def get_services_by_agent(self, agent_id: str) -> List[ServiceDefinition]:
         """Get all services provided by a specific agent"""
         return [
-            service
-            for service in self.services.values()
-            if service.provider_agent_id == agent_id
+            service for service in self.services.values() if service.provider_agent_id == agent_id
         ]
 
     def get_performance_history(
@@ -1093,25 +1033,13 @@ class AgentRegistry:
         return {
             "total_agents": len(self.agents),
             "active_agents": len(
-                [
-                    a
-                    for a in self.agents.values()
-                    if a.status == RegistrationStatus.ACTIVE
-                ]
+                [a for a in self.agents.values() if a.status == RegistrationStatus.ACTIVE]
             ),
             "inactive_agents": len(
-                [
-                    a
-                    for a in self.agents.values()
-                    if a.status == RegistrationStatus.INACTIVE
-                ]
+                [a for a in self.agents.values() if a.status == RegistrationStatus.INACTIVE]
             ),
             "archived_agents": len(
-                [
-                    a
-                    for a in self.agents.values()
-                    if a.status == RegistrationStatus.ARCHIVED
-                ]
+                [a for a in self.agents.values() if a.status == RegistrationStatus.ARCHIVED]
             ),
             "total_services": len(self.services),
             "unique_capabilities": len(self.capabilities_index),
@@ -1188,9 +1116,8 @@ if __name__ == "__main__":
             except ImportError:
                 import os
                 import sys
-                sys.path.append(
-                    os.path.join(os.path.dirname(__file__), "..", "core")
-                )
+
+                sys.path.append(os.path.join(os.path.dirname(__file__), "..", "core"))
                 from consciousness_bridge import (  # type: ignore
                     initialize_consciousness_bridge,
                 )

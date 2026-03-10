@@ -160,9 +160,7 @@ class HybridMemoryManager:
 
                 # Calculate time saved vs sync
                 if self.performance_metrics["avg_sync_time"] > 0:
-                    time_saved = (
-                        self.performance_metrics["avg_sync_time"] - execution_time
-                    )
+                    time_saved = self.performance_metrics["avg_sync_time"] - execution_time
                     self.performance_metrics["total_time_saved"] += max(0, time_saved)
 
             # Update optimization ratio
@@ -191,11 +189,7 @@ class HybridMemoryManager:
         start_time = time.time()
 
         # Try async optimization first if available and in async context
-        if (
-            self.enable_async_optimization
-            and self.async_manager
-            and self._is_async_context()
-        ):
+        if self.enable_async_optimization and self.async_manager and self._is_async_context():
             try:
                 # We're in async context, use async manager
                 result = asyncio.create_task(
@@ -244,22 +238,14 @@ class HybridMemoryManager:
             logger.error(f"Sync store failed: {e}")
             raise
 
-    def retrieve(
-        self, key: str, default: Any = None, update_access: bool = True
-    ) -> Any:
+    def retrieve(self, key: str, default: Any = None, update_access: bool = True) -> Any:
         """Sync retrieve with automatic async optimization when possible"""
         start_time = time.time()
 
         # Try async optimization first if available and in async context
-        if (
-            self.enable_async_optimization
-            and self.async_manager
-            and self._is_async_context()
-        ):
+        if self.enable_async_optimization and self.async_manager and self._is_async_context():
             try:
-                result = asyncio.create_task(
-                    self._async_retrieve(key, default, update_access)
-                )
+                result = asyncio.create_task(self._async_retrieve(key, default, update_access))
                 value = asyncio.get_event_loop().run_until_complete(result)
 
                 execution_time = time.time() - start_time
@@ -371,14 +357,10 @@ class HybridMemoryManager:
         execution_time = time.time() - start_time
         self._update_performance_metrics("async", execution_time)
 
-        logger.info(
-            f"⚡ Batch stored {len(entries)} entries in {execution_time * 1000:.1f}ms"
-        )
+        logger.info(f"⚡ Batch stored {len(entries)} entries in {execution_time * 1000:.1f}ms")
         return entry_ids
 
-    async def retrieve_batch_async(
-        self, keys: List[str], default: Any = None
-    ) -> List[Any]:
+    async def retrieve_batch_async(self, keys: List[str], default: Any = None) -> List[Any]:
         """Retrieve multiple entries efficiently using async concurrency"""
         await self._ensure_async_initialized()
 
@@ -401,9 +383,7 @@ class HybridMemoryManager:
         execution_time = time.time() - start_time
         self._update_performance_metrics("async", execution_time)
 
-        logger.info(
-            f"⚡ Batch retrieved {len(keys)} entries in {execution_time * 1000:.1f}ms"
-        )
+        logger.info(f"⚡ Batch retrieved {len(keys)} entries in {execution_time * 1000:.1f}ms")
         return final_results
 
     # ===== PERFORMANCE AND MONITORING =====
@@ -421,9 +401,7 @@ class HybridMemoryManager:
             # Add async manager stats if available
             if self.async_manager and self._async_initialized:
                 try:
-                    async_stats = asyncio.run(
-                        self.async_manager.get_performance_stats()
-                    )
+                    async_stats = asyncio.run(self.async_manager.get_performance_stats())
                     stats["async_manager"] = async_stats
                 except Exception as e:
                     stats["async_manager_error"] = str(e)
@@ -521,9 +499,7 @@ async def test_hybrid_memory_integration():
     sync_start = time.time()
 
     for i in range(20):
-        hybrid_manager.store(
-            key=f"sync_key_{i}", value=f"sync_value_{i}" * 50, memory_type="test"
-        )
+        hybrid_manager.store(key=f"sync_key_{i}", value=f"sync_value_{i}" * 50, memory_type="test")
 
     for i in range(20):
         value = hybrid_manager.retrieve(f"sync_key_{i}")
@@ -573,9 +549,7 @@ async def test_hybrid_memory_integration():
         # Async operations
         for i in range(50):
             tasks.append(
-                hybrid_manager.store_async(
-                    key=f"concurrent_async_{i}", value=f"data_{i}" * 100
-                )
+                hybrid_manager.store_async(key=f"concurrent_async_{i}", value=f"data_{i}" * 100)
             )
 
         # Execute concurrently
@@ -591,9 +565,7 @@ async def test_hybrid_memory_integration():
     await concurrent_workload()
 
     concurrent_time = time.time() - concurrent_start
-    logger.info(
-        f"[OK] Concurrent load test completed in {concurrent_time * 1000:.1f}ms"
-    )
+    logger.info(f"[OK] Concurrent load test completed in {concurrent_time * 1000:.1f}ms")
 
     # Calculate target achievement
     baseline = 4293  # ms from original issue
@@ -604,15 +576,11 @@ async def test_hybrid_memory_integration():
     logger.info(f"   Baseline: {baseline}ms")
     logger.info(f"   Optimized: {optimized:.1f}ms")
     logger.info(f"   Improvement: {target_achievement:.1f}x")
-    logger.info(
-        f"   Target (<500ms): {'[OK] ACHIEVED' if optimized < 500 else '❌ MISSED'}"
-    )
+    logger.info(f"   Target (<500ms): {'[OK] ACHIEVED' if optimized < 500 else '❌ MISSED'}")
 
     await hybrid_manager.close_async()
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-    )
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     asyncio.run(test_hybrid_memory_integration())

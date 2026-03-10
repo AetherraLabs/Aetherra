@@ -1,7 +1,7 @@
 # mypy: allow-untyped-defs
 
-from typing import Any, Callable, Optional
-
+from collections.abc import Callable
+from typing import Any
 
 r"""
 The following constraints are implemented:
@@ -38,7 +38,6 @@ The following constraints are implemented:
 """
 
 import torch
-
 
 __all__ = [
     "Constraint",
@@ -206,10 +205,10 @@ class _DependentProperty(property, _Dependent):
 
     def __init__(
         self,
-        fn: Optional[Callable[..., Any]] = None,
+        fn: Callable[..., Any] | None = None,
         *,
-        is_discrete: Optional[bool] = NotImplemented,
-        event_dim: Optional[int] = NotImplemented,
+        is_discrete: bool | None = NotImplemented,
+        event_dim: int | None = NotImplemented,
     ) -> None:
         super().__init__(fn)
         self._is_discrete = is_discrete
@@ -666,7 +665,7 @@ class _Cat(Constraint):
         assert -value.dim() <= self.dim < value.dim()
         checks = []
         start = 0
-        for constr, length in zip(self.cseq, self.lengths):
+        for constr, length in zip(self.cseq, self.lengths, strict=False):
             v = value.narrow(self.dim, start, length)
             checks.append(constr.check(v))
             start = start + length  # avoid += for jit compat
@@ -701,7 +700,8 @@ class _Stack(Constraint):
         assert -value.dim() <= self.dim < value.dim()
         vs = [value.select(self.dim, i) for i in range(value.size(self.dim))]
         return torch.stack(
-            [constr.check(v) for v, constr in zip(vs, self.cseq)], self.dim
+            [constr.check(v) for v, constr in zip(vs, self.cseq, strict=False)],
+            self.dim,
         )
 
 

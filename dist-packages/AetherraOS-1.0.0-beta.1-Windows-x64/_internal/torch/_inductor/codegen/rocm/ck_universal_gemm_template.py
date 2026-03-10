@@ -4,7 +4,6 @@ import logging
 import math
 import random
 from collections import namedtuple
-from typing import Optional
 
 import sympy
 
@@ -18,7 +17,6 @@ from torch._inductor.ir import Buffer, Layout
 from torch._inductor.runtime.runtime_utils import next_power_of_2
 
 from ...utils import IndentedBuffer, is_dynamic, try_import_ck_lib
-
 
 _, gen_ops_library, gen_ops_preselected, CKGemmOperation = try_import_ck_lib()
 
@@ -57,10 +55,9 @@ def is_static_int(number):
 def torch_layout_to_ck_layout(torch_layout):
     if torch_layout.stride[-1] == 1:
         return "Row"
-    elif torch_layout.stride[-2] == 1:
+    if torch_layout.stride[-2] == 1:
         return "Col"
-    else:
-        return None
+    return None
 
 
 class CKGemmTemplate(CKTemplate):
@@ -317,7 +314,7 @@ class CKGemmTemplate(CKTemplate):
         layout: Layout,
         alpha: float,
         beta: float,
-        input_reorder: Optional[list[int]] = None,
+        input_reorder: list[int] | None = None,
     ) -> None:
         is_batched = len(layout.size) == 3
         name = "ck_batched_gemm_template" if is_batched else "ck_gemm_template"
@@ -547,7 +544,7 @@ class CKGemmTemplate(CKTemplate):
         # Define the mapping of versions to stages
         version_to_stages = {1: 1, 3: 2, 4: 4, 5: 3}
         # Get the stages for the given version
-        stages = version_to_stages.get(version, None)
+        stages = version_to_stages.get(version)
         if stages is None:
             # This means we're at stage 2, and this requires computation
             # See github.com/ROCm/composable_kernel/blob/d6a4605/include/ck/tensor_operation/gpu/block/blockwise_gemm_pipeline_xdlops_v2.hpp#L143 # noqa: B950
@@ -612,9 +609,9 @@ class CKGemmTemplate(CKTemplate):
         """
         The primary entry point for the code rendering process used in this template.
         """
-        epilogue_nodes = kwargs.get("epilogue_nodes", None)
-        assert epilogue_nodes is None or 0 == len(epilogue_nodes)
-        template_buffer_node = kwargs.get("template_buffer_node", None)
+        epilogue_nodes = kwargs.get("epilogue_nodes")
+        assert epilogue_nodes is None or len(epilogue_nodes) == 0
+        template_buffer_node = kwargs.get("template_buffer_node")
         if template_buffer_node is not None:
             self.output_node = template_buffer_node
         # input nodes:
@@ -626,9 +623,9 @@ class CKGemmTemplate(CKTemplate):
         Y = self.output_node
         Bias = (
             self.input_nodes[2]
-            if 3 == len(self.input_nodes)
+            if len(self.input_nodes) == 3
             else self.input_nodes[4]
-            if 5 == len(self.input_nodes)
+            if len(self.input_nodes) == 5
             else None
         )
         has_bias = Bias is not None
@@ -648,7 +645,7 @@ class CKGemmTemplate(CKTemplate):
         if has_scale:
             scale_x = self.input_nodes[2]
             scale_w = self.input_nodes[3]
-            if 1 == scale_x.get_numel() and 1 == scale_w.get_numel():
+            if scale_x.get_numel() == 1 and scale_w.get_numel() == 1:
                 # tensorwise scale for both X, W
                 if has_bias:
                     op.c_elementwise_op = "ScaleAdd"
@@ -809,6 +806,7 @@ class CKGemmTemplate(CKTemplate):
                 zip(
                     [a.name for a in self.get_runtime_arg_info()],
                     self.get_runtime_arg_values(),
+                    strict=False,
                 )
             )
             runner_code = self._template_from_string(
@@ -824,10 +822,10 @@ class CKGemmTemplate(CKTemplate):
                 c_ck_dtype=op.c_element_dtype,
                 bias_ck_dtype=op.ds_element_dtypes[0] if has_bias else "",
                 scale_a_ck_dtype=op.ds_element_dtypes[0]
-                if has_scale and 2 == len(op.ds_element_dtypes)
+                if has_scale and len(op.ds_element_dtypes) == 2
                 else "BF16",
                 scale_b_ck_dtype=op.ds_element_dtypes[1]
-                if has_scale and 2 == len(op.ds_element_dtypes)
+                if has_scale and len(op.ds_element_dtypes) == 2
                 else "BF16",
                 a_torch_dtype=DTYPE_TO_CPP[X.get_layout().dtype],
                 b_torch_dtype=DTYPE_TO_CPP[W.get_layout().dtype],
@@ -917,6 +915,8 @@ class CKGemmTemplate(CKTemplate):
             )
             from ck4inductor.universal_gemm.gen_instances import (  # type: ignore[import]
                 gen_ops_library as gen_gemm_ops_library,
+            )
+            from ck4inductor.universal_gemm.gen_instances import (
                 gen_ops_preselected as gen_gemm_ops_preselected,
             )
         except ImportError:
@@ -1012,5 +1012,4 @@ class CKGemmTemplate(CKTemplate):
         if self.is_batched:
             B = X.get_size()[0]
             return B, M, N, K, LDA, LDB, LDC, LDD
-        else:
-            return M, N, K, LDA, LDB, LDC, LDD
+        return M, N, K, LDA, LDB, LDC, LDD

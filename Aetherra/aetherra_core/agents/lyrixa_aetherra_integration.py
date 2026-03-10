@@ -56,43 +56,75 @@ except ImportError as e:
 
     class MockEngine:
         def __init__(self, *args, **kwargs):
-            pass
+            self._running = False
+            self._introspection_level = None
+            self._last_introspection_at = None
+            self._improvement_cycles = 0
+            self._active_tasks = 0
+            self._completed_tasks = 0
 
         async def start_improvement_cycle(self):
-            pass
+            self._running = True
+            self._improvement_cycles += 1
 
         async def stop_improvement_cycle(self):
-            pass
+            self._running = False
 
         async def start_introspection(self, level=None):
-            pass
+            self._running = True
+            self._introspection_level = level
+            self._last_introspection_at = datetime.now().isoformat()
 
         async def stop_introspection(self):
-            pass
+            self._introspection_level = None
 
         async def start_orchestration(self):
-            pass
+            self._running = True
+            self._active_tasks = 1
 
         async def stop_orchestration(self):
-            pass
+            if self._active_tasks > 0:
+                self._completed_tasks += self._active_tasks
+            self._active_tasks = 0
 
         def get_current_health(self):
-            return {"overall_health": 0.8, "components": {}}
+            return {
+                "overall_health": 0.8 if self._running else 0.6,
+                "components": {
+                    "mock_engine": {
+                        "running": self._running,
+                        "last_introspection_at": self._last_introspection_at,
+                    }
+                },
+                "system_metrics": {
+                    "active_tasks": self._active_tasks,
+                    "completed_tasks": self._completed_tasks,
+                },
+            }
 
         def get_health_history(self, hours=24):
             return []
 
         def get_improvement_status(self):
-            return {"status": "inactive", "active_proposals": 0, "total_cycles": 0}
+            return {
+                "status": "active" if self._running else "inactive",
+                "active_proposals": 1 if self._running else 0,
+                "total_cycles": self._improvement_cycles,
+            }
 
         def get_system_status(self):
-            return {"agent_count": 0, "active_tasks": 0, "completed_tasks": 0}
+            return {
+                "agent_count": 1 if self._running else 0,
+                "active_tasks": self._active_tasks,
+                "completed_tasks": self._completed_tasks,
+            }
 
         async def reason(self, context):
             return MockReasoningResult()
 
         async def _perform_introspection(self, level):
-            pass
+            self._introspection_level = level
+            self._last_introspection_at = datetime.now().isoformat()
 
     SelfImprovementEngine = MockEngine
     IntrospectionController = MockEngine
@@ -127,9 +159,7 @@ class SimpleAetherraEngine:
         """Mock execute method"""
         return {
             "status": "success",
-            "results": [
-                {"type": "comment", "message": f"Mock execution: {code[:50]}..."}
-            ],
+            "results": [{"type": "comment", "message": f"Mock execution: {code[:50]}..."}],
             "context": self.execution_context,
         }
 
@@ -196,9 +226,7 @@ class LyrixaAetherraIntegration:
 
             # Start introspection controller
             if AETHERRA_ENGINES_AVAILABLE:
-                await self.introspection_controller.start_introspection(
-                    IntrospectionLevel.MODERATE
-                )
+                await self.introspection_controller.start_introspection(IntrospectionLevel.MODERATE)
             else:
                 await self.introspection_controller.start_introspection("moderate")
             self.autonomous_status["introspection_active"] = True
@@ -349,9 +377,7 @@ class LyrixaAetherraIntegration:
             agent_status = self.agent_orchestrator.get_system_status()
 
             # Calculate overall health score
-            overall_health = (
-                current_health.get("overall_health", 0.0) if current_health else 0.0
-            )
+            overall_health = current_health.get("overall_health", 0.0) if current_health else 0.0
 
             return {
                 "autonomous_mode_active": self.is_autonomous_active,
@@ -360,26 +386,20 @@ class LyrixaAetherraIntegration:
                     "self_improvement": {
                         "active": self.autonomous_status["self_improvement_active"],
                         "status": improvement_status.get("status", "unknown"),
-                        "active_proposals": improvement_status.get(
-                            "active_proposals", 0
-                        ),
+                        "active_proposals": improvement_status.get("active_proposals", 0),
                         "improvement_cycles": improvement_status.get("total_cycles", 0),
                     },
                     "introspection": {
                         "active": self.autonomous_status["introspection_active"],
                         "current_health": overall_health,
                         "health_trend": "stable",  # Could be calculated from history
-                        "monitoring_components": len(
-                            current_health.get("components", {})
-                        )
+                        "monitoring_components": len(current_health.get("components", {}))
                         if current_health
                         else 0,
                     },
                     "reasoning": {
                         "active": self.autonomous_status["reasoning_active"],
-                        "active_chains": len(
-                            self.autonomous_status["active_reasoning_chains"]
-                        ),
+                        "active_chains": len(self.autonomous_status["active_reasoning_chains"]),
                     },
                     "agent_orchestration": {
                         "active": self.autonomous_status["agent_orchestration_active"],
@@ -393,9 +413,7 @@ class LyrixaAetherraIntegration:
                     "self_healing": self.autonomous_status["self_improvement_active"],
                     "self_awareness": self.autonomous_status["introspection_active"],
                     "autonomous_reasoning": self.autonomous_status["reasoning_active"],
-                    "task_coordination": self.autonomous_status[
-                        "agent_orchestration_active"
-                    ],
+                    "task_coordination": self.autonomous_status["agent_orchestration_active"],
                 },
             }
 
@@ -413,9 +431,7 @@ class LyrixaAetherraIntegration:
             logger.info("🔍 Running immediate self-introspection...")
 
             # Force immediate introspection
-            await self.introspection_controller._perform_introspection(
-                IntrospectionLevel.DEEP
-            )
+            await self.introspection_controller._perform_introspection(IntrospectionLevel.DEEP)
 
             # Get the latest health data
             current_health = self.introspection_controller.get_current_health()
@@ -504,9 +520,7 @@ class LyrixaAetherraIntegration:
                 "message": "Failed to execute Aetherra code",
             }
 
-    async def _analyze_self_modification(
-        self, code: str, execution_result: Dict[str, Any]
-    ):
+    async def _analyze_self_modification(self, code: str, execution_result: Dict[str, Any]):
         """
         🔍 ANALYZE SELF-MODIFICATION
 
@@ -540,9 +554,7 @@ class LyrixaAetherraIntegration:
                 }
             )
 
-            logger.info(
-                f"🔍 Self-modification analysis completed: {reasoning_result.conclusion}"
-            )
+            logger.info(f"🔍 Self-modification analysis completed: {reasoning_result.conclusion}")
 
         except Exception as e:
             logger.error(f"Error analyzing self-modification: {e}")
@@ -587,9 +599,7 @@ class LyrixaAetherraIntegration:
                 )()
                 if self.aetherra_engine.llm_manager
                 else {},
-                "current_model": self.aetherra_engine.execution_context.get(
-                    "current_model"
-                ),
+                "current_model": self.aetherra_engine.execution_context.get("current_model"),
             },
         }
 

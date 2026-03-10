@@ -2,17 +2,18 @@
 import inspect
 import types
 import warnings
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from functools import wraps
 from types import GenericAlias
-from typing import Callable, NamedTuple, Optional, overload, TypeVar, Union
+from typing import NamedTuple, TypeVar, overload
+
 from typing_extensions import ParamSpec
 
 import torch
 import torch._prims_common as utils
 from torch._prims_common import (
-    CustomOutParamAnnotation,
     ELEMENTWISE_TYPE_PROMOTION_KIND,
+    CustomOutParamAnnotation,
     Number,
     NumberType,
     ShapeType,
@@ -21,7 +22,6 @@ from torch._prims_common import (
 )
 from torch.utils import _pytree as pytree
 from torch.utils._pytree import tree_flatten, tree_unflatten
-
 
 _T = TypeVar("_T")
 _P = ParamSpec("_P")
@@ -113,7 +113,7 @@ class elementwise_type_promotion_wrapper:
         self,
         *,
         type_promotion_kind: ELEMENTWISE_TYPE_PROMOTION_KIND,
-        type_promoting_args: Optional[Sequence[str]] = None,
+        type_promoting_args: Sequence[str] | None = None,
     ):
         self.type_promoting_arg_names = type_promoting_args
         self.type_promotion_kind = type_promotion_kind
@@ -185,12 +185,11 @@ def _resize_output_check(out: TensorLikeType, shape: ShapeType):
 def _maybe_resize_out(
     out: TensorLikeType,
     shape: ShapeType,
-    memory_format: Optional[torch.memory_format] = None,
+    memory_format: torch.memory_format | None = None,
 ):
     if _resize_output_check(out, shape):
         return out.resize_(shape, memory_format=memory_format)
-    else:
-        return out
+    return out
 
 
 def is_cpu_scalar(x: TensorLikeType) -> bool:
@@ -316,8 +315,7 @@ def out_wrapper(
                     and len(result) == len(out_names)  # type: ignore[arg-type]
                 )
                 or (
-                    fn.__name__ == "unbind"
-                    and isinstance(result, (list, tuple))  # type: ignore[arg-type]
+                    fn.__name__ == "unbind" and isinstance(result, (list, tuple))  # type: ignore[arg-type]
                 )
             )
             # unbind_copy is a special case: see https://github.com/pytorch/pytorch/issues/130829
@@ -342,9 +340,13 @@ def out_wrapper(
                     assert isinstance(out, TensorLike)
                     # These two operations are done in-place
                     _maybe_resize_out(
-                        out, result.shape, maybe_compute_memory_format(result)  # type: ignore[union-attr]
+                        out,
+                        result.shape,
+                        maybe_compute_memory_format(result),  # type: ignore[union-attr]
                     )
-                    _safe_copy_out(copy_from=result, copy_to=out, exact_dtype=exact_dtype)  # type: ignore[arg-type]
+                    _safe_copy_out(
+                        copy_from=result, copy_to=out, exact_dtype=exact_dtype
+                    )  # type: ignore[arg-type]
                 else:
                     if fn.__name__ != "unbind":
                         assert isinstance(out, tuple)  # type: ignore[arg-type]
@@ -354,7 +356,7 @@ def out_wrapper(
                         len(out) == len(result),  # type: ignore[arg-type]
                         lambda: f"expected tuple of {len(result)} elements but got {len(out)}",  # type: ignore[arg-type]
                     )
-                    for r, o in zip(result, out):  # type: ignore[arg-type]
+                    for r, o in zip(result, out, strict=False):  # type: ignore[arg-type]
                         # These two operations are done in-place
                         _maybe_resize_out(o, r.shape, maybe_compute_memory_format(r))
                         _safe_copy_out(copy_from=r, copy_to=o, exact_dtype=exact_dtype)  # type: ignore[arg-type]
@@ -385,7 +387,8 @@ def out_wrapper(
         params = sorted(params, key=lambda p: p.kind)
 
         _fn.__signature__ = inspect.Signature(  # type: ignore[attr-defined]
-            parameters=params, return_annotation=return_type  # type: ignore[arg-type]
+            parameters=params,
+            return_annotation=return_type,  # type: ignore[arg-type]
         )
 
         _fn.__annotations__ = dict(getattr(fn, "__annotations__", {}))
@@ -400,7 +403,9 @@ def out_wrapper(
         # Add an indicator attribute that can be used in special cases
         # where having a function wrapped by `out_wrapper` is not desirable e.g.
         # jit
-        _fn._torch_decompositions_out_wrapper = f"This function is wrapped by {out_wrapper.__module__}.out_wrapper"  # type: ignore[attr-defined]
+        _fn._torch_decompositions_out_wrapper = (
+            f"This function is wrapped by {out_wrapper.__module__}.out_wrapper"  # type: ignore[attr-defined]
+        )
 
         return _fn
 
@@ -446,8 +451,7 @@ def backwards_not_supported(prim):
             # of it!  We need a way of properly implementing autograd
             # for mutating operations in Python to do this.
             return BackwardsNotSupported.apply(args_spec, *flat_args)
-        else:
-            return redispatch_prim(args, kwargs)
+        return redispatch_prim(args, kwargs)
 
     return _autograd_impl
 
@@ -457,7 +461,7 @@ def backwards_not_supported(prim):
 # TODO: this wrapper is currently untested
 def elementwise_unary_scalar_wrapper(
     fn: Callable[_P, _T],
-) -> Callable[_P, Union[_T, NumberType]]:
+) -> Callable[_P, _T | NumberType]:
     """
     Allows unary operators that accept tensors to work with Python numbers.
     """

@@ -64,9 +64,9 @@ def _pin_memory_loop(in_queue, out_queue, device_id, done_event, device):
 def pin_memory(data, device=None):
     if isinstance(data, torch.Tensor):
         return data.pin_memory(device)
-    elif isinstance(data, (str, bytes)):
+    if isinstance(data, (str, bytes)):
         return data
-    elif isinstance(data, collections.abc.Mapping):
+    if isinstance(data, collections.abc.Mapping):
         try:
             if isinstance(data, collections.abc.MutableMapping):
                 # The sequence type may have extra properties, so we can't just
@@ -77,8 +77,9 @@ def pin_memory(data, device=None):
                     {k: pin_memory(sample, device) for k, sample in data.items()}
                 )
                 return clone
-            else:
-                return type(data)({k: pin_memory(sample, device) for k, sample in data.items()})  # type: ignore[call-arg]
+            return type(data)(
+                {k: pin_memory(sample, device) for k, sample in data.items()}
+            )  # type: ignore[call-arg]
         except TypeError:
             # The mapping type may not support `copy()` / `update(mapping)`
             # or `__init__(iterable)`.

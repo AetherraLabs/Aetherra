@@ -46,7 +46,7 @@ class LSTMSaliencyPruner(BaseStructuredSparsifier):
                 masks = torch.split(mask, split_size)
                 saliencies = torch.split(saliency, split_size)
 
-                for keep_mask, sal in zip(masks, saliencies):
+                for keep_mask, sal in zip(masks, saliencies, strict=False):
                     # mask smallest k values to be removed
                     k = int(len(keep_mask) * kwargs["sparsity_level"])
                     prune = sal.topk(k, largest=False, sorted=False).indices

@@ -4,12 +4,12 @@ from typing import Any
 
 import torch
 from torch import Tensor
-from torch.nn import functional as F, init
+from torch.nn import functional as F
+from torch.nn import init
 from torch.nn.parameter import Parameter, UninitializedParameter
 
 from .lazy import LazyModuleMixin
 from .module import Module
-
 
 __all__ = [
     "Bilinear",

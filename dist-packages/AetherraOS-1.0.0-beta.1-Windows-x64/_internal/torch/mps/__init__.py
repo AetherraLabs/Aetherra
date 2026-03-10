@@ -11,7 +11,6 @@ from typing import Union
 import torch
 from torch import Tensor
 
-
 _is_in_bad_fork = getattr(torch._C, "_mps_is_in_bad_fork", lambda: False)
 _default_mps_generator: torch._C.Generator = None  # type: ignore[assignment]
 
@@ -34,7 +33,7 @@ def synchronize() -> None:
     return torch._C._mps_deviceSynchronize()
 
 
-def get_rng_state(device: Union[int, str, torch.device] = "mps") -> Tensor:
+def get_rng_state(device: int | str | torch.device = "mps") -> Tensor:
     r"""Returns the random number generator state as a ByteTensor.
 
     Args:
@@ -44,9 +43,7 @@ def get_rng_state(device: Union[int, str, torch.device] = "mps") -> Tensor:
     return _get_default_mps_generator().get_state()
 
 
-def set_rng_state(
-    new_state: Tensor, device: Union[int, str, torch.device] = "mps"
-) -> None:
+def set_rng_state(new_state: Tensor, device: int | str | torch.device = "mps") -> None:
     r"""Sets the random number generator state.
 
     Args:
@@ -173,7 +170,6 @@ def is_available() -> bool:
 
 from . import profiler
 from .event import Event
-
 
 __all__ = [
     "compile_shader",

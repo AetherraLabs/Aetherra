@@ -16,11 +16,7 @@ PLUGIN_DIR = Path(__file__).parent / "plugins"
 
 def discover_plugins() -> List[str]:
     """Returns a list of plugin names based on folder names."""
-    return [
-        p.name
-        for p in PLUGIN_DIR.iterdir()
-        if p.is_dir() and (p / "manifest.json").exists()
-    ]
+    return [p.name for p in PLUGIN_DIR.iterdir() if p.is_dir() and (p / "manifest.json").exists()]
 
 
 def load_plugin_manifest(plugin_name: str) -> Dict:

@@ -1,5 +1,4 @@
 # mypy: allow-untyped-defs
-from typing import Optional
 
 import torch
 import torch.utils._pytree as pytree
@@ -10,8 +9,8 @@ from torch._ops import HigherOrderOperator
 from torch._prims_common import CUDARngStateHelper, make_contiguous_strides_for
 from torch._subclasses.fake_tensor import FakeTensorMode
 from torch.fx.experimental.proxy_tensor import (
-    disable_proxy_modes_tracing,
     ProxyTorchDispatchMode,
+    disable_proxy_modes_tracing,
     track_tensor_tree,
 )
 from torch.types import _device, _dtype
@@ -85,7 +84,7 @@ def register_philox_rand():
         shape: torch.Size,
         seed: torch.Tensor,
         offset: torch.Tensor,
-        stride: Optional[tuple[int, ...]],
+        stride: tuple[int, ...] | None,
         device: _device,
         dtype: _dtype,
     ):
@@ -102,7 +101,7 @@ def register_philox_rand():
         shape: torch.Size,
         seed: torch.Tensor,
         offset: torch.Tensor,
-        stride: Optional[tuple[int, ...]],
+        stride: tuple[int, ...] | None,
         device: _device,
         dtype: _dtype,
     ):
@@ -142,11 +141,11 @@ def get_device(args, kwargs):
     devices = {arg.device.type for arg in args if isinstance(arg, torch.Tensor)}
     if any(dev == "cuda" for dev in devices):
         return "cuda"
-    elif any(dev == "xpu" for dev in devices):
+    if any(dev == "xpu" for dev in devices):
         return "xpu"
-    elif any(dev == "hpu" for dev in devices):
+    if any(dev == "hpu" for dev in devices):
         return "hpu"
-    elif any(dev == "cpu" for dev in devices):
+    if any(dev == "cpu" for dev in devices):
         return "cpu"
     return None
 
@@ -342,9 +341,9 @@ def register_graphsafe_run_with_rng_state_op():
     @graphsafe_run_with_rng_state.py_impl(DispatchKey.BackendSelect)
     def impl_backend_select(op, *args, rng_state=None, **kwargs):
         device = get_device(args, kwargs)
-        assert (
-            device == "cuda"
-        ), f"GraphSafe RNG operations only supported for CUDA, got {device}"
+        assert device == "cuda", (
+            f"GraphSafe RNG operations only supported for CUDA, got {device}"
+        )
         return impl_cuda(op, *args, rng_state=rng_state, **kwargs)
 
     @graphsafe_run_with_rng_state.py_impl(FakeTensorMode)

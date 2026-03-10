@@ -1,9 +1,9 @@
 # mypy: ignore-errors
 
 import torch
+import torch.utils._pytree as pytree
 from torch.fx.experimental.proxy_tensor import make_fx
 from torch.testing._utils import wrapper_set_seed
-import torch.utils._pytree as pytree
 
 
 def make_fx_check(
@@ -86,4 +86,5 @@ def randomize(args):
         if not x.dtype.is_floating_point:
             return x
         return x.detach().clone().uniform_(0, 1).requires_grad_(x.requires_grad)
+
     return pytree.tree_map_only(torch.Tensor, transform, args)

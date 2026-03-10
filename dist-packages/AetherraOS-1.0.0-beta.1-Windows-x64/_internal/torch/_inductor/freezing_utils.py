@@ -5,7 +5,6 @@ from typing import Any
 
 import torch
 
-
 _TLS = threading.local()
 
 

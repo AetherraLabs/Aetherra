@@ -18,20 +18,19 @@ handling of iterator operations during code transformation and optimization.
 import itertools
 import operator
 import sys
-from typing import Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from .. import graph_break_hints, polyfills, variables
 from ..bytecode_transformation import create_call_function, create_instruction
 from ..exc import (
-    handle_observed_exception,
     ObservedUserStopIteration,
+    UserError,
+    handle_observed_exception,
     raise_observed_exception,
     unimplemented_v2,
-    UserError,
 )
 from .base import ValueMutationNew, VariableTracker
 from .constant import ConstantVariable
-
 
 if TYPE_CHECKING:
     from torch._dynamo.codegen import PyCodegen
@@ -72,7 +71,7 @@ class ItertoolsVariable(VariableTracker):
             return variables.ListIteratorVariable(
                 items, mutation_type=ValueMutationNew()
             )
-        elif self.value is itertools.accumulate:
+        if self.value is itertools.accumulate:
             from .builtin import BuiltinVariable
 
             if any(key not in ["initial", "func"] for key in kwargs.keys()):
@@ -143,7 +142,7 @@ class ItertoolsVariable(VariableTracker):
             return variables.ListIteratorVariable(
                 items, mutation_type=ValueMutationNew()
             )
-        elif (
+        if (
             self.value is itertools.combinations
             and not kwargs
             and len(args) == 2
@@ -159,7 +158,7 @@ class ItertoolsVariable(VariableTracker):
             return variables.ListIteratorVariable(
                 items, mutation_type=ValueMutationNew()
             )
-        elif self.value is itertools.groupby:
+        if self.value is itertools.groupby:
             if any(kw != "key" for kw in kwargs.keys()):
                 unimplemented_v2(
                     gb_type="Unsupported kwargs for itertools.groupby",
@@ -172,17 +171,16 @@ class ItertoolsVariable(VariableTracker):
             def retrieve_const_key(key):
                 if isinstance(key, variables.SymNodeVariable):
                     return key.evaluate_expr()
-                elif isinstance(key, variables.ConstantVariable):
+                if isinstance(key, variables.ConstantVariable):
                     return key.as_python_constant()
-                else:
-                    unimplemented_v2(
-                        gb_type="Unsupported key type for itertools.groupby",
-                        context=f"call_function {self} {args} {kwargs}",
-                        explanation="Dynamo does not know how to trace "
-                        f"itertools.groupby with key type: {str(type(key))}. "
-                        "We only support grouping keys that are constants (int, float, str, etc.)",
-                        hints=[*graph_break_hints.SUPPORTABLE],
-                    )
+                unimplemented_v2(
+                    gb_type="Unsupported key type for itertools.groupby",
+                    context=f"call_function {self} {args} {kwargs}",
+                    explanation="Dynamo does not know how to trace "
+                    f"itertools.groupby with key type: {str(type(key))}. "
+                    "We only support grouping keys that are constants (int, float, str, etc.)",
+                    hints=[*graph_break_hints.SUPPORTABLE],
+                )
 
             if len(args) == 1 and args[0].has_unpack_var_sequence(tx):
                 seq = args[0].unpack_var_sequence(tx)
@@ -239,7 +237,7 @@ class ItertoolsVariable(VariableTracker):
             return variables.ListIteratorVariable(
                 result, mutation_type=ValueMutationNew()
             )
-        elif self.value is itertools.repeat:
+        if self.value is itertools.repeat:
             if len(args) < 2:
                 return variables.RepeatIteratorVariable(
                     *args, mutation_type=ValueMutationNew()
@@ -248,16 +246,15 @@ class ItertoolsVariable(VariableTracker):
             return tx.inline_user_function_return(
                 VariableTracker.build(tx, polyfills.repeat), args, kwargs
             )
-        elif self.value is itertools.count:
+        if self.value is itertools.count:
             return variables.CountIteratorVariable(
                 *args, mutation_type=ValueMutationNew()
             )
-        elif self.value is itertools.cycle:
+        if self.value is itertools.cycle:
             return variables.CycleIteratorVariable(
                 *args, mutation_type=ValueMutationNew()
             )
-        else:
-            return super().call_function(tx, args, kwargs)
+        return super().call_function(tx, args, kwargs)
 
 
 class IteratorVariable(VariableTracker):
@@ -352,9 +349,9 @@ class CycleIteratorVariable(IteratorVariable):
     def __init__(
         self,
         iterator: IteratorVariable,
-        saved: Optional[list[VariableTracker]] = None,
+        saved: list[VariableTracker] | None = None,
         saved_index: int = 0,
-        item: Optional[VariableTracker] = None,
+        item: VariableTracker | None = None,
         **kwargs,
     ) -> None:
         if saved is None:
@@ -409,7 +406,7 @@ class ZipVariable(IteratorVariable):
 
     def __init__(
         self,
-        iterables: list[Union[list[VariableTracker], VariableTracker]],
+        iterables: list[list[VariableTracker] | VariableTracker],
         strict: bool = False,
         **kwargs,
     ) -> None:
@@ -451,8 +448,7 @@ class ZipVariable(IteratorVariable):
                 if old_index >= len(it):
                     raise_observed_exception(StopIteration, tx)
                 return it[old_index]
-            else:
-                return it.next_variable(tx)
+            return it.next_variable(tx)
 
         try:
             for idx, it in enumerate(self.iterables):
@@ -523,7 +519,7 @@ class MapVariable(ZipVariable):
     def __init__(
         self,
         fn: VariableTracker,
-        iterables: list[Union[list[VariableTracker], VariableTracker]],
+        iterables: list[list[VariableTracker] | VariableTracker],
         **kwargs,
     ) -> None:
         super().__init__(iterables, **kwargs)
@@ -566,7 +562,7 @@ class FilterVariable(IteratorVariable):
     def __init__(
         self,
         fn: VariableTracker,
-        iterable: Union[list[VariableTracker], VariableTracker],
+        iterable: list[VariableTracker] | VariableTracker,
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
@@ -599,8 +595,7 @@ class FilterVariable(IteratorVariable):
                 if old_index >= len(self.iterable):
                     raise_observed_exception(StopIteration, tx)
                 return self.iterable[old_index]
-            else:
-                return self.iterable.next_variable(tx)
+            return self.iterable.next_variable(tx)
 
         # A do-while loop to find elements that make fn return true
         while True:

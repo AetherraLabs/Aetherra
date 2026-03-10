@@ -3,7 +3,6 @@ import warnings
 
 from .base_scheduler import BaseScheduler
 
-
 __all__ = ["CubicSL"]
 
 
@@ -109,5 +108,6 @@ class CubicSL(BaseScheduler):
                 self.delta_t,
                 self.total_t,
                 self.initially_zero,
+                strict=False,
             )
         ]

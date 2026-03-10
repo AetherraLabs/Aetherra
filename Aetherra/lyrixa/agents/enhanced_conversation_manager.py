@@ -97,9 +97,7 @@ class EnhancedConversationManager:
         # Response enhancement settings
         self.memory_context_weight = self.config.get("memory_context_weight", 0.3)
         self.pattern_enhancement = self.config.get("pattern_enhancement", True)
-        self.conversation_flow_analysis = self.config.get(
-            "conversation_flow_analysis", True
-        )
+        self.conversation_flow_analysis = self.config.get("conversation_flow_analysis", True)
 
         logger.info("🤖 EnhancedConversationManager initialized")
 
@@ -197,9 +195,7 @@ class EnhancedConversationManager:
             logger.error(f"❌ Response generation failed: {e}")
             return await self._generate_fallback_response(message, user_id, str(e))
 
-    async def _recall_relevant_memories(
-        self, message: str, user_id: str
-    ) -> Dict[str, Any]:
+    async def _recall_relevant_memories(self, message: str, user_id: str) -> Dict[str, Any]:
         """Recall relevant memories for the current conversation"""
 
         try:
@@ -213,9 +209,7 @@ class EnhancedConversationManager:
 
             # Analyze memory quality
             high_relevance_results = [
-                r
-                for r in memory_results.get("results", [])
-                if r.get("relevance", 0.0) > 0.6
+                r for r in memory_results.get("results", []) if r.get("relevance", 0.0) > 0.6
             ]
 
             memory_results["memory_enhanced"] = len(high_relevance_results) > 0
@@ -277,12 +271,8 @@ class EnhancedConversationManager:
                 "categorized_memories": categorized_memories,
                 "patterns_discovered": patterns_discovered,
                 "total_memories": len(results),
-                "high_relevance_memories": len(
-                    [r for r in results if r.get("relevance", 0) > 0.6]
-                ),
-                "memory_sources": list(
-                    set(r.get("source", "unknown") for r in results)
-                ),
+                "high_relevance_memories": len([r for r in results if r.get("relevance", 0) > 0.6]),
+                "memory_sources": list(set(r.get("source", "unknown") for r in results)),
                 "recall_metadata": memory_results.get("metadata", {}),
             }
 
@@ -309,13 +299,9 @@ class EnhancedConversationManager:
 
             # Try OpenAI first if available
             if self.openai_client:
-                return await self._generate_openai_response(
-                    enhanced_prompt, memory_context
-                )
+                return await self._generate_openai_response(enhanced_prompt, memory_context)
             else:
-                return await self._generate_intelligent_fallback(
-                    message, memory_context
-                )
+                return await self._generate_intelligent_fallback(message, memory_context)
 
         except Exception as e:
             logger.error(f"Enhanced response generation failed: {e}")
@@ -352,19 +338,14 @@ class EnhancedConversationManager:
                 pattern_prompt = (
                     "DISCOVERED PATTERNS:\n"
                     + "\n".join(
-                        [
-                            f"- {p['pattern']} (frequency: {p['frequency']})"
-                            for p in patterns[:3]
-                        ]
+                        [f"- {p['pattern']} (frequency: {p['frequency']})" for p in patterns[:3]]
                     )
                     + "\n\nConsider these patterns when crafting your response."
                 )
                 messages.append({"role": "system", "content": pattern_prompt})
 
         # Add conversation flow context
-        if self.conversation_flow_analysis and memory_context.get(
-            "categorized_memories"
-        ):
+        if self.conversation_flow_analysis and memory_context.get("categorized_memories"):
             recent_conversations = memory_context["categorized_memories"].get(
                 "episodic_memories", []
             )
@@ -393,9 +374,7 @@ class EnhancedConversationManager:
             "quantum_memories", []
         )
         if quantum_memories:
-            summary_parts.append(
-                f"Quantum-enhanced memories ({len(quantum_memories)} entries):"
-            )
+            summary_parts.append(f"Quantum-enhanced memories ({len(quantum_memories)} entries):")
             for qm in quantum_memories[:2]:  # Top 2
                 content = qm.get("content", "")[:80]
                 summary_parts.append(f"  - {content}...")
@@ -405,9 +384,7 @@ class EnhancedConversationManager:
             "episodic_memories", []
         )
         if episodic_memories:
-            summary_parts.append(
-                f"Past conversations ({len(episodic_memories)} relevant):"
-            )
+            summary_parts.append(f"Past conversations ({len(episodic_memories)} relevant):")
             for em in episodic_memories[:2]:  # Top 2
                 content = em.get("content", "")[:80]
                 summary_parts.append(f"  - {content}...")
@@ -417,15 +394,9 @@ class EnhancedConversationManager:
         if patterns:
             summary_parts.append("Conversation patterns:")
             for pattern in patterns[:2]:  # Top 2
-                summary_parts.append(
-                    f"  - {pattern['pattern']} (×{pattern['frequency']})"
-                )
+                summary_parts.append(f"  - {pattern['pattern']} (×{pattern['frequency']})")
 
-        return (
-            "\n".join(summary_parts)
-            if summary_parts
-            else "No significant memory context found."
-        )
+        return "\n".join(summary_parts) if summary_parts else "No significant memory context found."
 
     async def _generate_openai_response(
         self, messages: List[Dict[str, str]], memory_context: Dict[str, Any]
@@ -466,9 +437,7 @@ class EnhancedConversationManager:
             if hasattr(response, "usage") and response.usage:
                 token_usage = {
                     "prompt_tokens": getattr(response.usage, "prompt_tokens", 0),
-                    "completion_tokens": getattr(
-                        response.usage, "completion_tokens", 0
-                    ),
+                    "completion_tokens": getattr(response.usage, "completion_tokens", 0),
                     "total_tokens": getattr(response.usage, "total_tokens", 0),
                 }
 
@@ -620,9 +589,7 @@ class EnhancedConversationManager:
         # Calculate percentages
         total = stats["total_conversations"]
         if total > 0:
-            stats["memory_enhancement_rate"] = (
-                stats["memory_enhanced_responses"] / total
-            )
+            stats["memory_enhancement_rate"] = stats["memory_enhanced_responses"] / total
             stats["fallback_rate"] = stats["fallback_responses"] / total
             stats["openai_usage_rate"] = stats["openai_api_calls"] / total
 

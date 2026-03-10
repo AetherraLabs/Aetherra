@@ -151,9 +151,7 @@ class AetherraLexer:
             self._scan_token()
 
         # Add EOF token
-        self.tokens.append(
-            Token(TokenType.EOF, "", self.current_line, self.current_column)
-        )
+        self.tokens.append(Token(TokenType.EOF, "", self.current_line, self.current_column))
 
         return self.tokens
 
@@ -293,9 +291,7 @@ class AetherraLexer:
 
     def _add_token(self, token_type: TokenType, value: str):
         """Add a token to the list"""
-        self.tokens.append(
-            Token(token_type, value, self.current_line, self.current_column)
-        )
+        self.tokens.append(Token(token_type, value, self.current_line, self.current_column))
 
 
 class AetherraParser:
@@ -393,10 +389,7 @@ class AetherraParser:
             # Expect closing parenthesis
             if self._match_operator(")"):
                 # Look for 'as' keyword and parse tags in one condition
-                if (
-                    self._match_operator("as")
-                    and self._current_token().type == TokenType.STRING
-                ):
+                if self._match_operator("as") and self._current_token().type == TokenType.STRING:
                     tags_node = ASTNode(
                         "TAGS",
                         self._current_token().value,
@@ -411,9 +404,7 @@ class AetherraParser:
 
     def _parse_recall(self) -> ASTNode:
         """Parse recall statement"""
-        node = ASTNode(
-            "RECALL", None, [], self._current_token().line, self._current_token().column
-        )
+        node = ASTNode("RECALL", None, [], self._current_token().line, self._current_token().column)
 
         self._advance()  # Skip 'recall'
 
@@ -437,9 +428,7 @@ class AetherraParser:
 
     def _parse_goal(self) -> ASTNode:
         """Parse goal statement: goal: "objective" priority: high"""
-        node = ASTNode(
-            "GOAL", None, [], self._current_token().line, self._current_token().column
-        )
+        node = ASTNode("GOAL", None, [], self._current_token().line, self._current_token().column)
 
         self._advance()  # Skip 'goal'
 
@@ -621,10 +610,7 @@ class AetherraParser:
 
     def _at_end(self) -> bool:
         """Check if at end of tokens"""
-        return (
-            self.current >= len(self.tokens)
-            or self._current_token().type == TokenType.EOF
-        )
+        return self.current >= len(self.tokens) or self._current_token().type == TokenType.EOF
 
     def _match_operator(self, expected: str) -> bool:
         """Check if current token matches expected operator"""
@@ -753,9 +739,7 @@ class EnhancedAetherraInterpreter:
                     body.append(self._reconstruct_command(stmt))
 
         if func_name:
-            result = self.base_interpreter.functions.define_function(
-                func_name, params, body
-            )
+            result = self.base_interpreter.functions.define_function(func_name, params, body)
             return f"[TOOL] Function defined: {func_name}({', '.join(params)})"
 
         return "❌ Invalid function definition"
@@ -766,9 +750,7 @@ class EnhancedAetherraInterpreter:
             parts = [node.value]
             for child in node.children:
                 if child.type == "ARGUMENT":
-                    parts.append(
-                        f'"{child.value}"' if " " in child.value else child.value
-                    )
+                    parts.append(f'"{child.value}"' if " " in child.value else child.value)
             return " ".join(parts)
 
         return str(node.value)

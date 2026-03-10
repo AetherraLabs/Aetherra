@@ -6,10 +6,9 @@ import collections.abc
 import functools
 import math
 import warnings
-from typing import cast, Optional, Union
+from typing import cast
 
 import torch
-
 
 _INTEGRAL_TYPES = [
     torch.uint8,
@@ -38,20 +37,19 @@ def _uniform_random_(t: torch.Tensor, low: float, high: float) -> torch.Tensor:
     # Work around this by scaling the range before and after the PRNG
     if high - low >= torch.finfo(t.dtype).max:
         return t.uniform_(low / 2, high / 2).mul_(2)
-    else:
-        return t.uniform_(low, high)
+    return t.uniform_(low, high)
 
 
 def make_tensor(
-    *shape: Union[int, torch.Size, list[int], tuple[int, ...]],
+    *shape: int | torch.Size | list[int] | tuple[int, ...],
     dtype: torch.dtype,
-    device: Union[str, torch.device],
-    low: Optional[float] = None,
-    high: Optional[float] = None,
+    device: str | torch.device,
+    low: float | None = None,
+    high: float | None = None,
     requires_grad: bool = False,
     noncontiguous: bool = False,
     exclude_zero: bool = False,
-    memory_format: Optional[torch.memory_format] = None,
+    memory_format: torch.memory_format | None = None,
 ) -> torch.Tensor:
     r"""Creates a tensor with the given :attr:`shape`, :attr:`device`, and :attr:`dtype`, and filled with
     values uniformly drawn from ``[low, high)``.
@@ -125,8 +123,8 @@ def make_tensor(
     """
 
     def modify_low_high(
-        low: Optional[float],
-        high: Optional[float],
+        low: float | None,
+        high: float | None,
         *,
         lowest_inclusive: float,
         highest_exclusive: float,
@@ -148,7 +146,7 @@ def make_tensor(
             raise ValueError(
                 f"`low` and `high` cannot be NaN, but got {low=} and {high=}"
             )
-        elif low == high and dtype in _FLOATING_OR_COMPLEX_TYPES:
+        if low == high and dtype in _FLOATING_OR_COMPLEX_TYPES:
             warnings.warn(
                 "Passing `low==high` to `torch.testing.make_tensor` for floating or complex types "
                 "is deprecated since 2.1 and will be removed in 2.3. "

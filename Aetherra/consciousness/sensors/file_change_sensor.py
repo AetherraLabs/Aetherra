@@ -23,9 +23,7 @@ class FileChangeSensor(BaseSensor):
         self._last_mtime: float | None = None
         self._pending: bool = False
         self._debounce_start: float | None = None
-        self._debounce_sec = float(
-            os.getenv("AETHERRA_FILE_SENSOR_DEBOUNCE_SEC", "2.0")
-        )
+        self._debounce_sec = float(os.getenv("AETHERRA_FILE_SENSOR_DEBOUNCE_SEC", "2.0"))
 
     def sample(self):
         try:

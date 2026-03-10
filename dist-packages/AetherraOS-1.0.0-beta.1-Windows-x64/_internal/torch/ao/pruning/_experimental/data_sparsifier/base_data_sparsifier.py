@@ -4,13 +4,12 @@ import copy
 import sys
 import warnings
 from collections import defaultdict
-from typing import Any, Optional
+from typing import Any
 
 import torch
 from torch import nn
 from torch.ao.pruning.sparsifier import base_sparsifier, utils
 from torch.nn.utils import parametrize
-
 
 if not sys.warnoptions:
     # to suppress repeated warnings when being used in a training loop.
@@ -61,7 +60,7 @@ class BaseDataSparsifier(base_sparsifier.BaseSparsifier):
         >>> # tensor_1 and tensor_2 will have sparsity_level of 0.7 but tensor_3 will have sparsity_level=0.3
     """
 
-    def __init__(self, data_list: Optional[list[tuple[str, Any]]] = None, **defaults):
+    def __init__(self, data_list: list[tuple[str, Any]] | None = None, **defaults):
         super().__init__(defaults=defaults)
 
         self._container = _Container()
@@ -78,7 +77,7 @@ class BaseDataSparsifier(base_sparsifier.BaseSparsifier):
         # extract the weight parameter instead of underlying data
         if type(data) in [torch.Tensor, nn.Parameter]:
             return data
-        elif type(data) in EMBEDDING_TYPES:
+        if type(data) in EMBEDDING_TYPES:
             return data.weight
 
     def add_data(self, name: str, data, reuse_mask=True, **config):
@@ -146,8 +145,7 @@ class BaseDataSparsifier(base_sparsifier.BaseSparsifier):
                 raise ValueError("mask squashed - original mask value does not exist")
             data = getattr(self._container.parametrizations, name).original
             return data
-        else:
-            return getattr(self._container, name)
+        return getattr(self._container, name)
 
     def _convert_mask(self, states, sparse_coo=True):
         r"""Converts the mask to sparse coo or dense tensors depending on the `sparse_coo` argument."""

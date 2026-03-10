@@ -1,5 +1,5 @@
 import operator
-from typing import Callable, Optional
+from collections.abc import Callable
 
 import torch
 import torch.ao.nn.intrinsic as nni
@@ -17,7 +17,6 @@ import torch.nn.functional as F
 from torch.ao.quantization.backend_config import get_native_backend_config
 
 from .ns_types import NSNodeTargetType
-
 
 toq = torch.ops.quantized
 
@@ -455,7 +454,7 @@ def get_base_name_to_sets_of_related_ops() -> dict[str, set[NSNodeTargetType]]:
 def get_base_name_for_op(
     base_name_to_sets_of_related_ops: dict[str, set[NSNodeTargetType]],
     op: NSNodeTargetType,
-) -> Optional[str]:
+) -> str | None:
     for base_name, set_of_related_ops in base_name_to_sets_of_related_ops.items():
         if op in set_of_related_ops:
             return base_name
@@ -465,7 +464,7 @@ def get_base_name_for_op(
 def add_op_to_sets_of_related_ops(
     base_name_to_sets_of_related_ops: dict[str, set[NSNodeTargetType]],
     op: NSNodeTargetType,
-    related_op: Optional[NSNodeTargetType],
+    related_op: NSNodeTargetType | None,
 ) -> None:
     if related_op is not None:
         for set_of_related_ops in base_name_to_sets_of_related_ops.values():
@@ -474,11 +473,10 @@ def add_op_to_sets_of_related_ops(
                 return
         # if we got here, related_op was not found
         raise AssertionError(f"{related_op} was not found")
-    else:
-        counter = 0
-        while str(counter) in base_name_to_sets_of_related_ops:
-            counter += 1
-        base_name_to_sets_of_related_ops[str(counter)] = {op}
+    counter = 0
+    while str(counter) in base_name_to_sets_of_related_ops:
+        counter += 1
+    base_name_to_sets_of_related_ops[str(counter)] = {op}
 
 
 # TODO(future PR): clean this up

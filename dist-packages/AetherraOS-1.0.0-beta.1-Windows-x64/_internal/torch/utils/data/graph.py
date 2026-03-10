@@ -3,11 +3,10 @@ import io
 import pickle
 import warnings
 from collections.abc import Collection
-from typing import Optional, Union
+from typing import Union
 
 from torch.utils._import_utils import dill_available
 from torch.utils.data.datapipes.datapipe import IterDataPipe, MapDataPipe
-
 
 __all__ = ["traverse", "traverse_dps"]
 
@@ -55,11 +54,10 @@ def _list_connected_datapipes(
     def reduce_hook(obj):
         if obj == scan_obj or id(obj) in cache:
             raise NotImplementedError
-        else:
-            captured_connections.append(obj)
-            # Adding id to remove duplicate DataPipe serialized at the same level
-            cache.add(id(obj))
-            return _stub_unpickler, ()
+        captured_connections.append(obj)
+        # Adding id to remove duplicate DataPipe serialized at the same level
+        cache.add(id(obj))
+        return _stub_unpickler, ()
 
     datapipe_classes: tuple[type[DataPipe]] = (IterDataPipe, MapDataPipe)  # type: ignore[assignment]
 
@@ -105,7 +103,7 @@ def traverse_dps(datapipe: DataPipe) -> DataPipeGraph:
     return _traverse_helper(datapipe, only_datapipe=True, cache=cache)
 
 
-def traverse(datapipe: DataPipe, only_datapipe: Optional[bool] = None) -> DataPipeGraph:
+def traverse(datapipe: DataPipe, only_datapipe: bool | None = None) -> DataPipeGraph:
     r"""
     Traverse the DataPipes and their attributes to extract the DataPipe graph.
 

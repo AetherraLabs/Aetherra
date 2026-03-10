@@ -7,9 +7,11 @@ import sys
 import traceback
 import warnings
 from collections import defaultdict
+from collections.abc import Callable
 from types import ModuleType
-from typing import Any, Callable, Generic, Optional, TYPE_CHECKING
-from typing_extensions import deprecated, ParamSpec
+from typing import TYPE_CHECKING, Any, Generic
+
+from typing_extensions import ParamSpec, deprecated
 
 import torch
 
@@ -94,13 +96,12 @@ def _to(self, device, non_blocking=False):
                 device, non_blocking
             )
             return new_type(indices, values, self.size())
-        else:
-            assert not self.is_sparse, (
-                f"sparse storage is not supported for {device.type.upper()} tensors"
-            )
-            untyped_storage = torch.UntypedStorage(self.size(), device=device)
-            untyped_storage.copy_(self, non_blocking)
-            return untyped_storage
+        assert not self.is_sparse, (
+            f"sparse storage is not supported for {device.type.upper()} tensors"
+        )
+        untyped_storage = torch.UntypedStorage(self.size(), device=device)
+        untyped_storage.copy_(self, non_blocking)
+        return untyped_storage
 
 
 def _get_async_or_non_blocking(function_name, non_blocking, kwargs):
@@ -130,17 +131,15 @@ def _get_restore_location(device):
     map_location = torch.serialization._serialization_tls.map_location
     if map_location is None:
         return device
-    else:
-        if isinstance(map_location, dict):
-            return map_location.get(device, device)
-        elif isinstance(map_location, (str, torch.device)):
-            return map_location
-        else:
-            assert callable(map_location)
-            raise RuntimeError(
-                "Callable map_location not supported with _rebuild_wrapper_subclass "
-                "or _rebuild_device_tensor_from_numpy"
-            )
+    if isinstance(map_location, dict):
+        return map_location.get(device, device)
+    if isinstance(map_location, (str, torch.device)):
+        return map_location
+    assert callable(map_location)
+    raise RuntimeError(
+        "Callable map_location not supported with _rebuild_wrapper_subclass "
+        "or _rebuild_device_tensor_from_numpy"
+    )
 
 
 # Note [Don't serialize hooks]
@@ -350,7 +349,7 @@ def _rebuild_sparse_tensor(layout, data):
         _sparse_tensors_to_validate.append(result)
         return result
 
-    elif layout in {
+    if layout in {
         torch.sparse_csr,
         torch.sparse_csc,
         torch.sparse_bsr,
@@ -630,7 +629,7 @@ def _unflatten_sparse_tensors(flat, tensors):
         flat_values, [torch.Tensor._values(t) for t in tensors]
     )
     outputs = []
-    for t, i, v in zip(tensors, indices, values):
+    for t, i, v in zip(tensors, indices, values, strict=False):
         outputs.append(t.new(i, v, t.size()))
     return tuple(outputs)
 
@@ -850,7 +849,7 @@ def _get_device_index(
     """
     if isinstance(device, str):
         device = torch.device(device)
-    device_idx: Optional[int] = None
+    device_idx: int | None = None
     if isinstance(device, torch.device):
         if not allow_cpu and device.type == "cpu":
             raise ValueError(f"Expected a non cpu device, but got: {device}")
@@ -897,13 +896,12 @@ def _element_size(dtype):
 
     if dtype.is_complex:
         return torch.finfo(dtype).bits >> 2
-    elif dtype.is_floating_point:
+    if dtype.is_floating_point:
         return torch.finfo(dtype).bits >> 3
-    elif dtype == torch.bool:
+    if dtype == torch.bool:
         # NOTE: torch.bool is not supported in torch.iinfo()
         return 1
-    else:
-        return torch.iinfo(dtype).bits >> 3
+    return torch.iinfo(dtype).bits >> 3
 
 
 class _ClassPropertyDescriptor:
@@ -1048,7 +1046,7 @@ class CallbackRegistry(Generic[P]):
                 )
 
 
-def try_import(module_name: str) -> Optional[ModuleType]:
+def try_import(module_name: str) -> ModuleType | None:
     # Implementation based on
     # https://docs.python.org/3/library/importlib.html#checking-if-a-module-can-be-imported
     if (module := sys.modules.get(module_name, None)) is not None:

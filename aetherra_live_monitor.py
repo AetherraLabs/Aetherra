@@ -17,7 +17,7 @@ import argparse
 import os
 import time
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 # Third party imports
 import requests
@@ -26,7 +26,7 @@ HUB_BASE = "http://localhost:3001"
 WEB_BASE = "http://localhost:8686"
 
 
-def _fetch_json(url: str, timeout: float = 2.0) -> Optional[Dict[str, Any]]:
+def _fetch_json(url: str, timeout: float = 2.0) -> dict[str, Any] | None:
     try:
         r = requests.get(url, timeout=timeout)
         if r.ok:

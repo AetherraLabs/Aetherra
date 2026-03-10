@@ -137,9 +137,7 @@ class EnhancedSelfEvaluationAgent:
 
         await self._store_evaluation_results(evaluation_results)
 
-        print(
-            f"✅ Evaluation cycle complete. Generated {len(recommendations)} recommendations"
-        )
+        print(f"✅ Evaluation cycle complete. Generated {len(recommendations)} recommendations")
 
         return evaluation_results
 
@@ -159,9 +157,7 @@ class EnhancedSelfEvaluationAgent:
                 created_at = insight.get("created_at", "")
                 if created_at:
                     try:
-                        insight_time = datetime.fromisoformat(
-                            created_at.replace("Z", "+00:00")
-                        )
+                        insight_time = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
                         if insight_time > cutoff_time:
                             recent_insights.append(insight)
                     except ValueError:
@@ -236,9 +232,7 @@ class EnhancedSelfEvaluationAgent:
             )
 
             pattern_analysis = {
-                "conversation_patterns": self._analyze_conversation_patterns(
-                    conversation_memories
-                ),
+                "conversation_patterns": self._analyze_conversation_patterns(conversation_memories),
                 "error_patterns": await self._analyze_error_patterns(error_memories),
                 "performance_trends": await self._analyze_performance_trends(),
                 "user_satisfaction_trend": await self._analyze_user_satisfaction(
@@ -278,9 +272,7 @@ class EnhancedSelfEvaluationAgent:
                 complex_queries += 1
 
             # Detect follow-up questions
-            if any(
-                q in user_input.lower() for q in ["again", "more", "clarify", "expand"]
-            ):
+            if any(q in user_input.lower() for q in ["again", "more", "clarify", "expand"]):
                 follow_ups += 1
 
             # Detect context-aware help requests
@@ -310,8 +302,7 @@ class EnhancedSelfEvaluationAgent:
             ):
                 positive_feedback += 1
             if any(
-                word in user_input.lower()
-                for word in ["frustrated", "confused", "bad", "useless"]
+                word in user_input.lower() for word in ["frustrated", "confused", "bad", "useless"]
             ):
                 negative_feedback += 1
 
@@ -375,9 +366,7 @@ class EnhancedSelfEvaluationAgent:
             "status": "operational",
         }
 
-    async def _analyze_user_satisfaction(
-        self, conversation_memories: List[Dict]
-    ) -> Dict[str, Any]:
+    async def _analyze_user_satisfaction(self, conversation_memories: List[Dict]) -> Dict[str, Any]:
         """Analyze user satisfaction indicators"""
         positive_indicators = 0
         negative_indicators = 0
@@ -401,9 +390,7 @@ class EnhancedSelfEvaluationAgent:
                         negative_indicators += 1
 
         total_indicators = positive_indicators + negative_indicators
-        satisfaction_score = (
-            positive_indicators / total_indicators if total_indicators > 0 else 0.5
-        )
+        satisfaction_score = positive_indicators / total_indicators if total_indicators > 0 else 0.5
 
         return {
             "positive_indicators": positive_indicators,
@@ -523,9 +510,7 @@ class EnhancedSelfEvaluationAgent:
 
         return recommendations
 
-    async def _execute_auto_improvements(
-        self, recommendations: List[Dict]
-    ) -> List[Dict[str, Any]]:
+    async def _execute_auto_improvements(self, recommendations: List[Dict]) -> List[Dict[str, Any]]:
         """Execute safe automatic improvements"""
         auto_threshold = self.config.get(
             "auto_remediation_threshold",
@@ -548,9 +533,7 @@ class EnhancedSelfEvaluationAgent:
                 and recommendation.get("confidence", 0) >= auto_threshold
             ):
                 try:
-                    improvement_result = await self._execute_improvement_action(
-                        recommendation
-                    )
+                    improvement_result = await self._execute_improvement_action(recommendation)
                     auto_improvements.append(improvement_result)
                     executed_count += 1
 
@@ -568,9 +551,7 @@ class EnhancedSelfEvaluationAgent:
 
         return auto_improvements
 
-    async def _execute_improvement_action(
-        self, recommendation: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def _execute_improvement_action(self, recommendation: Dict[str, Any]) -> Dict[str, Any]:
         """Execute a specific improvement action"""
         action_type = recommendation.get("type")
 
@@ -692,9 +673,7 @@ class EnhancedSelfEvaluationAgent:
                 created_at = memory.get("created_at", "")
                 if created_at:
                     try:
-                        memory_date = datetime.fromisoformat(
-                            created_at.replace("Z", "+00:00")
-                        )
+                        memory_date = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
                         if memory_date > cutoff_date:
                             recent_evaluations.append(memory)
                     except ValueError:
@@ -717,8 +696,7 @@ class EnhancedSelfEvaluationAgent:
                 "total_auto_improvements": total_auto_improvements,
                 "avg_recommendations_per_cycle": total_recommendations
                 / max(len(recent_evaluations), 1),
-                "improvement_rate": total_auto_improvements
-                / max(total_recommendations, 1),
+                "improvement_rate": total_auto_improvements / max(total_recommendations, 1),
                 "last_evaluation": recent_evaluations[0].get("created_at")
                 if recent_evaluations
                 else None,

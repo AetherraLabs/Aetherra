@@ -4,6 +4,8 @@ r"""Importing this file includes common utility methods and base classes for
 checking quantization api and properties of resulting modules.
 """
 
+from functorch.experimental import control_flow
+
 import torch
 import torch.ao.nn.intrinsic.quantized.dynamic as nniqd
 import torch.ao.nn.quantized as nnq
@@ -11,9 +13,15 @@ import torch.ao.nn.quantized.dynamic as nnqd
 import torch.distributed as dist
 import torch.nn as nn
 import torch.nn.functional as F
-from functorch.experimental import control_flow
 from torch.ao.nn.intrinsic import _FusedModule
 from torch.ao.quantization import (
+    DeQuantStub,
+    PerChannelMinMaxObserver,
+    QConfig,
+    QConfigMapping,
+    QuantStub,
+    QuantType,
+    QuantWrapper,
     convert,
     default_dynamic_qat_qconfig,
     default_dynamic_qconfig,
@@ -24,22 +32,15 @@ from torch.ao.quantization import (
     default_qconfig,
     default_symmetric_qnnpack_qat_qconfig,
     default_weight_observer,
-    DeQuantStub,
     float_qparams_weight_only_qconfig,
     get_default_qat_qconfig,
     get_default_qat_qconfig_mapping,
     get_default_qconfig,
     get_default_qconfig_mapping,
-    PerChannelMinMaxObserver,
     propagate_qconfig_,
-    QConfig,
-    QConfigMapping,
     quantize,
     quantize_dynamic_jit,
     quantize_jit,
-    QuantStub,
-    QuantType,
-    QuantWrapper,
 )
 from torch.ao.quantization.backend_config import get_executorch_backend_config
 from torch.ao.quantization.quantization_mappings import (
@@ -54,10 +55,9 @@ from torch.ao.quantization.quantize_pt2e import (
     prepare_qat_pt2e,
 )
 from torch.ao.quantization.quantizer.xnnpack_quantizer import (
-    get_symmetric_quantization_config,
     XNNPACKQuantizer,
+    get_symmetric_quantization_config,
 )
-
 from torch.export import export_for_training
 from torch.jit.mobile import _load_for_lite_interpreter
 from torch.testing._internal.common_quantized import override_quantized_engine
@@ -85,11 +85,12 @@ import copy
 import functools
 import io
 import os
-
 import unittest
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
+
 import torch._dynamo as torchdynamo
 import torch.ao.quantization.quantizer.x86_inductor_quantizer as xiq
 import torch.ao.quantization.quantizer.xpu_inductor_quantizer as xpuiq
@@ -375,8 +376,7 @@ def skipIfNoFBGEMM(fn):
     def wrapper(*args, **kwargs):
         if "fbgemm" not in torch.backends.quantized.supported_engines:
             raise unittest.SkipTest(reason)
-        else:
-            fn(*args, **kwargs)
+        fn(*args, **kwargs)
 
     return wrapper
 
@@ -393,8 +393,7 @@ def skipIfNoQNNPACK(fn):
     def wrapper(*args, **kwargs):
         if "qnnpack" not in torch.backends.quantized.supported_engines:
             raise unittest.SkipTest(reason)
-        else:
-            fn(*args, **kwargs)
+        fn(*args, **kwargs)
 
     return wrapper
 
@@ -431,8 +430,7 @@ def skipIfNoONEDNN(fn):
     def wrapper(*args, **kwargs):
         if "onednn" not in torch.backends.quantized.supported_engines:
             raise unittest.SkipTest(reason)
-        else:
-            fn(*args, **kwargs)
+        fn(*args, **kwargs)
 
     return wrapper
 
@@ -449,8 +447,7 @@ def skipIfNoONEDNNBF16(fn):
     def wrapper(*args, **kwargs):
         if not torch.ops.mkldnn._is_mkldnn_bf16_supported():
             raise unittest.SkipTest(reason)
-        else:
-            fn(*args, **kwargs)
+        fn(*args, **kwargs)
 
     return wrapper
 
@@ -467,8 +464,7 @@ def skipIfNoX86(fn):
     def wrapper(*args, **kwargs):
         if "x86" not in torch.backends.quantized.supported_engines:
             raise unittest.SkipTest(reason)
-        else:
-            fn(*args, **kwargs)
+        fn(*args, **kwargs)
 
     return wrapper
 
@@ -485,8 +481,7 @@ def skipIfNoDynamoSupport(fn):
     def wrapper(*args, **kwargs):
         if not torchdynamo.is_dynamo_supported():
             raise unittest.SkipTest(reason)
-        else:
-            fn(*args, **kwargs)
+        fn(*args, **kwargs)
 
     return wrapper
 
@@ -503,8 +498,7 @@ def skipIfNoInductorSupport(fn):
     def wrapper(*args, **kwargs):
         if not torchdynamo.is_inductor_supported():
             raise unittest.SkipTest(reason)
-        else:
-            fn(*args, **kwargs)
+        fn(*args, **kwargs)
 
     return wrapper
 
@@ -1069,15 +1063,12 @@ class QuantizationTestCase(TestCase):
             instance checks.
             """
 
-            def _get_underlying_op_type(
-                node: Node, gm: GraphModule
-            ) -> Union[Callable, str]:
+            def _get_underlying_op_type(node: Node, gm: GraphModule) -> Callable | str:
                 if node.op == "call_module":
                     mod = getattr(gm, node.target)
                     return type(mod)
-                else:
-                    assert node.op in ("call_function", "call_method")
-                    return node.target
+                assert node.op in ("call_function", "call_method")
+                return node.target
 
             self.assertTrue(
                 len(matched_subgraph_pairs) == len(expected_types),
@@ -1163,9 +1154,9 @@ class QuantizationTestCase(TestCase):
                                         + f"have a shape mismatch at idx {idx}.",
                                     )
                                 else:
-                                    assert isinstance(
-                                        values_0, tuple
-                                    ), f"unhandled type {type(values_0)}"
+                                    assert isinstance(values_0, tuple), (
+                                        f"unhandled type {type(values_0)}"
+                                    )
                                     assert len(values_0) == 2
                                     assert len(values_0[1]) == 2
                                     assert values_0[0].shape == values_1[0].shape
@@ -1470,8 +1461,7 @@ class QuantizationLiteTestCase(QuantizationTestCase):
                 except AssertionError as e:
                     if retry == max_retry:
                         raise e
-                    else:
-                        continue
+                    continue
                 break
 
 
@@ -2600,8 +2590,8 @@ class ManualEmbeddingBagLinear(nn.Module):
     def forward(
         self,
         input: torch.Tensor,
-        offsets: Optional[torch.Tensor] = None,
-        per_sample_weights: Optional[torch.Tensor] = None,
+        offsets: torch.Tensor | None = None,
+        per_sample_weights: torch.Tensor | None = None,
     ):
         x = self.emb(input, offsets, per_sample_weights)
         x = self.quant(x)
@@ -3183,12 +3173,15 @@ class TestHelperModules:
             x = self.adaptive_avg_pool2d(x)
             return x
 
-
     class ConvWithBNRelu(torch.nn.Module):
         def __init__(self, relu, dim=2, bn=True, bias=True, padding=0):
             super().__init__()
             convs = {1: torch.nn.Conv1d, 2: torch.nn.Conv2d, 3: torch.nn.Conv3d}
-            bns = {1: torch.nn.BatchNorm1d, 2: torch.nn.BatchNorm2d, 3: torch.nn.BatchNorm3d}
+            bns = {
+                1: torch.nn.BatchNorm1d,
+                2: torch.nn.BatchNorm2d,
+                3: torch.nn.BatchNorm3d,
+            }
             self.conv = convs[dim](3, 3, 3, bias=bias, padding=padding)
 
             if bn:
@@ -3379,9 +3372,9 @@ def _generate_qdq_quantized_model(
         )
         if has_xpu:
             quantizer = XPUInductorQuantizer()
-            assert (not is_qat) and (
-                not is_dynamic
-            ), "QAT and dynamic quantization is not supported at XPU backend currently"
+            assert (not is_qat) and (not is_dynamic), (
+                "QAT and dynamic quantization is not supported at XPU backend currently"
+            )
             quantizer.set_global(xpuiq.get_default_xpu_inductor_quantization_config())
         else:
             quantizer = X86InductorQuantizer()

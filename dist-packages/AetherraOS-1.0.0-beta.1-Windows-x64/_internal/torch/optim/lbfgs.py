@@ -1,11 +1,9 @@
 # mypy: allow-untyped-defs
-from typing import Optional, Union
 
 import torch
 from torch import Tensor
 
-from .optimizer import _to_scalar, Optimizer, ParamsT
-
+from .optimizer import Optimizer, ParamsT, _to_scalar
 
 __all__ = ["LBFGS"]
 
@@ -34,8 +32,7 @@ def _cubic_interpolate(x1, f1, g1, x2, f2, g2, bounds=None):
         else:
             min_pos = x1 - (x1 - x2) * ((g1 + d2 - d1) / (g1 - g2 + 2 * d2))
         return min(max(min_pos, xmin_bound), xmax_bound)
-    else:
-        return (xmin_bound + xmax_bound) / 2.0
+    return (xmin_bound + xmax_bound) / 2.0
 
 
 def _strong_wolfe(
@@ -217,17 +214,17 @@ class LBFGS(Optimizer):
     def __init__(
         self,
         params: ParamsT,
-        lr: Union[float, Tensor] = 1,
+        lr: float | Tensor = 1,
         max_iter: int = 20,
-        max_eval: Optional[int] = None,
+        max_eval: int | None = None,
         tolerance_grad: float = 1e-7,
         tolerance_change: float = 1e-9,
         history_size: int = 100,
-        line_search_fn: Optional[str] = None,
+        line_search_fn: str | None = None,
     ):
         if isinstance(lr, Tensor) and lr.numel() != 1:
             raise ValueError("Tensor lr must be 1-element")
-        if not 0.0 <= lr:
+        if not lr >= 0.0:
             raise ValueError(f"Invalid learning rate: {lr}")
         if max_eval is None:
             max_eval = max_iter * 5 // 4
@@ -288,7 +285,7 @@ class LBFGS(Optimizer):
         return [p.clone(memory_format=torch.contiguous_format) for p in self._params]
 
     def _set_param(self, params_data):
-        for p, pdata in zip(self._params, params_data):
+        for p, pdata in zip(self._params, params_data, strict=False):
             p.copy_(pdata)
 
     def _directional_evaluate(self, closure, x, t, d):
@@ -435,15 +432,14 @@ class LBFGS(Optimizer):
                 # perform line search, using user function
                 if line_search_fn != "strong_wolfe":
                     raise RuntimeError("only 'strong_wolfe' is supported")
-                else:
-                    x_init = self._clone_param()
+                x_init = self._clone_param()
 
-                    def obj_func(x, t, d):
-                        return self._directional_evaluate(closure, x, t, d)
+                def obj_func(x, t, d):
+                    return self._directional_evaluate(closure, x, t, d)
 
-                    loss, flat_grad, t, ls_func_evals = _strong_wolfe(
-                        obj_func, x_init, t, d, loss, flat_grad, gtd
-                    )
+                loss, flat_grad, t, ls_func_evals = _strong_wolfe(
+                    obj_func, x_init, t, d, loss, flat_grad, gtd
+                )
                 self._add_grad(t, d)
                 opt_cond = flat_grad.abs().max() <= tolerance_grad
             else:

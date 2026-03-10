@@ -13,7 +13,6 @@ import threading
 import time
 import uuid
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
 
 _ENABLED_ENV = "AETHERRA_TRAINER_ENABLED"
 
@@ -44,8 +43,8 @@ class _Eval:
 
 
 _lock = threading.Lock()
-_jobs: Dict[str, _Job] = {}
-_evals: Dict[str, _Eval] = {}
+_jobs: dict[str, _Job] = {}
+_evals: dict[str, _Eval] = {}
 _eval_last_score: float | None = None
 _eval_runs_total: int = 0
 
@@ -92,7 +91,7 @@ def _bg_transition_eval(eval_id: str):
         _eval_runs_total += 1
 
 
-def submit_job(payload: dict) -> Optional[str]:
+def submit_job(payload: dict) -> str | None:
     if not _enabled():
         return None
     jid = str(uuid.uuid4())
@@ -109,7 +108,7 @@ def submit_job(payload: dict) -> Optional[str]:
     return jid
 
 
-def submit_eval(payload: dict) -> Optional[str]:
+def submit_eval(payload: dict) -> str | None:
     if not _enabled():
         return None
     eid = str(uuid.uuid4())
@@ -126,7 +125,7 @@ def submit_eval(payload: dict) -> Optional[str]:
     return eid
 
 
-def get_job(job_id: str) -> Optional[dict]:
+def get_job(job_id: str) -> dict | None:
     with _lock:
         j = _jobs.get(job_id)
         if not j:
@@ -134,7 +133,7 @@ def get_job(job_id: str) -> Optional[dict]:
         return j.__dict__.copy()
 
 
-def get_eval(eval_id: str) -> Optional[dict]:
+def get_eval(eval_id: str) -> dict | None:
     with _lock:
         e = _evals.get(eval_id)
         if not e:
@@ -142,12 +141,12 @@ def get_eval(eval_id: str) -> Optional[dict]:
         return e.__dict__.copy()
 
 
-def list_jobs() -> List[dict]:
+def list_jobs() -> list[dict]:
     with _lock:
         return [j.__dict__.copy() for j in _jobs.values()]
 
 
-def list_evals() -> List[dict]:
+def list_evals() -> list[dict]:
     with _lock:
         return [e.__dict__.copy() for e in _evals.values()]
 

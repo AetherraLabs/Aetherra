@@ -12,7 +12,6 @@ import torch
 from torch.onnx._internal.exporter._torchlib._tensor_typing import TReal, TRealOrUInt8
 from torch.onnx._internal.exporter._torchlib._torchlib_registry import onnx_impl
 
-
 aten = torch.ops.aten
 
 

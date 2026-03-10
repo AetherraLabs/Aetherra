@@ -6,7 +6,6 @@ import itertools
 import torch
 from torch.nn.modules.module import _addindent
 
-
 __all__ = [
     "WeightedQuantizedModule",
 ]

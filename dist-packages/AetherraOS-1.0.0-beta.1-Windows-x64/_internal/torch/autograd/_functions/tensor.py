@@ -1,6 +1,7 @@
 # mypy: allow-untyped-defs
 import operator
 from functools import reduce
+
 from typing_extensions import deprecated
 
 import torch
@@ -24,9 +25,8 @@ class Type(Function):
     def backward(ctx, grad_output):
         if ctx.input_device == -1:
             return grad_output.type(ctx.input_type), None
-        else:
-            with torch.accelerator.device_index(ctx.input_device):
-                return grad_output.type(ctx.input_type), None
+        with torch.accelerator.device_index(ctx.input_device):
+            return grad_output.type(ctx.input_type), None
 
 
 # TODO: deprecate this
@@ -56,8 +56,7 @@ class Resize(Function):
         if tensor.is_contiguous():
             result = tensor.new(tensor).contiguous().view(*sizes)
             return result
-        else:
-            return tensor.contiguous().view(*sizes)
+        return tensor.contiguous().view(*sizes)
 
     @staticmethod
     def backward(ctx, grad_output):

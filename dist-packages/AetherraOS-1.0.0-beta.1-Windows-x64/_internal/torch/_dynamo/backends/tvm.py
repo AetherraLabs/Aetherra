@@ -29,13 +29,11 @@ import os
 import sys
 import tempfile
 from types import MappingProxyType
-from typing import Optional
 
 import torch
 
 from .common import device_from_inputs, fake_tensor_unsupported
 from .registry import register_backend
-
 
 log = logging.getLogger(__name__)
 
@@ -46,7 +44,7 @@ def tvm(
     gm,
     example_inputs,
     *,
-    options: Optional[MappingProxyType] = MappingProxyType(
+    options: MappingProxyType | None = MappingProxyType(
         {"scheduler": None, "trials": 20000, "opt_level": 3}
     ),
 ):
@@ -207,6 +205,6 @@ def llvm_target():
         cpuinfo = open("/proc/cpuinfo").read()
         if "avx512" in cpuinfo:
             return "llvm -mcpu=skylake-avx512"
-        elif "avx2" in cpuinfo:
+        if "avx2" in cpuinfo:
             return "llvm -mcpu=core-avx2"
     return "llvm"

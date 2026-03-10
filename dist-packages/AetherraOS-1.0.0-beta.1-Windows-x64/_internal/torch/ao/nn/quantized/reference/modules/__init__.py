@@ -7,9 +7,8 @@ from .conv import (
     ConvTranspose3d,
 )
 from .linear import Linear
-from .rnn import GRU, GRUCell, LSTM, LSTMCell, RNNCell
+from .rnn import GRU, LSTM, GRUCell, LSTMCell, RNNCell
 from .sparse import Embedding, EmbeddingBag
-
 
 __all__ = [
     "Linear",

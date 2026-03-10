@@ -12,7 +12,6 @@ from .windows import (
     nuttall,
 )
 
-
 __all__ = [
     "bartlett",
     "blackman",

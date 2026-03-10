@@ -10,8 +10,8 @@ while adding an import statement here.
 """
 
 from torch.ao.nn.quantized.reference.modules.rnn import (
-    GRUCell,
     LSTM,
+    GRUCell,
     LSTMCell,
     RNNBase,
     RNNCell,

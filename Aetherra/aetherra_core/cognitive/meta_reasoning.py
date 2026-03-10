@@ -7,7 +7,6 @@ Advanced decision tracking and explanation system for Lyrixa
 Intercepts and analyzes every major decision for transparency and learning
 """
 
-
 # Standard library imports
 import time
 import uuid
@@ -140,9 +139,7 @@ class MetaReasoningEngine:
         🧩 Explain why a specific plugin was chosen
         Enhanced version with memory links and intent tracking
         """
-        available_plugins = (
-            self.plugin_manager.list_plugin_names() if self.plugin_manager else []
-        )
+        available_plugins = self.plugin_manager.list_plugin_names() if self.plugin_manager else []
 
         context = {
             "goal": goal,
@@ -265,13 +262,9 @@ class MetaReasoningEngine:
         """
         trends = {}
         for decision_type in DecisionType:
-            relevant_traces = [
-                t for t in self.decision_history if t.decision_type == decision_type
-            ]
+            relevant_traces = [t for t in self.decision_history if t.decision_type == decision_type]
             if relevant_traces:
-                avg_confidence = sum(t.confidence for t in relevant_traces) / len(
-                    relevant_traces
-                )
+                avg_confidence = sum(t.confidence for t in relevant_traces) / len(relevant_traces)
                 trends[decision_type.value] = avg_confidence
         return trends
 
@@ -284,9 +277,7 @@ class MetaReasoningEngine:
         ]
         return sorted(relevant_traces, key=lambda x: x.timestamp)
 
-    def add_feedback(
-        self, trace_id: str, feedback_score: float, feedback_text: str = ""
-    ) -> bool:
+    def add_feedback(self, trace_id: str, feedback_score: float, feedback_text: str = "") -> bool:
         """
         👍 Add user feedback to a decision for learning
         """
@@ -414,9 +405,7 @@ class MetaReasoningEngine:
         if not plugin_traces:
             return 0.5  # Default neutral
 
-        successful = [
-            t for t in plugin_traces if t.feedback_score and t.feedback_score > 0.6
-        ]
+        successful = [t for t in plugin_traces if t.feedback_score and t.feedback_score > 0.6]
         return len(successful) / len(plugin_traces)
 
     def _get_plugin_usage_count(self, plugin_name: str) -> int:
@@ -429,9 +418,7 @@ class MetaReasoningEngine:
         similar_contexts = [
             t
             for t in self.decision_history[-10:]  # Last 10 decisions
-            if any(
-                word in str(t.context).lower() for word in context.lower().split()[:3]
-            )
+            if any(word in str(t.context).lower() for word in context.lower().split()[:3])
         ]
         return min(len(similar_contexts) / 10.0, 1.0)
 
@@ -529,6 +516,4 @@ class MetaReasoningEngine:
         """Calculate average confidence across all decisions"""
         if not self.decision_history:
             return 0.0
-        return sum(t.confidence for t in self.decision_history) / len(
-            self.decision_history
-        )
+        return sum(t.confidence for t in self.decision_history) / len(self.decision_history)

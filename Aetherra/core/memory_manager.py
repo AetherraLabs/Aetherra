@@ -105,9 +105,7 @@ class MemoryIndex:
 
         # Remove from access time index
         self.access_time_index = [
-            (timestamp, eid)
-            for timestamp, eid in self.access_time_index
-            if eid != entry.entry_id
+            (timestamp, eid) for timestamp, eid in self.access_time_index if eid != entry.entry_id
         ]
 
     def find_by_key(self, key: str) -> Optional[str]:
@@ -171,9 +169,7 @@ class MemoryEvictionPolicy:
     @staticmethod
     def lru_eviction(entries: Dict[str, MemoryEntry], target_size: int) -> List[str]:
         """Least Recently Used eviction"""
-        sorted_entries = sorted(
-            entries.values(), key=lambda e: (e.priority.value, e.accessed_at)
-        )
+        sorted_entries = sorted(entries.values(), key=lambda e: (e.priority.value, e.accessed_at))
 
         evict_ids = []
         current_size = sum(e.size_bytes for e in entries.values())
@@ -187,9 +183,7 @@ class MemoryEvictionPolicy:
         return evict_ids
 
     @staticmethod
-    def priority_eviction(
-        entries: Dict[str, MemoryEntry], target_size: int
-    ) -> List[str]:
+    def priority_eviction(entries: Dict[str, MemoryEntry], target_size: int) -> List[str]:
         """Priority-based eviction"""
         sorted_entries = sorted(
             entries.values(),
@@ -267,7 +261,7 @@ class SemanticSearch:
         if len(a) != len(b):
             return 0.0
 
-        dot_product = sum(x * y for x, y in zip(a, b))
+        dot_product = sum(x * y for x, y in zip(a, b, strict=False))
         norm_a = sum(x * x for x in a) ** 0.5
         norm_b = sum(x * x for x in b) ** 0.5
 
@@ -456,9 +450,7 @@ class MemoryManager:
         # Persist to database
         await self._persist_entry(entry)
 
-        logger.debug(
-            f"Stored {key} in {memory_type.value} memory (compressed: {should_compress})"
-        )
+        logger.debug(f"Stored {key} in {memory_type.value} memory (compressed: {should_compress})")
         return entry_id
 
     async def retrieve(self, key: str) -> Optional[Any]:
@@ -508,9 +500,7 @@ class MemoryManager:
 
             return results
 
-    async def semantic_search_memory(
-        self, query: str, top_k: int = 10
-    ) -> List[Dict[str, Any]]:
+    async def semantic_search_memory(self, query: str, top_k: int = 10) -> List[Dict[str, Any]]:
         """Perform semantic search on memory"""
         entry_ids = self.semantic_search.search_similar(query, top_k)
 
@@ -599,9 +589,7 @@ class MemoryManager:
             for memory_type in MemoryType:
                 type_entries = len(self.index.find_by_type(memory_type))
                 type_size = sum(
-                    e.size_bytes
-                    for e in self.entries.values()
-                    if e.memory_type == memory_type
+                    e.size_bytes for e in self.entries.values() if e.memory_type == memory_type
                 )
                 type_stats[memory_type.value] = {
                     "entries": type_entries,
@@ -614,9 +602,7 @@ class MemoryManager:
                 "max_size_mb": self.max_memory_bytes / 1024 / 1024,
                 "usage_percent": (total_size / self.max_memory_bytes) * 100,
                 "type_breakdown": type_stats,
-                "compressed_entries": len(
-                    [e for e in self.entries.values() if e.compressed]
-                ),
+                "compressed_entries": len([e for e in self.entries.values() if e.compressed]),
             }
 
     async def _persist_entry(self, entry: MemoryEntry):

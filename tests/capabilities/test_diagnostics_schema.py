@@ -60,6 +60,6 @@ def test_diagnostics_json_schema_contract(tmp_path):
     expected_order = sorted(data["results"].keys())
     # summary_lines lines start with name; extract
     observed_order = [line.split()[0] for line in data["summary_lines"] if line]
-    assert (
-        observed_order == expected_order
-    ), f"summary order mismatch: {observed_order} != {expected_order}"
+    assert observed_order == expected_order, (
+        f"summary order mismatch: {observed_order} != {expected_order}"
+    )

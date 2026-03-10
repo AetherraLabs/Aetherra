@@ -1,7 +1,7 @@
 # mypy: allow-untyped-defs
 import functools
 import logging
-from typing import Any, Optional
+from typing import Any
 
 import sympy
 
@@ -19,7 +19,8 @@ from torch._inductor.virtualized import V
 from torch.fx.experimental.proxy_tensor import make_fx
 from torch.torch_version import TorchVersion
 
-from .. import config as inductor_config, ir
+from .. import config as inductor_config
+from .. import ir
 from ..codegen.cuda.gemm_template import CUTLASS2xGemmTemplate, CUTLASS3xGemmTemplate
 from ..codegen.rocm.ck_tile_universal_gemm_template import CKTileGemmTemplate
 from ..codegen.rocm.ck_universal_gemm_template import CKGemmTemplate
@@ -28,14 +29,16 @@ from ..ir import FlexibleLayout, is_triton
 from ..lowering import (
     add_layout_constraint,
     constrain_to_fx_strides,
-    lowerings as L,
     register_lowering,
 )
+from ..lowering import (
+    lowerings as L,
+)
 from ..select_algorithm import (
-    autotune_select_algorithm,
     ExternKernelChoice,
-    realize_inputs,
     TritonTemplate,
+    autotune_select_algorithm,
+    realize_inputs,
 )
 from ..utils import (
     _use_cutlass_for_op,
@@ -62,7 +65,6 @@ from .mm_common import (
     scale_mm_epilogue,
     scaled_mm_options,
 )
-
 
 try:
     import triton
@@ -1273,7 +1275,7 @@ def tuned_scaled_mm(
 
 
 @functools.cache
-def _is_sm7x_or_older_gpu(index: Optional[int]) -> bool:
+def _is_sm7x_or_older_gpu(index: int | None) -> bool:
     props = torch.cuda.get_device_properties(index or 0)
     return props.major <= 7
 
@@ -1293,7 +1295,7 @@ def mm_autoheuristic(
     input_nodes,
     ops,
     precondition,
-    top_k: Optional[int] = None,
+    top_k: int | None = None,
     always_included=None,
 ):
     m, n, k = get_size_hints(mat1, mat2, m, n, k)

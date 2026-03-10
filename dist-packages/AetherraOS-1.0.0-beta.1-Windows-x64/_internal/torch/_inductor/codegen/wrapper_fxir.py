@@ -4,7 +4,8 @@ import logging
 import operator
 import textwrap
 from collections import Counter
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable
+from typing import Any, Union
 
 import sympy
 
@@ -25,7 +26,7 @@ from torch.utils import _pytree as pytree
 from torch.utils._sympy.functions import FloorDiv
 
 from .. import config, ir
-from ..utils import convert_shape_to_symint, convert_to_symint, LineContext
+from ..utils import LineContext, convert_shape_to_symint, convert_to_symint
 from .common import (
     CodegenSymbol,
     FileBackedGraphModule,
@@ -59,7 +60,6 @@ from .wrapper import (
     WrapperLine,
 )
 
-
 aten = torch.ops.aten
 log = logging.getLogger(__name__)
 
@@ -75,7 +75,7 @@ class SymbolBuffer(CodegenSymbol):
     def get_name(self) -> str:
         return str(self.symbol)
 
-    def get_example(self) -> Union[torch.Tensor, sympy.Symbol]:
+    def get_example(self) -> torch.Tensor | sympy.Symbol:
         return self.symbol
 
 
@@ -125,9 +125,9 @@ class WrapperFxCodegen(PythonWrapperCodegen):
     def create(
         cls,
         is_subgraph: bool,
-        subgraph_name: Optional[str],
-        parent_wrapper: Optional[PythonWrapperCodegen],
-        partition_signatures: Optional[ir.GraphPartitionSignature] = None,
+        subgraph_name: str | None,
+        parent_wrapper: PythonWrapperCodegen | None,
+        partition_signatures: ir.GraphPartitionSignature | None = None,
     ) -> "WrapperFxCodegen":
         if is_subgraph:
             raise NotImplementedError(
@@ -152,7 +152,7 @@ class FxConverter:
         graph = torch.fx.Graph()
         self.gm = GraphModule({}, graph)  # Wrapper FX IR.
         self.buffer_to_node: dict[
-            Optional[str], torch.fx.Node
+            str | None, torch.fx.Node
         ] = {}  # Symbol table for codegen.
         self.kernels: dict[str, TritonKernel] = {}  # Table to store Triton kernels.
         self._unique_symbol_ids: Counter[str] = Counter()
@@ -179,8 +179,8 @@ class FxConverter:
         self,
         size: tuple[Any, ...],
         stride: tuple[Any, ...],
-        dtype: Optional[torch.dtype] = None,
-        device: Optional[torch.device] = None,
+        dtype: torch.dtype | None = None,
+        device: torch.device | None = None,
     ) -> torch.Tensor:
         with V.fake_mode:
             return torch.empty_strided(
@@ -203,7 +203,7 @@ class FxConverter:
         input_node: torch.fx.Node,
         size: tuple[Any, ...],
         stride: tuple[Any, ...],
-        offset: Union[int, sympy.Expr],
+        offset: int | sympy.Expr,
     ) -> torch.fx.Node:
         return self.gm.graph.call_function(
             torch.as_strided,
@@ -223,7 +223,7 @@ class FxConverter:
         assert node not in self.buffer_to_node
         self.buffer_to_node[buffer.get_name()] = node
 
-    def _free(self, buffer: Union[CodegenBuffer, ir.TorchBindObject]) -> None:
+    def _free(self, buffer: CodegenBuffer | ir.TorchBindObject) -> None:
         """
         Removes the buffer from the symbol table.
         """
@@ -249,12 +249,11 @@ class FxConverter:
         """
         if isinstance(node, (ir.Buffer, WorkspaceArg)):
             return node
-        elif isinstance(node, (ir.BaseView, ir.MutableBox)):
+        if isinstance(node, (ir.BaseView, ir.MutableBox)):
             return self._get_buffer(node.data)
-        elif isinstance(node, sympy.Symbol):
+        if isinstance(node, sympy.Symbol):
             return SymbolBuffer(node)
-        else:
-            raise NotImplementedError(f"Unable to extract buffer from node: {node}")
+        raise NotImplementedError(f"Unable to extract buffer from node: {node}")
 
     def _generate_graph_inputs(self) -> None:
         """
@@ -271,20 +270,20 @@ class FxConverter:
             self._create_meta_from_buffer(node, buffer)
             self._record_allocation(buffer, node)
 
-    def _generate_buffer(self, node: ir.IRNode) -> Optional[torch.fx.Node]:
+    def _generate_buffer(self, node: ir.IRNode) -> torch.fx.Node | None:
         """
         Generates FX IR for transformations on a buffer, such as ReinterpretView.
         Does nothing if no such transformations are present.
         """
 
-        def generate_to_buffer(node: ir.IRNode) -> Optional[BufferLike]:
+        def generate_to_buffer(node: ir.IRNode) -> BufferLike | None:
             if isinstance(node, (ir.Buffer, WorkspaceArg)):
                 return node
-            elif isinstance(node, ir.NoneAsConstantBuffer):
+            if isinstance(node, ir.NoneAsConstantBuffer):
                 return None
-            elif isinstance(node, ir.StorageBox):
+            if isinstance(node, ir.StorageBox):
                 return generate_to_buffer(node.data)
-            elif isinstance(node, ir.ReinterpretView):
+            if isinstance(node, ir.ReinterpretView):
                 # We need to introduce a new symbol if the output is a ReinterpretView.
                 # Use a WorkspaceArg for this.
                 buffer = self._get_buffer(node.data)
@@ -306,8 +305,7 @@ class FxConverter:
                 self._generate_reinterpret_helper(buffer, reused_as, node.layout)
 
                 return reused_as
-            else:
-                raise NotImplementedError(f"Unrecognized buffer/view node: {node}")
+            raise NotImplementedError(f"Unrecognized buffer/view node: {node}")
 
         buffer = generate_to_buffer(node)
         return self.buffer_to_node[buffer.get_name()] if buffer is not None else None
@@ -551,7 +549,7 @@ class FxConverter:
 
         kernel_config = tuner.compile_results[0].config
         call_args, grid = tuner._interpret_args_grid(call_args, kernel_config)
-        call_kwargs = dict(zip(tuner.triton_meta["signature"], call_args))
+        call_kwargs = dict(zip(tuner.triton_meta["signature"], call_args, strict=False))
         call_kwargs.update(kernel_config.kwargs)
 
         def replace_floor_div(expr: sympy.Expr) -> sympy.Expr:
@@ -573,10 +571,9 @@ class FxConverter:
                 )
 
                 return FloorDiv(numerator, denominator)
-            else:
-                return sympy.floor(expr)
+            return sympy.floor(expr)
 
-        def expr_to_symint(expr: Union[int, sympy.Expr]) -> Union[int, sympy.Expr]:
+        def expr_to_symint(expr: int | sympy.Expr) -> int | sympy.Expr:
             return (
                 convert_to_symint(expr.replace(sympy.floor, replace_floor_div))
                 if isinstance(expr, sympy.Expr)
@@ -633,7 +630,7 @@ class FxConverter:
         # Get the result buffer.
         # Some kernels write to a pre-existing output tensor via the "out" kwarg.
         kwargs = kernel.kwargs.copy()
-        result_buffer: Optional[str] = None
+        result_buffer: str | None = None
         if isinstance(kernel, ir.ExternKernelOut):
             kwargs["out"] = self.buffer_to_node[out_ir_node.codegen_reference()]
         elif isinstance(kernel.layout, (ir.Layout, ir.MultiOutputLayout)):

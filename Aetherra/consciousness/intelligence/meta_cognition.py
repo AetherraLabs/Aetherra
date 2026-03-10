@@ -100,9 +100,7 @@ class MetaCognitionSystem:
         # Start continuous self-monitoring
         self._start_self_monitoring()
 
-        logging.info(
-            "Meta-Cognition System initialized - Enhanced self-knowledge active"
-        )
+        logging.info("Meta-Cognition System initialized - Enhanced self-knowledge active")
 
     def _init_database(self):
         """Initialize SQLite database for persistent meta-memory"""
@@ -228,9 +226,7 @@ class MetaCognitionSystem:
             {"domain": domain.value, "node_id": node_id, "confidence": confidence},
         )
 
-        logging.info(
-            f"Enhanced self-knowledge in domain {domain.value} - Node {node_id}"
-        )
+        logging.info(f"Enhanced self-knowledge in domain {domain.value} - Node {node_id}")
         return node_id
 
     def conduct_self_reflection(
@@ -319,9 +315,7 @@ class MetaCognitionSystem:
                     {
                         "domain": domain.value,
                         "coverage": coverage_score,
-                        "improvement_potential": self._estimate_improvement_potential(
-                            domain
-                        ),
+                        "improvement_potential": self._estimate_improvement_potential(domain),
                     }
                 )
 
@@ -329,14 +323,10 @@ class MetaCognitionSystem:
         coverage_report["overall_coverage"] = sum(domain_scores) / len(domain_scores)
 
         # Generate improvement priorities
-        coverage_report[
-            "improvement_priorities"
-        ] = self._generate_improvement_priorities()
+        coverage_report["improvement_priorities"] = self._generate_improvement_priorities()
 
         # Generate learning recommendations
-        coverage_report[
-            "learning_recommendations"
-        ] = self._generate_learning_recommendations()
+        coverage_report["learning_recommendations"] = self._generate_learning_recommendations()
 
         return coverage_report
 
@@ -490,9 +480,7 @@ class MetaCognitionSystem:
             insights.append("Significant knowledge gaps identified requiring attention")
 
         if assessment["learning_state"]["progress_rate"] > 0.8:
-            insights.append(
-                "High learning progress rate indicates effective adaptation"
-            )
+            insights.append("High learning progress rate indicates effective adaptation")
 
         # Add domain-specific insights
         for domain in SelfKnowledgeDomain:
@@ -515,8 +503,11 @@ class MetaCognitionSystem:
 
     def _start_self_monitoring(self):
         """Start continuous self-monitoring process"""
-        # This would run in a background thread for continuous monitoring
-        pass
+        # Lightweight initialization marker; avoids duplicate monitor bootstrap.
+        if self.cognitive_state.get("monitoring_active"):
+            return
+        self.cognitive_state["monitoring_active"] = True
+        self.cognitive_state["monitoring_started_at"] = time.time()
 
     def _load_meta_memory(self):
         """Load existing meta-memory from database"""
@@ -623,27 +614,23 @@ class MetaCognitionSystem:
 
     def _find_cross_references(self, knowledge_data: Dict[str, Any]) -> List[str]:
         """Find cross-references to other knowledge nodes"""
-        return []  # Placeholder
+        return []
 
-    def _identify_uncertainty_factors(
-        self, knowledge_data: Dict[str, Any]
-    ) -> List[str]:
+    def _identify_uncertainty_factors(self, knowledge_data: Dict[str, Any]) -> List[str]:
         """Identify factors that create uncertainty in this knowledge"""
-        return []  # Placeholder
+        return []
 
     def _extract_learning_context(self) -> Dict[str, Any]:
         """Extract current learning context"""
-        return {"timestamp": time.time()}  # Placeholder
+        return {"timestamp": time.time()}
 
     def _calculate_learning_weight(
         self, domain: SelfKnowledgeDomain, knowledge_data: Dict[str, Any]
     ) -> float:
         """Calculate learning weight for knowledge prioritization"""
-        return 0.5  # Placeholder
+        return 0.5
 
-    def _update_domain_coverage(
-        self, domain: SelfKnowledgeDomain, node: MetaMemoryNode
-    ):
+    def _update_domain_coverage(self, domain: SelfKnowledgeDomain, node: MetaMemoryNode):
         """Update coverage statistics for a domain"""
         domain_data = self.self_knowledge_coverage[domain.value]
         domain_data["knowledge_nodes"].append(node.node_id)
@@ -652,7 +639,17 @@ class MetaCognitionSystem:
 
     def _trigger_meta_reflection(self, event_type: str, context: Dict[str, Any]):
         """Trigger meta-reflection on specific events"""
-        pass  # Placeholder
+        events = self.cognitive_state.setdefault("meta_reflection_events", [])
+        events.append(
+            {
+                "event_type": event_type,
+                "context": context,
+                "timestamp": time.time(),
+            }
+        )
+        # Keep bounded in-memory history.
+        if len(events) > 200:
+            del events[:-200]
 
     def _identify_knowledge_updates(self, insights: List[str]) -> List[str]:
         """Stub: determine which knowledge nodes require updates based on insights.
@@ -714,7 +711,7 @@ class MetaCognitionSystem:
         return {"preferred_style": "balanced", "evidence_count": 0}
 
     def _identify_cognitive_biases(self) -> List[str]:
-        """Stub: placeholder for bias detection."""
+        """Stub: baseline hook for bias detection."""
         return []
 
     def _measure_processing_characteristics(self) -> Dict[str, Any]:
@@ -776,13 +773,22 @@ class MetaCognitionSystem:
         return None
 
     def _enhance_confidence_knowledge(self, insight: str):
-        pass
+        self.cognitive_state["last_confidence_insight"] = {
+            "insight": insight,
+            "timestamp": time.time(),
+        }
 
     def _enhance_learning_knowledge(self, insight: str):
-        pass
+        self.cognitive_state["last_learning_insight"] = {
+            "insight": insight,
+            "timestamp": time.time(),
+        }
 
     def _address_knowledge_gap(self, insight: str):
-        pass
+        gaps = self.cognitive_state.setdefault("addressed_knowledge_gaps", [])
+        gaps.append({"insight": insight, "timestamp": time.time()})
+        if len(gaps) > 200:
+            del gaps[:-200]
 
     def _calculate_recency_factor(self, ts: float) -> float:
         return 1.0

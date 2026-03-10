@@ -13,18 +13,19 @@ import pickle
 import pstats
 import shutil
 import traceback
-from collections.abc import Iterator
-from typing import Any, Callable, IO, Optional, Union
+from collections.abc import Callable, Iterator
+from typing import IO, Any
 from unittest.mock import patch
 
-import torch
 from functorch.compile import draw_graph, get_aot_graph_name, get_graph_being_compiled
+
+import torch
 from torch import fx as fx
 from torch._dynamo.repro.after_aot import save_graph_repro
 from torch._dynamo.utils import get_debug_dir
 from torch._logging import getArtifactLogger
 from torch.fx.graph_module import GraphModule
-from torch.fx.passes.shape_prop import _extract_tensor_metadata, TensorMetadata
+from torch.fx.passes.shape_prop import TensorMetadata, _extract_tensor_metadata
 from torch.fx.passes.tools_common import legalize_graph
 from torch.types import FileLike
 from torch.utils._ordered_set import OrderedSet
@@ -39,7 +40,6 @@ from .scheduler import (
     SchedulerNode,
 )
 from .virtualized import V
-
 
 log = logging.getLogger(__name__)
 
@@ -58,7 +58,7 @@ def has_dot() -> bool:
 def draw_buffers(
     nodes: list[BaseSchedulerNode],
     print_graph: bool = False,
-    fname: Optional[str] = None,
+    fname: str | None = None,
 ) -> None:
     """
     Draw a graph in fname.svg.
@@ -152,7 +152,7 @@ def create_fx_from_snodes(snodes: list[BaseSchedulerNode]) -> fx.Graph:
             kwargs = {"device": snode.get_device()}
         fx_node = graph.call_function(node_func, args=(), kwargs=kwargs)  # type: ignore[arg-type]
 
-        def in_output(snode: Union[BaseSchedulerNode, FusedSchedulerNode]) -> bool:
+        def in_output(snode: BaseSchedulerNode | FusedSchedulerNode) -> bool:
             if isinstance(snode, FusedSchedulerNode):
                 return any(in_output(x) for x in snode.snodes)
             return any(
@@ -200,9 +200,9 @@ def create_fx_from_snodes(snodes: list[BaseSchedulerNode]) -> fx.Graph:
 
 
 def update_orig_fx_node_name_to_buf_name(
-    nodes: Optional[SchedulerNodeList],
+    nodes: SchedulerNodeList | None,
     node_name_to_buf_name: dict[str, str],
-    parent_buf_name: Optional[str] = None,
+    parent_buf_name: str | None = None,
     n_origins: int = 0,
 ) -> None:
     if nodes is None:
@@ -218,8 +218,7 @@ def update_orig_fx_node_name_to_buf_name(
                 buf_name if parent_buf_name is None else parent_buf_name,
             )
             continue
-        else:
-            assert len(children_nodes) == 1 and children_nodes[0] == node
+        assert len(children_nodes) == 1 and children_nodes[0] == node
 
         ir_node = node.node
         if ir_node is None or ir_node.origins is None:
@@ -313,7 +312,7 @@ def enable_aot_logging() -> Iterator[None]:
 # They are not stored in DebugContext because they are not set in
 # _inductor_triton_kernel_to_post_grad_node_info's Debug Context
 _inductor_post_to_pre_grad_nodes: dict[str, Any] = {}
-_pre_grad_graph_id: Optional[int] = None
+_pre_grad_graph_id: int | None = None
 
 
 class DebugContext:
@@ -323,7 +322,7 @@ class DebugContext:
     _inductor_triton_kernel_to_post_grad_node_info: dict[str, list[str]] = {}
 
     @staticmethod
-    def create_debug_dir(folder_name: str) -> Optional[str]:
+    def create_debug_dir(folder_name: str) -> str | None:
         debug_dir = config.trace.debug_dir or get_debug_dir()
         for n in DebugContext._counter:
             dirname = os.path.join(
@@ -436,9 +435,9 @@ class DebugContext:
 
     def __exit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[Any],
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: Any | None,
     ) -> None:
         if self._prof:
             self._prof.disable()
@@ -460,7 +459,7 @@ class DebugContext:
             stats.sort_stats("tottime")
             stats.print_stats(100)
 
-    def __getattr__(self, name: str) -> Optional[Callable[..., None]]:
+    def __getattr__(self, name: str) -> Callable[..., None] | None:
         if config.trace.enabled and getattr(config.trace, name):
             try:
                 return getattr(DebugFormatter(self), name)
@@ -583,7 +582,7 @@ class DebugFormatter:
         timings: dict["ChoiceCaller", float],  # type: ignore[name-defined] # noqa: F821
         elapse: float,
         precompile_elapse: float,
-        prescreening_elapse: Optional[float],
+        prescreening_elapse: float | None,
     ) -> None:
         from .ir import FixedLayout
 
@@ -828,8 +827,7 @@ def save_args_for_compile_fx_inner(*args: Any, **kwargs: Any) -> None:
         """
         if isinstance(x, torch.Tensor):
             return TensorMetadataHolder(_extract_tensor_metadata(x), x.device)
-        else:
-            return x
+        return x
 
     args_to_save, kwargs_to_save = tree_map(handle_tensor, (args, kwargs))
 
@@ -868,8 +866,7 @@ def load_args_and_run_compile_fx_inner(path: str) -> Any:
                 x.tensor_metadata.dtype,
                 x.device,
             )
-        else:
-            return x
+        return x
 
     fake_mode = torch._subclasses.FakeTensorMode(allow_non_fake_inputs=True)
     with fake_mode, config.patch("save_args", False):
@@ -882,7 +879,7 @@ def aot_inductor_minifier_wrapper(
     exported_program: torch.export.ExportedProgram,
     *,
     inductor_configs: dict[str, Any],
-    package_path: Optional[FileLike] = None,
+    package_path: FileLike | None = None,
 ) -> str:
     from torch._dynamo.debug_utils import AccuracyError
     from torch._dynamo.repro.aoti import dump_to_minify

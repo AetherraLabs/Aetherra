@@ -150,9 +150,7 @@ class AdvancedMemoryManager:
             if quantum_result:
                 self.memory_stats["quantum_operations"] += 1
 
-            logger.info(
-                f"💾 Conversation memory stored (quantum: {quantum_result is not None})"
-            )
+            logger.info(f"💾 Conversation memory stored (quantum: {quantum_result is not None})")
             return result
 
         except Exception as e:
@@ -234,9 +232,7 @@ class AdvancedMemoryManager:
         if len(self.episodic_memory) > self.max_episodic_entries:
             self.episodic_memory = self.episodic_memory[-self.max_episodic_entries :]
 
-    async def _store_quantum_memory(
-        self, memory_entry: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+    async def _store_quantum_memory(self, memory_entry: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Store important memories in quantum-enhanced system"""
         if not self.quantum_memory:
             return None
@@ -277,15 +273,11 @@ class AdvancedMemoryManager:
 
         # Maintain context buffer
         if len(self.context_memory[user_id]) > self.max_context_entries:
-            self.context_memory[user_id] = self.context_memory[user_id][
-                -self.max_context_entries :
-            ]
+            self.context_memory[user_id] = self.context_memory[user_id][-self.max_context_entries :]
 
         self.memory_stats["context_updates"] += 1
 
-    async def _discover_patterns(
-        self, memory_entry: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+    async def _discover_patterns(self, memory_entry: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Discover patterns in memory entries"""
         patterns = []
 
@@ -312,9 +304,7 @@ class AdvancedMemoryManager:
                             "type": "topic_pattern",
                             "topic": topic,
                             "frequency": self.pattern_memory[topic]["count"],
-                            "strength": min(
-                                self.pattern_memory[topic]["count"] / 10, 1.0
-                            ),
+                            "strength": min(self.pattern_memory[topic]["count"] / 10, 1.0),
                         }
                     )
 
@@ -350,9 +340,7 @@ class AdvancedMemoryManager:
             logger.error(f"Quantum recall failed: {e}")
             return []
 
-    async def _episodic_recall(
-        self, query: str, user_id: str, limit: int
-    ) -> List[Dict[str, Any]]:
+    async def _episodic_recall(self, query: str, user_id: str, limit: int) -> List[Dict[str, Any]]:
         """Recall from episodic memory buffer"""
         query_lower = query.lower()
         results = []
@@ -383,9 +371,7 @@ class AdvancedMemoryManager:
         results.sort(key=lambda x: x["relevance"], reverse=True)
         return results[:limit]
 
-    async def _context_recall(
-        self, query: str, user_id: str, limit: int
-    ) -> List[Dict[str, Any]]:
+    async def _context_recall(self, query: str, user_id: str, limit: int) -> List[Dict[str, Any]]:
         """Recall using contextual memory"""
         if user_id not in self.context_memory:
             return []
@@ -396,8 +382,7 @@ class AdvancedMemoryManager:
         for context_entry in self.context_memory[user_id]:
             # Check topic matches
             topic_match = any(
-                topic.lower() in query_lower
-                for topic in context_entry.get("topics", [])
+                topic.lower() in query_lower for topic in context_entry.get("topics", [])
             )
             summary_match = self._calculate_text_similarity(
                 query_lower, context_entry["summary"].lower()

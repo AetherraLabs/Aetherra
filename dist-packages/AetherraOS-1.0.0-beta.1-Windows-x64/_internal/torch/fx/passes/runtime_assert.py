@@ -3,8 +3,7 @@ import functools
 import logging
 import operator
 import sys
-from typing import Any, Optional, TYPE_CHECKING
-
+from typing import TYPE_CHECKING, Any, Optional
 
 # Import sympy and ShapeEnv during TYPE_CHECKING since importing sympy is slow
 if TYPE_CHECKING:
@@ -24,24 +23,22 @@ from torch.fx.experimental.proxy_tensor import py_sym_types
 from torch.fx.experimental.sym_node import SymNode
 from torch.fx.graph_module import GraphModule
 
-
 __all__ = ["insert_deferred_runtime_asserts"]
 
 log = logging.getLogger(__name__)
 graph_code_log = torch._logging.getArtifactLogger(__name__, "graph_code_verbose")
 
 
-def _get_example_value(node: fx.Node) -> Optional[str]:
+def _get_example_value(node: fx.Node) -> str | None:
     """
     Get the example value key for a node, since dynamo uses "example_value"
     while non-strict export uses "val.
     """
     if "example_value" in node.meta:
         return node.meta["example_value"]
-    elif "val" in node.meta:
+    if "val" in node.meta:
         return node.meta["val"]
-    else:
-        return None
+    return None
 
 
 def _get_sym_val(node: fx.Node) -> Optional["sympy.Expr"]:
@@ -95,14 +92,14 @@ def insert_deferred_runtime_asserts(
 
     from torch._export.passes._node_metadata_hook import _set_node_metadata_hook
     from torch.fx.experimental.symbolic_shapes import (
-        _get_placeholder_expr,
-        _has_uninterpretable_sympy_function,
         CallMethodKey,
-        cast_symbool_to_symint_guardless,
         ConvertIntKey,
         DivideByKey,
-        free_symbols,
         InnerTensorKey,
+        _get_placeholder_expr,
+        _has_uninterpretable_sympy_function,
+        cast_symbool_to_symint_guardless,
+        free_symbols,
         resolve_unbacked_bindings,
     )
     from torch.utils._sympy.numbers import int_oo
@@ -131,8 +128,7 @@ def insert_deferred_runtime_asserts(
         if node.op != "placeholder":
             first_non_placeholder = node
             break
-        else:
-            placeholders.add(node)
+        placeholders.add(node)
 
     def _is_intermediate_tensor_sym_call(node: fx.Node) -> bool:
         """
@@ -158,13 +154,13 @@ def insert_deferred_runtime_asserts(
         if "example_value" in node.meta:
             val_key = "example_value"
             break
-        elif "val" in node.meta:
+        if "val" in node.meta:
             break
 
     def _node_metadata_hook(
         node: torch.fx.Node,
-        stack_trace: Optional[str] = None,
-        nn_module_stack: Optional[dict[str, Any]] = None,
+        stack_trace: str | None = None,
+        nn_module_stack: dict[str, Any] | None = None,
     ) -> None:
         fake_args = pytree.tree_map(
             lambda arg: (
@@ -467,25 +463,25 @@ def insert_deferred_runtime_asserts(
                                 ),
                                 keypath[2:],
                             )
-                        elif isinstance(keypath[0], CallMethodKey):
+                        if isinstance(keypath[0], CallMethodKey):
                             return go(
                                 graph.call_method(keypath[0].name, (node,)), keypath[1:]
                             )
-                        elif isinstance(keypath[0], pytree.SequenceKey):
+                        if isinstance(keypath[0], pytree.SequenceKey):
                             return go(
                                 graph.call_function(
                                     operator.getitem, (node, keypath[0].idx)
                                 ),
                                 keypath[1:],
                             )
-                        elif isinstance(keypath[0], ConvertIntKey):
+                        if isinstance(keypath[0], ConvertIntKey):
                             return go(
                                 graph.call_function(
                                     cast_symbool_to_symint_guardless, (node,)
                                 ),
                                 keypath[1:],
                             )
-                        elif isinstance(keypath[0], DivideByKey):
+                        if isinstance(keypath[0], DivideByKey):
                             # TODO: need to assert divisibility
                             return go(
                                 graph.call_function(
@@ -493,15 +489,14 @@ def insert_deferred_runtime_asserts(
                                 ),
                                 keypath[1:],
                             )
-                        elif isinstance(keypath[0], InnerTensorKey):
+                        if isinstance(keypath[0], InnerTensorKey):
                             return go(
                                 graph.call_function(
                                     getattr, (node, keypath[0].inner_name)
                                 ),
                                 keypath[1:],
                             )
-                        else:
-                            raise AssertionError(f"unrecognized keypath {keypath}")
+                        raise AssertionError(f"unrecognized keypath {keypath}")
 
                     if s not in expr_to_proxy:
                         with _set_node_metadata_hook(gm, _node_metadata_hook):

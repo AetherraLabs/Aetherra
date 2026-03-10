@@ -16,7 +16,7 @@ def maybe_unexpand(tensor, old_size, check_same_size=True):
     expanded_dims = [
         dim
         for dim, (expanded, original) in enumerate(
-            zip(tensor.size()[num_unsqueezed:], old_size)
+            zip(tensor.size()[num_unsqueezed:], old_size, strict=False)
         )
         if expanded != original
     ]

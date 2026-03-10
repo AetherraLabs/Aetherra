@@ -9,7 +9,6 @@ from torch.fx._compatibility import compatibility
 from .shape_prop import TensorMetadata
 from .tools_common import CALLABLE_NODE_OPS, get_node_target
 
-
 __all__ = [
     "OperatorSupportBase",
     "OperatorSupport",
@@ -66,7 +65,7 @@ class OperatorSupport(OperatorSupportBase):
 
     _support_dict: SupportDict
 
-    def __init__(self, support_dict: t.Optional[SupportDict] = None):
+    def __init__(self, support_dict: SupportDict | None = None):
         self._support_dict = support_dict or {}
 
     def is_node_supported(

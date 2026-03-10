@@ -17,8 +17,9 @@ import sys
 import threading
 import traceback
 import warnings
+from collections.abc import Callable
 from functools import lru_cache
-from typing import Any, Callable, cast, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Optional, Union, cast
 
 import torch
 import torch._C
@@ -35,7 +36,6 @@ from .graphs import (
     make_graphed_callables,
 )
 from .streams import Event, ExternalStream, Stream
-
 
 if TYPE_CHECKING:
     from torch.types import Device
@@ -90,7 +90,7 @@ try:
                     self.paths: list[str] = paths
 
                 def hooked_CDLL(
-                    self, name: Union[str, Path, None], *args: Any, **kwargs: Any
+                    self, name: str | Path | None, *args: Any, **kwargs: Any
                 ) -> ctypes.CDLL:
                     if name and Path(name).name == "libamd_smi.so":
                         for path in self.paths:
@@ -175,11 +175,10 @@ def is_available() -> bool:
         # using NVML at the cost of a weaker CUDA availability assessment. Note that if NVML discovery/initialization
         # fails, this assessment falls back to the default CUDA Runtime API assessment (`cudaGetDeviceCount`)
         return device_count() > 0
-    else:
-        # The default availability inspection never throws and returns 0 if the driver is missing or can't
-        # be initialized. This uses the CUDA Runtime API `cudaGetDeviceCount` which in turn initializes the CUDA Driver
-        # API via `cuInit`
-        return torch._C._cuda_getDeviceCount() > 0
+    # The default availability inspection never throws and returns 0 if the driver is missing or can't
+    # be initialized. This uses the CUDA Runtime API `cudaGetDeviceCount` which in turn initializes the CUDA Driver
+    # API via `cuInit`
+    return torch._C._cuda_getDeviceCount() > 0
 
 
 def is_bf16_supported(including_emulation: bool = True):
@@ -735,7 +734,7 @@ def set_stream(stream: Stream):
     )
 
 
-def _parse_visible_devices() -> Union[list[int], list[str]]:
+def _parse_visible_devices() -> list[int] | list[str]:
     r"""Parse CUDA_VISIBLE_DEVICES environment variable."""
     var = os.getenv("CUDA_VISIBLE_DEVICES")
 
@@ -821,7 +820,7 @@ def _raw_device_count_amdsmi() -> int:
 
 def _raw_device_count_nvml() -> int:
     r"""Return number of devices as reported by NVML or negative value if NVML discovery/initialization failed."""
-    from ctypes import byref, c_int, CDLL
+    from ctypes import CDLL, byref, c_int
 
     nvml_h = CDLL("libnvidia-ml.so.1")
     rc = nvml_h.nvmlInit()
@@ -837,8 +836,8 @@ def _raw_device_count_nvml() -> int:
     return dev_count.value
 
 
-def _raw_device_uuid_amdsmi() -> Optional[list[str]]:
-    from ctypes import byref, c_int, c_void_p, CDLL, create_string_buffer
+def _raw_device_uuid_amdsmi() -> list[str] | None:
+    from ctypes import CDLL, byref, c_int, c_void_p, create_string_buffer
 
     if not _HAS_PYNVML:  # If amdsmi is not available
         return None
@@ -873,9 +872,9 @@ def _raw_device_uuid_amdsmi() -> Optional[list[str]]:
     return uuids
 
 
-def _raw_device_uuid_nvml() -> Optional[list[str]]:
+def _raw_device_uuid_nvml() -> list[str] | None:
     r"""Return list of device UUID as reported by NVML or None if NVM discovery/initialization failed."""
-    from ctypes import byref, c_int, c_void_p, CDLL, create_string_buffer
+    from ctypes import CDLL, byref, c_int, c_void_p, create_string_buffer
 
     nvml_h = CDLL("libnvidia-ml.so.1")
     rc = nvml_h.nvmlInit()
@@ -1016,7 +1015,7 @@ def _get_nvml_device_index(device: "Device") -> int:
     return visible_devices[idx]
 
 
-_cached_device_count: Optional[int] = None
+_cached_device_count: int | None = None
 
 
 def device_count() -> int:
@@ -1166,7 +1165,7 @@ def current_blas_handle():
     return torch._C._cuda_getCurrentBlasHandle()
 
 
-def set_sync_debug_mode(debug_mode: Union[int, str]) -> None:
+def set_sync_debug_mode(debug_mode: int | str) -> None:
     r"""Set the debug mode for cuda synchronizing operations.
 
     Args:
@@ -1284,12 +1283,10 @@ def _get_amdsmi_power_draw(device: "Device" = None) -> int:
     socket_power = amdsmi.amdsmi_get_power_info(handle)["average_socket_power"]
     if socket_power != "N/A":
         return socket_power
-    else:
-        socket_power = amdsmi.amdsmi_get_power_info(handle)["current_socket_power"]
-        if socket_power != "N/A":
-            return socket_power
-        else:
-            return 0
+    socket_power = amdsmi.amdsmi_get_power_info(handle)["current_socket_power"]
+    if socket_power != "N/A":
+        return socket_power
+    return 0
 
 
 def _get_amdsmi_clock_rate(device: "Device" = None) -> int:
@@ -1301,8 +1298,7 @@ def _get_amdsmi_clock_rate(device: "Device" = None) -> int:
         clock_rate = clock_info["clk"]
     if clock_rate != "N/A":
         return clock_rate
-    else:
-        return 0
+    return 0
 
 
 def device_memory_used(device: "Device" = None) -> int:
@@ -1319,8 +1315,7 @@ def device_memory_used(device: "Device" = None) -> int:
         device = _get_nvml_device_index(device)
         handle = pynvml.nvmlDeviceGetHandleByIndex(device)
         return pynvml.nvmlDeviceGetMemoryInfo(handle).used
-    else:
-        return _get_amdsmi_device_memory_used(device)
+    return _get_amdsmi_device_memory_used(device)
 
 
 def memory_usage(device: "Device" = None) -> int:
@@ -1340,8 +1335,7 @@ def memory_usage(device: "Device" = None) -> int:
         device = _get_nvml_device_index(device)
         handle = pynvml.nvmlDeviceGetHandleByIndex(device)
         return pynvml.nvmlDeviceGetUtilizationRates(handle).memory
-    else:
-        return _get_amdsmi_memory_usage(device)
+    return _get_amdsmi_memory_usage(device)
 
 
 def utilization(device: "Device" = None) -> int:
@@ -1361,8 +1355,7 @@ def utilization(device: "Device" = None) -> int:
         device = _get_nvml_device_index(device)
         handle = pynvml.nvmlDeviceGetHandleByIndex(device)
         return pynvml.nvmlDeviceGetUtilizationRates(handle).gpu
-    else:
-        return _get_amdsmi_utilization(device)
+    return _get_amdsmi_utilization(device)
 
 
 def temperature(device: "Device" = None) -> int:
@@ -1382,8 +1375,7 @@ def temperature(device: "Device" = None) -> int:
         handle = _get_pynvml_handler(device)
         # 0 refers to the temperature sensor for the GPU die.
         return pynvml.nvmlDeviceGetTemperature(handle, 0)
-    else:
-        return _get_amdsmi_temperature(device)
+    return _get_amdsmi_temperature(device)
 
 
 def power_draw(device: "Device" = None) -> int:
@@ -1401,8 +1393,7 @@ def power_draw(device: "Device" = None) -> int:
     if not torch.version.hip:
         handle = _get_pynvml_handler(device)
         return pynvml.nvmlDeviceGetPowerUsage(handle)
-    else:
-        return _get_amdsmi_power_draw(device)
+    return _get_amdsmi_power_draw(device)
 
 
 def clock_rate(device: "Device" = None) -> int:
@@ -1419,11 +1410,10 @@ def clock_rate(device: "Device" = None) -> int:
     if not torch.version.hip:
         handle = _get_pynvml_handler(device)
         return pynvml.nvmlDeviceGetClockInfo(handle, 1)
-    else:
-        return _get_amdsmi_clock_rate(device)
+    return _get_amdsmi_clock_rate(device)
 
 
-def _get_device(device: Union[int, str, torch.device]) -> torch.device:
+def _get_device(device: int | str | torch.device) -> torch.device:
     r"""Return the torch.device type object from the passed in device.
 
     Args:
@@ -1449,7 +1439,7 @@ def _get_generator(device: torch.device) -> torch._C.Generator:
 
 
 def _set_rng_state_offset(
-    offset: int, device: Union[int, str, torch.device] = "cuda"
+    offset: int, device: int | str | torch.device = "cuda"
 ) -> None:
     r"""Set the random number generator state offset of the specified GPU.
 
@@ -1467,7 +1457,7 @@ def _set_rng_state_offset(
     _lazy_call(cb)
 
 
-def _get_rng_state_offset(device: Union[int, str, torch.device] = "cuda") -> int:
+def _get_rng_state_offset(device: int | str | torch.device = "cuda") -> int:
     r"""Return the random number generator state offset of the specified GPU.
 
     Args:
@@ -1485,7 +1475,6 @@ def _get_rng_state_offset(device: Union[int, str, torch.device] = "cuda") -> int
 
 from .memory import *  # noqa: F403
 from .random import *  # noqa: F403
-
 
 ################################################################################
 # Define Storage and Tensor classes
@@ -1736,10 +1725,10 @@ _lazy_call(_register_triton_kernels)
 def _compile_kernel(
     kernel_source: str,
     kernel_name: str,
-    compute_capability: Optional[str] = None,
+    compute_capability: str | None = None,
     header_code: str = "",
-    cuda_include_dirs: Optional[list] = None,
-    nvcc_options: Optional[list] = None,
+    cuda_include_dirs: list | None = None,
+    nvcc_options: list | None = None,
 ):
     """
     Compiles a CUDA kernel using NVRTC and returns a callable function.
@@ -1796,14 +1785,12 @@ def _compile_kernel(
 
     if isinstance(result, dict):
         return result[kernel_name]
-    else:
-        # This branch shouldn't be executed if kernel_names is provided,
-        # but MyPy needs this to understand type narrowing
-        return getattr(result, kernel_name)
+    # This branch shouldn't be executed if kernel_names is provided,
+    # but MyPy needs this to understand type narrowing
+    return getattr(result, kernel_name)
 
 
 from . import amp, jiterator, nvtx, profiler, sparse, tunable
-
 
 __all__ = [
     # Typed storage and tensors

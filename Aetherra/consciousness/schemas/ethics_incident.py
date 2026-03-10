@@ -23,9 +23,7 @@ class EthicsIncident(BaseModel):
     action_description: str = Field(
         ..., description="Natural language description of proposed action"
     )
-    risk_score: float = Field(
-        ..., ge=0.0, le=1.0, description="Estimated ethical risk (1=highest)"
-    )
+    risk_score: float = Field(..., ge=0.0, le=1.0, description="Estimated ethical risk (1=highest)")
     policy_flags: list[str] = Field(
         default_factory=list, description="Policy flag identifiers triggered"
     )

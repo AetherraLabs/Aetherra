@@ -2,13 +2,12 @@
 import logging
 from collections import abc, defaultdict
 from collections.abc import Iterable
-from typing import Any, Optional, overload, Union
+from typing import Any, overload
 
 import torch
 import torch.distributed as dist
-from torch.amp.grad_scaler import _MultiDeviceReplicator, GradScaler, OptState
+from torch.amp.grad_scaler import GradScaler, OptState, _MultiDeviceReplicator
 from torch.distributed.distributed_c10d import ProcessGroup
-
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +96,7 @@ class ShardedGradScaler(GradScaler):
         growth_factor: float = 2.0,
         growth_interval: int = 2000,
         enabled: bool = True,
-        process_group: Optional[ProcessGroup] = dist.group.WORLD,
+        process_group: ProcessGroup | None = dist.group.WORLD,
     ) -> None:
         super().__init__(
             device,
@@ -124,8 +123,8 @@ class ShardedGradScaler(GradScaler):
     def scale(self, outputs: Iterable[torch.Tensor]) -> Iterable[torch.Tensor]: ...
 
     def scale(
-        self, outputs: Union[torch.Tensor, Iterable[torch.Tensor]]
-    ) -> Union[torch.Tensor, Iterable[torch.Tensor]]:
+        self, outputs: torch.Tensor | Iterable[torch.Tensor]
+    ) -> torch.Tensor | Iterable[torch.Tensor]:
         if not self._enabled:
             return outputs
 
@@ -144,7 +143,7 @@ class ShardedGradScaler(GradScaler):
 
         stash: list[_GeneralMultiDeviceReplicator] = []
 
-        def apply_scale(val: Union[torch.Tensor, Iterable[torch.Tensor]]):
+        def apply_scale(val: torch.Tensor | Iterable[torch.Tensor]):
             if isinstance(val, torch.Tensor):
                 assert _is_supported_device(val)
                 if len(stash) == 0:
@@ -234,7 +233,7 @@ class ShardedGradScaler(GradScaler):
             raise RuntimeError(
                 "unscale_() has already been called on this optimizer since the last update()."
             )
-        elif optimizer_state["stage"] is OptState.STEPPED:
+        if optimizer_state["stage"] is OptState.STEPPED:
             raise RuntimeError("unscale_() is being called after step().")
 
         # FP32 division can be imprecise for certain compile options, so we carry out the reciprocal in FP64.
@@ -292,7 +291,7 @@ class ShardedGradScaler(GradScaler):
             else:
                 self._growth_tracker = successful
 
-    def update(self, new_scale: Optional[Union[float, torch.Tensor]] = None) -> None:
+    def update(self, new_scale: float | torch.Tensor | None = None) -> None:
         """
         Updates the scale factor.
         If any optimizer steps were skipped the scale is multiplied by ``backoff_factor``

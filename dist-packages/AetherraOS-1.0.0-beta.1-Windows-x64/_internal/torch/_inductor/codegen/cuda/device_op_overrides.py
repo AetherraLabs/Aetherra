@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-from typing import Optional
-
 import torch
 
 from ...utils import triton_version_uses_attrs_dict
 from ..common import (
     DeviceOpOverrides,
-    register_device_op_overrides,
     TritonScratchWorkspace,
+    register_device_op_overrides,
 )
 
 
@@ -335,7 +333,7 @@ class CUDADeviceOpOverrides(DeviceOpOverrides):
 
     def cpp_global_scratch(
         self, idx: int, workspace: TritonScratchWorkspace
-    ) -> Optional[tuple[list[str], str]]:
+    ) -> tuple[list[str], str] | None:
         if triton_version_uses_attrs_dict():
             var_name = f"global_scratch_{idx}"
             if workspace.size > 0:
@@ -358,8 +356,7 @@ class CUDADeviceOpOverrides(DeviceOpOverrides):
                     ],
                     var_name,
                 )
-            else:
-                return [f"CUdeviceptr {var_name} = 0;"], var_name
+            return [f"CUdeviceptr {var_name} = 0;"], var_name
         return None
 
 

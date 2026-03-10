@@ -36,6 +36,7 @@ try:  # pragma: no cover - optional UI types
         QVBoxLayout,
         QWidget,
     )
+
     HAS_PYSIDE6 = True
 except Exception:  # pragma: no cover - headless
     HAS_PYSIDE6 = False
@@ -65,6 +66,7 @@ except Exception:  # pragma: no cover - headless
 try:
     from ..memory.QuantumEnhancedMemoryEngine.engine import QuantumEnhancedMemoryEngine
 except Exception:  # pragma: no cover - allow import failure
+
     class QuantumEnhancedMemoryEngine:  # type: ignore
         def store(self, memory_entry: dict) -> dict:
             return memory_entry
@@ -193,9 +195,7 @@ class MemoryCore:
             ),
         ]
 
-    def search_memories(
-        self, query: str, filters: Optional[Dict[str, Any]] = None
-    ) -> List[Memory]:
+    def search_memories(self, query: str, filters: Optional[Dict[str, Any]] = None) -> List[Memory]:
         """Search memories with filters"""
         results = []
 
@@ -213,9 +213,11 @@ class MemoryCore:
                 if filters.get("importance", 0) > memory.importance:
                     continue
 
-                if (t := filters.get("time")) and t != "All Time" and (
-                    datetime.now() - memory.timestamp
-                ) > self.get_time_delta(t):
+                if (
+                    (t := filters.get("time"))
+                    and t != "All Time"
+                    and (datetime.now() - memory.timestamp) > self.get_time_delta(t)
+                ):
                     continue
 
             results.append(memory)
@@ -344,9 +346,7 @@ class MemoryCore:
                 memory_keywords = memory.content.lower().split()
 
                 if any(keyword in memory_keywords for keyword in goal_keywords):
-                    memory.context["linked_goals"] = memory.context.get(
-                        "linked_goals", []
-                    )
+                    memory.context["linked_goals"] = memory.context.get("linked_goals", [])
                     memory.context["linked_goals"].append(goal.id)
 
     def get_memory_stats(self) -> Dict[str, Any]:
@@ -374,9 +374,7 @@ class MemoryCore:
             "type_distribution": type_counts,
             "avg_importance": avg_importance,
             "avg_confidence": avg_confidence,
-            "active_goals": len(
-                [g for g in self.current_goals if g.status == "active"]
-            ),
+            "active_goals": len([g for g in self.current_goals if g.status == "active"]),
         }
 
 
@@ -525,9 +523,7 @@ if HAS_PYSIDE6:
             props_layout = QFormLayout(props_group)
 
             self.type_combo = QComboBox()
-            self.type_combo.addItems(
-                ["general", "goal", "insight", "experience", "knowledge"]
-            )
+            self.type_combo.addItems(["general", "goal", "insight", "experience", "knowledge"])
 
             self.importance_slider = QSlider(Qt.Horizontal)
             self.importance_slider.setRange(0, 100)
@@ -556,11 +552,7 @@ if HAS_PYSIDE6:
                 "content": self.content_input.toPlainText(),
                 "memory_type": self.type_combo.currentText(),
                 "importance": self.importance_slider.value() / 100.0,
-                "tags": [
-                    tag.strip()
-                    for tag in self.tags_input.text().split(",")
-                    if tag.strip()
-                ],
+                "tags": [tag.strip() for tag in self.tags_input.text().split(",") if tag.strip()],
             }
 
     class LightweightMemoryCore(QWidget):
@@ -579,9 +571,7 @@ if HAS_PYSIDE6:
             # Header
             header_layout = QHBoxLayout()
             title_label = QLabel("🧠 World-Class Memory Core")
-            title_label.setStyleSheet(
-                "font-size: 18px; font-weight: bold; color: #2E8B57;"
-            )
+            title_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #2E8B57;")
 
             stats = self.memory_core.get_memory_stats()
             self.stats_label = QLabel(
@@ -651,9 +641,7 @@ if HAS_PYSIDE6:
                     importance=data["importance"],
                     tags=data["tags"],
                 )
-                self.status_label.setText(
-                    f"✅ Memory injected: {memory.content[:50]}..."
-                )
+                self.status_label.setText(f"✅ Memory injected: {memory.content[:50]}...")
                 self.update_stats()
 
         def show_relevant_memories(self):
@@ -800,15 +788,12 @@ def console_demo():
             relevant = core.get_relevant_memories()
             print(f"\n🎯 Found {len(relevant)} relevant memories:")
             for i, memory in enumerate(relevant, 1):
-                print(
-                    f"{i}. [Score: {memory.relevance_score:.2f}] {memory.content[:60]}..."
-                )
+                print(f"{i}. [Score: {memory.relevance_score:.2f}] {memory.content[:60]}...")
 
         elif choice == "3":
             content = input("Enter memory content: ")
             memory_type = (
-                input("Enter type (general/goal/insight/experience/knowledge): ")
-                or "general"
+                input("Enter type (general/goal/insight/experience/knowledge): ") or "general"
             )
             importance = float(input("Enter importance (0.0-1.0): ") or "0.5")
             tags = input("Enter tags (comma-separated): ").split(",")

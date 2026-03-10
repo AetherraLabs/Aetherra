@@ -1,14 +1,12 @@
 # mypy: allow-untyped-defs
-from typing import Optional, Union
 
 import torch
-from torch import nan, Tensor
+from torch import Tensor, nan
 from torch.distributions import constraints
 from torch.distributions.transformed_distribution import TransformedDistribution
 from torch.distributions.transforms import AffineTransform, PowerTransform
 from torch.distributions.uniform import Uniform
 from torch.distributions.utils import broadcast_all, euler_constant
-
 
 __all__ = ["Kumaraswamy"]
 
@@ -49,9 +47,9 @@ class Kumaraswamy(TransformedDistribution):
 
     def __init__(
         self,
-        concentration1: Union[Tensor, float],
-        concentration0: Union[Tensor, float],
-        validate_args: Optional[bool] = None,
+        concentration1: Tensor | float,
+        concentration0: Tensor | float,
+        validate_args: bool | None = None,
     ) -> None:
         self.concentration1, self.concentration0 = broadcast_all(
             concentration1, concentration0

@@ -7,11 +7,10 @@
 import contextlib
 import copy
 from abc import ABC, abstractmethod
-from collections.abc import Generator, Iterable, Sequence
-from typing import Any, Callable, cast, Optional, Union
+from collections.abc import Callable, Generator, Iterable, Sequence
+from typing import Any, cast
 
 import torch.nn as nn
-
 
 __all__ = [
     "always_wrap_policy",
@@ -30,7 +29,7 @@ __all__ = [
 # non-FSDP-specific folder and/or make it public in the future.
 def _post_order_apply(
     root_module: nn.Module,
-    fn: Callable[[nn.Module], Optional[nn.Module]],
+    fn: Callable[[nn.Module], nn.Module | None],
 ):
     """
     This applies ``fn`` to every module in the module tree of ``root_module``
@@ -45,7 +44,7 @@ def _post_order_apply(
     def _post_order_apply_inner(
         module: nn.Module,
         module_name: str,
-        parent_module: Optional[nn.Module],
+        parent_module: nn.Module | None,
     ):
         for child_module_name, child_module in module.named_children():
             if child_module not in visited_modules:
@@ -73,14 +72,14 @@ def _construct_wrap_fn(
     root_module: nn.Module,
     target_module_to_kwargs: dict[nn.Module, dict[str, Any]],
     fsdp_fn: Callable,
-) -> Callable[[nn.Module], Optional[nn.Module]]:
+) -> Callable[[nn.Module], nn.Module | None]:
     """
     This constructs the "wrap" function to pass to :func:`_post_order_apply`
     based on ``target_module_to_kwargs``, which should be constructed from the
     wrapping policy.
     """
 
-    def fn(module: nn.Module) -> Optional[nn.Module]:
+    def fn(module: nn.Module) -> nn.Module | None:
         # Explicitly avoid wrapping the root module since for FSDP, it is
         # handled by the caller
         if module in target_module_to_kwargs and module is not root_module:
@@ -102,7 +101,7 @@ def _run_mixed_precision_override_policy(
     for module in root_module.modules():
         if module in ignored_modules:
             continue
-        elif isinstance(module, module_classes_tuple):
+        if isinstance(module, module_classes_tuple):
             # This policy overrides any existing policy
             if module not in target_module_to_kwargs:
                 # Only inherit from the root kwargs if not already specified
@@ -194,7 +193,7 @@ class ModuleWrapPolicy(_Policy):
         for module in root_module.modules():
             if module in ignored_modules:
                 continue
-            elif isinstance(module, module_classes):
+            if isinstance(module, module_classes):
                 # Shallow copy to avoid coupling changes across modules
                 target_module_to_kwargs[module] = copy.copy(root_kwargs)
         return target_module_to_kwargs
@@ -234,7 +233,7 @@ class CustomPolicy(_Policy):
         >>> fsdp_model = FSDP(model, auto_wrap_policy=policy)
     """
 
-    def __init__(self, lambda_fn: Callable[[nn.Module], Union[bool, dict[str, Any]]]):
+    def __init__(self, lambda_fn: Callable[[nn.Module], bool | dict[str, Any]]):
         self._lambda_fn = lambda_fn
 
     def _run_policy(
@@ -313,10 +312,9 @@ def _wrap_module_cls_individually(
     if recurse:
         # always recurse
         return True
-    else:
-        # if not recursing, decide whether we should wrap based on whether the type of module
-        # is in `module_classes`.
-        return isinstance(module, tuple(module_classes))
+    # if not recursing, decide whether we should wrap based on whether the type of module
+    # is in `module_classes`.
+    return isinstance(module, tuple(module_classes))
 
 
 def _or_policy(
@@ -341,8 +339,8 @@ def size_based_auto_wrap_policy(
     nonwrapped_numel: int,
     # Additional custom arguments
     min_num_params: int = int(1e8),
-    force_leaf_modules: Optional[set[type[nn.Module]]] = None,
-    exclude_wrap_modules: Optional[set[type[nn.Module]]] = None,
+    force_leaf_modules: set[type[nn.Module]] | None = None,
+    exclude_wrap_modules: set[type[nn.Module]] | None = None,
 ) -> bool:
     """
     A size-based auto wrap policy.
@@ -384,9 +382,8 @@ def size_based_auto_wrap_policy(
     if recurse:
         # We should recurse if the module is big enough but not in force_leaf_modules list.
         return is_large and not isinstance(module, tuple(force_leaf_modules))
-    else:
-        # If we are not recursing, determine if we should wrap.
-        return is_large and not isinstance(module, tuple(exclude_wrap_modules))
+    # If we are not recursing, determine if we should wrap.
+    return is_large and not isinstance(module, tuple(exclude_wrap_modules))
 
 
 # Set those defaults to the size_based_auto_wrap_policy function. Make them easy to be imported.
@@ -549,8 +546,7 @@ def _recursive_wrap(
         ):
             # Leaf node or final wrapping of the remainder both happen here.
             return _wrap(module, wrapper_cls, **kwargs), nonwrapped_numel
-        else:
-            return module, total_wrapped_numel
+        return module, total_wrapped_numel
     return module, 0
 
 
@@ -561,7 +557,7 @@ class _ConfigAutoWrap:
     """
 
     in_autowrap_context: bool = False  # Context flag
-    wrapper_cls: Optional[Callable] = None  # The wrapper class
+    wrapper_cls: Callable | None = None  # The wrapper class
     kwargs: dict[str, Any] = {}  # Wrapper's args
 
     def __init__(self, **kwargs: dict[str, Any]):

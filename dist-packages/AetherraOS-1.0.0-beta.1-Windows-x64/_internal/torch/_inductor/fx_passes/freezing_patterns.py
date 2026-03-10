@@ -8,19 +8,18 @@ from torch._inductor.utils import GPU_TYPES
 from ..._dynamo.utils import counters
 from .. import config
 from ..pattern_matcher import (
-    _return_true,
     CallFunction,
-    fwd_only,
     Ignored,
-    init_once_fakemode,
     KeywordArg,
     Match,
     PatternMatcherPass,
+    _return_true,
+    fwd_only,
+    init_once_fakemode,
     register_graph_pattern,
     register_replacement,
     stable_topological_sort,
 )
-
 
 aten = torch.ops.aten
 

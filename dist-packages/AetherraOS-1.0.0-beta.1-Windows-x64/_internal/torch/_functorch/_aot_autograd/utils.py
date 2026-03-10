@@ -6,9 +6,10 @@ Contains various utils for AOTAutograd, including those for handling collections
 import dataclasses
 import operator
 import warnings
+from collections.abc import Callable
 from contextlib import nullcontext
 from functools import wraps
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 import torch
 import torch.utils._pytree as pytree
@@ -18,7 +19,6 @@ from torch._subclasses.fake_tensor import FakeTensor
 from torch._subclasses.functional_tensor import FunctionalTensor
 from torch.fx.experimental._backward_state import BackwardState
 from torch.fx.experimental.proxy_tensor import py_sym_types
-
 
 KNOWN_TYPES = [
     torch.Tensor,
@@ -58,10 +58,9 @@ def _get_symint_hints(exprs):
     """
     if isinstance(exprs, (list, tuple)):
         return type(exprs)(_get_symint_hints(e) for e in exprs)
-    elif isinstance(exprs, torch.SymInt):
+    if isinstance(exprs, torch.SymInt):
         return exprs.node.shape_env.size_hint(exprs.node.expr)
-    else:
-        return exprs
+    return exprs
 
 
 def partial_flatten_asdict(obj: Any) -> Any:
@@ -69,18 +68,17 @@ def partial_flatten_asdict(obj: Any) -> Any:
         return {
             field.name: getattr(obj, field.name) for field in dataclasses.fields(obj)
         }
-    elif isinstance(obj, (list, tuple)):
+    if isinstance(obj, (list, tuple)):
         return obj.__class__([partial_flatten_asdict(item) for item in obj])
-    elif isinstance(obj, dict):
+    if isinstance(obj, dict):
         return {k: partial_flatten_asdict(v) for k, v in obj.items()}
-    else:
-        return obj
+    return obj
 
 
 def normalize_as_list(x):
     if isinstance(x, tuple):
         return list(x)
-    elif isinstance(x, list):
+    if isinstance(x, list):
         return x
     return [x]
 
@@ -114,7 +112,7 @@ def make_boxed_compiler(compiler):
 
 
 def call_func_at_runtime_with_args(
-    f, args: Union[tuple[Any], list[Any]], steal_args=False, disable_amp=False
+    f, args: tuple[Any] | list[Any], steal_args=False, disable_amp=False
 ):
     if not steal_args:
         args = list(args)
@@ -138,12 +136,12 @@ def call_func_at_runtime_with_args(
 
 # Inspired by autodidax (thanks!)
 class PytreeThunk:
-    spec: Optional[pytree.TreeSpec] = None
+    spec: pytree.TreeSpec | None = None
     # These are some kinda dumb microoptimizations that save about 3-4 us of overhead.
-    is_simple: Optional[
-        bool
-    ] = None  # if the output spec is a tuple/list, we won't bother unflattening it.
-    is_really_simple: Optional[bool] = None  # if the output spec is a LeafSpec
+    is_simple: bool | None = (
+        None  # if the output spec is a tuple/list, we won't bother unflattening it.
+    )
+    is_really_simple: bool | None = None  # if the output spec is a LeafSpec
 
     def set(self, spec: pytree.TreeSpec) -> None:
         assert self.spec is None or self.spec == spec
@@ -335,12 +333,12 @@ def unlift_tokens(fw_module, fw_metadata, aot_config, bw_module=None):
 
         num_erased_inputs = len(input_token_nodes)
 
-        assert (
-            num_erased_inputs == expected_num_erased
-        ), f"{subgraph} num_erased_inputs:{num_erased_inputs} {input_token_nodes}!=expected {expected_num_erased}"
-        assert (
-            num_erased_outs == expected_num_erased
-        ), f"{subgraph} num_erased_outs:{num_erased_outs} {output_token_nodes}!=expected {expected_num_erased}"
+        assert num_erased_inputs == expected_num_erased, (
+            f"{subgraph} num_erased_inputs:{num_erased_inputs} {input_token_nodes}!=expected {expected_num_erased}"
+        )
+        assert num_erased_outs == expected_num_erased, (
+            f"{subgraph} num_erased_outs:{num_erased_outs} {output_token_nodes}!=expected {expected_num_erased}"
+        )
 
         module.recompile()
 
@@ -394,8 +392,7 @@ def root_module_when_exporting_non_strict(flat_fn):
     # We look for that wrapping pattern here.
     if hasattr(flat_fn, "_orig_mod") and hasattr(flat_fn._orig_mod, "_export_root"):
         return flat_fn._orig_mod._export_root
-    else:
-        return None
+    return None
 
 
 def copy_fwd_metadata_to_bw_nodes(fx_g):

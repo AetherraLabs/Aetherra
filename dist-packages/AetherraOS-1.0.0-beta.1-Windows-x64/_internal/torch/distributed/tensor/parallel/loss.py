@@ -1,7 +1,7 @@
 # mypy: allow-untyped-defs
 # Copyright (c) Meta Platforms, Inc. and affiliates
 import contextlib
-from typing import cast, Optional
+from typing import cast
 
 import torch
 import torch._prims_common as utils
@@ -13,13 +13,12 @@ from torch.distributed.tensor import DTensor, Replicate, Shard
 from torch.distributed.tensor._dtensor_spec import DTensorSpec, TensorMeta
 from torch.distributed.tensor._ops._embedding_ops import _MaskPartial
 from torch.distributed.tensor._ops._math_ops import (
-    _skip_dim,
     Reduction,
+    _skip_dim,
     replicate_reduction_dims,
 )
 from torch.distributed.tensor._ops.utils import normalize_dim
 from torch.distributed.tensor.placement_types import Placement
-
 
 aten = torch.ops.aten
 
@@ -96,14 +95,12 @@ def _cast_to_dtensor(
     if isinstance(tensor, DTensor):
         if tensor.placements == placements:
             return tensor
-        else:
-            raise RuntimeError(f"Expected {placements} but got {tensor.placements}.")
-    elif isinstance(tensor, torch.Tensor):
+        raise RuntimeError(f"Expected {placements} but got {tensor.placements}.")
+    if isinstance(tensor, torch.Tensor):
         return DTensor.from_local(
             tensor, device_mesh=mesh, placements=placements, run_check=False
         )
-    else:
-        raise TypeError(f"Unsupported type {type(tensor)}")
+    raise TypeError(f"Unsupported type {type(tensor)}")
 
 
 def _propagate_tensor_meta(
@@ -117,10 +114,9 @@ def _propagate_tensor_meta(
     )
     if isinstance(tensor_meta, TensorMeta):
         return tensor_meta
-    elif isinstance(tensor_meta, tuple):
+    if isinstance(tensor_meta, tuple):
         return tensor_meta[0]
-    else:
-        raise RuntimeError(f"Unexpected tensor meta type: {type(tensor_meta)}.")
+    raise RuntimeError(f"Unexpected tensor meta type: {type(tensor_meta)}.")
 
 
 # NOTE: The implementation follows torch._decomp.decomposition._log_softmax,
@@ -198,8 +194,8 @@ def _log_softmax_backward_handler(
 def _nll_loss_forward(
     x: Tensor,
     target: Tensor,
-    weight: Optional[Tensor],
-    local_weight: Optional[Tensor],
+    weight: Tensor | None,
+    local_weight: Tensor | None,
     reduction: int,
     ignore_index: int,
     input_shape: torch.Size,
@@ -347,7 +343,7 @@ def _nll_loss_and_log_softmax_backward(
     grad_output: Tensor,
     x: Tensor,
     target: Tensor,
-    weight: Optional[Tensor],
+    weight: Tensor | None,
     reduction: int,
     ignore_index: int,
     total_weight: Tensor,

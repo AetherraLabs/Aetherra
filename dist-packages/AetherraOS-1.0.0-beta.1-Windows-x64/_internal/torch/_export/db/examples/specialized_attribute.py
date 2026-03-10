@@ -3,8 +3,10 @@ from enum import Enum
 
 import torch
 
+
 class Animal(Enum):
     COW = "moo"
+
 
 class SpecializedAttribute(torch.nn.Module):
     """
@@ -19,8 +21,8 @@ class SpecializedAttribute(torch.nn.Module):
     def forward(self, x):
         if self.a == Animal.COW.value:
             return x * x + self.b
-        else:
-            raise ValueError("bad")
+        raise ValueError("bad")
+
 
 example_args = (torch.randn(3, 2),)
 model = SpecializedAttribute()

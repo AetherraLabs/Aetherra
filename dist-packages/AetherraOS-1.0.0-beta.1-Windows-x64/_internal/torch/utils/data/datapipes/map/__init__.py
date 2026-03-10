@@ -5,13 +5,14 @@ from torch.utils.data.datapipes.map.combinatorics import (
 )
 from torch.utils.data.datapipes.map.combining import (
     ConcaterMapDataPipe as Concater,
+)
+from torch.utils.data.datapipes.map.combining import (
     ZipperMapDataPipe as Zipper,
 )
 from torch.utils.data.datapipes.map.grouping import BatcherMapDataPipe as Batcher
 from torch.utils.data.datapipes.map.utils import (
     SequenceWrapperMapDataPipe as SequenceWrapper,
 )
-
 
 __all__ = ["Batcher", "Concater", "Mapper", "SequenceWrapper", "Shuffler", "Zipper"]
 

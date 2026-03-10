@@ -33,8 +33,10 @@ import re
 import sys
 import traceback
 import weakref
-from dataclasses import dataclass, field as dc_field
-from typing import Any, Callable, cast, Optional, TYPE_CHECKING, Union
+from collections.abc import Callable
+from dataclasses import dataclass
+from dataclasses import field as dc_field
+from typing import TYPE_CHECKING, Any, cast
 
 import sympy
 
@@ -43,7 +45,7 @@ import torch._logging
 import torch.distributed as dist
 import torch.nn
 import torch.utils._pytree as pytree
-from torch import fx, Tensor
+from torch import Tensor, fx
 from torch._C._dynamo import guards
 from torch._dynamo.exc import ShortenTraceback, TensorifyScalarRestartAnalysis
 from torch._guards import (
@@ -51,32 +53,33 @@ from torch._guards import (
     CompileId,
     GlobalContextCheckpointState,
     Source,
-    tracing,
     TracingContext,
+    tracing,
 )
 from torch._subclasses.fake_tensor import FakeTensor
 from torch._utils_internal import signpost_event
 from torch.fx._lazy_graph_module import _make_graph_module  # type: ignore[attr-defined]
 from torch.fx.experimental._backward_state import BackwardState
 from torch.fx.experimental.symbolic_shapes import (
+    ShapeEnv,
+    Specialization,
     free_symbols,
     guard_scalar,
     is_symbolic,
-    ShapeEnv,
-    Specialization,
 )
 from torch.fx.passes.runtime_assert import insert_deferred_runtime_asserts
 from torch.multiprocessing.reductions import StorageWeakRef
 from torch.utils._ordered_set import OrderedSet
 from torch.utils._python_dispatch import is_traceable_wrapper_subclass
 
-from . import config, exc, logging as torchdynamo_logging, variables
+from . import config, exc, variables
+from . import logging as torchdynamo_logging
 from .backends.registry import CompiledFn, CompilerFn
 from .bytecode_transformation import (
+    Instruction,
     create_call_function,
     create_instruction,
     create_load_const,
-    Instruction,
     unique_id,
 )
 from .code_context import code_context
@@ -85,8 +88,8 @@ from .current_scope_id import enter_new_scope
 from .device_interface import get_interface_for_device
 from .exc import (
     BackendCompilerFailed,
-    exceptions_allowed_to_be_fallback,
     SkipFrame,
+    exceptions_allowed_to_be_fallback,
     unimplemented_v2,
     unimplemented_v2_with_warning,
 )
@@ -101,8 +104,6 @@ from .source import (
     ConstantSource,
     GetItemSource,
     GlobalStateSource,
-    is_constant_source,
-    is_from_local_source,
     LocalSource,
     NumpyTensorSource,
     ParamBufferSource,
@@ -110,11 +111,14 @@ from .source import (
     SyntheticLocalSource,
     TensorProperty,
     TensorPropertySource,
+    is_constant_source,
+    is_from_local_source,
 )
 from .utils import (
+    CleanupHook,
+    LazyString,
     _extract_tensor_dict,
     checkpoint_params,
-    CleanupHook,
     clone_inputs,
     count_calls,
     counters,
@@ -127,7 +131,6 @@ from .utils import (
     increment_op_count,
     istype,
     lazy_format_graph_code,
-    LazyString,
     nn_module_proxy,
     same,
     set_example_value,
@@ -150,7 +153,6 @@ from .variables.tensor import (
     UnspecializedPythonVariable,
 )
 from .variables.torch_function import TensorWithTFOverrideVariable
-
 
 if TYPE_CHECKING:
     from torch._dynamo.symbolic_convert import InstructionTranslatorBase
@@ -309,13 +311,13 @@ class OutputGraphGuardsState:
     input_source_to_sizes_strides: dict[Source, dict[str, Any]]
     dual_level: int
     functorch_layers: list[torch._functorch.pyfunctorch.FuncTorchInterpreter]
-    current_device: Optional[torch.device]
+    current_device: torch.device | None
 
     export: bool = False
     export_constraints: bool = False
 
-    _guards: Optional[torch._guards.GuardsSet] = None
-    _aotautograd_guards: Optional[list[torch._guards.GuardEnvExpr]] = None
+    _guards: torch._guards.GuardsSet | None = None
+    _aotautograd_guards: list[torch._guards.GuardEnvExpr] | None = None
 
     @property
     def shape_env(self):
@@ -359,7 +361,7 @@ class OutputGraph(OutputGraphGuardsState):
     def __init__(
         self,
         code_options: dict[str, Any],
-        compiler_fn: Optional[CompilerFn],
+        compiler_fn: CompilerFn | None,
         root_tx,
         export: bool,
         export_constraints,
@@ -439,9 +441,7 @@ class OutputGraph(OutputGraphGuardsState):
             )
         self.tracing_context: TracingContext = TracingContext(fake_mode)
         self.tracing_context.traced_code.append(f_code)
-        self.dynamo_compile_id: Optional[CompileId] = (
-            CompileContext.current_compile_id()
-        )
+        self.dynamo_compile_id: CompileId | None = CompileContext.current_compile_id()
         self.init_ambient_guards()
 
         # Map each tensor id to a list of sources. This is necessary because
@@ -453,7 +453,7 @@ class OutputGraph(OutputGraphGuardsState):
             collections.defaultdict(list)
         )
         # Stores the full fqn of a param or buffer to the relevant source.
-        self.param_name_to_source: Optional[dict[str, Source]] = {}
+        self.param_name_to_source: dict[str, Source] | None = {}
         self.side_effects = SideEffects(self)
         # Cached variable trackers. This makes symbolic analysis of LOAD_GLOBAL
         # and LOAD_ATTR for same python objects free.
@@ -469,7 +469,7 @@ class OutputGraph(OutputGraphGuardsState):
         self.register_finalizer_fns: list[Callable[[fx.GraphModule], None]] = []
 
         # Not checkpointed
-        self.compiler_fn: Optional[CompilerFn] = compiler_fn
+        self.compiler_fn: CompilerFn | None = compiler_fn
         self.root_tx = root_tx
 
         self.package = package
@@ -533,8 +533,8 @@ class OutputGraph(OutputGraphGuardsState):
 
         # Use to pass values to backward hooks when using compiled autograd
         self.backward_state: dict[str, VariableTracker] = {}
-        self.backward_state_proxy: Optional[torch.fx.Proxy] = None
-        self.backward_state_var: Optional[str] = None
+        self.backward_state_proxy: torch.fx.Proxy | None = None
+        self.backward_state_var: str | None = None
 
         self.name_of_builtins_dict_key_in_fglobals: str = (
             self.install_builtins_dict_in_fglobals()
@@ -546,7 +546,7 @@ class OutputGraph(OutputGraphGuardsState):
         # that are set for the entire duration of the compiled region.
         # This is an invariant today because we graph break on the saved_tensor_hook
         # context manager inside a compiled region
-        self.saved_tensors_hooks_subgraph_names: Optional[list[str]] = (
+        self.saved_tensors_hooks_subgraph_names: list[str] | None = (
             self.maybe_install_saved_tensors_hooks_subgraphs()
         )
 
@@ -636,7 +636,7 @@ class OutputGraph(OutputGraphGuardsState):
                 )
             )
 
-    def maybe_install_saved_tensors_hooks_subgraphs(self) -> Optional[list[str]]:
+    def maybe_install_saved_tensors_hooks_subgraphs(self) -> list[str] | None:
         if torch._dynamo.compiled_autograd.in_compiled_autograd_region:
             return None
 
@@ -865,7 +865,7 @@ class OutputGraph(OutputGraphGuardsState):
 
     def get_submodule(self, keys):
         assert keys
-        obj: Union[torch.nn.Module, dict[str, torch.nn.Module]] = self.nn_modules
+        obj: torch.nn.Module | dict[str, torch.nn.Module] = self.nn_modules
         for k in keys.split("."):
             if isinstance(obj, dict):
                 obj = obj[k]
@@ -916,7 +916,7 @@ class OutputGraph(OutputGraphGuardsState):
 
     def register_attr_or_module(
         self,
-        target: Union[torch.nn.Module, torch.Tensor, Any],
+        target: torch.nn.Module | torch.Tensor | Any,
         *names,
         **options,
     ):
@@ -1219,7 +1219,7 @@ class OutputGraph(OutputGraphGuardsState):
             if v not in val_to_names:
                 val_to_names[v] = []
             val_to_names[v].append(k)
-        for v in val_to_names.keys():
+        for v in val_to_names:
             restore_vars.extend(val_to_names[v])
             stack_values.extend([v] * len(val_to_names[v]))
 
@@ -1301,7 +1301,7 @@ class OutputGraph(OutputGraphGuardsState):
         all_stack_values = []
         all_restore_vars = []
         all_stack_locals_metas = []
-        cur_tx: Optional[InstructionTranslatorBase] = tx
+        cur_tx: InstructionTranslatorBase | None = tx
         while True:
             assert cur_tx is not None
             # this should have been checked by the caller
@@ -1490,7 +1490,7 @@ class OutputGraph(OutputGraphGuardsState):
             node.meta.pop("creation_timestamp", None)
 
         grad_enabled = torch.is_grad_enabled()
-        for node1, node2 in zip(nodes, nodes[1:]):
+        for node1, node2 in zip(nodes, nodes[1:], strict=False):
             if (
                 node1.target is torch._C._set_grad_enabled
                 and tuple(node1.args) == (not grad_enabled,)
@@ -1888,8 +1888,7 @@ class OutputGraph(OutputGraphGuardsState):
     def dedup_pass(self):
         if torch._dynamo.config.use_graph_deduplication:
             return apply_graph_deduplication(self)
-        else:
-            return {}
+        return {}
 
     def install_subgraph(self, name, sub_gm):
         next_name = get_unique_name_wrt(name, self.nn_modules, requires_suffix=True)
@@ -2007,7 +2006,7 @@ class OutputGraph(OutputGraphGuardsState):
 
         used_symbols: set[sympy.Symbol] = set()
 
-        def update_used_symbols(used_symbols, fake: Union[torch.SymInt, torch.Tensor]):
+        def update_used_symbols(used_symbols, fake: torch.SymInt | torch.Tensor):
             used_symbols |= free_symbols(fake)
 
         recheck_placeholders = []
@@ -2034,7 +2033,7 @@ class OutputGraph(OutputGraphGuardsState):
                             real_script_obj
                         ):
                             flat_dict = dict(real_script_obj.__obj_flatten__())  # type: ignore[attr-defined]
-                            for attr in flat_dict.keys():
+                            for attr in flat_dict:
                                 fake_attr_val = getattr(
                                     fake_script_obj.wrapped_obj, attr
                                 )
@@ -2313,7 +2312,7 @@ class SubgraphTracer(fx.Tracer):
         # There are only two cases where bound_symbols will be recorded:
         # 1. when we create_graph_input for a backed SymInt that's basic symbol
         # 2. when we track_unbacked_symbols for intermediate results that contain unbacked symints.
-        self.bound_symbols: dict[sympy.Symbol, Union[torch.fx.Proxy, LazyProxy]] = {}
+        self.bound_symbols: dict[sympy.Symbol, torch.fx.Proxy | LazyProxy] = {}
 
         self.prev_inst = None
         # True if this tracer is currently tracing into torch.utils.checkpoint
@@ -2774,9 +2773,8 @@ class SubgraphTracer(fx.Tracer):
                         for sub_arg in (arg.start, arg.stop, arg.step)
                     )
                 )
-            else:
-                return arg
-        elif arg.tracer == self:
+            return arg
+        if arg.tracer == self:
             return arg
         return self.lift_tracked_freevar_to_input(arg)
 
@@ -2788,7 +2786,7 @@ class SubgraphTracer(fx.Tracer):
     # LazyProxy are created for tensor shapes that're unbacked so that we don't create proxies
     # for symbols that're not going to be used.
     def track_unbacked_symbols(
-        self, example_value, e_proxy: Union[LazyProxy, torch.fx.Proxy]
+        self, example_value, e_proxy: LazyProxy | torch.fx.Proxy
     ):
         # When binding the symbols in an exmaple_value, we bind the symbols
         # to the proxy's associated Tracer instead of current tracer.
@@ -2887,15 +2885,15 @@ class SubgraphTracer(fx.Tracer):
 
     # See Note [Auto lift basic free symbols when create_graph_input]
     def _lift_basic_symbols(
-        self, example_value: Union[torch.SymInt, torch.Tensor], src: Optional[Source]
+        self, example_value: torch.SymInt | torch.Tensor, src: Source | None
     ):
         # The before arg is for inserting symints in the sizes/strides of a tensor
         # before the tensor. This ordering ensures that when we look at the tensor's
         # symbols, they're already lifted/tracked. E.g. this assumption is used
         # in insert_deferred_runtime_asserts.
         def _lift_symbols_in_symint(
-            s: Union[int, torch.SymInt],
-            source: Optional[Source],
+            s: int | torch.SymInt,
+            source: Source | None,
             before: bool = False,
         ) -> None:
             if not is_symbolic(s):
@@ -3054,7 +3052,7 @@ class SubgraphTracer(fx.Tracer):
         mutated_inputs = [
             i
             for i, (v1, v2) in enumerate(
-                zip(input_versions_at_beginning, input_versions_at_end)
+                zip(input_versions_at_beginning, input_versions_at_end, strict=False)
             )
             if v1 != v2
         ]

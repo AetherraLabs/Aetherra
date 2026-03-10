@@ -14,9 +14,18 @@ import types
 import typing
 import weakref
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, cast, Literal, Optional, TYPE_CHECKING, TypeVar, Union
-from typing_extensions import Self, TypeGuard
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Literal,
+    Self,
+    TypeGuard,
+    TypeVar,
+    Union,
+    cast,
+)
 from weakref import ReferenceType
 
 import torch
@@ -28,11 +37,11 @@ from torch._library.fake_profile import MissingOpProfile
 from torch._logging import dtrace_structured
 from torch._prims_common import suggest_memory_format
 from torch._subclasses.meta_utils import (
+    MetaConverter,
     assert_eq,
     assert_metadata_eq,
     is_sparse_any,
     is_sparse_compressed,
-    MetaConverter,
 )
 from torch._utils import render_call
 from torch.fx.immutable_collections import immutable_dict
@@ -43,15 +52,14 @@ from torch.types import IntLikeType, py_sym_types
 from torch.utils._backport_slots import dataclass_slots
 from torch.utils._mode_utils import no_dispatch
 from torch.utils._python_dispatch import (
-    is_traceable_wrapper_subclass,
     TorchDispatchMode,
+    is_traceable_wrapper_subclass,
 )
-from torch.utils._pytree import KeyPath, keystr, PyTree, tree_map, tree_map_, TreeSpec
+from torch.utils._pytree import KeyPath, PyTree, TreeSpec, keystr, tree_map, tree_map_
 from torch.utils._stats import count
 from torch.utils._traceback import CapturedTraceback
 
 from ._fake_tensor_utils import _CacheKeyState, _PySymInputStub, _SymIntOutputStub
-
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterable, Mapping, Sequence
@@ -134,7 +142,7 @@ class MetadataMismatchError(RuntimeError):
 class FakeTensorTLS(threading.local):
     # Default to None, otherwise it'll be used to override _all_
     # `FakeTensorMode.allow_non_fake_inputs` in this thread.
-    allow_non_fake_inputs_override: Optional[bool]
+    allow_non_fake_inputs_override: bool | None
 
     def __init__(self) -> None:
         self.allow_non_fake_inputs_override = None
@@ -148,7 +156,7 @@ def ordered_set(*items: T) -> dict[T, Literal[True]]:
 
 
 @contextlib.contextmanager
-def unset_fake_temporarily() -> Generator[Optional[TorchDispatchMode], None, None]:
+def unset_fake_temporarily() -> Generator[TorchDispatchMode | None, None, None]:
     old = torch._C._unset_dispatch_mode(torch._C._TorchDispatchModeKey.FAKE)
     try:
         yield old
@@ -168,8 +176,8 @@ def disable_fake_tensor_cache(fake_mode: FakeTensorMode) -> Generator[None, None
 
 
 def get_plain_tensors(
-    subclass: Tensor, *, out: list[Union[Tensor, int, SymInt]]
-) -> list[Union[Tensor, int, SymInt]]:
+    subclass: Tensor, *, out: list[Tensor | int | SymInt]
+) -> list[Tensor | int | SymInt]:
     # This function is used in Runtime, do not add redundant asserts
     todo = [subclass]
     while todo:
@@ -196,19 +204,19 @@ def is_fake(x: object) -> TypeGuard[Tensor]:
         any_fake = any(is_fake(x) for x in flattened_tensors)
         assert all_fake == any_fake, "got mixed fake and real tensors!"
         return all_fake
-    elif isinstance(x, FunctionalTensor):
+    if isinstance(x, FunctionalTensor):
         return is_fake(x.elem)
-    elif isinstance(x, Tensor) and torch._is_functional_tensor(x):
+    if isinstance(x, Tensor) and torch._is_functional_tensor(x):
         reapply_views = torch._C._functionalization_reapply_views_tls()
         unwrapped = torch._C._functorch._unwrap_functional_tensor(x, reapply_views)
         return is_fake(unwrapped)
-    elif isinstance(x, Tensor) and is_functorch_wrapped_tensor(x):
+    if isinstance(x, Tensor) and is_functorch_wrapped_tensor(x):
         unwrapped = torch._C._functorch.get_unwrapped(x)
         return is_fake(unwrapped)
     return False
 
 
-def maybe_get_fake_mode(t: object) -> Optional[FakeTensorMode]:
+def maybe_get_fake_mode(t: object) -> FakeTensorMode | None:
     from torch._subclasses.functional_tensor import FunctionalTensor
 
     if isinstance(t, FakeTensor):
@@ -221,13 +229,13 @@ def maybe_get_fake_mode(t: object) -> Optional[FakeTensorMode]:
         m = modes[0]
         assert all(m is x for x in modes)
         return m
-    elif isinstance(t, FunctionalTensor):
+    if isinstance(t, FunctionalTensor):
         return maybe_get_fake_mode(t.elem)
-    elif isinstance(t, Tensor) and torch._is_functional_tensor(t):
+    if isinstance(t, Tensor) and torch._is_functional_tensor(t):
         reapply_views = torch._C._functionalization_reapply_views_tls()
         unwrapped = torch._C._functorch._unwrap_functional_tensor(t, reapply_views)
         return maybe_get_fake_mode(unwrapped)
-    elif isinstance(t, Tensor) and is_functorch_wrapped_tensor(t):
+    if isinstance(t, Tensor) and is_functorch_wrapped_tensor(t):
         unwrapped = torch._C._functorch.get_unwrapped(t)
         return maybe_get_fake_mode(unwrapped)
     return None
@@ -328,7 +336,7 @@ class FakeTensorConverter:
 
         del self.constant_storage_mapping[weak_st]
 
-    def _get_memo(self, t: Tensor) -> Optional[FakeTensor]:
+    def _get_memo(self, t: Tensor) -> FakeTensor | None:
         tid = self.meta_converter.describer.lookup_tensor.get(t)
         if tid is None:
             return None
@@ -349,10 +357,10 @@ class FakeTensorConverter:
         fake_mode: FakeTensorMode,
         t: Tensor,
         make_constant: bool = False,
-        shape_env: Optional[ShapeEnv] = None,
+        shape_env: ShapeEnv | None = None,
         *,
-        source: Optional[Source] = None,
-        symbolic_context: Optional[SymbolicContext] = None,
+        source: Source | None = None,
+        symbolic_context: SymbolicContext | None = None,
         trace: bool = True,
     ) -> FakeTensor:
         # see note [Tensor Fakification and Symbol Caching]
@@ -382,7 +390,7 @@ class FakeTensorConverter:
         # caller to explicitly specify the device in case outer and inner tensors
         # have different devices.
         def mk_fake_tensor(
-            make_meta_t: Callable[[], object], device: Union[torch.device, str]
+            make_meta_t: Callable[[], object], device: torch.device | str
         ) -> FakeTensor:
             # NB: don't use in_kernel_invocation_manager. to
             # ensure FakeTensor can internally do constant computation
@@ -493,12 +501,12 @@ class FakeTensorConverter:
         fake_mode: FakeTensorMode,
         t: Tensor,
         device: torch.device,
-        pytype: Optional[type[torch.Tensor]] = None,
-        dispatch_keys: Optional[torch.DispatchKeySet] = None,
+        pytype: type[torch.Tensor] | None = None,
+        dispatch_keys: torch.DispatchKeySet | None = None,
     ) -> FakeTensor:
-        assert (
-            t.device.type == "meta"
-        ), f"tensor's device must be `meta`, got {t.device.type} instead"
+        assert t.device.type == "meta", (
+            f"tensor's device must be `meta`, got {t.device.type} instead"
+        )
         # This is a bit abusive (this is not the "real" tensor) but whatever,
         # the meta tensor should be fresh so there's no way to get it wrong
         maybe_memo = self._get_memo(t)
@@ -596,8 +604,8 @@ class SymNumberMemoDescriptor:
         return f"_{self._name}_epoch"
 
     def __get__(
-        self, obj: FakeTensor, objtype: Optional[type[FakeTensor]] = None
-    ) -> Optional[Union[torch.SymInt, torch.SymFloat]]:
+        self, obj: FakeTensor, objtype: type[FakeTensor] | None = None
+    ) -> torch.SymInt | torch.SymFloat | None:
         if (r := getattr(obj, self._memo(obj))) is None:
             return None
 
@@ -618,7 +626,7 @@ class SymNumberMemoDescriptor:
         return r
 
     def __set__(
-        self, obj: FakeTensor, value: Optional[Union[torch.SymInt, torch.SymFloat]]
+        self, obj: FakeTensor, value: torch.SymInt | torch.SymFloat | None
     ) -> None:
         if value is None:
             setattr(obj, self._memo(obj), None)
@@ -642,8 +650,8 @@ class FakeTensor(Tensor):
 
     fake_device: torch.device
     fake_mode: FakeTensorMode
-    constant: Optional[Tensor]
-    real_tensor: Optional[Tensor]
+    constant: Tensor | None
+    real_tensor: Tensor | None
 
     # TODO: Generalize this as needed, e.g., into a trie of memos, if
     # you do something like x[0].item()  (x[0] is fresh each time, so
@@ -661,8 +669,8 @@ class FakeTensor(Tensor):
     # FakeTensor doesn't fully emulate the original tensor's Python type
     # and dispatch key set, therefore sometimes we want to track them
     # separately.
-    pytype: Optional[type[Tensor]]
-    dispatch_keys: Optional[torch.DispatchKeySet]
+    pytype: type[Tensor] | None
+    dispatch_keys: torch.DispatchKeySet | None
 
     # Indicates to our torch_dispatch dispatching infra that
     # this is an "infra" mode with lower dispatching precedence.
@@ -672,8 +680,7 @@ class FakeTensor(Tensor):
     def device(self) -> torch.device:
         if self.fake_mode.in_kernel_invocation:
             return torch.device("meta")
-        else:
-            return self.fake_device
+        return self.fake_device
 
     @device.setter
     def device(self, _: torch.device) -> None:
@@ -711,10 +718,10 @@ class FakeTensor(Tensor):
         fake_mode: FakeTensorMode,
         elem: Tensor,
         device: torch.device,
-        constant: Optional[Tensor] = None,
-        real_tensor: Optional[Tensor] = None,
-        pytype: Optional[type[Tensor]] = None,
-        dispatch_keys: Optional[torch.DispatchKeySet] = None,
+        constant: Tensor | None = None,
+        real_tensor: Tensor | None = None,
+        pytype: type[Tensor] | None = None,
+        dispatch_keys: torch.DispatchKeySet | None = None,
     ) -> Self:
         self = Tensor._make_subclass(
             cls,
@@ -811,8 +818,7 @@ class FakeTensor(Tensor):
             assert len(args) == 1 and isinstance(args[0], FakeTensor)
             if args[0].fake_mode.in_kernel_invocation:
                 return torch.device("meta")
-            else:
-                return args[0].fake_device
+            return args[0].fake_device
 
         # this handler must be done inside FakeTensor subclass, not mode, because
         # we can end up dispatching here when we have a fake tensor with
@@ -955,7 +961,7 @@ class FakeTensor(Tensor):
     def get_nested_int(
         self,
         *,
-        coeff: Union[int, torch.SymInt] = 1,
+        coeff: int | torch.SymInt = 1,
     ) -> torch.SymInt:
         if self.nested_int_memo is None:
             self.nested_int_memo = self.fake_mode.create_symbolic_nested_int(
@@ -968,10 +974,9 @@ class FakeTensor(Tensor):
     def tolist(self) -> Any:
         if self.dim() == 0:
             return self.item()
-        elif self.dim() == 1:
+        if self.dim() == 1:
             return [elem.item() for elem in self]
-        else:
-            return [elem.tolist() for elem in self]
+        return [elem.tolist() for elem in self]
 
 
 _MetadataIntLike = Union[IntLikeType, "_PySymInputStub", "_SymIntOutputStub"]
@@ -989,18 +994,18 @@ class TensorMetadata:
     stride: tuple[_MetadataIntLike, ...]
     device: torch.device
     layout: torch.layout
-    memory_format: Optional[torch.memory_format]
+    memory_format: torch.memory_format | None
     storage_offset: _MetadataIntLike
-    storage_bytes: Optional[_MetadataIntLike]
+    storage_bytes: _MetadataIntLike | None
     requires_grad: bool
     is_quantized: bool
     is_conj: bool
     is_neg: bool
     is_inference: bool
     is_sparse: bool  # read: is sparse COO
-    is_coalesced: Optional[bool]
-    dense_dim: Optional[int]
-    sparse_dim: Optional[int]
+    is_coalesced: bool | None
+    dense_dim: int | None
+    sparse_dim: int | None
 
     def _flatten_into(
         self,
@@ -1110,10 +1115,10 @@ class _DispatchCacheEntryOutputInfo:
     None or integer)
     """
 
-    inplace_idx: Optional[int]
-    metadata: Optional[TensorMetadata]
-    view_idx: Optional[int]
-    constant_value: Optional[Any] = SingletonConstant
+    inplace_idx: int | None
+    metadata: TensorMetadata | None
+    view_idx: int | None
+    constant_value: Any | None = SingletonConstant
 
 
 @dataclass_slots
@@ -1187,8 +1192,8 @@ class FakeTensorMode(TorchDispatchMode):
     epoch: int = 0
     in_kernel_invocation: bool = False
     static_shapes: bool
-    shape_env: Optional[ShapeEnv]
-    _stack: Optional[str]
+    shape_env: ShapeEnv | None
+    _stack: str | None
     allow_meta: bool
 
     # NestedTensor uses a tensor_id_counter to uniquely identify offsets.
@@ -1206,8 +1211,8 @@ class FakeTensorMode(TorchDispatchMode):
         *,
         allow_fallback_kernels: bool = True,
         allow_non_fake_inputs: bool = False,
-        shape_env: Optional[ShapeEnv] = None,
-        static_shapes: Optional[bool] = None,
+        shape_env: ShapeEnv | None = None,
+        static_shapes: bool | None = None,
         # TODO: This is a temporary measure, see
         # https://github.com/pytorch/pytorch/pull/126245#discussion_r1604185748
         # We're currently solely using this to impede population of
@@ -1276,9 +1281,7 @@ class FakeTensorMode(TorchDispatchMode):
         # in_kernel_invocation
         # If another fake mode was already active when we enter, we also stash it here.
         # That way when we exit, we know to re-enable the previous fake mode.
-        self.enter_stack: list[
-            tuple[bool, Optional[TorchDispatchMode], Optional[bool]]
-        ] = []
+        self.enter_stack: list[tuple[bool, TorchDispatchMode | None, bool | None]] = []
 
         self.shape_env = shape_env
 
@@ -1369,17 +1372,16 @@ class FakeTensorMode(TorchDispatchMode):
                 (True, maybe_prev_fake_mode, prev_only_lift_cpu_tensors)
             )
             return super().__enter__()
-        else:
-            # no-op (still need to re-set the fake mode though since we unset it)
-            torch._C._set_dispatch_mode(self)
-            self.enter_stack.append((False, None, prev_only_lift_cpu_tensors))
+        # no-op (still need to re-set the fake mode though since we unset it)
+        torch._C._set_dispatch_mode(self)
+        self.enter_stack.append((False, None, prev_only_lift_cpu_tensors))
         return self
 
     def __exit__(
         self,
-        a: Optional[type[BaseException]],
-        b: Optional[BaseException],
-        c: Optional[TracebackType],
+        a: type[BaseException] | None,
+        b: BaseException | None,
+        c: TracebackType | None,
     ) -> None:
         (
             live,
@@ -1594,7 +1596,10 @@ class FakeTensorMode(TorchDispatchMode):
         if torch.Tag.dynamic_output_shape in func.tags:
             if func is aten.index.Tensor:
                 _, new_kwargs = normalize_function(  # type: ignore[misc]
-                    func, args=args, kwargs=kwargs, normalize_to_only_use_kwargs=True  # type: ignore[arg-type]
+                    func,
+                    args=args,
+                    kwargs=kwargs,
+                    normalize_to_only_use_kwargs=True,  # type: ignore[arg-type]
                 )
                 for index in new_kwargs["indices"]:
                     # index calls nonzero for bool or int8 tensors, and
@@ -1635,7 +1640,7 @@ class FakeTensorMode(TorchDispatchMode):
     def _prep_args_for_hash(
         self,
         result: list[object],
-        args: Union[Mapping[str, object], Sequence[object], Iterable[object]],
+        args: Mapping[str, object] | Sequence[object] | Iterable[object],
         state: _CacheKeyState,
         id_hashed_objects: list[object],
     ) -> None:
@@ -1699,7 +1704,7 @@ class FakeTensorMode(TorchDispatchMode):
         func: OpOverload,
         args: Sequence[object],
         kwargs: Mapping[str, object],
-        output: Optional[FakeTensor],
+        output: FakeTensor | None,
     ) -> None:
         # Is this even possible? According to the signature this can be None but
         # not `int`. So either the signature is a lie or (part of) this line is
@@ -1817,7 +1822,7 @@ class FakeTensorMode(TorchDispatchMode):
         func: OpOverload,
         args: Sequence[object],
         kwargs: Mapping[str, object],
-        output: Optional[FakeTensor],
+        output: FakeTensor | None,
     ) -> _DispatchCacheValidEntry:
         """
         Make a cache entry object for the given 'output' Tensor. Raises
@@ -1874,13 +1879,12 @@ class FakeTensorMode(TorchDispatchMode):
                 output_infos=tuple(output_infos), is_output_tuple=True
             )
 
-        else:
-            output_info = self._get_output_info_for_cache_entry(
-                state, key, func, args, kwargs, output
-            )
-            return _DispatchCacheValidEntry(
-                output_infos=(output_info,), is_output_tuple=False
-            )
+        output_info = self._get_output_info_for_cache_entry(
+            state, key, func, args, kwargs, output
+        )
+        return _DispatchCacheValidEntry(
+            output_infos=(output_info,), is_output_tuple=False
+        )
 
     def _get_output_tensor_from_cache_entry(
         self,
@@ -1889,7 +1893,7 @@ class FakeTensorMode(TorchDispatchMode):
         key: _DispatchCacheKey,
         func: OpOverload,
         args: Sequence[object],
-    ) -> Optional[FakeTensor]:
+    ) -> FakeTensor | None:
         if (
             entry.inplace_idx is None
             and entry.metadata is None
@@ -1910,15 +1914,12 @@ class FakeTensorMode(TorchDispatchMode):
 
         assert not is_sparse_any(metadata)
 
-        def check_value(
-            value: _MetadataIntLike, state: _CacheKeyState
-        ) -> Union[IntLikeType]:
+        def check_value(value: _MetadataIntLike, state: _CacheKeyState) -> IntLikeType:
             if isinstance(value, _SymIntOutputStub):
                 assert state.shape_env is not None
                 return value.extract(key, state.shape_env)
-            else:
-                assert not isinstance(value, _PySymInputStub)
-                return value
+            assert not isinstance(value, _PySymInputStub)
+            return value
 
         shape = tuple(check_value(v, state) for v in metadata.shape)
         stride = tuple(check_value(v, state) for v in metadata.stride)
@@ -1962,7 +1963,7 @@ class FakeTensorMode(TorchDispatchMode):
         key: _DispatchCacheKey,
         func: OpOverload,
         args: Sequence[object],
-    ) -> Union[Optional[FakeTensor], tuple[Optional[FakeTensor], ...]]:
+    ) -> FakeTensor | None | tuple[FakeTensor | None, ...]:
         """
         Create a new FakeTensor from the cache entry.
         """
@@ -1975,14 +1976,13 @@ class FakeTensorMode(TorchDispatchMode):
                 for output_info in entry.output_infos
             ]
             return tuple(outputs)
-        else:
-            return self._get_output_tensor_from_cache_entry(
-                state, entry.output_infos[0], key, func, args
-            )
+        return self._get_output_tensor_from_cache_entry(
+            state, entry.output_infos[0], key, func, args
+        )
 
     def _crosscheck_cache_output(
         self,
-        output: Union[Optional[FakeTensor], tuple[Optional[FakeTensor], ...]],
+        output: FakeTensor | None | tuple[FakeTensor | None, ...],
         func: OpOverload,
         types: Sequence[type],
         args: Sequence[object],
@@ -1997,7 +1997,7 @@ class FakeTensorMode(TorchDispatchMode):
             if isinstance(a, tuple):
                 assert isinstance(b, tuple)
                 assert len(a) == len(b)
-                for l, r in zip(a, b):
+                for l, r in zip(a, b, strict=False):
                     assert_helper(l, r)
             elif isinstance(a, int):
                 assert isinstance(b, int) and a == b
@@ -2056,12 +2056,11 @@ class FakeTensorMode(TorchDispatchMode):
 
         if self.cache_enabled:
             return self._cached_dispatch_impl(func, types, args, kwargs)
-        else:
-            return self._dispatch_impl(func, types, args, kwargs)
+        return self._dispatch_impl(func, types, args, kwargs)
 
     def _maybe_infer_fake(
         self, func: OpOverload, path: KeyPath, fake: object, real: object
-    ) -> tuple[Optional[object], bool]:
+    ) -> tuple[object | None, bool]:
         """
         Helper to cross-check fake/real output properties & values,
         and create new fake vals if mismatched.
@@ -2125,13 +2124,13 @@ class FakeTensorMode(TorchDispatchMode):
                     f" at output{keystr(path)}, for func: {func}"
                 ) from exc
 
-            for j, (s_fake, s_real) in enumerate(zip(fake.size(), real.size())):  # type: ignore[attr-defined]
+            for j, (s_fake, s_real) in enumerate(
+                zip(fake.size(), real.size(), strict=False)
+            ):  # type: ignore[attr-defined]
                 try:
                     _check_fake_real_vals(s_fake, s_real)
                 except MetadataMismatchError as exc:
-                    if (
-                        torch._functorch.config.generate_fake_kernels_from_real_mismatches
-                    ):
+                    if torch._functorch.config.generate_fake_kernels_from_real_mismatches:
                         dtrace_structured(
                             "mismatched_fake_kernel",
                             metadata_fn=lambda: {
@@ -2178,7 +2177,7 @@ class FakeTensorMode(TorchDispatchMode):
         real_in: object,
         fake_out: object,
         real_out: object,
-    ) -> Optional[object]:
+    ) -> object | None:
         """
         Helper to cross-check fake/real output properties & values,
         and create new fake vals if mismatched, but at the kernel level.
@@ -2224,12 +2223,11 @@ class FakeTensorMode(TorchDispatchMode):
                 return tree_map(
                     lambda x: _infer_fake_from_real_tensor(self, func, x), real_out
                 )
-            else:
-                raise MetadataMismatchError(
-                    f"Real tensor propagation found an aliasing mismatch between "
-                    f"fake output {fake_out} and real output {real_out}, "
-                    f" for func: {func}"
-                ) from exc
+            raise MetadataMismatchError(
+                f"Real tensor propagation found an aliasing mismatch between "
+                f"fake output {fake_out} and real output {real_out}, "
+                f" for func: {func}"
+            ) from exc
 
         # if no errors raised, run cross checks on fake/real tensors,
         # optionally overriding individual fake tensors, if individual meta kernel output is incorrect.
@@ -2237,9 +2235,10 @@ class FakeTensorMode(TorchDispatchMode):
             *[
                 self._maybe_infer_fake(func, _fake_path, _fake_out, _real_out)
                 for (_fake_path, _fake_out), _real_out in zip(
-                    fake_paths_leaves, real_leaves
+                    fake_paths_leaves, real_leaves, strict=False
                 )
-            ]
+            ],
+            strict=False,
         )
         if (
             any(overrides) and pending_unbacked
@@ -2253,7 +2252,7 @@ class FakeTensorMode(TorchDispatchMode):
         types: Sequence[type],
         args: Sequence[object],
         kwargs: Mapping[str, object],
-    ) -> Optional[FakeTensor]:
+    ) -> FakeTensor | None:
         from torch._higher_order_ops.utils import registered_hop_fake_fns
 
         flat_args, args_spec = pytree.tree_flatten((args, kwargs))
@@ -2304,9 +2303,9 @@ class FakeTensorMode(TorchDispatchMode):
             and not flat_arg_fake_tensors
             and not device_conversion_skip_const_prop
         ):
-            assert all(
-                t.constant is not None for t in flat_arg_fake_tensors
-            ), f"{func} should not have fake inputs without constants"
+            assert all(t.constant is not None for t in flat_arg_fake_tensors), (
+                f"{func} should not have fake inputs without constants"
+            )
             const_flat_args = [
                 a.constant if self.is_our_fake(a) else a for a in flat_args
             ]
@@ -2423,20 +2422,19 @@ class FakeTensorMode(TorchDispatchMode):
 
         def maybe_to_real_tensor(
             t: T,
-        ) -> Optional[Union[T, Tensor, torch._C.ScriptObject]]:
+        ) -> T | Tensor | torch._C.ScriptObject | None:
             if isinstance(t, FakeTensor):
                 return t.real_tensor
-            elif isinstance(t, py_sym_types):
+            if isinstance(t, py_sym_types):
                 assert self.shape_env is not None
                 return t.node.pytype(
                     t.node.expr.xreplace(self.shape_env.var_to_val).xreplace(
                         self.shape_env.unbacked_var_to_val
                     )
                 )
-            elif isinstance(t, FakeScriptObject):
+            if isinstance(t, FakeScriptObject):
                 return t.real_obj
-            else:
-                return t
+            return t
 
         from torch.fx.experimental.symbolic_shapes import (
             compute_unbacked_bindings,
@@ -2512,9 +2510,9 @@ class FakeTensorMode(TorchDispatchMode):
                         "maybe_propagate_real_tensors %s -> %s", id(t), id(real_t)
                     )
                     t.real_tensor = real_t
-                    for s, real_s in zip(t.size(), real_t.size()):
+                    for s, real_s in zip(t.size(), real_t.size(), strict=False):
                         go(s, real_s)  # type: ignore[arg-type]
-                    for s, real_s in zip(t.stride(), real_t.stride()):
+                    for s, real_s in zip(t.stride(), real_t.stride(), strict=False):
                         go(s, real_s)  # type: ignore[arg-type]
                     go(t.storage_offset(), real_t.storage_offset())  # type: ignore[arg-type]
                 elif isinstance(t, py_sym_types) and free_unbacked_symbols(t):
@@ -2531,9 +2529,7 @@ class FakeTensorMode(TorchDispatchMode):
 
             if real_out is not nil:
                 # cross check fake/real outputs, and optionally override fake kernel mismatches
-                if (
-                    not torch._functorch.config.generate_fake_kernels_from_real_mismatches
-                ):
+                if not torch._functorch.config.generate_fake_kernels_from_real_mismatches:
                     self._maybe_infer_fake_kernel_from_pytree_out(
                         func,
                         (args, kwargs),
@@ -2676,8 +2672,7 @@ class FakeTensorMode(TorchDispatchMode):
                         },
                     )
                     return maybe_propagate_real_tensors(result)
-                else:
-                    raise e
+                raise e
 
         # special handling for funcs registered through `register_op_impl`,
         # e.g., manipulating args on constructor calls to construct meta tensors
@@ -2689,8 +2684,8 @@ class FakeTensorMode(TorchDispatchMode):
                     return maybe_propagate_real_tensors(op_impl_out)
 
         def maybe_run_unsafe_fallback(
-            error: Optional[RuntimeError] = None,
-        ) -> Optional[FakeTensor]:
+            error: RuntimeError | None = None,
+        ) -> FakeTensor | None:
             # We infer the meta of a custom ops that return None to just
             # return None. custom ops are not allowed to mutate metadata
             # of their inputs, so this is safe.
@@ -2768,7 +2763,7 @@ class FakeTensorMode(TorchDispatchMode):
         """
         flat_arg_fake_tensors: list[FakeTensor] = []
 
-        def validate(x: T) -> Union[T, FakeTensor]:
+        def validate(x: T) -> T | FakeTensor:
             if not isinstance(x, Tensor):
                 return x
 
@@ -2816,7 +2811,7 @@ class FakeTensorMode(TorchDispatchMode):
         common_device = None
         has_scalar_only_inputs = False
 
-        def wrap(e: T) -> Union[T, FakeTensor]:
+        def wrap(e: T) -> T | FakeTensor:
             nonlocal common_device
             nonlocal has_scalar_only_inputs
 
@@ -2836,23 +2831,19 @@ class FakeTensorMode(TorchDispatchMode):
                     lambda: f"FakeTensor is wrapped to wrong device, found {e.device}, expected {common_device}",
                 )
                 return cast(T, e)
-            elif converter is not None:
+            if converter is not None:
                 if has_scalar_only_inputs:
                     # Under FakeTensorMode, op accepts scalar only inputs, such as aten.add/sub/mul/div,
                     # returns a real scalar tensor on CPU. See TensorMeta() in _prims/__init__.py for details.
                     # We thus directly convert real tensor to fake tensor.
                     return converter.from_real_tensor(self, e)
-                else:
-                    return converter.from_meta_and_device(
-                        self, e, device or common_device
-                    )
-            else:
-                return e
+                return converter.from_meta_and_device(self, e, device or common_device)
+            return e
 
         return tree_map(wrap, r)
 
     def create_symbolic_nested_int(
-        self, *, nt_tensor_id: Optional[int] = None
+        self, *, nt_tensor_id: int | None = None
     ) -> torch.SymInt:
         # See Note: [Creating symbolic nested int]
         # Returned nested int always has coeff=1; multiply the result by coeff if needed
@@ -2917,7 +2908,10 @@ class FakeTensorMode(TorchDispatchMode):
         schema_info = get_schema_info(func)
         if any_constant and schema_info.is_mutable():
             _, new_kwargs = normalize_function(  # type: ignore[misc]
-                func, args=args, kwargs=kwargs, normalize_to_only_use_kwargs=True  # type: ignore[arg-type]
+                func,
+                args=args,
+                kwargs=kwargs,
+                normalize_to_only_use_kwargs=True,  # type: ignore[arg-type]
             )
             for k, v in new_kwargs.items():
                 k = k if (k != "input" or schema_info.has_argument(k)) else "self"
@@ -2932,18 +2926,18 @@ class FakeTensorMode(TorchDispatchMode):
         self,
         tensor: Tensor,
         *,
-        static_shapes: Optional[bool] = None,
-        source: Optional[Source] = None,
-        symbolic_context: Optional[SymbolicContext] = None,
+        static_shapes: bool | None = None,
+        source: Source | None = None,
+        symbolic_context: SymbolicContext | None = None,
         trace: bool = True,
     ) -> FakeTensor:
-        shape_env: Optional[ShapeEnv] = self.shape_env
+        shape_env: ShapeEnv | None = self.shape_env
         if static_shapes is None:
             static_shapes = self.static_shapes
         if static_shapes:
-            assert (
-                symbolic_context is None
-            ), "cannot set both static_shapes and symbolic_context"
+            assert symbolic_context is None, (
+                "cannot set both static_shapes and symbolic_context"
+            )
             shape_env = None
         return self.fake_tensor_converter.from_real_tensor(
             self,
@@ -2959,7 +2953,7 @@ _StoragePointer = object
 
 
 def _has_unrepresented_symbols(
-    state: _CacheKeyState, output: Optional[FakeTensor]
+    state: _CacheKeyState, output: FakeTensor | None
 ) -> bool:
     from torch.fx.experimental.symbolic_shapes import _iterate_exprs
 
@@ -2991,7 +2985,7 @@ def run_fallback_kernel(
     # REAL compute (not with meta device)
     with no_dispatch():
 
-        def to_real_tensor(e: T) -> Union[T, Tensor]:
+        def to_real_tensor(e: T) -> T | Tensor:
             if fake_mode.is_our_fake(e):
                 out = torch.zeros_like(e, device=e.fake_device)
                 if e.is_sparse:
@@ -3017,7 +3011,7 @@ def run_fallback_kernel(
     # not be set up, bc of conversion to device, unless we can reuse an
     # input impl
 
-    def map_out(e: T) -> Union[T, FakeTensor]:
+    def map_out(e: T) -> T | FakeTensor:
         if id(e) not in inp_impls and (
             isinstance(e, Tensor)
             and not is_sparse_any(e)
@@ -3028,10 +3022,8 @@ def run_fallback_kernel(
         if isinstance(e, Tensor):
             if id(e) in inp_impls:
                 return inp_impls[id(e)]
-            else:
-                return fake_mode.fake_tensor_converter.from_real_tensor(fake_mode, e)
-        else:
-            return e
+            return fake_mode.fake_tensor_converter.from_real_tensor(fake_mode, e)
+        return e
 
     return pytree.tree_map(map_out, r)
 
@@ -3064,7 +3056,7 @@ class FakeCopyMode(TorchFunctionMode):
         func: OpOverload,
         types: Sequence[type],
         args: Sequence[object] = (),
-        kwargs: Optional[Mapping[str, object]] = None,
+        kwargs: Mapping[str, object] | None = None,
     ) -> FakeTensor:
         kwargs = kwargs if kwargs else {}
 
@@ -3074,7 +3066,7 @@ class FakeCopyMode(TorchFunctionMode):
             return func(
                 self.fake_mode.from_tensor(args[0], static_shapes=True), **kwargs
             )
-        elif func == Tensor.__deepcopy__:
+        if func == Tensor.__deepcopy__:
             assert len(args) == 2 and len(kwargs) == 0
             tensor = cast(Tensor, args[0])
             memo = cast(dict[int, FakeTensor], args[1])
@@ -3085,9 +3077,8 @@ class FakeCopyMode(TorchFunctionMode):
             out = self.fake_mode.from_tensor(tensor, static_shapes=True)
             memo[id(tensor)] = out
             return out
-        else:
-            with torch._C.DisableTorchFunctionSubclass():
-                return func(*args, **kwargs)
+        with torch._C.DisableTorchFunctionSubclass():
+            return func(*args, **kwargs)
 
 
 def _device_handler(args: Sequence[object]) -> torch.device:
@@ -3100,8 +3091,7 @@ def _device_handler(args: Sequence[object]) -> torch.device:
     assert len(args) == 1 and isinstance(args[0], FakeTensor)
     if args[0].fake_mode.in_kernel_invocation:
         return torch.device("meta")
-    else:
-        return args[0].fake_device
+    return args[0].fake_device
 
 
 # [subclass inputs]

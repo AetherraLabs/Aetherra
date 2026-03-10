@@ -14,7 +14,6 @@
 
 from ..utils import is_optimum_quanto_available, is_torch_available, logging
 
-
 if is_torch_available():
     import torch
 

@@ -8,10 +8,28 @@ import types
 # Third party imports
 import pytest
 import requests
-from schema_validators import validate_lyrixa_chat_response
 
 # Aetherra imports
 from aetherra_hub.compat import start_hub_server
+from schema_validators import validate_lyrixa_chat_response
+
+
+def _wait_ready(port: int, timeout_s: float = 8.0) -> None:
+    """Wait until the local Hub responds on /api/ping."""
+    import time
+
+    base = f"http://localhost:{port}"
+    deadline = time.time() + timeout_s
+    while time.time() < deadline:
+        try:
+            r = requests.get(f"{base}/api/ping", timeout=0.5)
+            if r.status_code == 200:
+                return
+        except Exception:
+            pass
+        time.sleep(0.05)
+    raise AssertionError(f"Hub not ready on port {port}")
+
 
 HAS_FLASK = True
 try:
@@ -25,11 +43,12 @@ except Exception:
 def test_lyrixa_chat_offline_fallback_schema_strict():
     server = start_hub_server(port=3015)
     assert server.is_running()
+    _wait_ready(3015)
 
     r = requests.post(
         "http://localhost:3015/api/lyrixa/chat",
         json={"message": "Hello"},
-        timeout=10,
+        timeout=20,
     )
     assert r.status_code == 200
     data = r.json()
@@ -68,11 +87,12 @@ def test_lyrixa_chat_upstream_suggestions_schema_strict(monkeypatch):
 
     server = start_hub_server(port=3016)
     assert server.is_running()
+    _wait_ready(3016)
 
     r = requests.post(
         "http://localhost:3016/api/lyrixa/chat",
         json={"message": "please fix conflicts", "allow_edits": False},
-        timeout=10,
+        timeout=20,
     )
     assert r.status_code == 200
     data = r.json()

@@ -10,7 +10,6 @@ from __future__ import annotations
 import threading
 import time
 from dataclasses import dataclass
-from typing import Dict
 
 __all__ = ["IdempotencyStore", "IdemResult"]
 
@@ -31,7 +30,7 @@ class IdempotencyStore:
     def __init__(self, ttl_seconds: int = 600):
         self._ttl = max(1, int(ttl_seconds))
         self._lock = threading.Lock()
-        self._hits: Dict[str, float] = {}
+        self._hits: dict[str, float] = {}
 
     def check_and_mark(self, key: str) -> IdemResult:
         if not key:

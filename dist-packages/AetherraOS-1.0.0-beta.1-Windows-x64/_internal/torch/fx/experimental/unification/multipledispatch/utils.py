@@ -1,7 +1,6 @@
 # mypy: allow-untyped-defs
 from collections import OrderedDict
 
-
 __all__ = ["raises", "expand_tuples", "reverse_dict", "groupby", "typename"]
 
 
@@ -22,12 +21,11 @@ def expand_tuples(L):
     """
     if not L:
         return [()]
-    elif not isinstance(L[0], tuple):
+    if not isinstance(L[0], tuple):
         rest = expand_tuples(L[1:])
         return [(L[0],) + t for t in rest]
-    else:
-        rest = expand_tuples(L[1:])
-        return [(item,) + t for t in rest for item in L[0]]
+    rest = expand_tuples(L[1:])
+    return [(item,) + t for t in rest for item in L[0]]
 
 
 # Taken from theano/theano/gof/sched.py

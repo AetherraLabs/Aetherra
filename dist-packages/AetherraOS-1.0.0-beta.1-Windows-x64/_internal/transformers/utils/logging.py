@@ -29,14 +29,12 @@ from logging import (
     WARNING,  # NOQA
 )
 from logging import captureWarnings as _captureWarnings
-from typing import Optional
 
 import huggingface_hub.utils as hf_hub_utils
 from tqdm import auto as tqdm_lib
 
-
 _lock = threading.Lock()
-_default_handler: Optional[logging.Handler] = None
+_default_handler: logging.Handler | None = None
 
 log_levels = {
     "detail": logging.DEBUG,  # will also print filename and line number
@@ -61,11 +59,10 @@ def _get_default_logging_level():
     if env_level_str:
         if env_level_str in log_levels:
             return log_levels[env_level_str]
-        else:
-            logging.getLogger().warning(
-                f"Unknown option TRANSFORMERS_VERBOSITY={env_level_str}, "
-                f"has to be one of: {', '.join(log_levels.keys())}"
-            )
+        logging.getLogger().warning(
+            f"Unknown option TRANSFORMERS_VERBOSITY={env_level_str}, "
+            f"has to be one of: {', '.join(log_levels.keys())}"
+        )
     return _default_log_level
 
 
@@ -97,10 +94,17 @@ def _configure_library_root_logger() -> None:
         library_root_logger.setLevel(_get_default_logging_level())
         # if logging level is debug, we add pathname and lineno to formatter for easy debugging
         if os.getenv("TRANSFORMERS_VERBOSITY", None) == "detail":
-            formatter = logging.Formatter("[%(levelname)s|%(pathname)s:%(lineno)s] %(asctime)s >> %(message)s")
+            formatter = logging.Formatter(
+                "[%(levelname)s|%(pathname)s:%(lineno)s] %(asctime)s >> %(message)s"
+            )
             _default_handler.setFormatter(formatter)
 
-        is_ci = os.getenv("CI") is not None and os.getenv("CI").upper() in {"1", "ON", "YES", "TRUE"}
+        is_ci = os.getenv("CI") is not None and os.getenv("CI").upper() in {
+            "1",
+            "ON",
+            "YES",
+            "TRUE",
+        }
         library_root_logger.propagate = True if is_ci else False
 
 
@@ -144,7 +148,7 @@ def captureWarnings(capture):
     _captureWarnings(capture)
 
 
-def get_logger(name: Optional[str] = None) -> logging.Logger:
+def get_logger(name: str | None = None) -> logging.Logger:
     """
     Return a logger with the specified name.
 
@@ -286,7 +290,9 @@ def enable_explicit_format() -> None:
     handlers = _get_library_root_logger().handlers
 
     for handler in handlers:
-        formatter = logging.Formatter("[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s >> %(message)s")
+        formatter = logging.Formatter(
+            "[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s >> %(message)s"
+        )
         handler.setFormatter(formatter)
 
 
@@ -374,8 +380,7 @@ class _tqdm_cls:
     def __call__(self, *args, **kwargs):
         if _tqdm_active:
             return tqdm_lib.tqdm(*args, **kwargs)
-        else:
-            return EmptyTqdm(*args, **kwargs)
+        return EmptyTqdm(*args, **kwargs)
 
     def set_lock(self, *args, **kwargs):
         self._lock = None

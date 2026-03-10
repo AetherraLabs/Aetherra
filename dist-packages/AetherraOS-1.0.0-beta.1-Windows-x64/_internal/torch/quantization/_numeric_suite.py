@@ -8,6 +8,11 @@ here.
 """
 
 from torch.ao.ns._numeric_suite import (
+    NON_LEAF_MODULE_TO_ADD_OBSERVER_ALLOW_LIST,
+    Logger,
+    OutputLogger,
+    Shadow,
+    ShadowLogger,
     _convert_tuple_to_list,
     _dequantize_tensor_list,
     _find_match,
@@ -18,11 +23,6 @@ from torch.ao.ns._numeric_suite import (
     compare_weights,
     get_logger_dict,
     get_matching_activations,
-    Logger,
-    NON_LEAF_MODULE_TO_ADD_OBSERVER_ALLOW_LIST,
-    OutputLogger,
     prepare_model_outputs,
     prepare_model_with_stubs,
-    Shadow,
-    ShadowLogger,
 )

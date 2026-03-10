@@ -5,7 +5,7 @@ import logging
 from collections import defaultdict
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from typing import Any, NamedTuple, Optional
+from typing import Any, NamedTuple
 
 import torch
 from torch.fx._compatibility import compatibility
@@ -13,18 +13,17 @@ from torch.fx.node import map_arg
 from torch.fx.passes.graph_manipulation import get_size_of_node
 
 from .graph_drawer import FxGraphDrawer
-from .operator_support import get_node_target, OperatorSupportBase
+from .operator_support import OperatorSupportBase, get_node_target
 from .shape_prop import ShapeProp
 from .split_utils import split_by_tags
 from .tools_common import (
     CALLABLE_NODE_OPS,
     FxNetAccFusionsFinder,
-    is_node_output_tensor,
     NodeList,
     NodeSet,
     Tensors,
+    is_node_output_tensor,
 )
-
 
 __all__ = [
     "FxNetAccNodesFinder",
@@ -210,7 +209,7 @@ class FxNetSplitterInternalError(Exception):
 class Subgraph:
     is_acc: bool
     nodes: NodeList
-    device_ordinal: Optional[int] = None
+    device_ordinal: int | None = None
 
 
 @compatibility(is_backward_compatible=False)
@@ -332,7 +331,7 @@ class _SplitterBase:
         settings: _SplitterSettingBase,
         non_acc_submodule_name: str = "_run_on_cpu_",
         return_tuple: bool = False,
-        nodes_finder: Optional[FxNetAccNodesFinder] = None,
+        nodes_finder: FxNetAccNodesFinder | None = None,
     ):
         """
         Preprocesses graph before splitting:
@@ -647,7 +646,7 @@ class _SplitterBase:
     # ===============================================================
 
     def find_reverse_deps(
-        self, tag_id: Optional[int] = None
+        self, tag_id: int | None = None
     ) -> dict[torch.fx.Node, NodeSet]:
         """
         Builds reversed topological node dependencies, if tag_id is specified,

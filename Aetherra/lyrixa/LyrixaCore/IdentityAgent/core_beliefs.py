@@ -230,9 +230,7 @@ class CoreBeliefsSystem:
         # Fundamental beliefs are very resistant to change
         if belief.strength == BeliefStrength.FUNDAMENTAL:
             belief.challenges_survived += 1
-            self.logger.info(
-                f"Fundamental belief {belief_name} challenged but unchanged"
-            )
+            self.logger.info(f"Fundamental belief {belief_name} challenged but unchanged")
             return False
 
         # Other beliefs may be examined and potentially modified
@@ -253,9 +251,7 @@ class CoreBeliefsSystem:
 
     def get_beliefs_by_category(self, category: BeliefCategory) -> List[CoreBelief]:
         """Get all beliefs in a specific category"""
-        return [
-            belief for belief in self.beliefs.values() if belief.category == category
-        ]
+        return [belief for belief in self.beliefs.values() if belief.category == category]
 
     def belief_supports_action(self, belief_name: str, action_description: str) -> bool:
         """
@@ -306,9 +302,7 @@ class CoreBeliefsSystem:
 
     def __str__(self) -> str:
         """String representation of the belief system"""
-        fundamental = [
-            b for b in self.beliefs.values() if b.strength == BeliefStrength.FUNDAMENTAL
-        ]
+        fundamental = [b for b in self.beliefs.values() if b.strength == BeliefStrength.FUNDAMENTAL]
         return f"CoreBeliefsSystem: {len(fundamental)} fundamental beliefs, {len(self.beliefs)} total beliefs"
 
 
@@ -327,8 +321,6 @@ if __name__ == "__main__":
     print(beliefs)
 
     # Get ethical guidance
-    guidance = beliefs.get_ethical_guidance(
-        "User is asking for help with a difficult decision"
-    )
+    guidance = beliefs.get_ethical_guidance("User is asking for help with a difficult decision")
     for item in guidance:
         print(f"• {item}")

@@ -20,7 +20,7 @@ import os
 import subprocess
 import sys
 import time
-from typing import Any, Dict
+from typing import Any
 
 CORE_SERVICES = [
     "aetherra_engine",
@@ -31,7 +31,7 @@ CORE_SERVICES = [
 ]
 
 
-async def _live_check(timeout_s: float = 2.5) -> Dict[str, Any]:
+async def _live_check(timeout_s: float = 2.5) -> dict[str, Any]:
     """Attempt a live health check using the Service Registry.
 
     Returns a structured result with per-service availability. If the registry
@@ -52,7 +52,7 @@ async def _live_check(timeout_s: float = 2.5) -> Dict[str, Any]:
         raise RuntimeError("service registry unavailable")
 
     # Basic registry heartbeat/status if available
-    status_detail: Dict[str, Any] = {}
+    status_detail: dict[str, Any] = {}
     get_status = getattr(reg, "get_registry_status", None)
     if callable(get_status):
         try:
@@ -65,7 +65,7 @@ async def _live_check(timeout_s: float = 2.5) -> Dict[str, Any]:
             status_detail = {}
 
     # Probe core services presence via get_service()
-    present: Dict[str, bool] = {}
+    present: dict[str, bool] = {}
     for name in CORE_SERVICES:
         try:
             svc = reg.get_service(name)  # type: ignore[attr-defined]
@@ -88,7 +88,7 @@ async def _live_check(timeout_s: float = 2.5) -> Dict[str, Any]:
     }
 
 
-def _run_smoke(timeout_s: float = 20.0) -> Dict[str, Any]:
+def _run_smoke(timeout_s: float = 20.0) -> dict[str, Any]:
     """Run the headless smoke script as a fallback check."""
     t0 = time.perf_counter()
     python = sys.executable or "python"
@@ -130,13 +130,13 @@ def _run_smoke(timeout_s: float = 20.0) -> Dict[str, Any]:
     }
 
 
-def main(*_args: Any, **_kwargs: Any) -> Dict[str, Any]:
+def main(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
     """Tool 'health_check' — Quick OS health check tool.
 
     Returns a dict with keys: status, mode, checks, summary, duration_ms.
     """
     # Prefer live check; fall back to smoke.
-    live: Dict[str, Any] | None = None
+    live: dict[str, Any] | None = None
     try:
         live = asyncio.run(_live_check())
     except Exception:
@@ -157,7 +157,7 @@ def main(*_args: Any, **_kwargs: Any) -> Dict[str, Any]:
             if not core_present or total == 0:
                 use_smoke = True
 
-    smoke: Dict[str, Any] | None = None
+    smoke: dict[str, Any] | None = None
     if use_smoke:
         smoke = _run_smoke()
 
@@ -176,7 +176,7 @@ def main(*_args: Any, **_kwargs: Any) -> Dict[str, Any]:
         if core_present:
             status = "degraded"
 
-    res_out: Dict[str, Any] = {
+    res_out: dict[str, Any] = {
         "status": status,
         "mode": primary.get("mode") if primary else None,
         "checks": primary.get("checks", []) if primary else [],

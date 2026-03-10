@@ -2,17 +2,12 @@
 import dataclasses
 import json
 import queue
-from typing import Any, Optional
+from typing import Any
 
 import torch
 from torch.distributed._shard._utils import narrow_tensor_by_index
 from torch.distributed.checkpoint._fsspec_filesystem import FsspecReader, FsspecWriter
 from torch.distributed.checkpoint._hf_utils import (
-    _gen_file_name,
-    _get_dtype,
-    _get_safetensors_file_metadata,
-    _HFStorageInfo,
-    _metadata_fn,
     CUSTOM_METADATA_KEY,
     DATA_KEY,
     DATA_OFFSETS_KEY,
@@ -21,6 +16,11 @@ from torch.distributed.checkpoint._hf_utils import (
     SAVED_OFFSETS_KEY,
     SHAPE_KEY,
     SUFFIX,
+    _gen_file_name,
+    _get_dtype,
+    _get_safetensors_file_metadata,
+    _HFStorageInfo,
+    _metadata_fn,
 )
 from torch.distributed.checkpoint.filesystem import SerializationFormat
 from torch.distributed.checkpoint.metadata import (
@@ -42,7 +42,6 @@ from torch.distributed.checkpoint.planner import (
 from torch.distributed.checkpoint.storage import WriteResult
 from torch.futures import Future
 
-
 __all__ = ["HuggingFaceStorageWriter", "HuggingFaceStorageReader"]
 
 
@@ -56,8 +55,8 @@ class HuggingFaceStorageWriter(FsspecWriter):
     def __init__(
         self,
         path: str,
-        fqn_to_index_mapping: Optional[dict[str, int]] = None,
-        token: Optional[str] = None,
+        fqn_to_index_mapping: dict[str, int] | None = None,
+        token: str | None = None,
         save_sharded: bool = False,
     ) -> None:
         """
@@ -88,7 +87,7 @@ class HuggingFaceStorageWriter(FsspecWriter):
                 path=path,
                 serialization_format=SerializationFormat.SAFETENSORS,
             )
-        self._fqn_to_index_mapping: Optional[dict[str, int]] = fqn_to_index_mapping
+        self._fqn_to_index_mapping: dict[str, int] | None = fqn_to_index_mapping
         self._save_sharded = save_sharded
 
     def prepare_global_plan(self, plans: list[SavePlan]) -> list[SavePlan]:
@@ -116,8 +115,8 @@ class HuggingFaceStorageWriter(FsspecWriter):
 
         # storage_plan is a map from key to file index
         storage_data: dict[str, Any] = plan.storage_data
-        storage_plan: Optional[dict[str, int]] = None
-        shard_index: Optional[int] = None
+        storage_plan: dict[str, int] | None = None
+        shard_index: int | None = None
         if "fqn_to_index_mapping" in storage_data:
             storage_plan = storage_data["fqn_to_index_mapping"]
         if "shard_index" in storage_data:
@@ -155,7 +154,7 @@ class HuggingFaceStorageWriter(FsspecWriter):
             json.dump(metadata_to_write, metadata_file, indent=2)
 
     def _split_by_storage_plan(
-        self, storage_plan: Optional[dict[str, int]], items: list[WriteItem]
+        self, storage_plan: dict[str, int] | None, items: list[WriteItem]
     ) -> dict[int, list[WriteItem]]:
         # storage_plan is a map from key to index
         if storage_plan is None:
@@ -185,7 +184,7 @@ class HuggingFaceStorageReader(FsspecReader):
     Fsspec registration of the storage solution is required.
     """
 
-    def __init__(self, path: str, token: Optional[str] = None) -> None:
+    def __init__(self, path: str, token: str | None = None) -> None:
         """
         Initialize the huggingface reader pointing to path.
 
@@ -284,7 +283,9 @@ class HuggingFaceStorageReader(FsspecReader):
                             size=torch.Size(
                                 [
                                     saved + offset
-                                    for saved, offset in zip(val[SHAPE_KEY], offset)
+                                    for saved, offset in zip(
+                                        val[SHAPE_KEY], offset, strict=False
+                                    )
                                 ]
                             ),
                             chunks=[

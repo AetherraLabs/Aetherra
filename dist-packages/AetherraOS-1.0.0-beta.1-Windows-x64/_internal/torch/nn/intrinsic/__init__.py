@@ -18,7 +18,6 @@ from torch.ao.nn.intrinsic.modules.fused import _FusedModule  # noqa: F401
 # Include the subpackages in case user imports from it directly
 from torch.nn.intrinsic import modules, qat, quantized  # noqa: F401
 
-
 __all__ = [
     "ConvBn1d",
     "ConvBn2d",

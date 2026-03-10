@@ -17,9 +17,9 @@ import torch.utils._pytree as pytree
 from torch._ops import HigherOrderOperator
 from torch._subclasses.fake_tensor import FakeTensorMode
 from torch.fx.experimental.proxy_tensor import (
+    ProxyTorchDispatchMode,
     disable_proxy_modes_tracing,
     get_proxy_slot,
-    ProxyTorchDispatchMode,
     track_tensor_tree,
 )
 from torch.utils._pytree import tree_flatten
@@ -49,7 +49,10 @@ def trace_call_delegate(proxy_mode, func_overload, lowered_module, *args):
         if not isinstance(e, (torch.Tensor, torch.SymInt, torch.SymFloat)):
             return e
         return get_proxy_slot(
-            cast(torch.Tensor, e), proxy_mode.tracer, e, lambda e: e.proxy  # type: ignore[attr-defined]
+            cast(torch.Tensor, e),
+            proxy_mode.tracer,
+            e,
+            lambda e: e.proxy,  # type: ignore[attr-defined]
         )
 
     if not is_lowered_module(lowered_module):

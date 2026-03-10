@@ -6,13 +6,11 @@ import logging
 import os
 import sys
 import tempfile
-from typing import Optional
 
 import torch
 from torch.distributed.nn.jit.templates.remote_module_template import (
     get_remote_module_template,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +62,7 @@ def get_arg_return_types_from_interface(module_interface):
 
 
 def _write(out_path, text):
-    old_text: Optional[str]
+    old_text: str | None
     try:
         with open(out_path) as f:
             old_text = f.read()

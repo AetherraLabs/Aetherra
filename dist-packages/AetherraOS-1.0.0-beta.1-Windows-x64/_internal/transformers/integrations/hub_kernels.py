@@ -11,10 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict, Union
 
 from ..utils import is_torchdynamo_compiling
-
 
 try:
     from kernels import (
@@ -29,7 +27,7 @@ try:
 
     _hub_kernels_available = True
 
-    _KERNEL_MAPPING: Dict[str, Dict[Union[Device, str], LayerRepository]] = {
+    _KERNEL_MAPPING: dict[str, dict[Device | str, LayerRepository]] = {
         "MultiScaleDeformableAttention": {
             "cuda": LayerRepository(
                 repo_id="kernels-community/deformable-detr",
@@ -81,11 +79,12 @@ try:
             kernel_forward = cls.forward
 
             def forward_with_compile_path(*forward_args, **forward_kwargs):
-                disable_custom_kernels = hasattr(cls, "config") and getattr(cls.config, "disable_custom_kernels", None)
+                disable_custom_kernels = hasattr(cls, "config") and getattr(
+                    cls.config, "disable_custom_kernels", None
+                )
                 if is_torchdynamo_compiling() or disable_custom_kernels:
                     return original_forward(*forward_args, **forward_kwargs)
-                else:
-                    return kernel_forward(*forward_args, **forward_kwargs)
+                return kernel_forward(*forward_args, **forward_kwargs)
 
             cls.forward = forward_with_compile_path
 
@@ -105,7 +104,9 @@ except ImportError:
 
     class LayerRepository:
         def __init__(self, *args, **kwargs):
-            raise RuntimeError("LayerRepository requires `kernels` to be installed. Run `pip install kernels`.")
+            raise RuntimeError(
+                "LayerRepository requires `kernels` to be installed. Run `pip install kernels`."
+            )
 
     def replace_kernel_forward_from_hub(*args, **kwargs):
         raise RuntimeError(
@@ -113,7 +114,9 @@ except ImportError:
         )
 
     def register_kernel_mapping(*args, **kwargs):
-        raise RuntimeError("register_kernel_mapping requires `kernels` to be installed. Run `pip install kernels`.")
+        raise RuntimeError(
+            "register_kernel_mapping requires `kernels` to be installed. Run `pip install kernels`."
+        )
 
     _hub_kernels_available = False
 

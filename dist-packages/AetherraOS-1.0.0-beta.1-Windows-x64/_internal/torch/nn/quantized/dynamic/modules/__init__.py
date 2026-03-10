@@ -20,12 +20,11 @@ from torch.ao.nn.quantized.dynamic.modules.conv import (
 from torch.ao.nn.quantized.dynamic.modules.linear import Linear
 from torch.ao.nn.quantized.dynamic.modules.rnn import (
     GRU,
-    GRUCell,
     LSTM,
+    GRUCell,
     LSTMCell,
     RNNCell,
 )
-
 
 __all__ = [
     "Linear",

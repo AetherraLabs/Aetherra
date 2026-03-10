@@ -32,7 +32,7 @@ import subprocess
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
@@ -41,9 +41,9 @@ if str(ROOT) not in sys.path:
 AETHER = [sys.executable, "aether.py"]
 
 
-def discover(root: Path) -> List[Path]:
+def discover(root: Path) -> list[Path]:
     ignore = {".git", ".hg", ".svn", "__pycache__", ".venv", "venv", "build", "dist"}
-    out: List[Path] = []
+    out: list[Path] = []
     for p in root.rglob("*.aether"):
         if not p.is_file():
             continue
@@ -53,7 +53,7 @@ def discover(root: Path) -> List[Path]:
     return sorted(out)
 
 
-def run_check(path: Path, timeout: int) -> Dict[str, Any]:
+def run_check(path: Path, timeout: int) -> dict[str, Any]:
     env = {
         **os.environ,
         "AETHERRA_PROFILE": os.getenv("AETHERRA_PROFILE", "test"),
@@ -72,8 +72,8 @@ def run_check(path: Path, timeout: int) -> Dict[str, Any]:
             "ok": False,
             "message": "timeout",
         }
-    record: Dict[str, Any] = {"path": str(path), "ok": proc.returncode == 0}
-    parsed_json: Optional[Dict[str, Any]] = None
+    record: dict[str, Any] = {"path": str(path), "ok": proc.returncode == 0}
+    parsed_json: dict[str, Any] | None = None
     for line in proc.stdout.splitlines():
         if line.strip().startswith("{") and '"code"' in line:
             try:
@@ -115,9 +115,9 @@ def run_check(path: Path, timeout: int) -> Dict[str, Any]:
     return record
 
 
-def aggregate(file_records: List[Dict[str, Any]]) -> Dict[str, Any]:
+def aggregate(file_records: list[dict[str, Any]]) -> dict[str, Any]:
     total = len(file_records)
-    by_code: Dict[str, int] = {}
+    by_code: dict[str, int] = {}
     for rec in file_records:
         name = rec.get("code_name", "UNKNOWN") or "UNKNOWN"
         by_code[name] = by_code.get(name, 0) + 1
@@ -146,7 +146,7 @@ def main():
     if args.limit > 0:
         files = files[: args.limit]
 
-    records: List[Dict[str, Any]] = []
+    records: list[dict[str, Any]] = []
     for p in files:
         records.append(run_check(p, args.timeout))
 

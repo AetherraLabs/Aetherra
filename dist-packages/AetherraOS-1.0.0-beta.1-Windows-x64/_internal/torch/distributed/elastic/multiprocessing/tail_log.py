@@ -12,8 +12,7 @@ import os
 import time
 from concurrent.futures.thread import ThreadPoolExecutor
 from threading import Event
-from typing import Optional, TextIO, TYPE_CHECKING
-
+from typing import TYPE_CHECKING, TextIO
 
 if TYPE_CHECKING:
     from concurrent.futures._base import Future
@@ -41,10 +40,9 @@ def tail_logfile(
                 if finished.is_set():
                     # log line producer is finished
                     break
-                else:
-                    # log line producer is still going
-                    # wait for a bit before looping again
-                    time.sleep(interval_sec)
+                # log line producer is still going
+                # wait for a bit before looping again
+                time.sleep(interval_sec)
 
 
 class TailLog:
@@ -91,7 +89,7 @@ class TailLog:
         name: str,
         log_files: dict[int, str],
         dst: TextIO,
-        log_line_prefixes: Optional[dict[int, str]] = None,
+        log_line_prefixes: dict[int, str] | None = None,
         interval_sec: float = 0.1,
     ):
         n = len(log_files)
@@ -107,7 +105,7 @@ class TailLog:
         self._log_files = log_files
         self._log_line_prefixes = log_line_prefixes
         self._finished_events: dict[int, Event] = {
-            local_rank: Event() for local_rank in log_files.keys()
+            local_rank: Event() for local_rank in log_files
         }
         self._futs: list[Future] = []
         self._interval_sec = interval_sec

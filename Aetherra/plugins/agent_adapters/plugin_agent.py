@@ -36,10 +36,7 @@ class PluginAgent(AgentBase):
             if operation_type == "plugin_generation":
                 result = await self._handle_plugin_generation(input_text, context)
             elif operation_type == "plugin_discovery":
-                if any(
-                    keyword in input_text.lower()
-                    for keyword in ["find", "search", "discover"]
-                ):
+                if any(keyword in input_text.lower() for keyword in ["find", "search", "discover"]):
                     result = await self._search_plugins(input_text, context)
                 else:
                     result = await self._list_plugins(context)
@@ -64,24 +61,16 @@ class PluginAgent(AgentBase):
                     ]
                 ):
                     result = await self._handle_plugin_generation(input_text, context)
-                elif any(
-                    keyword in input_lower for keyword in ["find", "search", "discover"]
-                ):
+                elif any(keyword in input_lower for keyword in ["find", "search", "discover"]):
                     result = await self._search_plugins(input_text, context)
-                elif any(
-                    keyword in input_lower for keyword in ["recommend", "suggest"]
-                ):
+                elif any(keyword in input_lower for keyword in ["recommend", "suggest"]):
                     result = await self._recommend_plugins(input_text, context)
                 elif any(keyword in input_lower for keyword in ["install", "add"]):
                     result = await self._install_plugin(input_text, context)
-                elif any(
-                    keyword in input_lower
-                    for keyword in ["list", "show all", "available"]
-                ):
+                elif any(keyword in input_lower for keyword in ["list", "show all", "available"]):
                     result = await self._list_plugins(context)
                 elif any(
-                    keyword in input_lower
-                    for keyword in ["info", "about", "details", "explain"]
+                    keyword in input_lower for keyword in ["info", "about", "details", "explain"]
                 ):
                     result = await self._plugin_info(input_text, context)
                 else:
@@ -101,9 +90,7 @@ class PluginAgent(AgentBase):
                 metadata={"error": str(e)},
             )
 
-    async def _search_plugins(
-        self, query: str, context: Dict[str, Any]
-    ) -> AgentResponse:
+    async def _search_plugins(self, query: str, context: Dict[str, Any]) -> AgentResponse:
         """Search for plugins based on query"""
         # Extract search terms from query
         search_terms = query.lower().replace("find", "").replace("search", "").strip()
@@ -118,10 +105,8 @@ class PluginAgent(AgentBase):
 
         try:
             # Get real plugin recommendations
-            recommendations = (
-                await self.intelligence_stack.get_plugin_recommendations_for_lyrixa(
-                    search_terms
-                )
+            recommendations = await self.intelligence_stack.get_plugin_recommendations_for_lyrixa(
+                search_terms
             )
 
             if not recommendations:
@@ -136,9 +121,7 @@ class PluginAgent(AgentBase):
                     plugin_name = plugin_data.get("name", plugin_key)
                     description = plugin_data.get("description", "")
                     capabilities = " ".join(plugin_data.get("capabilities", []))
-                    searchable_text = (
-                        f"{plugin_name} {description} {capabilities}".lower()
-                    )
+                    searchable_text = f"{plugin_name} {description} {capabilities}".lower()
 
                     if any(term in searchable_text for term in search_terms.split()):
                         matching_plugins.append(
@@ -160,10 +143,16 @@ class PluginAgent(AgentBase):
                         metadata={"search_terms": search_terms, "results": []},
                     )
 
-                result_text = f"Found {len(matching_plugins)} plugins matching '{search_terms}':\n\n"
+                result_text = (
+                    f"Found {len(matching_plugins)} plugins matching '{search_terms}':\n\n"
+                )
                 for plugin in matching_plugins[:5]:  # Limit to top 5 results
-                    result_text += f"• **{plugin['name']}** ({plugin['type']}): {plugin['description']}\n"
-                    result_text += f"  Category: {plugin['category']} | Status: {plugin['status']}\n\n"
+                    result_text += (
+                        f"• **{plugin['name']}** ({plugin['type']}): {plugin['description']}\n"
+                    )
+                    result_text += (
+                        f"  Category: {plugin['category']} | Status: {plugin['status']}\n\n"
+                    )
 
                 return AgentResponse(
                     content=result_text,
@@ -176,13 +165,13 @@ class PluginAgent(AgentBase):
                 )
             else:
                 # Use recommendations from intelligence system
-                result_text = f"Found {len(recommendations)} recommended plugins for '{search_terms}':\n\n"
+                result_text = (
+                    f"Found {len(recommendations)} recommended plugins for '{search_terms}':\n\n"
+                )
                 for plugin in recommendations:
                     result_text += f"• **{plugin.get('name', 'Unknown')}**: {plugin.get('description', 'No description')}\n"
                     if plugin.get("capabilities"):
-                        result_text += (
-                            f"  Capabilities: {', '.join(plugin['capabilities'])}\n"
-                        )
+                        result_text += f"  Capabilities: {', '.join(plugin['capabilities'])}\n"
                     result_text += "\n"
 
                 return AgentResponse(
@@ -200,9 +189,7 @@ class PluginAgent(AgentBase):
                 metadata={"error": str(e), "search_terms": search_terms},
             )
 
-    async def _recommend_plugins(
-        self, input_text: str, context: Dict[str, Any]
-    ) -> AgentResponse:
+    async def _recommend_plugins(self, input_text: str, context: Dict[str, Any]) -> AgentResponse:
         """Recommend plugins based on user needs"""
         # Analyze user input to understand what they need
         needs = input_text.lower()
@@ -260,9 +247,7 @@ class PluginAgent(AgentBase):
             metadata={"recommendations": recommendations},
         )
 
-    async def _install_plugin(
-        self, input_text: str, context: Dict[str, Any]
-    ) -> AgentResponse:
+    async def _install_plugin(self, input_text: str, context: Dict[str, Any]) -> AgentResponse:
         """Install a plugin"""
         # Extract plugin name from input
         plugin_name = input_text.lower().replace("install", "").strip()
@@ -291,12 +276,8 @@ class PluginAgent(AgentBase):
 
         try:
             # Get all available plugins
-            available_plugins = (
-                await self.intelligence_stack.plugin_bridge.discover_all_plugins()
-            )
-            plugin_summary = (
-                self.intelligence_stack.plugin_bridge.get_plugin_summary_for_gui()
-            )
+            available_plugins = await self.intelligence_stack.plugin_bridge.discover_all_plugins()
+            plugin_summary = self.intelligence_stack.plugin_bridge.get_plugin_summary_for_gui()
 
             if not available_plugins:
                 return AgentResponse(
@@ -316,18 +297,14 @@ class PluginAgent(AgentBase):
                 plugins_by_type[plugin_type].append(
                     {
                         "name": plugin_data.get("name", plugin_key),
-                        "description": plugin_data.get(
-                            "description", "No description available"
-                        ),
+                        "description": plugin_data.get("description", "No description available"),
                         "status": plugin_data.get("status", "Unknown"),
                         "category": plugin_data.get("category", "Unknown"),
                     }
                 )
 
             # Build result text
-            result_text = (
-                f"🔌 **Available Plugins** ({len(available_plugins)} total)\n\n"
-            )
+            result_text = f"🔌 **Available Plugins** ({len(available_plugins)} total)\n\n"
 
             # Add summary
             if plugin_summary.get("by_status"):
@@ -344,9 +321,7 @@ class PluginAgent(AgentBase):
                     result_text += f"  {plugin['description']}\n"
                     result_text += f"  Category: {plugin['category']}\n\n"
 
-            result_text += (
-                "\n💡 Use 'find plugin [keyword]' to search for specific functionality!"
-            )
+            result_text += "\n💡 Use 'find plugin [keyword]' to search for specific functionality!"
 
             return AgentResponse(
                 content=result_text,
@@ -367,9 +342,7 @@ class PluginAgent(AgentBase):
                 metadata={"error": str(e)},
             )
 
-    async def _general_plugin_help(
-        self, input_text: str, context: Dict[str, Any]
-    ) -> AgentResponse:
+    async def _general_plugin_help(self, input_text: str, context: Dict[str, Any]) -> AgentResponse:
         """Provide general plugin help"""
         help_text = """Plugin Assistant Help:
 
@@ -430,12 +403,8 @@ What would you like to do with plugins?"""
             # Show available templates
             result_text += "**Available Templates:**\n"
             for template in templates:
-                marker = (
-                    "✅" if template["category"].lower() == plugin_type.lower() else "📄"
-                )
-                result_text += (
-                    f"{marker} **{template['name']}** ({template['category']})\n"
-                )
+                marker = "✅" if template["category"].lower() == plugin_type.lower() else "📄"
+                result_text += f"{marker} **{template['name']}** ({template['category']})\n"
                 result_text += f"   {template['description']}\n\n"
 
             # Generate plugin suggestion
@@ -446,9 +415,7 @@ What would you like to do with plugins?"""
                     break
 
             if matching_template:
-                result_text += (
-                    f"🎯 **Recommended Template**: {matching_template['name']}\n\n"
-                )
+                result_text += f"🎯 **Recommended Template**: {matching_template['name']}\n\n"
 
                 # Attempt to generate the plugin
                 try:
@@ -465,28 +432,20 @@ What would you like to do with plugins?"""
                     if generated_plugin:
                         result_text += "✅ **Plugin Generated Successfully!**\n"
                         result_text += f"**Plugin ID**: {plugin_id}\n"
-                        result_text += (
-                            f"**Files Created**: {len(generated_plugin.files)}\n\n"
-                        )
+                        result_text += f"**Files Created**: {len(generated_plugin.files)}\n\n"
 
                         result_text += "**Generated Files:**\n"
                         for filename in generated_plugin.files.keys():
                             result_text += f"• {filename}\n"
 
                         result_text += "\n**Next Steps:**\n"
+                        result_text += "1. Review the generated code in the Plugin Editor tab\n"
+                        result_text += "2. Edit and customize the .aether or .py code as needed\n"
                         result_text += (
-                            "1. Review the generated code in the Plugin Editor tab\n"
+                            "3. Use the Save button to save the plugin to Aetherra/plugins\n"
                         )
-                        result_text += (
-                            "2. Edit and customize the .aether or .py code as needed\n"
-                        )
-                        result_text += "3. Use the Save button to save the plugin to Aetherra/plugins\n"
-                        result_text += (
-                            "4. Test your plugin using the Test button in the editor\n"
-                        )
-                        result_text += (
-                            "5. Apply the plugin to activate it in Aetherra\n\n"
-                        )
+                        result_text += "4. Test your plugin using the Test button in the editor\n"
+                        result_text += "5. Apply the plugin to activate it in Aetherra\n\n"
 
                         # Log to intelligence memory if available
                         if self.intelligence_stack:
@@ -528,31 +487,19 @@ What would you like to do with plugins?"""
 
                 except Exception as gen_error:
                     result_text += f"❌ **Generation Error**: {str(gen_error)}\n\n"
-                    result_text += (
-                        "Please try with a different template or description.\n"
-                    )
+                    result_text += "Please try with a different template or description.\n"
 
             else:
-                result_text += (
-                    f"💡 **No exact template match found for '{plugin_type}'**\n\n"
-                )
+                result_text += f"💡 **No exact template match found for '{plugin_type}'**\n\n"
                 result_text += "**Available Options:**\n"
-                result_text += (
-                    "1. Use a general template and customize in the Plugin Editor\n"
-                )
-                result_text += (
-                    "2. Edit the .aether or .py code directly in the code editor\n"
-                )
-                result_text += (
-                    "3. Describe your needs more specifically for better templates\n\n"
-                )
+                result_text += "1. Use a general template and customize in the Plugin Editor\n"
+                result_text += "2. Edit the .aether or .py code directly in the code editor\n"
+                result_text += "3. Describe your needs more specifically for better templates\n\n"
 
             # Always show how to access the plugin editor
             result_text += "🎯 **Plugin Editor Access**:\n"
             result_text += "• Open the Plugin Editor tab in the main interface\n"
-            result_text += (
-                "• Use the native code editor to write .aether or .py plugins\n"
-            )
+            result_text += "• Use the native code editor to write .aether or .py plugins\n"
             result_text += "• Use Save, Test, and Apply buttons for plugin management\n"
 
             return AgentResponse(
@@ -575,9 +522,7 @@ What would you like to do with plugins?"""
                 metadata={"error": str(e), "feature": "plugin_generation"},
             )
 
-    async def _plugin_info(
-        self, input_text: str, context: Dict[str, Any]
-    ) -> AgentResponse:
+    async def _plugin_info(self, input_text: str, context: Dict[str, Any]) -> AgentResponse:
         """Get detailed information about a specific plugin"""
         # Extract plugin name from input
         plugin_name = input_text.lower()
@@ -603,9 +548,7 @@ What would you like to do with plugins?"""
 
         try:
             # Search for the plugin
-            available_plugins = (
-                await self.intelligence_stack.plugin_bridge.discover_all_plugins()
-            )
+            available_plugins = await self.intelligence_stack.plugin_bridge.discover_all_plugins()
 
             found_plugin = None
             for plugin_key, plugin_data in available_plugins.items():
@@ -626,9 +569,7 @@ What would you like to do with plugins?"""
                 )
 
             # Build detailed info
-            result_text = (
-                f"🔌 **Plugin Information: {found_plugin.get('name', plugin_name)}**\n\n"
-            )
+            result_text = f"🔌 **Plugin Information: {found_plugin.get('name', plugin_name)}**\n\n"
             result_text += f"**Description:** {found_plugin.get('description', 'No description available')}\n\n"
             result_text += "**Details:**\n"
             result_text += f"• Type: {found_plugin.get('type', 'Unknown')}\n"
@@ -704,11 +645,7 @@ What would you like to do with plugins?"""
 
         for word in words:
             clean_word = word.strip(".,!?;:")
-            if (
-                clean_word
-                and clean_word.lower() not in skip_words
-                and len(clean_word) > 2
-            ):
+            if clean_word and clean_word.lower() not in skip_words and len(clean_word) > 2:
                 filtered_words.append(clean_word.capitalize())
 
         if not filtered_words:
@@ -789,14 +726,10 @@ What would you like to do with plugins?"""
         # Default to ui for general cases
         return "ui"
 
-    async def _log_generated_plugin(
-        self, plugin_id: str, generated_plugin, input_text: str
-    ):
+    async def _log_generated_plugin(self, plugin_id: str, generated_plugin, input_text: str):
         """Log generated plugin to intelligence memory"""
         try:
-            if self.intelligence_stack and hasattr(
-                self.intelligence_stack, "memory_manager"
-            ):
+            if self.intelligence_stack and hasattr(self.intelligence_stack, "memory_manager"):
                 log_entry = {
                     "type": "plugin_generated",
                     "timestamp": datetime.now().isoformat(),

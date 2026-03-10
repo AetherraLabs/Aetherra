@@ -25,7 +25,6 @@ from torch.onnx import _constants, _type_utils, symbolic_helper
 from torch.onnx._globals import GLOBALS
 from torch.onnx._internal import jit_utils, registration
 
-
 __all__ = [
     "hardswish",
     "tril",
@@ -112,11 +111,10 @@ def batch_norm(
     )
     if not training:
         return out
-    else:
-        res, new_running_mean, new_running_var = out
-        new_running_mean.setType(running_mean.type())
-        new_running_var.setType(running_var.type())
-        return res
+    res, new_running_mean, new_running_var = out
+    new_running_mean.setType(running_mean.type())
+    new_running_var.setType(running_var.type())
+    return res
 
 
 @_onnx_symbolic("quantized::hardswish")

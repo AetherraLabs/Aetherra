@@ -19,14 +19,13 @@ specialized implementations for each hardware backend's unique features.
 
 import inspect
 import time
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 import torch
 
-
-get_cuda_stream: Optional[Callable[[int], int]]
+get_cuda_stream: Callable[[int], int] | None
 if torch.cuda._is_compiled():
     from torch._C import _cuda_getCurrentRawStream as get_cuda_stream
 else:
@@ -182,7 +181,7 @@ class DeviceGuard:
     """
 
     def __init__(
-        self, device_interface: type[DeviceInterface], index: Optional[int]
+        self, device_interface: type[DeviceInterface], index: int | None
     ) -> None:
         self.device_interface = device_interface
         self.idx = index
@@ -262,8 +261,7 @@ class CudaInterface(DeviceInterface):
         if torch.version.hip is None:
             major, min = torch.cuda.get_device_capability(device)
             return major * 10 + min
-        else:
-            return torch.cuda.get_device_properties(device).gcnArchName.split(":", 1)[0]
+        return torch.cuda.get_device_properties(device).gcnArchName.split(":", 1)[0]
 
     @staticmethod
     def is_triton_capable(device: torch.types.Device = None) -> bool:
@@ -289,7 +287,7 @@ class CudaInterface(DeviceInterface):
             raise RuntimeError("triton not built with the 'nvidia' backend")
 
 
-get_xpu_stream: Optional[Callable[[int], int]]
+get_xpu_stream: Callable[[int], int] | None
 if torch.xpu._is_compiled():
     from torch._C import _xpu_getCurrentRawStream as get_xpu_stream
 else:
@@ -476,14 +474,14 @@ _device_initialized = False
 
 
 def register_interface_for_device(
-    device: Union[str, torch.device], device_interface: type[DeviceInterface]
+    device: str | torch.device, device_interface: type[DeviceInterface]
 ):
     if isinstance(device, torch.device):
         device = device.type
     device_interfaces[device] = device_interface
 
 
-def get_interface_for_device(device: Union[str, torch.device]) -> type[DeviceInterface]:
+def get_interface_for_device(device: str | torch.device) -> type[DeviceInterface]:
     if isinstance(device, torch.device):
         device = device.type
     if not _device_initialized:

@@ -20,7 +20,6 @@ Test Coverage:
 🔬 Timeline Exploration - "Paths not taken" analysis
 """
 
-
 # Standard library imports
 import math
 import tempfile
@@ -267,9 +266,9 @@ class TestCausalBranchSimulator(TestQuantumAwareSimulations):
         # Update superposition state after collapse
         collapsed_superposition = superposition.copy()
         collapsed_superposition["active_branches"] = [collapsed_branch]
-        collapsed_superposition[
-            "coherence_score"
-        ] = 1.0  # Fully coherent after collapse
+        collapsed_superposition["coherence_score"] = (
+            1.0  # Fully coherent after collapse
+        )
 
         self.assertEqual(len(collapsed_superposition["active_branches"]), 1)
         self.assertEqual(collapsed_superposition["coherence_score"], 1.0)
@@ -621,7 +620,10 @@ class TestQuantumMemoryBridge(TestQuantumAwareSimulations):
 
         # Mock error correction
         error_threshold = 0.1
-        fidelity = sum(orig * noisy for orig, noisy in zip(original_state, noisy_state))
+        fidelity = sum(
+            orig * noisy
+            for orig, noisy in zip(original_state, noisy_state, strict=False)
+        )
 
         if fidelity < (1.0 - error_threshold):
             # Apply correction
@@ -631,7 +633,8 @@ class TestQuantumMemoryBridge(TestQuantumAwareSimulations):
 
         # Verify error correction
         final_fidelity = sum(
-            orig * corr for orig, corr in zip(original_state, corrected_state)
+            orig * corr
+            for orig, corr in zip(original_state, corrected_state, strict=False)
         )
 
         # For this test, ensure we can measure improvement

@@ -5,11 +5,10 @@ import os
 import shutil
 import tempfile
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from enum import Enum
 from functools import partial
-from typing import Any, Callable, Optional
-from typing_extensions import Self
+from typing import Any, Optional, Self
 from warnings import warn
 
 import torch
@@ -24,9 +23,8 @@ from torch._C._profiler import (
 )
 from torch._environment import is_fbcode
 from torch._utils_internal import profiler_allow_cudagraph_cupti_lazy_reinit_cuda12
-from torch.autograd import kineto_available, ProfilerActivity
+from torch.autograd import ProfilerActivity, kineto_available
 from torch.profiler._memory_profiler import MemoryProfile, MemoryProfileTimeline
-
 
 __all__ = [
     "supported_activities",
@@ -53,12 +51,11 @@ class _NumpyEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, obj)
         if isinstance(obj, np.integer):
             return int(obj)
-        elif isinstance(obj, np.floating):
+        if isinstance(obj, np.floating):
             return float(obj)
-        elif isinstance(obj, np.ndarray):
+        if isinstance(obj, np.ndarray):
             return obj.tolist()
-        else:
-            return json.JSONEncoder.default(self, obj)
+        return json.JSONEncoder.default(self, obj)
 
 
 def supported_activities():
@@ -135,16 +132,16 @@ class _KinetoProfile:
     def __init__(
         self,
         *,
-        activities: Optional[Iterable[ProfilerActivity]] = None,
+        activities: Iterable[ProfilerActivity] | None = None,
         record_shapes: bool = False,
         profile_memory: bool = False,
         with_stack: bool = False,
         with_flops: bool = False,
         with_modules: bool = False,
-        experimental_config: Optional[_ExperimentalConfig] = None,
-        execution_trace_observer: Optional[_ITraceObserver] = None,
+        experimental_config: _ExperimentalConfig | None = None,
+        execution_trace_observer: _ITraceObserver | None = None,
         acc_events: bool = False,
-        custom_trace_id_callback: Optional[Callable[[], str]] = None,
+        custom_trace_id_callback: Callable[[], str] | None = None,
     ):
         self.activities = set(activities) if activities else supported_activities()
         self.record_shapes = record_shapes
@@ -156,9 +153,9 @@ class _KinetoProfile:
         self.execution_trace_observer = execution_trace_observer
         self.acc_events = acc_events
         self.custom_trace_id_callback = custom_trace_id_callback
-        self.profiler: Optional[prof.profile] = None
+        self.profiler: prof.profile | None = None
         self.has_cudagraphs = False
-        self.mem_tl: Optional[MemoryProfileTimeline] = None
+        self.mem_tl: MemoryProfileTimeline | None = None
         self.use_device = None
         if ProfilerActivity.CUDA in self.activities:
             self.use_device = "cuda"
@@ -269,8 +266,7 @@ class _KinetoProfile:
                     fout.writelines(fin)
             os.remove(fp.name)
             return retvalue
-        else:
-            return self.profiler.export_chrome_trace(path)
+        return self.profiler.export_chrome_trace(path)
 
     def export_stacks(self, path: str, metric: str = "self_cpu_time_total"):
         """Save stack traces to a file
@@ -392,7 +388,7 @@ class _KinetoProfile:
         assert self.profiler is not None and self.profiler.kineto_results is not None
         return MemoryProfile(self.profiler.kineto_results)
 
-    def export_memory_timeline(self, path: str, device: Optional[str] = None) -> None:
+    def export_memory_timeline(self, path: str, device: str | None = None) -> None:
         """Export memory event information from the profiler collected
         tree for a given device, and export a timeline plot. There are 3
         exportable files using ``export_memory_timeline``, each controlled by the
@@ -482,8 +478,7 @@ def schedule(
         assert step >= 0
         if step < skip_first:
             return ProfilerAction.NONE
-        else:
-            step -= skip_first
+        step -= skip_first
         # If wait >> skip_first and we want to grab profiling early, shift left by wait if skip_first_wait is True
         if skip_first_wait != 0:
             step += wait
@@ -493,14 +488,13 @@ def schedule(
         mod_step = step % num_steps
         if mod_step < wait:
             return ProfilerAction.NONE
-        elif mod_step < wait + warmup:
+        if mod_step < wait + warmup:
             return ProfilerAction.WARMUP
-        else:
-            return (
-                ProfilerAction.RECORD
-                if mod_step < num_steps - 1
-                else ProfilerAction.RECORD_AND_SAVE
-            )
+        return (
+            ProfilerAction.RECORD
+            if mod_step < num_steps - 1
+            else ProfilerAction.RECORD_AND_SAVE
+        )
 
     assert (
         wait >= 0 and warmup >= 0 and active > 0 and repeat >= 0 and skip_first >= 0
@@ -519,7 +513,7 @@ def _default_schedule_fn(_: int) -> ProfilerAction:
 
 
 def tensorboard_trace_handler(
-    dir_name: str, worker_name: Optional[str] = None, use_gzip: bool = False
+    dir_name: str, worker_name: str | None = None, use_gzip: bool = False
 ):
     """
     Outputs tracing files to directory of ``dir_name``, then that directory can be
@@ -688,20 +682,20 @@ class profile(_KinetoProfile):
     def __init__(
         self,
         *,
-        activities: Optional[Iterable[ProfilerActivity]] = None,
-        schedule: Optional[Callable[[int], ProfilerAction]] = None,
-        on_trace_ready: Optional[Callable[..., Any]] = None,
+        activities: Iterable[ProfilerActivity] | None = None,
+        schedule: Callable[[int], ProfilerAction] | None = None,
+        on_trace_ready: Callable[..., Any] | None = None,
         record_shapes: bool = False,
         profile_memory: bool = False,
         with_stack: bool = False,
         with_flops: bool = False,
         with_modules: bool = False,
-        experimental_config: Optional[_ExperimentalConfig] = None,
-        execution_trace_observer: Optional[_ITraceObserver] = None,
+        experimental_config: _ExperimentalConfig | None = None,
+        execution_trace_observer: _ITraceObserver | None = None,
         acc_events: bool = False,
         # deprecated:
-        use_cuda: Optional[bool] = None,
-        custom_trace_id_callback: Optional[Callable[[], str]] = None,
+        use_cuda: bool | None = None,
+        custom_trace_id_callback: Callable[[], str] | None = None,
     ):
         activities_set = set(activities) if activities else supported_activities()
         if use_cuda is not None:
@@ -741,10 +735,10 @@ class profile(_KinetoProfile):
         self.on_trace_ready = on_trace_ready
         self.step_num = 0
         self.current_action = self.schedule(self.step_num)
-        self.step_rec_fn: Optional[prof.record_function] = None
+        self.step_rec_fn: prof.record_function | None = None
 
         self.action_map: dict[
-            tuple[ProfilerAction, Optional[ProfilerAction]], list[Any]
+            tuple[ProfilerAction, ProfilerAction | None], list[Any]
         ] = {
             # key is (prev_action, current_action), value is action list corresponding to the state pair.
             (ProfilerAction.NONE, ProfilerAction.NONE): [],
@@ -877,7 +871,7 @@ class profile(_KinetoProfile):
             for action in action_list:
                 action()
 
-    def _stats(self) -> Optional[prof._ProfilerStats]:
+    def _stats(self) -> prof._ProfilerStats | None:
         if self.profiler is None:
             return None
         return self.profiler._stats
@@ -976,7 +970,7 @@ class ExecutionTraceObserver(_ITraceObserver):
             self._registered = _add_execution_trace_observer(output_file_path)
         return self
 
-    def get_resources_dir(self, can_create=False) -> Optional[str]:
+    def get_resources_dir(self, can_create=False) -> str | None:
         """
         Generates the resources directory for the generated kernels,
         or index tensor data or any other metadata that is required
@@ -1005,7 +999,7 @@ class ExecutionTraceObserver(_ITraceObserver):
     @staticmethod
     def get_resources_dir_for_et_path(
         trace_path, create_dir: bool = False
-    ) -> Optional[str]:
+    ) -> str | None:
         work_dir, file_name = os.path.split(trace_path)
         resource_dir = os.path.join(
             work_dir, os.path.splitext(file_name)[0] + "_resources"
@@ -1110,14 +1104,13 @@ class ExecutionTraceObserver(_ITraceObserver):
         """
         self.unregister_callback()
 
-    def get_output_file_path(self) -> Optional[str]:
+    def get_output_file_path(self) -> str | None:
         """
         Returns the output file name or None.
         """
         if self.output_file_path:
             return self.output_file_path
-        else:
-            return None
+        return None
 
     def _record_pg_config(self) -> None:
         # Records the PG config info to the trace as node:

@@ -6,7 +6,6 @@ from torch.fx.graph_module import GraphModule
 from torch.fx.passes.utils.matcher_utils import SubgraphMatcher
 from torch.nn import Module
 
-
 __all__ = ["HolderModule", "lift_subgraph_as_module", "compare_graphs"]
 
 

@@ -94,12 +94,8 @@ class NarrativeLayer:
         self.window_min = int(os.getenv("AETHERRA_NARRATIVE_WINDOW_MIN", "5"))
         self.min_events = int(os.getenv("AETHERRA_NARRATIVE_MIN_EVENTS", "15"))
         self.max_scan_events = int(os.getenv("AETHERRA_NARRATIVE_MAX_EVENTS", "120"))
-        self.max_summary_chars = int(
-            os.getenv("AETHERRA_NARRATIVE_MAX_SUMMARY_CHARS", "600")
-        )
-        self.chapter_dir = Path(
-            os.getenv("AETHERRA_NARRATIVE_CHAPTER_DIR", ".aetherra/narrative")
-        )
+        self.max_summary_chars = int(os.getenv("AETHERRA_NARRATIVE_MAX_SUMMARY_CHARS", "600"))
+        self.chapter_dir = Path(os.getenv("AETHERRA_NARRATIVE_CHAPTER_DIR", ".aetherra/narrative"))
         self.chapter_dir.mkdir(parents=True, exist_ok=True)
         self._last_chapter_ts: Optional[datetime] = None
         self._last_event_count: int = 0
@@ -155,9 +151,9 @@ class NarrativeLayer:
             new_event_count = len(events)
             if new_event_count - self._last_event_count < self.min_events:
                 # Not enough new events yet
-                if self._last_chapter_ts and (
-                    _now() - self._last_chapter_ts
-                ) < timedelta(minutes=self.window_min):
+                if self._last_chapter_ts and (_now() - self._last_chapter_ts) < timedelta(
+                    minutes=self.window_min
+                ):
                     return
             start_time = time.time()
             chapter = self._build_chapter(events)
@@ -229,8 +225,7 @@ class NarrativeLayer:
             return "I perceived no salient events in this interval."
         identity_line = who_am_i()
         embody = (
-            embodiment_statement()
-            or "I am the unified Aetherra consciousness expressed as Lyrixa."
+            embodiment_statement() or "I am the unified Aetherra consciousness expressed as Lyrixa."
         )
         tone_bits = []
         if _get_affect:
@@ -279,9 +274,7 @@ class NarrativeLayer:
                 first_person += 1
         return first_person / max(1, len(relevant))
 
-    def _coherence_metrics(
-        self, events: List[EpisodicEvent], salient: List[EpisodicEvent]
-    ):
+    def _coherence_metrics(self, events: List[EpisodicEvent], salient: List[EpisodicEvent]):
         # Topical consistency: measure dominant tag / type concentration
         types = [e.type for e in events]
         counter = Counter(types)
@@ -296,7 +289,8 @@ class NarrativeLayer:
         if len(timestamps) >= 3:
             timestamps.sort()
             gaps = [
-                (t2 - t1).total_seconds() for t1, t2 in zip(timestamps, timestamps[1:])
+                (t2 - t1).total_seconds()
+                for t1, t2 in zip(timestamps, timestamps[1:], strict=False)
             ]
             if gaps and max(gaps) > (self.window_min * 60) * 0.8:
                 anomalies.append("large_gap")
@@ -304,11 +298,7 @@ class NarrativeLayer:
         # Salient coverage: proportion of events represented in salient summary
         coverage = len(salient) / max(1, len(events))
         # Coherence heuristic: weighted blend
-        coherence = (
-            0.5 * topical_consistency
-            + 0.3 * coverage
-            + 0.2 * (0 if gap_detected else 1)
-        )
+        coherence = 0.5 * topical_consistency + 0.3 * coverage + 0.2 * (0 if gap_detected else 1)
         coherence = max(0.0, min(1.0, coherence))
         return coherence, anomalies
 
@@ -328,9 +318,7 @@ class NarrativeLayer:
             sub_type="chapter",
             content=chapter.summary[:120],
             importance=0.7 if chapter.coherence_index >= 0.6 else 0.5,
-            attribution=EventAttribution(
-                source="narrative_layer", agent=None, confidence=0.9
-            ),
+            attribution=EventAttribution(source="narrative_layer", agent=None, confidence=0.9),
             raw={
                 "chapter_id": chapter.id,
                 "coherence": chapter.coherence_index,

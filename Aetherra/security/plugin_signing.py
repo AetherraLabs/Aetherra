@@ -186,9 +186,7 @@ def verify_plugin_signature(manifest: dict) -> bool:
     # revocation check
     if _is_revoked(pub, manifest.get("key_id")):
         return False
-    msg = _manifest_bytes(
-        {k: v for k, v in manifest.items() if k not in ("signature", "pubkey")}
-    )
+    msg = _manifest_bytes({k: v for k, v in manifest.items() if k not in ("signature", "pubkey")})
     # Try PyNaCl, then cryptography
     if NACL:
         try:

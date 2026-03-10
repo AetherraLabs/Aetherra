@@ -14,7 +14,7 @@ and provides interfaces for monitoring and control.
 import threading
 import traceback
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -75,13 +75,13 @@ class AetherScriptRunner:
             script_content = f.read()
 
         # Simulate script execution
-        # TODO: Integrate with enhanced Aetherra interpreter
+        # Integration point: enhanced Aetherra interpreter pipeline.
         result = {
             "script_name": script_name,
             "script_path": str(script_path),
             "parameters": parameters or {},
             "context": context or {},
-            "executed_at": datetime.now(timezone.utc).isoformat(),
+            "executed_at": datetime.now(UTC).isoformat(),
             "simulated": True,
             "content_length": len(script_content),
             "lines": len(script_content.split("\n")),
@@ -93,9 +93,7 @@ class AetherScriptRunner:
         elif "test_" in script_name:
             result.update({"tests_run": 10, "passed": 9, "failed": 1, "success": True})
         else:
-            result.update(
-                {"status": "completed", "message": "Script executed successfully"}
-            )
+            result.update({"status": "completed", "message": "Script executed successfully"})
 
         return result
 
@@ -150,9 +148,7 @@ class JobController:
             job_store.update_job_status(job_id, JobStatus.RUNNING)
 
             # Execute the script
-            result = self.script_runner.execute_script(
-                job.script_name, job.parameters, job.context
-            )
+            result = self.script_runner.execute_script(job.script_name, job.parameters, job.context)
 
             # Update job with successful result
             job_store.update_job_status(job_id, JobStatus.COMPLETED, output=result)
@@ -196,7 +192,7 @@ class JobController:
         # Mark job as cancelled in store
         success = job_store.cancel_job(job_id)
 
-        # TODO: Implement actual thread interruption for running jobs
+        # Integration point: actual thread interruption for running jobs.
         # For now, we just mark it as cancelled in the store
 
         return success

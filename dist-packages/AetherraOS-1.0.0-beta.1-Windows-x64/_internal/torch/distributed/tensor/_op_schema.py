@@ -2,7 +2,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 import torch
 from torch._ops import OpOverload
@@ -10,14 +10,13 @@ from torch.distributed.device_mesh import DeviceMesh
 from torch.distributed.tensor._dtensor_spec import DTensorSpec
 from torch.distributed.tensor.placement_types import Placement
 
-
 try:
-    from torch.utils._cxx_pytree import tree_leaves, tree_map_only, TreeSpec
+    from torch.utils._cxx_pytree import TreeSpec, tree_leaves, tree_map_only
 except ImportError:
     from torch.utils._pytree import (  # type: ignore[no-redef, assignment]
+        TreeSpec,
         tree_leaves,
         tree_map_only,
-        TreeSpec,
     )
 
 
@@ -25,11 +24,11 @@ except ImportError:
 ArgsType = tuple[object, ...]
 KwargsType = dict[str, object]
 
-PlacementList = list[Optional[Placement]]
+PlacementList = list[Placement | None]
 
 # ATen op schemas could have Tensor, Tuple[Tensor] and List[Tensor], so output type sould
 # be the same set of possibilities.
-OutputSpecType = Optional[Union[DTensorSpec, Sequence[Optional[DTensorSpec]]]]
+OutputSpecType = Optional[DTensorSpec | Sequence[DTensorSpec | None]]
 
 
 def _rebuild_tensor_from_dtensor_meta(arg) -> object:
@@ -47,12 +46,11 @@ def _rebuild_tensor_from_dtensor_meta(arg) -> object:
 def _pretty_print_spec(spec: object) -> str:
     if spec is None:
         return "None"
-    elif isinstance(spec, DTensorSpec):
+    if isinstance(spec, DTensorSpec):
         return "".join([str(p) for p in spec.placements])
-    elif isinstance(spec, Sequence):
+    if isinstance(spec, Sequence):
         return "(" + ", ".join([_pretty_print_spec(s) for s in spec]) + ")"
-    else:
-        raise RuntimeError(f"Unknown spec type to print: spec={spec}")
+    raise RuntimeError(f"Unknown spec type to print: spec={spec}")
 
 
 @dataclass
@@ -66,13 +64,13 @@ class OpSpec:
     output_specs is a tuple of Optional[DTensorSpec].
     """
 
-    output_specs: Union[DTensorSpec, tuple[Optional[DTensorSpec], ...]]
-    input_specs: Optional[Sequence[DTensorSpec]] = None
+    output_specs: DTensorSpec | tuple[DTensorSpec | None, ...]
+    input_specs: Sequence[DTensorSpec] | None = None
 
     # redistribute costs to redistribute the operator input shardings to this OpSpec.
     # Note that We need a nested list to record the cost for each operand of this
     # operator, and for each operand of this operator it might have multiple OpSpecs.
-    redistribute_cost: Optional[list[list[float]]] = None
+    redistribute_cost: list[list[float]] | None = None
 
     @cached_property
     def output_spec(self) -> DTensorSpec:
@@ -82,23 +80,21 @@ class OpSpec:
         """
         if isinstance(self.output_specs, DTensorSpec):
             return self.output_specs
-        else:
-            raise ValueError(
-                f"function output_spec expects a single DTensorSpec but got: {self.output_specs}"
-            )
+        raise ValueError(
+            f"function output_spec expects a single DTensorSpec but got: {self.output_specs}"
+        )
 
     @cached_property
     def mesh(self):
         if isinstance(self.output_specs, DTensorSpec):
             return self.output_specs.mesh
-        elif isinstance(self.output_specs, tuple):
+        if isinstance(self.output_specs, tuple):
             out_spec = self.output_specs[0]
             assert isinstance(out_spec, DTensorSpec)
             return out_spec.mesh
-        else:
-            raise ValueError(
-                f"function output_spec expects a single DTensorSpec or a tuple of DTensorSpec but got: {self.output_specs}"
-            )
+        raise ValueError(
+            f"function output_spec expects a single DTensorSpec or a tuple of DTensorSpec but got: {self.output_specs}"
+        )
 
     def input_spec(self, index: int = 0) -> DTensorSpec:
         assert self.input_specs is not None, "input_specs of OpSpec is None!"
@@ -204,7 +200,7 @@ class RuntimeSchemaInfo:
     # Note that only a few ops need this information, e.g. view, transpose, var.dim, etc.
     static_argnum: int = 100
     # This static_kwargkey records static kwarg names which would affect sharding prop
-    static_kwargkey: Optional[list[str]] = None
+    static_kwargkey: list[str] | None = None
     # each op can decide if it wants to use pytree flatten/unflatten during operator
     # eager execution, by default we don't need to do flatten/unflatten, only if the
     # op indicate it needs to, this is to accelerate eager performance.
@@ -234,7 +230,7 @@ class OpSchema:
     args_schema: ArgsType
     kwargs_schema: KwargsType
 
-    schema_info: Optional[RuntimeSchemaInfo] = None
+    schema_info: RuntimeSchemaInfo | None = None
 
     @property
     def args_spec(self) -> tuple[DTensorSpec, ...]:
@@ -393,8 +389,7 @@ class OpSchema:
                 self.kwargs_schema.get(k, None) for k in static_kwargkey
             )
             return hash((self.op, args_to_hash, kwargs_to_hash))
-        else:
-            return hash((self.op, args_to_hash))
+        return hash((self.op, args_to_hash))
 
     def __eq__(self, other: object) -> bool:
         # early return checks
@@ -416,11 +411,14 @@ class OpSchema:
             static_kwargkey = self.schema_info.static_kwargkey
 
         for i, (self_arg, other_arg) in enumerate(
-            zip(self.args_schema, other.args_schema)
+            zip(self.args_schema, other.args_schema, strict=False)
         ):
-            if isinstance(self_arg, DTensorSpec) and self_arg != other_arg:
-                return False
-            elif i >= static_argnum and self_arg != other_arg:
+            if (
+                isinstance(self_arg, DTensorSpec)
+                and self_arg != other_arg
+                or i >= static_argnum
+                and self_arg != other_arg
+            ):
                 return False
 
         # check kwarg equality when there's a static kwarg key
@@ -493,21 +491,19 @@ class OutputSharding:
     """
 
     output_spec: OutputSpecType
-    redistribute_schema: Optional[OpSchema] = None
+    redistribute_schema: OpSchema | None = None
     needs_redistribute: bool = False
 
     @cached_property
     def mesh(self):
         if isinstance(self.output_spec, DTensorSpec):
             return self.output_spec.mesh
-        elif isinstance(self.output_spec, tuple):
+        if isinstance(self.output_spec, tuple):
             out_spec = self.output_spec[0]
             if isinstance(out_spec, DTensorSpec):
                 return out_spec.mesh
-            else:
-                raise ValueError(f"Unknown output spec type: {type(out_spec)}")
-        else:
-            raise ValueError(f"Unknown output spec type: {type(self.output_spec)}")
+            raise ValueError(f"Unknown output spec type: {type(out_spec)}")
+        raise ValueError(f"Unknown output spec type: {type(self.output_spec)}")
 
 
 @dataclass
@@ -526,7 +522,7 @@ class OpInfo:
     flat_args_schema: list[object]
     local_args: Sequence[object]
     local_kwargs: dict[str, object]
-    args_tree_spec: Optional[TreeSpec] = None
+    args_tree_spec: TreeSpec | None = None
 
     # the output sharding info
-    output_sharding: Optional[OutputSharding] = None
+    output_sharding: OutputSharding | None = None

@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 from collections import OrderedDict
-from typing import Any, Callable, Union
+from collections.abc import Callable
+from typing import Any
 
 import torch
 
-from .fake_quantize import default_weight_fake_quant, FixedQParamsFakeQuantize
+from .fake_quantize import FixedQParamsFakeQuantize, default_weight_fake_quant
 from .observer import (
     _PartialWrapper,
     default_fixed_qparams_range_0to1_observer,
@@ -15,16 +16,15 @@ from .observer import (
     default_weight_observer,
 )
 from .qconfig import (
+    QConfig,
+    QConfigAny,
     default_quint8_weight_qconfig,
     default_reuse_input_qconfig,
     default_symmetric_qnnpack_qat_qconfig,
     default_symmetric_qnnpack_qconfig,
     get_default_qat_qconfig,
     get_default_qconfig,
-    QConfig,
-    QConfigAny,
 )
-
 
 __all__ = [
     "get_default_qconfig_mapping",
@@ -41,7 +41,7 @@ _MODULE_NAME_DICT_KEY = "module_name"
 _MODULE_NAME_OBJECT_TYPE_ORDER_DICT_KEY = "module_name_object_type_order"
 
 # TODO: derive this map from the BackendConfig
-_FIXED_QPARAMS_OP_TO_OBSERVER: dict[Union[Callable, str], _PartialWrapper] = {
+_FIXED_QPARAMS_OP_TO_OBSERVER: dict[Callable | str, _PartialWrapper] = {
     torch.nn.Hardsigmoid: default_fixed_qparams_range_0to1_observer,
     torch.nn.functional.hardsigmoid: default_fixed_qparams_range_0to1_observer,
     "hardsigmoid": default_fixed_qparams_range_0to1_observer,
@@ -232,7 +232,7 @@ class QConfigMapping:
     def __init__(self) -> None:
         # In increasing match priority:
         self.global_qconfig: QConfigAny = None
-        self.object_type_qconfigs: OrderedDict[Union[Callable, str], QConfigAny] = (
+        self.object_type_qconfigs: OrderedDict[Callable | str, QConfigAny] = (
             OrderedDict()
         )
         self.module_name_regex_qconfigs: OrderedDict[str, QConfigAny] = OrderedDict()
@@ -249,7 +249,7 @@ class QConfigMapping:
         return self
 
     def set_object_type(
-        self, object_type: Union[Callable, str], qconfig: QConfigAny
+        self, object_type: Callable | str, qconfig: QConfigAny
     ) -> QConfigMapping:
         """
         Set the QConfig for a given module type, function, or method name.

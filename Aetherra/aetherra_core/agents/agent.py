@@ -44,9 +44,7 @@ class AetherraAgent:
             "start_time": datetime.now(),
         }
 
-    async def execute_command(
-        self, command: str, context: Optional[Dict] = None
-    ) -> Dict[str, Any]:
+    async def execute_command(self, command: str, context: Optional[Dict] = None) -> Dict[str, Any]:
         """Execute a command with AI assistance"""
         try:
             self.execution_stats["commands_executed"] += 1
@@ -154,9 +152,7 @@ class AetherraAgent:
 
         return patterns
 
-    async def suggest_next_action(
-        self, current_context: Optional[Dict] = None
-    ) -> Dict[str, Any]:
+    async def suggest_next_action(self, current_context: Optional[Dict] = None) -> Dict[str, Any]:
         """Suggest next action based on patterns and context"""
         try:
             patterns = self.detect_patterns()
@@ -239,7 +235,8 @@ class AetherraAgent:
 class InterpreterAgent(AetherraAgent):
     """Alias for backward compatibility"""
 
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 def create_agent(memory=None, functions=None, command_history=None) -> AetherraAgent:

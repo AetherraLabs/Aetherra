@@ -1,6 +1,7 @@
 # mypy: allow-untyped-defs
 import warnings
-from typing import Any, Callable, Union
+from collections.abc import Callable
+from typing import Any
 
 from torch.ao.quantization.backend_config import (
     BackendConfig,
@@ -12,14 +13,13 @@ from torch.ao.quantization.backend_config.utils import (
     get_fusion_pattern_to_root_node_getter,
 )
 from torch.ao.quantization.utils import NodePattern, Pattern
-from torch.fx import GraphModule, map_arg, Node
+from torch.fx import GraphModule, Node, map_arg
 from torch.fx.graph import Graph
 
 from .custom_config import FuseCustomConfig
-from .fuse_handler import _get_fusion_pattern_to_fuse_handler_cls, FuseHandler
-from .match_utils import _is_match, MatchAllNode
+from .fuse_handler import FuseHandler, _get_fusion_pattern_to_fuse_handler_cls
+from .match_utils import MatchAllNode, _is_match
 from .pattern_utils import _sorted_patterns_dict
-
 
 __all__ = [
     "fuse",
@@ -32,8 +32,8 @@ __all__ = [
 def fuse(
     model: GraphModule,
     is_qat: bool,
-    fuse_custom_config: Union[FuseCustomConfig, dict[str, Any], None] = None,
-    backend_config: Union[BackendConfig, dict[str, Any], None] = None,
+    fuse_custom_config: FuseCustomConfig | dict[str, Any] | None = None,
+    backend_config: BackendConfig | dict[str, Any] | None = None,
 ) -> GraphModule:
     if fuse_custom_config is None:
         fuse_custom_config = FuseCustomConfig()
@@ -152,7 +152,7 @@ def _find_matches(
             s, *args = pattern
             current_node_pattern: list[Node] = []
             apply_match(s, node, match, current_node_pattern, node_to_subpattern)
-            for subpattern, arg in zip(args, node.args):
+            for subpattern, arg in zip(args, node.args, strict=False):
                 apply_match(
                     subpattern, arg, match, current_node_pattern, node_to_subpattern
                 )

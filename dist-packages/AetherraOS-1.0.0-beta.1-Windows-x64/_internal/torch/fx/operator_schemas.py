@@ -5,14 +5,14 @@ import numbers
 import types
 import typing
 import warnings
-from typing import Any, Callable, cast, NamedTuple, Optional, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, NamedTuple, cast
 
 import torch
 from torch._jit_internal import boolean_dispatched
 from torch._ops import OpOverload, OpOverloadPacket
 
 from ._compatibility import compatibility
-
 
 if TYPE_CHECKING:
     from .node import Argument
@@ -173,7 +173,7 @@ def check_for_mutable_operation(
         # Iterate through all of the schema until we find one that matches
         # If one matches, populate `new_args_and_kwargs` with the new args/kwargs
         # values. If none matches, `new_args_and_kwargs` will be None
-        for candidate_signature, schema in zip(signatures, schemas):
+        for candidate_signature, schema in zip(signatures, schemas, strict=False):
             try:
                 candidate_signature.bind(*args, **kwargs)
                 matched_schemas.append((candidate_signature, schema))
@@ -268,7 +268,7 @@ def create_type_hint(x):
             for t in x:
                 if issubclass(t, base_type):
                     continue
-                elif issubclass(base_type, t):
+                if issubclass(base_type, t):
                     base_type = t
                 else:
                     return ret_type(Any)
@@ -336,11 +336,11 @@ def type_matches(signature_type: Any, argument_type: Any):
 def normalize_function(
     target: Callable,
     args: tuple[Any, ...],
-    kwargs: Optional[dict[str, Any]] = None,
-    arg_types: Optional[tuple[Any]] = None,
-    kwarg_types: Optional[dict[str, Any]] = None,
+    kwargs: dict[str, Any] | None = None,
+    arg_types: tuple[Any] | None = None,
+    kwarg_types: dict[str, Any] | None = None,
     normalize_to_only_use_kwargs: bool = False,
-) -> Optional[ArgsKwargsPair]:
+) -> ArgsKwargsPair | None:
     """
     Returns normalized arguments to PyTorch functions. This means that
     `args/kwargs` will be matched up to the functional's
@@ -472,9 +472,9 @@ def normalize_module(
     root: torch.nn.Module,
     target: str,
     args: tuple[Any],
-    kwargs: Optional[dict[str, Any]] = None,
+    kwargs: dict[str, Any] | None = None,
     normalize_to_only_use_kwargs: bool = False,
-) -> Optional[ArgsKwargsPair]:
+) -> ArgsKwargsPair | None:
     """
     Returns normalized arguments to PyTorch modules. This means that
     `args/kwargs` will be matched up to the functional's
@@ -519,7 +519,7 @@ def _args_kwargs_to_normalized_args_kwargs(
     args: tuple[Any, ...],
     kwargs: dict[str, Any],
     normalize_to_only_use_kwargs: bool,
-) -> Optional[ArgsKwargsPair]:
+) -> ArgsKwargsPair | None:
     """
     Given a call target, args, and kwargs, return the arguments normalized into
     an ArgsKwargsPair, or None if the type signature is not supported by

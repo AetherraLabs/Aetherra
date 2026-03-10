@@ -118,7 +118,6 @@ from .von_mises import VonMises
 from .weibull import Weibull
 from .wishart import Wishart
 
-
 _add_kl_info()
 del _add_kl_info
 

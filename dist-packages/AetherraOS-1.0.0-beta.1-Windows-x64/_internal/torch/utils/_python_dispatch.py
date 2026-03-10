@@ -4,20 +4,20 @@ import warnings
 from collections import deque
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Optional, overload, Protocol, Union
+from typing import Any, Optional, Protocol, overload
+
+import torchgen
+import torchgen.model
 from typing_extensions import TypeIs
 
 import torch
-import torchgen
-import torchgen.model
 from torch._C import (
+    DispatchKey,
     _get_dispatch_stack_at,
     _len_torch_dispatch_stack,
     _pop_torch_dispatch_stack,
     _push_on_torch_dispatch_stack,
-    DispatchKey,
 )
-
 
 # TODO: Limitations and things about enable_torch_dispatch_mode we should fix before exposing it:
 # - We need a better user-facing api for _DisableTorchDispatch that
@@ -211,7 +211,7 @@ def _push_mode(mode: TorchDispatchMode):
     _set_mode_pre_dispatch(mode)
 
 
-def _pop_mode(k: Optional[Union[DispatchKey, torch._C._TorchDispatchModeKey]] = None):
+def _pop_mode(k: DispatchKey | torch._C._TorchDispatchModeKey | None = None):
     if k == torch._C.DispatchKey.PreDispatch:  # type: ignore[attr-defined]
         from torch._ops import _pop_mode_from_pre_dispatch
 
@@ -222,7 +222,7 @@ def _pop_mode(k: Optional[Union[DispatchKey, torch._C._TorchDispatchModeKey]] = 
 
 
 @contextlib.contextmanager
-def _pop_mode_temporarily(k: Optional[DispatchKey] = None):
+def _pop_mode_temporarily(k: DispatchKey | None = None):
     old = _pop_mode(k)
     try:
         yield old
@@ -296,14 +296,12 @@ class BaseTorchDispatchMode(TorchDispatchMode):
 
 # Subtypes which have __tensor_flatten__ and __tensor_unflatten__.
 class TensorWithFlatten(Protocol):
-    def __tensor_flatten__(self) -> tuple[Sequence[str], object]:
-        ...
+    def __tensor_flatten__(self) -> tuple[Sequence[str], object]: ...
 
     @staticmethod
     def __tensor_unflatten__(
         inner_tensors: int, flatten_spec: int, outer_size: int, outer_stride: int
-    ) -> torch.Tensor:
-        ...
+    ) -> torch.Tensor: ...
 
     # It would be really nice to be able to say that the return of
     # is_traceable_wrapper_subclass() is Intersection[torch.Tensor,
@@ -312,26 +310,20 @@ class TensorWithFlatten(Protocol):
     shape: torch._C.Size
 
     @overload
-    def stride(self, dim: None = None) -> tuple[int, ...]:
-        ...
+    def stride(self, dim: None = None) -> tuple[int, ...]: ...
 
     @overload
-    def stride(self, dim: int) -> int:
-        ...
+    def stride(self, dim: int) -> int: ...
 
     @overload
-    def size(self, dim: None = None) -> tuple[int, ...]:
-        ...
+    def size(self, dim: None = None) -> tuple[int, ...]: ...
 
     @overload
-    def size(self, dim: int) -> int:
-        ...
+    def size(self, dim: int) -> int: ...
 
-    def storage_offset(self) -> int:
-        ...
+    def storage_offset(self) -> int: ...
 
-    def dim(self) -> int:
-        ...
+    def dim(self) -> int: ...
 
     @overload
     def to(
@@ -340,21 +332,19 @@ class TensorWithFlatten(Protocol):
         non_blocking: bool = False,
         copy: bool = False,
         *,
-        memory_format: Optional[torch.memory_format] = None,
-    ) -> torch.Tensor:
-        ...
+        memory_format: torch.memory_format | None = None,
+    ) -> torch.Tensor: ...
 
     @overload
     def to(
         self,
         device: Optional["torch._prims_common.DeviceLikeType"] = None,
-        dtype: Optional[torch.types._dtype] = None,
+        dtype: torch.types._dtype | None = None,
         non_blocking: bool = False,
         copy: bool = False,
         *,
-        memory_format: Optional[torch.memory_format] = None,
-    ) -> torch.Tensor:
-        ...
+        memory_format: torch.memory_format | None = None,
+    ) -> torch.Tensor: ...
 
     @overload
     def to(
@@ -363,9 +353,8 @@ class TensorWithFlatten(Protocol):
         non_blocking: bool = False,
         copy: bool = False,
         *,
-        memory_format: Optional[torch.memory_format] = None,
-    ) -> torch.Tensor:
-        ...
+        memory_format: torch.memory_format | None = None,
+    ) -> torch.Tensor: ...
 
 
 def is_traceable_wrapper_subclass(t: object) -> TypeIs[TensorWithFlatten]:
@@ -525,7 +514,7 @@ and output of type {type(ret)}. But expected types to match."""
 class AliasInfo:
     alias_set: set[str]
     is_write: bool
-    name: Optional[str]
+    name: str | None
 
 
 @dataclass
@@ -715,7 +704,7 @@ def return_and_correct_aliasing(func, args, kwargs, out):
                 if get_write_alias(r) is not None
                 else o
             )
-            for ((i, r), o) in zip(enumerate(schema_info.outs), out)
+            for ((i, r), o) in zip(enumerate(schema_info.outs), out, strict=False)
         ]
     )
     return outs_to_return

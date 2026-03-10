@@ -46,9 +46,7 @@ class AgentCollaborationManager:
         self.agent_registry = {}
         self.collaboration_history = []
 
-    def register_agent(
-        self, agent_id: str, agent_type: str, capabilities: List[str]
-    ) -> bool:
+    def register_agent(self, agent_id: str, agent_type: str, capabilities: List[str]) -> bool:
         """
         Register an agent for collaboration.
 
@@ -140,9 +138,7 @@ class AgentCollaborationManager:
             "results": collaboration.results,
         }
 
-    def coordinate_agents(
-        self, collaboration_id: str, task_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def coordinate_agents(self, collaboration_id: str, task_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Coordinate agents in a collaboration.
 
@@ -177,9 +173,7 @@ class AgentCollaborationManager:
 
         return coordination_results
 
-    def _find_suitable_agents(
-        self, required_capabilities: List[str], max_agents: int
-    ) -> List[str]:
+    def _find_suitable_agents(self, required_capabilities: List[str], max_agents: int) -> List[str]:
         """Find agents with required capabilities."""
         suitable_agents = []
 
@@ -195,9 +189,7 @@ class AgentCollaborationManager:
 
         return suitable_agents
 
-    def _simulate_agent_response(
-        self, agent_id: str, task_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _simulate_agent_response(self, agent_id: str, task_data: Dict[str, Any]) -> Dict[str, Any]:
         """Simulate an agent's response to a task."""
         # This is a simplified simulation
         return {
@@ -217,9 +209,7 @@ class AgentCollaborationManager:
 
         avg_confidence = 0
         if agent_results:
-            confidences = [
-                result.get("confidence", 0) for result in agent_results.values()
-            ]
+            confidences = [result.get("confidence", 0) for result in agent_results.values()]
             avg_confidence = sum(confidences) / len(confidences)
 
         return {
@@ -239,8 +229,6 @@ class AgentCollaborationManager:
             "total_collaborations": len(self.collaboration_history)
             + len(self.active_collaborations),
             "available_agents": sum(
-                1
-                for agent in self.agent_registry.values()
-                if agent["status"] == "available"
+                1 for agent in self.agent_registry.values() if agent["status"] == "available"
             ),
         }

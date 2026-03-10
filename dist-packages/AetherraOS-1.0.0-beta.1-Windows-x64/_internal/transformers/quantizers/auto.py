@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import warnings
-from typing import Dict, Optional, Union
 
 from ..models.auto.configuration_auto import AutoConfig
 from ..utils import logging
@@ -57,7 +56,6 @@ from .quantizer_quark import QuarkHfQuantizer
 from .quantizer_spqr import SpQRHfQuantizer
 from .quantizer_torchao import TorchAoHfQuantizer
 from .quantizer_vptq import VptqHfQuantizer
-
 
 AUTO_QUANTIZER_MAPPING = {
     "awq": AwqQuantizer,
@@ -111,18 +109,24 @@ class AutoQuantizationConfig:
     """
 
     @classmethod
-    def from_dict(cls, quantization_config_dict: Dict):
-        quant_method = quantization_config_dict.get("quant_method", None)
+    def from_dict(cls, quantization_config_dict: dict):
+        quant_method = quantization_config_dict.get("quant_method")
         # We need a special care for bnb models to make sure everything is BC ..
-        if quantization_config_dict.get("load_in_8bit", False) or quantization_config_dict.get("load_in_4bit", False):
-            suffix = "_4bit" if quantization_config_dict.get("load_in_4bit", False) else "_8bit"
+        if quantization_config_dict.get(
+            "load_in_8bit", False
+        ) or quantization_config_dict.get("load_in_4bit", False):
+            suffix = (
+                "_4bit"
+                if quantization_config_dict.get("load_in_4bit", False)
+                else "_8bit"
+            )
             quant_method = QuantizationMethod.BITS_AND_BYTES + suffix
         elif quant_method is None:
             raise ValueError(
                 "The model's quantization config from the arguments has no `quant_method` attribute. Make sure that the model has been correctly quantized"
             )
 
-        if quant_method not in AUTO_QUANTIZATION_CONFIG_MAPPING.keys():
+        if quant_method not in AUTO_QUANTIZATION_CONFIG_MAPPING:
             raise ValueError(
                 f"Unknown quantization type, got {quant_method} - supported types are:"
                 f" {list(AUTO_QUANTIZER_MAPPING.keys())}"
@@ -133,7 +137,9 @@ class AutoQuantizationConfig:
 
     @classmethod
     def from_pretrained(cls, pretrained_model_name_or_path, **kwargs):
-        model_config = AutoConfig.from_pretrained(pretrained_model_name_or_path, **kwargs)
+        model_config = AutoConfig.from_pretrained(
+            pretrained_model_name_or_path, **kwargs
+        )
         if getattr(model_config, "quantization_config", None) is None:
             raise ValueError(
                 f"Did not found a `quantization_config` in {pretrained_model_name_or_path}. Make sure that the model is correctly quantized."
@@ -152,7 +158,7 @@ class AutoHfQuantizer:
     """
 
     @classmethod
-    def from_config(cls, quantization_config: Union[QuantizationConfigMixin, Dict], **kwargs):
+    def from_config(cls, quantization_config: QuantizationConfigMixin | dict, **kwargs):
         # Convert it to a QuantizationConfig if the q_config is a dict
         if isinstance(quantization_config, dict):
             quantization_config = AutoQuantizationConfig.from_dict(quantization_config)
@@ -167,7 +173,7 @@ class AutoHfQuantizer:
             else:
                 quant_method += "_4bit"
 
-        if quant_method not in AUTO_QUANTIZER_MAPPING.keys():
+        if quant_method not in AUTO_QUANTIZER_MAPPING:
             raise ValueError(
                 f"Unknown quantization type, got {quant_method} - supported types are:"
                 f" {list(AUTO_QUANTIZER_MAPPING.keys())}"
@@ -178,14 +184,16 @@ class AutoHfQuantizer:
 
     @classmethod
     def from_pretrained(cls, pretrained_model_name_or_path, **kwargs):
-        quantization_config = AutoQuantizationConfig.from_pretrained(pretrained_model_name_or_path, **kwargs)
+        quantization_config = AutoQuantizationConfig.from_pretrained(
+            pretrained_model_name_or_path, **kwargs
+        )
         return cls.from_config(quantization_config)
 
     @classmethod
     def merge_quantization_configs(
         cls,
-        quantization_config: Union[dict, QuantizationConfigMixin],
-        quantization_config_from_args: Optional[QuantizationConfigMixin],
+        quantization_config: dict | QuantizationConfigMixin,
+        quantization_config_from_args: QuantizationConfigMixin | None,
     ):
         """
         handles situations where both quantization_config from args and quantization_config from model config are present.
@@ -203,11 +211,20 @@ class AutoHfQuantizer:
             if isinstance(quantization_config_from_args, AutoRoundConfig):
                 quantization_config = AutoRoundConfig.from_dict(quantization_config)
             else:
-                quantization_config = AutoQuantizationConfig.from_dict(quantization_config)
+                quantization_config = AutoQuantizationConfig.from_dict(
+                    quantization_config
+                )
 
         if (
             isinstance(
-                quantization_config, (GPTQConfig, AwqConfig, AutoRoundConfig, FbgemmFp8Config, CompressedTensorsConfig)
+                quantization_config,
+                (
+                    GPTQConfig,
+                    AwqConfig,
+                    AutoRoundConfig,
+                    FbgemmFp8Config,
+                    CompressedTensorsConfig,
+                ),
             )
             and quantization_config_from_args is not None
         ):
@@ -226,15 +243,21 @@ class AutoHfQuantizer:
     @staticmethod
     def supports_quant_method(quantization_config_dict):
         quant_method = quantization_config_dict.get("quant_method", None)
-        if quantization_config_dict.get("load_in_8bit", False) or quantization_config_dict.get("load_in_4bit", False):
-            suffix = "_4bit" if quantization_config_dict.get("load_in_4bit", False) else "_8bit"
+        if quantization_config_dict.get(
+            "load_in_8bit", False
+        ) or quantization_config_dict.get("load_in_4bit", False):
+            suffix = (
+                "_4bit"
+                if quantization_config_dict.get("load_in_4bit", False)
+                else "_8bit"
+            )
             quant_method = QuantizationMethod.BITS_AND_BYTES + suffix
         elif quant_method is None:
             raise ValueError(
                 "The model's quantization config from the arguments has no `quant_method` attribute. Make sure that the model has been correctly quantized"
             )
 
-        if quant_method not in AUTO_QUANTIZATION_CONFIG_MAPPING.keys():
+        if quant_method not in AUTO_QUANTIZATION_CONFIG_MAPPING:
             logger.warning(
                 f"Unknown quantization type, got {quant_method} - supported types are:"
                 f" {list(AUTO_QUANTIZER_MAPPING.keys())}. Hence, we will skip the quantization. "

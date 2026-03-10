@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import collections
 import re
-from typing import Callable
+from collections.abc import Callable
 
 import torch.fx
 import torch.fx.traceback as fx_traceback
@@ -107,7 +107,9 @@ def replace_placeholder_name_and_target(
     for node in module.graph.nodes:
         name_to_node[node.name] = node
 
-    for placeholder, reference_placeholder in zip(placeholders, reference_placeholders):
+    for placeholder, reference_placeholder in zip(
+        placeholders, reference_placeholders, strict=False
+    ):
         placeholder.target = reference_placeholder.target
         set_node_name(placeholder, reference_placeholder.name, name_to_node)
 

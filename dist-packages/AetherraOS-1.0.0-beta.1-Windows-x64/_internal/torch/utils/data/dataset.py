@@ -10,12 +10,12 @@ from collections.abc import Sequence
 # targets fail to typecheck with:
 #     TypeError: Cannot create a consistent method resolution order (MRO) for
 #     bases Iterable, Generic
-from typing import cast, Generic, Iterable, Optional, TypeVar, Union  # noqa: UP035
+from typing import Generic, Iterable, TypeVar, cast  # noqa: UP035
+
 from typing_extensions import deprecated
 
 # No 'default_generator' in torch/__init__.pyi
-from torch import default_generator, Generator, randperm, Tensor
-
+from torch import Generator, Tensor, default_generator, randperm
 
 __all__ = [
     "Dataset",
@@ -198,9 +198,9 @@ class TensorDataset(Dataset[tuple[Tensor, ...]]):
     tensors: tuple[Tensor, ...]
 
     def __init__(self, *tensors: Tensor) -> None:
-        assert all(
-            tensors[0].size(0) == tensor.size(0) for tensor in tensors
-        ), "Size mismatch between tensors"
+        assert all(tensors[0].size(0) == tensor.size(0) for tensor in tensors), (
+            "Size mismatch between tensors"
+        )
         self.tensors = tensors
 
     def __getitem__(self, index):
@@ -229,7 +229,7 @@ class StackDataset(Dataset[_T_stack]):
         **kwargs (Dataset): Datasets for stacking returned as dict.
     """
 
-    datasets: Union[tuple, dict]
+    datasets: tuple | dict
 
     def __init__(self, *args: Dataset[_T_co], **kwargs: Dataset[_T_co]) -> None:
         if args:
@@ -268,10 +268,10 @@ class StackDataset(Dataset[_T_stack]):
                             "Nested dataset's output size mismatch."
                             f" Expected {len(indices)}, got {len(items)}"
                         )
-                    for data, d_sample in zip(items, dict_batch):
+                    for data, d_sample in zip(items, dict_batch, strict=False):
                         d_sample[k] = data
                 else:
-                    for idx, d_sample in zip(indices, dict_batch):
+                    for idx, d_sample in zip(indices, dict_batch, strict=False):
                         d_sample[k] = dataset[idx]
             return dict_batch
 
@@ -285,10 +285,10 @@ class StackDataset(Dataset[_T_stack]):
                         "Nested dataset's output size mismatch."
                         f" Expected {len(indices)}, got {len(items)}"
                     )
-                for data, t_sample in zip(items, list_batch):
+                for data, t_sample in zip(items, list_batch, strict=False):
                     t_sample.append(data)
             else:
-                for idx, t_sample in zip(indices, list_batch):
+                for idx, t_sample in zip(indices, list_batch, strict=False):
                     t_sample.append(dataset[idx])
         tuple_batch: list[_T_tuple] = [tuple(sample) for sample in list_batch]
         return tuple_batch
@@ -323,9 +323,9 @@ class ConcatDataset(Dataset[_T_co]):
         self.datasets = list(datasets)
         assert len(self.datasets) > 0, "datasets should not be an empty iterable"  # type: ignore[arg-type]
         for d in self.datasets:
-            assert not isinstance(
-                d, IterableDataset
-            ), "ConcatDataset does not support IterableDataset"
+            assert not isinstance(d, IterableDataset), (
+                "ConcatDataset does not support IterableDataset"
+            )
         self.cumulative_sizes = self.cumsum(self.datasets)
 
     def __len__(self):
@@ -371,17 +371,17 @@ class ChainDataset(IterableDataset):
 
     def __iter__(self):
         for d in self.datasets:
-            assert isinstance(
-                d, IterableDataset
-            ), "ChainDataset only supports IterableDataset"
+            assert isinstance(d, IterableDataset), (
+                "ChainDataset only supports IterableDataset"
+            )
             yield from d
 
     def __len__(self):
         total = 0
         for d in self.datasets:
-            assert isinstance(
-                d, IterableDataset
-            ), "ChainDataset only supports IterableDataset"
+            assert isinstance(d, IterableDataset), (
+                "ChainDataset only supports IterableDataset"
+            )
             total += len(d)  # type: ignore[arg-type]
         return total
 
@@ -412,8 +412,7 @@ class Subset(Dataset[_T_co]):
         # see torch.utils.data._utils.fetch._MapDatasetFetcher
         if callable(getattr(self.dataset, "__getitems__", None)):
             return self.dataset.__getitems__([self.indices[idx] for idx in indices])  # type: ignore[attr-defined]
-        else:
-            return [self.dataset[self.indices[idx]] for idx in indices]
+        return [self.dataset[self.indices[idx]] for idx in indices]
 
     def __len__(self):
         return len(self.indices)
@@ -421,8 +420,8 @@ class Subset(Dataset[_T_co]):
 
 def random_split(
     dataset: Dataset[_T],
-    lengths: Sequence[Union[int, float]],
-    generator: Optional[Generator] = default_generator,
+    lengths: Sequence[int | float],
+    generator: Generator | None = default_generator,
 ) -> list[Subset[_T]]:
     r"""
     Randomly split a dataset into non-overlapping new datasets of given lengths.
@@ -481,5 +480,5 @@ def random_split(
     lengths = cast(Sequence[int], lengths)
     return [
         Subset(dataset, indices[offset - length : offset])
-        for offset, length in zip(itertools.accumulate(lengths), lengths)
+        for offset, length in zip(itertools.accumulate(lengths), lengths, strict=False)
     ]

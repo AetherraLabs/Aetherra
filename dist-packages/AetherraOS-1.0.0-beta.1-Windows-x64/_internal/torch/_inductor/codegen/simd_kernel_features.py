@@ -5,7 +5,7 @@ import dataclasses
 import functools
 import itertools
 import typing
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 import sympy
 
@@ -13,13 +13,12 @@ import torch
 
 from ...utils._ordered_set import OrderedSet
 from ...utils._sympy.functions import FloorDiv, ModularIndexing
-from ...utils._sympy.symbol import make_symbol, SymT
-from ..dependencies import Dep, extract_loop_body_with_args, MemoryDep
+from ...utils._sympy.symbol import SymT, make_symbol
+from ..dependencies import Dep, MemoryDep, extract_loop_body_with_args
 from ..runtime.hints import ReductionHint
 from ..scheduler import SchedulerNode
 from ..utils import cache_on_self
 from ..virtualized import V
-
 
 if typing.TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
@@ -82,7 +81,7 @@ class SIMDKernelFeatures:
         node_schedule: list[NodeScheduleEntry],
         numel: sympy.Expr,
         reduction_numel: sympy.Expr = sympy.S.One,
-        coalesce_analysis: Optional[CoalesceVarAnalysis] = None,
+        coalesce_analysis: CoalesceVarAnalysis | None = None,
     ):
         self.node_schedule = node_schedule
         # numel excludes reduction_numel
@@ -209,11 +208,10 @@ class SIMDKernelFeatures:
             for dep in itertools.chain(node.read_writes.reads, node.read_writes.writes)
         ):
             return ReductionHint.INNER
-        else:
-            return node.node.data.reduction_hint
+        return node.node.data.reduction_hint
 
     def memory_stats(
-        self, groups_dict: Optional[dict[str, sympy.Expr]] = None
+        self, groups_dict: dict[str, sympy.Expr] | None = None
     ) -> MemoryStats:
         """Analysis to generate features that can be used in heuristics"""
         if groups_dict is None:
@@ -275,7 +273,7 @@ class MemoryEstimator:
                 self.inside_reduction = False
                 self.kernel_sizes = kernel_size_outside_loop
                 continue
-            elif node is EnableReduction:
+            if node is EnableReduction:
                 self.inside_reduction = True
                 self.kernel_sizes = kernel_size_inside_loop
                 self.loops.append(MemoryEstimate())
@@ -286,7 +284,7 @@ class MemoryEstimator:
                 SIMDKernel.map_kernel_groups_to_node_sizes(
                     self.kernel_sizes, node.get_ranges(), self.set_ranges
                 ),
-                dict(zip(self.symbols, self.kernel_sizes)),
+                dict(zip(self.symbols, self.kernel_sizes, strict=False)),
             )
 
             for dep in rw._reads:
@@ -353,7 +351,9 @@ class MemoryEstimator:
         assert len(self.kernel_sizes) == len(lengths)
         return [
             self.make_flat_range(sym, numel, length)
-            for sym, numel, length in zip(self.symbols, self.kernel_sizes, lengths)
+            for sym, numel, length in zip(
+                self.symbols, self.kernel_sizes, lengths, strict=False
+            )
         ]
 
     @staticmethod
@@ -492,8 +492,8 @@ class StatsForReadsOrWrites:
         assert len(self.dim) == len(other.dim)
         assert len(self.loop) == len(other.loop)
         return StatsForReadsOrWrites(
-            dim=[a + b for a, b in zip(self.dim, other.dim)],
-            loop=[a + b for a, b in zip(self.loop, other.loop)],
+            dim=[a + b for a, b in zip(self.dim, other.dim, strict=False)],
+            loop=[a + b for a, b in zip(self.loop, other.loop, strict=False)],
             bytes_contiguous_or_broadcast=self.bytes_contiguous_or_broadcast
             + self.bytes_contiguous_or_broadcast,
             bytes_non_contiguous=self.bytes_non_contiguous + other.bytes_non_contiguous,

@@ -4,12 +4,11 @@ import logging
 import os
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Union
+from typing import Any
 
 import torch
 from torch.fx import Graph, Node
 from torch.fx._compatibility import compatibility
-
 
 __all__ = ["SubgraphMatcher", "InternalMatch"]
 
@@ -133,8 +132,7 @@ class SubgraphMatcher:
         # Don't require exact match on tensor values.
         if isinstance(pn_value, torch.Tensor):
             return isinstance(gn_value, torch.Tensor)
-        else:
-            raise RuntimeError(f"Unsupported type {pn_value} when matching attributes")
+        raise RuntimeError(f"Unsupported type {pn_value} when matching attributes")
         return False
 
     def _nodes_are_equal(self, pn: Node, gn: Node) -> bool:
@@ -145,7 +143,7 @@ class SubgraphMatcher:
         if pn.op == gn.op:
             if pn.op == "placeholder" or pn.op == "output":
                 return True
-            elif pn.op == "get_attr":
+            if pn.op == "get_attr":
                 return self._match_attributes(pn, gn)
             return pn.target == gn.target
         return False
@@ -205,12 +203,10 @@ class SubgraphMatcher:
 
                 match.nodes_map[pn] = gn
                 return True
-            else:
-                return False
-        elif not isinstance(pn, Node) and isinstance(gn, Node):
             return False
-        else:
-            return type(gn) == type(pn) and gn == pn
+        if not isinstance(pn, Node) and isinstance(gn, Node):
+            return False
+        return type(gn) == type(pn) and gn == pn
 
     def _match_nodes(self, pn: Node, gn: Node, match: InternalMatch) -> bool:
         logger.info("  matching %s to %s", pn, gn)
@@ -244,11 +240,11 @@ class SubgraphMatcher:
         # match for `gn`
         match_found = True
 
-        def _match_args(args1: Union[list, tuple], args2: Union[list, tuple]) -> bool:
+        def _match_args(args1: list | tuple, args2: list | tuple) -> bool:
             if len(args1) != len(args2):
                 return False
 
-            for a1, a2 in zip(args1, args2):
+            for a1, a2 in zip(args1, args2, strict=False):
                 if isinstance(a1, Node) and isinstance(a2, Node):
                     matched = self._match_nodes(a1, a2, match)
                 elif isinstance(a1, (list, tuple)) and isinstance(a2, (list, tuple)):

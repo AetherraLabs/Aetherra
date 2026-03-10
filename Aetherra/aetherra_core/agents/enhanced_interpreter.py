@@ -28,19 +28,22 @@ from ..aetherra_grammar import AetherraCodeAST
 class ControlFlowException(Exception):
     """Base class for control flow exceptions"""
 
-    pass
+    def __init__(self, message: str = "Control flow transition"):
+        super().__init__(message)
 
 
 class BreakException(ControlFlowException):
     """Exception for break statements"""
 
-    pass
+    def __init__(self, message: str = "Break statement encountered"):
+        super().__init__(message)
 
 
 class ContinueException(ControlFlowException):
     """Exception for continue statements"""
 
-    pass
+    def __init__(self, message: str = "Continue statement encountered"):
+        super().__init__(message)
 
 
 class ReturnException(ControlFlowException):
@@ -61,9 +64,7 @@ class AetherraEnhancedInterpreter:
         self.in_loop = False
         self.in_function = False
 
-    def execute(
-        self, ast_node: AetherraCodeAST, context: Dict[str, Any] | None = None
-    ) -> Any:
+    def execute(self, ast_node: AetherraCodeAST, context: Dict[str, Any] | None = None) -> Any:
         """Execute an AST node with enhanced language features"""
         if context is None:
             context = {}

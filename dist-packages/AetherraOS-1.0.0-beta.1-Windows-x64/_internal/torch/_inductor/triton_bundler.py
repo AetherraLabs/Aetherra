@@ -5,7 +5,6 @@ import os
 import shutil
 import uuid
 from pathlib import Path
-from typing import Optional
 
 from torch._dynamo.utils import counters, dynamo_timed, set_feature_use
 from torch._utils_internal import justknobs_check
@@ -13,7 +12,6 @@ from torch.utils._filelock import FileLock
 
 from .runtime.runtime_utils import triton_cache_dir
 from .utils import _IS_WINDOWS, GPU_KERNEL_BIN_EXTS
-
 
 log = logging.getLogger(__name__)
 
@@ -105,8 +103,8 @@ class TritonBundler:
     - TritonBundler.read_and_emit is called when a cache entry is read
     """
 
-    _entries: Optional[list[TritonBundleEntry]] = None
-    _static_autotuners: Optional[list[StaticallyLaunchedAutotuner]] = None
+    _entries: list[TritonBundleEntry] | None = None
+    _static_autotuners: list[StaticallyLaunchedAutotuner] | None = None
 
     # __grp__kernel_name.json contains metadata with source code paths
     # we use this as sentinel value for search and replace
@@ -198,18 +196,17 @@ class TritonBundler:
     ) -> tuple[list[StaticallyLaunchedAutotuner], list[str]]:
         if not cls._static_autotuners:
             return [], []
-        else:
-            log.info(
-                "Saving %d statically launchable CachingAutotuners",
-                len(cls._static_autotuners),
-            )
-            static_autotuner_names = [i.kernel_name for i in cls._static_autotuners]
-            counters["inductor"]["triton_bundler_save_static_autotuner"] += 1
-            return cls._static_autotuners, static_autotuner_names
+        log.info(
+            "Saving %d statically launchable CachingAutotuners",
+            len(cls._static_autotuners),
+        )
+        static_autotuner_names = [i.kernel_name for i in cls._static_autotuners]
+        counters["inductor"]["triton_bundler_save_static_autotuner"] += 1
+        return cls._static_autotuners, static_autotuner_names
 
     @classmethod
     def load_autotuners(
-        cls, static_autotuners: Optional[list[StaticallyLaunchedAutotuner]]
+        cls, static_autotuners: list[StaticallyLaunchedAutotuner] | None
     ) -> list[str]:
         """
         Load statically launchable CachingAutotuners into async_compile.CompiledTritonKernels
@@ -250,7 +247,7 @@ class TritonBundler:
     @classmethod
     def collect(
         cls,
-    ) -> tuple[TritonBundle, Optional[TritonBundlerMetadata]]:
+    ) -> tuple[TritonBundle, TritonBundlerMetadata | None]:
         """
         This is the main function called when a cache write happens. This function
         converts all the previously remembered kernels into bundled format so that
@@ -329,7 +326,7 @@ class TritonBundler:
             return TritonBundle([], []), None
 
     @staticmethod
-    def read_and_emit(bundle: TritonBundle) -> Optional[TritonBundlerMetadata]:
+    def read_and_emit(bundle: TritonBundle) -> TritonBundlerMetadata | None:
         """
         This is the main function called when a cache read happens. This function
         converts the bundled format back into individual files and writes them

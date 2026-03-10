@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import importlib
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional
 
 from packaging import version
 
 from .base import HfQuantizer
 from .quantizers_utils import get_module_from_name
-
 
 if TYPE_CHECKING:
     from ..modeling_utils import PreTrainedModel
@@ -30,7 +29,6 @@ from ..utils import (
     logging,
 )
 from ..utils.quantization_config import QuantoConfig
-
 
 if is_torch_available():
     import torch
@@ -83,11 +81,15 @@ class QuantoHfQuantizer(HfQuantizer):
 
     def update_torch_dtype(self, torch_dtype: "torch.dtype") -> "torch.dtype":
         if torch_dtype is None:
-            logger.info("You did not specify `torch_dtype` in `from_pretrained`. Setting it to `torch.float32`.")
+            logger.info(
+                "You did not specify `torch_dtype` in `from_pretrained`. Setting it to `torch.float32`."
+            )
             torch_dtype = torch.float32
         return torch_dtype
 
-    def update_missing_keys(self, model, missing_keys: List[str], prefix: str) -> List[str]:
+    def update_missing_keys(
+        self, model, missing_keys: list[str], prefix: str
+    ) -> list[str]:
         if is_optimum_quanto_available():
             from optimum.quanto import QModuleMixin
 
@@ -108,7 +110,7 @@ class QuantoHfQuantizer(HfQuantizer):
         model: "PreTrainedModel",
         param_value: "torch.Tensor",
         param_name: str,
-        state_dict: Dict[str, Any],
+        state_dict: dict[str, Any],
         **kwargs,
     ) -> bool:
         """
@@ -117,13 +119,15 @@ class QuantoHfQuantizer(HfQuantizer):
         if is_optimum_quanto_available():
             from optimum.quanto import QModuleMixin
 
-        device_map = kwargs.get("device_map", None)
-        param_device = kwargs.get("param_device", None)
+        device_map = kwargs.get("device_map")
+        param_device = kwargs.get("param_device")
         # we don't quantize the model if the module is going to be offloaded to the cpu
         if device_map is not None and param_device is not None:
             device_map_values = set(device_map.values())
             if param_device == "cpu" and len(device_map_values) > 1:
-                if not (device_map_values == {"cpu"} or device_map_values == {"cpu", "disk"}):
+                if not (
+                    device_map_values == {"cpu"} or device_map_values == {"cpu", "disk"}
+                ):
                     return False
 
         module, tensor_name = get_module_from_name(model, param_name)
@@ -131,10 +135,11 @@ class QuantoHfQuantizer(HfQuantizer):
         if isinstance(module, QModuleMixin) and "weight" in tensor_name:
             # if the weights are quantized, don't need to recreate it again with `create_quantized_param`
             return not module.frozen
-        else:
-            return False
+        return False
 
-    def adjust_max_memory(self, max_memory: Dict[str, Union[int, str]]) -> Dict[str, Union[int, str]]:
+    def adjust_max_memory(
+        self, max_memory: dict[str, int | str]
+    ) -> dict[str, int | str]:
         max_memory = {key: val * 0.90 for key, val in max_memory.items()}
         return max_memory
 
@@ -158,7 +163,9 @@ class QuantoHfQuantizer(HfQuantizer):
         module.weight.requires_grad = False
 
     def adjust_target_dtype(self, target_dtype: "torch.dtype") -> "torch.dtype":
-        if version.parse(importlib.metadata.version("accelerate")) > version.parse("0.27.0"):
+        if version.parse(importlib.metadata.version("accelerate")) > version.parse(
+            "0.27.0"
+        ):
             from accelerate.utils import CustomDtype
 
             mapping = {
@@ -169,15 +176,17 @@ class QuantoHfQuantizer(HfQuantizer):
             }
             target_dtype = mapping[self.quantization_config.weights]
             return target_dtype
-        else:
-            raise ValueError(
-                "You are using `device_map='auto'` on an optimum-quanto quantized model. To automatically compute"
-                " the appropriate device map, you should upgrade your `accelerate` library,"
-                "`pip install --upgrade accelerate` or install it from source."
-            )
+        raise ValueError(
+            "You are using `device_map='auto'` on an optimum-quanto quantized model. To automatically compute"
+            " the appropriate device map, you should upgrade your `accelerate` library,"
+            "`pip install --upgrade accelerate` or install it from source."
+        )
 
     def _process_model_before_weight_loading(
-        self, model: "PreTrainedModel", keep_in_fp32_modules: Optional[List[str]] = None, **kwargs
+        self,
+        model: "PreTrainedModel",
+        keep_in_fp32_modules: list[str] | None = None,
+        **kwargs,
     ):
         from ..integrations import replace_with_quanto_layers
 
@@ -186,7 +195,9 @@ class QuantoHfQuantizer(HfQuantizer):
         )
 
         model, _ = replace_with_quanto_layers(
-            model, modules_to_not_convert=self.modules_to_not_convert, quantization_config=self.quantization_config
+            model,
+            modules_to_not_convert=self.modules_to_not_convert,
+            quantization_config=self.quantization_config,
         )
         model.config.quantization_config = self.quantization_config
 

@@ -17,7 +17,6 @@ As described in the Aetherra specification:
 "Install, chain, and orchestrate AI plugins and agents, including planners, analyzers, or code generators."
 """
 
-
 # Standard library imports
 import sys
 import tempfile

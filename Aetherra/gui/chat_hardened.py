@@ -27,18 +27,17 @@ import threading
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable
+from typing import Any
 from uuid import uuid4
 
 # Third party imports
-from PySide6.QtCore import QMutex, QObject, QThread, QTimer, Signal, Slot
+from PySide6.QtCore import QThread, QTimer, Signal, Slot
 from PySide6.QtWidgets import (
     QApplication,
     QLabel,
     QLineEdit,
     QPushButton,
     QScrollArea,
-    QTextEdit,
     QVBoxLayout,
     QWidget,
 )
@@ -256,8 +255,7 @@ class ChatStateManager:
         try:
             if self._backup_state:
                 self._messages = [
-                    ChatMessage.from_dict(msg_data)
-                    for msg_data in self._backup_state["messages"]
+                    ChatMessage.from_dict(msg_data) for msg_data in self._backup_state["messages"]
                 ]
                 self._threads = self._backup_state["threads"].copy()
                 logger.warning("Restored chat state from backup")
@@ -342,17 +340,13 @@ class HardenedChatProcessor(QThread):
         """Process a single message."""
         try:
             # Update status
-            self.state_manager.update_message_status(
-                message_id, MessageStatus.PROCESSING
-            )
+            self.state_manager.update_message_status(message_id, MessageStatus.PROCESSING)
 
             # Simulate processing (integrate with AI/backend here)
             self.msleep(100)
 
             # Complete processing
-            self.state_manager.update_message_status(
-                message_id, MessageStatus.COMPLETED
-            )
+            self.state_manager.update_message_status(message_id, MessageStatus.COMPLETED)
             self.message_processed.emit(message_id)
 
         except Exception as e:
@@ -521,9 +515,7 @@ class HardenedChatInterface(QWidget):
     def get_recent_messages(self, count: int = 10) -> list[ChatMessage]:
         """Get recent messages safely."""
         try:
-            return self.state_manager.get_messages(
-                thread_id=self.current_thread_id, limit=count
-            )
+            return self.state_manager.get_messages(thread_id=self.current_thread_id, limit=count)
         except Exception as e:
             logger.error(f"Failed to get recent messages: {e}")
             return []

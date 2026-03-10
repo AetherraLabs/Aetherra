@@ -3,8 +3,9 @@ import contextlib
 import warnings
 import weakref
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from contextlib import AbstractContextManager
-from typing import Any, Callable, Optional, Union
+from typing import Any, Optional
 
 import torch
 import torch.utils._pytree as pytree
@@ -12,12 +13,11 @@ from torch._C import _functionalization_reapply_views_tls as _reapply_views
 from torch._ops import _get_dispatch_mode_pre_dispatch
 from torch._subclasses.meta_utils import is_sparse_any
 from torch.utils._python_dispatch import (
+    TorchDispatchMode,
     _detect_infra_mode,
     _disable_infra_mode,
     return_and_correct_aliasing,
-    TorchDispatchMode,
 )
-
 
 not_implemented_log = torch._logging.getArtifactLogger(__name__, "not_implemented")
 
@@ -253,10 +253,9 @@ class FunctionalTensor(torch.Tensor):
     def tolist(self) -> Any:
         if self.elem.dim() == 0:
             return self.elem.item()
-        elif self.elem.dim() == 1:
+        if self.elem.dim() == 1:
             return [elem.item() for elem in self.elem]
-        else:
-            return [elem.tolist() for elem in self.elem]
+        return [elem.tolist() for elem in self.elem]
 
     def to(self, *args, **kwargs):
         if _detect_infra_mode(torch._C._TorchDispatchModeKey.FUNCTIONAL).export:
@@ -272,8 +271,7 @@ class FunctionalTensor(torch.Tensor):
         device = device or torch.cuda.current_device()
         if len(args) > 0:
             return self.to(device, *args, **kwargs)
-        else:
-            return self.to(device=device, **kwargs)
+        return self.to(device=device, **kwargs)
 
     char = _conversion_method_template(dtype=torch.int8)
     cpu = _conversion_method_template(device=torch.device("cpu"))
@@ -327,7 +325,7 @@ class FunctionalTensorMode(TorchDispatchMode):
         self._allow_token_discovery = _allow_token_discovery
 
         self._storage_to_base: weakref.WeakKeyDictionary[
-            torch.storage.UntypedStorage, Optional[FunctionalTensor]
+            torch.storage.UntypedStorage, FunctionalTensor | None
         ] = weakref.WeakKeyDictionary()
 
     # No-op if FunctionalTensorMode is already in use
@@ -344,9 +342,8 @@ class FunctionalTensorMode(TorchDispatchMode):
         if _get_prev_mode() is None:
             self.enter_stack.append(True)
             return super().__enter__()
-        else:
-            self.enter_stack.append(False)
-            return self
+        self.enter_stack.append(False)
+        return self
 
     def __exit__(self, a, b, c):
         is_on_stack = self.enter_stack.pop()
@@ -450,8 +447,7 @@ class FunctionalTensorMode(TorchDispatchMode):
 
             if self.export or not inductor_config.enable_auto_functionalized_v2:
                 return do_auto_functionalize(self, func, args, kwargs)
-            else:
-                return do_auto_functionalize_v2(self, func, args, kwargs)
+            return do_auto_functionalize_v2(self, func, args, kwargs)
 
         from torch._higher_order_ops.effects import handle_effects, has_effects
 
@@ -613,9 +609,7 @@ class BaseFunctionalizeAPI(ABC):
         pass
 
     @abstractmethod
-    def unwrap_tensors(
-        self, args: Union[torch.Tensor, tuple[torch.Tensor, ...]]
-    ) -> Any:
+    def unwrap_tensors(self, args: torch.Tensor | tuple[torch.Tensor, ...]) -> Any:
         pass
 
     @abstractmethod
@@ -645,7 +639,7 @@ class BaseFunctionalizeAPI(ABC):
 
 class PythonFunctionalizeAPI(BaseFunctionalizeAPI):
     def __init__(
-        self, mode: Optional[FunctionalTensorMode] = None, pre_dispatch: bool = False
+        self, mode: FunctionalTensorMode | None = None, pre_dispatch: bool = False
     ) -> None:
         super().__init__()
         self.mode = mode if mode else FunctionalTensorMode()
@@ -658,7 +652,7 @@ class PythonFunctionalizeAPI(BaseFunctionalizeAPI):
             )
 
     def unwrap_tensors(
-        self, args: Union[torch.Tensor, tuple[torch.Tensor, ...], list[torch.Tensor]]
+        self, args: torch.Tensor | tuple[torch.Tensor, ...] | list[torch.Tensor]
     ) -> Any:
         return torch.utils._pytree.tree_map_only(
             FunctionalTensor, FunctionalTensor.from_functional, args
@@ -700,8 +694,8 @@ class CppFunctionalizeAPI(BaseFunctionalizeAPI):
         return _wrap_all_tensors_to_functional(args, level=0)
 
     def unwrap_tensors(
-        self, args: Union[torch.Tensor, tuple[torch.Tensor, ...]]
-    ) -> Union[torch.Tensor, tuple[torch.Tensor, ...]]:
+        self, args: torch.Tensor | tuple[torch.Tensor, ...]
+    ) -> torch.Tensor | tuple[torch.Tensor, ...]:
         from torch._functorch.eager_transforms import (
             _unwrap_all_tensors_from_functional,
         )
@@ -739,8 +733,8 @@ class FunctorchFunctionalizeAPI(BaseFunctionalizeAPI):
         return _wrap_all_tensors_to_functional(args, level=self.interpreter.level())
 
     def unwrap_tensors(
-        self, args: Union[torch.Tensor, tuple[torch.Tensor, ...]]
-    ) -> Union[torch.Tensor, tuple[torch.Tensor, ...]]:
+        self, args: torch.Tensor | tuple[torch.Tensor, ...]
+    ) -> torch.Tensor | tuple[torch.Tensor, ...]:
         from torch._functorch.eager_transforms import (
             _unwrap_all_tensors_from_functional,
         )

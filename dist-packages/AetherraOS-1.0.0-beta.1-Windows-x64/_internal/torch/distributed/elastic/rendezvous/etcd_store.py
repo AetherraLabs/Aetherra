@@ -9,11 +9,9 @@ import datetime
 import random
 import time
 from base64 import b64decode, b64encode
-from typing import Optional
 
 # pyre-ignore[21]: Could not find name `Store` in `torch.distributed`.
 from torch.distributed import Store
-
 
 try:
     import etcd  # type: ignore[import]
@@ -40,7 +38,7 @@ class EtcdStore(Store):
         etcd_client,
         etcd_store_prefix,
         # Default timeout same as in c10d/Store.hpp
-        timeout: Optional[datetime.timedelta] = None,
+        timeout: datetime.timedelta | None = None,
     ):
         super().__init__()  # required for pybind trampoline.
 
@@ -121,7 +119,7 @@ class EtcdStore(Store):
             except etcd.EtcdCompareFailed:
                 cas_delay()
 
-    def wait(self, keys, override_timeout: Optional[datetime.timedelta] = None):
+    def wait(self, keys, override_timeout: datetime.timedelta | None = None):
         """
         Wait until all of the keys are published, or until timeout.
 
@@ -151,7 +149,7 @@ class EtcdStore(Store):
     def _encode(self, value) -> str:
         if type(value) == bytes:
             return b64encode(value).decode()
-        elif type(value) == str:
+        if type(value) == str:
             return b64encode(value.encode()).decode()
         raise ValueError("Value must be of type str or bytes")
 
@@ -162,7 +160,7 @@ class EtcdStore(Store):
     def _decode(self, value) -> bytes:
         if type(value) == bytes:
             return b64decode(value)
-        elif type(value) == str:
+        if type(value) == str:
             return b64decode(value.encode())
         raise ValueError("Value must be of type str or bytes")
 
@@ -210,7 +208,6 @@ class EtcdStore(Store):
             except etcd.EtcdWatchTimedOut:
                 if time.time() >= deadline:
                     return None
-                else:
-                    continue
+                continue
             except etcd.EtcdEventIndexCleared:
                 continue

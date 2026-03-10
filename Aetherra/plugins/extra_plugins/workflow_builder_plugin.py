@@ -35,9 +35,7 @@ class WorkflowStep:
     }
     created_by = "Plugin System Auto-Fixer"
 
-    def __init__(
-        self, step_id: str, name: str, action: str, parameters: Optional[Dict] = None
-    ):
+    def __init__(self, step_id: str, name: str, action: str, parameters: Optional[Dict] = None):
         self.step_id = step_id
         self.name = name
         self.action = action
@@ -194,9 +192,7 @@ class WorkflowBuilderPlugin:
             raise ValueError(f"Template '{template_name}' not found")
 
         template = self.template_workflows[template_name]
-        workflow_id = self.create_workflow(
-            new_name, f"Created from {template_name} template"
-        )
+        workflow_id = self.create_workflow(new_name, f"Created from {template_name} template")
         new_workflow = self.workflows[workflow_id]
 
         # Copy steps from template

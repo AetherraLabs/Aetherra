@@ -1,6 +1,5 @@
 # mypy: allow-untyped-defs
 from contextlib import contextmanager
-from typing import Optional
 
 import torch
 import torch.distributed as dist
@@ -129,7 +128,7 @@ def shard_parameter(
 
 
 # Tracks the current process group in the load context manager.
-_CURRENT_PROCESS_GROUP: Optional[dist.ProcessGroup] = None
+_CURRENT_PROCESS_GROUP: dist.ProcessGroup | None = None
 
 
 @contextmanager
@@ -158,8 +157,7 @@ def _get_current_process_group():
     global _CURRENT_PROCESS_GROUP
     if _CURRENT_PROCESS_GROUP is None:
         return distributed_c10d._get_default_group()
-    else:
-        return _CURRENT_PROCESS_GROUP
+    return _CURRENT_PROCESS_GROUP
 
 
 def _reshard_output(

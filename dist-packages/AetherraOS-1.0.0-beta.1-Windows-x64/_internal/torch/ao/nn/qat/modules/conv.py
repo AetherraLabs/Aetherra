@@ -1,12 +1,11 @@
 # mypy: allow-untyped-defs
-from typing import ClassVar, Union
+from typing import ClassVar
 
 import torch
 import torch.nn as nn
 from torch.ao.nn.intrinsic import _FusedModule
 from torch.nn.common_types import _size_1_t, _size_2_t, _size_3_t
 from torch.nn.modules.utils import _pair, _single, _triple
-
 
 __all__ = ["Conv1d", "Conv2d", "Conv3d"]
 
@@ -20,7 +19,7 @@ class _ConvNd(nn.modules.conv._ConvNd):
         out_channels: int,
         kernel_size: tuple[int, ...],
         stride: tuple[int, ...],
-        padding: Union[str, tuple[int, ...]],
+        padding: str | tuple[int, ...],
         dilation: tuple[int, ...],
         transposed: bool,
         output_padding: tuple[int, ...],
@@ -117,8 +116,7 @@ class _ConvNd(nn.modules.conv._ConvNd):
             fused = cls._FLOAT_MODULE(*modules)
             fused.train(self.training)
             return fused
-        else:
-            return conv
+        return conv
 
 
 class Conv1d(_ConvNd, nn.Conv1d):
@@ -144,7 +142,7 @@ class Conv1d(_ConvNd, nn.Conv1d):
         out_channels: int,
         kernel_size: _size_1_t,
         stride: _size_1_t = 1,
-        padding: Union[str, _size_1_t] = 0,
+        padding: str | _size_1_t = 0,
         dilation: _size_1_t = 1,
         groups: int = 1,
         bias: bool = True,
@@ -206,7 +204,7 @@ class Conv2d(_ConvNd, nn.Conv2d):
         out_channels: int,
         kernel_size: _size_2_t,
         stride: _size_2_t = 1,
-        padding: Union[str, _size_2_t] = 0,
+        padding: str | _size_2_t = 0,
         dilation: _size_2_t = 1,
         groups: int = 1,
         bias: bool = True,
@@ -271,7 +269,7 @@ class Conv3d(_ConvNd, nn.Conv3d):
         out_channels: int,
         kernel_size: _size_3_t,
         stride: _size_3_t = 1,
-        padding: Union[str, _size_3_t] = 0,
+        padding: str | _size_3_t = 0,
         dilation: _size_3_t = 1,
         groups: int = 1,
         bias: bool = True,

@@ -1,13 +1,11 @@
 # mypy: allow-untyped-defs
-from typing import Optional, Union
 
 import torch
 from torch import Tensor
 from torch.distributions import constraints
 from torch.distributions.exp_family import ExponentialFamily
 from torch.distributions.utils import broadcast_all
-from torch.types import _Number, Number
-
+from torch.types import Number, _Number
 
 __all__ = ["Poisson"]
 
@@ -49,8 +47,8 @@ class Poisson(ExponentialFamily):
 
     def __init__(
         self,
-        rate: Union[Tensor, Number],
-        validate_args: Optional[bool] = None,
+        rate: Tensor | Number,
+        validate_args: bool | None = None,
     ) -> None:
         (self.rate,) = broadcast_all(rate)
         if isinstance(rate, _Number):

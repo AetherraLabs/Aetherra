@@ -6,5 +6,4 @@ from .instance_norm_expanded_weights import InstanceNormPerSampleGrad
 from .layer_norm_expanded_weights import LayerNormPerSampleGrad
 from .linear_expanded_weights import LinearPerSampleGrad
 
-
 __all__ = ["ExpandedWeight"]

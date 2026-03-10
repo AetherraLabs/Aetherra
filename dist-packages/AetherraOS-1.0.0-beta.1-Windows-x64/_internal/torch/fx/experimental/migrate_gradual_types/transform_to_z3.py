@@ -7,12 +7,12 @@ from torch.fx.experimental.migrate_gradual_types.constraint import (
     Disj,
     DVar,
     F,
-    is_algebraic_expression,
-    is_bool_expr,
-    is_dim,
     Prod,
     T,
     TVar,
+    is_algebraic_expression,
+    is_bool_expr,
+    is_dim,
 )
 from torch.fx.experimental.migrate_gradual_types.constraint_generator import (
     ConstraintGenerator,
@@ -34,7 +34,6 @@ from torch.fx.experimental.migrate_gradual_types.operation import (
 )
 from torch.fx.tensor_type import Dyn, TensorType
 
-
 try:
     import z3  # type: ignore[import]
 
@@ -54,29 +53,28 @@ try:
                 conjuncts.append(new_c)
             return z3.And(conjuncts), counter
 
-        elif isinstance(constraint, Disj):
+        if isinstance(constraint, Disj):
             disjuncts = []
             for c in constraint.disjuncts:
                 new_c, counter = transform_to_z3(c, counter, dimension_dict)
                 disjuncts.append(new_c)
             return z3.Or(disjuncts), counter
 
-        elif isinstance(constraint, T):
+        if isinstance(constraint, T):
             return True, counter
 
-        elif isinstance(constraint, F):
+        if isinstance(constraint, F):
             return False, counter
 
-        elif isinstance(constraint, BinConstraintT):
+        if isinstance(constraint, BinConstraintT):
             if constraint.op == op_eq:
                 lhs, counter = transform_var(constraint.lhs, counter, dimension_dict)
                 rhs, counter = transform_var(constraint.rhs, counter, dimension_dict)
                 return (lhs == rhs), counter
 
-            else:
-                raise NotImplementedError("Method not yet implemented")
+            raise NotImplementedError("Method not yet implemented")
 
-        elif isinstance(constraint, BinConstraintD):
+        if isinstance(constraint, BinConstraintD):
             if constraint.op == op_eq:
                 if isinstance(constraint.lhs, BVar) and is_bool_expr(constraint.rhs):
                     transformed_rhs, counter = transform_to_z3(
@@ -85,7 +83,7 @@ try:
                     transformed_lhs = z3.Bool(constraint.lhs.c)
                     return transformed_lhs == transformed_rhs, counter
 
-                elif is_dim(constraint.lhs) and is_dim(constraint.rhs):
+                if is_dim(constraint.lhs) and is_dim(constraint.rhs):
                     # with dimension transformations we consider the encoding
                     lhs, counter = transform_dimension(
                         constraint.lhs, counter, dimension_dict
@@ -95,19 +93,18 @@ try:
                     )
                     return lhs == rhs, counter
 
-                else:
-                    # then we have an algebraic expression which means that we disregard the
-                    # first element of the encoding
-                    lhs, counter = transform_algebraic_expression(
-                        constraint.lhs, counter, dimension_dict
-                    )
-                    rhs, counter = transform_algebraic_expression(
-                        constraint.rhs, counter, dimension_dict
-                    )
-                    return lhs == rhs, counter
+                # then we have an algebraic expression which means that we disregard the
+                # first element of the encoding
+                lhs, counter = transform_algebraic_expression(
+                    constraint.lhs, counter, dimension_dict
+                )
+                rhs, counter = transform_algebraic_expression(
+                    constraint.rhs, counter, dimension_dict
+                )
+                return lhs == rhs, counter
 
             # The assumption here is that the LHS and RHS must be dimensions
-            elif constraint.op == op_neq:
+            if constraint.op == op_neq:
                 assert is_dim(constraint.lhs)
                 assert is_dim(constraint.rhs)
                 lhs, counter = transform_dimension(
@@ -119,7 +116,7 @@ try:
                 if constraint.rhs == Dyn or constraint.lhs == Dyn:
                     if constraint.rhs == Dyn:
                         return lhs.arg(0) == 1, counter
-                    elif constraint.lhs == Dyn:
+                    if constraint.lhs == Dyn:
                         return rhs.arg(0) == 1, counter
 
                 # if one of the instances is a number
@@ -135,7 +132,7 @@ try:
                             counter,
                         )
 
-                    elif isinstance(constraint.rhs, int):
+                    if isinstance(constraint.rhs, int):
                         return (
                             z3.Or(
                                 [
@@ -220,11 +217,11 @@ try:
             assert len(res) <= 4
             if len(tensor.__args__) == 1:
                 return tensor_type.tensor1(res[0]), counter
-            elif len(tensor.__args__) == 2:
+            if len(tensor.__args__) == 2:
                 return tensor_type.tensor2(res[0], res[1]), counter
-            elif len(tensor.__args__) == 3:
+            if len(tensor.__args__) == 3:
                 return tensor_type.tensor3(res[0], res[1], res[2]), counter
-            elif len(tensor.__args__) == 4:
+            if len(tensor.__args__) == 4:
                 return tensor_type.tensor4(res[0], res[1], res[2], res[3]), counter
 
         elif tensor == Dyn:
@@ -247,18 +244,17 @@ try:
         if dimension == Dyn:
             counter += 1
             return D(0, z3.Int(counter)), counter
-        elif isinstance(dimension, int):
+        if isinstance(dimension, int):
             return D(1, dimension), counter
-        elif isinstance(dimension, DVar):
+        if isinstance(dimension, DVar):
             if dimension.c in dimension_dict:
                 return (
                     D(z3.Int(dimension_dict[dimension.c]), z3.Int(dimension.c)),
                     counter,
                 )
-            else:
-                counter += 1
-                dimension_dict[dimension.c] = counter
-                return D(z3.Int(counter), z3.Int(dimension.c)), counter
+            counter += 1
+            dimension_dict[dimension.c] = counter
+            return D(z3.Int(counter), z3.Int(dimension.c)), counter
 
     def transform_algebraic_expression(expr, counter, dimension_dict):
         """
@@ -276,7 +272,7 @@ try:
             transformed, counter = transform_dimension(expr, counter, dimension_dict)
             return transformed.arg(1), counter
 
-        elif isinstance(expr, Prod):
+        if isinstance(expr, Prod):
             dims = []
             for dim in expr.products:
                 assert is_dim(dim)
@@ -284,7 +280,7 @@ try:
                 dims.append(d.arg(1))
             return z3.Product(dims), counter
 
-        elif is_algebraic_expression(expr):
+        if is_algebraic_expression(expr):
             lhs, counter = transform_algebraic_expression(
                 expr.lhs, counter, dimension_dict
             )
@@ -312,8 +308,7 @@ try:
 
             return c, counter
 
-        else:
-            raise RuntimeError
+        raise RuntimeError
 
     def transform_all_constraints(traced, counter=0):
         """

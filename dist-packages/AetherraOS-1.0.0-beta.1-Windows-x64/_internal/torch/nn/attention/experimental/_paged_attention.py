@@ -4,24 +4,19 @@ This module implements Paged Attention on top of flex_attention.
 This module is experimental and subject to change.
 """
 
-from typing import Optional, Union
-
 import torch
 from torch.nn.attention.flex_attention import (
+    BlockMask,
     _identity,
     _mask_mod_signature,
     _score_mod_signature,
-    BlockMask,
     noop_mask,
 )
-
 
 __all__ = ["PagedAttention"]
 
 
-def _cdiv(
-    x: Union[int, float, torch.Tensor], multiple: Union[int, float, torch.Tensor]
-):
+def _cdiv(x: int | float | torch.Tensor, multiple: int | float | torch.Tensor):
     return (x + multiple - 1) // multiple
 
 
@@ -151,27 +146,27 @@ class PagedAttention:
 
         B, H, S, K_D = k_val.shape
         V_D = v_val.shape[3]
-        if B != batch_idx.shape[0]:
+        if batch_idx.shape[0] != B:
             raise RuntimeError(
                 f"Expect val and batch_idx have the same batch size "
                 f"but got B={B} and B={batch_idx.shape[0]}."
             )
-        if H != k_cache.shape[1]:
+        if k_cache.shape[1] != H:
             raise RuntimeError(
                 f"Expect val and cache has the same number of heads "
                 f"but got H={H} and H={k_cache.shape[1]}."
             )
-        if S != input_pos.shape[1]:
+        if input_pos.shape[1] != S:
             raise RuntimeError(
                 f"Expect val and input_pos has the same length "
                 f"but got S={S} and S={input_pos.shape[0]}."
             )
-        if K_D != k_cache.shape[3]:
+        if k_cache.shape[3] != K_D:
             raise RuntimeError(
                 f"Expect k_val and k_cache has the same hidden dim "
                 f"but got D={K_D} and D={k_cache.shape[3]}."
             )
-        if V_D != v_cache.shape[3]:
+        if v_cache.shape[3] != V_D:
             raise RuntimeError(
                 f"Expect v_val and v_cache has the same hidden dim "
                 f"but got D={V_D} and D={v_cache.shape[3]}."
@@ -197,7 +192,7 @@ class PagedAttention:
     def convert_logical_block_mask(
         self,
         block_mask: BlockMask,
-        batch_idx: Optional[torch.Tensor] = None,
+        batch_idx: torch.Tensor | None = None,
     ) -> BlockMask:
         """
         Converts a logical block mask by mapping its logical kv indices to the corresponding
@@ -274,9 +269,7 @@ class PagedAttention:
             seq_lengths=seq_lengths,
         )
 
-    def get_mask_mod(
-        self, mask_mod: Optional[_mask_mod_signature]
-    ) -> _mask_mod_signature:
+    def get_mask_mod(self, mask_mod: _mask_mod_signature | None) -> _mask_mod_signature:
         """
         Converts a mask_mod based on mapping from the physical block index to the logical
         block index.
@@ -304,7 +297,7 @@ class PagedAttention:
         return new_mask_mod
 
     def get_score_mod(
-        self, score_mod: Optional[_score_mod_signature]
+        self, score_mod: _score_mod_signature | None
     ) -> _score_mod_signature:
         """
         Converts a score_mod based on mapping from the physical block index to the logical

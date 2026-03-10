@@ -15,7 +15,6 @@ Purpose: Fix violations detected by architectural compliance checker
 import os
 import re
 from pathlib import Path
-from typing import Dict, List
 
 
 class ArchitecturalFixer:
@@ -27,7 +26,7 @@ class ArchitecturalFixer:
         self.lyrixa_root = self.aetherra_root / "lyrixa"
         self.dry_run = dry_run
 
-    def fix_import_violations(self) -> List[str]:
+    def fix_import_violations(self) -> list[str]:
         """Fix core AI files importing from Lyrixa"""
         print("🔧 Fixing core import violations...")
 
@@ -84,7 +83,7 @@ class ArchitecturalFixer:
 
         return fixed_files
 
-    def apply_fixes(self) -> Dict[str, List[str]]:
+    def apply_fixes(self) -> dict[str, list[str]]:
         """Apply all architectural fixes"""
         print("🔧 APPLYING ARCHITECTURAL FIXES")
         print("=" * 40)

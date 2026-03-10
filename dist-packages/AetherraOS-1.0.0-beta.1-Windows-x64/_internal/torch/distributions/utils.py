@@ -1,13 +1,12 @@
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from functools import update_wrapper
-from typing import Any, Callable, Final, Generic, Optional, overload, TypeVar, Union
+from typing import Any, Final, Generic, TypeVar, overload
 
 import torch
 import torch.nn.functional as F
 from torch import SymInt, Tensor
 from torch.overrides import is_tensor_like
-from torch.types import _dtype, _Number, Device, Number
-
+from torch.types import Device, Number, _dtype, _Number
 
 euler_constant: Final[float] = 0.57721566490153286060  # Euler Mascheroni Constant
 
@@ -24,7 +23,7 @@ __all__ = [
 
 # FIXME: Use (*values: *Ts) -> tuple[Tensor for T in Ts] if Mapping-Type is ever added.
 #   See https://github.com/python/typing/issues/1216#issuecomment-2126153831
-def broadcast_all(*values: Union[Tensor, Number]) -> tuple[Tensor, ...]:
+def broadcast_all(*values: Tensor | Number) -> tuple[Tensor, ...]:
     r"""
     Given a list of values (possibly containing numbers), returns a list where each
     value is broadcasted based on the following rules:
@@ -59,9 +58,9 @@ def broadcast_all(*values: Union[Tensor, Number]) -> tuple[Tensor, ...]:
 
 
 def _standard_normal(
-    shape: Sequence[Union[int, SymInt]],
-    dtype: Optional[_dtype],
-    device: Optional[Device],
+    shape: Sequence[int | SymInt],
+    dtype: _dtype | None,
+    device: Device | None,
 ) -> Tensor:
     if torch._C._get_tracing_state():
         # [JIT WORKAROUND] lack of support for .normal_()
@@ -162,7 +161,7 @@ class lazy_property(Generic[T, R]):
     def __get__(self, instance: T, obj_type: Any = None) -> R: ...
 
     def __get__(
-        self, instance: Union[T, None], obj_type: Any = None
+        self, instance: T | None, obj_type: Any = None
     ) -> "R | _lazy_property_and_property[T, R]":
         if instance is None:
             return _lazy_property_and_property(self.wrapped)

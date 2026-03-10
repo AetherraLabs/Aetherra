@@ -6,17 +6,18 @@ If you are adding a new entry/functionality, please, add it to the
 appropriate files under `torch/ao/quantization/fx/`, while adding an import statement
 here.
 """
+
 from torch.ao.quantization.fx._equalize import (
+    CUSTOM_MODULE_SUPP_LIST,
+    EqualizationQConfig,
     _convert_equalization_ref,
     _InputEqualizationObserver,
     _WeightEqualizationObserver,
     calculate_equalization_scale,
     clear_weight_quant_obs_node,
     convert_eq_obs,
-    CUSTOM_MODULE_SUPP_LIST,
     custom_module_supports_equalization,
     default_equalization_qconfig,
-    EqualizationQConfig,
     fused_module_supports_equalization,
     get_equalization_qconfig_dict,
     get_layer_sqnr_dict,

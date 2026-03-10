@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 import networkx as nx
 
@@ -23,11 +23,11 @@ class GraphInfoProvider:
         graph_nodes_in_order: list[str],
         graph_edges: list[tuple[str, str]],
         all_recomputable_banned_nodes: list[str],
-        all_node_runtimes: Optional[dict[str, float]] = None,
-        all_node_memories: Optional[dict[str, float]] = None,
-        recorded_knapsack_input_memories: Optional[list[float]] = None,
-        recorded_knapsack_input_runtimes: Optional[list[float]] = None,
-        joint_graph: Optional[Graph] = None,
+        all_node_runtimes: dict[str, float] | None = None,
+        all_node_memories: dict[str, float] | None = None,
+        recorded_knapsack_input_memories: list[float] | None = None,
+        recorded_knapsack_input_runtimes: list[float] | None = None,
+        joint_graph: Graph | None = None,
     ):
         self.graph_nodes_in_order = graph_nodes_in_order
         self.graph_edges = graph_edges
@@ -96,9 +96,9 @@ class GraphInfoProvider:
     @property
     def recomputable_node_only_graph(self) -> nx.DiGraph:
         if self._lazily_initialized_graphs[self.__RECOMPUTABLE_NODE_ONLY_GRAPH] is None:
-            self._lazily_initialized_graphs[
-                self.__RECOMPUTABLE_NODE_ONLY_GRAPH
-            ] = self._create_recomputable_node_only_graph()
+            self._lazily_initialized_graphs[self.__RECOMPUTABLE_NODE_ONLY_GRAPH] = (
+                self._create_recomputable_node_only_graph()
+            )
         return self._lazily_initialized_graphs[self.__RECOMPUTABLE_NODE_ONLY_GRAPH]
 
     @property
@@ -119,17 +119,17 @@ class GraphInfoProvider:
     @property
     def full_joint_nx_graph(self) -> nx.DiGraph:
         if self._lazily_initialized_graphs[self.__FULL_NX_JOINT_GRAPH] is None:
-            self._lazily_initialized_graphs[
-                self.__FULL_NX_JOINT_GRAPH
-            ] = self._create_full_joint_graph()
+            self._lazily_initialized_graphs[self.__FULL_NX_JOINT_GRAPH] = (
+                self._create_full_joint_graph()
+            )
         return self._lazily_initialized_graphs[self.__FULL_NX_JOINT_GRAPH]
 
     @property
     def simplified_fx_joint_graph(self) -> Graph:
         if self._lazily_initialized_graphs[self.__SIMPLIFIED_FX_JOINT_GRAPH] is None:
-            self._lazily_initialized_graphs[
-                self.__SIMPLIFIED_FX_JOINT_GRAPH
-            ] = self._recreate_psuedo_joint_graph()
+            self._lazily_initialized_graphs[self.__SIMPLIFIED_FX_JOINT_GRAPH] = (
+                self._recreate_psuedo_joint_graph()
+            )
         return self._lazily_initialized_graphs[self.__SIMPLIFIED_FX_JOINT_GRAPH]
 
     def get_non_ac_peak_memory(self) -> float:
@@ -253,7 +253,9 @@ class GraphInfoProvider:
         """
         Visualize the recomputable candidate graph with larger context.
         """
-        from matplotlib import cm, colors as mcolors, pyplot as plt
+        from matplotlib import cm
+        from matplotlib import colors as mcolors
+        from matplotlib import pyplot as plt
 
         pos = nx.spring_layout(
             self.recomputable_node_only_graph_with_larger_graph_context,
@@ -285,9 +287,7 @@ class GraphInfoProvider:
                     float(
                         self.recomputable_node_only_graph_with_larger_graph_context.nodes[
                             node
-                        ][
-                            "memory"
-                        ]
+                        ]["memory"]
                     )
                 )
             )

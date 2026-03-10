@@ -8,7 +8,8 @@ import pickle
 import sys
 import warnings
 from inspect import signature
-from typing import Any, Literal, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Literal
+
 from typing_extensions import deprecated
 
 import torch
@@ -22,8 +23,8 @@ from . import (
     _lazy_init,
     is_initialized,
 )
-from ._memory_viz import memory as _memory, segments as _segments
-
+from ._memory_viz import memory as _memory
+from ._memory_viz import segments as _segments
 
 if TYPE_CHECKING:
     from torch.types import Device
@@ -932,13 +933,12 @@ def _record_memory_history(
     """
     if isinstance(enabled, bool):
         return _record_memory_history_legacy(enabled, *args, **kwargs)
-    else:
-        return _record_memory_history_impl(enabled, *args, **kwargs)
+    return _record_memory_history_impl(enabled, *args, **kwargs)
 
 
 def _record_memory_history_impl(
-    enabled: Optional[str] = "all",
-    context: Optional[str] = "all",
+    enabled: str | None = "all",
+    context: str | None = "all",
     stacks: str = "all",
     max_entries: int = sys.maxsize,
     device: "Device" = None,
@@ -1169,7 +1169,7 @@ class MemPool(_MemPool):
 
     def __init__(
         self,
-        allocator: Optional[_cuda_CUDAAllocator] = None,
+        allocator: _cuda_CUDAAllocator | None = None,
         use_on_oom: bool = False,
         symmetric: bool = False,
     ):
@@ -1186,7 +1186,7 @@ class MemPool(_MemPool):
         return super().is_symmetric
 
     @property
-    def allocator(self) -> Optional[_cuda_CUDAAllocator]:
+    def allocator(self) -> _cuda_CUDAAllocator | None:
         r"""Returns the allocator this MemPool routes allocations to."""
         return super().allocator
 

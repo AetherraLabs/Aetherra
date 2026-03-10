@@ -200,7 +200,7 @@ class UniversalDirectoryAnalyzer:
 
             # Count different lines
             diff_count = 0
-            for i, (line1, line2) in enumerate(zip(content1, content2)):
+            for i, (line1, line2) in enumerate(zip(content1, content2, strict=False)):
                 if line1 != line2:
                     diff_count += 1
 

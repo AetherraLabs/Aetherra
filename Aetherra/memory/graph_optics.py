@@ -49,7 +49,7 @@ def summarize_memory_graph(max_nodes: int = 100) -> Dict[str, Any]:
                             {
                                 "source": path,
                                 "table": table,
-                                **{c: v for c, v in zip(["rowid"] + cols, row)},
+                                **{c: v for c, v in zip(["rowid"] + cols, row, strict=False)},
                             }
                         )
                         if len(nodes) >= max_nodes:

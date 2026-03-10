@@ -8,12 +8,12 @@ import torch
 import torch.distributed.fsdp._traversal_utils as traversal_utils
 import torch.nn as nn
 from torch.distributed.fsdp._common_utils import (
+    HandleTrainingState,
+    TrainingState,
     _FSDPState,
     _get_module_fsdp_state,
     _has_fsdp_params,
     _module_handle,
-    HandleTrainingState,
-    TrainingState,
 )
 from torch.distributed.fsdp._runtime_utils import (
     _lazy_init,
@@ -26,7 +26,6 @@ from torch.distributed.fsdp._runtime_utils import (
 from torch.distributed.utils import _p_assert
 
 from ._flat_param import FlatParamHandle
-
 
 FLAT_PARAM = "_flat_param"
 
@@ -292,7 +291,7 @@ def _unshard_params(
     else:
         states_and_modules = traversal_utils._get_fsdp_states_with_modules(module)
     with contextlib.ExitStack() as stack:
-        for state, module in zip(*states_and_modules):
+        for state, module in zip(*states_and_modules, strict=False):
             stack.enter_context(
                 _unshard_params_for_summon(
                     module=module,

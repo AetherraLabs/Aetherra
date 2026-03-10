@@ -5,14 +5,13 @@ import torch
 from .. import ir
 from ..lowering import lowerings
 from ..select_algorithm import (
-    autotune_select_algorithm,
     ExternKernelChoice,
     TritonTemplate,
+    autotune_select_algorithm,
 )
 from ..utils import use_aten_gemm_kernels, use_triton_template
 from ..virtualized import V
 from .mm_common import mm_args, mm_grid, mm_options
-
 
 aten = torch.ops.aten
 

@@ -1,8 +1,9 @@
 # mypy: allow-untyped-defs
 import operator
 import warnings
-from collections.abc import Iterable
-from typing import Callable, TypeVar
+from collections.abc import Callable, Iterable
+from typing import TypeVar
+
 from typing_extensions import ParamSpec
 
 import torch
@@ -53,7 +54,6 @@ from torch.fx.node import Node, Target
 from torch.fx.tensor_type import Dyn, TensorType
 from torch.nn.modules.batchnorm import BatchNorm2d
 from torch.nn.modules.conv import Conv2d
-
 
 _T = TypeVar("_T")
 _P = ParamSpec("_P")
@@ -148,8 +148,7 @@ def get_attr_inference_rule(n: Node, symbols, constraints, counter):
 
     if attr == "device":
         return [BinConstraintT(input, output, op_eq)], counter
-    else:
-        raise NotImplementedError("Not yet implemented")
+    raise NotImplementedError("Not yet implemented")
 
 
 @register_inference_rule(torch.bmm)
@@ -344,19 +343,17 @@ def equality_inference_rule(n: Node, symbols, constraints, counter):
             return [BinConstraintT(input, output, op_eq)], counter
 
         # then we have dimension variables
-        else:
-            for arg in n.args:
-                assert isinstance(symbols[arg], DVar)
+        for arg in n.args:
+            assert isinstance(symbols[arg], DVar)
         my_size = [symbols[arg] for arg in n.args]
         return [BinConstraintT(output, TensorType(my_size), op_eq)], counter
 
-    elif isinstance(n.args[0], tuple):
+    if isinstance(n.args[0], tuple):
         # then the tuple is the size
         assert len(n.args[0]) <= 4
         my_size = [symbols[arg] for arg in n.args[0]]
         return [BinConstraintT(output, TensorType(my_size), op_eq)], counter
-    else:
-        raise NotImplementedError("Method not yet implemented")
+    raise NotImplementedError("Method not yet implemented")
 
 
 @register_inference_rule("transpose")
@@ -436,8 +433,7 @@ def masked_fill_inference_rule(n: Node, symbols, constraints, counter):
         return gen_broadcasting_constraints(
             e1, e2, symbols, counter, masked_fill_tensor
         )
-    else:
-        raise NotImplementedError("Not yet implemented")
+    raise NotImplementedError("Not yet implemented")
 
 
 @register_inference_rule(torch.nn.functional.embedding)
@@ -560,7 +556,7 @@ def size_inference_rule(n: Node, symbols, constraints, counter):
         c = BinConstraintT(input, size, op_eq)
         return [c], counter
 
-    elif len(n.args) == 2:
+    if len(n.args) == 2:
         # TODO: review this rule; should input = dyn; output = dyn be included here?
         if isinstance(n.args[1], int):
             # generate the new variable
@@ -579,11 +575,9 @@ def size_inference_rule(n: Node, symbols, constraints, counter):
 
             return [Disj([c1, Conj([Disj(c2), c3])])], counter
 
-        else:
-            raise NotImplementedError
-
-    else:
         raise NotImplementedError
+
+    raise NotImplementedError
 
 
 def range_check(i, n):
@@ -597,8 +591,7 @@ def range_check(i, n):
     """
     if i >= 0:
         return T() if i < n else F()
-    else:
-        return T() if i >= n else F()
+    return T() if i >= n else F()
 
 
 @register_inference_rule(torch.cumsum)
@@ -679,7 +672,7 @@ def getitem_inference_rule(n: Node, symbols, constraints, counter):
         return [Disj([c1, Conj([Disj(c2), c3])])], counter
 
     # tensor output case
-    elif isinstance(n.args[1], tuple):
+    if isinstance(n.args[1], tuple):
         # create and store the new tensor variable
         get_item_output, counter = gen_tvar(counter)
         symbols[n] = get_item_output
@@ -703,8 +696,7 @@ def getitem_inference_rule(n: Node, symbols, constraints, counter):
 
         return [Disj([c1, *c2])], counter
 
-    else:
-        raise RuntimeError("Method not yet implemented")
+    raise RuntimeError("Method not yet implemented")
 
 
 @register_inference_rule(operator.gt)
@@ -724,7 +716,7 @@ def gt_inference_rule(n: Node, symbols, constraints, counter):
             symbols[n] = gt_tensor
             return gen_broadcasting_constraints(e1, e2, symbols, counter, gt_tensor)
 
-        elif isinstance(e1, DVar) and isinstance(e2, DVar):
+        if isinstance(e1, DVar) and isinstance(e2, DVar):
             # This is meant to be used for flow analysis only
             gt_constraint = BinConstraintD(e1, e2, op_gt)
 
@@ -732,10 +724,9 @@ def gt_inference_rule(n: Node, symbols, constraints, counter):
             equality_constraint = BinConstraintD(my_gt, gt_constraint, op_eq)
             return [equality_constraint], counter
 
-        else:
-            raise RuntimeError("Sort Mismatch")
+        raise RuntimeError("Sort Mismatch")
 
-    elif isinstance(n.args[0], Node) and not isinstance(n.args[1], Node):
+    if isinstance(n.args[0], Node) and not isinstance(n.args[1], Node):
         if isinstance(e1, DVar):
             # This is meant to be used for flow analysis only
             gt_constraint = BinConstraintD(e1, e2, op_gt)
@@ -744,7 +735,7 @@ def gt_inference_rule(n: Node, symbols, constraints, counter):
             equality_constraint = BinConstraintD(my_gt, gt_constraint, op_eq)
             return [equality_constraint], counter
 
-        elif isinstance(e1, TVar) and isinstance(e2, int):
+        if isinstance(e1, TVar) and isinstance(e2, int):
             # then we made the wrong assumption about the argument being a tensor
             # so we should fix the assumption
             warnings.warn(
@@ -761,11 +752,9 @@ def gt_inference_rule(n: Node, symbols, constraints, counter):
             equality_constraint = BinConstraintD(my_gt, gt_constraint, op_eq)
             return [equality_constraint], counter
 
-        else:
-            raise NotImplementedError("Method not yet implemented")
-
-    else:
         raise NotImplementedError("Method not yet implemented")
+
+    raise NotImplementedError("Method not yet implemented")
 
 
 @register_inference_rule(operator.eq)
@@ -782,7 +771,7 @@ def eq_inference_rule(n: Node, symbols, constraints, counter):
             symbols[n] = eq_tensor
             return gen_broadcasting_constraints(e1, e2, symbols, counter, eq_tensor)
 
-        elif isinstance(e1, DVar) and isinstance(e2, DVar):
+        if isinstance(e1, DVar) and isinstance(e2, DVar):
             # This is meant to be used for flow analysis only
             eq_constraint = BinConstraintD(e1, e2, op_eq)
 
@@ -790,10 +779,9 @@ def eq_inference_rule(n: Node, symbols, constraints, counter):
             equality_constraint = BinConstraintD(my_eq, eq_constraint, op_eq)
             return [equality_constraint], counter
 
-        else:
-            raise RuntimeError("Sort Mismatch")
+        raise RuntimeError("Sort Mismatch")
 
-    elif isinstance(n.args[0], Node) and not isinstance(n.args[1], Node):
+    if isinstance(n.args[0], Node) and not isinstance(n.args[1], Node):
         if isinstance(e1, DVar):
             # This is meant to be used for flow analysis only
             eq_constraint = BinConstraintD(e1, e2, op_eq)
@@ -801,10 +789,8 @@ def eq_inference_rule(n: Node, symbols, constraints, counter):
             my_eq, counter = gen_bvar(counter)
             equality_constraint = BinConstraintD(my_eq, eq_constraint, op_eq)
             return [equality_constraint], counter
-        else:
-            raise NotImplementedError("Method not yet implemented")
-    else:
         raise NotImplementedError("Method not yet implemented")
+    raise NotImplementedError("Method not yet implemented")
 
 
 @register_inference_rule(operator.ne)
@@ -943,7 +929,7 @@ def lt_inference_rule(n: Node, symbols, constraints, counter):
             symbols[n] = lt_tensor
             return gen_broadcasting_constraints(e1, e2, symbols, counter, lt_tensor)
 
-        elif isinstance(e1, DVar) and isinstance(e2, DVar):
+        if isinstance(e1, DVar) and isinstance(e2, DVar):
             # This is meant to be used for flow analysis only
             lt_constraint = BinConstraintD(e1, e2, op_lt)
 
@@ -951,10 +937,9 @@ def lt_inference_rule(n: Node, symbols, constraints, counter):
             equality_constraint = BinConstraintD(my_lt, lt_constraint, op_eq)
             return [equality_constraint], counter
 
-        else:
-            raise RuntimeError("Sort Mismatch")
+        raise RuntimeError("Sort Mismatch")
 
-    elif isinstance(n.args[0], Node) and not isinstance(n.args[1], Node):
+    if isinstance(n.args[0], Node) and not isinstance(n.args[1], Node):
         if isinstance(e1, DVar):
             # This is meant to be used for flow analysis only
             lt_constraint = BinConstraintD(e1, e2, op_lt)
@@ -962,11 +947,9 @@ def lt_inference_rule(n: Node, symbols, constraints, counter):
             my_lt, counter = gen_bvar(counter)
             equality_constraint = BinConstraintD(my_lt, lt_constraint, op_eq)
             return [equality_constraint], counter
-        else:
-            raise NotImplementedError("Method not yet implemented")
-
-    else:
         raise NotImplementedError("Method not yet implemented")
+
+    raise NotImplementedError("Method not yet implemented")
 
 
 @register_inference_rule(torch.full)
@@ -1063,16 +1046,15 @@ def broadcasting_inference_rule(n: Node, symbols, constraints, counter):
             e2 = symbols[n.args[1]]
 
             return gen_broadcasting_constraints(e1, e2, symbols, counter, my_output)
-        else:
-            raise NotImplementedError("Method not yet implemented")
+        raise NotImplementedError("Method not yet implemented")
 
-    elif isinstance(n.args[0], Node) and isinstance(n.args[1], (int, float)):
+    if isinstance(n.args[0], Node) and isinstance(n.args[1], (int, float)):
         if isinstance(symbols[n.args[0]], TVar):
             my_output, counter = gen_tvar(counter)
             symbols[n] = my_output
             e1 = symbols[n.args[0]]
             return [BinConstraintT(my_output, e1, op_eq)], counter
-        elif isinstance(symbols[n.args[0]], DVar):
+        if isinstance(symbols[n.args[0]], DVar):
             my_output, counter = gen_dvar(counter)
             symbols[n] = my_output
             e1 = symbols[n.args[0]]
@@ -1094,7 +1076,7 @@ def broadcasting_inference_rule(n: Node, symbols, constraints, counter):
             symbols[n] = my_output
             e2 = symbols[n.args[1]]
             return [BinConstraintT(my_output, e2, op_eq)], counter
-        elif isinstance(symbols[n.args[1]], DVar):
+        if isinstance(symbols[n.args[1]], DVar):
             my_output, counter = gen_dvar(counter)
             symbols[n] = my_output
             e2 = symbols[n.args[1]]
@@ -1110,8 +1092,7 @@ def broadcasting_inference_rule(n: Node, symbols, constraints, counter):
             )
             return [c], counter
 
-        else:
-            raise NotImplementedError("Method not yet implemented")
+        raise NotImplementedError("Method not yet implemented")
 
     else:
         # TODO generate add constraints for scalar addition
@@ -1312,11 +1293,10 @@ def add_layer_norm_constraints(input_dim, normalized_dim):
     if len(normalized_dim) > len(input_dim):
         return [F()]
 
-    else:
-        constraints = []
-        for i, n in zip(reversed(input_dim), reversed(normalized_dim)):
-            constraints.append(BinConstraintD(i, n, op_consistency))
-        return constraints
+    constraints = []
+    for i, n in zip(reversed(input_dim), reversed(normalized_dim), strict=False):
+        constraints.append(BinConstraintD(i, n, op_consistency))
+    return constraints
 
 
 def add_linear_constraints(dims1, dims2, in_features, out_features):
@@ -1508,38 +1488,31 @@ class ConstraintGenerator:
             c2 = BinConstraintT(x, MAX_TENSOR_RANK, op_leq)
             return [c1, c2], counter
 
-        elif n.op == "call_function":
+        if n.op == "call_function":
             if n.target in _INFERENCE_RULES:
                 return _INFERENCE_RULES[n.target](
                     n, self.symbol_dict, self.constraints, counter
                 )
-            else:
-                raise RuntimeError(
-                    f"No inference rule registered for target {n.target}!"
-                )
+            raise RuntimeError(f"No inference rule registered for target {n.target}!")
 
-        elif n.op == "call_module":
+        if n.op == "call_module":
             module_instance = self.traced.get_submodule(n.target)
             if type(module_instance) in _INFERENCE_RULES:
                 return _INFERENCE_RULES[type(module_instance)](
                     n, module_instance, self.symbol_dict, self.constraints, counter
                 )
-            else:
-                raise RuntimeError(
-                    f"No inference rule registered for class {type(module_instance)}!"
-                )
+            raise RuntimeError(
+                f"No inference rule registered for class {type(module_instance)}!"
+            )
 
-        elif n.op == "call_method":
+        if n.op == "call_method":
             if n.target in _INFERENCE_RULES:
                 return _INFERENCE_RULES[n.target](
                     n, self.symbol_dict, self.constraints, counter
                 )
-            else:
-                raise RuntimeError(
-                    f"No inference rule registered for target {n.target}!"
-                )
+            raise RuntimeError(f"No inference rule registered for target {n.target}!")
 
-        elif n.op == "get_attr":
+        if n.op == "get_attr":
             t = self.traced_params.get(n.target, None)
 
             if isinstance(t, torch.Tensor):
@@ -1549,14 +1522,11 @@ class ConstraintGenerator:
                     output, counter = gen_tvar(counter)
                     self.symbol_dict[n] = output
                     return [BinConstraintT(output, attr_type, op_eq)], counter
-                else:
-                    # scalar?
-                    return [], counter
-            else:
+                # scalar?
                 return [], counter
-
-        elif n.op == "output":
             return [], counter
 
-        else:
-            raise NotImplementedError(f"Method {n.op} not yet implemented")
+        if n.op == "output":
+            return [], counter
+
+        raise NotImplementedError(f"Method {n.op} not yet implemented")

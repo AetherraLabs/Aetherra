@@ -37,10 +37,10 @@ import torch._C
 import torch.utils._pytree as pytree
 from torch._guards import Source
 from torch.overrides import (
-    _get_overloaded_args,
     BaseTorchFunctionMode,
-    get_default_nowrap_functions,
     TorchFunctionMode,
+    _get_overloaded_args,
+    get_default_nowrap_functions,
 )
 from torch.utils._device import DeviceContext
 
@@ -65,7 +65,6 @@ from .lazy import LazyVariableTracker
 from .lists import TupleVariable
 from .tensor import TensorSubclassVariable, TensorVariable
 from .user_defined import UserDefinedObjectVariable
-
 
 if TYPE_CHECKING:
     from torch._dynamo.codegen import PyCodegen
@@ -335,14 +334,13 @@ class TorchFunctionModeStackVariable(VariableTracker):
         stack = tx.symbolic_torch_function_state.mode_stack
         if stack and cls.is_device_context(stack[0]):
             return
-        else:
-            cls.offset += 1
-            stack.insert(
-                0,
-                TorchFunctionModeVariable(
-                    None, source=TorchFunctionModeStackSource(-cls.offset)
-                ),
-            )
+        cls.offset += 1
+        stack.insert(
+            0,
+            TorchFunctionModeVariable(
+                None, source=TorchFunctionModeStackSource(-cls.offset)
+            ),
+        )
 
     @classmethod
     def clear_default_device(cls, tx: "InstructionTranslator"):
@@ -482,7 +480,7 @@ def _get_subclass_type_var(tx: "InstructionTranslator", var):
     assert isinstance(var, (TensorWithTFOverrideVariable, UserDefinedObjectVariable))
     if isinstance(var, TensorWithTFOverrideVariable):
         return var.class_type_var(tx)
-    elif isinstance(var, UserDefinedObjectVariable):
+    if isinstance(var, UserDefinedObjectVariable):
         source = var.source and TypeSource(var.source)
         return VariableTracker.build(tx, var.python_type(), source)
 
@@ -683,18 +681,18 @@ class TensorWithTFOverrideVariable(TensorVariable):
                     install_guard(attr_source.make_guard(GuardBuilder.FUNCTION_MATCH))
                     return UserMethodVariable(attr, self)
 
-                elif isinstance(attr, property):
+                if isinstance(attr, property):
                     getter_source = AttrSource(attr_source, "fget")
                     getter = attr.fget
                     getter_var = UserMethodVariable(getter, self, source=getter_source)
                     return getter_var.call_function(tx, [], {})
 
-                elif isinstance(attr, classmethod):
+                if isinstance(attr, classmethod):
                     return UserMethodVariable(
                         attr.__func__, self.class_type_var(tx), source=attr_source
                     )
 
-                elif attr_is_overridden:
+                if attr_is_overridden:
                     unimplemented_v2(
                         gb_type="Unsupported tensor subclass overridden attribute access",
                         context=f"{name}",
@@ -759,5 +757,4 @@ class TensorWithTFOverrideVariable(TensorVariable):
                 value = getattr(torch.Tensor, name)
             func_var = VariableTracker.build(tx, value, source)
             return dispatch_torch_function(tx, func_var, tf_args, kwargs)
-        else:
-            return super().call_method(tx, name, args, kwargs)
+        return super().call_method(tx, name, args, kwargs)

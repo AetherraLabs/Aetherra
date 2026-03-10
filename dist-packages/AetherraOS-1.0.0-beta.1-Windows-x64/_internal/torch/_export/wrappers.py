@@ -14,9 +14,9 @@ from torch._higher_order_ops.utils import autograd_not_implemented
 from torch._ops import HigherOrderOperator
 from torch._subclasses.fake_tensor import FakeTensorMode
 from torch.fx.experimental.proxy_tensor import (
-    get_proxy_slot,
     PreDispatchTorchFunctionMode,
     ProxyTorchDispatchMode,
+    get_proxy_slot,
     track_tensor_tree,
 )
 from torch.utils import _pytree as pytree
@@ -195,9 +195,9 @@ def mark_subclass_constructor_exportable_experimental(constructor_subclass):
             for mode in torch_function_mode_stack
             if isinstance(mode, PreDispatchTorchFunctionMode)
         ]
-        assert (
-            len(pre_dispatch_tf_modes) <= 1
-        ), f"Expected only one PreDispatchTorchFunctionMode, found {len(pre_dispatch_tf_modes)}"
+        assert len(pre_dispatch_tf_modes) <= 1, (
+            f"Expected only one PreDispatchTorchFunctionMode, found {len(pre_dispatch_tf_modes)}"
+        )
 
         if len(pre_dispatch_tf_modes) == 0:
             return

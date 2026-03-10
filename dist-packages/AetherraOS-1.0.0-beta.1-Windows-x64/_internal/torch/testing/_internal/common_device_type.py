@@ -9,37 +9,30 @@ import sys
 import threading
 import unittest
 from collections import namedtuple
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from enum import Enum
 from functools import partial, wraps
-from typing import Any, Callable, ClassVar, Optional, TypeVar, Union
+from typing import Any, ClassVar, TypeVar
+
 from typing_extensions import ParamSpec
 
 import torch
 from torch._inductor.utils import GPU_TYPES
 from torch.testing._internal.common_cuda import (
-    _get_torch_cuda_version,
-    _get_torch_rocm_version,
     TEST_CUSPARSE_GENERIC,
     TEST_HIPSPARSE_GENERIC,
+    _get_torch_cuda_version,
+    _get_torch_rocm_version,
 )
 from torch.testing._internal.common_dtype import get_all_dtypes
 from torch.testing._internal.common_utils import (
-    _TestParametrizer,
-    clear_tracked_input,
-    compose_parametrize_fns,
-    dtype_name,
-    get_tracked_input,
     IS_FBCODE,
     IS_MACOS,
-    is_privateuse1_backend_available,
     IS_REMOTE_GPU,
     IS_SANDCASTLE,
     IS_WINDOWS,
     NATIVE_DEVICES,
     PRINT_REPRO_ON_FAILURE,
-    skipCUDANonDefaultStreamIf,
-    skipIfTorchDynamo,
     TEST_HPU,
     TEST_MKL,
     TEST_MPS,
@@ -51,8 +44,15 @@ from torch.testing._internal.common_utils import (
     TEST_WITH_UBSAN,
     TEST_XPU,
     TestCase,
+    _TestParametrizer,
+    clear_tracked_input,
+    compose_parametrize_fns,
+    dtype_name,
+    get_tracked_input,
+    is_privateuse1_backend_available,
+    skipCUDANonDefaultStreamIf,
+    skipIfTorchDynamo,
 )
-
 
 _T = TypeVar("_T")
 _P = ParamSpec("_P")
@@ -287,10 +287,9 @@ def _dtype_test_suffix(dtypes):
         if len(dtypes) == 0:
             return ""
         return "_" + "_".join(dtype_name(d) for d in dtypes)
-    elif dtypes:
+    if dtypes:
         return f"_{dtype_name(dtypes)}"
-    else:
-        return ""
+    return ""
 
 
 def _update_param_kwargs(param_kwargs, name, value):
@@ -441,7 +440,7 @@ class DeviceTypeTestBase(TestCase):
                             "Suppressing fatal exception to trigger unexpected success",
                             file=sys.stderr,
                         )
-                        return
+                        return None
                     # raise the runtime error as is for the test suite to record.
                     raise rte
                 finally:
@@ -721,9 +720,9 @@ def filter_desired_device_types(device_type_test_bases, except_for=None, only_fo
     intersect = set(except_for if except_for else []) & set(
         only_for if only_for else []
     )
-    assert (
-        not intersect
-    ), f"device ({intersect}) appeared in both except_for and only_for"
+    assert not intersect, (
+        f"device ({intersect}) appeared in both except_for and only_for"
+    )
 
     # Replace your privateuse1 backend name with 'privateuse1'
     if is_privateuse1_backend_available():
@@ -1034,8 +1033,8 @@ class ops(_TestParametrizer):
         self,
         op_list,
         *,
-        dtypes: Union[OpDTypes, Sequence[torch.dtype]] = OpDTypes.supported,
-        allowed_dtypes: Optional[Sequence[torch.dtype]] = None,
+        dtypes: OpDTypes | Sequence[torch.dtype] = OpDTypes.supported,
+        allowed_dtypes: Sequence[torch.dtype] | None = None,
         skip_if_dynamo=True,
     ):
         self.op_list = list(op_list)
@@ -1057,7 +1056,7 @@ class ops(_TestParametrizer):
         op = check_exhausted_iterator = object()
         for op in self.op_list:
             # Determine the set of dtypes to use.
-            dtypes: Union[set[torch.dtype], set[None]]
+            dtypes: set[torch.dtype] | set[None]
             if isinstance(self.opinfo_dtypes, Sequence):
                 dtypes = set(self.opinfo_dtypes)
             elif self.opinfo_dtypes == OpDTypes.unsupported_backward:
@@ -1373,7 +1372,7 @@ class expectedFailure:
                 try:
                     fn(slf, *args, **kwargs)
                 except Exception:
-                    return
+                    return None
                 else:
                     slf.fail("expected test to fail, but it passed")
 
@@ -1407,9 +1406,9 @@ class deviceCountAtLeast:
         self.num_required_devices = num_required_devices
 
     def __call__(self, fn):
-        assert not hasattr(
-            fn, "num_required_devices"
-        ), f"deviceCountAtLeast redefinition for {fn.__name__}"
+        assert not hasattr(fn, "num_required_devices"), (
+            f"deviceCountAtLeast redefinition for {fn.__name__}"
+        )
         fn.num_required_devices = self.num_required_devices
 
         @wraps(fn)
@@ -1474,13 +1473,13 @@ def onlyNativeDeviceTypesAnd(devices=None):
 # self.precision *2, max(1, self.precision)).
 class precisionOverride:
     def __init__(self, d):
-        assert isinstance(
-            d, dict
-        ), "precisionOverride not given a dtype : precision dict!"
+        assert isinstance(d, dict), (
+            "precisionOverride not given a dtype : precision dict!"
+        )
         for dtype in d.keys():
-            assert isinstance(
-                dtype, torch.dtype
-            ), f"precisionOverride given unknown dtype {dtype}"
+            assert isinstance(dtype, torch.dtype), (
+                f"precisionOverride given unknown dtype {dtype}"
+            )
 
         self.d = d
 
@@ -1513,12 +1512,12 @@ class toleranceOverride:
     def __init__(self, d):
         assert isinstance(d, dict), "toleranceOverride not given a dtype : tol dict!"
         for dtype, prec in d.items():
-            assert isinstance(
-                dtype, torch.dtype
-            ), f"toleranceOverride given unknown dtype {dtype}"
-            assert isinstance(
-                prec, tol
-            ), "toleranceOverride not given a dtype : tol dict!"
+            assert isinstance(dtype, torch.dtype), (
+                f"toleranceOverride given unknown dtype {dtype}"
+            )
+            assert isinstance(prec, tol), (
+                "toleranceOverride not given a dtype : tol dict!"
+            )
 
         self.d = d
 
@@ -1546,13 +1545,13 @@ class dtypes:
                     "all dtype variants must be. "
                     f"Received non-list non-tuple dtype {str(arg)}"
                 )
-                assert all(
-                    isinstance(dtype, torch.dtype) for dtype in arg
-                ), f"Unknown dtype in {str(arg)}"
+                assert all(isinstance(dtype, torch.dtype) for dtype in arg), (
+                    f"Unknown dtype in {str(arg)}"
+                )
         else:
-            assert all(
-                isinstance(arg, torch.dtype) for arg in args
-            ), f"Unknown dtype in {str(args)}"
+            assert all(isinstance(arg, torch.dtype) for arg in args), (
+                f"Unknown dtype in {str(args)}"
+            )
 
         self.args = args
         self.device_type = device_type
@@ -1765,18 +1764,16 @@ def skipCUDAIfNoCusolver(fn):
 def skipCUDAIfNoMagmaAndNoCusolver(fn):
     if has_cusolver():
         return fn
-    else:
-        # cuSolver is disabled on cuda < 10.1.243, tests depend on MAGMA
-        return skipCUDAIfNoMagma(fn)
+    # cuSolver is disabled on cuda < 10.1.243, tests depend on MAGMA
+    return skipCUDAIfNoMagma(fn)
 
 
 # Skips a test if both cuSOLVER/hipSOLVER and MAGMA are not available
 def skipCUDAIfNoMagmaAndNoLinalgsolver(fn):
     if has_cusolver() or has_hipsolver():
         return fn
-    else:
-        # cuSolver is disabled on cuda < 10.1.243, tests depend on MAGMA
-        return skipCUDAIfNoMagma(fn)
+    # cuSolver is disabled on cuda < 10.1.243, tests depend on MAGMA
+    return skipCUDAIfNoMagma(fn)
 
 
 # Skips a test on CUDA when using ROCm.
@@ -1833,7 +1830,7 @@ def skipCUDAIfNotMiopenSuggestNHWC(fn):
 
 
 # Skips a test for specified CUDA versions, given in the form of a list of [major, minor]s.
-def skipCUDAVersionIn(versions: Optional[list[tuple[int, int]]] = None):
+def skipCUDAVersionIn(versions: list[tuple[int, int]] | None = None):
     def dec_fn(fn):
         @wraps(fn)
         def wrap_fn(self, *args, **kwargs):
@@ -1851,7 +1848,7 @@ def skipCUDAVersionIn(versions: Optional[list[tuple[int, int]]] = None):
 
 
 # Skips a test for CUDA versions less than specified, given in the form of [major, minor].
-def skipCUDAIfVersionLessThan(versions: Optional[tuple[int, int]] = None):
+def skipCUDAIfVersionLessThan(versions: tuple[int, int] | None = None):
     def dec_fn(fn):
         @wraps(fn)
         def wrap_fn(self, *args, **kwargs):

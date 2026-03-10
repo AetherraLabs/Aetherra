@@ -19,7 +19,7 @@ variable tracking system.
 import collections
 import inspect
 import operator
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import torch
 import torch.fx
@@ -29,12 +29,12 @@ from ..bytecode_transformation import create_call_function, create_instruction
 from ..exc import raise_observed_exception, unimplemented_v2
 from ..source import AttrSource
 from ..utils import (
+    Lit,
     cmp_name_to_op_mapping,
     cmp_name_to_op_str_mapping,
     get_fake_value,
     guard_if_dyn,
     iter_contains,
-    Lit,
     namedtuple_fields,
     odict_values,
     set_example_value,
@@ -43,7 +43,6 @@ from .base import ValueMutationNew, VariableTracker
 from .constant import ConstantVariable
 from .functions import UserFunctionVariable, UserMethodVariable
 from .iter import IteratorVariable
-
 
 if TYPE_CHECKING:
     from torch._dynamo.codegen import PyCodegen
@@ -114,14 +113,11 @@ class BaseListVariable(VariableTracker):
                 source=None,
                 mutation_type=ValueMutationNew() if self.mutation_type else None,
             )
-        else:
-            assert isinstance(index, (int, torch.SymInt))
-            try:
-                return self.items[index]
-            except IndexError:
-                raise_observed_exception(
-                    IndexError, tx, args=["list index out of range"]
-                )
+        assert isinstance(index, (int, torch.SymInt))
+        try:
+            return self.items[index]
+        except IndexError:
+            raise_observed_exception(IndexError, tx, args=["list index out of range"])
 
     def unpack_var_sequence(self, tx):
         return list(self.items)
@@ -153,17 +149,17 @@ class BaseListVariable(VariableTracker):
             else:
                 value = args[0]
             return self.getitem_const(tx, value)
-        elif name == "__contains__":
+        if name == "__contains__":
             assert len(args) == 1
             assert not kwargs
             return iter_contains(self.unpack_var_sequence(tx), args[0], tx)
-        elif name == "index":
+        if name == "index":
             return tx.inline_user_function_return(
                 VariableTracker.build(tx, polyfills.index),
                 [self] + list(args),
                 kwargs,
             )
-        elif name in cmp_name_to_op_mapping:
+        if name in cmp_name_to_op_mapping:
             left = self
             right = args[0]
             # TODO this type check logic mirrors the following
@@ -177,16 +173,15 @@ class BaseListVariable(VariableTracker):
                     return variables.BuiltinVariable(operator.is_).call_function(
                         tx, (left, right), {}
                     )
-                elif name == "__ne__":
+                if name == "__ne__":
                     return variables.BuiltinVariable(operator.is_not).call_function(
                         tx, (left, right), {}
                     )
-                else:
-                    op_str = cmp_name_to_op_str_mapping[name]
-                    left_ty = left.python_type_name()
-                    right_ty = right.python_type_name()
-                    msg = f"{op_str} not supported between instances of '{left_ty}' and '{right_ty}'"
-                    raise_observed_exception(TypeError, tx, args=[msg])
+                op_str = cmp_name_to_op_str_mapping[name]
+                left_ty = left.python_type_name()
+                right_ty = right.python_type_name()
+                msg = f"{op_str} not supported between instances of '{left_ty}' and '{right_ty}'"
+                raise_observed_exception(TypeError, tx, args=[msg])
 
             return variables.UserFunctionVariable(polyfills.list_cmp).call_function(
                 tx,
@@ -239,10 +234,9 @@ class RangeVariable(BaseListVariable):
         assert step != 0
         if step > 0 and lo < hi:
             return 1 + (hi - 1 - lo) // step
-        elif step < 0 and lo > hi:
+        if step < 0 and lo > hi:
             return 1 + (lo - 1 - hi) // (0 - step)
-        else:
-            return 0
+        return 0
 
     def _get_slice_indices(self, length, slice):
         step_is_negative = 0
@@ -333,8 +327,7 @@ class RangeVariable(BaseListVariable):
 
         if isinstance(index, slice):
             return self.apply_slice(index)
-        else:
-            return self.apply_index(index)
+        return self.apply_index(index)
 
     def as_proxy(self):
         return self.python_type()(*self._as_proxy())
@@ -383,7 +376,7 @@ class CommonListMethodsVariable(BaseListVariable):
             tx.output.side_effects.mutation(self)
             self.items.append(arg)
             return ConstantVariable.create(None)
-        elif (
+        if (
             name == "extend"
             and self.is_mutable()
             and args
@@ -395,7 +388,7 @@ class CommonListMethodsVariable(BaseListVariable):
                 tx, lambda item: self.call_method(tx, "append", [item], {})
             )
             return ConstantVariable.create(None)
-        elif name == "insert" and self.is_mutable():
+        if name == "insert" and self.is_mutable():
             assert not kwargs
             idx, value = args
             if isinstance(idx, SymNodeVariable):
@@ -405,16 +398,16 @@ class CommonListMethodsVariable(BaseListVariable):
             tx.output.side_effects.mutation(self)
             self.items.insert(const_idx, value)
             return ConstantVariable.create(None)
-        elif name == "pop" and self.is_mutable():
+        if name == "pop" and self.is_mutable():
             assert not kwargs
             tx.output.side_effects.mutation(self)
             return self.items.pop(*[a.as_python_constant() for a in args])
-        elif name == "clear" and self.is_mutable():
+        if name == "clear" and self.is_mutable():
             assert not kwargs and not args
             tx.output.side_effects.mutation(self)
             self.items.clear()
             return ConstantVariable.create(None)
-        elif (
+        if (
             name == "__setitem__"
             and self.is_mutable()
             and args
@@ -428,20 +421,19 @@ class CommonListMethodsVariable(BaseListVariable):
             else:
                 self.items[key.as_python_constant()] = value
             return ConstantVariable.create(None)
-        elif name == "copy":
+        if name == "copy":
             # List copy() doesn't have args and kwargs
             assert not kwargs
             assert not args
             items = list(self.items)
             return self.modified(items, mutation_type=ValueMutationNew())
-        elif name == "reverse" and self.is_mutable():
+        if name == "reverse" and self.is_mutable():
             assert not kwargs
             assert not args
             self.items.reverse()
             tx.output.side_effects.mutation(self)
             return ConstantVariable.create(None)
-        else:
-            return super().call_method(tx, name, args, kwargs)
+        return super().call_method(tx, name, args, kwargs)
 
 
 class ListVariable(CommonListMethodsVariable):
@@ -537,7 +529,7 @@ class ListVariable(CommonListMethodsVariable):
                         k.as_python_constant(),
                         -i if reverse else i,  # extra key to ensure stable sort
                     )
-                    for i, (k, x) in enumerate(zip(keys, self.items))
+                    for i, (k, x) in enumerate(zip(keys, self.items, strict=False))
                 ),
                 key=operator.itemgetter(1, 2),
                 reverse=reverse,
@@ -549,7 +541,7 @@ class ListVariable(CommonListMethodsVariable):
             assert not kwargs
             if len(args) == 0:
                 return ConstantVariable.create(None)
-            elif len(args) == 1 and args[0].has_force_unpack_var_sequence(tx):
+            if len(args) == 1 and args[0].has_force_unpack_var_sequence(tx):
                 (arg,) = args
                 tx.output.side_effects.mutation(self)
                 self.items[:] = arg.force_unpack_var_sequence(tx)
@@ -563,8 +555,7 @@ class ListVariable(CommonListMethodsVariable):
             class_type = self.python_type()
             if class_type is list:
                 return variables.BuiltinVariable(class_type, source=source)
-            else:
-                return variables.UserDefinedClassVariable(class_type, source=source)
+            return variables.UserDefinedClassVariable(class_type, source=source)
         return super().var_getattr(tx, name)
 
     def call_obj_hasattr(
@@ -724,8 +715,7 @@ class TupleVariable(BaseListVariable):
             class_type = self.python_type()
             if class_type is tuple:
                 return variables.BuiltinVariable(class_type, source=source)
-            else:
-                return variables.UserDefinedClassVariable(class_type, source=source)
+            return variables.UserDefinedClassVariable(class_type, source=source)
         return super().var_getattr(tx, name)
 
     def call_obj_hasattr(
@@ -747,7 +737,7 @@ class SizeVariable(TupleVariable):
     def __init__(
         self,
         items: list[VariableTracker],
-        proxy: Optional[torch.fx.Proxy] = None,
+        proxy: torch.fx.Proxy | None = None,
         **kwargs,
     ) -> None:
         self.proxy = proxy
@@ -856,7 +846,7 @@ class SizeVariable(TupleVariable):
             assert not kwargs and len(args) == 1
             out = self.get_item_dyn(tx, args[0])
             return out
-        elif name == "numel":
+        if name == "numel":
             assert not args and not kwargs
             return self.numel(tx)
 
@@ -872,9 +862,8 @@ class SizeVariable(TupleVariable):
 
         if isinstance(index, slice):
             return SizeVariable(self.items[index])
-        else:
-            assert isinstance(index, (int, torch.SymInt))
-            return self.items[index]
+        assert isinstance(index, (int, torch.SymInt))
+        return self.items[index]
 
     def call_obj_hasattr(
         self, tx: "InstructionTranslator", name: str
@@ -985,12 +974,11 @@ class NamedTupleVariable(TupleVariable):
                     method.__func__,
                     variables.UserDefinedClassVariable(self.tuple_cls),
                 )
-            elif isinstance(method, staticmethod):
+            if isinstance(method, staticmethod):
                 return UserFunctionVariable(method.__func__)
-            elif inspect.isfunction(method):
+            if inspect.isfunction(method):
                 return UserMethodVariable(method, self)
-            else:
-                return None
+            return None
 
         if name in self.dynamic_attributes:
             return self.dynamic_attributes[name]

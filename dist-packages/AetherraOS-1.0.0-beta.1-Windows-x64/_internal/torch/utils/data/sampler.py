@@ -1,10 +1,9 @@
 # mypy: allow-untyped-defs
 import itertools
 from collections.abc import Iterable, Iterator, Sequence, Sized
-from typing import Generic, Optional, TypeVar, Union
+from typing import Generic, TypeVar
 
 import torch
-
 
 __all__ = [
     "BatchSampler",
@@ -61,7 +60,7 @@ class Sampler(Generic[_T_co]):
               calculation involving the length of a :class:`~torch.utils.data.DataLoader`.
     """
 
-    def __init__(self, data_source: Optional[Sized] = None) -> None:
+    def __init__(self, data_source: Sized | None = None) -> None:
         if data_source is not None:
             import warnings
 
@@ -139,7 +138,7 @@ class RandomSampler(Sampler[int]):
         self,
         data_source: Sized,
         replacement: bool = False,
-        num_samples: Optional[int] = None,
+        num_samples: int | None = None,
         generator=None,
     ) -> None:
         self.data_source = data_source
@@ -300,7 +299,7 @@ class BatchSampler(Sampler[list[int]]):
 
     def __init__(
         self,
-        sampler: Union[Sampler[int], Iterable[int]],
+        sampler: Sampler[int] | Iterable[int],
         batch_size: int,
         drop_last: bool,
     ) -> None:
@@ -329,7 +328,7 @@ class BatchSampler(Sampler[list[int]]):
         if self.drop_last:
             # Create multiple references to the same iterator
             args = [sampler_iter] * self.batch_size
-            for batch_droplast in zip(*args):
+            for batch_droplast in zip(*args, strict=False):
                 yield [*batch_droplast]
         else:
             batch = [*itertools.islice(sampler_iter, self.batch_size)]
@@ -344,5 +343,4 @@ class BatchSampler(Sampler[list[int]]):
         # Somewhat related: see NOTE [ Lack of Default `__len__` in Python Abstract Base Classes ]
         if self.drop_last:
             return len(self.sampler) // self.batch_size  # type: ignore[arg-type]
-        else:
-            return (len(self.sampler) + self.batch_size - 1) // self.batch_size  # type: ignore[arg-type]
+        return (len(self.sampler) + self.batch_size - 1) // self.batch_size  # type: ignore[arg-type]

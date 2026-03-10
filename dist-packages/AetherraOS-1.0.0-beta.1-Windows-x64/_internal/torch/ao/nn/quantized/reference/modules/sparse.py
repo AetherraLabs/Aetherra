@@ -1,12 +1,11 @@
 # mypy: allow-untyped-defs
-from typing import Any, Optional
+from typing import Any
 
 import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
 
 from .utils import ReferenceQuantizedModule
-
 
 __all__ = ["Embedding", "EmbeddingBag"]
 
@@ -23,15 +22,15 @@ class Embedding(nn.Embedding, ReferenceQuantizedModule):
         self,
         num_embeddings: int,
         embedding_dim: int,
-        padding_idx: Optional[int] = None,
-        max_norm: Optional[float] = None,
+        padding_idx: int | None = None,
+        max_norm: float | None = None,
         norm_type: float = 2.0,
         scale_grad_by_freq: bool = False,
         sparse: bool = False,
-        _weight: Optional[Tensor] = None,
+        _weight: Tensor | None = None,
         device=None,
         dtype=None,
-        weight_qparams: Optional[dict[str, Any]] = None,
+        weight_qparams: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(
             num_embeddings,
@@ -91,17 +90,17 @@ class EmbeddingBag(nn.EmbeddingBag, ReferenceQuantizedModule):
         self,
         num_embeddings: int,
         embedding_dim: int,
-        max_norm: Optional[float] = None,
+        max_norm: float | None = None,
         norm_type: float = 2.0,
         scale_grad_by_freq: bool = False,
         mode: str = "mean",
         sparse: bool = False,
-        _weight: Optional[Tensor] = None,
+        _weight: Tensor | None = None,
         include_last_offset: bool = False,
-        padding_idx: Optional[int] = None,
+        padding_idx: int | None = None,
         device=None,
         dtype=None,
-        weight_qparams: Optional[dict[str, Any]] = None,
+        weight_qparams: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(
             num_embeddings,
@@ -125,8 +124,8 @@ class EmbeddingBag(nn.EmbeddingBag, ReferenceQuantizedModule):
     def forward(
         self,
         input: Tensor,
-        offsets: Optional[Tensor] = None,
-        per_sample_weights: Optional[Tensor] = None,
+        offsets: Tensor | None = None,
+        per_sample_weights: Tensor | None = None,
     ) -> Tensor:
         weight_quant_dequant = self.get_weight()
         return F.embedding_bag(

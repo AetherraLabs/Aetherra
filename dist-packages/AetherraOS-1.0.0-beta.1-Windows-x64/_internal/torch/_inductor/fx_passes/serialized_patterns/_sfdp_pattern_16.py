@@ -5,47 +5,45 @@
 # To re-generate, run:
 # cd ~/pytorch && python torchgen/fuse/gen_patterns.py
 
+
 import torch
 import torch._inductor
-import operator
 
 aten = torch.ops.aten
 prims = torch.ops.prims
 
 from torch._inductor.pattern_matcher import (
-   Arg,
-   CallFunction,
-   CallFunctionVarArgs,
-   CallMethod,
-   CallMethodVarArgs,
-   CallModule,
-   CallModuleVarArgs,
-   ExclusiveKeywordArg,
-   Ignored,
-   KeywordArg,
-   ListOf,
-   MultiOutputPattern,
-   PatternExpr,
-   RepeatedExpr,
-   _TargetArgsExpr,
-   _TargetExpr,
-   _TargetExprVarArgs,
+    CallFunction,
+    Ignored,
+    KeywordArg,
+    MultiOutputPattern,
 )
-rand_default = CallFunction(aten.rand.default, Ignored(), dtype=Ignored(), device=Ignored(), pin_memory=False)
-gt_Scalar = CallFunction(aten.gt.Scalar, rand_default, KeywordArg('dropout_p'), _users=2)
-permute_default = CallFunction(aten.permute.default, KeywordArg('query'), Ignored())
+
+rand_default = CallFunction(
+    aten.rand.default, Ignored(), dtype=Ignored(), device=Ignored(), pin_memory=False
+)
+gt_Scalar = CallFunction(
+    aten.gt.Scalar, rand_default, KeywordArg("dropout_p"), _users=2
+)
+permute_default = CallFunction(aten.permute.default, KeywordArg("query"), Ignored())
 expand_default = CallFunction(aten.expand.default, permute_default, Ignored())
-clone_default = CallFunction(aten.clone.default, expand_default, memory_format=torch.contiguous_format)
+clone_default = CallFunction(
+    aten.clone.default, expand_default, memory_format=torch.contiguous_format
+)
 view_default = CallFunction(aten.view.default, clone_default, Ignored(), _users=2)
-permute_default_1 = CallFunction(aten.permute.default, KeywordArg('key'), Ignored())
+permute_default_1 = CallFunction(aten.permute.default, KeywordArg("key"), Ignored())
 permute_default_2 = CallFunction(aten.permute.default, permute_default_1, Ignored())
 expand_default_1 = CallFunction(aten.expand.default, permute_default_2, Ignored())
-clone_default_1 = CallFunction(aten.clone.default, expand_default_1, memory_format=torch.contiguous_format)
+clone_default_1 = CallFunction(
+    aten.clone.default, expand_default_1, memory_format=torch.contiguous_format
+)
 view_default_1 = CallFunction(aten.view.default, clone_default_1, Ignored(), _users=2)
 bmm_default = CallFunction(aten.bmm.default, view_default, view_default_1)
 view_default_2 = CallFunction(aten.view.default, bmm_default, Ignored())
-div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg('inv_scale'))
-add_Tensor = CallFunction(aten.add.Tensor, div_Tensor, KeywordArg('attn_mask'), _users=2)
+div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg("inv_scale"))
+add_Tensor = CallFunction(
+    aten.add.Tensor, div_Tensor, KeywordArg("attn_mask"), _users=2
+)
 amax_default = CallFunction(aten.amax.default, add_Tensor, Ignored(), True)
 sub_Tensor = CallFunction(aten.sub.Tensor, add_Tensor, amax_default)
 exp_default = CallFunction(aten.exp.default, sub_Tensor, _users=2)
@@ -55,24 +53,32 @@ mul_Tensor = CallFunction(aten.mul.Tensor, gt_Scalar, div_Tensor_1)
 mul_Tensor_1 = CallFunction(aten.mul.Tensor, mul_Tensor, Ignored())
 expand_default_2 = CallFunction(aten.expand.default, mul_Tensor_1, Ignored())
 view_default_3 = CallFunction(aten.view.default, expand_default_2, Ignored(), _users=2)
-permute_default_3 = CallFunction(aten.permute.default, KeywordArg('value'), Ignored())
+permute_default_3 = CallFunction(aten.permute.default, KeywordArg("value"), Ignored())
 expand_default_3 = CallFunction(aten.expand.default, permute_default_3, Ignored())
-clone_default_2 = CallFunction(aten.clone.default, expand_default_3, memory_format=torch.contiguous_format)
+clone_default_2 = CallFunction(
+    aten.clone.default, expand_default_3, memory_format=torch.contiguous_format
+)
 view_default_4 = CallFunction(aten.view.default, clone_default_2, Ignored(), _users=2)
 bmm_default_1 = CallFunction(aten.bmm.default, view_default_3, view_default_4)
 view_default_5 = CallFunction(aten.view.default, bmm_default_1, Ignored())
 neg_default = CallFunction(aten.neg.default, div_Tensor_1)
-view_default_6 = CallFunction(aten.view.default, KeywordArg('tangents_1'), Ignored(), _users=2)
+view_default_6 = CallFunction(
+    aten.view.default, KeywordArg("tangents_1"), Ignored(), _users=2
+)
 permute_default_4 = CallFunction(aten.permute.default, view_default_4, Ignored())
 bmm_default_2 = CallFunction(aten.bmm.default, view_default_6, permute_default_4)
 view_default_7 = CallFunction(aten.view.default, bmm_default_2, Ignored())
-convert_element_type_default = CallFunction(prims.convert_element_type.default, gt_Scalar, Ignored())
+convert_element_type_default = CallFunction(
+    prims.convert_element_type.default, gt_Scalar, Ignored()
+)
 mul_Tensor_2 = CallFunction(aten.mul.Tensor, convert_element_type_default, Ignored())
 mul_Tensor_3 = CallFunction(aten.mul.Tensor, view_default_7, mul_Tensor_2)
 mul_Tensor_4 = CallFunction(aten.mul.Tensor, mul_Tensor_3, div_Tensor_1, _users=2)
 sum_dim_IntList_1 = CallFunction(aten.sum.dim_IntList, mul_Tensor_4, Ignored(), True)
-fma_default = CallFunction(prims.fma.default, neg_default, sum_dim_IntList_1, mul_Tensor_4)
-div_Tensor_2 = CallFunction(aten.div.Tensor, fma_default, KeywordArg('inv_scale'))
+fma_default = CallFunction(
+    prims.fma.default, neg_default, sum_dim_IntList_1, mul_Tensor_4
+)
+div_Tensor_2 = CallFunction(aten.div.Tensor, fma_default, KeywordArg("inv_scale"))
 view_default_8 = CallFunction(aten.view.default, div_Tensor_2, Ignored(), _users=2)
 permute_default_5 = CallFunction(aten.permute.default, view_default_1, Ignored())
 bmm_default_3 = CallFunction(aten.bmm.default, view_default_8, permute_default_5)
@@ -87,29 +93,38 @@ permute_default_10 = CallFunction(aten.permute.default, view_default_3, Ignored(
 bmm_default_5 = CallFunction(aten.bmm.default, permute_default_10, view_default_6)
 view_default_11 = CallFunction(aten.view.default, bmm_default_5, Ignored())
 permute_default_11 = CallFunction(aten.permute.default, view_default_11, Ignored())
-_sfdp_pattern_16_training = MultiOutputPattern([view_default_5,
-  permute_default_6,
-  permute_default_9,
-  permute_default_11,
-  None,
-  None,
-  None
-])
+_sfdp_pattern_16_training = MultiOutputPattern(
+    [
+        view_default_5,
+        permute_default_6,
+        permute_default_9,
+        permute_default_11,
+        None,
+        None,
+        None,
+    ]
+)
 
 
-permute_default = CallFunction(aten.permute.default, KeywordArg('query'), Ignored())
+permute_default = CallFunction(aten.permute.default, KeywordArg("query"), Ignored())
 expand_default = CallFunction(aten.expand.default, permute_default, Ignored())
-clone_default = CallFunction(aten.clone.default, expand_default, memory_format=torch.contiguous_format)
+clone_default = CallFunction(
+    aten.clone.default, expand_default, memory_format=torch.contiguous_format
+)
 view_default = CallFunction(aten.view.default, clone_default, Ignored())
-permute_default_1 = CallFunction(aten.permute.default, KeywordArg('key'), Ignored())
+permute_default_1 = CallFunction(aten.permute.default, KeywordArg("key"), Ignored())
 permute_default_2 = CallFunction(aten.permute.default, permute_default_1, Ignored())
 expand_default_1 = CallFunction(aten.expand.default, permute_default_2, Ignored())
-clone_default_1 = CallFunction(aten.clone.default, expand_default_1, memory_format=torch.contiguous_format)
+clone_default_1 = CallFunction(
+    aten.clone.default, expand_default_1, memory_format=torch.contiguous_format
+)
 view_default_1 = CallFunction(aten.view.default, clone_default_1, Ignored())
 bmm_default = CallFunction(aten.bmm.default, view_default, view_default_1)
 view_default_2 = CallFunction(aten.view.default, bmm_default, Ignored())
-div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg('inv_scale'))
-add_Tensor = CallFunction(aten.add.Tensor, div_Tensor, KeywordArg('attn_mask'), _users=2)
+div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg("inv_scale"))
+add_Tensor = CallFunction(
+    aten.add.Tensor, div_Tensor, KeywordArg("attn_mask"), _users=2
+)
 amax_default = CallFunction(aten.amax.default, add_Tensor, Ignored(), True)
 sub_Tensor = CallFunction(aten.sub.Tensor, add_Tensor, amax_default)
 exp_default = CallFunction(aten.exp.default, sub_Tensor, _users=2)
@@ -117,27 +132,37 @@ sum_dim_IntList = CallFunction(aten.sum.dim_IntList, exp_default, Ignored(), Tru
 div_Tensor_1 = CallFunction(aten.div.Tensor, exp_default, sum_dim_IntList)
 expand_default_2 = CallFunction(aten.expand.default, div_Tensor_1, Ignored())
 view_default_3 = CallFunction(aten.view.default, expand_default_2, Ignored())
-permute_default_3 = CallFunction(aten.permute.default, KeywordArg('value'), Ignored())
+permute_default_3 = CallFunction(aten.permute.default, KeywordArg("value"), Ignored())
 expand_default_3 = CallFunction(aten.expand.default, permute_default_3, Ignored())
-clone_default_2 = CallFunction(aten.clone.default, expand_default_3, memory_format=torch.contiguous_format)
+clone_default_2 = CallFunction(
+    aten.clone.default, expand_default_3, memory_format=torch.contiguous_format
+)
 view_default_4 = CallFunction(aten.view.default, clone_default_2, Ignored())
 bmm_default_1 = CallFunction(aten.bmm.default, view_default_3, view_default_4)
-_sfdp_pattern_16_inference = CallFunction(aten.view.default, bmm_default_1, Ignored(), _users=0)
+_sfdp_pattern_16_inference = CallFunction(
+    aten.view.default, bmm_default_1, Ignored(), _users=0
+)
 
 
-rand_default = CallFunction(aten.rand.default, Ignored(), dtype=Ignored(), device=Ignored(), pin_memory=False)
-gt_Scalar = CallFunction(aten.gt.Scalar, rand_default, KeywordArg('dropout_p'), _users=2)
-permute_default = CallFunction(aten.permute.default, KeywordArg('query'), Ignored())
+rand_default = CallFunction(
+    aten.rand.default, Ignored(), dtype=Ignored(), device=Ignored(), pin_memory=False
+)
+gt_Scalar = CallFunction(
+    aten.gt.Scalar, rand_default, KeywordArg("dropout_p"), _users=2
+)
+permute_default = CallFunction(aten.permute.default, KeywordArg("query"), Ignored())
 expand_default = CallFunction(aten.expand.default, permute_default, Ignored())
 view_default = CallFunction(aten.view.default, expand_default, Ignored(), _users=2)
-permute_default_1 = CallFunction(aten.permute.default, KeywordArg('key'), Ignored())
+permute_default_1 = CallFunction(aten.permute.default, KeywordArg("key"), Ignored())
 permute_default_2 = CallFunction(aten.permute.default, permute_default_1, Ignored())
 expand_default_1 = CallFunction(aten.expand.default, permute_default_2, Ignored())
 view_default_1 = CallFunction(aten.view.default, expand_default_1, Ignored(), _users=2)
 bmm_default = CallFunction(aten.bmm.default, view_default, view_default_1)
 view_default_2 = CallFunction(aten.view.default, bmm_default, Ignored())
-div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg('inv_scale'))
-add_Tensor = CallFunction(aten.add.Tensor, div_Tensor, KeywordArg('attn_mask'), _users=2)
+div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg("inv_scale"))
+add_Tensor = CallFunction(
+    aten.add.Tensor, div_Tensor, KeywordArg("attn_mask"), _users=2
+)
 amax_default = CallFunction(aten.amax.default, add_Tensor, Ignored(), True)
 sub_Tensor = CallFunction(aten.sub.Tensor, add_Tensor, amax_default)
 exp_default = CallFunction(aten.exp.default, sub_Tensor, _users=2)
@@ -147,23 +172,29 @@ mul_Tensor = CallFunction(aten.mul.Tensor, gt_Scalar, div_Tensor_1)
 mul_Tensor_1 = CallFunction(aten.mul.Tensor, mul_Tensor, Ignored())
 expand_default_2 = CallFunction(aten.expand.default, mul_Tensor_1, Ignored())
 view_default_3 = CallFunction(aten.view.default, expand_default_2, Ignored(), _users=2)
-permute_default_3 = CallFunction(aten.permute.default, KeywordArg('value'), Ignored())
+permute_default_3 = CallFunction(aten.permute.default, KeywordArg("value"), Ignored())
 expand_default_3 = CallFunction(aten.expand.default, permute_default_3, Ignored())
 view_default_4 = CallFunction(aten.view.default, expand_default_3, Ignored(), _users=2)
 bmm_default_1 = CallFunction(aten.bmm.default, view_default_3, view_default_4)
 view_default_5 = CallFunction(aten.view.default, bmm_default_1, Ignored())
 neg_default = CallFunction(aten.neg.default, div_Tensor_1)
-view_default_6 = CallFunction(aten.view.default, KeywordArg('tangents_1'), Ignored(), _users=2)
+view_default_6 = CallFunction(
+    aten.view.default, KeywordArg("tangents_1"), Ignored(), _users=2
+)
 permute_default_4 = CallFunction(aten.permute.default, view_default_4, Ignored())
 bmm_default_2 = CallFunction(aten.bmm.default, view_default_6, permute_default_4)
 view_default_7 = CallFunction(aten.view.default, bmm_default_2, Ignored())
-convert_element_type_default = CallFunction(prims.convert_element_type.default, gt_Scalar, Ignored())
+convert_element_type_default = CallFunction(
+    prims.convert_element_type.default, gt_Scalar, Ignored()
+)
 mul_Tensor_2 = CallFunction(aten.mul.Tensor, convert_element_type_default, Ignored())
 mul_Tensor_3 = CallFunction(aten.mul.Tensor, view_default_7, mul_Tensor_2)
 mul_Tensor_4 = CallFunction(aten.mul.Tensor, mul_Tensor_3, div_Tensor_1, _users=2)
 sum_dim_IntList_1 = CallFunction(aten.sum.dim_IntList, mul_Tensor_4, Ignored(), True)
-fma_default = CallFunction(prims.fma.default, neg_default, sum_dim_IntList_1, mul_Tensor_4)
-div_Tensor_2 = CallFunction(aten.div.Tensor, fma_default, KeywordArg('inv_scale'))
+fma_default = CallFunction(
+    prims.fma.default, neg_default, sum_dim_IntList_1, mul_Tensor_4
+)
+div_Tensor_2 = CallFunction(aten.div.Tensor, fma_default, KeywordArg("inv_scale"))
 view_default_8 = CallFunction(aten.view.default, div_Tensor_2, Ignored(), _users=2)
 permute_default_5 = CallFunction(aten.permute.default, view_default_1, Ignored())
 bmm_default_3 = CallFunction(aten.bmm.default, view_default_8, permute_default_5)
@@ -178,27 +209,32 @@ permute_default_10 = CallFunction(aten.permute.default, view_default_3, Ignored(
 bmm_default_5 = CallFunction(aten.bmm.default, permute_default_10, view_default_6)
 view_default_11 = CallFunction(aten.view.default, bmm_default_5, Ignored())
 permute_default_11 = CallFunction(aten.permute.default, view_default_11, Ignored())
-_sfdp_pattern_16_bs1_training = MultiOutputPattern([view_default_5,
-  permute_default_6,
-  permute_default_9,
-  permute_default_11,
-  None,
-  None,
-  None
-])
+_sfdp_pattern_16_bs1_training = MultiOutputPattern(
+    [
+        view_default_5,
+        permute_default_6,
+        permute_default_9,
+        permute_default_11,
+        None,
+        None,
+        None,
+    ]
+)
 
 
-permute_default = CallFunction(aten.permute.default, KeywordArg('query'), Ignored())
+permute_default = CallFunction(aten.permute.default, KeywordArg("query"), Ignored())
 expand_default = CallFunction(aten.expand.default, permute_default, Ignored())
 view_default = CallFunction(aten.view.default, expand_default, Ignored())
-permute_default_1 = CallFunction(aten.permute.default, KeywordArg('key'), Ignored())
+permute_default_1 = CallFunction(aten.permute.default, KeywordArg("key"), Ignored())
 permute_default_2 = CallFunction(aten.permute.default, permute_default_1, Ignored())
 expand_default_1 = CallFunction(aten.expand.default, permute_default_2, Ignored())
 view_default_1 = CallFunction(aten.view.default, expand_default_1, Ignored())
 bmm_default = CallFunction(aten.bmm.default, view_default, view_default_1)
 view_default_2 = CallFunction(aten.view.default, bmm_default, Ignored())
-div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg('inv_scale'))
-add_Tensor = CallFunction(aten.add.Tensor, div_Tensor, KeywordArg('attn_mask'), _users=2)
+div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg("inv_scale"))
+add_Tensor = CallFunction(
+    aten.add.Tensor, div_Tensor, KeywordArg("attn_mask"), _users=2
+)
 amax_default = CallFunction(aten.amax.default, add_Tensor, Ignored(), True)
 sub_Tensor = CallFunction(aten.sub.Tensor, add_Tensor, amax_default)
 exp_default = CallFunction(aten.exp.default, sub_Tensor, _users=2)
@@ -206,60 +242,100 @@ sum_dim_IntList = CallFunction(aten.sum.dim_IntList, exp_default, Ignored(), Tru
 div_Tensor_1 = CallFunction(aten.div.Tensor, exp_default, sum_dim_IntList)
 expand_default_2 = CallFunction(aten.expand.default, div_Tensor_1, Ignored())
 view_default_3 = CallFunction(aten.view.default, expand_default_2, Ignored())
-permute_default_3 = CallFunction(aten.permute.default, KeywordArg('value'), Ignored())
+permute_default_3 = CallFunction(aten.permute.default, KeywordArg("value"), Ignored())
 expand_default_3 = CallFunction(aten.expand.default, permute_default_3, Ignored())
 view_default_4 = CallFunction(aten.view.default, expand_default_3, Ignored())
 bmm_default_1 = CallFunction(aten.bmm.default, view_default_3, view_default_4)
-_sfdp_pattern_16_bs1_inference = CallFunction(aten.view.default, bmm_default_1, Ignored(), _users=0)
+_sfdp_pattern_16_bs1_inference = CallFunction(
+    aten.view.default, bmm_default_1, Ignored(), _users=0
+)
 
 
-rand_default = CallFunction(aten.rand.default, Ignored(), dtype=Ignored(), device=Ignored(), pin_memory=False)
-gt_Scalar = CallFunction(aten.gt.Scalar, rand_default, KeywordArg('dropout_p'), _users=2)
-permute_default = CallFunction(aten.permute.default, KeywordArg('query'), Ignored())
+rand_default = CallFunction(
+    aten.rand.default, Ignored(), dtype=Ignored(), device=Ignored(), pin_memory=False
+)
+gt_Scalar = CallFunction(
+    aten.gt.Scalar, rand_default, KeywordArg("dropout_p"), _users=2
+)
+permute_default = CallFunction(aten.permute.default, KeywordArg("query"), Ignored())
 expand_default = CallFunction(aten.expand.default, permute_default, Ignored())
-clone_default = CallFunction(aten.clone.default, expand_default, memory_format=torch.contiguous_format)
+clone_default = CallFunction(
+    aten.clone.default, expand_default, memory_format=torch.contiguous_format
+)
 view_default = CallFunction(aten.view.default, clone_default, Ignored(), _users=2)
-permute_default_1 = CallFunction(aten.permute.default, KeywordArg('key'), Ignored())
+permute_default_1 = CallFunction(aten.permute.default, KeywordArg("key"), Ignored())
 permute_default_2 = CallFunction(aten.permute.default, permute_default_1, Ignored())
 expand_default_1 = CallFunction(aten.expand.default, permute_default_2, Ignored())
-clone_default_1 = CallFunction(aten.clone.default, expand_default_1, memory_format=torch.contiguous_format)
+clone_default_1 = CallFunction(
+    aten.clone.default, expand_default_1, memory_format=torch.contiguous_format
+)
 view_default_1 = CallFunction(aten.view.default, clone_default_1, Ignored(), _users=2)
 bmm_default = CallFunction(aten.bmm.default, view_default, view_default_1)
 view_default_2 = CallFunction(aten.view.default, bmm_default, Ignored())
-div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg('inv_scale'))
-add_Tensor = CallFunction(aten.add.Tensor, div_Tensor, KeywordArg('attn_mask'))
-convert_element_type_default = CallFunction(prims.convert_element_type.default, add_Tensor, Ignored(), _users=2)
-amax_default = CallFunction(aten.amax.default, convert_element_type_default, Ignored(), True)
+div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg("inv_scale"))
+add_Tensor = CallFunction(aten.add.Tensor, div_Tensor, KeywordArg("attn_mask"))
+convert_element_type_default = CallFunction(
+    prims.convert_element_type.default, add_Tensor, Ignored(), _users=2
+)
+amax_default = CallFunction(
+    aten.amax.default, convert_element_type_default, Ignored(), True
+)
 sub_Tensor = CallFunction(aten.sub.Tensor, convert_element_type_default, amax_default)
 exp_default = CallFunction(aten.exp.default, sub_Tensor, _users=2)
 sum_dim_IntList = CallFunction(aten.sum.dim_IntList, exp_default, Ignored(), True)
 div_Tensor_1 = CallFunction(aten.div.Tensor, exp_default, sum_dim_IntList)
-convert_element_type_default_1 = CallFunction(prims.convert_element_type.default, div_Tensor_1, Ignored(), _users=2)
+convert_element_type_default_1 = CallFunction(
+    prims.convert_element_type.default, div_Tensor_1, Ignored(), _users=2
+)
 mul_Tensor = CallFunction(aten.mul.Tensor, gt_Scalar, convert_element_type_default_1)
 mul_Tensor_1 = CallFunction(aten.mul.Tensor, mul_Tensor, Ignored())
 expand_default_2 = CallFunction(aten.expand.default, mul_Tensor_1, Ignored())
 view_default_3 = CallFunction(aten.view.default, expand_default_2, Ignored(), _users=2)
-permute_default_3 = CallFunction(aten.permute.default, KeywordArg('value'), Ignored())
+permute_default_3 = CallFunction(aten.permute.default, KeywordArg("value"), Ignored())
 expand_default_3 = CallFunction(aten.expand.default, permute_default_3, Ignored())
-clone_default_2 = CallFunction(aten.clone.default, expand_default_3, memory_format=torch.contiguous_format)
+clone_default_2 = CallFunction(
+    aten.clone.default, expand_default_3, memory_format=torch.contiguous_format
+)
 view_default_4 = CallFunction(aten.view.default, clone_default_2, Ignored(), _users=2)
 bmm_default_1 = CallFunction(aten.bmm.default, view_default_3, view_default_4)
 view_default_5 = CallFunction(aten.view.default, bmm_default_1, Ignored())
-convert_element_type_default_2 = CallFunction(prims.convert_element_type.default, convert_element_type_default_1, Ignored(), _users=2)
+convert_element_type_default_2 = CallFunction(
+    prims.convert_element_type.default,
+    convert_element_type_default_1,
+    Ignored(),
+    _users=2,
+)
 neg_default = CallFunction(aten.neg.default, convert_element_type_default_2)
-view_default_6 = CallFunction(aten.view.default, KeywordArg('tangents_1'), Ignored(), _users=2)
+view_default_6 = CallFunction(
+    aten.view.default, KeywordArg("tangents_1"), Ignored(), _users=2
+)
 permute_default_4 = CallFunction(aten.permute.default, view_default_4, Ignored())
 bmm_default_2 = CallFunction(aten.bmm.default, view_default_6, permute_default_4)
 view_default_7 = CallFunction(aten.view.default, bmm_default_2, Ignored())
-convert_element_type_default_3 = CallFunction(prims.convert_element_type.default, gt_Scalar, Ignored())
+convert_element_type_default_3 = CallFunction(
+    prims.convert_element_type.default, gt_Scalar, Ignored()
+)
 mul_Tensor_2 = CallFunction(aten.mul.Tensor, convert_element_type_default_3, Ignored())
 mul_Tensor_3 = CallFunction(aten.mul.Tensor, view_default_7, mul_Tensor_2)
-convert_element_type_default_4 = CallFunction(prims.convert_element_type.default, mul_Tensor_3, Ignored())
-mul_Tensor_4 = CallFunction(aten.mul.Tensor, convert_element_type_default_4, convert_element_type_default_2, _users=2)
+convert_element_type_default_4 = CallFunction(
+    prims.convert_element_type.default, mul_Tensor_3, Ignored()
+)
+mul_Tensor_4 = CallFunction(
+    aten.mul.Tensor,
+    convert_element_type_default_4,
+    convert_element_type_default_2,
+    _users=2,
+)
 sum_dim_IntList_1 = CallFunction(aten.sum.dim_IntList, mul_Tensor_4, Ignored(), True)
-fma_default = CallFunction(prims.fma.default, neg_default, sum_dim_IntList_1, mul_Tensor_4)
-convert_element_type_default_5 = CallFunction(prims.convert_element_type.default, fma_default, Ignored())
-div_Tensor_2 = CallFunction(aten.div.Tensor, convert_element_type_default_5, KeywordArg('inv_scale'))
+fma_default = CallFunction(
+    prims.fma.default, neg_default, sum_dim_IntList_1, mul_Tensor_4
+)
+convert_element_type_default_5 = CallFunction(
+    prims.convert_element_type.default, fma_default, Ignored()
+)
+div_Tensor_2 = CallFunction(
+    aten.div.Tensor, convert_element_type_default_5, KeywordArg("inv_scale")
+)
 view_default_8 = CallFunction(aten.view.default, div_Tensor_2, Ignored(), _users=2)
 permute_default_5 = CallFunction(aten.permute.default, view_default_1, Ignored())
 bmm_default_3 = CallFunction(aten.bmm.default, view_default_8, permute_default_5)
@@ -274,90 +350,141 @@ permute_default_10 = CallFunction(aten.permute.default, view_default_3, Ignored(
 bmm_default_5 = CallFunction(aten.bmm.default, permute_default_10, view_default_6)
 view_default_11 = CallFunction(aten.view.default, bmm_default_5, Ignored())
 permute_default_11 = CallFunction(aten.permute.default, view_default_11, Ignored())
-_sfdp_pattern_16_half_training = MultiOutputPattern([view_default_5,
-  permute_default_6,
-  permute_default_9,
-  permute_default_11,
-  None,
-  None,
-  None
-])
+_sfdp_pattern_16_half_training = MultiOutputPattern(
+    [
+        view_default_5,
+        permute_default_6,
+        permute_default_9,
+        permute_default_11,
+        None,
+        None,
+        None,
+    ]
+)
 
 
-permute_default = CallFunction(aten.permute.default, KeywordArg('query'), Ignored())
+permute_default = CallFunction(aten.permute.default, KeywordArg("query"), Ignored())
 expand_default = CallFunction(aten.expand.default, permute_default, Ignored())
-clone_default = CallFunction(aten.clone.default, expand_default, memory_format=torch.contiguous_format)
+clone_default = CallFunction(
+    aten.clone.default, expand_default, memory_format=torch.contiguous_format
+)
 view_default = CallFunction(aten.view.default, clone_default, Ignored())
-permute_default_1 = CallFunction(aten.permute.default, KeywordArg('key'), Ignored())
+permute_default_1 = CallFunction(aten.permute.default, KeywordArg("key"), Ignored())
 permute_default_2 = CallFunction(aten.permute.default, permute_default_1, Ignored())
 expand_default_1 = CallFunction(aten.expand.default, permute_default_2, Ignored())
-clone_default_1 = CallFunction(aten.clone.default, expand_default_1, memory_format=torch.contiguous_format)
+clone_default_1 = CallFunction(
+    aten.clone.default, expand_default_1, memory_format=torch.contiguous_format
+)
 view_default_1 = CallFunction(aten.view.default, clone_default_1, Ignored())
 bmm_default = CallFunction(aten.bmm.default, view_default, view_default_1)
 view_default_2 = CallFunction(aten.view.default, bmm_default, Ignored())
-div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg('inv_scale'))
-add_Tensor = CallFunction(aten.add.Tensor, div_Tensor, KeywordArg('attn_mask'))
-convert_element_type_default = CallFunction(prims.convert_element_type.default, add_Tensor, Ignored(), _users=2)
-amax_default = CallFunction(aten.amax.default, convert_element_type_default, Ignored(), True)
+div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg("inv_scale"))
+add_Tensor = CallFunction(aten.add.Tensor, div_Tensor, KeywordArg("attn_mask"))
+convert_element_type_default = CallFunction(
+    prims.convert_element_type.default, add_Tensor, Ignored(), _users=2
+)
+amax_default = CallFunction(
+    aten.amax.default, convert_element_type_default, Ignored(), True
+)
 sub_Tensor = CallFunction(aten.sub.Tensor, convert_element_type_default, amax_default)
 exp_default = CallFunction(aten.exp.default, sub_Tensor, _users=2)
 sum_dim_IntList = CallFunction(aten.sum.dim_IntList, exp_default, Ignored(), True)
 div_Tensor_1 = CallFunction(aten.div.Tensor, exp_default, sum_dim_IntList)
-convert_element_type_default_1 = CallFunction(prims.convert_element_type.default, div_Tensor_1, Ignored())
-expand_default_2 = CallFunction(aten.expand.default, convert_element_type_default_1, Ignored())
+convert_element_type_default_1 = CallFunction(
+    prims.convert_element_type.default, div_Tensor_1, Ignored()
+)
+expand_default_2 = CallFunction(
+    aten.expand.default, convert_element_type_default_1, Ignored()
+)
 view_default_3 = CallFunction(aten.view.default, expand_default_2, Ignored())
-permute_default_3 = CallFunction(aten.permute.default, KeywordArg('value'), Ignored())
+permute_default_3 = CallFunction(aten.permute.default, KeywordArg("value"), Ignored())
 expand_default_3 = CallFunction(aten.expand.default, permute_default_3, Ignored())
-clone_default_2 = CallFunction(aten.clone.default, expand_default_3, memory_format=torch.contiguous_format)
+clone_default_2 = CallFunction(
+    aten.clone.default, expand_default_3, memory_format=torch.contiguous_format
+)
 view_default_4 = CallFunction(aten.view.default, clone_default_2, Ignored())
 bmm_default_1 = CallFunction(aten.bmm.default, view_default_3, view_default_4)
-_sfdp_pattern_16_half_inference = CallFunction(aten.view.default, bmm_default_1, Ignored(), _users=0)
+_sfdp_pattern_16_half_inference = CallFunction(
+    aten.view.default, bmm_default_1, Ignored(), _users=0
+)
 
 
-rand_default = CallFunction(aten.rand.default, Ignored(), dtype=Ignored(), device=Ignored(), pin_memory=False)
-gt_Scalar = CallFunction(aten.gt.Scalar, rand_default, KeywordArg('dropout_p'), _users=2)
-permute_default = CallFunction(aten.permute.default, KeywordArg('query'), Ignored())
+rand_default = CallFunction(
+    aten.rand.default, Ignored(), dtype=Ignored(), device=Ignored(), pin_memory=False
+)
+gt_Scalar = CallFunction(
+    aten.gt.Scalar, rand_default, KeywordArg("dropout_p"), _users=2
+)
+permute_default = CallFunction(aten.permute.default, KeywordArg("query"), Ignored())
 expand_default = CallFunction(aten.expand.default, permute_default, Ignored())
 view_default = CallFunction(aten.view.default, expand_default, Ignored(), _users=2)
-permute_default_1 = CallFunction(aten.permute.default, KeywordArg('key'), Ignored())
+permute_default_1 = CallFunction(aten.permute.default, KeywordArg("key"), Ignored())
 permute_default_2 = CallFunction(aten.permute.default, permute_default_1, Ignored())
 expand_default_1 = CallFunction(aten.expand.default, permute_default_2, Ignored())
 view_default_1 = CallFunction(aten.view.default, expand_default_1, Ignored(), _users=2)
 bmm_default = CallFunction(aten.bmm.default, view_default, view_default_1)
 view_default_2 = CallFunction(aten.view.default, bmm_default, Ignored())
-div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg('inv_scale'))
-add_Tensor = CallFunction(aten.add.Tensor, div_Tensor, KeywordArg('attn_mask'))
-convert_element_type_default = CallFunction(prims.convert_element_type.default, add_Tensor, Ignored(), _users=2)
-amax_default = CallFunction(aten.amax.default, convert_element_type_default, Ignored(), True)
+div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg("inv_scale"))
+add_Tensor = CallFunction(aten.add.Tensor, div_Tensor, KeywordArg("attn_mask"))
+convert_element_type_default = CallFunction(
+    prims.convert_element_type.default, add_Tensor, Ignored(), _users=2
+)
+amax_default = CallFunction(
+    aten.amax.default, convert_element_type_default, Ignored(), True
+)
 sub_Tensor = CallFunction(aten.sub.Tensor, convert_element_type_default, amax_default)
 exp_default = CallFunction(aten.exp.default, sub_Tensor, _users=2)
 sum_dim_IntList = CallFunction(aten.sum.dim_IntList, exp_default, Ignored(), True)
 div_Tensor_1 = CallFunction(aten.div.Tensor, exp_default, sum_dim_IntList)
-convert_element_type_default_1 = CallFunction(prims.convert_element_type.default, div_Tensor_1, Ignored(), _users=2)
+convert_element_type_default_1 = CallFunction(
+    prims.convert_element_type.default, div_Tensor_1, Ignored(), _users=2
+)
 mul_Tensor = CallFunction(aten.mul.Tensor, gt_Scalar, convert_element_type_default_1)
 mul_Tensor_1 = CallFunction(aten.mul.Tensor, mul_Tensor, Ignored())
 expand_default_2 = CallFunction(aten.expand.default, mul_Tensor_1, Ignored())
 view_default_3 = CallFunction(aten.view.default, expand_default_2, Ignored(), _users=2)
-permute_default_3 = CallFunction(aten.permute.default, KeywordArg('value'), Ignored())
+permute_default_3 = CallFunction(aten.permute.default, KeywordArg("value"), Ignored())
 expand_default_3 = CallFunction(aten.expand.default, permute_default_3, Ignored())
 view_default_4 = CallFunction(aten.view.default, expand_default_3, Ignored(), _users=2)
 bmm_default_1 = CallFunction(aten.bmm.default, view_default_3, view_default_4)
 view_default_5 = CallFunction(aten.view.default, bmm_default_1, Ignored())
-convert_element_type_default_2 = CallFunction(prims.convert_element_type.default, convert_element_type_default_1, Ignored(), _users=2)
+convert_element_type_default_2 = CallFunction(
+    prims.convert_element_type.default,
+    convert_element_type_default_1,
+    Ignored(),
+    _users=2,
+)
 neg_default = CallFunction(aten.neg.default, convert_element_type_default_2)
-view_default_6 = CallFunction(aten.view.default, KeywordArg('tangents_1'), Ignored(), _users=2)
+view_default_6 = CallFunction(
+    aten.view.default, KeywordArg("tangents_1"), Ignored(), _users=2
+)
 permute_default_4 = CallFunction(aten.permute.default, view_default_4, Ignored())
 bmm_default_2 = CallFunction(aten.bmm.default, view_default_6, permute_default_4)
 view_default_7 = CallFunction(aten.view.default, bmm_default_2, Ignored())
-convert_element_type_default_3 = CallFunction(prims.convert_element_type.default, gt_Scalar, Ignored())
+convert_element_type_default_3 = CallFunction(
+    prims.convert_element_type.default, gt_Scalar, Ignored()
+)
 mul_Tensor_2 = CallFunction(aten.mul.Tensor, convert_element_type_default_3, Ignored())
 mul_Tensor_3 = CallFunction(aten.mul.Tensor, view_default_7, mul_Tensor_2)
-convert_element_type_default_4 = CallFunction(prims.convert_element_type.default, mul_Tensor_3, Ignored())
-mul_Tensor_4 = CallFunction(aten.mul.Tensor, convert_element_type_default_4, convert_element_type_default_2, _users=2)
+convert_element_type_default_4 = CallFunction(
+    prims.convert_element_type.default, mul_Tensor_3, Ignored()
+)
+mul_Tensor_4 = CallFunction(
+    aten.mul.Tensor,
+    convert_element_type_default_4,
+    convert_element_type_default_2,
+    _users=2,
+)
 sum_dim_IntList_1 = CallFunction(aten.sum.dim_IntList, mul_Tensor_4, Ignored(), True)
-fma_default = CallFunction(prims.fma.default, neg_default, sum_dim_IntList_1, mul_Tensor_4)
-convert_element_type_default_5 = CallFunction(prims.convert_element_type.default, fma_default, Ignored())
-div_Tensor_2 = CallFunction(aten.div.Tensor, convert_element_type_default_5, KeywordArg('inv_scale'))
+fma_default = CallFunction(
+    prims.fma.default, neg_default, sum_dim_IntList_1, mul_Tensor_4
+)
+convert_element_type_default_5 = CallFunction(
+    prims.convert_element_type.default, fma_default, Ignored()
+)
+div_Tensor_2 = CallFunction(
+    aten.div.Tensor, convert_element_type_default_5, KeywordArg("inv_scale")
+)
 view_default_8 = CallFunction(aten.view.default, div_Tensor_2, Ignored(), _users=2)
 permute_default_5 = CallFunction(aten.permute.default, view_default_1, Ignored())
 bmm_default_3 = CallFunction(aten.bmm.default, view_default_8, permute_default_5)
@@ -372,58 +499,81 @@ permute_default_10 = CallFunction(aten.permute.default, view_default_3, Ignored(
 bmm_default_5 = CallFunction(aten.bmm.default, permute_default_10, view_default_6)
 view_default_11 = CallFunction(aten.view.default, bmm_default_5, Ignored())
 permute_default_11 = CallFunction(aten.permute.default, view_default_11, Ignored())
-_sfdp_pattern_16_half_bs1_training = MultiOutputPattern([view_default_5,
-  permute_default_6,
-  permute_default_9,
-  permute_default_11,
-  None,
-  None,
-  None
-])
+_sfdp_pattern_16_half_bs1_training = MultiOutputPattern(
+    [
+        view_default_5,
+        permute_default_6,
+        permute_default_9,
+        permute_default_11,
+        None,
+        None,
+        None,
+    ]
+)
 
 
-permute_default = CallFunction(aten.permute.default, KeywordArg('query'), Ignored())
+permute_default = CallFunction(aten.permute.default, KeywordArg("query"), Ignored())
 expand_default = CallFunction(aten.expand.default, permute_default, Ignored())
 view_default = CallFunction(aten.view.default, expand_default, Ignored())
-permute_default_1 = CallFunction(aten.permute.default, KeywordArg('key'), Ignored())
+permute_default_1 = CallFunction(aten.permute.default, KeywordArg("key"), Ignored())
 permute_default_2 = CallFunction(aten.permute.default, permute_default_1, Ignored())
 expand_default_1 = CallFunction(aten.expand.default, permute_default_2, Ignored())
 view_default_1 = CallFunction(aten.view.default, expand_default_1, Ignored())
 bmm_default = CallFunction(aten.bmm.default, view_default, view_default_1)
 view_default_2 = CallFunction(aten.view.default, bmm_default, Ignored())
-div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg('inv_scale'))
-add_Tensor = CallFunction(aten.add.Tensor, div_Tensor, KeywordArg('attn_mask'))
-convert_element_type_default = CallFunction(prims.convert_element_type.default, add_Tensor, Ignored(), _users=2)
-amax_default = CallFunction(aten.amax.default, convert_element_type_default, Ignored(), True)
+div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg("inv_scale"))
+add_Tensor = CallFunction(aten.add.Tensor, div_Tensor, KeywordArg("attn_mask"))
+convert_element_type_default = CallFunction(
+    prims.convert_element_type.default, add_Tensor, Ignored(), _users=2
+)
+amax_default = CallFunction(
+    aten.amax.default, convert_element_type_default, Ignored(), True
+)
 sub_Tensor = CallFunction(aten.sub.Tensor, convert_element_type_default, amax_default)
 exp_default = CallFunction(aten.exp.default, sub_Tensor, _users=2)
 sum_dim_IntList = CallFunction(aten.sum.dim_IntList, exp_default, Ignored(), True)
 div_Tensor_1 = CallFunction(aten.div.Tensor, exp_default, sum_dim_IntList)
-convert_element_type_default_1 = CallFunction(prims.convert_element_type.default, div_Tensor_1, Ignored())
-expand_default_2 = CallFunction(aten.expand.default, convert_element_type_default_1, Ignored())
+convert_element_type_default_1 = CallFunction(
+    prims.convert_element_type.default, div_Tensor_1, Ignored()
+)
+expand_default_2 = CallFunction(
+    aten.expand.default, convert_element_type_default_1, Ignored()
+)
 view_default_3 = CallFunction(aten.view.default, expand_default_2, Ignored())
-permute_default_3 = CallFunction(aten.permute.default, KeywordArg('value'), Ignored())
+permute_default_3 = CallFunction(aten.permute.default, KeywordArg("value"), Ignored())
 expand_default_3 = CallFunction(aten.expand.default, permute_default_3, Ignored())
 view_default_4 = CallFunction(aten.view.default, expand_default_3, Ignored())
 bmm_default_1 = CallFunction(aten.bmm.default, view_default_3, view_default_4)
-_sfdp_pattern_16_half_bs1_inference = CallFunction(aten.view.default, bmm_default_1, Ignored(), _users=0)
+_sfdp_pattern_16_half_bs1_inference = CallFunction(
+    aten.view.default, bmm_default_1, Ignored(), _users=0
+)
 
 
-rand_default = CallFunction(aten.rand.default, Ignored(), dtype=Ignored(), device=Ignored(), pin_memory=False)
-gt_Scalar = CallFunction(aten.gt.Scalar, rand_default, KeywordArg('dropout_p'), _users=2)
-permute_default = CallFunction(aten.permute.default, KeywordArg('query'), Ignored())
+rand_default = CallFunction(
+    aten.rand.default, Ignored(), dtype=Ignored(), device=Ignored(), pin_memory=False
+)
+gt_Scalar = CallFunction(
+    aten.gt.Scalar, rand_default, KeywordArg("dropout_p"), _users=2
+)
+permute_default = CallFunction(aten.permute.default, KeywordArg("query"), Ignored())
 expand_default = CallFunction(aten.expand.default, permute_default, Ignored())
-clone_default = CallFunction(aten.clone.default, expand_default, memory_format=torch.contiguous_format)
+clone_default = CallFunction(
+    aten.clone.default, expand_default, memory_format=torch.contiguous_format
+)
 view_default = CallFunction(aten.view.default, clone_default, Ignored(), _users=2)
-permute_default_1 = CallFunction(aten.permute.default, KeywordArg('key'), Ignored())
+permute_default_1 = CallFunction(aten.permute.default, KeywordArg("key"), Ignored())
 permute_default_2 = CallFunction(aten.permute.default, permute_default_1, Ignored())
 expand_default_1 = CallFunction(aten.expand.default, permute_default_2, Ignored())
-clone_default_1 = CallFunction(aten.clone.default, expand_default_1, memory_format=torch.contiguous_format)
+clone_default_1 = CallFunction(
+    aten.clone.default, expand_default_1, memory_format=torch.contiguous_format
+)
 view_default_1 = CallFunction(aten.view.default, clone_default_1, Ignored(), _users=2)
 bmm_default = CallFunction(aten.bmm.default, view_default, view_default_1)
 view_default_2 = CallFunction(aten.view.default, bmm_default, Ignored())
-div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg('inv_scale'))
-add_Tensor = CallFunction(aten.add.Tensor, div_Tensor, KeywordArg('attn_mask'), _users=2)
+div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg("inv_scale"))
+add_Tensor = CallFunction(
+    aten.add.Tensor, div_Tensor, KeywordArg("attn_mask"), _users=2
+)
 amax_default = CallFunction(aten.amax.default, add_Tensor, Ignored(), True)
 sub_Tensor = CallFunction(aten.sub.Tensor, add_Tensor, amax_default)
 exp_default = CallFunction(aten.exp.default, sub_Tensor, _users=2)
@@ -431,29 +581,49 @@ sum_dim_IntList = CallFunction(aten.sum.dim_IntList, exp_default, Ignored(), Tru
 div_Tensor_1 = CallFunction(aten.div.Tensor, exp_default, sum_dim_IntList, _users=3)
 mul_Tensor = CallFunction(aten.mul.Tensor, gt_Scalar, div_Tensor_1)
 mul_Tensor_1 = CallFunction(aten.mul.Tensor, mul_Tensor, Ignored())
-convert_element_type_default = CallFunction(prims.convert_element_type.default, mul_Tensor_1, Ignored())
-expand_default_2 = CallFunction(aten.expand.default, convert_element_type_default, Ignored())
+convert_element_type_default = CallFunction(
+    prims.convert_element_type.default, mul_Tensor_1, Ignored()
+)
+expand_default_2 = CallFunction(
+    aten.expand.default, convert_element_type_default, Ignored()
+)
 view_default_3 = CallFunction(aten.view.default, expand_default_2, Ignored(), _users=2)
-permute_default_3 = CallFunction(aten.permute.default, KeywordArg('value'), Ignored())
+permute_default_3 = CallFunction(aten.permute.default, KeywordArg("value"), Ignored())
 expand_default_3 = CallFunction(aten.expand.default, permute_default_3, Ignored())
-clone_default_2 = CallFunction(aten.clone.default, expand_default_3, memory_format=torch.contiguous_format)
+clone_default_2 = CallFunction(
+    aten.clone.default, expand_default_3, memory_format=torch.contiguous_format
+)
 view_default_4 = CallFunction(aten.view.default, clone_default_2, Ignored(), _users=2)
 bmm_default_1 = CallFunction(aten.bmm.default, view_default_3, view_default_4)
 view_default_5 = CallFunction(aten.view.default, bmm_default_1, Ignored())
 neg_default = CallFunction(aten.neg.default, div_Tensor_1)
-view_default_6 = CallFunction(aten.view.default, KeywordArg('tangents_1'), Ignored(), _users=2)
+view_default_6 = CallFunction(
+    aten.view.default, KeywordArg("tangents_1"), Ignored(), _users=2
+)
 permute_default_4 = CallFunction(aten.permute.default, view_default_4, Ignored())
 bmm_default_2 = CallFunction(aten.bmm.default, view_default_6, permute_default_4)
 view_default_7 = CallFunction(aten.view.default, bmm_default_2, Ignored())
-convert_element_type_default_1 = CallFunction(prims.convert_element_type.default, view_default_7, Ignored())
-convert_element_type_default_2 = CallFunction(prims.convert_element_type.default, gt_Scalar, Ignored())
+convert_element_type_default_1 = CallFunction(
+    prims.convert_element_type.default, view_default_7, Ignored()
+)
+convert_element_type_default_2 = CallFunction(
+    prims.convert_element_type.default, gt_Scalar, Ignored()
+)
 mul_Tensor_2 = CallFunction(aten.mul.Tensor, convert_element_type_default_2, Ignored())
-mul_Tensor_3 = CallFunction(aten.mul.Tensor, convert_element_type_default_1, mul_Tensor_2)
+mul_Tensor_3 = CallFunction(
+    aten.mul.Tensor, convert_element_type_default_1, mul_Tensor_2
+)
 mul_Tensor_4 = CallFunction(aten.mul.Tensor, mul_Tensor_3, div_Tensor_1, _users=2)
 sum_dim_IntList_1 = CallFunction(aten.sum.dim_IntList, mul_Tensor_4, Ignored(), True)
-fma_default = CallFunction(prims.fma.default, neg_default, sum_dim_IntList_1, mul_Tensor_4)
-convert_element_type_default_3 = CallFunction(prims.convert_element_type.default, fma_default, Ignored())
-div_Tensor_2 = CallFunction(aten.div.Tensor, convert_element_type_default_3, KeywordArg('inv_scale'))
+fma_default = CallFunction(
+    prims.fma.default, neg_default, sum_dim_IntList_1, mul_Tensor_4
+)
+convert_element_type_default_3 = CallFunction(
+    prims.convert_element_type.default, fma_default, Ignored()
+)
+div_Tensor_2 = CallFunction(
+    aten.div.Tensor, convert_element_type_default_3, KeywordArg("inv_scale")
+)
 view_default_8 = CallFunction(aten.view.default, div_Tensor_2, Ignored(), _users=2)
 permute_default_5 = CallFunction(aten.permute.default, view_default_1, Ignored())
 bmm_default_3 = CallFunction(aten.bmm.default, view_default_8, permute_default_5)
@@ -468,58 +638,81 @@ permute_default_10 = CallFunction(aten.permute.default, view_default_3, Ignored(
 bmm_default_5 = CallFunction(aten.bmm.default, permute_default_10, view_default_6)
 view_default_11 = CallFunction(aten.view.default, bmm_default_5, Ignored())
 permute_default_11 = CallFunction(aten.permute.default, view_default_11, Ignored())
-_sfdp_pattern_16_half_mask_fp32_training = MultiOutputPattern([view_default_5,
-  permute_default_6,
-  permute_default_9,
-  permute_default_11,
-  None,
-  None,
-  None
-])
+_sfdp_pattern_16_half_mask_fp32_training = MultiOutputPattern(
+    [
+        view_default_5,
+        permute_default_6,
+        permute_default_9,
+        permute_default_11,
+        None,
+        None,
+        None,
+    ]
+)
 
 
-permute_default = CallFunction(aten.permute.default, KeywordArg('query'), Ignored())
+permute_default = CallFunction(aten.permute.default, KeywordArg("query"), Ignored())
 expand_default = CallFunction(aten.expand.default, permute_default, Ignored())
-clone_default = CallFunction(aten.clone.default, expand_default, memory_format=torch.contiguous_format)
+clone_default = CallFunction(
+    aten.clone.default, expand_default, memory_format=torch.contiguous_format
+)
 view_default = CallFunction(aten.view.default, clone_default, Ignored())
-permute_default_1 = CallFunction(aten.permute.default, KeywordArg('key'), Ignored())
+permute_default_1 = CallFunction(aten.permute.default, KeywordArg("key"), Ignored())
 permute_default_2 = CallFunction(aten.permute.default, permute_default_1, Ignored())
 expand_default_1 = CallFunction(aten.expand.default, permute_default_2, Ignored())
-clone_default_1 = CallFunction(aten.clone.default, expand_default_1, memory_format=torch.contiguous_format)
+clone_default_1 = CallFunction(
+    aten.clone.default, expand_default_1, memory_format=torch.contiguous_format
+)
 view_default_1 = CallFunction(aten.view.default, clone_default_1, Ignored())
 bmm_default = CallFunction(aten.bmm.default, view_default, view_default_1)
 view_default_2 = CallFunction(aten.view.default, bmm_default, Ignored())
-div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg('inv_scale'))
-add_Tensor = CallFunction(aten.add.Tensor, div_Tensor, KeywordArg('attn_mask'), _users=2)
+div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg("inv_scale"))
+add_Tensor = CallFunction(
+    aten.add.Tensor, div_Tensor, KeywordArg("attn_mask"), _users=2
+)
 amax_default = CallFunction(aten.amax.default, add_Tensor, Ignored(), True)
 sub_Tensor = CallFunction(aten.sub.Tensor, add_Tensor, amax_default)
 exp_default = CallFunction(aten.exp.default, sub_Tensor, _users=2)
 sum_dim_IntList = CallFunction(aten.sum.dim_IntList, exp_default, Ignored(), True)
 div_Tensor_1 = CallFunction(aten.div.Tensor, exp_default, sum_dim_IntList)
-convert_element_type_default = CallFunction(prims.convert_element_type.default, div_Tensor_1, Ignored())
-expand_default_2 = CallFunction(aten.expand.default, convert_element_type_default, Ignored())
+convert_element_type_default = CallFunction(
+    prims.convert_element_type.default, div_Tensor_1, Ignored()
+)
+expand_default_2 = CallFunction(
+    aten.expand.default, convert_element_type_default, Ignored()
+)
 view_default_3 = CallFunction(aten.view.default, expand_default_2, Ignored())
-permute_default_3 = CallFunction(aten.permute.default, KeywordArg('value'), Ignored())
+permute_default_3 = CallFunction(aten.permute.default, KeywordArg("value"), Ignored())
 expand_default_3 = CallFunction(aten.expand.default, permute_default_3, Ignored())
-clone_default_2 = CallFunction(aten.clone.default, expand_default_3, memory_format=torch.contiguous_format)
+clone_default_2 = CallFunction(
+    aten.clone.default, expand_default_3, memory_format=torch.contiguous_format
+)
 view_default_4 = CallFunction(aten.view.default, clone_default_2, Ignored())
 bmm_default_1 = CallFunction(aten.bmm.default, view_default_3, view_default_4)
-_sfdp_pattern_16_half_mask_fp32_inference = CallFunction(aten.view.default, bmm_default_1, Ignored(), _users=0)
+_sfdp_pattern_16_half_mask_fp32_inference = CallFunction(
+    aten.view.default, bmm_default_1, Ignored(), _users=0
+)
 
 
-rand_default = CallFunction(aten.rand.default, Ignored(), dtype=Ignored(), device=Ignored(), pin_memory=False)
-gt_Scalar = CallFunction(aten.gt.Scalar, rand_default, KeywordArg('dropout_p'), _users=2)
-permute_default = CallFunction(aten.permute.default, KeywordArg('query'), Ignored())
+rand_default = CallFunction(
+    aten.rand.default, Ignored(), dtype=Ignored(), device=Ignored(), pin_memory=False
+)
+gt_Scalar = CallFunction(
+    aten.gt.Scalar, rand_default, KeywordArg("dropout_p"), _users=2
+)
+permute_default = CallFunction(aten.permute.default, KeywordArg("query"), Ignored())
 expand_default = CallFunction(aten.expand.default, permute_default, Ignored())
 view_default = CallFunction(aten.view.default, expand_default, Ignored(), _users=2)
-permute_default_1 = CallFunction(aten.permute.default, KeywordArg('key'), Ignored())
+permute_default_1 = CallFunction(aten.permute.default, KeywordArg("key"), Ignored())
 permute_default_2 = CallFunction(aten.permute.default, permute_default_1, Ignored())
 expand_default_1 = CallFunction(aten.expand.default, permute_default_2, Ignored())
 view_default_1 = CallFunction(aten.view.default, expand_default_1, Ignored(), _users=2)
 bmm_default = CallFunction(aten.bmm.default, view_default, view_default_1)
 view_default_2 = CallFunction(aten.view.default, bmm_default, Ignored())
-div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg('inv_scale'))
-add_Tensor = CallFunction(aten.add.Tensor, div_Tensor, KeywordArg('attn_mask'), _users=2)
+div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg("inv_scale"))
+add_Tensor = CallFunction(
+    aten.add.Tensor, div_Tensor, KeywordArg("attn_mask"), _users=2
+)
 amax_default = CallFunction(aten.amax.default, add_Tensor, Ignored(), True)
 sub_Tensor = CallFunction(aten.sub.Tensor, add_Tensor, amax_default)
 exp_default = CallFunction(aten.exp.default, sub_Tensor, _users=2)
@@ -527,28 +720,46 @@ sum_dim_IntList = CallFunction(aten.sum.dim_IntList, exp_default, Ignored(), Tru
 div_Tensor_1 = CallFunction(aten.div.Tensor, exp_default, sum_dim_IntList, _users=3)
 mul_Tensor = CallFunction(aten.mul.Tensor, gt_Scalar, div_Tensor_1)
 mul_Tensor_1 = CallFunction(aten.mul.Tensor, mul_Tensor, Ignored())
-convert_element_type_default = CallFunction(prims.convert_element_type.default, mul_Tensor_1, Ignored())
-expand_default_2 = CallFunction(aten.expand.default, convert_element_type_default, Ignored())
+convert_element_type_default = CallFunction(
+    prims.convert_element_type.default, mul_Tensor_1, Ignored()
+)
+expand_default_2 = CallFunction(
+    aten.expand.default, convert_element_type_default, Ignored()
+)
 view_default_3 = CallFunction(aten.view.default, expand_default_2, Ignored(), _users=2)
-permute_default_3 = CallFunction(aten.permute.default, KeywordArg('value'), Ignored())
+permute_default_3 = CallFunction(aten.permute.default, KeywordArg("value"), Ignored())
 expand_default_3 = CallFunction(aten.expand.default, permute_default_3, Ignored())
 view_default_4 = CallFunction(aten.view.default, expand_default_3, Ignored(), _users=2)
 bmm_default_1 = CallFunction(aten.bmm.default, view_default_3, view_default_4)
 view_default_5 = CallFunction(aten.view.default, bmm_default_1, Ignored())
 neg_default = CallFunction(aten.neg.default, div_Tensor_1)
-view_default_6 = CallFunction(aten.view.default, KeywordArg('tangents_1'), Ignored(), _users=2)
+view_default_6 = CallFunction(
+    aten.view.default, KeywordArg("tangents_1"), Ignored(), _users=2
+)
 permute_default_4 = CallFunction(aten.permute.default, view_default_4, Ignored())
 bmm_default_2 = CallFunction(aten.bmm.default, view_default_6, permute_default_4)
 view_default_7 = CallFunction(aten.view.default, bmm_default_2, Ignored())
-convert_element_type_default_1 = CallFunction(prims.convert_element_type.default, view_default_7, Ignored())
-convert_element_type_default_2 = CallFunction(prims.convert_element_type.default, gt_Scalar, Ignored())
+convert_element_type_default_1 = CallFunction(
+    prims.convert_element_type.default, view_default_7, Ignored()
+)
+convert_element_type_default_2 = CallFunction(
+    prims.convert_element_type.default, gt_Scalar, Ignored()
+)
 mul_Tensor_2 = CallFunction(aten.mul.Tensor, convert_element_type_default_2, Ignored())
-mul_Tensor_3 = CallFunction(aten.mul.Tensor, convert_element_type_default_1, mul_Tensor_2)
+mul_Tensor_3 = CallFunction(
+    aten.mul.Tensor, convert_element_type_default_1, mul_Tensor_2
+)
 mul_Tensor_4 = CallFunction(aten.mul.Tensor, mul_Tensor_3, div_Tensor_1, _users=2)
 sum_dim_IntList_1 = CallFunction(aten.sum.dim_IntList, mul_Tensor_4, Ignored(), True)
-fma_default = CallFunction(prims.fma.default, neg_default, sum_dim_IntList_1, mul_Tensor_4)
-convert_element_type_default_3 = CallFunction(prims.convert_element_type.default, fma_default, Ignored())
-div_Tensor_2 = CallFunction(aten.div.Tensor, convert_element_type_default_3, KeywordArg('inv_scale'))
+fma_default = CallFunction(
+    prims.fma.default, neg_default, sum_dim_IntList_1, mul_Tensor_4
+)
+convert_element_type_default_3 = CallFunction(
+    prims.convert_element_type.default, fma_default, Ignored()
+)
+div_Tensor_2 = CallFunction(
+    aten.div.Tensor, convert_element_type_default_3, KeywordArg("inv_scale")
+)
 view_default_8 = CallFunction(aten.view.default, div_Tensor_2, Ignored(), _users=2)
 permute_default_5 = CallFunction(aten.permute.default, view_default_1, Ignored())
 bmm_default_3 = CallFunction(aten.bmm.default, view_default_8, permute_default_5)
@@ -563,37 +774,48 @@ permute_default_10 = CallFunction(aten.permute.default, view_default_3, Ignored(
 bmm_default_5 = CallFunction(aten.bmm.default, permute_default_10, view_default_6)
 view_default_11 = CallFunction(aten.view.default, bmm_default_5, Ignored())
 permute_default_11 = CallFunction(aten.permute.default, view_default_11, Ignored())
-_sfdp_pattern_16_half_mask_fp32_bs1_training = MultiOutputPattern([view_default_5,
-  permute_default_6,
-  permute_default_9,
-  permute_default_11,
-  None,
-  None,
-  None
-])
+_sfdp_pattern_16_half_mask_fp32_bs1_training = MultiOutputPattern(
+    [
+        view_default_5,
+        permute_default_6,
+        permute_default_9,
+        permute_default_11,
+        None,
+        None,
+        None,
+    ]
+)
 
 
-permute_default = CallFunction(aten.permute.default, KeywordArg('query'), Ignored())
+permute_default = CallFunction(aten.permute.default, KeywordArg("query"), Ignored())
 expand_default = CallFunction(aten.expand.default, permute_default, Ignored())
 view_default = CallFunction(aten.view.default, expand_default, Ignored())
-permute_default_1 = CallFunction(aten.permute.default, KeywordArg('key'), Ignored())
+permute_default_1 = CallFunction(aten.permute.default, KeywordArg("key"), Ignored())
 permute_default_2 = CallFunction(aten.permute.default, permute_default_1, Ignored())
 expand_default_1 = CallFunction(aten.expand.default, permute_default_2, Ignored())
 view_default_1 = CallFunction(aten.view.default, expand_default_1, Ignored())
 bmm_default = CallFunction(aten.bmm.default, view_default, view_default_1)
 view_default_2 = CallFunction(aten.view.default, bmm_default, Ignored())
-div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg('inv_scale'))
-add_Tensor = CallFunction(aten.add.Tensor, div_Tensor, KeywordArg('attn_mask'), _users=2)
+div_Tensor = CallFunction(aten.div.Tensor, view_default_2, KeywordArg("inv_scale"))
+add_Tensor = CallFunction(
+    aten.add.Tensor, div_Tensor, KeywordArg("attn_mask"), _users=2
+)
 amax_default = CallFunction(aten.amax.default, add_Tensor, Ignored(), True)
 sub_Tensor = CallFunction(aten.sub.Tensor, add_Tensor, amax_default)
 exp_default = CallFunction(aten.exp.default, sub_Tensor, _users=2)
 sum_dim_IntList = CallFunction(aten.sum.dim_IntList, exp_default, Ignored(), True)
 div_Tensor_1 = CallFunction(aten.div.Tensor, exp_default, sum_dim_IntList)
-convert_element_type_default = CallFunction(prims.convert_element_type.default, div_Tensor_1, Ignored())
-expand_default_2 = CallFunction(aten.expand.default, convert_element_type_default, Ignored())
+convert_element_type_default = CallFunction(
+    prims.convert_element_type.default, div_Tensor_1, Ignored()
+)
+expand_default_2 = CallFunction(
+    aten.expand.default, convert_element_type_default, Ignored()
+)
 view_default_3 = CallFunction(aten.view.default, expand_default_2, Ignored())
-permute_default_3 = CallFunction(aten.permute.default, KeywordArg('value'), Ignored())
+permute_default_3 = CallFunction(aten.permute.default, KeywordArg("value"), Ignored())
 expand_default_3 = CallFunction(aten.expand.default, permute_default_3, Ignored())
 view_default_4 = CallFunction(aten.view.default, expand_default_3, Ignored())
 bmm_default_1 = CallFunction(aten.bmm.default, view_default_3, view_default_4)
-_sfdp_pattern_16_half_mask_fp32_bs1_inference = CallFunction(aten.view.default, bmm_default_1, Ignored(), _users=0)
+_sfdp_pattern_16_half_mask_fp32_bs1_inference = CallFunction(
+    aten.view.default, bmm_default_1, Ignored(), _users=0
+)

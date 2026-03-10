@@ -57,7 +57,7 @@ def setup_test_environment():
     """Set up test environment for each test"""
     # Ensure we're in test mode
     os.environ["TESTING"] = "true"
-    yield
+    return
     # Cleanup after test if needed
 
 

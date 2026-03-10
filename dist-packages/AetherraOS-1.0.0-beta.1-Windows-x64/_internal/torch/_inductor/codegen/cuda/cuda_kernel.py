@@ -3,8 +3,9 @@ import functools
 import itertools
 import logging
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Literal, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Literal
 
 from sympy import Expr, symbols
 
@@ -12,11 +13,10 @@ import torch._inductor.config as config
 from torch import dtype as torch_dtype
 from torch._inductor.codegen.cpp_wrapper_cpu import CppWrapperCpu
 from torch._inductor.scheduler import BaseSchedulerNode
-from torch._inductor.utils import do_bench_using_profiling, OrderedSet, Placeholder
+from torch._inductor.utils import OrderedSet, Placeholder, do_bench_using_profiling
 from torch.utils._sympy.value_ranges import ValueRanges
 
 from .cutlass_utils import DTYPE_TO_CUTLASS_TYPE
-
 
 if TYPE_CHECKING:
     from .cuda_template import ArgInfo
@@ -41,8 +41,7 @@ from ..common import (
     WorkspaceArg,
     WorkspaceZeroMode,
 )
-from ..cpp_utils import CppPrinter, DTYPE_TO_CPP
-
+from ..cpp_utils import DTYPE_TO_CPP, CppPrinter
 
 if TYPE_CHECKING:
     from torch._inductor.codegen.cuda.cuda_template import CUDATemplate
@@ -81,19 +80,17 @@ class CUDAKernel(Kernel):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.layout_args: dict[str, list[LayoutArg]] = defaultdict(list)
-        self.size_args: list[Union[Expr, int]] = []
+        self.size_args: list[Expr | int] = []
         # Mapping from arg name to IRNode.
         self.named_nodes: dict[str, IRNode] = {}
 
-    def find_symbol(
-        self, node: IRNode, attr: ValidLayoutAttrs, dim: int
-    ) -> Optional[str]:
+    def find_symbol(self, node: IRNode, attr: ValidLayoutAttrs, dim: int) -> str | None:
         arg = self.find_layout_arg(node, attr, dim)
         return arg.symbol if arg else None
 
     def find_layout_arg(
         self, node: IRNode, attr: ValidLayoutAttrs, dim: int
-    ) -> Optional[LayoutArg]:
+    ) -> LayoutArg | None:
         matches = [
             arg
             for arg in itertools.chain.from_iterable(self.layout_args.values())
@@ -150,7 +147,7 @@ class CUDAKernel(Kernel):
             self.add_layout_arg("ldc", Bias, "stride", ldc_dim)
         self.add_layout_arg("ldd", Y, "stride", ldd_dim)
 
-    def get_layout_args(self) -> tuple[Union[Expr, int], ...]:
+    def get_layout_args(self) -> tuple[Expr | int, ...]:
         X = self.named_nodes["X"]
         W = self.named_nodes["W"]
         Y = self.named_nodes["Y"]
@@ -159,7 +156,7 @@ class CUDAKernel(Kernel):
         ndim = _normalize_idx(-1, len(W.get_size()))
         kdim = _normalize_idx(-1, len(X.get_size()))
 
-        def get_ld(node) -> Union[Expr, int]:
+        def get_ld(node) -> Expr | int:
             dim = self.find_ld_idx(node)
             return node.get_stride()[dim]
 
@@ -173,7 +170,7 @@ class CUDAKernel(Kernel):
         LDD = get_ld(Y)
         return (M, N, K, B, LDA, LDB, LDC, LDD)
 
-    def get_dynamic_shape_args(self) -> list[Union[Expr, int]]:
+    def get_dynamic_shape_args(self) -> list[Expr | int]:
         return [*self.get_layout_args(), *self.size_args]
 
     @staticmethod
@@ -247,7 +244,7 @@ class CUDATemplateKernel(CUDAKernel):
         inputs: list[IRNode],
         outputs: list[IRNode],
         names_str: str = "",
-        input_reorder: Optional[list[int]] = None,
+        input_reorder: list[int] | None = None,
     ) -> str:
         """
         Hook called from template code to generate function definition and
@@ -282,7 +279,9 @@ class CUDATemplateKernel(CUDAKernel):
                 self.args.input_buffers[node.get_name()] = name
 
         free_symbols: OrderedSet[Expr] = OrderedSet()
-        for name, node in zip(names[len(inputs) : len(inputs) + len(outputs)], outputs):
+        for name, node in zip(
+            names[len(inputs) : len(inputs) + len(outputs)], outputs, strict=False
+        ):
             if node is not None:
                 self.named_nodes[name] = node
                 self.args.output_buffers[node.get_name()] = name
@@ -398,7 +397,7 @@ class CUDATemplateKernel(CUDAKernel):
         if ws:
             wrapper.generate_workspace_deallocation(ws)
 
-    def dtype(self, node: IRNode) -> Optional[str]:
+    def dtype(self, node: IRNode) -> str | None:
         """
         Generates code which represents dtype of a given node.
         """
@@ -407,7 +406,7 @@ class CUDATemplateKernel(CUDAKernel):
             return "void"
         return DTYPE_TO_CPP.get(node.get_layout().dtype)
 
-    def cutlass_dtype(self, node: IRNode, default_dtype="void") -> Optional[str]:
+    def cutlass_dtype(self, node: IRNode, default_dtype="void") -> str | None:
         # Helper method, called into from CUTLASSGemmTemplate
         if node is None:
             return default_dtype
@@ -450,7 +449,7 @@ class CUDATemplateKernel(CUDAKernel):
         self,
         node: IRNode,
         start_index: int,
-        end_index: Optional[int] = None,
+        end_index: int | None = None,
         default_value: int = 0,
     ) -> str:
         """
@@ -540,12 +539,11 @@ class CUDATemplateKernel(CUDAKernel):
         stride1 = node.get_stride()[-2]
         if stride0 == 1:
             return cexpr(self.rename_indexing(stride1))
-        elif stride1 == 1:
+        if stride1 == 1:
             return cexpr(self.rename_indexing(stride0))
-        else:
-            raise RuntimeError(
-                f"At least 1 stride should be 1. Strides: {node.get_stride()=}"
-            )
+        raise RuntimeError(
+            f"At least 1 stride should be 1. Strides: {node.get_stride()=}"
+        )
 
     def load(self, name: str, index: Expr, mode: Any = None) -> CSEVariable:
         """
@@ -579,15 +577,13 @@ class CUDATemplateCaller(ChoiceCaller):
         input_nodes: list[Buffer],
         layout: Layout,
         make_kernel_render: Callable[
-            [CUDATemplateBuffer, Optional[list[BaseSchedulerNode]]],
+            [CUDATemplateBuffer, list[BaseSchedulerNode] | None],
             tuple[CUDATemplateKernel, functools.partial[str]],
         ],
         bmreq: CUDABenchmarkRequest,
         supports_epilogue_fusion: bool,
         template: "CUDATemplate",  # type: ignore[name-defined]
-        info_kwargs: Optional[
-            dict[str, Union[PrimitiveInfoType, list[PrimitiveInfoType]]]
-        ],  # type: ignore[type-arg]
+        info_kwargs: dict[str, PrimitiveInfoType | list[PrimitiveInfoType]] | None,  # type: ignore[type-arg]
         description: str,
     ) -> None:
         super().__init__(name, input_nodes, layout, description)
@@ -638,7 +634,7 @@ class CUDATemplateCaller(ChoiceCaller):
             ]
         )
 
-    def info_dict(self) -> dict[str, Union[PrimitiveInfoType, list[PrimitiveInfoType]]]:
+    def info_dict(self) -> dict[str, PrimitiveInfoType | list[PrimitiveInfoType]]:
         """Information returned here is logged to the autotune log file when that is enabled."""
         if self.info_kwargs is not None and "op" in self.info_kwargs:
             op: Any = self.info_kwargs["op"]
@@ -657,8 +653,7 @@ class CUDATemplateCaller(ChoiceCaller):
                 ),
                 "swizzle": str(self.info_kwargs["swizzle"]),
             }
-        else:
-            return {"backend": "CUDA", "op_type": "unknown"}
+        return {"backend": "CUDA", "op_type": "unknown"}
 
     def output_node(self) -> TensorBox:
         self.bmreq.update_workspace_size()

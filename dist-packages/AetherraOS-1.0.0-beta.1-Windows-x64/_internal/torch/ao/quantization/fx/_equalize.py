@@ -2,7 +2,7 @@
 import operator
 import warnings
 from collections import namedtuple
-from typing import Any, Optional
+from typing import Any
 
 import torch
 import torch.ao.nn.intrinsic as nni
@@ -10,9 +10,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.ao.quantization.fx.graph_module import _get_observed_graph_module_attr
 from torch.ao.quantization.observer import (
-    _with_args,
     ObserverBase,
     PerChannelMinMaxObserver,
+    _with_args,
 )
 from torch.ao.quantization.utils import _parent_name, check_min_max_valid
 from torch.fx import GraphModule
@@ -23,7 +23,6 @@ from .utils import (
     maybe_get_next_module,
     node_arg_is_weight,
 )
-
 
 CUSTOM_MODULE_SUPP_LIST: list[Any] = []
 
@@ -319,7 +318,7 @@ def node_supports_equalization(node: Node, modules) -> bool:
             or fused_module_supports_equalization(modules[str(node.target)])
             or custom_module_supports_equalization(modules[str(node.target)])
         )
-    elif node.op == "call_function":
+    if node.op == "call_function":
         return node.target in [F.linear, F.conv1d, F.conv2d, F.conv3d]
     return False
 
@@ -337,7 +336,7 @@ def is_equalization_observer(observer: nn.Module) -> bool:
 
 def get_op_node_and_weight_eq_obs(
     input_eq_obs_node: Node, model: GraphModule, modules: dict[str, nn.Module]
-) -> tuple[Optional[Node], Optional[_WeightEqualizationObserver]]:
+) -> tuple[Node | None, _WeightEqualizationObserver | None]:
     """Gets the following weight equalization observer. There should always
     exist a weight equalization observer after an input equalization observer.
 
@@ -371,7 +370,7 @@ def get_op_node_and_weight_eq_obs(
         assert isinstance(weight_eq_obs, _WeightEqualizationObserver)
         return op_node, weight_eq_obs
 
-    elif op_node.op == "call_function":
+    if op_node.op == "call_function":
         weight_node = maybe_get_weight_eq_obs_node(op_node, modules)
         if weight_node is not None:
             weight_eq_obs = modules[str(weight_node.target)]
@@ -383,7 +382,7 @@ def get_op_node_and_weight_eq_obs(
 
 def maybe_get_weight_eq_obs_node(
     op_node: Node, modules: dict[str, nn.Module]
-) -> Optional[Node]:
+) -> Node | None:
     """Gets the weight equalization observer node if it exists."""
     assert op_node.op == "call_function"
     for node_arg in op_node.args:
@@ -401,7 +400,7 @@ def maybe_get_weight_eq_obs_node(
 
 def maybe_get_next_input_eq_obs(
     node: Node, modules: dict[str, nn.Module]
-) -> Optional[_InputEqualizationObserver]:
+) -> _InputEqualizationObserver | None:
     """Gets the following input equalization observer if it exists.
 
     For example, in the case of connecting linear layers:
@@ -451,7 +450,7 @@ def maybe_get_next_input_eq_obs(
 
 def maybe_get_next_equalization_scale(
     node: Node, modules: dict[str, nn.Module]
-) -> Optional[torch.Tensor]:
+) -> torch.Tensor | None:
     """If the next next node is an InputEqualizationObserver then we want to
     return its equalization scale, else we return 1
 
@@ -496,7 +495,7 @@ def scale_weight_node(
     node: Node,
     modules: dict[str, nn.Module],
     equalization_scale: torch.Tensor,
-    next_equalization_scale: Optional[torch.Tensor],
+    next_equalization_scale: torch.Tensor | None,
 ) -> None:
     """Scale the weights for input-weight equalization by multiplying the
     weight by 1/equalization_scale and next_equalization_scale
@@ -556,7 +555,7 @@ def scale_weight_functional(
     model: GraphModule,
     modules: dict[str, nn.Module],
     equalization_scale: torch.Tensor,
-    next_equalization_scale: Optional[torch.Tensor],
+    next_equalization_scale: torch.Tensor | None,
 ) -> None:
     """Scales the weight value for functional layers"""
     if equalization_scale is None:

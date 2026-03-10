@@ -36,7 +36,6 @@ from torch.nn.functional import (
 from torch.onnx import _type_utils, errors, symbolic_helper, utils
 from torch.onnx._internal import jit_utils, registration
 
-
 _onnx_symbolic = functools.partial(registration.onnx_symbolic, opset=16)
 
 
@@ -96,24 +95,23 @@ def scatter_add(g: jit_utils.GraphContext, self, dim, index, src):
     src = symbolic_helper._maybe_get_scalar(src)
     if symbolic_helper._is_value(src):
         return g.op("ScatterElements", self, index, src, axis_i=dim, reduction_s="add")
-    else:
-        # Check if scalar "src" has same type as self (PyTorch allows different
-        # type for scalar src (but not when src is tensor)). If not, insert Cast node.
-        if _type_utils.JitScalarType.from_value(self) != src_type:
-            src = g.op(
-                "Cast",
-                src,
-                to_i=_type_utils.JitScalarType.from_value(self).onnx_type(),
-            )
-
-        return g.op(
-            "ScatterElements",
-            self,
-            index,
+    # Check if scalar "src" has same type as self (PyTorch allows different
+    # type for scalar src (but not when src is tensor)). If not, insert Cast node.
+    if _type_utils.JitScalarType.from_value(self) != src_type:
+        src = g.op(
+            "Cast",
             src,
-            axis_i=dim,
-            reduction_s="add",
+            to_i=_type_utils.JitScalarType.from_value(self).onnx_type(),
         )
+
+    return g.op(
+        "ScatterElements",
+        self,
+        index,
+        src,
+        axis_i=dim,
+        reduction_s="add",
+    )
 
 
 @_onnx_symbolic("aten::scatter_reduce")

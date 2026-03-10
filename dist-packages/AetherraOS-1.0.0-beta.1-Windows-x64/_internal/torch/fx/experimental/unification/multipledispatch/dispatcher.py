@@ -1,13 +1,13 @@
 # mypy: allow-untyped-defs
 import inspect
 import itertools as itl
-from typing_extensions import deprecated
 from warnings import warn
 
-from .conflict import ambiguities, AmbiguityWarning, ordering, super_signature
-from .utils import expand_tuples
-from .variadic import isvariadic, Variadic
+from typing_extensions import deprecated
 
+from .conflict import AmbiguityWarning, ambiguities, ordering, super_signature
+from .utils import expand_tuples
+from .variadic import Variadic, isvariadic
 
 __all__ = [
     "MDNotImplementedError",

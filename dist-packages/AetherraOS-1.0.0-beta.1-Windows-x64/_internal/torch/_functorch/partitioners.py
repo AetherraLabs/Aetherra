@@ -10,8 +10,9 @@ import operator
 import os
 import os.path
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass, replace
-from typing import Any, Callable, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any
 
 import torch
 import torch._inductor.inductor_prims
@@ -51,7 +52,6 @@ from ._activation_checkpointing.knapsack_evaluator import KnapsackEvaluator
 from ._aot_autograd.logging_utils import get_aot_graph_name
 from ._aot_autograd.utils import get_cuda_generator_meta_val, is_with_effects
 from .compile_utils import fx_graph_cse, get_aten_target, raise_getitems
-
 
 if TYPE_CHECKING:
     import sympy
@@ -175,7 +175,7 @@ def _extract_graph_with_inputs_outputs(
     joint_graph: fx.Graph,
     inputs: list[fx.Node],
     outputs: list[fx.Node],
-    subgraph: Optional[str] = None,
+    subgraph: str | None = None,
 ) -> fx.Graph:
     """
     Given a graph, extracts out a subgraph that takes the specified nodes as
@@ -207,7 +207,7 @@ def _extract_graph_with_inputs_outputs(
             # input to start must have been created by this loop and won't be in
             # joint_graph.nodes).
             continue
-        elif node.op == "placeholder":
+        if node.op == "placeholder":
             env[node] = InvalidNode  # type: ignore[assignment]
         elif node.op == "call_function":
             all_args = pytree.arg_tree_leaves(*node.args, **node.kwargs)
@@ -229,9 +229,9 @@ def _extract_graph_with_inputs_outputs(
         if isinstance(x, fx.Node):
             if x not in env:
                 raise RuntimeError(f"Node {x} couldn't be found in env")
-            assert not isinstance(
-                env[x], InvalidNodeBase
-            ), f"Node {x} was invalid, but is output"
+            assert not isinstance(env[x], InvalidNodeBase), (
+                f"Node {x} was invalid, but is output"
+            )
             output_values.append(env[x])
         else:
             output_values.append(x)
@@ -304,7 +304,7 @@ def _remove_by_name(saved_values: list[fx.Node], name: str):
 
 
 def find_first_sym_node(
-    fwd_module_outputs: Union[list[fx.Node], tuple[fx.Node]],
+    fwd_module_outputs: list[fx.Node] | tuple[fx.Node],
 ) -> int:
     idx = len(fwd_module_outputs)
     for i in range(len(fwd_module_outputs) - 1, -1, -1):
@@ -449,10 +449,10 @@ def perform_quantization(
             args=(clamp_max_scaled_node, quant_type),
             name="fp8_quant_" + str(node.name),
         )
-        quant_activation_node.meta[
-            "val"
-        ] = torch.ops.prims.convert_element_type.default(
-            clamp_max_scaled_node.meta["val"], quant_type
+        quant_activation_node.meta["val"] = (
+            torch.ops.prims.convert_element_type.default(
+                clamp_max_scaled_node.meta["val"], quant_type
+            )
         )
         quant_activation_node.meta["tensor_meta"] = extract_tensor_metadata(
             quant_activation_node.meta["val"]
@@ -500,17 +500,15 @@ def should_quantize(node: torch.fx.Node) -> bool:
         "activation_quantization_aten_pass"
     ].get("skip_dynamo_guards", False):
         return size_in_mb >= size_threshold
-    else:
-        # case 1: we alway quantize tensors with dynamic shapes
-        if torch._inductor.config.post_grad_fusion_options[
-            "activation_quantization_aten_pass"
-        ].get("quantize_dynamic_shape", False):
-            return statically_known_true(
-                size_in_mb >= size_threshold
-            ) or not statically_known_false(size_in_mb >= size_threshold)
-        else:
-            # case 2: we alway not quantize tensors with dynamic shapes
-            return statically_known_true(size_in_mb >= size_threshold)
+    # case 1: we alway quantize tensors with dynamic shapes
+    if torch._inductor.config.post_grad_fusion_options[
+        "activation_quantization_aten_pass"
+    ].get("quantize_dynamic_shape", False):
+        return statically_known_true(
+            size_in_mb >= size_threshold
+        ) or not statically_known_false(size_in_mb >= size_threshold)
+    # case 2: we alway not quantize tensors with dynamic shapes
+    return statically_known_true(size_in_mb >= size_threshold)
 
 
 def get_quant_type() -> torch.dtype:
@@ -567,10 +565,10 @@ def quantize_activation_fw(graph: torch.fx.Graph) -> None:
                         args=(node, quant_type),
                         name="fp8_quant_" + str(node.name),
                     )
-                    quant_node.meta[
-                        "val"
-                    ] = torch.ops.prims.convert_element_type.default(
-                        node.meta["val"], quant_type
+                    quant_node.meta["val"] = (
+                        torch.ops.prims.convert_element_type.default(
+                            node.meta["val"], quant_type
+                        )
                     )
                     quant_node.meta["tensor_meta"] = extract_tensor_metadata(
                         quant_node.meta["val"]
@@ -578,7 +576,8 @@ def quantize_activation_fw(graph: torch.fx.Graph) -> None:
             node_to_quant[node] = quant_node
     # only update the return node args, and remain all other users unchanged
     output_updated_args = [
-        node_to_quant[node] if node in node_to_quant else node for node in fwd_outputs  # type: ignore[union-attr]
+        node_to_quant[node] if node in node_to_quant else node
+        for node in fwd_outputs  # type: ignore[union-attr]
     ]
     # add the scale nodes to the ouput find the first sym_node in the output
     idx = find_first_sym_node(output_updated_args)
@@ -617,10 +616,10 @@ def quantize_activation_bw(graph: torch.fx.Graph) -> None:
                         torch.ops.prims.convert_element_type.default,
                         args=(node, dequant_type),
                     )
-                    activation_node.meta[
-                        "val"
-                    ] = torch.ops.prims.convert_element_type.default(
-                        node.meta["val"], dequant_type
+                    activation_node.meta["val"] = (
+                        torch.ops.prims.convert_element_type.default(
+                            node.meta["val"], dequant_type
+                        )
                     )
                     activation_node.meta["tensor_meta"] = extract_tensor_metadata(
                         activation_node.meta["val"]
@@ -633,18 +632,18 @@ def quantize_activation_bw(graph: torch.fx.Graph) -> None:
                     divided_target_node_32.meta["val"] = torch.ops.aten.div.Tensor(
                         activation_node.meta["val"], scale_node.meta["val"]
                     )
-                    divided_target_node_32.meta[
-                        "tensor_meta"
-                    ] = extract_tensor_metadata(divided_target_node_32.meta["val"])
+                    divided_target_node_32.meta["tensor_meta"] = (
+                        extract_tensor_metadata(divided_target_node_32.meta["val"])
+                    )
                 with graph.inserting_after(divided_target_node_32):
                     dequant_node = graph.call_function(
                         torch.ops.prims.convert_element_type.default,
                         args=(divided_target_node_32, dequant_type),
                     )
-                    dequant_node.meta[
-                        "val"
-                    ] = torch.ops.prims.convert_element_type.default(
-                        divided_target_node_32.meta["val"], dequant_type
+                    dequant_node.meta["val"] = (
+                        torch.ops.prims.convert_element_type.default(
+                            divided_target_node_32.meta["val"], dequant_type
+                        )
                     )
                     dequant_node.meta["tensor_meta"] = extract_tensor_metadata(
                         dequant_node.meta["val"]
@@ -656,10 +655,10 @@ def quantize_activation_bw(graph: torch.fx.Graph) -> None:
                         args=(node, dequant_type),
                         name="dequant_" + str(node.name),
                     )
-                    dequant_node.meta[
-                        "val"
-                    ] = torch.ops.prims.convert_element_type.default(
-                        node.meta["val"], dequant_type
+                    dequant_node.meta["val"] = (
+                        torch.ops.prims.convert_element_type.default(
+                            node.meta["val"], dequant_type
+                        )
                     )
                     dequant_node.meta["tensor_meta"] = extract_tensor_metadata(
                         dequant_node.meta["val"]
@@ -676,7 +675,7 @@ def enable_activation_quantization(
     saved_values: list[fx.Node],
     fwd_module: fx.GraphModule,
     bwd_module: fx.GraphModule,
-    static_lifetime_input_nodes: Optional[OrderedSet[fx.Node]] = None,
+    static_lifetime_input_nodes: OrderedSet[fx.Node] | None = None,
 ) -> None:
     if (
         inductor_config.post_grad_fusion_options.get(
@@ -802,7 +801,7 @@ def _extract_fwd_bwd_modules(
     saved_sym_nodes: list[fx.Node],
     *,
     num_fwd_outputs: int,
-    static_lifetime_input_nodes: Optional[OrderedSet[fx.Node]] = None,
+    static_lifetime_input_nodes: OrderedSet[fx.Node] | None = None,
 ) -> tuple[fx.GraphModule, fx.GraphModule]:
     fwd_outputs, bwd_outputs = _extract_fwd_bwd_outputs(
         joint_module, num_fwd_outputs=num_fwd_outputs
@@ -825,17 +824,14 @@ def _extract_fwd_bwd_modules(
 
     for node in bwd_graph.find_nodes(op="placeholder"):
         # This is to filter out saved values that don't actually end up being used by the backwards pass
-        if not node.users:
-            _remove_by_name(saved_values, node.name)
-            _remove_by_name(saved_sym_nodes, node.name)
-        # wait_tensor is a bit special: if we have a "dead activation" that is not used in the bw,
-        # but this dead activation is actually a collective,
-        # then the collective will generally by followed by a wait_tensor() call.
-        # we need to peak one node further to see if this wait_tensor is dead as well.
-        elif distributed_enabled and all(
-            n.target is torch.ops._c10d_functional.wait_tensor.default
-            and len(n.users) == 0
-            for n in node.users
+        if (
+            not node.users
+            or distributed_enabled
+            and all(
+                n.target is torch.ops._c10d_functional.wait_tensor.default
+                and len(n.users) == 0
+                for n in node.users
+            )
         ):
             _remove_by_name(saved_values, node.name)
             _remove_by_name(saved_sym_nodes, node.name)
@@ -917,8 +913,8 @@ def default_partition(
     _joint_inputs,
     *,
     num_fwd_outputs,
-    static_lifetime_input_indices: Optional[list[int]] = None,
-    static_lifetime_input_nodes: Optional[OrderedSet[fx.Node]] = None,
+    static_lifetime_input_indices: list[int] | None = None,
+    static_lifetime_input_nodes: OrderedSet[fx.Node] | None = None,
 ) -> tuple[fx.GraphModule, fx.GraphModule]:
     """
     Partitions the :attr:`joint_module` in a manner that closely resembles the
@@ -1027,11 +1023,11 @@ def _size_of(node: fx.Node) -> int:
         # NB: The fallback values here are meaningless, maybe we should respect
         # torch._inductor.config.unbacked_symint_fallback (but this is a
         # layering violation)
-        elif isinstance(val, (list, tuple)):
+        if isinstance(val, (list, tuple)):
             return sum(object_nbytes(n) for n in val)
-        elif isinstance(val, dict):
+        if isinstance(val, dict):
             return sum(object_nbytes(n) for _, n in val.items())
-        elif isinstance(val, torch.Tensor):
+        if isinstance(val, torch.Tensor):
             return object_nbytes(val)
 
         raise RuntimeError(f"Unknown metadata type {type(val)} on node {node}")
@@ -1286,7 +1282,7 @@ def functionalize_rng_ops(
                 random_nodes[node.name] = node
         return random_nodes
 
-    def get_device(node) -> Optional[torch.device]:
+    def get_device(node) -> torch.device | None:
         """
         Check the example value of the node outputs to find the device type.
         """
@@ -1304,7 +1300,7 @@ def functionalize_rng_ops(
 
         return torch.device("cpu")
 
-    def get_sample_rng_state(device: Optional[torch.device]):
+    def get_sample_rng_state(device: torch.device | None):
         if device is not None and device.type == "cuda":
             return torch.cuda.get_rng_state()
         return torch.get_rng_state()
@@ -1508,7 +1504,7 @@ def solve_min_cut(
     joint_graph: fx.Graph,
     node_info: NodeInfo,
     min_cut_options: MinCutOptions,
-    dont_ban: Optional[OrderedSet[fx.Node]] = None,
+    dont_ban: OrderedSet[fx.Node] | None = None,
 ):
     if dont_ban is None:
         dont_ban = OrderedSet()
@@ -1675,8 +1671,7 @@ def solve_min_cut(
         mem_sz = int(mem_sz * (1.1 ** max(min(node.dist_from_bw, 100), 1)))
         if is_materialized(node):
             return mem_sz
-        else:
-            return mem_sz * 2
+        return mem_sz * 2
 
     nx_graph = nx.DiGraph()
     banned_nodes: OrderedSet[fx.Node] = OrderedSet()
@@ -2113,11 +2108,11 @@ def _optimize_runtime_with_given_memory(
     SOLVER = config.activation_memory_budget_solver
     if SOLVER == "greedy":
         return greedy_knapsack(memory, runtimes, max_memory)
-    elif SOLVER == "ilp":
+    if SOLVER == "ilp":
         return ilp_knapsack(memory, runtimes, max_memory)
-    elif SOLVER == "dp":
+    if SOLVER == "dp":
         return dp_knapsack(memory, runtimes, max_memory)
-    elif SOLVER == "dynamic_memory_budget_dp":
+    if SOLVER == "dynamic_memory_budget_dp":
         log.warning(
             "dynamic_memory_budget_dp is an experimental solver. "
             "It does not guarantee performance improvements. "
@@ -2139,13 +2134,12 @@ def _optimize_runtime_with_given_memory(
                 max_mem_budget=max_memory,
             ),
         )
-    elif callable(SOLVER):
+    if callable(SOLVER):
         saved_node_idx, recomp_node_idx = SOLVER(
             memory, joint_graph, max_memory, node_info, all_recomputable_banned_nodes
         )
         return (0.0, saved_node_idx, recomp_node_idx)
-    else:
-        raise RuntimeError(f"Not aware of memory budget knapsack solver: {SOLVER}")
+    raise RuntimeError(f"Not aware of memory budget knapsack solver: {SOLVER}")
 
 
 from torch.utils._mode_utils import no_dispatch
@@ -2169,19 +2163,18 @@ def estimate_runtime(node):
     def materialize_arg(x):
         if isinstance(x, fx.Node) and isinstance(x.meta["val"], torch.Tensor):
             return _remove_symbols_without_guarding(x.meta["val"], fallback=4096)
-        elif isinstance(x, fx.Node) and isinstance(x.meta["val"], torch.SymInt):
+        if isinstance(x, fx.Node) and isinstance(x.meta["val"], torch.SymInt):
             return hint_int(x.meta["val"], fallback=4096)
-        elif isinstance(x, fx.Node) and isinstance(x.meta["val"], torch.SymFloat):
+        if isinstance(x, fx.Node) and isinstance(x.meta["val"], torch.SymFloat):
             return 1.0
-        elif isinstance(x, fx.Node) and isinstance(x.meta["val"], torch.SymBool):
+        if isinstance(x, fx.Node) and isinstance(x.meta["val"], torch.SymBool):
             return True
-        else:
-            return x
+        return x
 
     if RUNTIME_MODE == "testing":
         return 1
 
-    elif RUNTIME_MODE == "profile":
+    if RUNTIME_MODE == "profile":
         with no_dispatch():
             from torch._inductor.runtime.benchmarking import benchmarker
 
@@ -2494,7 +2487,7 @@ def min_cut_rematerialization_partition(
     compiler="inductor",
     *,
     num_fwd_outputs,
-    static_lifetime_input_indices: Optional[list[int]] = None,
+    static_lifetime_input_indices: list[int] | None = None,
 ) -> tuple[fx.GraphModule, fx.GraphModule]:
     """
     Partitions the joint graph such that the backward recomputes the forward.
@@ -2544,9 +2537,11 @@ def min_cut_rematerialization_partition(
         name_to_node = get_name_to_node(joint_module.graph)
         required_bw_nodes: OrderedSet[fx.Node] = OrderedSet()
         for node in joint_module.graph.nodes:
-            if node.op == "placeholder" and "tangents" in node.target:
-                required_bw_nodes.add(node)
-            elif _must_be_in_backward(node):
+            if (
+                node.op == "placeholder"
+                and "tangents" in node.target
+                or _must_be_in_backward(node)
+            ):
                 required_bw_nodes.add(node)
 
             if node in required_bw_nodes:
@@ -2696,9 +2691,9 @@ def draw_graph(
     fname: str,
     figname: str = "fx_graph",
     clear_meta: bool = True,
-    prog: Optional[Union[str, list[str]]] = None,
+    prog: str | list[str] | None = None,
     parse_stack_trace: bool = False,
-    dot_graph_shape: Optional[str] = None,
+    dot_graph_shape: str | None = None,
 ) -> None:
     if clear_meta:
         new_graph = copy.deepcopy(traced.graph)

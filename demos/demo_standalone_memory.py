@@ -13,7 +13,6 @@ complex external dependencies. This showcases the core memory functionality.
 import asyncio
 import time
 from datetime import datetime
-from typing import List
 
 
 # Simple memory implementation for demo
@@ -25,7 +24,7 @@ class SimpleMemoryEngine:
         self.patterns = {}
         self.context_memory = {}
 
-    async def remember(self, content: str, tags: List[str] = None, **kwargs):
+    async def remember(self, content: str, tags: list[str] = None, **kwargs):
         """Store a memory"""
         memory = {
             "id": f"mem_{len(self.memories)}",

@@ -26,7 +26,7 @@ import itertools
 import logging
 import types
 import warnings
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import torch._C
 import torch.fx
@@ -48,9 +48,9 @@ from ..exc import (
     IncorrectUsage,
     ObservedException,
     UncapturedHigherOrderOpError,
+    Unsupported,
     unimplemented,
     unimplemented_v2,
-    Unsupported,
 )
 from ..source import AttrSource, DictGetItemSource
 from ..utils import proxy_args_kwargs, set_example_value
@@ -58,7 +58,6 @@ from .base import VariableTracker
 from .dicts import ConstDictVariable
 from .lazy import LazyVariableTracker
 from .lists import ListVariable, TupleVariable
-
 
 if TYPE_CHECKING:
     from torch._dynamo.symbolic_convert import InstructionTranslator
@@ -117,12 +116,11 @@ def check_meta_consistency_vt(
     def _unwrap_var(var):
         if isinstance(var, TensorVariable):
             return var.proxy.node.meta["example_value"]
-        elif isinstance(var, SymNodeVariable):
+        if isinstance(var, SymNodeVariable):
             return var.sym_num
-        elif isinstance(var, ConstantVariable):
+        if isinstance(var, ConstantVariable):
             return var.as_python_constant()
-        else:
-            unimplemented(f"Cannot unwrap var {var}")
+        unimplemented(f"Cannot unwrap var {var}")
 
     unwrapped1 = [_unwrap_var(var) for var in vars1]
     unwrapped2 = [_unwrap_var(var) for var in vars2]
@@ -270,7 +268,7 @@ def are_same_graph_modules(fn_name, a_mod, b_mod, fake_mode):
     node_map = {}
 
     def check_all_args(a_nodes, b_nodes):
-        for arg_a, arg_b in zip(a_nodes, b_nodes):
+        for arg_a, arg_b in zip(a_nodes, b_nodes, strict=False):
             if isinstance(arg_a, torch.fx.Node):
                 if node_map[arg_a] != arg_b:
                     return False
@@ -289,7 +287,7 @@ def are_same_graph_modules(fn_name, a_mod, b_mod, fake_mode):
                 return False
         return True
 
-    for a_node, b_node in zip(a_mod.graph.nodes, b_mod.graph.nodes):
+    for a_node, b_node in zip(a_mod.graph.nodes, b_mod.graph.nodes, strict=False):
         if a_node.op != b_node.op:
             return False
 
@@ -400,67 +398,17 @@ def validate_args_and_maybe_create_graph_inputs(
         return _make_inlined(tx, pytree.tree_unflatten)(
             ListVariable(flat_inputs), tree_spec
         ).unpack_var_sequence(tx)
-    else:
-        if sub_args_names is not None:
-            # Can be greater if user passes some args as kwargs
-            assert len(sub_args_names) >= len(sub_args)
-        args = []
-        for idx, a in enumerate(sub_args):
-            assert isinstance(a, VariableTracker)
-            if set_subgraph_inputs == "automatic":
-                args.append(a)
-                continue
-            elif set_subgraph_inputs == "semi_automatic":
-                if isinstance(a, AutogradFunctionContextVariable):
-                    example_value = a.as_proxy().node.meta["example_value"]
-                    arg_name = (
-                        a.as_proxy().node.name
-                        if sub_args_names is None
-                        else sub_args_names[idx]
-                    )
-                    tracer.create_graph_input(arg_name, a.python_type(), example_value)
-                elif a.maybe_fx_node() is not None:
-                    node = a.maybe_fx_node()
-                    example_value = node.meta["example_value"]
-                    arg_name = (
-                        a.as_proxy().node.name
-                        if sub_args_names is None
-                        else sub_args_names[idx]
-                    )
-                    new_proxy = tracer.create_graph_input(
-                        arg_name, a.python_type(), example_value
-                    )
-                    example_value = (
-                        node.meta["example_value"]
-                        if "example_value" in node.meta
-                        else None
-                    )
-                    a = wrap_fx_proxy_cls(
-                        target_cls=type(a),
-                        tx=tx,
-                        proxy=new_proxy,
-                        example_value=example_value,
-                    )
-                args.append(a)
-                continue
-
-            if a.is_python_constant():
-                # This arg is not used in the body of the higher order op.
-                # Currently, this new input is added to make the calls
-                # happy, which expect a fixed number of arguments. In
-                # future, we can clean this up.
-                arg_name = (
-                    "const_unused"
-                    if sub_args_names is None
-                    else f"const_unused_{sub_args_names[idx]}"
-                )
-                tracer.create_graph_input(
-                    arg_name, a.python_type(), a.as_python_constant()
-                )
-                new_arg = a
-            # Weird special case, we probably want to delete it or fold it
-            # into the next case (of `a` being placeable into a graph)
-            elif isinstance(a, AutogradFunctionContextVariable):
+    if sub_args_names is not None:
+        # Can be greater if user passes some args as kwargs
+        assert len(sub_args_names) >= len(sub_args)
+    args = []
+    for idx, a in enumerate(sub_args):
+        assert isinstance(a, VariableTracker)
+        if set_subgraph_inputs == "automatic":
+            args.append(a)
+            continue
+        if set_subgraph_inputs == "semi_automatic":
+            if isinstance(a, AutogradFunctionContextVariable):
                 example_value = a.as_proxy().node.meta["example_value"]
                 arg_name = (
                     a.as_proxy().node.name
@@ -468,32 +416,77 @@ def validate_args_and_maybe_create_graph_inputs(
                     else sub_args_names[idx]
                 )
                 tracer.create_graph_input(arg_name, a.python_type(), example_value)
-                new_arg = a
-            # If `a` can be put into a graph
             elif a.maybe_fx_node() is not None:
                 node = a.maybe_fx_node()
-                example_value = (
-                    node.meta["example_value"] if "example_value" in node.meta else None
+                example_value = node.meta["example_value"]
+                arg_name = (
+                    a.as_proxy().node.name
+                    if sub_args_names is None
+                    else sub_args_names[idx]
                 )
-                arg_name = node.name if sub_args_names is None else sub_args_names[idx]
                 new_proxy = tracer.create_graph_input(
                     arg_name, a.python_type(), example_value
                 )
-                new_arg = wrap_fx_proxy_cls(
+                example_value = (
+                    node.meta["example_value"] if "example_value" in node.meta else None
+                )
+                a = wrap_fx_proxy_cls(
                     target_cls=type(a),
                     tx=tx,
                     proxy=new_proxy,
                     example_value=example_value,
                 )
-            # If `a` cannot be put into a graph
-            else:
-                # HOPs work much better if they use speculate_subgraph(set_subgraph_inputs="automatic").
-                unimplemented(
-                    f"{description} with body that accepts non-Tensors as input. "
-                    f"Got: {a.python_type()}"
-                )
-            args.append(new_arg)
-        return args
+            args.append(a)
+            continue
+
+        if a.is_python_constant():
+            # This arg is not used in the body of the higher order op.
+            # Currently, this new input is added to make the calls
+            # happy, which expect a fixed number of arguments. In
+            # future, we can clean this up.
+            arg_name = (
+                "const_unused"
+                if sub_args_names is None
+                else f"const_unused_{sub_args_names[idx]}"
+            )
+            tracer.create_graph_input(arg_name, a.python_type(), a.as_python_constant())
+            new_arg = a
+        # Weird special case, we probably want to delete it or fold it
+        # into the next case (of `a` being placeable into a graph)
+        elif isinstance(a, AutogradFunctionContextVariable):
+            example_value = a.as_proxy().node.meta["example_value"]
+            arg_name = (
+                a.as_proxy().node.name
+                if sub_args_names is None
+                else sub_args_names[idx]
+            )
+            tracer.create_graph_input(arg_name, a.python_type(), example_value)
+            new_arg = a
+        # If `a` can be put into a graph
+        elif a.maybe_fx_node() is not None:
+            node = a.maybe_fx_node()
+            example_value = (
+                node.meta["example_value"] if "example_value" in node.meta else None
+            )
+            arg_name = node.name if sub_args_names is None else sub_args_names[idx]
+            new_proxy = tracer.create_graph_input(
+                arg_name, a.python_type(), example_value
+            )
+            new_arg = wrap_fx_proxy_cls(
+                target_cls=type(a),
+                tx=tx,
+                proxy=new_proxy,
+                example_value=example_value,
+            )
+        # If `a` cannot be put into a graph
+        else:
+            # HOPs work much better if they use speculate_subgraph(set_subgraph_inputs="automatic").
+            unimplemented(
+                f"{description} with body that accepts non-Tensors as input. "
+                f"Got: {a.python_type()}"
+            )
+        args.append(new_arg)
+    return args
 
 
 # This helper function is used to make sure two graphs share the same input signature. For example,
@@ -729,124 +722,123 @@ def speculate_subgraph(
             if always_restore:
                 # Nothing left to do here
                 return (output, treespec), tx.output.graph, subtracer.lifted_freevars
-            else:
-                validate_subgraph_output_types(output)
+            validate_subgraph_output_types(output)
 
-                # The output proxies might not belong to this SubgraphTracer
-                # (if they are free variables that were never lifted)
-                # so lift them here.
-                output_proxies = output.as_proxy()
-                output_proxies = pytree.tree_map(
-                    subtracer.maybe_lift_tracked_freevar_to_input, output_proxies
-                )
+            # The output proxies might not belong to this SubgraphTracer
+            # (if they are free variables that were never lifted)
+            # so lift them here.
+            output_proxies = output.as_proxy()
+            output_proxies = pytree.tree_map(
+                subtracer.maybe_lift_tracked_freevar_to_input, output_proxies
+            )
 
-                tx.output.create_node(
-                    "output",
-                    "output",
-                    (subtracer.create_arg((output_proxies,))),
-                    {},
-                )
-                graph = tx.output.graph
-                graph.lint()
-                lifted_freevars = subtracer.lifted_freevars
+            tx.output.create_node(
+                "output",
+                "output",
+                (subtracer.create_arg((output_proxies,))),
+                {},
+            )
+            graph = tx.output.graph
+            graph.lint()
+            lifted_freevars = subtracer.lifted_freevars
 
-                # NOTE: [HigherOrderOperator subgraph input ordering]
-                # The input ordering of the higher order ops is determined by the order of
-                # the creation of the placeholder.
-                # Manually created inputs are created in validate_args_and_maybe_create_graph_inputs before
-                # speculating subgraph.
-                # During subgraph speculation, we may lift closured tensors and free symbols as inputs,
-                # their ordering is determined by the time they are lifted: earlier lifted ones precede later
-                # lifted ones.
-                #
-                # Suppose the placeholders are
-                # O1, O2, X1, O3, O4, X2, X3, O5 where Xs are lifted phs
-                # The following code re-order the placeholders to
-                # O1, O2, O3, O4, O5, X1, X2, X3
-                def move_lifted_freevars_phs_to_end(
-                    graph: torch.fx.Graph, lifted_freevars: tuple[torch.fx.Node]
+            # NOTE: [HigherOrderOperator subgraph input ordering]
+            # The input ordering of the higher order ops is determined by the order of
+            # the creation of the placeholder.
+            # Manually created inputs are created in validate_args_and_maybe_create_graph_inputs before
+            # speculating subgraph.
+            # During subgraph speculation, we may lift closured tensors and free symbols as inputs,
+            # their ordering is determined by the time they are lifted: earlier lifted ones precede later
+            # lifted ones.
+            #
+            # Suppose the placeholders are
+            # O1, O2, X1, O3, O4, X2, X3, O5 where Xs are lifted phs
+            # The following code re-order the placeholders to
+            # O1, O2, O3, O4, O5, X1, X2, X3
+            def move_lifted_freevars_phs_to_end(
+                graph: torch.fx.Graph, lifted_freevars: tuple[torch.fx.Node]
+            ):
+                lifted_ph_set = {child_p.node for child_p in lifted_freevars.values()}
+
+                prev_phs = [n for n in graph.nodes if n.op == "placeholder"]
+
+                # No need to reorder when graph doesn't have args or doesn't
+                # have lifted freevars or all inputs are lifted freevars.
+                if (
+                    len(prev_phs) == 0
+                    or len(lifted_ph_set) == 0
+                    or len(prev_phs) == len(lifted_ph_set)
                 ):
-                    lifted_ph_set = {
-                        child_p.node for child_p in lifted_freevars.values()
-                    }
+                    return
 
-                    prev_phs = [n for n in graph.nodes if n.op == "placeholder"]
+                # Step 1: find first X1
+                for x1 in prev_phs:
+                    if x1 in lifted_ph_set:
+                        break
 
-                    # No need to reorder when graph doesn't have args or doesn't
-                    # have lifted freevars or all inputs are lifted freevars.
-                    if (
-                        len(prev_phs) == 0
-                        or len(lifted_ph_set) == 0
-                        or len(prev_phs) == len(lifted_ph_set)
-                    ):
-                        return
+                assert x1 is not None and x1.op == "placeholder"
+                # Step 2: starting from the X1, skip Xs and prepend Os before X1.
+                cand_x = x1.next
+                while cand_x is not None and cand_x.op == "placeholder":
+                    if cand_x in lifted_ph_set:
+                        cand_x = cand_x.next
+                    else:
+                        nxt = cand_x.next
+                        cand_x._remove_from_list()
+                        x1.prepend(cand_x)
+                        cand_x = nxt
 
-                    # Step 1: find first X1
-                    for x1 in prev_phs:
-                        if x1 in lifted_ph_set:
-                            break
+                # Step 3: assert that all placeholders are in the correct order as .
+                # in lifted_freevars
+                after_phs = [node for node in graph.nodes if node.op == "placeholder"][
+                    -len(lifted_freevars) :
+                ]
+                assert len(after_phs) == len(lifted_freevars)
+                for child_proxy, ph in zip(
+                    lifted_freevars.values(), after_phs, strict=False
+                ):
+                    assert child_proxy.node is ph, (
+                        "The order of placeholders is different from the order of lifted_freevars"
+                    )
 
-                    assert x1 is not None and x1.op == "placeholder"
-                    # Step 2: starting from the X1, skip Xs and prepend Os before X1.
-                    cand_x = x1.next
-                    while cand_x is not None and cand_x.op == "placeholder":
-                        if cand_x in lifted_ph_set:
-                            cand_x = cand_x.next
-                        else:
-                            nxt = cand_x.next
-                            cand_x._remove_from_list()
-                            x1.prepend(cand_x)
-                            cand_x = nxt
+                graph.lint()
 
-                    # Step 3: assert that all placeholders are in the correct order as .
-                    # in lifted_freevars
-                    after_phs = [
-                        node for node in graph.nodes if node.op == "placeholder"
-                    ][-len(lifted_freevars) :]
-                    assert len(after_phs) == len(lifted_freevars)
-                    for child_proxy, ph in zip(lifted_freevars.values(), after_phs):
-                        assert child_proxy.node is ph, (
-                            "The order of placeholders is different from the order of lifted_freevars"
-                        )
+            if len(lifted_freevars) > 0:
+                move_lifted_freevars_phs_to_end(graph, lifted_freevars)
 
-                    graph.lint()
+            if not supports_input_mutation:
+                mutation_info = subtracer.has_input_mutation()
+                if mutation_info.has_mutation:
+                    context = f"{mutation_info.msg} in\n {graph}"
+                    unimplemented_v2(
+                        gb_type="Encountered input mutation during higher order op tracing",
+                        context=context,
+                        explanation=f"Higher order ops do not support input mutation. Found in {source_target.name()}",
+                        hints=[
+                            "Consider using the debug context to change user code to avoid mutation.",
+                            "Please open an issue.",
+                        ],
+                    )
 
-                if len(lifted_freevars) > 0:
-                    move_lifted_freevars_phs_to_end(graph, lifted_freevars)
+            if not supports_aliasing:
+                aliasing_info = subtracer.has_aliasing()
+                if aliasing_info.has_aliasing:
+                    context = f"{aliasing_info.msg} in\n {graph}"
+                    unimplemented_v2(
+                        gb_type="Encountered aliasing during higher order op tracing",
+                        context=context,
+                        explanation=f"Higher order ops do not support aliasing. Found in {source_target.name()}",
+                        hints=[
+                            "Consider using the debug context to change user code to avoid aliasing.",
+                            "Please open an issue.",
+                        ],
+                    )
 
-                if not supports_input_mutation:
-                    mutation_info = subtracer.has_input_mutation()
-                    if mutation_info.has_mutation:
-                        context = f"{mutation_info.msg} in\n {graph}"
-                        unimplemented_v2(
-                            gb_type="Encountered input mutation during higher order op tracing",
-                            context=context,
-                            explanation=f"Higher order ops do not support input mutation. Found in {source_target.name()}",
-                            hints=[
-                                "Consider using the debug context to change user code to avoid mutation.",
-                                "Please open an issue.",
-                            ],
-                        )
-
-                if not supports_aliasing:
-                    aliasing_info = subtracer.has_aliasing()
-                    if aliasing_info.has_aliasing:
-                        context = f"{aliasing_info.msg} in\n {graph}"
-                        unimplemented_v2(
-                            gb_type="Encountered aliasing during higher order op tracing",
-                            context=context,
-                            explanation=f"Higher order ops do not support aliasing. Found in {source_target.name()}",
-                            hints=[
-                                "Consider using the debug context to change user code to avoid aliasing.",
-                                "Please open an issue.",
-                            ],
-                        )
-
-                return (
-                    (output, treespec),
-                    graph,
-                    lifted_freevars,
-                )
+            return (
+                (output, treespec),
+                graph,
+                lifted_freevars,
+            )
 
     except Unsupported as ex:
         f_name = f"{type(f).__name__}"
@@ -875,7 +867,7 @@ def make_attr(tx: "InstructionTranslator", name):
 
 class TorchHigherOrderOperatorVariable(VariableTracker):
     def __init__(
-        self, value: HigherOrderOperator, source: Optional[Source] = None, **kwargs
+        self, value: HigherOrderOperator, source: Source | None = None, **kwargs
     ) -> None:
         super().__init__(**kwargs)
         self.value = value
@@ -887,60 +879,59 @@ class TorchHigherOrderOperatorVariable(VariableTracker):
 
         if value.__name__ == "cond":
             return CondHigherOrderVariable(value, source, **kwargs)
-        elif value.__name__ == "while_loop":
+        if value.__name__ == "while_loop":
             return WhileLoopHigherOrderVariable(value, source, **kwargs)
-        elif value.__name__ in ("map", "map_impl"):
+        if value.__name__ in ("map", "map_impl"):
             return MapHigherOrderVariable(value, source, **kwargs)
-        elif value.__name__ == "executorch_call_delegate":
+        if value.__name__ == "executorch_call_delegate":
             return ExecutorchCallDelegateHigherOrderVariable(value, source, **kwargs)
-        elif value.__name__ == "out_dtype":
+        if value.__name__ == "out_dtype":
             return OutDtypeHigherOrderVariable(value, source, **kwargs)
-        elif value.__name__ == "wrap":
+        if value.__name__ == "wrap":
             return WrapHigherOrderVariable(value, source, **kwargs)
-        elif value.__name__ == "hints_wrapper":
+        if value.__name__ == "hints_wrapper":
             return HintsWrapperHigherOrderVariable(value, source, **kwargs)
-        elif value.__name__ == "flex_attention":
+        if value.__name__ == "flex_attention":
             return FlexAttentionHigherOrderVariable(value, source, **kwargs)
-        elif value.__name__ == "flex_attention_backward":
+        if value.__name__ == "flex_attention_backward":
             return FlexAttentionBackwardHighOrderVariable(value, source, **kwargs)
-        elif value.__name__ in (
+        if value.__name__ in (
             "wrap_activation_checkpoint",
             "tag_activation_checkpoint",
         ):
             return CheckpointHigherOrderVariable(value, source, **kwargs)
-        elif value.__name__ == "_export_tracepoint":
+        if value.__name__ == "_export_tracepoint":
             return ExportTracepointHigherOrderVariable(value, source, **kwargs)
-        elif value.__name__ == "trace_wrapped":
+        if value.__name__ == "trace_wrapped":
             return TraceWrappedHigherOrderOperatorVariable(value, source, **kwargs)
-        elif value.__name__ == "strict_mode":
+        if value.__name__ == "strict_mode":
             return StrictModeHigherOrderVariable(value, source, **kwargs)
-        elif value.__name__ == "run_with_rng_state":
+        if value.__name__ == "run_with_rng_state":
             return RunWithRNGStateHigherOrderVariable(value, source, **kwargs)
-        elif value.__name__ == "associative_scan":
+        if value.__name__ == "associative_scan":
             return AssociativeScanHigherOrderVariable(value, source, **kwargs)
-        elif value.__name__ == "scan":
+        if value.__name__ == "scan":
             return ScanHigherOrderVariable(value, source, **kwargs)
-        elif value.__name__ == "call_torchbind":
+        if value.__name__ == "call_torchbind":
             return CallTorchbindHigherOrderVariable(value, source, **kwargs)
-        elif value.__name__ == "wrap_with_set_grad_enabled":
+        if value.__name__ == "wrap_with_set_grad_enabled":
             return WrapWithSetGradEnabledHigherOrderVariable(value, source, **kwargs)
-        elif value.__name__ == "wrap_with_autocast":
+        if value.__name__ == "wrap_with_autocast":
             return WrapWithAutocastHigherOrderVariable(value, source, **kwargs)
-        elif value.__name__ == "dynamo_bypassing_wrapper":
+        if value.__name__ == "dynamo_bypassing_wrapper":
             return DynamoBypassingWrapperHigherOrderVariable(value, source, **kwargs)
-        elif (
+        if (
             value.__name__ == "auto_functionalized"
             or value.__name__ == "auto_functionalized_v2"
         ):
             return AutoFunctionalizeHigherOrderVariable(value, source, **kwargs)
-        elif value.__name__ == "invoke_subgraph":
+        if value.__name__ == "invoke_subgraph":
             return InvokeSubgraphHigherOrderVariable(value, source, **kwargs)
-        elif isinstance(value, BaseHOP):
+        if isinstance(value, BaseHOP):
             return BaseHOPVariable(value, source, **kwargs)
-        elif value.__name__ == "custom_function_call":
+        if value.__name__ == "custom_function_call":
             return CustomFunctionHigherOrderOperatorVariable(value, source, **kwargs)
-        else:
-            unimplemented(f"HigherOrderOperator {value.__name__}")
+        unimplemented(f"HigherOrderOperator {value.__name__}")
 
     def call_function(
         self,
@@ -1019,8 +1010,7 @@ class CondHigherOrderVariable(TorchHigherOrderOperatorVariable):
             )
             if pred.as_python_constant():
                 return true_fn.call_function(tx, operands.unpack_var_sequence(tx), {})
-            else:
-                return false_fn.call_function(tx, operands.unpack_var_sequence(tx), {})
+            return false_fn.call_function(tx, operands.unpack_var_sequence(tx), {})
 
         # predicate
         if type(pred) not in (ConstantVariable, TensorVariable, SymNodeVariable):
@@ -1953,7 +1943,7 @@ class MapHigherOrderVariable(TorchHigherOrderOperatorVariable):
             for x in body_r_vars
         ]
         _check_all_tensorvariable(
-            [br for bm, br in zip(none_mask, body_r_vars) if not bm]
+            [br for bm, br in zip(none_mask, body_r_vars, strict=False) if not bm]
         )
 
         body_nn_modules = dict(tx.output.nn_modules)
@@ -2690,12 +2680,11 @@ class FlexAttentionBackwardHighOrderVariable(TorchHigherOrderOperatorVariable):
     def to_proxy(self, tx, arg):
         if isinstance(arg, UnspecializedNNModuleVariable):
             return self.proxy_submod(tx, arg)
-        elif isinstance(arg, (ListVariable, TupleVariable)):
+        if isinstance(arg, (ListVariable, TupleVariable)):
             return arg.python_type()(
                 self.to_proxy(tx, nested_arg) for nested_arg in arg.items
             )
-        else:
-            return arg.as_proxy()
+        return arg.as_proxy()
 
     def call_function(
         self, tx, args: "list[VariableTracker]", kwargs: "dict[str, VariableTracker]"
@@ -3129,11 +3118,10 @@ class AutogradFunctionApplyVariable(VariableTracker):
         def unwrap_proxy(x):
             if isinstance(x, torch.fx.Proxy):
                 return x.node
-            else:
-                assert variables.ConstantVariable.is_literal(x), (
-                    f"Only constant is allowed. Got {x}"
-                )
-                return x
+            assert variables.ConstantVariable.is_literal(x), (
+                f"Only constant is allowed. Got {x}"
+            )
+            return x
 
         new_fwd_graph_outputs = (fwd_out.as_proxy(), fwd_proxy_of_bwd_freevars)
         new_fwd_graph_outputs = pytree.tree_map(unwrap_proxy, new_fwd_graph_outputs)
@@ -3190,7 +3178,7 @@ class AutogradFunctionApplyVariable(VariableTracker):
         output_proxy = bwd_proxy_of_fwd_freevars
         if isinstance(output_proxy, (tuple, list)):
             new_bwd_graph_outputs = ()
-            for x, mask in zip(output_proxy, args_tensor_mask):
+            for x, mask in zip(output_proxy, args_tensor_mask, strict=False):
                 if mask:
                     new_bwd_graph_outputs = new_bwd_graph_outputs + (x,)
                 else:
@@ -3262,10 +3250,9 @@ class AutogradFunctionApplyVariable(VariableTracker):
 def _get_fake_value(x):
     if isinstance(x, variables.VariableTracker):
         return x.as_proxy().node.meta["example_value"]
-    elif isinstance(x, torch.fx.Proxy):
+    if isinstance(x, torch.fx.Proxy):
         return x.node.meta["example_value"]
-    else:
-        return x
+    return x
 
 
 def maybe_positional_arg_names(func):

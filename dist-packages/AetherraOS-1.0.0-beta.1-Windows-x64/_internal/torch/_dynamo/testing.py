@@ -23,10 +23,11 @@ import re
 import sys
 import types
 import unittest
-from collections.abc import Sequence
-from typing import Any, Callable, Optional, overload, TypeVar, Union
-from typing_extensions import ParamSpec
+from collections.abc import Callable, Sequence
+from typing import Any, TypeVar, overload
 from unittest.mock import patch
+
+from typing_extensions import ParamSpec
 
 import torch
 from torch import fx
@@ -44,8 +45,7 @@ from .guards import CheckFunctionManager, CompileId, GuardedCode
 from .types import ConvertFrameReturn, DynamoFrameType, wrap_guarded_code
 from .utils import same
 
-
-np: Optional[types.ModuleType] = None
+np: types.ModuleType | None = None
 try:
     import numpy as np
 except ModuleNotFoundError:
@@ -60,7 +60,7 @@ log = logging.getLogger(__name__)
 _P = ParamSpec("_P")
 
 
-def clone_me(x: Optional[torch.Tensor]) -> Optional[torch.Tensor]:
+def clone_me(x: torch.Tensor | None) -> torch.Tensor | None:
     if x is None:
         return None
     return x.detach().clone().requires_grad_(x.requires_grad)
@@ -130,11 +130,9 @@ def collect_results(
 def requires_bwd_pass(out: Any) -> bool:
     if isinstance(out, torch.Tensor):
         return out.requires_grad
-    elif isinstance(out, (list, tuple)):
+    if isinstance(out, (list, tuple)):
         return any(requires_bwd_pass(x) for x in out)
-    elif out is None:
-        return False
-    elif isinstance(out, int):
+    if out is None or isinstance(out, int):
         return False
     raise NotImplementedError("Don't know how to reduce", type(out))
 
@@ -145,26 +143,26 @@ def reduce_to_scalar_loss(out: torch.Tensor) -> torch.Tensor: ...
 
 @overload
 def reduce_to_scalar_loss(
-    out: Union[list[Any], tuple[Any, ...], dict[Any, Any]],
+    out: list[Any] | tuple[Any, ...] | dict[Any, Any],
 ) -> float: ...
 
 
-def reduce_to_scalar_loss(out: Any) -> Union[torch.Tensor, float]:
+def reduce_to_scalar_loss(out: Any) -> torch.Tensor | float:
     """Reduce the output of a model to get scalar loss"""
     if isinstance(out, torch.Tensor):
         # Mean does not work on integer tensors
         return out.sum() / out.numel()
-    elif isinstance(out, (list, tuple)):
+    if isinstance(out, (list, tuple)):
         return sum(reduce_to_scalar_loss(x) for x in out) / len(out)
-    elif type(out).__name__ in (
+    if type(out).__name__ in (
         "MaskedLMOutput",
         "Seq2SeqLMOutput",
         "CausalLMOutputWithCrossAttentions",
     ):
         return reduce_to_scalar_loss(out.logits)
-    elif type(out).__name__ == "SquashedNormal":
+    if type(out).__name__ == "SquashedNormal":
         return out.mean.sum()
-    elif isinstance(out, dict):
+    if isinstance(out, dict):
         return sum(reduce_to_scalar_loss(value) for value in out.values()) / len(
             out.keys()
         )
@@ -359,8 +357,8 @@ def standard_test(
     self: Any,
     fn: Callable[..., Any],
     nargs: int,
-    expected_ops: Optional[int] = None,
-    expected_ops_dynamic: Optional[int] = None,
+    expected_ops: int | None = None,
+    expected_ops_dynamic: int | None = None,
     expected_frame_count: int = 1,
 ) -> None:
     if not config.assume_static_by_default and expected_ops_dynamic is not None:
@@ -411,11 +409,11 @@ def rand_strided(
     size: Sequence[int],
     stride: Sequence[int],
     dtype: torch.dtype = torch.float32,
-    device: Union[str, torch.device] = "cpu",
+    device: str | torch.device = "cpu",
     extra_size: int = 0,
 ) -> torch.Tensor:
     needed_size = (
-        sum((shape - 1) * stride for shape, stride in zip(size, stride))
+        sum((shape - 1) * stride for shape, stride in zip(size, stride, strict=False))
         + 1
         + extra_size
     )
@@ -460,7 +458,7 @@ def make_test_cls_with_patches(
     cls_prefix: str,
     fn_suffix: str,
     *patches: Any,
-    xfail_prop: Optional[str] = None,
+    xfail_prop: str | None = None,
     decorator: Callable[[Callable[..., Any]], Callable[..., Any]] = lambda x: x,
 ) -> type:
     DummyTestClass = type(f"{cls_prefix}{cls.__name__}", cls.__bases__, {})
@@ -513,8 +511,7 @@ def skipIfPy312(fn: Callable[_P, _T]) -> Callable[_P, _T]:
 def requiresPy310(fn: Callable[_P, _T]) -> Callable[_P, _T]:
     if sys.version_info >= (3, 10):
         return fn
-    else:
-        return unittest.skip("Requires Python 3.10+")(fn)
+    return unittest.skip("Requires Python 3.10+")(fn)
 
 
 # Controls tests generated in test/inductor/test_torchinductor_dynamic_shapes.py

@@ -68,9 +68,7 @@ class LyrixaIntelligenceStack:
 
     def __init__(self, workspace_path: str, aether_runtime=None, gui_interface=None):
         self.workspace_path = workspace_path
-        self.aether_runtime = aether_runtime or (
-            AetherRuntime() if AetherRuntime else None
-        )
+        self.aether_runtime = aether_runtime or (AetherRuntime() if AetherRuntime else None)
         self.gui_interface = gui_interface  # Store GUI interface reference
 
         # Initialize conversation manager with GUI interface (using lazy import)
@@ -82,9 +80,7 @@ class LyrixaIntelligenceStack:
                     aether_runtime=self.aether_runtime,
                     gui_interface=gui_interface,  # Pass GUI interface to conversation manager
                 )
-                print(
-                    "✅ LLM-powered conversation manager initialized with GUI integration"
-                )
+                print("✅ LLM-powered conversation manager initialized with GUI integration")
             except Exception as e:
                 print(f"⚠️ Failed to initialize conversation manager: {e}")
                 self.conversation_manager = None
@@ -170,9 +166,7 @@ class LyrixaIntelligenceStack:
             import importlib.util
 
             intelligence_path = Path(__file__).parent / "intelligence.py"
-            spec = importlib.util.spec_from_file_location(
-                "intelligence", intelligence_path
-            )
+            spec = importlib.util.spec_from_file_location("intelligence", intelligence_path)
             intelligence_module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(intelligence_module)
 
@@ -310,9 +304,7 @@ class LyrixaIntelligenceStack:
             uptime_seconds = current_time - self._start_time
             uptime_hours = uptime_seconds / 3600
             uptime_str = (
-                f"{uptime_hours:.1f}h"
-                if uptime_hours >= 1
-                else f"{uptime_seconds / 60:.1f}m"
+                f"{uptime_hours:.1f}h" if uptime_hours >= 1 else f"{uptime_seconds / 60:.1f}m"
             )
 
             # Calculate system health scores
@@ -368,9 +360,7 @@ class LyrixaIntelligenceStack:
                 "modules": {
                     "loaded": len(getattr(self, "active_modules", [])),
                     "health": module_health,
-                    "plugin_manager": "✅ Connected"
-                    if self.plugin_manager
-                    else "⚠️ Disconnected",
+                    "plugin_manager": "✅ Connected" if self.plugin_manager else "⚠️ Disconnected",
                 },
                 "performance": {
                     "cpu": cpu_percent,
@@ -416,9 +406,7 @@ class LyrixaIntelligenceStack:
                     "success_rate": 96.3,
                 },
                 "timestamp": current_time,
-                "last_update": time.strftime(
-                    "%Y-%m-%d %H:%M:%S", time.localtime(current_time)
-                ),
+                "last_update": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(current_time)),
             }
 
         except Exception as e:
@@ -459,9 +447,7 @@ class LyrixaIntelligenceStack:
                 return 95.0
 
             recent_workflows = self.workflow_history[-10:]
-            success_count = sum(
-                1 for w in recent_workflows if w.get("status") == "completed"
-            )
+            success_count = sum(1 for w in recent_workflows if w.get("status") == "completed")
             return (success_count / len(recent_workflows)) * 100
         except:
             return 85.0
@@ -495,16 +481,10 @@ class LyrixaIntelligenceStack:
             status = {
                 # Core cognitive metrics that GUI expects
                 "learning_iterations": cognitive_metrics.get("learning_iterations", 0),
-                "pattern_recognitions": cognitive_metrics.get(
-                    "pattern_recognitions", 0
-                ),
+                "pattern_recognitions": cognitive_metrics.get("pattern_recognitions", 0),
                 "total_decisions": cognitive_metrics.get("total_decisions", 0),
-                "successful_predictions": cognitive_metrics.get(
-                    "successful_predictions", 0
-                ),
-                "adaptive_adjustments": cognitive_metrics.get(
-                    "adaptive_adjustments", 0
-                ),
+                "successful_predictions": cognitive_metrics.get("successful_predictions", 0),
+                "adaptive_adjustments": cognitive_metrics.get("adaptive_adjustments", 0),
                 # Additional status information
                 "intelligence_health": self._calculate_intelligence_health(),
                 "workflow_health": self._calculate_workflow_health(),
@@ -662,16 +642,12 @@ class LyrixaIntelligenceStack:
             "system_workflows": {
                 "status": self.workflow_status,
                 "health": self._calculate_workflow_health(),
-                "active_count": sum(
-                    1 for w in self.workflow_status.values() if w["active"]
-                ),
+                "active_count": sum(1 for w in self.workflow_status.values() if w["active"]),
             },
             "system_modules": {
                 "status": self.module_status,
                 "health": self._calculate_module_health(),
-                "active_count": sum(
-                    1 for active in self.module_status.values() if active
-                ),
+                "active_count": sum(1 for active in self.module_status.values() if active),
             },
             "overall_health": self._calculate_overall_health(),
             "timestamp": datetime.now().isoformat(),
@@ -718,18 +694,14 @@ class LyrixaIntelligenceStack:
             insights = await self._generate_system_insights(intelligence_status)
 
             # Create recommendations
-            recommendations = await self._generate_recommendations(
-                intelligence_status, insights
-            )
+            recommendations = await self._generate_recommendations(intelligence_status, insights)
 
             reflection_report = {
                 "timestamp": datetime.now().isoformat(),
                 "system_status": intelligence_status,
                 "insights": insights,
                 "recommendations": recommendations,
-                "confidence_score": self._calculate_confidence_score(
-                    intelligence_status
-                ),
+                "confidence_score": self._calculate_confidence_score(intelligence_status),
             }
 
             # Cache the reflection
@@ -747,24 +719,18 @@ class LyrixaIntelligenceStack:
         try:
             # Check for memory-related queries
             if self.aether_runtime and self.aether_runtime.context.memory:
-                memory_results = (
-                    await self.aether_runtime.context.memory.query_memories(
-                        user_message
-                    )
+                memory_results = await self.aether_runtime.context.memory.query_memories(
+                    user_message
                 )
                 if memory_results:
                     # Process memory results into a conversational response
-                    response = self._process_memory_results(
-                        memory_results, user_message
-                    )
+                    response = self._process_memory_results(memory_results, user_message)
                     if response:
                         return response
 
             # Try plugin execution for dynamic responses
             if self.aether_runtime and self.aether_runtime.context.plugins:
-                plugin_response = self.aether_runtime.context.plugins.execute_chain(
-                    user_message
-                )
+                plugin_response = self.aether_runtime.context.plugins.execute_chain(user_message)
                 if plugin_response:
                     return plugin_response
 
@@ -821,30 +787,19 @@ class LyrixaIntelligenceStack:
             if relevant_memories:
                 response_parts = ["Based on what I remember:"]
 
-                project_memories = [
-                    m for m in relevant_memories if m["type"] == "project"
-                ]
+                project_memories = [m for m in relevant_memories if m["type"] == "project"]
                 if project_memories:
-                    response_parts.append(
-                        f"You're working on the {project_memories[0]['info']}."
-                    )
+                    response_parts.append(f"You're working on the {project_memories[0]['info']}.")
 
-                feedback_memories = [
-                    m for m in relevant_memories if m["type"] == "feedback"
-                ]
+                feedback_memories = [m for m in relevant_memories if m["type"] == "feedback"]
                 if feedback_memories:
                     response_parts.append(
                         "I've been learning from your feedback to improve my responses."
                     )
 
                 # Add contextual help based on user message
-                if any(
-                    word in user_message.lower()
-                    for word in ["help", "how", "what", "explain"]
-                ):
-                    response_parts.append(
-                        "How can I assist you with your current work?"
-                    )
+                if any(word in user_message.lower() for word in ["help", "how", "what", "explain"]):
+                    response_parts.append("How can I assist you with your current work?")
                 else:
                     response_parts.append(
                         "Is there something specific you'd like to know or work on?"
@@ -874,9 +829,7 @@ class LyrixaIntelligenceStack:
             return "I can help you check the status of your project. Would you like me to review your current progress or help with next steps?"
 
         # Question patterns
-        if any(
-            word in message_lower for word in ["what", "how", "why", "when", "where"]
-        ):
+        if any(word in message_lower for word in ["what", "how", "why", "when", "where"]):
             return "That's a great question! I'd be happy to help you understand this better. Could you provide more context about what you're working on?"
 
         # Default conversational response
@@ -906,9 +859,7 @@ class LyrixaIntelligenceStack:
                                     self.conversation_manager, "generate_response"
                                 ):
                                     return new_loop.run_until_complete(
-                                        self.conversation_manager.generate_response(
-                                            user_message
-                                        )
+                                        self.conversation_manager.generate_response(user_message)
                                     )
                                 else:
                                     return "Conversation manager not available"
@@ -925,9 +876,7 @@ class LyrixaIntelligenceStack:
                             self.conversation_manager, "generate_response"
                         ):
                             return asyncio.run(
-                                self.conversation_manager.generate_response(
-                                    user_message
-                                )
+                                self.conversation_manager.generate_response(user_message)
                             )
                         else:
                             return "Conversation manager not available"
@@ -1000,14 +949,10 @@ class LyrixaIntelligenceStack:
             system_dir = Path(self.workspace_path) / "Aetherra" / "system"
 
             if system_dir.exists():
-                available_plugins = [
-                    p for p in system_plugins if (system_dir / p).exists()
-                ]
+                available_plugins = [p for p in system_plugins if (system_dir / p).exists()]
                 if available_plugins:
                     self.intelligence_status["system_awareness"] = True
-                    print(
-                        f"✅ System awareness - Active ({len(available_plugins)} plugins)"
-                    )
+                    print(f"✅ System awareness - Active ({len(available_plugins)} plugins)")
                 else:
                     print("⚠️ No system plugins found - System awareness limited")
             else:
@@ -1019,10 +964,7 @@ class LyrixaIntelligenceStack:
         """Setup AI self-reflection capabilities"""
         try:
             reflector_path = (
-                Path(self.workspace_path)
-                / "Aetherra"
-                / "system"
-                / "daily_reflector.aether"
+                Path(self.workspace_path) / "Aetherra" / "system" / "daily_reflector.aether"
             )
             if reflector_path.exists():
                 self.intelligence_status["self_reflection"] = True
@@ -1035,9 +977,7 @@ class LyrixaIntelligenceStack:
     async def _initialize_event_correlation(self):
         """Initialize event correlation and reasoning"""
         try:
-            logger_path = (
-                Path(self.workspace_path) / "Aetherra" / "system" / "logger.aether"
-            )
+            logger_path = Path(self.workspace_path) / "Aetherra" / "system" / "logger.aether"
             if logger_path.exists():
                 self.intelligence_status["event_correlation"] = True
                 print("✅ Event correlation + reasoning - Active")
@@ -1059,31 +999,21 @@ class LyrixaIntelligenceStack:
         """Initialize plugin monitoring capabilities"""
         try:
             watchdog_path = (
-                Path(self.workspace_path)
-                / "Aetherra"
-                / "system"
-                / "plugin_watchdog.aether"
+                Path(self.workspace_path) / "Aetherra" / "system" / "plugin_watchdog.aether"
             )
             if watchdog_path.exists():
                 self.intelligence_status["plugin_monitoring"] = True
                 print("✅ Plugin monitoring - Active")
             else:
-                print(
-                    "⚠️ plugin_watchdog.aether not found - Plugin monitoring disabled"
-                )
+                print("⚠️ plugin_watchdog.aether not found - Plugin monitoring disabled")
         except Exception as e:
             print(f"❌ Plugin monitoring initialization failed: {e}")
 
-    async def _initialize_workflow(
-        self, workflow_name: str, schedule: str, description: str
-    ):
+    async def _initialize_workflow(self, workflow_name: str, schedule: str, description: str):
         """Initialize a specific workflow"""
         try:
             workflow_path = (
-                Path(self.workspace_path)
-                / "Aetherra"
-                / "system"
-                / f"{workflow_name}.aether"
+                Path(self.workspace_path) / "Aetherra" / "system" / f"{workflow_name}.aether"
             )
             if workflow_path.exists():
                 self.workflow_status[workflow_name]["active"] = True
@@ -1098,10 +1028,7 @@ class LyrixaIntelligenceStack:
         """Initialize a specific system module"""
         try:
             module_path = (
-                Path(self.workspace_path)
-                / "Aetherra"
-                / "system"
-                / f"{module_name}.aether"
+                Path(self.workspace_path) / "Aetherra" / "system" / f"{module_name}.aether"
             )
             if module_path.exists():
                 self.module_status[module_name] = True
@@ -1118,10 +1045,7 @@ class LyrixaIntelligenceStack:
         try:
             # Load and execute the workflow
             workflow_path = (
-                Path(self.workspace_path)
-                / "Aetherra"
-                / "system"
-                / f"{workflow_name}.aether"
+                Path(self.workspace_path) / "Aetherra" / "system" / f"{workflow_name}.aether"
             )
             if workflow_path.exists():
                 with open(workflow_path) as f:
@@ -1134,9 +1058,7 @@ class LyrixaIntelligenceStack:
                         # Try different execution methods
                         if hasattr(self.aether_runtime, "execute_async"):
                             try:
-                                result = self.aether_runtime.execute_async(
-                                    workflow_code, params
-                                )
+                                result = self.aether_runtime.execute_async(workflow_code, params)
                             except:
                                 result = {"status": "executed", "runtime": "basic"}
                         else:
@@ -1177,9 +1099,7 @@ class LyrixaIntelligenceStack:
             print(f"✅ Discovered {len(discovered_plugins)} plugins")
 
             # Store plugin metadata in intelligence memory
-            stored_successfully = (
-                await self.plugin_bridge.store_plugins_in_intelligence_memory()
-            )
+            stored_successfully = await self.plugin_bridge.store_plugins_in_intelligence_memory()
 
             if stored_successfully:
                 print("✅ Plugin metadata stored in intelligence memory")
@@ -1193,9 +1113,7 @@ class LyrixaIntelligenceStack:
             print(f"❌ Error in plugin discovery integration: {e}")
             return False
 
-    async def get_plugin_recommendations_for_lyrixa(
-        self, query: str
-    ) -> List[Dict[str, Any]]:
+    async def get_plugin_recommendations_for_lyrixa(self, query: str) -> List[Dict[str, Any]]:
         """
         Get plugin recommendations for Lyrixa to use in conversations
 

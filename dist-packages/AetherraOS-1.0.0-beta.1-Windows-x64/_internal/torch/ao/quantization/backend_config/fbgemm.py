@@ -15,7 +15,6 @@ from ._common_operator_config_utils import (
 )
 from .backend_config import BackendConfig, DTypeConfig
 
-
 __all__ = [
     "get_fbgemm_backend_config",
 ]

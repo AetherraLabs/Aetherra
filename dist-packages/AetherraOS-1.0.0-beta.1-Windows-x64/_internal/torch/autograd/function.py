@@ -4,7 +4,8 @@ import inspect
 import itertools
 import warnings
 from collections import OrderedDict
-from typing import Any, Optional
+from typing import Any
+
 from typing_extensions import deprecated
 
 import torch
@@ -13,7 +14,6 @@ import torch._functorch as _functorch
 import torch.utils.hooks as hooks
 from torch._C import _functions
 from torch._functorch.autograd_function import custom_function_call
-
 
 __all__ = [
     "FunctionCtx",
@@ -656,27 +656,26 @@ def _nested_map(condition, fn, condition_msg=None):
     def _map(obj):
         if condition(obj):
             return fn(obj)
-        elif obj is None:
+        if obj is None:
             return None
-        elif isinstance(obj, (list, tuple)):
+        if isinstance(obj, (list, tuple)):
             mapped = (_map(x) for x in obj)
             if hasattr(obj, "_fields"):
                 # obj is namedtuple
                 return type(obj)(*mapped)
             return type(obj)(mapped)
-        elif isinstance(obj, dict):
+        if isinstance(obj, dict):
             return {x: _map(obj[x]) for x in obj}
-        else:
-            raise ValueError(
-                "Auto nesting doesn't know how to process "
-                "an input object of type "
-                + torch.typename(obj)
-                + (
-                    ". Accepted types: " + condition_msg + ", or lists/tuples of them"
-                    if condition_msg
-                    else ""
-                )
+        raise ValueError(
+            "Auto nesting doesn't know how to process "
+            "an input object of type "
+            + torch.typename(obj)
+            + (
+                ". Accepted types: " + condition_msg + ", or lists/tuples of them"
+                if condition_msg
+                else ""
             )
+        )
 
     return _map
 
@@ -723,7 +722,7 @@ def _unflatten(input, proto):
     # unflatten a list or tuple input into a nested list/tuple structure
     # specified by proto
     def unflatten_helper(input, proto):
-        res: list[Optional[torch.Tensor]] = []
+        res: list[torch.Tensor | None] = []
         if hasattr(proto, "_jit_wrap"):
             return proto._jit_wrap(input)
         if not isinstance(proto, (list, tuple)):
@@ -766,6 +765,7 @@ class NestedIOFunction(Function):
     This class is here only for backward compatibility reasons.
     Use :class:`Function` instead of this for any new use case.
     """
+
     # The 'type: ignore' statements are needed here because these functions are declared as '@staticmethod' in the
     # superclass (Function) but are instance methods here, which mypy reports as incompatible.
 

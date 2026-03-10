@@ -4,10 +4,10 @@
 
 import itertools
 import sys
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass
 from functools import partial, wraps
-from typing import Any, Callable, cast, Optional, TypeVar, Union
+from typing import Any, TypeVar, cast
 
 import torch
 import torch.distributed as dist
@@ -16,28 +16,27 @@ import torch.nn.functional as F
 from torch._utils import _get_device_module
 from torch.distributed.tensor import (
     DeviceMesh,
-    distribute_tensor,
     Placement,
     Replicate,
     Shard,
+    distribute_tensor,
 )
 from torch.distributed.tensor.parallel import (
     ColwiseParallel,
-    parallelize_module,
     PrepareModuleInput,
     RowwiseParallel,
     SequenceParallel,
+    parallelize_module,
 )
 from torch.testing._internal.common_distributed import (
+    TEST_SKIPS,
     MultiProcessTestCase,
     MultiThreadedTestCase,
     run_subtests,
     skip_if_lt_x_gpu,
-    TEST_SKIPS,
 )
 from torch.testing._internal.common_utils import TEST_CUDA, TEST_HPU, TEST_XPU
-from torch.utils._pytree import tree_flatten, tree_unflatten, TreeSpec
-
+from torch.utils._pytree import TreeSpec, tree_flatten, tree_unflatten
 
 if TEST_CUDA:
     DEVICE_TYPE = "cuda"
@@ -340,10 +339,9 @@ class DTensorTestBase(MultiProcessTestCase):
     @property
     def device_type(self) -> str:
         # if enough GPU/XPU/HPU we can use those devices, otherwise we fallback to CPU
-        if not (TEST_CUDA or TEST_XPU or TEST_HPU) or DEVICE_COUNT < self.world_size:
+        if not (TEST_CUDA or TEST_XPU or TEST_HPU) or self.world_size > DEVICE_COUNT:
             return "cpu"
-        else:
-            return DEVICE_TYPE
+        return DEVICE_TYPE
 
     @property
     def backend(self) -> str:
@@ -386,7 +384,7 @@ class DTensorTestBase(MultiProcessTestCase):
             device_id=device_id,
         )
 
-    def destroy_pg(self, device_id: Optional[int] = None) -> None:
+    def destroy_pg(self, device_id: int | None = None) -> None:
         # Wait for all ranks to reach here before starting shutdown.
         # FIXME dist.barrier deadlocks with multiple threads and NCCL: https://github.com/pytorch/pytorch/issues/95895
         # dist.all_reduce(torch.zeros((1,), device="cuda" if TEST_CUDA else "cpu"))
@@ -421,11 +419,13 @@ TestFunc = Callable[[...], object]
 
 
 # wrapper to initialize comms (processgroup)
-def with_comms(eager_init: Union[TestFunc, bool] = False) -> TestFunc:
+def with_comms(eager_init: TestFunc | bool = False) -> TestFunc:
     def decorator(func, eager_init: bool = False):
         @wraps(func)  # pyre-ignore[6]
         def wrapper(
-            self, *args: tuple[object], **kwargs: dict[str, Any]  # type: ignore[misc]
+            self,
+            *args: tuple[object],
+            **kwargs: dict[str, Any],  # type: ignore[misc]
         ) -> None:
             self.init_pg(eager_init)
 
@@ -601,15 +601,13 @@ class DTensorConverter:
                         r, requires_grad=r.requires_grad
                     )
                 return r
-            else:
-                self.miss += 1
-                return t
-        elif torch.overrides.is_tensor_like(t):
+            self.miss += 1
+            return t
+        if torch.overrides.is_tensor_like(t):
             # Blindly converting tensor subclasses to dist tensor can cause
             # unpredictable problems, we explicitly disable this conversion
             # for now (i.e. we don't support DTensor holding tensor subclass
             # until there's a strong reason later).
             self.miss += 1
             return t
-        else:
-            raise RuntimeError(f"Trying to convert to DTensor, but got {type(t)}")
+        raise RuntimeError(f"Trying to convert to DTensor, but got {type(t)}")

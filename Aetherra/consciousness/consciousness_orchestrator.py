@@ -83,9 +83,7 @@ class ConsciousnessOrchestrator:
                 try:
                     if component_name == "consciousness_bridge":
                         if initialize_consciousness_bridge:
-                            self.consciousness_bridge = (
-                                await initialize_consciousness_bridge()
-                            )
+                            self.consciousness_bridge = await initialize_consciousness_bridge()
                         else:
                             self.consciousness_bridge = None
                     elif component_name == "agent_registry":
@@ -113,7 +111,7 @@ class ConsciousnessOrchestrator:
                         else:
                             self.meta_layer_core = None
                     elif component_name == "lyrixa_consciousness":
-                        # ARCHITECTURAL FIX: Lyrixa initialization removed; keep placeholder
+                        # ARCHITECTURAL FIX: Lyrixa initialization removed; keep baseline sentinel
                         self.lyrixa_consciousness = None
 
                     component_time = (datetime.now() - component_start).total_seconds()
@@ -166,9 +164,9 @@ class ConsciousnessOrchestrator:
 
         # Check consciousness bridge
         if self.consciousness_bridge:
-            health_status[
-                "consciousness_bridge"
-            ] = self.consciousness_bridge.is_consciousness_bridge_healthy()
+            health_status["consciousness_bridge"] = (
+                self.consciousness_bridge.is_consciousness_bridge_healthy()
+            )
 
         # Check agent registry
         if self.agent_registry:
@@ -267,9 +265,7 @@ class ConsciousnessOrchestrator:
                 current_time = datetime.now()
 
                 # Periodic status reports
-                if (
-                    current_time - last_status_report
-                ).total_seconds() >= status_interval:
+                if (current_time - last_status_report).total_seconds() >= status_interval:
                     await self._generate_status_report()
                     last_status_report = current_time
 
@@ -318,9 +314,7 @@ class ConsciousnessOrchestrator:
                     f"📝 Registry: {registry_stats['active_agents']}/{registry_stats['total_agents']} agents active"
                 )
                 self.logger.info(f"  Services: {registry_stats['total_services']}")
-                self.logger.info(
-                    f"  Capabilities: {registry_stats['unique_capabilities']}"
-                )
+                self.logger.info(f"  Capabilities: {registry_stats['unique_capabilities']}")
 
             # Meta-layer status
             if self.meta_layer_core:
@@ -368,9 +362,7 @@ class ConsciousnessOrchestrator:
 
             # Take action if components are unhealthy
             if unhealthy_components:
-                self.logger.warning(
-                    f"⚠️ Unhealthy components detected: {unhealthy_components}"
-                )
+                self.logger.warning(f"⚠️ Unhealthy components detected: {unhealthy_components}")
 
                 # Could implement automatic recovery here
                 # For now, just log the issue
@@ -518,7 +510,7 @@ class ConsciousnessOrchestrator:
             status["components"]["narrative_layer"] = {
                 "enabled": True,
                 "last_chapter_ts": (
-                    getattr(self.narrative_layer, "_last_chapter_ts").isoformat()
+                    self.narrative_layer._last_chapter_ts.isoformat()
                     if getattr(self.narrative_layer, "_last_chapter_ts", None)
                     else None
                 ),

@@ -22,7 +22,6 @@ from torch.ao.nn.intrinsic.qat import (
     update_bn_stats,
 )
 
-
 __all__ = [
     # Modules
     "ConvBn1d",

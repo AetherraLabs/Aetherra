@@ -10,12 +10,12 @@ while adding an import statement here.
 """
 
 from torch.ao.nn.quantized.reference.modules.conv import (
-    _ConvNd,
-    _ConvTransposeNd,
     Conv1d,
     Conv2d,
     Conv3d,
     ConvTranspose1d,
     ConvTranspose2d,
     ConvTranspose3d,
+    _ConvNd,
+    _ConvTransposeNd,
 )

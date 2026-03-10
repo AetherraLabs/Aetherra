@@ -52,9 +52,7 @@ class WhisperPlugin:
                 "and future roadmap."
             )
         else:
-            mock_text = (
-                "This is a simulated transcription of the uploaded audio content."
-            )
+            mock_text = "This is a simulated transcription of the uploaded audio content."
 
         return {
             "text": mock_text,

@@ -2,7 +2,7 @@
 # mypy: allow-untyped-defs
 import enum
 import operator
-from typing import Callable, Optional, Union
+from collections.abc import Callable
 
 import torch
 import torch.ao.nn.intrinsic.quantized as nniq
@@ -15,7 +15,6 @@ from torch.fx import GraphModule
 from torch.fx.graph import Node
 
 from .ns_types import NSNodeTargetType, NSResultsType
-
 
 toq = torch.ops.quantized
 
@@ -56,9 +55,9 @@ def get_node_first_input_and_output_type(
             return (NodeInputOrOutputType.FP32, NodeInputOrOutputType.FP32)
         if node.target in FUNS_IO_TYPE_FP16:
             return (NodeInputOrOutputType.FP16, NodeInputOrOutputType.FP16)
-        elif node.target in FUNS_IO_TYPE_INT8:
+        if node.target in FUNS_IO_TYPE_INT8:
             return (NodeInputOrOutputType.INT8, NodeInputOrOutputType.INT8)
-        elif node.target in FUNS_IO_TYPE_FP32_OR_INT8:
+        if node.target in FUNS_IO_TYPE_FP32_OR_INT8:
             first_arg = get_normalized_nth_input(node, gm, 0)
             assert isinstance(first_arg, Node)
             (
@@ -68,10 +67,9 @@ def get_node_first_input_and_output_type(
                 first_arg, gm, logger_cls, node_type_to_io_type_map
             )
             return (prev_node_output_type, prev_node_output_type)
-        else:
-            return (NodeInputOrOutputType.UNKNOWN, NodeInputOrOutputType.UNKNOWN)
+        return (NodeInputOrOutputType.UNKNOWN, NodeInputOrOutputType.UNKNOWN)
 
-    elif node.op == "call_module":
+    if node.op == "call_module":
         assert node.op == "call_module"
         assert isinstance(node.target, str)
         mod = getattr_from_fqn(gm, node.target)
@@ -104,12 +102,11 @@ def get_node_first_input_and_output_type(
         )
         if is_known_fp32_input_module:
             return (NodeInputOrOutputType.FP32, NodeInputOrOutputType.FP32)
-        elif is_known_int8_input_module:
+        if is_known_int8_input_module:
             return (NodeInputOrOutputType.INT8, NodeInputOrOutputType.INT8)
-        else:
-            return (NodeInputOrOutputType.UNKNOWN, NodeInputOrOutputType.UNKNOWN)
+        return (NodeInputOrOutputType.UNKNOWN, NodeInputOrOutputType.UNKNOWN)
 
-    elif node.op == "call_method":
+    if node.op == "call_method":
         if node.target == "dequantize":
             # Dequantize is a special node because it allows multiple input types.
             # So, we look up the output type of the previous node and return that
@@ -124,7 +121,7 @@ def get_node_first_input_and_output_type(
             )
             return (prev_node_output_type, NodeInputOrOutputType.FP32)
 
-        elif node.target == "to":
+        if node.target == "to":
             # to is a special node because it allows multiple input types.
             # So, we look up the output type of the previous node and return that
             # as the input type of this node instance. We also look up the target
@@ -145,7 +142,7 @@ def get_node_first_input_and_output_type(
 
             return (prev_node_output_type, NodeInputOrOutputType.FP16)
 
-        elif node.target in METHS_IO_TYPE_FP32_OR_INT8:
+        if node.target in METHS_IO_TYPE_FP32_OR_INT8:
             first_arg = get_normalized_nth_input(node, gm, 0)
             assert isinstance(first_arg, Node)
             (
@@ -157,15 +154,14 @@ def get_node_first_input_and_output_type(
             return (prev_node_output_type, prev_node_output_type)
 
         return (NodeInputOrOutputType.UNKNOWN, NodeInputOrOutputType.UNKNOWN)
-    else:
-        return (NodeInputOrOutputType.UNKNOWN, NodeInputOrOutputType.UNKNOWN)
+    return (NodeInputOrOutputType.UNKNOWN, NodeInputOrOutputType.UNKNOWN)
 
 
 def get_node_input_qparams(
     node: Node,
     gm: GraphModule,
     node_type_to_io_type_map: dict[str, set[NSNodeTargetType]],
-) -> Optional[tuple[Union[torch.Tensor, float], Union[torch.Tensor, int]]]:
+) -> tuple[torch.Tensor | float, torch.Tensor | int] | None:
     """
     Returns the qparams (scale, zero_point) of the first input to `node`,
     if they can be inferred from the graph.
@@ -190,14 +186,14 @@ def get_node_input_qparams(
         # quantize - read the args directly
         if prev_node.target == torch.quantize_per_tensor:
             return _get_scale_zp_from_function_args(prev_node, gm, 1, 2)
-        elif prev_node.target in (toq.add, toq.add_relu, toq.mul, toq.mul_relu):
+        if prev_node.target in (toq.add, toq.add_relu, toq.mul, toq.mul_relu):
             return _get_scale_zp_from_function_args(prev_node, gm, 2, 3)
 
         return None
         # TODO(future PR): handle more functionals
         # TODO(future PR): handle functional ops which inherit qparams from input
 
-    elif prev_node.op == "call_module":
+    if prev_node.op == "call_module":
         # get type of the module
         assert isinstance(prev_node.target, str)
         module_obj = getattr_from_fqn(gm, prev_node.target)
@@ -417,12 +413,12 @@ def maybe_dequantize_first_two_tensor_args_and_handle_tuples(f):
             isinstance(a0, list) and isinstance(a1, list)
         ):
             results = []
-            for el0, el1 in zip(a0, a1):
+            for el0, el1 in zip(a0, a1, strict=False):
                 new_args = (el0, el1, *a_other)
                 results.append(inner(*new_args, **kwargs))
             return results
 
-        elif isinstance(a0, torch.Tensor) and isinstance(a1, torch.Tensor):
+        if isinstance(a0, torch.Tensor) and isinstance(a1, torch.Tensor):
             if a0.is_quantized:
                 a0 = a0.dequantize()
             if a1.is_quantized:
@@ -519,16 +515,13 @@ def get_normalized_nth_input(node: Node, gm: GraphModule, idx: int) -> Node:
             assert len(norm_args) + len(norm_kwargs) > idx
             if idx < len(norm_args):
                 return norm_args[idx]
-            else:
-                # note: in Python 3.7+ dicts are ordered
-                return list(norm_kwargs.values())[idx]
-        else:
-            assert len(node.args) + len(node.kwargs) > idx
-            if idx < len(node.args):
-                return node.args[idx]  # type: ignore[return-value]
-            else:
-                kwargs_idx = idx + len(node.args)
-                return list(node.kwargs.values())[kwargs_idx]  # type: ignore[return-value]
+            # note: in Python 3.7+ dicts are ordered
+            return list(norm_kwargs.values())[idx]
+        assert len(node.args) + len(node.kwargs) > idx
+        if idx < len(node.args):
+            return node.args[idx]  # type: ignore[return-value]
+        kwargs_idx = idx + len(node.args)
+        return list(node.kwargs.values())[kwargs_idx]  # type: ignore[return-value]
     except RuntimeError:
         # this RuntimeError happens when node argument normalization
         # requires typehints to proceed, such as for torch.add where
@@ -536,6 +529,5 @@ def get_normalized_nth_input(node: Node, gm: GraphModule, idx: int) -> Node:
         assert len(node.args) + len(node.kwargs) > idx
         if idx < len(node.args):
             return node.args[idx]  # type: ignore[return-value]
-        else:
-            kwargs_idx = idx + len(node.args)
-            return list(node.kwargs.values())[kwargs_idx]  # type: ignore[return-value]
+        kwargs_idx = idx + len(node.args)
+        return list(node.kwargs.values())[kwargs_idx]  # type: ignore[return-value]

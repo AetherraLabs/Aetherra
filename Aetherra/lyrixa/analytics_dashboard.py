@@ -350,15 +350,9 @@ class AnalyticsDashboard:
                 "status": "healthy",
                 "timestamp": datetime.now().isoformat(),
                 "components": {
-                    "analytics_engine": "available"
-                    if self.analytics_engine
-                    else "unavailable",
-                    "insights_engine": "available"
-                    if self.insights_engine
-                    else "unavailable",
-                    "memory_manager": "available"
-                    if self.memory_manager
-                    else "unavailable",
+                    "analytics_engine": "available" if self.analytics_engine else "unavailable",
+                    "insights_engine": "available" if self.insights_engine else "unavailable",
+                    "memory_manager": "available" if self.memory_manager else "unavailable",
                     "dashboard": "running",
                 },
                 "dashboard_stats": self.dashboard_stats.copy(),
@@ -701,7 +695,9 @@ class AnalyticsDashboard:
         if category_stats:
             html += "<h4>Category Statistics:</h4>"
             for category, stats in category_stats.items():
-                html += f"<p><strong>{category.title()}:</strong> {stats.get('count', 0)} metrics</p>"
+                html += (
+                    f"<p><strong>{category.title()}:</strong> {stats.get('count', 0)} metrics</p>"
+                )
 
         return html
 
@@ -778,12 +774,8 @@ class AnalyticsDashboard:
             return False
 
         try:
-            logger.info(
-                f"🚀 Starting Analytics Dashboard on http://{self.host}:{self.port}"
-            )
-            self.flask_app.run(
-                host=self.host, port=self.port, debug=self.debug, threaded=True
-            )
+            logger.info(f"🚀 Starting Analytics Dashboard on http://{self.host}:{self.port}")
+            self.flask_app.run(host=self.host, port=self.port, debug=self.debug, threaded=True)
             return True
 
         except Exception as e:
@@ -798,13 +790,9 @@ class AnalyticsDashboard:
 
         try:
             # Collect dashboard metrics
-            uptime = (
-                datetime.now() - self.dashboard_stats["uptime_start"]
-            ).total_seconds()
+            uptime = (datetime.now() - self.dashboard_stats["uptime_start"]).total_seconds()
 
-            await self.analytics_engine.collect_metric(
-                "dashboard_uptime", uptime, "dashboard"
-            )
+            await self.analytics_engine.collect_metric("dashboard_uptime", uptime, "dashboard")
 
             await self.analytics_engine.collect_metric(
                 "dashboard_requests",
@@ -826,9 +814,7 @@ class AnalyticsDashboard:
 
 
 # Convenience function
-def create_analytics_dashboard(
-    config: dict[str, Any] | None = None
-) -> AnalyticsDashboard:
+def create_analytics_dashboard(config: dict[str, Any] | None = None) -> AnalyticsDashboard:
     """Create and return an analytics dashboard instance"""
     return AnalyticsDashboard(config)
 

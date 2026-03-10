@@ -18,8 +18,8 @@ import logging
 import math
 import operator
 import types
-from typing import Callable, Literal, Union
-from typing_extensions import TypeAlias
+from collections.abc import Callable
+from typing import Literal, TypeAlias
 
 import torch
 import torch._ops
@@ -27,8 +27,7 @@ from torch.onnx._internal._lazy_import import onnxscript, onnxscript_apis
 from torch.onnx._internal.exporter import _constants, _schemas
 from torch.onnx._internal.exporter._torchlib import _torchlib_registry
 
-
-TorchOp: TypeAlias = Union[torch._ops.OpOverload, types.BuiltinFunctionType, Callable]
+TorchOp: TypeAlias = torch._ops.OpOverload | types.BuiltinFunctionType | Callable
 
 logger = logging.getLogger(__name__)
 
@@ -76,17 +75,16 @@ class OnnxDecompMeta:
                 # Log an warning if the op is custom. Raise exception for builtin ops.
                 if not self.is_custom:
                     raise
-                else:
-                    # When the function is targeting an HOP, for example, it will accept
-                    # functions as arguments and fail to generate an ONNX signature.
-                    # In this case we set signature to None and dispatch to this function always.
-                    logger.warning(
-                        "Failed to infer the signature for function '%s' because '%s'"
-                        "All nodes targeting `%s` will be dispatched to this function",
-                        self.onnx_function,
-                        e,
-                        self.fx_target,
-                    )
+                # When the function is targeting an HOP, for example, it will accept
+                # functions as arguments and fail to generate an ONNX signature.
+                # In this case we set signature to None and dispatch to this function always.
+                logger.warning(
+                    "Failed to infer the signature for function '%s' because '%s'"
+                    "All nodes targeting `%s` will be dispatched to this function",
+                    self.onnx_function,
+                    e,
+                    self.fx_target,
+                )
             else:
                 self.signature = signature
                 self.onnx_function._pt_onnx_signature = signature  # type: ignore[attr-defined]

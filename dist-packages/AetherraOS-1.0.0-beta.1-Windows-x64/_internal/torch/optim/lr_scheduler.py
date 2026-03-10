@@ -8,25 +8,24 @@ import types
 import warnings
 from bisect import bisect_right
 from collections import Counter
+from collections.abc import Callable
 from functools import partial, wraps
 from typing import (
-    Any,
-    Callable,
-    cast,
-    Literal,
-    Optional,
-    SupportsFloat,
     TYPE_CHECKING,
+    Any,
+    Literal,
+    Self,
+    SupportsFloat,
     TypedDict,
-    Union,
+    cast,
 )
-from typing_extensions import override, Self
 from weakref import ref
 
-from torch import inf, Tensor
+from typing_extensions import override
 
-from .optimizer import _to_scalar, Optimizer
+from torch import Tensor, inf
 
+from .optimizer import Optimizer, _to_scalar
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
@@ -173,7 +172,7 @@ class LRScheduler:
         """Compute learning rate using chainable form of the scheduler."""
         raise NotImplementedError
 
-    def step(self, epoch: Optional[int] = None) -> None:
+    def step(self, epoch: int | None = None) -> None:
         """Perform a step."""
         # Raise a warning if old pattern is detected
         # https://github.com/pytorch/pytorch/issues/20124
@@ -213,7 +212,7 @@ class LRScheduler:
                 else:
                     values = self.get_lr()
 
-        for param_group, lr in zip(self.optimizer.param_groups, values):
+        for param_group, lr in zip(self.optimizer.param_groups, values, strict=False):
             if isinstance(param_group["lr"], Tensor):
                 param_group["lr"].fill_(_to_scalar(lr))
             else:
@@ -301,7 +300,7 @@ class LambdaLR(LRScheduler):
     def __init__(
         self,
         optimizer: Optimizer,
-        lr_lambda: Union[Callable[[int], float], list[Callable[[int], float]]],
+        lr_lambda: Callable[[int], float] | list[Callable[[int], float]],
         last_epoch: int = -1,
     ) -> None:  # noqa: D107
         self.optimizer = optimizer
@@ -368,7 +367,7 @@ class LambdaLR(LRScheduler):
 
         return [
             base_lr * lmbda(self.last_epoch)
-            for lmbda, base_lr in zip(self.lr_lambdas, self.base_lrs)
+            for lmbda, base_lr in zip(self.lr_lambdas, self.base_lrs, strict=False)
         ]
 
 
@@ -399,7 +398,7 @@ class MultiplicativeLR(LRScheduler):
     def __init__(
         self,
         optimizer: Optimizer,
-        lr_lambda: Union[Callable[[int], float], list[Callable[[int], float]]],
+        lr_lambda: Callable[[int], float] | list[Callable[[int], float]],
         last_epoch: int = -1,
     ) -> None:  # noqa: D107
         self.optimizer = optimizer
@@ -468,10 +467,11 @@ class MultiplicativeLR(LRScheduler):
         if not self._is_initial:
             return [
                 group["lr"] * lmbda(self.last_epoch)
-                for lmbda, group in zip(self.lr_lambdas, self.optimizer.param_groups)
+                for lmbda, group in zip(
+                    self.lr_lambdas, self.optimizer.param_groups, strict=False
+                )
             ]
-        else:
-            return [group["lr"] for group in self.optimizer.param_groups]
+        return [group["lr"] for group in self.optimizer.param_groups]
 
 
 class StepLR(LRScheduler):
@@ -1088,19 +1088,23 @@ class CosineAnnealingLR(LRScheduler):
 
         if self._is_initial:
             return [group["lr"] for group in self.optimizer.param_groups]
-        elif self._step_count == 1 and self.last_epoch > 0:
+        if self._step_count == 1 and self.last_epoch > 0:
             return [
                 self.eta_min
                 + (base_lr - self.eta_min)
                 * (1 + math.cos((self.last_epoch) * math.pi / self.T_max))
                 / 2
-                for base_lr, group in zip(self.base_lrs, self.optimizer.param_groups)
+                for base_lr, group in zip(
+                    self.base_lrs, self.optimizer.param_groups, strict=False
+                )
             ]
-        elif (self.last_epoch - 1 - self.T_max) % (2 * self.T_max) == 0:
+        if (self.last_epoch - 1 - self.T_max) % (2 * self.T_max) == 0:
             return [
                 group["lr"]
                 + (base_lr - self.eta_min) * (1 - math.cos(math.pi / self.T_max)) / 2
-                for base_lr, group in zip(self.base_lrs, self.optimizer.param_groups)
+                for base_lr, group in zip(
+                    self.base_lrs, self.optimizer.param_groups, strict=False
+                )
             ]
         return [
             (1 + math.cos(math.pi * self.last_epoch / self.T_max))
@@ -1152,7 +1156,7 @@ class ChainedScheduler(LRScheduler):
     """
 
     def __init__(
-        self, schedulers: Sequence[LRScheduler], optimizer: Optional[Optimizer] = None
+        self, schedulers: Sequence[LRScheduler], optimizer: Optimizer | None = None
     ) -> None:  # noqa: D107
         if len(schedulers) < 1:
             raise ValueError(
@@ -1295,7 +1299,7 @@ class ReduceLROnPlateau(LRScheduler):
         threshold: float = 1e-4,
         threshold_mode: Literal["rel", "abs"] = "rel",
         cooldown: int = 0,
-        min_lr: Union[list[float], float] = 0,
+        min_lr: list[float] | float = 0,
         eps: float = 1e-8,
     ):  # noqa: D107
         if factor >= 1.0:
@@ -1373,8 +1377,7 @@ class ReduceLROnPlateau(LRScheduler):
                     "modify the `min_lrs` field to match the length "
                     "of the `optimizer` param groups."
                 )
-            else:
-                self.min_lrs = [self.default_min_lr] * len(self.optimizer.param_groups)
+            self.min_lrs = [self.default_min_lr] * len(self.optimizer.param_groups)
 
         for i, param_group in enumerate(self.optimizer.param_groups):
             old_lr = float(param_group["lr"])
@@ -1391,15 +1394,15 @@ class ReduceLROnPlateau(LRScheduler):
             rel_epsilon = 1.0 - self.threshold
             return a < best * rel_epsilon
 
-        elif self.mode == "min" and self.threshold_mode == "abs":
+        if self.mode == "min" and self.threshold_mode == "abs":
             return a < best - self.threshold
 
-        elif self.mode == "max" and self.threshold_mode == "rel":
+        if self.mode == "max" and self.threshold_mode == "rel":
             rel_epsilon = self.threshold + 1.0
             return a > best * rel_epsilon
 
-        else:  # mode == 'max' and epsilon_mode == 'abs':
-            return a > best + self.threshold
+        # mode == 'max' and epsilon_mode == 'abs':
+        return a > best + self.threshold
 
     def _init_is_better(self, mode, threshold, threshold_mode):
         if mode not in {"min", "max"}:
@@ -1528,13 +1531,13 @@ class CyclicLR(LRScheduler):
     def __init__(
         self,
         optimizer: Optimizer,
-        base_lr: Union[float, list[float]],
-        max_lr: Union[float, list[float]],
+        base_lr: float | list[float],
+        max_lr: float | list[float],
         step_size_up: int = 2000,
-        step_size_down: Optional[int] = None,
+        step_size_down: int | None = None,
         mode: Literal["triangular", "triangular2", "exp_range"] = "triangular",
         gamma: float = 1.0,
-        scale_fn: Optional[Callable[[float], float]] = None,
+        scale_fn: Callable[[float], float] | None = None,
         scale_mode: Literal["cycle", "iterations"] = "cycle",
         cycle_momentum: bool = True,
         base_momentum: float = 0.8,
@@ -1548,7 +1551,7 @@ class CyclicLR(LRScheduler):
 
         base_lrs = _format_param("base_lr", optimizer, base_lr)
         if last_epoch == -1:
-            for lr, group in zip(base_lrs, optimizer.param_groups):
+            for lr, group in zip(base_lrs, optimizer.param_groups, strict=False):
                 if isinstance(group["lr"], Tensor):
                     lr_val = lr.item() if isinstance(lr, Tensor) else lr
                     group["lr"].fill_(lr_val)
@@ -1592,7 +1595,10 @@ class CyclicLR(LRScheduler):
             self.max_momentums = _format_param("max_momentum", optimizer, max_momentum)
             if last_epoch == -1:
                 for m_momentum, b_momentum, group in zip(
-                    self.max_momentums, self.base_momentums, optimizer.param_groups
+                    self.max_momentums,
+                    self.base_momentums,
+                    optimizer.param_groups,
+                    strict=False,
                 ):
                     if self.use_beta1:
                         group["betas"] = (m_momentum, *group["betas"][1:])
@@ -1621,8 +1627,7 @@ class CyclicLR(LRScheduler):
         """Get the scaling policy."""
         if self._scale_fn_custom is not None:
             return self._scale_fn_custom(x)
-        else:
-            return self._scale_fn_ref(x)  # static method
+        return self._scale_fn_ref(x)  # static method
 
     @staticmethod
     def _triangular_scale_fn(x: float) -> float:
@@ -1655,7 +1660,7 @@ class CyclicLR(LRScheduler):
             scale_factor = (x - 1) / (self.step_ratio - 1)
 
         lrs = []
-        for base_lr, max_lr in zip(self.base_lrs, self.max_lrs):
+        for base_lr, max_lr in zip(self.base_lrs, self.max_lrs, strict=False):
             base_height = (max_lr - base_lr) * scale_factor
             if self.scale_mode == "cycle":
                 lr = base_lr + base_height * self.scale_fn(cycle)
@@ -1666,7 +1671,7 @@ class CyclicLR(LRScheduler):
         if self.cycle_momentum:
             momentums = []
             for base_momentum, max_momentum in zip(
-                self.base_momentums, self.max_momentums
+                self.base_momentums, self.max_momentums, strict=False
             ):
                 base_height = (max_momentum - base_momentum) * scale_factor
                 if self.scale_mode == "cycle":
@@ -1676,7 +1681,9 @@ class CyclicLR(LRScheduler):
                         self.last_epoch
                     )
                 momentums.append(momentum)
-            for param_group, momentum in zip(self.optimizer.param_groups, momentums):
+            for param_group, momentum in zip(
+                self.optimizer.param_groups, momentums, strict=False
+            ):
                 if self.use_beta1:
                     param_group["betas"] = (momentum, *param_group["betas"][1:])
                 else:
@@ -1845,7 +1852,9 @@ class CosineAnnealingWarmRestarts(LRScheduler):
         self.last_epoch = math.floor(epoch)
 
         with _enable_get_lr_call(self):
-            for param_group, lr in zip(self.optimizer.param_groups, self.get_lr()):
+            for param_group, lr in zip(
+                self.optimizer.param_groups, self.get_lr(), strict=False
+            ):
                 param_group["lr"] = lr
 
         self._last_lr = [group["lr"] for group in self.optimizer.param_groups]
@@ -1966,15 +1975,15 @@ class OneCycleLR(LRScheduler):
     def __init__(
         self,
         optimizer: Optimizer,
-        max_lr: Union[float, list[float]],
-        total_steps: Optional[int] = None,
-        epochs: Optional[int] = None,
-        steps_per_epoch: Optional[int] = None,
+        max_lr: float | list[float],
+        total_steps: int | None = None,
+        epochs: int | None = None,
+        steps_per_epoch: int | None = None,
         pct_start: float = 0.3,
         anneal_strategy: Literal["cos", "linear"] = "cos",
         cycle_momentum: bool = True,
-        base_momentum: Union[float, list[float]] = 0.85,
-        max_momentum: Union[float, list[float]] = 0.95,
+        base_momentum: float | list[float] = 0.85,
+        max_momentum: float | list[float] = 0.95,
         div_factor: float = 25.0,
         final_div_factor: float = 1e4,
         three_phase: bool = False,
@@ -2059,8 +2068,7 @@ class OneCycleLR(LRScheduler):
             raise ValueError(
                 f"anneal_strategy must be one of 'cos' or 'linear', instead got {anneal_strategy}"
             )
-        else:
-            self._anneal_func_type = anneal_strategy
+        self._anneal_func_type = anneal_strategy
 
         # Initialize learning rate variables
         max_lrs = _format_param("max_lr", self.optimizer, max_lr)
@@ -2085,7 +2093,7 @@ class OneCycleLR(LRScheduler):
             base_momentums = _format_param("base_momentum", optimizer, base_momentum)
             if last_epoch == -1:
                 for m_momentum, b_momentum, group in zip(
-                    max_momentums, base_momentums, optimizer.param_groups
+                    max_momentums, base_momentums, optimizer.param_groups, strict=False
                 ):
                     if self.use_beta1:
                         group["betas"] = (m_momentum, *group["betas"][1:])
@@ -2100,13 +2108,11 @@ class OneCycleLR(LRScheduler):
         if hasattr(self, "_anneal_func_type"):
             if self._anneal_func_type == "cos":
                 return self._annealing_cos(*args, **kwargs)
-            elif self._anneal_func_type == "linear":
+            if self._anneal_func_type == "linear":
                 return self._annealing_linear(*args, **kwargs)
-            else:
-                raise ValueError(f"Unknown _anneal_func_type: {self._anneal_func_type}")
-        else:
-            # For BC
-            return self.anneal_func(*args, **kwargs)  # type: ignore[attr-defined]
+            raise ValueError(f"Unknown _anneal_func_type: {self._anneal_func_type}")
+        # For BC
+        return self.anneal_func(*args, **kwargs)  # type: ignore[attr-defined]
 
     @staticmethod
     def _annealing_cos(start, end, pct):

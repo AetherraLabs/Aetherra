@@ -1,7 +1,7 @@
 # mypy: allow-untyped-defs
+from collections.abc import Callable
 from itertools import chain
 from operator import getitem
-from typing import Callable, Optional, Union
 
 import torch
 import torch.nn.functional as F
@@ -10,7 +10,7 @@ from torch.ao.pruning.sparsifier.base_sparsifier import BaseSparsifier
 from torch.fx import symbolic_trace
 from torch.nn.utils import parametrize
 
-from .match_utils import apply_match, MatchAllNode
+from .match_utils import MatchAllNode, apply_match
 from .parametrization import BiasHook, FakeStructuredSparsity, module_contains_param
 from .prune_functions import (
     prune_conv2d,
@@ -91,14 +91,14 @@ def _get_supported_activation_modules():
 
 
 def _get_default_structured_pruning_patterns() -> dict[
-    tuple[Union[type[nn.Module], Callable, MatchAllNode, str], ...],
+    tuple[type[nn.Module] | Callable | MatchAllNode | str, ...],
     Callable[..., None],
 ]:
     """
     Returns the patterns for conv2d / linear conversion for each element in the activation functions/modules defined above.
     """
     patterns: dict[
-        tuple[Union[type[nn.Module], Callable, MatchAllNode, str], ...],
+        tuple[type[nn.Module] | Callable | MatchAllNode | str, ...],
         Callable[..., None],
     ] = {
         # linear -> linear
@@ -227,7 +227,7 @@ class BaseStructuredSparsifier(BaseSparsifier):
     def make_config_from_model(
         self,
         model: nn.Module,
-        SUPPORTED_MODULES: Optional[set[type]] = None,
+        SUPPORTED_MODULES: set[type] | None = None,
     ) -> None:
         if SUPPORTED_MODULES is None:
             SUPPORTED_MODULES = _get_supported_structured_pruning_modules()

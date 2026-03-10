@@ -2,37 +2,36 @@
 import functools
 import itertools
 import logging
-from collections.abc import Iterable, Sequence
-from typing import Any, Callable, cast, Optional, Union
+from collections.abc import Callable, Iterable, Sequence
+from typing import Any, cast
 
 import sympy
 from sympy import Expr
 
-from torch.fx.experimental.symbolic_shapes import has_free_unbacked_symbols, ShapeEnv
+from torch.fx.experimental.symbolic_shapes import ShapeEnv, has_free_unbacked_symbols
 from torch.utils._ordered_set import OrderedSet
 from torch.utils._sympy.functions import FloorDiv, ModularIndexing
-from torch.utils._sympy.symbol import symbol_is_type, SymT
-from torch.utils._sympy.value_ranges import bound_sympy, IntInfinity, ValueRanges
+from torch.utils._sympy.symbol import SymT, symbol_is_type
+from torch.utils._sympy.value_ranges import IntInfinity, ValueRanges, bound_sympy
 
 from .runtime.runtime_utils import is_power_of_2
 from .utils import (
+    VarRanges,
     has_free_symbols,
     sympy_index_symbol,
     sympy_index_symbol_with_prefix,
     sympy_subs,
-    VarRanges,
 )
 from .virtualized import V
-
 
 log = logging.getLogger(__name__)
 
 
 def statically_known_true(
     shape_env: ShapeEnv,
-    expr: Union[sympy.Basic, bool],
-    axioms: Optional[tuple[sympy.Expr]] = None,
-    var_to_range: Optional[tuple[tuple[sympy.Symbol, ValueRanges[Any]]]] = None,
+    expr: sympy.Basic | bool,
+    axioms: tuple[sympy.Expr] | None = None,
+    var_to_range: tuple[tuple[sympy.Symbol, ValueRanges[Any]]] | None = None,
 ) -> bool:
     if expr in (True, False):
         return bool(expr)
@@ -62,7 +61,7 @@ class SizeVarAllocator:
         self.shape_env = shape_env
         self.var_to_val = self.shape_env.var_to_val
         self.replacements: dict[sympy.Symbol, Expr] = self.shape_env.replacements
-        self.unbacked_replacements: Optional[dict[Expr, Expr]] = None
+        self.unbacked_replacements: dict[Expr, Expr] | None = None
         # Maps of dynamic sizes that have to be precomputed on the host to the kernel args.
         # The basic idea is if we have some complicated sympy expression
         # f(s0), we may choose to precompute it on the host and then replace
@@ -96,7 +95,7 @@ class SizeVarAllocator:
                 cache.clear()
                 replacement_count = len(self.replacements)
             key = (expr, *var_ranges.items())
-            result = cache.get(key, None)
+            result = cache.get(key)
             if result is None:
                 result = self._simplify_with_ranges(expr, var_ranges)
                 cache[key] = result
@@ -120,7 +119,7 @@ class SizeVarAllocator:
                 cache.clear()
                 replacement_count = len(self.replacements)
             key = (*index_vars, *sizes, *index_formulas)
-            result = cache.get(key, None)
+            result = cache.get(key)
             if result is None:
                 result = self._simplify_loops_impl(index_vars, sizes, index_formulas)
                 cache[key] = result
@@ -157,7 +156,7 @@ class SizeVarAllocator:
 
         axioms = []
         for var, upper_bound in var_ranges.items():
-            axioms.append(0 <= var)
+            axioms.append(var >= 0)
             axioms.append(var < upper_bound)
         axioms = tuple(axioms) + self.shape_env.get_axioms()
 
@@ -299,7 +298,7 @@ class SizeVarAllocator:
 
         def prune(index):
             assert len(index) == len(sizes)
-            return [i for i, s in zip(index, sizes) if s is not None]
+            return [i for i, s in zip(index, sizes, strict=False) if s is not None]
 
         return [x for x in sizes if x is not None], reindex, prune
 
@@ -308,16 +307,14 @@ class SizeVarAllocator:
     # asked questions can be answered without guarding otherwise they return False.
     # Those are similar to statically_known_true in symbolic_shapes but operate on sympy
     # expressions instead of symnodes.
-    def statically_known_true(self, expr: Union[sympy.Basic, bool]) -> bool:
+    def statically_known_true(self, expr: sympy.Basic | bool) -> bool:
         """
         Returns true if an expression is always true (symbolically or via guards),
         false otherwise. Never add guards, or throw data dependent errors.
         """
         return statically_known_true(self.shape_env, expr)
 
-    def statically_known_equals(
-        self, left: Union[Expr, int], right: Union[Expr, int]
-    ) -> bool:
+    def statically_known_equals(self, left: Expr | int, right: Expr | int) -> bool:
         """
         Returns a bool indicating if it is sound to optimize as if left and right are equal.
         """
@@ -328,31 +325,32 @@ class SizeVarAllocator:
         Returns a bool indicating if it is sound to optimize as if left and right lists are equal.
         """
         return len(left) == len(right) and all(
-            self.statically_known_equals(l, r) for l, r in zip(left, right)
+            self.statically_known_equals(l, r)
+            for l, r in zip(left, right, strict=False)
         )
 
-    def statically_known_leq(self, left: Expr, right: Union[Expr, int]) -> bool:
+    def statically_known_leq(self, left: Expr, right: Expr | int) -> bool:
         """
         Returns a bool indicating if it is sound to optimize as if left is less than or equal to right.
         """
         expr = left <= right
         return self.statically_known_true(expr)
 
-    def statically_known_geq(self, left: Expr, right: Union[Expr, int]) -> bool:
+    def statically_known_geq(self, left: Expr, right: Expr | int) -> bool:
         """
         Returns a bool indicating if it is sound to optimize as if left is greater than or equal to right.
         """
         expr = left >= right
         return self.statically_known_true(expr)
 
-    def statically_known_lt(self, left: Expr, right: Union[Expr, int]) -> bool:
+    def statically_known_lt(self, left: Expr, right: Expr | int) -> bool:
         """
         Returns a bool indicating if it is sound to optimize as if left is less than right.
         """
         expr = left < right
         return self.statically_known_true(expr)
 
-    def statically_known_gt(self, left: Expr, right: Union[Expr, int]) -> bool:
+    def statically_known_gt(self, left: Expr, right: Expr | int) -> bool:
         """
         Returns a bool indicating if it is sound to optimize as if left is greater than right.
         """
@@ -360,7 +358,7 @@ class SizeVarAllocator:
         return self.statically_known_true(expr)
 
     def statically_known_multiple_of(
-        self, numerator: Expr, denominator: Union[Expr, int]
+        self, numerator: Expr, denominator: Expr | int
     ) -> bool:
         """
         Return a bool indicating if it is sound to optimize for the numerator being a multiple of the denominator.
@@ -451,9 +449,9 @@ class SizeVarAllocator:
     # which does the wrong thing if a or b is a sympy expression
     def evaluate_expr(
         self,
-        left: Union[Expr, sympy.logic.boolalg.Boolean],
+        left: Expr | sympy.logic.boolalg.Boolean,
         size_oblivious: bool = False,
-        fallback_value: Optional[bool] = None,
+        fallback_value: bool | None = None,
     ) -> bool:
         assert isinstance(left, (Expr, sympy.logic.boolalg.Boolean)), type(left)
         return self.shape_env.evaluate_expr(
@@ -487,9 +485,8 @@ class SizeVarAllocator:
         if lv <= rv:
             self.guard_leq(left, right)
             return left
-        else:
-            self.guard_leq(right, left)
-            return right
+        self.guard_leq(right, left)
+        return right
 
     def evaluate_max(self, left: Expr, right: Expr) -> Expr:
         """return the larger of left and right, and guard on that choice"""
@@ -498,14 +495,14 @@ class SizeVarAllocator:
         min_val = self.evaluate_min(left, right)
         return right if min_val is left else left
 
-    def evaluate_static_shape(self, left: Union[Expr, int]) -> int:
+    def evaluate_static_shape(self, left: Expr | int) -> int:
         if isinstance(left, int):
             return left
         right = self.size_hint_or_throw(left)
         self.guard_equals(left, sympy.Integer(right))
         return int(right)
 
-    def evaluate_static_shapes(self, left: Sequence[Union[Expr, int]]) -> list[int]:
+    def evaluate_static_shapes(self, left: Sequence[Expr | int]) -> list[int]:
         return [self.evaluate_static_shape(x) for x in left]
 
     def remove_precomputed_replacements(self, expr: Expr) -> Expr:
@@ -513,7 +510,7 @@ class SizeVarAllocator:
             return sympy_subs(expr, self.inv_precomputed_replacements)  # type: ignore[arg-type]
         return expr
 
-    def symbolic_hint(self, expr: Union[Expr, int]) -> Union[Expr, int]:
+    def symbolic_hint(self, expr: Expr | int) -> Expr | int:
         if isinstance(expr, int):
             return expr
         # Substitute all hints into expr, but leave unbacked symints alone
@@ -530,9 +527,7 @@ class SizeVarAllocator:
         expr = self.remove_precomputed_replacements(expr)
         return sympy_subs(expr, self.var_to_val)
 
-    def size_hint(
-        self, expr: Union[Expr, int], *, fallback: Optional[int] = None
-    ) -> int:
+    def size_hint(self, expr: Expr | int, *, fallback: int | None = None) -> int:
         out = self.symbolic_hint(expr)
         if not isinstance(out, (int, sympy.Integer)) and fallback is not None:
             # Use the provided heuristic fallback hint
@@ -553,7 +548,7 @@ class SizeVarAllocator:
             log.debug("failed on: %s", out)
             raise
 
-    def size_hint_or_throw(self, expr: Union[Expr, int]) -> int:
+    def size_hint_or_throw(self, expr: Expr | int) -> int:
         out = self.symbolic_hint(expr)
         try:
             return int(out)
@@ -563,9 +558,9 @@ class SizeVarAllocator:
 
     def size_hints(
         self,
-        exprs: Iterable[Union[Expr, int]],
+        exprs: Iterable[Expr | int],
         *,
-        fallback: Optional[int] = None,
+        fallback: int | None = None,
     ) -> tuple[int, ...]:
         return tuple(self.size_hint(x, fallback=fallback) for x in exprs)
 
@@ -593,7 +588,7 @@ class SizeVarAllocator:
         def stride_vars(
             index: Expr,
             vars: Sequence[sympy.Symbol],
-            support_vars: Optional[Sequence[sympy.Symbol]] = None,
+            support_vars: Sequence[sympy.Symbol] | None = None,
         ) -> list[Expr]:
             if not support_vars:
                 support_vars = vars
@@ -685,8 +680,8 @@ class SizeVarAllocator:
             expr = sympy.factor(new_expr)
 
     def atomically_apply_size_hint(
-        self, expr: Union[Expr, int], *, fallback: Optional[int] = None
-    ) -> Union[Expr, int]:
+        self, expr: Expr | int, *, fallback: int | None = None
+    ) -> Expr | int:
         if isinstance(expr, (int, sympy.Integer)):
             return int(expr)
 
@@ -716,7 +711,7 @@ class SizeVarAllocator:
         self,
         index: Expr,
         vars: Sequence[sympy.Symbol],
-        support_vars: Optional[Sequence[sympy.Symbol]] = None,
+        support_vars: Sequence[sympy.Symbol] | None = None,
     ) -> list[int]:
         for v in index.free_symbols:
             if symbol_is_type(v, SymT.INDIRECT):  # type: ignore[attr-defined]
@@ -806,7 +801,7 @@ class SizeVarAllocator:
 
     def expand_floor_div(
         self, index: sympy.Expr
-    ) -> Union[bool, tuple[sympy.Expr, sympy.Expr]]:
+    ) -> bool | tuple[sympy.Expr, sympy.Expr]:
         """
         Expand the FloorDiv to the entire expression so that the expression may
         be simplified.

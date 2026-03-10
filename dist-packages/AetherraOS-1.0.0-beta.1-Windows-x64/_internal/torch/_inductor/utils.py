@@ -22,39 +22,43 @@ import tempfile
 import textwrap
 import time
 import unittest
-from collections.abc import Collection, Iterator, Mapping, MutableMapping, MutableSet
+from collections.abc import (
+    Callable,
+    Collection,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSet,
+)
 from datetime import datetime
 from io import StringIO
 from typing import (
+    TYPE_CHECKING,
     Any,
-    Callable,
-    cast,
+    Concatenate,
     Generic,
     Literal,
     NamedTuple,
     Optional,
     Protocol,
-    TYPE_CHECKING,
-    TypeVar,
-    Union,
-)
-from typing_extensions import (
-    Concatenate,
-    dataclass_transform,
-    ParamSpec,
     Self,
     TypeAlias,
     TypeGuard,
+    TypeVar,
+    cast,
 )
 from unittest import mock
 
 import sympy
+from typing_extensions import (
+    ParamSpec,
+    dataclass_transform,
+)
 
 import torch
 from torch._inductor.runtime.hints import DeviceProperties
 from torch.utils._ordered_set import OrderedSet
 from torch.utils._pytree import tree_map_only
-
 
 OPTIMUS_EXCLUDE_POST_GRAD = [
     "activation_quantization_aten_pass",
@@ -112,12 +116,11 @@ from torch.utils._sympy.functions import (
     Identity,
     ModularIndexing,
 )
-from torch.utils._sympy.symbol import make_symbol, SymT
-from torch.utils._sympy.value_ranges import bound_sympy, ValueRanges
+from torch.utils._sympy.symbol import SymT, make_symbol
+from torch.utils._sympy.value_ranges import ValueRanges, bound_sympy
 
 from . import config
 from .runtime.runtime_utils import ceildiv as runtime_ceildiv
-
 
 _IS_WINDOWS = sys.platform == "win32"
 
@@ -125,7 +128,7 @@ log = logging.getLogger(__name__)
 
 _T = TypeVar("_T")
 VarRanges = dict[sympy.Expr, sympy.Expr]
-InputType = Optional[Union[torch.Tensor, int, torch.SymInt]]
+InputType = Optional[torch.Tensor | int | torch.SymInt]
 
 GPU_KERNEL_BIN_EXTS = {"cuda": ".cubin", "xpu": ".spv"}
 
@@ -158,7 +161,7 @@ class align(sympy.Function):
     is_integer = True
 
     @classmethod
-    def eval(cls, value: sympy.Expr) -> Optional[sympy.Expr]:
+    def eval(cls, value: sympy.Expr) -> sympy.Expr | None:
         if isinstance(value, (int, sympy.Integer)):
             return _align(int(value))
         if _is_aligned(value):
@@ -176,8 +179,8 @@ class GraphPartitionMap:
 
     # map partition input/output indices to graph input/output indices. None indicates
     # a partition input/output is not a graph input/output.
-    input_index_mapping: list[Optional[int]]
-    output_index_mapping: list[Optional[int]]
+    input_index_mapping: list[int | None]
+    output_index_mapping: list[int | None]
 
     # name of constants read/written by the graph partition
     constant_names: list[str]
@@ -231,7 +234,7 @@ def fp8_bench(fn: Callable[[], Any], warmup: int = 25, rep: int = 100) -> float:
             end_event[i].record()
         torch.cuda.synchronize()
         times = torch.tensor(
-            [s.elapsed_time(e) for s, e in zip(start_event, end_event)]
+            [s.elapsed_time(e) for s, e in zip(start_event, end_event, strict=False)]
         )
 
     res = torch.mean(times).item()
@@ -356,7 +359,7 @@ def has_torchvision_roi_align() -> bool:
         return False
 
 
-def decode_device(device: Union[Optional[torch.device], str]) -> torch.device:
+def decode_device(device: torch.device | None | str) -> torch.device:
     if device is None:
         return torch.tensor(0.0).device  # default device
     if isinstance(device, str):
@@ -373,16 +376,14 @@ def sympy_product(it: Iterable[sympy.Expr]) -> sympy.Expr:
 
 def sympy_dot(seq1: Sequence[sympy.Expr], seq2: Sequence[sympy.Expr]) -> sympy.Expr:
     assert len(seq1) == len(seq2)
-    return sympy.expand(sum(a * b for a, b in zip(seq1, seq2)))
+    return sympy.expand(sum(a * b for a, b in zip(seq1, seq2, strict=False)))
 
 
 def unique(it: Iterable[_T]) -> ValuesView[_T]:
     return {id(x): x for x in it}.values()
 
 
-def ceildiv(
-    number: Union[int, sympy.Expr], denom: Union[int, sympy.Expr]
-) -> Union[int, sympy.Expr]:
+def ceildiv(number: int | sympy.Expr, denom: int | sympy.Expr) -> int | sympy.Expr:
     if isinstance(number, sympy.Expr) or isinstance(denom, sympy.Expr):
         return CeilDiv(sympy.sympify(number), sympy.sympify(denom))
     # TODO: There is a bug in a call to this function, to repro:
@@ -394,7 +395,7 @@ def ceildiv(
     return runtime_ceildiv(number, denom)
 
 
-def _type_of(key: Optional[torch.dtype]) -> str:
+def _type_of(key: torch.dtype | None) -> str:
     # Use the function here to get rid of dependencies on the Triton during the codegen.
     # Refer to Triton implementation here:
     # https://github.com/triton-lang/triton/blob/98b5945d2aef679e00ebca8e07c35c3658ec76de/python/triton/runtime/jit.py#L238
@@ -433,7 +434,7 @@ def _type_of(key: Optional[torch.dtype]) -> str:
 
 
 def convert_shape_to_inductor(
-    lst: Iterable[Union[int, torch.SymInt]],
+    lst: Iterable[int | torch.SymInt],
 ) -> list[sympy.Expr]:
     """
     Gets the shape and stride of a tensor. For non-symbolic tensors, this is
@@ -443,7 +444,7 @@ def convert_shape_to_inductor(
     return [sympy.sympify(i) for i in lst]
 
 
-def convert_to_symint(i: Union[int, sympy.Expr]) -> Union[int, torch.SymInt]:
+def convert_to_symint(i: int | sympy.Expr) -> int | torch.SymInt:
     """
     Like convert_shape_to_symint, but operates on a single expression.
     """
@@ -461,8 +462,8 @@ def convert_to_symint(i: Union[int, sympy.Expr]) -> Union[int, torch.SymInt]:
 
 
 def convert_shape_to_symint(
-    lst: Iterable[Union[int, sympy.Expr]],
-) -> list[Union[int, torch.SymInt]]:
+    lst: Iterable[int | sympy.Expr],
+) -> list[int | torch.SymInt]:
     """
     Takes a list of shapes from Inductor and converts them into symints (or just
     ints if all shapes are static).
@@ -583,7 +584,7 @@ def cmp(a: int, b: int) -> int:
     return int(a > b) - int(a < b)
 
 
-def pad_listlike(x: Union[int, Sequence[int]], size: int) -> Sequence[int]:
+def pad_listlike(x: int | Sequence[int], size: int) -> Sequence[int]:
     if isinstance(x, int):
         return [x] * size
     if len(x) == 1:
@@ -650,7 +651,7 @@ def cache_on_self(fn: Callable[Concatenate[Any, P], RV]) -> CachedMethod[P, RV]:
 
 
 def aggregate_origins(
-    node_schedule: Union[Sequence[BaseSchedulerNode], ExternKernel],
+    node_schedule: Sequence[BaseSchedulerNode] | ExternKernel,
 ) -> OrderedSet[Node]:
     from . import ir
 
@@ -664,10 +665,9 @@ def aggregate_origins(
             ],
             OrderedSet(),
         )
-    elif isinstance(node_schedule, ir.ExternKernel):
+    if isinstance(node_schedule, ir.ExternKernel):
         return node_schedule.origins
-    else:
-        return OrderedSet()
+    return OrderedSet()
 
 
 def get_fused_kernel_name(
@@ -707,7 +707,7 @@ def get_fused_kernel_name(
 
 
 def get_kernel_metadata(
-    node_schedule: Union[Sequence[BaseSchedulerNode], ExternKernel],
+    node_schedule: Sequence[BaseSchedulerNode] | ExternKernel,
     wrapper: PythonWrapperCodegen,
 ) -> tuple[str, str]:
     all_origins = aggregate_origins(node_schedule)
@@ -765,7 +765,7 @@ def get_kernel_metadata(
 
 def dominated_nodes(
     initial_queue: Iterable[torch.fx.Node],
-    skip_filter: Optional[Callable[[Any], bool]] = None,
+    skip_filter: Callable[[Any], bool] | None = None,
 ) -> OrderedSet[torch.fx.Node]:
     """Returns the set of nodes whose values depend on those within initial_queue"""
     initial_queue = list(initial_queue)
@@ -820,10 +820,8 @@ def sympy_str(expr: sympy.Expr) -> str:
             # 'a + -1 * b + -1 * c'.
             if len(expr.args) == 2 and is_neg_lead(expr.args[1]):
                 return f"{sympy_str_mul(expr.args[0])} - {sympy_str_mul(expr.args[1].args[1])}"
-            else:
-                return " + ".join(map(sympy_str_mul, expr.args))
-        else:
-            return sympy_str_mul(expr)
+            return " + ".join(map(sympy_str_mul, expr.args))
+        return sympy_str_mul(expr)
 
     def sympy_str_mul(expr: sympy.Expr) -> str:
         if isinstance(expr, sympy.Mul):
@@ -831,20 +829,17 @@ def sympy_str(expr: sympy.Expr) -> str:
                 # Special case '-a'. Note that 'a * -b' will still appear as
                 # '-1 * a * b'.
                 return f"-{sympy_str_atom(expr.args[1])}"
-            else:
-                return " * ".join(map(sympy_str_atom, expr.args))
-        else:
-            return sympy_str_atom(expr)
+            return " * ".join(map(sympy_str_atom, expr.args))
+        return sympy_str_atom(expr)
 
     def sympy_str_atom(expr: sympy.Expr) -> str:
         if isinstance(expr, sympy.Symbol):
             return expr.name
-        elif isinstance(expr, (sympy.Add, sympy.Mul)):
+        if isinstance(expr, (sympy.Add, sympy.Mul)):
             return f"({sympy_str_add(expr)})"
-        elif isinstance(expr, (ModularIndexing, CleanDiv, FloorDiv, Identity)):
+        if isinstance(expr, (ModularIndexing, CleanDiv, FloorDiv, Identity)):
             return f"{expr.func.__name__}({', '.join(map(sympy_str, expr.args))})"
-        else:
-            return str(expr)
+        return str(expr)
 
     return sympy_str_add(expr)
 
@@ -859,8 +854,7 @@ def get_bounds_index_expr(index: sympy.Expr) -> ValueRanges[Any]:
         and fx_node.target != "index_expr"
     ):
         return bound_sympy(index)
-    else:
-        return ValueRanges.unknown()
+    return ValueRanges.unknown()
 
 
 def prefix_is_reduction(prefix: str) -> bool:
@@ -901,9 +895,7 @@ def sympy_subs(expr: sympy.Expr, replacements: dict[sympy.Expr, Any]) -> sympy.E
     have the same replaced expression integer and nonnegative properties.
     """
 
-    def to_symbol(
-        replaced: sympy.Expr, replacement: Union[sympy.Expr, str]
-    ) -> sympy.Symbol:
+    def to_symbol(replaced: sympy.Expr, replacement: sympy.Expr | str) -> sympy.Symbol:
         assert isinstance(replaced, sympy.Expr)
         if isinstance(replacement, str):
             return sympy.Symbol(
@@ -911,8 +903,7 @@ def sympy_subs(expr: sympy.Expr, replacements: dict[sympy.Expr, Any]) -> sympy.E
                 integer=replaced.is_integer,  # type: ignore[attr-defined]
                 nonnegative=replaced.is_nonnegative,  # type: ignore[attr-defined]
             )
-        else:
-            return replacement
+        return replacement
 
     # xreplace is faster than subs, but is way more picky
     return sympy.sympify(expr).xreplace(
@@ -920,7 +911,7 @@ def sympy_subs(expr: sympy.Expr, replacements: dict[sympy.Expr, Any]) -> sympy.E
     )
 
 
-def is_symbolic(a: Any) -> TypeGuard[Union[torch.SymInt, torch.Tensor]]:
+def is_symbolic(a: Any) -> TypeGuard[torch.SymInt | torch.Tensor]:
     return isinstance(a, torch.SymInt) or (
         isinstance(a, torch.Tensor)
         and any(is_symbolic(x) for x in itertools.chain(a.size(), a.stride()))
@@ -933,7 +924,7 @@ def any_is_symbolic(*args: Any) -> bool:
 
 def get_first_incompatible_cudagraph_node(
     gm: torch.fx.GraphModule,
-) -> Optional[torch.fx.Node]:
+) -> torch.fx.Node | None:
     from torch.fx.experimental.symbolic_shapes import free_unbacked_symbols
 
     forbidden_set = OrderedSet(
@@ -1073,8 +1064,8 @@ def clear_caches() -> None:
 
 @contextlib.contextmanager
 def fresh_cache(
-    cache_entries: Optional[dict[str, Any]] = None,
-    dir: Optional[str] = None,
+    cache_entries: dict[str, Any] | None = None,
+    dir: str | None = None,
     delete: bool = True,
 ) -> Iterator[None]:
     """
@@ -1141,13 +1132,13 @@ def argsort(seq: Sequence[Any]) -> list[int]:
 
 
 def argsort_sym(
-    shape_env: ShapeEnv, seq: Sequence[Union[int, torch.SymInt, sympy.Expr]]
+    shape_env: ShapeEnv, seq: Sequence[int | torch.SymInt | sympy.Expr]
 ) -> list[int]:
     def cmp(a: tuple[int, sympy.Expr], b: tuple[int, sympy.Expr]) -> int:
         a_idx, a_val = a
         b_idx, b_val = b
 
-        def evaluate(expr: Union[bool, torch.SymInt, sympy.Expr]) -> bool:
+        def evaluate(expr: bool | torch.SymInt | sympy.Expr) -> bool:
             if isinstance(expr, bool):
                 return expr
             return shape_env.evaluate_expr(expr, size_oblivious=True)
@@ -1199,7 +1190,7 @@ class IndentedBuffer:
     tabwidth = 4
 
     def __init__(self, initial_indent: int = 0) -> None:
-        self._lines: list[Union[DeferredLineBase, LineContext, str]] = []
+        self._lines: list[DeferredLineBase | LineContext | str] = []
         self._indent = initial_indent
 
     @contextlib.contextmanager
@@ -1266,7 +1257,7 @@ class IndentedBuffer:
     def newline(self) -> None:
         self.writeline("\n")
 
-    def writeline(self, line: Union[LineContext, DeferredLineBase, str]) -> None:
+    def writeline(self, line: LineContext | DeferredLineBase | str) -> None:
         if isinstance(line, LineContext):
             self._lines.append(line)
         elif isinstance(line, DeferredLineBase):
@@ -1276,9 +1267,7 @@ class IndentedBuffer:
         else:
             self._lines.append("")
 
-    def writelines(
-        self, lines: Sequence[Union[LineContext, DeferredLineBase, str]]
-    ) -> None:
+    def writelines(self, lines: Sequence[LineContext | DeferredLineBase | str]) -> None:
         for line in lines:
             self.writeline(line)
 
@@ -1299,9 +1288,7 @@ class IndentedBuffer:
     def do_unindent(self, offset: int = 1) -> None:
         self._indent -= offset
 
-    def splice(
-        self, other_code: Union[IndentedBuffer, str], strip: bool = False
-    ) -> None:
+    def splice(self, other_code: IndentedBuffer | str, strip: bool = False) -> None:
         if isinstance(other_code, IndentedBuffer):
             dedent = float("inf")
             for line in other_code._lines:
@@ -1373,7 +1360,7 @@ class DeferredLineBase:
             line = ""
         self.line = line
 
-    def __call__(self) -> Union[str, None]:
+    def __call__(self) -> str | None:
         """Returns either self.line or None to indicate the line has been 'unwritten'"""
         raise NotImplementedError
 
@@ -1387,7 +1374,7 @@ class DeferredLineBase:
     def lstrip(self) -> Self:
         return self._new_line(self.line.lstrip())
 
-    def __getitem__(self, index: Union[int, slice]) -> Self:
+    def __getitem__(self, index: int | slice) -> Self:
         return self._new_line(self.line[index])
 
     def __bool__(self) -> bool:
@@ -1413,7 +1400,7 @@ class DelayReplaceLine(DeferredLineBase):
 
 
 @functools.cache
-def is_big_gpu(index_or_device: Union[int, torch.device] = 0) -> bool:
+def is_big_gpu(index_or_device: int | torch.device = 0) -> bool:
     if isinstance(index_or_device, torch.device):
         device = index_or_device
     else:
@@ -1456,7 +1443,7 @@ def get_num_sms() -> int:
 def get_tma_workspace_arg(
     num_tma_descriptors: int,
     device: torch.device,
-    num_programs: Optional[int] = None,
+    num_programs: int | None = None,
 ) -> WorkspaceArg:
     """Builds and returns a WorkspaceArg for the device side TMA workspace buffer."""
     from .codegen.common import WorkspaceArg, WorkspaceZeroMode
@@ -1614,7 +1601,7 @@ k_splits_limit = 5
 # Hand-tuned
 default_k_splits = [16, 32, 64, 128, 256]
 
-_IntLike: TypeAlias = Union[int, sympy.Expr]
+_IntLike: TypeAlias = int | sympy.Expr
 
 
 def use_decompose_k_choice(m: _IntLike, n: _IntLike, k: _IntLike) -> bool:
@@ -1682,10 +1669,9 @@ def get_k_splits(m: _IntLike, n: _IntLike, k: _IntLike) -> list[int]:
     # should never be a massive amount
     if len(pow_of_2_divisors) >= k_splits_limit:
         return pow_of_2_divisors
-    else:
-        best_splits = pow_of_2_divisors + mul_of_32_divisors + rest_of_splits
-        # Otherwise, conform results to k_splits_limit
-        return best_splits[:k_splits_limit]
+    best_splits = pow_of_2_divisors + mul_of_32_divisors + rest_of_splits
+    # Otherwise, conform results to k_splits_limit
+    return best_splits[:k_splits_limit]
 
 
 @functools.cache
@@ -1695,7 +1681,7 @@ def _rocm_native_device_arch_name(device: str) -> str:
 
 @functools.cache
 def try_import_ck_lib() -> tuple[
-    Optional[str], Callable[[], list[Any]], Callable[[], list[Any]], type[Any]
+    str | None, Callable[[], list[Any]], Callable[[], list[Any]], type[Any]
 ]:
     try:
         import ck4inductor  # type: ignore[import]
@@ -1800,7 +1786,7 @@ def _use_template_for_cpu(layout: Layout) -> bool:
 
 
 def use_cpp_bmm_template(
-    layout: Layout, mat1: Union[ReinterpretView, Buffer], mat2: IRNode
+    layout: Layout, mat1: ReinterpretView | Buffer, mat2: IRNode
 ) -> bool:
     from .ir import Layout
 
@@ -1819,7 +1805,7 @@ def use_cpp_gemm_template(
     mat2_transposed: bool = False,
     require_constant_mat2: bool = True,
     is_woq_int4: bool = False,
-    q_group_size: Optional[int] = None,
+    q_group_size: int | None = None,
 ) -> bool:
     from . import ir
     from .codegen.cpp_micro_gemm import create_micro_gemm
@@ -2040,7 +2026,7 @@ def override_lowering(
 
 
 def add_scheduler_init_hook(
-    pre_fn: Callable[..., Any], post_fn: Optional[Callable[..., Any]] = None
+    pre_fn: Callable[..., Any], post_fn: Callable[..., Any] | None = None
 ) -> Any:
     """
     Add hook functions to be called at the beginning and end of Scheduler.__init__.
@@ -2072,7 +2058,7 @@ def developer_warning(msg: str) -> None:
         log.info(msg)
 
 
-def get_benchmark_name() -> Optional[str]:
+def get_benchmark_name() -> str | None:
     """
     An experimental API used only when config.benchmark_kernel is true.
 
@@ -2127,8 +2113,7 @@ def get_sympy_Expr_dtype(val: sympy.Expr) -> torch.dtype:
     )
     if val.is_integer:  # type: ignore[attr-defined]
         return torch.int64
-    else:
-        return torch.float64
+    return torch.float64
 
 
 @contextlib.contextmanager
@@ -2171,16 +2156,13 @@ def get_device_tflops(dtype: torch.dtype) -> int:
 
         if torch.backends.cuda.matmul.allow_tf32:
             return get_max_tensorcore_tflops(torch.float32, sm_clock)
-        else:
-            return get_max_simd_tflops(torch.float32, sm_clock)
-    else:
-        if dtype in (torch.float16, torch.bfloat16):
-            return get_max_tensorcore_tflops(dtype)
+        return get_max_simd_tflops(torch.float32, sm_clock)
+    if dtype in (torch.float16, torch.bfloat16):
+        return get_max_tensorcore_tflops(dtype)
 
-        if torch.backends.cuda.matmul.allow_tf32:
-            return get_max_tensorcore_tflops(torch.float32)
-        else:
-            return get_max_simd_tflops(torch.float32)
+    if torch.backends.cuda.matmul.allow_tf32:
+        return get_max_tensorcore_tflops(torch.float32)
+    return get_max_simd_tflops(torch.float32)
 
 
 @functools.cache
@@ -2203,10 +2185,9 @@ def is_welford_reduction(reduction_type: str) -> bool:
 def reduction_num_outputs(reduction_type: str) -> int:
     if is_welford_reduction(reduction_type):
         return 3
-    elif reduction_type == "online_softmax_reduce":
+    if reduction_type == "online_softmax_reduce":
         return 2
-    else:
-        return 1
+    return 1
 
 
 def is_linux() -> bool:
@@ -2287,7 +2268,7 @@ def pass_execution_and_save(
         )
 
 
-def is_multi_outputs_template(input_buf: Optional[Union[Buffer, Operation]]) -> bool:
+def is_multi_outputs_template(input_buf: Buffer | Operation | None) -> bool:
     """
     Check if input buffer is a multi-outputs template buffer
     """
@@ -2299,7 +2280,7 @@ def is_multi_outputs_template(input_buf: Optional[Union[Buffer, Operation]]) -> 
 
 
 def is_output_of_multi_outputs_template(
-    input_buf: Optional[Union[Buffer, Operation]],
+    input_buf: Buffer | Operation | None,
 ) -> bool:
     """
     Check if input buffer is a output of multi-outputs template buffer
@@ -2314,8 +2295,8 @@ def is_output_of_multi_outputs_template(
 
 
 def is_collective(
-    node: Optional[Union[Node, Operation]],
-    op: Optional[torch._ops.OperatorBase] = None,
+    node: Node | Operation | None,
+    op: torch._ops.OperatorBase | None = None,
 ) -> bool:
     if node is None:
         return False
@@ -2349,7 +2330,7 @@ def is_collective(
     )
 
 
-def is_wait(node: Optional[Union[IRNode, Operation]]) -> bool:
+def is_wait(node: IRNode | Operation | None) -> bool:
     from . import ir
 
     return type(node) == ir._WaitKernel
@@ -2369,13 +2350,12 @@ def contains_wait(snode: BaseSchedulerNode) -> bool:
 
     if isinstance(snode, GroupedSchedulerNode):
         return any(contains_wait(x) for x in snode.snodes)
-    else:
-        return is_wait(snode.node)
+    return is_wait(snode.node)
 
 
 def is_fallback_op(
-    node: Optional[Operation],
-    op: Union[torch._ops.OpOverload, Collection[torch._ops.OpOverload]],
+    node: Operation | None,
+    op: torch._ops.OpOverload | Collection[torch._ops.OpOverload],
 ) -> bool:
     from . import ir
 
@@ -2488,7 +2468,7 @@ class BoxedBool:
         return self.value
 
     @staticmethod
-    def disable(obj: Any) -> Union[BoxedBool, bool]:
+    def disable(obj: Any) -> BoxedBool | bool:
         if isinstance(obj, BoxedBool):
             obj.value = False
             return obj
@@ -2505,9 +2485,9 @@ def collect_defined_kernels(kernel_list: list[str]) -> Iterator[None]:
         self: PythonWrapperCodegen,
         kernel_name: str,
         kernel_code: str,
-        metadata: Optional[str] = None,
+        metadata: str | None = None,
         gpu: bool = True,
-        cpp_definition: Optional[str] = None,
+        cpp_definition: str | None = None,
     ) -> Any:
         kernel_list.append(kernel_code)
         return orig_define_kernel(
@@ -2522,7 +2502,7 @@ def get_cloned_parameter_buffer_name(name: str) -> str:
     return name + "__original__"
 
 
-def is_gpu(device: Optional[str]) -> bool:
+def is_gpu(device: str | None) -> bool:
     return device in GPU_TYPES
 
 
@@ -2542,13 +2522,12 @@ def needs_fallback_due_to_atomic_add_limitations(dtype: torch.dtype) -> bool:
         and config.bfloat16_atomic_adds_enabled
     ):
         return False
-    else:
-        return dtype in OrderedSet([torch.int64, torch.bool, torch.bfloat16])
+    return dtype in OrderedSet([torch.int64, torch.bool, torch.bfloat16])
 
 
 def use_scatter_fallback(
     op_overload: torch._ops.OpOverload,
-    reduction_type: Optional[str],
+    reduction_type: str | None,
     self_dtype: torch.dtype,
     src_dtype: torch.dtype,
     src_device_type: str,
@@ -2681,7 +2660,7 @@ def run_and_get_cpp_code(
     return result, s
 
 
-def shape_env_from_inputs(inputs: Sequence[InputType]) -> Optional[ShapeEnv]:
+def shape_env_from_inputs(inputs: Sequence[InputType]) -> ShapeEnv | None:
     fake_mode = detect_fake_mode(inputs)
 
     # TODO(voz): It would be nice to enable this assert, but there are lots of tests that
@@ -2731,7 +2710,11 @@ def clone_preserve_strides(x: torch.Tensor) -> torch.Tensor:
         needed_size = 0
     else:
         needed_size = (
-            sum((shape - 1) * stride for shape, stride in zip(x.size(), x.stride())) + 1
+            sum(
+                (shape - 1) * stride
+                for shape, stride in zip(x.size(), x.stride(), strict=False)
+            )
+            + 1
         )
     buffer = torch.as_strided(x, (needed_size,), (1,)).clone()
     return torch.as_strided(buffer, x.size(), x.stride())
@@ -2740,7 +2723,7 @@ def clone_preserve_strides(x: torch.Tensor) -> torch.Tensor:
 def copy_misaligned_inputs(
     new_inputs: list[InputType],
     check_inputs_idxs: Sequence[int],
-    return_pair_idxs: Optional[OrderedSet[int]] = None,
+    return_pair_idxs: OrderedSet[int] | None = None,
 ) -> tuple[list[torch.Tensor], list[torch.Tensor]]:
     """
     Clones misaligned tensors which we inferred were aligned. Returns a tuple of [old_tensors], [new_tensors] for every
@@ -2817,7 +2800,7 @@ def set_tracing_context_output_strides(
                 if ctx := torch._guards.TracingContext.try_get():
                     fakify_first_call = ctx.fakify_first_call
 
-                def map_expr(e: Any) -> Union[float, int, SymInt, SymFloat, SymBool]:
+                def map_expr(e: Any) -> float | int | SymInt | SymFloat | SymBool:
                     if shape_env is None:
                         return int(e)
                     if fakify_first_call:
@@ -2843,8 +2826,11 @@ def should_use_remote_fx_graph_cache() -> bool:
     except ModuleNotFoundError:
         return False
 
-    return REMOTE_CACHE_VERSION >= torch._utils_internal.justknobs_getval_int(
-        "pytorch/remote_cache:fx_graph_memcache_version"
+    return (
+        torch._utils_internal.justknobs_getval_int(
+            "pytorch/remote_cache:fx_graph_memcache_version"
+        )
+        <= REMOTE_CACHE_VERSION
     )
 
 
@@ -2929,7 +2915,7 @@ def boolean_ops() -> tuple[str, ...]:
 @dataclasses.dataclass
 class OpDtypeRule:
     type_promotion_kind: ELEMENTWISE_TYPE_PROMOTION_KIND
-    override_return_dtype: Optional[torch.dtype]
+    override_return_dtype: torch.dtype | None
 
 
 op_dtype_propagation_rules: dict[str, OpDtypeRule] = {}
@@ -2938,7 +2924,7 @@ op_dtype_propagation_rules: dict[str, OpDtypeRule] = {}
 def register_op_dtype_propagation_rules(
     name: str,
     type_promotion_kind: ELEMENTWISE_TYPE_PROMOTION_KIND,
-    override_return_dtype: Optional[torch.dtype],
+    override_return_dtype: torch.dtype | None,
 ) -> None:
     op_dtype_propagation_rules[name] = OpDtypeRule(
         type_promotion_kind, override_return_dtype
@@ -2958,10 +2944,9 @@ def get_current_backend() -> str:
     device_str = V.graph.get_current_device_or_throw().type
     if device_str == "cpu":
         return config.cpu_backend
-    elif device_str == "mps":
+    if device_str == "mps":
         return "mps"
-    else:
-        return config.cuda_backend
+    return config.cuda_backend
 
 
 def upcast_compute_type(dtype: torch.dtype) -> torch.dtype:
@@ -3002,7 +2987,7 @@ class ScopedDict(MutableMapping[KeyType, ValType]):
     def __contains__(self, key: object) -> bool:
         return key in self.new_items or key in self.original_dict
 
-    def get(self, key: KeyType, default: Optional[ValType] = None) -> Optional[ValType]:  # type: ignore[override]
+    def get(self, key: KeyType, default: ValType | None = None) -> ValType | None:  # type: ignore[override]
         if key in self.new_items:
             return self.new_items[key]
         return self.original_dict.get(key, default)
@@ -3028,21 +3013,20 @@ class ScopedDict(MutableMapping[KeyType, ValType]):
 
 
 @dataclass_transform(frozen_default=True)
-def ir_dataclass(cls: Optional[type[Any]] = None, /, *, frozen: bool = True) -> Any:
+def ir_dataclass(cls: type[Any] | None = None, /, *, frozen: bool = True) -> Any:
     def wrap(cls: _T) -> _T:
         if sys.version_info >= (3, 10):
             return dataclasses.dataclass(cls, kw_only=True, frozen=frozen)  # type: ignore[call-overload]
-        else:
-            # Polyfill for python=3.9. kw_only simply introduces an extra check
-            # that only kwargs are used (and is not available on 3.9)
-            return dataclasses.dataclass(cls, frozen=frozen)
+        # Polyfill for python=3.9. kw_only simply introduces an extra check
+        # that only kwargs are used (and is not available on 3.9)
+        return dataclasses.dataclass(cls, frozen=frozen)
 
     if cls is None:
         return wrap
     return wrap(cls)
 
 
-def get_donated_idxs() -> Optional[list[int]]:
+def get_donated_idxs() -> list[int] | None:
     tracing_context = torch._guards.TracingContext.try_get()
     if tracing_context is not None and tracing_context.fw_metadata:
         return tracing_context.fw_metadata.bw_donated_idxs
@@ -3050,7 +3034,7 @@ def get_donated_idxs() -> Optional[list[int]]:
 
 
 def set_kernel_post_grad_provenance_tracing(
-    node_schedule: Union[Sequence[BaseSchedulerNode], ExternKernelOut],
+    node_schedule: Sequence[BaseSchedulerNode] | ExternKernelOut,
     kernel_name: str,
     is_extern: bool = False,
 ) -> None:
@@ -3112,13 +3096,12 @@ def get_triton_attrs_descriptor_version() -> TritonAttrsDescriptorVersion:
         # On Dec 9, 2024, tuple support (triton #5220) was implemented and breaks handling.
         # We don't have a way to detect this (and haven't implemented this version)
         return TritonAttrsDescriptorVersion.V2_BACKENDS
-    elif hasattr(triton.compiler.compiler, "AttrsDescriptor"):
+    if hasattr(triton.compiler.compiler, "AttrsDescriptor"):
         # Triton 3.0.0
         return TritonAttrsDescriptorVersion.V1_COMPILER
-    else:
-        # After Jan 1, 2025
-        # AttrsDescriptor was removed and replaced with a raw dict.
-        return TritonAttrsDescriptorVersion.V4_DICT
+    # After Jan 1, 2025
+    # AttrsDescriptor was removed and replaced with a raw dict.
+    return TritonAttrsDescriptorVersion.V4_DICT
 
 
 def triton_version_uses_attrs_dict() -> bool:
@@ -3173,8 +3156,7 @@ def dtype_from_size(size: int) -> torch.dtype:
         size, 2**31
     ) and V.graph.sizevars.statically_known_geq(size, -(2**31)):
         return torch.int32
-    else:
-        return torch.int64
+    return torch.int64
 
 
 SUPPORTED_MKLDNN_DEVICES = ("cpu", "xpu")
@@ -3186,7 +3168,7 @@ def is_mkldnn_bf16_supported(device_type: str) -> bool:
     """
     if device_type == "cpu":
         return torch.ops.mkldnn._is_mkldnn_bf16_supported()
-    elif "xpu" in device_type:
+    if "xpu" in device_type:
         # match "xpu", "xpu:0", "xpu:1", etc.
         return True
     return False
@@ -3198,7 +3180,7 @@ def is_mkldnn_fp16_supported(device_type: str) -> bool:
     """
     if device_type == "cpu":
         return torch.ops.mkldnn._is_mkldnn_fp16_supported()
-    elif "xpu" in device_type:
+    if "xpu" in device_type:
         # match "xpu", "xpu:0", "xpu:1", etc.
         return True
     return False

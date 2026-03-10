@@ -1,12 +1,10 @@
 # mypy: allow-untyped-defs
-from typing import Optional
 
 import torch
 from torch import Tensor
 from torch.distributions import Categorical, constraints
 from torch.distributions.constraints import MixtureSameFamilyConstraint
 from torch.distributions.distribution import Distribution
-
 
 __all__ = ["MixtureSameFamily"]
 
@@ -61,7 +59,7 @@ class MixtureSameFamily(Distribution):
         self,
         mixture_distribution: Categorical,
         component_distribution: Distribution,
-        validate_args: Optional[bool] = None,
+        validate_args: bool | None = None,
     ) -> None:
         self._mixture_distribution = mixture_distribution
         self._component_distribution = component_distribution
@@ -81,7 +79,7 @@ class MixtureSameFamily(Distribution):
         # Check that batch size matches
         mdbs = self._mixture_distribution.batch_shape
         cdbs = self._component_distribution.batch_shape[:-1]
-        for size1, size2 in zip(reversed(mdbs), reversed(cdbs)):
+        for size1, size2 in zip(reversed(mdbs), reversed(cdbs), strict=False):
             if size1 != 1 and size2 != 1 and size1 != size2:
                 raise ValueError(
                     f"`mixture_distribution.batch_shape` ({mdbs}) is not "

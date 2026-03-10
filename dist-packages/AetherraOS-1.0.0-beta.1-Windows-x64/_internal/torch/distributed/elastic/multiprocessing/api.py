@@ -19,12 +19,13 @@ import tempfile
 import threading
 import time
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from contextlib import nullcontext
 from dataclasses import dataclass, field
 from enum import IntFlag
 from multiprocessing import synchronize
 from types import FrameType
-from typing import Any, Callable, Optional, Union
+from typing import Any, Union
 
 import torch.multiprocessing as mp
 from torch.distributed.elastic.multiprocessing.errors import ProcessFailure, record
@@ -33,11 +34,10 @@ from torch.distributed.elastic.multiprocessing.redirects import (
     redirect_stdout,
 )
 from torch.distributed.elastic.multiprocessing.subprocess_handler import (
-    get_subprocess_handler,
     SubprocessHandler,
+    get_subprocess_handler,
 )
 from torch.distributed.elastic.multiprocessing.tail_log import TailLog
-
 
 IS_WINDOWS = sys.platform == "win32"
 IS_MACOS = sys.platform == "darwin"
@@ -71,7 +71,7 @@ class SignalException(Exception):
         self.sigval = sigval
 
 
-def _terminate_process_handler(signum: int, frame: Optional[FrameType]) -> None:
+def _terminate_process_handler(signum: int, frame: FrameType | None) -> None:
     """Termination handler that raises exceptions on the main process.
 
     When the process receives death signal(SIGTERM, SIGINT), this termination handler will
@@ -88,16 +88,14 @@ def _get_kill_signal() -> signal.Signals:
     """Get the kill signal. SIGKILL for unix, CTRL_C_EVENT for windows."""
     if IS_WINDOWS:
         return signal.CTRL_C_EVENT  # type: ignore[attr-defined] # noqa: F821
-    else:
-        return signal.SIGKILL
+    return signal.SIGKILL
 
 
 def _get_default_signal() -> signal.Signals:
     """Get the default termination signal. SIGTERM for unix, CTRL_C_EVENT for windows."""
     if IS_WINDOWS:
         return signal.CTRL_C_EVENT  # type: ignore[attr-defined] # noqa: F821
-    else:
-        return signal.SIGTERM
+    return signal.SIGTERM
 
 
 def _validate_full_rank(d: dict[int, Any], nprocs: int, what: str):
@@ -142,21 +140,16 @@ class Std(IntFlag):
 
         if re.match(_VALUE_REGEX, vm):  # vm is a number (e.g. 0)
             return to_std(vm)
-        elif re.match(_MAPPING_REGEX, vm):  # vm is a mapping (e.g. 0:1,1:2)
+        if re.match(_MAPPING_REGEX, vm):  # vm is a mapping (e.g. 0:1,1:2)
             d: dict[int, Std] = {}
             for m in vm.split(","):
                 i, v = m.split(":")
                 d[int(i)] = to_std(v)
             return d
-        else:
-            raise ValueError(
-                f"{vm} does not match: <{_VALUE_REGEX}> or <{_MAPPING_REGEX}>"
-            )
+        raise ValueError(f"{vm} does not match: <{_VALUE_REGEX}> or <{_MAPPING_REGEX}>")
 
 
-def to_map(
-    val_or_map: Union[Std, dict[int, Std]], local_world_size: int
-) -> dict[int, Std]:
+def to_map(val_or_map: Std | dict[int, Std], local_world_size: int) -> dict[int, Std]:
     """
     Certain APIs take redirect settings either as a single value (e.g. apply to all
     local ranks) or as an explicit user-provided mapping. This method is a convenience
@@ -173,11 +166,10 @@ def to_map(
     """
     if isinstance(val_or_map, Std):
         return dict.fromkeys(range(local_world_size), val_or_map)
-    else:
-        map = {}
-        for i in range(local_world_size):
-            map[i] = val_or_map.get(i, Std.NONE)
-        return map
+    map = {}
+    for i in range(local_world_size):
+        map[i] = val_or_map.get(i, Std.NONE)
+    return map
 
 
 @dataclass
@@ -212,10 +204,10 @@ class LogsSpecs(ABC):
 
     def __init__(
         self,
-        log_dir: Optional[str] = None,
-        redirects: Union[Std, dict[int, Std]] = Std.NONE,
-        tee: Union[Std, dict[int, Std]] = Std.NONE,
-        local_ranks_filter: Optional[set[int]] = None,
+        log_dir: str | None = None,
+        redirects: Std | dict[int, Std] = Std.NONE,
+        tee: Std | dict[int, Std] = Std.NONE,
+        local_ranks_filter: set[int] | None = None,
     ) -> None:
         self._root_log_dir = log_dir
         self._redirects = redirects
@@ -250,10 +242,10 @@ class DefaultLogsSpecs(LogsSpecs):
 
     def __init__(
         self,
-        log_dir: Optional[str] = None,
-        redirects: Union[Std, dict[int, Std]] = Std.NONE,
-        tee: Union[Std, dict[int, Std]] = Std.NONE,
-        local_ranks_filter: Optional[set[int]] = None,
+        log_dir: str | None = None,
+        redirects: Std | dict[int, Std] = Std.NONE,
+        tee: Std | dict[int, Std] = Std.NONE,
+        local_ranks_filter: set[int] | None = None,
     ) -> None:
         if log_dir != os.devnull:
             if not log_dir:
@@ -271,7 +263,7 @@ class DefaultLogsSpecs(LogsSpecs):
     def root_log_dir(self) -> str:
         return str(self._root_log_dir)
 
-    def _make_log_dir(self, log_dir: Optional[str], rdzv_run_id: str):
+    def _make_log_dir(self, log_dir: str | None, rdzv_run_id: str):
         base_log_dir = log_dir or tempfile.mkdtemp(prefix="torchelastic_")
         os.makedirs(base_log_dir, exist_ok=True)
         dir = tempfile.mkdtemp(prefix=f"{rdzv_run_id}_", dir=base_log_dir)
@@ -441,11 +433,11 @@ class PContext(abc.ABC):
     def __init__(
         self,
         name: str,
-        entrypoint: Union[Callable, str],
+        entrypoint: Callable | str,
         args: dict[int, tuple],
         envs: dict[int, dict[str, str]],
         logs_specs: LogsSpecs,
-        log_line_prefixes: Optional[dict[int, str]] = None,
+        log_line_prefixes: dict[int, str] | None = None,
     ):
         self.name = name
         # validate that all mappings have the same number of keys and
@@ -496,7 +488,7 @@ class PContext(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _poll(self) -> Optional[RunProcsResult]:
+    def _poll(self) -> RunProcsResult | None:
         """
         Poll the run status of the processes running under this context.
         This method follows an "all-or-nothing" policy and returns
@@ -506,7 +498,7 @@ class PContext(abc.ABC):
         """
         raise NotImplementedError
 
-    def wait(self, timeout: float = -1, period: float = 1) -> Optional[RunProcsResult]:
+    def wait(self, timeout: float = -1, period: float = 1) -> RunProcsResult | None:
         """
         Wait for the specified ``timeout`` seconds, polling every ``period`` seconds
         for the processes to be done. Returns ``None`` if the processes are still running
@@ -560,9 +552,7 @@ class PContext(abc.ABC):
         """
         raise NotImplementedError
 
-    def close(
-        self, death_sig: Optional[signal.Signals] = None, timeout: int = 30
-    ) -> None:
+    def close(self, death_sig: signal.Signals | None = None, timeout: int = 30) -> None:
         r"""
         Terminates all processes managed by this context and cleans up any
         meta resources (e.g. redirect, error_file files).
@@ -584,8 +574,7 @@ class PContext(abc.ABC):
 def get_std_cm(std_rd: str, redirect_fn):
     if IS_WINDOWS or IS_MACOS or not std_rd:
         return nullcontext()
-    else:
-        return redirect_fn(std_rd)
+    return redirect_fn(std_rd)
 
 
 def _wrap(
@@ -629,7 +618,7 @@ class MultiprocessContext(PContext):
         envs: dict[int, dict[str, str]],
         start_method: str,
         logs_specs: LogsSpecs,
-        log_line_prefixes: Optional[dict[int, str]] = None,
+        log_line_prefixes: dict[int, str] | None = None,
     ):
         super().__init__(
             name,
@@ -649,7 +638,7 @@ class MultiprocessContext(PContext):
 
         # see comments in ``join()`` for what this is
         self._return_values: dict[int, Any] = {}
-        self._pc: Optional[mp.ProcessContext] = None
+        self._pc: mp.ProcessContext | None = None
         # Note: set method should ONLY be invoked for the use case when all processes finished
         # successfully. If any process died on event.wait() calling set() method will deadlock.
         self._worker_finished_event = mp.get_context(self.start_method).Event()
@@ -680,7 +669,7 @@ class MultiprocessContext(PContext):
     def _is_done(self) -> bool:
         return len(self._return_values) == self.nprocs
 
-    def _poll(self) -> Optional[RunProcsResult]:
+    def _poll(self) -> RunProcsResult | None:
         assert self._pc is not None  # assertion for mypy type checker
 
         try:
@@ -724,8 +713,7 @@ class MultiprocessContext(PContext):
                     stdouts=self.stdouts,
                     stderrs=self.stderrs,
                 )
-            else:
-                return None
+            return None
         except (mp.ProcessRaisedException, mp.ProcessExitedException) as e:
             failed_local_rank = e.error_index
 
@@ -810,7 +798,7 @@ class SubprocessContext(PContext):
         args: dict[int, tuple],
         envs: dict[int, dict[str, str]],
         logs_specs: LogsSpecs,
-        log_line_prefixes: Optional[dict[int, str]] = None,
+        log_line_prefixes: dict[int, str] | None = None,
     ):
         super().__init__(
             name,
@@ -843,7 +831,7 @@ class SubprocessContext(PContext):
             for local_rank in range(self.nprocs)
         }
 
-    def _poll(self) -> Optional[RunProcsResult]:
+    def _poll(self) -> RunProcsResult | None:
         done_local_ranks = set()
         for local_rank in self._running_local_ranks:
             handler = self.subprocess_handlers[local_rank]
@@ -883,8 +871,8 @@ class SubprocessContext(PContext):
                 result.return_values = dict.fromkeys(range(self.nprocs))
 
             return result
-        else:  # there are no failures and procs still running
-            return None
+        # there are no failures and procs still running
+        return None
 
     def pids(self) -> dict[int, int]:
         return {

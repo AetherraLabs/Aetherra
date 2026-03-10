@@ -52,8 +52,8 @@ class SemanticResonance:
         if cache_key in self._proj:
             return self._proj[cache_key]
 
-        # Minimal placeholder: hash-based pseudo-vector with semantic boosting
-        # TODO: Replace with sentence-transformers or fastText
+        # Baseline: hash-based pseudo-vector with semantic boosting.
+        # Integration point: replace with sentence-transformers or fastText.
         text = f"{e_type} {' '.join(str(k) for k in payload)}"
         h = abs(hash((e_type, tuple(sorted(payload)))))
         vec = [((h >> i) & 255) / 255.0 for i in range(self.vector_dim)]

@@ -12,9 +12,9 @@ async def test_plugin_timeout_clamp_over_ceiling(monkeypatch):
     monkeypatch.setenv("AETHERRA_PROFILE", "prod")
     monkeypatch.setenv("AETHERRA_PLUGIN_INVOKE_TIMEOUT_SEC", "999")  # way above ceiling
     kernel = AetherraKernelLoop()
-    assert (
-        kernel.plugin_invoke_timeout_sec == 120.0
-    ), "Timeout should clamp to 120s ceiling in production"
+    assert kernel.plugin_invoke_timeout_sec == 120.0, (
+        "Timeout should clamp to 120s ceiling in production"
+    )
 
 
 @pytest.mark.asyncio
@@ -22,9 +22,9 @@ async def test_plugin_timeout_non_positive_resets(monkeypatch):
     monkeypatch.setenv("AETHERRA_PROFILE", "prod")
     monkeypatch.setenv("AETHERRA_PLUGIN_INVOKE_TIMEOUT_SEC", "0")  # non-positive
     kernel = AetherraKernelLoop()
-    assert (
-        kernel.plugin_invoke_timeout_sec == 20.0
-    ), "Non-positive timeout should reset to conservative 20s default in production"
+    assert kernel.plugin_invoke_timeout_sec == 20.0, (
+        "Non-positive timeout should reset to conservative 20s default in production"
+    )
 
 
 def test_plugin_timeout_metric_export(monkeypatch):

@@ -15,10 +15,9 @@
 """Functions and classes related to optimization (weight updates)."""
 
 import re
-from typing import Callable, Optional, Union
+from collections.abc import Callable
 
 import tensorflow as tf
-
 
 try:
     from tf_keras.optimizers.legacy import Adam
@@ -26,7 +25,6 @@ except (ImportError, ModuleNotFoundError):
     from tensorflow.keras.optimizers.legacy import Adam
 
 from .modeling_tf_utils import keras
-
 
 # This block because Keras loves randomly moving things to different places - this changed somewhere between 2.10 - 2.15
 if hasattr(keras.optimizers.schedules, "learning_rate_schedule"):
@@ -59,7 +57,7 @@ class WarmUp(schedules.LearningRateSchedule):
         decay_schedule_fn: Callable,
         warmup_steps: int,
         power: float = 1.0,
-        name: Optional[str] = None,
+        name: str | None = None,
     ):
         super().__init__()
         self.initial_learning_rate = initial_learning_rate
@@ -75,7 +73,9 @@ class WarmUp(schedules.LearningRateSchedule):
             global_step_float = tf.cast(step, tf.float32)
             warmup_steps_float = tf.cast(self.warmup_steps, tf.float32)
             warmup_percent_done = global_step_float / warmup_steps_float
-            warmup_learning_rate = self.initial_learning_rate * tf.math.pow(warmup_percent_done, self.power)
+            warmup_learning_rate = self.initial_learning_rate * tf.math.pow(
+                warmup_percent_done, self.power
+            )
             return tf.cond(
                 global_step_float < warmup_steps_float,
                 lambda: warmup_learning_rate,
@@ -101,11 +101,11 @@ def create_optimizer(
     adam_beta1: float = 0.9,
     adam_beta2: float = 0.999,
     adam_epsilon: float = 1e-8,
-    adam_clipnorm: Optional[float] = None,
-    adam_global_clipnorm: Optional[float] = None,
+    adam_clipnorm: float | None = None,
+    adam_global_clipnorm: float | None = None,
     weight_decay_rate: float = 0.0,
     power: float = 1.0,
-    include_in_weight_decay: Optional[list[str]] = None,
+    include_in_weight_decay: list[str] | None = None,
 ):
     """
     Creates an optimizer with a learning rate schedule using a warmup phase followed by a linear decay.
@@ -218,18 +218,20 @@ class AdamWeightDecay(Adam):
 
     def __init__(
         self,
-        learning_rate: Union[float, schedules.LearningRateSchedule] = 0.001,
+        learning_rate: float | schedules.LearningRateSchedule = 0.001,
         beta_1: float = 0.9,
         beta_2: float = 0.999,
         epsilon: float = 1e-7,
         amsgrad: bool = False,
         weight_decay_rate: float = 0.0,
-        include_in_weight_decay: Optional[list[str]] = None,
-        exclude_from_weight_decay: Optional[list[str]] = None,
+        include_in_weight_decay: list[str] | None = None,
+        exclude_from_weight_decay: list[str] | None = None,
         name: str = "AdamWeightDecay",
         **kwargs,
     ):
-        super().__init__(learning_rate, beta_1, beta_2, epsilon, amsgrad, name, **kwargs)
+        super().__init__(
+            learning_rate, beta_1, beta_2, epsilon, amsgrad, name, **kwargs
+        )
         self.weight_decay_rate = weight_decay_rate
         self._include_in_weight_decay = include_in_weight_decay
         self._exclude_from_weight_decay = exclude_from_weight_decay
@@ -250,14 +252,18 @@ class AdamWeightDecay(Adam):
         do_decay = self._do_use_weight_decay(var.name)
         if do_decay:
             return var.assign_sub(
-                learning_rate * var * apply_state[(var.device, var.dtype.base_dtype)]["weight_decay_rate"],
+                learning_rate
+                * var
+                * apply_state[(var.device, var.dtype.base_dtype)]["weight_decay_rate"],
                 use_locking=self._use_locking,
             )
         return tf.no_op()
 
     def apply_gradients(self, grads_and_vars, name=None, **kwargs):
-        grads, tvars = list(zip(*grads_and_vars))
-        return super().apply_gradients(zip(grads, tvars), name=name, **kwargs)
+        grads, tvars = list(zip(*grads_and_vars, strict=False))
+        return super().apply_gradients(
+            zip(grads, tvars, strict=False), name=name, **kwargs
+        )
 
     def _get_lr(self, var_device, var_dtype, apply_state):
         """Retrieves the learning rate with the given state."""
@@ -340,8 +346,13 @@ class GradientAccumulator:
     def gradients(self):
         """The accumulated gradients on the current replica."""
         if not self._gradients:
-            raise ValueError("The accumulator should be called first to initialize the gradients")
-        return [gradient.value() if gradient is not None else gradient for gradient in self._gradients]
+            raise ValueError(
+                "The accumulator should be called first to initialize the gradients"
+            )
+        return [
+            gradient.value() if gradient is not None else gradient
+            for gradient in self._gradients
+        ]
 
     def __call__(self, gradients):
         """Accumulates `gradients` on the current replica."""
@@ -361,9 +372,11 @@ class GradientAccumulator:
                 ]
             )
         if len(gradients) != len(self._gradients):
-            raise ValueError(f"Expected {len(self._gradients)} gradients, but got {len(gradients)}")
+            raise ValueError(
+                f"Expected {len(self._gradients)} gradients, but got {len(gradients)}"
+            )
 
-        for accum_gradient, gradient in zip(self._gradients, gradients):
+        for accum_gradient, gradient in zip(self._gradients, gradients, strict=False):
             if accum_gradient is not None and gradient is not None:
                 accum_gradient.assign_add(gradient)
 

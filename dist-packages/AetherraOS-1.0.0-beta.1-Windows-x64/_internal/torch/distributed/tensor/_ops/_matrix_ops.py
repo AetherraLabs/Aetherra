@@ -2,8 +2,6 @@
 # implement matrix related ops for distributed tensor
 
 
-from typing import Optional
-
 import torch
 from torch.distributed.device_mesh import DeviceMesh
 from torch.distributed.tensor._dtensor_spec import DTensorSpec
@@ -30,7 +28,6 @@ from torch.distributed.tensor.placement_types import (
     Replicate,
     Shard,
 )
-
 
 aten = torch.ops.aten
 
@@ -679,7 +676,7 @@ def scaled_dot_product_cudnn_attention_strategy(op_schema: OpSchema) -> OpStrate
     ) = op_schema.args_schema
     return_debug_mask = len(op_schema.args_schema) >= 8 and rest_args[2]
     has_attn_bias = attn_bias_strategy is not None
-    debug_attn_mask_sharding: Optional[Placement] = (
+    debug_attn_mask_sharding: Placement | None = (
         Replicate() if return_debug_mask else None
     )
 

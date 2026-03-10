@@ -2,7 +2,7 @@
 Contains utility functions to check if a pattern is in the graph and return the matching nodes
 """
 
-from typing import Any, Optional, Union
+from typing import Any
 
 import torch
 from torch import nn
@@ -14,7 +14,7 @@ from torch.nn.utils import parametrize
 def _match(
     modules: dict[str, nn.ModuleDict],
     node: Node,
-    current: Union[nn.Module, Any],
+    current: nn.Module | Any,
 ) -> bool:
     r"""
     checks to see if a single node of a pattern matches
@@ -29,19 +29,19 @@ def _match(
             and parametrize.type_before_parametrizations(modules[node.target])  # type: ignore[index]
             == current
         )
-    elif callable(current):
+    if callable(current):
         return node.op == "call_function" and node.target is current
-    elif isinstance(current, str):
+    if isinstance(current, str):
         return node.target == current
     return False
 
 
 def apply_match(
     modules: dict[str, nn.ModuleDict],
-    pattern: Union[tuple[Any], Any],
+    pattern: tuple[Any] | Any,
     node: Node,
     matched_node_pattern: list[Node],
-) -> Optional[list[Node]]:
+) -> list[Node] | None:
     r"""
     This function will return the matched nodes if the pattern matches the node given
     If there is no match, it will return None

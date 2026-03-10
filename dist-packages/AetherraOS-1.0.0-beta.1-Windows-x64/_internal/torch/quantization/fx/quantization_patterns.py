@@ -6,6 +6,7 @@ If you are adding a new entry/functionality, please, add it to the
 appropriate files under `torch/ao/quantization/fx/`, while adding an import statement
 here.
 """
+
 from torch.ao.quantization.fx.quantize_handler import (
     BatchNormQuantizeHandler,
     BinaryOpQuantizeHandler,
@@ -22,7 +23,6 @@ from torch.ao.quantization.fx.quantize_handler import (
     RNNDynamicQuantizeHandler,
     StandaloneModuleQuantizeHandler,
 )
-
 
 QuantizeHandler.__module__ = "torch.ao.quantization.fx.quantization_patterns"
 BinaryOpQuantizeHandler.__module__ = "torch.ao.quantization.fx.quantization_patterns"

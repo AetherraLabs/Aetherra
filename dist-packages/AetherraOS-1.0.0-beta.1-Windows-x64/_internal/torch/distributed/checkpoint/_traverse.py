@@ -1,12 +1,11 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates
-from collections.abc import Collection, Mapping, MutableMapping
-from typing import Callable, cast, Optional, TypeVar, Union
+from collections.abc import Callable, Collection, Mapping, MutableMapping
+from typing import TypeVar, Union, cast
 
 import torch
 from torch.distributed._shard.sharded_tensor.api import ShardedTensor
 from torch.distributed.checkpoint.metadata import STATE_DICT_TYPE
 from torch.distributed.tensor import DTensor
-
 
 PATH_ITEM = Union[str, int]
 OBJ_PATH = tuple[PATH_ITEM, ...]
@@ -39,7 +38,7 @@ def traverse_state_dict(
         values: Collection[STATE_DICT_ITEM]
         if isinstance(value, Mapping):
             return False
-        elif isinstance(value, list):
+        if isinstance(value, list):
             values = value
         else:
             return True
@@ -143,8 +142,8 @@ def set_element(
 def get_element(
     root_dict: STATE_DICT_TYPE,
     path: OBJ_PATH,
-    default_value: Optional[T] = None,
-) -> Optional[T]:
+    default_value: T | None = None,
+) -> T | None:
     """Retrieve the value at ``path``from ``root_dict``, returning ``default_value`` if not found."""
     cur_value = cast(CONTAINER_TYPE, root_dict)
     for part in path:
@@ -155,7 +154,7 @@ def get_element(
             return default_value
 
         cur_value = cast(CONTAINER_TYPE, cur_value[part])
-    return cast(Optional[T], cur_value)
+    return cast(T | None, cur_value)
 
 
 def _print_nested(

@@ -142,9 +142,7 @@ class FileOrganizer:
                     self._apply_actions(file_info, rule.actions)
         self.logger.info("Applied organization rules")
 
-    def _matches_conditions(
-        self, file_info: FileInfo, conditions: Dict[str, Any]
-    ) -> bool:
+    def _matches_conditions(self, file_info: FileInfo, conditions: Dict[str, Any]) -> bool:
         for field, value in conditions.items():
             if getattr(file_info, field, None) != value:
                 return False

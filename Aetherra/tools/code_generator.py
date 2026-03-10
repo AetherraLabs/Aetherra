@@ -22,9 +22,7 @@ class CodeGenerator:
         self.router = model_router or router
         self.language = "aether"
 
-    def generate_function(
-        self, description: str, function_name: Optional[str] = None
-    ) -> str:
+    def generate_function(self, description: str, function_name: Optional[str] = None) -> str:
         """Generate an .aether function from description"""
 
         system_prompt = f"""You are an expert {self.language} programmer.
@@ -49,9 +47,7 @@ class CodeGenerator:
             model=self.router.route_by_task("code_generation"),
         )
 
-    def generate_plugin(
-        self, description: str, plugin_name: Optional[str] = None
-    ) -> str:
+    def generate_plugin(self, description: str, plugin_name: Optional[str] = None) -> str:
         """Generate a complete .aether plugin from description"""
 
         system_prompt = f"""You are an expert {self.language} plugin developer.

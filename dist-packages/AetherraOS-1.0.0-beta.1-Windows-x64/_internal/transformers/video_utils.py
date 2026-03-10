@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2025 The HuggingFace Inc. team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,17 +13,22 @@
 # limitations under the License.
 
 import os
+from collections.abc import Callable, Iterable
 from contextlib import redirect_stdout
 from dataclasses import dataclass
 from io import BytesIO
-from typing import Callable, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Union
 from urllib.parse import urlparse
 
 import numpy as np
 import requests
 
 from .image_transforms import PaddingMode, to_channel_dimension_format
-from .image_utils import ChannelDimension, infer_channel_dimension_format, is_valid_image
+from .image_utils import (
+    ChannelDimension,
+    infer_channel_dimension_format,
+    is_valid_image,
+)
 from .utils import (
     is_av_available,
     is_cv2_available,
@@ -38,7 +42,6 @@ from .utils import (
     logging,
     requires_backends,
 )
-
 
 if is_vision_available():
     import PIL.Image
@@ -55,14 +58,14 @@ logger = logging.get_logger(__name__)
 
 
 VideoInput = Union[
-    List["PIL.Image.Image"],
+    list["PIL.Image.Image"],
     "np.ndarray",
     "torch.Tensor",
-    List["np.ndarray"],
-    List["torch.Tensor"],
-    List[List["PIL.Image.Image"]],
-    List[List["np.ndarrray"]],
-    List[List["torch.Tensor"]],
+    list["np.ndarray"],
+    list["torch.Tensor"],
+    list[list["PIL.Image.Image"]],
+    list[list["np.ndarrray"]],
+    list[list["torch.Tensor"]],
 ]  # noqa
 
 
@@ -90,7 +93,9 @@ def valid_videos(videos):
     # If we have a list of videos, it could be either one video as list of frames or a batch
     if isinstance(videos, (list, tuple)):
         for video_or_frame in videos:
-            if not (is_valid_video(video_or_frame) or is_valid_video_frame(video_or_frame)):
+            if not (
+                is_valid_video(video_or_frame) or is_valid_video_frame(video_or_frame)
+            ):
                 return False
     # If not a list, then we have a single 4D video or 5D batched tensor
     elif not is_valid_video(videos) or videos.ndim == 5:
@@ -101,7 +106,7 @@ def valid_videos(videos):
 def is_batched_video(videos):
     if isinstance(videos, (list, tuple)):
         return is_valid_video(videos[0])
-    elif (is_numpy_array(videos) or is_torch_tensor(videos)) and videos.ndim == 5:
+    if (is_numpy_array(videos) or is_torch_tensor(videos)) and videos.ndim == 5:
         return True
     return False
 
@@ -114,7 +119,9 @@ def is_scaled_video(video: np.ndarray) -> bool:
     return np.min(video) >= 0 and np.max(video) <= 1
 
 
-def convert_pil_frames_to_video(videos: List[VideoInput]) -> List[Union["np.ndarray", "torch.Tensor"]]:
+def convert_pil_frames_to_video(
+    videos: list[VideoInput],
+) -> list[Union["np.ndarray", "torch.Tensor"]]:
     """
     Given a batch of videos, converts each video to a 4D array. If video is already in array type,
     it is simply returned. We assume that all inputs in the list are in the same format, based on the type of the first element.
@@ -135,7 +142,7 @@ def convert_pil_frames_to_video(videos: List[VideoInput]) -> List[Union["np.ndar
     return video_converted
 
 
-def make_batched_videos(videos) -> List[Union["np.ndarray", "torch.Tensor"]]:
+def make_batched_videos(videos) -> list[Union["np.ndarray", "torch.Tensor"]]:
     """
     Ensure that the input is a list of videos. If the input is a single video, it is converted to a list of length 1.
     If the input is a batch of videos, it is converted to a list of 4D video arrays. Videos passed as list `PIL.Image`
@@ -166,7 +173,9 @@ def make_batched_videos(videos) -> List[Union["np.ndarray", "torch.Tensor"]]:
     return convert_pil_frames_to_video(videos)
 
 
-def get_video_size(video: np.ndarray, channel_dim: ChannelDimension = None) -> Tuple[int, int]:
+def get_video_size(
+    video: np.ndarray, channel_dim: ChannelDimension = None
+) -> tuple[int, int]:
     """
     Returns the (height, width) dimensions of the video.
 
@@ -184,13 +193,12 @@ def get_video_size(video: np.ndarray, channel_dim: ChannelDimension = None) -> T
 
     if channel_dim == ChannelDimension.FIRST:
         return video.shape[-2], video.shape[-1]
-    elif channel_dim == ChannelDimension.LAST:
+    if channel_dim == ChannelDimension.LAST:
         return video.shape[-3], video.shape[-2]
-    else:
-        raise ValueError(f"Unsupported data format: {channel_dim}")
+    raise ValueError(f"Unsupported data format: {channel_dim}")
 
 
-def get_uniform_frame_indices(total_num_frames: int, num_frames: Optional[int] = None):
+def get_uniform_frame_indices(total_num_frames: int, num_frames: int | None = None):
     """
     Creates a numpy array for uniform sampling of `num_frame` frames from `total_num_frames`
     when loading a video.
@@ -205,13 +213,17 @@ def get_uniform_frame_indices(total_num_frames: int, num_frames: Optional[int] =
         np.ndarray: np array of frame indices that will be sampled.
     """
     if num_frames is not None:
-        indices = np.arange(0, total_num_frames, total_num_frames / num_frames).astype(int)
+        indices = np.arange(0, total_num_frames, total_num_frames / num_frames).astype(
+            int
+        )
     else:
         indices = np.arange(0, total_num_frames).astype(int)
     return indices
 
 
-def default_sample_indices_fn(metadata: VideoMetadata, num_frames=None, fps=None, **kwargs):
+def default_sample_indices_fn(
+    metadata: VideoMetadata, num_frames=None, fps=None, **kwargs
+):
     """
     A default sampling function that replicates the logic used in get_uniform_frame_indices,
     while optionally handling `fps` if `num_frames` is not provided.
@@ -240,7 +252,9 @@ def default_sample_indices_fn(metadata: VideoMetadata, num_frames=None, fps=None
             )
 
     if num_frames is not None:
-        indices = np.arange(0, total_num_frames, total_num_frames / num_frames, dtype=int)
+        indices = np.arange(
+            0, total_num_frames, total_num_frames / num_frames, dtype=int
+        )
     else:
         indices = np.arange(0, total_num_frames, dtype=int)
     return indices
@@ -279,7 +293,10 @@ def read_video_opencv(
     video_fps = video.get(cv2.CAP_PROP_FPS)
     duration = total_num_frames / video_fps if video_fps else 0
     metadata = VideoMetadata(
-        total_num_frames=int(total_num_frames), fps=float(video_fps), duration=float(duration), video_backend="opencv"
+        total_num_frames=int(total_num_frames),
+        fps=float(video_fps),
+        duration=float(duration),
+        video_backend="opencv",
     )
     indices = sample_indices_fn(metadata=metadata, **kwargs)
 
@@ -305,7 +322,7 @@ def read_video_opencv(
 
 def read_video_decord(
     video_path: str,
-    sample_indices_fn: Optional[Callable] = None,
+    sample_indices_fn: Callable | None = None,
     **kwargs,
 ):
     """
@@ -336,7 +353,10 @@ def read_video_decord(
     total_num_frames = len(vr)
     duration = total_num_frames / video_fps if video_fps else 0
     metadata = VideoMetadata(
-        total_num_frames=int(total_num_frames), fps=float(video_fps), duration=float(duration), video_backend="decord"
+        total_num_frames=int(total_num_frames),
+        fps=float(video_fps),
+        duration=float(duration),
+        video_backend="decord",
     )
 
     indices = sample_indices_fn(metadata=metadata, **kwargs)
@@ -376,10 +396,15 @@ def read_video_pyav(
 
     container = av.open(video_path)
     total_num_frames = container.streams.video[0].frames
-    video_fps = container.streams.video[0].average_rate  # should we better use `av_guess_frame_rate`?
+    video_fps = container.streams.video[
+        0
+    ].average_rate  # should we better use `av_guess_frame_rate`?
     duration = total_num_frames / video_fps if video_fps else 0
     metadata = VideoMetadata(
-        total_num_frames=int(total_num_frames), fps=float(video_fps), duration=float(duration), video_backend="pyav"
+        total_num_frames=int(total_num_frames),
+        fps=float(video_fps),
+        duration=float(duration),
+        video_backend="pyav",
     )
     indices = sample_indices_fn(metadata=metadata, **kwargs)
 
@@ -455,10 +480,10 @@ VIDEO_DECODERS = {
 
 def load_video(
     video: Union[str, "VideoInput"],
-    num_frames: Optional[int] = None,
-    fps: Optional[int] = None,
+    num_frames: int | None = None,
+    fps: int | None = None,
     backend: str = "pyav",
-    sample_indices_fn: Optional[Callable] = None,
+    sample_indices_fn: Callable | None = None,
     **kwargs,
 ) -> np.array:
     """
@@ -501,13 +526,17 @@ def load_video(
     if sample_indices_fn is None:
 
         def sample_indices_fn_func(metadata, **fn_kwargs):
-            return default_sample_indices_fn(metadata, num_frames=num_frames, fps=fps, **fn_kwargs)
+            return default_sample_indices_fn(
+                metadata, num_frames=num_frames, fps=fps, **fn_kwargs
+            )
 
         sample_indices_fn = sample_indices_fn_func
 
     if urlparse(video).netloc in ["www.youtube.com", "youtube.com"]:
         if not is_yt_dlp_available():
-            raise ImportError("To load a video from YouTube url you have  to install `yt_dlp` first.")
+            raise ImportError(
+                "To load a video from YouTube url you have  to install `yt_dlp` first."
+            )
         # Lazy import from yt_dlp
         requires_backends(load_video, ["yt_dlp"])
         from yt_dlp import YoutubeDL
@@ -521,10 +550,14 @@ def load_video(
         file_obj = BytesIO(requests.get(video).content)
     elif os.path.isfile(video):
         file_obj = video
-    elif is_valid_image(video) or (isinstance(video, (list, tuple)) and is_valid_image(video[0])):
+    elif is_valid_image(video) or (
+        isinstance(video, (list, tuple)) and is_valid_image(video[0])
+    ):
         file_obj = None
     else:
-        raise TypeError("Incorrect format used for video. Should be an url linking to an video or a local path.")
+        raise TypeError(
+            "Incorrect format used for video. Should be an url linking to an video or a local path."
+        )
 
     # can also load with decord, but not cv2/torchvision
     # both will fail in case of url links
@@ -555,8 +588,8 @@ def load_video(
 
 def convert_to_rgb(
     video: np.array,
-    data_format: Optional[ChannelDimension] = None,
-    input_data_format: Optional[Union[str, ChannelDimension]] = None,
+    data_format: ChannelDimension | None = None,
+    input_data_format: str | ChannelDimension | None = None,
 ) -> np.array:
     """
     Convert video to RGB by blending the transparency layer if it's in RGBA format, otherwise simply returns it.
@@ -570,12 +603,16 @@ def convert_to_rgb(
             The channel dimension format of the input video. If unset, will use the inferred format from the input.
     """
     if not isinstance(video, np.ndarray):
-        raise ValueError(f"Video has to be a numpy array to convert to RGB format, but found {type(video)}")
+        raise ValueError(
+            f"Video has to be a numpy array to convert to RGB format, but found {type(video)}"
+        )
 
     # np.array usually comes with ChannelDimension.LAST so leet's convert it
     if input_data_format is None:
         input_data_format = infer_channel_dimension_format(video)
-    video = to_channel_dimension_format(video, ChannelDimension.FIRST, input_channel_dim=input_data_format)
+    video = to_channel_dimension_format(
+        video, ChannelDimension.FIRST, input_channel_dim=input_data_format
+    )
 
     # 3 channels for RGB already
     if video.shape[-3] == 3:
@@ -591,17 +628,19 @@ def convert_to_rgb(
     # There is a transparency layer, blend it with a white background.
     # Calculate the alpha proportion for blending.
     alpha = video[..., 3, :, :] / 255.0
-    video = (1 - alpha[..., None, :, :]) * 255 + alpha[..., None, :, :] * video[..., 3, :, :]
+    video = (1 - alpha[..., None, :, :]) * 255 + alpha[..., None, :, :] * video[
+        ..., 3, :, :
+    ]
     return video
 
 
 def pad(
     video: np.ndarray,
-    padding: Union[int, Tuple[int, int], Iterable[Tuple[int, int]]],
+    padding: int | tuple[int, int] | Iterable[tuple[int, int]],
     mode: PaddingMode = PaddingMode.CONSTANT,
-    constant_values: Union[float, Iterable[float]] = 0.0,
-    data_format: Optional[Union[str, ChannelDimension]] = None,
-    input_data_format: Optional[Union[str, ChannelDimension]] = None,
+    constant_values: float | Iterable[float] = 0.0,
+    data_format: str | ChannelDimension | None = None,
+    input_data_format: str | ChannelDimension | None = None,
 ) -> np.ndarray:
     """
     Pads the `video` with the specified (height, width) `padding` and `mode`.
@@ -649,16 +688,26 @@ def pad(
             values = ((values, values), (values, values))
         elif isinstance(values, tuple) and len(values) == 1:
             values = ((values[0], values[0]), (values[0], values[0]))
-        elif isinstance(values, tuple) and len(values) == 2 and isinstance(values[0], int):
+        elif (
+            isinstance(values, tuple)
+            and len(values) == 2
+            and isinstance(values[0], int)
+        ):
             values = (values, values)
-        elif isinstance(values, tuple) and len(values) == 2 and isinstance(values[0], tuple):
+        elif (
+            isinstance(values, tuple)
+            and len(values) == 2
+            and isinstance(values[0], tuple)
+        ):
             values = values
         else:
             raise ValueError(f"Unsupported format: {values}")
 
         # add 0 for channel dimension
         values = (
-            ((0, 0), (0, 0), *values) if input_data_format == ChannelDimension.FIRST else ((0, 0), *values, (0, 0))
+            ((0, 0), (0, 0), *values)
+            if input_data_format == ChannelDimension.FIRST
+            else ((0, 0), *values, (0, 0))
         )
 
         # Add additional padding if there's a batch dimension
@@ -676,17 +725,23 @@ def pad(
     pad_kwargs = {}
     if mode not in padding_map:
         raise ValueError(f"Invalid padding mode: {mode}")
-    elif mode == PaddingMode.CONSTANT:
+    if mode == PaddingMode.CONSTANT:
         pad_kwargs["constant_values"] = _expand_for_data_format(constant_values)
 
     video = np.pad(video, padding, mode=padding_map[mode], **pad_kwargs)
-    video = to_channel_dimension_format(video, data_format, input_data_format) if data_format is not None else video
+    video = (
+        to_channel_dimension_format(video, data_format, input_data_format)
+        if data_format is not None
+        else video
+    )
     return video
 
 
 def group_videos_by_shape(
-    videos: List["torch.Tensor"],
-) -> Tuple[Dict[Tuple[int, int], List["torch.Tensor"]], Dict[int, Tuple[Tuple[int, int], int]]]:
+    videos: list["torch.Tensor"],
+) -> tuple[
+    dict[tuple[int, int], list["torch.Tensor"]], dict[int, tuple[tuple[int, int], int]]
+]:
     """
     Groups videos by shape.
     Returns a dictionary with the shape as key and a list of videos with that shape as value,
@@ -703,13 +758,16 @@ def group_videos_by_shape(
         grouped_videos[shape].append(video)
         grouped_videos_index[i] = (shape, len(grouped_videos[shape]) - 1)
     # stack videos with the same size and number of frames
-    grouped_videos = {shape: torch.stack(videos, dim=0) for shape, videos in grouped_videos.items()}
+    grouped_videos = {
+        shape: torch.stack(videos, dim=0) for shape, videos in grouped_videos.items()
+    }
     return grouped_videos, grouped_videos_index
 
 
 def reorder_videos(
-    processed_videos: Dict[Tuple[int, int], "torch.Tensor"], grouped_videos_index: Dict[int, Tuple[int, int]]
-) -> List["torch.Tensor"]:
+    processed_videos: dict[tuple[int, int], "torch.Tensor"],
+    grouped_videos_index: dict[int, tuple[int, int]],
+) -> list["torch.Tensor"]:
     """
     Reconstructs a list of videos in the original order.
     """

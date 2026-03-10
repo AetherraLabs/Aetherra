@@ -5,7 +5,7 @@ import logging
 import operator
 import warnings
 from collections.abc import Sequence
-from typing import cast, Optional
+from typing import cast
 
 import torch
 import torch.distributed as dist
@@ -23,7 +23,6 @@ from torch.distributed.tensor._tp_conv import (
 )
 from torch.distributed.tensor._utils import try_find_mesh_from_args
 from torch.distributed.tensor.placement_types import Partial, Placement, Replicate
-
 
 try:
     from torch.utils import _cxx_pytree as pytree
@@ -222,11 +221,9 @@ class OpDispatcher:
                         if len(shape) == 0:
                             # scalar tensor
                             return torch.zeros((), dtype=dtype)
-                        else:
-                            # non-scalar tensor
-                            return torch.tensor([], dtype=dtype)
-                    else:
-                        raise RuntimeError(f"{spec} has no tensor metadata.")
+                        # non-scalar tensor
+                        return torch.tensor([], dtype=dtype)
+                    raise RuntimeError(f"{spec} has no tensor metadata.")
 
                 if isinstance(spec, DTensorSpec):
                     # return a Tensor value
@@ -258,9 +255,8 @@ class OpDispatcher:
             # inplace op should return self instead of re-wrapping
             if output_sharding.output_spec is not None:
                 return args[0]
-            else:
-                return None
-        elif op_info.schema.is_out_variant_op():
+            return None
+        if op_info.schema.is_out_variant_op():
             # out variant could possibly have multiple out args (i.e. lu_unpack.out)
             output_specs = (
                 (output_sharding.output_spec,)
@@ -278,8 +274,7 @@ class OpDispatcher:
 
             assert len(out_dts) >= 1, "out variant should have at least one out arg"
             return tuple(out_dts) if len(out_dts) > 1 else out_dts[0]
-        else:
-            return self.wrap(local_results, output_sharding.output_spec)  # type: ignore[possibly-undefined]
+        return self.wrap(local_results, output_sharding.output_spec)  # type: ignore[possibly-undefined]
 
     @staticmethod
     def redistribute_local_args(
@@ -333,7 +328,7 @@ class OpDispatcher:
         kwargs_schema: dict[str, object] = {}
         local_args: list[object] = []
         local_kwargs: dict[str, object] = {}
-        compute_mesh: Optional[DeviceMesh] = None
+        compute_mesh: DeviceMesh | None = None
 
         for arg in args_list:
             if isinstance(arg, dtensor.DTensor):
@@ -404,23 +399,21 @@ class OpDispatcher:
                     f"output spec does not match with output! Expected DTensorSpec, got {spec}."
                 )
                 return dtensor.DTensor(res, spec, requires_grad=res.requires_grad)
-            else:
-                # if output does not have a DTensorSpec due to specific ops, it must be a scalar tensor
-                assert res.ndim == 0, "output tensor should be scalar!"
-                return res
-        elif isinstance(res, (list, tuple)):
+            # if output does not have a DTensorSpec due to specific ops, it must be a scalar tensor
+            assert res.ndim == 0, "output tensor should be scalar!"
+            return res
+        if isinstance(res, (list, tuple)):
             assert spec is not None and isinstance(spec, (list, tuple)), (
                 f"output spec does not match with output! Expected list/tuple, got {spec}."
             )
             res_list = []
-            for e, s in zip(res, spec):
+            for e, s in zip(res, spec, strict=False):
                 res_list.append(OpDispatcher.wrap(e, s))
 
             return tuple(res_list) if isinstance(res, tuple) else res_list
-        else:
-            # if the res contains only non tensor values (i.e. int/float/none), we simply return it
-            # without rewrapping to DTensor.
-            return res
+        # if the res contains only non tensor values (i.e. int/float/none), we simply return it
+        # without rewrapping to DTensor.
+        return res
 
     def _try_replicate_spec_for_scalar_tensor(
         self,

@@ -2,7 +2,7 @@
 from enum import Enum
 from typing import NamedTuple
 
-from torch.fx.node import map_arg, Node
+from torch.fx.node import Node, map_arg
 
 
 class Partition:

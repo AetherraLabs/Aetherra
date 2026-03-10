@@ -2,15 +2,14 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates
 import contextlib
 import warnings
-from typing import Optional, Union
+from typing import Optional
 
 import torch
 import torch.distributed as dist
 from torch import Tensor
-from torch.distributed.device_mesh import _get_device_handle, DeviceMesh
+from torch.distributed.device_mesh import DeviceMesh, _get_device_handle
 from torch.distributed.tensor._dtensor_spec import DTensorSpec
 from torch.distributed.tensor.placement_types import Shard
-
 
 __all__ = [
     "is_rng_supported_mesh",
@@ -39,12 +38,11 @@ def is_rng_supported_mesh(device_mesh: DeviceMesh) -> bool:
     device_handle = _get_device_handle(device_mesh.device_type)
     if device_handle and hasattr(device_handle, "set_rng_state"):
         return True
-    else:
-        # TODO: Logs way too much
-        warnings.warn(
-            f"DTensor random operators may not have complete support on {device_mesh.device_type} device mesh"
-        )
-        return False
+    # TODO: Logs way too much
+    warnings.warn(
+        f"DTensor random operators may not have complete support on {device_mesh.device_type} device mesh"
+    )
+    return False
 
 
 def manual_seed(seed: int, device_mesh: DeviceMesh) -> None:
@@ -283,7 +281,7 @@ class OffsetBasedRNGTracker(_RNGStateTracker):
         mesh = spec.mesh
         # note: dim_map does not allow double sharding which is the FSDP(fully_shard)+TP
         # case. Replace the custom logic with dim_map once we support it.
-        dim_map: list[Union[int, list[int]]] = [-1] * spec.ndim
+        dim_map: list[int | list[int]] = [-1] * spec.ndim
         for i, placement in enumerate(spec.placements):
             if isinstance(placement, Shard):
                 shard_dim = placement.dim
@@ -311,7 +309,7 @@ class OffsetBasedRNGTracker(_RNGStateTracker):
                 rank_coord = [mesh_coordinate[d] for d in mesh_dim]
                 num_shards = [mesh_size[d] for d in mesh_dim]
                 # compute the shard idx and total number of shards
-                for idx, size in zip(rank_coord, num_shards):
+                for idx, size in zip(rank_coord, num_shards, strict=False):
                     shard_idx = shard_idx * size + idx
                     total_num_shards *= size
 
@@ -378,7 +376,7 @@ class OffsetBasedRNGTracker(_RNGStateTracker):
         # compute shard linear index
         shard_linear_idx = 0
         shard_coord_stride = 1
-        for idx, size in zip(reversed(shard_coord), reversed(shard_size)):
+        for idx, size in zip(reversed(shard_coord), reversed(shard_size), strict=False):
             shard_linear_idx += idx * shard_coord_stride
             shard_coord_stride *= size
 

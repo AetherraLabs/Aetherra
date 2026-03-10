@@ -1,7 +1,6 @@
 # mypy: allow-untyped-defs
 from __future__ import annotations
 
-
 __all__ = [
     "ExportOptions",
     "ONNXRuntimeOptions",
@@ -16,7 +15,9 @@ import dataclasses
 import logging
 import warnings
 from collections import defaultdict
-from typing import Any, Callable, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
+
 from typing_extensions import deprecated
 
 import torch
@@ -26,10 +27,11 @@ from torch.onnx._internal._lazy_import import onnxscript_apis
 from torch.onnx._internal.exporter import _constants
 from torch.onnx._internal.fx import (
     decomposition_table,
-    patcher as patcher,
     registration,
 )
-
+from torch.onnx._internal.fx import (
+    patcher as patcher,
+)
 
 # We can only import onnx from this module in a type-checking context to ensure that
 # 'import torch.onnx' continues to work without having 'onnx' installed. We fully

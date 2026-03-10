@@ -45,9 +45,7 @@ class TrainingDataset:
         self.last_modified = self.created_at
         self.format_type = "conversation"  # conversation, instruction, qa
 
-    def add_sample(
-        self, input_text: str, output_text: str, metadata: Optional[Dict] = None
-    ):
+    def add_sample(self, input_text: str, output_text: str, metadata: Optional[Dict] = None):
         """Add a training sample to the dataset."""
         sample = {
             "id": str(uuid.uuid4()),
@@ -200,9 +198,7 @@ class AssistantTrainerPlugin:
 
         model = self.models[model_id]
         dataset = self.datasets[dataset_id]
-        config = self.training_presets.get(
-            preset, self.training_presets["conversational"]
-        )
+        config = self.training_presets.get(preset, self.training_presets["conversational"])
 
         # Simulate training
         model.status = "training"
@@ -352,9 +348,7 @@ class AssistantTrainerPlugin:
             ],
             "stats": {
                 "datasets_created": len(self.datasets),
-                "models_trained": len(
-                    [m for m in self.models.values() if m.status == "trained"]
-                ),
+                "models_trained": len([m for m in self.models.values() if m.status == "trained"]),
                 "training_presets": len(self.training_presets),
                 "personality_templates": len(self.personality_templates),
             },

@@ -1,18 +1,19 @@
 {
   "_meta": {
     "profile": "test",
-    "ts": 1758593416.0234954,
+    "ts": 1773179072.5435781,
     "all_passed": true
   },
   "launcher_smoke": {
     "ok": true,
     "manual": false,
-    "duration_sec": 15.339,
+    "duration_sec": 12.533,
     "details": {
       "services": [
         "adaptive_behavior_system",
         "aether_script_service",
         "aetherra_engine",
+        "aetherra_homeostasis",
         "agent.bughunter",
         "agent.ethics_guard",
         "agent.executor",
@@ -23,8 +24,9 @@
         "agent.summarizer",
         "agent.toolsmith",
         "agent_fabric",
+        "consciousness_core",
         "event_bus",
-        "kernel_loop",
+        "homeostasis_system",
         "lyrixa_chat",
         "memory_system",
         "meta_cognition",
@@ -51,30 +53,29 @@
   "chat_sse_resume": {
     "ok": true,
     "manual": false,
-    "duration_sec": 5.913,
+    "duration_sec": 5.226,
     "details": {
-      "last_id": 3,
-      "resumed_first": 4,
+      "last_id": 4,
+      "resumed_first": 5,
       "monotonic": true
     }
   },
   "security_strict": {
     "ok": true,
     "manual": false,
-    "duration_sec": 3.769,
+    "duration_sec": 10.42,
     "details": {
       "scripts_ok": true,
       "report": "aether_static_report.md",
-      "stdout": "",
+      "stdout": "[ENV] Loading .env file from: D:\\Aetherra Project\\Aetherra\\core\\..\\..\\.env\n[ENV] Environment variables loaded from .env file\n[AI] OpenAI client initialized (key ending in ...g7UA)\n",
       "stderr": "",
-      "scripts_ok_report_override": true,
       "net_call_status": 200
     }
   },
   "memory_qfac": {
     "ok": true,
     "manual": false,
-    "duration_sec": 0.004,
+    "duration_sec": 0.03,
     "details": {
       "node": "qfac_node_000000",
       "retrieved_type": "dict",
@@ -94,26 +95,27 @@
   "agents_api": {
     "ok": true,
     "manual": false,
-    "duration_sec": 4.069,
+    "duration_sec": 4.09,
     "details": {
-      "disabled_status": 501,
+      "disabled_status": 200,
+      "disabled_enabled": false,
       "enabled_status": 200
     }
   },
   "quality_gates": {
     "ok": true,
     "manual": false,
-    "duration_sec": 187.471,
+    "duration_sec": 345.08,
     "details": {
       "tests_ok": true,
       "stdout_snippet": [
-        "........................................................................ [ 63%]",
-        ".........................................                                [100%]",
-        "113 passed, 1 skipped in 179.48s (0:02:59)"
+        "...............................ss....................................... [ 51%]",
+        "..............................................s.......s.............     [100%]",
+        "136 passed, 5 skipped in 333.73s (0:05:33)"
       ],
       "spec_tests_exit": 0,
       "spec_tests_stdout": [
-        "[SPEC->TESTS] OK: 2 test file(s) changed for 9 code file(s)."
+        "[SPEC->TESTS] OK: 56 test file(s) changed for 2291 code file(s)."
       ],
       "spec_tests_stderr": ""
     }
@@ -121,7 +123,7 @@
   "policy_privacy": {
     "ok": true,
     "manual": false,
-    "duration_sec": 3.06,
+    "duration_sec": 3.268,
     "details": {
       "header_present": true,
       "policy_event": true

@@ -2,8 +2,9 @@ import itertools
 import logging
 import textwrap
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, cast, Optional, Union
+from typing import Any, cast
 
 import sympy
 from sympy import Integer, Symbol
@@ -32,11 +33,10 @@ from .common import (
     SizeArg,
     WorkspaceArg,
 )
-from .simd import prefix_is_reduction, SIMDScheduling
+from .simd import SIMDScheduling, prefix_is_reduction
 from .simd_kernel_features import SIMDKernelFeatures
-from .triton import gen_common_triton_imports, TritonKernel
+from .triton import TritonKernel, gen_common_triton_imports
 from .triton_utils import config_of, signature_to_meta
-
 
 log = logging.getLogger(__name__)
 pexpr = PythonPrinter().doprint
@@ -77,7 +77,7 @@ def _default_custom_combo_kernel_horizontal_partition(
     max_dims = max(len(t) for t in tilings)
     nodes_per_ndim: list[list[BaseSchedulerNode]] = []
     for i in range(2, max_dims + 1):
-        group_per_dim = [n for n, t in zip(nodes, tilings) if len(t) == i]
+        group_per_dim = [n for n, t in zip(nodes, tilings, strict=False) if len(t) == i]
         reduction = [
             n
             for n in group_per_dim
@@ -358,13 +358,13 @@ class ComboKernel(Kernel):
         self.sub_kernels: list[TritonKernel] = []
         self.iter_vars_count = itertools.count()
         self.grids: list[list[int]] = []
-        self.min_x_blocks_list: list[Union[int, str]] = []
-        self.x_numels_list: list[Union[int, str]] = []
+        self.min_x_blocks_list: list[int | str] = []
+        self.x_numels_list: list[int | str] = []
         self.enable_autotune = enable_autotune
         self.mixed_sizes = mixed_sizes
-        self.dispatch_class: Optional[
-            type[Union[ComboKernel.SequentialDispatch, ComboKernel.RoundRobinDispatch]]
-        ] = None
+        self.dispatch_class: (
+            type[ComboKernel.SequentialDispatch | ComboKernel.RoundRobinDispatch] | None
+        ) = None
         self.block_args: list[str] = []
         # there following are used when autotuning is disabled
         self.block_size_1d = 1024  # Try tuning this value
@@ -459,8 +459,8 @@ class ComboKernel(Kernel):
         Kernels with no_x_dim being true has no tunable XBLOCK. They have a fixed number of X blocks.
         Grid calculation needs to make sure that they are assigned with enough number of blocks.
         """
-        min_x_blocks: Union[int, str] = 0
-        x_numels: Union[int, str] = 0
+        min_x_blocks: int | str = 0
+        x_numels: int | str = 0
         for tree in sub_kernel.range_trees:
             simplified_tree_numel = V.graph.sizevars.simplify(tree.numel)
             if tree.prefix == "x":
@@ -509,7 +509,7 @@ class ComboKernel(Kernel):
                 key=lambda x: x[1]["x"] if heuristics_list[x[0]] == "reduction" else 0,
             )
             return heuristics_list[i], size_hints_list[i], self.sub_kernels[i]
-        elif "pointwise" in heuristics_list:
+        if "pointwise" in heuristics_list:
             i, _ = max(
                 enumerate(size_hints_list),
                 key=lambda x: x[1]["x"] if heuristics_list[x[0]] == "pointwise" else 0,
@@ -532,8 +532,7 @@ class ComboKernel(Kernel):
                 size_hints = size_hints_list[i]
                 size_hints["x"] = min(128, size_hints["x"])
             return heuristics, size_hints_list[i], self.sub_kernels[i]
-        else:
-            return heuristics_list[0], size_hints_list[0], self.sub_kernels[0]
+        return heuristics_list[0], size_hints_list[0], self.sub_kernels[0]
 
     def get_mutated_args_sub_kernels(self) -> list[str]:
         mutated_args: OrderedSet[str] = OrderedSet()
@@ -685,7 +684,7 @@ class ComboKernel(Kernel):
                 block_names[f"{tree.prefix.upper()}BLOCK"] = tree.prefix
         self.block_args = list(block_names.keys())
 
-        return [ConstexprArg(x) for x in block_names.keys()]
+        return [ConstexprArg(x) for x in block_names]
 
     def add_numel_to_args(
         self, argdefs: list[ArgName], signature: list[Any]
@@ -729,7 +728,7 @@ class ComboKernel(Kernel):
                     extra_args.append(str(V.graph.sizevars.size_hint(tree.numel)))
         return extra_args
 
-    def codegen_kernel(self, name: Optional[str] = None) -> str:
+    def codegen_kernel(self, name: str | None = None) -> str:
         # TODO: is it correct to use the first sub kernel's heuristics?
         heuristics_list, size_hints_list = [], []
         for subkernel in self.sub_kernels:
@@ -806,7 +805,7 @@ class ComboKernel(Kernel):
         with result.indent():
             name_cnt = itertools.count()
             var_names = []
-            for arg_name, arg_sig in zip(call_args, signature):
+            for arg_name, arg_sig in zip(call_args, signature, strict=False):
                 var_name = f"arg_{next(name_cnt)}"
                 buf = V.graph.try_get_buffer(arg_name)
                 if buf:

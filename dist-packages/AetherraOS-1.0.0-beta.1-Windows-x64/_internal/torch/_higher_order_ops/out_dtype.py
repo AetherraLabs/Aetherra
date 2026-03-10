@@ -5,15 +5,14 @@ import torch.utils._pytree as pytree
 from torch._C import DispatchKey
 from torch._higher_order_ops.utils import autograd_not_implemented
 from torch._ops import HigherOrderOperator
-from torch._prims_common import elementwise_dtypes, ELEMENTWISE_TYPE_PROMOTION_KIND
+from torch._prims_common import ELEMENTWISE_TYPE_PROMOTION_KIND, elementwise_dtypes
 from torch._subclasses.fake_tensor import FakeTensorMode
 from torch.fx.experimental.proxy_tensor import (
+    ProxyTorchDispatchMode,
     disable_proxy_modes_tracing,
     maybe_handle_decomp,
-    ProxyTorchDispatchMode,
     track_tensor_tree,
 )
-
 
 # TODO to figure out a more generic approach
 ALLOWABLE_OPS = [

@@ -18,7 +18,6 @@ import argparse
 import pathlib
 import re
 from dataclasses import fields
-from typing import List
 
 # Aetherra imports
 from aetherra_hub.services import metrics_accum
@@ -66,8 +65,8 @@ DERIVED_ROWS = [
 ]
 
 
-def build_table() -> List[str]:
-    rows: List[str] = []
+def build_table() -> list[str]:
+    rows: list[str] = []
     rows.append("| Metric (field) | Type | Description | Notes |")
     rows.append("| -------------- | ---- | ----------- | ----- |")
     for f in fields(metrics_accum.ChatMetrics):  # dataclass field introspection

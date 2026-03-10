@@ -1,5 +1,4 @@
 from .fused import (  # noqa: F401
-    _FusedModule,
     BNReLU2d,
     BNReLU3d,
     ConvAdd2d,
@@ -17,8 +16,8 @@ from .fused import (  # noqa: F401
     LinearLeakyReLU,
     LinearReLU,
     LinearTanh,
+    _FusedModule,
 )
-
 
 __all__ = [
     "ConvBn1d",

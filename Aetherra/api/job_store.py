@@ -12,7 +12,7 @@ In production, this could be replaced with a database or Redis.
 
 # Standard library imports
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from threading import Lock
 from typing import Any, Dict, List, Optional
@@ -48,7 +48,7 @@ class Job:
         self.started_at: Optional[datetime] = None
         self.completed_at: Optional[datetime] = None
         self.progress: Optional[Dict[str, Any]] = None
-        self.created_at = datetime.now(timezone.utc)
+        self.created_at = datetime.now(UTC)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert job to dictionary for API responses"""
@@ -113,9 +113,9 @@ class JobStore:
             job.status = status
 
             if status == JobStatus.RUNNING and not job.started_at:
-                job.started_at = datetime.now(timezone.utc)
+                job.started_at = datetime.now(UTC)
             elif status in [JobStatus.COMPLETED, JobStatus.FAILED, JobStatus.CANCELLED]:
-                job.completed_at = datetime.now(timezone.utc)
+                job.completed_at = datetime.now(UTC)
 
             if output is not None:
                 job.output = output
@@ -148,7 +148,7 @@ class JobStore:
                 return False  # Cannot cancel already finished jobs
 
             job.status = JobStatus.CANCELLED
-            job.completed_at = datetime.now(timezone.utc)
+            job.completed_at = datetime.now(UTC)
             return True
 
     def list_jobs(
@@ -204,15 +204,12 @@ class JobStore:
             if len(self.jobs) <= max_jobs:
                 return 0
 
-            cutoff_time = datetime.now(timezone.utc).timestamp() - (
-                max_age_hours * 3600
-            )
+            cutoff_time = datetime.now(UTC).timestamp() - (max_age_hours * 3600)
 
             jobs_to_remove = []
             for job_id, job in self.jobs.items():
                 if (
-                    job.status
-                    in [JobStatus.COMPLETED, JobStatus.FAILED, JobStatus.CANCELLED]
+                    job.status in [JobStatus.COMPLETED, JobStatus.FAILED, JobStatus.CANCELLED]
                     and job.created_at.timestamp() < cutoff_time
                 ):
                     jobs_to_remove.append(job_id)
@@ -222,8 +219,7 @@ class JobStore:
                 finished_jobs = [
                     (job_id, job.created_at)
                     for job_id, job in self.jobs.items()
-                    if job.status
-                    in [JobStatus.COMPLETED, JobStatus.FAILED, JobStatus.CANCELLED]
+                    if job.status in [JobStatus.COMPLETED, JobStatus.FAILED, JobStatus.CANCELLED]
                     and job_id not in jobs_to_remove
                 ]
                 finished_jobs.sort(key=lambda x: x[1])  # Sort by creation time

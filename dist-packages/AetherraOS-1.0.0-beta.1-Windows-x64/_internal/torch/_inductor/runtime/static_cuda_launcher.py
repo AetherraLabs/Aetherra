@@ -1,9 +1,11 @@
 import functools
 import os
-from typing import Any, Optional
+from typing import Any
+
 from typing_extensions import Unpack
 
-from .triton_compat import ASTSource, CompiledKernel, knobs as triton_knobs
+from .triton_compat import ASTSource, CompiledKernel
+from .triton_compat import knobs as triton_knobs
 
 
 class StaticallyLaunchedCudaKernel:
@@ -69,15 +71,12 @@ class StaticallyLaunchedCudaKernel:
         if hasattr(kernel.metadata, "global_scratch_size"):
             if kernel.metadata.global_scratch_size > 0:
                 raise NotImplementedError("Global scratch not yet supported")
-            else:
-                self.has_global_scratch = True
+            self.has_global_scratch = True
         else:
             self.has_global_scratch = False
 
         self.arg_tys = self.arg_ty_from_signature(kernel.src)
-        self.function: Optional[int] = (
-            None  # Loaded by load_kernel(on the parent process)
-        )
+        self.function: int | None = None  # Loaded by load_kernel(on the parent process)
         num_ctas = 1
         if hasattr(kernel, "num_ctas"):
             num_ctas = kernel.num_ctas
@@ -148,7 +147,7 @@ class StaticallyLaunchedCudaKernel:
         """
         if ty[0] == "*":
             return "O"
-        elif ty == "nvTmaDesc":
+        if ty == "nvTmaDesc":
             raise NotImplementedError("nvTmaDesc kernels are not yet supported")
         return StaticallyLaunchedCudaKernel.type_mappings()[ty]
 
@@ -156,11 +155,10 @@ class StaticallyLaunchedCudaKernel:
         def index_key(i: Any) -> int:
             if isinstance(i, str):
                 return src.fn.arg_names.index(i)
-            elif isinstance(i, tuple):
+            if isinstance(i, tuple):
                 # In triton 3.3, src.fn.constants has tuples as a key
                 return i[0]
-            else:
-                return i
+            return i
 
         signature = {index_key(key): value for key, value in src.signature.items()}
         # Triton uses these as the main way to filter out constants passed to their cubin

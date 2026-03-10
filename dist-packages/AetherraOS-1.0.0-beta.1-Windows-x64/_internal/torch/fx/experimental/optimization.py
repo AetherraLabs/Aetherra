@@ -6,7 +6,7 @@ import time
 from collections import defaultdict
 from collections.abc import Iterable
 from enum import Enum
-from typing import Any, cast, Optional
+from typing import Any, cast
 
 import torch
 import torch.fx as fx
@@ -16,7 +16,6 @@ import torch.utils.mkldnn as th_mkldnn
 from torch.fx.node import Argument, Target
 from torch.fx.passes.shape_prop import ShapeProp
 from torch.nn.utils.fusion import fuse_conv_bn_eval, fuse_linear_bn_eval
-
 
 __all__ = [
     "matches_module_pattern",
@@ -50,7 +49,7 @@ def matches_module_pattern(
     if len(node.args) == 0:
         return False
     nodes: tuple[Any, fx.Node] = (node.args[0], node)
-    for expected_type, current_node in zip(pattern, nodes):
+    for expected_type, current_node in zip(pattern, nodes, strict=False):
         if not isinstance(current_node, fx.Node):
             return False
         if current_node.op != "call_module":
@@ -126,8 +125,7 @@ def remove_dropout(model: nn.Module) -> nn.Module:
             if isinstance(self.submodules[target], nn.Dropout):
                 assert len(args) == 1
                 return args[0]
-            else:
-                return super().call_module(target, args, kwargs)
+            return super().call_module(target, args, kwargs)
 
     return DropoutRemover(fx_model).transform()
 
@@ -282,7 +280,7 @@ def use_mkl_length(graph: MklSubgraph) -> bool:
 
 class UnionFind:
     def __init__(self, n):
-        self.parent: list[Optional[int]] = [None] * n
+        self.parent: list[int | None] = [None] * n
         self.size: list[int] = [0] * n
 
     def make_set(self, v: int):
@@ -309,7 +307,7 @@ class UnionFind:
 
 def optimize_for_inference(
     model: torch.nn.Module,
-    pass_config: Optional[dict[str, Any]] = None,
+    pass_config: dict[str, Any] | None = None,
     tracer: type[fx.Tracer] = fx.Tracer,
 ) -> torch.nn.Module:
     """

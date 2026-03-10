@@ -1,7 +1,8 @@
 # mypy: allow-untyped-defs
 import contextlib
 import itertools
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 from unittest.mock import patch
 
 import sympy
@@ -10,11 +11,10 @@ from .. import ir
 from ..select_algorithm import PartialRender
 from ..virtualized import V
 from .common import ArgName
-from .cpp_gemm_template import CppGemmTemplate, GEMM_TEMPLATE
+from .cpp_gemm_template import GEMM_TEMPLATE, CppGemmTemplate
 from .cpp_micro_gemm import LayoutType
 from .cpp_template_kernel import CppTemplateKernel
 from .cpp_utils import DTYPE_TO_CPP, GemmBlocking
-
 
 # We pass all sizevars present in BY to the GEMM templates so variables are not renamed in the BMM definition
 GEMM_SINGLE_THREAD_MM_STUB = r"""
@@ -82,7 +82,7 @@ class CppBmmTemplate(CppGemmTemplate):
         beta=1,
         alpha=1,
         has_bias=False,
-        epilogue_creator: Optional[Callable[[ir.Buffer], ir.Pointwise]] = None,
+        epilogue_creator: Callable[[ir.Buffer], ir.Pointwise] | None = None,
         should_block_weights: bool = False,
         name="bmm",
     ):
@@ -120,9 +120,8 @@ class CppBmmTemplate(CppGemmTemplate):
             # Add the new batch dimension
             new_size.insert(0, -1)
             return new_size, padded_n
-        else:
-            new_size = [-1, k, n]
-            return new_size, n
+        new_size = [-1, k, n]
+        return new_size, n
 
     @staticmethod
     def check_if_block_weight(W, micro_gemm):
@@ -175,9 +174,9 @@ class CppBmmTemplate(CppGemmTemplate):
     def get_options(
         self,
         kernel: CppTemplateKernel,
-        template_buffer_node: Optional[ir.CppTemplateBuffer] = None,
-        flag_template_buffer_has_other_users: Optional[bool] = None,
-        epilogue_nodes: Optional[list[ir.IRNode]] = None,
+        template_buffer_node: ir.CppTemplateBuffer | None = None,
+        flag_template_buffer_has_other_users: bool | None = None,
+        epilogue_nodes: list[ir.IRNode] | None = None,
         **kwargs,
     ) -> dict[str, Any]:
         options = super().get_options(
@@ -209,9 +208,9 @@ class CppBmmTemplate(CppGemmTemplate):
     def render(  # type: ignore[override, return]
         self,
         kernel: CppTemplateKernel,
-        template_buffer_node: Optional[ir.CppTemplateBuffer] = None,
-        flag_template_buffer_has_other_users: Optional[bool] = None,
-        epilogue_nodes: Optional[list[ir.IRNode]] = None,
+        template_buffer_node: ir.CppTemplateBuffer | None = None,
+        flag_template_buffer_has_other_users: bool | None = None,
+        epilogue_nodes: list[ir.IRNode] | None = None,
         **kwargs,
     ) -> str:
         options = self.get_options(

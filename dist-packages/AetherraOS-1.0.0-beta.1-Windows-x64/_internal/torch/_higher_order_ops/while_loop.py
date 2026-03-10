@@ -1,6 +1,6 @@
 # mypy: allow-untyped-defs
 import contextlib
-from typing import Callable, Union
+from collections.abc import Callable
 
 import torch
 import torch.utils._pytree as pytree
@@ -16,8 +16,8 @@ from torch._higher_order_ops.utils import (
 from torch._ops import HigherOrderOperator
 from torch._subclasses.fake_tensor import FakeTensorMode
 from torch.fx.experimental.proxy_tensor import (
-    _temp_remove_metadata_torch_function_mode,
     ProxyTorchDispatchMode,
+    _temp_remove_metadata_torch_function_mode,
     track_tensor_tree,
 )
 
@@ -30,8 +30,8 @@ class WhileLoopOp(HigherOrderOperator):
         self,
         cond_fn: Callable,
         body_fn: Callable,
-        carried_inputs: tuple[Union[torch.Tensor, int, float, bool]],
-        additional_inputs: tuple[Union[torch.Tensor, torch.SymInt, int], ...],
+        carried_inputs: tuple[torch.Tensor | int | float | bool],
+        additional_inputs: tuple[torch.Tensor | torch.SymInt | int, ...],
         /,
     ):
         if not isinstance(carried_inputs, (tuple, list)):
@@ -189,10 +189,9 @@ def while_loop_dense(cond_fn, body_fn, carried_inputs, additional_inputs):
             and pred.dtype == torch.bool
         ) or isinstance(pred, bool):
             return
-        else:
-            raise RuntimeError(
-                f"cond_fn must return a boolean scalar tensor or a boolean but got {pred}"
-            )
+        raise RuntimeError(
+            f"cond_fn must return a boolean scalar tensor or a boolean but got {pred}"
+        )
 
     if not isinstance(carried_inputs, (tuple, list)):
         raise RuntimeError(
@@ -202,12 +201,12 @@ def while_loop_dense(cond_fn, body_fn, carried_inputs, additional_inputs):
     while pred := cond_fn(*carried_vals, *additional_inputs):
         _validate_cond_output(pred)
         out = body_fn(*carried_vals, *additional_inputs)
-        assert isinstance(
-            out, tuple
-        ), f"body_fn should return a tuple but got {type(out)}"
-        assert len(out) == len(
-            carried_inputs
-        ), "body_fn should return the same number of elements as carried_inputs"
+        assert isinstance(out, tuple), (
+            f"body_fn should return a tuple but got {type(out)}"
+        )
+        assert len(out) == len(carried_inputs), (
+            "body_fn should return the same number of elements as carried_inputs"
+        )
         carried_vals = out
     return carried_vals
 
@@ -230,9 +229,9 @@ def _find_or_create_fake_mode() -> FakeTensorMode:
 def _create_unbacked_symint(
     fake_mode: FakeTensorMode, ignore_fresh_unbacked_symbols: bool
 ) -> torch.SymInt:
-    assert (
-        fake_mode is not None and fake_mode.shape_env is not None
-    ), "Must provide a fake_mode with shape_env."
+    assert fake_mode is not None and fake_mode.shape_env is not None, (
+        "Must provide a fake_mode with shape_env."
+    )
     ctx = (
         contextlib.nullcontext()
         if not ignore_fresh_unbacked_symbols

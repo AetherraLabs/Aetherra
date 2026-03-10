@@ -11,11 +11,12 @@ from torch.onnx import (
     _type_utils,
     errors,
     symbolic_helper,
-    symbolic_opset9 as opset9,
     utils,
 )
+from torch.onnx import (
+    symbolic_opset9 as opset9,
+)
 from torch.onnx._internal import jit_utils, registration
-
 
 # EDITING THIS FILE? READ THIS FIRST!
 # see Note [Edit Symbolic Files] in README.md
@@ -59,8 +60,7 @@ def _einsum_helper(g: jit_utils.GraphContext, equation, tensors):
             g.op("Einsum", *tensors, equation_s=equation),
             to_i=_C_onnx.TensorProtoDataType.BOOL,
         )
-    else:
-        return g.op("Einsum", *tensors, equation_s=equation)
+    return g.op("Einsum", *tensors, equation_s=equation)
 
 
 @_onnx_symbolic("aten::einsum")
@@ -240,15 +240,14 @@ def binary_cross_entropy_with_logits(
     reduction = symbolic_helper._maybe_get_const(reduction, "i")
     if reduction == 0:
         return output
-    elif reduction == 1:
+    if reduction == 1:
         return g.op("ReduceMean", output, keepdims_i=0)
-    elif reduction == 2:
+    if reduction == 2:
         return g.op("ReduceSum", output, keepdims_i=0)
-    else:
-        return symbolic_helper._onnx_unsupported(
-            "binary_cross_entropy_with_logits with reduction other than none, mean, or sum",
-            input,
-        )
+    return symbolic_helper._onnx_unsupported(
+        "binary_cross_entropy_with_logits with reduction other than none, mean, or sum",
+        input,
+    )
 
 
 @_onnx_symbolic("aten::celu")

@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-
 __all__ = [
     "OnnxBackend",
     "VerificationOptions",
@@ -29,13 +28,13 @@ import io
 import itertools
 import os
 import tempfile
-import typing_extensions
 import warnings
-from collections.abc import Collection, Mapping, Sequence
-from typing import Any, Callable, Union
+from collections.abc import Callable, Collection, Mapping, Sequence
+from typing import Any, Union
 
 import numpy as np
 import numpy.typing as npt
+import typing_extensions
 
 import torch
 import torch._C._onnx as _C_onnx
@@ -48,7 +47,6 @@ from torch.onnx._internal.exporter._verification import (
     verify_onnx_program,
 )
 from torch.types import Number
-
 
 # TODO: Update deprecation messages to recommend the new classes
 
@@ -137,13 +135,12 @@ def _to_numpy(elem) -> list | npt.NDArray:
     if isinstance(elem, torch.Tensor):
         if elem.requires_grad:
             return elem.detach().cpu().numpy()
-        else:
-            return elem.cpu().numpy()
-    elif isinstance(elem, (list, tuple)):
+        return elem.cpu().numpy()
+    if isinstance(elem, (list, tuple)):
         return [_to_numpy(inp) for inp in elem]
-    elif isinstance(elem, (bool, int, float)):
+    if isinstance(elem, (bool, int, float)):
         return np.array(elem)
-    elif isinstance(elem, dict):
+    if isinstance(elem, dict):
         flattened = []
         for k in elem:
             flattened.extend([_to_numpy(k), _to_numpy(elem[k])])
@@ -263,7 +260,7 @@ def _compare_onnx_pytorch_outputs_in_np(
             "If set, acceptable_error_percentage should be between 0.0 and 1.0"
         )
 
-    for ort_out, pt_out in zip(onnx_outs, pt_outs):
+    for ort_out, pt_out in zip(onnx_outs, pt_outs, strict=False):
         try:
             # TODO: Remove `check_shape` option once every shape inconsistent issue is addressed.
             if not options.check_shape:
@@ -399,8 +396,7 @@ def _prepare_input_for_onnx(
         onnx_inputs = onnx_inputs[:-1]
     if remained_onnx_input_idx is not None:
         return [onnx_inputs[i] for i in remained_onnx_input_idx]
-    else:
-        return onnx_inputs
+    return onnx_inputs
 
 
 def _try_clone_model(model):
@@ -951,7 +947,7 @@ def verify_aten_graph(
         # NOTE: Input might be dce'ed, so we need to remove those from the input args.
         new_input_names = {v.debugName() for v in graph.inputs()}
         new_input_args = []
-        for v, arg in zip(original_jit_graph.inputs(), input_args):
+        for v, arg in zip(original_jit_graph.inputs(), input_args, strict=False):
             if v.debugName() in new_input_names:
                 new_input_args.append(arg)
         input_args = tuple(new_input_args)
@@ -1061,11 +1057,11 @@ class GraphInfoPrettyPrinter:
         lower_total_rows = self.lower_printer._total_rows() if self.lower_printer else 1
         if line == 0:
             return "  __"
-        elif line < upper_total_rows + 1:
+        if line < upper_total_rows + 1:
             return " |  "
-        elif line == upper_total_rows + 1:
+        if line == upper_total_rows + 1:
             return " |__"
-        elif line < upper_total_rows + lower_total_rows + 1:
+        if line < upper_total_rows + lower_total_rows + 1:
             return "    "
         return ""
 
@@ -1082,7 +1078,7 @@ class GraphInfoPrettyPrinter:
             return (
                 self.upper_printer._str_at_line(line) if self.upper_printer else "..."
             )
-        elif upper_total_rows < line < upper_total_rows + lower_total_rows + 1:
+        if upper_total_rows < line < upper_total_rows + lower_total_rows + 1:
             return (
                 self.lower_printer._str_at_line(line - upper_total_rows - 1)
                 if self.lower_printer
@@ -1340,7 +1336,7 @@ class GraphInfo:
         if len(id) > current_length:
             if id[current_length] == "0" and self.upper_graph_info is not None:
                 return self.upper_graph_info.find_partition(id)
-            elif id[current_length] == "1" and self.lower_graph_info is not None:
+            if id[current_length] == "1" and self.lower_graph_info is not None:
                 return self.lower_graph_info.find_partition(id)
         return None
 
@@ -1585,7 +1581,7 @@ class GraphInfo:
         assert len(graph_outputs) == len(pt_outs), (
             f"{len(graph_outputs)} vs {len(pt_outs)}\nGraph: {self.graph}"
         )
-        return {v.debugName(): o for v, o in zip(graph_outputs, pt_outs)}
+        return {v.debugName(): o for v, o in zip(graph_outputs, pt_outs, strict=False)}
 
     def _args_and_params_for_partition_graph(
         self,
@@ -1677,7 +1673,8 @@ class GraphInfo:
             return
 
         full_kwargs = {
-            k.debugName(): v for k, v in zip(self.graph.inputs(), self.input_args)
+            k.debugName(): v
+            for k, v in zip(self.graph.inputs(), self.input_args, strict=False)
         }
         full_params = self.params_dict
 

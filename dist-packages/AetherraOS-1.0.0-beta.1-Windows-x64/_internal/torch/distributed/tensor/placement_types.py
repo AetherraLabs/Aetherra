@@ -2,7 +2,7 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates
 
 from dataclasses import dataclass
-from typing import cast, Optional
+from typing import cast
 
 import torch
 import torch.distributed._functional_collectives as funcol
@@ -15,7 +15,6 @@ from torch.distributed.tensor._collective_utils import (
     shard_dim_alltoall,
     unpad_tensor,
 )
-
 
 __all__ = ["Placement", "Shard", "Replicate", "Partial"]
 
@@ -31,12 +30,11 @@ class Placement:
     """
 
     # convenient utils to check for placement types
-    def is_shard(self, dim: Optional[int] = None) -> bool:
+    def is_shard(self, dim: int | None = None) -> bool:
         is_shard_instance = isinstance(self, Shard)
         if dim is not None and is_shard_instance:
             return cast(Shard, self).dim == dim
-        else:
-            return is_shard_instance
+        return is_shard_instance
 
     def is_replicate(self) -> bool:
         return isinstance(self, Replicate)
@@ -136,19 +134,18 @@ class Shard(Placement):
 
         if curr_local_size < shard_starting_idx:
             return 0, curr_local_size
-        else:
-            local_shard_size = (
-                min(curr_local_size, shard_starting_idx + full_chunk_size)
-                - shard_starting_idx
-            )
-            return local_shard_size, shard_starting_idx
+        local_shard_size = (
+            min(curr_local_size, shard_starting_idx + full_chunk_size)
+            - shard_starting_idx
+        )
+        return local_shard_size, shard_starting_idx
 
     def _shard_tensor(
         self,
         tensor: torch.Tensor,
         mesh: DeviceMesh,
         mesh_dim: int,
-        src_data_rank: Optional[int] = 0,
+        src_data_rank: int | None = 0,
     ) -> torch.Tensor:
         """
         shard and scatter a tensor on a mesh dimension (use coordinate
@@ -426,7 +423,7 @@ class _StridedShard(Shard):
     def __eq__(self, other: object) -> bool:
         if isinstance(other, _StridedShard):
             return self.dim == other.dim and self.split_factor == other.split_factor
-        elif isinstance(other, Shard):
+        if isinstance(other, Shard):
             # TODO: this is to avoid extra all-gather in dtensor op dispatch
             # note that sharding prop would not produce _StridedShard and an
             # placement inequality would introduce an all-gather for resharding
@@ -630,7 +627,7 @@ class Replicate(Placement):
         tensor: torch.Tensor,
         mesh: DeviceMesh,
         mesh_dim: int,
-        src_data_rank: Optional[int] = 0,
+        src_data_rank: int | None = 0,
     ) -> torch.Tensor:
         """
         Replicate (broadcast) a torch.Tensor on a mesh dimension (use

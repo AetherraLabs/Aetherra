@@ -6,16 +6,14 @@ from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
 from types import CodeType
-from typing import Optional
 
 import torch
-
 
 _IS_MONKEYTYPE_INSTALLED = True
 try:
     import monkeytype  # type: ignore[import]
     from monkeytype import trace as monkeytype_trace
-    from monkeytype.config import _startswith, LIB_PATHS  # type: ignore[import]
+    from monkeytype.config import LIB_PATHS, _startswith  # type: ignore[import]
     from monkeytype.db.base import (  # type: ignore[import]
         CallTraceStore,
         CallTraceStoreLogger,
@@ -43,20 +41,19 @@ def get_type(type):
     """Convert the given type to a torchScript acceptable format."""
     if isinstance(type, str):
         return type
-    elif inspect.getmodule(type) == typing:
+    if inspect.getmodule(type) == typing:
         # If the type is a type imported from typing
         # like Tuple, List, Dict then replace `typing.`
         # with a null string. This needs to be done since
         # typing.List is not accepted by TorchScript.
         type_to_string = str(type)
         return type_to_string.replace(type.__module__ + ".", "")
-    elif is_torch_native_class(type):
+    if is_torch_native_class(type):
         # If the type is a subtype of torch module, then TorchScript expects a fully qualified name
         # for the type which is obtained by combining the module name and type name.
         return type.__module__ + "." + type.__name__
-    else:
-        # For all other types use the name for the type.
-        return type.__name__
+    # For all other types use the name for the type.
+    return type.__name__
 
 
 def get_optional_of_element_type(types):
@@ -105,7 +102,7 @@ if _IS_MONKEYTYPE_INSTALLED:
         def filter(
             self,
             qualified_name: str,
-            qualname_prefix: Optional[str] = None,
+            qualname_prefix: str | None = None,
             limit: int = 2000,
         ) -> list[CallTraceThunk]:
             return self.trace_records[qualified_name]
@@ -153,7 +150,7 @@ if _IS_MONKEYTYPE_INSTALLED:
         def trace_store(self) -> CallTraceStore:
             return self.s
 
-        def code_filter(self) -> Optional[CodeFilter]:
+        def code_filter(self) -> CodeFilter | None:
             return jit_code_filter
 
 else:

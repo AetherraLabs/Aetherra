@@ -3,7 +3,6 @@ from typing import TypeVar
 
 import torch
 
-
 T = TypeVar("T")
 
 

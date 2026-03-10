@@ -804,7 +804,7 @@ class LyrixaIntelligenceCore:
 
     async def _generate_local_response(self, provider: Dict, prompt: str) -> str:
         """Generate response using local model"""
-        # Placeholder for local model implementation
+        # Baseline local-model hook
         return "Local model response not yet implemented. Using fallback."
 
     async def _post_process_response(self, response: str, context: Dict) -> str:

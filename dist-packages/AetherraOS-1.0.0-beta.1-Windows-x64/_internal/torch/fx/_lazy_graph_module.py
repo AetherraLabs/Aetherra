@@ -2,15 +2,14 @@
 from contextlib import contextmanager
 
 from torch.fx.graph_module import (
-    _format_import_block,
     GraphModule,
+    _format_import_block,
     reduce_graph_module,
     reduce_package_graph_module,
 )
 from torch.package import PackageExporter, sys_importer
 
 from ._compatibility import compatibility
-
 
 _use_lazy_graph_module_flag = False
 _force_skip_lazy_graph_module_flag = False
@@ -91,8 +90,7 @@ class _LazyGraphModule(GraphModule):
     def from_graphmodule(cls, gm: GraphModule):
         if isinstance(gm, _LazyGraphModule):
             return gm
-        else:
-            return _LazyGraphModule(gm, gm.graph)
+        return _LazyGraphModule(gm, gm.graph)
 
     @staticmethod
     def force_recompile(gm):

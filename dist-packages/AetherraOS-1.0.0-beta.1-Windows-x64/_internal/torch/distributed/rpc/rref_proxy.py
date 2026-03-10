@@ -43,27 +43,26 @@ def _invoke_rpc(rref, rpc_api, func_name, timeout, *args, **kwargs):
     if rpc_api != rpc_async:
         rref_fut.wait()
         return _rref_type_cont(rref_fut)
-    else:
-        # A little explanation on this.
-        # rpc_async returns a Future pointing to the return value of `func_name`, it returns a `Future[T]`
-        # Calling _rref_type_cont from the `then` lambda causes Future wrapping. IOW, `then` returns a `Future[Future[T]]`
-        # To address that, we return a Future that is completed with the result of the async call.
-        result: Future = Future()
+    # A little explanation on this.
+    # rpc_async returns a Future pointing to the return value of `func_name`, it returns a `Future[T]`
+    # Calling _rref_type_cont from the `then` lambda causes Future wrapping. IOW, `then` returns a `Future[Future[T]]`
+    # To address that, we return a Future that is completed with the result of the async call.
+    result: Future = Future()
 
-        def _wrap_rref_type_cont(fut):
-            try:
-                _rref_type_cont(fut).then(_complete_op)
-            except BaseException as ex:
-                result.set_exception(ex)
+    def _wrap_rref_type_cont(fut):
+        try:
+            _rref_type_cont(fut).then(_complete_op)
+        except BaseException as ex:
+            result.set_exception(ex)
 
-        def _complete_op(fut):
-            try:
-                result.set_result(fut.value())
-            except BaseException as ex:
-                result.set_exception(ex)
+    def _complete_op(fut):
+        try:
+            result.set_result(fut.value())
+        except BaseException as ex:
+            result.set_exception(ex)
 
-        rref_fut.then(_wrap_rref_type_cont)
-        return result
+    rref_fut.then(_wrap_rref_type_cont)
+    return result
 
 
 # This class manages proxied RPC API calls for RRefs. It is entirely used from

@@ -1,10 +1,9 @@
 # mypy: allow-untyped-defs
 import re
-from typing import Callable
+from collections.abc import Callable
 
 import torch
 from torch import Tensor
-
 
 __all__: list[str] = []
 
@@ -57,9 +56,9 @@ class _JittedFunction:
     ):
         self.code_string = code_string
 
-        assert (
-            return_by_ref or num_outputs == 1
-        ), "Return by value only works for single output. "
+        assert return_by_ref or num_outputs == 1, (
+            "Return by value only works for single output. "
+        )
         self.return_by_ref = return_by_ref
         self.num_outputs = num_outputs
 
@@ -72,9 +71,9 @@ class _JittedFunction:
     def __call__(self, *tensors: Tensor, **kwargs):
         # Jiterator follow torch.cuda's lazy initialization behavior
         # Defer checking cuda's availability at the function invocation time
-        assert (
-            self.is_cuda_available
-        ), "Jiterator is only supported on CUDA and ROCm GPUs, none are available."
+        assert self.is_cuda_available, (
+            "Jiterator is only supported on CUDA and ROCm GPUs, none are available."
+        )
 
         assert len(tensors) <= 8, "jiterator only supports up to 8 tensor inputs."
 

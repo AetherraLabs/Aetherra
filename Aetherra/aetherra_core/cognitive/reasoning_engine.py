@@ -54,9 +54,7 @@ class ReasoningChain:
         self.steps = []
         self.current_step = 0
 
-    def add_step(
-        self, step_type: str, description: str, evidence: List[str] | None = None
-    ):
+    def add_step(self, step_type: str, description: str, evidence: List[str] | None = None):
         """Add a reasoning step"""
         step = {
             "type": step_type,
@@ -151,9 +149,7 @@ class AnalogicalReasoning:
     def __init__(self):
         self.analogies = []
 
-    def add_analogy(
-        self, source_domain: str, target_domain: str, mappings: Dict[str, str]
-    ):
+    def add_analogy(self, source_domain: str, target_domain: str, mappings: Dict[str, str]):
         """Add analogy between domains"""
         analogy = {
             "source": source_domain,
@@ -242,9 +238,7 @@ class ReasoningEngine:
         causal_result = await self._apply_causal_reasoning(context, reasoning_chain)
 
         # Step 4: Apply analogical reasoning
-        analogical_result = await self._apply_analogical_reasoning(
-            context, reasoning_chain
-        )
+        analogical_result = await self._apply_analogical_reasoning(context, reasoning_chain)
 
         # Step 5: Synthesize results
         final_result = await self._synthesize_results(
@@ -298,9 +292,7 @@ class ReasoningEngine:
             for effect in effects:
                 path = self.causal_reasoning.find_causal_path(cause, effect)
                 if path:
-                    causal_explanations.append(
-                        {"cause": cause, "effect": effect, "path": path}
-                    )
+                    causal_explanations.append({"cause": cause, "effect": effect, "path": path})
                     chain.add_step(
                         "Causal Path",
                         f"Found causal path: {' → '.join(path)}",
@@ -383,9 +375,7 @@ class ReasoningEngine:
             )
 
         conclusion = (
-            ". ".join(conclusion_parts)
-            if conclusion_parts
-            else "No definitive conclusion reached"
+            ". ".join(conclusion_parts) if conclusion_parts else "No definitive conclusion reached"
         )
 
         # Generate alternatives
@@ -413,9 +403,7 @@ class ReasoningEngine:
             },
         )
 
-    async def _store_reasoning_session(
-        self, context: ReasoningContext, result: ReasoningResult
-    ):
+    async def _store_reasoning_session(self, context: ReasoningContext, result: ReasoningResult):
         """Store reasoning session in database"""
         conn = sqlite3.connect(self.db_path)
         try:
@@ -451,13 +439,23 @@ class ReasoningEngine:
 
     def add_logical_rule(self, rule_type: str, antecedent: str, consequent: str):
         """Add a logical rule to the reasoning system"""
-        # Implementation for adding logical rules
-        pass
+        rule = {
+            "type": rule_type,
+            "antecedent": antecedent,
+            "consequent": consequent,
+            "timestamp": datetime.now().isoformat(),
+        }
+        self.reasoning_history.append({"event": "logical_rule_added", "rule": rule})
 
     def add_domain_knowledge(self, domain: str, facts: List[str], rules: List[Dict]):
         """Add domain-specific knowledge"""
-        # Implementation for adding domain knowledge
-        pass
+        entry = {
+            "domain": domain,
+            "facts": list(facts),
+            "rules": list(rules),
+            "timestamp": datetime.now().isoformat(),
+        }
+        self.reasoning_history.append({"event": "domain_knowledge_added", "data": entry})
 
     async def explain_reasoning(self, result: ReasoningResult) -> str:
         """Generate human-readable explanation of reasoning process"""

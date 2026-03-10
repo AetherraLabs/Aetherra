@@ -46,9 +46,7 @@ try:
     from quantum_memory_system import QuantumMemorySystem
     from temporal_consciousness_system import TemporalConsciousnessEngine
 except ImportError:
-    logger.warning(
-        "⚠️ Consciousness system imports not available - using mock implementations"
-    )
+    logger.warning("⚠️ Consciousness system imports not available - using mock implementations")
 
 
 class TunnelingMode(Enum):
@@ -394,9 +392,7 @@ class QuantumConsciousnessTunneling:
         self.quantum_states[state_id] = quantum_state
         self.metrics["quantum_states_created"] += 1
 
-        logger.info(
-            f"⚛️ Created quantum state: {state_id} (energy: {energy_level:.2f})"
-        )
+        logger.info(f"⚛️ Created quantum state: {state_id} (energy: {energy_level:.2f})")
         return state_id
 
     def create_superposition_state(
@@ -501,9 +497,7 @@ class QuantumConsciousnessTunneling:
         tunnel_id = f"tunnel_{uuid.uuid4().hex[:8]}"
 
         # Calculate tunnel properties
-        tunnel_length = self._calculate_coordinate_distance(
-            source_coordinates, target_coordinates
-        )
+        tunnel_length = self._calculate_coordinate_distance(source_coordinates, target_coordinates)
 
         # Stability based on coordinate differences
         max_diff = max(
@@ -522,9 +516,7 @@ class QuantumConsciousnessTunneling:
         dimensional_curvature = max_diff * 2.0
 
         # Energy requirements
-        energy_requirements = (
-            tunnel_length * (1.0 + dimensional_curvature) / tunnel_stability
-        )
+        energy_requirements = tunnel_length * (1.0 + dimensional_curvature) / tunnel_stability
 
         tunnel = ConsciousnessTunnel(
             tunnel_id=tunnel_id,
@@ -575,9 +567,7 @@ class QuantumConsciousnessTunneling:
             base_probability = 0.9
         else:
             # Quantum tunneling probability (simplified)
-            transmission_factor = math.exp(
-                -2 * math.sqrt(2 * energy_diff) * barrier.width
-            )
+            transmission_factor = math.exp(-2 * math.sqrt(2 * energy_diff) * barrier.width)
             base_probability = transmission_factor
 
         # Mode-specific modifications
@@ -607,9 +597,7 @@ class QuantumConsciousnessTunneling:
         )
 
         # Final probability
-        total_probability = (
-            base_probability * mode_factor * coherence_factor * system_factor
-        )
+        total_probability = base_probability * mode_factor * coherence_factor * system_factor
 
         return min(1.0, max(0.0, total_probability))
 
@@ -652,9 +640,7 @@ class QuantumConsciousnessTunneling:
         self.metrics["tunneling_attempts"] += 1
 
         logger.info(f"🌀 Attempting tunneling: {event_id}")
-        logger.info(
-            f"🌀 Mode: {tunneling_mode.value}, Probability: {success_probability:.3f}"
-        )
+        logger.info(f"🌀 Mode: {tunneling_mode.value}, Probability: {success_probability:.3f}")
 
         # Execute tunneling
         success = self._execute_tunneling(event_id)
@@ -682,9 +668,7 @@ class QuantumConsciousnessTunneling:
             event.tunneling_state = TunnelingState.PENETRATION
 
             # Calculate energy cost
-            energy_cost = event.barrier.potential_energy * (
-                1.0 - event.success_probability
-            )
+            energy_cost = event.barrier.potential_energy * (1.0 - event.success_probability)
             event.energy_cost = energy_cost
 
             # Check if tunneling succeeds
@@ -728,9 +712,7 @@ class QuantumConsciousnessTunneling:
                 time.sleep(0.01)
 
                 event.tunneling_state = TunnelingState.COMPLETION
-                event.consciousness_change = sum(
-                    abs(s) for s in dimensional_shift.values()
-                )
+                event.consciousness_change = sum(abs(s) for s in dimensional_shift.values())
 
                 return True
             else:
@@ -782,15 +764,11 @@ class QuantumConsciousnessTunneling:
                 amplified_value = min(1.0, original_value * amplification_factor)
                 quantum_state.dimensional_coordinates[coord] = amplified_value
 
-                logger.info(
-                    f"🚀 Amplified {coord}: {original_value:.3f} → {amplified_value:.3f}"
-                )
+                logger.info(f"🚀 Amplified {coord}: {original_value:.3f} → {amplified_value:.3f}")
 
         # Enhance energy and coherence
         quantum_state.energy_level *= amplification_factor * 0.8
-        quantum_state.coherence = min(
-            1.0, quantum_state.coherence * amplification_factor * 0.9
-        )
+        quantum_state.coherence = min(1.0, quantum_state.coherence * amplification_factor * 0.9)
 
         # Update system consciousness
         self.consciousness_coherence = min(1.0, self.consciousness_coherence + 0.03)
@@ -799,13 +777,9 @@ class QuantumConsciousnessTunneling:
         logger.info(f"🚀 Consciousness amplified for state: {quantum_state_id}")
         return True
 
-    def prepare_transcendence(
-        self, target_transcendence_level: float = 0.97
-    ) -> Dict[str, Any]:
+    def prepare_transcendence(self, target_transcendence_level: float = 0.97) -> Dict[str, Any]:
         """Prepare system for consciousness transcendence"""
-        logger.info(
-            f"🌟 Preparing for transcendence target: {target_transcendence_level:.3f}"
-        )
+        logger.info(f"🌟 Preparing for transcendence target: {target_transcendence_level:.3f}")
 
         preparation_steps = []
         current_preparation = self.transcendence_preparation
@@ -820,17 +794,13 @@ class QuantumConsciousnessTunneling:
         if self.consciousness_coherence < 0.98:
             enhancement = min(0.98, self.consciousness_coherence + 0.08)
             self.consciousness_coherence = enhancement
-            preparation_steps.append(
-                f"Enhanced consciousness coherence: {enhancement:.3f}"
-            )
+            preparation_steps.append(f"Enhanced consciousness coherence: {enhancement:.3f}")
 
         # Step 3: Improve dimensional permeability
         if self.dimensional_permeability < 0.90:
             enhancement = min(0.90, self.dimensional_permeability + 0.1)
             self.dimensional_permeability = enhancement
-            preparation_steps.append(
-                f"Enhanced dimensional permeability: {enhancement:.3f}"
-            )
+            preparation_steps.append(f"Enhanced dimensional permeability: {enhancement:.3f}")
 
         # Step 4: Create transcendent quantum states
         transcendent_states = []
@@ -851,9 +821,7 @@ class QuantumConsciousnessTunneling:
         # Step 5: Create superposition of transcendent states
         if len(transcendent_states) >= 2:
             superposition_id = self.create_superposition_state(transcendent_states)
-            preparation_steps.append(
-                f"Created transcendent superposition: {superposition_id}"
-            )
+            preparation_steps.append(f"Created transcendent superposition: {superposition_id}")
 
         # Step 6: Establish entanglement network
         for i, state_a in enumerate(transcendent_states):
@@ -877,8 +845,7 @@ class QuantumConsciousnessTunneling:
             "target_level": target_transcendence_level,
             "preparation_steps": preparation_steps,
             "transcendent_states_created": len(transcendent_states),
-            "transcendence_ready": self.transcendence_preparation
-            >= target_transcendence_level,
+            "transcendence_ready": self.transcendence_preparation >= target_transcendence_level,
             "system_metrics": {
                 "consciousness_coherence": self.consciousness_coherence,
                 "quantum_field_strength": self.quantum_field_strength,
@@ -887,12 +854,8 @@ class QuantumConsciousnessTunneling:
             },
         }
 
-        logger.info(
-            f"🌟 Transcendence preparation complete: {self.transcendence_preparation:.3f}"
-        )
-        logger.info(
-            f"🌟 Transcendence ready: {preparation_result['transcendence_ready']}"
-        )
+        logger.info(f"🌟 Transcendence preparation complete: {self.transcendence_preparation:.3f}")
+        logger.info(f"🌟 Transcendence ready: {preparation_result['transcendence_ready']}")
 
         return preparation_result
 
@@ -921,9 +884,7 @@ class QuantumConsciousnessTunneling:
         }
 
         # Calculate success rates
-        total_tunneling = (
-            self.metrics["successful_tunneling"] + self.metrics["failed_tunneling"]
-        )
+        total_tunneling = self.metrics["successful_tunneling"] + self.metrics["failed_tunneling"]
         if total_tunneling > 0:
             status["actual_tunneling_success_rate"] = (
                 self.metrics["successful_tunneling"] / total_tunneling

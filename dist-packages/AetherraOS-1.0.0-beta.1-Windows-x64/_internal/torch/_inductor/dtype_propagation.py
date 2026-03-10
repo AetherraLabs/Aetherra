@@ -1,7 +1,7 @@
 # mypy: allow-untyped-defs
 import functools
-from collections.abc import Sequence
-from typing import Any, Callable, Optional, Protocol, TYPE_CHECKING, TypeVar, Union
+from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING, Any, Optional, Protocol, TypeVar, Union
 
 import sympy
 
@@ -12,7 +12,6 @@ from torch.utils._ordered_set import OrderedSet
 from .ops_handler import OP_NAMES, OpsHandler
 from .utils import upcast_compute_type
 from .virtualized import OpsValue, V
-
 
 T = TypeVar("T")
 
@@ -32,13 +31,12 @@ DTypeArg = Union[DTypeVar, torch.types.Number, str, OpsValue]
 @functools.cache
 def get_promoted_dtype(
     *args: Sequence[tuple[torch.dtype, bool]],
-    type_promotion_kind: Optional[ELEMENTWISE_TYPE_PROMOTION_KIND] = None,
+    type_promotion_kind: ELEMENTWISE_TYPE_PROMOTION_KIND | None = None,
 ):
     def construct_input(inp):
         if inp[1]:
             return torch.empty([], dtype=inp[0])
-        else:
-            return torch.empty([1], dtype=inp[0])
+        return torch.empty([1], dtype=inp[0])
 
     inps = [construct_input(arg) for arg in args]
     _, dtype = torch._prims_common.elementwise_dtypes(
@@ -54,7 +52,7 @@ def get_promoted_dtype(
 
 def promote_types(
     args: Sequence[DTypeArg],
-    type_promotion_kind: Optional[ELEMENTWISE_TYPE_PROMOTION_KIND] = None,
+    type_promotion_kind: ELEMENTWISE_TYPE_PROMOTION_KIND | None = None,
 ):
     dtype_prop_candidates = []
 
@@ -187,7 +185,7 @@ class DtypePropagationOpsHandler:
     def to_dtype(
         x: DTypeArg,
         dtype: torch.dtype,
-        src_dtype: Optional[torch.dtype] = None,
+        src_dtype: torch.dtype | None = None,
         use_compute_types=True,
     ) -> torch.dtype:
         return upcast_compute_type(dtype) if use_compute_types else dtype
@@ -243,7 +241,7 @@ class DtypePropagationOpsHandler:
         return dtype
 
     @staticmethod
-    def store(name: str, index, value: DTypeArg, mode: Optional[str] = None) -> None:
+    def store(name: str, index, value: DTypeArg, mode: str | None = None) -> None:
         return None
 
     @staticmethod
@@ -311,8 +309,8 @@ class DtypePropagationOpsHandler:
         boundary_indices: DTypeArg,
         indexing_dtype: torch.dtype,
         right: bool,
-        sorter: Optional[tuple[str, sympy.Expr]] = None,
-        sorter_indices: Optional[T] = None,
+        sorter: tuple[str, sympy.Expr] | None = None,
+        sorter_indices: T | None = None,
     ) -> torch.dtype:
         return indexing_dtype
 

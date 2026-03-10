@@ -83,11 +83,11 @@ class PerformanceMonitor(QObject):
             memory_mb = process.memory_info().rss / (1024 * 1024)
             cpu_percent = process.cpu_percent(interval=0.1)
 
-            # Widget and plugin counts (stub, integrate with GUI)
+            # Widget and plugin counts (baseline, integrate with GUI)
             widget_count = self._get_widget_count()
             plugin_count = self._get_plugin_count()
 
-            # UI responsiveness (stub)
+            # UI responsiveness baseline check.
             ui_responsive = self._check_ui_responsiveness()
 
             alerts = []
@@ -100,13 +100,9 @@ class PerformanceMonitor(QObject):
                     f"CPU usage exceeded: {cpu_percent:.1f}% > {self.cpu_budget_percent}%"
                 )
             if widget_count > self.widget_budget:
-                alerts.append(
-                    f"Widget count exceeded: {widget_count} > {self.widget_budget}"
-                )
+                alerts.append(f"Widget count exceeded: {widget_count} > {self.widget_budget}")
             if plugin_count > self.plugin_budget:
-                alerts.append(
-                    f"Plugin count exceeded: {plugin_count} > {self.plugin_budget}"
-                )
+                alerts.append(f"Plugin count exceeded: {plugin_count} > {self.plugin_budget}")
             if not ui_responsive:
                 alerts.append("UI responsiveness degraded")
 

@@ -7,27 +7,24 @@ import signal
 import string
 import sys
 import traceback
-from collections.abc import KeysView, Sequence
+from collections.abc import Callable, KeysView, Sequence
 from enum import Enum
 from functools import partial, wraps
 from types import FrameType
 from typing import (
     Any,
-    Callable,
-    get_args,
-    get_origin,
     Literal,
-    Optional,
     TypeVar,
     Union,
+    get_args,
+    get_origin,
 )
 
 import torch
 from torch._inductor.custom_graph_pass import CustomGraphPass
 from torch._inductor.scheduler import BaseSchedulerNode
-from torch.utils._config_module import _ConfigEntry, ConfigModule
+from torch.utils._config_module import ConfigModule, _ConfigEntry
 from torch.utils._ordered_set import OrderedSet
-
 
 log = logging.getLogger(__name__)
 
@@ -70,7 +67,7 @@ class DummyPass(CustomGraphPass):
     def __call__(self, graph: torch.fx.graph.Graph) -> None:
         return None
 
-    def uuid(self) -> Optional[Any]:
+    def uuid(self) -> Any | None:
         return None
 
 
@@ -89,7 +86,7 @@ class TypeExemplars:
     }
 
     @staticmethod
-    def example(t: type[T]) -> Optional[T]:
+    def example(t: type[T]) -> T | None:
         """
         Return an example of a class.
         """
@@ -205,18 +202,18 @@ class SamplingMethod(Enum):
 
         if type_hint == bool:
             return random.choice([True, False]) if random_sample else not default
-        elif type_hint == int:
+        if type_hint == int:
             # NOTE initially tried to use negation of the value, but it doesn't work because most types are ints
             # when they should be natural numbers + zero. Python types to cover these values aren't super convenient.
             return random.randint(0, 1000)
-        elif type_hint == float:
+        if type_hint == float:
             return random.uniform(0, 1000)
-        elif type_hint == str:
+        if type_hint == str:
             characters = string.ascii_letters + string.digits + string.punctuation
             return "".join(
                 random.choice(characters) for _ in range(random.randint(1, 20))
             )
-        elif is_type(type_hint, list):
+        if is_type(type_hint, list):
             elem_type = getattr(
                 type_hint,
                 "__args__",
@@ -229,7 +226,7 @@ class SamplingMethod(Enum):
                 )
                 for _ in range(random.randint(1, 3))
             ]
-        elif is_type(type_hint, set):  # noqa: set_linter
+        if is_type(type_hint, set):  # noqa: set_linter
             indexable = list(default)
             elem_type = getattr(
                 type_hint,
@@ -243,7 +240,7 @@ class SamplingMethod(Enum):
                 )
                 for _ in range(random.randint(1, 3))
             }
-        elif is_type(type_hint, OrderedSet):
+        if is_type(type_hint, OrderedSet):
             indexable = list(default)
             elem_type = getattr(
                 type_hint,
@@ -259,7 +256,7 @@ class SamplingMethod(Enum):
                     for _ in range(random.randint(1, 3))
                 ]
             )
-        elif is_type(type_hint, dict):
+        if is_type(type_hint, dict):
             key_type, value_type = getattr(
                 type_hint,
                 "__args__",
@@ -279,7 +276,7 @@ class SamplingMethod(Enum):
                 )
                 for _ in range(random.randint(0, 3))
             }
-        elif is_type(type_hint, Union):
+        if is_type(type_hint, Union):
             # do whatever is not the type of default
             try:
                 assert len(type_hint.__args__) > 1
@@ -300,13 +297,13 @@ class SamplingMethod(Enum):
             return SamplingMethod._generate_value_for_type(
                 random_sample, field_name, new_type, new_default
             )
-        elif is_type(type_hint, tuple):
+        if is_type(type_hint, tuple):
             args = getattr(
                 type_hint,
                 "__args__",
                 tuple(map(type, default)),
             )
-            zipped = zip(args, default)
+            zipped = zip(args, default, strict=False)
             return tuple(
                 map(  # noqa: C417
                     lambda x: SamplingMethod._generate_value_for_type(
@@ -315,16 +312,14 @@ class SamplingMethod(Enum):
                     zipped,
                 )
             )
-        elif is_type(type_hint, Literal):
+        if is_type(type_hint, Literal):
             try:
                 if random_sample:
                     return random.choice(type_hint.__args__)
-                else:
-                    choices = [t for t in type_hint.__args__ if t != default]
-                    if choices:
-                        return random.choice(choices)
-                    else:
-                        return default
+                choices = [t for t in type_hint.__args__ if t != default]
+                if choices:
+                    return random.choice(choices)
+                return default
             except AttributeError as err:
                 raise ValueError("Literal type with no args") from err
         elif is_optional_type(type_hint):
@@ -341,13 +336,11 @@ class SamplingMethod(Enum):
                         ),
                     ]
                 )
-            else:
-                if default is None:
-                    return SamplingMethod._generate_value_for_type(
-                        random_sample, field_name, elem_type, None
-                    )
-                else:
-                    return None
+            if default is None:
+                return SamplingMethod._generate_value_for_type(
+                    random_sample, field_name, elem_type, None
+                )
+            return None
         elif type_hint is type(None):
             return None
         elif is_callable_type(type_hint):
@@ -379,10 +372,9 @@ class SamplingMethod(Enum):
         """
         if sm == SamplingMethod.RANDOM:
             return partial(SamplingMethod._generate_value_for_type, True)
-        elif sm == SamplingMethod.TOGGLE:
+        if sm == SamplingMethod.TOGGLE:
             return partial(SamplingMethod._generate_value_for_type, False)
-        else:
-            raise ValueError(f"malformed sampling method: {sm}")
+        raise ValueError(f"malformed sampling method: {sm}")
 
 
 class Default:
@@ -427,7 +419,7 @@ class ResultType:
         combo = tuple(sorted(combo))
         self._vals[combo] = status
 
-    def lookup(self, combo: ComboType) -> Optional[Status]:
+    def lookup(self, combo: ComboType) -> Status | None:
         combo = tuple(sorted(combo))
         return self._vals.get(combo, None)
 
@@ -578,7 +570,7 @@ class ConfigFuzzer:
         config_module: ConfigModule,
         test_model_fn_factory: FactoryType,
         seed: int,
-        default: Optional[ConfigType] = None,
+        default: ConfigType | None = None,
         sm: SamplingMethod = SamplingMethod.TOGGLE,
         test_timeout: int = 3600,
     ):
@@ -711,7 +703,7 @@ class ConfigFuzzer:
             self.results = state["results"]
             self.detailed_results = state.get("detailed_results", {})
 
-    def timeout_handler(self, signum: int, frame: Optional[FrameType]) -> None:
+    def timeout_handler(self, signum: int, frame: FrameType | None) -> None:
         raise TimeoutError("Test execution timed out")
 
     def test_config(self, results: ResultType, config: ConfigType) -> Status:
@@ -741,7 +733,7 @@ class ConfigFuzzer:
             message: str,
             return_status: Status,
             print_traceback: bool,
-            exc: Optional[Exception],
+            exc: Exception | None,
         ) -> Status:
             signal.signal(signal.SIGALRM, original_handler)
             print(f"{message} with config combination:")
@@ -793,8 +785,7 @@ class ConfigFuzzer:
             return handle_return(
                 "Function returned False", Status.FAILED_RUN_RETURN, False, None
             )
-        else:
-            return handle_return("Function succeeded", Status.PASSED, False, None)
+        return handle_return("Function succeeded", Status.PASSED, False, None)
 
     def bisect(self, num_attempts: int = 100, p: float = 0.5) -> list[ConfigType]:
         """
@@ -835,12 +826,12 @@ class ConfigFuzzer:
 
     def _bisect_failing_config(
         self, results: ResultType, failing_config: ConfigType
-    ) -> Optional[ConfigType]:
+    ) -> ConfigType | None:
         return self._bisect_failing_config_helper(results, list(failing_config.items()))
 
     def _bisect_failing_config_helper(
         self, results: ResultType, failing_config: list[tuple[str, Any]]
-    ) -> Optional[ConfigType]:
+    ) -> ConfigType | None:
         """
         Bisect a failing configuration to find minimal set of configs that cause failure.
 

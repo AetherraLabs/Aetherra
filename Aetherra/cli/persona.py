@@ -205,9 +205,7 @@ class PersonaCLI:
             print("🤖 AetherraCode Persona Status")
             print("=" * 40)
             print(f"Mindprint ID: {status.get('mindprint_id', 'fallback')}")
-            print(
-                f"Archetype: {status.get('emoji', '🤖')} {status.get('archetype', 'fallback')}"
-            )
+            print(f"Archetype: {status.get('emoji', '🤖')} {status.get('archetype', 'fallback')}")
             print(f"Interactions: {status.get('total_interactions', 0)}")
             print(
                 f"Adaptation: {'Enabled' if status.get('adaptation_enabled', False) else 'Disabled'}"
@@ -258,9 +256,7 @@ def main():
         "archetype",
         help="Persona archetype (guardian, explorer, sage, optimist, analyst, catalyst)",
     )
-    set_parser.add_argument(
-        "--ratio", type=float, default=1.0, help="Blend ratio (0.0-1.0)"
-    )
+    set_parser.add_argument("--ratio", type=float, default=1.0, help="Blend ratio (0.0-1.0)")
 
     # Status command
     subparsers.add_parser("status", help="Show current persona status")

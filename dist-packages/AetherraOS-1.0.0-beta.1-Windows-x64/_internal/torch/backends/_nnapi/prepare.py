@@ -1,10 +1,8 @@
 # mypy: allow-untyped-decorators
 # mypy: allow-untyped-defs
-from typing import Optional
 
 import torch
 from torch.backends._nnapi.serializer import _NnapiSerializer
-
 
 ANEURALNETWORKS_PREFER_LOW_POWER = 0
 ANEURALNETWORKS_PREFER_FAST_SINGLE_ANSWER = 1
@@ -20,7 +18,7 @@ class NnapiModule(torch.nn.Module):
     """
 
     # _nnapi.Compilation is defined
-    comp: Optional[torch.classes._nnapi.Compilation]  # type: ignore[name-defined]
+    comp: torch.classes._nnapi.Compilation | None  # type: ignore[name-defined]
     weights: list[torch.Tensor]
     out_templates: list[torch.Tensor]
 

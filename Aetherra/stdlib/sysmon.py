@@ -137,9 +137,7 @@ class SystemMonitorPlugin:
         """Calculate overall system health score (0-100)"""
         disk_score = max(0, 100 - status["disk_space"]["percent_used"])
         process_score = (
-            max(0, 100 - (status["process_count"] / 5))
-            if status["process_count"] > 0
-            else 100
+            max(0, 100 - (status["process_count"] / 5)) if status["process_count"] > 0 else 100
         )
 
         return (disk_score + process_score) / 2

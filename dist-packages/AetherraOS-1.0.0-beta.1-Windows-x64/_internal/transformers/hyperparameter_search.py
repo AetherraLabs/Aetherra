@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
 
 from .integrations import (
     is_optuna_available,
@@ -32,13 +31,12 @@ from .trainer_utils import (
 )
 from .utils import logging
 
-
 logger = logging.get_logger(__name__)
 
 
 class HyperParamSearchBackendBase:
     name: str
-    pip_package: Optional[str] = None
+    pip_package: str | None = None
 
     @staticmethod
     def is_available():
@@ -119,12 +117,17 @@ class WandbBackend(HyperParamSearchBackendBase):
 
 
 ALL_HYPERPARAMETER_SEARCH_BACKENDS = {
-    HPSearchBackend(backend.name): backend for backend in [OptunaBackend, RayTuneBackend, SigOptBackend, WandbBackend]
+    HPSearchBackend(backend.name): backend
+    for backend in [OptunaBackend, RayTuneBackend, SigOptBackend, WandbBackend]
 }
 
 
 def default_hp_search_backend() -> str:
-    available_backends = [backend for backend in ALL_HYPERPARAMETER_SEARCH_BACKENDS.values() if backend.is_available()]
+    available_backends = [
+        backend
+        for backend in ALL_HYPERPARAMETER_SEARCH_BACKENDS.values()
+        if backend.is_available()
+    ]
     if len(available_backends) > 0:
         name = available_backends[0].name
         if len(available_backends) > 1:

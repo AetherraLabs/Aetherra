@@ -4,20 +4,19 @@
 import contextlib
 from contextlib import nullcontext
 from dataclasses import dataclass, field
-from typing import Optional, Union
 
 import torch
 import torch.utils._pytree as pytree
 from torch._C import DispatchKey
 from torch._dispatch.python import suspend_functionalization
 from torch._higher_order_ops.utils import (
+    FunctionalizeCtxWrapper,
+    HopInstance,
     _from_fun,
     _maybe_reenter_make_fx,
     _set_compilation_env,
     clone_outputs_aliasing_inputs,
-    FunctionalizeCtxWrapper,
     get_dummy_aot_autograd_config,
-    HopInstance,
     prepare_fw_with_masks,
     reenter_make_fx,
     register_fake,
@@ -27,15 +26,14 @@ from torch._higher_order_ops.utils import (
 from torch._ops import HigherOrderOperator
 from torch._subclasses.functional_tensor import disable_functional_mode
 from torch.fx.experimental.proxy_tensor import (
+    ProxyTorchDispatchMode,
     _temp_remove_metadata_torch_function_mode,
     _temp_remove_pre_dispatch_torch_function_mode,
     disable_proxy_modes_tracing,
-    ProxyTorchDispatchMode,
     track_tensor_tree,
 )
 from torch.fx.graph_module import GraphModule
 from torch.fx.passes.runtime_assert import insert_deferred_runtime_asserts
-
 
 invoke_subgraph_counter = 0
 
@@ -45,7 +43,7 @@ invoke_subgraph_counter = 0
 # InvokeSubgraphAutogradOp.
 @dataclass
 class OutputMetadata:
-    num_fw_outs: Optional[int] = None
+    num_fw_outs: int | None = None
     indexes_with_none: set[int] = field(default_factory=set)
     indexes_with_no_grad: set[int] = field(default_factory=set)
 
@@ -66,13 +64,13 @@ class InvokeSubgraphHOP(HigherOrderOperator):
     # identifying two invoke_subgraph calls have same subgraph.
     def __call__(
         self,
-        subgraph: Union[GraphModule, FunctionalizeCtxWrapper],
-        identifier: Optional[str],
+        subgraph: GraphModule | FunctionalizeCtxWrapper,
+        identifier: str | None,
         *operands,
     ):
-        assert identifier is None or isinstance(
-            identifier, str
-        ), "identifier must be a None or a string"
+        assert identifier is None or isinstance(identifier, str), (
+            "identifier must be a None or a string"
+        )
 
         assert all(
             isinstance(o, (torch.Tensor, int, torch.SymInt)) for o in operands
@@ -128,7 +126,11 @@ def invoke_subgraph_placeholder(func, *args, **kwargs):
         def _invoke_subgraph_placeholder_wrapper(func, args):
             return invoke_subgraph_placeholder(func, *args)
 
-        with _set_compilation_env(), torch._dynamo.utils.disable_cache_limit(), _temp_remove_pre_dispatch_torch_function_mode():
+        with (
+            _set_compilation_env(),
+            torch._dynamo.utils.disable_cache_limit(),
+            _temp_remove_pre_dispatch_torch_function_mode(),
+        ):
             with _temp_remove_metadata_torch_function_mode() as metadata_mode:
                 if metadata_mode:
                     backend = make_eager_backend_with_torch_function_mode(metadata_mode)
@@ -168,8 +170,7 @@ def mark_compile_region(fn=None):
 
     if fn:
         return wrap(fn)
-    else:
-        return wrap
+    return wrap
 
 
 def get_invoke_subgraph_cache():

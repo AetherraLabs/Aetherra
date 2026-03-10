@@ -2,7 +2,6 @@
 import sympy
 from sympy.multipledispatch import dispatch
 
-
 __all__ = ["SingletonInt"]
 
 
@@ -30,8 +29,7 @@ class SingletonInt(sympy.AtomicExpr):
             and self._coeff == other._coeff
         ):
             return sympy.true
-        else:
-            return sympy.false
+        return sympy.false
 
     # This is necessary so that calling expr.free_symbols on exprs that contain
     # this Singleton does not error
@@ -91,6 +89,5 @@ def _eval_is_ge(a, b):  # noqa: F811
     if a._val == b._val:
         if a._coeff >= b._coeff:
             return sympy.true
-        else:
-            return sympy.false
+        return sympy.false
     raise ValueError("Symbolic SingletonInt: Relation is indeterminate")

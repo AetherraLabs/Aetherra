@@ -1,11 +1,9 @@
 # mypy: allow-untyped-defs
 import logging
 import os
-from typing import Optional
 
 from torch._inductor import config
 from torch._inductor.utils import is_linux
-
 
 log = logging.getLogger(__name__)
 
@@ -101,7 +99,7 @@ def _rocm_compiler_options() -> list[str]:
     return opts
 
 
-def rocm_compiler() -> Optional[str]:
+def rocm_compiler() -> str | None:
     if is_linux():
         if config.rocm.rocm_home:
             return os.path.realpath(
@@ -123,7 +121,7 @@ def rocm_compile_command(
     src_files: list[str],
     dst_file: str,
     dst_file_ext: str,
-    extra_args: Optional[list[str]] = None,
+    extra_args: list[str] | None = None,
 ) -> str:
     include_paths = _rocm_include_paths(dst_file_ext)
     lib_options = _rocm_lib_options(dst_file_ext)

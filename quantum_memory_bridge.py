@@ -17,7 +17,7 @@ for enhanced memory coherence and quantum state management.
 # Standard library imports
 import logging
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class QuantumExperimentResult:
         self.entanglement_strength = 0.88
         self.timestamp = datetime.now()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert result to dictionary"""
         return {
             "experiment_type": self.experiment_type,
@@ -55,7 +55,7 @@ class QuantumCircuitTemplate:
         """Add a quantum gate to the circuit"""
         self.gates.append({"type": gate_type, "target": target_qubit})
 
-    def measure(self) -> Dict[str, float]:
+    def measure(self) -> dict[str, float]:
         """Simulate quantum measurement"""
         return {"0000": 0.25, "0001": 0.25, "0010": 0.25, "0011": 0.25}
 
@@ -74,11 +74,11 @@ class QuantumMemoryState:
         """Add quantum entanglement between two memories"""
         self.entanglement_pairs.append((memory_id1, memory_id2))
 
-    def set_superposition(self, memory_id: str, states: List[Any]):
+    def set_superposition(self, memory_id: str, states: list[Any]):
         """Set a memory in quantum superposition"""
         self.superposition_memories[memory_id] = states
 
-    def measure_state(self) -> Dict[str, Any]:
+    def measure_state(self) -> dict[str, Any]:
         """Measure the quantum state (collapses superposition)"""
         measurement = {
             "coherence": self.coherence_level,
@@ -105,12 +105,12 @@ class QuantumMemoryBridge:
         """Check quantum coherence level"""
         return self.quantum_coherence
 
-    def entangle_memories(self, memory_ids: List[str]) -> bool:
+    def entangle_memories(self, memory_ids: list[str]) -> bool:
         """Create quantum entanglement between memories"""
         self.entangled_memories += len(memory_ids)
         return True
 
-    def get_quantum_state(self) -> Dict[str, Any]:
+    def get_quantum_state(self) -> dict[str, Any]:
         """Get current quantum state"""
         return {
             "coherence": self.quantum_coherence,

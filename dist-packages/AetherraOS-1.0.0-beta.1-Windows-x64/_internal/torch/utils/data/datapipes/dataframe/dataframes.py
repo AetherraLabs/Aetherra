@@ -1,10 +1,9 @@
 # mypy: allow-untyped-defs
-from typing import Any, Optional
+from typing import Any
 
 from torch.utils.data.datapipes._decorator import functional_datapipe
 from torch.utils.data.datapipes.dataframe.structures import DataChunkDF
 from torch.utils.data.datapipes.datapipe import DFIterDataPipe, IterDataPipe
-
 
 # TODO(VitalyFedyunin): Add error when two different traces get combined
 
@@ -365,10 +364,9 @@ class CaptureGetAttr(Capture):
 def get_val(capture):
     if isinstance(capture, Capture):
         return capture.execute()
-    elif isinstance(capture, str):
+    if isinstance(capture, str):
         return f'"{capture}"'
-    else:
-        return capture
+    return capture
 
 
 class CaptureInitial(CaptureVariable):
@@ -440,7 +438,7 @@ class CaptureDataFrameWithDataPipeOps(CaptureDataFrame):
 
 @functional_datapipe("trace_as_dataframe")
 class DataFrameTracer(CaptureDataFrameWithDataPipeOps, IterDataPipe):  # type: ignore[misc]
-    source_datapipe: Optional[Any] = None
+    source_datapipe: Any | None = None
 
     # TODO(VitalyFedyunin): Must implement all special functions of datapipes
 

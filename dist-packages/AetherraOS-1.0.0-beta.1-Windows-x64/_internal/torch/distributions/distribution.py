@@ -1,6 +1,6 @@
 # mypy: allow-untyped-defs
 import warnings
-from typing import Optional
+
 from typing_extensions import deprecated
 
 import torch
@@ -8,7 +8,6 @@ from torch import Tensor
 from torch.distributions import constraints
 from torch.distributions.utils import lazy_property
 from torch.types import _size
-
 
 __all__ = ["Distribution"]
 
@@ -48,7 +47,7 @@ class Distribution:
         self,
         batch_shape: torch.Size = torch.Size(),
         event_shape: torch.Size = torch.Size(),
-        validate_args: Optional[bool] = None,
+        validate_args: bool | None = None,
     ) -> None:
         self._batch_shape = batch_shape
         self._event_shape = event_shape
@@ -129,7 +128,7 @@ class Distribution:
         raise NotImplementedError
 
     @property
-    def support(self) -> Optional[constraints.Constraint]:
+    def support(self) -> constraints.Constraint | None:
         """
         Returns a :class:`~torch.distributions.constraints.Constraint` object
         representing this distribution's support.
@@ -302,7 +301,7 @@ class Distribution:
 
         actual_shape = value.size()
         expected_shape = self._batch_shape + self._event_shape
-        for i, j in zip(reversed(actual_shape), reversed(expected_shape)):
+        for i, j in zip(reversed(actual_shape), reversed(expected_shape), strict=False):
             if i != 1 and j != 1 and i != j:
                 raise ValueError(
                     f"Value is not broadcastable with batch_shape+event_shape: {actual_shape} vs {expected_shape}."

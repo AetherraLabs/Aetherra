@@ -86,13 +86,13 @@ class FractalMeshCore:
     def mutate_fragment(
         self, fragment: MemoryFragment, mutation_type: str = "observer_effect"
     ) -> MemoryFragment:
-        # Stub: Mark the fragment as mutated (for test/demo purposes)
+        # Baseline: mark the fragment as mutated for test/demo purposes.
         fragment.content["mutated"] = True
         fragment.content["mutation_type"] = mutation_type
         return fragment
 
     def simulate_causal_branch(self, branch_id: str):
-        # Stub: Return a simple simulated branch result
+        # Baseline: return a simple simulated causal branch result.
         return {"branch_id": branch_id, "status": "simulated", "fragments": []}
 
     """
@@ -208,20 +208,14 @@ class FractalMeshCore:
 
         return fragment.fragment_id
 
-    def retrieve_by_concept(
-        self, concept: str, limit: int = 10
-    ) -> List[MemoryFragment]:
+    def retrieve_by_concept(self, concept: str, limit: int = 10) -> List[MemoryFragment]:
         """Retrieve fragments related to a concept"""
         related_fragment_ids = self.concept_index.get(concept, set())
-        fragments = [
-            self.fragments[fid] for fid in related_fragment_ids if fid in self.fragments
-        ]
+        fragments = [self.fragments[fid] for fid in related_fragment_ids if fid in self.fragments]
 
         # Sort by relevance (combination of confidence and recency)
         fragments.sort(
-            key=lambda f: (
-                f.confidence_score * 0.7 + self._temporal_relevance(f.created_at) * 0.3
-            ),
+            key=lambda f: (f.confidence_score * 0.7 + self._temporal_relevance(f.created_at) * 0.3),
             reverse=True,
         )
 
@@ -274,14 +268,10 @@ class FractalMeshCore:
         similar_fragments.sort(key=lambda x: x[1], reverse=True)
         return similar_fragments[:limit]
 
-    def detect_memory_drift(
-        self, time_window: timedelta = timedelta(days=7)
-    ) -> Dict[str, Any]:
+    def detect_memory_drift(self, time_window: timedelta = timedelta(days=7)) -> Dict[str, Any]:
         """Detect changes in memory patterns over time"""
         cutoff_time = datetime.now() - time_window
-        recent_fragments = [
-            f for f in self.fragments.values() if f.created_at >= cutoff_time
-        ]
+        recent_fragments = [f for f in self.fragments.values() if f.created_at >= cutoff_time]
 
         # Analyze concept frequency changes
         recent_concepts = {}
@@ -290,21 +280,15 @@ class FractalMeshCore:
                 recent_concepts[concept] = recent_concepts.get(concept, 0) + 1
 
         # Compare with historical patterns (simplified)
-        historical_fragments = [
-            f for f in self.fragments.values() if f.created_at < cutoff_time
-        ]
+        historical_fragments = [f for f in self.fragments.values() if f.created_at < cutoff_time]
         historical_concepts = {}
         for fragment in historical_fragments[-100:]:  # Sample recent history
             for concept in fragment.symbolic_tags:
                 historical_concepts[concept] = historical_concepts.get(concept, 0) + 1
 
         # Calculate drift metrics
-        emerging_concepts = set(recent_concepts.keys()) - set(
-            historical_concepts.keys()
-        )
-        declining_concepts = set(historical_concepts.keys()) - set(
-            recent_concepts.keys()
-        )
+        emerging_concepts = set(recent_concepts.keys()) - set(historical_concepts.keys())
+        declining_concepts = set(historical_concepts.keys()) - set(recent_concepts.keys())
 
         return {
             "time_window": str(time_window),
@@ -346,10 +330,7 @@ class FractalMeshCore:
         for concept in fragment.symbolic_tags:
             existing_cluster = None
             for cluster in self.concept_clusters.values():
-                if (
-                    concept in cluster.related_concepts
-                    or concept == cluster.central_concept
-                ):
+                if concept in cluster.related_concepts or concept == cluster.central_concept:
                     existing_cluster = cluster
                     break
 
@@ -383,9 +364,7 @@ class FractalMeshCore:
             if (
                 other_id != fragment.fragment_id
                 and other_fragment.fragment_type == MemoryFragmentType.EPISODIC
-                and abs(
-                    (fragment.created_at - other_fragment.created_at).total_seconds()
-                )
+                and abs((fragment.created_at - other_fragment.created_at).total_seconds())
                 <= time_window.total_seconds()
             ):
                 nearby_fragments.append(other_fragment)

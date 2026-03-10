@@ -19,9 +19,7 @@ from .qrng_service import qrng_int
 
 
 class RandomFeatureMap:
-    def __init__(
-        self, in_dim: int, out_dim: int = 128, seed: Optional[int] = None
-    ) -> None:
+    def __init__(self, in_dim: int, out_dim: int = 128, seed: Optional[int] = None) -> None:
         self.in_dim = int(in_dim)
         self.out_dim = int(out_dim)
         s = int(seed) if seed is not None else qrng_int(0, 2**31 - 1, seed=None)
@@ -32,9 +30,7 @@ class RandomFeatureMap:
             [self._rng.gauss(0.0, 1.0) * scale for _ in range(self.in_dim)]
             for _ in range(self.out_dim)
         ]
-        self.b: List[float] = [
-            self._rng.uniform(0.0, 2 * math.pi) for _ in range(self.out_dim)
-        ]
+        self.b: List[float] = [self._rng.uniform(0.0, 2 * math.pi) for _ in range(self.out_dim)]
 
     def transform(self, vec: Sequence[float]) -> List[float]:
         x = list(vec)
@@ -55,7 +51,7 @@ def cosine_similarity(a: Sequence[float], b: Sequence[float]) -> float:
     num = 0.0
     da = 0.0
     db = 0.0
-    for x, y in zip(a, b):
+    for x, y in zip(a, b, strict=False):
         fx = float(x)
         fy = float(y)
         num += fx * fy

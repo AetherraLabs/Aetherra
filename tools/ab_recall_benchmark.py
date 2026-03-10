@@ -27,7 +27,7 @@ import asyncio
 import json
 import os
 import time
-from typing import Any, Dict, List
+from typing import Any
 
 
 async def _get_engine():
@@ -51,7 +51,7 @@ async def _get_engine():
     return eng
 
 
-async def _bench_once(eng, query: str, limit: int = 8) -> Dict[str, Any]:
+async def _bench_once(eng, query: str, limit: int = 8) -> dict[str, Any]:
     # Force classical/quantum via env for controlled runs
     os.environ.pop("AETHERRA_AB_FORCE_BUCKET", None)
     os.environ["AETHERRA_AB_RECALL_MODE"] = "classical"
@@ -88,10 +88,10 @@ async def _bench_once(eng, query: str, limit: int = 8) -> Dict[str, Any]:
 
 
 async def run_benchmark(
-    queries: List[str], limit: int = 8, emit: bool = False
-) -> Dict[str, Any]:
+    queries: list[str], limit: int = 8, emit: bool = False
+) -> dict[str, Any]:
     eng = await _get_engine()
-    results: List[Dict[str, Any]] = []
+    results: list[dict[str, Any]] = []
     for q in queries:
         rec = await _bench_once(eng, q, limit)
         results.append(rec)

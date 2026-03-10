@@ -70,10 +70,8 @@ class EmotionalIntelligenceIntegration:
             # Step 1: Phase 2 processing (if enabled)
             if enable_phase2:
                 print("🎭 Applying Phase 2 personality enhancement...")
-                phase2_result = (
-                    await self.phase2_integration.process_complete_interaction(
-                        user_input, context, user_id
-                    )
+                phase2_result = await self.phase2_integration.process_complete_interaction(
+                    user_input, context, user_id
                 )
                 base_response = phase2_result["enhanced_response"]
                 phase2_data = phase2_result
@@ -81,9 +79,7 @@ class EmotionalIntelligenceIntegration:
                 print("🎭 Using Phase 1 personality enhancement...")
                 # Fall back to Phase 1 enhancement
                 basic_response = f"I'd be happy to help you with that: {user_input}"
-                phase1_result = await enhance_lyrixa_response(
-                    basic_response, user_input, context
-                )
+                phase1_result = await enhance_lyrixa_response(basic_response, user_input, context)
                 base_response = phase1_result["text"]
                 phase2_data = {
                     "phase": "phase1_fallback",
@@ -103,9 +99,7 @@ class EmotionalIntelligenceIntegration:
             processing_time = (datetime.now() - start_time).total_seconds() * 1000
             self._update_integration_metrics(emotional_result, processing_time)
 
-            print(
-                f"✅ Emotional intelligence integration complete: {processing_time:.1f}ms"
-            )
+            print(f"✅ Emotional intelligence integration complete: {processing_time:.1f}ms")
 
             return {
                 "final_response": final_response,
@@ -115,9 +109,7 @@ class EmotionalIntelligenceIntegration:
                     "processing_time_ms": processing_time,
                     "emotional_enhancement_applied": True,
                     "phase2_enabled": enable_phase2,
-                    "empathy_score": emotional_result["empathy_metrics"][
-                        "empathy_score"
-                    ],
+                    "empathy_score": emotional_result["empathy_metrics"]["empathy_score"],
                 },
                 "status": "success",
             }
@@ -127,10 +119,10 @@ class EmotionalIntelligenceIntegration:
 
             # Fallback to basic enhancement
             try:
-                basic_response = f"I understand you're asking about: {user_input}. Let me help you with that."
-                fallback_result = await enhance_lyrixa_response(
-                    basic_response, user_input, context
+                basic_response = (
+                    f"I understand you're asking about: {user_input}. Let me help you with that."
                 )
+                fallback_result = await enhance_lyrixa_response(basic_response, user_input, context)
 
                 processing_time = (datetime.now() - start_time).total_seconds() * 1000
 
@@ -154,10 +146,7 @@ class EmotionalIntelligenceIntegration:
                     "phase2_data": {"status": "error"},
                     "emotional_intelligence": {"status": "error"},
                     "integration_metrics": {
-                        "processing_time_ms": (
-                            datetime.now() - start_time
-                        ).total_seconds()
-                        * 1000,
+                        "processing_time_ms": (datetime.now() - start_time).total_seconds() * 1000,
                         "emotional_enhancement_applied": False,
                         "phase2_enabled": False,
                         "empathy_score": 0.0,
@@ -166,9 +155,7 @@ class EmotionalIntelligenceIntegration:
                     "error": str(fallback_error),
                 }
 
-    def _update_integration_metrics(
-        self, emotional_result: Dict[str, Any], processing_time: float
-    ):
+    def _update_integration_metrics(self, emotional_result: Dict[str, Any], processing_time: float):
         """Update integration performance metrics"""
 
         self.integration_metrics["total_interactions"] += 1
@@ -179,9 +166,7 @@ class EmotionalIntelligenceIntegration:
         # Update average processing time
         total_interactions = self.integration_metrics["total_interactions"]
         current_avg = self.integration_metrics["avg_processing_time"]
-        new_avg = (
-            (current_avg * (total_interactions - 1)) + processing_time
-        ) / total_interactions
+        new_avg = ((current_avg * (total_interactions - 1)) + processing_time) / total_interactions
         self.integration_metrics["avg_processing_time"] = new_avg
 
         # Update success rate
@@ -222,12 +207,8 @@ class EmotionalIntelligenceIntegration:
             "emotional_insights": emotional_insights,
             "mood_analysis": mood_analysis,
             "performance_summary": {
-                "avg_processing_time_ms": round(
-                    self.integration_metrics["avg_processing_time"], 1
-                ),
-                "success_rate_percent": round(
-                    self.integration_metrics["success_rate"] * 100, 1
-                ),
+                "avg_processing_time_ms": round(self.integration_metrics["avg_processing_time"], 1),
+                "success_rate_percent": round(self.integration_metrics["success_rate"] * 100, 1),
                 "emotional_accuracy_percent": round(
                     self.integration_metrics["emotional_accuracy"] * 100, 1
                 ),

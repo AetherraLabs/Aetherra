@@ -1,10 +1,9 @@
-from typing import Callable
+from collections.abc import Callable
 
 import torch
 from torch.ao.nn.intrinsic import _FusedModule
 from torch.fx._symbolic_trace import Tracer
 from torch.fx.proxy import Scope
-
 
 __all__ = [
     "QuantizationTracer",

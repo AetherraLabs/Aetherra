@@ -129,9 +129,7 @@ class QuantumTunnelingEngine:
 
         self.logger.info("🌀 Quantum Tunneling Engine initialized")
 
-    def calculate_tunneling_probability(
-        self, barrier: LogicalBarrier, energy: float
-    ) -> float:
+    def calculate_tunneling_probability(self, barrier: LogicalBarrier, energy: float) -> float:
         """Calculate quantum tunneling probability through a logical barrier"""
         try:
             # Quantum tunneling probability using WKB approximation
@@ -161,18 +159,14 @@ class QuantumTunnelingEngine:
             # Ensure probability bounds
             probability = max(min(probability, 1.0), 0.0)
 
-            self.logger.debug(
-                f"Tunneling probability for {barrier.barrier_id}: {probability:.6f}"
-            )
+            self.logger.debug(f"Tunneling probability for {barrier.barrier_id}: {probability:.6f}")
             return probability
 
         except Exception as e:
             self.logger.error(f"❌ Error calculating tunneling probability: {e}")
             return 0.0
 
-    def analyze_barrier_structure(
-        self, barriers: List[LogicalBarrier]
-    ) -> Dict[str, Any]:
+    def analyze_barrier_structure(self, barriers: List[LogicalBarrier]) -> Dict[str, Any]:
         """Analyze the structure of barriers for optimal tunneling strategy"""
         try:
             if not barriers:
@@ -182,9 +176,7 @@ class QuantumTunnelingEngine:
             total_height = sum(b.height for b in barriers)
             max_height = max(b.height for b in barriers)
             total_width = sum(b.width for b in barriers)
-            avg_breakthrough_potential = np.mean(
-                [b.breakthrough_potential for b in barriers]
-            )
+            avg_breakthrough_potential = np.mean([b.breakthrough_potential for b in barriers])
 
             # Determine tunneling strategy
             if max_height < 0.3:
@@ -197,9 +189,7 @@ class QuantumTunnelingEngine:
                 strategy = "multi_path_tunneling"
 
             # Calculate complexity score
-            complexity = (total_height * total_width) / (
-                avg_breakthrough_potential + 0.1
-            )
+            complexity = (total_height * total_width) / (avg_breakthrough_potential + 0.1)
 
             analysis = {
                 "strategy": strategy,
@@ -212,9 +202,7 @@ class QuantumTunnelingEngine:
                 "energy_requirement": total_height * 1.2,
             }
 
-            self.logger.info(
-                f"🔍 Barrier analysis: {strategy}, complexity: {complexity:.3f}"
-            )
+            self.logger.info(f"🔍 Barrier analysis: {strategy}, complexity: {complexity:.3f}")
             return analysis
 
         except Exception as e:
@@ -230,9 +218,7 @@ class QuantumTunnelingEngine:
     ) -> List[TunnelingPath]:
         """Find optimal quantum tunneling paths through barrier landscape"""
         try:
-            self.logger.info(
-                f"🔍 Finding tunneling paths from {source_state} to {target_state}"
-            )
+            self.logger.info(f"🔍 Finding tunneling paths from {source_state} to {target_state}")
 
             paths = []
 
@@ -240,9 +226,7 @@ class QuantumTunnelingEngine:
             if len(barriers) == 1:
                 barrier = barriers[0]
                 energy_cost = barrier.height * self.energy_scaling
-                tunneling_prob = self.calculate_tunneling_probability(
-                    barrier, energy_cost * 0.8
-                )
+                tunneling_prob = self.calculate_tunneling_probability(barrier, energy_cost * 0.8)
 
                 if tunneling_prob > self.min_tunneling_prob:
                     path = TunnelingPath(
@@ -262,9 +246,7 @@ class QuantumTunnelingEngine:
                 # Try different sequences
                 for i in range(min(max_paths, len(barriers))):
                     # Select subset of barriers for this path
-                    path_barriers = (
-                        barriers[i : i + 3] if i + 3 <= len(barriers) else barriers[i:]
-                    )
+                    path_barriers = barriers[i : i + 3] if i + 3 <= len(barriers) else barriers[i:]
 
                     # Calculate cumulative tunneling probability
                     total_prob = 1.0
@@ -273,9 +255,7 @@ class QuantumTunnelingEngine:
 
                     for barrier in path_barriers:
                         energy = barrier.height * self.energy_scaling
-                        prob = self.calculate_tunneling_probability(
-                            barrier, energy * 0.9
-                        )
+                        prob = self.calculate_tunneling_probability(barrier, energy * 0.9)
                         total_prob *= prob
                         total_energy += energy
                         total_breakthrough += barrier.breakthrough_potential
@@ -294,28 +274,21 @@ class QuantumTunnelingEngine:
                         paths.append(path)
 
             # Strategy 3: Resonance tunneling (high breakthrough potential)
-            high_potential_barriers = [
-                b for b in barriers if b.breakthrough_potential > 0.7
-            ]
+            high_potential_barriers = [b for b in barriers if b.breakthrough_potential > 0.7]
             if high_potential_barriers:
                 resonance_energy = float(
-                    np.mean([b.height for b in high_potential_barriers])
-                    * self.energy_scaling
+                    np.mean([b.height for b in high_potential_barriers]) * self.energy_scaling
                 )
                 resonance_prob = float(
                     np.prod(
                         [
-                            self.calculate_tunneling_probability(
-                                b, resonance_energy * 1.2
-                            )
+                            self.calculate_tunneling_probability(b, resonance_energy * 1.2)
                             for b in high_potential_barriers
                         ]
                     )
                 )
 
-                if (
-                    resonance_prob > self.min_tunneling_prob * 0.1
-                ):  # Lower threshold for resonance
+                if resonance_prob > self.min_tunneling_prob * 0.1:  # Lower threshold for resonance
                     path = TunnelingPath(
                         path_id="resonance_breakthrough",
                         source_state=source_state,
@@ -324,12 +297,7 @@ class QuantumTunnelingEngine:
                         tunneling_probability=resonance_prob,
                         energy_cost=resonance_energy,
                         breakthrough_value=float(
-                            np.mean(
-                                [
-                                    b.breakthrough_potential
-                                    for b in high_potential_barriers
-                                ]
-                            )
+                            np.mean([b.breakthrough_potential for b in high_potential_barriers])
                         ),
                         path_complexity=len(high_potential_barriers)
                         * 0.7,  # Resonance reduces complexity
@@ -379,9 +347,7 @@ class QuantumTunnelingEngine:
                 self.successful_tunnelings += 1
 
                 # Calculate innovation metrics
-                innovation_level = path.breakthrough_value * (
-                    1 + consciousness_factor * 0.3
-                )
+                innovation_level = path.breakthrough_value * (1 + consciousness_factor * 0.3)
                 paradigm_shift = min(innovation_level * 1.2, 1.0)
                 implementation_prob = enhanced_probability * 0.8
                 transcendence_impact = innovation_level * paradigm_shift
@@ -399,9 +365,7 @@ class QuantumTunnelingEngine:
                 )
 
                 # Update metrics
-                self.breakthrough_rate = (
-                    self.successful_tunnelings / self.tunneling_attempts
-                )
+                self.breakthrough_rate = self.successful_tunnelings / self.tunneling_attempts
                 self.innovation_score = np.mean(
                     [s.innovation_level for s in self.breakthrough_history[-10:]]
                 )
@@ -433,9 +397,7 @@ class QuantumTunnelingEngine:
             "breakthrough_rate": self.breakthrough_rate,
             "innovation_score": self.innovation_score,
             "breakthroughs_discovered": len(self.breakthrough_history),
-            "avg_innovation_level": np.mean(
-                [s.innovation_level for s in self.breakthrough_history]
-            )
+            "avg_innovation_level": np.mean([s.innovation_level for s in self.breakthrough_history])
             if self.breakthrough_history
             else 0.0,
             "max_paradigm_shift": max(
@@ -534,9 +496,7 @@ async def test_quantum_tunneling():
         best_path = paths[0]
         consciousness_energy = 2000.0  # High consciousness energy
 
-        solution = await engine.attempt_quantum_tunneling(
-            best_path, consciousness_energy
-        )
+        solution = await engine.attempt_quantum_tunneling(best_path, consciousness_energy)
 
         if solution:
             print(f"⚡ BREAKTHROUGH: {solution.description}")

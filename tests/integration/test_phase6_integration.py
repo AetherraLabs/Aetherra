@@ -271,9 +271,8 @@ def test_chat_interface():
             print(f"   ✓ {component}")
 
         return len(found_components) >= len(components) - 1
-    else:
-        print("❌ Chat Interface: phase6_chat.html not found")
-        return False
+    print("❌ Chat Interface: phase6_chat.html not found")
+    return False
 
 
 def test_plugin_system():
@@ -302,12 +301,10 @@ def test_plugin_system():
         if demo_file.exists():
             print("✅ Plugin Demo Interface: Available")
             return True
-        else:
-            print("❌ Plugin Demo Interface: Missing")
-            return False
-    else:
-        print("❌ Plugins Directory: Not found")
+        print("❌ Plugin Demo Interface: Missing")
         return False
+    print("❌ Plugins Directory: Not found")
+    return False
 
 
 def main():
@@ -357,7 +354,9 @@ def main():
 
     if passed == total:
         print("🎉 ALL SYSTEMS OPERATIONAL! Phase 1-6 integration complete!")
-        print("🌌 Lyrixa is ready for launch with full personality and AI capabilities!")
+        print(
+            "🌌 Lyrixa is ready for launch with full personality and AI capabilities!"
+        )
     elif passed >= total * 0.8:
         print("⚠️  Most systems operational. Minor issues detected.")
         print("🚀 Lyrixa can launch but may have reduced functionality.")

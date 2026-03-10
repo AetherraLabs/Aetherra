@@ -2,7 +2,6 @@ from torch.nn.quantized import dynamic, functional, modules  # noqa: F403
 from torch.nn.quantized.modules import *  # noqa: F403
 from torch.nn.quantized.modules import MaxPool2d
 
-
 __all__ = [
     "BatchNorm2d",
     "BatchNorm3d",

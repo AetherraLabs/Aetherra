@@ -4,24 +4,24 @@ import logging
 import os
 import re
 import tempfile
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 import torch
 import torch._logging._internal
 import torch._logging.structured
 import torch.utils._pytree as pytree
 from torch._export.passes.insert_custom_op_guards import (
+    OpProfile,
     get_op_profiles,
     insert_custom_op_guards,
-    OpProfile,
 )
 
 from ._trace import _export
-from .dynamic_shapes import _DimHint, _DimHintType, Dim
+from .dynamic_shapes import Dim, _DimHint, _DimHintType
 from .exported_program import ExportedProgram
-
 
 log = logging.getLogger(__name__)
 
@@ -68,7 +68,7 @@ def prettify_frame_locals(
     return res
 
 
-def get_loc(filename: str, lineno: int) -> Optional[str]:
+def get_loc(filename: str, lineno: int) -> str | None:
     try:
         with open(filename) as f:
             for i, line in enumerate(f):
@@ -100,7 +100,7 @@ class FailureReport:
     Please refer to https://docs.google.com/document/d/1_W62p8WJOQQUzPsJYa7s701JXt0qf2OfLub2sbkHOaU/edit#heading=h.ahugy69p2jmz for more detailed instructions on how to write a meta implementation.
 """  # noqa: B950
 
-        elif self.failure_type == FailureType.GUARD_ADDED:
+        if self.failure_type == FailureType.GUARD_ADDED:
             locals_info = (
                 prettify_frame_locals(**self.data["frame_locals"])
                 if self.data["frame_locals"]
@@ -121,7 +121,7 @@ class FailureReport:
     ```
 """
 
-        elif self.failure_type == FailureType.DATA_DEPENDENT_ERROR:
+        if self.failure_type == FailureType.DATA_DEPENDENT_ERROR:
             locals_info = (
                 prettify_frame_locals(**self.data["frame_locals"])
                 if self.data["frame_locals"]
@@ -139,7 +139,7 @@ class FailureReport:
     Please refer to https://docs.google.com/document/d/1kZ_BbB3JnoLbUZleDT6635dHs88ZVYId8jT-yTFgf3A/edit#heading=h.boi2xurpqa0o for more details.
 """  # noqa: B950
 
-        elif self.failure_type == FailureType.MISMATCHED_FAKE_KERNEL:
+        if self.failure_type == FailureType.MISMATCHED_FAKE_KERNEL:
             op = self.data["op"]
             reason = self.data["reason"]
             return f"""Mismatched fake kernel.
@@ -149,8 +149,7 @@ class FailureReport:
     Please refer to https://docs.google.com/document/d/1_W62p8WJOQQUzPsJYa7s701JXt0qf2OfLub2sbkHOaU/edit#heading=h.ahugy69p2jmz for more detailed instructions on how to write a fake implementation.
 """  # noqa: B950
 
-        else:
-            raise ValueError(f"Unknown failure type: {self.failure_type}")
+        raise ValueError(f"Unknown failure type: {self.failure_type}")
 
 
 class DraftExportReport:
@@ -222,13 +221,13 @@ class LogRecord:
 
         if key == "missing_fake_kernel":
             return hash((key, data["op"]))
-        elif key == "mismatched_fake_kernel":
+        if key == "mismatched_fake_kernel":
             return hash((key, data["op"], data["reason"]))
-        elif key == "propagate_real_tensors_provenance":
-            return hash((key, json.dumps(data["user_stack"])))
-        elif key == "guard_added":
-            return hash((key, json.dumps(data["user_stack"])))
-        elif key == "create_unbacked_symbol":
+        if (
+            key == "propagate_real_tensors_provenance"
+            or key == "guard_added"
+            or key == "create_unbacked_symbol"
+        ):
             return hash((key, json.dumps(data["user_stack"])))
 
         return hash((key, json.dumps(data)))
@@ -336,7 +335,7 @@ class CaptureStructuredTrace(torch._logging._internal.LazyTraceHandler):
                         )
                         return
 
-                    elif key == "propagate_real_tensors_provenance":
+                    if key == "propagate_real_tensors_provenance":
                         _log_expression_created(
                             super().emit, metadata[key].get("expr_node_id")
                         )
@@ -347,7 +346,7 @@ class CaptureStructuredTrace(torch._logging._internal.LazyTraceHandler):
                             # the symbolic shapes corresponding to the inputs which were
                             # specified in the dynamic_shapes arg. These have a source.
                             return
-                        elif metadata[key]["prefix"] == "runtime_assert":
+                        if metadata[key]["prefix"] == "runtime_assert":
                             # This should've been captured by a
                             # propagate_real_tensors log
                             return
@@ -362,9 +361,9 @@ class CaptureStructuredTrace(torch._logging._internal.LazyTraceHandler):
 def draft_export(
     mod: torch.nn.Module,
     args: tuple[Any, ...],
-    kwargs: Optional[dict[str, Any]] = None,
+    kwargs: dict[str, Any] | None = None,
     *,
-    dynamic_shapes: Optional[Union[dict[str, Any], tuple[Any], list[Any]]] = None,
+    dynamic_shapes: dict[str, Any] | tuple[Any] | list[Any] | None = None,
     preserve_module_call_signature: tuple[str, ...] = (),
     strict: bool = False,
     pre_dispatch: bool = True,
@@ -395,9 +394,11 @@ def draft_export(
         except torch._dynamo.exc.UserError:
 
             def convert_dim_to_auto(dim: Any) -> Any:
-                if isinstance(dim, Dim):
-                    return Dim.AUTO(min=dim.min, max=dim.max)
-                elif isinstance(dim, _DimHint) and dim.type == _DimHintType.DYNAMIC:
+                if (
+                    isinstance(dim, Dim)
+                    or isinstance(dim, _DimHint)
+                    and dim.type == _DimHintType.DYNAMIC
+                ):
                     return Dim.AUTO(min=dim.min, max=dim.max)
                 return dim
 
@@ -426,7 +427,7 @@ def draft_export(
                 str_to_filename[log_contents[1]] = log_contents[0]  # type: ignore[index]
                 continue
 
-            elif log_name == "propagate_real_tensors_provenance":
+            if log_name == "propagate_real_tensors_provenance":
                 log_contents["occurrences"] = (
                     capture_structured_log.log_record.get_log_count(
                         (log_name, log_contents)

@@ -20,7 +20,6 @@ from torch.distributed.checkpoint.planner import (
     WriteItemType,
 )
 
-
 aten = torch.ops.aten
 
 
@@ -79,7 +78,7 @@ class LocalShardsWrapper(torch.Tensor):
                 offsets=torch.Size(offset),
                 sizes=shard.size(),
             )
-            for shard, offset in zip(local_shards, local_offsets)
+            for shard, offset in zip(local_shards, local_offsets, strict=False)
         ]
 
         r = torch.Tensor._make_wrapper_subclass(
@@ -113,10 +112,7 @@ class LocalShardsWrapper(torch.Tensor):
 
         if func in dispatcher:
             return dispatcher[func](args, kwargs)
-        else:
-            raise NotImplementedError(
-                f"{func} is not supported for LocalShardsWrapper!"
-            )
+        raise NotImplementedError(f"{func} is not supported for LocalShardsWrapper!")
 
     @staticmethod
     def handle_all_gather_into_tensor(args, kwargs) -> torch.Tensor:
@@ -184,7 +180,8 @@ class LocalShardsWrapper(torch.Tensor):
         if len(a.local_shards()) != len(b.local_shards()):
             return False
         if not all(
-            aten.equal.default(x, y) for x, y in zip(a.local_shards(), b.local_shards())
+            aten.equal.default(x, y)
+            for x, y in zip(a.local_shards(), b.local_shards(), strict=False)
         ):
             return False
         if not a.storage_metadata() == b.storage_metadata():
@@ -305,7 +302,9 @@ class LocalShardsWrapper(torch.Tensor):
                     size=object.size(),
                 ),
             )
-            for tensor, chunks in zip(self.local_shards(), self.local_chunks)
+            for tensor, chunks in zip(
+                self.local_shards(), self.local_chunks, strict=False
+            )
         ]
 
     def __create_chunk_list__(self) -> list[ChunkStorageMetadata]:
@@ -329,7 +328,9 @@ class LocalShardsWrapper(torch.Tensor):
                 return self._local_shards[index.index]
 
         if index.offset is not None:
-            for shard, chunk in zip(self._local_shards, self._storage_meta.chunks):
+            for shard, chunk in zip(
+                self._local_shards, self._storage_meta.chunks, strict=False
+            ):
                 if chunk.offsets == index.offset:
                     return shard
 

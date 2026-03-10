@@ -1,15 +1,14 @@
-from typing import Callable, Union
-from typing_extensions import TypeAlias
-
+from collections.abc import Callable
+from typing import TypeAlias
 
 try:
     from fbscribelogger import (  # type: ignore[import-untyped, import-not-found]
         make_scribe_logger,
     )
 except ImportError:
-    TAtom: TypeAlias = Union[int, float, bool, str]
-    TField: TypeAlias = Union[TAtom, list[TAtom]]
-    TLazyField: TypeAlias = Union[TField, Callable[[], TField]]
+    TAtom: TypeAlias = int | float | bool | str
+    TField: TypeAlias = TAtom | list[TAtom]
+    TLazyField: TypeAlias = TField | Callable[[], TField]
 
     def make_scribe_logger(name: str, thrift_src: str) -> Callable[..., None]:
         def inner(**kwargs: TLazyField) -> None:

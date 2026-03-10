@@ -5,7 +5,6 @@ from functools import partial
 
 import torch
 
-
 # Unfortunately it doesn't seem as if there was any way to get TensorBoard to do
 # anything without having TF installed, and so this file has a hard dependency on it
 # as well. It really is a debugging tool, so it doesn't matter.
@@ -106,12 +105,12 @@ def visualize_rec(graph, value_map, name_prefix, pb_graph, executors_it=None):
     def inline_graph(subgraph, name, node):
         rec_value_map = {
             inp.unique(): value_map[val.unique()]
-            for inp, val in zip(subgraph.inputs(), node.inputs())
+            for inp, val in zip(subgraph.inputs(), node.inputs(), strict=False)
         }
         visualize_rec(
             graph=subgraph, value_map=rec_value_map, name_prefix=name, pb_graph=pb_graph
         )
-        for out, val in zip(subgraph.outputs(), node.outputs()):
+        for out, val in zip(subgraph.outputs(), node.outputs(), strict=False):
             value_map[val.unique()] = rec_value_map[out.unique()]
 
     op_id_counter: defaultdict[str, int] = defaultdict(int)
@@ -138,7 +137,7 @@ def visualize_rec(graph, value_map, name_prefix, pb_graph, executors_it=None):
     def add_node(node):
         if node.kind() == "prim::FusionGroup":
             return add_fusion_group(node)
-        elif node.kind() == "prim::GraphExecutor":
+        if node.kind() == "prim::GraphExecutor":
             return add_graph_executor(node)
         op, name = name_for(node)
         pb_node = pb_graph.node.add(op=op, name=name)

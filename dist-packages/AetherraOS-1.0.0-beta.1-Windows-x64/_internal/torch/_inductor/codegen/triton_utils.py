@@ -1,5 +1,5 @@
 # mypy: allow-untyped-defs
-from typing import Any, Optional
+from typing import Any
 
 import sympy
 
@@ -31,7 +31,7 @@ def should_unwrap_unspec_arg(name: str):
     return False
 
 
-def signature_of(arg: KernelArgType, *, size_dtype: Optional[str]) -> str:
+def signature_of(arg: KernelArgType, *, size_dtype: str | None) -> str:
     if isinstance(arg, TensorArg):
         # TODO: Remove fp8 special handling when Triton supports PyTorch fp8 dtypes.
         # Related PR: https://github.com/triton-lang/triton/pull/2279/
@@ -50,55 +50,49 @@ def signature_of(arg: KernelArgType, *, size_dtype: Optional[str]) -> str:
             new_typ = typ.lstrip("*")
             if new_typ in ["fp16", "bf16"]:
                 return "fp32"
-            else:
-                return new_typ
-        else:
-            return typ
+            return new_typ
+        return typ
     if isinstance(arg, SizeArg):
         if arg.expr is None:
             if triton_version_uses_attrs_dict():
                 # In newer versions of Triton, the signature includes "None" args
                 # and their type is marked as "constexpr"
                 return "constexpr"
-            else:
-                # In older versions of Triton...
-                # From triton/runtime/jit.py
-                # `None` is nullptr.  Implicitly convert to *i8.
-                return "*i8"
-        elif _arg_equals_1(arg) and triton_version_uses_attrs_dict():
+            # In older versions of Triton...
+            # From triton/runtime/jit.py
+            # `None` is nullptr.  Implicitly convert to *i8.
+            return "*i8"
+        if _arg_equals_1(arg) and triton_version_uses_attrs_dict():
             # In new versions of Triton, if we have an equal-to-1 arg that's marked as a constant,
             # it should be marked as "constexpr" in the signature.
             return "constexpr"
-        elif isinstance(arg.expr, (float, sympy.Float)):
+        if isinstance(arg.expr, (float, sympy.Float)):
             return "fp32"
 
         # if this is a integer
         if size_dtype == "tl.int32":
             return "i32"
-        elif size_dtype == "tl.int64":
+        if size_dtype == "tl.int64":
             return "i64"
-        elif size_dtype is None:
+        if size_dtype is None:
             # no hint: we'll see if we know that this is a 32-bit int, and guard if possible.
             int_max = torch.iinfo(torch.int32).max
             if expr_fits_within_32bit(arg.expr):
                 V.graph.sizevars.guard_leq(arg.expr, int_max)
                 return "i32"
-            else:
-                return "i64"
-        else:
-            raise NotImplementedError(f"unhandled size_dtype {size_dtype}")
+            return "i64"
+        raise NotImplementedError(f"unhandled size_dtype {size_dtype}")
     if isinstance(arg, WorkspaceArg):
         return _type_of(arg.dtype)
     if isinstance(arg, TMADescriptorArg):
         if arg.api_type == "experimental":
             return "nvTmaDesc"
-        else:
-            # https://github.com/triton-lang/triton/blob/9695baed9b46cf957e08b157bb4133f4a4b331c5/python/triton/runtime/jit.py#L360-L363
-            assert arg.api_type == "stable"
-            assert arg.block_shape is not None
-            assert arg.dtype is not None
-            inner = _type_of(arg.dtype)[1:]  # strip the `*`: *fp32 -> fp32
-            return f"tensordesc<{inner}{list(arg.block_shape)}>"
+        # https://github.com/triton-lang/triton/blob/9695baed9b46cf957e08b157bb4133f4a4b331c5/python/triton/runtime/jit.py#L360-L363
+        assert arg.api_type == "stable"
+        assert arg.block_shape is not None
+        assert arg.dtype is not None
+        inner = _type_of(arg.dtype)[1:]  # strip the `*`: *fp32 -> fp32
+        return f"tensordesc<{inner}{list(arg.block_shape)}>"
     if isinstance(arg, ConstexprArg):
         return "constexpr"
     raise NotImplementedError(f"unhandled {type(arg)}: {arg}")
@@ -116,9 +110,9 @@ def non_constexpr_signature(signature):
 def signature_to_meta(
     signature: list[KernelArgType],
     *,
-    size_dtype: Optional[str],
+    size_dtype: str | None,
     argdefs: list[ArgName],
-    indices: Optional[list[int]] = None,
+    indices: list[int] | None = None,
     is_template: bool = False,
 ) -> dict[str, str]:
     if indices is None:
@@ -147,7 +141,7 @@ def signature_to_meta(
 
     return {
         argdefs[i].name: signature_of(arg, size_dtype=_decide_tl_dtype(arg))
-        for i, arg in zip(indices, signature)
+        for i, arg in zip(indices, signature, strict=False)
     }
 
 
@@ -179,8 +173,7 @@ def is_unaligned_buffer(arg: TensorArg):
 
     if isinstance(layout, torch._inductor.ir.NonOwningLayout):
         return not layout.maybe_guard_aligned()
-    else:
-        return False
+    return False
 
 
 def _arg_equals_1(arg: KernelArgType) -> bool:
@@ -194,12 +187,14 @@ def _arg_equals_1(arg: KernelArgType) -> bool:
 def equal_1_arg_indices(
     args: list[KernelArgType],
     *,
-    indices: Optional[list[int]] = None,
+    indices: list[int] | None = None,
 ) -> tuple[int, ...]:
     if indices is None:
         indices = list(range(len(args)))
 
-    equal_to_1 = tuple(i for i, arg in zip(indices, args) if _arg_equals_1(arg))
+    equal_to_1 = tuple(
+        i for i, arg in zip(indices, args, strict=False) if _arg_equals_1(arg)
+    )
 
     return equal_to_1
 
@@ -207,7 +202,7 @@ def equal_1_arg_indices(
 def config_of(
     args: list[KernelArgType],
     *,
-    indices: Optional[list[int]] = None,
+    indices: list[int] | None = None,
 ) -> Any:
     if indices is None:
         indices = list(range(len(args)))
@@ -224,8 +219,7 @@ def config_of(
                     alignment,  # type: ignore[arg-type]
                 )
                 return offset_aligned and not is_unaligned_buffer(x)
-            else:
-                return False
+            return False
         if isinstance(x, SizeArg):
             # TODO(voz): These are kinda redundant, if we can solve out statically_known_multiple_of with
             # _maybe_evaluate_static...
@@ -246,7 +240,7 @@ def config_of(
     if config.triton.divisible_by_16:
         divisible_by_16 = tuple(
             i
-            for i, arg in zip(indices, args)
+            for i, arg in zip(indices, args, strict=False)
             if is_aligned(arg, alignment=16, include_tensor=True)
         )
     else:

@@ -1,12 +1,10 @@
 # mypy: allow-untyped-defs
 import contextlib
-from typing import Optional
 
 import torch
 from torch.utils._content_store import ContentStoreReader
 
-
-LOAD_TENSOR_READER: Optional[ContentStoreReader] = None
+LOAD_TENSOR_READER: ContentStoreReader | None = None
 
 
 @contextlib.contextmanager
@@ -38,17 +36,16 @@ def register_debug_prims():
             from torch._dynamo.testing import rand_strided
 
             return rand_strided(size, stride, dtype, device)
-        else:
-            from torch._dynamo.utils import clone_input
+        from torch._dynamo.utils import clone_input
 
-            # device argument here takes care of coercion
-            r = LOAD_TENSOR_READER.read_tensor(name, device=device)
-            assert list(r.size()) == size, f"{r.size()} != {size}"
-            assert list(r.stride()) == stride, f"{r.stride()} != {stride}"
-            assert r.device == device, f"{r.device} != {device}"
+        # device argument here takes care of coercion
+        r = LOAD_TENSOR_READER.read_tensor(name, device=device)
+        assert list(r.size()) == size, f"{r.size()} != {size}"
+        assert list(r.stride()) == stride, f"{r.stride()} != {stride}"
+        assert r.device == device, f"{r.device} != {device}"
 
-            # Unlike the other properties, we will do coercions for dtype
-            # mismatch
-            if r.dtype != dtype:
-                r = clone_input(r, dtype=dtype)
-            return r
+        # Unlike the other properties, we will do coercions for dtype
+        # mismatch
+        if r.dtype != dtype:
+            r = clone_input(r, dtype=dtype)
+        return r

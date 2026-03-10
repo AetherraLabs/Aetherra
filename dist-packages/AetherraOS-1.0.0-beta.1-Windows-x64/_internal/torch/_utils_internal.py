@@ -4,12 +4,13 @@ import logging
 import os
 import sys
 import tempfile
-from typing import Any, Callable, Optional, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar
+
 from typing_extensions import ParamSpec
 
 import torch
 from torch._strobelight.compile_time_profiler import StrobelightCompileTimeProfiler
-
 
 _T = TypeVar("_T")
 _P = ParamSpec("_P")
@@ -71,12 +72,11 @@ def throw_abstract_impl_not_imported_error(opname, module, context):
         raise NotImplementedError(
             f"{opname}: We could not find the fake impl for this operator. "
         )
-    else:
-        raise NotImplementedError(
-            f"{opname}: We could not find the fake impl for this operator. "
-            f"The operator specified that you may need to import the '{module}' "
-            f"Python module to load the fake impl. {context}"
-        )
+    raise NotImplementedError(
+        f"{opname}: We could not find the fake impl for this operator. "
+        f"The operator specified that you may need to import the '{module}' "
+        f"Python module to load the fake impl. {context}"
+    )
 
 
 # NB!  This treats "skip" kwarg specially!!
@@ -216,32 +216,26 @@ def max_clock_rate():
         from triton.testing import nvsmi
 
         return nvsmi(["clocks.max.sm"])[0]
-    else:
-        # Manually set max-clock speeds on ROCm until equivalent nvmsi
-        # functionality in triton.testing or via pyamdsmi enablement. Required
-        # for test_snode_runtime unit tests.
-        gcn_arch = str(torch.cuda.get_device_properties(0).gcnArchName.split(":", 1)[0])
-        if "gfx94" in gcn_arch:
-            return 1700
-        elif "gfx90a" in gcn_arch:
-            return 1700
-        elif "gfx908" in gcn_arch:
-            return 1502
-        elif "gfx12" in gcn_arch:
-            return 1700
-        elif "gfx11" in gcn_arch:
-            return 1700
-        elif "gfx103" in gcn_arch:
-            return 1967
-        elif "gfx101" in gcn_arch:
-            return 1144
-        elif "gfx95" in gcn_arch:
-            return 1700  # TODO: placeholder, get actual value
-        else:
-            return 1100
+    # Manually set max-clock speeds on ROCm until equivalent nvmsi
+    # functionality in triton.testing or via pyamdsmi enablement. Required
+    # for test_snode_runtime unit tests.
+    gcn_arch = str(torch.cuda.get_device_properties(0).gcnArchName.split(":", 1)[0])
+    if "gfx94" in gcn_arch or "gfx90a" in gcn_arch:
+        return 1700
+    if "gfx908" in gcn_arch:
+        return 1502
+    if "gfx12" in gcn_arch or "gfx11" in gcn_arch:
+        return 1700
+    if "gfx103" in gcn_arch:
+        return 1967
+    if "gfx101" in gcn_arch:
+        return 1144
+    if "gfx95" in gcn_arch:
+        return 1700  # TODO: placeholder, get actual value
+    return 1100
 
 
-def get_mast_job_name_version() -> Optional[tuple[str, int]]:
+def get_mast_job_name_version() -> tuple[str, int] | None:
     return None
 
 
@@ -260,7 +254,7 @@ USE_RTLD_GLOBAL_WITH_LIBTORCH = False
 REQUIRES_SET_PYTHON_MODULE = False
 
 
-def maybe_upload_prof_stats_to_manifold(profile_path: str) -> Optional[str]:
+def maybe_upload_prof_stats_to_manifold(profile_path: str) -> str | None:
     print("Uploading profile stats (fb-only otherwise no-op)")
     return None
 

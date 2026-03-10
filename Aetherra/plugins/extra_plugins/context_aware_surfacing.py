@@ -52,9 +52,7 @@ class ContextAwareSurfacing:
 
     # Required plugin metadata
     name = "context_aware_surfacing"
-    description = (
-        "Intelligent plugin recommendation and surfacing based on current context"
-    )
+    description = "Intelligent plugin recommendation and surfacing based on current context"
     input_schema = {
         "type": "object",
         "properties": {
@@ -123,9 +121,7 @@ class ContextAwareSurfacing:
         """Serialize learning data to JSON format."""
         return {
             "plugin_usage_patterns": dict(self.plugin_usage_patterns),
-            "task_plugin_mapping": {
-                k: list(v) for k, v in self.task_plugin_mapping.items()
-            },
+            "task_plugin_mapping": {k: list(v) for k, v in self.task_plugin_mapping.items()},
             "context_triggers": self.context_triggers,
             "learning_data": self.learning_data,
             "last_update": datetime.now().isoformat(),
@@ -133,9 +129,7 @@ class ContextAwareSurfacing:
 
     def _deserialize_learning_data(self, data: Dict):
         """Deserialize learning data from JSON format."""
-        self.plugin_usage_patterns = defaultdict(
-            list, data.get("plugin_usage_patterns", {})
-        )
+        self.plugin_usage_patterns = defaultdict(list, data.get("plugin_usage_patterns", {}))
         self.task_plugin_mapping = defaultdict(
             set, {k: set(v) for k, v in data.get("task_plugin_mapping", {}).items()}
         )
@@ -229,9 +223,7 @@ class ContextAwareSurfacing:
                         "plugin": plugin_name,
                         "score": score,
                         "confidence": min(100, score * 10),
-                        "reason": self._generate_recommendation_reason(
-                            plugin_name, context
-                        ),
+                        "reason": self._generate_recommendation_reason(plugin_name, context),
                         "category": self._get_plugin_category(plugin_name),
                     }
                 )
@@ -258,9 +250,7 @@ class ContextAwareSurfacing:
         ]
         return "|".join(key_parts)
 
-    def _score_by_file_context(
-        self, context: ContextSnapshot, plugin_scores: Dict[str, float]
-    ):
+    def _score_by_file_context(self, context: ContextSnapshot, plugin_scores: Dict[str, float]):
         """Score plugins based on file context."""
         for file_path in context.active_files:
             # Extract file extension
@@ -277,9 +267,7 @@ class ContextAwareSurfacing:
                     for plugin in plugins:
                         plugin_scores[plugin] += 2.0
 
-    def _score_by_task_context(
-        self, context: ContextSnapshot, plugin_scores: Dict[str, float]
-    ):
+    def _score_by_task_context(self, context: ContextSnapshot, plugin_scores: Dict[str, float]):
         """Score plugins based on current task context."""
         task_lower = context.current_task.lower()
 
@@ -300,9 +288,7 @@ class ContextAwareSurfacing:
             for plugin in self.task_plugin_mapping[context.current_task]:
                 plugin_scores[plugin] += 4.0
 
-    def _score_by_usage_patterns(
-        self, context: ContextSnapshot, plugin_scores: Dict[str, float]
-    ):
+    def _score_by_usage_patterns(self, context: ContextSnapshot, plugin_scores: Dict[str, float]):
         """Score plugins based on historical usage patterns."""
         current_hour = datetime.now().hour
         current_day = datetime.now().weekday()
@@ -332,15 +318,12 @@ class ContextAwareSurfacing:
                 same_day_usage = [
                     usage
                     for usage in recent_usage
-                    if datetime.fromisoformat(usage["timestamp"]).weekday()
-                    == current_day
+                    if datetime.fromisoformat(usage["timestamp"]).weekday() == current_day
                 ]
                 if same_day_usage:
                     plugin_scores[plugin] += len(same_day_usage) * 0.2
 
-    def _score_by_recent_activity(
-        self, context: ContextSnapshot, plugin_scores: Dict[str, float]
-    ):
+    def _score_by_recent_activity(self, context: ContextSnapshot, plugin_scores: Dict[str, float]):
         """Score plugins based on recent activity."""
         # Boost plugins used recently
         for plugin_name in context.recent_plugins:
@@ -352,9 +335,7 @@ class ContextAwareSurfacing:
             for plugin_name in recent_context.recent_plugins:
                 plugin_scores[plugin_name] += 0.5
 
-    def _score_by_success_metrics(
-        self, context: ContextSnapshot, plugin_scores: Dict[str, float]
-    ):
+    def _score_by_success_metrics(self, context: ContextSnapshot, plugin_scores: Dict[str, float]):
         """Score plugins based on success metrics."""
         for plugin_name, metrics in context.success_metrics.items():
             success_rate = metrics.get("success_rate", 0.5)
@@ -367,9 +348,7 @@ class ContextAwareSurfacing:
             if execution_time > 5.0:
                 plugin_scores[plugin_name] -= 0.5
 
-    def _generate_recommendation_reason(
-        self, plugin_name: str, context: ContextSnapshot
-    ) -> str:
+    def _generate_recommendation_reason(self, plugin_name: str, context: ContextSnapshot) -> str:
         """Generate human-readable reason for recommendation."""
         reasons = []
 
@@ -435,11 +414,7 @@ class ContextAwareSurfacing:
             "execution_time": execution_time,
             "file_count": len(context.active_files),
             "file_types": list(
-                set(
-                    "." + f.split(".")[-1].lower()
-                    for f in context.active_files
-                    if "." in f
-                )
+                set("." + f.split(".")[-1].lower() for f in context.active_files if "." in f)
             ),
         }
 
@@ -448,9 +423,7 @@ class ContextAwareSurfacing:
 
         # Limit history size
         if len(self.plugin_usage_patterns[plugin_name]) > 100:
-            self.plugin_usage_patterns[plugin_name] = self.plugin_usage_patterns[
-                plugin_name
-            ][-100:]
+            self.plugin_usage_patterns[plugin_name] = self.plugin_usage_patterns[plugin_name][-100:]
 
         # Map task to plugin
         if context.current_task:
@@ -531,9 +504,7 @@ class ContextAwareSurfacing:
         # Success rates
         for plugin, data in self.learning_data.items():
             if data["total_uses"] > 0:
-                insights["success_rates"][plugin] = (
-                    data["success_count"] / data["total_uses"]
-                )
+                insights["success_rates"][plugin] = data["success_count"] / data["total_uses"]
 
         return insights
 
@@ -555,9 +526,7 @@ class ContextAwareSurfacing:
 context_surfacing = ContextAwareSurfacing()
 
 
-def get_recommendations(
-    context: Optional[ContextSnapshot] = None, limit: int = 10
-) -> List[Dict]:
+def get_recommendations(context: Optional[ContextSnapshot] = None, limit: int = 10) -> List[Dict]:
     """Convenience function for getting context-aware recommendations."""
     return context_surfacing.get_context_recommendations(context, limit)
 

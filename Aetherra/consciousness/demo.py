@@ -89,9 +89,7 @@ async def run_consciousness_demo():
             print("🌐 Collective Intelligence Metrics:")
             print(f"  • Total Agents: {metrics.total_agents}")
             print(f"  • Active Agents: {metrics.active_agents}")
-            print(
-                f"  • Collective Consciousness: {metrics.collective_consciousness:.2f}"
-            )
+            print(f"  • Collective Consciousness: {metrics.collective_consciousness:.2f}")
             print(f"  • Emergent Behaviors: {metrics.emergent_behaviors_detected}")
             print()
 
@@ -124,22 +122,14 @@ async def run_consciousness_demo():
 
         if orchestrator.lyrixa_consciousness:
             final_lyrixa_state = orchestrator.lyrixa_consciousness.get_current_state()
-            print(
-                f"  • Lyrixa Consciousness: {final_lyrixa_state['consciousness_level']:.2f}"
-            )
-            print(
-                f"  • Lyrixa Emotional State: {final_lyrixa_state['emotional_state']}"
-            )
+            print(f"  • Lyrixa Consciousness: {final_lyrixa_state['consciousness_level']:.2f}")
+            print(f"  • Lyrixa Emotional State: {final_lyrixa_state['emotional_state']}")
             print(f"  • Lyrixa Reflections: {final_lyrixa_state['total_reflections']}")
 
         if orchestrator.meta_layer_core:
             final_metrics = orchestrator.meta_layer_core.get_collective_metrics()
-            print(
-                f"  • Collective Consciousness: {final_metrics.collective_consciousness:.2f}"
-            )
-            print(
-                f"  • Emergent Behaviors: {final_metrics.emergent_behaviors_detected}"
-            )
+            print(f"  • Collective Consciousness: {final_metrics.collective_consciousness:.2f}")
+            print(f"  • Emergent Behaviors: {final_metrics.emergent_behaviors_detected}")
 
         print()
 

@@ -129,7 +129,7 @@ def sharded_embedding_bag(types, args, kwargs, pg):
         )
         weight.local_shards()[0].tensor = local_shard
         return output
-    elif sharding_dim == 0:
+    if sharding_dim == 0:
         return _handle_row_wise_sharding(
             input,
             world_size,
@@ -144,10 +144,9 @@ def sharded_embedding_bag(types, args, kwargs, pg):
             rank,
             pg,
         )
-    else:
-        raise RuntimeError(
-            f"nn.EmbeddingBag weight sharded on dim {sharding_dim} not supported!"
-        )
+    raise RuntimeError(
+        f"nn.EmbeddingBag weight sharded on dim {sharding_dim} not supported!"
+    )
 
 
 def _validate_embedding_bag_param(args, kwargs):

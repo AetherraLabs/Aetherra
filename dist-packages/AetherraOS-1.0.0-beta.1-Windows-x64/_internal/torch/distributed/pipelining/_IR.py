@@ -4,20 +4,21 @@ import copy
 import logging
 import operator
 from collections import defaultdict
+from collections.abc import Callable
 from enum import Enum
 from inspect import Parameter, Signature, signature
 from types import MethodType
-from typing import Any, Callable, Optional, Union
+from typing import Any, Union
 
 import torch
 import torch.fx as fx
 from torch.distributed import ProcessGroup
 from torch.export import ExportedProgram
 from torch.export.unflatten import (
+    InterpreterModule,
     _assign_attr,
     _AttrKind,
     _sink_params,
-    InterpreterModule,
 )
 from torch.fx.node import map_aggregate
 from torch.fx.passes.split_module import split_module
@@ -26,7 +27,6 @@ from ._backward import _null_coalesce_accumulate, stage_backward
 from ._unflatten import _outline_submodules
 from ._utils import PipeInfo
 from .stage import _PipelineStage
-
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ def _find_loss_from_output_and_spec(output_val, spec_val):
                 f"Output value {output_val} must match length of loss specification "
                 f"{spec_val}"
             )
-        for out, spec in zip(output_val, spec_val):
+        for out, spec in zip(output_val, spec_val, strict=False):
             loss_val = _find_loss_from_output_and_spec(out, spec)
             if loss_val is not None:
                 return loss_val
@@ -154,7 +154,7 @@ def _insert_stage_symbolic_backward(
     # We will only emit backward operations for nodes that can contribute
     # to the specified loss value.
     live_nodes = {loss_node: None}
-    val_to_grad: dict[fx.Node, Optional[fx.Node]] = {loss_node: None}
+    val_to_grad: dict[fx.Node, fx.Node | None] = {loss_node: None}
 
     def assign_or_accumulate_grad(forward_node, grad_value):
         if forward_node in val_to_grad and forward_node.op != "placeholder":
@@ -175,10 +175,10 @@ def _insert_stage_symbolic_backward(
             fx.node.map_arg(node.args, add_to_live_nodes)
             fx.node.map_arg(node.kwargs, add_to_live_nodes)
             if node.op == "call_module":
-                output_grads: Union[tuple[Optional[fx.Node], ...], Optional[fx.Node]]
+                output_grads: tuple[fx.Node | None, ...] | fx.Node | None
                 if node in tuples:
                     stage_output = tuples[node]
-                    output_grads = tuple(val_to_grad.get(n, None) for n in tuples[node])
+                    output_grads = tuple(val_to_grad.get(n) for n in tuples[node])
                     outputs_with_grads_idxs = [
                         i for i, n in enumerate(tuples[node]) if n in live_nodes
                     ]
@@ -374,8 +374,7 @@ class DetachExecutor(fx.Interpreter):
                     new_val = a.detach().requires_grad_(True)
                     self.value_remap[a] = new_val
                 return self.value_remap[a]
-            else:
-                return a
+            return a
 
         """
         def dont_traverse_size(a):
@@ -436,8 +435,7 @@ class _LinearNodeList:
         def ref_to_node(arg):
             if isinstance(arg, _NodeReference):
                 return ref_str_to_node[arg.name]
-            else:
-                return arg
+            return arg
 
         for node in self.serialize_node_list:
             node_args = map_aggregate(node.args, ref_to_node)
@@ -666,11 +664,10 @@ class Pipe(torch.nn.Module):
     def _from_traced(
         mod: torch.nn.Module,
         exported_program: ExportedProgram,
-        multi_use_param_spec: Optional[MultiUseParamSpec] = None,
+        multi_use_param_spec: MultiUseParamSpec | None = None,
         output_loss_value_spec=None,
-        split_policy: Optional[
-            Callable[[torch.fx.GraphModule], torch.fx.GraphModule]
-        ] = None,
+        split_policy: Callable[[torch.fx.GraphModule], torch.fx.GraphModule]
+        | None = None,
     ):
         """
         Additionally, the ``output_loss_value_spec`` value can be specified to disambiguate
@@ -998,7 +995,7 @@ class Pipe(torch.nn.Module):
     def _trace_with_export(
         mod: torch.nn.Module,
         example_args: tuple[Any, ...],
-        example_kwargs: Optional[dict[str, Any]] = None,
+        example_kwargs: dict[str, Any] | None = None,
     ) -> ExportedProgram:
         logger.info("Tracing model ...")
         try:
@@ -1020,8 +1017,8 @@ class Pipe(torch.nn.Module):
     def from_tracing(
         mod: torch.nn.Module,
         example_args: tuple[Any, ...],
-        example_kwargs: Optional[dict[str, Any]] = None,
-        split_policy: Optional[Callable[[fx.GraphModule], fx.GraphModule]] = None,
+        example_kwargs: dict[str, Any] | None = None,
+        split_policy: Callable[[fx.GraphModule], fx.GraphModule] | None = None,
     ):
         # If a param will be used in multiple pipeline stages, we default the strategy to REPLICATE'ing the param across
         # stages instead of TRANSMIT'ting it
@@ -1108,7 +1105,7 @@ class Pipe(torch.nn.Module):
         self,
         stage_index: int,
         device: torch.device,
-        group: Optional[ProcessGroup] = None,
+        group: ProcessGroup | None = None,
     ) -> _PipelineStage:
         """
         Create a `PipelineStage` given a stage index and distributed group.
@@ -1197,9 +1194,9 @@ def annotate_split_points(mod: torch.nn.Module, spec: dict[str, SplitPoint]):
 def pipeline(
     module: torch.nn.Module,
     mb_args: tuple[Any, ...],
-    mb_kwargs: Optional[dict[str, Any]] = None,
-    split_spec: Optional[dict[str, SplitPoint]] = None,
-    split_policy: Optional[Callable[[fx.GraphModule], fx.GraphModule]] = None,
+    mb_kwargs: dict[str, Any] | None = None,
+    split_spec: dict[str, SplitPoint] | None = None,
+    split_policy: Callable[[fx.GraphModule], fx.GraphModule] | None = None,
 ) -> Pipe:
     """
     Split a module based on a specification.
@@ -1236,11 +1233,10 @@ def pipeline(
             example_args=mb_args,
             example_kwargs=mb_kwargs,
         )
-    else:
-        # Use split policy
-        return Pipe.from_tracing(
-            mod=module,
-            example_args=mb_args,
-            example_kwargs=mb_kwargs,
-            split_policy=split_policy,
-        )
+    # Use split policy
+    return Pipe.from_tracing(
+        mod=module,
+        example_args=mb_args,
+        example_kwargs=mb_kwargs,
+        split_policy=split_policy,
+    )
