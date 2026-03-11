@@ -81,16 +81,21 @@ Completed now:
   - `test_phase5_validation_harness_standalone.py` (5/5 passing)
   - Includes repeat-run mode (`--runs`) and run pass-rate evidence in JSON output
   - Hardened subprocess execution for Windows (`PYTHONIOENCODING=utf-8`, `PYTHONUTF8=1`) to avoid cp1252 crashes in child test runs
+  - Interruption-resilient runner handling for subprocess timeout/interrupt/runner exceptions
   - 10-run quick-profile artifact generated: `phase5_validation_report_quick_runs10.json` (status `pass`, run_pass_rate `1.0`)
+- Added Phase 5 artifact rollup utility:
+  - `tools/phase5_report_rollup.py`
+  - `test_phase5_report_rollup_standalone.py` (3/3 passing)
+  - Produces aggregate pass-rate summary from one or more harness report files
 
 Remaining highest-priority roadmap gaps:
 
 1. Expand Phase 3 and Phase 4 tests toward roadmap breadth (decision quality/guardrails/plugin sandboxing).
 2. Extend Phase 5 validation harness from quick profile to roadmap-complete end-to-end scenarios.
-3. Add artifact rollup/summary generation for formal gate bundles.
+3. Wire rollup output into formal gate artifact bundle workflow.
 
 ## Next Execution Block
 
 1. Expand Phase 5 harness with scenario mapping for all roadmap Week 10 integration flows.
-2. Add artifact rollup script for generated harness reports.
+2. Add bundle task that runs harness + rollup in one command and stores artifacts.
 3. Commit next block as `test(phase-5): expand validation scenarios and stability evidence`.
