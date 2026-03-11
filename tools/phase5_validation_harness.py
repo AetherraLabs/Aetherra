@@ -50,7 +50,22 @@ def build_plan(profile: str = "quick") -> list[Scenario]:
         ),
     ]
 
-    full = quick + [
+    # Full profile extends quick with broader scenario coverage aligned to
+    # roadmap Week 10 integration intent.
+    full = [
+        Scenario(
+            name="reflector-codegen-apply-chain",
+            command=[sys.executable, "test_orchestrator_task5_standalone.py"],
+        ),
+        Scenario(
+            name="codegen-impact-approval-chain",
+            command=[sys.executable, "test_analysis_engine_standalone.py"],
+        ),
+        Scenario(
+            name="code-verification-gates",
+            command=[sys.executable, "test_verification_engine_standalone.py"],
+        ),
+    ] + quick + [
         Scenario(
             name="phase3-core-modules",
             command=[sys.executable, "test_phase3_modules_standalone.py"],
