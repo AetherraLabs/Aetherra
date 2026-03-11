@@ -110,7 +110,7 @@ def _build_trend(
     cur_categories = {
         str(row.get("category")): float(row.get("observed_pass_rate", 0.0) or 0.0)
         for row in list(
-            ((current_payload.get("categories") or {}).get("results", []) or [])
+            (current_payload.get("categories") or {}).get("results", []) or []
         )
         if row.get("category")
     }
@@ -192,6 +192,9 @@ def bundle_artifacts(
     min_run_pass_rate: float | None = None,
     scenario_min_pass_rate: dict[str, float] | None = None,
     allowed_scenario_failures: int | None = None,
+    performance_min_pass_rate: float | None = None,
+    performance_max_avg_duration_sec: float | None = None,
+    performance_max_scenario_duration_sec: float | None = None,
     emit_release_manifest: bool = False,
     release_manifest_version: str | None = None,
 ) -> dict[str, Any]:
@@ -223,6 +226,18 @@ def bundle_artifacts(
         "--output",
         str(rollup_path),
     ]
+    if performance_min_pass_rate is not None:
+        rollup_cmd += ["--performance-min-pass-rate", str(performance_min_pass_rate)]
+    if performance_max_avg_duration_sec is not None:
+        rollup_cmd += [
+            "--performance-max-avg-duration-sec",
+            str(performance_max_avg_duration_sec),
+        ]
+    if performance_max_scenario_duration_sec is not None:
+        rollup_cmd += [
+            "--performance-max-scenario-duration-sec",
+            str(performance_max_scenario_duration_sec),
+        ]
     rollup = _run(rollup_cmd, repo_root)
 
     report_data: dict[str, Any] = {}
@@ -290,6 +305,8 @@ def bundle_artifacts(
         )
     scenario_gates_passed = all(row["passed"] for row in scenario_gate_rows)
     category_rollup = _build_category_rollup(report_data)
+    performance_thresholds = (rollup_data.get("performance_thresholds") or {})
+    performance_thresholds_passed = bool(performance_thresholds.get("passed", True))
 
     payload = {
         "created_at": datetime.utcnow().isoformat(),
@@ -315,7 +332,14 @@ def bundle_artifacts(
             "observed_scenario_failures": scenario_failures,
             "budget_passed": budget_passed,
             "category_results": category_rollup["results"],
-            "passed": gate_passed and scenario_gates_passed and budget_passed,
+            "performance_thresholds": performance_thresholds,
+            "performance_thresholds_passed": performance_thresholds_passed,
+            "passed": (
+                gate_passed
+                and scenario_gates_passed
+                and budget_passed
+                and performance_thresholds_passed
+            ),
         },
         "categories": category_rollup,
     }
@@ -387,6 +411,11 @@ def _parse_args() -> argparse.Namespace:
         default=[],
         help="Scenario threshold in the form <scenario_name>=<rate>",
     )
+    p.add_argument("--performance-min-pass-rate", type=float, default=None)
+    p.add_argument("--performance-max-avg-duration-sec", type=float, default=None)
+    p.add_argument(
+        "--performance-max-scenario-duration-sec", type=float, default=None
+    )
     p.add_argument(
         "--emit-release-manifest",
         action="store_true",
@@ -418,6 +447,9 @@ def main() -> int:
             "min_run_pass_rate": args.min_run_pass_rate,
             "allowed_scenario_failures": args.allowed_scenario_failures,
             "scenario_min_pass_rate": args.scenario_min_pass_rate,
+            "performance_min_pass_rate": args.performance_min_pass_rate,
+            "performance_max_avg_duration_sec": args.performance_max_avg_duration_sec,
+            "performance_max_scenario_duration_sec": args.performance_max_scenario_duration_sec,
             "emit_release_manifest": args.emit_release_manifest,
             "release_manifest_version": args.release_manifest_version,
             "stamp": args.stamp,
@@ -455,6 +487,9 @@ def main() -> int:
         min_run_pass_rate=args.min_run_pass_rate,
         scenario_min_pass_rate=scenario_thresholds,
         allowed_scenario_failures=args.allowed_scenario_failures,
+        performance_min_pass_rate=args.performance_min_pass_rate,
+        performance_max_avg_duration_sec=args.performance_max_avg_duration_sec,
+        performance_max_scenario_duration_sec=args.performance_max_scenario_duration_sec,
         emit_release_manifest=args.emit_release_manifest,
         release_manifest_version=args.release_manifest_version,
     )

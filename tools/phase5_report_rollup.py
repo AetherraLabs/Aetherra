@@ -19,6 +19,18 @@ def _load_report(path: str) -> dict[str, Any]:
     return cast(dict[str, Any], payload)
 
 
+def _load_optional_json(path: str | None) -> dict[str, Any] | None:
+    if not path:
+        return None
+    try:
+        payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    if isinstance(payload, dict):
+        return cast(dict[str, Any], payload)
+    return None
+
+
 def _rollup_categories(reports: list[dict[str, Any]]) -> dict[str, Any]:
     categories: dict[str, dict[str, Any]] = {}
     for report in reports:
@@ -65,7 +77,9 @@ def _rollup_categories(reports: list[dict[str, Any]]) -> dict[str, Any]:
                 "failed": int(summary["failed"]),
                 "total": total,
                 "aggregate_pass_rate": round((passed / total) if total else 0.0, 4),
-                "status": "pass" if int(summary["failed"]) == 0 and total > 0 else "fail",
+                "status": "pass"
+                if int(summary["failed"]) == 0 and total > 0
+                else "fail",
                 "scenarios": sorted(s for s in summary["scenarios"] if s),
             }
         )
@@ -95,7 +109,9 @@ def _build_performance_evidence(reports: list[dict[str, Any]]) -> dict[str, Any]
             duration = float(row.get("duration_sec", 0.0) or 0.0)
             metric["samples"] = int(metric["samples"]) + 1
             metric["duration_sum_sec"] = float(metric["duration_sum_sec"]) + duration
-            metric["max_duration_sec"] = max(float(metric["max_duration_sec"]), duration)
+            metric["max_duration_sec"] = max(
+                float(metric["max_duration_sec"]), duration
+            )
             metric["min_duration_sec"] = (
                 duration
                 if metric["min_duration_sec"] is None
@@ -119,8 +135,12 @@ def _build_performance_evidence(reports: list[dict[str, Any]]) -> dict[str, Any]
             {
                 "name": name,
                 "samples": samples,
-                "pass_rate": round((int(metric["passed"]) / samples) if samples else 0.0, 4),
-                "avg_duration_sec": round((duration_sum / samples) if samples else 0.0, 4),
+                "pass_rate": round(
+                    (int(metric["passed"]) / samples) if samples else 0.0, 4
+                ),
+                "avg_duration_sec": round(
+                    (duration_sum / samples) if samples else 0.0, 4
+                ),
                 "min_duration_sec": round(float(metric["min_duration_sec"] or 0.0), 4),
                 "max_duration_sec": round(float(metric["max_duration_sec"]), 4),
             }
@@ -129,13 +149,150 @@ def _build_performance_evidence(reports: list[dict[str, Any]]) -> dict[str, Any]
     return {
         "scenario_count": len(scenarios),
         "samples": total_samples,
-        "avg_duration_sec": round((total_duration / total_samples) if total_samples else 0.0, 4),
+        "avg_duration_sec": round(
+            (total_duration / total_samples) if total_samples else 0.0, 4
+        ),
         "max_duration_sec": round(max_duration, 4),
         "scenarios": scenarios,
     }
 
 
-def rollup_reports(paths: list[str]) -> dict[str, Any]:
+def _evaluate_performance_thresholds(
+    performance_evidence: dict[str, Any],
+    min_pass_rate: float | None = None,
+    max_avg_duration_sec: float | None = None,
+    max_scenario_duration_sec: float | None = None,
+) -> dict[str, Any]:
+    rows: list[dict[str, Any]] = []
+
+    aggregate_avg = float(performance_evidence.get("avg_duration_sec", 0.0) or 0.0)
+    if max_avg_duration_sec is not None:
+        rows.append(
+            {
+                "name": "performance.avg_duration_sec",
+                "observed": aggregate_avg,
+                "threshold": float(max_avg_duration_sec),
+                "operator": "<=",
+                "passed": aggregate_avg <= float(max_avg_duration_sec),
+            }
+        )
+
+    max_scenario_observed = float(
+        max(
+            [
+                float(row.get("max_duration_sec", 0.0) or 0.0)
+                for row in list(performance_evidence.get("scenarios", []) or [])
+            ]
+            or [0.0]
+        )
+    )
+    if max_scenario_duration_sec is not None:
+        rows.append(
+            {
+                "name": "performance.max_scenario_duration_sec",
+                "observed": max_scenario_observed,
+                "threshold": float(max_scenario_duration_sec),
+                "operator": "<=",
+                "passed": max_scenario_observed <= float(max_scenario_duration_sec),
+            }
+        )
+
+    min_scenario_pass_rate = float(
+        min(
+            [
+                float(row.get("pass_rate", 0.0) or 0.0)
+                for row in list(performance_evidence.get("scenarios", []) or [])
+            ]
+            or [0.0]
+        )
+    )
+    if min_pass_rate is not None:
+        rows.append(
+            {
+                "name": "performance.min_scenario_pass_rate",
+                "observed": min_scenario_pass_rate,
+                "threshold": float(min_pass_rate),
+                "operator": ">=",
+                "passed": min_scenario_pass_rate >= float(min_pass_rate),
+            }
+        )
+
+    return {
+        "min_pass_rate": min_pass_rate,
+        "max_avg_duration_sec": max_avg_duration_sec,
+        "max_scenario_duration_sec": max_scenario_duration_sec,
+        "checks": rows,
+        "passed": all(bool(row.get("passed", False)) for row in rows),
+    }
+
+
+def _build_grouped_trends(
+    previous_rollup: dict[str, Any] | None,
+    current_categories: dict[str, Any],
+    current_performance: dict[str, Any],
+) -> dict[str, Any]:
+    if not previous_rollup:
+        return {
+            "has_previous": False,
+            "category_deltas": [],
+            "performance_deltas": [],
+        }
+
+    prev_categories = {
+        str(row.get("category")): float(row.get("aggregate_pass_rate", 0.0) or 0.0)
+        for row in list((previous_rollup.get("categories") or {}).get("results", []) or [])
+        if row.get("category")
+    }
+    cur_categories = {
+        str(row.get("category")): float(row.get("aggregate_pass_rate", 0.0) or 0.0)
+        for row in list((current_categories.get("results") or []) or [])
+        if row.get("category")
+    }
+
+    category_deltas: list[dict[str, Any]] = []
+    for name in sorted(set(prev_categories) | set(cur_categories)):
+        category_deltas.append(
+            {
+                "category": name,
+                "previous": prev_categories.get(name),
+                "current": cur_categories.get(name),
+                "delta": (
+                    None
+                    if name not in prev_categories or name not in cur_categories
+                    else round(cur_categories[name] - prev_categories[name], 4)
+                ),
+            }
+        )
+
+    prev_perf = previous_rollup.get("performance_evidence") or {}
+    perf_rows = [
+        ("avg_duration_sec", float(prev_perf.get("avg_duration_sec", 0.0) or 0.0), float(current_performance.get("avg_duration_sec", 0.0) or 0.0)),
+        ("max_duration_sec", float(prev_perf.get("max_duration_sec", 0.0) or 0.0), float(current_performance.get("max_duration_sec", 0.0) or 0.0)),
+    ]
+    performance_deltas = [
+        {
+            "name": name,
+            "previous": prev,
+            "current": cur,
+            "delta": round(cur - prev, 4),
+        }
+        for name, prev, cur in perf_rows
+    ]
+
+    return {
+        "has_previous": True,
+        "category_deltas": category_deltas,
+        "performance_deltas": performance_deltas,
+    }
+
+
+def rollup_reports(
+    paths: list[str],
+    previous_rollup: dict[str, Any] | None = None,
+    performance_min_pass_rate: float | None = None,
+    performance_max_avg_duration_sec: float | None = None,
+    performance_max_scenario_duration_sec: float | None = None,
+) -> dict[str, Any]:
     reports: list[dict[str, Any]] = []
     for path in paths:
         try:
@@ -177,6 +334,17 @@ def rollup_reports(paths: list[str]) -> dict[str, Any]:
 
     category_rollup = _rollup_categories(reports)
     performance_evidence = _build_performance_evidence(reports)
+    performance_thresholds = _evaluate_performance_thresholds(
+        performance_evidence,
+        min_pass_rate=performance_min_pass_rate,
+        max_avg_duration_sec=performance_max_avg_duration_sec,
+        max_scenario_duration_sec=performance_max_scenario_duration_sec,
+    )
+    grouped_trends = _build_grouped_trends(
+        previous_rollup=previous_rollup,
+        current_categories=category_rollup,
+        current_performance=performance_evidence,
+    )
 
     return {
         "summary": {
@@ -189,6 +357,8 @@ def rollup_reports(paths: list[str]) -> dict[str, Any]:
         },
         "categories": category_rollup,
         "performance_evidence": performance_evidence,
+        "performance_thresholds": performance_thresholds,
+        "grouped_trends": grouped_trends,
         "reports": by_report,
     }
 
@@ -200,6 +370,16 @@ def _parse_args() -> argparse.Namespace:
         nargs="+",
         default=["phase5_validation_report*.json"],
         help="Input files or glob patterns",
+    )
+    p.add_argument(
+        "--previous-rollup",
+        default=None,
+        help="Optional prior rollup JSON for grouped trend deltas",
+    )
+    p.add_argument("--performance-min-pass-rate", type=float, default=None)
+    p.add_argument("--performance-max-avg-duration-sec", type=float, default=None)
+    p.add_argument(
+        "--performance-max-scenario-duration-sec", type=float, default=None
     )
     p.add_argument("--output", default="phase5_validation_rollup.json")
     return p.parse_args()
@@ -230,12 +410,22 @@ def main() -> int:
         print("No input reports found")
         return 1
 
-    payload = rollup_reports(inputs)
+    previous_rollup = _load_optional_json(args.previous_rollup)
+
+    payload = rollup_reports(
+        inputs,
+        previous_rollup=previous_rollup,
+        performance_min_pass_rate=args.performance_min_pass_rate,
+        performance_max_avg_duration_sec=args.performance_max_avg_duration_sec,
+        performance_max_scenario_duration_sec=args.performance_max_scenario_duration_sec,
+    )
     Path(args.output).write_text(json.dumps(payload, indent=2), encoding="utf-8")
     summary = payload["summary"]
+    threshold_passed = bool((payload.get("performance_thresholds") or {}).get("passed", True))
     print(
         f"Rollup: {summary['passing_reports']}/{summary['reports']} reports passing, "
-        f"aggregate run pass-rate {summary['aggregate_run_pass_rate']}"
+        f"aggregate run pass-rate {summary['aggregate_run_pass_rate']}, "
+        f"performance_thresholds_passed={threshold_passed}"
     )
     return 0
 

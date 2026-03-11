@@ -87,7 +87,7 @@ class TestPhase5ReportRollup(unittest.TestCase):
                             "total": 1,
                             "status": "pass",
                             "scenarios": ["decision-governor-learning-chain"],
-                        }
+                        },
                     ],
                     "scenarios": [
                         {
@@ -114,7 +114,9 @@ class TestPhase5ReportRollup(unittest.TestCase):
             )
             self.assertIn("categories", out)
             perf = next(
-                row for row in out["categories"]["results"] if row["category"] == "performance"
+                row
+                for row in out["categories"]["results"]
+                if row["category"] == "performance"
             )
             self.assertEqual(perf["reports"], 2)
             self.assertEqual(perf["total"], 4)
@@ -122,6 +124,99 @@ class TestPhase5ReportRollup(unittest.TestCase):
             self.assertIn("performance_evidence", out)
             self.assertEqual(out["performance_evidence"]["samples"], 4)
             self.assertEqual(out["performance_evidence"]["scenario_count"], 2)
+            self.assertIn("performance_thresholds", out)
+            self.assertTrue(out["performance_thresholds"]["passed"])
+
+    def test_rollup_performance_threshold_gate_fails(self):
+        with tempfile.TemporaryDirectory() as td:
+            p1 = Path(td) / "r1.json"
+            self._write(
+                p1,
+                {
+                    "status": "pass",
+                    "runs": 1,
+                    "full_pass_runs": 1,
+                    "run_pass_rate": 1.0,
+                    "failed": 0,
+                    "total": 3,
+                    "category_summaries": [
+                        {
+                            "category": "performance",
+                            "passed": 1,
+                            "failed": 0,
+                            "total": 1,
+                            "status": "pass",
+                            "scenarios": ["learning-quality-and-latency"],
+                        }
+                    ],
+                    "scenarios": [
+                        {
+                            "name": "learning-quality-and-latency",
+                            "category": "performance",
+                            "ok": True,
+                            "duration_sec": 0.2,
+                        }
+                    ],
+                },
+            )
+
+            out = rollup_reports(
+                [str(p1)],
+                performance_max_avg_duration_sec=0.001,
+                performance_max_scenario_duration_sec=0.001,
+                performance_min_pass_rate=1.0,
+            )
+            self.assertFalse(out["performance_thresholds"]["passed"])
+            self.assertEqual(len(out["performance_thresholds"]["checks"]), 3)
+
+    def test_rollup_grouped_trends_against_previous_rollup(self):
+        with tempfile.TemporaryDirectory() as td:
+            p1 = Path(td) / "r1.json"
+            self._write(
+                p1,
+                {
+                    "status": "pass",
+                    "runs": 1,
+                    "full_pass_runs": 1,
+                    "run_pass_rate": 1.0,
+                    "failed": 0,
+                    "total": 3,
+                    "category_summaries": [
+                        {
+                            "category": "performance",
+                            "passed": 1,
+                            "failed": 0,
+                            "total": 1,
+                            "status": "pass",
+                            "scenarios": ["learning-quality-and-latency"],
+                        }
+                    ],
+                    "scenarios": [
+                        {
+                            "name": "learning-quality-and-latency",
+                            "category": "performance",
+                            "ok": True,
+                            "duration_sec": 0.2,
+                        }
+                    ],
+                },
+            )
+
+            previous = {
+                "categories": {
+                    "results": [
+                        {"category": "performance", "aggregate_pass_rate": 0.5}
+                    ]
+                },
+                "performance_evidence": {
+                    "avg_duration_sec": 0.5,
+                    "max_duration_sec": 0.8,
+                },
+            }
+            out = rollup_reports([str(p1)], previous_rollup=previous)
+            self.assertTrue(out["grouped_trends"]["has_previous"])
+            self.assertTrue(out["grouped_trends"]["category_deltas"])
+            self.assertTrue(out["grouped_trends"]["performance_deltas"])
 
     def test_rollup_handles_bad_json(self):
         with tempfile.TemporaryDirectory() as td:
@@ -190,6 +285,8 @@ class TestPhase5ReportRollup(unittest.TestCase):
             self.assertEqual(payload["summary"]["reports"], 1)
             self.assertIn("categories", payload)
             self.assertIn("performance_evidence", payload)
+            self.assertIn("performance_thresholds", payload)
+            self.assertIn("grouped_trends", payload)
 
 
 if __name__ == "__main__":

@@ -99,13 +99,16 @@ Completed now:
   - 10-run quick-profile artifact generated: `phase5_validation_report_quick_runs10.json` (status `pass`, run_pass_rate `1.0`)
 - Added Phase 5 artifact rollup utility:
   - `tools/phase5_report_rollup.py`
-  - `test_phase5_report_rollup_standalone.py` (3/3 passing)
+  - `test_phase5_report_rollup_standalone.py` (5/5 passing)
   - Produces aggregate pass-rate summary from one or more harness report files
   - Propagates grouped category rollups across multi-report inputs
   - Emits performance evidence summaries from `performance` scenario durations
+  - Adds threshold evaluation over performance evidence (`min pass-rate`,
+    `max average duration`, `max scenario duration`)
+  - Adds grouped historical trend deltas against prior rollup artifacts
 - Added Phase 5 bundle utility:
   - `tools/phase5_bundle_artifacts.py`
-  - `test_phase5_bundle_artifacts_standalone.py` (8/8 passing)
+  - `test_phase5_bundle_artifacts_standalone.py` (9/9 passing)
   - Runs harness + rollup in one command and writes bundled artifacts under a target directory
   - Supports threshold gates via `--min-run-pass-rate` and writes gate outcomes in bundle summary metadata
   - Supports per-scenario threshold gates via `--scenario-min-pass-rate <scenario>=<rate>`
@@ -114,6 +117,7 @@ Completed now:
   - Adds historical trend deltas against prior bundle summaries (run-pass-rate delta + scenario-level deltas)
   - Integrates optional release-manifest emission/signing path via `--emit-release-manifest [--release-manifest-version <v>]`
   - Adds bundle-level category rollups and category trend deltas so failures are grouped by gate type
+  - Enforces rollup performance thresholds as part of bundle gates
 - Added VS Code tasks for bundle generation:
   - `Phase5 Bundle Artifacts (Quick x10)`
   - `Phase5 Bundle Artifacts (Full x3)`
@@ -142,15 +146,22 @@ Completed now:
 - Generated grouped multi-report rollup evidence artifact:
   - `.aetherra/reports/phase5/phase5_rollup_grouped_performance.json`
   - Includes aggregate category results and performance duration evidence
+- Generated grouped multi-report threshold+trend rollup artifact:
+  - `.aetherra/reports/phase5/phase5_rollup_grouped_thresholds_trends.json`
+  - Includes performance threshold checks and grouped trend deltas (`has_previous=true`)
+- Generated quick-profile performance-threshold bundle artifact:
+  - `.aetherra/reports/phase5/phase5_bundle_quick_performance_thresholds.json`
+  - Result: `harness_ok=true`, `rollup_ok=true`, `gates_ok=true`
+  - Includes rollup-derived performance threshold gates in bundle summary
 
 Remaining highest-priority roadmap gaps:
 
 1. Expand Phase 3 and Phase 4 tests toward roadmap breadth (decision quality/guardrails/plugin sandboxing).
 2. Continue broadening full-profile scenario mapping toward complete Week 10 coverage.
-3. Add repeatable load/performance thresholds on aggregated performance evidence.
+3. Add category-level threshold policy controls (not only global performance checks).
 
 ## Next Execution Block
 
-1. Add threshold gates over aggregated performance evidence in rollup/bundle flow.
-2. Extend grouped reporting into historical multi-report trend comparisons.
-3. Commit next block as `test(phase-5): performance thresholds and grouped trends`.
+1. Add category-specific threshold gates (`integration`, `security`, `governance`, `performance`) in bundle flow.
+2. Extend grouped trend deltas into bundle-level historical comparisons for multi-report rollups.
+3. Commit next block as `test(phase-5): category threshold policies and grouped trend propagation`.
