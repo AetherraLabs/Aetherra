@@ -69,7 +69,8 @@ Completed now:
   - Integrates decision outcomes + episodic recording + adaptive decision hints + persisted learning state
 - Added standalone tests: `test_phase4_learning_loop_standalone.py` (7/7 passing)
 - Implemented Phase 4 memory-engine enhancement slice:
-  - Enhanced `Aetherra/aetherra_core/memory/aetherra_memory_engine.py` with semantic recall ranking, consolidation hooks, importance scoring, and decay support
+  - Enhanced `Aetherra/aetherra_core/memory/aetherra_memory_engine.py` with semantic recall ranking,
+    consolidation hooks, importance scoring, and decay support
 - Added standalone tests: `test_phase4_memory_engine_enhancement_standalone.py` (5/5 passing)
 - Added standalone integration tests for autonomy-learning chain:
   - `test_phase4_autonomy_learning_chain_standalone.py` (3/3 passing)
@@ -82,7 +83,10 @@ Completed now:
   - Includes repeat-run mode (`--runs`) and run pass-rate evidence in JSON output
   - Hardened subprocess execution for Windows (`PYTHONIOENCODING=utf-8`, `PYTHONUTF8=1`) to avoid cp1252 crashes in child test runs
   - Interruption-resilient runner handling for subprocess timeout/interrupt/runner exceptions
-  - Expanded `full` profile scenario map toward roadmap Week 10 integration flows (reflector/codegen/apply chain, impact/approval chain, verification gates)
+  - Expanded `full` profile scenario map toward roadmap Week 10 integration flows
+    (reflector/codegen/apply chain, impact/approval chain, verification gates)
+  - Further expanded `full` profile to 10 scenarios by adding Phase 5 self-check coverage (`phase5-harness-self-check`, `phase5-rollup-self-check`)
+  - Dry-run full-profile plan artifact generated: `.aetherra/reports/phase5/phase5_validation_plan_full_expanded.json`
   - 10-run quick-profile artifact generated: `phase5_validation_report_quick_runs10.json` (status `pass`, run_pass_rate `1.0`)
 - Added Phase 5 artifact rollup utility:
   - `tools/phase5_report_rollup.py`
@@ -102,6 +106,11 @@ Completed now:
   - `Phase5 Bundle Artifacts (Quick x10)`
   - `Phase5 Bundle Artifacts (Full x3)`
   - Both tasks now include `--min-run-pass-rate 1.0` gate enforcement
+- Added production CI signed-manifest enforcement:
+  - Workflow update: `.github/workflows/ci_quality_gates.yml`
+  - `main` push now runs a production-style Phase 5 bundle with `--emit-release-manifest`
+  - Enforces signature presence via `tools/verify_phase5_manifest_policy.py --require-signature`
+  - New standalone tests: `test_phase5_manifest_policy_standalone.py` (3/3 passing)
 - Generated full-profile bundle evidence artifact:
   - `.aetherra/reports/phase5/phase5_bundle_full_x3_evidence.json`
   - Result: `harness_ok=true`, `rollup_ok=true`, `gates_ok=true`
@@ -118,10 +127,10 @@ Remaining highest-priority roadmap gaps:
 
 1. Expand Phase 3 and Phase 4 tests toward roadmap breadth (decision quality/guardrails/plugin sandboxing).
 2. Continue broadening full-profile scenario mapping toward complete Week 10 coverage.
-3. Enforce signed manifest policy in CI for production profile (`AETHERRA_RELEASE_PRIVKEY` required).
+3. Harden release signature governance with explicit key-presence precheck and failure messaging.
 
 ## Next Execution Block
 
-1. Extend full-profile scenario map toward complete Week 10 coverage.
-2. Add production CI gate requiring signature presence on release manifest outputs.
-3. Commit next block as `test(phase-5): full-profile scenario expansion and signed-manifest CI policy`.
+1. Add explicit CI precheck for `AETHERRA_RELEASE_PRIVKEY` presence on production branch runs.
+2. Extend full-profile scenarios toward integration/load/security/perf gates from Week 10 matrix.
+3. Commit next block as `test(phase-5): key precheck + deeper week10 scenario coverage`.

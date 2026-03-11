@@ -43,3 +43,26 @@ jobs:
             integrity-manifest.json
             licenses_report.json
             sbom.json
+
+      - name: Production bundle with signed release manifest
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          AETHERRA_RELEASE_PRIVKEY: ${{ secrets['AETHERRA_RELEASE_PRIVKEY'] }}
+        run: |
+          pip install pynacl
+          python tools/phase5_bundle_artifacts.py \
+            --profile full \
+            --runs 1 \
+            --timeout 180 \
+            --min-run-pass-rate 1.0 \
+            --emit-release-manifest \
+            --release-manifest-version ci-production-${{ github.sha }} \
+            --output-dir .aetherra/reports/phase5 \
+            --stamp ci_prod_manifest
+
+      - name: Enforce signed-manifest policy
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          python tools/verify_phase5_manifest_policy.py \
+            --summary .aetherra/reports/phase5/phase5_bundle_ci_prod_manifest.json \
+            --require-signature

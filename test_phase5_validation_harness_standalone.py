@@ -23,10 +23,13 @@ class TestPhase5ValidationHarness(unittest.TestCase):
     def test_build_plan_quick_and_full(self):
         quick = build_plan("quick")
         full = build_plan("full")
+        full_names = {s.name for s in full}
 
         self.assertGreaterEqual(len(quick), 3)
         self.assertGreater(len(full), len(quick))
         self.assertEqual(quick[0].name, "decision-governor-learning-chain")
+        self.assertIn("phase5-harness-self-check", full_names)
+        self.assertIn("phase5-rollup-self-check", full_names)
 
     def test_run_validation_aggregates_pass_fail(self):
         plan = build_plan("quick")[:2]
