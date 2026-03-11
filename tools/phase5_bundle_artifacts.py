@@ -51,12 +51,16 @@ def _sha256_file(path: Path) -> str | None:
 
 
 def _find_previous_bundle_summary(output_dir: Path, summary_path: Path) -> Path | None:
-    candidates = sorted(output_dir.glob("phase5_bundle_*.json"), key=lambda p: p.stat().st_mtime)
+    candidates = sorted(
+        output_dir.glob("phase5_bundle_*.json"), key=lambda p: p.stat().st_mtime
+    )
     candidates = [p for p in candidates if p.resolve() != summary_path.resolve()]
     return candidates[-1] if candidates else None
 
 
-def _build_trend(previous_summary_path: Path | None, current_payload: dict[str, Any]) -> dict[str, Any]:
+def _build_trend(
+    previous_summary_path: Path | None, current_payload: dict[str, Any]
+) -> dict[str, Any]:
     if previous_summary_path is None:
         return {
             "has_previous": False,
@@ -77,9 +81,11 @@ def _build_trend(previous_summary_path: Path | None, current_payload: dict[str, 
         }
 
     cur_rate = float(
-        ((current_payload.get("gates") or {}).get("observed_run_pass_rate", 0.0) or 0.0)
+        (current_payload.get("gates") or {}).get("observed_run_pass_rate", 0.0) or 0.0
     )
-    prev_rate = float(((previous.get("gates") or {}).get("observed_run_pass_rate", 0.0) or 0.0))
+    prev_rate = float(
+        (previous.get("gates") or {}).get("observed_run_pass_rate", 0.0) or 0.0
+    )
 
     prev_scenarios = {
         str(row.get("name")): float(row.get("observed_pass_rate", 0.0) or 0.0)
@@ -88,7 +94,9 @@ def _build_trend(previous_summary_path: Path | None, current_payload: dict[str, 
     }
     cur_scenarios = {
         str(row.get("name")): float(row.get("observed_pass_rate", 0.0) or 0.0)
-        for row in list((current_payload.get("gates") or {}).get("scenario_results", []) or [])
+        for row in list(
+            (current_payload.get("gates") or {}).get("scenario_results", []) or []
+        )
         if row.get("name")
     }
 
@@ -126,6 +134,9 @@ def bundle_artifacts(
     stamp: str,
     min_run_pass_rate: float | None = None,
     scenario_min_pass_rate: dict[str, float] | None = None,
+    allowed_scenario_failures: int | None = None,
+    emit_release_manifest: bool = False,
+    release_manifest_version: str | None = None,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -181,6 +192,16 @@ def bundle_artifacts(
         (observed_rate >= min_rate_value) if min_rate_value is not None else True
     )
 
+    scenario_failures = sum(
+        1 for row in list(report_data.get("scenarios", []) or []) if not bool(row.get("ok"))
+    )
+    budget_applies = allowed_scenario_failures is not None and profile != "full"
+    budget_passed = (
+        scenario_failures <= int(allowed_scenario_failures)
+        if budget_applies and allowed_scenario_failures is not None
+        else True
+    )
+
     scenario_thresholds = scenario_min_pass_rate or {}
     scenario_stats: dict[str, dict[str, float | int]] = {}
     for row in list(report_data.get("scenarios", []) or []):
@@ -229,7 +250,11 @@ def bundle_artifacts(
             "observed_run_pass_rate": observed_rate,
             "scenario_min_pass_rate": scenario_thresholds,
             "scenario_results": scenario_gate_rows,
-            "passed": gate_passed and scenario_gates_passed,
+            "allowed_scenario_failures": allowed_scenario_failures,
+            "budget_applies": budget_applies,
+            "observed_scenario_failures": scenario_failures,
+            "budget_passed": budget_passed,
+            "passed": gate_passed and scenario_gates_passed and budget_passed,
         },
     }
 
@@ -243,6 +268,40 @@ def bundle_artifacts(
     previous_summary = _find_previous_bundle_summary(output_dir, summary_path)
     payload["trend"] = _build_trend(previous_summary, payload)
 
+    release_manifest: dict[str, Any] = {
+        "enabled": bool(emit_release_manifest),
+        "version": release_manifest_version,
+    }
+    if emit_release_manifest:
+        manifest_version = release_manifest_version or f"phase5-{stamp}"
+        manifest_path = output_dir / f"phase5_release_manifest_{stamp}.json"
+        manifest_cmd = [
+            sys.executable,
+            "tools/sign_release_manifest.py",
+            "--dist",
+            str(output_dir),
+            "--version",
+            manifest_version,
+            "--output",
+            str(manifest_path),
+        ]
+        manifest_run = _run(manifest_cmd, repo_root)
+        signature_path = manifest_path.with_suffix(manifest_path.suffix + ".sig")
+        release_manifest.update(
+            {
+                "path": str(manifest_path),
+                "step": manifest_run,
+                "sha256": _sha256_file(manifest_path),
+                "size_bytes": (
+                    manifest_path.stat().st_size if manifest_path.exists() else 0
+                ),
+                "signature_path": str(signature_path),
+                "signature_exists": signature_path.exists(),
+                "signature_sha256": _sha256_file(signature_path),
+            }
+        )
+    payload["release_manifest"] = release_manifest
+
     summary_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return payload
 
@@ -255,10 +314,26 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--output-dir", default=".aetherra/reports/phase5")
     p.add_argument("--min-run-pass-rate", type=float, default=None)
     p.add_argument(
+        "--allowed-scenario-failures",
+        type=int,
+        default=None,
+        help="Non-prod budget for total failed scenario rows across all runs",
+    )
+    p.add_argument(
         "--scenario-min-pass-rate",
         action="append",
         default=[],
         help="Scenario threshold in the form <scenario_name>=<rate>",
+    )
+    p.add_argument(
+        "--emit-release-manifest",
+        action="store_true",
+        help="Emit a signed/unsigned release manifest for generated artifacts",
+    )
+    p.add_argument(
+        "--release-manifest-version",
+        default=None,
+        help="Explicit manifest version passed to sign_release_manifest.py",
     )
     p.add_argument("--stamp", default=datetime.utcnow().strftime("%Y%m%d_%H%M%S"))
     p.add_argument("--dry-run", action="store_true")
@@ -279,11 +354,18 @@ def main() -> int:
             "timeout": int(args.timeout),
             "output_dir": str(out_dir),
             "min_run_pass_rate": args.min_run_pass_rate,
+            "allowed_scenario_failures": args.allowed_scenario_failures,
             "scenario_min_pass_rate": args.scenario_min_pass_rate,
+            "emit_release_manifest": args.emit_release_manifest,
+            "release_manifest_version": args.release_manifest_version,
             "stamp": args.stamp,
         }
         print(json.dumps(preview, indent=2))
         return 0
+
+    if args.allowed_scenario_failures is not None and args.allowed_scenario_failures < 0:
+        print("Invalid --allowed-scenario-failures: must be >= 0")
+        return 2
 
     scenario_thresholds: dict[str, float] = {}
     try:
@@ -307,16 +389,22 @@ def main() -> int:
         stamp=args.stamp,
         min_run_pass_rate=args.min_run_pass_rate,
         scenario_min_pass_rate=scenario_thresholds,
+        allowed_scenario_failures=args.allowed_scenario_failures,
+        emit_release_manifest=args.emit_release_manifest,
+        release_manifest_version=args.release_manifest_version,
     )
 
     harness_ok = bool(payload["steps"]["harness"]["ok"])
     rollup_ok = bool(payload["steps"]["rollup"]["ok"])
+    release_manifest_ok = bool(
+        (payload.get("release_manifest") or {}).get("step", {}).get("ok", True)
+    )
     gates_ok = bool(payload["gates"]["passed"])
     print(
-        f"Bundle complete: harness_ok={harness_ok}, rollup_ok={rollup_ok}, gates_ok={gates_ok}, "
+        f"Bundle complete: harness_ok={harness_ok}, rollup_ok={rollup_ok}, release_manifest_ok={release_manifest_ok}, gates_ok={gates_ok}, "
         f"summary={payload['artifacts']['summary']}"
     )
-    return 0 if harness_ok and rollup_ok and gates_ok else 1
+    return 0 if harness_ok and rollup_ok and release_manifest_ok and gates_ok else 1
 
 
 if __name__ == "__main__":

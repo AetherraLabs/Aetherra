@@ -43,7 +43,10 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
         self.assertEqual(payload["profile"], "quick")
         self.assertEqual(payload["runs"], 3)
         self.assertIsNone(payload["min_run_pass_rate"])
+        self.assertIsNone(payload["allowed_scenario_failures"])
         self.assertEqual(payload["scenario_min_pass_rate"], [])
+        self.assertFalse(payload["emit_release_manifest"])
+        self.assertIsNone(payload["release_manifest_version"])
 
     def test_bundle_generates_artifacts(self):
         with tempfile.TemporaryDirectory() as td:
@@ -87,6 +90,106 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             self.assertTrue(bundle["integrity"]["report_sha256"])
             self.assertTrue(bundle["integrity"]["rollup_sha256"])
             self.assertIn("trend", bundle)
+            self.assertIn("release_manifest", bundle)
+            self.assertFalse(bundle["release_manifest"]["enabled"])
+
+    def test_bundle_emits_release_manifest(self):
+        with tempfile.TemporaryDirectory() as td:
+            stamp = "manifest_emit"
+            cmd = [
+                sys.executable,
+                "tools/phase5_bundle_artifacts.py",
+                "--profile",
+                "quick",
+                "--runs",
+                "1",
+                "--timeout",
+                "120",
+                "--output-dir",
+                td,
+                "--stamp",
+                stamp,
+                "--emit-release-manifest",
+                "--release-manifest-version",
+                "0.0.0-phase5-test",
+            ]
+            proc = subprocess.run(
+                cmd,
+                cwd=os.path.dirname(os.path.abspath(__file__)),
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+            )
+            self.assertEqual(proc.returncode, 0)
+
+            summary = Path(td) / f"phase5_bundle_{stamp}.json"
+            manifest = Path(td) / f"phase5_release_manifest_{stamp}.json"
+            self.assertTrue(summary.exists())
+            self.assertTrue(manifest.exists())
+
+            bundle = json.loads(summary.read_text(encoding="utf-8"))
+            self.assertTrue(bundle["release_manifest"]["enabled"])
+            self.assertEqual(
+                bundle["release_manifest"]["version"], "0.0.0-phase5-test"
+            )
+            self.assertTrue(bundle["release_manifest"]["step"]["ok"])
+            self.assertTrue(bundle["release_manifest"]["sha256"])
+
+    def test_bundle_rejects_negative_failure_budget(self):
+        cmd = [
+            sys.executable,
+            "tools/phase5_bundle_artifacts.py",
+            "--profile",
+            "quick",
+            "--runs",
+            "1",
+            "--allowed-scenario-failures",
+            "-1",
+        ]
+        proc = subprocess.run(
+            cmd,
+            cwd=os.path.dirname(os.path.abspath(__file__)),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        self.assertEqual(proc.returncode, 2)
+
+    def test_bundle_records_non_prod_failure_budget(self):
+        with tempfile.TemporaryDirectory() as td:
+            stamp = "budget_quick"
+            cmd = [
+                sys.executable,
+                "tools/phase5_bundle_artifacts.py",
+                "--profile",
+                "quick",
+                "--runs",
+                "1",
+                "--timeout",
+                "120",
+                "--output-dir",
+                td,
+                "--stamp",
+                stamp,
+                "--allowed-scenario-failures",
+                "999",
+            ]
+            proc = subprocess.run(
+                cmd,
+                cwd=os.path.dirname(os.path.abspath(__file__)),
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+            )
+            self.assertEqual(proc.returncode, 0)
+            summary = Path(td) / f"phase5_bundle_{stamp}.json"
+            bundle = json.loads(summary.read_text(encoding="utf-8"))
+            self.assertTrue(bundle["gates"]["budget_applies"])
+            self.assertEqual(bundle["gates"]["allowed_scenario_failures"], 999)
+            self.assertTrue(bundle["gates"]["budget_passed"])
 
     def test_bundle_fails_when_scenario_threshold_not_met(self):
         with tempfile.TemporaryDirectory() as td:
@@ -173,7 +276,9 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             bundle = json.loads(summary.read_text(encoding="utf-8"))
             self.assertTrue(bundle["trend"]["has_previous"])
             self.assertEqual(bundle["trend"]["previous_observed_run_pass_rate"], 0.5)
-            self.assertGreaterEqual(bundle["trend"]["delta_observed_run_pass_rate"], 0.0)
+            self.assertGreaterEqual(
+                bundle["trend"]["delta_observed_run_pass_rate"], 0.0
+            )
             self.assertEqual(len(bundle["gates"]["scenario_results"]), 1)
             self.assertTrue(bundle["gates"]["scenario_results"][0]["passed"])
 

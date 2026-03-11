@@ -90,12 +90,14 @@ Completed now:
   - Produces aggregate pass-rate summary from one or more harness report files
 - Added Phase 5 bundle utility:
   - `tools/phase5_bundle_artifacts.py`
-  - `test_phase5_bundle_artifacts_standalone.py` (5/5 passing)
+  - `test_phase5_bundle_artifacts_standalone.py` (8/8 passing)
   - Runs harness + rollup in one command and writes bundled artifacts under a target directory
   - Supports threshold gates via `--min-run-pass-rate` and writes gate outcomes in bundle summary metadata
   - Supports per-scenario threshold gates via `--scenario-min-pass-rate <scenario>=<rate>`
+  - Supports non-prod failure budgets via `--allowed-scenario-failures <n>` (applies to `quick` profile)
   - Adds artifact integrity metadata (SHA-256 + file sizes for report/rollup)
   - Adds historical trend deltas against prior bundle summaries (run-pass-rate delta + scenario-level deltas)
+  - Integrates optional release-manifest emission/signing path via `--emit-release-manifest [--release-manifest-version <v>]`
 - Added VS Code tasks for bundle generation:
   - `Phase5 Bundle Artifacts (Quick x10)`
   - `Phase5 Bundle Artifacts (Full x3)`
@@ -107,15 +109,19 @@ Completed now:
 - Generated quick-profile integrity/trend evidence artifact:
   - `.aetherra/reports/phase5/phase5_bundle_quick_integrity_trend.json`
   - Includes integrity checksums and trend comparison metadata
+- Generated quick-profile manifest+budget evidence artifact:
+  - `.aetherra/reports/phase5/phase5_bundle_quick_manifest_budget.json`
+  - Result: `harness_ok=true`, `rollup_ok=true`, `release_manifest_ok=true`, `gates_ok=true`
+  - Includes release-manifest metadata and non-prod failure-budget gate outcomes
 
 Remaining highest-priority roadmap gaps:
 
 1. Expand Phase 3 and Phase 4 tests toward roadmap breadth (decision quality/guardrails/plugin sandboxing).
 2. Continue broadening full-profile scenario mapping toward complete Week 10 coverage.
-3. Add artifact signature/manifest integration for tamper-evident release bundles.
+3. Enforce signed manifest policy in CI for production profile (`AETHERRA_RELEASE_PRIVKEY` required).
 
 ## Next Execution Block
 
-1. Integrate bundle artifacts with release manifest/signing path.
-2. Add optional failure budget policy (allowed scenario failures) for non-prod profiles.
-3. Commit next block as `test(phase-5): manifest/signing integration and policy budgets`.
+1. Extend full-profile scenario map toward complete Week 10 coverage.
+2. Add production CI gate requiring signature presence on release manifest outputs.
+3. Commit next block as `test(phase-5): full-profile scenario expansion and signed-manifest CI policy`.
