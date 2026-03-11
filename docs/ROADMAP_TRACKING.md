@@ -101,6 +101,8 @@ Completed now:
   - `tools/phase5_report_rollup.py`
   - `test_phase5_report_rollup_standalone.py` (3/3 passing)
   - Produces aggregate pass-rate summary from one or more harness report files
+  - Propagates grouped category rollups across multi-report inputs
+  - Emits performance evidence summaries from `performance` scenario durations
 - Added Phase 5 bundle utility:
   - `tools/phase5_bundle_artifacts.py`
   - `test_phase5_bundle_artifacts_standalone.py` (8/8 passing)
@@ -137,15 +139,18 @@ Completed now:
   - `.aetherra/reports/phase5/phase5_bundle_quick_grouped_categories.json`
   - Result: `harness_ok=true`, `rollup_ok=true`, `release_manifest_ok=true`, `gates_ok=true`
   - Includes category rollups for `governance`, `integration`, `performance`, and `security`
+- Generated grouped multi-report rollup evidence artifact:
+  - `.aetherra/reports/phase5/phase5_rollup_grouped_performance.json`
+  - Includes aggregate category results and performance duration evidence
 
 Remaining highest-priority roadmap gaps:
 
 1. Expand Phase 3 and Phase 4 tests toward roadmap breadth (decision quality/guardrails/plugin sandboxing).
 2. Continue broadening full-profile scenario mapping toward complete Week 10 coverage.
-3. Propagate grouped category reporting into multi-report rollup outputs.
+3. Add repeatable load/performance thresholds on aggregated performance evidence.
 
 ## Next Execution Block
 
-1. Extend grouped reporting into rollup artifacts for multi-report comparisons.
-2. Add repeatable load/performance evidence runs for selected Phase 5 categories.
-3. Commit next block as `test(phase-5): rollup grouping propagation and performance evidence`.
+1. Add threshold gates over aggregated performance evidence in rollup/bundle flow.
+2. Extend grouped reporting into historical multi-report trend comparisons.
+3. Commit next block as `test(phase-5): performance thresholds and grouped trends`.

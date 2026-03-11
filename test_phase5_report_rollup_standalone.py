@@ -36,6 +36,30 @@ class TestPhase5ReportRollup(unittest.TestCase):
                     "run_pass_rate": 1.0,
                     "failed": 0,
                     "total": 30,
+                    "category_summaries": [
+                        {
+                            "category": "performance",
+                            "passed": 2,
+                            "failed": 0,
+                            "total": 2,
+                            "status": "pass",
+                            "scenarios": ["learning-quality-and-latency"],
+                        }
+                    ],
+                    "scenarios": [
+                        {
+                            "name": "learning-quality-and-latency",
+                            "category": "performance",
+                            "ok": True,
+                            "duration_sec": 0.1,
+                        },
+                        {
+                            "name": "learning-quality-and-latency",
+                            "category": "performance",
+                            "ok": True,
+                            "duration_sec": 0.2,
+                        },
+                    ],
                 },
             )
             self._write(
@@ -47,13 +71,57 @@ class TestPhase5ReportRollup(unittest.TestCase):
                     "run_pass_rate": 0.8,
                     "failed": 2,
                     "total": 30,
+                    "category_summaries": [
+                        {
+                            "category": "performance",
+                            "passed": 1,
+                            "failed": 1,
+                            "total": 2,
+                            "status": "fail",
+                            "scenarios": ["memory-recall-and-consolidation"],
+                        },
+                        {
+                            "category": "governance",
+                            "passed": 1,
+                            "failed": 0,
+                            "total": 1,
+                            "status": "pass",
+                            "scenarios": ["decision-governor-learning-chain"],
+                        }
+                    ],
+                    "scenarios": [
+                        {
+                            "name": "memory-recall-and-consolidation",
+                            "category": "performance",
+                            "ok": False,
+                            "duration_sec": 0.4,
+                        },
+                        {
+                            "name": "memory-recall-and-consolidation",
+                            "category": "performance",
+                            "ok": True,
+                            "duration_sec": 0.3,
+                        },
+                    ],
                 },
             )
 
             out = rollup_reports([str(p1), str(p2)])
             self.assertEqual(out["summary"]["reports"], 2)
             self.assertEqual(out["summary"]["passing_reports"], 1)
-            self.assertAlmostEqual(out["summary"]["aggregate_run_pass_rate"], 0.9, places=3)
+            self.assertAlmostEqual(
+                out["summary"]["aggregate_run_pass_rate"], 0.9, places=3
+            )
+            self.assertIn("categories", out)
+            perf = next(
+                row for row in out["categories"]["results"] if row["category"] == "performance"
+            )
+            self.assertEqual(perf["reports"], 2)
+            self.assertEqual(perf["total"], 4)
+            self.assertAlmostEqual(perf["aggregate_pass_rate"], 0.75, places=3)
+            self.assertIn("performance_evidence", out)
+            self.assertEqual(out["performance_evidence"]["samples"], 4)
+            self.assertEqual(out["performance_evidence"]["scenario_count"], 2)
 
     def test_rollup_handles_bad_json(self):
         with tempfile.TemporaryDirectory() as td:
@@ -63,6 +131,8 @@ class TestPhase5ReportRollup(unittest.TestCase):
             self.assertEqual(out["summary"]["reports"], 1)
             self.assertEqual(out["summary"]["passing_reports"], 0)
             self.assertEqual(out["reports"][0]["status"], "error")
+            self.assertEqual(out["categories"]["results"], [])
+            self.assertEqual(out["performance_evidence"]["samples"], 0)
 
     def test_cli_writes_rollup(self):
         with tempfile.TemporaryDirectory() as td:
@@ -77,6 +147,24 @@ class TestPhase5ReportRollup(unittest.TestCase):
                     "run_pass_rate": 1.0,
                     "failed": 0,
                     "total": 6,
+                    "category_summaries": [
+                        {
+                            "category": "performance",
+                            "passed": 1,
+                            "failed": 0,
+                            "total": 1,
+                            "status": "pass",
+                            "scenarios": ["learning-quality-and-latency"],
+                        }
+                    ],
+                    "scenarios": [
+                        {
+                            "name": "learning-quality-and-latency",
+                            "category": "performance",
+                            "ok": True,
+                            "duration_sec": 0.2,
+                        }
+                    ],
                 },
             )
 
@@ -100,6 +188,8 @@ class TestPhase5ReportRollup(unittest.TestCase):
             self.assertTrue(o.exists())
             payload = json.loads(o.read_text(encoding="utf-8"))
             self.assertEqual(payload["summary"]["reports"], 1)
+            self.assertIn("categories", payload)
+            self.assertIn("performance_evidence", payload)
 
 
 if __name__ == "__main__":
