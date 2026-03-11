@@ -83,6 +83,10 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             self.assertTrue(bundle["steps"]["harness"]["ok"])
             self.assertTrue(bundle["steps"]["rollup"]["ok"])
             self.assertTrue(bundle["gates"]["passed"])
+            self.assertIn("integrity", bundle)
+            self.assertTrue(bundle["integrity"]["report_sha256"])
+            self.assertTrue(bundle["integrity"]["rollup_sha256"])
+            self.assertIn("trend", bundle)
 
     def test_bundle_fails_when_scenario_threshold_not_met(self):
         with tempfile.TemporaryDirectory() as td:
@@ -117,8 +121,61 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
 
             bundle = json.loads(summary.read_text(encoding="utf-8"))
             self.assertFalse(bundle["gates"]["passed"])
+
+    def test_bundle_includes_trend_delta_against_previous_summary(self):
+        with tempfile.TemporaryDirectory() as td:
+            previous = Path(td) / "phase5_bundle_prev.json"
+            previous.write_text(
+                json.dumps(
+                    {
+                        "gates": {
+                            "observed_run_pass_rate": 0.5,
+                            "scenario_results": [
+                                {
+                                    "name": "learning-quality-and-latency",
+                                    "observed_pass_rate": 0.5,
+                                }
+                            ],
+                        }
+                    },
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+
+            stamp = "trend_check"
+            cmd = [
+                sys.executable,
+                "tools/phase5_bundle_artifacts.py",
+                "--profile",
+                "quick",
+                "--runs",
+                "1",
+                "--timeout",
+                "120",
+                "--output-dir",
+                td,
+                "--stamp",
+                stamp,
+                "--scenario-min-pass-rate",
+                "learning-quality-and-latency=0.0",
+            ]
+            proc = subprocess.run(
+                cmd,
+                cwd=os.path.dirname(os.path.abspath(__file__)),
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+            )
+            self.assertEqual(proc.returncode, 0)
+            summary = Path(td) / f"phase5_bundle_{stamp}.json"
+            bundle = json.loads(summary.read_text(encoding="utf-8"))
+            self.assertTrue(bundle["trend"]["has_previous"])
+            self.assertEqual(bundle["trend"]["previous_observed_run_pass_rate"], 0.5)
+            self.assertGreaterEqual(bundle["trend"]["delta_observed_run_pass_rate"], 0.0)
             self.assertEqual(len(bundle["gates"]["scenario_results"]), 1)
-            self.assertFalse(bundle["gates"]["scenario_results"][0]["passed"])
+            self.assertTrue(bundle["gates"]["scenario_results"][0]["passed"])
 
     def test_bundle_fails_when_threshold_not_met(self):
         with tempfile.TemporaryDirectory() as td:

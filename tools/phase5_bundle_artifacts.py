@@ -8,6 +8,7 @@ outputs in a target artifact directory.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import subprocess
@@ -36,6 +37,83 @@ def _run(cmd: list[str], cwd: Path) -> dict[str, Any]:
         "ok": proc.returncode == 0,
         "stdout": proc.stdout,
         "stderr": proc.stderr,
+    }
+
+
+def _sha256_file(path: Path) -> str | None:
+    if not path.exists() or not path.is_file():
+        return None
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _find_previous_bundle_summary(output_dir: Path, summary_path: Path) -> Path | None:
+    candidates = sorted(output_dir.glob("phase5_bundle_*.json"), key=lambda p: p.stat().st_mtime)
+    candidates = [p for p in candidates if p.resolve() != summary_path.resolve()]
+    return candidates[-1] if candidates else None
+
+
+def _build_trend(previous_summary_path: Path | None, current_payload: dict[str, Any]) -> dict[str, Any]:
+    if previous_summary_path is None:
+        return {
+            "has_previous": False,
+            "previous_summary": None,
+            "delta_observed_run_pass_rate": None,
+            "scenario_deltas": [],
+        }
+
+    try:
+        previous = json.loads(previous_summary_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return {
+            "has_previous": True,
+            "previous_summary": str(previous_summary_path),
+            "delta_observed_run_pass_rate": None,
+            "scenario_deltas": [],
+            "error": f"failed_to_load_previous: {type(exc).__name__}: {exc}",
+        }
+
+    cur_rate = float(
+        ((current_payload.get("gates") or {}).get("observed_run_pass_rate", 0.0) or 0.0)
+    )
+    prev_rate = float(((previous.get("gates") or {}).get("observed_run_pass_rate", 0.0) or 0.0))
+
+    prev_scenarios = {
+        str(row.get("name")): float(row.get("observed_pass_rate", 0.0) or 0.0)
+        for row in list((previous.get("gates") or {}).get("scenario_results", []) or [])
+        if row.get("name")
+    }
+    cur_scenarios = {
+        str(row.get("name")): float(row.get("observed_pass_rate", 0.0) or 0.0)
+        for row in list((current_payload.get("gates") or {}).get("scenario_results", []) or [])
+        if row.get("name")
+    }
+
+    scenario_deltas: list[dict[str, Any]] = []
+    for name in sorted(set(prev_scenarios) | set(cur_scenarios)):
+        scenario_deltas.append(
+            {
+                "name": name,
+                "previous": prev_scenarios.get(name),
+                "current": cur_scenarios.get(name),
+                "delta": (
+                    None
+                    if name not in prev_scenarios or name not in cur_scenarios
+                    else round(cur_scenarios[name] - prev_scenarios[name], 4)
+                ),
+            }
+        )
+
+    return {
+        "has_previous": True,
+        "previous_summary": str(previous_summary_path),
+        "previous_observed_run_pass_rate": prev_rate,
+        "current_observed_run_pass_rate": cur_rate,
+        "delta_observed_run_pass_rate": round(cur_rate - prev_rate, 4),
+        "scenario_deltas": scenario_deltas,
     }
 
 
@@ -99,7 +177,9 @@ def bundle_artifacts(
     )
     gate_enabled = min_run_pass_rate is not None
     min_rate_value = float(min_run_pass_rate) if min_run_pass_rate is not None else None
-    gate_passed = (observed_rate >= min_rate_value) if min_rate_value is not None else True
+    gate_passed = (
+        (observed_rate >= min_rate_value) if min_rate_value is not None else True
+    )
 
     scenario_thresholds = scenario_min_pass_rate or {}
     scenario_stats: dict[str, dict[str, float | int]] = {}
@@ -152,6 +232,16 @@ def bundle_artifacts(
             "passed": gate_passed and scenario_gates_passed,
         },
     }
+
+    payload["integrity"] = {
+        "report_sha256": _sha256_file(report_path),
+        "report_size_bytes": report_path.stat().st_size if report_path.exists() else 0,
+        "rollup_sha256": _sha256_file(rollup_path),
+        "rollup_size_bytes": rollup_path.stat().st_size if rollup_path.exists() else 0,
+    }
+
+    previous_summary = _find_previous_bundle_summary(output_dir, summary_path)
+    payload["trend"] = _build_trend(previous_summary, payload)
 
     summary_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return payload
