@@ -42,6 +42,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
         payload = json.loads(proc.stdout)
         self.assertEqual(payload["profile"], "quick")
         self.assertEqual(payload["runs"], 3)
+        self.assertIsNone(payload["min_run_pass_rate"])
 
     def test_bundle_generates_artifacts(self):
         with tempfile.TemporaryDirectory() as td:
@@ -80,6 +81,41 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             bundle = json.loads(summary.read_text(encoding="utf-8"))
             self.assertTrue(bundle["steps"]["harness"]["ok"])
             self.assertTrue(bundle["steps"]["rollup"]["ok"])
+            self.assertTrue(bundle["gates"]["passed"])
+
+    def test_bundle_fails_when_threshold_not_met(self):
+        with tempfile.TemporaryDirectory() as td:
+            stamp = "threshold_fail"
+            cmd = [
+                sys.executable,
+                "tools/phase5_bundle_artifacts.py",
+                "--profile",
+                "quick",
+                "--runs",
+                "1",
+                "--timeout",
+                "120",
+                "--output-dir",
+                td,
+                "--stamp",
+                stamp,
+                "--min-run-pass-rate",
+                "1.1",
+            ]
+            proc = subprocess.run(
+                cmd,
+                cwd=os.path.dirname(os.path.abspath(__file__)),
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+            )
+            self.assertEqual(proc.returncode, 1)
+
+            summary = Path(td) / f"phase5_bundle_{stamp}.json"
+            self.assertTrue(summary.exists())
+            bundle = json.loads(summary.read_text(encoding="utf-8"))
+            self.assertFalse(bundle["gates"]["passed"])
 
 
 if __name__ == "__main__":

@@ -877,6 +877,48 @@
 			"group": "test",
 			"isBackground": false,
 			"problemMatcher": []
+		},
+		{
+			"label": "Phase5 Bundle Artifacts (Quick x10)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/phase5_bundle_artifacts.py",
+				"--profile",
+				"quick",
+				"--runs",
+				"10",
+				"--timeout",
+				"180",
+				"--min-run-pass-rate",
+				"1.0",
+				"--output-dir",
+				".aetherra/reports/phase5"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Phase5 Bundle Artifacts (Full x3)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"tools/phase5_bundle_artifacts.py",
+				"--profile",
+				"full",
+				"--runs",
+				"3",
+				"--timeout",
+				"240",
+				"--min-run-pass-rate",
+				"1.0",
+				"--output-dir",
+				".aetherra/reports/phase5"
+			],
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": []
 		}
 	],
 	"inputs": [

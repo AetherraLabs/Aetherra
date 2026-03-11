@@ -90,17 +90,22 @@ Completed now:
   - Produces aggregate pass-rate summary from one or more harness report files
 - Added Phase 5 bundle utility:
   - `tools/phase5_bundle_artifacts.py`
-  - `test_phase5_bundle_artifacts_standalone.py` (2/2 passing)
+  - `test_phase5_bundle_artifacts_standalone.py` (3/3 passing)
   - Runs harness + rollup in one command and writes bundled artifacts under a target directory
+  - Supports threshold gates via `--min-run-pass-rate` and writes gate outcomes in bundle summary metadata
+- Added VS Code tasks for bundle generation:
+  - `Phase5 Bundle Artifacts (Quick x10)`
+  - `Phase5 Bundle Artifacts (Full x3)`
+  - Both tasks now include `--min-run-pass-rate 1.0` gate enforcement
 
 Remaining highest-priority roadmap gaps:
 
 1. Expand Phase 3 and Phase 4 tests toward roadmap breadth (decision quality/guardrails/plugin sandboxing).
 2. Continue broadening full-profile scenario mapping toward complete Week 10 coverage.
-3. Add VS Code task wiring for `phase5_bundle_artifacts.py` to standardize artifact generation.
+3. Run full-profile bundle task and archive artifact set for formal gate evidence.
 
 ## Next Execution Block
 
-1. Add VS Code task entries for quick/full bundle generation.
-2. Add optional threshold gates (min pass-rate) into bundle summary metadata.
-3. Commit next block as `test(phase-5): wire artifact bundling tasks and threshold gates`.
+1. Execute `Phase5 Bundle Artifacts (Full x3)` and archive produced report/rollup/summary artifacts.
+2. Add scenario-level acceptance thresholds (per-flow pass minima) to bundle metadata.
+3. Commit next block as `test(phase-5): full-profile artifact evidence and scenario thresholds`.
