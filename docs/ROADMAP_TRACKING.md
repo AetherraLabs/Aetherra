@@ -71,6 +71,8 @@ Completed now:
 - Implemented Phase 4 memory-engine enhancement slice:
   - Enhanced `Aetherra/aetherra_core/memory/aetherra_memory_engine.py` with semantic recall ranking, consolidation hooks, importance scoring, and decay support
 - Added standalone tests: `test_phase4_memory_engine_enhancement_standalone.py` (5/5 passing)
+- Added standalone integration tests for autonomy-learning chain:
+  - `test_phase4_autonomy_learning_chain_standalone.py` (3/3 passing)
 
 Remaining highest-priority roadmap gaps:
 
@@ -81,5 +83,5 @@ Remaining highest-priority roadmap gaps:
 ## Next Execution Block
 
 1. Add focused standalone coverage for learning-over-iterations behavior and policy-safe adaptation.
-2. Add integration checks for Decision Engine -> Autonomy Governor -> Learning Loop chain.
-3. Commit next block as `test(phase-4/5): ...`.
+2. Add performance/latency checks for memory recall and reflector against roadmap thresholds.
+3. Start formal Phase 5 validation harness commit as `test(phase-5): ...`.
