@@ -78,8 +78,34 @@ def build_plan(profile: str = "quick") -> list[Scenario]:
                 command=[sys.executable, "test_plugins_reflector_standalone.py"],
             ),
             Scenario(
+                name="plugin-system-safety",
+                command=[sys.executable, "test_plugin_system_standalone.py"],
+            ),
+            Scenario(
+                name="hub-blueprints-integration",
+                command=[sys.executable, "test_hub_blueprints_standalone.py"],
+            ),
+            Scenario(
+                name="policy-governance-guardrails",
+                command=[sys.executable, "test_policy_manager_standalone.py"],
+            ),
+            Scenario(
+                name="signature-verifier-security",
+                command=[sys.executable, "test_signature_verifier_standalone.py"],
+            ),
+            Scenario(
+                name="optimization-executor-safety",
+                command=[
+                    sys.executable,
+                    "test_optimization_executor_standalone.py",
+                ],
+            ),
+            Scenario(
                 name="phase5-harness-self-check",
-                command=[sys.executable, "test_phase5_validation_harness_standalone.py"],
+                command=[
+                    sys.executable,
+                    "test_phase5_validation_harness_standalone.py",
+                ],
             ),
             Scenario(
                 name="phase5-rollup-self-check",

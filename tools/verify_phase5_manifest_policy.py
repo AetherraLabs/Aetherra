@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -22,7 +23,27 @@ def _load_json(path: Path) -> dict[str, Any]:
     return data
 
 
-def verify_policy(summary_path: Path, require_signature: bool = False) -> tuple[bool, str]:
+def verify_required_env_var(env_var: str) -> tuple[bool, str]:
+    if not env_var.strip():
+        return False, "required_env_var_empty"
+    if os.getenv(env_var):
+        return True, "ok"
+    return False, f"required_env_missing: {env_var}"
+
+
+def verify_policy(
+    summary_path: Path | None,
+    require_signature: bool = False,
+    require_env_var: str | None = None,
+) -> tuple[bool, str]:
+    if require_env_var:
+        env_ok, env_reason = verify_required_env_var(require_env_var)
+        if not env_ok:
+            return False, env_reason
+
+    if summary_path is None:
+        return True, "ok"
+
     if not summary_path.exists():
         return False, f"summary_missing: {summary_path}"
 
@@ -57,20 +78,31 @@ def verify_policy(summary_path: Path, require_signature: bool = False) -> tuple[
 
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Verify phase5 release manifest policy")
-    p.add_argument("--summary", required=True, help="Path to phase5 bundle summary JSON")
+    p.add_argument(
+        "--summary", help="Path to phase5 bundle summary JSON"
+    )
     p.add_argument(
         "--require-signature",
         action="store_true",
         help="Fail unless release-manifest signature is present",
+    )
+    p.add_argument(
+        "--require-env-var",
+        default=None,
+        help="Fail unless the named environment variable is set and non-empty",
     )
     return p.parse_args()
 
 
 def main() -> int:
     args = _parse_args()
+    if not args.summary and not args.require_env_var:
+        print("[PHASE5_POLICY][FAIL] either --summary or --require-env-var is required")
+        return 2
     ok, reason = verify_policy(
-        summary_path=Path(args.summary),
+        summary_path=Path(args.summary) if args.summary else None,
         require_signature=bool(args.require_signature),
+        require_env_var=args.require_env_var,
     )
     if ok:
         print("[PHASE5_POLICY][OK] release manifest policy satisfied")

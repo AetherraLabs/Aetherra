@@ -28,6 +28,11 @@ class TestPhase5ValidationHarness(unittest.TestCase):
         self.assertGreaterEqual(len(quick), 3)
         self.assertGreater(len(full), len(quick))
         self.assertEqual(quick[0].name, "decision-governor-learning-chain")
+        self.assertIn("plugin-system-safety", full_names)
+        self.assertIn("hub-blueprints-integration", full_names)
+        self.assertIn("policy-governance-guardrails", full_names)
+        self.assertIn("signature-verifier-security", full_names)
+        self.assertIn("optimization-executor-safety", full_names)
         self.assertIn("phase5-harness-self-check", full_names)
         self.assertIn("phase5-rollup-self-check", full_names)
 

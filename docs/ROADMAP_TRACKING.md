@@ -85,7 +85,12 @@ Completed now:
   - Interruption-resilient runner handling for subprocess timeout/interrupt/runner exceptions
   - Expanded `full` profile scenario map toward roadmap Week 10 integration flows
     (reflector/codegen/apply chain, impact/approval chain, verification gates)
-  - Further expanded `full` profile to 10 scenarios by adding Phase 5 self-check coverage (`phase5-harness-self-check`, `phase5-rollup-self-check`)
+  - Further expanded `full` profile to 15 scenarios by adding plugin, hub, policy,
+    signature, optimization, and Phase 5 self-check coverage
+    (`plugin-system-safety`, `hub-blueprints-integration`,
+    `policy-governance-guardrails`, `signature-verifier-security`,
+    `optimization-executor-safety`, `phase5-harness-self-check`,
+    `phase5-rollup-self-check`)
   - Dry-run full-profile plan artifact generated: `.aetherra/reports/phase5/phase5_validation_plan_full_expanded.json`
   - 10-run quick-profile artifact generated: `phase5_validation_report_quick_runs10.json` (status `pass`, run_pass_rate `1.0`)
 - Added Phase 5 artifact rollup utility:
@@ -108,9 +113,10 @@ Completed now:
   - Both tasks now include `--min-run-pass-rate 1.0` gate enforcement
 - Added production CI signed-manifest enforcement:
   - Workflow update: `.github/workflows/ci_quality_gates.yml`
+  - Adds explicit key-presence precheck via `tools/verify_phase5_manifest_policy.py --require-env-var AETHERRA_RELEASE_PRIVKEY`
   - `main` push now runs a production-style Phase 5 bundle with `--emit-release-manifest`
   - Enforces signature presence via `tools/verify_phase5_manifest_policy.py --require-signature`
-  - New standalone tests: `test_phase5_manifest_policy_standalone.py` (3/3 passing)
+  - New standalone tests: `test_phase5_manifest_policy_standalone.py` (5/5 passing)
 - Generated full-profile bundle evidence artifact:
   - `.aetherra/reports/phase5/phase5_bundle_full_x3_evidence.json`
   - Result: `harness_ok=true`, `rollup_ok=true`, `gates_ok=true`
@@ -127,10 +133,10 @@ Remaining highest-priority roadmap gaps:
 
 1. Expand Phase 3 and Phase 4 tests toward roadmap breadth (decision quality/guardrails/plugin sandboxing).
 2. Continue broadening full-profile scenario mapping toward complete Week 10 coverage.
-3. Harden release signature governance with explicit key-presence precheck and failure messaging.
+3. Add bundle-level scenario grouping/reporting so failures roll up by gate category.
 
 ## Next Execution Block
 
-1. Add explicit CI precheck for `AETHERRA_RELEASE_PRIVKEY` presence on production branch runs.
-2. Extend full-profile scenarios toward integration/load/security/perf gates from Week 10 matrix.
-3. Commit next block as `test(phase-5): key precheck + deeper week10 scenario coverage`.
+1. Add bundle-level grouping for Phase 5 scenarios (integration/security/perf/governance).
+2. Extend full-profile scenarios further toward load/performance evidence where stable standalone suites exist.
+3. Commit next block as `test(phase-5): scenario grouping and deeper week10 coverage`.

@@ -15,10 +15,29 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from tools.verify_phase5_manifest_policy import verify_policy
+from tools.verify_phase5_manifest_policy import verify_policy, verify_required_env_var
 
 
 class TestPhase5ManifestPolicy(unittest.TestCase):
+    def test_verify_required_env_var_fails_when_missing(self):
+        os.environ.pop("AETHERRA_RELEASE_PRIVKEY", None)
+        ok, reason = verify_required_env_var("AETHERRA_RELEASE_PRIVKEY")
+        assert not ok
+        assert reason == "required_env_missing: AETHERRA_RELEASE_PRIVKEY"
+
+    def test_verify_required_env_var_passes_when_present(self):
+        original = os.environ.get("AETHERRA_RELEASE_PRIVKEY")
+        try:
+            os.environ["AETHERRA_RELEASE_PRIVKEY"] = "test-key"
+            ok, reason = verify_required_env_var("AETHERRA_RELEASE_PRIVKEY")
+            assert ok
+            assert reason == "ok"
+        finally:
+            if original is None:
+                os.environ.pop("AETHERRA_RELEASE_PRIVKEY", None)
+            else:
+                os.environ["AETHERRA_RELEASE_PRIVKEY"] = original
+
     def test_verify_policy_passes_without_signature_requirement(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
@@ -42,8 +61,8 @@ class TestPhase5ManifestPolicy(unittest.TestCase):
             )
 
             ok, reason = verify_policy(summary, require_signature=False)
-            self.assertTrue(ok)
-            self.assertEqual(reason, "ok")
+            assert ok
+            assert reason == "ok"
 
     def test_verify_policy_fails_when_signature_required_but_missing(self):
         with tempfile.TemporaryDirectory() as td:
@@ -68,8 +87,8 @@ class TestPhase5ManifestPolicy(unittest.TestCase):
             )
 
             ok, reason = verify_policy(summary, require_signature=True)
-            self.assertFalse(ok)
-            self.assertEqual(reason, "release_manifest_signature_missing")
+            assert not ok
+            assert reason == "release_manifest_signature_missing"
 
     def test_verify_policy_passes_with_signature_requirement(self):
         with tempfile.TemporaryDirectory() as td:
@@ -98,8 +117,8 @@ class TestPhase5ManifestPolicy(unittest.TestCase):
             )
 
             ok, reason = verify_policy(summary, require_signature=True)
-            self.assertTrue(ok)
-            self.assertEqual(reason, "ok")
+            assert ok
+            assert reason == "ok"
 
 
 if __name__ == "__main__":

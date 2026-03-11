@@ -49,6 +49,7 @@ jobs:
         env:
           AETHERRA_RELEASE_PRIVKEY: ${{ secrets['AETHERRA_RELEASE_PRIVKEY'] }}
         run: |
+          python tools/verify_phase5_manifest_policy.py --require-env-var AETHERRA_RELEASE_PRIVKEY
           pip install pynacl
           python tools/phase5_bundle_artifacts.py \
             --profile full \
