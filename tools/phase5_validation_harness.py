@@ -22,6 +22,7 @@ from typing import Any
 class Scenario:
     name: str
     command: list[str]
+    category: str
 
 
 def build_plan(profile: str = "quick") -> list[Scenario]:
@@ -33,6 +34,7 @@ def build_plan(profile: str = "quick") -> list[Scenario]:
                 sys.executable,
                 "test_phase4_autonomy_learning_chain_standalone.py",
             ],
+            category="governance",
         ),
         Scenario(
             name="learning-quality-and-latency",
@@ -40,6 +42,7 @@ def build_plan(profile: str = "quick") -> list[Scenario]:
                 sys.executable,
                 "test_phase4_learning_quality_and_latency_standalone.py",
             ],
+            category="performance",
         ),
         Scenario(
             name="memory-recall-and-consolidation",
@@ -47,6 +50,7 @@ def build_plan(profile: str = "quick") -> list[Scenario]:
                 sys.executable,
                 "test_phase4_memory_engine_enhancement_standalone.py",
             ],
+            category="performance",
         ),
     ]
 
@@ -57,14 +61,17 @@ def build_plan(profile: str = "quick") -> list[Scenario]:
             Scenario(
                 name="reflector-codegen-apply-chain",
                 command=[sys.executable, "test_orchestrator_task5_standalone.py"],
+                category="integration",
             ),
             Scenario(
                 name="codegen-impact-approval-chain",
                 command=[sys.executable, "test_analysis_engine_standalone.py"],
+                category="integration",
             ),
             Scenario(
                 name="code-verification-gates",
                 command=[sys.executable, "test_verification_engine_standalone.py"],
+                category="security",
             ),
         ]
         + quick
@@ -72,26 +79,32 @@ def build_plan(profile: str = "quick") -> list[Scenario]:
             Scenario(
                 name="phase3-core-modules",
                 command=[sys.executable, "test_phase3_modules_standalone.py"],
+                category="integration",
             ),
             Scenario(
                 name="plugin-reflector",
                 command=[sys.executable, "test_plugins_reflector_standalone.py"],
+                category="integration",
             ),
             Scenario(
                 name="plugin-system-safety",
                 command=[sys.executable, "test_plugin_system_standalone.py"],
+                category="security",
             ),
             Scenario(
                 name="hub-blueprints-integration",
                 command=[sys.executable, "test_hub_blueprints_standalone.py"],
+                category="integration",
             ),
             Scenario(
                 name="policy-governance-guardrails",
                 command=[sys.executable, "test_policy_manager_standalone.py"],
+                category="governance",
             ),
             Scenario(
                 name="signature-verifier-security",
                 command=[sys.executable, "test_signature_verifier_standalone.py"],
+                category="security",
             ),
             Scenario(
                 name="optimization-executor-safety",
@@ -99,6 +112,7 @@ def build_plan(profile: str = "quick") -> list[Scenario]:
                     sys.executable,
                     "test_optimization_executor_standalone.py",
                 ],
+                category="performance",
             ),
             Scenario(
                 name="phase5-harness-self-check",
@@ -106,10 +120,12 @@ def build_plan(profile: str = "quick") -> list[Scenario]:
                     sys.executable,
                     "test_phase5_validation_harness_standalone.py",
                 ],
+                category="integration",
             ),
             Scenario(
                 name="phase5-rollup-self-check",
                 command=[sys.executable, "test_phase5_report_rollup_standalone.py"],
+                category="integration",
             ),
         ]
     )
@@ -162,6 +178,46 @@ def _run_subprocess(command: list[str], timeout: int) -> dict[str, Any]:
         }
 
 
+def _build_category_summaries(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    summaries: dict[str, dict[str, Any]] = {}
+    for row in results:
+        category = str(row.get("category") or "uncategorized")
+        summary = summaries.setdefault(
+            category,
+            {
+                "category": category,
+                "passed": 0,
+                "failed": 0,
+                "total": 0,
+                "scenarios": set(),
+            },
+        )
+        summary["total"] = int(summary["total"]) + 1
+        summary["scenarios"].add(str(row.get("name") or ""))
+        if bool(row.get("ok", False)):
+            summary["passed"] = int(summary["passed"]) + 1
+        else:
+            summary["failed"] = int(summary["failed"]) + 1
+
+    payload: list[dict[str, Any]] = []
+    for category in sorted(summaries):
+        summary = summaries[category]
+        total = int(summary["total"])
+        passed = int(summary["passed"])
+        payload.append(
+            {
+                "category": category,
+                "passed": passed,
+                "failed": int(summary["failed"]),
+                "total": total,
+                "pass_rate": round((passed / total) if total else 0.0, 4),
+                "status": "pass" if passed == total else "fail",
+                "scenarios": sorted(s for s in summary["scenarios"] if s),
+            }
+        )
+    return payload
+
+
 def run_validation(
     plan: list[Scenario],
     timeout: int = 180,
@@ -193,6 +249,7 @@ def run_validation(
             row = {
                 "run": run_index,
                 "name": scenario.name,
+                "category": scenario.category,
                 "command": scenario.command,
                 "ok": bool(outcome.get("ok", False)),
                 "returncode": int(outcome.get("returncode", 1)),
@@ -219,6 +276,7 @@ def run_validation(
     total = len(results)
     full_pass_runs = sum(1 for rs in run_summaries if rs["status"] == "pass")
     run_pass_rate = (full_pass_runs / runs) if runs else 0.0
+    category_summaries = _build_category_summaries(results)
 
     return {
         "status": "pass" if full_pass_runs == runs else "fail",
@@ -229,6 +287,7 @@ def run_validation(
         "full_pass_runs": full_pass_runs,
         "run_pass_rate": round(run_pass_rate, 4),
         "run_summaries": run_summaries,
+        "category_summaries": category_summaries,
         "scenarios": results,
     }
 
@@ -256,7 +315,16 @@ def main() -> int:
             "profile": args.profile,
             "runs": max(1, int(args.runs)),
             "total": len(plan),
-            "scenarios": [{"name": s.name, "command": s.command} for s in plan],
+            "category_summaries": _build_category_summaries(
+                [
+                    {"name": s.name, "category": s.category, "ok": True}
+                    for s in plan
+                ]
+            ),
+            "scenarios": [
+                {"name": s.name, "category": s.category, "command": s.command}
+                for s in plan
+            ],
         }
         Path(args.output).write_text(json.dumps(payload, indent=2), encoding="utf-8")
         print(json.dumps(payload, indent=2))

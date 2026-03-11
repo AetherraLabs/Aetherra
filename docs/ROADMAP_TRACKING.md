@@ -91,6 +91,10 @@ Completed now:
     `policy-governance-guardrails`, `signature-verifier-security`,
     `optimization-executor-safety`, `phase5-harness-self-check`,
     `phase5-rollup-self-check`)
+  - Adds scenario category metadata and category rollups in harness reports
+    (`integration`, `security`, `performance`, `governance`)
+  - Generated grouped full-profile plan artifact:
+    `.aetherra/reports/phase5/phase5_validation_plan_full_grouped.json`
   - Dry-run full-profile plan artifact generated: `.aetherra/reports/phase5/phase5_validation_plan_full_expanded.json`
   - 10-run quick-profile artifact generated: `phase5_validation_report_quick_runs10.json` (status `pass`, run_pass_rate `1.0`)
 - Added Phase 5 artifact rollup utility:
@@ -107,6 +111,7 @@ Completed now:
   - Adds artifact integrity metadata (SHA-256 + file sizes for report/rollup)
   - Adds historical trend deltas against prior bundle summaries (run-pass-rate delta + scenario-level deltas)
   - Integrates optional release-manifest emission/signing path via `--emit-release-manifest [--release-manifest-version <v>]`
+  - Adds bundle-level category rollups and category trend deltas so failures are grouped by gate type
 - Added VS Code tasks for bundle generation:
   - `Phase5 Bundle Artifacts (Quick x10)`
   - `Phase5 Bundle Artifacts (Full x3)`
@@ -128,15 +133,19 @@ Completed now:
   - `.aetherra/reports/phase5/phase5_bundle_quick_manifest_budget.json`
   - Result: `harness_ok=true`, `rollup_ok=true`, `release_manifest_ok=true`, `gates_ok=true`
   - Includes release-manifest metadata and non-prod failure-budget gate outcomes
+- Generated quick-profile grouped-category evidence artifact:
+  - `.aetherra/reports/phase5/phase5_bundle_quick_grouped_categories.json`
+  - Result: `harness_ok=true`, `rollup_ok=true`, `release_manifest_ok=true`, `gates_ok=true`
+  - Includes category rollups for `governance`, `integration`, `performance`, and `security`
 
 Remaining highest-priority roadmap gaps:
 
 1. Expand Phase 3 and Phase 4 tests toward roadmap breadth (decision quality/guardrails/plugin sandboxing).
 2. Continue broadening full-profile scenario mapping toward complete Week 10 coverage.
-3. Add bundle-level scenario grouping/reporting so failures roll up by gate category.
+3. Propagate grouped category reporting into multi-report rollup outputs.
 
 ## Next Execution Block
 
-1. Add bundle-level grouping for Phase 5 scenarios (integration/security/perf/governance).
-2. Extend full-profile scenarios further toward load/performance evidence where stable standalone suites exist.
-3. Commit next block as `test(phase-5): scenario grouping and deeper week10 coverage`.
+1. Extend grouped reporting into rollup artifacts for multi-report comparisons.
+2. Add repeatable load/performance evidence runs for selected Phase 5 categories.
+3. Commit next block as `test(phase-5): rollup grouping propagation and performance evidence`.

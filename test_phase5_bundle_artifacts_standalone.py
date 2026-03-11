@@ -90,6 +90,10 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             self.assertTrue(bundle["integrity"]["report_sha256"])
             self.assertTrue(bundle["integrity"]["rollup_sha256"])
             self.assertIn("trend", bundle)
+            self.assertIn("categories", bundle)
+            self.assertIn("results", bundle["categories"])
+            self.assertTrue(bundle["categories"]["results"])
+            self.assertIn("category_results", bundle["gates"])
             self.assertIn("release_manifest", bundle)
             self.assertFalse(bundle["release_manifest"]["enabled"])
 
@@ -130,9 +134,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
 
             bundle = json.loads(summary.read_text(encoding="utf-8"))
             self.assertTrue(bundle["release_manifest"]["enabled"])
-            self.assertEqual(
-                bundle["release_manifest"]["version"], "0.0.0-phase5-test"
-            )
+            self.assertEqual(bundle["release_manifest"]["version"], "0.0.0-phase5-test")
             self.assertTrue(bundle["release_manifest"]["step"]["ok"])
             self.assertTrue(bundle["release_manifest"]["sha256"])
 
@@ -279,6 +281,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             self.assertGreaterEqual(
                 bundle["trend"]["delta_observed_run_pass_rate"], 0.0
             )
+            self.assertIn("category_deltas", bundle["trend"])
             self.assertEqual(len(bundle["gates"]["scenario_results"]), 1)
             self.assertTrue(bundle["gates"]["scenario_results"][0]["passed"])
 

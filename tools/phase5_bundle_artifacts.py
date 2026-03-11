@@ -66,6 +66,7 @@ def _build_trend(
             "has_previous": False,
             "previous_summary": None,
             "delta_observed_run_pass_rate": None,
+            "category_deltas": [],
             "scenario_deltas": [],
         }
 
@@ -76,6 +77,7 @@ def _build_trend(
             "has_previous": True,
             "previous_summary": str(previous_summary_path),
             "delta_observed_run_pass_rate": None,
+            "category_deltas": [],
             "scenario_deltas": [],
             "error": f"failed_to_load_previous: {type(exc).__name__}: {exc}",
         }
@@ -100,6 +102,34 @@ def _build_trend(
         if row.get("name")
     }
 
+    prev_categories = {
+        str(row.get("category")): float(row.get("observed_pass_rate", 0.0) or 0.0)
+        for row in list((previous.get("categories") or {}).get("results", []) or [])
+        if row.get("category")
+    }
+    cur_categories = {
+        str(row.get("category")): float(row.get("observed_pass_rate", 0.0) or 0.0)
+        for row in list(
+            ((current_payload.get("categories") or {}).get("results", []) or [])
+        )
+        if row.get("category")
+    }
+
+    category_deltas: list[dict[str, Any]] = []
+    for name in sorted(set(prev_categories) | set(cur_categories)):
+        category_deltas.append(
+            {
+                "category": name,
+                "previous": prev_categories.get(name),
+                "current": cur_categories.get(name),
+                "delta": (
+                    None
+                    if name not in prev_categories or name not in cur_categories
+                    else round(cur_categories[name] - prev_categories[name], 4)
+                ),
+            }
+        )
+
     scenario_deltas: list[dict[str, Any]] = []
     for name in sorted(set(prev_scenarios) | set(cur_scenarios)):
         scenario_deltas.append(
@@ -121,8 +151,35 @@ def _build_trend(
         "previous_observed_run_pass_rate": prev_rate,
         "current_observed_run_pass_rate": cur_rate,
         "delta_observed_run_pass_rate": round(cur_rate - prev_rate, 4),
+        "category_deltas": category_deltas,
         "scenario_deltas": scenario_deltas,
     }
+
+
+def _build_category_rollup(report_data: dict[str, Any]) -> dict[str, Any]:
+    results: list[dict[str, Any]] = []
+    failing: list[str] = []
+    for row in list(report_data.get("category_summaries", []) or []):
+        category = str(row.get("category") or "")
+        if not category:
+            continue
+        observed = float(row.get("pass_rate", 0.0) or 0.0)
+        total = int(row.get("total", 0) or 0)
+        failed = int(row.get("failed", 0) or 0)
+        passed_all = failed == 0 and total > 0
+        results.append(
+            {
+                "category": category,
+                "observed_pass_rate": observed,
+                "total": total,
+                "failed": failed,
+                "passed": passed_all,
+                "scenarios": list(row.get("scenarios", []) or []),
+            }
+        )
+        if not passed_all:
+            failing.append(category)
+    return {"results": results, "failing": failing}
 
 
 def bundle_artifacts(
@@ -193,7 +250,9 @@ def bundle_artifacts(
     )
 
     scenario_failures = sum(
-        1 for row in list(report_data.get("scenarios", []) or []) if not bool(row.get("ok"))
+        1
+        for row in list(report_data.get("scenarios", []) or [])
+        if not bool(row.get("ok"))
     )
     budget_applies = allowed_scenario_failures is not None and profile != "full"
     budget_passed = (
@@ -230,6 +289,7 @@ def bundle_artifacts(
             }
         )
     scenario_gates_passed = all(row["passed"] for row in scenario_gate_rows)
+    category_rollup = _build_category_rollup(report_data)
 
     payload = {
         "created_at": datetime.utcnow().isoformat(),
@@ -254,8 +314,10 @@ def bundle_artifacts(
             "budget_applies": budget_applies,
             "observed_scenario_failures": scenario_failures,
             "budget_passed": budget_passed,
+            "category_results": category_rollup["results"],
             "passed": gate_passed and scenario_gates_passed and budget_passed,
         },
+        "categories": category_rollup,
     }
 
     payload["integrity"] = {
@@ -363,7 +425,10 @@ def main() -> int:
         print(json.dumps(preview, indent=2))
         return 0
 
-    if args.allowed_scenario_failures is not None and args.allowed_scenario_failures < 0:
+    if (
+        args.allowed_scenario_failures is not None
+        and args.allowed_scenario_failures < 0
+    ):
         print("Invalid --allowed-scenario-failures: must be >= 0")
         return 2
 
