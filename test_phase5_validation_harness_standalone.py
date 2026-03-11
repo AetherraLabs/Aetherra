@@ -77,6 +77,18 @@ class TestPhase5ValidationHarness(unittest.TestCase):
         self.assertAlmostEqual(report["run_pass_rate"], 2 / 3, places=3)
         self.assertEqual(len(report["run_summaries"]), 3)
 
+    def test_run_validation_handles_runner_interrupt(self):
+        plan = build_plan("quick")[:1]
+
+        def interrupting_runner(command, timeout):
+            raise KeyboardInterrupt("simulated stop")
+
+        report = run_validation(plan, timeout=10, runs=1, runner=interrupting_runner)
+        self.assertEqual(report["status"], "fail")
+        self.assertEqual(report["passed"], 0)
+        self.assertEqual(report["failed"], 1)
+        self.assertIn("runner_exception", report["scenarios"][0]["stderr"])
+
     def test_cli_dry_run_writes_plan(self):
         with tempfile.TemporaryDirectory() as td:
             out = Path(td) / "report.json"
@@ -108,7 +120,9 @@ class TestPhase5ValidationHarness(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestPhase5ValidationHarness)
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        TestPhase5ValidationHarness
+    )
     total = suite.countTestCases()
     print(f"Running {total} phase-5 harness tests...")
     result = unittest.TextTestRunner(verbosity=2).run(suite)

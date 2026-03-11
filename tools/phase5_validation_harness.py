@@ -29,15 +29,24 @@ def build_plan(profile: str = "quick") -> list[Scenario]:
     quick = [
         Scenario(
             name="decision-governor-learning-chain",
-            command=[sys.executable, "test_phase4_autonomy_learning_chain_standalone.py"],
+            command=[
+                sys.executable,
+                "test_phase4_autonomy_learning_chain_standalone.py",
+            ],
         ),
         Scenario(
             name="learning-quality-and-latency",
-            command=[sys.executable, "test_phase4_learning_quality_and_latency_standalone.py"],
+            command=[
+                sys.executable,
+                "test_phase4_learning_quality_and_latency_standalone.py",
+            ],
         ),
         Scenario(
             name="memory-recall-and-consolidation",
-            command=[sys.executable, "test_phase4_memory_engine_enhancement_standalone.py"],
+            command=[
+                sys.executable,
+                "test_phase4_memory_engine_enhancement_standalone.py",
+            ],
         ),
     ]
 
@@ -62,23 +71,42 @@ def _run_subprocess(command: list[str], timeout: int) -> dict[str, Any]:
     child_env = dict(os.environ)
     child_env.setdefault("PYTHONIOENCODING", "utf-8")
     child_env.setdefault("PYTHONUTF8", "1")
-    proc = subprocess.run(
-        command,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        timeout=timeout,
-        env=child_env,
-    )
-    elapsed = time.perf_counter() - started
-    return {
-        "ok": proc.returncode == 0,
-        "returncode": proc.returncode,
-        "duration_sec": round(elapsed, 4),
-        "stdout": proc.stdout,
-        "stderr": proc.stderr,
-    }
+    try:
+        proc = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout,
+            env=child_env,
+        )
+        elapsed = time.perf_counter() - started
+        return {
+            "ok": proc.returncode == 0,
+            "returncode": proc.returncode,
+            "duration_sec": round(elapsed, 4),
+            "stdout": proc.stdout,
+            "stderr": proc.stderr,
+        }
+    except subprocess.TimeoutExpired as exc:
+        elapsed = time.perf_counter() - started
+        return {
+            "ok": False,
+            "returncode": 124,
+            "duration_sec": round(elapsed, 4),
+            "stdout": str(exc.stdout or ""),
+            "stderr": f"timeout after {timeout}s",
+        }
+    except KeyboardInterrupt:
+        elapsed = time.perf_counter() - started
+        return {
+            "ok": False,
+            "returncode": 130,
+            "duration_sec": round(elapsed, 4),
+            "stdout": "",
+            "stderr": "interrupted",
+        }
 
 
 def run_validation(
@@ -99,7 +127,16 @@ def run_validation(
     for run_index in range(1, runs + 1):
         run_rows: list[dict[str, Any]] = []
         for scenario in plan:
-            outcome = runner(scenario.command, timeout)
+            try:
+                outcome = runner(scenario.command, timeout)
+            except BaseException as exc:
+                outcome = {
+                    "ok": False,
+                    "returncode": 99,
+                    "duration_sec": 0.0,
+                    "stdout": "",
+                    "stderr": f"runner_exception: {type(exc).__name__}: {exc}",
+                }
             row = {
                 "run": run_index,
                 "name": scenario.name,
@@ -175,7 +212,9 @@ def main() -> int:
     report = run_validation(plan=plan, timeout=args.timeout, runs=args.runs)
     Path(args.output).write_text(json.dumps(report, indent=2), encoding="utf-8")
 
-    print(f"Validation status: {report['status']} ({report['passed']}/{report['total']} passed)")
+    print(
+        f"Validation status: {report['status']} ({report['passed']}/{report['total']} passed)"
+    )
     return 0 if report["status"] == "pass" else 1
 
 
