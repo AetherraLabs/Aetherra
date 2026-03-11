@@ -8,21 +8,23 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List
+from typing import Any
 
 
 @dataclass
 class Scenario:
     name: str
-    command: List[str]
+    command: list[str]
 
 
-def build_plan(profile: str = "quick") -> List[Scenario]:
+def build_plan(profile: str = "quick") -> list[Scenario]:
     """Build a validation plan from a named profile."""
     quick = [
         Scenario(
@@ -55,8 +57,11 @@ def build_plan(profile: str = "quick") -> List[Scenario]:
     return quick
 
 
-def _run_subprocess(command: List[str], timeout: int) -> Dict[str, Any]:
+def _run_subprocess(command: list[str], timeout: int) -> dict[str, Any]:
     started = time.perf_counter()
+    child_env = dict(os.environ)
+    child_env.setdefault("PYTHONIOENCODING", "utf-8")
+    child_env.setdefault("PYTHONUTF8", "1")
     proc = subprocess.run(
         command,
         capture_output=True,
@@ -64,6 +69,7 @@ def _run_subprocess(command: List[str], timeout: int) -> Dict[str, Any]:
         encoding="utf-8",
         errors="replace",
         timeout=timeout,
+        env=child_env,
     )
     elapsed = time.perf_counter() - started
     return {
@@ -76,17 +82,26 @@ def _run_subprocess(command: List[str], timeout: int) -> Dict[str, Any]:
 
 
 def run_validation(
-    plan: List[Scenario],
+    plan: list[Scenario],
     timeout: int = 180,
-    runner: Callable[[List[str], int], Dict[str, Any]] = _run_subprocess,
-) -> Dict[str, Any]:
-    """Execute validation scenarios and return aggregate results."""
-    results: List[Dict[str, Any]] = []
+    runs: int = 1,
+    runner: Callable[[list[str], int], dict[str, Any]] = _run_subprocess,
+) -> dict[str, Any]:
+    """Execute validation scenarios and return aggregate results.
 
-    for scenario in plan:
-        outcome = runner(scenario.command, timeout)
-        results.append(
-            {
+    When runs > 1, all scenarios are executed per run and pass-rate evidence
+    is included in the report.
+    """
+    runs = max(1, int(runs))
+    results: list[dict[str, Any]] = []
+    run_summaries: list[dict[str, Any]] = []
+
+    for run_index in range(1, runs + 1):
+        run_rows: list[dict[str, Any]] = []
+        for scenario in plan:
+            outcome = runner(scenario.command, timeout)
+            row = {
+                "run": run_index,
                 "name": scenario.name,
                 "command": scenario.command,
                 "ok": bool(outcome.get("ok", False)),
@@ -95,15 +110,35 @@ def run_validation(
                 "stdout": str(outcome.get("stdout", "")),
                 "stderr": str(outcome.get("stderr", "")),
             }
+            run_rows.append(row)
+            results.append(row)
+
+        run_passed = sum(1 for row in run_rows if row["ok"])
+        run_total = len(run_rows)
+        run_summaries.append(
+            {
+                "run": run_index,
+                "status": "pass" if run_passed == run_total else "fail",
+                "passed": run_passed,
+                "failed": run_total - run_passed,
+                "total": run_total,
+            }
         )
 
     passed = sum(1 for row in results if row["ok"])
     total = len(results)
+    full_pass_runs = sum(1 for rs in run_summaries if rs["status"] == "pass")
+    run_pass_rate = (full_pass_runs / runs) if runs else 0.0
+
     return {
-        "status": "pass" if passed == total else "fail",
+        "status": "pass" if full_pass_runs == runs else "fail",
         "passed": passed,
         "failed": total - passed,
         "total": total,
+        "runs": runs,
+        "full_pass_runs": full_pass_runs,
+        "run_pass_rate": round(run_pass_rate, 4),
+        "run_summaries": run_summaries,
         "scenarios": results,
     }
 
@@ -112,6 +147,7 @@ def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Run Phase 5 validation harness")
     p.add_argument("--profile", choices=["quick", "full"], default="quick")
     p.add_argument("--timeout", type=int, default=180)
+    p.add_argument("--runs", type=int, default=1)
     p.add_argument("--output", default="phase5_validation_report.json")
     p.add_argument(
         "--dry-run",
@@ -128,6 +164,7 @@ def main() -> int:
     if args.dry_run:
         payload = {
             "profile": args.profile,
+            "runs": max(1, int(args.runs)),
             "total": len(plan),
             "scenarios": [{"name": s.name, "command": s.command} for s in plan],
         }
@@ -135,7 +172,7 @@ def main() -> int:
         print(json.dumps(payload, indent=2))
         return 0
 
-    report = run_validation(plan=plan, timeout=args.timeout)
+    report = run_validation(plan=plan, timeout=args.timeout, runs=args.runs)
     Path(args.output).write_text(json.dumps(report, indent=2), encoding="utf-8")
 
     print(f"Validation status: {report['status']} ({report['passed']}/{report['total']} passed)")

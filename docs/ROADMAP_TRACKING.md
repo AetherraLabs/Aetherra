@@ -80,6 +80,7 @@ Completed now:
   - `tools/phase5_validation_harness.py`
   - `test_phase5_validation_harness_standalone.py` (3/3 passing)
   - Includes repeat-run mode (`--runs`) and run pass-rate evidence in JSON output
+  - Hardened subprocess execution for Windows (`PYTHONIOENCODING=utf-8`, `PYTHONUTF8=1`) to avoid cp1252 crashes in child test runs
 
 Remaining highest-priority roadmap gaps:
 
