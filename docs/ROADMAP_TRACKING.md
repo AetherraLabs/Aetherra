@@ -20,8 +20,8 @@ Source of truth roadmap: `PRODUCTION_ROADMAP.md`
 | ------------------------------ | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | Phase 1 Foundation/Audit       | Partial-Complete          | `STUB_INVENTORY.json`, `docs/architecture/DEPENDENCY_GRAPH.md`, `docs/IMPLEMENTATION_TASKS.md`, `docs/DEVELOPMENT_GUIDELINES.md` | Keep inventory current and tie to milestone gates                          |
 | Phase 2a Reflector             | In Progress               | `Aetherra/aetherra_core/kernel/reflector.py`, `Aetherra/plugins/reflector.py`                                                    | Kernel reflector still needs roadmap acceptance validation                 |
-| Phase 2b Impact + Code Gen     | In Progress               | `aetherra_coding/orchestrator.py`, `aetherra_coding/analysis.py`, `aetherra_coding/verification.py`                            | Expand unit/integration coverage toward roadmap test volume                |
-| Phase 3 Consciousness/Autonomy | Partial                   | `Aetherra/consciousness/episodic_store.py` present                                                                               | Missing `decision_engine.py`, `autonomy_governor.py`, `plugins/manager.py` |
+| Phase 2b Impact + Code Gen     | In Progress               | `aetherra_coding/orchestrator.py`, `aetherra_coding/analysis.py`, `aetherra_coding/verification.py`                              | Expand unit/integration coverage toward roadmap test volume                |
+| Phase 3 Consciousness/Autonomy | In Progress               | `Aetherra/consciousness/episodic_store.py`, `Aetherra/consciousness/decision_engine.py`, `Aetherra/consciousness/autonomy_governor.py`, `Aetherra/plugins/manager.py` | Expand depth and coverage versus roadmap acceptance tests |
 | Phase 4 Memory/Learning        | Partial                   | episodic layer present                                                                                                           | Missing `learning_loop.py`, verify memory engine enhancements              |
 | Phase 5 Validation/Release     | Not Started (formal gate) | Some ad-hoc test runs completed                                                                                                  | Need structured integration/load/security/perf/release gates               |
 
@@ -59,16 +59,20 @@ Completed now:
 - Added standalone tests: `test_analysis_engine_standalone.py` (10/10 passing)
 - Replaced placeholder helper methods in `Aetherra/plugins/reflector.py` with data-driven implementations
 - Added standalone tests: `test_plugins_reflector_standalone.py` (16/16 passing)
+- Implemented Phase 3 core modules:
+  - `Aetherra/consciousness/decision_engine.py`
+  - `Aetherra/consciousness/autonomy_governor.py`
+  - `Aetherra/plugins/manager.py`
+- Added standalone tests: `test_phase3_modules_standalone.py` (17/17 passing)
 
 Remaining highest-priority roadmap gaps:
 
-1. Add missing consciousness/autonomy modules required by roadmap Phase 3.
-2. Add/verify learning-loop components required by roadmap Phase 4.
+1. Add/verify learning-loop components required by roadmap Phase 4.
+2. Expand Phase 3 tests toward roadmap breadth (decision quality/guardrails/plugin sandboxing).
 3. Build formal validation gate scripts for roadmap Phase 5 evidence.
 
 ## Next Execution Block
 
-1. Implement `Aetherra/consciousness/decision_engine.py`.
-2. Implement `Aetherra/consciousness/autonomy_governor.py`.
-3. Implement `Aetherra/plugins/manager.py`.
-4. Add focused standalone tests and commit as `feat(phase-3): ...`.
+1. Implement `Aetherra/consciousness/learning_loop.py`.
+2. Integrate learning loop with episodic store + decision outcomes.
+3. Add focused standalone tests and commit as `feat(phase-4): ...`.
