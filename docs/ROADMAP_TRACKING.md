@@ -108,16 +108,19 @@ Completed now:
   - Adds grouped historical trend deltas against prior rollup artifacts
 - Added Phase 5 bundle utility:
   - `tools/phase5_bundle_artifacts.py`
-  - `test_phase5_bundle_artifacts_standalone.py` (9/9 passing)
+  - `test_phase5_bundle_artifacts_standalone.py` (10/10 passing)
   - Runs harness + rollup in one command and writes bundled artifacts under a target directory
   - Supports threshold gates via `--min-run-pass-rate` and writes gate outcomes in bundle summary metadata
   - Supports per-scenario threshold gates via `--scenario-min-pass-rate <scenario>=<rate>`
+  - Supports per-category threshold gates via `--category-min-pass-rate <category>=<rate>`
   - Supports non-prod failure budgets via `--allowed-scenario-failures <n>` (applies to `quick` profile)
   - Adds artifact integrity metadata (SHA-256 + file sizes for report/rollup)
   - Adds historical trend deltas against prior bundle summaries (run-pass-rate delta + scenario-level deltas)
   - Integrates optional release-manifest emission/signing path via `--emit-release-manifest [--release-manifest-version <v>]`
   - Adds bundle-level category rollups and category trend deltas so failures are grouped by gate type
   - Enforces rollup performance thresholds as part of bundle gates
+  - Persists rollup analysis snapshots and bundle-level deltas for grouped category/performance history
+  - Uses timezone-aware UTC timestamps in generated bundle metadata
 - Added VS Code tasks for bundle generation:
   - `Phase5 Bundle Artifacts (Quick x10)`
   - `Phase5 Bundle Artifacts (Full x3)`
@@ -153,15 +156,19 @@ Completed now:
   - `.aetherra/reports/phase5/phase5_bundle_quick_performance_thresholds.json`
   - Result: `harness_ok=true`, `rollup_ok=true`, `gates_ok=true`
   - Includes rollup-derived performance threshold gates in bundle summary
+- Generated quick-profile category-threshold + grouped-trend bundle artifact:
+  - `.aetherra/reports/phase5/phase5_bundle_category_thresholds_grouped_trends.json`
+  - Result: `harness_ok=true`, `rollup_ok=true`, `gates_ok=true`
+  - Includes category threshold gate results plus rollup category/performance delta propagation
 
 Remaining highest-priority roadmap gaps:
 
 1. Expand Phase 3 and Phase 4 tests toward roadmap breadth (decision quality/guardrails/plugin sandboxing).
 2. Continue broadening full-profile scenario mapping toward complete Week 10 coverage.
-3. Add category-level threshold policy controls (not only global performance checks).
+3. Expand bundle/rollup policy coverage into release-manifest and historical gate governance.
 
 ## Next Execution Block
 
-1. Add category-specific threshold gates (`integration`, `security`, `governance`, `performance`) in bundle flow.
-2. Extend grouped trend deltas into bundle-level historical comparisons for multi-report rollups.
-3. Commit next block as `test(phase-5): category threshold policies and grouped trend propagation`.
+1. Extend manifest policy verification to assert category-threshold governance in release-style runs.
+2. Broaden historical gate governance with trend-aware release criteria and negative-path coverage.
+3. Commit next block as `test(phase-5): manifest governance and trend-aware release gates`.

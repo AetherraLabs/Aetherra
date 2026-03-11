@@ -13,7 +13,7 @@ import json
 import os
 import subprocess
 import sys
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -67,6 +67,8 @@ def _build_trend(
             "previous_summary": None,
             "delta_observed_run_pass_rate": None,
             "category_deltas": [],
+            "rollup_category_deltas": [],
+            "rollup_performance_deltas": [],
             "scenario_deltas": [],
         }
 
@@ -78,6 +80,8 @@ def _build_trend(
             "previous_summary": str(previous_summary_path),
             "delta_observed_run_pass_rate": None,
             "category_deltas": [],
+            "rollup_category_deltas": [],
+            "rollup_performance_deltas": [],
             "scenario_deltas": [],
             "error": f"failed_to_load_previous: {type(exc).__name__}: {exc}",
         }
@@ -130,6 +134,52 @@ def _build_trend(
             }
         )
 
+    prev_rollup_categories = {
+        str(row.get("category")): float(row.get("aggregate_pass_rate", 0.0) or 0.0)
+        for row in list(
+            (((previous.get("rollup_analysis") or {}).get("categories") or {}).get("results", []) or [])
+        )
+        if row.get("category")
+    }
+    cur_rollup_categories = {
+        str(row.get("category")): float(row.get("aggregate_pass_rate", 0.0) or 0.0)
+        for row in list(
+            ((((current_payload.get("rollup_analysis") or {}).get("categories") or {}).get("results", [])) or [])
+        )
+        if row.get("category")
+    }
+
+    rollup_category_deltas: list[dict[str, Any]] = []
+    for name in sorted(set(prev_rollup_categories) | set(cur_rollup_categories)):
+        rollup_category_deltas.append(
+            {
+                "category": name,
+                "previous": prev_rollup_categories.get(name),
+                "current": cur_rollup_categories.get(name),
+                "delta": (
+                    None
+                    if name not in prev_rollup_categories or name not in cur_rollup_categories
+                    else round(cur_rollup_categories[name] - prev_rollup_categories[name], 4)
+                ),
+            }
+        )
+
+    previous_rollup_performance = ((previous.get("rollup_analysis") or {}).get("performance_evidence") or {})
+    current_rollup_performance = ((current_payload.get("rollup_analysis") or {}).get("performance_evidence") or {})
+    rollup_performance_deltas = [
+        {
+            "name": key,
+            "previous": float(previous_rollup_performance.get(key, 0.0) or 0.0),
+            "current": float(current_rollup_performance.get(key, 0.0) or 0.0),
+            "delta": round(
+                float(current_rollup_performance.get(key, 0.0) or 0.0)
+                - float(previous_rollup_performance.get(key, 0.0) or 0.0),
+                4,
+            ),
+        }
+        for key in ["avg_duration_sec", "max_duration_sec"]
+    ]
+
     scenario_deltas: list[dict[str, Any]] = []
     for name in sorted(set(prev_scenarios) | set(cur_scenarios)):
         scenario_deltas.append(
@@ -152,6 +202,8 @@ def _build_trend(
         "current_observed_run_pass_rate": cur_rate,
         "delta_observed_run_pass_rate": round(cur_rate - prev_rate, 4),
         "category_deltas": category_deltas,
+        "rollup_category_deltas": rollup_category_deltas,
+        "rollup_performance_deltas": rollup_performance_deltas,
         "scenario_deltas": scenario_deltas,
     }
 
@@ -191,6 +243,7 @@ def bundle_artifacts(
     stamp: str,
     min_run_pass_rate: float | None = None,
     scenario_min_pass_rate: dict[str, float] | None = None,
+    category_min_pass_rate: dict[str, float] | None = None,
     allowed_scenario_failures: int | None = None,
     performance_min_pass_rate: float | None = None,
     performance_max_avg_duration_sec: float | None = None,
@@ -305,11 +358,29 @@ def bundle_artifacts(
         )
     scenario_gates_passed = all(row["passed"] for row in scenario_gate_rows)
     category_rollup = _build_category_rollup(report_data)
+    category_thresholds = category_min_pass_rate or {}
+    category_gate_rows: list[dict[str, Any]] = []
+    category_rate_map = {
+        str(row.get("category")): float(row.get("observed_pass_rate", 0.0) or 0.0)
+        for row in list(category_rollup.get("results", []) or [])
+        if row.get("category")
+    }
+    for name, threshold in category_thresholds.items():
+        observed = float(category_rate_map.get(name, 0.0) or 0.0)
+        category_gate_rows.append(
+            {
+                "category": name,
+                "min_pass_rate": float(threshold),
+                "observed_pass_rate": observed,
+                "passed": observed >= float(threshold),
+            }
+        )
+    category_gates_passed = all(row["passed"] for row in category_gate_rows)
     performance_thresholds = (rollup_data.get("performance_thresholds") or {})
     performance_thresholds_passed = bool(performance_thresholds.get("passed", True))
 
     payload = {
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
         "profile": profile,
         "runs": runs,
         "timeout": timeout,
@@ -322,21 +393,30 @@ def bundle_artifacts(
             "harness": harness,
             "rollup": rollup,
         },
+        "rollup_analysis": {
+            "categories": rollup_data.get("categories") or {"results": []},
+            "performance_evidence": rollup_data.get("performance_evidence") or {},
+            "performance_thresholds": performance_thresholds,
+            "grouped_trends": rollup_data.get("grouped_trends") or {},
+        },
         "gates": {
             "min_run_pass_rate": min_run_pass_rate,
             "observed_run_pass_rate": observed_rate,
             "scenario_min_pass_rate": scenario_thresholds,
             "scenario_results": scenario_gate_rows,
+            "category_min_pass_rate": category_thresholds,
             "allowed_scenario_failures": allowed_scenario_failures,
             "budget_applies": budget_applies,
             "observed_scenario_failures": scenario_failures,
             "budget_passed": budget_passed,
             "category_results": category_rollup["results"],
+            "category_threshold_results": category_gate_rows,
             "performance_thresholds": performance_thresholds,
             "performance_thresholds_passed": performance_thresholds_passed,
             "passed": (
                 gate_passed
                 and scenario_gates_passed
+                and category_gates_passed
                 and budget_passed
                 and performance_thresholds_passed
             ),
@@ -411,6 +491,12 @@ def _parse_args() -> argparse.Namespace:
         default=[],
         help="Scenario threshold in the form <scenario_name>=<rate>",
     )
+    p.add_argument(
+        "--category-min-pass-rate",
+        action="append",
+        default=[],
+        help="Category threshold in the form <category>=<rate>",
+    )
     p.add_argument("--performance-min-pass-rate", type=float, default=None)
     p.add_argument("--performance-max-avg-duration-sec", type=float, default=None)
     p.add_argument(
@@ -426,7 +512,7 @@ def _parse_args() -> argparse.Namespace:
         default=None,
         help="Explicit manifest version passed to sign_release_manifest.py",
     )
-    p.add_argument("--stamp", default=datetime.utcnow().strftime("%Y%m%d_%H%M%S"))
+    p.add_argument("--stamp", default=datetime.now(UTC).strftime("%Y%m%d_%H%M%S"))
     p.add_argument("--dry-run", action="store_true")
     return p.parse_args()
 
@@ -447,6 +533,7 @@ def main() -> int:
             "min_run_pass_rate": args.min_run_pass_rate,
             "allowed_scenario_failures": args.allowed_scenario_failures,
             "scenario_min_pass_rate": args.scenario_min_pass_rate,
+            "category_min_pass_rate": args.category_min_pass_rate,
             "performance_min_pass_rate": args.performance_min_pass_rate,
             "performance_max_avg_duration_sec": args.performance_max_avg_duration_sec,
             "performance_max_scenario_duration_sec": args.performance_max_scenario_duration_sec,
@@ -465,6 +552,7 @@ def main() -> int:
         return 2
 
     scenario_thresholds: dict[str, float] = {}
+    category_thresholds: dict[str, float] = {}
     try:
         for raw in list(args.scenario_min_pass_rate or []):
             if "=" not in raw:
@@ -473,6 +561,13 @@ def main() -> int:
                 )
             name, value = raw.split("=", 1)
             scenario_thresholds[name.strip()] = float(value)
+        for raw in list(args.category_min_pass_rate or []):
+            if "=" not in raw:
+                raise ValueError(
+                    "--category-min-pass-rate entries must be in form <category>=<rate>"
+                )
+            name, value = raw.split("=", 1)
+            category_thresholds[name.strip()] = float(value)
     except ValueError as exc:
         print(f"Invalid scenario threshold argument: {exc}")
         return 2
@@ -486,6 +581,7 @@ def main() -> int:
         stamp=args.stamp,
         min_run_pass_rate=args.min_run_pass_rate,
         scenario_min_pass_rate=scenario_thresholds,
+        category_min_pass_rate=category_thresholds,
         allowed_scenario_failures=args.allowed_scenario_failures,
         performance_min_pass_rate=args.performance_min_pass_rate,
         performance_max_avg_duration_sec=args.performance_max_avg_duration_sec,

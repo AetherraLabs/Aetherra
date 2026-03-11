@@ -93,6 +93,8 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             self.assertIn("categories", bundle)
             self.assertIn("results", bundle["categories"])
             self.assertTrue(bundle["categories"]["results"])
+            self.assertIn("rollup_analysis", bundle)
+            self.assertIn("grouped_trends", bundle["rollup_analysis"])
             self.assertIn("category_results", bundle["gates"])
             self.assertIn("release_manifest", bundle)
             self.assertFalse(bundle["release_manifest"]["enabled"])
@@ -227,6 +229,40 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             bundle = json.loads(summary.read_text(encoding="utf-8"))
             self.assertFalse(bundle["gates"]["passed"])
 
+    def test_bundle_fails_when_category_threshold_not_met(self):
+        with tempfile.TemporaryDirectory() as td:
+            stamp = "category_threshold_fail"
+            cmd = [
+                sys.executable,
+                "tools/phase5_bundle_artifacts.py",
+                "--profile",
+                "quick",
+                "--runs",
+                "1",
+                "--timeout",
+                "120",
+                "--output-dir",
+                td,
+                "--stamp",
+                stamp,
+                "--category-min-pass-rate",
+                "integration=1.0",
+            ]
+            proc = subprocess.run(
+                cmd,
+                cwd=os.path.dirname(os.path.abspath(__file__)),
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+            )
+            self.assertEqual(proc.returncode, 1)
+            summary = Path(td) / f"phase5_bundle_{stamp}.json"
+            bundle = json.loads(summary.read_text(encoding="utf-8"))
+            self.assertIn("category_threshold_results", bundle["gates"])
+            self.assertFalse(bundle["gates"]["category_threshold_results"][0]["passed"])
+            self.assertFalse(bundle["gates"]["passed"])
+
     def test_bundle_includes_trend_delta_against_previous_summary(self):
         with tempfile.TemporaryDirectory() as td:
             previous = Path(td) / "phase5_bundle_prev.json"
@@ -282,6 +318,8 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
                 bundle["trend"]["delta_observed_run_pass_rate"], 0.0
             )
             self.assertIn("category_deltas", bundle["trend"])
+            self.assertIn("rollup_category_deltas", bundle["trend"])
+            self.assertIn("rollup_performance_deltas", bundle["trend"])
             self.assertEqual(len(bundle["gates"]["scenario_results"]), 1)
             self.assertTrue(bundle["gates"]["scenario_results"][0]["passed"])
 
