@@ -97,15 +97,19 @@ Completed now:
   - `Phase5 Bundle Artifacts (Quick x10)`
   - `Phase5 Bundle Artifacts (Full x3)`
   - Both tasks now include `--min-run-pass-rate 1.0` gate enforcement
+- Generated full-profile bundle evidence artifact:
+  - `.aetherra/reports/phase5/phase5_bundle_full_x3_evidence.json`
+  - Result: `harness_ok=true`, `rollup_ok=true`, `gates_ok=true`
+  - Coverage: full profile, 3 runs, 24/24 scenario executions passed
 
 Remaining highest-priority roadmap gaps:
 
 1. Expand Phase 3 and Phase 4 tests toward roadmap breadth (decision quality/guardrails/plugin sandboxing).
 2. Continue broadening full-profile scenario mapping toward complete Week 10 coverage.
-3. Run full-profile bundle task and archive artifact set for formal gate evidence.
+3. Add scenario-level threshold gates (per-flow minimum pass expectations) into bundle summary metadata.
 
 ## Next Execution Block
 
-1. Execute `Phase5 Bundle Artifacts (Full x3)` and archive produced report/rollup/summary artifacts.
-2. Add scenario-level acceptance thresholds (per-flow pass minima) to bundle metadata.
-3. Commit next block as `test(phase-5): full-profile artifact evidence and scenario thresholds`.
+1. Add scenario-level acceptance thresholds (per-flow pass minima) to bundle metadata.
+2. Add optional artifact signature/checksum output for report integrity tracking.
+3. Commit next block as `test(phase-5): scenario threshold gates and artifact integrity metadata`.
