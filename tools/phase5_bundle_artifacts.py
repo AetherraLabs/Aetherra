@@ -47,6 +47,7 @@ def bundle_artifacts(
     output_dir: Path,
     stamp: str,
     min_run_pass_rate: float | None = None,
+    scenario_min_pass_rate: dict[str, float] | None = None,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -97,7 +98,37 @@ def bundle_artifacts(
         or 0.0
     )
     gate_enabled = min_run_pass_rate is not None
-    gate_passed = (observed_rate >= float(min_run_pass_rate)) if gate_enabled else True
+    min_rate_value = float(min_run_pass_rate) if min_run_pass_rate is not None else None
+    gate_passed = (observed_rate >= min_rate_value) if min_rate_value is not None else True
+
+    scenario_thresholds = scenario_min_pass_rate or {}
+    scenario_stats: dict[str, dict[str, float | int]] = {}
+    for row in list(report_data.get("scenarios", []) or []):
+        name = str(row.get("name", ""))
+        if not name:
+            continue
+        stat = scenario_stats.setdefault(name, {"total": 0, "passed": 0, "rate": 0.0})
+        stat["total"] = int(stat["total"]) + 1
+        if bool(row.get("ok", False)):
+            stat["passed"] = int(stat["passed"]) + 1
+
+    for stat in scenario_stats.values():
+        total = int(stat["total"])
+        passed = int(stat["passed"])
+        stat["rate"] = (passed / total) if total else 0.0
+
+    scenario_gate_rows: list[dict[str, Any]] = []
+    for name, threshold in scenario_thresholds.items():
+        observed = float((scenario_stats.get(name) or {}).get("rate", 0.0) or 0.0)
+        scenario_gate_rows.append(
+            {
+                "name": name,
+                "min_pass_rate": float(threshold),
+                "observed_pass_rate": observed,
+                "passed": observed >= float(threshold),
+            }
+        )
+    scenario_gates_passed = all(row["passed"] for row in scenario_gate_rows)
 
     payload = {
         "created_at": datetime.utcnow().isoformat(),
@@ -116,7 +147,9 @@ def bundle_artifacts(
         "gates": {
             "min_run_pass_rate": min_run_pass_rate,
             "observed_run_pass_rate": observed_rate,
-            "passed": gate_passed,
+            "scenario_min_pass_rate": scenario_thresholds,
+            "scenario_results": scenario_gate_rows,
+            "passed": gate_passed and scenario_gates_passed,
         },
     }
 
@@ -131,6 +164,12 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--timeout", type=int, default=180)
     p.add_argument("--output-dir", default=".aetherra/reports/phase5")
     p.add_argument("--min-run-pass-rate", type=float, default=None)
+    p.add_argument(
+        "--scenario-min-pass-rate",
+        action="append",
+        default=[],
+        help="Scenario threshold in the form <scenario_name>=<rate>",
+    )
     p.add_argument("--stamp", default=datetime.utcnow().strftime("%Y%m%d_%H%M%S"))
     p.add_argument("--dry-run", action="store_true")
     return p.parse_args()
@@ -150,10 +189,24 @@ def main() -> int:
             "timeout": int(args.timeout),
             "output_dir": str(out_dir),
             "min_run_pass_rate": args.min_run_pass_rate,
+            "scenario_min_pass_rate": args.scenario_min_pass_rate,
             "stamp": args.stamp,
         }
         print(json.dumps(preview, indent=2))
         return 0
+
+    scenario_thresholds: dict[str, float] = {}
+    try:
+        for raw in list(args.scenario_min_pass_rate or []):
+            if "=" not in raw:
+                raise ValueError(
+                    "--scenario-min-pass-rate entries must be in form <scenario_name>=<rate>"
+                )
+            name, value = raw.split("=", 1)
+            scenario_thresholds[name.strip()] = float(value)
+    except ValueError as exc:
+        print(f"Invalid scenario threshold argument: {exc}")
+        return 2
 
     payload = bundle_artifacts(
         repo_root=repo_root,
@@ -163,6 +216,7 @@ def main() -> int:
         output_dir=out_dir,
         stamp=args.stamp,
         min_run_pass_rate=args.min_run_pass_rate,
+        scenario_min_pass_rate=scenario_thresholds,
     )
 
     harness_ok = bool(payload["steps"]["harness"]["ok"])
