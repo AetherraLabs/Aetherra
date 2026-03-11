@@ -53,6 +53,29 @@ class TestPhase5ValidationHarness(unittest.TestCase):
         self.assertEqual(report["passed"], 1)
         self.assertEqual(report["failed"], 1)
         self.assertEqual(report["status"], "fail")
+        self.assertEqual(report["runs"], 1)
+        self.assertEqual(report["full_pass_runs"], 0)
+
+    def test_run_validation_repeat_runs_reports_pass_rate(self):
+        plan = build_plan("quick")[:1]
+        call_counter = {"n": 0}
+
+        def flaky_runner(command, timeout):
+            call_counter["n"] += 1
+            ok = call_counter["n"] in (1, 3)
+            return {
+                "ok": ok,
+                "returncode": 0 if ok else 1,
+                "duration_sec": 0.1,
+                "stdout": "ok" if ok else "",
+                "stderr": "" if ok else "failed",
+            }
+
+        report = run_validation(plan, timeout=10, runs=3, runner=flaky_runner)
+        self.assertEqual(report["runs"], 3)
+        self.assertEqual(report["full_pass_runs"], 2)
+        self.assertAlmostEqual(report["run_pass_rate"], 2 / 3, places=3)
+        self.assertEqual(len(report["run_summaries"]), 3)
 
     def test_cli_dry_run_writes_plan(self):
         with tempfile.TemporaryDirectory() as td:
@@ -62,6 +85,8 @@ class TestPhase5ValidationHarness(unittest.TestCase):
                 "tools/phase5_validation_harness.py",
                 "--profile",
                 "quick",
+                "--runs",
+                "5",
                 "--dry-run",
                 "--output",
                 str(out),
@@ -78,6 +103,7 @@ class TestPhase5ValidationHarness(unittest.TestCase):
             self.assertTrue(out.exists())
             payload = json.loads(out.read_text(encoding="utf-8"))
             self.assertEqual(payload["profile"], "quick")
+            self.assertEqual(payload["runs"], 5)
             self.assertGreaterEqual(payload["total"], 3)
 
 
