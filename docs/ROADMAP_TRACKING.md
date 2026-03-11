@@ -16,14 +16,14 @@ Source of truth roadmap: `PRODUCTION_ROADMAP.md`
 
 ## Phase Status Against Production Roadmap
 
-| Phase                          | Status                    | Evidence                                                                                                                         | Gaps                                                                       |
-| ------------------------------ | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Phase 1 Foundation/Audit       | Partial-Complete          | `STUB_INVENTORY.json`, `docs/architecture/DEPENDENCY_GRAPH.md`, `docs/IMPLEMENTATION_TASKS.md`, `docs/DEVELOPMENT_GUIDELINES.md` | Keep inventory current and tie to milestone gates                          |
-| Phase 2a Reflector             | In Progress               | `Aetherra/aetherra_core/kernel/reflector.py`, `Aetherra/plugins/reflector.py`                                                    | Kernel reflector still needs roadmap acceptance validation                 |
-| Phase 2b Impact + Code Gen     | In Progress               | `aetherra_coding/orchestrator.py`, `aetherra_coding/analysis.py`, `aetherra_coding/verification.py`                              | Expand unit/integration coverage toward roadmap test volume                |
-| Phase 3 Consciousness/Autonomy | In Progress               | `Aetherra/consciousness/episodic_store.py`, `Aetherra/consciousness/decision_engine.py`, `Aetherra/consciousness/autonomy_governor.py`, `Aetherra/plugins/manager.py` | Expand depth and coverage versus roadmap acceptance tests |
-| Phase 4 Memory/Learning        | In Progress               | `Aetherra/consciousness/episodic_store.py`, `Aetherra/consciousness/learning_loop.py`, `Aetherra/aetherra_core/memory/aetherra_memory_engine.py` | Broaden coverage and benchmark quality over repeated iterations             |
-| Phase 5 Validation/Release     | Not Started (formal gate) | Some ad-hoc test runs completed                                                                                                  | Need structured integration/load/security/perf/release gates               |
+| Phase                          | Status                    | Evidence                                                                                                                                                              | Gaps                                                            |
+| ------------------------------ | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Phase 1 Foundation/Audit       | Partial-Complete          | `STUB_INVENTORY.json`, `docs/architecture/DEPENDENCY_GRAPH.md`, `docs/IMPLEMENTATION_TASKS.md`, `docs/DEVELOPMENT_GUIDELINES.md`                                      | Keep inventory current and tie to milestone gates               |
+| Phase 2a Reflector             | In Progress               | `Aetherra/aetherra_core/kernel/reflector.py`, `Aetherra/plugins/reflector.py`                                                                                         | Kernel reflector still needs roadmap acceptance validation      |
+| Phase 2b Impact + Code Gen     | In Progress               | `aetherra_coding/orchestrator.py`, `aetherra_coding/analysis.py`, `aetherra_coding/verification.py`                                                                   | Expand unit/integration coverage toward roadmap test volume     |
+| Phase 3 Consciousness/Autonomy | In Progress               | `Aetherra/consciousness/episodic_store.py`, `Aetherra/consciousness/decision_engine.py`, `Aetherra/consciousness/autonomy_governor.py`, `Aetherra/plugins/manager.py` | Expand depth and coverage versus roadmap acceptance tests       |
+| Phase 4 Memory/Learning        | In Progress               | `Aetherra/consciousness/episodic_store.py`, `Aetherra/consciousness/learning_loop.py`, `Aetherra/aetherra_core/memory/aetherra_memory_engine.py`                      | Broaden coverage and benchmark quality over repeated iterations |
+| Phase 5 Validation/Release     | Not Started (formal gate) | Some ad-hoc test runs completed                                                                                                                                       | Need structured integration/load/security/perf/release gates    |
 
 ## Drift Audit (Working Tree)
 
@@ -73,15 +73,21 @@ Completed now:
 - Added standalone tests: `test_phase4_memory_engine_enhancement_standalone.py` (5/5 passing)
 - Added standalone integration tests for autonomy-learning chain:
   - `test_phase4_autonomy_learning_chain_standalone.py` (3/3 passing)
+- Added standalone Phase 4 quality/latency checkpoint tests:
+  - `test_phase4_learning_quality_and_latency_standalone.py` (3/3 passing)
+  - Demonstrates learning improvement over 10+ iterations and <100ms checks for memory recall and reflector behavior analysis
+- Started formal Phase 5 validation harness:
+  - `tools/phase5_validation_harness.py`
+  - `test_phase5_validation_harness_standalone.py` (3/3 passing)
 
 Remaining highest-priority roadmap gaps:
 
-1. Expand Phase 3 and Phase 4 tests toward roadmap breadth (decision quality/guardrails/plugin sandboxing/learning over iterations).
-2. Build formal validation gate scripts for roadmap Phase 5 evidence.
-3. Add performance/latency checks for reflector + memory recall against roadmap checkpoints.
+1. Expand Phase 3 and Phase 4 tests toward roadmap breadth (decision quality/guardrails/plugin sandboxing).
+2. Extend Phase 5 validation harness from quick profile to roadmap-complete end-to-end scenarios.
+3. Add repeat-run stability reporting (10-run pass-rate) to formal validation evidence.
 
 ## Next Execution Block
 
-1. Add focused standalone coverage for learning-over-iterations behavior and policy-safe adaptation.
-2. Add performance/latency checks for memory recall and reflector against roadmap thresholds.
-3. Start formal Phase 5 validation harness commit as `test(phase-5): ...`.
+1. Expand Phase 5 harness with scenario mapping for all roadmap Week 10 integration flows.
+2. Add a repeat-run mode that produces pass-rate evidence over 10 runs.
+3. Commit next block as `test(phase-5): expand validation scenarios and stability evidence`.

@@ -1,0 +1,90 @@
+"""Standalone tests for tools/phase5_validation_harness.py.
+
+Run with:
+    python test_phase5_validation_harness_standalone.py
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from tools.phase5_validation_harness import build_plan, run_validation
+
+
+class TestPhase5ValidationHarness(unittest.TestCase):
+    def test_build_plan_quick_and_full(self):
+        quick = build_plan("quick")
+        full = build_plan("full")
+
+        self.assertGreaterEqual(len(quick), 3)
+        self.assertGreater(len(full), len(quick))
+        self.assertEqual(quick[0].name, "decision-governor-learning-chain")
+
+    def test_run_validation_aggregates_pass_fail(self):
+        plan = build_plan("quick")[:2]
+
+        def fake_runner(command, timeout):
+            if "quality" in " ".join(command):
+                return {
+                    "ok": False,
+                    "returncode": 1,
+                    "duration_sec": 0.2,
+                    "stdout": "",
+                    "stderr": "failed",
+                }
+            return {
+                "ok": True,
+                "returncode": 0,
+                "duration_sec": 0.1,
+                "stdout": "ok",
+                "stderr": "",
+            }
+
+        report = run_validation(plan, timeout=10, runner=fake_runner)
+        self.assertEqual(report["total"], 2)
+        self.assertEqual(report["passed"], 1)
+        self.assertEqual(report["failed"], 1)
+        self.assertEqual(report["status"], "fail")
+
+    def test_cli_dry_run_writes_plan(self):
+        with tempfile.TemporaryDirectory() as td:
+            out = Path(td) / "report.json"
+            cmd = [
+                sys.executable,
+                "tools/phase5_validation_harness.py",
+                "--profile",
+                "quick",
+                "--dry-run",
+                "--output",
+                str(out),
+            ]
+            proc = subprocess.run(
+                cmd,
+                cwd=os.path.dirname(os.path.abspath(__file__)),
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+            )
+            self.assertEqual(proc.returncode, 0)
+            self.assertTrue(out.exists())
+            payload = json.loads(out.read_text(encoding="utf-8"))
+            self.assertEqual(payload["profile"], "quick")
+            self.assertGreaterEqual(payload["total"], 3)
+
+
+if __name__ == "__main__":
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestPhase5ValidationHarness)
+    total = suite.countTestCases()
+    print(f"Running {total} phase-5 harness tests...")
+    result = unittest.TextTestRunner(verbosity=2).run(suite)
+    print(f"Result: {total - len(result.failures) - len(result.errors)}/{total} passed")
+    sys.exit(0 if result.wasSuccessful() else 1)
