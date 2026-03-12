@@ -165,12 +165,32 @@ Completed now:
   - `test_plugins_reflector_standalone.py` re-run (16/16 passing)
   - `docs/REFLECTOR_PERFORMANCE.md` documents command outputs and latency gate evidence
   - Confirms active reflector architecture stability (`kernel` compatibility adapter + plugin reflector latency <100ms)
+- Closed Phase 2b acceptance gates:
+  - `test_phase2b_acceptance_standalone.py` (3/3 passing)
+  - Re-validated core Phase 2b suites:
+    - `test_analysis_engine_standalone.py` (10/10 passing)
+    - `test_verification_engine_standalone.py` (15/15 passing)
+    - `test_orchestrator_task5_standalone.py` (60/60 passing)
+  - Evidence doc: `docs/PHASE_2B_ACCEPTANCE_EVIDENCE.md`
+- Expanded Phase 3 guardrail coverage:
+  - `test_phase3_modules_standalone.py` expanded to 19/19 passing
+  - Added plugin negative-path checks (load failure reporting, unknown capability path)
+  - Evidence doc: `docs/PHASE_3_4_COVERAGE_EVIDENCE.md`
+- Expanded Phase 4 learning benchmark coverage (all passing):
+  - `test_phase4_learning_loop_standalone.py` (7/7)
+  - `test_phase4_autonomy_learning_chain_standalone.py` (3/3)
+  - `test_phase4_learning_quality_and_latency_standalone.py` (3/3)
+  - `test_phase4_memory_engine_enhancement_standalone.py` (5/5)
+  - Evidence doc: `docs/PHASE_3_4_COVERAGE_EVIDENCE.md`
+- Completed Week 10 integration matrix and regression/load-style repeat runs:
+  - `.aetherra/reports/phase5/phase5_validation_report_full_week10_matrix.json` (`15/15`, pass)
+  - `.aetherra/reports/phase5/phase5_validation_report_quick_runs10_regression.json` (`10/10 full-pass runs`, pass)
+  - Deterministic runner added: `tools/run_week10_matrix_and_regression.py`
+  - Evidence doc: `docs/WEEK10_VALIDATION_EVIDENCE.md`
 
 Remaining highest-priority roadmap gaps:
 
-1. Close Phase 2b acceptance gates (impact accuracy, safe codegen verification, e2e apply safeguards).
-2. Expand Phase 3 and Phase 4 tests toward roadmap breadth (decision quality/guardrails/plugin sandboxing).
-3. Continue broadening full-profile scenario mapping toward complete Week 10 coverage.
+1. Execute deferred Week 11/12 release hardening and deployment/go-live upgrades when roadmap-first hold is lifted.
 
 Deferred intentionally until roadmap completion:
 
@@ -178,6 +198,6 @@ Deferred intentionally until roadmap completion:
 
 ## Next Execution Block
 
-1. Close Phase 2b acceptance gates with focused standalone and integration evidence.
-2. Expand Phase 3 guardrail coverage for high-risk negative paths.
-3. Commit next block as `test(phase-2b): acceptance gates and safety evidence`.
+1. Begin deferred release-hardening wave (manifest governance extension + trend-aware release criteria).
+2. Execute Week 11/12 packaging, deployment runbook, and go-live rehearsal updates.
+3. Commit next block as `test(phase-5): deferred release hardening wave`.

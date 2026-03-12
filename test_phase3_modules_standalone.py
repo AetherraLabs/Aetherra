@@ -94,12 +94,16 @@ class TestAutonomyGovernor(unittest.TestCase):
         self.assertIn("forbidden_operation", r.violations)
 
     def test_file_change_limit(self):
-        r = self.gov.evaluate({"operation": "bulk edit", "file_changes": 10_000, "risk_score": 0.1})
+        r = self.gov.evaluate(
+            {"operation": "bulk edit", "file_changes": 10_000, "risk_score": 0.1}
+        )
         self.assertFalse(r.allowed)
         self.assertIn("file_change_limit_exceeded", r.violations)
 
     def test_risk_limit(self):
-        r = self.gov.evaluate({"operation": "apply", "file_changes": 1, "risk_score": 0.99})
+        r = self.gov.evaluate(
+            {"operation": "apply", "file_changes": 1, "risk_score": 0.99}
+        )
         self.assertFalse(r.allowed)
         self.assertIn("risk_limit_exceeded", r.violations)
 
@@ -209,6 +213,30 @@ class TestPluginsManager(unittest.TestCase):
             rows = pm.list_plugins(include_unloaded=True)
             self.assertEqual(len(rows), 1)
             self.assertEqual(rows[0]["name"], "sample_plugin")
+
+    def test_plugin_load_failure_is_reported(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            self._write(root, "broken_plugin.py", "raise RuntimeError('boom on import')\n")
+            pm = PluginManager(plugins_dir=root)
+            pm.discover_plugins()
+            ok = pm.load_plugin("broken_plugin")
+            self.assertFalse(ok)
+            self.assertTrue(pm.registry["broken_plugin"].errors)
+
+    def test_execute_unknown_capability_raises(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            self._write(
+                root,
+                "sample_plugin.py",
+                "class PLUGIN_CLASS:\n    def execute_action(self, action, **kwargs):\n        if action == 'known':\n            return {'ok': True}\n        raise AttributeError('unknown capability')\n",
+            )
+            pm = PluginManager(plugins_dir=root)
+            pm.discover_plugins()
+            self.assertTrue(pm.load_plugin("sample_plugin"))
+            with self.assertRaises(AttributeError):
+                pm.execute_capability("sample_plugin", "unknown")
 
 
 if __name__ == "__main__":
