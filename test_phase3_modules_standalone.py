@@ -217,7 +217,9 @@ class TestPluginsManager(unittest.TestCase):
     def test_plugin_load_failure_is_reported(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
-            self._write(root, "broken_plugin.py", "raise RuntimeError('boom on import')\n")
+            self._write(
+                root, "broken_plugin.py", "raise RuntimeError('boom on import')\n"
+            )
             pm = PluginManager(plugins_dir=root)
             pm.discover_plugins()
             ok = pm.load_plugin("broken_plugin")

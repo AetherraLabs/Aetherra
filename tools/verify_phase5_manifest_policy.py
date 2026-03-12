@@ -78,9 +78,7 @@ def verify_policy(
 
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Verify phase5 release manifest policy")
-    p.add_argument(
-        "--summary", help="Path to phase5 bundle summary JSON"
-    )
+    p.add_argument("--summary", help="Path to phase5 bundle summary JSON")
     p.add_argument(
         "--require-signature",
         action="store_true",

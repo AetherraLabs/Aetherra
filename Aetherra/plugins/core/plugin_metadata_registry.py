@@ -19,7 +19,7 @@ Example:
 
 import json
 import logging
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
@@ -172,9 +172,9 @@ class PluginRegistryManager:
         """
         cap_lower = capability.lower()
         return [
-            p for p in self._plugins.values()
-            if any(cap_lower in c.lower() for c in p.capabilities)
-            and p.enabled
+            p
+            for p in self._plugins.values()
+            if any(cap_lower in c.lower() for c in p.capabilities) and p.enabled
         ]
 
     def find_by_tag(self, tag: str) -> List[PluginMetadataRecord]:
@@ -189,9 +189,9 @@ class PluginRegistryManager:
         """
         tag_lower = tag.lower()
         return [
-            p for p in self._plugins.values()
-            if any(tag_lower in t.lower() for t in p.tags)
-            and p.enabled
+            p
+            for p in self._plugins.values()
+            if any(tag_lower in t.lower() for t in p.tags) and p.enabled
         ]
 
     def find_by_category(self, category: str) -> List[PluginMetadataRecord]:
@@ -205,10 +205,7 @@ class PluginRegistryManager:
             List of matching plugins
         """
         cat_lower = category.lower()
-        return [
-            p for p in self._plugins.values()
-            if p.category.lower() == cat_lower and p.enabled
-        ]
+        return [p for p in self._plugins.values() if p.category.lower() == cat_lower and p.enabled]
 
     def search(self, query: str) -> RegistrySearchResult:
         """
@@ -228,13 +225,15 @@ class PluginRegistryManager:
                 continue
 
             # Search across multiple fields
-            searchable = " ".join([
-                plugin.name,
-                plugin.description,
-                plugin.category,
-                " ".join(plugin.tags),
-                " ".join(plugin.capabilities),
-            ]).lower()
+            searchable = " ".join(
+                [
+                    plugin.name,
+                    plugin.description,
+                    plugin.category,
+                    " ".join(plugin.tags),
+                    " ".join(plugin.capabilities),
+                ]
+            ).lower()
 
             if query_lower in searchable:
                 matches.append(plugin)
@@ -350,7 +349,7 @@ class PluginRegistryManager:
             return
         if self.registry_path.stat().st_size == 0:
             return
-        with open(self.registry_path, "r", encoding="utf-8") as f:
+        with open(self.registry_path, encoding="utf-8") as f:
             data = json.load(f)
         for plugin_data in data.get("plugins", []):
             plugin = PluginMetadataRecord.from_dict(plugin_data)

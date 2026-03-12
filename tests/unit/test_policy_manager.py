@@ -12,26 +12,23 @@ Tests cover:
 - Ethics weight calculation
 """
 
-import unittest
-import tempfile
 import json
 import os
-from pathlib import Path
-from datetime import datetime, timedelta
-
 import sys
+import tempfile
+import unittest
+from datetime import datetime, timedelta
+from pathlib import Path
 
 # Add parent directory to path
-sys.path.insert(
-    0, str(Path(__file__).parent.parent.parent)
-)
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from Aetherra.aetherra_core.system.policy_manager import (
-    PolicyManager,
-    PolicyValidator,
-    Policy,
-    PolicyMetadata,
     EthicsProfile,
+    Policy,
+    PolicyManager,
+    PolicyMetadata,
+    PolicyValidator,
     SafetyConstraints,
 )
 
@@ -72,10 +69,7 @@ class TestEthicsProfile(unittest.TestCase):
         )
         profile.normalize()
         total = (
-            profile.utilitarian
-            + profile.deontological
-            + profile.virtue
-            + profile.care
+            profile.utilitarian + profile.deontological + profile.virtue + profile.care
         )
         self.assertAlmostEqual(total, 1.0, places=2)
 
@@ -204,7 +198,14 @@ class TestPolicyValidator(unittest.TestCase):
                 "version": "1.0",
                 "created_by": "Test",
             },
-            "profiles": {"test": {"utilitarian": 0.25, "deontological": 0.25, "virtue": 0.25, "care": 0.25}},
+            "profiles": {
+                "test": {
+                    "utilitarian": 0.25,
+                    "deontological": 0.25,
+                    "virtue": 0.25,
+                    "care": 0.25,
+                }
+            },
             "constraints": {
                 "max_code_generation_size": 50,  # Invalid: < 100
             },
@@ -275,9 +276,7 @@ class TestPolicyManager(unittest.TestCase):
 
     def test_06_validate_disallowed_operation(self):
         """Test validating explicitly disallowed operation."""
-        is_allowed, reason = self.manager.validate_operation(
-            "rm -rf", "balanced"
-        )
+        is_allowed, reason = self.manager.validate_operation("rm -rf", "balanced")
         self.assertFalse(is_allowed)
         self.assertIn("disallowed", reason)
 
@@ -307,9 +306,7 @@ class TestPolicyManager(unittest.TestCase):
         # Check it's cached
         self.assertIn("balanced", manager.policies)
         # Simulate expiration
-        manager.policies["balanced"].loaded_at = (
-            datetime.now() - timedelta(seconds=2)
-        )
+        manager.policies["balanced"].loaded_at = datetime.now() - timedelta(seconds=2)
         # Load again (should reload)
         success, policy2, msg = manager.load_policy("balanced", force_refresh=False)
         self.assertIn("loaded", msg.lower())
@@ -376,9 +373,7 @@ class TestPolicyManager(unittest.TestCase):
         success, policy, msg = self.manager._load_from_file(str(policy_file))
         self.assertTrue(success)
         self.assertIsNotNone(policy)
-        self.assertEqual(
-            policy.constraints.max_autonomy_level, 2
-        )
+        self.assertEqual(policy.constraints.max_autonomy_level, 2)
 
     def test_15_operation_validation_strict_mode(self):
         """Test operation validation in strict mode."""

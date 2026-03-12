@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 import sys
 import unittest
-from datetime import datetime, timedelta
+from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -44,8 +44,12 @@ class TestReflectorPluginStandalone(unittest.TestCase):
         self.assertEqual(r["top_context"], "dev")
 
     def test_decision_patterns(self):
-        self.p.decision_tracking({"action": "x", "confidence": 0.9, "outcome": "success"})
-        self.p.decision_tracking({"action": "y", "confidence": 0.5, "outcome": "failed"})
+        self.p.decision_tracking(
+            {"action": "x", "confidence": 0.9, "outcome": "success"}
+        )
+        self.p.decision_tracking(
+            {"action": "y", "confidence": 0.5, "outcome": "failed"}
+        )
         r = self.p._analyze_decision_patterns()
         self.assertEqual(r["decision_count"], 2)
         self.assertIn("success", r["outcomes"])
@@ -75,7 +79,7 @@ class TestReflectorPluginStandalone(unittest.TestCase):
         self._log("test")
         self._log("build")
         wf = self.p._identify_workflows()
-        self.assertTrue(any("plan->build" == x for x in wf))
+        self.assertTrue(any(x == "plan->build" for x in wf))
 
     def test_cognitive_load(self):
         for _ in range(5):
@@ -101,8 +105,20 @@ class TestReflectorPluginStandalone(unittest.TestCase):
 
     def test_goal_efficiency_and_recommendations(self):
         actions = [
-            {"data": {"duration_sec": 100, "success": True, "resource_usage": {"cpu": 0.7, "memory": 0.5}}},
-            {"data": {"duration_sec": 400, "success": False, "resource_usage": {"cpu": 0.9, "memory": 0.6}}},
+            {
+                "data": {
+                    "duration_sec": 100,
+                    "success": True,
+                    "resource_usage": {"cpu": 0.7, "memory": 0.5},
+                }
+            },
+            {
+                "data": {
+                    "duration_sec": 400,
+                    "success": False,
+                    "resource_usage": {"cpu": 0.9, "memory": 0.6},
+                }
+            },
         ]
         eff = self.p._analyze_goal_time_efficiency(actions)
         self.assertIn("efficiency", eff)
@@ -137,7 +153,9 @@ class TestReflectorPluginStandalone(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestReflectorPluginStandalone)
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        TestReflectorPluginStandalone
+    )
     total = suite.countTestCases()
     print(f"Running {total} reflector tests...")
     result = unittest.TextTestRunner(verbosity=2).run(suite)

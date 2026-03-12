@@ -25,18 +25,14 @@ Example:
 """
 
 import logging
-import os
-import json
 import subprocess
 import time
 import traceback
-from dataclasses import dataclass, field, asdict
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-import threading
-import signal
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -248,8 +244,7 @@ class ScriptExecutor:
         self.context: Optional[ExecutionContext] = None
         self.metrics = ExecutionMetrics()
         logger.info(
-            f"ScriptExecutor initialized: {script_path}, timeout={timeout}s, "
-            f"sandbox={sandbox}"
+            f"ScriptExecutor initialized: {script_path}, timeout={timeout}s, sandbox={sandbox}"
         )
 
     def execute(self) -> ExecutionResult:
@@ -302,9 +297,7 @@ class ScriptExecutor:
 
                         # Handle error strategy
                         if step.on_error == "fail":
-                            raise RuntimeError(
-                                f"Step failed: {step.name}: {step_result.error}"
-                            )
+                            raise RuntimeError(f"Step failed: {step.name}: {step_result.error}")
                         elif step.on_error == "skip":
                             logger.warning(f"Skipping step {step.name}")
                             self.metrics.skipped_steps += 1
@@ -354,8 +347,7 @@ class ScriptExecutor:
                 self.metrics.total_duration = duration
 
             logger.info(
-                f"Script execution completed: success={result.success}, "
-                f"duration={result.duration}s"
+                f"Script execution completed: success={result.success}, duration={result.duration}s"
             )
 
         return result
@@ -371,7 +363,7 @@ class ScriptExecutor:
             List of WorkflowStep objects
         """
         try:
-            with open(self.script_path, "r") as f:
+            with open(self.script_path) as f:
                 content = f.read()
 
             # Mock parsing (real implementation would parse YAML/JSON)
@@ -404,9 +396,7 @@ class ScriptExecutor:
 
         try:
             if step.step_type == StepType.SHELL:
-                success, output, error, code = self._execute_shell(
-                    step, step.timeout
-                )
+                success, output, error, code = self._execute_shell(step, step.timeout)
                 result.success = success
                 result.output = output
                 result.error = error
@@ -415,17 +405,13 @@ class ScriptExecutor:
                 result.stderr = error
 
             elif step.step_type == StepType.PYTHON:
-                success, output, error = self._execute_python(
-                    step, step.timeout
-                )
+                success, output, error = self._execute_python(step, step.timeout)
                 result.success = success
                 result.output = output
                 result.error = error
 
             elif step.step_type == StepType.PLUGIN:
-                success, output, error = self._execute_plugin(
-                    step, step.timeout
-                )
+                success, output, error = self._execute_plugin(step, step.timeout)
                 result.success = success
                 result.output = output
                 result.error = error
@@ -447,9 +433,7 @@ class ScriptExecutor:
 
         return result
 
-    def _execute_shell(
-        self, step: WorkflowStep, timeout: int
-    ) -> Tuple[bool, str, str, int]:
+    def _execute_shell(self, step: WorkflowStep, timeout: int) -> Tuple[bool, str, str, int]:
         """
         Execute shell command step.
 
@@ -487,9 +471,7 @@ class ScriptExecutor:
         except Exception as e:
             return False, "", str(e), -1
 
-    def _execute_python(
-        self, step: WorkflowStep, timeout: int
-    ) -> Tuple[bool, str, str]:
+    def _execute_python(self, step: WorkflowStep, timeout: int) -> Tuple[bool, str, str]:
         """
         Execute Python code step.
 
@@ -529,9 +511,7 @@ class ScriptExecutor:
         except Exception as e:
             return False, "", str(e)
 
-    def _execute_plugin(
-        self, step: WorkflowStep, timeout: int
-    ) -> Tuple[bool, str, str]:
+    def _execute_plugin(self, step: WorkflowStep, timeout: int) -> Tuple[bool, str, str]:
         """
         Execute plugin call step.
 

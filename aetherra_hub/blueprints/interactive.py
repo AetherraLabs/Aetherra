@@ -186,7 +186,9 @@ def _check_admin_auth() -> tuple[Response, int] | None:
         return None
     provided = request.headers.get("X-Aetherra-Admin-Key", "").strip()
     if not provided or provided != admin_key:
-        return jsonify({"error": "forbidden", "message": "Admin authentication required"}), 403
+        return jsonify(
+            {"error": "forbidden", "message": "Admin authentication required"}
+        ), 403
     return None
 
 

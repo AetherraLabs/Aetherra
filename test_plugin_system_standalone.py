@@ -6,43 +6,39 @@ Run with:
     python test_plugin_system_standalone.py
 """
 
-import io
 import json
-import sys
 import os
+import sys
 import tempfile
 import unittest
 
 # Ensure project root is on path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from Aetherra.plugins.core.plugin_processors import (
-    ProcessConfig,
-    ProcessResult,
-    JSONProcessor,
-    CSVProcessor,
-    TextProcessor,
-)
 from Aetherra.plugins.core.plugin_metadata_registry import (
     PluginMetadataRecord,
     PluginRegistryManager,
     RegistrySearchResult,
 )
+from Aetherra.plugins.core.plugin_processors import (
+    CSVProcessor,
+    JSONProcessor,
+    ProcessConfig,
+    TextProcessor,
+)
 from Aetherra.plugins.core.plugin_wizard_backend import (
     PluginWizardBackend,
     WizardResult,
     WizardValidationError,
-    ValidationError,
     _to_class_name,
 )
-
 
 # ──────────────────────────────────────────────────────────────────────────────
 # JSONProcessor tests (10 tests)
 # ──────────────────────────────────────────────────────────────────────────────
 
-class TestJSONProcessor(unittest.TestCase):
 
+class TestJSONProcessor(unittest.TestCase):
     def setUp(self):
         self.processor = JSONProcessor()
 
@@ -113,8 +109,8 @@ class TestJSONProcessor(unittest.TestCase):
 # CSVProcessor tests (10 tests)
 # ──────────────────────────────────────────────────────────────────────────────
 
-class TestCSVProcessor(unittest.TestCase):
 
+class TestCSVProcessor(unittest.TestCase):
     def setUp(self):
         self.processor = CSVProcessor()
         self.csv_data = "name,age,score\nAlice,30,95.5\nBob,25,88.0\nCarol,35,72.3"
@@ -189,8 +185,8 @@ class TestCSVProcessor(unittest.TestCase):
 # TextProcessor tests (10 tests)
 # ──────────────────────────────────────────────────────────────────────────────
 
-class TestTextProcessor(unittest.TestCase):
 
+class TestTextProcessor(unittest.TestCase):
     def setUp(self):
         self.processor = TextProcessor()
         self.text = "Hello world\nFoo bar baz\nHello again\nThe quick brown fox"
@@ -257,8 +253,8 @@ class TestTextProcessor(unittest.TestCase):
 # PluginMetadataRecord tests (5 tests)
 # ──────────────────────────────────────────────────────────────────────────────
 
-class TestPluginMetadataRecord(unittest.TestCase):
 
+class TestPluginMetadataRecord(unittest.TestCase):
     def test_defaults(self):
         p = PluginMetadataRecord(name="test_plugin")
         self.assertEqual(p.name, "test_plugin")
@@ -294,9 +290,11 @@ class TestPluginMetadataRecord(unittest.TestCase):
 # PluginRegistryManager tests (15 tests)
 # ──────────────────────────────────────────────────────────────────────────────
 
-class TestPluginRegistryManager(unittest.TestCase):
 
-    def _make_plugin(self, name, category="general", capabilities=None, tags=None, deps=None):
+class TestPluginRegistryManager(unittest.TestCase):
+    def _make_plugin(
+        self, name, category="general", capabilities=None, tags=None, deps=None
+    ):
         return PluginMetadataRecord(
             name=name,
             description=f"Plugin {name}",
@@ -351,7 +349,9 @@ class TestPluginRegistryManager(unittest.TestCase):
 
     def test_find_by_capability_partial_match(self):
         registry = PluginRegistryManager()
-        registry.register(self._make_plugin("proc", capabilities=["data-processing-v2"]))
+        registry.register(
+            self._make_plugin("proc", capabilities=["data-processing-v2"])
+        )
         results = registry.find_by_capability("data")
         self.assertEqual(len(results), 1)
 
@@ -429,8 +429,8 @@ class TestPluginRegistryManager(unittest.TestCase):
 # PluginWizardBackend tests (15 tests)
 # ──────────────────────────────────────────────────────────────────────────────
 
-class TestPluginWizardBackend(unittest.TestCase):
 
+class TestPluginWizardBackend(unittest.TestCase):
     def _valid_wizard(self):
         wizard = PluginWizardBackend()
         wizard.set_basic_info("my_plugin", "A test plugin", "Alice")

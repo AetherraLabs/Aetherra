@@ -82,7 +82,9 @@ class TestMemoryEngineEnhancement(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestMemoryEngineEnhancement)
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        TestMemoryEngineEnhancement
+    )
     total = suite.countTestCases()
     print(f"Running {total} phase-4 memory-engine enhancement tests...")
     result = unittest.TextTestRunner(verbosity=2).run(suite)

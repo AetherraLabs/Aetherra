@@ -27,11 +27,11 @@ Example:
 import json
 import logging
 import time
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from enum import Enum
 
 
 class ExecutionPhase(Enum):
@@ -259,9 +259,7 @@ class ScriptServiceLogger:
 
         if not self.logger.handlers:
             handler = logging.StreamHandler()
-            formatter = logging.Formatter(
-                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-            )
+            formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
             handler.setFormatter(formatter)
             self.logger.addHandler(handler)
 
@@ -330,14 +328,14 @@ class ScriptServiceLogger:
 
     def log_step_start(self, step_name: str):
         """Log step start."""
-        self.log(EventLevel.INFO, f"Step starting", step_name=step_name)
+        self.log(EventLevel.INFO, "Step starting", step_name=step_name)
         self.timeline.record(f"step_start_{step_name}")
 
     def log_step_completed(self, step_name: str, duration: float):
         """Log step completion."""
         self.log(
             EventLevel.INFO,
-            f"Step completed",
+            "Step completed",
             step_name=step_name,
             duration=duration,
             metrics={"duration": duration},
@@ -366,9 +364,7 @@ class ScriptServiceLogger:
 
     def log_execution_complete(self, success: bool, duration: float):
         """Log execution completion."""
-        self.current_phase = (
-            ExecutionPhase.COMPLETED if success else ExecutionPhase.FAILED
-        )
+        self.current_phase = ExecutionPhase.COMPLETED if success else ExecutionPhase.FAILED
         level = EventLevel.INFO if success else EventLevel.ERROR
         status = "succeeded" if success else "failed"
         self.log(
@@ -446,22 +442,18 @@ class ScriptServiceLogger:
         lines.append("# TYPE script_step_duration_seconds histogram")
         if self.metrics.step_durations:
             avg = self.metrics.get_average_step_duration()
-            lines.append(
-                f'script_step_duration_seconds_avg{{script="{self.script_path}"}} {avg}'
-            )
+            lines.append(f'script_step_duration_seconds_avg{{script="{self.script_path}"}} {avg}')
 
         lines.append("# HELP script_errors_total Total errors")
         lines.append("# TYPE script_errors_total counter")
         lines.append(
-            f'script_errors_total{{script="{self.script_path}"}} '
-            f"{len(self.metrics.errors)}"
+            f'script_errors_total{{script="{self.script_path}"}} {len(self.metrics.errors)}'
         )
 
         lines.append("# HELP script_warnings_total Total warnings")
         lines.append("# TYPE script_warnings_total counter")
         lines.append(
-            f'script_warnings_total{{script="{self.script_path}"}} '
-            f"{len(self.metrics.warnings)}"
+            f'script_warnings_total{{script="{self.script_path}"}} {len(self.metrics.warnings)}'
         )
 
         return "\n".join(lines)

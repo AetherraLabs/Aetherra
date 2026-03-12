@@ -7,23 +7,22 @@ Avoids Aetherra engine initialization to prevent Unicode encoding issues.
 Run: python test_optimization_executor_standalone.py
 """
 
-import sys
-import os
-import tempfile
 import json
-from pathlib import Path
-import unittest
 import shutil
+import sys
+import tempfile
+import unittest
+from pathlib import Path
 
 # Add workspace root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from Aetherra.aetherra_core.system.optimization_executor import (
-    OptimizationExecutor,
-    OptimizationProposal,
     CodeChange,
     ConfigChange,
     Metrics,
+    OptimizationExecutor,
+    OptimizationProposal,
 )
 
 
@@ -383,17 +382,16 @@ def run_tests():
     if result.wasSuccessful():
         print("✓ ALL TESTS PASSED")
         return 0
-    else:
-        print("✗ SOME TESTS FAILED")
-        if result.failures:
-            print("\nFailures:")
-            for test, traceback in result.failures:
-                print(f"  - {test}: {traceback[:200]}...")
-        if result.errors:
-            print("\nErrors:")
-            for test, traceback in result.errors:
-                print(f"  - {test}: {traceback[:200]}...")
-        return 1
+    print("✗ SOME TESTS FAILED")
+    if result.failures:
+        print("\nFailures:")
+        for test, traceback in result.failures:
+            print(f"  - {test}: {traceback[:200]}...")
+    if result.errors:
+        print("\nErrors:")
+        for test, traceback in result.errors:
+            print(f"  - {test}: {traceback[:200]}...")
+    return 1
 
 
 if __name__ == "__main__":

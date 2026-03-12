@@ -295,16 +295,28 @@ def get_registered_agents() -> list[dict[str, Any]]:
                 else:
                     cap_list = [str(raw_caps)] if raw_caps else []
                 raw_status = getattr(agent, "status", None)
-                status_str = raw_status.value if hasattr(raw_status, "value") else str(raw_status or "unknown")
-                raw_type = getattr(agent, "agent_type", None) or getattr(agent, "type", None)
-                type_str = raw_type.value if hasattr(raw_type, "value") else str(raw_type or "unknown")
-                result.append({
-                    "agent_id": str(agent_id),
-                    "type": type_str,
-                    "status": status_str,
-                    "capabilities": cap_list,
-                    "description": str(getattr(agent, "description", "")),
-                })
+                status_str = (
+                    raw_status.value
+                    if hasattr(raw_status, "value")
+                    else str(raw_status or "unknown")
+                )
+                raw_type = getattr(agent, "agent_type", None) or getattr(
+                    agent, "type", None
+                )
+                type_str = (
+                    raw_type.value
+                    if hasattr(raw_type, "value")
+                    else str(raw_type or "unknown")
+                )
+                result.append(
+                    {
+                        "agent_id": str(agent_id),
+                        "type": type_str,
+                        "status": status_str,
+                        "capabilities": cap_list,
+                        "description": str(getattr(agent, "description", "")),
+                    }
+                )
             return result
 
         r = _run_coro(_go())

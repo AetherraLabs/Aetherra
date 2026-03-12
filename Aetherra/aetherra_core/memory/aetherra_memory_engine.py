@@ -139,7 +139,9 @@ class AetherraMemoryEngine:
             content = str(item.get("content", ""))
             found_bucket = None
             for existing in kept:
-                sim = self._semantic_score(self._tokenize(content), str(existing.get("content", "")))
+                sim = self._semantic_score(
+                    self._tokenize(content), str(existing.get("content", ""))
+                )
                 if sim >= similarity_threshold:
                     found_bucket = existing
                     break
@@ -216,7 +218,9 @@ class AetherraMemoryEngine:
         if not created_at:
             return 0.0
         try:
-            age_hours = (datetime.utcnow() - datetime.fromisoformat(str(created_at))).total_seconds() / 3600
+            age_hours = (
+                datetime.utcnow() - datetime.fromisoformat(str(created_at))
+            ).total_seconds() / 3600
         except Exception:
             return 0.0
         if age_hours <= 1:

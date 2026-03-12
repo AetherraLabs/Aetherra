@@ -33,9 +33,7 @@ class ConsciousnessDecisionEngine:
 
     def __init__(self) -> None:
         self.enabled = os.getenv("AETHERRA_CONSCIOUSNESS_ENABLED", "0") == "1"
-        self.approval_threshold = float(
-            os.getenv("AETHERRA_DECISION_APPROVAL_THRESHOLD", "0.65")
-        )
+        self.approval_threshold = float(os.getenv("AETHERRA_DECISION_APPROVAL_THRESHOLD", "0.65"))
 
     def decide(self, situation: Dict[str, Any]) -> Decision:
         """Produce a decision from a situation payload.
@@ -83,9 +81,7 @@ class ConsciousnessDecisionEngine:
         self._record_decision(context, decision)
         return decision
 
-    def _candidate_actions(
-        self, goal: str, context: str, situation: Dict[str, Any]
-    ) -> List[str]:
+    def _candidate_actions(self, goal: str, context: str, situation: Dict[str, Any]) -> List[str]:
         provided = [str(x) for x in situation.get("candidate_actions", []) if str(x).strip()]
         if provided:
             return provided

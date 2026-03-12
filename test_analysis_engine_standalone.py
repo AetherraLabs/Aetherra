@@ -83,7 +83,9 @@ class TestAnalysisEngine(unittest.TestCase):
             root = Path(td)
             self._write(root, "pkg/a.py", "def f():\n    return 1\n")
             ia = ImpactAnalyzer()
-            rp = ia.analyze_change("pkg/a.py", "+def api_func():\n+    return 1\n", root)
+            rp = ia.analyze_change(
+                "pkg/a.py", "+def api_func():\n+    return 1\n", root
+            )
             self.assertGreater(rp.factors["api_change_factor"], 0.0)
 
     def test_impact_suggests_tests(self):
@@ -97,7 +99,9 @@ class TestAnalysisEngine(unittest.TestCase):
     def test_impact_for_test_file_lowers_test_factor(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
-            self._write(root, "tests/unit/test_mod.py", "def test_x():\n    assert True\n")
+            self._write(
+                root, "tests/unit/test_mod.py", "def test_x():\n    assert True\n"
+            )
             ia = ImpactAnalyzer()
             rp = ia.analyze_change("tests/unit/test_mod.py", "+assert True\n", root)
             self.assertEqual(rp.factors["test_factor"], 0.0)

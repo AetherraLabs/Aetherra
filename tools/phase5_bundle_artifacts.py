@@ -137,14 +137,23 @@ def _build_trend(
     prev_rollup_categories = {
         str(row.get("category")): float(row.get("aggregate_pass_rate", 0.0) or 0.0)
         for row in list(
-            (((previous.get("rollup_analysis") or {}).get("categories") or {}).get("results", []) or [])
+            ((previous.get("rollup_analysis") or {}).get("categories") or {}).get(
+                "results", []
+            )
+            or []
         )
         if row.get("category")
     }
     cur_rollup_categories = {
         str(row.get("category")): float(row.get("aggregate_pass_rate", 0.0) or 0.0)
         for row in list(
-            ((((current_payload.get("rollup_analysis") or {}).get("categories") or {}).get("results", [])) or [])
+            (
+                (
+                    (current_payload.get("rollup_analysis") or {}).get("categories")
+                    or {}
+                ).get("results", [])
+            )
+            or []
         )
         if row.get("category")
     }
@@ -158,14 +167,21 @@ def _build_trend(
                 "current": cur_rollup_categories.get(name),
                 "delta": (
                     None
-                    if name not in prev_rollup_categories or name not in cur_rollup_categories
-                    else round(cur_rollup_categories[name] - prev_rollup_categories[name], 4)
+                    if name not in prev_rollup_categories
+                    or name not in cur_rollup_categories
+                    else round(
+                        cur_rollup_categories[name] - prev_rollup_categories[name], 4
+                    )
                 ),
             }
         )
 
-    previous_rollup_performance = ((previous.get("rollup_analysis") or {}).get("performance_evidence") or {})
-    current_rollup_performance = ((current_payload.get("rollup_analysis") or {}).get("performance_evidence") or {})
+    previous_rollup_performance = (previous.get("rollup_analysis") or {}).get(
+        "performance_evidence"
+    ) or {}
+    current_rollup_performance = (current_payload.get("rollup_analysis") or {}).get(
+        "performance_evidence"
+    ) or {}
     rollup_performance_deltas = [
         {
             "name": key,
@@ -376,7 +392,7 @@ def bundle_artifacts(
             }
         )
     category_gates_passed = all(row["passed"] for row in category_gate_rows)
-    performance_thresholds = (rollup_data.get("performance_thresholds") or {})
+    performance_thresholds = rollup_data.get("performance_thresholds") or {}
     performance_thresholds_passed = bool(performance_thresholds.get("passed", True))
 
     payload = {
@@ -499,9 +515,7 @@ def _parse_args() -> argparse.Namespace:
     )
     p.add_argument("--performance-min-pass-rate", type=float, default=None)
     p.add_argument("--performance-max-avg-duration-sec", type=float, default=None)
-    p.add_argument(
-        "--performance-max-scenario-duration-sec", type=float, default=None
-    )
+    p.add_argument("--performance-max-scenario-duration-sec", type=float, default=None)
     p.add_argument(
         "--emit-release-manifest",
         action="store_true",

@@ -18,14 +18,15 @@ Example:
     >>> is_allowed = manager.validate_operation("code_generation")
 """
 
-import os
+import hashlib
 import json
 import logging
-import hashlib
-from dataclasses import dataclass, field, asdict
+import os
+from dataclasses import asdict, dataclass, field
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-from datetime import datetime, timedelta
+
 import yaml
 
 logger = logging.getLogger(__name__)
@@ -52,9 +53,7 @@ class EthicsProfile:
 
     def normalize(self):
         """Normalize weights to sum to 1.0."""
-        total = sum(
-            [self.utilitarian, self.deontological, self.virtue, self.care]
-        )
+        total = sum([self.utilitarian, self.deontological, self.virtue, self.care])
         if total > 0:
             self.utilitarian /= total
             self.deontological /= total
@@ -99,9 +98,7 @@ class PolicyMetadata:
     """Policy creator"""
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     """Creation timestamp"""
-    effective_date: str = field(
-        default_factory=lambda: datetime.now().isoformat()
-    )
+    effective_date: str = field(default_factory=lambda: datetime.now().isoformat())
     """When this policy becomes effective"""
     description: str = "Default policy"
     """Policy description"""
@@ -216,9 +213,7 @@ class PolicyValidator:
             else:
                 for profile_name, profile_data in profiles.items():
                     if not isinstance(profile_data, dict):
-                        errors.append(
-                            f"Profile '{profile_name}' must be a dictionary"
-                        )
+                        errors.append(f"Profile '{profile_name}' must be a dictionary")
                         continue
 
                     # Check ethics weights
@@ -230,10 +225,7 @@ class PolicyValidator:
                     ]
                     total = sum(weights)
                     if not (0.99 <= total <= 1.01):
-                        errors.append(
-                            f"Profile '{profile_name}' weights sum to {total}, "
-                            f"not 1.0"
-                        )
+                        errors.append(f"Profile '{profile_name}' weights sum to {total}, not 1.0")
 
                     # Check weight ranges
                     for weight_name, weight_val in [
@@ -262,17 +254,13 @@ class PolicyValidator:
                 if "max_autonomy_level" in constraints:
                     level = constraints["max_autonomy_level"]
                     if not isinstance(level, int) or not (1 <= level <= 5):
-                        errors.append(
-                            "constraints.max_autonomy_level must be between 1 and 5"
-                        )
+                        errors.append("constraints.max_autonomy_level must be between 1 and 5")
 
                 # Check code size limit
                 if "max_code_generation_size" in constraints:
                     size = constraints["max_code_generation_size"]
                     if not isinstance(size, int) or size < 100:
-                        errors.append(
-                            "constraints.max_code_generation_size must be >= 100"
-                        )
+                        errors.append("constraints.max_code_generation_size must be >= 100")
 
                 # Check boolean fields
                 for bool_field in [
@@ -284,9 +272,7 @@ class PolicyValidator:
                     if bool_field in constraints:
                         val = constraints[bool_field]
                         if not isinstance(val, bool):
-                            errors.append(
-                                f"constraints.{bool_field} must be boolean"
-                            )
+                            errors.append(f"constraints.{bool_field} must be boolean")
 
         return len(errors) == 0, errors
 
@@ -524,7 +510,7 @@ class PolicyManager:
             Tuple of (success, Policy or None, message)
         """
         try:
-            with open(file_path, "r") as f:
+            with open(file_path) as f:
                 if file_path.endswith(".yaml") or file_path.endswith(".yml"):
                     policy_dict = yaml.safe_load(f)
                 else:
@@ -572,15 +558,9 @@ class PolicyManager:
         metadata = PolicyMetadata(
             version=metadata_dict.get("version", "1.0"),
             created_by=metadata_dict.get("created_by", "Unknown"),
-            created_at=metadata_dict.get(
-                "created_at", datetime.now().isoformat()
-            ),
-            effective_date=metadata_dict.get(
-                "effective_date", datetime.now().isoformat()
-            ),
-            description=metadata_dict.get(
-                "description", "Policy loaded from file"
-            ),
+            created_at=metadata_dict.get("created_at", datetime.now().isoformat()),
+            effective_date=metadata_dict.get("effective_date", datetime.now().isoformat()),
+            description=metadata_dict.get("description", "Policy loaded from file"),
         )
 
         # Build profiles
@@ -597,13 +577,9 @@ class PolicyManager:
         constraints_dict = policy_dict.get("constraints", {})
         constraints = SafetyConstraints(
             max_autonomy_level=constraints_dict.get("max_autonomy_level", 3),
-            require_verification=constraints_dict.get(
-                "require_verification", True
-            ),
+            require_verification=constraints_dict.get("require_verification", True),
             audit_trail=constraints_dict.get("audit_trail", True),
-            max_code_generation_size=constraints_dict.get(
-                "max_code_generation_size", 10000
-            ),
+            max_code_generation_size=constraints_dict.get("max_code_generation_size", 10000),
             disallowed_operations=constraints_dict.get(
                 "disallowed_operations",
                 [
@@ -645,8 +621,7 @@ class PolicyManager:
 
         if profile not in policy.profiles:
             logger.warning(
-                f"Profile '{profile}' not in policy "
-                f"(available: {list(policy.profiles.keys())})"
+                f"Profile '{profile}' not in policy (available: {list(policy.profiles.keys())})"
             )
             # Return first available profile
             first_profile = next(iter(policy.profiles.values()))
@@ -719,9 +694,7 @@ class PolicyManager:
         # Return predefined profile names
         return ["strict", "balanced", "permissive"]
 
-    def get_policy_info(
-        self, profile: str = "balanced"
-    ) -> Optional[Dict]:
+    def get_policy_info(self, profile: str = "balanced") -> Optional[Dict]:
         """
         Get information about a loaded policy.
 

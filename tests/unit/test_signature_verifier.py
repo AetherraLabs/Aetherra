@@ -18,7 +18,10 @@ import unittest
 from datetime import datetime
 from pathlib import Path
 
-from Aetherra.aetherra_core.system.signature_verifier import SignatureInfo, SignatureVerifier
+from Aetherra.aetherra_core.system.signature_verifier import (
+    SignatureInfo,
+    SignatureVerifier,
+)
 
 
 class TestSignatureVerifier(unittest.TestCase):
@@ -57,12 +60,8 @@ class TestSignatureVerifier(unittest.TestCase):
         verifier = SignatureVerifier(development_mode=True)
 
         # Test trusted paths
-        self.assertTrue(
-            verifier._is_trusted_location("Aetherra/core/test.py")
-        )
-        self.assertTrue(
-            verifier._is_trusted_location("Aetherra/aetherra_core/test.py")
-        )
+        self.assertTrue(verifier._is_trusted_location("Aetherra/core/test.py"))
+        self.assertTrue(verifier._is_trusted_location("Aetherra/aetherra_core/test.py"))
         self.assertTrue(verifier._is_trusted_location("src/lyrixa/test.py"))
 
         # Test untrusted paths
@@ -149,7 +148,9 @@ class TestSignatureVerifier(unittest.TestCase):
             "created_by": "TestSuite",
             "last_updated": datetime.utcnow().isoformat(),
             "hashes": {
-                str(test_file.relative_to(self.temp_path)).replace("\\", "/"): file_hash,
+                str(test_file.relative_to(self.temp_path)).replace(
+                    "\\", "/"
+                ): file_hash,
             },
         }
 

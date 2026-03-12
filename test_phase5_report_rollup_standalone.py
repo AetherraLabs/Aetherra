@@ -204,9 +204,7 @@ class TestPhase5ReportRollup(unittest.TestCase):
 
             previous = {
                 "categories": {
-                    "results": [
-                        {"category": "performance", "aggregate_pass_rate": 0.5}
-                    ]
+                    "results": [{"category": "performance", "aggregate_pass_rate": 0.5}]
                 },
                 "performance_evidence": {
                     "avg_duration_sec": 0.5,

@@ -9,23 +9,17 @@ Run: python test_policy_manager_standalone.py
 """
 
 import sys
-import os
 import tempfile
-import json
-from pathlib import Path
-from datetime import datetime, timedelta
 import unittest
+from pathlib import Path
 
 # Add workspace root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from Aetherra.aetherra_core.system.policy_manager import (
+    EthicsProfile,
     PolicyManager,
     PolicyValidator,
-    Policy,
-    PolicyMetadata,
-    EthicsProfile,
-    SafetyConstraints,
 )
 
 
@@ -40,6 +34,7 @@ class TestPolicyManagerStandalone(unittest.TestCase):
     def tearDown(self):
         """Clean up."""
         import shutil
+
         shutil.rmtree(self.temp_dir, ignore_errors=True)
         self.manager.clear_cache()
 
@@ -90,9 +85,7 @@ class TestPolicyManagerStandalone(unittest.TestCase):
 
     def test_06_validate_disallowed_operation(self):
         """Test validating explicitly disallowed operation."""
-        is_allowed, reason = self.manager.validate_operation(
-            "rm -rf", "balanced"
-        )
+        is_allowed, reason = self.manager.validate_operation("rm -rf", "balanced")
         assert not is_allowed, "rm -rf should be disallowed"
         assert "disallowed" in reason
 
@@ -224,17 +217,16 @@ def run_tests():
     if result.wasSuccessful():
         print("✓ ALL TESTS PASSED")
         return 0
-    else:
-        print("✗ SOME TESTS FAILED")
-        if result.failures:
-            print("\nFailures:")
-            for test, traceback in result.failures:
-                print(f"  - {test}: {traceback}")
-        if result.errors:
-            print("\nErrors:")
-            for test, traceback in result.errors:
-                print(f"  - {test}: {traceback}")
-        return 1
+    print("✗ SOME TESTS FAILED")
+    if result.failures:
+        print("\nFailures:")
+        for test, traceback in result.failures:
+            print(f"  - {test}: {traceback}")
+    if result.errors:
+        print("\nErrors:")
+        for test, traceback in result.errors:
+            print(f"  - {test}: {traceback}")
+    return 1
 
 
 if __name__ == "__main__":

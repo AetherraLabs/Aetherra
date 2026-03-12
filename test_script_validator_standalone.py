@@ -19,12 +19,13 @@ Test Categories:
 Total: 22 comprehensive tests
 """
 
-import sys
-import os
-import tempfile
 import json
-import yaml
+import os
+import sys
+import tempfile
 from pathlib import Path
+
+import yaml
 
 # Add project root to path
 project_root = str(Path(__file__).parent.parent.parent)
@@ -32,11 +33,11 @@ sys.path.insert(0, project_root)
 
 # Import modules directly (no engine init)
 from Aetherra.aetherra_core.script_service.script_validator import (
+    ErrorLevel,
+    ScriptValidator,
+    StepDefinition,
     ValidationError,
     ValidationResult,
-    ErrorLevel,
-    StepDefinition,
-    ScriptValidator,
 )
 
 
@@ -72,15 +73,15 @@ class TestRunner:
 
     def summary(self):
         """Print test summary."""
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"Tests run: {self.total}")
         print(f"Passed:    {self.passed}")
         print(f"Failed:    {self.failed}")
         if self.failed > 0:
-            print(f"\nFailures:")
+            print("\nFailures:")
             for name, error in self.errors:
                 print(f"  - {name}: {error[:100]}")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
         return self.failed == 0
 
 
@@ -526,11 +527,15 @@ def main():
     print("\nStep Type Validation (3/22):")
     runner.run_test("Validate simple script", test_validate_simple_script)
     runner.run_test("Validate invalid step type", test_validate_invalid_step_type)
-    runner.run_test("Validate shell missing command", test_validate_shell_missing_command)
+    runner.run_test(
+        "Validate shell missing command", test_validate_shell_missing_command
+    )
 
     # Plugin and timeout validation
     print("\nPlugin & Timeout Validation (2/22):")
-    runner.run_test("Validate plugin missing fields", test_validate_plugin_missing_fields)
+    runner.run_test(
+        "Validate plugin missing fields", test_validate_plugin_missing_fields
+    )
     runner.run_test("Validate invalid timeout", test_validate_invalid_timeout)
 
     # Dependency validation

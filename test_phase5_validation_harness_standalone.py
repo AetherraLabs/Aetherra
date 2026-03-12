@@ -70,7 +70,9 @@ class TestPhase5ValidationHarness(unittest.TestCase):
         self.assertEqual(report["runs"], 1)
         self.assertEqual(report["full_pass_runs"], 0)
         self.assertIn("category_summaries", report)
-        self.assertTrue(any(row["category"] == "governance" for row in report["category_summaries"]))
+        self.assertTrue(
+            any(row["category"] == "governance" for row in report["category_summaries"])
+        )
 
     def test_run_validation_repeat_runs_reports_pass_rate(self):
         plan = build_plan("quick")[:1]

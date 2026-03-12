@@ -26,13 +26,13 @@ Example:
     >>> should_skip = loader.should_ignore("build/output.o")
 """
 
+import fnmatch
 import logging
 import os
-from dataclasses import dataclass, field
+import re
+from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Set, Tuple
-import fnmatch
-import re
 
 logger = logging.getLogger(__name__)
 
@@ -157,8 +157,7 @@ class IgnorePatternLoader:
         self.negation_patterns: List[IgnorePattern] = []
         self.ignore_file_path: Optional[Path] = None
         logger.debug(
-            f"IgnorePatternLoader initialized: root={root_dir}, "
-            f"use_defaults={use_defaults}"
+            f"IgnorePatternLoader initialized: root={root_dir}, use_defaults={use_defaults}"
         )
 
     def load(self) -> Tuple[bool, Set[str]]:
@@ -192,8 +191,7 @@ class IgnorePatternLoader:
 
             pattern_set = {str(p.pattern) for p in self.patterns if not p.is_negation}
             logger.info(
-                f"Loaded {len(pattern_set)} patterns, "
-                f"{len(self.negation_patterns)} negations"
+                f"Loaded {len(pattern_set)} patterns, {len(self.negation_patterns)} negations"
             )
 
             return True, pattern_set
@@ -252,7 +250,7 @@ class IgnorePatternLoader:
             file_path: Path to .aetherraignore file
         """
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 lines = f.readlines()
 
             for line_num, line in enumerate(lines, start=1):
@@ -380,9 +378,7 @@ class IgnorePatternLoader:
                 # Directory pattern: check if path is under directory
                 # Remove trailing slash for comparison
                 dir_pattern = pattern.pattern.rstrip("/")
-                if normalized_path == dir_pattern or normalized_path.startswith(
-                    dir_pattern + "/"
-                ):
+                if normalized_path == dir_pattern or normalized_path.startswith(dir_pattern + "/"):
                     is_ignored = True
                     break
             else:
@@ -466,13 +462,9 @@ class IgnorePatternLoader:
         """
         return {
             "total_patterns": len(self.patterns),
-            "ignore_patterns": len(
-                [p for p in self.patterns if not p.is_negation]
-            ),
+            "ignore_patterns": len([p for p in self.patterns if not p.is_negation]),
             "negation_patterns": len(self.negation_patterns),
             "directory_patterns": len([p for p in self.patterns if p.is_directory]),
             "regex_patterns": len([p for p in self.patterns if p.is_regex]),
-            "ignore_file_path": str(self.ignore_file_path)
-            if self.ignore_file_path
-            else None,
+            "ignore_file_path": str(self.ignore_file_path) if self.ignore_file_path else None,
         }

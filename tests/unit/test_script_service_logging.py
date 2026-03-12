@@ -10,10 +10,10 @@ Tests cover:
   - File writing and export
 """
 
-import unittest
-import tempfile
-import os
 import json
+import os
+import tempfile
+import unittest
 from pathlib import Path
 
 
@@ -23,9 +23,9 @@ class TestLogEvent(unittest.TestCase):
     def test_create_log_event(self):
         """Test creating log event."""
         from Aetherra.aetherra_core.script_service.script_service_logging import (
-            LogEvent,
             EventLevel,
             ExecutionPhase,
+            LogEvent,
         )
 
         event = LogEvent(
@@ -41,9 +41,9 @@ class TestLogEvent(unittest.TestCase):
     def test_log_event_to_json(self):
         """Test converting log event to JSON."""
         from Aetherra.aetherra_core.script_service.script_service_logging import (
-            LogEvent,
             EventLevel,
             ExecutionPhase,
+            LogEvent,
         )
 
         event = LogEvent(
@@ -68,10 +68,11 @@ class TestTimelineEntry(unittest.TestCase):
 
     def test_create_timeline_entry(self):
         """Test creating timeline entry."""
+        import time
+
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             TimelineEntry,
         )
-        import time
 
         entry = TimelineEntry(
             timestamp=time.time(),
@@ -110,10 +111,11 @@ class TestExecutionTimeline(unittest.TestCase):
 
     def test_timeline_elapsed(self):
         """Test timeline elapsed time."""
+        import time
+
         from Aetherra.aetherra_core.script_service.script_service_logging import (
             ExecutionTimeline,
         )
-        import time
 
         timeline = ExecutionTimeline()
         time.sleep(0.1)
@@ -249,8 +251,8 @@ class TestMetricsSnapshot(unittest.TestCase):
     def test_create_snapshot(self):
         """Test creating metrics snapshot."""
         from Aetherra.aetherra_core.script_service.script_service_logging import (
-            MetricsSnapshot,
             ExecutionPhase,
+            MetricsSnapshot,
         )
 
         snapshot = MetricsSnapshot(

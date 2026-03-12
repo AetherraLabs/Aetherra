@@ -16,10 +16,8 @@ Example:
 """
 
 import json
-import textwrap
 from dataclasses import dataclass, field
-from typing import List, Optional
-
+from typing import List
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Templates
@@ -122,6 +120,7 @@ _MANIFEST_TEMPLATE = {
 # Data classes
 # ──────────────────────────────────────────────────────────────────────────────
 
+
 @dataclass
 class WizardResult:
     """Result produced by the wizard after finalization."""
@@ -165,6 +164,7 @@ class WizardValidationError(Exception):
 # ──────────────────────────────────────────────────────────────────────────────
 # Wizard
 # ──────────────────────────────────────────────────────────────────────────────
+
 
 class PluginWizardBackend:
     """
@@ -302,7 +302,9 @@ class PluginWizardBackend:
             errors.append(ValidationError("basic_info", "Plugin name is required"))
         elif not self._name.replace("_", "").replace("-", "").isalnum():
             errors.append(
-                ValidationError("basic_info", "Name must be alphanumeric (underscores/dashes allowed)")
+                ValidationError(
+                    "basic_info", "Name must be alphanumeric (underscores/dashes allowed)"
+                )
             )
 
         if not self._description:
@@ -316,9 +318,7 @@ class PluginWizardBackend:
         # Validate version format (basic semver: x.y.z)
         parts = self._version.split(".")
         if len(parts) < 2 or not all(p.isdigit() for p in parts):
-            errors.append(
-                ValidationError("basic_info", f"Invalid version format: {self._version}")
-            )
+            errors.append(ValidationError("basic_info", f"Invalid version format: {self._version}"))
 
         return errors
 
@@ -424,6 +424,7 @@ class PluginWizardBackend:
 # ──────────────────────────────────────────────────────────────────────────────
 # Helpers
 # ──────────────────────────────────────────────────────────────────────────────
+
 
 def _to_class_name(plugin_name: str) -> str:
     """Convert plugin_name to CamelCase class name."""

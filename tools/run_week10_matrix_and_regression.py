@@ -27,7 +27,9 @@ def main() -> int:
         f"quick={quick_report['status']} (full_pass_runs={quick_report['full_pass_runs']}/{quick_report['runs']})"
     )
 
-    return 0 if full_report["status"] == "pass" and quick_report["status"] == "pass" else 1
+    return (
+        0 if full_report["status"] == "pass" and quick_report["status"] == "pass" else 1
+    )
 
 
 if __name__ == "__main__":

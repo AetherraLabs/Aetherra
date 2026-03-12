@@ -11,12 +11,13 @@ Tests cover:
   - Error reporting
 """
 
-import unittest
-import tempfile
-import os
 import json
-import yaml
+import os
+import tempfile
+import unittest
 from pathlib import Path
+
+import yaml
 
 
 class TestValidationError(unittest.TestCase):
@@ -25,8 +26,8 @@ class TestValidationError(unittest.TestCase):
     def test_create_error(self):
         """Test creating validation error."""
         from Aetherra.aetherra_core.script_service.script_validator import (
-            ValidationError,
             ErrorLevel,
+            ValidationError,
         )
 
         error = ValidationError(
@@ -43,8 +44,8 @@ class TestValidationError(unittest.TestCase):
     def test_error_string_representation(self):
         """Test error string representation."""
         from Aetherra.aetherra_core.script_service.script_validator import (
-            ValidationError,
             ErrorLevel,
+            ValidationError,
         )
 
         error = ValidationError(
@@ -332,9 +333,7 @@ class TestScriptValidator(unittest.TestCase):
                 }
             ],
         }
-        script_path = self._create_script(
-            "missing_cmd.aether", yaml.dump(script_data)
-        )
+        script_path = self._create_script("missing_cmd.aether", yaml.dump(script_data))
         validator = ScriptValidator(script_path)
         result = validator.validate()
 
@@ -399,9 +398,7 @@ class TestScriptValidator(unittest.TestCase):
                 }
             ],
         }
-        script_path = self._create_script(
-            "bad_ref.aether", yaml.dump(script_data)
-        )
+        script_path = self._create_script("bad_ref.aether", yaml.dump(script_data))
         validator = ScriptValidator(script_path)
         result = validator.validate()
 
@@ -453,9 +450,7 @@ class TestScriptValidator(unittest.TestCase):
                 }
             ],
         }
-        script_path = self._create_script(
-            "unused_var.aether", yaml.dump(script_data)
-        )
+        script_path = self._create_script("unused_var.aether", yaml.dump(script_data))
         validator = ScriptValidator(script_path)
         result = validator.validate()
 
@@ -500,9 +495,7 @@ class TestScriptValidator(unittest.TestCase):
                 }
             ],
         }
-        script_path = self._create_script(
-            "json.aether", json.dumps(script_data)
-        )
+        script_path = self._create_script("json.aether", json.dumps(script_data))
         validator = ScriptValidator(script_path)
         result = validator.validate()
 

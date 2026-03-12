@@ -31,7 +31,6 @@ import subprocess
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
 
 # Local imports
 from . import audit, ops_engine, safety
@@ -186,7 +185,9 @@ class IntentParser:
 
         if any(k in lowered for k in ["simple", "small", "quick"]):
             complexity = "low"
-        elif any(k in lowered for k in ["enterprise", "distributed", "scalable", "complex"]):
+        elif any(
+            k in lowered for k in ["enterprise", "distributed", "scalable", "complex"]
+        ):
             complexity = "high"
         else:
             complexity = "medium"
@@ -262,7 +263,7 @@ class CodeGenerationWorkflow:
             class_name = parsed.target_name[:1].upper() + parsed.target_name[1:]
             return (
                 f"class {class_name}:\n"
-                f"    \"\"\"Auto-generated class for intent: {parsed.raw_intent}\"\"\"\n"
+                f'    """Auto-generated class for intent: {parsed.raw_intent}"""\n'
                 "\n"
                 "    def __init__(self):\n"
                 "        self._ready = True\n"
@@ -271,18 +272,21 @@ class CodeGenerationWorkflow:
         if "async" in parsed.constraints:
             return (
                 f"async def {fn}(value):\n"
-                f"    \"\"\"Auto-generated function for intent: {parsed.raw_intent}\"\"\"\n"
+                f'    """Auto-generated function for intent: {parsed.raw_intent}"""\n'
                 "    return value\n"
             )
         return (
             f"def {fn}(value):\n"
-            f"    \"\"\"Auto-generated function for intent: {parsed.raw_intent}\"\"\"\n"
+            f'    """Auto-generated function for intent: {parsed.raw_intent}"""\n'
             "    return value\n"
         )
 
     def _add_logic(self, skeleton: str, parsed: ParsedIntent) -> str:
         code = skeleton
-        if parsed.intent_type == "function" and "factorial" in parsed.target_name.lower():
+        if (
+            parsed.intent_type == "function"
+            and "factorial" in parsed.target_name.lower()
+        ):
             code = code.replace(
                 "    return value\n",
                 "    if value < 0:\n"

@@ -7,7 +7,7 @@ Provides:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 # Third party imports
 from flask import Blueprint, jsonify
@@ -35,7 +35,7 @@ def quantum_snapshot():
     payload = {
         "available": True,
         "backend": "simulated",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "coherence": {
             "level": float(q_status.get("coherence_level", 1.0)),
             "stable": bool(q_status.get("stable", True)),

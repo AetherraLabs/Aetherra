@@ -49,7 +49,9 @@ class LearningLoop:
         memory_engine=None,
         state_path: Optional[str | Path] = None,
     ) -> None:
-        default_state = os.getenv("AETHERRA_LEARNING_STATE_PATH", ".aetherra/learning_loop_state.json")
+        default_state = os.getenv(
+            "AETHERRA_LEARNING_STATE_PATH", ".aetherra/learning_loop_state.json"
+        )
         self.state_path = Path(state_path or default_state)
         self.state_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -147,7 +149,9 @@ class LearningLoop:
             "success_rate": round(success_rate, 3),
         }
 
-    def recent_similar_episodes(self, context: str, action: str, limit: int = 10) -> List[Dict[str, Any]]:
+    def recent_similar_episodes(
+        self, context: str, action: str, limit: int = 10
+    ) -> List[Dict[str, Any]]:
         """Return recent outcome episodes matching context and action."""
         context = (context or "general").strip() or "general"
         action = (action or "").strip()
@@ -193,7 +197,9 @@ class LearningLoop:
 
     def _save_state(self) -> None:
         self.state["global"]["last_updated"] = datetime.utcnow().isoformat()
-        self.state_path.write_text(json.dumps(self.state, indent=2, sort_keys=True), encoding="utf-8")
+        self.state_path.write_text(
+            json.dumps(self.state, indent=2, sort_keys=True), encoding="utf-8"
+        )
 
     def _get_action_bucket(self, context: str, action: str) -> Dict[str, Any]:
         contexts = self.state.setdefault("contexts", {})

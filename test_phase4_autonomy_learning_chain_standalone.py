@@ -72,10 +72,19 @@ class TestAutonomyLearningChain(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             loop = self._loop(td)
             decision = self.decision_engine.decide(
-                {"goal": "optimize docs", "context": "repo", "candidate_actions": ["analyze"]}
+                {
+                    "goal": "optimize docs",
+                    "context": "repo",
+                    "candidate_actions": ["analyze"],
+                }
             )
             gate = self.governor.evaluate(
-                {"operation": decision.action, "file_changes": 1, "api_calls": 0, "risk_score": 0.2}
+                {
+                    "operation": decision.action,
+                    "file_changes": 1,
+                    "api_calls": 0,
+                    "risk_score": 0.2,
+                }
             )
             self.assertTrue(gate.allowed)
 
@@ -127,8 +136,12 @@ class TestAutonomyLearningChain(unittest.TestCase):
     def test_chain_records_episodes_and_memory(self):
         with tempfile.TemporaryDirectory() as td:
             loop = self._loop(td)
-            decision = self.decision_engine.decide({"goal": "fix bug", "context": "repo"})
-            loop.process_outcome(decision, {"context": "repo", "success": True, "quality": 0.8})
+            decision = self.decision_engine.decide(
+                {"goal": "fix bug", "context": "repo"}
+            )
+            loop.process_outcome(
+                decision, {"context": "repo", "success": True, "quality": 0.8}
+            )
             rows = loop.recent_similar_episodes("repo", decision.action, limit=5)
             self.assertGreaterEqual(len(rows), 1)
             self.assertEqual(len(self.memory.saved), 1)

@@ -23,17 +23,14 @@ Example:
     ...     print(f"Optimization improved {result.metrics_gained}")
 """
 
-import os
 import json
-import shutil
 import logging
-import hashlib
-import ast
-import re
-from dataclasses import dataclass, field, asdict
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Any
+import shutil
+from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
 import yaml
 
 logger = logging.getLogger(__name__)
@@ -67,8 +64,7 @@ class Metrics:
             Dictionary of improvements (negative = better)
         """
         return {
-            "execution_time_improvement": other.execution_time
-            - self.execution_time,
+            "execution_time_improvement": other.execution_time - self.execution_time,
             "memory_improvement": other.memory_usage - self.memory_usage,
             "cpu_improvement": other.cpu_usage - self.cpu_usage,
             "code_reduction": other.code_lines - self.code_lines,
@@ -101,7 +97,7 @@ class CodeChange:
             Tuple of (success, message)
         """
         try:
-            with open(self.file_path, "r") as f:
+            with open(self.file_path) as f:
                 content = f.read()
 
             if self.old_code not in content:
@@ -144,12 +140,10 @@ class ConfigChange:
         """
         try:
             # Load config file
-            with open(self.config_path, "r") as f:
+            with open(self.config_path) as f:
                 if self.config_path.endswith(".json"):
                     config = json.load(f)
-                elif self.config_path.endswith(".yaml") or self.config_path.endswith(
-                    ".yml"
-                ):
+                elif self.config_path.endswith(".yaml") or self.config_path.endswith(".yml"):
                     config = yaml.safe_load(f)
                 else:
                     return False, "Unsupported config format"
@@ -164,7 +158,7 @@ class ConfigChange:
 
             # Check old value matches
             if current.get(keys[-1]) != self.old_value:
-                return False, f"Current value doesn't match expected old value"
+                return False, "Current value doesn't match expected old value"
 
             # Apply change
             current[keys[-1]] = self.new_value
@@ -260,8 +254,7 @@ class OptimizationExecutor:
         self.enable_dry_run = enable_dry_run
         self.backup_dir.mkdir(exist_ok=True, parents=True)
         logger.info(
-            f"OptimizationExecutor initialized: workspace={workspace}, "
-            f"dry_run={enable_dry_run}"
+            f"OptimizationExecutor initialized: workspace={workspace}, dry_run={enable_dry_run}"
         )
 
     def execute(
@@ -301,21 +294,15 @@ class OptimizationExecutor:
                 result.message = f"Proposal validation failed: {validation_errors}"
                 return result
 
-            result.audit_trail.append(
-                f"[{datetime.now().isoformat()}] Proposal validation passed"
-            )
+            result.audit_trail.append(f"[{datetime.now().isoformat()}] Proposal validation passed")
 
             # Step 2: Capture baseline metrics
             result.metrics_before = self._capture_metrics()
-            result.audit_trail.append(
-                f"[{datetime.now().isoformat()}] Baseline metrics captured"
-            )
+            result.audit_trail.append(f"[{datetime.now().isoformat()}] Baseline metrics captured")
 
             # Step 3: Create backup
             backup_id = self._create_backup(proposal.proposal_id)
-            result.audit_trail.append(
-                f"[{datetime.now().isoformat()}] Created backup: {backup_id}"
-            )
+            result.audit_trail.append(f"[{datetime.now().isoformat()}] Created backup: {backup_id}")
 
             # Step 4: Apply changes
             changes_applied = self._apply_changes(proposal)
@@ -343,29 +330,23 @@ class OptimizationExecutor:
 
             # Step 6: Capture metrics after optimization
             result.metrics_after = self._capture_metrics()
-            result.audit_trail.append(
-                f"[{datetime.now().isoformat()}] Final metrics captured"
-            )
+            result.audit_trail.append(f"[{datetime.now().isoformat()}] Final metrics captured")
 
             # Step 7: Compare metrics
-            result.metrics_gained = result.metrics_before.compare(
-                result.metrics_after
-            )
+            result.metrics_gained = result.metrics_before.compare(result.metrics_after)
             result.audit_trail.append(
-                f"[{datetime.now().isoformat()}] Metrics improved: "
-                f"{result.metrics_gained}"
+                f"[{datetime.now().isoformat()}] Metrics improved: {result.metrics_gained}"
             )
 
             # Step 8: Commit changes
             if not self.enable_dry_run:
                 self._cleanup_backup(backup_id)
                 result.audit_trail.append(
-                    f"[{datetime.now().isoformat()}] Backup cleaned up, "
-                    f"changes committed"
+                    f"[{datetime.now().isoformat()}] Backup cleaned up, changes committed"
                 )
 
             result.success = True
-            result.message = f"Optimization completed successfully: "
+            result.message = "Optimization completed successfully: "
             f"{changes_applied} changes applied"
             logger.info(f"Optimization {proposal.proposal_id} completed successfully")
 
@@ -375,9 +356,7 @@ class OptimizationExecutor:
             logger.error(f"Optimization execution failed: {e}")
             result.message = f"Unexpected error: {str(e)}"
             result.rollback_reason = str(e)
-            result.audit_trail.append(
-                f"[{datetime.now().isoformat()}] Error: {str(e)}"
-            )
+            result.audit_trail.append(f"[{datetime.now().isoformat()}] Error: {str(e)}")
             return result
 
     def _validate_proposal(self, proposal: OptimizationProposal) -> Tuple[bool, str]:
@@ -404,9 +383,7 @@ class OptimizationExecutor:
             return False, f"Invalid optimization_type: {proposal.optimization_type}"
 
         # Check safety limits
-        total_changes = len(proposal.code_changes) + len(
-            proposal.config_changes
-        )
+        total_changes = len(proposal.code_changes) + len(proposal.config_changes)
         if total_changes > self.MAX_PROPOSAL_CHANGES:
             return (
                 False,
@@ -442,7 +419,7 @@ class OptimizationExecutor:
             for py_file in self.workspace.rglob("*.py"):
                 if ".optimization_backups" not in str(py_file):
                     try:
-                        with open(py_file, "r", errors="ignore") as f:
+                        with open(py_file, errors="ignore") as f:
                             total_lines += len(f.readlines())
                     except Exception:
                         pass
@@ -484,7 +461,9 @@ class OptimizationExecutor:
                 src = self.workspace / item
                 if src.exists():
                     dst = backup_path / item
-                    shutil.copytree(src, dst, ignore=shutil.ignore_patterns("__pycache__", ".pyc", ".git"))
+                    shutil.copytree(
+                        src, dst, ignore=shutil.ignore_patterns("__pycache__", ".pyc", ".git")
+                    )
 
             logger.info(f"Created backup: {backup_id}")
             return backup_id

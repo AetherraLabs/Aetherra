@@ -46,7 +46,11 @@ class PluginManager:
 
         # Single-file plugin modules in plugins root
         for py in self.plugins_dir.glob("*.py"):
-            if py.name.startswith("__") or py.stem in {"manager", "manifest_schema", "ai_plugin_generator_v2"}:
+            if py.name.startswith("__") or py.stem in {
+                "manager",
+                "manifest_schema",
+                "ai_plugin_generator_v2",
+            }:
                 continue
             name = py.stem
             self.registry.setdefault(name, PluginRecord(name=name, path=py))
@@ -101,9 +105,9 @@ class PluginManager:
             mod = self._import_plugin_module(rec)
             instance = None
 
-            if hasattr(mod, "PLUGIN_CLASS") and isinstance(getattr(mod, "PLUGIN_CLASS"), type):
+            if hasattr(mod, "PLUGIN_CLASS") and isinstance(mod.PLUGIN_CLASS, type):
                 instance = mod.PLUGIN_CLASS()
-            elif hasattr(mod, "Plugin") and isinstance(getattr(mod, "Plugin"), type):
+            elif hasattr(mod, "Plugin") and isinstance(mod.Plugin, type):
                 instance = mod.Plugin()
             else:
                 # Module-level fallback
@@ -134,15 +138,13 @@ class PluginManager:
         if hasattr(target, capability) and callable(getattr(target, capability)):
             return getattr(target, capability)(**kwargs)
 
-        if hasattr(target, "execute_action") and callable(getattr(target, "execute_action")):
+        if hasattr(target, "execute_action") and callable(target.execute_action):
             return target.execute_action(capability, **kwargs)
 
-        if hasattr(target, "execute") and callable(getattr(target, "execute")):
+        if hasattr(target, "execute") and callable(target.execute):
             return target.execute(capability=capability, **kwargs)
 
-        raise AttributeError(
-            f"Capability '{capability}' not found for plugin '{plugin_name}'"
-        )
+        raise AttributeError(f"Capability '{capability}' not found for plugin '{plugin_name}'")
 
     def unload_plugin(self, plugin_name: str) -> bool:
         rec = self.registry.get(plugin_name)
@@ -163,7 +165,9 @@ class PluginManager:
                     "path": str(rec.path),
                     "loaded": rec.loaded,
                     "errors": list(rec.errors),
-                    "capabilities": list(rec.manifest.get("capabilities", [])) if rec.manifest else [],
+                    "capabilities": list(rec.manifest.get("capabilities", []))
+                    if rec.manifest
+                    else [],
                 }
             )
         return sorted(out, key=lambda x: x["name"])

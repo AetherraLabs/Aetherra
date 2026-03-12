@@ -22,7 +22,7 @@ import re
 import statistics
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
@@ -113,10 +113,11 @@ class ProcessorBase(ABC):
 # JSON Processor
 # ---------------------------------------------------------------------------
 
+
 class JSONProcessor(ProcessorBase):
     """Process JSON data with validation, transform, and filter support."""
 
-    def parse(self, input_data: str) -> Union[dict, list]:
+    def parse(self, input_data: str) -> dict | list:
         """
         Parse JSON string into Python objects.
 
@@ -163,7 +164,7 @@ class JSONProcessor(ProcessorBase):
 
         # Apply row limit
         if config.max_rows and isinstance(result, list):
-            result = result[:config.max_rows]
+            result = result[: config.max_rows]
 
         return result
 
@@ -266,7 +267,8 @@ class JSONProcessor(ProcessorBase):
                 key = key.strip()
                 value = value.strip()
                 result = [
-                    item for item in result
+                    item
+                    for item in result
                     if isinstance(item, dict) and str(item.get(key, "")) == value
                 ]
         return result
@@ -275,6 +277,7 @@ class JSONProcessor(ProcessorBase):
 # ---------------------------------------------------------------------------
 # CSV Processor
 # ---------------------------------------------------------------------------
+
 
 class CSVProcessor(ProcessorBase):
     """Process CSV data with type detection, filtering, sorting."""
@@ -285,9 +288,7 @@ class CSVProcessor(ProcessorBase):
     _BOOL_PATTERN = re.compile(r"^(true|false|yes|no|1|0)$", re.IGNORECASE)
     _DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
-    def parse(
-        self, input_data: str, delimiter: str = ","
-    ) -> List[Dict[str, Any]]:
+    def parse(self, input_data: str, delimiter: str = ",") -> List[Dict[str, Any]]:
         """
         Parse CSV string into list of row dicts.
 
@@ -301,9 +302,7 @@ class CSVProcessor(ProcessorBase):
         if not isinstance(input_data, str):
             raise ValueError(f"Expected str, got {type(input_data).__name__}")
 
-        reader = csv.DictReader(
-            io.StringIO(input_data), delimiter=delimiter
-        )
+        reader = csv.DictReader(io.StringIO(input_data), delimiter=delimiter)
         rows = []
         for row in reader:
             typed_row = {k: self._detect_type(v) for k, v in row.items()}
@@ -333,7 +332,7 @@ class CSVProcessor(ProcessorBase):
 
         # Apply row limit
         if config.max_rows:
-            result = result[:config.max_rows]
+            result = result[: config.max_rows]
 
         return result
 
@@ -393,7 +392,9 @@ class CSVProcessor(ProcessorBase):
         }
 
         return {
-            col: type_name_map.get(next(iter(type_set)), next(iter(type_set))) if len(type_set) == 1 else "mixed"
+            col: type_name_map.get(next(iter(type_set)), next(iter(type_set)))
+            if len(type_set) == 1
+            else "mixed"
             for col, type_set in types.items()
         }
 
@@ -453,21 +454,33 @@ class CSVProcessor(ProcessorBase):
                 # Try type coercion for numeric comparisons
                 try:
                     num_value = float(value)
-                    result = [r for r in result if r.get(key) == num_value or str(r.get(key, "")) == value]
+                    result = [
+                        r for r in result if r.get(key) == num_value or str(r.get(key, "")) == value
+                    ]
                 except ValueError:
                     result = [r for r in result if str(r.get(key, "")) == value]
             elif ">" in f:
                 key, value = f.split(">", 1)
                 try:
                     threshold = float(value.strip())
-                    result = [r for r in result if isinstance(r.get(key.strip()), (int, float)) and r[key.strip()] > threshold]
+                    result = [
+                        r
+                        for r in result
+                        if isinstance(r.get(key.strip()), (int, float))
+                        and r[key.strip()] > threshold
+                    ]
                 except ValueError:
                     pass
             elif "<" in f:
                 key, value = f.split("<", 1)
                 try:
                     threshold = float(value.strip())
-                    result = [r for r in result if isinstance(r.get(key.strip()), (int, float)) and r[key.strip()] < threshold]
+                    result = [
+                        r
+                        for r in result
+                        if isinstance(r.get(key.strip()), (int, float))
+                        and r[key.strip()] < threshold
+                    ]
                 except ValueError:
                     pass
         return result
@@ -475,7 +488,11 @@ class CSVProcessor(ProcessorBase):
     def _sort_rows(self, data: List[Dict], sort_by: str, ascending: bool) -> List[Dict]:
         """Sort rows by a column."""
         try:
-            return sorted(data, key=lambda r: (r.get(sort_by) is None, r.get(sort_by, "")), reverse=not ascending)
+            return sorted(
+                data,
+                key=lambda r: (r.get(sort_by) is None, r.get(sort_by, "")),
+                reverse=not ascending,
+            )
         except TypeError:
             return data
 
@@ -483,6 +500,7 @@ class CSVProcessor(ProcessorBase):
 # ---------------------------------------------------------------------------
 # Text Processor
 # ---------------------------------------------------------------------------
+
 
 class TextProcessor(ProcessorBase):
     """Process text data with line operations, regex, and statistics."""
@@ -529,7 +547,7 @@ class TextProcessor(ProcessorBase):
 
         # Apply row limit
         if config.max_rows:
-            result = result[:config.max_rows]
+            result = result[: config.max_rows]
 
         return result
 
@@ -579,9 +597,7 @@ class TextProcessor(ProcessorBase):
             "word_count": len(words),
             "char_count": len(all_text),
             "empty_lines": empty_lines,
-            "avg_line_length": (
-                statistics.mean(line_lengths) if line_lengths else 0.0
-            ),
+            "avg_line_length": (statistics.mean(line_lengths) if line_lengths else 0.0),
             "max_line_length": max(line_lengths) if line_lengths else 0,
         }
 
@@ -600,13 +616,15 @@ class TextProcessor(ProcessorBase):
         matches = []
         for i, line in enumerate(data, 1):
             for match in compiled.finditer(line):
-                matches.append({
-                    "line_number": i,
-                    "match": match.group(),
-                    "start": match.start(),
-                    "end": match.end(),
-                    "line": line,
-                })
+                matches.append(
+                    {
+                        "line_number": i,
+                        "match": match.group(),
+                        "start": match.start(),
+                        "end": match.end(),
+                        "line": line,
+                    }
+                )
         return matches
 
     def replace_pattern(self, data: List[str], pattern: str, replacement: str) -> List[str]:
@@ -624,7 +642,9 @@ class TextProcessor(ProcessorBase):
         compiled = re.compile(pattern)
         return [compiled.sub(replacement, line) for line in data]
 
-    def filter_lines(self, data: List[str], contains: str, case_sensitive: bool = False) -> List[str]:
+    def filter_lines(
+        self, data: List[str], contains: str, case_sensitive: bool = False
+    ) -> List[str]:
         """
         Filter lines containing a substring.
 

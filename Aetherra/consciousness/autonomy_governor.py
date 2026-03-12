@@ -30,9 +30,7 @@ class AutonomyGovernor:
         self.max_file_changes = int(os.getenv("AETHERRA_MAX_FILE_CHANGES", "25"))
         self.max_api_calls_per_min = int(os.getenv("AETHERRA_MAX_API_CALLS_PER_MIN", "120"))
         self.max_risk_score = float(os.getenv("AETHERRA_MAX_RISK_SCORE", "0.75"))
-        self.require_approval_for_breaking = (
-            os.getenv("AETHERRA_APPROVAL_BREAKING", "1") == "1"
-        )
+        self.require_approval_for_breaking = os.getenv("AETHERRA_APPROVAL_BREAKING", "1") == "1"
         self.forbidden_ops = {
             "rm -rf",
             "format c:",

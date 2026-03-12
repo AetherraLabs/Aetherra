@@ -13,13 +13,13 @@ Tests cover:
   - Result generation
 """
 
-import unittest
-import tempfile
-import os
 import json
-from unittest.mock import Mock, patch, MagicMock
+import os
+import tempfile
+import unittest
 from datetime import datetime
 from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
 
 
 class TestWorkflowStep(unittest.TestCase):
@@ -28,8 +28,8 @@ class TestWorkflowStep(unittest.TestCase):
     def test_create_shell_step(self):
         """Test creating a shell command step."""
         from Aetherra.aetherra_core.script_service.script_executor import (
-            WorkflowStep,
             StepType,
+            WorkflowStep,
         )
 
         step = WorkflowStep(
@@ -47,8 +47,8 @@ class TestWorkflowStep(unittest.TestCase):
     def test_create_python_step(self):
         """Test creating a Python code step."""
         from Aetherra.aetherra_core.script_service.script_executor import (
-            WorkflowStep,
             StepType,
+            WorkflowStep,
         )
 
         step = WorkflowStep(
@@ -65,8 +65,8 @@ class TestWorkflowStep(unittest.TestCase):
     def test_create_plugin_step(self):
         """Test creating a plugin call step."""
         from Aetherra.aetherra_core.script_service.script_executor import (
-            WorkflowStep,
             StepType,
+            WorkflowStep,
         )
 
         step = WorkflowStep(
@@ -83,8 +83,8 @@ class TestWorkflowStep(unittest.TestCase):
     def test_step_with_dependencies(self):
         """Test step with dependency tracking."""
         from Aetherra.aetherra_core.script_service.script_executor import (
-            WorkflowStep,
             StepType,
+            WorkflowStep,
         )
 
         step = WorkflowStep(
@@ -99,8 +99,8 @@ class TestWorkflowStep(unittest.TestCase):
     def test_step_with_variables(self):
         """Test step storing local variables."""
         from Aetherra.aetherra_core.script_service.script_executor import (
-            WorkflowStep,
             StepType,
+            WorkflowStep,
         )
 
         variables = {"count": 5, "name": "test"}
@@ -156,10 +156,11 @@ class TestExecutionContext(unittest.TestCase):
 
     def test_context_duration(self):
         """Test context duration tracking."""
+        import time
+
         from Aetherra.aetherra_core.script_service.script_executor import (
             ExecutionContext,
         )
-        import time
 
         context = ExecutionContext(script_path="/path/to/script.aether")
         context.start_time = datetime.now()
@@ -363,8 +364,8 @@ class TestScriptExecutor(unittest.TestCase):
     def test_execute_missing_script(self):
         """Test execution fails gracefully with missing script."""
         from Aetherra.aetherra_core.script_service.script_executor import (
-            ScriptExecutor,
             ExecutionState,
+            ScriptExecutor,
         )
 
         executor = ScriptExecutor("/path/that/does/not/exist.aether")
@@ -513,10 +514,10 @@ class TestScriptExecutor(unittest.TestCase):
     def test_execute_step_metrics(self):
         """Test step execution collects metrics."""
         from Aetherra.aetherra_core.script_service.script_executor import (
-            ScriptExecutor,
             ExecutionContext,
-            WorkflowStep,
+            ScriptExecutor,
             StepType,
+            WorkflowStep,
         )
 
         executor = ScriptExecutor(self.script_path)
@@ -547,8 +548,8 @@ class TestScriptExecutorIntegration(unittest.TestCase):
     def test_full_execution_flow(self):
         """Test complete execution flow."""
         from Aetherra.aetherra_core.script_service.script_executor import (
-            ScriptExecutor,
             ExecutionState,
+            ScriptExecutor,
         )
 
         executor = ScriptExecutor(self.script_path)

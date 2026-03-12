@@ -60,15 +60,15 @@ def list_agents():
     cap_filter = request.args.get("capability", "").strip().lower()
     if cap_filter and agents:
         agents = [
-            a for a in agents
+            a
+            for a in agents
             if any(cap_filter in str(c).lower() for c in a.get("capabilities", []))
         ]
     # Optional status filter: ?status=idle
     status_filter = request.args.get("status", "").strip().lower()
     if status_filter and agents:
         agents = [
-            a for a in agents
-            if str(a.get("status", "")).lower() == status_filter
+            a for a in agents if str(a.get("status", "")).lower() == status_filter
         ]
     return jsonify(
         {

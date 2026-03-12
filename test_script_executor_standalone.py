@@ -18,12 +18,10 @@ Test Categories:
 Total: 27 comprehensive tests
 """
 
-import sys
 import os
+import sys
 import tempfile
-import time
 from pathlib import Path
-from datetime import datetime
 from unittest.mock import Mock
 
 # Add project root to path for direct module import
@@ -32,14 +30,14 @@ sys.path.insert(0, project_root)
 
 # Import modules directly (no engine init)
 from Aetherra.aetherra_core.script_service.script_executor import (
-    WorkflowStep,
-    StepType,
     ExecutionContext,
-    ExecutionState,
-    StepResult,
     ExecutionMetrics,
     ExecutionResult,
+    ExecutionState,
     ScriptExecutor,
+    StepResult,
+    StepType,
+    WorkflowStep,
 )
 
 
@@ -75,15 +73,15 @@ class TestRunner:
 
     def summary(self):
         """Print test summary."""
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"Tests run: {self.total}")
         print(f"Passed:    {self.passed}")
         print(f"Failed:    {self.failed}")
         if self.failed > 0:
-            print(f"\nFailures:")
+            print("\nFailures:")
             for name, error in self.errors:
                 print(f"  - {name}: {error[:100]}")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
         return self.failed == 0
 
 
@@ -330,7 +328,6 @@ def test_execute_shell_timeout():
 
         executor = ScriptExecutor(script_path)
         # Test with a command that should timeout
-        import subprocess
         success, stdout, stderr, code = executor._execute_shell(
             Mock(command="ping -n 1000 127.0.0.1", timeout=1), timeout=1
         )

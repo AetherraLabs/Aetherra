@@ -1,8 +1,8 @@
 # PHASE 1 IMPLEMENTATION PLAN - DETAILED TASK BREAKDOWN
 
-**Status**: Ready for Development  
-**Total Effort**: 40-60 hours  
-**Team Size**: 2-3 developers  
+**Status**: Ready for Development
+**Total Effort**: 40-60 hours
+**Team Size**: 2-3 developers
 **Timeline**: 6 weeks (concurrent work recommended)
 
 ---
@@ -22,9 +22,9 @@
 
 # TASK 1: Self-Incorporation System
 
-**File**: `aetherra_self_incorporation.py`  
-**Owner**: Senior Developer A  
-**Total Effort**: 12-16 hours  
+**File**: `aetherra_self_incorporation.py`
+**Owner**: Senior Developer A
+**Total Effort**: 12-16 hours
 **Priority**: 🔴 CRITICAL
 
 ## Overview
@@ -38,6 +38,7 @@ The self-incorporation system drives Aetherra's autonomous learning and self-imp
 **Effort**: 4-5 hours
 
 #### Current State
+
 ```python
 def _verify_signatures(self, file_item: FileItem) -> tuple[bool, dict[str, Any]]:
     """Verify file signatures (placeholder implementation)."""
@@ -64,27 +65,29 @@ def _verify_signatures(self, file_item: FileItem) -> tuple[bool, dict[str, Any]]
    - Log all verifications for audit trail
 
 4. **Code Structure**
+
    ```python
    class SignatureVerifier:
        def __init__(self, manifest_path: str):
            self.manifest = self._load_manifest(manifest_path)
            self.trusted_paths = ["Aetherra/core", "Aetherra/aetherra_core"]
-       
+
        def verify(self, file_path: str) -> tuple[bool, dict]:
            # Hash file
            # Check manifest
            # Return (is_valid, details)
-       
+
        def _load_manifest(self) -> dict:
            # Load from JSON or environment
            pass
-       
+
        def _compute_hash(self, file_path: str) -> str:
            # SHA-256 hash
            pass
    ```
 
 #### Success Criteria
+
 - [ ] All Aetherra core files have valid signatures
 - [ ] Unit tests cover verification (10+ test cases)
 - [ ] Fallback to path-based trust works in dev mode
@@ -92,6 +95,7 @@ def _verify_signatures(self, file_item: FileItem) -> tuple[bool, dict[str, Any]]
 - [ ] <100ms per-file verification latency
 
 #### Test Cases
+
 1. Valid signature → returns True
 2. Modified file → returns False
 3. Unknown file → returns False with reason
@@ -106,6 +110,7 @@ def _verify_signatures(self, file_item: FileItem) -> tuple[bool, dict[str, Any]]
 **Effort**: 3-4 hours
 
 #### Current State
+
 ```python
 def _load_ethical_profile_weights(self) -> dict:
     """Load ethical profile weights from configuration."""
@@ -117,12 +122,13 @@ def _load_ethical_profile_weights(self) -> dict:
 #### Implementation Plan
 
 1. **Define Policy File Format** (YAML or JSON)
+
    ```yaml
    # policies/default.aetherra-policy
    version: "1.0"
    created_by: "Aetherra Labs"
    effective_date: "2026-03-10"
-   
+
    ethics:
      profiles:
        strict:
@@ -131,12 +137,12 @@ def _load_ethical_profile_weights(self) -> dict:
          virtue: 0.1
          care: 0.1
        balanced: {...}
-   
+
    safety:
      max_autonomy_level: 3
      require_verification: true
      audit_trail: true
-   
+
    constraints:
      max_code_generation_size: 10000  # lines
      disallowed_operations: ["rm -rf", "format C:"]
@@ -155,29 +161,31 @@ def _load_ethical_profile_weights(self) -> dict:
    - Version compatibility
 
 4. **Code Structure**
+
    ```python
    class PolicyManager:
        def __init__(self, policy_dir: str = None):
            self.policy_dir = policy_dir or self._find_policy_dir()
            self.policies = {}
            self.cache_ttl = 3600  # 1 hour
-       
+
        def load_policy(self, profile: str) -> dict:
            # Load policy file
            # Validate
            # Cache
            # Return
-       
+
        def get_ethics_weights(self, profile: str) -> dict:
            # Get ethics profile weights
            pass
-       
+
        def validate_operation(self, operation: str) -> bool:
            # Check if operation is allowed by policy
            pass
    ```
 
 #### Success Criteria
+
 - [ ] Load policies from file system
 - [ ] Support 3+ predefined profiles
 - [ ] Schema validation working
@@ -192,6 +200,7 @@ def _load_ethical_profile_weights(self) -> dict:
 **Effort**: 3-4 hours
 
 #### Current State
+
 ```python
 def _implement_optimization(self, proposal: OptimizationProposal) -> ImplementationResult:
     """Implement optimization actions."""
@@ -216,25 +225,26 @@ def _implement_optimization(self, proposal: OptimizationProposal) -> Implementat
    - Commit if successful with audit trail
 
 3. **Code Structure**
+
    ```python
    class OptimizationExecutor:
        def __init__(self, workspace: str):
            self.workspace = workspace
            self.executor = OptimizationActionExecutor()
-       
+
        def execute(self, proposal: OptimizationProposal) -> ImplementationResult:
            # Create backup
            # Apply changes
            # Run tests
            # Verify metrics
            # Commit or rollback
-       
+
        def _apply_code_refactoring(self, changes: List[CodeChange]) -> bool:
            pass
-       
+
        def _apply_config_tuning(self, changes: List[ConfigChange]) -> bool:
            pass
-       
+
        def _verify_metrics(self, baseline: Metrics, expected: Metrics) -> bool:
            pass
    ```
@@ -246,6 +256,7 @@ def _implement_optimization(self, proposal: OptimizationProposal) -> Implementat
    - **Resource Optimization**: Memory/CPU profiling + tuning
 
 #### Success Criteria
+
 - [ ] Execute all 4 optimization types
 - [ ] Rollback on test failure
 - [ ] Metrics verification working
@@ -260,6 +271,7 @@ def _implement_optimization(self, proposal: OptimizationProposal) -> Implementat
 **Effort**: 2-3 hours
 
 #### Current State
+
 ```python
 def _load_ignore_patterns(self) -> set[str]:
     """Load patterns from .aetherraignore file."""
@@ -270,28 +282,29 @@ def _load_ignore_patterns(self) -> set[str]:
 #### Implementation Plan
 
 1. **Define .aetherraignore Format** (similar to .gitignore)
+
    ```
    # File exclusion patterns for self-incorporation analysis
-   
+
    # Build artifacts
    build/
    dist/
    *.egg-info/
-   
+
    # Testing
    .pytest_cache/
    htmlcov/
-   
+
    # Development
    .venv/
    __pycache__/
    *.pyc
-   
+
    # Exclude specific patterns
    experiments/
    archive/
    temp*
-   
+
    # BUT include important dirs (!)
    !archived_but_important/
    ```
@@ -304,19 +317,20 @@ def _load_ignore_patterns(self) -> set[str]:
    - Merge with default ignore list
 
 3. **Code Structure**
+
    ```python
    class IgnorePatternLoader:
        def __init__(self, root_dir: str):
            self.root_dir = root_dir
            self.patterns = set()
            self.negation_patterns = set()
-       
+
        def load(self) -> set[str]:
            # Find .aetherraignore
            # Parse patterns
            # Compile glob patterns
            # Return unified pattern set
-       
+
        def should_ignore(self, file_path: str) -> bool:
            # Check if file matches any ignore pattern
            # Respect negation patterns
@@ -324,6 +338,7 @@ def _load_ignore_patterns(self) -> set[str]:
    ```
 
 #### Success Criteria
+
 - [ ] Parse standard .aetherraignore format
 - [ ] Support glob patterns
 - [ ] Support negation patterns (!)
@@ -336,25 +351,26 @@ def _load_ignore_patterns(self) -> set[str]:
 ## Task 1 Testing Strategy
 
 ### Unit Tests
+
 - **test_signature_verification.py** (10 test cases)
   - Valid signatures
   - Modified files
   - Missing files
   - Fallback to path-based trust
-  
+
 - **test_policy_loading.py** (15 test cases)
   - Load from file
   - Load from environment
   - Schema validation
   - Profile switching
   - Cache behavior
-  
+
 - **test_optimization_executor.py** (20 test cases)
   - Code refactoring
   - Config tuning
   - Metrics verification
   - Rollback on failure
-  
+
 - **test_ignore_patterns.py** (10 test cases)
   - Pattern parsing
   - Glob matching
@@ -362,21 +378,23 @@ def _load_ignore_patterns(self) -> set[str]:
   - Edge cases
 
 ### Integration Tests
+
 - **test_self_incorporation_e2e.py** (5 test cases)
   - Full workflow: verify → load policy → apply optimization → ignore patterns
   - Concurrent optimization proposals
   - Error recovery
 
 ### Total Test Cases: 60+
+
 ### Target Coverage: 90%+
 
 ---
 
 # TASK 2: Script Service Runtime
 
-**File**: `aetherra_script_service.py`  
-**Owner**: Senior Developer B  
-**Total Effort**: 8-12 hours  
+**File**: `aetherra_script_service.py`
+**Owner**: Senior Developer B
+**Total Effort**: 8-12 hours
 **Priority**: 🔴 CRITICAL
 
 ## Overview
@@ -390,6 +408,7 @@ The script service is the core execution engine for Aether scripts (.aether file
 **Effort**: 5-7 hours
 
 #### Current Capabilities
+
 - Basic script parsing (AST)
 - Simple step execution
 - Limited error handling
@@ -415,6 +434,7 @@ The script service is the core execution engine for Aether scripts (.aether file
    - Success/failure rates
 
 4. **Code Structure**
+
    ```python
    class ScriptExecutor:
        def __init__(self, script_path: str, timeout: int = 300):
@@ -422,7 +442,7 @@ The script service is the core execution engine for Aether scripts (.aether file
            self.context = ExecutionContext()
            self.timeout = timeout
            self.metrics = ExecutionMetrics()
-       
+
        def execute(self) -> ExecutionResult:
            # Validate script
            # Run pre-hooks
@@ -430,13 +450,13 @@ The script service is the core execution engine for Aether scripts (.aether file
            # Run post-hooks
            # Collect metrics
            return result
-       
+
        def _execute_step(self, step: WorkflowStep) -> StepResult:
            # Handle step type (shell, python, plugin)
            # Execute with timeout
            # Capture output
            # Track metrics
-       
+
        def _handle_error(self, error: Exception, step: WorkflowStep) -> StepResult:
            # Log error
            # Check retry policy
@@ -444,6 +464,7 @@ The script service is the core execution engine for Aether scripts (.aether file
    ```
 
 #### Success Criteria
+
 - [ ] Execute all script step types (shell, python, plugin)
 - [ ] Handle timeouts gracefully
 - [ ] Support variable scoping and context
@@ -466,6 +487,7 @@ The script service is the core execution engine for Aether scripts (.aether file
    - Check permissions/sandboxing
 
 2. **Validation Framework**
+
    ```python
    class ScriptValidator:
        def validate(self, script: AetherScript) -> ValidationResult:
@@ -474,15 +496,16 @@ The script service is the core execution engine for Aether scripts (.aether file
            # Check variables
            # Check constraints
            return result
-       
+
        def _validate_step_references(self) -> List[ValidationError]:
            pass
-       
+
        def _validate_variable_bindings(self) -> List[ValidationError]:
            pass
    ```
 
 #### Success Criteria
+
 - [ ] Validate syntax before execution
 - [ ] Check all step references exist
 - [ ] Validate variable types
@@ -507,6 +530,7 @@ The script service is the core execution engine for Aether scripts (.aether file
    - Historical trending
 
 #### Success Criteria
+
 - [ ] Structured logging implemented
 - [ ] Metrics collection working
 - [ ] 10+ test cases
@@ -516,37 +540,40 @@ The script service is the core execution engine for Aether scripts (.aether file
 ## Task 2 Testing Strategy
 
 ### Unit Tests
+
 - **test_script_executor.py** (25 test cases)
   - Execute different step types
   - Handle timeouts
   - Variable scoping
   - Error handling
-  
+
 - **test_script_validator.py** (15 test cases)
   - Syntax validation
   - Step references
   - Variable validation
-  
+
 - **test_script_logging.py** (10 test cases)
   - Structured logging
   - Metrics collection
 
 ### Integration Tests
+
 - **test_script_service_e2e.py** (10 test cases)
   - Real script execution
   - Error scenarios
   - Performance under load
 
 ### Total Test Cases: 60+
+
 ### Target Coverage: 90%+
 
 ---
 
 # TASK 3: Plugin System
 
-**File**: `Aetherra/plugins/core/plugin_creation_wizard.py`  
-**Owner**: Developer C  
-**Total Effort**: 16-20 hours  
+**File**: `Aetherra/plugins/core/plugin_creation_wizard.py`
+**Owner**: Developer C
+**Total Effort**: 16-20 hours
 **Priority**: 🟡 HIGH
 
 ## Overview
@@ -560,6 +587,7 @@ The plugin system enables extensibility. The creation wizard helps users build p
 **Effort**: 8-10 hours
 
 #### Current State
+
 - 3 processor types stubbed (JSON, CSV, text)
 - Template-based generation
 - No real processing logic
@@ -584,40 +612,42 @@ The plugin system enables extensibility. The creation wizard helps users build p
    - Text statistics
 
 4. **Code Structure**
+
    ```python
    class ProcessorBase:
        def parse(self, input_data: Any) -> Any:
            raise NotImplementedError
-       
+
        def process(self, data: Any, config: ProcessConfig) -> Any:
            raise NotImplementedError
-       
+
        def export(self, data: Any, format: str) -> str:
            raise NotImplementedError
-   
+
    class JSONProcessor(ProcessorBase):
        def parse(self, input_data: str) -> dict:
            # Parse JSON
            pass
-       
+
        # ... implementations
-   
+
    class CSVProcessor(ProcessorBase):
        def parse(self, input_data: str, delimiter: str = ',') -> List[dict]:
            # Parse CSV
            pass
-       
+
        # ... implementations
-   
+
    class TextProcessor(ProcessorBase):
        def parse(self, input_data: str) -> List[str]:
            # Split into lines
            pass
-       
+
        # ... implementations
    ```
 
 #### Success Criteria
+
 - [ ] All 3 processors functional
 - [ ] Handle edge cases (empty files, malformed data)
 - [ ] Type detection working
@@ -633,6 +663,7 @@ The plugin system enables extensibility. The creation wizard helps users build p
 #### Implementation Plan
 
 1. **Plugin Metadata Schema**
+
    ```python
    @dataclass
    class PluginMetadata:
@@ -659,23 +690,25 @@ The plugin system enables extensibility. The creation wizard helps users build p
    - Dependency resolution
 
 3. **Code Structure**
+
    ```python
    class PluginRegistry:
        def register(self, plugin: PluginMetadata) -> bool:
            # Validate metadata
            # Store in registry
            # Return success
-       
+
        def find_by_capability(self, capability: str) -> List[PluginMetadata]:
            # Search registry
            pass
-       
+
        def resolve_dependencies(self, plugin_name: str) -> List[str]:
            # Return dependency list with versions
            pass
    ```
 
 #### Success Criteria
+
 - [ ] Store plugin metadata
 - [ ] Search functionality
 - [ ] Dependency resolution
@@ -705,26 +738,28 @@ The plugin system enables extensibility. The creation wizard helps users build p
    - Create manifest
 
 3. **Code Structure**
+
    ```python
    class PluginWizardSteps:
        def step_basic_info(self) -> dict:
            # Collect name, description, author
            pass
-       
+
        def step_capabilities(self) -> List[str]:
            # Select capabilities
            pass
-       
+
        def step_code_generation(self) -> str:
            # Generate plugin code
            pass
-       
+
        def generate_manifest(self) -> dict:
            # Create plugin.json
            pass
    ```
 
 #### Success Criteria
+
 - [ ] All wizard steps working
 - [ ] Code generation functional
 - [ ] Manifest creation
@@ -736,6 +771,7 @@ The plugin system enables extensibility. The creation wizard helps users build p
 ## Task 3 Testing Strategy
 
 ### Unit Tests
+
 - **test_json_processor.py** (10 test cases)
 - **test_csv_processor.py** (10 test cases)
 - **test_text_processor.py** (10 test cases)
@@ -743,6 +779,7 @@ The plugin system enables extensibility. The creation wizard helps users build p
 - **test_plugin_wizard.py** (15 test cases)
 
 ### Integration Tests
+
 - **test_plugin_system_e2e.py** (10 test cases)
   - Create plugin via wizard
   - Register plugin
@@ -750,15 +787,16 @@ The plugin system enables extensibility. The creation wizard helps users build p
   - Verify output
 
 ### Total Test Cases: 85+
+
 ### Target Coverage: 90%+
 
 ---
 
 # TASK 4: Hub Blueprints
 
-**File**: `aetherra_hub/blueprints/`  
-**Owner**: Developer D  
-**Total Effort**: 4-8 hours  
+**File**: `aetherra_hub/blueprints/`
+**Owner**: Developer D
+**Total Effort**: 4-8 hours
 **Priority**: 🟡 HIGH
 
 ## Overview
@@ -774,6 +812,7 @@ Hub blueprints are Flask API endpoints for system management and monitoring.
 **File**: `agents.py:62`
 
 #### Current State
+
 ```python
 "agents": [],  # TODO: populate when agent registry is exposed
 ```
@@ -787,6 +826,7 @@ Hub blueprints are Flask API endpoints for system management and monitoring.
    - Get agent health metrics
 
 2. **API Endpoint**
+
    ```python
    @agents_bp.route('/agents', methods=['GET'])
    def list_agents():
@@ -794,12 +834,12 @@ Hub blueprints are Flask API endpoints for system management and monitoring.
        # Query registry
        # Filter by status/capability if requested
        # Return JSON
-   
+
    @agents_bp.route('/agents/<agent_id>', methods=['GET'])
    def get_agent(agent_id):
        """Get agent details."""
        pass
-   
+
    @agents_bp.route('/agents/<agent_id>/status', methods=['GET'])
    def get_agent_status(agent_id):
        """Get agent health status."""
@@ -807,6 +847,7 @@ Hub blueprints are Flask API endpoints for system management and monitoring.
    ```
 
 #### Success Criteria
+
 - [ ] List all agents endpoint
 - [ ] Get agent details endpoint
 - [ ] Get agent status endpoint
@@ -822,6 +863,7 @@ Hub blueprints are Flask API endpoints for system management and monitoring.
 **File**: `interactive.py:188`
 
 #### Current State
+
 ```python
 # TODO: Add admin authentication check
 ```
@@ -835,6 +877,7 @@ Hub blueprints are Flask API endpoints for system management and monitoring.
    - Permission levels (view, edit, admin)
 
 2. **Middleware Implementation**
+
    ```python
    def require_admin_auth(f):
        @wraps(f)
@@ -844,7 +887,7 @@ Hub blueprints are Flask API endpoints for system management and monitoring.
            # If fail, return 403
            return f(*args, **kwargs)
        return decorated_function
-   
+
    @interactive_bp.route('/admin/settings', methods=['POST'])
    @require_admin_auth
    def update_settings():
@@ -858,6 +901,7 @@ Hub blueprints are Flask API endpoints for system management and monitoring.
    - Permission mappings
 
 #### Success Criteria
+
 - [ ] API key authentication working
 - [ ] JWT token support
 - [ ] Permission checking
@@ -880,6 +924,7 @@ Hub blueprints are Flask API endpoints for system management and monitoring.
    - Get coherence metrics
 
 2. **API Endpoint**
+
    ```python
    @quantum_bp.route('/quantum/snapshot', methods=['GET'])
    def get_quantum_snapshot():
@@ -894,6 +939,7 @@ Hub blueprints are Flask API endpoints for system management and monitoring.
    ```
 
 #### Success Criteria
+
 - [ ] Snapshot endpoint functional
 - [ ] All metrics included
 - [ ] Lightweight (< 100ms)
@@ -904,26 +950,29 @@ Hub blueprints are Flask API endpoints for system management and monitoring.
 ## Task 4 Testing Strategy
 
 ### Unit Tests
+
 - **test_agents_blueprint.py** (10 test cases)
 - **test_interactive_blueprint.py** (15 test cases)
 - **test_quantum_blueprint.py** (5 test cases)
 
 ### Integration Tests
+
 - **test_hub_api_e2e.py** (10 test cases)
   - Full API workflows
   - Authentication flows
   - Error handling
 
 ### Total Test Cases: 40+
+
 ### Target Coverage: 85%+
 
 ---
 
 # TASK 5: Orchestrator
 
-**File**: `aetherra_coding/orchestrator.py`  
-**Owner**: Developer A (or E)  
-**Total Effort**: 6-10 hours  
+**File**: `aetherra_coding/orchestrator.py`
+**Owner**: Developer A (or E)
+**Total Effort**: 6-10 hours
 **Priority**: 🟡 HIGH
 
 ## Overview
@@ -939,6 +988,7 @@ The orchestrator translates user intents into code generation plans and manages 
 **File**: `orchestrator.py:114-122`
 
 #### Current State
+
 ```python
 # Placeholder: generate a comment header if file exists, else create file with TODO
 target, f"# TODO: implement for intent: {self._plan.intent}\n"
@@ -959,6 +1009,7 @@ target, f"# TODO: implement for intent: {self._plan.intent}\n"
    - Estimate effort/complexity
 
 3. **Code Structure**
+
    ```python
    class IntentParser:
        def parse(self, intent: str) -> ParsedIntent:
@@ -966,7 +1017,7 @@ target, f"# TODO: implement for intent: {self._plan.intent}\n"
            # Extract entities (functions, classes, modules)
            # Extract requirements
            return ParsedIntent(...)
-   
+
    class PlanGenerator:
        def generate(self, parsed_intent: ParsedIntent) -> CodeGenerationPlan:
            # Create step-by-step plan
@@ -987,6 +1038,7 @@ target, f"# TODO: implement for intent: {self._plan.intent}\n"
      6. Verify complexity
 
 #### Success Criteria
+
 - [ ] Parse intents accurately
 - [ ] Extract requirements and constraints
 - [ ] Generate multi-step plans
@@ -1009,6 +1061,7 @@ target, f"# TODO: implement for intent: {self._plan.intent}\n"
    - Step 5: Generate tests
 
 2. **Code Structure**
+
    ```python
    class CodeGenerationWorkflow:
        def execute(self, plan: CodeGenerationPlan) -> GeneratedCode:
@@ -1016,25 +1069,26 @@ target, f"# TODO: implement for intent: {self._plan.intent}\n"
            for step in plan.steps:
                code += self._execute_step(step)
            return GeneratedCode(code)
-       
+
        def _generate_skeleton(self, intent: ParsedIntent) -> str:
            # Class/function signatures
            pass
-       
+
        def _add_logic(self, skeleton: str, requirements: List) -> str:
            # Implement functions
            pass
-       
+
        def _add_error_handling(self, code: str) -> str:
            # Try/except blocks
            pass
-       
+
        def _generate_tests(self, code: str) -> str:
            # Unit tests
            pass
    ```
 
 #### Success Criteria
+
 - [ ] Generate complete, runnable code
 - [ ] Include error handling
 - [ ] Include documentation
@@ -1046,28 +1100,31 @@ target, f"# TODO: implement for intent: {self._plan.intent}\n"
 ## Task 5 Testing Strategy
 
 ### Unit Tests
+
 - **test_intent_parser.py** (20 test cases)
   - Parse various intents
   - Extract entities
   - Handle edge cases
-  
+
 - **test_plan_generator.py** (15 test cases)
   - Generate plans from intents
   - Identify dependencies
   - Estimate effort
-  
+
 - **test_code_generation.py** (15 test cases)
   - Generate code from plans
   - Handle errors
   - Verify runnable output
 
 ### Integration Tests
+
 - **test_orchestrator_e2e.py** (10 test cases)
   - End-to-end intent to code
   - Verify generated code runs
   - Performance testing
 
 ### Total Test Cases: 60+
+
 ### Target Coverage: 90%+
 
 ---
@@ -1099,28 +1156,34 @@ Task 5: Orchestrator
 ## Recommended Implementation Order
 
 ### Week 1 (Parallel execution possible)
+
 - **Task 1.1 & 1.2**: Signature verification + Policy loading (Senior Dev A)
 - **Task 2.1 & 2.2**: Script execution + validation (Senior Dev B)
 - **Task 3.1**: JSON/CSV/Text processors (Dev C)
 
 ### Week 2
+
 - **Task 1.3 & 1.4**: Optimization + Ignore patterns (Senior Dev A)
 - **Task 2.3**: Logging & telemetry (Senior Dev B)
 - **Task 3.2**: Plugin registry (Dev C)
 
 ### Week 3
+
 - **Task 4.1 & 4.2**: Agent registry API + Auth (Dev D)
 - **Task 3.3**: Plugin wizard UI (Dev C)
 
 ### Week 4
+
 - **Task 5.1**: Intent parsing & planning (Senior Dev A or E)
 - **Task 4.3**: Quantum blueprint (Dev D)
 
 ### Week 5
+
 - **Task 5.2**: Code generation workflow (Dev A or E)
 - Testing & integration (All developers)
 
 ### Week 6
+
 - Documentation & performance optimization
 - Integration testing & bug fixes
 - Go-live preparation
@@ -1140,7 +1203,7 @@ Task 5: Orchestrator
        /          \    Integration Tests (25%)
       /  ______    \   - Task-level integration
      /  /      \    \  - Component interactions
-    /  /________\    \ 
+    /  /________\    \
    /   /          \    \Load Tests, Performance
   /   /  Unit Tests\ 60%\- Individual components
  /   /_______________\    \- Edge cases
@@ -1150,21 +1213,25 @@ Task 5: Orchestrator
 ## Test Execution Plan
 
 ### Phase 1: Unit Tests (Weeks 1-3)
+
 - Each developer writes unit tests for their components
 - Target: 60+ unit tests, 85%+ coverage
 - Continuous integration: tests run on each commit
 
 ### Phase 2: Integration Tests (Week 4)
+
 - Test interactions between tasks
 - Test data flow across components
 - Verify dependency links
 
 ### Phase 3: End-to-End Tests (Week 5)
+
 - Real-world workflows
 - Performance benchmarks
 - Stress testing
 
 ### Phase 4: Regression Tests (Week 6)
+
 - Run full test suite
 - Verify no regressions
 - Document any issues
@@ -1176,6 +1243,7 @@ Task 5: Orchestrator
 ## Phase 1 Implementation Checklist
 
 ### Code Quality
+
 - [ ] All 20 stubs replaced with production code
 - [ ] Code follows style guide (Ruff validated)
 - [ ] Type annotations complete (mypy validated)
@@ -1183,6 +1251,7 @@ Task 5: Orchestrator
 - [ ] No linting errors
 
 ### Testing
+
 - [ ] 250+ unit test cases written
 - [ ] 30+ integration test cases
 - [ ] 15+ end-to-end test cases
@@ -1190,20 +1259,24 @@ Task 5: Orchestrator
 - [ ] All tests passing
 
 ### Documentation
+
 - [ ] API reference documentation
 - [ ] Examples for each component
 - [ ] Troubleshooting guides
 - [ ] Performance guidelines
 
 ### Performance
+
 - [ ] Signature verification: <100ms per file
 - [ ] Script execution: no unexpected slow
 
 downs
+
 - [ ] Plugin loading: <500ms
 - [ ] Hub API responses: <200ms
 
 ### Deliverables
+
 - [ ] STUB_IMPLEMENTATION_REPORT.md
 - [ ] Test coverage report
 - [ ] Performance benchmarks
@@ -1214,19 +1287,19 @@ downs
 
 ## Effort Breakdown
 
-| Task | Hours | % of Total |
-|------|-------|-----------|
-| Task 1: Self-Incorporation | 12-16 | 25% |
-| Task 2: Script Service | 8-12 | 18% |
-| Task 3: Plugin System | 16-20 | 35% |
-| Task 4: Hub Blueprints | 4-8 | 10% |
-| Task 5: Orchestrator | 6-10 | 15% |
-| **Total** | **46-66** | **100%** |
+| Task                       | Hours     | % of Total |
+| -------------------------- | --------- | ---------- |
+| Task 1: Self-Incorporation | 12-16     | 25%        |
+| Task 2: Script Service     | 8-12      | 18%        |
+| Task 3: Plugin System      | 16-20     | 35%        |
+| Task 4: Hub Blueprints     | 4-8       | 10%        |
+| Task 5: Orchestrator       | 6-10      | 15%        |
+| **Total**                  | **46-66** | **100%**   |
 
 **Recommended**: Run Tasks 1 & 2 in parallel (different devs) to shorten overall timeline.
 
 ---
 
-**Document Created**: March 10, 2026  
-**Version**: 1.0  
+**Document Created**: March 10, 2026
+**Version**: 1.0
 **Status**: Ready for Development

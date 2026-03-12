@@ -12,27 +12,24 @@ Tests cover:
 - Audit logging
 """
 
-import unittest
-import tempfile
 import json
 import os
-from pathlib import Path
-from datetime import datetime
-
 import sys
+import tempfile
+import unittest
+from datetime import datetime
+from pathlib import Path
 
 # Add parent directory to path
-sys.path.insert(
-    0, str(Path(__file__).parent.parent.parent)
-)
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from Aetherra.aetherra_core.system.optimization_executor import (
-    OptimizationExecutor,
-    OptimizationProposal,
-    ImplementationResult,
     CodeChange,
     ConfigChange,
+    ImplementationResult,
     Metrics,
+    OptimizationExecutor,
+    OptimizationProposal,
 )
 
 
@@ -411,7 +408,9 @@ class TestOptimizationExecutor(unittest.TestCase):
         self.assertGreater(len(result.audit_trail), 0)
         # Check for timestamped entries
         self.assertTrue(
-            any(datetime.now().isoformat()[:10] in entry for entry in result.audit_trail)
+            any(
+                datetime.now().isoformat()[:10] in entry for entry in result.audit_trail
+            )
         )
 
     def test_14_proposal_with_too_many_changes(self):

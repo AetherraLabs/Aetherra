@@ -11,20 +11,17 @@ Tests cover:
 - File discovery and ignoring
 """
 
-import unittest
+import sys
 import tempfile
+import unittest
 from pathlib import Path
 
-import sys
-
 # Add parent directory to path
-sys.path.insert(
-    0, str(Path(__file__).parent.parent.parent)
-)
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from Aetherra.aetherra_core.system.ignore_pattern_loader import (
-    IgnorePatternLoader,
     IgnorePattern,
+    IgnorePatternLoader,
 )
 
 
@@ -97,12 +94,7 @@ class TestIgnorePatternLoader(unittest.TestCase):
         """Test loading patterns from .aetherraignore file."""
         # Create .aetherraignore file
         ignore_file = self.workspace / ".aetherraignore"
-        ignore_file.write_text(
-            "# Comment\n"
-            "build/\n"
-            "dist/\n"
-            "*.pyc\n"
-        )
+        ignore_file.write_text("# Comment\nbuild/\ndist/\n*.pyc\n")
 
         loader = IgnorePatternLoader(str(self.workspace), use_defaults=False)
         success, patterns = loader.load()
@@ -131,10 +123,7 @@ class TestIgnorePatternLoader(unittest.TestCase):
     def test_05_negation_patterns(self):
         """Test negation patterns."""
         ignore_file = self.workspace / ".aetherraignore"
-        ignore_file.write_text(
-            "*.log\n"
-            "!important.log\n"
-        )
+        ignore_file.write_text("*.log\n!important.log\n")
 
         loader = IgnorePatternLoader(str(self.workspace), use_defaults=False)
         success, patterns = loader.load()
@@ -197,10 +186,7 @@ class TestIgnorePatternLoader(unittest.TestCase):
     def test_10_list_patterns(self):
         """Test listing patterns."""
         ignore_file = self.workspace / ".aetherraignore"
-        ignore_file.write_text(
-            "*.pyc\n"
-            "build/\n"
-        )
+        ignore_file.write_text("*.pyc\nbuild/\n")
 
         loader = IgnorePatternLoader(str(self.workspace), use_defaults=False)
         loader.load()
@@ -212,11 +198,7 @@ class TestIgnorePatternLoader(unittest.TestCase):
     def test_11_get_pattern_info(self):
         """Test getting pattern information."""
         ignore_file = self.workspace / ".aetherraignore"
-        ignore_file.write_text(
-            "*.pyc\n"
-            "build/\n"
-            "!important.pyc\n"
-        )
+        ignore_file.write_text("*.pyc\nbuild/\n!important.pyc\n")
 
         loader = IgnorePatternLoader(str(self.workspace), use_defaults=False)
         loader.load()
@@ -331,7 +313,7 @@ class TestIgnorePatternLoader(unittest.TestCase):
 
         # Directory pattern with trailing slash
         dir_pattern = IgnorePattern(pattern="logs/", is_directory=True)
-        # File pattern without trailing slash  
+        # File pattern without trailing slash
         file_pattern = IgnorePattern(pattern="*.log")
 
         self.assertTrue(dir_pattern.matches("logs/"))

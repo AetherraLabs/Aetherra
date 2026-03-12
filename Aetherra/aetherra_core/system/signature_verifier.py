@@ -12,7 +12,7 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Tuple, Dict, Any
+from typing import Any, Dict, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ class SignatureInfo:
 class SignatureVerifier:
     """
     Verifies file signatures using cryptographic hashing and manifest validation.
-    
+
     Supports:
     - SHA-256 file hashing for integrity verification
     - Manifest-based signature validation
@@ -91,7 +91,7 @@ class SignatureVerifier:
                 logger.warning(f"Manifest file not found: {manifest_path}")
                 return False
 
-            with open(manifest_file, "r", encoding="utf-8") as f:
+            with open(manifest_file, encoding="utf-8") as f:
                 data = json.load(f)
 
             # Extract metadata and hashes
@@ -106,7 +106,7 @@ class SignatureVerifier:
             )
             return True
 
-        except (json.JSONDecodeError, IOError) as e:
+        except (OSError, json.JSONDecodeError) as e:
             logger.error(f"Failed to load manifest: {e}")
             return False
 
@@ -129,7 +129,7 @@ class SignatureVerifier:
                 for chunk in iter(lambda: f.read(4096), b""):
                     sha256_hash.update(chunk)
             return sha256_hash.hexdigest()
-        except IOError as e:
+        except OSError as e:
             logger.error(f"Failed to compute hash for {file_path}: {e}")
             raise
 
@@ -299,7 +299,7 @@ class SignatureVerifier:
 
         try:
             file_hash = self._compute_file_hash(file_path)
-        except IOError:
+        except OSError:
             file_hash = "error"
 
         info = SignatureInfo(
@@ -309,7 +309,9 @@ class SignatureVerifier:
             method="path_based_trust",
             trusted_location=trusted,
             signature_present=False,
-            reason="Development mode: file is in trusted path" if trusted else "File is not in trusted path",
+            reason="Development mode: file is in trusted path"
+            if trusted
+            else "File is not in trusted path",
             details={"trusted_paths": self.trusted_paths},
         )
 
@@ -364,7 +366,7 @@ class SignatureVerifier:
             with open(self.audit_log_path, "a", encoding="utf-8") as f:
                 f.write(json.dumps(audit_entry) + "\n")
 
-        except IOError as e:
+        except OSError as e:
             logger.error(f"Failed to write audit log: {e}")
 
     def verify_batch(self, file_paths: list[str]) -> Dict[str, Tuple[bool, SignatureInfo]]:
@@ -400,7 +402,10 @@ class SignatureVerifier:
             # Scan all Python files
             for py_file in root_path.rglob("*.py"):
                 # Skip common dirs
-                if any(skip in str(py_file) for skip in [".venv", "__pycache__", ".git", "dist-packages"]):
+                if any(
+                    skip in str(py_file)
+                    for skip in [".venv", "__pycache__", ".git", "dist-packages"]
+                ):
                     continue
 
                 file_hash = self._compute_file_hash(str(py_file))

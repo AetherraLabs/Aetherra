@@ -316,10 +316,7 @@ def main() -> int:
             "runs": max(1, int(args.runs)),
             "total": len(plan),
             "category_summaries": _build_category_summaries(
-                [
-                    {"name": s.name, "category": s.category, "ok": True}
-                    for s in plan
-                ]
+                [{"name": s.name, "category": s.category, "ok": True} for s in plan]
             ),
             "scenarios": [
                 {"name": s.name, "category": s.category, "command": s.command}

@@ -240,7 +240,9 @@ def _build_grouped_trends(
 
     prev_categories = {
         str(row.get("category")): float(row.get("aggregate_pass_rate", 0.0) or 0.0)
-        for row in list((previous_rollup.get("categories") or {}).get("results", []) or [])
+        for row in list(
+            (previous_rollup.get("categories") or {}).get("results", []) or []
+        )
         if row.get("category")
     }
     cur_categories = {
@@ -266,8 +268,16 @@ def _build_grouped_trends(
 
     prev_perf = previous_rollup.get("performance_evidence") or {}
     perf_rows = [
-        ("avg_duration_sec", float(prev_perf.get("avg_duration_sec", 0.0) or 0.0), float(current_performance.get("avg_duration_sec", 0.0) or 0.0)),
-        ("max_duration_sec", float(prev_perf.get("max_duration_sec", 0.0) or 0.0), float(current_performance.get("max_duration_sec", 0.0) or 0.0)),
+        (
+            "avg_duration_sec",
+            float(prev_perf.get("avg_duration_sec", 0.0) or 0.0),
+            float(current_performance.get("avg_duration_sec", 0.0) or 0.0),
+        ),
+        (
+            "max_duration_sec",
+            float(prev_perf.get("max_duration_sec", 0.0) or 0.0),
+            float(current_performance.get("max_duration_sec", 0.0) or 0.0),
+        ),
     ]
     performance_deltas = [
         {
@@ -378,9 +388,7 @@ def _parse_args() -> argparse.Namespace:
     )
     p.add_argument("--performance-min-pass-rate", type=float, default=None)
     p.add_argument("--performance-max-avg-duration-sec", type=float, default=None)
-    p.add_argument(
-        "--performance-max-scenario-duration-sec", type=float, default=None
-    )
+    p.add_argument("--performance-max-scenario-duration-sec", type=float, default=None)
     p.add_argument("--output", default="phase5_validation_rollup.json")
     return p.parse_args()
 
@@ -421,7 +429,9 @@ def main() -> int:
     )
     Path(args.output).write_text(json.dumps(payload, indent=2), encoding="utf-8")
     summary = payload["summary"]
-    threshold_passed = bool((payload.get("performance_thresholds") or {}).get("passed", True))
+    threshold_passed = bool(
+        (payload.get("performance_thresholds") or {}).get("passed", True)
+    )
     print(
         f"Rollup: {summary['passing_reports']}/{summary['reports']} reports passing, "
         f"aggregate run pass-rate {summary['aggregate_run_pass_rate']}, "

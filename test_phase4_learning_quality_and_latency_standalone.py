@@ -11,15 +11,15 @@ import sys
 import tempfile
 import time
 import unittest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from Aetherra.aetherra_core.memory.aetherra_memory_engine import AetherraMemoryEngine
 from Aetherra.consciousness.decision_engine import Decision
 from Aetherra.consciousness.learning_loop import LearningLoop
 from Aetherra.plugins.reflector import ReflectorPlugin
-from Aetherra.aetherra_core.memory.aetherra_memory_engine import AetherraMemoryEngine
 
 
 class _DummyBackend:
@@ -46,7 +46,7 @@ class _FakeStore:
     def new_event(self, **kwargs):
         payload = dict(kwargs)
         payload.setdefault("id", f"evt-{len(self.events) + 1}")
-        payload.setdefault("ts", datetime.now(timezone.utc).replace(tzinfo=None))
+        payload.setdefault("ts", datetime.now(UTC).replace(tzinfo=None))
         evt = _FakeEpisode(payload)
         self.events.append(evt)
         return evt

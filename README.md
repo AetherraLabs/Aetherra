@@ -5,17 +5,32 @@
 
 > AI-native development environment unifying code, memory, and intelligent automation
 
-![Status](https://img.shields.io/badge/Status-STABLE-green)
-![Version](https://img.shields.io/badge/Version-v0.3.0-0891b2)
+![Status](https://img.shields.io/badge/Status-BETA%20READY-blue)
+![Version](https://img.shields.io/badge/Version-v0.1.0--beta.1-0891b2)
 ![License](https://img.shields.io/badge/License-GPLv3-0891b2)
 ![Language](https://img.shields.io/badge/Language-Python%20%2B%20Aetherra-8b5cf6)
 ![Responsible AI](https://img.shields.io/badge/Responsible%20AI-Policies%20Published-22c55e)
-![STORM](https://img.shields.io/badge/STORM-Production%20Ready-8b5cf6)
+![STORM](https://img.shields.io/badge/STORM-Production%20Shadow%20Mode-8b5cf6)
 
 Aetherra pairs a lightweight Hub (APIs + metrics) with the Lyrixa AI assistant,
 pluggable memory systems, an intent-driven workflow language (.aether), and
 first-class observability. Core subsystems ship ready-to-use: **Engine**,
 **Memory**, **Agents**, **Kernel**, **Chat**, **Security**, and **Coding system**.
+
+## Production Readiness Status (March 12, 2026)
+
+**✅ READY FOR BETA RELEASE CANDIDATE**
+
+All validation gates passing:
+- ✅ Phase 2a (Reflector): 19/19 tests ✓
+- ✅ Phase 2b (Analysis & Code Gen): 100/100 tests ✓
+- ✅ Phase 3 (Consciousness & Autonomy): 19/19 tests ✓
+- ✅ Phase 4 (Memory & Learning): 18/18 tests ✓
+- ✅ Week-10 Integration Matrix: 15/15 scenarios ✓
+- ✅ Regression Stability: 10/10 repeat runs @ 100% pass rate ✓
+
+**See**: [`docs/PRODUCTION_READINESS_REVIEW_2026-03-12.md`](./docs/PRODUCTION_READINESS_REVIEW_2026-03-12.md) for complete review.
+**Full Overview**: [`docs/AETHERRA_COMPLETE_OVERVIEW_2026-03-12.md`](./docs/AETHERRA_COMPLETE_OVERVIEW_2026-03-12.md) explains every system and how it works.
 
 ## Stable Release Acceptance Checklist
 
@@ -37,48 +52,50 @@ typed recall + legacy adapters described.
 ✅ **Spec→Tests gate** enabled in your dev flow; tools/verify_aether_scripts.py
 wired in CI.
 
-## v0.3.0 Release Status
+## v0.1.0-beta.1 Release Status
 
 | Area                | Status                                                     |
 | ------------------- | ---------------------------------------------------------- |
-| Tests               | 98 passed, 1 skipped (99%)                                 |
-| Security            | All scans clean                                            |
-| QFAC & Core Systems | Operational                                                |
-| Code Quality        | PEP 585, lint-clean                                        |
-| Coverage            | **13.80%** (↑ from 8.36%); gate enforces **no regression** |
+| Phase Coverage      | 2a-4 complete + Week-10 validation (all evidence generated)|
+| Integration Tests   | 150+ scenarios passing, 100% regression stable            |
+| Security           | All gates passing (script signing, sandbox, audit logging) |
+| Memory Systems      | Core stable, STORM in production shadow mode             |
+| Code Quality        | PEP 585, all critical systems documented                 |
+| Consciousness Loop  | Phenomenological loop + adaptive qualia learning live    |
+| Plugin System       | 14 plugins discovered, 6 with PySide6 GUI               |
 
-**🚀 v0.3.0 shipped as "Stable"** - High test reliability and security readiness achieved.
+**🚀 v0.1.0-beta.1 Ready** - Complete roadmap validation, production safety gates passing, comprehensive documentation.
 
-### Coverage Plan (Post-release)
+### Coverage Plan (Post-Beta Release)
 
-- **v0.3.1 (≤ 30 days):** ≥ **25%**
-- **v0.3.2 (≤ 60 days):** ≥ **40%**
-- **v0.3.3 (≤ 90 days):** ≥ **60%**
-
-*Coverage waiver active: No regression below 13.80% allowed; new/changed files require unit tests.*
+- **v0.2.0 (≤ 30 days):** Advanced deployment runbooks (K8s, Docker, systemd)
+- **v0.2.1 (≤ 60 days):** Trend-aware release criteria & advanced monitoring
+- **v1.0 (Q2 2026):** Production go-live procedures & disaster recovery
 
 ---
 
 ## Project Features
 
-| Subsystem         | Core Capabilities                                            | Value Proposition                               |
-| ----------------- | ------------------------------------------------------------ | ----------------------------------------------- |
-| **Engine**        | Multi-provider AI routing with deterministic fallbacks       | Reliable intelligence even under outages/quotas |
-| **Memory**        | Persistent + quantum-augmented (QFAC) layers                 | Rich recall & experimentation continuity        |
-| **STORM** 🌩️       | Optimal transport-based semantic recall with sheaf coherence | Mathematically optimal memory retrieval         |
-| **Agents**        | Orchestrator API with task submission and status tracking    | Composable automation workflows                 |
-| **Kernel**        | Event-driven service coordination with backpressure control  | Predictable resource management                 |
-| **Chat**          | SSE v2 streaming with resume capability                      | Flawless conversational experience              |
-| **Security**      | Script/plugin signing, capability gates, network allowlist   | Trust & audit trail for automation              |
-| **Coding system** | .aether workflow language with static verification           | Intent-driven development surface               |
+All 10 core subsystems implemented and validated:
+
+| Subsystem         | Status | Core Capabilities                                            | Value Proposition                               |
+| ----------------- | ------ | ------------------------------------------------------------ | ----------------------------------------------- |
+| **Kernel**        | ✅ Stable | Event-driven service coordination with backpressure control  | Predictable resource management                 |
+| **Consciousness** | ✅ Stable | Phenomenological loop, adaptive qualia, semantic resonance   | Autonomous awareness & self-trust learning     |
+| **Memory**        | ✅ Stable | Persistent + quantum-augmented (QFAC) layers, STORM shadow   | Rich recall & experimentation continuity        |
+| **Engine**        | ✅ Stable | Multi-provider AI routing with deterministic fallbacks       | Reliable intelligence even under outages       |
+| **Agents**        | ✅ Stable | Orchestrator API with task submission and status tracking    | Composable automation workflows                 |
+| **Chat**          | ✅ Stable | SSE v2 streaming with resume capability                      | Flawless conversational experience              |
+| **Security**      | ✅ Stable | Script/plugin signing, capability gates, network allowlist   | Trust & audit trail for automation              |
+| **Coding system** | ✅ Stable | .aether workflow language with static verification           | Intent-driven development surface               |
+| **Plugins**       | ✅ Stable | 14 plugins, 6 with GUI (PySide6), safe sandboxed execution   | Extensible without forking core                 |
+| **Homeostasis**   | ✅ Stable | Continuous monitoring with autonomous self-healing           | Predictable system health & recovery            |
 
 **Why Aetherra**: Explicit feature gating via environment flags (secure by default),
 Prometheus-first metrics for every subsystem, and human-readable workflow artifacts
 for auditable evolution.
 
----
-
-## Architecture & Repository Map
+## STORM Memory System 🌩️
 
 Aetherra/
             ├── aetherra_core/           # Core engine, kernel, and orchestration
@@ -308,6 +325,52 @@ On successful boot, logs include a post-boot STORM status line like:
 ```
 [STORM:POST-BOOT] enabled=1 shadow_mode=1 backend=ot:earthmover tt_rank_cap=128
 ```
+
+---
+
+## Documentation & Next Steps
+
+### For Release & Deployment
+
+- **Production Readiness Review** → [`docs/PRODUCTION_READINESS_REVIEW_2026-03-12.md`](./docs/PRODUCTION_READINESS_REVIEW_2026-03-12.md)
+  - Executive summary of all systems
+  - Validation evidence for phases 2a-4 and week-10
+  - Production readiness checklist
+  - Risk assessment & mitigation
+
+- **Complete System Overview** → [`docs/AETHERRA_COMPLETE_OVERVIEW_2026-03-12.md`](./docs/AETHERRA_COMPLETE_OVERVIEW_2026-03-12.md)
+  - What Aetherra is and how it works
+  - Each of 10 subsystems explained with examples
+  - Architecture diagrams and data flows
+  - Configuration, APIs, and testing
+  - Release & packaging procedures
+
+### Core Documentation
+
+- **System Index** → [`docs/SYSTEM_INDEX.md`](./docs/SYSTEM_INDEX.md) — Navigate all system docs
+- **Deployment Guide** → [`docs/DEPLOYMENT_GUIDE.md`](./docs/DEPLOYMENT_GUIDE.md) — Multi-tier setup
+- **Testing Guide** → [`docs/TESTING_GUIDE.md`](./docs/TESTING_GUIDE.md) — Test suite organization
+- **Security Operations** → [`docs/SECURITY_OPERATIONS_GUIDE.md`](./docs/SECURITY_OPERATIONS_GUIDE.md)
+- **Go/No-Go Gates** → [`docs/GO_NO_GO_GATES.md`](./docs/GO_NO_GO_GATES.md) — 8 release gates
+- **Master Map** → [`AETHERRA_MASTER_MAP.md`](./AETHERRA_MASTER_MAP.md) — Complete architecture
+
+### Release Candidate Build
+
+```bash
+# 1. Run release gates
+python tools/run_go_no_go_gates.py --all --strict-manual
+
+# 2. Build wheel and sdist
+python -m build
+
+# 3. Generate SBOM and manifest (with optional signing)
+python tools/build_release_bundle.py --version 0.1.0-beta.1
+
+# 4. Verify artifacts
+ls -la dist/
+```
+
+---
 
 ## Agents Quick Demo
 

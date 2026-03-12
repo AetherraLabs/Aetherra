@@ -432,11 +432,7 @@ class ReflectorPlugin:
 
     def _analyze_learning_patterns(self) -> Dict[str, Any]:
         """Analyze learning patterns"""
-        learning = [
-            a
-            for a in self.behavior_log
-            if a.get("type") in {"learn", "adapt", "analyze"}
-        ]
+        learning = [a for a in self.behavior_log if a.get("type") in {"learn", "adapt", "analyze"}]
         domains = Counter(a.get("data", {}).get("domain", "general") for a in learning)
         return {
             "learning_events": len(learning),

@@ -7,19 +7,18 @@ Avoids Aetherra engine initialization.
 Run: python test_ignore_pattern_loader_standalone.py
 """
 
-import sys
-import os
-import tempfile
-from pathlib import Path
-import unittest
 import shutil
+import sys
+import tempfile
+import unittest
+from pathlib import Path
 
 # Add workspace root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from Aetherra.aetherra_core.system.ignore_pattern_loader import (
-    IgnorePatternLoader,
     IgnorePattern,
+    IgnorePatternLoader,
 )
 
 
@@ -52,12 +51,7 @@ class TestIgnorePatternLoaderStandalone(unittest.TestCase):
         """Test loading patterns from .aetherraignore file."""
         # Create .aetherraignore file
         ignore_file = self.workspace / ".aetherraignore"
-        ignore_file.write_text(
-            "# Comment\n"
-            "build/\n"
-            "dist/\n"
-            "*.pyc\n"
-        )
+        ignore_file.write_text("# Comment\nbuild/\ndist/\n*.pyc\n")
 
         loader = IgnorePatternLoader(str(self.workspace), use_defaults=False)
         success, patterns = loader.load()
@@ -69,12 +63,7 @@ class TestIgnorePatternLoaderStandalone(unittest.TestCase):
     def test_04_ignore_file_comments(self):
         """Test that comments are ignored."""
         ignore_file = self.workspace / ".aetherraignore"
-        ignore_file.write_text(
-            "# This is a comment\n"
-            "*.pyc\n"
-            "\n"
-            "build/\n"
-        )
+        ignore_file.write_text("# This is a comment\n*.pyc\n\nbuild/\n")
 
         loader = IgnorePatternLoader(str(self.workspace), use_defaults=False)
         success, patterns = loader.load()
@@ -84,10 +73,7 @@ class TestIgnorePatternLoaderStandalone(unittest.TestCase):
     def test_05_negation_patterns(self):
         """Test negation patterns."""
         ignore_file = self.workspace / ".aetherraignore"
-        ignore_file.write_text(
-            "*.log\n"
-            "!important.log\n"
-        )
+        ignore_file.write_text("*.log\n!important.log\n")
 
         loader = IgnorePatternLoader(str(self.workspace), use_defaults=False)
         success, patterns = loader.load()
@@ -150,10 +136,7 @@ class TestIgnorePatternLoaderStandalone(unittest.TestCase):
     def test_10_list_patterns(self):
         """Test listing patterns."""
         ignore_file = self.workspace / ".aetherraignore"
-        ignore_file.write_text(
-            "*.pyc\n"
-            "build/\n"
-        )
+        ignore_file.write_text("*.pyc\nbuild/\n")
 
         loader = IgnorePatternLoader(str(self.workspace), use_defaults=False)
         loader.load()
@@ -165,11 +148,7 @@ class TestIgnorePatternLoaderStandalone(unittest.TestCase):
     def test_11_get_pattern_info(self):
         """Test getting pattern information."""
         ignore_file = self.workspace / ".aetherraignore"
-        ignore_file.write_text(
-            "*.pyc\n"
-            "build/\n"
-            "!important.pyc\n"
-        )
+        ignore_file.write_text("*.pyc\nbuild/\n!important.pyc\n")
 
         loader = IgnorePatternLoader(str(self.workspace), use_defaults=False)
         loader.load()
@@ -333,17 +312,16 @@ def run_tests():
     if result.wasSuccessful():
         print("✓ ALL TESTS PASSED")
         return 0
-    else:
-        print("✗ SOME TESTS FAILED")
-        if result.failures:
-            print("\nFailures:")
-            for test, traceback in result.failures:
-                print(f"  - {test}")
-        if result.errors:
-            print("\nErrors:")
-            for test, traceback in result.errors:
-                print(f"  - {test}")
-        return 1
+    print("✗ SOME TESTS FAILED")
+    if result.failures:
+        print("\nFailures:")
+        for test, traceback in result.failures:
+            print(f"  - {test}")
+    if result.errors:
+        print("\nErrors:")
+        for test, traceback in result.errors:
+            print(f"  - {test}")
+    return 1
 
 
 if __name__ == "__main__":

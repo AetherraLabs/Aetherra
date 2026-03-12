@@ -24,13 +24,14 @@ Example:
     ...     print(f"Found {len(errors.errors)} errors")
 """
 
-import logging
 import json
-import yaml
+import logging
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
 from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -233,7 +234,7 @@ class ScriptValidator:
                 return result
 
             # Read file
-            with open(self.script_path, "r") as f:
+            with open(self.script_path) as f:
                 content = f.read()
 
             # Validate syntax
@@ -272,9 +273,7 @@ class ScriptValidator:
             result.metadata = {
                 "steps_count": len(self.steps),
                 "variables_count": len(self.variables),
-                "max_timeout": max(
-                    (s.timeout for s in self.steps), default=self.MIN_TIMEOUT
-                ),
+                "max_timeout": max((s.timeout for s in self.steps), default=self.MIN_TIMEOUT),
             }
 
             result.valid = result.is_valid()
@@ -307,9 +306,7 @@ class ScriptValidator:
             except json.JSONDecodeError:
                 return None
 
-    def _validate_structure(
-        self, script_data: Dict, result: ValidationResult
-    ):
+    def _validate_structure(self, script_data: Dict, result: ValidationResult):
         """Validate script structure."""
         # Check required fields
         if "steps" not in script_data:
@@ -362,8 +359,7 @@ class ScriptValidator:
         # Validate timeout
         if step.timeout < self.MIN_TIMEOUT or step.timeout > self.MAX_TIMEOUT:
             result.add_error(
-                f"Timeout {step.timeout}s out of range "
-                f"[{self.MIN_TIMEOUT}, {self.MAX_TIMEOUT}]",
+                f"Timeout {step.timeout}s out of range [{self.MIN_TIMEOUT}, {self.MAX_TIMEOUT}]",
                 step_name=step.name,
                 code="INVALID_TIMEOUT",
             )
@@ -410,9 +406,7 @@ class ScriptValidator:
                         code="UNDEFINED_REFERENCE",
                     )
 
-    def _validate_variables(
-        self, script_data: Dict, result: ValidationResult
-    ):
+    def _validate_variables(self, script_data: Dict, result: ValidationResult):
         """Validate variable definitions and usage."""
         variables = script_data.get("variables", {})
 

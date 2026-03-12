@@ -25,7 +25,9 @@ from Aetherra.plugins.reflector import ReflectorPlugin
 
 
 class TestPhase2AReflectorAcceptance(unittest.TestCase):
-    def _fragment(self, idx: int, concept: str, confidence: float, hour_offset: int = 0) -> MemoryFragment:
+    def _fragment(
+        self, idx: int, concept: str, confidence: float, hour_offset: int = 0
+    ) -> MemoryFragment:
         created = datetime.now(UTC).replace(tzinfo=None) - timedelta(hours=hour_offset)
         return MemoryFragment(
             fragment_id=f"frag-{idx}",
@@ -71,10 +73,14 @@ class TestPhase2AReflectorAcceptance(unittest.TestCase):
     def test_kernel_reflector_compatibility_shims_work(self):
         with tempfile.TemporaryDirectory() as td:
             reflector = MemoryReflector(os.path.join(td, "phase2a_reflector_compat.db"))
-            fragments = [self._fragment(i, "integration", 0.6, hour_offset=i) for i in range(5)]
+            fragments = [
+                self._fragment(i, "integration", 0.6, hour_offset=i) for i in range(5)
+            ]
             cluster = self._cluster("integration", {f.fragment_id for f in fragments})
 
-            contradictions = reflector.analyze_contradictions(fragments, context=[cluster])
+            contradictions = reflector.analyze_contradictions(
+                fragments, context=[cluster]
+            )
             connections = reflector.explore_concept_connections(fragments, None)
 
             self.assertIsInstance(contradictions, list)
@@ -103,7 +109,9 @@ class TestPhase2AReflectorAcceptance(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestPhase2AReflectorAcceptance)
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        TestPhase2AReflectorAcceptance
+    )
     total = suite.countTestCases()
     print(f"Running {total} phase-2a reflector acceptance tests...")
     result = unittest.TextTestRunner(verbosity=2).run(suite)
