@@ -160,15 +160,24 @@ Completed now:
   - `.aetherra/reports/phase5/phase5_bundle_category_thresholds_grouped_trends.json`
   - Result: `harness_ok=true`, `rollup_ok=true`, `gates_ok=true`
   - Includes category threshold gate results plus rollup category/performance delta propagation
+- Added Phase 2a reflector acceptance evidence pack:
+  - `test_phase2a_reflector_acceptance_standalone.py` (3/3 passing)
+  - `test_plugins_reflector_standalone.py` re-run (16/16 passing)
+  - `docs/REFLECTOR_PERFORMANCE.md` documents command outputs and latency gate evidence
+  - Confirms active reflector architecture stability (`kernel` compatibility adapter + plugin reflector latency <100ms)
 
 Remaining highest-priority roadmap gaps:
 
-1. Expand Phase 3 and Phase 4 tests toward roadmap breadth (decision quality/guardrails/plugin sandboxing).
-2. Continue broadening full-profile scenario mapping toward complete Week 10 coverage.
-3. Expand bundle/rollup policy coverage into release-manifest and historical gate governance.
+1. Close Phase 2b acceptance gates (impact accuracy, safe codegen verification, e2e apply safeguards).
+2. Expand Phase 3 and Phase 4 tests toward roadmap breadth (decision quality/guardrails/plugin sandboxing).
+3. Continue broadening full-profile scenario mapping toward complete Week 10 coverage.
+
+Deferred intentionally until roadmap completion:
+
+- Additional release hardening and deployment/go-live upgrades beyond lightweight guardrails.
 
 ## Next Execution Block
 
-1. Extend manifest policy verification to assert category-threshold governance in release-style runs.
-2. Broaden historical gate governance with trend-aware release criteria and negative-path coverage.
-3. Commit next block as `test(phase-5): manifest governance and trend-aware release gates`.
+1. Close Phase 2b acceptance gates with focused standalone and integration evidence.
+2. Expand Phase 3 guardrail coverage for high-risk negative paths.
+3. Commit next block as `test(phase-2b): acceptance gates and safety evidence`.
