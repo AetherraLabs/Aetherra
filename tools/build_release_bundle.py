@@ -67,10 +67,8 @@ def main() -> int:
             [
                 sys.executable,
                 "tools/generate_sbom.py",
-                "--output",
+                "--out",
                 str(sbom_path),
-                "--version",
-                args.version,
             ]
         )
 

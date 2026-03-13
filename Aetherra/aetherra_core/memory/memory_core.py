@@ -89,7 +89,8 @@ class LyrixaMemorySystem:
     def __init__(self, memory_db_path: str = ":memory:"):
         self.db_path = memory_db_path
         self.conn: Optional[sqlite3.Connection] = sqlite3.connect(
-            self.db_path
+            self.db_path,
+            check_same_thread=False,
         )  # Initialize connection
         self.memory_cache: Dict[str, Any] = {}
         self.consolidation_interval = 3600  # 1 hour in seconds
@@ -138,7 +139,7 @@ class LyrixaMemorySystem:
         """Ensures the database connection is open and returns it."""
         if self.conn is None:
             print("🔄 Reopening database connection...")
-            self.conn = sqlite3.connect(self.db_path)
+            self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
         return self.conn
 
     def _initialize_database_sync(self):

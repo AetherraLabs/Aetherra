@@ -97,9 +97,14 @@ except ImportError as exc:
 
 try:
     # Local imports
-    from .reasoning_engine import ReasoningEngine
+    from .reasoning_engine import ReasoningContext, ReasoningEngine
 except ImportError as exc:
     COMPONENT_IMPORT_ERRORS["reasoning_engine"] = exc
+
+    class ReasoningContext:
+        def __init__(self, **kwargs):
+            for key, value in kwargs.items():
+                setattr(self, key, value)
 
     class ReasoningEngine:
         def __init__(self, *args, **kwargs):
@@ -760,10 +765,10 @@ class AetherraEngine:
                 pass
 
             # Perform reasoning about the message
-            reasoning_context = {
-                "query": f"How should I respond to: {safe_message}",
-                "domain": "conversation",
-                "context_data": {
+            reasoning_context = ReasoningContext(
+                query=f"How should I respond to: {safe_message}",
+                domain="conversation",
+                context_data={
                     "user_message": safe_message,
                     "conversation_history": [
                         (m.content if hasattr(m, "content") else ((m or {}).get("content")))
@@ -772,11 +777,10 @@ class AetherraEngine:
                     "evidence": evidence,
                     "session_context": self.conversation_context,
                 },
-                "constraints": ["be_helpful", "be_conversational"],
-                "objectives": ["provide_value", "maintain_engagement"],
-            }
+                constraints=["be_helpful", "be_conversational"],
+                objectives=["provide_value", "maintain_engagement"],
+            )
 
-            # Use mock reasoning for now - would import real ReasoningContext in production
             reasoning_result = await self.reasoning_engine.reason(reasoning_context)
 
             _safe_call(_on_thought, text="Reasoning complete, composing response")
@@ -976,10 +980,18 @@ class AetherraEngine:
                 pass
 
             # Structured confidence calibration (planned shape)
-            conf_struct = {
-                "model": float(reasoning_result.get("confidence", 0.8))
+            reasoning_confidence = (
+                float(reasoning_result.get("confidence", 0.8))
                 if isinstance(reasoning_result, dict)
-                else 0.8,
+                else float(getattr(reasoning_result, "confidence", 0.8))
+            )
+            reasoning_text = (
+                reasoning_result.get("reasoning", "Mock reasoning")
+                if isinstance(reasoning_result, dict)
+                else getattr(reasoning_result, "conclusion", "Mock reasoning")
+            )
+            conf_struct = {
+                "model": reasoning_confidence,
                 "grounding": 0.9 if evidence else 0.6,
                 "coherence": 0.8,
                 "safety": 0.95,
@@ -989,7 +1001,7 @@ class AetherraEngine:
             return {
                 "response": response,
                 "session_id": self.session_id,
-                "reasoning": reasoning_result.get("reasoning", "Mock reasoning"),
+                "reasoning": reasoning_text,
                 "confidence": conservative_conf,
                 "confidence_details": conf_struct,
                 "memory_id": memory_id,
@@ -1021,18 +1033,28 @@ class AetherraEngine:
         """Generate response based on message and context (baseline implementation)."""
 
         # This is a simple baseline; a production profile should prefer LLM output.
+        reasoning_confidence = (
+            float(reasoning_result.get("confidence", 0.8))
+            if isinstance(reasoning_result, dict)
+            else float(getattr(reasoning_result, "confidence", 0.8))
+        )
+        reasoning_text = (
+            reasoning_result.get("reasoning", "Mock reasoning")
+            if isinstance(reasoning_result, dict)
+            else getattr(reasoning_result, "conclusion", "Mock reasoning")
+        )
 
         if "hello" in message.lower():
             return f"Hello! I'm Lyrixa, your AI assistant. I understand you said: '{message}'. How can I help you today?"
 
         elif "?" in message:
-            return f"That's an interesting question about '{message}'. Based on my reasoning (confidence: {reasoning_result.get('confidence', 0.8):.2f}), I believe: {reasoning_result.get('reasoning', 'Mock reasoning')}"
+            return f"That's an interesting question about '{message}'. Based on my reasoning (confidence: {reasoning_confidence:.2f}), I believe: {reasoning_text}"
 
         elif len(relevant_memories) > 0:
-            return f"I remember we discussed similar topics. Regarding '{message}', I think: {reasoning_result.get('reasoning', 'Mock reasoning')}"
+            return f"I remember we discussed similar topics. Regarding '{message}', I think: {reasoning_text}"
 
         else:
-            return f"I understand you're talking about '{message}'. {reasoning_result.get('reasoning', 'Mock reasoning')} Is there anything specific you'd like to know or discuss?"
+            return f"I understand you're talking about '{message}'. {reasoning_text} Is there anything specific you'd like to know or discuss?"
 
     async def get_conversation_summary(self) -> Dict[str, Any]:
         """Get summary of current conversation"""

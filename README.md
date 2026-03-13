@@ -22,6 +22,7 @@ first-class observability. Core subsystems ship ready-to-use: **Engine**,
 **✅ READY FOR BETA RELEASE CANDIDATE**
 
 All validation gates passing:
+
 - ✅ Phase 2a (Reflector): 19/19 tests ✓
 - ✅ Phase 2b (Analysis & Code Gen): 100/100 tests ✓
 - ✅ Phase 3 (Consciousness & Autonomy): 19/19 tests ✓
@@ -54,15 +55,15 @@ wired in CI.
 
 ## v0.1.0-beta.1 Release Status
 
-| Area                | Status                                                     |
-| ------------------- | ---------------------------------------------------------- |
-| Phase Coverage      | 2a-4 complete + Week-10 validation (all evidence generated)|
-| Integration Tests   | 150+ scenarios passing, 100% regression stable            |
-| Security           | All gates passing (script signing, sandbox, audit logging) |
-| Memory Systems      | Core stable, STORM in production shadow mode             |
-| Code Quality        | PEP 585, all critical systems documented                 |
-| Consciousness Loop  | Phenomenological loop + adaptive qualia learning live    |
-| Plugin System       | 14 plugins discovered, 6 with PySide6 GUI               |
+| Area               | Status                                                      |
+| ------------------ | ----------------------------------------------------------- |
+| Phase Coverage     | 2a-4 complete + Week-10 validation (all evidence generated) |
+| Integration Tests  | 150+ scenarios passing, 100% regression stable              |
+| Security           | All gates passing (script signing, sandbox, audit logging)  |
+| Memory Systems     | Core stable, STORM in production shadow mode                |
+| Code Quality       | PEP 585, all critical systems documented                    |
+| Consciousness Loop | Phenomenological loop + adaptive qualia learning live       |
+| Plugin System      | 14 plugins discovered, 6 with PySide6 GUI                   |
 
 **🚀 v0.1.0-beta.1 Ready** - Complete roadmap validation, production safety gates passing, comprehensive documentation.
 
@@ -78,18 +79,18 @@ wired in CI.
 
 All 10 core subsystems implemented and validated:
 
-| Subsystem         | Status | Core Capabilities                                            | Value Proposition                               |
-| ----------------- | ------ | ------------------------------------------------------------ | ----------------------------------------------- |
-| **Kernel**        | ✅ Stable | Event-driven service coordination with backpressure control  | Predictable resource management                 |
-| **Consciousness** | ✅ Stable | Phenomenological loop, adaptive qualia, semantic resonance   | Autonomous awareness & self-trust learning     |
-| **Memory**        | ✅ Stable | Persistent + quantum-augmented (QFAC) layers, STORM shadow   | Rich recall & experimentation continuity        |
-| **Engine**        | ✅ Stable | Multi-provider AI routing with deterministic fallbacks       | Reliable intelligence even under outages       |
-| **Agents**        | ✅ Stable | Orchestrator API with task submission and status tracking    | Composable automation workflows                 |
-| **Chat**          | ✅ Stable | SSE v2 streaming with resume capability                      | Flawless conversational experience              |
-| **Security**      | ✅ Stable | Script/plugin signing, capability gates, network allowlist   | Trust & audit trail for automation              |
-| **Coding system** | ✅ Stable | .aether workflow language with static verification           | Intent-driven development surface               |
-| **Plugins**       | ✅ Stable | 14 plugins, 6 with GUI (PySide6), safe sandboxed execution   | Extensible without forking core                 |
-| **Homeostasis**   | ✅ Stable | Continuous monitoring with autonomous self-healing           | Predictable system health & recovery            |
+| Subsystem         | Status   | Core Capabilities                                           | Value Proposition                          |
+| ----------------- | -------- | ----------------------------------------------------------- | ------------------------------------------ |
+| **Kernel**        | ✅ Stable | Event-driven service coordination with backpressure control | Predictable resource management            |
+| **Consciousness** | ✅ Stable | Phenomenological loop, adaptive qualia, semantic resonance  | Autonomous awareness & self-trust learning |
+| **Memory**        | ✅ Stable | Persistent + quantum-augmented (QFAC) layers, STORM shadow  | Rich recall & experimentation continuity   |
+| **Engine**        | ✅ Stable | Multi-provider AI routing with deterministic fallbacks      | Reliable intelligence even under outages   |
+| **Agents**        | ✅ Stable | Orchestrator API with task submission and status tracking   | Composable automation workflows            |
+| **Chat**          | ✅ Stable | SSE v2 streaming with resume capability                     | Flawless conversational experience         |
+| **Security**      | ✅ Stable | Script/plugin signing, capability gates, network allowlist  | Trust & audit trail for automation         |
+| **Coding system** | ✅ Stable | .aether workflow language with static verification          | Intent-driven development surface          |
+| **Plugins**       | ✅ Stable | 14 plugins, 6 with GUI (PySide6), safe sandboxed execution  | Extensible without forking core            |
+| **Homeostasis**   | ✅ Stable | Continuous monitoring with autonomous self-healing          | Predictable system health & recovery       |
 
 **Why Aetherra**: Explicit feature gating via environment flags (secure by default),
 Prometheus-first metrics for every subsystem, and human-readable workflow artifacts

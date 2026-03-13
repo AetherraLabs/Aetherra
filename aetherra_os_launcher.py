@@ -1366,6 +1366,127 @@ class AetherraOSLauncher:
                         def __init__(self, engine):
                             self.engine = engine  # registry client looks for .engine._storm_engine
 
+                        def _sanitize_for_storage(self, value):
+                            if callable(value):
+                                return None
+                            if isinstance(value, dict):
+                                sanitized = {}
+                                for key, item in value.items():
+                                    cleaned = self._sanitize_for_storage(item)
+                                    if cleaned is not None:
+                                        sanitized[key] = cleaned
+                                return sanitized
+                            if isinstance(value, (list, tuple, set)):
+                                cleaned_items = [
+                                    self._sanitize_for_storage(item) for item in value
+                                ]
+                                return [
+                                    item for item in cleaned_items if item is not None
+                                ]
+                            if (
+                                isinstance(value, (str, int, float, bool))
+                                or value is None
+                            ):
+                                return value
+                            if hasattr(value, "isoformat"):
+                                try:
+                                    return value.isoformat()
+                                except Exception:
+                                    pass
+                            return str(value)
+
+                        async def store_memory(
+                            self,
+                            content,
+                            context=None,
+                            tags=None,
+                            importance=0.5,
+                            memory_type="conversation",
+                        ):
+                            safe_content = self._sanitize_for_storage(content)
+                            safe_context = self._sanitize_for_storage(context) or {}
+                            core_memory = getattr(self.engine, "core_memory", None)
+                            if core_memory is not None and hasattr(
+                                core_memory, "store_memory"
+                            ):
+                                return await core_memory.store_memory(
+                                    content=safe_content,
+                                    context=safe_context,
+                                    tags=tags,
+                                    importance=importance,
+                                    memory_type=memory_type,
+                                )
+
+                            result = await self.engine.remember(
+                                content=safe_content,
+                                tags=tags,
+                                category=memory_type,
+                                confidence=importance,
+                                metadata=safe_context,
+                            )
+                            return result.fragment_id or ""
+
+                        async def recall_memories(
+                            self,
+                            query_text,
+                            limit=5,
+                            memory_type=None,
+                        ):
+                            core_memory = getattr(self.engine, "core_memory", None)
+                            if core_memory is not None and hasattr(
+                                core_memory, "recall_memories"
+                            ):
+                                return await core_memory.recall_memories(
+                                    query_text=query_text,
+                                    limit=limit,
+                                    memory_type=memory_type,
+                                )
+
+                            return await self.engine.recall(
+                                query=query_text, limit=limit
+                            )
+
+                        async def get_memory_stats(self):
+                            core_memory = getattr(self.engine, "core_memory", None)
+                            if core_memory is not None and hasattr(
+                                core_memory, "get_memory_stats"
+                            ):
+                                return await core_memory.get_memory_stats()
+                            return getattr(self.engine, "operation_stats", {})
+
+                        async def get_conversation_context(self, session_id, limit=10):
+                            core_memory = getattr(self.engine, "core_memory", None)
+                            if core_memory is not None and hasattr(
+                                core_memory, "get_conversation_context"
+                            ):
+                                return await core_memory.get_conversation_context(
+                                    session_id,
+                                    limit=limit,
+                                )
+                            return []
+
+                        async def store_learning(
+                            self, learning_content, learning_context=None
+                        ):
+                            core_memory = getattr(self.engine, "core_memory", None)
+                            if core_memory is not None and hasattr(
+                                core_memory, "store_learning"
+                            ):
+                                return await core_memory.store_learning(
+                                    learning_content,
+                                    learning_context,
+                                )
+                            return await self.store_memory(
+                                content=learning_content,
+                                context=learning_context,
+                                tags=["learning"],
+                                importance=0.6,
+                                memory_type="learning",
+                            )
+
+                        def __getattr__(self, name):
+                            return getattr(self.engine, name)
+
                     engine_impl.memory_system = _MemorySystemWrapper(memory_impl)
                     logger.info(
                         "[ENGINE] Wired AetherraMemoryEngineAdvanced to engine.memory_system"

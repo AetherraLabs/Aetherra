@@ -31,7 +31,11 @@ def hub_server():
 
     # Ensure API flags don't interfere (we only need /api/lyrixa/chat which does not require AI API flags)
     env_backup = os.environ.copy()
-    os.environ.setdefault("AETHERRA_HUB_SKIP_OPTIONALS", "1")
+    os.environ["AETHERRA_HUB_SKIP_OPTIONALS"] = "1"
+    os.environ["AETHERRA_SIGNING_STRICT"] = "0"
+    os.environ["AETHERRA_HUB_STRICT"] = "0"
+    os.environ["AETHERRA_STRICT"] = "0"
+    os.environ["AETHERRA_ALLOW_UNSIGNED_DEV"] = "1"
 
     # Aetherra imports
     from aetherra_hub.compat import AetherraHubServer
@@ -65,7 +69,12 @@ async def test_plugin_registration_and_listing(hub_server):
     import requests
 
     # Register a plugin
-    payload = {"name": "sample_plugin", "version": "0.0.1", "description": "Sample"}
+    payload = {
+        "name": "sample_plugin",
+        "version": "0.0.1",
+        "description": "Sample",
+        "category": "utilities",
+    }
     r = requests.post(
         f"http://localhost:{HUB_PORT}/api/plugins/register", json=payload, timeout=3
     )
