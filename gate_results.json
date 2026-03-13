@@ -1,13 +1,13 @@
 {
   "_meta": {
     "profile": "test",
-    "ts": 1773179072.5435781,
-    "all_passed": true
+    "ts": 1773365517.580777,
+    "all_passed": false
   },
   "launcher_smoke": {
     "ok": true,
     "manual": false,
-    "duration_sec": 12.533,
+    "duration_sec": 70.636,
     "details": {
       "services": [
         "adaptive_behavior_system",
@@ -53,7 +53,7 @@
   "chat_sse_resume": {
     "ok": true,
     "manual": false,
-    "duration_sec": 5.226,
+    "duration_sec": 5.481,
     "details": {
       "last_id": 4,
       "resumed_first": 5,
@@ -63,7 +63,7 @@
   "security_strict": {
     "ok": true,
     "manual": false,
-    "duration_sec": 10.42,
+    "duration_sec": 9.412,
     "details": {
       "scripts_ok": true,
       "report": "aether_static_report.md",
@@ -75,7 +75,7 @@
   "memory_qfac": {
     "ok": true,
     "manual": false,
-    "duration_sec": 0.03,
+    "duration_sec": 4.726,
     "details": {
       "node": "qfac_node_000000",
       "retrieved_type": "dict",
@@ -95,7 +95,7 @@
   "agents_api": {
     "ok": true,
     "manual": false,
-    "duration_sec": 4.09,
+    "duration_sec": 4.157,
     "details": {
       "disabled_status": 200,
       "disabled_enabled": false,
@@ -103,19 +103,26 @@
     }
   },
   "quality_gates": {
-    "ok": true,
+    "ok": false,
     "manual": false,
-    "duration_sec": 345.08,
+    "duration_sec": 445.134,
     "details": {
-      "tests_ok": true,
+      "tests_ok": false,
       "stdout_snippet": [
-        "...............................ss....................................... [ 51%]",
-        "..............................................s.......s.............     [100%]",
-        "136 passed, 5 skipped in 333.73s (0:05:33)"
+        "",
+        "[ERR] Requested port 3013 is already in use. Use --auto-port or set AETHERRA_HUB_PORT_AUTOFIX=1 to auto-select.",
+        "",
+        "---------------------------- Captured stderr call -----------------------------",
+        "Engine running with degraded components: introspection, plugin_executor",
+        "",
+        "=========================== short test summary info ===========================",
+        "FAILED tests/capabilities/test_lyrixa_chat.py::test_suggest_and_apply_conflict_fix",
+        "FAILED tests/capabilities/test_openapi_examples_and_runner_endpoints.py::test_qfac_admin_openapi_and_endpoint",
+        "2 failed, 134 passed, 5 skipped in 416.88s (0:06:56)"
       ],
       "spec_tests_exit": 0,
       "spec_tests_stdout": [
-        "[SPEC->TESTS] OK: 56 test file(s) changed for 2291 code file(s)."
+        "[SPEC->TESTS] No code changes requiring tests (pass)."
       ],
       "spec_tests_stderr": ""
     }
@@ -123,7 +130,7 @@
   "policy_privacy": {
     "ok": true,
     "manual": false,
-    "duration_sec": 3.268,
+    "duration_sec": 3.265,
     "details": {
       "header_present": true,
       "policy_event": true
