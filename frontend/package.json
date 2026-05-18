@@ -20,7 +20,7 @@
         "react-dom": "^19.2.6",
         "react-router-dom": "^7.15.1",
         "three": "^0.184.0",
-        "zustand": "^5.0.12"
+        "zustand": "^5.0.13"
     },
     "devDependencies": {
         "@vitejs/plugin-react": "^6.0.1",
