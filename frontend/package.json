@@ -18,12 +18,12 @@
         "framer-motion": "^12.38.0",
         "react": "^19.2.6",
         "react-dom": "^19.2.6",
-        "react-router-dom": "^7.15.0",
+        "react-router-dom": "^7.15.1",
         "three": "^0.184.0",
         "zustand": "^5.0.12"
     },
     "devDependencies": {
         "@vitejs/plugin-react": "^6.0.1",
-        "vite": "^8.0.12"
+        "vite": "^8.0.13"
     }
 }
