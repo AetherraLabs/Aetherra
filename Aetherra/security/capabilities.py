@@ -33,6 +33,18 @@ logger = logging.getLogger(__name__)
 APP_DIR = Path(os.path.expanduser("~/.aetherra")).resolve()
 POLICY_FILE = APP_DIR / "policy" / "capabilities.json"
 
+
+def _is_production_profile() -> bool:
+    profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
+    return profile in {"prod", "production"}
+
+
+def _strict_capabilities_enabled() -> bool:
+    if os.getenv("AETHERRA_PROD_UNSAFE_ALLOW", "0") == "1":
+        return False
+    return os.getenv("AETHERRA_REQUIRE_CAPABILITIES", "0") == "1" or _is_production_profile()
+
+
 # Ephemeral (in-process) grants layered on top of policy file contents.
 # Tests can safely grant capabilities without mutating user policy state.
 _EPHEMERAL_GRANTS: dict[str, set[str]] = {}
@@ -118,10 +130,7 @@ def has_capability(requester: str, capability: str) -> bool:
     allow_map = _load_policy()
     allowed = capability in allow_map.get(requester, [])
 
-    # Strict when explicitly enabled or when running in production profile
-    profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
-    strict_env = os.getenv("AETHERRA_REQUIRE_CAPABILITIES", "0") == "1"
-    strict = strict_env or profile in ("prod", "production")
+    strict = _strict_capabilities_enabled()
     if strict and not allowed:
         logger.warning("Capability denied (strict): %s -> %s", requester, capability)
         return False

@@ -12,12 +12,28 @@ lifecycle management, and comprehensive analytics integration.
 # Standard library imports
 import importlib
 import importlib.util
+import json
 import os
 import sys
 import threading
 import time
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
+
+try:
+    from Aetherra.aetherra_core.system.security_system import append_security_audit_entry
+except Exception:  # pragma: no cover - fallback when module unavailable
+
+    def append_security_audit_entry(
+        actor: str,
+        event_type: str,
+        *,
+        reason: Optional[str] = None,
+        details: Optional[Dict[str, Any]] = None,
+    ) -> Optional[Path]:
+        return None
+
 
 try:
     # Aetherra imports
@@ -58,6 +74,31 @@ except Exception:
     def run_with_timeout(func, args=None, kwargs=None, timeout_sec: float = 5.0):  # type: ignore
         return func(*(args or ()), **(kwargs or {}))
 
+
+def _is_production_profile() -> bool:
+    profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
+    return profile in {"prod", "production"}
+
+
+def _safe_mode_enabled() -> bool:
+    try:
+        from Aetherra.aetherra_core.system.security_system import is_safe_mode_enabled
+
+        return is_safe_mode_enabled()
+    except Exception:
+        return (os.getenv("AETHERRA_SAFE_MODE", "") or "").strip().lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
+
+
+def _plugin_signing_strict_enabled() -> bool:
+    if os.getenv("AETHERRA_PROD_UNSAFE_ALLOW", "0") == "1":
+        return False
+    return os.getenv("AETHERRA_PLUGIN_SIGNING_STRICT", "0") == "1" or _is_production_profile()
+
     def ensure_memory_budget(max_mb):  # type: ignore
         return None
 
@@ -68,6 +109,53 @@ except Exception:
     class MemoryBudgetExceeded(Exception):  # type: ignore
         def __init__(self, message: str = "Memory budget exceeded"):
             super().__init__(message)
+
+
+def _get_security_audit_path() -> Optional[Path]:
+    path_value = os.getenv("AETHERRA_SECURITY_AUDIT_PATH")
+    if path_value:
+        return Path(path_value)
+
+    workspace_root = os.getenv("AETHERRA_WORKSPACE_ROOT")
+    if workspace_root:
+        return Path(workspace_root) / ".aetherra" / "security" / "plugin_audit.jsonl"
+
+    try:
+        return Path(__file__).resolve().parents[3] / ".aetherra" / "security" / "plugin_audit.jsonl"
+    except Exception:
+        return None
+
+
+def _write_security_audit_entry(
+    plugin_name: str,
+    event_type: str,
+    *,
+    reason: Optional[str] = None,
+    details: Optional[Dict[str, Any]] = None,
+) -> None:
+    try:
+        audit_path = _get_security_audit_path()
+        if not audit_path:
+            return
+        audit_path.parent.mkdir(parents=True, exist_ok=True)
+        entry = {
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "event_type": event_type,
+            "plugin_name": plugin_name,
+            "reason": reason,
+            "details": details or {},
+        }
+        with audit_path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(entry) + "\n")
+
+        append_security_audit_entry(
+            plugin_name,
+            event_type,
+            reason=reason,
+            details={**(details or {}), "plugin_audit_path": str(audit_path)},
+        )
+    except Exception:
+        pass
 
 
 class PluginState:
@@ -306,8 +394,40 @@ class PluginManager:
                 return None
 
         try:
+            if _safe_mode_enabled():
+                _write_security_audit_entry(
+                    plugin_name,
+                    "plugin_denied",
+                    reason="safe_mode",
+                    details={"requester": f"plugin:{plugin_name}", "capability": "execute"},
+                )
+                print(f"Safe mode denied execution for plugin: {plugin_name}")
+                return None
+
             # Capability policy (deny-by-default if strict mode set globally)
-            if not has_capability(f"plugin:{plugin_name}", "execute"):
+            try:
+                has_permission = has_capability(f"plugin:{plugin_name}", "execute")
+            except Exception as exc:
+                _write_security_audit_entry(
+                    plugin_name,
+                    "plugin_denied",
+                    reason="capability_check_failed",
+                    details={
+                        "requester": f"plugin:{plugin_name}",
+                        "capability": "execute",
+                        "error": str(exc),
+                    },
+                )
+                print(f"Capability check failed for plugin: {plugin_name}")
+                return None
+
+            if not has_permission:
+                _write_security_audit_entry(
+                    plugin_name,
+                    "plugin_denied",
+                    reason="missing_capability",
+                    details={"requester": f"plugin:{plugin_name}", "capability": "execute"},
+                )
                 print(f"Policy denied execution for plugin: {plugin_name}")
                 return None
 
@@ -315,10 +435,26 @@ class PluginManager:
             module = self._plugin_modules.get(plugin_name)
 
             # Optional: signing strict mode
-            if os.environ.get("AETHERRA_PLUGIN_SIGNING_STRICT", "0") == "1":
-                manifest = getattr(module, "MANIFEST", None) if module else None
-                if manifest and not verify_plugin_signature(manifest):
-                    print(f"Signing verification failed for plugin: {plugin_name}")
+            if _plugin_signing_strict_enabled():
+                try:
+                    manifest = getattr(module, "MANIFEST", None) if module else None
+                    if manifest and not verify_plugin_signature(manifest):
+                        _write_security_audit_entry(
+                            plugin_name,
+                            "plugin_denied",
+                            reason="signature_verification_failed",
+                            details={"strict_signing": True},
+                        )
+                        print(f"Signing verification failed for plugin: {plugin_name}")
+                        return None
+                except Exception as exc:
+                    _write_security_audit_entry(
+                        plugin_name,
+                        "plugin_denied",
+                        reason="signature_check_failed",
+                        details={"strict_signing": True, "error": str(exc)},
+                    )
+                    print(f"Signing check failed for plugin: {plugin_name}")
                     return None
 
             # Analytics tracking - start
@@ -351,6 +487,13 @@ class PluginManager:
             # Execute with wall-clock timeout
             result = run_with_timeout(_call, timeout_sec=max_runtime)
 
+            _write_security_audit_entry(
+                plugin_name,
+                "plugin_executed",
+                reason="success",
+                details={"runtime_sec": round(time.time() - start_time, 6)},
+            )
+
             # Analytics tracking - success
             execution_time = time.time() - start_time
             self.track_plugin_event(
@@ -366,11 +509,23 @@ class PluginManager:
             return result
 
         except (TimeBudgetExceeded, MemoryBudgetExceeded) as e:
+            _write_security_audit_entry(
+                plugin_name,
+                "plugin_denied",
+                reason="quota_exceeded",
+                details={"error": str(e)},
+            )
             self.track_plugin_event(plugin_name, "execute_error", {"error": str(e)})
             print(f"Quota violation executing plugin {plugin_name}: {e}")
             return None
         except Exception as e:
             # Analytics tracking - error
+            _write_security_audit_entry(
+                plugin_name,
+                "plugin_denied",
+                reason="execution_error",
+                details={"error": str(e)},
+            )
             self.track_plugin_event(plugin_name, "execute_error", {"error": str(e)})
 
             print(f"Error executing plugin {plugin_name}: {e}")

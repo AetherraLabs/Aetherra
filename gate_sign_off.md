@@ -8,7 +8,7 @@
 | memory_qfac | ✅ |  |  |
 | hmr_quiesce | ✅ | 🔧 | hmr_controller not registered (enable in launcher to fully test) |
 | agents_api | ✅ |  |  |
-| quality_gates | ✅ |  |  |
+| quality_gates | ❌ |  |  |
 | policy_privacy | ✅ |  |  |
 
 ## Summary Template
@@ -19,5 +19,5 @@ Security strict (scripts/plugins/net): ✅
 Memory (core + QFAC fallback): ✅
 HMR swap + audit: ✅
 Agents API posture: ✅
-Spec→Tests & coverage no‑drop: ✅
+Spec→Tests & coverage no‑drop: ❌
 Policy/DP surfaced to clients: ✅

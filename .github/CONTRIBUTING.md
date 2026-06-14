@@ -100,12 +100,12 @@ The Aetherra project now features a unified React + Flask GUI system. This is th
 
 ```bash
 # Install Node.js/npm dependencies for React frontend
-cd Aetherra/lyrixa_core/gui
+cd frontend
 npm install
 
 # Return to project root and launch unified GUI
-cd ../../../
-python Aetherra/gui/launch_aetherra_gui.py
+cd ..
+python aetherra_os.py --interface hybrid
 ```
 
 This will start:
@@ -121,10 +121,10 @@ This will start:
 python aetherra_os_launcher.py --mode test
 
 # Test API server only (Flask backend)
-python Aetherra/gui/web_interface_server.py --debug
+python aetherra_os.py --interface web
 
 # Test React frontend only (requires separate API server)
-cd Aetherra/lyrixa_core/gui && npm run dev
+cd frontend && npm run dev
 
 # Run tests (if available)
 pytest
@@ -193,14 +193,14 @@ isort .
 pytest
 
 # Test the unified GUI (recommended)
-python Aetherra/gui/launch_aetherra_gui.py
+python aetherra_os.py --interface hybrid
 
 # Or test components individually:
 # React frontend only
-cd Aetherra/lyrixa_core/gui && npm run dev
+cd frontend && npm run dev
 
 # Flask API server only
-python Aetherra/gui/web_interface_server.py --debug
+python aetherra_os.py --interface web
 
 # Test core functionality
 python aetherra_os_launcher.py --mode test

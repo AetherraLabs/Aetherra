@@ -209,7 +209,7 @@ except ImportError as e:
    {activation_cmd}
 
 3. 🌐 Start the web interface:
-   python Aetherra/gui/web_interface_server.py --debug
+    python aetherra_os.py --interface web
 
 4. 🧪 Test the AI OS launcher:
    python aetherra_os_launcher.py --mode test

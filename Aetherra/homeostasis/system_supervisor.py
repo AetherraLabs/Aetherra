@@ -694,6 +694,8 @@ class SystemSupervisor:
                 verification_results["overall_status"] = "healthy"
             elif critical_services_healthy > 0:
                 verification_results["overall_status"] = "degraded"
+            elif self._is_boot_grace_period():
+                verification_results["overall_status"] = "booting"
             else:
                 verification_results["overall_status"] = "failed"
 
@@ -705,7 +707,7 @@ class SystemSupervisor:
                 failed_checks = [
                     name
                     for name, check in verification_results["vital_checks"].items()
-                    if check.get("status") != "healthy"
+                    if check.get("status") in {"failed", "error"}
                 ]
                 if failed_checks:
                     logger.warning(f"⚠️ Failed vital checks: {', '.join(failed_checks)}")
@@ -716,6 +718,14 @@ class SystemSupervisor:
             verification_results["error"] = str(e)
 
         return verification_results
+
+    def _is_boot_grace_period(self, grace_seconds: float = 120.0) -> bool:
+        """Return True while services are still expected to be registering during startup."""
+        if self.current_runlevel == SystemRunlevel.BOOTING:
+            return True
+        if self.boot_start_time is None:
+            return False
+        return (time.time() - self.boot_start_time) < grace_seconds
 
     async def _verify_memory_coherence(self) -> Dict[str, Any]:
         """Verify memory system coherence."""
@@ -728,6 +738,8 @@ class SystemSupervisor:
             memory_service = registry.get_service_info("memory_system")
             if not memory_service:
                 logger.debug("[HEALTH] Memory coherence check: service not found")
+                if self._is_boot_grace_period():
+                    return {"status": "starting", "reason": "service_registration_pending"}
                 return {"status": "failed", "reason": "service_not_found"}
 
             # Check basic memory service health
@@ -761,6 +773,8 @@ class SystemSupervisor:
             plugin_service = registry.get_service_info("plugin_manager")
             if not plugin_service:
                 logger.debug("[HEALTH] Plugin queue check: service not found")
+                if self._is_boot_grace_period():
+                    return {"status": "starting", "reason": "service_registration_pending"}
                 return {"status": "failed", "reason": "service_not_found"}
 
             # Check plugin manager health
@@ -796,6 +810,8 @@ class SystemSupervisor:
 
             lyrixa_service = registry.get_service_info("lyrixa_chat")
             if not lyrixa_service:
+                if self._is_boot_grace_period():
+                    return {"status": "starting", "reason": "service_registration_pending"}
                 return {"status": "failed", "reason": "service_not_found"}
 
             # Check Lyrixa service health
@@ -826,6 +842,8 @@ class SystemSupervisor:
             hub_service = registry.get_service_info("aetherra_hub")
             if not hub_service:
                 logger.debug("[HEALTH] Hub connectivity check: service not found")
+                if self._is_boot_grace_period():
+                    return {"status": "starting", "reason": "service_registration_pending"}
                 return {"status": "failed", "reason": "service_not_found"}
 
             # Check Hub service health

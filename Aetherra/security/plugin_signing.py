@@ -23,10 +23,23 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, cast
 
-STRICT = os.environ.get("AETHERRA_SIGNING_STRICT", "0") == "1"
 APP_DIR = Path(os.path.expanduser("~/.aetherra")).resolve()
 REVOCATIONS_FILE = APP_DIR / "revocations.json"
 TRANSPARENCY_LOG = APP_DIR / "signing_log.jsonl"
+
+
+def _is_production_profile() -> bool:
+    profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
+    return profile in {"prod", "production"}
+
+
+def _strict_signing_enabled() -> bool:
+    if os.getenv("AETHERRA_PROD_UNSAFE_ALLOW", "0") == "1":
+        return False
+    return os.getenv("AETHERRA_SIGNING_STRICT", "0") == "1" or _is_production_profile()
+
+
+STRICT = _strict_signing_enabled()
 
 try:
     # PyNaCl optional (fast path)
@@ -181,8 +194,9 @@ def sign_manifest(manifest: dict, secret_b64: str | None) -> dict:
 def verify_plugin_signature(manifest: dict) -> bool:
     sig = manifest.get("signature")
     pub = manifest.get("pubkey")
+    strict = _strict_signing_enabled()
     if not sig or not pub:
-        return not STRICT  # allow if not strict
+        return not strict  # allow if not strict
     # revocation check
     if _is_revoked(pub, manifest.get("key_id")):
         return False
@@ -206,7 +220,7 @@ def verify_plugin_signature(manifest: dict) -> bool:
             ok_v = False
     else:
         # No crypto libs available: in strict mode, fail closed when a signature is present
-        return not STRICT
+        return not _strict_signing_enabled()
     if not ok_v:
         return False
     # optional code hash verification when provided

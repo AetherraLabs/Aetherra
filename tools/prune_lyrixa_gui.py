@@ -5,23 +5,31 @@
 """
 Prune Aetherra/lyrixa/gui to keep only the new React GUI.
 
-Keeps (React/Vite app essentials):
+Keeps (React/Vite app essentials + transition docs/config):
 - package.json
 - package-lock.json (if present)
 - index.html
 - src/ (React source)
 - assets/ (static assets used by React)
-- postcss.config.cjs
-- tailwind.config.cjs
+- postcss.config.cjs / postcss.config.js
+- tailwind.config.cjs / tailwind.config.js
 - tailwind.config.js
-- vite.config.js
+- vite.config.js / vite.config.ts
+- tsconfig.json / tsconfig.node.json
+- .gitignore
 - README.md (project doc)
+- QUICKSTART.md, SETUP.md, STARTUP.md, SUMMARY.md, CHANGELOG.md
+- main_window.py (temporary compatibility shim)
 - PHASE3_README.md, PHASE3_IMPLEMENTATION_COMPLETE.md (docs)
 
 Everything else under Aetherra/lyrixa/gui will be removed, including Python GUI files,
 legacy web_panels/widgets, and the legacy frontend/ folder.
 
 Additionally removes the legacy directory Aetherra/lyrixa/ui entirely.
+
+This script is intentionally conservative by default during migration. It does not
+remove `node_modules/` or editor metadata directories in dry-run/apply mode; those
+can be deleted later once the Lyrixa GUI is fully retired.
 
 Run with --apply to actually delete; default is dry-run.
 """
@@ -45,16 +53,29 @@ KEEP_FILES = {
     "package-lock.json",
     "index.html",
     "postcss.config.cjs",
+    "postcss.config.js",
     "tailwind.config.cjs",
     "tailwind.config.js",
     "vite.config.js",
+    "vite.config.ts",
+    "tsconfig.json",
+    "tsconfig.node.json",
+    ".gitignore",
     "README.md",
+    "QUICKSTART.md",
+    "SETUP.md",
+    "STARTUP.md",
+    "SUMMARY.md",
+    "CHANGELOG.md",
+    "main_window.py",
     "PHASE3_README.md",
     "PHASE3_IMPLEMENTATION_COMPLETE.md",
 }
 KEEP_DIRS = {
     "src",
     "assets",
+    "node_modules",
+    ".vscode",
 }
 
 

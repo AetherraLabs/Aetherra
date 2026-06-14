@@ -35,6 +35,17 @@ APP_DIR = Path(os.path.expanduser("~/.aetherra")).resolve()
 POLICY_FILE = APP_DIR / "policy" / "net_policy.json"
 
 
+def _is_production_profile() -> bool:
+    profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
+    return profile in {"prod", "production"}
+
+
+def _strict_net_policy_enabled() -> bool:
+    if os.getenv("AETHERRA_PROD_UNSAFE_ALLOW", "0") == "1":
+        return False
+    return os.getenv("AETHERRA_NET_STRICT", "0") == "1" or _is_production_profile()
+
+
 def _load_policy() -> dict[str, Any]:
     try:
         if POLICY_FILE.exists():
@@ -60,12 +71,10 @@ def is_domain_allowed(url: str, requester: str) -> bool:
     allow = list(pol.get("allow_domains", []) or [])
     deny = set(pol.get("deny_domains", []) or [])
     # Default allowlist in production when none provided
-    profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
-    if profile in ("prod", "production") and not allow:
+    if _is_production_profile() and not allow:
         allow = ["localhost", "127.0.0.1", ".aetherra.dev"]
     allow = set(allow)
-    strict_env = os.getenv("AETHERRA_NET_STRICT", "0") == "1"
-    strict = strict_env or profile in ("prod", "production")
+    strict = _strict_net_policy_enabled()
 
     if dom in deny:
         logger.warning("Net policy deny: %s -> %s", requester, dom)

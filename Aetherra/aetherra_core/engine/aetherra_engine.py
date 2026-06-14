@@ -68,31 +68,61 @@ except ImportError as exc:
 
 
 try:
+    # Prefer canonical reflection path
     # Local imports
-    from .introspection_controller import IntrospectionController
-except ImportError as exc:
-    COMPONENT_IMPORT_ERRORS["introspection"] = exc
+    from ..reflection.introspection_controller import IntrospectionController
+except ImportError:
+    try:
+        # Back-compat fallback used in older layouts
+        # Local imports
+        from .introspection_controller import IntrospectionController  # type: ignore
+    except ImportError as exc:
+        COMPONENT_IMPORT_ERRORS["introspection"] = exc
 
-    class IntrospectionController:
-        def __init__(self, *args, **kwargs):
-            self._error = COMPONENT_IMPORT_ERRORS["introspection"]
+        class IntrospectionController:
+            def __init__(self, *args, **kwargs):
+                self._error = COMPONENT_IMPORT_ERRORS["introspection"]
 
-        async def start_introspection(self, *args, **kwargs):
-            return None
+            async def start_introspection(self, *args, **kwargs):
+                return None
 
-        async def stop_introspection(self, *args, **kwargs):
-            return None
+            async def stop_introspection(self, *args, **kwargs):
+                return None
 
-        def get_health_status(self, *args, **kwargs):
-            return {
-                "status": "unavailable",
-                "health": "degraded",
-                "error": str(self._error),
-            }
+            def get_health_status(self, *args, **kwargs):
+                return {
+                    "status": "unavailable",
+                    "health": "degraded",
+                    "error": str(self._error),
+                }
 
-        @property
-        def component_monitor(self):
-            return None
+            @property
+            def component_monitor(self):
+                return None
+
+
+try:
+    # Prefer canonical plugin package path
+    # Local imports
+    from ..plugins.plugin_chain_executor import PluginChainExecutor
+except ImportError:
+    try:
+        # Back-compat fallback used in older layouts
+        # Local imports
+        from .plugin_chain_executor import PluginChainExecutor  # type: ignore
+    except ImportError as exc:
+        COMPONENT_IMPORT_ERRORS["plugin_executor"] = exc
+
+        class PluginChainExecutor:
+            def __init__(self, *args, **kwargs):
+                self._error = COMPONENT_IMPORT_ERRORS["plugin_executor"]
+
+            async def execute_chain(self, *args, **kwargs):
+                return {
+                    "status": "unavailable",
+                    "results": [],
+                    "error": str(self._error),
+                }
 
 
 try:
@@ -144,24 +174,6 @@ except ImportError as exc:
             return {
                 "status": "unavailable",
                 "improvements": 0,
-                "error": str(self._error),
-            }
-
-
-try:
-    # Local imports
-    from .plugin_chain_executor import PluginChainExecutor
-except ImportError as exc:
-    COMPONENT_IMPORT_ERRORS["plugin_executor"] = exc
-
-    class PluginChainExecutor:
-        def __init__(self, *args, **kwargs):
-            self._error = COMPONENT_IMPORT_ERRORS["plugin_executor"]
-
-        async def execute_chain(self, *args, **kwargs):
-            return {
-                "status": "unavailable",
-                "results": [],
                 "error": str(self._error),
             }
 

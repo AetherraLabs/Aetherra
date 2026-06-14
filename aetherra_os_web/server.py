@@ -29,27 +29,71 @@ from fastapi.templating import Jinja2Templates
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Try to import Aetherra engine
+# Load engine lazily to avoid import races during OS startup.
+aetherra_engine = None
+AETHERRA_AVAILABLE = False
+
+
+def _ensure_aetherra_engine_loaded() -> bool:
+    """Load the shared Aetherra engine instance on demand."""
+    global aetherra_engine, AETHERRA_AVAILABLE
+
+    if AETHERRA_AVAILABLE and aetherra_engine is not None:
+        return True
+
+    try:
+        import sys
+
+        project_root = str(Path(__file__).parent.parent)
+        if project_root not in sys.path:
+            sys.path.append(project_root)
+
+        from Aetherra.aetherra_core.engine.aetherra_engine import (
+            aetherra_engine as _engine,
+        )
+
+        aetherra_engine = _engine
+        AETHERRA_AVAILABLE = True
+        logger.info("✅ Aetherra engine loaded on demand")
+        return True
+    except Exception as e:
+        aetherra_engine = None
+        AETHERRA_AVAILABLE = False
+        logger.warning("⚠️ Aetherra engine not available: %s", e)
+        return False
+
+
 try:
-    # Standard library imports
-    import sys
+    from aetherra_os_launcher import get_latest_boot_readiness
 
-    sys.path.append(str(Path(__file__).parent.parent))
-    # Aetherra imports
-    from Aetherra.aetherra_core.engine.aetherra_engine import aetherra_engine
-
-    AETHERRA_AVAILABLE = True
-    logger.info("✅ Aetherra engine successfully imported")
-except ImportError as e:
-    aetherra_engine = None
-    AETHERRA_AVAILABLE = False
-    logger.warning(f"⚠️ Aetherra engine not available: {e}")
+    BOOT_READINESS_AVAILABLE = True
+except ImportError:
+    get_latest_boot_readiness = None
+    BOOT_READINESS_AVAILABLE = False
 
 app = FastAPI(
     title="Aetherra OS Interface", description="Revolutionary AI Operating System"
 )
 
-# Setup static files and templates
+# ── Frontend static bundle (Vite production build) ──────────────────────────
+# When `npm run build` has been run inside frontend/, serve those files.
+# Falls back to legacy aetherra_os_web/templates for development access.
+FRONTEND_DIST = Path(__file__).parent.parent / "frontend" / "dist"
+_frontend_built = (FRONTEND_DIST / "index.html").exists()
+
+if _frontend_built:
+    app.mount(
+        "/assets",
+        StaticFiles(directory=FRONTEND_DIST / "assets"),
+        name="frontend-assets",
+    )
+    logger.info("✅ Serving Vite-built React frontend from frontend/dist")
+else:
+    logger.info(
+        "ℹ️  frontend/dist not found — serving legacy templates. Run 'npm run build' inside frontend/ to activate the React UI."
+    )
+
+# Legacy static/templates (kept for fallback)
 static_dir = Path(__file__).parent / "static"
 templates_dir = Path(__file__).parent / "templates"
 static_dir.mkdir(exist_ok=True)
@@ -266,7 +310,7 @@ class SystemMonitor:
 
     async def get_aetherra_status(self) -> dict[str, Any]:
         """Get Aetherra engine status if available"""
-        if not AETHERRA_AVAILABLE or aetherra_engine is None:
+        if not _ensure_aetherra_engine_loaded() or aetherra_engine is None:
             return {
                 "available": False,
                 "status": "Engine not available",
@@ -324,7 +368,9 @@ monitor = SystemMonitor()
 
 @app.get("/", response_class=HTMLResponse)
 async def get_interface(request: Request):
-    """Serve the main Aetherra OS interface"""
+    """Serve the Aetherra React UI when built, otherwise the legacy template."""
+    if _frontend_built:
+        return HTMLResponse((FRONTEND_DIST / "index.html").read_text(encoding="utf-8"))
     return templates.TemplateResponse("index.html", {"request": request})
 
 
@@ -368,7 +414,7 @@ async def websocket_endpoint(websocket: WebSocket):
 @app.post("/api/aetherra/message")
 async def send_aetherra_message(data: dict):
     """Send message to Aetherra engine"""
-    if not AETHERRA_AVAILABLE or aetherra_engine is None:
+    if not _ensure_aetherra_engine_loaded() or aetherra_engine is None:
         return {"error": "Aetherra engine not available"}
 
     try:
@@ -432,6 +478,53 @@ async def get_status():
         "connections": len(manager.active_connections),
         "timestamp": datetime.now().isoformat(),
     }
+
+
+@app.get("/api/boot/readiness")
+async def get_boot_readiness():
+    """Expose launcher startup readiness synthesis for UI boot experiences."""
+    if BOOT_READINESS_AVAILABLE and get_latest_boot_readiness is not None:
+        snapshot = get_latest_boot_readiness()
+        if snapshot:
+            return {"available": True, "readiness": snapshot}
+
+    return {
+        "available": False,
+        "readiness": {
+            "status": "unknown",
+            "phase": "unavailable",
+            "message": "Boot readiness is not available in this runtime mode.",
+            "system_scan": {
+                "registry": {
+                    "available": False,
+                    "total_services": 0,
+                    "healthy_services": 0,
+                },
+                "kernel": {"available": False, "running": False, "cycle_count": 0},
+                "hub": {"ok": False, "url": "http://localhost:3001"},
+            },
+            "self_scan": {
+                "provider": "default",
+                "policy_tier": "free",
+                "gui_enabled": False,
+            },
+            "issues": ["Launcher readiness snapshot unavailable"],
+            "recommended_actions": [
+                "Start via aetherra_os.py so launcher and web API share process state"
+            ],
+            "updated_at": datetime.now().isoformat(),
+        },
+    }
+
+
+@app.get("/{full_path:path}", response_class=HTMLResponse, include_in_schema=False)
+async def spa_fallback(full_path: str, request: Request):
+    """SPA catch-all: any unmatched route returns the React index so client-side routing works."""
+    if _frontend_built and not full_path.startswith(("api", "ws", "static", "assets")):
+        return HTMLResponse((FRONTEND_DIST / "index.html").read_text(encoding="utf-8"))
+    from fastapi.responses import Response
+
+    return Response(status_code=404)
 
 
 if __name__ == "__main__":

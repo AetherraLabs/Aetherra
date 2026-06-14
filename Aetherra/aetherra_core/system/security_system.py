@@ -13,12 +13,15 @@ Date: July 16, 2025
 """
 
 # Standard library imports
+import hashlib
+import hmac
 import json
 import logging
 import os
 import threading
 import time
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -76,6 +79,308 @@ def redact_secrets(data: Any) -> Any:
         return data
     except Exception:
         return data
+
+
+def _get_workspace_root() -> Path:
+    for env_name in ("AETHERRA_WORKSPACE_ROOT", "AETHERRA_WORKSPACE"):
+        workspace_root = os.getenv(env_name)
+        if workspace_root:
+            return Path(workspace_root).resolve()
+    return Path(".").resolve()
+
+
+def append_security_audit_entry(
+    actor: str,
+    event_type: str,
+    *,
+    reason: Optional[str] = None,
+    details: Optional[Dict[str, Any]] = None,
+) -> Optional[Path]:
+    """Append a security audit event to the central JSONL ledger for the workspace."""
+    try:
+        workspace_root = _get_workspace_root()
+        audit_path = workspace_root / ".aetherra" / "security" / "audit.jsonl"
+        audit_path.parent.mkdir(parents=True, exist_ok=True)
+        entry = {
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "actor": actor,
+            "event_type": event_type,
+            "reason": reason,
+            "details": redact_secrets(details or {}),
+        }
+        with audit_path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(entry) + "\n")
+        return audit_path
+    except Exception:
+        return None
+
+
+def _get_security_state_dir() -> Path:
+    workspace_root = _get_workspace_root()
+    return workspace_root / ".aetherra" / "security"
+
+
+def _get_security_state_path(name: str) -> Path:
+    return _get_security_state_dir() / name
+
+
+def _normalize_actor_role(actor: str | None) -> str:
+    return (actor or "").strip().lower()
+
+
+def _get_actor_role(actor: str | None) -> str:
+    actor_name = _normalize_actor_role(actor)
+    if actor_name in {"guardian", "security"}:
+        return actor_name
+    if actor_name in {"homeostasis"}:
+        return "homeostasis"
+    if actor_name in {"operator", "admin", "root"}:
+        return "operator"
+    return "unknown"
+
+
+def authorize_system_action(actor: str | None, action: str, target: str) -> bool:
+    """Enforce the Guardian > Security > Homeostasis > Everything Else hierarchy."""
+    actor_role = _get_actor_role(actor)
+    if actor_role in {"guardian", "security", "operator"}:
+        return True
+
+    if target in {"security", "homeostasis"}:
+        append_security_audit_entry(
+            actor_role,
+            "security_action_denied",
+            reason="unauthorized_actor",
+            details={"action": action, "target": target, "actor_role": actor_role},
+        )
+        return False
+
+    return True
+
+
+def _is_truthy_env(name: str) -> bool:
+    value = (os.getenv(name, "") or "").strip().lower()
+    return value in {"1", "true", "yes", "on"}
+
+
+def _get_security_state_secret() -> bytes:
+    secret = (os.getenv("AETHERRA_SECURITY_STATE_SECRET", "") or "").strip()
+    if secret:
+        return secret.encode("utf-8")
+    workspace_root = _get_workspace_root()
+    return f"aetherra-security-state::{workspace_root}".encode()
+
+
+def _canonical_payload(payload: Dict[str, Any]) -> bytes:
+    return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode(
+        "utf-8"
+    )
+
+
+def _sign_payload(payload: Dict[str, Any]) -> str:
+    return hmac.new(
+        _get_security_state_secret(), _canonical_payload(payload), hashlib.sha256
+    ).hexdigest()
+
+
+def _sign_state_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
+    body = dict(payload)
+    body["signature_algorithm"] = "hmac-sha256"
+    body["signature"] = _sign_payload(
+        {k: v for k, v in body.items() if k not in {"signature", "signature_algorithm"}}
+    )
+    return body
+
+
+def _write_security_state_file(path: Path, payload: Dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    encoded = json.dumps(_sign_state_payload(payload), indent=2, sort_keys=True).encode("utf-8")
+    tmp_path = path.with_suffix(path.suffix + ".tmp")
+    try:
+        with tmp_path.open("xb") as handle:
+            handle.write(encoded)
+        os.replace(tmp_path, path)
+    finally:
+        if tmp_path.exists():
+            tmp_path.unlink(missing_ok=True)
+    try:
+        os.chmod(path, 0o600)
+    except Exception:
+        pass
+
+
+def _validate_state_payload(payload: Dict[str, Any]) -> bool:
+    if not isinstance(payload, dict):
+        return False
+    signature = payload.get("signature")
+    algorithm = payload.get("signature_algorithm")
+    if not isinstance(signature, str) or algorithm != "hmac-sha256":
+        return False
+    body = {k: v for k, v in payload.items() if k not in {"signature", "signature_algorithm"}}
+    expected = _sign_payload(body)
+    return hmac.compare_digest(signature, expected)
+
+
+def _read_state_flag(path_name: str, field_name: str) -> bool:
+    try:
+        path = _get_security_state_path(path_name)
+        if not path.exists():
+            return False
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict):
+            return False
+        if not _validate_state_payload(payload):
+            return False
+        value = payload.get(field_name)
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            return value.strip().lower() in {"1", "true", "yes", "on"}
+        return False
+    except Exception:
+        return False
+
+
+def is_safe_mode_enabled() -> bool:
+    """Return whether the runtime is currently in safe mode."""
+    state_path = _get_security_state_path("safe_mode.json")
+    if state_path.exists():
+        return _read_state_flag("safe_mode.json", "enabled")
+    if _is_truthy_env("AETHERRA_SAFE_MODE"):
+        return True
+    return False
+
+
+def trigger_emergency_lockdown(
+    reason: str,
+    *,
+    details: Optional[Dict[str, Any]] = None,
+    actor: str = "security",
+) -> Path | None:
+    """Enable safe mode immediately and persist the lockdown marker for downstream checks."""
+    if not authorize_system_action(actor, "change_security_state", "security"):
+        raise PermissionError("homeostasis is not authorized to change security state")
+
+    try:
+        os.environ["AETHERRA_SAFE_MODE"] = "1"
+        state_path = _get_security_state_path("safe_mode.json")
+        state_payload = {
+            "enabled": True,
+            "reason": reason,
+            "details": details or {},
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+        }
+        _write_security_state_file(state_path, state_payload)
+        append_security_audit_entry(
+            actor,
+            "safe_mode_enabled",
+            reason=reason,
+            details=details or {},
+        )
+        return state_path
+    except Exception:
+        return None
+
+
+def restrict_homeostasis(
+    reason: str,
+    *,
+    details: Optional[Dict[str, Any]] = None,
+    actor: str = "security",
+) -> Path | None:
+    """Prevent homeostasis from taking active control and force it into observe-only mode."""
+    if not authorize_system_action(actor, "restrict_homeostasis", "homeostasis"):
+        raise PermissionError("homeostasis is not authorized to restrict itself")
+
+    try:
+        os.environ["AETHERRA_HOMEOSTASIS_RESTRICTED"] = "1"
+        state_path = _get_security_state_path("homeostasis_restrictions.json")
+        state_payload = {
+            "restricted": True,
+            "reason": reason,
+            "details": details or {},
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+        }
+        _write_security_state_file(state_path, state_payload)
+        append_security_audit_entry(
+            actor,
+            "homeostasis_restricted",
+            reason=reason,
+            details=details or {},
+        )
+        return state_path
+    except Exception:
+        return None
+
+
+def is_homeostasis_restricted() -> bool:
+    state_path = _get_security_state_path("homeostasis_restrictions.json")
+    if state_path.exists():
+        return _read_state_flag("homeostasis_restrictions.json", "restricted")
+    if _is_truthy_env("AETHERRA_HOMEOSTASIS_RESTRICTED"):
+        return True
+    return False
+
+
+def clear_security_lockdown(
+    *,
+    actor: str = "security",
+    reason: str = "recovery",
+    recovery_context: Optional[Dict[str, Any]] = None,
+) -> dict[str, Any]:
+    """Safely clear lockdown state only with explicit authorization, context, and auditing."""
+    if not authorize_system_action(actor, "clear_security_lockdown", "security"):
+        raise PermissionError("homeostasis is not authorized to clear security lockdown")
+
+    if not reason or not str(reason).strip():
+        append_security_audit_entry(
+            actor,
+            "security_recovery_denied",
+            reason="missing_reason",
+            details={"recovery_context": recovery_context},
+        )
+        raise ValueError("recovery requires a non-empty reason")
+
+    if not recovery_context:
+        append_security_audit_entry(
+            actor,
+            "security_recovery_denied",
+            reason="missing_context",
+            details={"reason": reason},
+        )
+        raise ValueError("recovery requires a recovery context")
+
+    try:
+        state_path = _get_security_state_path("safe_mode.json")
+        restrictions_path = _get_security_state_path("homeostasis_restrictions.json")
+        for path in (state_path, restrictions_path):
+            if path.exists():
+                path.unlink()
+        os.environ.pop("AETHERRA_SAFE_MODE", None)
+        os.environ.pop("AETHERRA_HOMEOSTASIS_RESTRICTED", None)
+        append_security_audit_entry(
+            actor,
+            "security_lockdown_cleared",
+            reason=reason,
+            details={
+                "safe_mode_path": str(state_path),
+                "restrictions_path": str(restrictions_path),
+                "recovery_context": recovery_context,
+            },
+        )
+        return {
+            "cleared": True,
+            "reason": reason,
+            "actor": actor,
+            "recovery_context": recovery_context,
+        }
+    except Exception as exc:
+        append_security_audit_entry(
+            actor,
+            "security_lockdown_clear_failed",
+            reason=str(exc),
+            details={"reason": reason, "recovery_context": recovery_context},
+        )
+        raise
 
 
 @dataclass

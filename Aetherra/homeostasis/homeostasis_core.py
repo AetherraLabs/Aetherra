@@ -35,6 +35,11 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 import yaml
 
 # Aetherra imports
+from Aetherra.aetherra_core.system.security_system import (
+    is_homeostasis_restricted,
+    is_safe_mode_enabled,
+)
+
 from .stability_metrics import MetricSnapshot, StabilityMetrics, get_stability_metrics
 
 if TYPE_CHECKING:
@@ -845,6 +850,12 @@ class HomeostasisController:
 
     def set_mode(self, mode: ControllerMode):
         """Set the operating mode of the controller."""
+        if is_safe_mode_enabled() or is_homeostasis_restricted():
+            logger.warning("🚫 Homeostasis mode change blocked by security restrictions")
+            self.mode = ControllerMode.OBSERVE_ONLY
+            self.pending_actions.clear()
+            return
+
         old_mode = self.mode
         self.mode = mode
         logger.info(f"🎛️ Controller mode changed: {old_mode.value} → {mode.value}")
@@ -856,6 +867,10 @@ class HomeostasisController:
 
     def emergency_stop(self):
         """Trigger emergency stop of all homeostasis actions."""
+        if is_safe_mode_enabled() or is_homeostasis_restricted():
+            logger.warning("🚫 Homeostasis emergency stop blocked by security restrictions")
+            return
+
         self._emergency_stop = True
         self.pending_actions.clear()
         self.confirmation_pending.clear()

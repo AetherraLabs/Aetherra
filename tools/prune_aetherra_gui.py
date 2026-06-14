@@ -11,6 +11,7 @@ Keeps:
 - run_aetherra_os.py (compat wrapper -> os_gui)
 - README.md
 - __init__.py
+- GUI_CURATION_PLAN.md
 
 Deletes everything else in Aetherra/gui, including subfolders like web_* and dashboards.
 Use --apply to actually delete; otherwise runs in dry-run mode.
@@ -31,6 +32,7 @@ KEEP = {
     "run_aetherra_os.py",
     "README.md",
     "__init__.py",
+    "GUI_CURATION_PLAN.md",
 }
 
 

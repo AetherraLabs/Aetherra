@@ -39,6 +39,20 @@ _cache = None
 _fernet = None
 
 
+def _safe_mode_enabled() -> bool:
+    try:
+        from Aetherra.aetherra_core.system.security_system import is_safe_mode_enabled
+
+        return is_safe_mode_enabled()
+    except Exception:
+        return (os.getenv("AETHERRA_SAFE_MODE", "") or "").strip().lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
+
+
 def _ensure():
     APP_DIR.mkdir(parents=True, exist_ok=True)
     if not KEYS_FILE.exists():
@@ -160,6 +174,8 @@ def _maybe_encrypt_on_write():
 
 
 def get_key(name: str) -> str | None:
+    if _safe_mode_enabled():
+        return None
     env_name = f"AETHERRA_{name.upper()}"
     if env_name in os.environ:
         return os.environ[env_name]
@@ -195,6 +211,8 @@ def get_key(name: str) -> str | None:
 
 
 def set_key(name: str, value: str):
+    if _safe_mode_enabled():
+        raise RuntimeError("safe mode: secret storage is disabled")
     data = _load()
     f = _get_fernet()
     # Enforce encryption in production/staging unless explicitly allowed

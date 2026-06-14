@@ -18,6 +18,7 @@ from __future__ import annotations
 # Standard library imports
 import hashlib
 import hmac
+import os
 
 # typing.Tuple no longer needed after migration to built-in tuple[]
 
@@ -30,6 +31,17 @@ except Exception:  # pragma: no cover - optional import
 
 SIGNATURE_MARKER = "# @signature:"
 DEFAULT_KEY_NAME = "aether_script_signing_secret"
+
+
+def _is_production_profile() -> bool:
+    profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
+    return profile in {"prod", "production"}
+
+
+def _strict_signature_verification_enabled() -> bool:
+    if os.getenv("AETHERRA_PROD_UNSAFE_ALLOW", "0") == "1":
+        return False
+    return os.getenv("AETHERRA_SCRIPT_VERIFY_STRICT", "0") == "1" or _is_production_profile()
 
 
 def _get_secret_bytes() -> bytes:
@@ -81,6 +93,8 @@ def embed_signature(script_content: str) -> str:
 def verify_embedded_signature(script_content: str) -> tuple[bool, str]:
     header, body = _split_header_and_body(script_content)
     if not header:
+        if _strict_signature_verification_enabled():
+            return False, "missing signature header"
         return False, "missing signature header"
     try:
         _, provided = header.split(":", 1)

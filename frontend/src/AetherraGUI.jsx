@@ -3,16 +3,7 @@ import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-
-// Minimal HoloAura 3D visual effect
-function HoloAura() {
-    return (
-        <mesh position={[0, 0, 0]}>
-            <sphereGeometry args={[1.5, 32, 32]} />
-            <meshStandardMaterial color="#00ff88" transparent opacity={0.08} emissive="#00ff88" emissiveIntensity={0.5} />
-        </mesh>
-    );
-}
+import { AetherraAvatar } from "./AetherraAvatar";
 
 // Minimal Zustand-like store for metrics
 const metricsInitial = { cpu: 0, mem: 0, net: 0 };
@@ -168,6 +159,76 @@ function QuantumPanel({ ws }) {
     );
 }
 
+function BootReadinessPanel({ readinessState }) {
+    const readiness = readinessState?.readiness || {};
+    const status = (readiness.status || "unknown").toUpperCase();
+    const phase = (readiness.phase || "presence").toLowerCase();
+    const progress = Number.isFinite(readiness.progress) ? readiness.progress : 0;
+    const registry = readiness.system_scan?.registry || {};
+    const kernel = readiness.system_scan?.kernel || {};
+    const hub = readiness.system_scan?.hub || {};
+    const issues = Array.isArray(readiness.issues) ? readiness.issues : [];
+    const phases = ["presence", "diagnostics", "ready"];
+
+    const activePhaseIndex =
+        phase === "stabilizing"
+            ? phases.indexOf("ready")
+            : Math.max(0, phases.indexOf(phase));
+
+    const statusClasses =
+        status === "READY"
+            ? "border-green-500/40 text-green-200"
+            : status === "DEGRADED"
+                ? "border-yellow-500/40 text-yellow-200"
+                : "border-red-500/40 text-red-200";
+
+    return (
+        <div className={`absolute top-20 left-4 w-[26rem] bg-black/75 rounded-xl px-4 py-3 text-xs font-mono shadow border backdrop-blur ${statusClasses}`}>
+            <div className="flex items-center justify-between mb-2">
+                <div className="text-sm font-bold">Aetherra Boot Readiness</div>
+                <div className="font-semibold">{status}</div>
+            </div>
+            <div className="mb-2">
+                <div className="flex items-center justify-between text-[10px] opacity-90 mb-1">
+                    <span>Phase: {phase.toUpperCase()}</span>
+                    <span>{Math.max(0, Math.min(100, progress))}%</span>
+                </div>
+                <div className="h-1.5 bg-black/60 rounded overflow-hidden">
+                    <motion.div
+                        className="h-full bg-green-400"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.max(0, Math.min(100, progress))}%` }}
+                        transition={{ duration: 0.4 }}
+                    />
+                </div>
+            </div>
+            <div className="flex items-center gap-2 mb-2 text-[10px]">
+                {phases.map((p, idx) => {
+                    const isReached = idx <= activePhaseIndex;
+                    const isActive = idx === activePhaseIndex;
+                    return (
+                        <div key={p} className={`px-2 py-1 rounded border ${isReached ? "border-green-500/40 text-green-300" : "border-gray-600/40 text-gray-400"} ${isActive ? "animate-pulse" : ""}`}>
+                            {p}
+                        </div>
+                    );
+                })}
+            </div>
+            <div className="opacity-90 mb-2">{readiness.message || "Preparing diagnostics..."}</div>
+            <div className="grid grid-cols-2 gap-2 opacity-90">
+                <div>Services: {registry.total_services ?? 0}</div>
+                <div>Healthy: {registry.healthy_services ?? 0}</div>
+                <div>Kernel: {kernel.running ? "Running" : "Stopped"}</div>
+                <div>Cycles: {kernel.cycle_count ?? 0}</div>
+                <div>Hub: {hub.ok ? "Online" : "Offline"}</div>
+                <div>Mode: {readiness.interface_mode || "hybrid"}</div>
+            </div>
+            {issues.length > 0 && (
+                <div className="mt-2 opacity-90">Issues: {issues.slice(0, 2).join("; ")}</div>
+            )}
+        </div>
+    );
+}
+
 function NeuralChat({ ws }) {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
@@ -197,7 +258,7 @@ function NeuralChat({ ws }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
         >
-            <div className="text-lg font-bold mb-2">Lyrixa Neural Chat</div>
+            <div className="text-lg font-bold mb-2">Aetherra</div>
             <div className="h-[20rem] overflow-y-auto space-y-2">
                 {messages.map((m, i) => (
                     <div key={i} className={m.from === "user" ? "text-white text-right" : "text-green-300 text-left"}>{m.text}</div>
@@ -207,7 +268,7 @@ function NeuralChat({ ws }) {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                placeholder="Ask Lyrixa anything..."
+                placeholder="Ask Aetherra anything..."
                 className="w-full mt-3 bg-black/40 p-2 rounded-lg text-green-200 border border-green-500 outline-none"
             />
         </motion.div>
@@ -217,14 +278,25 @@ function NeuralChat({ ws }) {
 export default function AetherraGUI() {
     const [ws, setWs] = useState(null);
     const [wsStatus, setWsStatus] = useState("Connecting...");
+    const [readinessState, setReadinessState] = useState({
+        available: false,
+        readiness: {
+            status: "booting",
+            phase: "presence",
+            progress: 5,
+            message: "Connecting to readiness diagnostics...",
+            system_scan: {},
+            issues: [],
+        },
+    });
     useEffect(() => {
         let socket;
         try {
-            socket = new WebSocket("ws://localhost:8080/ws");
+            socket = new WebSocket(`ws://${window.location.hostname}:8888/ws`);
             setWs(socket);
             socket.onopen = () => {
                 setWsStatus("Connected");
-                console.log("WebSocket connected to Lyrixa");
+                console.log("WebSocket connected to Aetherra");
             };
             socket.onmessage = (msg) => {
                 try {
@@ -250,29 +322,66 @@ export default function AetherraGUI() {
             if (socket) socket.close();
         };
     }, []);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        const loadReadiness = async () => {
+            try {
+                const res = await fetch("/api/boot/readiness", { cache: "no-store" });
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!cancelled) {
+                    setReadinessState(data);
+                }
+            } catch (error) {
+                if (!cancelled) {
+                    setReadinessState((prev) => ({
+                        ...prev,
+                        readiness: {
+                            ...(prev.readiness || {}),
+                            status: "degraded",
+                            message: "Readiness endpoint unavailable.",
+                            issues: ["Could not reach /api/boot/readiness"],
+                        },
+                    }));
+                }
+            }
+        };
+
+        loadReadiness();
+        const timer = setInterval(loadReadiness, 1500);
+        return () => {
+            cancelled = true;
+            clearInterval(timer);
+        };
+    }, []);
+
     return (
         <div className="w-screen h-screen bg-[#0a0a0a] overflow-hidden relative">
             <Canvas
-                camera={{ position: [0, 0, 5], fov: 75 }}
+                camera={{ position: [0, 0.65, 4.2], fov: 65 }}
                 style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                gl={{ antialias: true }}
             >
-                <ambientLight intensity={0.6} />
-                <pointLight position={[10, 10, 10]} intensity={1} />
-                <directionalLight position={[-5, 5, 5]} intensity={0.5} />
-                <HoloAura />
+                <AetherraAvatar />
                 <OrbitControls
                     enableZoom={false}
                     autoRotate
-                    autoRotateSpeed={0.5}
+                    autoRotateSpeed={0.28}
                     enablePan={false}
+                    target={[0, 0.5, 0]}
+                    maxPolarAngle={Math.PI * 0.62}
+                    minPolarAngle={Math.PI * 0.38}
                 />
             </Canvas>
+            <BootReadinessPanel readinessState={readinessState} />
             <MetricsOverlay />
             <NeuralChat ws={ws} />
             <MemoryGraphPanel ws={ws} />
             <QuantumPanel ws={ws} />
             <div className="absolute top-4 left-4 text-2xl font-bold text-[#00ff88] font-mono">
-                LYRIXA - Aetherra OS
+                AETHERRA OS
             </div>
             <div className="absolute top-4 right-4 text-sm font-mono">
                 <div className={`px-2 py-1 rounded ${wsStatus === "Connected" ? "bg-green-900 text-green-300" :

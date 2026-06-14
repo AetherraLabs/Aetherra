@@ -15,58 +15,21 @@ __version__ = "1.0.0"
 __author__ = "AetherraLabs"
 __email__ = "contact@aetherralabs.com"
 
-# Standard library imports
-# Core module imports with graceful fallbacks
+# Use path-based availability checks to avoid cross-thread import deadlocks.
+# Eager submodule imports here caused a Python 3.13 _DeadlockError when
+# server.py imported engine on the main thread while the launcher loaded
+# memory on the background thread — both trying to acquire each other's locks.
 import logging
-from pathlib import Path
+from pathlib import Path as _Path
 
 logger = logging.getLogger(__name__)
 
-# Try to import core components with fallbacks
-try:
-    # Aetherra imports
-    from Aetherra.aetherra_core import memory  # noqa: F401
-
-    MEMORY_AVAILABLE = True
-except ImportError as e:
-    logger.debug(f"Memory system not available: {e}")
-    MEMORY_AVAILABLE = False
-
-try:
-    # Aetherra imports
-    from Aetherra.aetherra_core import engine  # noqa: F401
-
-    ENGINE_AVAILABLE = True
-except ImportError as e:
-    logger.debug(f"Engine system not available: {e}")
-    ENGINE_AVAILABLE = False
-
-try:
-    # Aetherra imports
-    from Aetherra.aetherra_core import orchestration  # noqa: F401
-
-    ORCHESTRATION_AVAILABLE = True
-except ImportError as e:
-    logger.debug(f"Orchestration system not available: {e}")
-    ORCHESTRATION_AVAILABLE = False
-
-try:
-    # Aetherra imports
-    from Aetherra.aetherra_core import plugins  # noqa: F401
-
-    PLUGINS_AVAILABLE = True
-except ImportError as e:
-    logger.debug(f"Plugin system not available: {e}")
-    PLUGINS_AVAILABLE = False
-
-try:
-    # Aetherra imports
-    from Aetherra.aetherra_core import config  # noqa: F401
-
-    CONFIG_AVAILABLE = True
-except ImportError as e:
-    logger.debug(f"Config system not available: {e}")
-    CONFIG_AVAILABLE = False
+_CORE_DIR = _Path(__file__).parent
+MEMORY_AVAILABLE = (_CORE_DIR / "memory" / "__init__.py").exists()
+ENGINE_AVAILABLE = (_CORE_DIR / "engine" / "__init__.py").exists()
+ORCHESTRATION_AVAILABLE = (_CORE_DIR / "orchestration" / "__init__.py").exists()
+PLUGINS_AVAILABLE = (_CORE_DIR / "plugins" / "__init__.py").exists()
+CONFIG_AVAILABLE = (_CORE_DIR / "config" / "__init__.py").exists()
 
 # Availability flags for external components
 CORE_SYSTEMS = {
@@ -93,7 +56,7 @@ def check_dependencies():
 
 
 # Module-level constants
-CORE_MODULE_PATH = Path(__file__).parent
+CORE_MODULE_PATH = _Path(__file__).parent
 PROJECT_ROOT = CORE_MODULE_PATH.parent.parent
 
 # Export main components

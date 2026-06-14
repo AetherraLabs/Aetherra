@@ -13,6 +13,7 @@ from __future__ import annotations
 
 # Standard library imports
 import ast
+import os
 import threading
 from typing import Any
 
@@ -30,6 +31,21 @@ SAFE_BUILTINS = {
     "len": len,
     "range": range,
 }
+
+RISKY_OPERATIONS = {
+    "subprocess",
+    "subprocess.run",
+    "os.system",
+    "os.popen",
+    "eval",
+    "exec",
+    "__import__",
+}
+
+
+def _is_production_profile() -> bool:
+    profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
+    return profile in {"prod", "production"}
 
 
 class SandboxViolation(Exception):
@@ -162,8 +178,9 @@ class SecuritySandbox:
       - allowed_modules (list[str])
       - blocked_functions (list[str])
 
-    The implementation is intentionally lightweight; it provides
-    interface coverage and basic budget checking rather than full isolation.
+    The implementation is intentionally lightweight but now applies stricter
+    defaults in production-like profiles, blocking obviously risky operations
+    unless explicitly allowed in configuration.
     """
 
     def __init__(self, config: dict | None = None):
@@ -174,18 +191,21 @@ class SecuritySandbox:
         self._timeout = float(self.config.get("timeout", 5) or 5)
         self._allowed_modules = set(self.config.get("allowed_modules", []) or [])
         self._blocked_functions = set(self.config.get("blocked_functions", []) or [])
+        if _is_production_profile():
+            self._blocked_functions.update(RISKY_OPERATIONS)
 
     # Simple allow list semantics; expand later as needed
     def is_allowed(self, operation: str) -> bool:
         op = (operation or "").strip().lower()
         if not op:
             return False
+        if op in self._blocked_functions:
+            return False
         # Increment operation counter
         self._ops += 1
         if self._ops > self._max_ops:
             raise TimeBudgetExceeded("Operation budget exceeded")
-        # Basic heuristic: block if name matches blocked_functions
-        return op not in self._blocked_functions
+        return True
 
     def check_resource_limits(self) -> None:
         # Memory budget check (best-effort)
@@ -196,7 +216,8 @@ class SecuritySandbox:
     # Convenience wrapper to execute a callable under timeout & memory check
     def run(self, func, *args, **kwargs) -> Any:  # pragma: no cover - thin wrapper
         self.check_resource_limits()
-        return run_with_timeout(func, args=args, kwargs=kwargs, timeout_sec=self._timeout)
+        timeout = kwargs.pop("timeout", self._timeout)
+        return run_with_timeout(func, args=args, kwargs=kwargs, timeout_sec=timeout)
 
 
 __all__ = [

@@ -170,6 +170,8 @@ def main(argv: list[str] | None = None) -> int:
     # Resolve a sensible default directory if requested root is missing
     if not root.exists():
         candidates = [
+            pathlib.Path("frontend/src"),
+            pathlib.Path("frontend"),
             pathlib.Path("Aetherra/lyrixa/gui/src"),
             pathlib.Path("Aetherra/lyrixa/gui"),
             pathlib.Path("Aetherra/lyrixa"),

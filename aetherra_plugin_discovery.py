@@ -250,6 +250,10 @@ class AetherraPluginDiscovery:
                 logger.info(
                     f"[SKIP] GUI plugin {py_file.name} not loaded (Qt dependency issue): {e}"
                 )
+            elif "attempted relative import with no known parent package" in err_txt:
+                logger.info(
+                    f"[SKIP] Python plugin {py_file.name} requires package import context"
+                )
             else:
                 logger.error(f"[ERROR] Error importing {py_file}: {e}")
 
@@ -279,7 +283,14 @@ class AetherraPluginDiscovery:
                     logger.info(f"[OK] Discovered plugin_data: {metadata.name}")
 
         except Exception as e:
-            logger.error(f"[ERROR] Error extracting plugin_data from {py_file}: {e}")
+            if "attempted relative import with no known parent package" in str(e):
+                logger.info(
+                    f"[SKIP] plugin_data module {py_file.name} requires package import context"
+                )
+            else:
+                logger.error(
+                    f"[ERROR] Error extracting plugin_data from {py_file}: {e}"
+                )
 
     async def _discover_sample_plugins(self):
         """Discover sample plugins specifically."""

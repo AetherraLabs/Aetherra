@@ -23,6 +23,7 @@ import signal
 import sys
 import time
 import traceback
+from datetime import datetime
 from typing import Any
 
 # Early .env loader: ensure API keys and config from .env are available at startup
@@ -111,6 +112,21 @@ logging.basicConfig(
     handlers=[file_handler, console_handler],
 )
 logger = logging.getLogger(__name__)
+
+_LATEST_BOOT_READINESS: dict[str, Any] | None = None
+
+
+def get_latest_boot_readiness() -> dict[str, Any] | None:
+    """Return the most recent launcher readiness snapshot, if available."""
+    return _LATEST_BOOT_READINESS
+
+
+def _merge_boot_readiness(update: dict[str, Any]) -> None:
+    global _LATEST_BOOT_READINESS
+    current = _LATEST_BOOT_READINESS or {}
+    merged = {**current, **update}
+    merged["updated_at"] = datetime.utcnow().isoformat() + "Z"
+    _LATEST_BOOT_READINESS = merged
 
 
 # Minimal adapters to align real systems with kernel contracts (no mocks)
@@ -375,6 +391,7 @@ class AetherraOSLauncher:
         self.kernel_loop = None
         self.systems = {}
         self.startup_time = None
+        self.readiness_report: dict[str, Any] | None = None
         # Self-maintenance
         self._improvement_telemetry_task = None
         # STORM feature tracking
@@ -390,6 +407,8 @@ class AetherraOSLauncher:
         self.startup_time = time.time()
 
         try:
+            await self._emit_boot_presence(config or {})
+
             # Enforce "no fake data" posture in all-systems mode when requested
             cfg = config or {}
             run_mode = (
@@ -416,11 +435,11 @@ class AetherraOSLauncher:
             # Apply logging mode (quiet or custom level) ASAP
             self._apply_logging_mode(cfg)
 
-            # Default disclosure posture: Free/Observation Layer unless explicitly overridden
+            # Default disclosure posture: Integration (full capability) unless overridden
             try:
                 if os.environ.get("AETHERRA_DISCLOSURE_TIER") in (None, ""):
-                    os.environ["AETHERRA_DISCLOSURE_TIER"] = "free"
-                tier = os.environ.get("AETHERRA_DISCLOSURE_TIER", "free").lower()
+                    os.environ["AETHERRA_DISCLOSURE_TIER"] = "integration"
+                tier = os.environ.get("AETHERRA_DISCLOSURE_TIER", "integration").lower()
                 if tier == "free":
                     logger.info(
                         "[POLICY] Disclosure tier: FREE (Observation Layer — metadata only)"
@@ -438,9 +457,21 @@ class AetherraOSLauncher:
 
             # Phase 1: Initialize Service Registry
             await self._initialize_service_registry()
+            self._update_boot_phase(
+                phase="diagnostics",
+                phase_detail="service-registry",
+                message="Registry online. Loading core systems.",
+                progress=30,
+            )
 
             # Phase 2: Load and validate core systems
             await self._load_core_systems(config)
+            self._update_boot_phase(
+                phase="diagnostics",
+                phase_detail="core-systems",
+                message="Core systems loaded. Starting kernel loop.",
+                progress=50,
+            )
 
             # Log summary of registered services and health
             try:
@@ -459,12 +490,34 @@ class AetherraOSLauncher:
 
             # Phase 3: Start Kernel Loop
             await self._start_kernel_loop()
+            self._update_boot_phase(
+                phase="diagnostics",
+                phase_detail="kernel-loop",
+                message="Kernel loop active. Activating subsystems.",
+                progress=70,
+            )
 
             # Phase 4: Activate all systems
             await self._activate_systems(config)
+            self._update_boot_phase(
+                phase="diagnostics",
+                phase_detail="activation",
+                message="Subsystems active. Running health validation.",
+                progress=85,
+            )
 
             # Phase 5: Perform system validation
             await self._validate_system_health()
+            self._update_boot_phase(
+                phase="diagnostics",
+                phase_detail="validation",
+                message="Validation complete. Synthesizing readiness.",
+                progress=95,
+            )
+
+            # Phase 5.5: Run startup diagnostics and synthesize readiness
+            self.readiness_report = await self._run_startup_readiness_scan(config)
+            self._log_readiness_summary(self.readiness_report)
 
             # Phase 6: Announce OS online
             await self._announce_os_online()
@@ -516,6 +569,229 @@ class AetherraOSLauncher:
         except Exception:
             # Never fail launch due to logging tweaks
             pass
+
+    async def _emit_boot_presence(self, config: dict[str, Any]):
+        """Emit the initial Aetherra presence message before subsystem startup."""
+        global _LATEST_BOOT_READINESS
+        interface_mode = str(config.get("interface") or config.get("mode") or "hybrid")
+        _LATEST_BOOT_READINESS = {
+            "status": "booting",
+            "phase": "presence",
+            "phase_detail": "init",
+            "progress": 10,
+            "message": "Aetherra online. Beginning system and self diagnostics.",
+            "system_scan": {
+                "registry": {
+                    "available": False,
+                    "total_services": 0,
+                    "healthy_services": 0,
+                },
+                "kernel": {"available": False, "running": False, "cycle_count": 0},
+                "hub": {
+                    "url": os.environ.get("AETHERRA_HUB_URL", "http://localhost:3001"),
+                    "ok": False,
+                },
+            },
+            "self_scan": {
+                "policy_tier": os.environ.get("AETHERRA_DISCLOSURE_TIER", "free"),
+                "provider": os.environ.get("AETHERRA_PROVIDER")
+                or os.environ.get("AETHERRA_INTELLIGENCE_PROVIDER")
+                or "default",
+                "gui_enabled": bool(config.get("gui_enabled", True)),
+            },
+            "issues": [],
+            "recommended_actions": [],
+            "phase_sequence": ["presence", "diagnostics", "ready"],
+            "interface_mode": interface_mode,
+            "updated_at": datetime.utcnow().isoformat() + "Z",
+        }
+        logger.info("[AETHERRA] Presence initialized")
+        logger.info(
+            "[AETHERRA] Aetherra online. Beginning system and self diagnostics."
+        )
+        logger.info("[AETHERRA] Startup mode: %s", interface_mode)
+
+    async def _run_startup_readiness_scan(
+        self, config: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        """Gather a concise startup readiness report for system + self state."""
+        global _LATEST_BOOT_READINESS
+        cfg = config or {}
+
+        async def _registry_scan() -> dict[str, Any]:
+            if not self.service_registry:
+                return {"available": False, "total_services": 0, "healthy_services": 0}
+            try:
+                reg = self.service_registry.get_registry_status()
+                services = reg.get("services", {})
+                healthy = sum(
+                    1
+                    for info in services.values()
+                    if str(info.get("status", "")).lower() in {"healthy", "starting"}
+                )
+                return {
+                    "available": True,
+                    "total_services": reg.get("total_services", 0),
+                    "healthy_services": healthy,
+                }
+            except Exception as exc:
+                return {"available": False, "error": type(exc).__name__}
+
+        async def _kernel_scan() -> dict[str, Any]:
+            if not self.kernel_loop:
+                return {"available": False, "running": False, "cycle_count": 0}
+            try:
+                status = self.kernel_loop.get_status()
+                return {
+                    "available": True,
+                    "running": bool(getattr(self.kernel_loop, "running", False)),
+                    "cycle_count": int(status.get("cycle_count", 0)),
+                }
+            except Exception as exc:
+                return {
+                    "available": False,
+                    "running": False,
+                    "cycle_count": 0,
+                    "error": type(exc).__name__,
+                }
+
+        async def _hub_scan() -> dict[str, Any]:
+            hub_url = os.environ.get("AETHERRA_HUB_URL", "http://localhost:3001")
+            try:
+                import aiohttp  # type: ignore
+
+                timeout = aiohttp.ClientTimeout(total=1.5)
+                async with aiohttp.ClientSession(timeout=timeout) as session:
+                    async with session.get(f"{hub_url}/health") as response:
+                        return {
+                            "url": hub_url,
+                            "ok": response.status == 200,
+                            "status_code": response.status,
+                        }
+            except Exception as exc:
+                return {"url": hub_url, "ok": False, "error": type(exc).__name__}
+
+        async def _self_scan() -> dict[str, Any]:
+            report: dict[str, Any] = {
+                "policy_tier": os.environ.get("AETHERRA_DISCLOSURE_TIER", "free"),
+                "provider": os.environ.get("AETHERRA_PROVIDER")
+                or os.environ.get("AETHERRA_INTELLIGENCE_PROVIDER")
+                or "default",
+                "gui_enabled": bool(cfg.get("gui_enabled", True)),
+            }
+            for key in ("memory_system", "plugin_manager", "aetherra_engine"):
+                service_state = "missing"
+                if self.service_registry:
+                    info = self.service_registry.get_service_info(key)
+                    if info is not None:
+                        status = getattr(info, "status", "unknown")
+                        service_state = getattr(status, "value", str(status))
+                report[key] = service_state
+            return report
+
+        registry, kernel, hub, self_state = await asyncio.gather(
+            _registry_scan(), _kernel_scan(), _hub_scan(), _self_scan()
+        )
+
+        issues: list[str] = []
+        recommended_actions: list[str] = []
+
+        if not registry.get("available"):
+            issues.append("Service registry unavailable")
+            recommended_actions.append("Check service registry initialization")
+        elif registry.get("healthy_services", 0) == 0:
+            issues.append("No healthy services registered")
+
+        if not kernel.get("running"):
+            issues.append("Kernel loop not running")
+            recommended_actions.append("Inspect kernel startup and scheduler wiring")
+
+        if not hub.get("ok"):
+            issues.append("Hub unreachable")
+            recommended_actions.append(
+                "Run with backend/headless mode or verify Hub startup"
+            )
+
+        status = "ready"
+        if issues:
+            status = "degraded" if kernel.get("running") else "restricted"
+
+        report = {
+            "status": status,
+            "phase": "ready" if status == "ready" else "stabilizing",
+            "phase_detail": "readiness",
+            "progress": 100,
+            "message": "Diagnostics complete. Ready for commands and questions."
+            if status == "ready"
+            else "Diagnostics complete with issues. Running in degraded mode.",
+            "system_scan": {
+                "registry": registry,
+                "kernel": kernel,
+                "hub": hub,
+            },
+            "self_scan": self_state,
+            "issues": issues,
+            "recommended_actions": recommended_actions,
+            "phase_sequence": ["presence", "diagnostics", "ready"],
+            "interface_mode": str(cfg.get("interface") or cfg.get("mode") or "hybrid"),
+            "updated_at": datetime.utcnow().isoformat() + "Z",
+        }
+        _LATEST_BOOT_READINESS = report
+        return report
+
+    def _update_boot_phase(
+        self,
+        *,
+        phase: str,
+        phase_detail: str,
+        message: str,
+        progress: int,
+    ) -> None:
+        _merge_boot_readiness(
+            {
+                "status": "booting",
+                "phase": phase,
+                "phase_detail": phase_detail,
+                "message": message,
+                "progress": max(0, min(100, int(progress))),
+                "phase_sequence": ["presence", "diagnostics", "ready"],
+            }
+        )
+
+    def _log_readiness_summary(self, report: dict[str, Any] | None) -> None:
+        """Log a compact readiness synthesis for the operator and future UI layers."""
+        if not report:
+            logger.warning("[AETHERRA] Readiness synthesis unavailable")
+            return
+
+        status = str(report.get("status", "unknown")).upper()
+        logger.info("[AETHERRA] Readiness synthesis: %s", status)
+
+        system_scan = report.get("system_scan", {})
+        registry = system_scan.get("registry", {})
+        kernel = system_scan.get("kernel", {})
+        hub = system_scan.get("hub", {})
+        self_scan = report.get("self_scan", {})
+
+        logger.info(
+            "[AETHERRA] System scan: services=%s healthy=%s kernel_running=%s cycles=%s hub=%s",
+            registry.get("total_services", 0),
+            registry.get("healthy_services", 0),
+            kernel.get("running", False),
+            kernel.get("cycle_count", 0),
+            "online" if hub.get("ok") else "offline",
+        )
+        logger.info(
+            "[AETHERRA] Self scan: provider=%s policy=%s gui_enabled=%s",
+            self_scan.get("provider", "default"),
+            self_scan.get("policy_tier", "free"),
+            self_scan.get("gui_enabled", True),
+        )
+
+        for issue in report.get("issues", []):
+            logger.warning("[AETHERRA] Issue: %s", issue)
+        for action in report.get("recommended_actions", []):
+            logger.info("[AETHERRA] Suggested next step: %s", action)
 
     async def _initialize_service_registry(self):
         """[NET] Initialize the service registry."""
@@ -2439,12 +2715,12 @@ class AetherraOSLauncher:
                 logger.info("[GUI] Loading GUI System...")
 
                 try:
-                    # Prefer launching Lyrixa via its own launcher when needed
-                    # Aetherra imports
-                    from Aetherra.lyrixa.gui import main_window  # noqa: F401, F811
+                    # Transitional native GUI support remains available while the
+                    # canonical Aetherra frontend continues to consolidate.
+                    from Aetherra.gui import aetherra_os_gui  # noqa: F401, F811
 
                     logger.info(
-                        "[INFO] GUI modules available. GUI launch is controlled by Lyrixa launcher."
+                        "[INFO] Aetherra GUI modules available. Launch is handled by the Aetherra OS interface path."
                     )
                 except Exception:
                     logger.info("[INFO] GUI system not available")
@@ -3033,6 +3309,11 @@ class AetherraOSLauncher:
         logger.info("[PLUGIN] Plugin ecosystem: Ready")
         logger.info("[MEM] Quantum memory: Operational")
         logger.info("[SCHED] Task scheduler: Running")
+        if self.readiness_report:
+            logger.info(
+                "[AETHERRA] Startup state: %s",
+                str(self.readiness_report.get("status", "unknown")).upper(),
+            )
         logger.info("=" * 60)
 
         # Display user-friendly access information
@@ -3041,9 +3322,12 @@ class AetherraOSLauncher:
         hub_url = os.environ.get("AETHERRA_HUB_URL", "http://localhost:3001")
         logger.info("")
         logger.info("🌐 ACCESS POINTS:")
-        logger.info(f"   Lyrixa UI:  {hub_url}")
+        logger.info(f"   Aetherra UI: {hub_url}")
         logger.info(f"   API:        {hub_url}/api/*")
         logger.info("")
+        logger.info(
+            "[AETHERRA] Diagnostics complete. Ready for commands and questions."
+        )
         logger.info("💡 TIP: Keep this window open to keep Aetherra OS running")
         logger.info("🛑 Press Ctrl+C to shutdown gracefully")
         logger.info("=" * 60)
@@ -3054,7 +3338,7 @@ class AetherraOSLauncher:
                 import subprocess
                 import sys as _sys
 
-                monitor_path = os.path.join("Aetherra", "gui", "boot_monitor.py")
+                monitor_path = os.path.join("Aetherra", "gui", "aetherra_os_gui.py")
                 subprocess.Popen([_sys.executable, monitor_path])
                 logger.info("[MON] Boot monitor launched")
         except Exception as _mon_err:
@@ -3895,9 +4179,21 @@ async def main():
 
     if want_boot_menu:
         try:
-            # Aetherra imports (boot menu has a console fallback if PySide6 is missing)
-            from Aetherra.gui.boot_menu import (
-                show_boot_menu_and_get_choice,  # type: ignore
+            import importlib.util
+
+            boot_menu_path = Path(__file__).parent / "Aetherra" / "gui" / "boot_menu.py"
+            if not boot_menu_path.exists():
+                raise FileNotFoundError("boot menu removed during GUI curation")
+
+            spec = importlib.util.spec_from_file_location(
+                "aetherra_boot_menu", boot_menu_path
+            )
+            if spec is None or spec.loader is None:
+                raise ImportError("unable to load boot menu module")
+            boot_menu_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(boot_menu_module)
+            show_boot_menu_and_get_choice = (
+                boot_menu_module.show_boot_menu_and_get_choice
             )
 
             choice = show_boot_menu_and_get_choice() or {}
@@ -3957,6 +4253,10 @@ async def main():
                 os.environ.get("AETHERRA_ENABLE_QFAC", ""),
                 os.environ.get("AETHERRA_QFAC_DASHBOARD", ""),
                 os.environ.get("AETHERRA_NET_STRICT", ""),
+            )
+        except FileNotFoundError:
+            logger.info(
+                "[AETHERRA] Boot menu unavailable in curated UI mode; continuing."
             )
         except Exception as e:
             logger.warning(f"[BOOT] Boot menu unavailable or failed: {e}")
