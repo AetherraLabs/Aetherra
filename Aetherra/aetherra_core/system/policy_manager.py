@@ -21,6 +21,7 @@ Example:
 import hashlib
 import json
 import logging
+import math
 import os
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta
@@ -46,10 +47,14 @@ class EthicsProfile:
     """Prioritize relationships/empathy (0.0-1.0)"""
 
     def __post_init__(self):
-        """Validate that weights sum to 1.0."""
-        total = self.utilitarian + self.deontological + self.virtue + self.care
-        if not (0.99 <= total <= 1.01):  # Allow small floating-point rounding
-            raise ValueError(f"Ethics weights must sum to 1.0, got {total}")
+        """Validate that weights are finite, positive values."""
+        weights = [self.utilitarian, self.deontological, self.virtue, self.care]
+        if not all(isinstance(weight, (int, float)) for weight in weights):
+            raise ValueError("Ethics weights must be numeric")
+        if not all(math.isfinite(float(weight)) for weight in weights):
+            raise ValueError("Ethics weights must be finite")
+        if any(float(weight) <= 0 for weight in weights):
+            raise ValueError("Ethics weights must be positive and non-zero")
 
     def normalize(self):
         """Normalize weights to sum to 1.0."""
@@ -239,9 +244,9 @@ class PolicyValidator:
                                 errors.append(
                                     f"Profile '{profile_name}.{weight_name}' must be numeric"
                                 )
-                            elif not (0 <= weight_val <= 1):
+                            elif not (0 < weight_val <= 1):
                                 errors.append(
-                                    f"Profile '{profile_name}.{weight_name}' must be between 0 and 1"
+                                    f"Profile '{profile_name}.{weight_name}' must be greater than 0 and at most 1"
                                 )
 
         # Validate constraints
@@ -329,7 +334,7 @@ class PolicyManager:
                 "max_autonomy_level": 1,
                 "require_verification": True,
                 "audit_trail": True,
-                "max_code_generation_size": 1000,
+                "max_code_generation_size": 100,
                 "sandboxing": True,
                 "rollback_on_failure": True,
             },

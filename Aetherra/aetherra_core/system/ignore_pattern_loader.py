@@ -65,10 +65,30 @@ class IgnorePattern:
             True if pattern matches
         """
         try:
+            normalized_path = path.replace("\\", "/").strip("/")
+            pattern = self.pattern.replace("\\", "/")
+            if self.is_negation and pattern.startswith("!"):
+                pattern = pattern[1:]
+
             if self.is_regex:
-                return re.match(self.pattern, path) is not None
-            else:
-                return fnmatch.fnmatch(path, self.pattern)
+                return re.match(pattern, normalized_path) is not None
+
+            if self.is_directory or pattern.endswith("/"):
+                directory_pattern = pattern.rstrip("/").strip("/")
+                if not directory_pattern:
+                    return False
+
+                path_parts = [part for part in normalized_path.split("/") if part]
+                candidate_dirs = [
+                    "/".join(path_parts[:index])
+                    for index in range(1, len(path_parts) + 1)
+                ]
+                return any(
+                    fnmatch.fnmatch(candidate_dir, directory_pattern)
+                    for candidate_dir in candidate_dirs
+                )
+
+            return fnmatch.fnmatch(normalized_path, pattern)
         except Exception as e:
             logger.warning(f"Pattern matching error: {e}")
             return False

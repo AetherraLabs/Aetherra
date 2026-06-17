@@ -36,7 +36,7 @@ jobs:
         shell: bash
       - name: Run targeted unit tests (security/telemetry/hub)
         run: |
-          python -m pytest -q \
+          python -m pytest -q -o addopts= \
             tests/unit/test_telemetry_optin.py \
             tests/unit/test_aether_static_risk.py \
             tests/unit/test_aether_script_signing.py \

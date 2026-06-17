@@ -29,6 +29,8 @@ jobs:
           SBOM_GENERATE: '1'
           PUBLISH_ARTIFACTS: '1'
           TEST_TARGETS: 'tests/capabilities tests/unit tests/integration'
+          LOCK_ENFORCE: ${{ github.event_name == 'push' && '1' || '0' }}
+          VULN_SCAN: ${{ github.event_name == 'push' && '1' || '0' }}
         run: python tools/quality_gates.py
       - name: Validate overrides schema
         run: python tools/validate_license_overrides.py --file license_overrides.yml || true

@@ -22,6 +22,10 @@ jobs:
           while read -r line; do
             msg=$(echo "$line" | cut -d' ' -f2-)
             sha=$(echo "$line" | awk '{print $1}')
+            if echo "$msg" | grep -E -q '^Merge [0-9a-f]{7,40} into [0-9a-f]{7,40}$|^Merge (branch|pull request) '; then
+              echo "Skipping generated merge commit ($sha): $msg"
+              continue
+            fi
             if ! echo "$msg" | grep -E -q "$pattern"; then
               echo "::error file=COMMIT,msg=Invalid commit message ($sha): $msg"
               fails=$((fails+1))

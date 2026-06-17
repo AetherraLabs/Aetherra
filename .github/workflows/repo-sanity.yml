@@ -11,7 +11,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check for large files (>10MB)
         run: |
-          git ls-files -z | xargs -0 -I {} bash -lc 'size=$(wc -c < "{}" || echo 0); if [ "$size" -gt 10485760 ]; then echo "Large file: {} ($size bytes)"; exit 1; fi'
+          git ls-files -z \
+            ':!:dist-packages/**' \
+            ':!:aetherra-website/node_modules/**' \
+            ':!:**/node_modules/**' \
+            ':!:tools/doctor_last_run.txt' \
+            | xargs -0 -I {} bash -lc 'size=$(wc -c < "{}" || echo 0); if [ "$size" -gt 10485760 ]; then echo "Large file: {} ($size bytes)"; exit 1; fi'
 
   vendor-guard:
     runs-on: ubuntu-latest

@@ -136,8 +136,10 @@ class Telemetry:
                 or os.environ.get("AETHERRA_HUB_CONTROL_TOKEN")
                 or ""
             ).strip()
-            headers = {"X-Aetherra-Token": token} if token else None
-            r = requests.post(self.endpoint, json=payload, headers=headers, timeout=2)
+            request_kwargs = {"json": payload, "timeout": 2}
+            if token:
+                request_kwargs["headers"] = {"X-Aetherra-Token": token}
+            r = requests.post(self.endpoint, **request_kwargs)
             return r.status_code in (200, 201, 202)
         except Exception:
             return False

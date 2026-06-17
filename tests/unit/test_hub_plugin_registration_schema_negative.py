@@ -31,14 +31,17 @@ def test_register_rejects_invalid_manifest_schema(monkeypatch):
 
     base = f"http://localhost:{port}"
 
-    # Invalid permission value should fail schema validation
-    payload = {
-        "name": "bad_manifest_plugin",
-        "version": "0.1.0",
-        "entry_point": "main.py",
-        "permissions": ["not-a-permission"],
-    }
-    r = requests.post(f"{base}/api/plugins/register", json=payload, timeout=3)
-    assert r.status_code == 400
-    data = r.json()
-    assert data.get("error") == "manifest_invalid"
+    try:
+        # Invalid permission value should fail schema validation
+        payload = {
+            "name": "bad_manifest_plugin",
+            "version": "0.1.0",
+            "entry_point": "main.py",
+            "permissions": ["not-a-permission"],
+        }
+        r = requests.post(f"{base}/api/plugins/register", json=payload, timeout=3)
+        assert r.status_code == 400
+        data = r.json()
+        assert data.get("error") == "manifest_invalid"
+    finally:
+        server.stop_server()

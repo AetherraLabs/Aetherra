@@ -22,6 +22,7 @@
 | aetherra_chat_resume_gaps_total                       | counter           | SSE resume gap detections (missed events replayed)           | Driven by Last-Event-ID replay scan    |
 | aetherra_chat_soft_timeouts_total                     | counter           | Streams terminated by soft timeout window                    | AETHERRA_STREAM_SOFT_TIMEOUT_S         |
 | aetherra_chat_breaker_open_total                      | counter           | Circuit breaker / timeout error finalizations                | Engine-level faults/latency guards     |
+| aetherra_chat_rate_limited_total                      | counter           | Chat requests rejected by engine rate limiting               | Incremented on rate-limit responses    |
 | aetherra_chat_auth_missing_token_total                | counter           | Requests lacking required token (prod)                       | AETHERRA_AI_API_REQUIRE_TOKEN=1        |
 | aetherra_chat_auth_invalid_token_total                | counter           | Provided token rejected                                      | Future enforcement                     |
 | aetherra_hmr_denied_total                             | counter           | HMR enable attempts denied                                   | Production safety guard                |

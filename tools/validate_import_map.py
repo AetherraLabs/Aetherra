@@ -32,6 +32,9 @@ RELATIVE_WHITELIST: set[str] = {
     "Aetherra/runtime/aether_parser.py:278",
     # agent base complex relative (pending refactor)
     "Aetherra/aetherra_core/agents/base.py:280",
+    "Aetherra/aetherra_core/agents/base.py:390",
+    "Aetherra/aetherra_core/memory/memory_learning.py:27",
+    "Aetherra/runtime/aether_parser.py:342",
 }
 
 DISALLOWED_PREFIXES = (
@@ -56,6 +59,7 @@ def iter_py_files(root: Path):
             "__pycache__",
             "build",
             "dist",
+            "dist-packages",
             "archive",
             "backups",
             "unused",

@@ -7,7 +7,6 @@ Enables external tools to trigger proposal application with optional HMR integra
 from __future__ import annotations
 
 # Standard library imports
-import asyncio
 import logging
 
 # Third party imports
@@ -19,6 +18,7 @@ from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
 # Local imports
 from ..services.control_auth import authorize_control_request
 from ..services.registry_client import get_service
+from ..utils.http import run_coro_blocking
 
 logger = logging.getLogger(__name__)
 
@@ -147,8 +147,7 @@ def apply_proposal() -> ResponseReturnValue:
 
             if selfinc is not None:
                 try:
-                    loop = asyncio.get_event_loop()
-                    si_res = loop.run_until_complete(
+                    si_res = run_coro_blocking(
                         selfinc.handle_message(
                             "selfimprovement.proposal", proposal_payload
                         )
@@ -206,7 +205,7 @@ def apply_proposal() -> ResponseReturnValue:
                 )
 
             hmr_controller = get_service("hmr_controller")
-            if not hmr_controller:
+            if not hmr_controller or not hasattr(hmr_controller, "handle_kernel_task"):
                 logger.warning("[SELFIMPROVE] HMR requested but controller unavailable")
                 return jsonify(
                     {
@@ -218,9 +217,8 @@ def apply_proposal() -> ResponseReturnValue:
                     }
                 )
 
-            loop = asyncio.get_event_loop()
             try:
-                result = loop.run_until_complete(
+                result = run_coro_blocking(
                     hmr_controller.handle_kernel_task(
                         {
                             "type": "hmr_reload",
@@ -387,8 +385,7 @@ def _apply_single_proposal(data: dict) -> dict:
                 "sender": data.get("sender"),
             }
             try:
-                loop = asyncio.get_event_loop()
-                si_res = loop.run_until_complete(
+                si_res = run_coro_blocking(
                     selfinc.handle_message("selfimprovement.proposal", payload)
                 )
             except Exception as exc:
@@ -432,7 +429,7 @@ def _apply_single_proposal(data: dict) -> dict:
             }
 
         hmr_controller = get_service("hmr_controller")
-        if not hmr_controller:
+        if not hmr_controller or not hasattr(hmr_controller, "handle_kernel_task"):
             return {
                 "proposal_id": proposal_id,
                 "ok": True,
@@ -441,9 +438,8 @@ def _apply_single_proposal(data: dict) -> dict:
                 "warning": "HMR not available",
             }
 
-        loop = asyncio.get_event_loop()
         try:
-            result = loop.run_until_complete(
+            result = run_coro_blocking(
                 hmr_controller.handle_kernel_task(
                     {
                         "type": "hmr_reload",

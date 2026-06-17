@@ -77,6 +77,7 @@ class ChatMetrics:
     chunks_total: int = 0
     # Breaker / timeout counter
     breaker_open_total: int = 0
+    rate_limited_total: int = 0
     # Soft timeout counter (SSE enforced timeouts before engine responds)
     soft_timeouts_total: int = 0
     # Security / auth related counters (Phase 0 hardening)
@@ -241,6 +242,10 @@ def inc_hmr_denied(reason: str):  # pragma: no cover
         )
 
 
+def inc_chat_rate_limited():  # pragma: no cover - simple counter
+    chat_metrics.rate_limited_total += 1
+
+
 def export_prometheus(lines: list[str]) -> str:
     return "\n".join(lines) + "\n"
 
@@ -354,6 +359,13 @@ def chat_metrics_lines(metrics: ChatMetrics) -> list[str]:
     )
     lines.append("# TYPE aetherra_chat_breaker_open_total counter")
     lines.append(f"aetherra_chat_breaker_open_total {metrics.breaker_open_total}")
+    lines.append(
+        "# HELP aetherra_chat_rate_limited_total Chat requests rejected by engine rate limiting"
+    )
+    lines.append("# TYPE aetherra_chat_rate_limited_total counter")
+    lines.append(
+        f"aetherra_chat_rate_limited_total {getattr(metrics, 'rate_limited_total', 0)}"
+    )
     # Soft timeout counter (export even if zero for discoverability)
     lines.append(
         "# HELP aetherra_chat_soft_timeouts_total Soft timeouts enforced before engine response"
@@ -404,11 +416,80 @@ def _num(x: Any) -> float:  # safe numeric conversion
         return 0.0
 
 
+def _label_value(x: Any) -> str:
+    return str(x).replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
+
+
 def _safe_len(obj: Any) -> int:
     try:
         return int(len(obj))
     except Exception:
         return 0
+
+
+def _engine_ab_metrics_lines() -> list[str]:
+    """Render A/B recall telemetry from the registered engine service."""
+    session_metrics = registry_client.get_engine_session_metrics()
+    engine_status = registry_client.get_engine_status() or {}
+    ab_status = engine_status.get("ab") if isinstance(engine_status, dict) else None
+    if not isinstance(ab_status, dict):
+        ab_status = {}
+
+    if not session_metrics and not ab_status:
+        return []
+
+    lines = [
+        "# HELP aetherra_engine_ab_recall_total Total A/B recall operations",
+        "# TYPE aetherra_engine_ab_recall_total counter",
+        f"aetherra_engine_ab_recall_total {_num(session_metrics.get('ab_recall_total', 0))}",
+        "# HELP aetherra_engine_ab_recall_classical_total Total classical A/B recall operations",
+        "# TYPE aetherra_engine_ab_recall_classical_total counter",
+        f"aetherra_engine_ab_recall_classical_total {_num(session_metrics.get('ab_recall_classical_total', 0))}",
+        "# HELP aetherra_engine_ab_recall_quantum_total Total quantum A/B recall operations",
+        "# TYPE aetherra_engine_ab_recall_quantum_total counter",
+        f"aetherra_engine_ab_recall_quantum_total {_num(session_metrics.get('ab_recall_quantum_total', 0))}",
+        "# HELP aetherra_engine_ab_recall_latency_ms_sum Cumulative A/B recall latency by bucket",
+        "# TYPE aetherra_engine_ab_recall_latency_ms_sum counter",
+    ]
+
+    for bucket in ("classical", "quantum"):
+        lines.append(
+            f'aetherra_engine_ab_recall_latency_ms_sum{{bucket="{bucket}"}} '
+            f"{_num(session_metrics.get(f'ab_recall_latency_ms_sum_{bucket}', 0))}"
+        )
+
+    lines.extend(
+        [
+            "# HELP aetherra_engine_ab_recall_latency_ms_count A/B recall latency observations by bucket",
+            "# TYPE aetherra_engine_ab_recall_latency_ms_count counter",
+        ]
+    )
+    for bucket in ("classical", "quantum"):
+        lines.append(
+            f'aetherra_engine_ab_recall_latency_ms_count{{bucket="{bucket}"}} '
+            f"{_num(session_metrics.get(f'ab_recall_latency_ms_count_{bucket}', 0))}"
+        )
+
+    mode = ab_status.get("mode")
+    if mode:
+        lines.extend(
+            [
+                "# HELP aetherra_engine_ab_mode Active engine A/B recall mode",
+                "# TYPE aetherra_engine_ab_mode gauge",
+                f'aetherra_engine_ab_mode{{mode="{_label_value(mode)}"}} 1',
+            ]
+        )
+
+    if "pmem_ready" in ab_status:
+        lines.extend(
+            [
+                "# HELP aetherra_engine_ab_pmem_ready Persistent memory readiness for A/B recall",
+                "# TYPE aetherra_engine_ab_pmem_ready gauge",
+                f"aetherra_engine_ab_pmem_ready {1 if ab_status.get('pmem_ready') else 0}",
+            ]
+        )
+
+    return lines
 
 
 def _trainer_metrics_lines() -> list[str]:
@@ -583,6 +664,78 @@ def build_all_metrics_lines() -> list[str]:  # core builder used by blueprint
         lines.append(
             f'aetherra_kernel_queue_size{{queue="background"}} {_num(qsz.get("background", 0))}'
         )
+        inflight = ks.get("inflight") or {}
+        if isinstance(inflight, dict):
+            for target, count in sorted(inflight.items(), key=lambda item: str(item[0])):
+                lines.append(
+                    'aetherra_kernel_inflight_current'
+                    f'{{target="{_label_value(target)}"}} {_num(count)}'
+                )
+
+    # HMR configuration gauges
+    hmr_config = registry_client.get_hmr_config_metrics() or {}
+    if hmr_config:
+        lines.append(
+            f"aetherra_hmr_enabled {1 if hmr_config.get('enabled') else 0}"
+        )
+        lines.append(f"aetherra_hmr_strict {1 if hmr_config.get('strict') else 0}")
+        lines.append(
+            "aetherra_hmr_allowed_sources_count "
+            f"{_num(hmr_config.get('allowed_sources_count', 0))}"
+        )
+        lines.append(
+            f"aetherra_hmr_audit_max_bytes {_num(hmr_config.get('audit_max_bytes', 0))}"
+        )
+        lines.append(
+            "aetherra_hmr_audit_max_backups "
+            f"{_num(hmr_config.get('audit_max_backups', 0))}"
+        )
+    hmr_audit = registry_client.get_hmr_audit_counters() or {}
+    if hmr_audit:
+        for event, count in sorted(hmr_audit.items(), key=lambda item: str(item[0])):
+            lines.append(
+                f'aetherra_hmr_audit_total{{event="{_label_value(event)}"}} {_num(count)}'
+            )
+
+    # KLM / KEB control-plane metrics
+    klm_metrics = registry_client.get_klm_metrics() or {}
+    if klm_metrics:
+        for name in (
+            "loads_total",
+            "reloads_total",
+            "rollbacks_total",
+            "active_modules",
+        ):
+            if name in klm_metrics:
+                lines.append(f"aetherra_klm_{name} {_num(klm_metrics.get(name, 0))}")
+        per_module_active = klm_metrics.get("per_module_active") or {}
+        if isinstance(per_module_active, dict):
+            for module, active in sorted(
+                per_module_active.items(), key=lambda item: str(item[0])
+            ):
+                lines.append(
+                    'aetherra_klm_active_module'
+                    f'{{module="{_label_value(module)}"}} {_num(active)}'
+                )
+
+    keb_metrics = registry_client.get_keb_metrics() or {}
+    if keb_metrics:
+        for name in (
+            "events_published_total",
+            "events_delivered_total",
+            "events_dropped_burst",
+        ):
+            if name in keb_metrics:
+                lines.append(f"aetherra_keb_{name} {_num(keb_metrics.get(name, 0))}")
+        topic_backlog = keb_metrics.get("topic_backlog") or {}
+        if isinstance(topic_backlog, dict):
+            for topic, backlog in sorted(
+                topic_backlog.items(), key=lambda item: str(item[0])
+            ):
+                lines.append(
+                    'aetherra_keb_topic_backlog'
+                    f'{{topic="{_label_value(topic)}"}} {_num(backlog)}'
+                )
 
     # Orchestrator
     orch = registry_client.get_orchestrator_status() or {}
@@ -601,6 +754,59 @@ def build_all_metrics_lines() -> list[str]:  # core builder used by blueprint
         lines.append(
             f"aetherra_orchestrator_tasks_pending_total {_num(orch.get('pending_tasks', 0))}"
         )
+        pending_by_priority = orch.get("pending_by_priority") or {}
+        if isinstance(pending_by_priority, dict):
+            for priority, count in sorted(
+                pending_by_priority.items(), key=lambda item: str(item[0])
+            ):
+                lines.append(
+                    "aetherra_orchestrator_tasks_pending"
+                    f'{{priority="{_label_value(priority)}"}} {_num(count)}'
+                )
+        task_statuses = orch.get("task_statuses") or {}
+        if isinstance(task_statuses, dict):
+            for status, count in sorted(
+                task_statuses.items(), key=lambda item: str(item[0])
+            ):
+                lines.append(
+                    "aetherra_orchestrator_tasks_total"
+                    f'{{status="{_label_value(status)}"}} {_num(count)}'
+                )
+        counters = orch.get("counters") or {}
+        if isinstance(counters, dict):
+            for name in (
+                "timeouts_total",
+                "policy_denied_total",
+                "observer_gates_triggered_total",
+                "observer_pending_human_total",
+                "observer_denied_total",
+                "drift_alerts_total",
+            ):
+                lines.append(
+                    f"aetherra_orchestrator_{name} {_num(counters.get(name, 0))}"
+                )
+        coherence_policy = orch.get("coherence_policy") or {}
+        if isinstance(coherence_policy, dict):
+            lines.append(
+                "aetherra_orchestrator_coherence_gate_min "
+                f"{_num(coherence_policy.get('gate_min', 0.0))}"
+            )
+            lines.append(
+                "aetherra_orchestrator_coherence_hard_min "
+                f"{_num(coherence_policy.get('hard_min', 0.0))}"
+            )
+            lines.append(
+                "aetherra_orchestrator_coherence_ema "
+                f"{_num(coherence_policy.get('ema', 0.0))}"
+            )
+            lines.append(
+                "aetherra_orchestrator_coherence_window_size "
+                f"{_num(coherence_policy.get('window_size', 0))}"
+            )
+            lines.append(
+                "aetherra_orchestrator_last_drift_alert_present "
+                f"{1 if coherence_policy.get('last_drift_alert') is not None else 0}"
+            )
 
     # Memory quantum + audit
     mq = registry_client.get_memory_quantum_status() or {}
@@ -1312,6 +1518,8 @@ def build_all_metrics_lines() -> list[str]:  # core builder used by blueprint
             )
     except Exception:
         logger.debug("metrics: engine metrics export failed", exc_info=True)
+
+    lines.extend(_engine_ab_metrics_lines())
 
     # Timestamp
     lines.append(

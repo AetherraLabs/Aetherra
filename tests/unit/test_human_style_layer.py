@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
 # Standard library imports
+import asyncio
 import importlib
 
 
@@ -57,10 +58,7 @@ def test_engine_integration_exports(monkeypatch):
         st = await eng.get_system_status()
         return st
 
-    # Standard library imports
-    import asyncio
-
-    st = asyncio.get_event_loop().run_until_complete(_run())
+    st = asyncio.run(_run())
     sm = st.get("session_metrics", {}) if isinstance(st, dict) else {}
     # Style counters exist
     assert "style_contractions" in sm

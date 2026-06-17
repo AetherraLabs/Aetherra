@@ -252,9 +252,13 @@ class AetherraServiceRegistry:
         self._running = False
 
         if self._heartbeat_task:
-            self._heartbeat_task.cancel()
-            with suppress(asyncio.CancelledError):
-                await self._heartbeat_task
+            heartbeat_task = self._heartbeat_task
+            self._heartbeat_task = None
+            task_loop = heartbeat_task.get_loop()
+            if not task_loop.is_closed():
+                heartbeat_task.cancel()
+                with suppress(asyncio.CancelledError):
+                    await heartbeat_task
 
         # Notify all services of shutdown
         await self._broadcast_event("system.shutdown", {})

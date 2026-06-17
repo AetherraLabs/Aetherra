@@ -178,8 +178,7 @@ async def test_storm_metrics_absent_when_disabled(mock_engine_without_storm):
     assert storm.get("enabled") is False
 
     # Build metrics output
-    lines = []
-    metrics_accum.export_prometheus(lines)
+    lines = metrics_accum.build_all_metrics_lines()
     output = "\n".join(lines)
 
     # Verify STORM metrics NOT present
@@ -201,8 +200,7 @@ async def test_storm_metrics_format_valid_prometheus(mock_engine_with_storm):
     await reg.register_service("aetherra_engine", mock_engine_with_storm)
 
     # Build metrics
-    lines = []
-    metrics_accum.export_prometheus(lines)
+    lines = metrics_accum.build_all_metrics_lines()
 
     # Verify format: each line should be "metric_name value" or "metric_name{labels} value"
     storm_lines = [line for line in lines if "aetherra_storm_" in line]
@@ -260,8 +258,7 @@ async def test_storm_metrics_maintenance_last_labels(mock_engine_with_storm):
     await reg.register_service("aetherra_engine", mock_engine_with_storm)
 
     # Build metrics
-    lines = []
-    metrics_accum.export_prometheus(lines)
+    lines = metrics_accum.build_all_metrics_lines()
     output = "\n".join(lines)
 
     # Verify labeled gauge format: aetherra_storm_maintenance_last{action="..."} value
