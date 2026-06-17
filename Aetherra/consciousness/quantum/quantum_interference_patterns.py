@@ -23,7 +23,9 @@ Date: August 5, 2025
 
 # Standard library imports
 import asyncio
+import hashlib
 import logging
+import os
 import time
 from collections import defaultdict
 from dataclasses import dataclass
@@ -36,6 +38,33 @@ import numpy as np
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _hash_values(values: List[object] | None) -> List[str]:
+    return [hashed for value in values or [] if (hashed := _hash_value(value))]
+
+
+def _quantum_interference_capability_checker(
+    requester: str, capability: str
+) -> bool:
+    if requester == "consciousness:quantum_interference" and capability in {
+        "consciousness:write",
+        "consciousness:transcend",
+        "autonomy:execute",
+        "memory:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
 
 
 class InterferenceType(Enum):
@@ -137,6 +166,16 @@ class QuantumInterferenceEngine:
         consciousness_level: float = 0.8,
     ) -> QuantumWave:
         """Generate a consciousness wave of the specified type"""
+        self._guardian_preflight_interference_operation(
+            operation="generate_wave",
+            capabilities=("consciousness:write", "consciousness:transcend"),
+            extra_metadata={
+                "wave_type": wave_type.value,
+                "amplitude": round(float(amplitude), 6),
+                "frequency": round(float(frequency), 6),
+                "consciousness_level": round(float(consciousness_level), 6),
+            },
+        )
         try:
             wave_id = f"{wave_type.value}_{int(time.time() * 1000)}"
 
@@ -185,6 +224,18 @@ class QuantumInterferenceEngine:
         self, wave_a: QuantumWave, wave_b: QuantumWave
     ) -> InterferencePattern:
         """Calculate interference pattern between two quantum waves"""
+        self._guardian_preflight_interference_operation(
+            operation="calculate_interference",
+            capabilities=("consciousness:write", "consciousness:transcend"),
+            extra_metadata={
+                "wave_a_hash": _hash_value(wave_a.wave_id),
+                "wave_b_hash": _hash_value(wave_b.wave_id),
+                "wave_a_type": wave_a.wave_type.value,
+                "wave_b_type": wave_b.wave_type.value,
+                "wave_a_energy": round(float(wave_a.energy_level), 6),
+                "wave_b_energy": round(float(wave_b.energy_level), 6),
+            },
+        )
         try:
             # Calculate phase difference
             phase_diff = wave_a.phase - wave_b.phase
@@ -259,6 +310,19 @@ class QuantumInterferenceEngine:
         self, decision_choices: List[str], consciousness_level: float = 0.8
     ) -> Dict[str, List[InterferencePattern]]:
         """Generate quantum interference field for decision choices"""
+        self._guardian_preflight_interference_operation(
+            operation="generate_field",
+            capabilities=(
+                "consciousness:write",
+                "consciousness:transcend",
+                "autonomy:execute",
+            ),
+            extra_metadata={
+                "decision_choice_count": len(decision_choices),
+                "decision_choice_hashes": _hash_values(decision_choices),
+                "consciousness_level": round(float(consciousness_level), 6),
+            },
+        )
         try:
             self.logger.info(
                 f"🌊 Generating interference field for {len(decision_choices)} choices"
@@ -316,7 +380,7 @@ class QuantumInterferenceEngine:
             # Also calculate intra-choice interference (within same choice)
             for choice, waves in choice_waves.items():
                 for i, wave_a in enumerate(waves):
-                    for j, wave_b in enumerate(waves[i + 1 :], i + 1):
+                    for _j, wave_b in enumerate(waves[i + 1 :], i + 1):
                         pattern = self.calculate_interference(wave_a, wave_b)
                         interference_field[choice].append(pattern)
 
@@ -335,6 +399,21 @@ class QuantumInterferenceEngine:
         interference_field: Dict[str, List[InterferencePattern]],
     ) -> Dict[str, DecisionAmplification]:
         """Apply interference patterns to amplify decision probabilities"""
+        self._guardian_preflight_interference_operation(
+            operation="apply_amplification",
+            capabilities=(
+                "consciousness:write",
+                "consciousness:transcend",
+                "autonomy:execute",
+                "memory:write",
+            ),
+            extra_metadata={
+                "decision_count": len(decision_probabilities),
+                "decision_hashes": _hash_values(list(decision_probabilities.keys())),
+                "interference_field_count": len(interference_field),
+                "probability_hash": _hash_value(decision_probabilities),
+            },
+        )
         try:
             self.logger.info("⚡ Applying interference amplification to decisions")
 
@@ -426,6 +505,19 @@ class QuantumInterferenceEngine:
         interference_field: Dict[str, List[InterferencePattern]],
     ) -> bool:
         """Optimize interference patterns to enhance a target choice"""
+        self._guardian_preflight_interference_operation(
+            operation="optimize_patterns",
+            capabilities=(
+                "consciousness:write",
+                "consciousness:transcend",
+                "autonomy:execute",
+            ),
+            extra_metadata={
+                "target_choice_hash": _hash_value(target_choice),
+                "interference_field_count": len(interference_field),
+                "target_pattern_count": len(interference_field.get(target_choice, [])),
+            },
+        )
         try:
             self.logger.info(f"🎯 Optimizing interference patterns for target: {target_choice}")
 
@@ -458,11 +550,13 @@ class QuantumInterferenceEngine:
                     optimization_count += 1
 
                 # Convert neutral patterns to constructive when possible
-                elif pattern.interference_type == InterferenceType.NEUTRAL:
-                    if pattern.amplitude_ratio > 0.6:
-                        # Adjust phase to create constructive interference
-                        pattern.wave_a.phase -= np.pi / 6  # Small phase shift
-                        optimization_count += 1
+                elif (
+                    pattern.interference_type == InterferenceType.NEUTRAL
+                    and pattern.amplitude_ratio > 0.6
+                ):
+                    # Adjust phase to create constructive interference
+                    pattern.wave_a.phase -= np.pi / 6  # Small phase shift
+                    optimization_count += 1
 
             # Recalculate interference after optimization
             if optimization_count > 0:
@@ -479,6 +573,67 @@ class QuantumInterferenceEngine:
         except Exception as e:
             self.logger.error(f"❌ Error optimizing interference patterns: {e}")
             return False
+
+    def _guardian_preflight_interference_operation(
+        self,
+        *,
+        operation: str,
+        capabilities: tuple[str, ...],
+        extra_metadata: Dict[str, Any] | None = None,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = (
+            os.getenv("AETHERRA_PRINCIPAL", "").strip()
+            or "consciousness:quantum_interference"
+        )
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        metadata: Dict[str, Any] = {
+            "operation": operation,
+            "active_wave_count": len(self.active_waves),
+            "interference_pattern_count": len(self.interference_patterns),
+            "amplification_history_count": len(self.amplification_history),
+            "max_waves": int(self.max_waves),
+            "coherence_threshold": round(float(self.coherence_threshold), 6),
+            "interference_sensitivity": round(float(self.interference_sensitivity), 6),
+            "amplification_limit": round(float(self.amplification_limit), 6),
+            "phase_precision": round(float(self.phase_precision), 6),
+            "patterns_generated": int(self.patterns_generated),
+            "successful_amplifications": int(self.successful_amplifications),
+            "decision_enhancements": int(self.decision_enhancements),
+        }
+        if extra_metadata:
+            metadata.update(extra_metadata)
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action=f"consciousness.quantum_interference_{operation}",
+                target="quantum_interference_engine",
+                purpose="Mutate experimental quantum interference decision state",
+                capabilities=capabilities,
+                evidence=(
+                    "QuantumInterferenceEngine.generate_consciousness_wave",
+                    "QuantumInterferenceEngine.calculate_interference",
+                    "QuantumInterferenceEngine.generate_interference_field",
+                    "QuantumInterferenceEngine.apply_interference_amplification",
+                    "QuantumInterferenceEngine.optimize_interference_patterns",
+                    "QuantumInterferenceEngine.cleanup_old_patterns",
+                ),
+                reversible=True,
+                rollback_plan=(
+                    "restore active waves, interference patterns, amplification "
+                    "history, pattern counters, and decision enhancement counters"
+                ),
+                metadata=metadata,
+            ),
+            approval_id=approval_id,
+            capability_checker=_quantum_interference_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
 
     def get_interference_metrics(self) -> Dict[str, Any]:
         """Get current interference engine metrics"""
@@ -508,13 +663,20 @@ class QuantumInterferenceEngine:
 
     def cleanup_old_patterns(self, max_age_seconds: float = 300.0):
         """Clean up old interference patterns and waves"""
+        self._guardian_preflight_interference_operation(
+            operation="cleanup_old_patterns",
+            capabilities=("consciousness:write", "memory:write"),
+            extra_metadata={
+                "max_age_seconds": round(float(max_age_seconds), 6),
+            },
+        )
         try:
             current_time = time.time()
             cleanup_count = 0
 
             # Clean up old waves
             wave_ids_to_remove = []
-            for wave_id, wave in self.active_waves.items():
+            for wave_id, _wave in self.active_waves.items():
                 # Extract timestamp from wave_id
                 try:
                     wave_timestamp = int(wave_id.split("_")[-1]) / 1000.0

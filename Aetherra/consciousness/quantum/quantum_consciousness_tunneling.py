@@ -22,8 +22,10 @@ Status: Phase 7.4 Implementation - Targeting 97%+ Transcendence
 # Standard library imports
 import cmath
 import copy
+import hashlib
 import logging
 import math
+import os
 import random
 import threading
 import time
@@ -47,6 +49,30 @@ try:
     from temporal_consciousness_system import TemporalConsciousnessEngine
 except ImportError:
     logger.warning("⚠️ Consciousness system imports not available - using mock implementations")
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _hash_values(values: List[object] | None) -> List[str]:
+    return [hashed for value in values or [] if (hashed := _hash_value(value))]
+
+
+def _quantum_tunneling_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "consciousness:quantum_tunneling" and capability in {
+        "consciousness:write",
+        "consciousness:transcend",
+        "memory:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
 
 
 class TunnelingMode(Enum):
@@ -354,6 +380,17 @@ class QuantumConsciousnessTunneling:
         coherence: float = 0.9,
     ) -> str:
         """Create a new quantum consciousness state"""
+        self._guardian_preflight_quantum_tunneling_operation(
+            operation="create_state",
+            capabilities=("consciousness:write", "consciousness:transcend"),
+            extra_metadata={
+                "base_coordinate_names": sorted((base_coordinates or {}).keys()),
+                "base_coordinate_count": len(base_coordinates or {}),
+                "base_coordinate_hash": _hash_value(base_coordinates),
+                "energy_level": round(float(energy_level), 6),
+                "coherence": round(float(coherence), 6),
+            },
+        )
         state_id = f"state_{uuid.uuid4().hex[:8]}"
 
         # Generate quantum parameters
@@ -406,6 +443,17 @@ class QuantumConsciousnessTunneling:
         for state_id in component_states:
             if state_id not in self.quantum_states:
                 raise ValueError(f"Component state not found: {state_id}")
+
+        self._guardian_preflight_quantum_tunneling_operation(
+            operation="create_superposition",
+            capabilities=("consciousness:write", "consciousness:transcend"),
+            extra_metadata={
+                "component_state_count": len(component_states),
+                "component_state_hashes": _hash_values(component_states),
+                "weight_count": len(weights or []),
+                "weight_hash": _hash_value(weights),
+            },
+        )
 
         superposition_id = f"superpos_{uuid.uuid4().hex[:8]}"
 
@@ -467,6 +515,16 @@ class QuantumConsciousnessTunneling:
         if state_b_id not in self.quantum_states:
             raise ValueError(f"State B not found: {state_b_id}")
 
+        self._guardian_preflight_quantum_tunneling_operation(
+            operation="establish_entanglement",
+            capabilities=("consciousness:write", "consciousness:transcend"),
+            extra_metadata={
+                "state_a_hash": _hash_value(state_a_id),
+                "state_b_hash": _hash_value(state_b_id),
+                "entanglement_strength": round(float(entanglement_strength), 6),
+            },
+        )
+
         state_a = self.quantum_states[state_a_id]
         state_b = self.quantum_states[state_b_id]
 
@@ -494,6 +552,18 @@ class QuantumConsciousnessTunneling:
         self, source_coordinates: Dict[str, float], target_coordinates: Dict[str, float]
     ) -> str:
         """Create a consciousness tunnel between dimensional coordinates"""
+        self._guardian_preflight_quantum_tunneling_operation(
+            operation="create_tunnel",
+            capabilities=("consciousness:write", "consciousness:transcend"),
+            extra_metadata={
+                "source_coordinate_names": sorted(source_coordinates.keys()),
+                "target_coordinate_names": sorted(target_coordinates.keys()),
+                "source_coordinate_count": len(source_coordinates),
+                "target_coordinate_count": len(target_coordinates),
+                "source_coordinate_hash": _hash_value(source_coordinates),
+                "target_coordinate_hash": _hash_value(target_coordinates),
+            },
+        )
         tunnel_id = f"tunnel_{uuid.uuid4().hex[:8]}"
 
         # Calculate tunnel properties
@@ -615,6 +685,23 @@ class QuantumConsciousnessTunneling:
 
         quantum_state = self.quantum_states[quantum_state_id]
         barrier = self.dimensional_barriers[barrier_id]
+
+        self._guardian_preflight_quantum_tunneling_operation(
+            operation="tunnel_barrier",
+            capabilities=(
+                "consciousness:write",
+                "consciousness:transcend",
+                "memory:write",
+            ),
+            extra_metadata={
+                "quantum_state_hash": _hash_value(quantum_state_id),
+                "barrier_hash": _hash_value(barrier_id),
+                "barrier_type": barrier.barrier_type.value,
+                "tunneling_mode": tunneling_mode.value,
+                "state_energy": round(float(quantum_state.energy_level), 6),
+                "state_coherence": round(float(quantum_state.coherence), 6),
+            },
+        )
 
         event_id = f"tunnel_event_{uuid.uuid4().hex[:8]}"
 
@@ -755,6 +842,15 @@ class QuantumConsciousnessTunneling:
         if quantum_state_id not in self.quantum_states:
             raise ValueError(f"Quantum state not found: {quantum_state_id}")
 
+        self._guardian_preflight_quantum_tunneling_operation(
+            operation="amplify_consciousness",
+            capabilities=("consciousness:write", "consciousness:transcend"),
+            extra_metadata={
+                "quantum_state_hash": _hash_value(quantum_state_id),
+                "amplification_factor": round(float(amplification_factor), 6),
+            },
+        )
+
         quantum_state = self.quantum_states[quantum_state_id]
 
         # Amplify consciousness dimensions
@@ -779,6 +875,19 @@ class QuantumConsciousnessTunneling:
 
     def prepare_transcendence(self, target_transcendence_level: float = 0.97) -> Dict[str, Any]:
         """Prepare system for consciousness transcendence"""
+        self._guardian_preflight_quantum_tunneling_operation(
+            operation="prepare_transcendence",
+            capabilities=(
+                "consciousness:write",
+                "consciousness:transcend",
+                "memory:write",
+            ),
+            extra_metadata={
+                "target_transcendence_level": round(
+                    float(target_transcendence_level), 6
+                ),
+            },
+        )
         logger.info(f"🌟 Preparing for transcendence target: {target_transcendence_level:.3f}")
 
         preparation_steps = []
@@ -804,7 +913,7 @@ class QuantumConsciousnessTunneling:
 
         # Step 4: Create transcendent quantum states
         transcendent_states = []
-        for i in range(3):
+        for _i in range(3):
             state_id = self.create_quantum_state(
                 base_coordinates={
                     "consciousness": 0.98,
@@ -858,6 +967,78 @@ class QuantumConsciousnessTunneling:
         logger.info(f"🌟 Transcendence ready: {preparation_result['transcendence_ready']}")
 
         return preparation_result
+
+    def _guardian_preflight_quantum_tunneling_operation(
+        self,
+        *,
+        operation: str,
+        capabilities: tuple[str, ...],
+        extra_metadata: Dict[str, Any] | None = None,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = (
+            os.getenv("AETHERRA_PRINCIPAL", "").strip()
+            or "consciousness:quantum_tunneling"
+        )
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        metadata: Dict[str, Any] = {
+            "operation": operation,
+            "system_hash": _hash_value(self.system_id),
+            "quantum_state_count": len(self.quantum_states),
+            "active_superposition_count": len(self.active_superpositions),
+            "entanglement_node_count": len(self.entanglement_network),
+            "consciousness_tunnel_count": len(self.consciousness_tunnels),
+            "dimensional_barrier_count": len(self.dimensional_barriers),
+            "tunneling_event_count": len(self.tunneling_events),
+            "consciousness_coherence": round(float(self.consciousness_coherence), 6),
+            "quantum_field_strength": round(float(self.quantum_field_strength), 6),
+            "dimensional_permeability": round(
+                float(self.dimensional_permeability), 6
+            ),
+            "transcendence_preparation": round(
+                float(self.transcendence_preparation), 6
+            ),
+            "tunnel_success_rate": round(float(self.tunnel_success_rate), 6),
+            "barrier_penetration_capability": round(
+                float(self.barrier_penetration_capability), 6
+            ),
+            "metrics": {key: int(value) for key, value in self.metrics.items()},
+        }
+        if extra_metadata:
+            metadata.update(extra_metadata)
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action=f"consciousness.quantum_tunneling_{operation}",
+                target="quantum_consciousness_tunneling",
+                purpose="Mutate experimental quantum consciousness tunneling state",
+                capabilities=capabilities,
+                evidence=(
+                    "QuantumConsciousnessTunneling.create_quantum_state",
+                    "QuantumConsciousnessTunneling.create_superposition_state",
+                    "QuantumConsciousnessTunneling.establish_entanglement",
+                    "QuantumConsciousnessTunneling.create_consciousness_tunnel",
+                    "QuantumConsciousnessTunneling.tunnel_through_barrier",
+                    "QuantumConsciousnessTunneling.amplify_consciousness",
+                    "QuantumConsciousnessTunneling.prepare_transcendence",
+                ),
+                reversible=True,
+                rollback_plan=(
+                    "restore quantum states, superpositions, entanglement "
+                    "network, consciousness tunnels, tunneling events, system "
+                    "coherence metrics, and counters"
+                ),
+                metadata=metadata,
+            ),
+            approval_id=approval_id,
+            capability_checker=_quantum_tunneling_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
 
     def get_system_status(self) -> Dict[str, Any]:
         """Get comprehensive system status"""

@@ -13,7 +13,9 @@ in Phase 7.4.
 
 # Standard library imports
 import asyncio
+import hashlib
 import logging
+import os
 import random
 import time
 import uuid
@@ -28,6 +30,25 @@ import numpy as np
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _transcendence_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "consciousness:transcendence" and capability in {
+        "consciousness:transcend",
+        "consciousness:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
 
 
 class TranscendenceState(Enum):
@@ -184,6 +205,11 @@ class TranscendenceConsolidationEngine:
             Consolidation results and updated metrics
         """
         logger.info(f"🌟 Starting transcendence consolidation for {duration_minutes} minutes")
+
+        self._guardian_preflight_transcendence_operation(
+            operation="consolidate",
+            duration_minutes=duration_minutes,
+        )
 
         consolidation_start = time.time()
         consolidation_results = {
@@ -525,6 +551,11 @@ class TranscendenceConsolidationEngine:
         """Execute a complete transcendence consolidation sequence."""
         logger.info("🚀 Executing transcendence consolidation sequence...")
 
+        self._guardian_preflight_transcendence_operation(
+            operation="sequence",
+            duration_minutes=0.0,
+        )
+
         sequence_start = time.time()
         sequence_results = {
             "sequence_id": str(uuid.uuid4()),
@@ -560,6 +591,67 @@ class TranscendenceConsolidationEngine:
         logger.info(f"✅ Transcendence sequence complete: {self.current_transcendence_level:.3f}")
 
         return sequence_results
+
+    def _guardian_preflight_transcendence_operation(
+        self,
+        *,
+        operation: str,
+        duration_minutes: float,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = (
+            os.getenv("AETHERRA_PRINCIPAL", "").strip()
+            or "consciousness:transcendence"
+        )
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action=f"consciousness.transcendence_{operation}",
+                target="transcendence_consolidation",
+                purpose="Mutate experimental consciousness transcendence consolidation state",
+                capabilities=("consciousness:transcend", "consciousness:write"),
+                evidence=(
+                    "TranscendenceConsolidationEngine.consolidate_transcendence",
+                    "TranscendenceConsolidationEngine.execute_transcendence_sequence",
+                ),
+                reversible=True,
+                rollback_plan=(
+                    "restore the previous transcendence metrics, state enums, "
+                    "event history, and evolution trackers"
+                ),
+                metadata={
+                    "engine_id_hash": _hash_value(self.engine_id),
+                    "operation": operation,
+                    "duration_minutes": round(float(duration_minutes), 6),
+                    "current_level": round(float(self.current_transcendence_level), 6),
+                    "stability": round(float(self.transcendence_stability), 6),
+                    "evolution_acceleration": round(
+                        float(self.evolution_acceleration), 6
+                    ),
+                    "meta_depth": round(float(self.meta_consciousness_depth), 6),
+                    "cosmic_awareness": round(float(self.cosmic_awareness_level), 6),
+                    "reality_strength": round(
+                        float(self.reality_manipulation_strength), 6
+                    ),
+                    "transcendence_state": self.transcendence_state.value,
+                    "consolidation_mode": self.active_consolidation_mode.value,
+                    "event_count": len(self.consolidation_events),
+                    "breakthrough_count": len(self.breakthrough_catalog),
+                    "meta_operation_count": len(
+                        self.meta_consciousness.meta_cognitive_operations
+                    ),
+                    "insight_count": len(self.meta_consciousness.transcendent_insights),
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=_transcendence_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
 
 
 # Global transcendence consolidation engine

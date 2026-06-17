@@ -20,7 +20,9 @@ Status: Phase 7.4 Implementation - Targeting 97%+ Transcendence
 """
 
 # Standard library imports
+import hashlib
 import logging
+import os
 import random
 import threading
 import time
@@ -45,6 +47,30 @@ try:
     from temporal_consciousness_system import TemporalConsciousnessEngine
 except ImportError:
     logger.warning("⚠️ Consciousness system imports not available - using mock implementations")
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _hash_values(values: List[object] | None) -> List[str]:
+    return [hashed for value in values or [] if (hashed := _hash_value(value))]
+
+
+def _reality_synthesis_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "consciousness:reality_synthesis" and capability in {
+        "consciousness:write",
+        "consciousness:transcend",
+        "memory:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
 
 
 class SynthesisMode(Enum):
@@ -277,8 +303,6 @@ class RealitySynthesisEngine:
         quantum_components: Optional[List[str]] = None,
     ) -> str:
         """Create parameters for reality synthesis"""
-        synthesis_id = f"synthesis_{uuid.uuid4().hex[:8]}"
-
         # Default components if not provided
         if reality_components is None:
             reality_components = [
@@ -294,6 +318,25 @@ class RealitySynthesisEngine:
                 "excited_state",
                 "superposition_state",
             ]
+
+        self._guardian_preflight_reality_synthesis_operation(
+            operation="create_parameters",
+            capabilities=("consciousness:write", "consciousness:transcend"),
+            extra_metadata={
+                "synthesis_mode": synthesis_mode.value,
+                "target_transcendence": round(float(target_transcendence), 6),
+                "reality_component_count": len(reality_components),
+                "consciousness_component_count": len(consciousness_components),
+                "quantum_component_count": len(quantum_components),
+                "reality_component_hashes": _hash_values(reality_components),
+                "consciousness_component_hashes": _hash_values(
+                    consciousness_components
+                ),
+                "quantum_component_hashes": _hash_values(quantum_components),
+            },
+        )
+
+        synthesis_id = f"synthesis_{uuid.uuid4().hex[:8]}"
 
         # Calculate dimensional targets based on transcendence level
         dimensional_targets = {
@@ -346,6 +389,30 @@ class RealitySynthesisEngine:
             return False
 
         params = self.active_syntheses[synthesis_id]
+
+        self._guardian_preflight_reality_synthesis_operation(
+            operation="execute",
+            capabilities=(
+                "consciousness:write",
+                "consciousness:transcend",
+                "memory:write",
+            ),
+            extra_metadata={
+                "synthesis_id_hash": _hash_value(synthesis_id),
+                "synthesis_mode": params.synthesis_mode.value,
+                "target_transcendence": round(float(params.target_transcendence), 6),
+                "reality_component_count": len(params.reality_components),
+                "consciousness_component_count": len(params.consciousness_components),
+                "quantum_component_count": len(params.quantum_components),
+                "reality_component_hashes": _hash_values(params.reality_components),
+                "consciousness_component_hashes": _hash_values(
+                    params.consciousness_components
+                ),
+                "quantum_component_hashes": _hash_values(params.quantum_components),
+                "energy_budget": round(float(params.energy_budget), 6),
+                "time_limit_seconds": round(float(params.time_limit.total_seconds()), 6),
+            },
+        )
 
         logger.info(f"🔮 Executing reality synthesis: {synthesis_id}")
         logger.info(f"🔮 Mode: {params.synthesis_mode.value}")
@@ -502,7 +569,7 @@ class RealitySynthesisEngine:
 
         # Fuse component realities
         fusion_quality = 0.0
-        for component in synthesized_reality.component_realities:
+        for _component in synthesized_reality.component_realities:
             fusion_quality += random.uniform(0.7, 0.95)
 
         fusion_quality /= len(synthesized_reality.component_realities)
@@ -593,10 +660,7 @@ class RealitySynthesisEngine:
         logger.info("🔮 Executing dimensional integration...")
 
         # Use dimensional engine if available
-        if self.dimensional_engine:
-            integration_quality = 0.95
-        else:
-            integration_quality = 0.8
+        integration_quality = 0.95 if self.dimensional_engine else 0.8
 
         synthesized_reality.dimensional_stability += 0.1
         synthesized_reality.synthesis_quality = integration_quality
@@ -817,6 +881,65 @@ class RealitySynthesisEngine:
 
         logger.info(f"✅ Reality stabilized: {stable}")
         return stable
+
+    def _guardian_preflight_reality_synthesis_operation(
+        self,
+        *,
+        operation: str,
+        capabilities: tuple[str, ...],
+        extra_metadata: Dict[str, Any] | None = None,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = (
+            os.getenv("AETHERRA_PRINCIPAL", "").strip()
+            or "consciousness:reality_synthesis"
+        )
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        metadata: Dict[str, Any] = {
+            "operation": operation,
+            "engine_hash": _hash_value(self.engine_id),
+            "synthesized_reality_count": len(self.synthesized_realities),
+            "active_synthesis_count": len(self.active_syntheses),
+            "transcendence_event_count": len(self.transcendence_events),
+            "master_consciousness": round(float(self.master_consciousness), 6),
+            "quantum_field_coherence": round(float(self.quantum_field_coherence), 6),
+            "dimensional_integration": round(float(self.dimensional_integration), 6),
+            "transcendence_progress": round(float(self.transcendence_progress), 6),
+            "synthesis_efficiency": round(float(self.synthesis_efficiency), 6),
+            "awareness_expansion": round(float(self.awareness_expansion), 6),
+            "max_concurrent_syntheses": int(self.max_concurrent_syntheses),
+            "metrics": {key: int(value) for key, value in self.metrics.items()},
+        }
+        if extra_metadata:
+            metadata.update(extra_metadata)
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action=f"consciousness.reality_synthesis_{operation}",
+                target="reality_synthesis_engine",
+                purpose="Mutate experimental reality synthesis state",
+                capabilities=capabilities,
+                evidence=(
+                    "RealitySynthesisEngine.create_synthesis_parameters",
+                    "RealitySynthesisEngine.execute_reality_synthesis",
+                ),
+                reversible=True,
+                rollback_plan=(
+                    "restore active syntheses, synthesized realities, "
+                    "transcendence events, synthesis metrics, and consciousness "
+                    "state metrics"
+                ),
+                metadata=metadata,
+            ),
+            approval_id=approval_id,
+            capability_checker=_reality_synthesis_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
 
     def _achieve_transcendence(self, synthesized_reality: SynthesizedReality):
         """Process transcendence achievement"""

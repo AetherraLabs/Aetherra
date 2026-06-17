@@ -27,6 +27,7 @@ import asyncio
 import hashlib
 import json
 import logging
+import os
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -39,6 +40,26 @@ import numpy as np
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _quantum_memory_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "consciousness:quantum_memory" and capability in {
+        "consciousness:write",
+        "memory:read",
+        "memory:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
 
 
 class MemoryState(Enum):
@@ -158,6 +179,18 @@ class QuantumMemorySystem:
     ) -> str:
         """Store a new quantum memory"""
         try:
+            self._guardian_preflight_quantum_memory_operation(
+                operation="store",
+                capabilities=("consciousness:write", "memory:write"),
+                extra_metadata={
+                    "memory_type": memory_type.value,
+                    "content_hash": _hash_value(content),
+                    "content_field_names": sorted(str(key) for key in content),
+                    "content_field_count": len(content),
+                    "content_size": len(json.dumps(content, sort_keys=True, default=str)),
+                    "consciousness_level": round(float(consciousness_level), 6),
+                },
+            )
             memory_id = self.generate_memory_id(content)
 
             # Calculate initial quantum state
@@ -197,6 +230,8 @@ class QuantumMemorySystem:
 
             return memory_id
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Failed to store quantum memory: {e}")
             raise
@@ -212,6 +247,14 @@ class QuantumMemorySystem:
                 self.logger.warning(f"Memory {memory_id} not found")
                 return None
 
+            self._guardian_preflight_quantum_memory_operation(
+                operation="retrieve",
+                capabilities=("consciousness:write", "memory:read", "memory:write"),
+                extra_metadata={
+                    "memory_hash": _hash_value(memory_id),
+                    "consciousness_context": round(float(consciousness_context), 6),
+                },
+            )
             memory = self.memory_traces[memory_id]
 
             # Update access statistics
@@ -255,6 +298,8 @@ class QuantumMemorySystem:
 
             return memory
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Failed to retrieve memory {memory_id}: {e}")
             return None
@@ -268,6 +313,16 @@ class QuantumMemorySystem:
                 self.logger.warning("Cannot entangle: one or both memories not found")
                 return None
 
+            self._guardian_preflight_quantum_memory_operation(
+                operation="entangle",
+                capabilities=("consciousness:write", "memory:write"),
+                extra_metadata={
+                    "memory_a_hash": _hash_value(memory_a_id),
+                    "memory_b_hash": _hash_value(memory_b_id),
+                    "entanglement_type_hash": _hash_value(entanglement_type),
+                    "entanglement_type_length": len(entanglement_type),
+                },
+            )
             memory_a = self.memory_traces[memory_a_id]
             memory_b = self.memory_traces[memory_b_id]
 
@@ -318,6 +373,8 @@ class QuantumMemorySystem:
 
             return entanglement_id
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Failed to create entanglement: {e}")
             return None
@@ -330,11 +387,22 @@ class QuantumMemorySystem:
     ) -> List[QuantumMemoryTrace]:
         """Search memories using quantum coherence matching"""
         try:
+            self._guardian_preflight_quantum_memory_operation(
+                operation="search",
+                capabilities=("consciousness:write", "memory:read"),
+                extra_metadata={
+                    "query_hash": _hash_value(query),
+                    "query_field_names": sorted(str(key) for key in query),
+                    "query_field_count": len(query),
+                    "consciousness_level": round(float(consciousness_level), 6),
+                    "max_results": int(max_results),
+                },
+            )
             self.logger.info("🔍 Quantum memory search initiated")
 
             search_results = []
 
-            for memory_id, memory in self.memory_traces.items():
+            for memory in self.memory_traces.values():
                 # Calculate quantum resonance with query
                 content_match = self._calculate_content_similarity(query, memory.content)
                 consciousness_match = 1.0 - abs(consciousness_level - memory.consciousness_level)
@@ -365,6 +433,8 @@ class QuantumMemorySystem:
 
             return results
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Quantum memory search failed: {e}")
             return []
@@ -376,7 +446,7 @@ class QuantumMemorySystem:
             coherent_memories = []
 
             # Find memories within time window
-            for memory_id, memory in self.memory_traces.items():
+            for memory in self.memory_traces.values():
                 time_diff = current_time - memory.creation_time
                 if time_diff <= time_window:
                     coherent_memories.append(memory)
@@ -425,6 +495,63 @@ class QuantumMemorySystem:
             self.logger.error(f"❌ Temporal coherence analysis failed: {e}")
             return {}
 
+    def _guardian_preflight_quantum_memory_operation(
+        self,
+        *,
+        operation: str,
+        capabilities: tuple[str, ...],
+        extra_metadata: Dict[str, Any] | None = None,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = (
+            os.getenv("AETHERRA_PRINCIPAL", "").strip()
+            or "consciousness:quantum_memory"
+        )
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        metadata: Dict[str, Any] = {
+            "operation": operation,
+            "memory_count": len(self.memory_traces),
+            "entanglement_count": len(self.entanglements),
+            "temporal_cluster_count": len(self.temporal_clusters),
+            "memories_stored": int(self.memories_stored),
+            "memory_retrievals": int(self.memory_retrievals),
+            "evolution_events": int(self.evolution_events),
+            "avg_retrieval_time": round(float(self.avg_retrieval_time), 6),
+            "memory_coherence_avg": round(float(self.memory_coherence_avg), 6),
+            "entanglement_stability": round(float(self.entanglement_stability), 6),
+        }
+        if extra_metadata:
+            metadata.update(extra_metadata)
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action=f"consciousness.quantum_memory_{operation}",
+                target="quantum_memory_system",
+                purpose="Read or mutate experimental quantum memory state",
+                capabilities=capabilities,
+                evidence=(
+                    "QuantumMemorySystem.store_quantum_memory",
+                    "QuantumMemorySystem.retrieve_quantum_memory",
+                    "QuantumMemorySystem.create_memory_entanglement",
+                    "QuantumMemorySystem.quantum_memory_search",
+                ),
+                reversible=True,
+                rollback_plan=(
+                    "restore previous memory traces, entanglements, temporal "
+                    "clusters, access counters, evolution history, and metrics"
+                ),
+                metadata=metadata,
+            ),
+            approval_id=approval_id,
+            capability_checker=_quantum_memory_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
+
     async def _check_automatic_entanglements(self, new_memory_id: str):
         """Check for automatic entanglement opportunities"""
         try:
@@ -442,7 +569,7 @@ class QuantumMemorySystem:
 
             # Create entanglements with top candidates
             entanglement_candidates.sort(key=lambda x: x[1], reverse=True)
-            for memory_id, similarity in entanglement_candidates[:3]:  # Top 3 candidates
+            for memory_id, _similarity in entanglement_candidates[:3]:  # Top 3 candidates
                 await self.create_memory_entanglement(new_memory_id, memory_id, "automatic")
 
         except Exception as e:

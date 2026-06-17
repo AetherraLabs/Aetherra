@@ -12,6 +12,7 @@ No simulation, no fabrication—only actual awareness state.
 from __future__ import annotations
 
 import json
+import os
 import time
 from typing import TYPE_CHECKING, Any, Callable, List, Optional
 
@@ -76,7 +77,14 @@ class ThinkStream:
                 import requests
 
                 # Fire-and-forget POST (don't wait for response)
-                response = requests.post(self._hub_api_url, json=state, timeout=1.0)
+                token = (os.environ.get("AETHERRA_HUB_CONTROL_TOKEN") or "").strip()
+                headers = {"X-Aetherra-Control-Token": token} if token else None
+                response = requests.post(
+                    self._hub_api_url,
+                    json=state,
+                    headers=headers,
+                    timeout=1.0,
+                )
                 if config.DEBUG_CONSCIOUSNESS and response.status_code != 200:
                     print(f"[ThinkStream] Hub API returned {response.status_code}")
             except ImportError:

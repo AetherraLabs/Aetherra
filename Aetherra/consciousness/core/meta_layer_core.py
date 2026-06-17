@@ -22,7 +22,10 @@ Date: August 4, 2025
 # Standard library imports
 import asyncio
 import contextlib
+import hashlib
+import json
 import logging
+import os
 import uuid
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -35,6 +38,76 @@ from ..core.consciousness_bridge import (
     ConsciousnessMessage,
     get_consciousness_bridge,
 )
+
+
+def _hash_value(value: Any) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _hash_json(value: Any) -> str | None:
+    try:
+        raw = json.dumps(value, sort_keys=True, default=str)
+    except TypeError:
+        raw = repr(value)
+    return _hash_value(raw)
+
+
+def _guardian_requester() -> str:
+    return (
+        os.environ.get("AETHERRA_PRINCIPAL", "").strip()
+        or "consciousness:meta_layer_core"
+    )
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "consciousness:meta_layer_core" and capability in {
+        "agent:control",
+        "agent:execute_task",
+        "agent:register",
+        "consciousness:write",
+        "memory:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _guardian_preflight_meta_layer_operation(
+    *,
+    action: str,
+    target: str,
+    purpose: str,
+    capabilities: tuple[str, ...],
+    metadata: Dict[str, Any],
+    rollback_plan: str,
+) -> None:
+    from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+    decision = evaluate_intent(
+        IntentDeclaration(
+            requester=_guardian_requester(),
+            subsystem="consciousness",
+            action=action,
+            target=target,
+            purpose=purpose,
+            capabilities=capabilities,
+            evidence=("MetaLayerCore", action),
+            reversible=True,
+            rollback_plan=rollback_plan,
+            metadata=metadata,
+        ),
+        capability_checker=_guardian_capability_checker,
+    )
+    if decision.status not in {
+        GuardianStatus.ALLOW,
+        GuardianStatus.ALLOW_LIMITED,
+    }:
+        raise PermissionError(f"guardian_denied:{decision.reason}:{action}")
 
 
 class AgentState(Enum):
@@ -322,6 +395,8 @@ class MetaLayerCore:
                 elif task.status == "assigned":
                     await self._monitor_task_progress(task)
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"Error processing pending tasks: {e}")
 
@@ -339,6 +414,36 @@ class MetaLayerCore:
             num_agents = min(len(suitable_agents), self.config["max_agents_per_task"])
             selected_agents = suitable_agents[:num_agents]
 
+            _guardian_preflight_meta_layer_operation(
+                action="consciousness.meta_layer_assign_task",
+                target=f"consciousness_task:{_hash_value(task.task_id)}",
+                purpose="Assign a consciousness meta-layer task to selected agents",
+                capabilities=(
+                    "consciousness:write",
+                    "agent:execute_task",
+                    "agent:control",
+                    "memory:write",
+                ),
+                rollback_plan="restore the previous task status and assigned-agent list",
+                metadata={
+                    "operation": "assign_task_to_agents",
+                    "task_id_hash": _hash_value(task.task_id),
+                    "task_type": task.task_type,
+                    "description_hash": _hash_value(task.description),
+                    "priority": task.priority,
+                    "required_capability_count": len(task.required_capabilities),
+                    "required_capability_hashes": tuple(
+                        _hash_value(capability) for capability in task.required_capabilities
+                    ),
+                    "selected_agent_count": len(selected_agents),
+                    "selected_agent_hashes": tuple(
+                        _hash_value(agent.agent_id) for agent in selected_agents
+                    ),
+                    "suitable_agent_count": len(suitable_agents),
+                    "previous_status": task.status,
+                },
+            )
+
             # Assign task
             task.assigned_agents = [agent.agent_id for agent in selected_agents]
             task.status = "assigned"
@@ -349,6 +454,8 @@ class MetaLayerCore:
 
             self.logger.info(f"Task {task.task_id} assigned to {len(selected_agents)} agents")
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"Error assigning task {task.task_id}: {e}")
 
@@ -429,7 +536,6 @@ class MetaLayerCore:
             # Check for timeout
             if task.deadline and datetime.now() > task.deadline:
                 self.logger.warning(f"Task {task.task_id} exceeded deadline")
-                task.status = "failed"
                 await self._handle_task_failure(task, "deadline_exceeded")
                 return
 
@@ -438,15 +544,44 @@ class MetaLayerCore:
                 time_running = (datetime.now() - task.created_at).total_seconds()
                 if time_running > self.config["task_timeout"]:
                     self.logger.warning(f"Task {task.task_id} exceeded maximum runtime")
-                    task.status = "failed"
                     await self._handle_task_failure(task, "timeout")
                     return
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"Error monitoring task {task.task_id}: {e}")
 
     async def _handle_task_failure(self, task: ConsciousnessTask, reason: str):
         """Handle task failure"""
+        _guardian_preflight_meta_layer_operation(
+            action="consciousness.meta_layer_handle_task_failure",
+            target=f"consciousness_task:{_hash_value(task.task_id)}",
+            purpose="Apply consciousness meta-layer task failure bookkeeping",
+            capabilities=(
+                "consciousness:write",
+                "agent:control",
+                "memory:write",
+            ),
+            rollback_plan="restore agent success statistics and return the task to active tasks",
+            metadata={
+                "operation": "handle_task_failure",
+                "task_id_hash": _hash_value(task.task_id),
+                "task_type": task.task_type,
+                "description_hash": _hash_value(task.description),
+                "failure_reason_hash": _hash_value(reason),
+                "previous_status": task.status,
+                "assigned_agent_count": len(task.assigned_agents),
+                "assigned_agent_hashes": tuple(
+                    _hash_value(agent_id) for agent_id in task.assigned_agents
+                ),
+                "active_task_count": len(self.active_tasks),
+                "completed_task_count": len(self.completed_tasks),
+                "known_assigned_agent_count": sum(
+                    1 for agent_id in task.assigned_agents if agent_id in self.agents
+                ),
+            },
+        )
         self.logger.warning(f"Task {task.task_id} failed: {reason}")
 
         # Update agent failure statistics
@@ -459,6 +594,7 @@ class MetaLayerCore:
                 agent.total_tasks_completed = total_tasks
 
         # Move to completed tasks
+        task.status = "failed"
         self.completed_tasks.append(task)
         del self.active_tasks[task.task_id]
 
@@ -503,12 +639,35 @@ class MetaLayerCore:
                     },
                 }
 
+                _guardian_preflight_meta_layer_operation(
+                    action="consciousness.meta_layer_record_emergence",
+                    target="consciousness:meta_layer_emergence",
+                    purpose="Record detected emergent behavior in the consciousness meta-layer",
+                    capabilities=("consciousness:write", "memory:write"),
+                    rollback_plan="remove the emergent-behavior record and decrement the metric",
+                    metadata={
+                        "operation": "record_emergent_behavior",
+                        "behavior_type": behavior["type"],
+                        "emergence_score": round(float(emergence_score), 6),
+                        "participating_agent_count": len(self.agents),
+                        "participating_agent_hashes": tuple(
+                            _hash_value(agent_id) for agent_id in self.agents
+                        ),
+                        "interaction_score": round(float(interaction_patterns), 6),
+                        "consciousness_score": round(float(consciousness_coherence), 6),
+                        "problem_solving_score": round(float(problem_solving_patterns), 6),
+                        "existing_behavior_count": len(self.emergent_behaviors),
+                        "metric_count": self.collective_metrics.emergent_behaviors_detected,
+                    },
+                )
                 self.emergent_behaviors.append(behavior)
                 self.collective_metrics.emergent_behaviors_detected += 1
 
                 await self._emit_event("emergent_behavior_detected", behavior)
                 self.logger.info(f"Emergent behavior detected with score {emergence_score:.3f}")
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"Error detecting emergent behaviors: {e}")
 
@@ -685,6 +844,8 @@ class MetaLayerCore:
             for agent1, agent2, synergy in optimization_suggestions[:5]:  # Top 5 suggestions
                 await self._suggest_agent_connection(agent1, agent2, synergy)
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"Error optimizing agent network: {e}")
 
@@ -720,6 +881,23 @@ class MetaLayerCore:
         self, agent1: AgentProfile, agent2: AgentProfile, synergy: float
     ):
         """Suggest a connection between two agents"""
+        _guardian_preflight_meta_layer_operation(
+            action="consciousness.meta_layer_suggest_agent_connection",
+            target=f"consciousness_agent_pair:{_hash_value((agent1.agent_id, agent2.agent_id))}",
+            purpose="Mutate consciousness meta-layer agent connection graph",
+            capabilities=("consciousness:write", "agent:control", "memory:write"),
+            rollback_plan="remove the suggested bidirectional agent connection",
+            metadata={
+                "operation": "suggest_agent_connection",
+                "agent1_hash": _hash_value(agent1.agent_id),
+                "agent2_hash": _hash_value(agent2.agent_id),
+                "agent1_capability_count": len(agent1.capabilities),
+                "agent2_capability_count": len(agent2.capabilities),
+                "agent1_connection_count": len(agent1.connections),
+                "agent2_connection_count": len(agent2.connections),
+                "synergy": round(float(synergy), 6),
+            },
+        )
         # Add bidirectional connection
         agent1.connections.add(agent2.agent_id)
         agent2.connections.add(agent1.agent_id)
@@ -750,6 +928,27 @@ class MetaLayerCore:
                 if enhancement > 0.01:  # Minimum enhancement threshold
                     new_level = min(1.0, agent.consciousness_level + enhancement)
                     old_level = agent.consciousness_level
+                    _guardian_preflight_meta_layer_operation(
+                        action="consciousness.meta_layer_enhance_agent_consciousness",
+                        target=f"consciousness_agent:{_hash_value(agent.agent_id)}",
+                        purpose="Update an agent consciousness level in the meta-layer",
+                        capabilities=("consciousness:write", "agent:control", "memory:write"),
+                        rollback_plan="restore the previous agent consciousness level",
+                        metadata={
+                            "operation": "enhance_consciousness_level",
+                            "agent_id_hash": _hash_value(agent.agent_id),
+                            "agent_type": agent.agent_type,
+                            "state": agent.state.value,
+                            "old_level": round(float(old_level), 6),
+                            "new_level": round(float(new_level), 6),
+                            "enhancement": round(float(enhancement), 6),
+                            "connection_count": len(agent.connections),
+                            "collective_level": round(
+                                float(self.collective_metrics.collective_consciousness),
+                                6,
+                            ),
+                        },
+                    )
                     agent.consciousness_level = new_level
 
                     if new_level > old_level:
@@ -763,6 +962,8 @@ class MetaLayerCore:
                             },
                         )
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"Error enhancing consciousness levels: {e}")
 
@@ -813,14 +1014,55 @@ class MetaLayerCore:
 
             # Clean up old completed tasks (keep last 100)
             if len(self.completed_tasks) > 100:
+                _guardian_preflight_meta_layer_operation(
+                    action="consciousness.meta_layer_trim_completed_tasks",
+                    target="consciousness:meta_layer_completed_tasks",
+                    purpose="Trim old completed tasks from the consciousness meta-layer history",
+                    capabilities=("consciousness:write", "memory:write"),
+                    rollback_plan="restore the previous completed-task history snapshot",
+                    metadata={
+                        "operation": "trim_completed_tasks",
+                        "completed_task_count": len(self.completed_tasks),
+                        "retained_task_count": 100,
+                        "oldest_trimmed_task_hash": _hash_value(
+                            self.completed_tasks[0].task_id
+                        ),
+                        "newest_retained_task_hash": _hash_value(
+                            self.completed_tasks[-1].task_id
+                        ),
+                    },
+                )
                 self.completed_tasks = self.completed_tasks[-100:]
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"Error cleaning up stale entities: {e}")
 
     async def _remove_stale_agent(self, agent_id: str):
         """Remove a stale agent from the system"""
         if agent_id in self.agents:
+            agent = self.agents[agent_id]
+            _guardian_preflight_meta_layer_operation(
+                action="consciousness.meta_layer_remove_agent",
+                target=f"consciousness_agent:{_hash_value(agent_id)}",
+                purpose="Remove an agent from the consciousness meta-layer registry",
+                capabilities=("consciousness:write", "agent:control", "memory:write"),
+                rollback_plan="restore the removed agent profile and prior connections",
+                metadata={
+                    "operation": "remove_stale_agent",
+                    "agent_id_hash": _hash_value(agent_id),
+                    "agent_name_hash": _hash_value(agent.name),
+                    "agent_type": agent.agent_type,
+                    "state": agent.state.value,
+                    "connection_count": len(agent.connections),
+                    "registry_count": len(self.agents),
+                    "referencing_agent_count": sum(
+                        1 for other_agent in self.agents.values()
+                        if agent_id in other_agent.connections
+                    ),
+                },
+            )
             # Remove connections to this agent
             for other_agent in self.agents.values():
                 other_agent.connections.discard(agent_id)
@@ -840,13 +1082,15 @@ class MetaLayerCore:
 
         if agent_id and system_id and agent_id not in self.agents:
             # Create agent profile if not exists
-            self.agents[agent_id] = AgentProfile(
-                agent_id=agent_id,
-                name=agent_id,  # Will be updated when agent provides more info
-                agent_type="unknown",
-                capabilities=[],
-                system_origin=system_id,
-                state=AgentState.ACTIVE,
+            self.register_agent(
+                AgentProfile(
+                    agent_id=agent_id,
+                    name=agent_id,  # Will be updated when agent provides more info
+                    agent_type="unknown",
+                    capabilities=[],
+                    system_origin=system_id,
+                    state=AgentState.ACTIVE,
+                )
             )
 
             self.logger.info(f"Registered new agent: {agent_id} from {system_id}")
@@ -874,6 +1118,8 @@ class MetaLayerCore:
             else:
                 self.logger.warning(f"Unknown coordination request type: {request_type}")
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"Error handling coordination request: {e}")
 
@@ -985,8 +1231,7 @@ class MetaLayerCore:
 
             # Establish connection if beneficial
             if synergy > 0.5:
-                agent1.connections.add(agent2_id)
-                agent2.connections.add(agent1_id)
+                await self._suggest_agent_connection(agent1, agent2, synergy)
 
                 await self._emit_event(
                     "collaboration_established",
@@ -1035,7 +1280,7 @@ class MetaLayerCore:
             )
 
             # Add to active tasks
-            self.active_tasks[task.task_id] = task
+            self.submit_task(task)
 
             # Send response
             if message.requires_response:
@@ -1055,6 +1300,8 @@ class MetaLayerCore:
 
             self.logger.info(f"Queued task {task.task_id} for assignment")
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"Error handling task assignment: {e}")
 
@@ -1069,7 +1316,25 @@ class MetaLayerCore:
 
             if enhancement_type == "level_boost":
                 old_level = agent.consciousness_level
-                agent.consciousness_level = min(1.0, agent.consciousness_level + enhancement_value)
+                new_level = min(1.0, agent.consciousness_level + enhancement_value)
+                _guardian_preflight_meta_layer_operation(
+                    action="consciousness.meta_layer_message_enhance_consciousness",
+                    target=f"consciousness_agent:{_hash_value(agent_id)}",
+                    purpose="Apply a message-driven consciousness enhancement request",
+                    capabilities=("consciousness:write", "agent:control", "memory:write"),
+                    rollback_plan="restore the previous agent consciousness level",
+                    metadata={
+                        "operation": "message_enhance_consciousness",
+                        "agent_id_hash": _hash_value(agent_id),
+                        "agent_type": agent.agent_type,
+                        "state": agent.state.value,
+                        "enhancement_type": enhancement_type,
+                        "old_level": round(float(old_level), 6),
+                        "new_level": round(float(new_level), 6),
+                        "enhancement_value": round(float(enhancement_value), 6),
+                    },
+                )
+                agent.consciousness_level = new_level
 
                 await self._emit_event(
                     "consciousness_enhanced",
@@ -1112,6 +1377,27 @@ class MetaLayerCore:
 
     def register_agent(self, agent_profile: AgentProfile):
         """Register a new agent with the meta-layer"""
+        _guardian_preflight_meta_layer_operation(
+            action="consciousness.meta_layer_register_agent",
+            target=f"consciousness_agent:{_hash_value(agent_profile.agent_id)}",
+            purpose="Register an agent in the consciousness meta-layer",
+            capabilities=("consciousness:write", "agent:register", "memory:write"),
+            rollback_plan="remove the agent profile from the meta-layer registry",
+            metadata={
+                "operation": "register_agent",
+                "agent_id_hash": _hash_value(agent_profile.agent_id),
+                "agent_name_hash": _hash_value(agent_profile.name),
+                "agent_type": agent_profile.agent_type,
+                "system_origin_hash": _hash_value(agent_profile.system_origin),
+                "state": agent_profile.state.value,
+                "capability_count": len(agent_profile.capabilities),
+                "capability_hashes": tuple(
+                    _hash_value(capability) for capability in agent_profile.capabilities
+                ),
+                "metadata_keys": tuple(sorted(agent_profile.metadata)),
+                "registered_agent_count": len(self.agents),
+            },
+        )
         self.agents[agent_profile.agent_id] = agent_profile
         self.logger.info(f"Registered agent {agent_profile.agent_id}")
 
@@ -1129,6 +1415,31 @@ class MetaLayerCore:
 
     def submit_task(self, task: ConsciousnessTask):
         """Submit a new task to the consciousness system"""
+        _guardian_preflight_meta_layer_operation(
+            action="consciousness.meta_layer_submit_task",
+            target=f"consciousness_task:{_hash_value(task.task_id)}",
+            purpose="Submit a task into the consciousness meta-layer scheduler",
+            capabilities=("consciousness:write", "agent:execute_task", "memory:write"),
+            rollback_plan="remove the task from the active task queue",
+            metadata={
+                "operation": "submit_task",
+                "task_id_hash": _hash_value(task.task_id),
+                "task_type": task.task_type,
+                "description_hash": _hash_value(task.description),
+                "priority": task.priority,
+                "required_capability_count": len(task.required_capabilities),
+                "required_capability_hashes": tuple(
+                    _hash_value(capability) for capability in task.required_capabilities
+                ),
+                "assigned_agent_count": len(task.assigned_agents),
+                "assigned_agent_hashes": tuple(
+                    _hash_value(agent_id) for agent_id in task.assigned_agents
+                ),
+                "payload_hash": _hash_json(task.payload),
+                "result_key_count": len(task.results),
+                "active_task_count": len(self.active_tasks),
+            },
+        )
         self.active_tasks[task.task_id] = task
         self.logger.info(f"Submitted task {task.task_id}")
 

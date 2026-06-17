@@ -23,7 +23,9 @@ Date: August 5, 2025
 
 # Standard library imports
 import asyncio
+import hashlib
 import logging
+import os
 import time
 from dataclasses import dataclass
 from datetime import datetime
@@ -36,6 +38,33 @@ import numpy as np
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _hash_values(values: List[object] | None) -> List[str]:
+    return [hashed for value in values or [] if (hashed := _hash_value(value))]
+
+
+def _quantum_tunneling_logic_capability_checker(
+    requester: str, capability: str
+) -> bool:
+    if requester == "consciousness:quantum_tunneling_logic" and capability in {
+        "consciousness:write",
+        "consciousness:transcend",
+        "autonomy:execute",
+        "memory:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
 
 
 class BarrierType(Enum):
@@ -162,6 +191,8 @@ class QuantumTunnelingEngine:
             self.logger.debug(f"Tunneling probability for {barrier.barrier_id}: {probability:.6f}")
             return probability
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Error calculating tunneling probability: {e}")
             return 0.0
@@ -321,6 +352,10 @@ class QuantumTunnelingEngine:
         self, path: TunnelingPath, consciousness_energy: float
     ) -> Optional[BreakthroughSolution]:
         """Attempt quantum tunneling through the specified path"""
+        self._guardian_preflight_tunneling_attempt(
+            path=path,
+            consciousness_energy=consciousness_energy,
+        )
         try:
             self.logger.info(f"🌀 Attempting quantum tunneling via path: {path.path_id}")
             self.tunneling_attempts += 1
@@ -364,14 +399,14 @@ class QuantumTunnelingEngine:
                     discovery_timestamp=datetime.now(),
                 )
 
-                # Update metrics
-                self.breakthrough_rate = self.successful_tunnelings / self.tunneling_attempts
-                self.innovation_score = np.mean(
-                    [s.innovation_level for s in self.breakthrough_history[-10:]]
-                )
-
                 # Store in history
                 self.breakthrough_history.append(solution)
+
+                # Update metrics
+                self.breakthrough_rate = self.successful_tunnelings / self.tunneling_attempts
+                self.innovation_score = float(
+                    np.mean([s.innovation_level for s in self.breakthrough_history[-10:]])
+                )
 
                 self.logger.info(
                     f"⚡ BREAKTHROUGH ACHIEVED! Innovation level: {innovation_level:.3f}"
@@ -388,6 +423,68 @@ class QuantumTunnelingEngine:
         except Exception as e:
             self.logger.error(f"❌ Quantum tunneling attempt failed: {e}")
             return None
+
+    def _guardian_preflight_tunneling_attempt(
+        self,
+        *,
+        path: TunnelingPath,
+        consciousness_energy: float,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = (
+            os.getenv("AETHERRA_PRINCIPAL", "").strip()
+            or "consciousness:quantum_tunneling_logic"
+        )
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        barrier_ids = [barrier.barrier_id for barrier in path.barriers]
+        barrier_types = [barrier.barrier_type.value for barrier in path.barriers]
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action="consciousness.quantum_tunneling_attempt",
+                target="quantum_tunneling_logic",
+                purpose="Mutate experimental quantum tunneling breakthrough state",
+                capabilities=(
+                    "consciousness:write",
+                    "consciousness:transcend",
+                    "autonomy:execute",
+                    "memory:write",
+                ),
+                evidence=("QuantumTunnelingEngine.attempt_quantum_tunneling",),
+                reversible=True,
+                rollback_plan=(
+                    "restore tunneling counters, breakthrough history, "
+                    "breakthrough rate, and innovation score"
+                ),
+                metadata={
+                    "path_hash": _hash_value(path.path_id),
+                    "source_state_hash": _hash_value(path.source_state),
+                    "target_state_hash": _hash_value(path.target_state),
+                    "barrier_count": len(path.barriers),
+                    "barrier_hashes": _hash_values(barrier_ids),
+                    "barrier_types": barrier_types,
+                    "tunneling_probability": round(
+                        float(path.tunneling_probability), 6
+                    ),
+                    "energy_cost": round(float(path.energy_cost), 6),
+                    "consciousness_energy": round(float(consciousness_energy), 6),
+                    "breakthrough_value": round(float(path.breakthrough_value), 6),
+                    "path_complexity": round(float(path.path_complexity), 6),
+                    "attempt_count": int(self.tunneling_attempts),
+                    "successful_tunneling_count": int(self.successful_tunnelings),
+                    "breakthrough_history_count": len(self.breakthrough_history),
+                    "breakthrough_rate": round(float(self.breakthrough_rate), 6),
+                    "innovation_score": round(float(self.innovation_score), 6),
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=_quantum_tunneling_logic_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
 
     def get_tunneling_metrics(self) -> Dict[str, Any]:
         """Get current quantum tunneling metrics"""

@@ -11,6 +11,7 @@ Tracks recent action outcomes and integrates trust/continuity signals.
 
 from __future__ import annotations
 
+import hashlib
 import os
 import time
 from collections import deque
@@ -19,6 +20,60 @@ from typing import Deque, Dict, List, Optional, Tuple
 
 from Aetherra.consciousness.continuity_memory import ContinuityMemory
 from Aetherra.consciousness.self_trust import SelfTrust
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_requester() -> str:
+    return os.environ.get("AETHERRA_PRINCIPAL", "").strip() or "autopilot_manager"
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "autopilot_manager" and capability in {
+        "autonomy:control",
+        "consciousness:write",
+        "memory:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _guardian_preflight_autopilot_operation(
+    *,
+    action: str,
+    purpose: str,
+    metadata: Dict[str, object],
+) -> None:
+    from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+    decision = evaluate_intent(
+        IntentDeclaration(
+            requester=_guardian_requester(),
+            subsystem="consciousness",
+            action=action,
+            target="consciousness:autopilot_manager",
+            purpose=purpose,
+            capabilities=("consciousness:write", "autonomy:control", "memory:write"),
+            evidence=("AutopilotManager", action),
+            reversible=True,
+            rollback_plan="restore previous autopilot history/status snapshot",
+            metadata=metadata,
+        ),
+        capability_checker=_guardian_capability_checker,
+    )
+    if decision.status not in {
+        GuardianStatus.ALLOW,
+        GuardianStatus.ALLOW_LIMITED,
+    }:
+        raise PermissionError(f"guardian_denied:{decision.reason}:{action}")
 
 
 @dataclass
@@ -47,6 +102,18 @@ class AutopilotManager:
         self.success_ratio_min = float(os.getenv("AETHERRA_AUTOPILOT_SUCCESS_MIN", "0.8"))
 
     def record_ledger(self, ts: float, success: bool, policy_status: str) -> None:
+        _guardian_preflight_autopilot_operation(
+            action="consciousness.autopilot_record_ledger",
+            purpose="Record an autonomy action outcome for autopilot readiness evaluation",
+            metadata={
+                "operation": "record_ledger",
+                "history_count": len(self.history),
+                "success": bool(success),
+                "policy_status_hash": _hash_value(policy_status),
+                "timestamp_bucket": int(float(ts) // 3600) if ts else None,
+                "success_window": self.success_window,
+            },
+        )
         self.history.append((ts, success, policy_status))
 
     def evaluate(self, current_mode: str) -> AutopilotStatus:
@@ -114,6 +181,23 @@ class AutopilotManager:
             days_clean=round((now - seven_days_ago) / (24 * 3600), 2) if incidents == 0 else 0.0,
             incidents_last_7d=incidents,
             suggested_mode=suggested_mode,
+        )
+        _guardian_preflight_autopilot_operation(
+            action="consciousness.autopilot_evaluate",
+            purpose="Update autopilot readiness status from trust, continuity, and action history",
+            metadata={
+                "operation": "evaluate",
+                "current_mode": current_mode,
+                "history_count": len(self.history),
+                "recent_count": len(recent),
+                "success_ratio": round(float(ratio), 6),
+                "trust": round(float(trust), 6),
+                "snci": round(float(snci), 6),
+                "incidents_last_7d": incidents,
+                "eligible": eligible,
+                "suggested_mode": suggested_mode,
+                "reason_hashes": tuple(_hash_value(reason) for reason in reasons),
+            },
         )
         self.last_eval = status
         return status

@@ -8,6 +8,8 @@ cycle using lightweight heuristics and persisted learning state.
 from __future__ import annotations
 
 # Standard library imports
+import copy
+import hashlib
 import json
 import os
 from dataclasses import asdict, dataclass, field
@@ -18,6 +20,26 @@ from typing import Any, Dict, List, Optional
 # Local imports
 from .decision_engine import Decision
 from .episodic_store import get_episodic_store
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _learning_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "consciousness:learning" and capability in {
+        "consciousness:write",
+        "memory:write",
+        "fs:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
 
 
 @dataclass
@@ -53,7 +75,6 @@ class LearningLoop:
             "AETHERRA_LEARNING_STATE_PATH", ".aetherra/learning_loop_state.json"
         )
         self.state_path = Path(state_path or default_state)
-        self.state_path.parent.mkdir(parents=True, exist_ok=True)
 
         self.episodic_store = episodic_store or get_episodic_store()
         self.memory_engine: Any = (
@@ -86,6 +107,7 @@ class LearningLoop:
         explicit_success = outcome.get("success")
         success = bool(explicit_success) if isinstance(explicit_success, bool) else score >= 0.6
 
+        previous_state = copy.deepcopy(self.state)
         bucket = self._get_action_bucket(resolved_context, action)
         bucket["attempts"] += 1
         bucket["successes"] += 1 if success else 0
@@ -103,7 +125,11 @@ class LearningLoop:
         strategy_delta = self._strategy_delta(success_rate, score)
 
         self._increment_global(success)
-        self._save_state()
+        try:
+            self._save_state()
+        except Exception:
+            self.state = previous_state
+            raise
 
         adjustment = LearningAdjustment(
             context=resolved_context,
@@ -196,10 +222,74 @@ class LearningLoop:
             return
 
     def _save_state(self) -> None:
-        self.state["global"]["last_updated"] = datetime.utcnow().isoformat()
+        global_state = self.state.setdefault("global", {})
+        previous_last_updated = global_state.get("last_updated")
+        global_state["last_updated"] = datetime.utcnow().isoformat()
+        try:
+            self._guardian_preflight_state_save()
+        except Exception:
+            global_state["last_updated"] = previous_last_updated
+            raise
+        self.state_path.parent.mkdir(parents=True, exist_ok=True)
         self.state_path.write_text(
             json.dumps(self.state, indent=2, sort_keys=True), encoding="utf-8"
         )
+
+    def _guardian_preflight_state_save(self):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "consciousness:learning"
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        contexts = self.state.get("contexts", {})
+        if not isinstance(contexts, dict):
+            contexts = {}
+        action_count = 0
+        context_hashes: list[str | None] = []
+        action_hashes: list[str | None] = []
+        for context_name, context_data in contexts.items():
+            context_hashes.append(_hash_value(context_name))
+            if not isinstance(context_data, dict):
+                continue
+            actions = context_data.get("actions", {})
+            if not isinstance(actions, dict):
+                continue
+            action_count += len(actions)
+            action_hashes.extend(_hash_value(action_name) for action_name in actions)
+
+        global_state = self.state.get("global", {})
+        if not isinstance(global_state, dict):
+            global_state = {}
+        state_payload = json.dumps(self.state, sort_keys=True, default=str)
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action="consciousness.learning_state_save",
+                target="learning_loop_state",
+                purpose="Persist compact decision-outcome learning hints for future consciousness decisions",
+                capabilities=("consciousness:write", "memory:write", "fs:write"),
+                evidence=("LearningLoop.process_outcome",),
+                reversible=True,
+                rollback_plan="restore the previous learning-loop state file or remove the latest saved state",
+                metadata={
+                    "path_hash": _hash_value(self.state_path.resolve()),
+                    "state_hash": _hash_value(state_payload),
+                    "state_bytes": len(state_payload.encode("utf-8")),
+                    "iteration_count": int(global_state.get("iterations", 0) or 0),
+                    "total_successes": int(global_state.get("total_successes", 0) or 0),
+                    "total_failures": int(global_state.get("total_failures", 0) or 0),
+                    "context_count": len(contexts),
+                    "action_count": action_count,
+                    "context_hashes": context_hashes[:10],
+                    "action_hashes": action_hashes[:20],
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=_learning_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
 
     def _get_action_bucket(self, context: str, action: str) -> Dict[str, Any]:
         contexts = self.state.setdefault("contexts", {})

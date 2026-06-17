@@ -18,6 +18,7 @@ Design:
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import time
@@ -59,6 +60,70 @@ class ContinuityMemory:
         self.max_snaps = max_snaps
         self.buffer: List[ContinuitySnapshot] = []
         self.load()
+
+    def _hash_value(self, value: object) -> str | None:
+        raw = str(value) if value is not None else ""
+        if not raw:
+            return None
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+    def _guardian_requester(self) -> str:
+        return (
+            os.environ.get("AETHERRA_PRINCIPAL", "").strip()
+            or "continuity_memory"
+        )
+
+    def _guardian_capability_checker(self, requester: str, capability: str) -> bool:
+        if requester == "continuity_memory" and capability in {
+            "consciousness:write",
+            "memory:write",
+            "fs:write",
+        }:
+            return True
+
+        from Aetherra.security.capabilities import has_capability
+
+        return has_capability(requester, capability)
+
+    def _guardian_preflight_save(
+        self, snapshots: List[ContinuitySnapshot] | None = None
+    ) -> None:
+        from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+        buffer = snapshots if snapshots is not None else self.buffer
+        latest = buffer[-1] if buffer else None
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=self._guardian_requester(),
+                subsystem="consciousness",
+                action="consciousness.continuity_save",
+                target="consciousness:continuity_memory",
+                purpose="Persist consciousness continuity snapshots",
+                capabilities=("consciousness:write", "memory:write", "fs:write"),
+                evidence=("continuity_memory",),
+                reversible=True,
+                rollback_plan="restore previous continuity memory file from backup",
+                metadata={
+                    "path_hash": self._hash_value(Path(self.path).resolve()),
+                    "snapshot_count": len(buffer),
+                    "max_snapshots": self.max_snaps,
+                    "latest_tick": latest.tick if latest else None,
+                    "latest_ts": round(float(latest.ts), 3) if latest else None,
+                    "qualia_keys": tuple(sorted(latest.qualia)) if latest else (),
+                    "focus_count": len(latest.focuses) if latest else 0,
+                    "intention_count": len(latest.intentions) if latest else 0,
+                    "trust_keys": tuple(sorted(latest.trust_scores)) if latest else (),
+                },
+            ),
+            capability_checker=self._guardian_capability_checker,
+        )
+        if decision.status not in {
+            GuardianStatus.ALLOW,
+            GuardianStatus.ALLOW_LIMITED,
+        }:
+            raise PermissionError(
+                f"guardian_denied:{decision.reason}:consciousness.continuity_save"
+            )
 
     def record(
         self,
@@ -102,12 +167,16 @@ class ContinuityMemory:
             tick=tick,
         )
 
-        self.buffer.append(snap)
-        self.buffer = self.buffer[-self.max_snaps :]  # Keep last N
-        self.save()
+        next_buffer = [*self.buffer, snap][-self.max_snaps :]
+        self._guardian_preflight_save(next_buffer)
+        self.buffer = next_buffer
+        self.save(_preflight=False)
 
-    def save(self) -> None:
+    def save(self, *, _preflight: bool = True) -> None:
         """Persist buffer to disk (atomic write)."""
+        if _preflight:
+            self._guardian_preflight_save()
+
         # Ensure directory exists
         os.makedirs(os.path.dirname(self.path) or ".", exist_ok=True)
 
