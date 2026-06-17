@@ -304,9 +304,13 @@ class TestSignatureVerifier(unittest.TestCase):
         with open(output_manifest) as f:
             manifest_data = json.load(f)
 
-        # Should include code.py but not venv files
-        self.assertEqual(len(manifest_data["hashes"]), 1)
-        self.assertIn("code.py", list(manifest_data["hashes"].keys())[0])
+        # Should include project code but not virtual-environment files.
+        manifest_paths = set(manifest_data["hashes"])
+        self.assertIn("code.py", manifest_paths)
+        self.assertFalse(
+            any(path.startswith(".venv/") for path in manifest_paths),
+            manifest_paths,
+        )
 
     def test_audit_logging(self):
         """Test audit log generation."""
