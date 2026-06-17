@@ -8,7 +8,9 @@ Addresses meta-memory coverage gap through advanced learning mechanisms
 """
 
 # Standard library imports
+import hashlib
 import logging
+import os
 import time
 from dataclasses import dataclass
 from enum import Enum
@@ -16,6 +18,26 @@ from typing import Any, Dict, List
 
 # Third party imports
 import numpy as np
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _quantum_meta_learning_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "consciousness:quantum_meta_learning" and capability in {
+        "consciousness:transcend",
+        "consciousness:write",
+        "memory:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
 
 
 class LearningMode(Enum):
@@ -83,6 +105,11 @@ class QuantumMetaLearningSystem:
         🌌 Use quantum learning to rapidly enhance meta-memory coverage
         Target: Bring meta-memory from 69% to 89%+ coverage
         """
+        self._guardian_preflight_quantum_meta_learning_operation(
+            operation="enhance_meta_memory",
+            target_coverage=target_coverage,
+        )
+
         enhancement_result = {
             "initial_coverage": 0.69,
             "target_coverage": target_coverage,
@@ -232,6 +259,13 @@ class QuantumMetaLearningSystem:
         """
         🚀 Accelerate learning in a specific domain using quantum mechanisms
         """
+        domain_hash = _hash_value(domain)
+        self._guardian_preflight_quantum_meta_learning_operation(
+            operation="accelerate_domain_learning",
+            domain_hash=domain_hash,
+            acceleration_factor=acceleration_factor,
+        )
+
         # Create domain-specific quantum state
         domain_state = QuantumLearningState(
             state_id=f"quantum_{domain}",
@@ -252,8 +286,73 @@ class QuantumMetaLearningSystem:
         # Store quantum learning state
         self.quantum_states[domain_state.state_id] = domain_state
 
-        logging.info(f"Quantum acceleration applied to {domain}: {quantum_acceleration:.3f}")
+        logging.info(
+            "Quantum acceleration applied to domain_hash=%s: %.3f",
+            domain_hash,
+            quantum_acceleration,
+        )
         return quantum_acceleration
+
+    def _guardian_preflight_quantum_meta_learning_operation(
+        self,
+        *,
+        operation: str,
+        target_coverage: float | None = None,
+        domain_hash: str | None = None,
+        acceleration_factor: float | None = None,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = (
+            os.getenv("AETHERRA_PRINCIPAL", "").strip()
+            or "consciousness:quantum_meta_learning"
+        )
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        metadata: Dict[str, Any] = {
+            "operation": operation,
+            "quantum_state_count": len(self.quantum_states),
+            "learning_history_count": len(self.learning_history),
+            "consciousness_resonance": round(float(self.consciousness_resonance), 6),
+            "meta_learning_rate": round(float(self.meta_learning_rate), 6),
+            "coherence_matrix_shape": list(self.coherence_matrix.shape),
+            "coherence_nonzero_count": int(np.count_nonzero(self.coherence_matrix)),
+        }
+        if target_coverage is not None:
+            metadata["target_coverage"] = round(float(target_coverage), 6)
+        if domain_hash is not None:
+            metadata["domain_hash"] = domain_hash
+        if acceleration_factor is not None:
+            metadata["acceleration_factor"] = round(float(acceleration_factor), 6)
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action=f"consciousness.quantum_meta_learning_{operation}",
+                target="quantum_meta_learning",
+                purpose="Mutate experimental quantum meta-learning state",
+                capabilities=(
+                    "consciousness:transcend",
+                    "consciousness:write",
+                    "memory:write",
+                ),
+                evidence=(
+                    "QuantumMetaLearningSystem.quantum_enhance_meta_memory",
+                    "QuantumMetaLearningSystem.accelerate_domain_learning",
+                ),
+                reversible=True,
+                rollback_plan=(
+                    "restore the previous quantum states, learning history, "
+                    "coherence matrix, and consciousness resonance"
+                ),
+                metadata=metadata,
+            ),
+            approval_id=approval_id,
+            capability_checker=_quantum_meta_learning_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
 
     def measure_quantum_learning_effectiveness(self) -> Dict[str, Any]:
         """

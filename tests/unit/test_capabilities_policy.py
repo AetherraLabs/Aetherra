@@ -9,40 +9,43 @@ from pathlib import Path
 import pytest
 
 # Aetherra imports
-from Aetherra.security.capabilities import POLICY_FILE, has_capability
+import Aetherra.security.capabilities as capabilities
 
 
 def write_policy(tmp_path: Path, allow_map: dict):
-    POLICY_FILE.parent.mkdir(parents=True, exist_ok=True)
-    POLICY_FILE.write_text(json.dumps({"allow": allow_map}), encoding="utf-8")
+    policy_file = capabilities._policy_file()
+    policy_file.parent.mkdir(parents=True, exist_ok=True)
+    policy_file.write_text(json.dumps({"allow": allow_map}), encoding="utf-8")
 
 
 @pytest.fixture(autouse=True)
 def cleanup_policy(tmp_path, monkeypatch):
-    # Point home dir to a temp so ~/.aetherra resolves there? Not available in module.
-    # We'll just ensure POLICY_FILE location exists and clean it up after.
-    if POLICY_FILE.exists():
-        POLICY_FILE.unlink()
-    if POLICY_FILE.parent.exists():
-        for p in POLICY_FILE.parent.glob("*.json"):
+    monkeypatch.setenv("AETHERRA_POLICY_HOME", str(tmp_path / "policy"))
+    policy_file = capabilities._policy_file()
+    if policy_file.exists():
+        policy_file.unlink()
+    if policy_file.parent.exists():
+        for p in policy_file.parent.glob("*.json"):
             p.unlink()
     yield
-    if POLICY_FILE.exists():
-        POLICY_FILE.unlink()
+    if policy_file.exists():
+        policy_file.unlink()
 
 
 def test_non_strict_allows_when_not_listed(monkeypatch):
     monkeypatch.delenv("AETHERRA_REQUIRE_CAPABILITIES", raising=False)
-    if POLICY_FILE.exists():
-        POLICY_FILE.unlink()
-    assert has_capability("core:webhook_manager", "network:webhook") is True
+    policy_file = capabilities._policy_file()
+    if policy_file.exists():
+        policy_file.unlink()
+    assert capabilities.has_capability("core:webhook_manager", "network:webhook") is True
 
 
 def test_strict_denies_when_not_listed(monkeypatch):
     monkeypatch.setenv("AETHERRA_REQUIRE_CAPABILITIES", "1")
-    if POLICY_FILE.exists():
-        POLICY_FILE.unlink()
-    assert has_capability("core:webhook_manager", "network:webhook") is False
+    policy_file = capabilities._policy_file()
+    if policy_file.exists():
+        policy_file.unlink()
+    assert capabilities.has_capability("core:webhook_manager", "network:webhook") is False
 
 
 def test_strict_allows_when_listed(monkeypatch):
@@ -50,4 +53,4 @@ def test_strict_allows_when_listed(monkeypatch):
     write_policy(
         Path("."), {"core:webhook_manager": ["network:webhook", "network:outbound"]}
     )
-    assert has_capability("core:webhook_manager", "network:webhook") is True
+    assert capabilities.has_capability("core:webhook_manager", "network:webhook") is True

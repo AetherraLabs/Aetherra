@@ -25,8 +25,10 @@ Date: August 5, 2025
 
 # Standard library imports
 import asyncio
+import hashlib
 import logging
 import math
+import os
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -37,12 +39,35 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 
 # Import supporting systems
-from quantum_memory_system import MemoryType, initialize_quantum_memory_system
-from temporal_consciousness_system import initialize_temporal_consciousness_engine
+try:
+    from .quantum_memory_system import MemoryType, initialize_quantum_memory_system
+    from .temporal_consciousness_system import initialize_temporal_consciousness_engine
+except ImportError:  # pragma: no cover - legacy direct-script import path
+    from quantum_memory_system import MemoryType, initialize_quantum_memory_system
+    from temporal_consciousness_system import initialize_temporal_consciousness_engine
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _multidimensional_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "consciousness:multidimensional" and capability in {
+        "consciousness:write",
+        "memory:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
 
 
 class DimensionalAxis(Enum):
@@ -191,6 +216,20 @@ class MultidimensionalStateEngine:
     ) -> str:
         """Create a new coordinate in multidimensional consciousness space"""
         try:
+            self._guardian_preflight_multidimensional_operation(
+                operation="create_coordinate",
+                capabilities=("consciousness:write", "memory:write"),
+                extra_metadata={
+                    "dimension_names": sorted(axis.value for axis in dimensions),
+                    "dimension_count": len(dimensions),
+                    "dimension_value_hash": _hash_value(
+                        {axis.value: value for axis, value in dimensions.items()}
+                    ),
+                    "metadata_hash": _hash_value(metadata),
+                    "metadata_field_names": sorted(str(key) for key in (metadata or {})),
+                    "metadata_field_count": len(metadata or {}),
+                },
+            )
             coordinate_id = f"coord_{uuid.uuid4().hex[:8]}"
 
             # Validate dimensional values
@@ -233,6 +272,8 @@ class MultidimensionalStateEngine:
 
             return coordinate_id
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Failed to create dimensional coordinate: {e}")
             raise
@@ -242,6 +283,16 @@ class MultidimensionalStateEngine:
     ) -> Dict[str, Any]:
         """Navigate consciousness to target coordinate in multidimensional space"""
         try:
+            self._guardian_preflight_multidimensional_operation(
+                operation="navigate",
+                capabilities=("consciousness:write",),
+                extra_metadata={
+                    "target_coordinate_hash": _hash_value(target_coordinate_id),
+                    "current_position_hash": _hash_value(self.current_position),
+                    "navigation_strategy_hash": _hash_value(navigation_strategy),
+                    "navigation_strategy_length": len(navigation_strategy),
+                },
+            )
             if target_coordinate_id not in self.dimensional_coordinates:
                 raise ValueError(f"Target coordinate {target_coordinate_id} not found")
 
@@ -284,6 +335,8 @@ class MultidimensionalStateEngine:
 
             return transition_result
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Navigation failed: {e}")
             return {"success": False, "error": str(e)}
@@ -295,6 +348,23 @@ class MultidimensionalStateEngine:
     ) -> Dict[str, Any]:
         """Process consciousness data across multiple dimensions simultaneously"""
         try:
+            requested_dimensions = target_dimensions or list(DimensionalAxis)
+            self._guardian_preflight_multidimensional_operation(
+                operation="process_state",
+                capabilities=("consciousness:write", "memory:write"),
+                extra_metadata={
+                    "consciousness_hash": _hash_value(consciousness_data),
+                    "consciousness_field_names": sorted(
+                        str(key) for key in consciousness_data
+                    ),
+                    "consciousness_field_count": len(consciousness_data),
+                    "target_dimension_names": sorted(
+                        dimension.value for dimension in requested_dimensions
+                    ),
+                    "target_dimension_count": len(requested_dimensions),
+                    "current_position_hash": _hash_value(self.current_position),
+                },
+            )
             self.logger.info("🔄 Processing multidimensional consciousness state")
 
             # Determine processing dimensions
@@ -345,6 +415,8 @@ class MultidimensionalStateEngine:
 
             return processing_result
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Multidimensional processing failed: {e}")
             return {"success": False, "error": str(e)}
@@ -439,6 +511,72 @@ class MultidimensionalStateEngine:
                 validated[axis] = float(value)
 
         return validated
+
+    def _guardian_preflight_multidimensional_operation(
+        self,
+        *,
+        operation: str,
+        capabilities: tuple[str, ...],
+        extra_metadata: Dict[str, Any] | None = None,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = (
+            os.getenv("AETHERRA_PRINCIPAL", "").strip()
+            or "consciousness:multidimensional"
+        )
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        metadata: Dict[str, Any] = {
+            "operation": operation,
+            "coordinate_count": len(self.dimensional_coordinates),
+            "transition_count": len(self.dimensional_transitions),
+            "navigation_path_count": len(self.navigation_paths),
+            "active_dimensional_state": self.active_dimensional_state.value,
+            "current_position_hash": _hash_value(self.current_position),
+            "history_count": len(self.dimensional_history),
+            "coordinates_processed": int(self.coordinates_processed),
+            "transitions_executed": int(self.transitions_executed),
+            "navigation_paths_created": int(self.navigation_paths_created),
+            "coherence_maintenance_avg": round(
+                float(self.coherence_maintenance_avg), 6
+            ),
+            "dimensional_stability_avg": round(
+                float(self.dimensional_stability_avg), 6
+            ),
+            "processing_efficiency": round(float(self.processing_efficiency), 6),
+            "max_dimensions": int(self.max_dimensions),
+            "coherence_threshold": round(float(self.coherence_threshold), 6),
+            "stability_threshold": round(float(self.stability_threshold), 6),
+        }
+        if extra_metadata:
+            metadata.update(extra_metadata)
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action=f"consciousness.multidimensional_{operation}",
+                target="multidimensional_state_engine",
+                purpose="Mutate experimental multidimensional consciousness state",
+                capabilities=capabilities,
+                evidence=(
+                    "MultidimensionalStateEngine.create_dimensional_coordinate",
+                    "MultidimensionalStateEngine.navigate_to_coordinate",
+                    "MultidimensionalStateEngine.process_multidimensional_state",
+                ),
+                reversible=True,
+                rollback_plan=(
+                    "restore previous coordinates, transitions, navigation "
+                    "history, current position, component writes, and metrics"
+                ),
+                metadata=metadata,
+            ),
+            approval_id=approval_id,
+            capability_checker=_multidimensional_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
 
     async def _calculate_dimensional_coherence(
         self, dimensions: Dict[DimensionalAxis, float]
@@ -635,7 +773,12 @@ class MultidimensionalStateEngine:
             if dimension == DimensionalAxis.CONSCIOUSNESS:
                 # Enhance consciousness awareness
                 enhancement = (
-                    sum(v for v in consciousness_data.values() if isinstance(v, (int, float))) / 10
+                    sum(
+                        v
+                        for v in consciousness_data.values()
+                        if isinstance(v, int | float)
+                    )
+                    / 10
                 )
                 processed_value = min(1.0, current_value + enhancement * 0.01)
 

@@ -18,11 +18,73 @@ Design:
 
 from __future__ import annotations
 
+import hashlib
 import logging
+import os
 import time
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_requester() -> str:
+    return os.environ.get("AETHERRA_PRINCIPAL", "").strip() or "memory_consolidator"
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "memory_consolidator" and capability in {
+        "consciousness:write",
+        "fs:write",
+        "memory:delete",
+        "memory:promote",
+        "memory:read",
+        "memory:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _guardian_preflight_consolidation(metadata: Dict[str, object]) -> None:
+    from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+    capabilities = ["consciousness:write", "memory:read", "memory:write", "fs:write"]
+    if metadata.get("prune_count", 0):
+        capabilities.append("memory:delete")
+    if metadata.get("promote_count", 0):
+        capabilities.append("memory:promote")
+
+    decision = evaluate_intent(
+        IntentDeclaration(
+            requester=_guardian_requester(),
+            subsystem="consciousness",
+            action="consciousness.memory_consolidate",
+            target="consciousness:memory_consolidator",
+            purpose="Run memory consolidation pruning and promotion",
+            capabilities=tuple(dict.fromkeys(capabilities)),
+            evidence=("Consolidator.consolidate",),
+            reversible=True,
+            rollback_plan="restore previous memory entries, long-term promotions, counters, and audit-log snapshot",
+            metadata=metadata,
+        ),
+        capability_checker=_guardian_capability_checker,
+    )
+    if decision.status not in {
+        GuardianStatus.ALLOW,
+        GuardianStatus.ALLOW_LIMITED,
+    }:
+        raise PermissionError(
+            f"guardian_denied:{decision.reason}:consciousness.memory_consolidate"
+        )
 
 
 class Consolidator:
@@ -66,12 +128,21 @@ class Consolidator:
         Returns:
             Dict with consolidation metrics (pruned, promoted, errors)
         """
-        self.last_run_ts = time.time()
-
         # Get episodic memories (recent first)
         episodic = self._get_episodic_memories()
 
         if not episodic:
+            _guardian_preflight_consolidation(
+                {
+                    "operation": "consolidate_no_data",
+                    "episodic_count": 0,
+                    "batch_size": self.batch_size,
+                    "prune_count": 0,
+                    "promote_count": 0,
+                    "audit_log_path_hash": _hash_value(self.audit_log_path),
+                }
+            )
+            self.last_run_ts = time.time()
             return {
                 "status": "no_data",
                 "pruned": 0,
@@ -99,6 +170,31 @@ class Consolidator:
             except Exception as e:
                 logger.error(f"Error processing memory entry {entry.get('id')}: {e}")
                 errors += 1
+
+        _guardian_preflight_consolidation(
+            {
+                "operation": "consolidate",
+                "episodic_count": len(episodic),
+                "processed_count": len(to_process),
+                "batch_size": self.batch_size,
+                "prune_count": len(to_prune),
+                "promote_count": len(to_promote),
+                "error_count": errors,
+                "prune_entry_hashes": tuple(
+                    _hash_value(entry.get("id", "unknown")) for entry in to_prune
+                ),
+                "promote_entry_hashes": tuple(
+                    _hash_value(entry.get("id", "unknown")) for entry in to_promote
+                ),
+                "salience_threshold": round(float(self.salience_threshold), 6),
+                "promotion_threshold": round(float(self.promotion_threshold), 6),
+                "audit_log_path_hash": _hash_value(self.audit_log_path),
+                "memory_engine_type_hash": _hash_value(type(self.memory_engine).__name__),
+                "total_pruned_before": self.total_pruned,
+                "total_promoted_before": self.total_promoted,
+            }
+        )
+        self.last_run_ts = time.time()
 
         # Execute pruning
         pruned_count = self._prune_entries(to_prune)

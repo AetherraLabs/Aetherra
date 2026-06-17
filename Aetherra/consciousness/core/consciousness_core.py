@@ -12,6 +12,8 @@ Perceive → Appraise → Attend → Intend → Reflect.
 from __future__ import annotations
 
 import contextlib
+import hashlib
+import os
 import time
 from typing import List, Optional
 
@@ -40,6 +42,27 @@ from .types import (
     PlanStep,
     QualiaVector,
 )
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _consciousness_core_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "consciousness:core" and capability in {
+        "consciousness:act",
+        "consciousness:reflect",
+        "autonomy:execute",
+        "memory:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
 
 
 class ConsciousnessCore:
@@ -396,6 +419,14 @@ class ConsciousnessCore:
             text=text,
         )
 
+        self._guardian_preflight_reflection(
+            reflection_kind="micro",
+            text=text,
+            focus_types=focus_types,
+            intent_goals=intent_goals,
+            qfac_enabled=config.ENABLE_QFAC_PERSISTENCE,
+        )
+
         self.narrative_thread.append(moment)
         if len(self.narrative_thread) > config.MAX_NARRATIVE_MOMENTS:
             self.narrative_thread = self.narrative_thread[-config.MAX_NARRATIVE_MOMENTS :]
@@ -421,9 +452,6 @@ class ConsciousnessCore:
 
         Phase 3: Calls qualia decay to prevent parameter drift.
         """
-        # Decay qualia learning parameters toward defaults
-        self.ql.decay_toward_defaults()
-
         # Integration point: synthesize patterns, update self-model, propose improvements.
         uptime_s = time.time() - self.start_time
         summary = (
@@ -432,6 +460,17 @@ class ConsciousnessCore:
             f"Focuses: {self.total_focuses} | "
             f"Intents: {self.total_intents_formed}"
         )
+
+        self._guardian_preflight_reflection(
+            reflection_kind="macro",
+            text=summary,
+            focus_types=[],
+            intent_goals=[],
+            qfac_enabled=config.ENABLE_QFAC_PERSISTENCE,
+        )
+
+        # Decay qualia learning parameters toward defaults
+        self.ql.decay_toward_defaults()
 
         if config.ENABLE_QFAC_PERSISTENCE:
             qfac_store(
@@ -467,6 +506,56 @@ class ConsciousnessCore:
 
         return f"{mood}, {energy}, {conf}"
 
+    def _guardian_preflight_reflection(
+        self,
+        *,
+        reflection_kind: str,
+        text: str,
+        focus_types: List[str],
+        intent_goals: List[str],
+        qfac_enabled: bool,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "consciousness:core"
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action=f"consciousness.{reflection_kind}_reflection_update",
+                target=f"reflection:{reflection_kind}",
+                purpose="Update consciousness reflection state and optional reflection persistence",
+                capabilities=("consciousness:reflect", "memory:write"),
+                evidence=("ConsciousnessCore._reflect_micro", "ConsciousnessCore._reflect_macro"),
+                reversible=True,
+                rollback_plan="remove the appended reflection moment or restore prior qualia-learning parameters and QFAC state",
+                metadata={
+                    "reflection_kind": reflection_kind,
+                    "tick": self.tick_count,
+                    "text_hash": _hash_value(text),
+                    "text_length": len(text or ""),
+                    "focus_count": len(focus_types),
+                    "focus_type_hashes": [_hash_value(item) for item in focus_types[:10]],
+                    "intent_count": len(intent_goals),
+                    "intent_goal_hashes": [_hash_value(item) for item in intent_goals[:10]],
+                    "narrative_size_before": len(self.narrative_thread),
+                    "qfac_enabled": bool(qfac_enabled),
+                    "qualia_learning": {
+                        "curiosity_gain": round(float(self.ql.p.curiosity_gain), 6),
+                        "error_penalty": round(float(self.ql.p.error_penalty), 6),
+                        "success_boost": round(float(self.ql.p.success_boost), 6),
+                        "certainty_gain": round(float(self.ql.p.certainty_gain), 6),
+                    },
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=_consciousness_core_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
+
     # ========== Act ==========
     def _maybe_act(self) -> None:
         """Execute intents via safety envelope (if permitted).
@@ -485,6 +574,7 @@ class ConsciousnessCore:
         for intent in sorted_intents[:5]:  # max 5 intents per tick
             # Convert intent to plan
             plan = self._intent_to_plan(intent)
+            self._guardian_preflight_autonomy_plan(intent, plan)
 
             # Phase 5: Pre-check policy for explainability (non-binding)
             try:
@@ -547,6 +637,59 @@ class ConsciousnessCore:
             # Remove executed intent
             if intent in self.active_intents:
                 self.active_intents.remove(intent)
+
+    def _guardian_preflight_autonomy_plan(self, intent: Intent, plan: Plan):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "consciousness:core"
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        step_capabilities = [step.capability for step in plan.steps]
+        step_ids = [step.id for step in plan.steps]
+        rollback_ids = [step.id for step in plan.rollback]
+        plan_args_keys = sorted(
+            {
+                key
+                for step in plan.steps
+                for key in getattr(step, "args", {})
+            }
+        )
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action="consciousness.autonomy_plan_execute",
+                target="consciousness_plan",
+                purpose="Execute an autonomy plan generated by the consciousness loop",
+                capabilities=("consciousness:act", "autonomy:execute"),
+                evidence=("ConsciousnessCore._maybe_act",),
+                reversible=bool(plan.rollback),
+                rollback_plan=(
+                    "execute the plan rollback steps through the safety envelope"
+                    if plan.rollback
+                    else "stop before execution; no rollback steps are available for this intent"
+                ),
+                metadata={
+                    "intent_goal_hash": _hash_value(intent.goal),
+                    "intent_why_hash": _hash_value(intent.why),
+                    "intent_risk": intent.risk,
+                    "intent_priority": round(float(intent.priority), 6),
+                    "intent_expected_gain": round(float(intent.expected_gain), 6),
+                    "plan_step_count": len(plan.steps),
+                    "rollback_step_count": len(plan.rollback),
+                    "step_id_hashes": [_hash_value(step_id) for step_id in step_ids],
+                    "rollback_id_hashes": [
+                        _hash_value(step_id) for step_id in rollback_ids
+                    ],
+                    "step_capabilities": step_capabilities[:20],
+                    "plan_arg_keys": plan_args_keys[:20],
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=_consciousness_core_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
 
     def _map_plan_to_subsystem(self, plan: Plan) -> Optional[str]:
         """Map plan capability to subsystem name for self-trust tracking."""

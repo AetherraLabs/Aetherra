@@ -18,6 +18,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any, Callable, Optional
 
+from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
 # Local imports
 from ..kernel.narrator import MemoryNarrative, MemoryNarrator
 from .fractal_mesh import (
@@ -393,6 +395,13 @@ class AetherraMemoryEngineAdvanced:
             if category:
                 derived_meta.setdefault("category", category)
 
+            self._evaluate_guardian_memory_write(
+                tags=tags or [],
+                category=category,
+                narrative_role=narrative_role,
+                metadata=derived_meta,
+            )
+
             # Apply guard; allow explicit PolicyViolation to bubble out
             try:
                 self._apply_policy_guard(content, derived_meta)
@@ -615,6 +624,81 @@ class AetherraMemoryEngineAdvanced:
         return base
 
     # Internal helpers
+    def _evaluate_guardian_memory_write(
+        self,
+        *,
+        tags: list[str],
+        category: str,
+        narrative_role: str | None,
+        metadata: dict[str, Any],
+    ) -> None:
+        """Evaluate Guardian policy before persistent memory mutation."""
+
+        normalized_tags = tuple(sorted(str(tag).strip().lower() for tag in tags if tag))
+        normalized_category = str(category or "general").strip().lower() or "general"
+        is_identity = self._is_identity_memory(
+            category=normalized_category,
+            tags=normalized_tags,
+            narrative_role=narrative_role,
+            metadata=metadata,
+        )
+        capabilities = ["memory:write"]
+        if is_identity:
+            capabilities.append("memory:modify_identity")
+        intent = IntentDeclaration(
+            requester=str(metadata.get("requester") or "memory:advanced_engine"),
+            subsystem="memory",
+            action="memory.remember",
+            target=f"memory:{normalized_category}",
+            purpose="Persist memory through advanced memory engine",
+            capabilities=tuple(capabilities),
+            evidence=(f"memory_category:{normalized_category}",),
+            reversible=bool(metadata.get("reversible", True)),
+            rollback_plan=metadata.get(
+                "rollback_plan",
+                "delete generated memory fragment and associated core memory record",
+            ),
+            metadata={
+                "category": normalized_category,
+                "tags": normalized_tags,
+                "narrative_role": narrative_role,
+                "identity_memory": is_identity,
+            },
+        )
+        decision = evaluate_intent(intent)
+        if decision.status in {
+            GuardianStatus.DENY,
+            GuardianStatus.REQUIRE_APPROVAL,
+            GuardianStatus.CONTAIN,
+        }:
+            raise PolicyViolation(
+                f"Memory write blocked by Guardian: {decision.reason}",
+                code=f"GUARDIAN_{decision.status.value.upper()}",
+            )
+
+    @staticmethod
+    def _is_identity_memory(
+        *,
+        category: str,
+        tags: tuple[str, ...],
+        narrative_role: str | None,
+        metadata: dict[str, Any],
+    ) -> bool:
+        identity_markers = {"identity", "self", "persona", "core_identity"}
+        metadata_markers = {
+            str(metadata.get("memory_type") or "").strip().lower(),
+            str(metadata.get("scope") or "").strip().lower(),
+        }
+        return any(
+            (
+                category in identity_markers,
+                bool(identity_markers.intersection(tags)),
+                str(narrative_role or "").strip().lower() in identity_markers,
+                bool(identity_markers.intersection(metadata_markers)),
+                bool(metadata.get("identity")),
+            )
+        )
+
     def _apply_policy_guard(self, content: Any, metadata: Optional[dict]) -> None:
         """Apply minimal policy hooks; default config disables enforcement.
 

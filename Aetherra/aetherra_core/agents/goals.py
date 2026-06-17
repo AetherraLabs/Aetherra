@@ -11,12 +11,66 @@ Helps users set, track, and achieve development goals.
 """
 
 # Standard library imports
+import hashlib
 import json
 import os
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
+
+
+def _hash_value(value: Any) -> str | None:
+    if value is None:
+        return None
+    raw = str(value)
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "agent:goals" and capability in {
+        "agent:control",
+        "agent:execute_task",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _guardian_preflight_goal_operation(
+    *,
+    action: str,
+    target: str,
+    purpose: str,
+    capabilities: tuple[str, ...],
+    reversible: bool,
+    rollback_plan: str,
+    metadata: dict[str, Any],
+):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "agent:goals"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="agents",
+            action=action,
+            target=target,
+            purpose=purpose,
+            capabilities=capabilities,
+            evidence=(f"{action}:request",),
+            reversible=reversible,
+            rollback_plan=rollback_plan,
+            metadata=metadata,
+        ),
+        approval_id=approval_id,
+        capability_checker=_guardian_capability_checker,
+    )
 
 
 class GoalStatus(Enum):
@@ -211,6 +265,25 @@ class LyrixaGoalSystem:
     ) -> str:
         """Create a new goal"""
         goal_id = f"goal_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{len(self.goals)}"
+        decision = _guardian_preflight_goal_operation(
+            action="agent.goal_create",
+            target=f"agent_goal:{_hash_value(goal_id)}",
+            purpose="Create a persisted agent goal",
+            capabilities=("agent:control",),
+            reversible=True,
+            rollback_plan="delete the created goal and associated subtasks from the goal store",
+            metadata={
+                "goal_id_hash": _hash_value(goal_id),
+                "title_hash": _hash_value(title),
+                "description_length": len(str(description or "")),
+                "priority": priority.value,
+                "has_due_date": due_date is not None,
+                "tag_count": len(tags or []),
+                "metadata_keys": sorted(str(key) for key in metadata or {}),
+            },
+        )
+        if not decision.allowed:
+            return ""
 
         goal = Goal(
             id=goal_id,
@@ -237,6 +310,26 @@ class LyrixaGoalSystem:
             return False
 
         goal = self.goals[goal_id]
+        normalized_updates = sorted(str(key) for key in updates)
+        decision = _guardian_preflight_goal_operation(
+            action="agent.goal_update",
+            target=f"agent_goal:{_hash_value(goal_id)}",
+            purpose="Update a persisted agent goal",
+            capabilities=("agent:control",),
+            reversible=True,
+            rollback_plan="restore the previous goal record from the goal store backup or audit snapshot",
+            metadata={
+                "goal_id_hash": _hash_value(goal_id),
+                "title_hash": _hash_value(goal.title),
+                "current_status": goal.status.value,
+                "requested_status": str(updates.get("status", "")) or None,
+                "update_fields": normalized_updates,
+                "tag_count": len(updates.get("tags", []) or []),
+                "metadata_keys": sorted(str(key) for key in updates.get("metadata") or {}),
+            },
+        )
+        if not decision.allowed:
+            return False
 
         # Update allowed fields
         if "title" in updates:
@@ -275,9 +368,26 @@ class LyrixaGoalSystem:
             return False
 
         goal = self.goals[goal_id]
+        subtasks_to_delete = [st_id for st_id, st in self.subtasks.items() if st.goal_id == goal_id]
+        decision = _guardian_preflight_goal_operation(
+            action="agent.goal_delete",
+            target=f"agent_goal:{_hash_value(goal_id)}",
+            purpose="Delete a persisted agent goal and its subtasks",
+            capabilities=("agent:control",),
+            reversible=True,
+            rollback_plan="restore the deleted goal and subtasks from the goal store backup",
+            metadata={
+                "goal_id_hash": _hash_value(goal_id),
+                "title_hash": _hash_value(goal.title),
+                "status": goal.status.value,
+                "subtask_count": len(subtasks_to_delete),
+                "subtask_hashes": [_hash_value(subtask_id) for subtask_id in subtasks_to_delete],
+            },
+        )
+        if not decision.allowed:
+            return False
 
         # Delete associated subtasks
-        subtasks_to_delete = [st_id for st_id, st in self.subtasks.items() if st.goal_id == goal_id]
         for subtask_id in subtasks_to_delete:
             del self.subtasks[subtask_id]
 
@@ -293,6 +403,22 @@ class LyrixaGoalSystem:
             return ""
 
         subtask_id = f"subtask_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{len(self.subtasks)}"
+        decision = _guardian_preflight_goal_operation(
+            action="agent.subtask_create",
+            target=f"agent_goal:{_hash_value(goal_id)}",
+            purpose="Create a persisted subtask under an agent goal",
+            capabilities=("agent:control",),
+            reversible=True,
+            rollback_plan="delete the created subtask and remove its goal reference",
+            metadata={
+                "goal_id_hash": _hash_value(goal_id),
+                "subtask_id_hash": _hash_value(subtask_id),
+                "title_hash": _hash_value(title),
+                "description_length": len(str(description or "")),
+            },
+        )
+        if not decision.allowed:
+            return ""
 
         subtask = Subtask(id=subtask_id, goal_id=goal_id, title=title, description=description)
 
@@ -315,6 +441,23 @@ class LyrixaGoalSystem:
             return False
 
         subtask = self.subtasks[subtask_id]
+        decision = _guardian_preflight_goal_operation(
+            action="agent.subtask_complete",
+            target=f"agent_subtask:{_hash_value(subtask_id)}",
+            purpose="Mark an agent goal subtask as completed",
+            capabilities=("agent:execute_task", "agent:control"),
+            reversible=True,
+            rollback_plan="mark the subtask incomplete and recompute goal progress",
+            metadata={
+                "goal_id_hash": _hash_value(subtask.goal_id),
+                "subtask_id_hash": _hash_value(subtask_id),
+                "title_hash": _hash_value(subtask.title),
+                "was_completed": subtask.completed,
+            },
+        )
+        if not decision.allowed:
+            return False
+
         subtask.completed = True
         subtask.completed_at = datetime.now()
 

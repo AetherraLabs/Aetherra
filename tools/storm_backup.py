@@ -14,6 +14,7 @@ Notes:
 """
 
 import argparse
+import hashlib
 import json
 import os
 import sqlite3
@@ -50,6 +51,94 @@ INSERT_PREFIX = {
 }
 
 
+def _hash_value(value: Any | None) -> str | None:
+    if value is None:
+        return None
+    raw = str(value)
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _storm_backup_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "maintenance" and capability in {
+        "maintenance:backup",
+        "maintenance:restore",
+        "fs:write",
+        "memory:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _guardian_preflight_backup(db_path: str, out_path: str):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="maintenance",
+            action="maintenance.storm_backup",
+            target="maintenance:storm_backup",
+            purpose="Export STORM SQLite tables to a portable backup file",
+            capabilities=("maintenance:backup", "fs:write"),
+            expected_outcome="STORM table contents are exported without modifying the source database",
+            reversible=True,
+            rollback_plan="delete the generated backup file if export should be discarded",
+            metadata={
+                "db_path_hash": _hash_value(db_path),
+                "out_path_hash": _hash_value(out_path),
+                "table_count": len(STORM_TABLES),
+            },
+        ),
+        approval_id=approval_id,
+        capability_checker=_storm_backup_capability_checker,
+    )
+
+
+def _guardian_preflight_restore(db_path: str, in_path: str, force: bool):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    capabilities = ("maintenance:restore", "memory:write") if force else ("maintenance:restore",)
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="maintenance",
+            action="maintenance.storm_restore",
+            target="maintenance:storm_restore",
+            purpose="Validate or restore STORM SQLite tables from a backup file",
+            capabilities=capabilities,
+            expected_outcome=(
+                "STORM table contents are replaced from backup"
+                if force
+                else "STORM restore backup is validated without database mutation"
+            ),
+            reversible=not force,
+            rollback_plan=(
+                "restore from a fresh STORM backup captured before forced restore"
+                if force
+                else "no rollback needed for dry-run validation"
+            ),
+            metadata={
+                "db_path_hash": _hash_value(db_path),
+                "in_path_hash": _hash_value(in_path),
+                "force": bool(force),
+                "table_count": len(STORM_TABLES),
+                "backup_exists": os.path.exists(in_path),
+            },
+        ),
+        approval_id=approval_id,
+        capability_checker=_storm_backup_capability_checker,
+    )
+
+
 def _safe_table(name: str) -> str:
     if name not in STORM_TABLES:
         raise ValueError(f"Invalid table: {name}")
@@ -57,6 +146,10 @@ def _safe_table(name: str) -> str:
 
 
 def backup(db_path: str, out_path: str) -> None:
+    decision = _guardian_preflight_backup(db_path, out_path)
+    if not decision.allowed:
+        raise PermissionError(f"guardian_denied:{decision.reason}")
+
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     data: dict[str, Any] = {
@@ -79,6 +172,11 @@ def backup(db_path: str, out_path: str) -> None:
 def restore(db_path: str, in_path: str, force: bool = False) -> None:
     if not os.path.exists(in_path):
         raise FileNotFoundError(in_path)
+
+    decision = _guardian_preflight_restore(db_path, in_path, force)
+    if not decision.allowed:
+        raise PermissionError(f"guardian_denied:{decision.reason}")
+
     with open(in_path, encoding="utf-8") as f:
         data = json.load(f)
 

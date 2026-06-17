@@ -19,6 +19,7 @@ try:  # Centralized disclosure policy (optional at import time)
     from Aetherra.core import disclosure_policy as dp  # type: ignore
 except Exception:  # pragma: no cover - defensive import fallback
     dp = None  # type: ignore
+from .guardian_chat import evaluate_chat_ingress
 from .metrics_accum import chat_metrics
 from .security import policy_snapshot, safety_precheck
 from .tokenizer import count_tokens
@@ -112,6 +113,26 @@ def handle_chat(payload: dict[str, Any]) -> tuple[dict[str, Any], int, dict[str,
             "trace_id": trace_id,
         }
         headers = _std_headers(trace_id, policy=sc.get("policy"))
+        return body, 403, headers
+    message = str(sc.get("message") or message)
+    guardian_decision = evaluate_chat_ingress(
+        message=message,
+        route="/api/lyrixa/chat",
+        principal=str(payload.get("principal") or "hub:chat"),
+        trace_id=trace_id,
+        priority=prio,
+        context={"edit_root": edit_root} if edit_root else {},
+        streaming=False,
+        allow_edits=allow_edits,
+    )
+    if not guardian_decision.allowed:
+        body = {
+            "error": "guardian_denied",
+            "message": "Request rejected by Guardian",
+            "reason": guardian_decision.reason,
+            "trace_id": trace_id,
+        }
+        headers = _std_headers(trace_id)
         return body, 403, headers
 
     # Registry call

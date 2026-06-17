@@ -29,6 +29,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+from Aetherra.security.capabilities import has_capability
+
 # Import Lyrixa components
 try:
     # ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.core.advanced_vector_memory import AdvancedMemorySystem
@@ -271,6 +274,67 @@ class LyrixaPluginSystem:
         print(f"   📁 Plugin directory: {self.plugins_dir}")
         print(f"   🔍 Found {len(self.installed_plugins)} installed plugins")
 
+    def _guardian_preflight(
+        self,
+        *,
+        action: str,
+        plugin_name: str,
+        target_path: Path,
+        capabilities: tuple[str, ...],
+        purpose: str,
+        reversible: bool,
+        rollback_plan: str | None,
+        metadata: dict[str, Any] | None = None,
+    ) -> None:
+        try:
+            target_label = str(target_path.expanduser().resolve(strict=False))
+        except Exception:
+            target_label = str(target_path)
+        requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "lyrixa_plugin_system"
+        intent = IntentDeclaration(
+            requester=requester,
+            subsystem="lyrixa_plugin_system",
+            action=action,
+            target=f"plugin:{plugin_name}",
+            purpose=purpose,
+            capabilities=capabilities,
+            expected_outcome="Plugin system mutation is completed",
+            reversible=reversible,
+            rollback_plan=rollback_plan,
+            evidence=(f"plugin:{plugin_name}", f"path_name:{target_path.name}"),
+            metadata={
+                "target_path_name": target_path.name,
+                "target_parent_name": target_path.parent.name,
+                "target_path_hash": self._path_fingerprint(target_label),
+                **(metadata or {}),
+            },
+        )
+        decision = evaluate_intent(intent, capability_checker=has_capability)
+        if decision.status not in {GuardianStatus.ALLOW, GuardianStatus.ALLOW_LIMITED}:
+            raise PermissionError(
+                f"Guardian denied plugin system action {action}: {decision.reason}"
+            )
+
+    @staticmethod
+    def _path_fingerprint(path_value: str) -> str:
+        import hashlib
+
+        return hashlib.sha256(path_value.encode("utf-8", errors="replace")).hexdigest()[:16]
+
+    @staticmethod
+    def _extract_zip_safely(zip_ref: zipfile.ZipFile, extract_to: Path) -> int:
+        destination = extract_to.expanduser().resolve()
+        destination.mkdir(parents=True, exist_ok=True)
+        members = zip_ref.infolist()
+        for member in members:
+            member_path = destination / member.filename
+            resolved_member = member_path.resolve()
+            if resolved_member != destination and destination not in resolved_member.parents:
+                raise ValueError(f"Archive member escapes extraction directory: {member.filename}")
+        for member in members:
+            zip_ref.extract(member, destination)
+        return len(members)
+
     def _load_plugin_registry(self):
         """Load plugin registry from disk"""
         if self.plugin_registry_file.exists():
@@ -366,11 +430,24 @@ class LyrixaPluginSystem:
                 temp_dir = self.plugins_dir / "temp_install"
                 temp_dir.mkdir(exist_ok=True)
 
-                zip_ref.extractall(temp_dir)
+                self._guardian_preflight(
+                    action="plugin.install",
+                    plugin_name=Path(zip_path).stem,
+                    target_path=temp_dir,
+                    capabilities=("plugin:install", "fs:write"),
+                    purpose="Install plugin from ZIP archive",
+                    reversible=True,
+                    rollback_plan="Remove extracted files and delete the installed plugin directory",
+                    metadata={
+                        "source_type": "zip",
+                        "archive_name": Path(zip_path).name,
+                    },
+                )
+                self._extract_zip_safely(zip_ref, temp_dir)
 
                 # Look for manifest file
                 manifest_file = None
-                for root, dirs, files in os.walk(temp_dir):
+                for root, _dirs, files in os.walk(temp_dir):
                     if "manifest.json" in files:
                         manifest_file = Path(root) / "manifest.json"
                         break
@@ -450,6 +527,22 @@ class LyrixaPluginSystem:
 
             # Copy to plugins directory
             dest_dir = self.plugins_dir / manifest.name
+            self._guardian_preflight(
+                action="plugin.install",
+                plugin_name=manifest.name,
+                target_path=dest_dir,
+                capabilities=("plugin:install", "fs:write"),
+                purpose="Install plugin from local directory",
+                reversible=True,
+                rollback_plan="Remove the copied plugin directory and registry record",
+                metadata={
+                    "source_type": "directory",
+                    "source_name": source_dir.name,
+                    "manifest_entry_point": manifest.entry_point,
+                    "permission_count": len(manifest.permissions),
+                    "capability_count": len(manifest.capabilities),
+                },
+            )
             if dest_dir.exists():
                 shutil.rmtree(dest_dir)
 
@@ -480,6 +573,16 @@ class LyrixaPluginSystem:
                 return {"success": False, "error": f"Plugin {plugin_name} not found"}
 
             plugin = self.installed_plugins[plugin_name]
+            self._guardian_preflight(
+                action="plugin.uninstall",
+                plugin_name=plugin_name,
+                target_path=plugin.plugin_path,
+                capabilities=("plugin:uninstall", "fs:delete"),
+                purpose="Uninstall plugin from Lyrixa plugin system",
+                reversible=False,
+                rollback_plan=None,
+                metadata={"plugin_path_name": plugin.plugin_path.name},
+            )
 
             # Deactivate if active
             if plugin_name in self.active_plugins:
@@ -533,12 +636,11 @@ class LyrixaPluginSystem:
 
             plugin = self.installed_plugins[plugin_name]
 
-            if not plugin.loaded:
-                if not plugin.load():
-                    return {
-                        "success": False,
-                        "error": f"Failed to load plugin: {plugin.last_error}",
-                    }
+            if not plugin.loaded and not plugin.load():
+                return {
+                    "success": False,
+                    "error": f"Failed to load plugin: {plugin.last_error}",
+                }
 
             plugin.active = True
             self.active_plugins[plugin_name] = plugin
@@ -635,6 +737,16 @@ class LyrixaPluginSystem:
         """Create a new plugin template"""
         try:
             plugin_dir = self.plugins_dir / plugin_name
+            self._guardian_preflight(
+                action="plugin.create_template",
+                plugin_name=plugin_name,
+                target_path=plugin_dir,
+                capabilities=("plugin:create", "fs:write"),
+                purpose="Create plugin template files",
+                reversible=True,
+                rollback_plan="Remove the generated plugin template directory",
+                metadata={"overwrite": bool(overwrite)},
+            )
 
             if plugin_dir.exists():
                 if not overwrite:

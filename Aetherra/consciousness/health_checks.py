@@ -22,6 +22,9 @@ Notes:
 from __future__ import annotations
 
 # Standard library imports
+import hashlib
+import json
+import os
 import shutil
 import time
 from dataclasses import dataclass
@@ -70,6 +73,132 @@ class HealthCheckEngine:
         self.hub = hub_base_url.rstrip("/")
         # Phase 3: Optional self-trust layer for consciousness integration
         self.self_trust = self_trust
+
+    def _hash_value(self, value: object) -> str | None:
+        raw = str(value) if value is not None else ""
+        if not raw:
+            return None
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+    def _hash_json(self, value: object) -> str | None:
+        try:
+            raw = json.dumps(value, sort_keys=True, default=str)
+        except TypeError:
+            raw = repr(value)
+        return self._hash_value(raw)
+
+    def _guardian_requester(self) -> str:
+        return os.environ.get("AETHERRA_PRINCIPAL", "").strip() or "health_check_engine"
+
+    def _guardian_capability_checker(self, requester: str, capability: str) -> bool:
+        internal_capabilities = {
+            "autonomy:execute",
+            "consciousness:act",
+            "consciousness:write",
+            "fs:write",
+            "memory:write",
+            "system.rotate_logs",
+            "fs.cleanup_temp",
+        }
+        if requester == "health_check_engine" and capability in internal_capabilities:
+            return True
+
+        from Aetherra.security.capabilities import has_capability
+
+        return has_capability(requester, capability)
+
+    def _guardian_preflight_remediation(
+        self,
+        check: HealthCheck,
+        steps: List[PlanStep],
+        rollback: List[PlanStep],
+    ) -> None:
+        from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+        step_capabilities = tuple(sorted({step.capability for step in steps if step.capability}))
+        required_capabilities = (
+            "consciousness:act",
+            "autonomy:execute",
+            *step_capabilities,
+        )
+        if any(cap.startswith("fs.") or cap.startswith("fs:") for cap in step_capabilities):
+            required_capabilities = (*required_capabilities, "fs:write")
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=self._guardian_requester(),
+                subsystem="consciousness",
+                action="consciousness.health_check_remediate",
+                target="consciousness:health_check_engine",
+                purpose="Execute a bounded health-check remediation plan through the safety envelope",
+                capabilities=tuple(dict.fromkeys(required_capabilities)),
+                evidence=("HealthCheckEngine.run_check",),
+                reversible=bool(rollback),
+                rollback_plan=(
+                    "execute configured health-check rollback steps"
+                    if rollback
+                    else "no rollback steps configured for this health-check remediation"
+                ),
+                metadata={
+                    "operation": "run_check.remediate",
+                    "check_name_hash": self._hash_value(check.name),
+                    "risk": check.risk,
+                    "step_count": len(steps),
+                    "rollback_step_count": len(rollback),
+                    "step_capabilities": step_capabilities,
+                    "step_args_hashes": tuple(self._hash_json(step.args) for step in steps),
+                    "rollback_capabilities": tuple(step.capability for step in rollback),
+                    "rollback_args_hashes": tuple(self._hash_json(step.args) for step in rollback),
+                    "last_result_count": len(self.last_results),
+                },
+            ),
+            capability_checker=self._guardian_capability_checker,
+        )
+        if decision.status not in {
+            GuardianStatus.ALLOW,
+            GuardianStatus.ALLOW_LIMITED,
+        }:
+            raise PermissionError(
+                f"guardian_denied:{decision.reason}:consciousness.health_check_remediate"
+            )
+
+    def _guardian_preflight_self_trust_update(
+        self,
+        check: HealthCheck,
+        subsystem: str,
+        status: str,
+    ) -> None:
+        from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=self._guardian_requester(),
+                subsystem="consciousness",
+                action="consciousness.health_check_self_trust_update",
+                target="consciousness:health_check_engine",
+                purpose="Update subsystem self-trust from a health-check result",
+                capabilities=("consciousness:write", "memory:write"),
+                evidence=("HealthCheckEngine.run_check", "SelfTrust.observe"),
+                reversible=True,
+                rollback_plan="restore the previous subsystem trust score from the prior snapshot",
+                metadata={
+                    "operation": "run_check.self_trust_update",
+                    "check_name_hash": self._hash_value(check.name),
+                    "subsystem": subsystem,
+                    "result_status": status,
+                    "last_result_count": len(self.last_results),
+                },
+            ),
+            capability_checker=self._guardian_capability_checker,
+        )
+        if decision.status not in {
+            GuardianStatus.ALLOW,
+            GuardianStatus.ALLOW_LIMITED,
+        }:
+            raise PermissionError(
+                "guardian_denied:"
+                f"{decision.reason}:consciousness.health_check_self_trust_update"
+            )
 
     # -----------------------------
     # Probes (safe, fast, defensive)
@@ -231,11 +360,14 @@ class HealthCheckEngine:
             rb = [
                 PlanStep(id=sid, capability=sid, args=args) for sid, args in (check.rollback or [])
             ]
+            self._guardian_preflight_remediation(check, steps, rb)
             ledger = self.actuator.execute(Plan(intent=intent, steps=steps, rollback=rb))
             result["steps"] = ledger.actions
             # Verify
             verified = (check.verify or check.pass_if)(check.probe())
             result["status"] = "repaired" if (ledger.success and verified) else "failed"
+        except PermissionError:
+            raise
         except Exception as e:
             result["status"] = "error"
             result["error"] = str(e)
@@ -245,6 +377,11 @@ class HealthCheckEngine:
             # Map check name to subsystem (simple mapping strategy)
             subsystem = self._map_check_to_subsystem(check.name)
             if subsystem:
+                self._guardian_preflight_self_trust_update(
+                    check,
+                    subsystem,
+                    result["status"],
+                )
                 self.self_trust.observe(subsystem, result["status"])
 
         self.last_results[check.name] = result

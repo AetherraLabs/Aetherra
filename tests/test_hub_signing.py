@@ -38,11 +38,15 @@ def test_register_unsigned_non_strict(monkeypatch):
     try:
         resp = _post_json(
             "http://localhost:3012/api/plugins/register",
-            {"name": "unsigned_plugin", "version": "1.0.0"},
+            {
+                "name": "unsigned_plugin",
+                "version": "1.0.0",
+                "description": "Unsigned plugin for non-strict registration test",
+            },
         )
         assert resp.status_code == 200
         data = resp.json()
-        assert data["status"] == "success"
+        assert data["status"] == "ok"
     finally:
         srv.stop_server()
 
@@ -54,7 +58,11 @@ def test_register_unsigned_strict(monkeypatch):
     try:
         resp = _post_json(
             "http://localhost:3013/api/plugins/register",
-            {"name": "unsigned_plugin", "version": "1.0.0"},
+            {
+                "name": "unsigned_plugin",
+                "version": "1.0.0",
+                "description": "Unsigned plugin for strict registration test",
+            },
         )
         assert resp.status_code == 400
     finally:
@@ -71,7 +79,11 @@ def test_register_signed_valid(monkeypatch):
     from Aetherra.security.plugin_signing import generate_keypair, sign_manifest
 
     pub, secret = generate_keypair()
-    manifest = {"name": "signed_plugin", "version": "1.0.0"}
+    manifest = {
+        "name": "signed_plugin",
+        "version": "1.0.0",
+        "description": "Signed plugin registration test",
+    }
     signed = sign_manifest(manifest, secret)
 
     srv = _start_server(3014)

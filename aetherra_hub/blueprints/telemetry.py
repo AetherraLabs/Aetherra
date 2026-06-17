@@ -9,10 +9,13 @@ from __future__ import annotations
 
 # Standard library imports
 import threading
+from collections import deque
 from typing import Any
 
 # Third party imports
 from flask import Blueprint, jsonify, request
+
+from ..services.control_auth import authorize_control_request
 
 try:  # optional import; if missing we just omit field
     # Local imports
@@ -24,20 +27,22 @@ bp = Blueprint("telemetry", __name__)
 
 _lock = threading.Lock()
 _state: dict[str, Any] = {"telemetry_received": 0}
-_events: list[dict[str, Any]] = []  # future: ring buffer / size limit
+_events: deque[dict[str, Any]] = deque(maxlen=1_000)
 
 
 @bp.post("/api/telemetry")
 def ingest():  # pragma: no cover - validated via capability tests
-    try:
-        data = request.get_json(silent=True) or {}
-    except Exception:
-        data = {}
+    decision = authorize_control_request(request.headers, request.remote_addr)
+    if not decision.allowed:
+        return jsonify({"ok": False, "error": decision.error}), decision.status_code
+    if request.content_length is not None and request.content_length > 65_536:
+        return jsonify({"ok": False, "error": "payload_too_large"}), 413
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"ok": False, "error": "invalid_json_object"}), 400
     with _lock:
         _state["telemetry_received"] = int(_state.get("telemetry_received", 0)) + 1
-        if isinstance(data, dict):
-            # store shallow copy to avoid later mutation surprises
-            _events.append(dict(data))
+        _events.append(dict(data))
     return jsonify({"ok": True}), 200
 
 

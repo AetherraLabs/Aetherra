@@ -15,6 +15,7 @@ Tests cover:
 
 import json
 import os
+import sys
 import tempfile
 import unittest
 from datetime import datetime
@@ -404,8 +405,9 @@ class TestScriptExecutor(unittest.TestCase):
         )
 
         executor = ScriptExecutor(self.script_path)
+        command = f'"{sys.executable}" -c "print(\'test\')"'
         success, stdout, stderr, code = executor._execute_shell(
-            Mock(command="echo test", timeout=10), timeout=10
+            Mock(command=command, timeout=10), timeout=10
         )
 
         self.assertTrue(success)
@@ -419,8 +421,9 @@ class TestScriptExecutor(unittest.TestCase):
         )
 
         executor = ScriptExecutor(self.script_path)
+        command = f'"{sys.executable}" -c "import sys; sys.exit(1)"'
         success, stdout, stderr, code = executor._execute_shell(
-            Mock(command="exit 1", timeout=10), timeout=10
+            Mock(command=command, timeout=10), timeout=10
         )
 
         self.assertFalse(success)
@@ -433,12 +436,30 @@ class TestScriptExecutor(unittest.TestCase):
         )
 
         executor = ScriptExecutor(self.script_path)
+        command = f'"{sys.executable}" -c "import time; time.sleep(5)"'
         success, stdout, stderr, code = executor._execute_shell(
-            Mock(command="sleep 5", timeout=1), timeout=1
+            Mock(command=command, timeout=1), timeout=1
         )
 
         self.assertFalse(success)
         self.assertIn("Timeout", stderr)
+
+    def test_execute_shell_step_rejects_shell_operators(self):
+        """Shell steps execute direct commands, not shell command strings."""
+        from Aetherra.aetherra_core.script_service.script_executor import (
+            ScriptExecutor,
+        )
+
+        executor = ScriptExecutor(self.script_path)
+        command = f'"{sys.executable}" -c "print(1)" && "{sys.executable}" -c "print(2)"'
+        success, stdout, stderr, code = executor._execute_shell(
+            Mock(command=command, timeout=10), timeout=10
+        )
+
+        self.assertFalse(success)
+        self.assertEqual(stdout, "")
+        self.assertEqual(code, -1)
+        self.assertIn("Shell operators", stderr)
 
     def test_execute_python_step_success(self):
         """Test successful Python step execution."""
@@ -454,6 +475,7 @@ class TestScriptExecutor(unittest.TestCase):
 
         self.assertTrue(success)
         self.assertEqual(error, "")
+        self.assertEqual(executor.context.variables["x"], 42)
 
     def test_execute_python_step_error(self):
         """Test Python step with syntax error."""
@@ -483,6 +505,22 @@ class TestScriptExecutor(unittest.TestCase):
 
         self.assertFalse(success)
         self.assertIn("No code", error)
+
+    def test_execute_python_step_rejects_import_and_side_effects(self):
+        """Python workflow steps use the restricted statement language."""
+        from Aetherra.aetherra_core.script_service.script_executor import (
+            ScriptExecutor,
+        )
+
+        executor = ScriptExecutor(self.script_path)
+        executor.context = Mock(variables={})
+        success, output, error = executor._execute_python(
+            Mock(command="import os\nos.system('echo unsafe')"), timeout=10
+        )
+
+        self.assertFalse(success)
+        self.assertEqual(output, "")
+        self.assertIn("Forbidden restricted statement", error)
 
     def test_execute_plugin_step_success(self):
         """Test successful plugin step execution."""
@@ -558,6 +596,61 @@ class TestScriptExecutorIntegration(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(str(result.script_path), self.script_path)
         self.assertEqual(result.state, ExecutionState.COMPLETED)
+
+    def test_execution_writes_guardian_audit(self):
+        """Script execution declares intent to Guardian before running."""
+        from Aetherra.aetherra_core.script_service.script_executor import (
+            ScriptExecutor,
+        )
+
+        workspace = Path(self.tempdir.name)
+        with patch.dict(
+            os.environ,
+            {
+                "AETHERRA_WORKSPACE_ROOT": str(workspace),
+                "AETHERRA_GUARDIAN_MODE": "enforcing",
+            },
+        ):
+            executor = ScriptExecutor(self.script_path)
+            result = executor.execute()
+            audit_path = workspace / ".aetherra" / "security" / "audit.jsonl"
+            entries = [
+                json.loads(line)
+                for line in audit_path.read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            ]
+
+        self.assertTrue(result.success)
+        self.assertEqual(entries[-1]["event_type"], "guardian_decision")
+        self.assertEqual(
+            entries[-1]["details"]["intent"]["action"],
+            "script.execute",
+        )
+
+    def test_execution_blocked_by_guardian_missing_capability(self):
+        """Strict capability mode blocks scripts before parsing/execution."""
+        from Aetherra.aetherra_core.script_service.script_executor import (
+            ExecutionState,
+            ScriptExecutor,
+        )
+
+        with patch.dict(
+            os.environ,
+            {
+                "AETHERRA_WORKSPACE_ROOT": self.tempdir.name,
+                "AETHERRA_POLICY_HOME": str(Path(self.tempdir.name) / "policy"),
+                "AETHERRA_REQUIRE_CAPABILITIES": "1",
+                "AETHERRA_GUARDIAN_MODE": "enforcing",
+            },
+        ):
+            executor = ScriptExecutor(self.script_path)
+            with patch.object(executor, "_parse_script") as parse_script:
+                result = executor.execute()
+
+        self.assertFalse(result.success)
+        self.assertEqual(result.state, ExecutionState.FAILED)
+        self.assertEqual(result.error, "missing_capability")
+        parse_script.assert_not_called()
 
     def test_execution_result_has_metrics(self):
         """Test execution result includes metrics."""

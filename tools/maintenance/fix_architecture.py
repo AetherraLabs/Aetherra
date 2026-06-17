@@ -12,9 +12,11 @@ Purpose: Fix violations detected by architectural compliance checker
 """
 
 # Standard library imports
+import hashlib
 import os
 import re
 import shutil
+from datetime import datetime
 from pathlib import Path
 
 
@@ -29,6 +31,55 @@ class ArchitecturalFixer:
 
         self.fixes_applied = []
         self.moves_needed = []
+
+    @staticmethod
+    def _hash_value(value) -> str | None:
+        if value is None:
+            return None
+        raw = str(value)
+        if not raw:
+            return None
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+    @staticmethod
+    def _guardian_capability_checker(requester: str, capability: str) -> bool:
+        if requester == "maintenance" and capability in {
+            "maintenance:cleanup",
+            "fs:write",
+            "fs:delete",
+        }:
+            return True
+
+        from Aetherra.security.capabilities import has_capability
+
+        return has_capability(requester, capability)
+
+    def _guardian_preflight_apply(self):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        return evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="maintenance",
+                action="maintenance.architecture_fix",
+                target="maintenance:aetherra_architecture_fix",
+                purpose="Apply architectural import fixes, GUI moves, guard generation, and fix report output",
+                capabilities=("maintenance:cleanup", "fs:write", "fs:delete"),
+                expected_outcome="Architecture fixes are applied and enforcement/report files are generated",
+                reversible=False,
+                rollback_plan="restore modified files from version control or a prior workspace backup",
+                metadata={
+                    "project_root_hash": self._hash_value(self.project_root),
+                    "aetherra_root_hash": self._hash_value(self.aetherra_root),
+                    "lyrixa_root_hash": self._hash_value(self.lyrixa_root),
+                    "dry_run": bool(self.dry_run),
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=self._guardian_capability_checker,
+        )
 
     def fix_import_violations(self) -> list[str]:
         """Fix core AI files importing from Lyrixa"""
@@ -107,10 +158,9 @@ class ArchitecturalFixer:
                 continue
 
             try:
-                # Create target directory if needed
-                target.parent.mkdir(parents=True, exist_ok=True)
-
                 if not self.dry_run:
+                    # Create target directory if needed
+                    target.parent.mkdir(parents=True, exist_ok=True)
                     shutil.move(str(source), str(target))
 
                 moved_files.append(f"{source} → {target}")
@@ -234,9 +284,7 @@ if __name__ == "__main__":
         """Generate comprehensive fix report"""
         report = []
         report.append("# 🔧 AETHERRA ARCHITECTURAL FIX REPORT")
-        report.append(
-            f"**Generated**: {os.popen('date /t').read().strip()} {os.popen('time /t').read().strip()}"
-        )
+        report.append(f"**Generated**: {datetime.now().isoformat(timespec='seconds')}")
         report.append(f"**Mode**: {'DRY RUN' if self.dry_run else 'LIVE EXECUTION'}")
         report.append("")
 
@@ -307,6 +355,16 @@ if __name__ == "__main__":
         """Apply all architectural fixes"""
         print("🔧 APPLYING ARCHITECTURAL FIXES")
         print("=" * 40)
+
+        if not self.dry_run:
+            decision = self._guardian_preflight_apply()
+            if not decision.allowed:
+                print(f"Guardian denied architecture fixes: {decision.reason}")
+                return {
+                    "import_fixes": [],
+                    "gui_moves": [],
+                    "engine_analysis": [],
+                }
 
         # Apply fixes
         import_fixes = self.fix_import_violations()

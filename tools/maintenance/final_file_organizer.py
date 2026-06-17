@@ -9,6 +9,7 @@ Moves the remaining misplaced files to their correct directories.
 """
 
 # Standard library imports
+import hashlib
 import logging
 import os
 import shutil
@@ -25,9 +26,60 @@ class FinalFileOrganizer:
         self.backup_dir = Path("final_organization_backup")
         self.moves_performed = []
 
-        # Create backup directory
-        if not self.dry_run:
-            self.backup_dir.mkdir(exist_ok=True)
+    @staticmethod
+    def _hash_value(value) -> str | None:
+        if value is None:
+            return None
+        raw = str(value)
+        if not raw:
+            return None
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+    @staticmethod
+    def _guardian_capability_checker(requester: str, capability: str) -> bool:
+        if requester == "maintenance" and capability in {
+            "maintenance:cleanup",
+            "fs:write",
+            "fs:delete",
+        }:
+            return True
+
+        from Aetherra.security.capabilities import has_capability
+
+        return has_capability(requester, capability)
+
+    def _guardian_preflight_execute(self, moves: dict[str, str]):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        move_hashes = tuple(
+            sorted(
+                self._hash_value(f"{src}->{dst}") or ""
+                for src, dst in moves.items()
+            )
+        )
+        return evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="maintenance",
+                action="maintenance.final_file_organization",
+                target="maintenance:aetherra_core_file_organization",
+                purpose="Move Aetherra core files into their final organized locations",
+                capabilities=("maintenance:cleanup", "fs:write", "fs:delete"),
+                expected_outcome="Selected Aetherra core files are backed up and moved to final locations",
+                reversible=False,
+                rollback_plan="restore moved files from final organization backups or version control",
+                metadata={
+                    "base_path_hash": self._hash_value(self.base_path),
+                    "backup_dir_hash": self._hash_value(self.backup_dir),
+                    "move_count": len(moves),
+                    "move_hashes": move_hashes[:20],
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=self._guardian_capability_checker,
+        )
 
     def get_final_moves(self):
         """Get the strategic file moves that make the most sense"""
@@ -137,6 +189,12 @@ class FinalFileOrganizer:
 
         logger.info(f"📦 Planning to move {len(moves)} files...")
 
+        if not self.dry_run:
+            decision = self._guardian_preflight_execute(moves)
+            if not decision.allowed:
+                logger.error("Guardian denied final organization: %s", decision.reason)
+                return
+
         for src_path, dst_path in moves.items():
             logger.info(f"📦 Moving: {src_path} → {dst_path}")
             self.move_file(src_path, dst_path)
@@ -158,7 +216,7 @@ class FinalFileOrganizer:
 
         logger.info("🧹 Cleaning up empty directories...")
 
-        for root, dirs, files in os.walk(self.base_path, topdown=False):
+        for root, dirs, _files in os.walk(self.base_path, topdown=False):
             for dir_name in dirs:
                 dir_path = Path(root) / dir_name
                 try:

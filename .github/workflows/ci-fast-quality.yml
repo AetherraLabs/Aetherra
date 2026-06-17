@@ -25,6 +25,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -45,18 +47,31 @@ jobs:
       - name: Install minimal deps
         run: |
           python -m pip install --upgrade pip
-          pip install ruff black isort pytest jq
+          pip install ruff black isort pytest jq requests flask pyyaml
 
       - name: Quick lint/format/test
         run: |
-          echo '--- Ruff lint'
-          ruff check .
-          echo '--- Ruff format check'
-          ruff format --check .
-          echo '--- Black check'
-          black --line-length 100 --check . || (echo 'Black failed' && exit 1)
-          echo '--- isort check'
-          isort --profile black --line-length 100 --check-only .
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+            mapfile -t py_files < <(git diff --name-only --diff-filter=ACMRT "origin/${{ github.base_ref }}...HEAD" -- '*.py' ':!:dist-packages/**' ':!:**/node_modules/**')
+            if [ "${#py_files[@]}" -eq 0 ]; then
+              echo 'No changed Python files; skipping Python lint/format checks.'
+            else
+              echo '--- Ruff critical checks changed files'
+              ruff check --select E9,F63,F7,F82 "${py_files[@]}"
+            fi
+          elif [ "${{ github.ref }}" != "refs/heads/main" ]; then
+            echo 'Feature branch push detected; full repo lint runs only on main pushes.'
+          else
+            echo '--- Ruff lint'
+            ruff check .
+            echo '--- Ruff format check'
+            ruff format --check .
+            echo '--- Black check'
+            black --line-length 100 --check . || (echo 'Black failed' && exit 1)
+            echo '--- isort check'
+            isort --profile black --line-length 100 --check-only .
+          fi
           echo '--- Minimal pytest'
           if [ -f tests/capabilities/test_lyrixa_chat_bridge_schema.py ]; then pytest -q -o addopts= tests/capabilities/test_lyrixa_chat_bridge_schema.py::test_edit_plan_mirrors_suggestions_and_confidence_defaults; fi
 

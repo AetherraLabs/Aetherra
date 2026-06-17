@@ -23,19 +23,45 @@ Date: August 5, 2025
 
 # Standard library imports
 import asyncio
+import hashlib
 import logging
+import os
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 # Third party imports
 # Import quantum memory and temporal consciousness systems
-from quantum_memory_system import MemoryType, initialize_quantum_memory_system
-from temporal_consciousness_system import initialize_temporal_consciousness_engine
+try:
+    from .quantum_memory_system import MemoryType, initialize_quantum_memory_system
+    from .temporal_consciousness_system import initialize_temporal_consciousness_engine
+except ImportError:  # pragma: no cover - legacy direct-script import path
+    from quantum_memory_system import MemoryType, initialize_quantum_memory_system
+    from temporal_consciousness_system import initialize_temporal_consciousness_engine
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _integration_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "consciousness:memory_temporal_integration" and capability in {
+        "consciousness:write",
+        "memory:read",
+        "memory:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
 
 
 @dataclass
@@ -111,6 +137,22 @@ class QuantumMemoryTemporalIntegration:
         """Create a unified consciousness state with integrated memory and temporal processing"""
         try:
             timestamp = temporal_context or datetime.now()
+            self._guardian_preflight_integration_operation(
+                operation="create_state",
+                capabilities=("consciousness:write", "memory:write"),
+                extra_metadata={
+                    "consciousness_hash": _hash_value(consciousness_data),
+                    "consciousness_field_names": sorted(
+                        str(key) for key in consciousness_data
+                    ),
+                    "consciousness_field_count": len(consciousness_data),
+                    "memory_context_count": len(memory_context or []),
+                    "memory_context_hashes": [
+                        _hash_value(item) for item in (memory_context or [])[:16]
+                    ],
+                    "temporal_context_hash": _hash_value(timestamp.isoformat()),
+                },
+            )
             state_id = f"integrated_{int(timestamp.timestamp())}"
 
             self.logger.info(f"🌟 Creating integrated consciousness state: {state_id}")
@@ -175,6 +217,8 @@ class QuantumMemoryTemporalIntegration:
 
             return state_id
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Failed to create integrated consciousness state: {e}")
             raise
@@ -187,6 +231,21 @@ class QuantumMemoryTemporalIntegration:
     ) -> Dict[str, Any]:
         """Retrieve memories enhanced by temporal consciousness context"""
         try:
+            self._guardian_preflight_integration_operation(
+                operation="enhanced_retrieval",
+                capabilities=("consciousness:write", "memory:read", "memory:write"),
+                extra_metadata={
+                    "query_hash": _hash_value(query),
+                    "query_field_names": sorted(str(key) for key in query),
+                    "query_field_count": len(query),
+                    "temporal_context_hash": _hash_value(
+                        temporal_context.isoformat() if temporal_context else None
+                    ),
+                    "temporal_window_seconds": round(
+                        float((temporal_window or timedelta(0)).total_seconds()), 6
+                    ),
+                },
+            )
             self.logger.info("🔍 Enhanced memory retrieval with temporal context")
 
             # Get temporal context if provided
@@ -253,6 +312,8 @@ class QuantumMemoryTemporalIntegration:
 
             return retrieval_result
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Enhanced memory retrieval failed: {e}")
             return {
@@ -266,6 +327,18 @@ class QuantumMemoryTemporalIntegration:
     ) -> Dict[str, Any]:
         """Create temporal predictions enhanced by quantum memory patterns"""
         try:
+            self._guardian_preflight_integration_operation(
+                operation="memory_enhanced_prediction",
+                capabilities=("consciousness:write", "memory:read", "memory:write"),
+                extra_metadata={
+                    "target_time_hash": _hash_value(target_time.isoformat()),
+                    "prediction_context_hash": _hash_value(prediction_context),
+                    "prediction_context_field_names": sorted(
+                        str(key) for key in prediction_context
+                    ),
+                    "prediction_context_field_count": len(prediction_context),
+                },
+            )
             self.logger.info(f"🔮 Temporal prediction with memory enhancement for {target_time}")
 
             # Get relevant memories for prediction context
@@ -315,6 +388,8 @@ class QuantumMemoryTemporalIntegration:
 
             return enhanced_prediction
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Temporal prediction with memory failed: {e}")
             return {}
@@ -324,6 +399,15 @@ class QuantumMemoryTemporalIntegration:
     ) -> Dict[str, Any]:
         """Process consciousness evolution through memory-temporal integration"""
         try:
+            self._guardian_preflight_integration_operation(
+                operation="evolution_processing",
+                capabilities=("consciousness:write", "memory:read", "memory:write"),
+                extra_metadata={
+                    "trigger_hash": _hash_value(evolution_trigger),
+                    "trigger_field_names": sorted(str(key) for key in evolution_trigger),
+                    "trigger_field_count": len(evolution_trigger),
+                },
+            )
             self.logger.info("🚀 Processing consciousness evolution")
 
             # Analyze current consciousness state
@@ -395,6 +479,8 @@ class QuantumMemoryTemporalIntegration:
                     "threshold_required": 0.7,
                 }
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Consciousness evolution processing failed: {e}")
             return {"evolution_occurred": False, "error": str(e)}
@@ -423,6 +509,72 @@ class QuantumMemoryTemporalIntegration:
 
         except Exception:
             return 0.0
+
+    def _guardian_preflight_integration_operation(
+        self,
+        *,
+        operation: str,
+        capabilities: tuple[str, ...],
+        extra_metadata: Dict[str, Any] | None = None,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = (
+            os.getenv("AETHERRA_PRINCIPAL", "").strip()
+            or "consciousness:memory_temporal_integration"
+        )
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        metadata: Dict[str, Any] = {
+            "operation": operation,
+            "integrated_state_count": len(self.integrated_states),
+            "bridge_count": len(self.memory_temporal_bridges),
+            "evolution_history_count": len(self.consciousness_evolution_history),
+            "states_integrated": int(self.states_integrated),
+            "bridges_created": int(self.bridges_created),
+            "consciousness_evolution_events": int(
+                self.consciousness_evolution_events
+            ),
+            "avg_integration_strength": round(
+                float(self.avg_integration_strength), 6
+            ),
+            "temporal_memory_coherence": round(
+                float(self.temporal_memory_coherence), 6
+            ),
+            "integration_threshold": round(float(self.integration_threshold), 6),
+            "bridge_correlation_threshold": round(
+                float(self.bridge_correlation_threshold), 6
+            ),
+        }
+        if extra_metadata:
+            metadata.update(extra_metadata)
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action=f"consciousness.memory_temporal_integration_{operation}",
+                target="quantum_memory_temporal_integration",
+                purpose="Mutate experimental memory-temporal consciousness integration state",
+                capabilities=capabilities,
+                evidence=(
+                    "QuantumMemoryTemporalIntegration.create_integrated_consciousness_state",
+                    "QuantumMemoryTemporalIntegration.enhanced_memory_retrieval",
+                    "QuantumMemoryTemporalIntegration.temporal_prediction_with_memory",
+                    "QuantumMemoryTemporalIntegration.consciousness_evolution_processing",
+                ),
+                reversible=True,
+                rollback_plan=(
+                    "restore integrated states, memory-temporal bridges, "
+                    "evolution history, integration counters, and metrics"
+                ),
+                metadata=metadata,
+            ),
+            approval_id=approval_id,
+            capability_checker=_integration_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
 
     async def _calculate_memory_integration_strength(
         self, memory_trace_id: str, consciousness_data: Dict[str, Any]
@@ -563,7 +715,7 @@ class QuantumMemoryTemporalIntegration:
         for memory in memories:
             content = memory.get("content", {})
             for key, value in content.items():
-                if isinstance(value, (int, float)):
+                if isinstance(value, int | float):
                     if key not in patterns:
                         patterns[key] = []
                     patterns[key].append(value)

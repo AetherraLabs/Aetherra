@@ -19,22 +19,20 @@ def reload_api():
 
 @pytest.fixture(autouse=True)
 def iso_home(monkeypatch, tmp_path):
-    fake = tmp_path / "H"
-    fake.mkdir()
-    monkeypatch.setenv("HOME", str(fake))
-    monkeypatch.setenv("USERPROFILE", str(fake))
+    monkeypatch.setenv("AETHERRA_STATE_DIR", str(tmp_path / "state"))
     monkeypatch.setenv("AETHERRA_PROFILE", "prod")
+    monkeypatch.delenv("AETHERRA_SAFE_MODE", raising=False)
     monkeypatch.delenv("AETHERRA_KEYS_MASTER", raising=False)
     monkeypatch.delenv("AETHERRA_KEYS_ALLOW_PLAINTEXT", raising=False)
     return
 
 
 def _keys_file():
-    return Path(os.path.expanduser("~/.aetherra/keys.json"))
+    return Path(os.environ["AETHERRA_STATE_DIR"]) / "keys.json"
 
 
 def _master_file():
-    return Path(os.path.expanduser("~/.aetherra/keys_master.key"))
+    return Path(os.environ["AETHERRA_STATE_DIR"]) / "keys_master.key"
 
 
 def test_set_key_auto_encryption(monkeypatch):

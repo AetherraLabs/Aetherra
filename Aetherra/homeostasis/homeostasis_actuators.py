@@ -141,8 +141,113 @@ class HomeostasisActuators:
             f"📝 Recorded action: {action_type} on {target} - {'✅' if result.success else '❌'}"
         )
 
+    def _guardian_requester(self, action: Any | None = None) -> str:
+        requester = None
+        if action is not None:
+            requester = getattr(action, "guardian_requester", None) or getattr(
+                action, "requester", None
+            )
+        return str(requester or "homeostasis").strip() or "homeostasis"
+
+    def _guardian_capability_checker(self, requester: str, capability: str) -> bool:
+        if requester == "homeostasis" and capability in {
+            "homeostasis:actuate",
+            "homeostasis:rollback",
+            "security:modify",
+        }:
+            return True
+        from Aetherra.security.capabilities import has_capability
+
+        return has_capability(requester, capability)
+
+    def _guardian_capabilities_for_action(self, action: Any) -> tuple[str, ...]:
+        action_type = str(getattr(action, "action_type", "") or "")
+        target_service = str(getattr(action, "target_service", "") or "")
+        capabilities = ["homeostasis:actuate"]
+        target_lower = f"{target_service} {action_type}".lower()
+        if any(marker in target_lower for marker in ("security", "policy", "capability")):
+            capabilities.append("security:modify")
+        return tuple(capabilities)
+
+    def _guardian_preflight_action(self, action: Any) -> None:
+        from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+        action_type = str(getattr(action, "action_type", "") or "").strip()
+        target_service = str(getattr(action, "target_service", "") or "").strip()
+        parameters = getattr(action, "parameters", {}) or {}
+        if not isinstance(parameters, dict):
+            parameters = {}
+        priority = getattr(getattr(action, "priority", None), "name", None) or str(
+            getattr(action, "priority", "unknown")
+        )
+        controller_name = str(getattr(action, "controller_name", "") or "homeostasis")
+        reason = str(getattr(action, "reason", "") or "")
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=self._guardian_requester(action),
+                subsystem="homeostasis",
+                action="homeostasis.actuate",
+                target="homeostasis:actuator",
+                purpose=reason or f"Execute homeostasis actuator {action_type}",
+                capabilities=self._guardian_capabilities_for_action(action),
+                evidence=(
+                    f"homeostasis_action:{action_type}",
+                    f"target_service:{target_service or 'system'}",
+                ),
+                reversible=True,
+                rollback_plan="use homeostasis actuator rollback or restore previous service state",
+                metadata={
+                    "action_type": action_type,
+                    "target_service": target_service,
+                    "priority": str(priority).lower(),
+                    "controller_name": controller_name,
+                    "parameter_keys": tuple(sorted(str(key) for key in parameters)),
+                    "reason_present": bool(reason.strip()),
+                    "requires_confirmation": bool(
+                        getattr(action, "requires_confirmation", False)
+                    ),
+                },
+            ),
+            capability_checker=self._guardian_capability_checker,
+        )
+        if decision.status not in {
+            GuardianStatus.ALLOW,
+            GuardianStatus.ALLOW_LIMITED,
+        }:
+            raise PermissionError(
+                f"Guardian denied Homeostasis actuator action {action_type}: {decision.reason}"
+            )
+
+    def _guardian_preflight_rollback(self, requester: str = "homeostasis") -> None:
+        from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=str(requester or "homeostasis"),
+                subsystem="homeostasis",
+                action="homeostasis.rollback",
+                target="homeostasis:actuator_history",
+                purpose="Rollback the most recent Homeostasis actuator action",
+                capabilities=("homeostasis:rollback",),
+                evidence=("rollback_last_action",),
+                reversible=True,
+                rollback_plan="inspect action history and re-run the reverted actuator if rollback was unsafe",
+                metadata={"rollback_stack_depth": len(self.rollback_stack)},
+            ),
+            capability_checker=self._guardian_capability_checker,
+        )
+        if decision.status not in {
+            GuardianStatus.ALLOW,
+            GuardianStatus.ALLOW_LIMITED,
+        }:
+            raise PermissionError(
+                f"Guardian denied Homeostasis actuator rollback: {decision.reason}"
+            )
+
     async def execute_action(self, action) -> bool:
         """Execute a control action with comprehensive audit tracing."""
+        self._guardian_preflight_action(action)
         start_time = time.time()
         audit_layer = get_audit_layer()
 
@@ -658,6 +763,7 @@ class HomeostasisActuators:
 
     async def rollback_last_action(self) -> ActuatorResult:
         """Rollback the last successful action."""
+        self._guardian_preflight_rollback()
         if not self.rollback_stack:
             return ActuatorResult(success=False, message="No actions available for rollback")
 

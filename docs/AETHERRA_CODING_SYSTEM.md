@@ -10,6 +10,21 @@ This document defines the autonomous coding system for Aetherra OS that enables 
 - Extensible: plugin scaffolding, language support, toolchain adapters
 - Headless and GUI: works from CLI, web, or Lyrixa GUI
 
+## Guardian enforcement
+
+Guardian protects Coding System paths that can mutate files, execute code, or materialize generated code:
+
+- `CoreToolsPlugin` filesystem operations declare Guardian intents before write, append, directory creation, delete, copy, move, archive, extract, JSON, or CSV mutation.
+- `PluginGeneratorPlugin.save_plugin_to_disk` declares `coding.plugin_generator_save` before creating generated plugin scaffold directories or writing scaffold files.
+- Script execution and self-improvement/optimization apply paths are guarded through their owning systems before code execution or repository mutation.
+- Strict capability mode blocks explicit external callers without the required filesystem, code-modification, plugin-creation, or execution capabilities.
+- Denied plugin scaffold saves raise `PermissionError` before output directories or files are created.
+- Audit metadata records file counts, file names, template IDs, and hashes of plugin/output identifiers without storing raw plugin names, descriptions, generated code, or output paths.
+
+Remaining Guardian scope:
+
+- Keep future natural compiler output, additional code generators, test-fix automation, refactor assistants, direct write helpers, and autonomous patch applicators behind Guardian before enabling them.
+
 ## Core Capabilities
 
 1. IDE-grade experience

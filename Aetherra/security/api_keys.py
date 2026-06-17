@@ -1,42 +1,65 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
-"""
-API key management helpers.
-
-- Stores keys in user config dir ~/.aetherra/keys.json (Windows friendly).
-- Provides get/set/delete and in-memory cache.
-- Avoids printing secrets; integrates with env override AETHERRA_<NAME>.
-- Optional encrypt-at-rest with Fernet when a master key is available.
-
-Encryption design:
-- If the environment variable `AETHERRA_KEYS_MASTER` is set to a base64 urlsafe
-    32-byte key (Fernet format), or if a master key file exists at
-    `~/.aetherra/keys_master.key`, values will be stored encrypted at rest.
-- Backward compatible: plaintext files are still readable and will be upgraded on write.
-"""
+"""Local API-key storage with encryption-at-rest and scoped retrieval."""
 
 from __future__ import annotations
 
-# Standard library imports
 import contextlib
 import json
 import os
-from datetime import datetime
+import re
+import tempfile
+import threading
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-try:  # Optional dependency
-    # Third party imports
+try:
     from cryptography.fernet import Fernet  # type: ignore
-except Exception:  # pragma: no cover - optional
+except ImportError:  # pragma: no cover - optional dependency
     Fernet = None  # type: ignore
-APP_DIR = Path(os.path.expanduser("~/.aetherra")).resolve()
-KEYS_FILE = APP_DIR / "keys.json"
-MASTER_KEY_FILE = APP_DIR / "keys_master.key"
 
-_cache = None
-_fernet = None
+
+class KeyStoreError(RuntimeError):
+    """Raised when the local key store cannot be read or written safely."""
+
+
+_KEY_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$")
+_LOCK = threading.RLock()
+_cache: dict[str, Any] | None = None
+_cache_path: Path | None = None
+_fernet: Any | None = None
+_fernet_source: tuple[str | None, Path] | None = None
+
+
+def get_app_dir() -> Path:
+    """Return the current state directory, honoring runtime overrides."""
+    override = os.getenv("AETHERRA_STATE_DIR", "").strip()
+    if override:
+        return Path(override).expanduser().resolve()
+    return Path(os.path.expanduser("~/.aetherra")).resolve()
+
+
+def get_keys_file() -> Path:
+    return get_app_dir() / "keys.json"
+
+
+def get_master_key_file() -> Path:
+    return get_app_dir() / "keys_master.key"
+
+
+# Compatibility snapshots. New code should use the accessors above because
+# AETHERRA_STATE_DIR may be changed after this module is imported.
+APP_DIR = get_app_dir()
+KEYS_FILE = get_keys_file()
+MASTER_KEY_FILE = get_master_key_file()
+
+
+def _validate_name(name: str) -> str:
+    if not isinstance(name, str) or not _KEY_NAME_RE.fullmatch(name):
+        raise ValueError("invalid key name")
+    return name
 
 
 def _safe_mode_enabled() -> bool:
@@ -44,7 +67,7 @@ def _safe_mode_enabled() -> bool:
         from Aetherra.aetherra_core.system.security_system import is_safe_mode_enabled
 
         return is_safe_mode_enabled()
-    except Exception:
+    except (ImportError, AttributeError):
         return (os.getenv("AETHERRA_SAFE_MODE", "") or "").strip().lower() in {
             "1",
             "true",
@@ -53,254 +76,261 @@ def _safe_mode_enabled() -> bool:
         }
 
 
-def _ensure():
-    APP_DIR.mkdir(parents=True, exist_ok=True)
-    if not KEYS_FILE.exists():
-        KEYS_FILE.write_text("{}", encoding="utf-8")
-    # best-effort restrictive perms (no-op on some platforms)
-    with contextlib.suppress(Exception):
-        os.chmod(APP_DIR, 0o700)
-        if KEYS_FILE.exists():
-            os.chmod(KEYS_FILE, 0o600)
-    # In production/staging, auto-provision a master key if not present and plaintext is not allowed
+def _ensure() -> None:
+    app_dir = get_app_dir()
+    keys_file = get_keys_file()
     try:
-        profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
-        allow_plain = os.getenv("AETHERRA_KEYS_ALLOW_PLAINTEXT", "0") == "1"
-        if (
-            profile in ("prod", "production", "staging")
-            and not allow_plain
-            and Fernet is not None
-            and not os.getenv("AETHERRA_KEYS_MASTER")
-            and not MASTER_KEY_FILE.exists()
-        ):
-            ensure_master_key()
+        app_dir.mkdir(parents=True, exist_ok=True)
+        if not keys_file.exists():
+            _atomic_write(keys_file, "{}")
+        with contextlib.suppress(OSError):
+            os.chmod(app_dir, 0o700)
+            os.chmod(keys_file, 0o600)
+    except OSError as exc:
+        raise KeyStoreError(f"unable to initialize key store: {exc}") from exc
+
+    profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
+    allow_plain = os.getenv("AETHERRA_KEYS_ALLOW_PLAINTEXT", "0") == "1"
+    if (
+        profile in {"prod", "production", "staging"}
+        and not allow_plain
+        and Fernet is not None
+        and not os.getenv("AETHERRA_KEYS_MASTER")
+        and not get_master_key_file().exists()
+    ):
+        ensure_master_key()
+
+
+def _atomic_write(path: Path, content: str | bytes) -> None:
+    """Atomically replace a sensitive file in its destination directory."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    binary = isinstance(content, bytes)
+    fd, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    temporary_path = Path(temporary_name)
+    try:
+        mode = "wb" if binary else "w"
+        kwargs = {} if binary else {"encoding": "utf-8", "newline": "\n"}
+        with os.fdopen(fd, mode, **kwargs) as handle:
+            handle.write(content)
+            handle.flush()
+            os.fsync(handle.fileno())
+        with contextlib.suppress(OSError):
+            os.chmod(temporary_path, 0o600)
+        os.replace(temporary_path, path)
     except Exception:
-        # non-fatal
-        pass
+        with contextlib.suppress(OSError):
+            temporary_path.unlink()
+        raise
 
 
 def _load_master_key() -> bytes | None:
-    """Return Fernet key bytes if available, else None.
-
-    Priority: env AETHERRA_KEYS_MASTER -> file ~/.aetherra/keys_master.key
-    """
     env_key = os.getenv("AETHERRA_KEYS_MASTER")
     if env_key:
-        try:
-            return env_key.encode("utf-8")
-        except Exception:
-            return None
-    if MASTER_KEY_FILE.exists():
-        try:
-            data = MASTER_KEY_FILE.read_bytes()
-            return data.strip()
-        except Exception:
-            return None
-    return None
+        return env_key.encode("utf-8")
+    master_file = get_master_key_file()
+    if not master_file.exists():
+        return None
+    try:
+        return master_file.read_bytes().strip()
+    except OSError as exc:
+        raise KeyStoreError(f"unable to read master key: {exc}") from exc
 
 
 def _get_fernet() -> Any | None:
-    global _fernet
-    if _fernet is not None:
-        return _fernet
+    global _fernet, _fernet_source
     if Fernet is None:
         return None
+    source = (os.getenv("AETHERRA_KEYS_MASTER"), get_master_key_file())
+    if _fernet_source == source:
+        return _fernet
     key = _load_master_key()
     if not key:
+        _fernet = None
+        _fernet_source = source
         return None
     try:
         _fernet = Fernet(key)
+        _fernet_source = source
         return _fernet
-    except Exception:
-        return None
+    except (TypeError, ValueError) as exc:
+        raise KeyStoreError("invalid Fernet master key") from exc
 
 
-def _load():
-    global _cache
+def _load() -> dict[str, Any]:
+    global _cache, _cache_path
     _ensure()
-    if _cache is None:
-        try:
-            _cache = json.loads(KEYS_FILE.read_text(encoding="utf-8"))
-        except Exception:
-            _cache = {}
+    keys_file = get_keys_file()
+    if _cache is not None and _cache_path == keys_file:
+        return _cache
+    try:
+        loaded = json.loads(keys_file.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise KeyStoreError(f"unable to read key store: {exc}") from exc
+    if not isinstance(loaded, dict):
+        raise KeyStoreError("key store root must be a JSON object")
+    _cache = loaded
+    _cache_path = keys_file
     return _cache
 
 
-def _save():
+def _save() -> None:
     if _cache is None:
         return
-    KEYS_FILE.write_text(json.dumps(_cache, indent=2), encoding="utf-8")
-    with contextlib.suppress(Exception):
-        os.chmod(KEYS_FILE, 0o600)
+    try:
+        _atomic_write(get_keys_file(), json.dumps(_cache, indent=2, sort_keys=True) + "\n")
+    except OSError as exc:
+        raise KeyStoreError(f"unable to write key store: {exc}") from exc
 
 
-def _maybe_encrypt_on_write():
-    """If Fernet is available and master key configured, rewrite values encrypted.
+def _encrypted_copy(data: dict[str, Any], fernet: Any) -> dict[str, Any]:
+    converted: dict[str, Any] = {
+        "__encrypted__": True,
+        "__updated_at": datetime.now(UTC).isoformat(),
+    }
+    for name, value in data.items():
+        if name.startswith("__"):
+            continue
+        if isinstance(value, dict) and isinstance(value.get("cipher"), str):
+            converted[name] = value
+            continue
+        plaintext = value if isinstance(value, str) else str(value)
+        converted[name] = {"cipher": fernet.encrypt(plaintext.encode()).decode()}
+    return converted
 
-    Backward compatible: when a plaintext map exists, convert values to
-    {"cipher": "..."} structure and set top-level flag "__encrypted__": true.
-    """
-    f = _get_fernet()
-    if f is None:
+
+def _maybe_encrypt_on_write() -> None:
+    global _cache
+    fernet = _get_fernet()
+    if fernet is None:
         return
     data = _load()
-    if not data:
+    if not data or data.get("__encrypted__") is True:
         return
-    if data.get("__encrypted__") is True:
-        return
-    converted: dict[str, object] = {
-        "__encrypted__": True,
-        "__updated_at": datetime.utcnow().isoformat(),
-    }
-    for k, v in list(data.items()):
-        if k.startswith("__"):
-            continue
-        try:
-            if isinstance(v, str):
-                token = f.encrypt(v.encode("utf-8")).decode("utf-8")
-                converted[k] = {"cipher": token}
-            elif isinstance(v, dict) and "cipher" in v:
-                converted[k] = v
-            else:
-                # coerce to str then encrypt
-                token = f.encrypt(str(v).encode("utf-8")).decode("utf-8")
-                converted[k] = {"cipher": token}
-        except Exception:
-            # leave as-is on failure (do not corrupt)
-            converted[k] = v
-    _cache.clear()  # type: ignore
-    _cache.update(converted)  # type: ignore
+    _cache = _encrypted_copy(data, fernet)
     _save()
 
 
 def get_key(name: str) -> str | None:
+    """Retrieve a key for trusted core code."""
+    _validate_name(name)
     if _safe_mode_enabled():
         return None
     env_name = f"AETHERRA_{name.upper()}"
     if env_name in os.environ:
         return os.environ[env_name]
-    data = _load()
-    # Encrypted layout
-    if data.get("__encrypted__") is True:
-        try:
+    with _LOCK:
+        data = _load()
+        if data.get("__encrypted__") is True:
             entry = data.get(name)
-            if not entry:
+            if not isinstance(entry, dict) or not isinstance(entry.get("cipher"), str):
                 return None
-            if isinstance(entry, dict) and "cipher" in entry:
-                f = _get_fernet()
-                if not f:
-                    # Can't decrypt without Fernet key; treat as unavailable
-                    return None
-                token = entry.get("cipher")
-                if not isinstance(token, str):
-                    return None
-                pt = f.decrypt(token.encode("utf-8"))
-                out = pt.decode("utf-8")
-                # drop references quickly (Python doesn't guarantee zeroization)
-                del pt
-                return out
-            # unexpected structure
-            return None
-        except Exception:
-            return None
-    # Plaintext layout
-    val = data.get(name)
-    if isinstance(val, str):
-        return val
-    return None
+            fernet = _get_fernet()
+            if fernet is None:
+                return None
+            try:
+                return fernet.decrypt(entry["cipher"].encode()).decode("utf-8")
+            except Exception as exc:
+                raise KeyStoreError(f"unable to decrypt key {name!r}") from exc
+        value = data.get(name)
+        return value if isinstance(value, str) else None
 
 
-def set_key(name: str, value: str):
+def set_key(name: str, value: str) -> None:
+    _validate_name(name)
+    if not isinstance(value, str) or not value:
+        raise ValueError("key value must be a non-empty string")
     if _safe_mode_enabled():
         raise RuntimeError("safe mode: secret storage is disabled")
-    data = _load()
-    f = _get_fernet()
-    # Enforce encryption in production/staging unless explicitly allowed
-    if not f:
+    with _LOCK:
+        data = _load()
+        fernet = _get_fernet()
         profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
         allow_plain = os.getenv("AETHERRA_KEYS_ALLOW_PLAINTEXT", "0") == "1"
-        if profile in ("prod", "production", "staging") and not allow_plain:
-            # Attempt to provision a master key automatically
-            try:
-                ensure_master_key()
-                f = _get_fernet()
-            except Exception:
-                f = None
-            if not f:
-                raise RuntimeError("encryption_required_in_production")
-    if f:
-        enc_map: dict[str, object]
-        enc_map = data if data.get("__encrypted__") else {"__encrypted__": True}
-        token = f.encrypt(value.encode("utf-8")).decode("utf-8")
-        enc_map[name] = {"cipher": token}
-        enc_map["__updated_at"] = datetime.utcnow().isoformat()
-        _cache.clear()  # type: ignore
-        _cache.update(enc_map)  # type: ignore
+        if fernet is None and profile in {"prod", "production", "staging"} and not allow_plain:
+            ensure_master_key()
+            fernet = _get_fernet()
+            if fernet is None:
+                raise KeyStoreError("encryption_required_in_production")
+
+        global _cache
+        if fernet is not None:
+            encrypted = (
+                data
+                if data.get("__encrypted__") is True
+                else _encrypted_copy(data, fernet)
+            )
+            encrypted[name] = {"cipher": fernet.encrypt(value.encode()).decode()}
+            encrypted["__updated_at"] = datetime.now(UTC).isoformat()
+            _cache = encrypted
+        else:
+            data[name] = value
+            data["__updated_at"] = datetime.now(UTC).isoformat()
         _save()
-        return
-    # plaintext fallback
-    data[name] = value
-    _save()
 
 
-def delete_key(name: str):
-    data = _load()
-    if name in data:
-        del data[name]
-        _save()
+def delete_key(name: str) -> None:
+    _validate_name(name)
+    if _safe_mode_enabled():
+        raise RuntimeError("safe mode: secret storage is disabled")
+    with _LOCK:
+        data = _load()
+        if name in data:
+            del data[name]
+            data["__updated_at"] = datetime.now(UTC).isoformat()
+            _save()
 
 
 def get_key_scoped(name: str, requester: str | None) -> str | None:
-    """Return a key only if the requester is allowed by policy.
-
-    Deny-by-default when a requester is provided. Allow global callers when
-    requester is None (backward-compatible), or when env override
-    AETHERRA_KEYS_ALLOW_UNSCOPED=1 is set.
-    Policy file (optional): ~/.aetherra/policy/keys_policy.json
-    {
-      "allow": { "plugin:example": ["openai_api_key"] }
-    }
-    """
-    # Unscoped allowed for backward compatibility unless explicitly disabled
-    if requester is None or os.getenv("AETHERRA_KEYS_ALLOW_UNSCOPED", "0") == "1":
-        return get_key(name)
-
-    policy_path = APP_DIR / "policy" / "keys_policy.json"
-    try:
-        if policy_path.exists():
-            policy = json.loads(policy_path.read_text(encoding="utf-8"))
-            allow = policy.get("allow", {})
-            allowed = allow.get(requester, [])
-            if name in allowed:
-                return get_key(name)
+    """Retrieve a key only when the requester is authorized by policy."""
+    _validate_name(name)
+    profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
+    allow_unscoped = os.getenv("AETHERRA_KEYS_ALLOW_UNSCOPED", "0") == "1"
+    if requester is None:
+        if profile in {"prod", "production", "staging"} and not allow_unscoped:
             return None
-    except Exception:
+        return get_key(name)
+    if not isinstance(requester, str) or not requester.strip():
         return None
-    return None
+
+    policy_path = get_app_dir() / "policy" / "keys_policy.json"
+    try:
+        policy = json.loads(policy_path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return None
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
+    if not isinstance(policy, dict):
+        return None
+    allow = policy.get("allow")
+    if not isinstance(allow, dict):
+        return None
+    allowed = allow.get(requester)
+    if not isinstance(allowed, list) or name not in allowed:
+        return None
+    return get_key(name)
 
 
 def ensure_master_key() -> str | None:
-    """Generate and persist a Fernet master key if none exists; return base64 key.
-
-    No-op if cryptography isn't available. Returns the key as a string for convenience.
-    """
+    """Generate and persist a Fernet master key when one is not configured."""
+    global _fernet, _fernet_source
     if Fernet is None:
         return None
-    if os.getenv("AETHERRA_KEYS_MASTER"):
-        return os.getenv("AETHERRA_KEYS_MASTER")
-    if MASTER_KEY_FILE.exists():
-        try:
-            return MASTER_KEY_FILE.read_text(encoding="utf-8").strip()
-        except Exception:
-            return None
-    try:
-        APP_DIR.mkdir(parents=True, exist_ok=True)
+    env_key = os.getenv("AETHERRA_KEYS_MASTER")
+    if env_key:
+        return env_key
+    master_file = get_master_key_file()
+    with _LOCK:
+        if master_file.exists():
+            try:
+                return master_file.read_text(encoding="utf-8").strip()
+            except OSError as exc:
+                raise KeyStoreError(f"unable to read master key: {exc}") from exc
         key = Fernet.generate_key()
-        MASTER_KEY_FILE.write_bytes(key + b"\n")
-        with contextlib.suppress(Exception):
-            os.chmod(MASTER_KEY_FILE, 0o600)
-        # attempt to encrypt existing plaintext entries
+        try:
+            _atomic_write(master_file, key + b"\n")
+        except OSError as exc:
+            raise KeyStoreError(f"unable to persist master key: {exc}") from exc
+        _fernet = None
+        _fernet_source = None
         _maybe_encrypt_on_write()
         return key.decode("utf-8")
-    except Exception:
-        return None

@@ -7,14 +7,90 @@ Aetherra Project Deep Analysis Tool
 Comprehensive file analysis, duplicate detection, and documentation generator
 """
 
+from __future__ import annotations
+
 # Standard library imports
 import ast
 import hashlib
 import json
 import os
 from collections import defaultdict
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+
+
+@dataclass(frozen=True)
+class ProjectAnalysisWritePlan:
+    file_path: Path
+    data: dict
+
+
+def _hash_value(value) -> str | None:
+    if value is None:
+        return None
+    raw = str(value)
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "maintenance" and capability in {
+        "maintenance:cleanup",
+        "fs:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _safe_relative_path(path: Path, root: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(root.resolve()))
+    except ValueError:
+        return str(path.resolve())
+
+
+def _guardian_preflight_analysis_write(
+    *,
+    project_root: Path,
+    plan: ProjectAnalysisWritePlan,
+):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    summary = plan.data.get("summary", {})
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="maintenance",
+            action="maintenance.project_analysis_write",
+            target="maintenance:project_analysis",
+            purpose="Write generated project analysis JSON",
+            capabilities=("maintenance:cleanup", "fs:write"),
+            expected_outcome="Planned project analysis JSON is written to disk",
+            reversible=False,
+            rollback_plan="delete generated analysis JSON or restore from version control",
+            metadata={
+                "project_root_hash": _hash_value(project_root.resolve()),
+                "output_path_hash": _hash_value(
+                    _safe_relative_path(plan.file_path, project_root)
+                ),
+                "directory_count": len(plan.data.get("directories", {})),
+                "duplicate_group_count": len(plan.data.get("duplicates", [])),
+                "total_files": summary.get("total_files", 0),
+                "analysis_size_bytes": len(
+                    json.dumps(plan.data, ensure_ascii=False, default=str)
+                ),
+            },
+        ),
+        approval_id=approval_id,
+        capability_checker=_guardian_capability_checker,
+    )
 
 
 class AetherraProjectAnalyzer:
@@ -48,9 +124,8 @@ class AetherraProjectAnalyzer:
                     if isinstance(node, ast.Import):
                         for alias in node.names:
                             imports.append(alias.name)
-                    elif isinstance(node, ast.ImportFrom):
-                        if node.module:
-                            imports.append(node.module)
+                    elif isinstance(node, ast.ImportFrom) and node.module:
+                        imports.append(node.module)
 
                 # Find classes and functions
                 classes = [
@@ -211,7 +286,7 @@ class AetherraProjectAnalyzer:
         print("🔍 Starting comprehensive Aetherra project analysis...")
 
         # Scan all directories
-        for root, dirs, files in os.walk(self.project_root):
+        for root, dirs, _files in os.walk(self.project_root):
             # Skip hidden directories and common excludes
             dirs[:] = [
                 d
@@ -257,8 +332,12 @@ class AetherraProjectAnalyzer:
             "duplicate_files": sum(d["count"] - 1 for d in self.duplicate_groups),
         }
 
-    def save_analysis(self, output_file="project_analysis.json"):
-        """Save analysis results to JSON file"""
+    def plan_analysis_write(self, output_file="project_analysis.json"):
+        """Build a side-effect-free JSON write plan for analysis results."""
+        output_path = Path(output_file)
+        if not output_path.is_absolute():
+            output_path = self.project_root / output_path
+
         analysis_data = {
             "timestamp": datetime.now().isoformat(),
             "project_root": str(self.project_root),
@@ -266,15 +345,33 @@ class AetherraProjectAnalyzer:
             "duplicates": self.duplicate_groups,
             "summary": self.generate_summary(),
         }
+        return ProjectAnalysisWritePlan(file_path=output_path, data=analysis_data)
 
-        with open(output_file, "w", encoding="utf-8") as f:
-            json.dump(analysis_data, f, indent=2, ensure_ascii=False)
+    def save_analysis(self, output_file="project_analysis.json", *, plan=None):
+        """Save analysis results to JSON file after Guardian approval."""
+        write_plan = plan or self.plan_analysis_write(output_file)
+        decision = _guardian_preflight_analysis_write(
+            project_root=self.project_root,
+            plan=write_plan,
+        )
+        if not decision.allowed:
+            print(f"Guardian denied project analysis write: {decision.reason}")
+            return False
 
-        print(f"💾 Analysis saved to {output_file}")
+        write_plan.file_path.parent.mkdir(parents=True, exist_ok=True)
+        write_plan.file_path.write_text(
+            json.dumps(write_plan.data, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        print(f"Analysis saved to {write_plan.file_path}")
+        return True
+
 
 
 if __name__ == "__main__":
     # Run analysis on current directory
     analyzer = AetherraProjectAnalyzer(".")
-    results = analyzer.analyze_project()
-    analyzer.save_analysis("aetherra_project_analysis.json")
+    analyzer.analyze_project()
+    raise SystemExit(
+        0 if analyzer.save_analysis("aetherra_project_analysis.json") else 1
+    )

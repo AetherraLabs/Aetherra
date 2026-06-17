@@ -25,7 +25,6 @@ Example:
 """
 
 import logging
-import subprocess
 import time
 import traceback
 from dataclasses import dataclass, field
@@ -33,6 +32,15 @@ from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+from Aetherra.security.sandbox import (
+    IsolatedExecutionError,
+    SandboxViolation,
+    TimeBudgetExceeded,
+    execute_restricted_python,
+    run_command_no_shell,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -275,6 +283,21 @@ class ScriptExecutor:
             if not self.script_path.exists():
                 raise FileNotFoundError(f"Script not found: {self.script_path}")
 
+            guardian_decision = self._evaluate_guardian()
+            if guardian_decision.status in {
+                GuardianStatus.DENY,
+                GuardianStatus.REQUIRE_APPROVAL,
+                GuardianStatus.CONTAIN,
+            }:
+                result.state = ExecutionState.FAILED
+                result.message = f"Script execution blocked by Guardian: {guardian_decision.reason}"
+                result.error = guardian_decision.reason
+                result.metrics = self.metrics
+                self.metrics.custom_metrics["guardian_decision"] = (
+                    guardian_decision.to_audit_dict()
+                )
+                return result
+
             # Initialize context
             self.context = ExecutionContext(script_path=str(self.script_path))
             self.context.state = ExecutionState.RUNNING
@@ -352,6 +375,20 @@ class ScriptExecutor:
 
         return result
 
+    def _evaluate_guardian(self):
+        """Evaluate Guardian policy before script workflow execution."""
+
+        intent = IntentDeclaration(
+            requester="core:script_executor",
+            subsystem="script_service",
+            action="script.execute",
+            target=str(self.script_path),
+            purpose="Execute Aether workflow script",
+            capabilities=("script:run",),
+            evidence=(f"script:{self.script_path.name}",),
+        )
+        return evaluate_intent(intent)
+
     def _parse_script(self) -> List[WorkflowStep]:
         """
         Parse .aether script file into steps.
@@ -364,7 +401,7 @@ class ScriptExecutor:
         """
         try:
             with open(self.script_path) as f:
-                content = f.read()
+                f.read()
 
             # Mock parsing (real implementation would parse YAML/JSON)
             steps = []
@@ -448,27 +485,16 @@ class ScriptExecutor:
             if not step.command:
                 return False, "", "No command specified", 1
 
-            process = subprocess.Popen(
-                step.command,
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
+            result = run_command_no_shell(step.command, timeout_sec=timeout)
+            return (
+                result.return_code == 0,
+                result.stdout,
+                result.stderr,
+                result.return_code,
             )
-
-            try:
-                stdout, stderr = process.communicate(timeout=timeout)
-                return (
-                    process.returncode == 0,
-                    stdout,
-                    stderr,
-                    process.returncode,
-                )
-            except subprocess.TimeoutExpired:
-                process.kill()
-                return False, "", f"Timeout after {timeout}s", -1
-
-        except Exception as e:
+        except TimeBudgetExceeded:
+            return False, "", f"Timeout after {timeout}s", -1
+        except (IsolatedExecutionError, SandboxViolation, OSError, ValueError) as e:
             return False, "", str(e), -1
 
     def _execute_python(self, step: WorkflowStep, timeout: int) -> Tuple[bool, str, str]:
@@ -486,30 +512,15 @@ class ScriptExecutor:
             if not step.command:
                 return False, "", "No code specified"
 
-            # Create execution environment
-            env = {
-                "context": self.context,
-                "variables": self.context.variables if self.context else {},
-            }
+            initial_variables = self.context.variables if self.context else {}
+            result = execute_restricted_python(step.command, initial_variables)
+            if self.context is not None:
+                self.context.variables.clear()
+                self.context.variables.update(result.variables)
+            return True, "\n".join(result.output), ""
 
-            # Execute with timeout
-            exec_globals = {"__builtins__": __builtins__, **env}
-
-            output_buffer = []
-            original_print = print
-
-            def mock_print(*args, **kwargs):
-                output_buffer.append(" ".join(str(a) for a in args))
-                original_print(*args, **kwargs)
-
-            exec_globals["print"] = mock_print
-
-            exec(step.command, exec_globals)
-
-            return True, "\n".join(output_buffer), ""
-
-        except Exception as e:
-            return False, "", str(e)
+        except SandboxViolation as exc:
+            return False, "", str(exc)
 
     def _execute_plugin(self, step: WorkflowStep, timeout: int) -> Tuple[bool, str, str]:
         """

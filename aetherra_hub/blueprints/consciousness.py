@@ -21,9 +21,10 @@ if TYPE_CHECKING:
     from Aetherra.consciousness.core.think_stream import ThinkStream
 
 # Third party imports
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
 # Local imports
+from ..services.control_auth import authorize_control_request
 from ..services.state import hub_state
 
 # Aetherra imports
@@ -63,14 +64,28 @@ def _init_consciousness_if_needed():
 def _update_state_snapshot(state: dict[str, Any]):
     """Callback invoked by ThinkStream to update state snapshot."""
     hub_state.update_consciousness(state)
-    print(
-        f"[Consciousness API] Received state update: tick={state.get('tick_id')}, qualia_valence={state.get('qualia', {}).get('valence')}"
-    )
-    print(f"  Callback hub_state object id: {id(hub_state)}")
-    print(f"  Callback consciousness_state id: {id(hub_state.consciousness_state)}")
-    print(
-        f"  Callback consciousness_state has {len(hub_state.consciousness_state)} keys"
-    )
+
+
+def _authorize_internal_request():
+    decision = authorize_control_request(request.headers, request.remote_addr)
+    if decision.allowed:
+        return None
+    return jsonify({"error": decision.error}), decision.status_code
+
+
+def _validate_state(state: Any) -> str | None:
+    if not isinstance(state, dict):
+        return "invalid_state"
+    tick_id = state.get("tick_id")
+    if tick_id is not None and (not isinstance(tick_id, int) or isinstance(tick_id, bool)):
+        return "invalid_tick_id"
+    qualia = state.get("qualia")
+    if qualia is not None and not isinstance(qualia, dict):
+        return "invalid_qualia"
+    for field in ("focuses", "intentions", "recent_narrative"):
+        if field in state and not isinstance(state[field], list):
+            return f"invalid_{field}"
+    return None
 
 
 @bp.get("/state")
@@ -86,15 +101,6 @@ def get_consciousness_state():
 
     # Get state from hub_state (shared singleton)
     current_state = hub_state.get_consciousness()
-
-    # Debug: Check state with full diagnostic
-    print("[Consciousness API] GET /state called")
-    print(f"  hub_state object id: {id(hub_state)}")
-    print(f"  consciousness_state id: {id(hub_state.consciousness_state)}")
-    print(
-        f"  consciousness_state keys: {list(current_state.keys()) if current_state else 'EMPTY'}"
-    )
-    print(f"  consciousness_state is truthy: {bool(current_state)}")
 
     # If consciousness system is not running, return offline state
     if not current_state:
@@ -132,20 +138,18 @@ def update_consciousness_state():
     This endpoint is called by the consciousness runner process to push state
     updates to the Hub's shared state, enabling cross-process communication.
     """
-    from flask import request
-
-    state = request.get_json()
-    if not state:
-        return jsonify({"error": "No state data provided"}), 400
+    auth_error = _authorize_internal_request()
+    if auth_error is not None:
+        return auth_error
+    if request.content_length is not None and request.content_length > 262_144:
+        return jsonify({"error": "payload_too_large"}), 413
+    state = request.get_json(silent=True)
+    validation_error = _validate_state(state)
+    if validation_error is not None:
+        return jsonify({"error": validation_error}), 400
 
     # Update shared hub state
     hub_state.update_consciousness(state)
-
-    # Optional debug output
-    print(
-        f"[Consciousness API] POST /update: tick={state.get('tick_id')}, "
-        f"qualia_valence={state.get('qualia', {}).get('valence')}"
-    )
 
     return jsonify({"status": "ok", "tick_id": state.get("tick_id")})
 
@@ -158,6 +162,9 @@ def register_think_stream_callback():
     This would be called by the consciousness runner on startup to wire
     the ThinkStream's _ui_callback to our _update_state_snapshot function.
     """
+    auth_error = _authorize_internal_request()
+    if auth_error is not None:
+        return auth_error
     # In production, this would be called from run_consciousness.py
     # to register the callback when the consciousness loop starts
     return jsonify({"status": "ok", "message": "Callback registration endpoint ready"})

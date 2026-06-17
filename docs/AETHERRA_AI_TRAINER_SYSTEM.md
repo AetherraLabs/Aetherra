@@ -101,6 +101,20 @@ Examples (subject to change as implementation lands):
 - Optional differential privacy during training/eval logging
 - Signed model artifacts and provenance records
 
+## Guardian enforcement
+
+Current active trainer surfaces are guarded at the service layer:
+
+- `aetherra_hub.services.trainer.submit_job` declares `trainer.submit_job` before creating job IDs, mutating the in-memory job queue, or starting background transition threads.
+- `aetherra_hub.services.trainer.submit_eval` declares `trainer.submit_eval` before creating eval IDs, mutating the in-memory eval queue, or starting background transition threads.
+- Hub `/api/trainer/jobs` and `/api/trainer/evals` return HTTP 403 on Guardian denial.
+- Audit metadata uses task names, payload shape, parameter/resource keys, tag counts, and hashes for model and dataset references instead of raw model names, dataset IDs, parameter values, resource values, or tags.
+- Strict capability mode requires explicit external callers to hold trainer, model, and dataset capabilities before trainer queue mutation.
+
+Remaining Guardian scope:
+
+- Dataset ingestion/export, real backend training start, fine-tune execution, evaluation promotion, adapter deployment, model registry writes, artifact signing, and policy/model replacement must receive Guardian preflight before implementation moves beyond the in-memory scaffold.
+
 ## Roadmap (phased)
 
 1. Scaffolding (this doc + stubs): trainer orchestrator, dataset registry (read-only), model registry (local)

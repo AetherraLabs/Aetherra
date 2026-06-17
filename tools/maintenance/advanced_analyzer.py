@@ -7,6 +7,8 @@ Advanced Project Intelligence System
 Provides comprehensive file and directory analysis with deep insights
 """
 
+from __future__ import annotations
+
 # Standard library imports
 import ast
 import hashlib
@@ -15,8 +17,82 @@ import mimetypes
 import os
 import re
 from collections import defaultdict
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+
+
+@dataclass(frozen=True)
+class AdvancedIntelligenceReportPlan:
+    file_path: Path
+    data: dict
+
+
+def _hash_value(value) -> str | None:
+    if value is None:
+        return None
+    raw = str(value)
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "maintenance" and capability in {
+        "maintenance:cleanup",
+        "fs:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _safe_relative_path(path: Path, root: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(root.resolve()))
+    except ValueError:
+        return str(path.resolve())
+
+
+def _guardian_preflight_intelligence_report(
+    *,
+    project_root: Path,
+    plan: AdvancedIntelligenceReportPlan,
+):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    summary = plan.data.get("summary", {})
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="maintenance",
+            action="maintenance.advanced_intelligence_report",
+            target="maintenance:advanced_intelligence_report",
+            purpose="Write generated advanced project intelligence JSON",
+            capabilities=("maintenance:cleanup", "fs:write"),
+            expected_outcome="Planned advanced intelligence JSON is written to disk",
+            reversible=False,
+            rollback_plan="delete generated intelligence JSON or restore from version control",
+            metadata={
+                "project_root_hash": _hash_value(project_root.resolve()),
+                "output_path_hash": _hash_value(
+                    _safe_relative_path(plan.file_path, project_root)
+                ),
+                "file_record_count": len(plan.data.get("files", {})),
+                "directory_record_count": len(plan.data.get("directories", {})),
+                "total_files": summary.get("total_files", 0),
+                "analysis_size_bytes": len(
+                    json.dumps(plan.data, ensure_ascii=False, default=str)
+                ),
+            },
+        ),
+        approval_id=approval_id,
+        capability_checker=_guardian_capability_checker,
+    )
 
 
 class AdvancedProjectAnalyzer:
@@ -244,7 +320,7 @@ class AdvancedProjectAnalyzer:
         # Extract links
         link_pattern = r"\[([^\]]+)\]\(([^)]+)\)"
         links = re.findall(link_pattern, content)
-        analysis["links"] = [{"text": l[0], "url": l[1]} for l in links]
+        analysis["links"] = [{"text": link[0], "url": link[1]} for link in links]
 
         # Extract images
         image_pattern = r"!\[([^\]]*)\]\(([^)]+)\)"
@@ -361,7 +437,7 @@ class AdvancedProjectAnalyzer:
             # Look for binary indicators
             if b"\x00" in content.encode("utf-8"):
                 analysis["is_binary"] = True
-        except:
+        except UnicodeEncodeError:
             analysis["is_binary"] = True
             analysis["encoding"] = "unknown"
 
@@ -430,7 +506,7 @@ class AdvancedProjectAnalyzer:
         try:
             with open(filepath, "rb") as f:
                 return hashlib.sha256(f.read()).hexdigest()
-        except:
+        except OSError:
             return None
 
     def calculate_dict_depth(self, d):
@@ -438,10 +514,12 @@ class AdvancedProjectAnalyzer:
         if isinstance(d, dict) and d:
             return 1 + max(self.calculate_dict_depth(v) for v in d.values())
         if isinstance(d, list) and d:
+            nested_items = [item for item in d if isinstance(item, dict | list)]
+            if not nested_items:
+                return 0
             return max(
                 self.calculate_dict_depth(item)
-                for item in d
-                if isinstance(item, (dict, list))
+                for item in nested_items
             )
         return 0
 
@@ -552,7 +630,6 @@ class AdvancedProjectAnalyzer:
     def infer_directory_purpose(self, directory):
         """Infer directory purpose with enhanced intelligence"""
         name = directory.name.lower()
-        parent = directory.parent.name.lower() if directory.parent != directory else ""
 
         purpose_map = {
             "test": "Testing infrastructure and automated tests",
@@ -770,8 +847,12 @@ class AdvancedProjectAnalyzer:
 
         return summary
 
-    def save_intelligence_report(self, filename="advanced_project_intelligence.json"):
-        """Save comprehensive analysis to file"""
+    def plan_intelligence_report(self, filename="advanced_project_intelligence.json"):
+        """Build a side-effect-free write plan for the intelligence report."""
+        output_path = Path(filename)
+        if not output_path.is_absolute():
+            output_path = self.project_root / output_path
+
         analysis_data = {
             "timestamp": datetime.now().isoformat(),
             "project_root": str(self.project_root),
@@ -780,16 +861,36 @@ class AdvancedProjectAnalyzer:
             "directories": self.directory_intelligence,
             "summary": self.generate_intelligence_summary(),
         }
+        return AdvancedIntelligenceReportPlan(file_path=output_path, data=analysis_data)
 
-        with open(filename, "w", encoding="utf-8") as f:
-            json.dump(analysis_data, f, indent=2, ensure_ascii=False, default=str)
+    def save_intelligence_report(
+        self,
+        filename="advanced_project_intelligence.json",
+        *,
+        plan=None,
+    ):
+        """Save comprehensive analysis to file after Guardian approval."""
+        write_plan = plan or self.plan_intelligence_report(filename)
+        decision = _guardian_preflight_intelligence_report(
+            project_root=self.project_root,
+            plan=write_plan,
+        )
+        if not decision.allowed:
+            print(f"Guardian denied advanced intelligence report: {decision.reason}")
+            return None
 
-        print(f"💾 Advanced intelligence report saved to {filename}")
-        return filename
+        write_plan.file_path.parent.mkdir(parents=True, exist_ok=True)
+        write_plan.file_path.write_text(
+            json.dumps(write_plan.data, indent=2, ensure_ascii=False, default=str),
+            encoding="utf-8",
+        )
+        print(f"Advanced intelligence report saved to {write_plan.file_path}")
+        return str(write_plan.file_path)
+
 
 
 if __name__ == "__main__":
     # Run advanced analysis
     analyzer = AdvancedProjectAnalyzer(".")
-    results = analyzer.run_comprehensive_analysis()
-    analyzer.save_intelligence_report()
+    analyzer.run_comprehensive_analysis()
+    raise SystemExit(0 if analyzer.save_intelligence_report() else 1)

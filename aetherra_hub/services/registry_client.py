@@ -11,6 +11,7 @@ import asyncio
 import datetime as dt
 import json
 import logging
+import threading
 import time
 from pathlib import Path
 from typing import Any
@@ -53,6 +54,27 @@ def _run_coro(coro: Any) -> Any:
     - Any exception returns None per best‑effort contract.
     """
     try:
+        try:
+            running_loop = asyncio.get_running_loop()
+        except RuntimeError:
+            running_loop = None
+        if running_loop and running_loop.is_running():
+            holder: dict[str, Any] = {}
+
+            def _runner() -> None:
+                try:
+                    holder["result"] = asyncio.run(coro)
+                except Exception as exc:  # pragma: no cover - defensive
+                    holder["error"] = exc
+
+            thread = threading.Thread(target=_runner, daemon=True)
+            thread.start()
+            thread.join(timeout=3.0)
+            if "result" in holder:
+                return holder["result"]
+            if "error" in holder:
+                logger.debug("_run_coro thread failed: %s", holder["error"])
+            return None
         return asyncio.run(coro)
     except RuntimeError:
         try:
@@ -92,7 +114,25 @@ def get_registry_status() -> dict[str, Any] | None:
 
 def get_kernel_status() -> dict[str, Any] | None:
     try:
-        # Prefer central Registry Daemon if configured and reachable
+        async def _local_kernel_status() -> Any:
+            reg = await _get_registry_async()
+            info = reg.get_service_info("kernel_loop")
+            if not info or not info.instance:
+                return None
+            kern = info.instance
+            if hasattr(kern, "get_status"):
+                try:
+                    return kern.get_status()
+                except Exception as exc:  # pragma: no cover
+                    logger.debug("kernel get_status failed: %s", exc)
+                    return None
+            return None
+
+        local_status = _run_coro(_local_kernel_status())
+        if isinstance(local_status, dict):
+            return local_status
+
+        # Prefer central Registry Daemon when no in-process kernel is registered.
         try:
             from aetherra_registry_client import http_get_status
         except Exception:
@@ -144,23 +184,6 @@ def get_kernel_status() -> dict[str, Any] | None:
                         payload_daemon["stale_sec"] = age_sec_daemon
                     return payload_daemon
 
-        async def _go() -> Any:
-            reg = await _get_registry_async()
-            info = reg.get_service_info("kernel_loop")
-            if not info or not info.instance:
-                return None
-            kern = info.instance
-            if hasattr(kern, "get_status"):
-                try:
-                    return kern.get_status()
-                except Exception as exc:  # pragma: no cover
-                    logger.debug("kernel get_status failed: %s", exc)
-                    return None
-            return None
-
-        r = _run_coro(_go())
-        if isinstance(r, dict):
-            return r
         # Fallback path: attempt to infer kernel status from local metrics artifacts (dev-only)
         try:
             # Prefer root-level metrics file; fallback to data/
@@ -263,6 +286,73 @@ def get_orchestrator_status() -> dict[str, Any] | None:
     except Exception as exc:
         logger.debug("get_orchestrator_status error: %s", exc)
         return None
+
+
+def get_engine_status() -> dict[str, Any] | None:
+    """Return the registered engine's system status, when available."""
+    try:
+
+        async def _go() -> Any:
+            reg = await _get_registry_async()
+            info = reg.get_service_info("aetherra_engine")
+            if not info or not info.instance:
+                return None
+            eng = info.instance
+            if not hasattr(eng, "get_system_status"):
+                return None
+            try:
+                status = eng.get_system_status()
+                if asyncio.iscoroutine(status):
+                    status = await status
+                return status if isinstance(status, dict) else None
+            except Exception as exc:  # pragma: no cover - best effort
+                logger.debug("eng.get_system_status failed: %s", exc)
+                return None
+
+        r = _run_coro(_go())
+        return r if isinstance(r, dict) else None
+    except Exception as exc:
+        logger.debug("get_engine_status error: %s", exc)
+        return None
+
+
+def get_engine_session_metrics() -> dict[str, Any]:
+    """Return registered engine session metrics, including status fallback data."""
+    try:
+
+        async def _go() -> Any:
+            reg = await _get_registry_async()
+            info = reg.get_service_info("aetherra_engine")
+            if not info or not info.instance:
+                return None
+            eng = info.instance
+            if hasattr(eng, "get_session_metrics"):
+                try:
+                    metrics = eng.get_session_metrics()
+                    if asyncio.iscoroutine(metrics):
+                        metrics = await metrics
+                    if isinstance(metrics, dict):
+                        return metrics
+                except Exception as exc:  # pragma: no cover - best effort
+                    logger.debug("eng.get_session_metrics failed: %s", exc)
+            if hasattr(eng, "get_system_status"):
+                try:
+                    status = eng.get_system_status()
+                    if asyncio.iscoroutine(status):
+                        status = await status
+                    if isinstance(status, dict) and isinstance(
+                        status.get("session_metrics"), dict
+                    ):
+                        return status.get("session_metrics")
+                except Exception as exc:  # pragma: no cover - best effort
+                    logger.debug("eng.get_system_status metrics failed: %s", exc)
+            return None
+
+        r = _run_coro(_go())
+        return r if isinstance(r, dict) else {}
+    except Exception as exc:
+        logger.debug("get_engine_session_metrics error: %s", exc)
+        return {}
 
 
 def get_registered_agents() -> list[dict[str, Any]]:
@@ -406,6 +496,58 @@ def get_agent_task_status(task_id: str) -> dict[str, Any] | None:
     except Exception as exc:
         logger.debug("get_agent_task_status error: %s", exc)
         return None
+
+
+def execute_agent_task(
+    name: str,
+    data: dict[str, Any],
+    priority: str = "normal",
+) -> str | None:
+    """Submit a task through the engine's public task API when available."""
+
+    async def _go() -> str | None:
+        reg = await _get_registry_async()
+        info = reg.get_service_info("aetherra_engine")
+        engine = info.instance if info else None
+        if engine is None or not hasattr(engine, "execute_task"):
+            return None
+        result = await engine.execute_task(name, data, priority)
+        return result if isinstance(result, str) else None
+
+    result = _run_coro(_go())
+    return result if isinstance(result, str) else None
+
+
+def run_agent_evaluation(plan: dict[str, Any]) -> dict[str, Any] | None:
+    """Run the engine's agent evaluation harness."""
+
+    async def _go() -> dict[str, Any] | None:
+        reg = await _get_registry_async()
+        info = reg.get_service_info("aetherra_engine")
+        engine = info.instance if info else None
+        if engine is None or not hasattr(engine, "run_agent_evaluation"):
+            return None
+        report = await engine.run_agent_evaluation(plan)
+        return report if isinstance(report, dict) else None
+
+    result = _run_coro(_go())
+    return result if isinstance(result, dict) else None
+
+
+def get_last_agent_evaluation() -> dict[str, Any] | None:
+    """Return the engine's most recent agent evaluation report."""
+
+    async def _go() -> dict[str, Any] | None:
+        reg = await _get_registry_async()
+        info = reg.get_service_info("aetherra_engine")
+        engine = info.instance if info else None
+        if engine is None or not hasattr(engine, "get_last_agent_evaluation"):
+            return None
+        report = engine.get_last_agent_evaluation()
+        return report if isinstance(report, dict) else None
+
+    result = _run_coro(_go())
+    return result if isinstance(result, dict) else None
 
 
 def get_agent_task_list(
@@ -622,6 +764,8 @@ def get_storm_metrics() -> dict[str, Any]:
             storm_engine = getattr(engine, "_storm_engine", None)
             if storm_engine is None:
                 return None
+            if getattr(storm_engine, "enabled", True) is False:
+                return {"enabled": False}
             # Get metrics snapshot from STORM engine
             if hasattr(storm_engine, "metrics") and hasattr(
                 storm_engine.metrics, "snapshot"
@@ -733,7 +877,11 @@ def get_keb_metrics() -> dict[str, Any]:
 
 
 def get_keb_status() -> dict[str, Any]:
-    # Prefer Registry Daemon status if available
+    local_status = _generic_service_call("event_bus", "get_status")
+    if local_status:
+        return local_status
+
+    # Prefer Registry Daemon status when no in-process event bus is registered.
     try:
         from aetherra_registry_client import http_get_status
     except Exception:
@@ -752,7 +900,7 @@ def get_keb_status() -> dict[str, Any]:
                 except Exception:
                     enabled = False
                 return {"enabled": enabled, "source": "registry_daemon"}
-    return _generic_service_call("event_bus", "get_status")
+    return {}
 
 
 def get_quantum_bridge_status() -> dict[str, Any]:

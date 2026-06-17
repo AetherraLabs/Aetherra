@@ -30,6 +30,54 @@ logger = logging.getLogger(__name__)
 
 
 class AetherraKernelLoop:
+    def _guardian_requester(self, requester: str | None = None) -> str:
+        principal = (
+            requester
+            or os.environ.get("AETHERRA_PRINCIPAL", "").strip()
+            or "kernel_loop"
+        )
+        return str(principal).strip() or "kernel_loop"
+
+    def _guardian_capability_checker(self, requester: str, capability: str) -> bool:
+        if requester == "kernel_loop" and capability == "kernel:control":
+            return True
+
+        from Aetherra.security.capabilities import has_capability
+
+        return has_capability(requester, capability)
+
+    def _guardian_preflight_control(
+        self,
+        *,
+        requester: str | None,
+        action: str,
+        target: str,
+        purpose: str,
+        metadata: dict[str, Any] | None = None,
+    ) -> None:
+        from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=self._guardian_requester(requester),
+                subsystem="kernel",
+                action=action,
+                target=target,
+                purpose=purpose,
+                capabilities=("kernel:control",),
+                evidence=(f"kernel_control:{action}",),
+                reversible=True,
+                rollback_plan="restore previous kernel lifecycle or queue state",
+                metadata=metadata or {},
+            ),
+            capability_checker=self._guardian_capability_checker,
+        )
+        if decision.status not in {
+            GuardianStatus.ALLOW,
+            GuardianStatus.ALLOW_LIMITED,
+        }:
+            raise PermissionError(f"guardian_denied:{decision.reason}:kernel:{action}")
+
     def _get_passive_services(self) -> list[str]:
         raw_list = (os.getenv("AETHERRA_PASSIVE_SERVICES", "") or "").strip()
         if raw_list:
@@ -1839,9 +1887,16 @@ class AetherraKernelLoop:
         except Exception as e:
             logger.debug(f"[RETRY] Failed to schedule retry: {e}")
 
-    async def shutdown(self) -> None:
+    async def shutdown(self, requester: str | None = None) -> None:
         """🛑 Gracefully shutdown the kernel loop."""
         logger.info("🛑 Shutting down Aetherra OS Kernel Loop...")
+        self._guardian_preflight_control(
+            requester=requester,
+            action="kernel.shutdown",
+            target="kernel:loop",
+            purpose="Shutdown the Aetherra kernel loop",
+            metadata={"operation": "shutdown"},
+        )
         self.running = False
 
         # Save final metrics
@@ -1999,19 +2054,42 @@ class AetherraKernelLoop:
             await self.swap_system(target, old_instance)
 
     # -------------------- Control-plane helpers --------------------
-    def pause(self) -> None:
+    def pause(self, requester: str | None = None) -> None:
         """Pause processing of queues (idempotent)."""
+        self._guardian_preflight_control(
+            requester=requester,
+            action="kernel.pause",
+            target="kernel:loop",
+            purpose="Pause the Aetherra kernel loop",
+            metadata={"operation": "pause"},
+        )
         self.paused = True
 
-    def resume(self) -> None:
+    def resume(self, requester: str | None = None) -> None:
         """Resume processing of queues (idempotent)."""
+        self._guardian_preflight_control(
+            requester=requester,
+            action="kernel.resume",
+            target="kernel:loop",
+            purpose="Resume the Aetherra kernel loop",
+            metadata={"operation": "resume"},
+        )
         self.paused = False
 
-    async def drain_queue(self, name: str, mode: str = "dlq") -> None:
+    async def drain_queue(
+        self, name: str, mode: str = "dlq", requester: str | None = None
+    ) -> None:
         """Drain a queue by name: 'high_priority'|'normal_priority'|'background'.
 
         mode='dlq' writes items to DLQ; mode='drop' discards silently.
         """
+        self._guardian_preflight_control(
+            requester=requester,
+            action="kernel.drain_queue",
+            target=f"kernel_queue:{name}",
+            purpose=f"Drain kernel queue {name}",
+            metadata={"queue": str(name), "mode": str(mode)},
+        )
         q = None
         if name == "high_priority":
             q = self.high_priority_queue
@@ -2036,8 +2114,17 @@ class AetherraKernelLoop:
                 self.metrics.get("queue_drained_total", 0) + drained
             )
 
-    def set_queue_limits(self, limits: dict[str, int]) -> None:
+    def set_queue_limits(
+        self, limits: dict[str, int], requester: str | None = None
+    ) -> None:
         """Dynamically update queue limits at runtime (best-effort)."""
+        self._guardian_preflight_control(
+            requester=requester,
+            action="kernel.set_queue_limits",
+            target="kernel:queue_limits",
+            purpose="Set Aetherra kernel queue limits",
+            metadata={"limit_keys": tuple(sorted(str(key) for key in limits))},
+        )
         try:
             for k in ("high_priority", "normal_priority", "background"):
                 if k in limits:

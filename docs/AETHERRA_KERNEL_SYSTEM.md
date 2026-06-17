@@ -39,6 +39,22 @@ This document describes the Aetherra Kernel: the core runtime loop, service regi
 - HMR Phase 2 improvements: in‑flight counters per target, source gating, audit logging
 - New services: KLM (Module Manager) and KEB (Event Bus) wired in Phase 2; Hub exports their metrics
 
+## Guardian enforcement
+
+Guardian protects Kernel control paths that mutate lifecycle, queue, module, registry, or event-routing state:
+
+- Hub `/api/kernel/control/pause`, `/resume`, `/drain`, and `/queue_limits` declare Guardian intents before mutating the registered kernel loop.
+- `AetherraKernelLoop.pause`, `resume`, `drain_queue`, `set_queue_limits`, and `shutdown` also declare Guardian intents directly, so callers below the Hub layer cannot bypass policy.
+- Hub kernel controls forward the caller principal into the lower-level kernel guard when the kernel object supports it.
+- Strict capability mode blocks explicit external callers without `kernel:control`.
+- Denied direct kernel controls raise `PermissionError` before pause state, running state, queue contents, queue metrics, or queue limits change.
+- Kernel-adjacent subsystems also enforce Guardian at their owning boundary: Service Registry lifecycle and trust mutations, Kernel Event Bus publish/subscribe/ack and privileged command publishing, Module Manager lifecycle operations, and HMR reload lifecycle.
+- Audit metadata records control operation, queue name, drain mode, and redacted queue-limit keys without storing raw queue-limit values or queued task payloads.
+
+Remaining Guardian scope:
+
+- Keep future boot phase mutation, runtime mode changes outside existing queue controls, topic administration, cross-system command APIs outside KEB privileged publish, or kernel service-lifecycle controls behind Guardian before enabling them.
+
 ## Core components
 
 ### 1) Kernel loop

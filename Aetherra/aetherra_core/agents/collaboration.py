@@ -9,11 +9,66 @@ Coordinates multiple AI agents to solve complex problems collaboratively
 
 # Standard library imports
 import asyncio
+import hashlib
+import os
 import time
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional
+
+
+def _hash_value(value: Any) -> str | None:
+    if value is None:
+        return None
+    raw = str(value)
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "agent:collaboration" and capability in {
+        "agent:control",
+        "agent:execute_task",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _guardian_preflight_collaboration_operation(
+    *,
+    action: str,
+    target: str,
+    purpose: str,
+    capabilities: tuple[str, ...],
+    reversible: bool,
+    rollback_plan: str,
+    metadata: dict[str, Any],
+):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "agent:collaboration"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="agents",
+            action=action,
+            target=target,
+            purpose=purpose,
+            capabilities=capabilities,
+            evidence=(f"{action}:request",),
+            reversible=reversible,
+            rollback_plan=rollback_plan,
+            metadata=metadata,
+        ),
+        approval_id=approval_id,
+        capability_checker=_guardian_capability_checker,
+    )
 
 
 class AgentRole(Enum):
@@ -420,6 +475,36 @@ class AICollaborationFramework:
 
         task_id = f"task_{int(time.time())}"
         requirements = requirements or []
+        assigned_agents = [
+            AgentRole.CODE_GENERATOR,
+            AgentRole.OPTIMIZER,
+            AgentRole.DEBUGGER,
+            AgentRole.DOCUMENTER,
+        ]
+        decision = _guardian_preflight_collaboration_operation(
+            action="agent.collaborative_solve",
+            target=f"agent_collaboration:{_hash_value(task_id)}",
+            purpose="Create and execute a multi-agent collaboration task",
+            capabilities=("agent:execute_task", "agent:control"),
+            reversible=True,
+            rollback_plan="remove the active collaboration task and discard recorded history/results",
+            metadata={
+                "task_id_hash": _hash_value(task_id),
+                "problem_hash": _hash_value(problem),
+                "problem_length": len(str(problem or "")),
+                "requirement_count": len(requirements),
+                "requirement_hashes": [_hash_value(requirement) for requirement in requirements],
+                "priority": priority.name,
+                "assigned_agents": [agent.value for agent in assigned_agents],
+            },
+        )
+        if not decision.allowed:
+            return {
+                "success": False,
+                "error": "guardian_denied",
+                "reason": decision.reason,
+                "task_id": task_id,
+            }
 
         # Create collaboration task
         task = CollaborationTask(
@@ -427,12 +512,7 @@ class AICollaborationFramework:
             description=problem,
             requirements=requirements,
             priority=priority,
-            assigned_agents=[
-                AgentRole.CODE_GENERATOR,
-                AgentRole.OPTIMIZER,
-                AgentRole.DEBUGGER,
-                AgentRole.DOCUMENTER,
-            ],
+            assigned_agents=assigned_agents,
             context={},
             status="in_progress",
         )
@@ -543,6 +623,26 @@ class AICollaborationFramework:
 
     def add_agent(self, agent: AIAgent) -> None:
         """Add a new AI agent to the framework"""
+        agent_capabilities = agent.get_capabilities()
+        decision = _guardian_preflight_collaboration_operation(
+            action="agent.collaboration_add_agent",
+            target=f"agent_role:{agent.role.value}",
+            purpose="Add an agent to the collaboration framework registry",
+            capabilities=("agent:control",),
+            reversible=True,
+            rollback_plan="remove the agent from the collaboration registry",
+            metadata={
+                "agent_role": agent.role.value,
+                "agent_class": agent.__class__.__name__,
+                "capability_count": len(agent_capabilities),
+                "capability_hashes": [
+                    _hash_value(capability) for capability in agent_capabilities
+                ],
+            },
+        )
+        if not decision.allowed:
+            return
+
         self.ai_agents[agent.role] = agent
         print(f"🤖 Added new AI agent: {agent.role.value}")
 
@@ -580,8 +680,26 @@ class AICollaborationFramework:
 
         # Use only code generator for quick solutions
         code_agent = self.ai_agents[AgentRole.CODE_GENERATOR]
+        task_id = f"quick_{int(time.time())}"
+        decision = _guardian_preflight_collaboration_operation(
+            action="agent.quick_solve",
+            target=f"agent_collaboration:{_hash_value(task_id)}",
+            purpose="Delegate a quick solve task to the code-generation agent",
+            capabilities=("agent:execute_task",),
+            reversible=False,
+            rollback_plan="quick solve is side-effect-free apart from caller-visible output",
+            metadata={
+                "task_id_hash": _hash_value(task_id),
+                "problem_hash": _hash_value(problem),
+                "problem_length": len(str(problem or "")),
+                "agent_role": AgentRole.CODE_GENERATOR.value,
+            },
+        )
+        if not decision.allowed:
+            return "[Guardian] Quick solve denied"
+
         task = CollaborationTask(
-            id=f"quick_{int(time.time())}",
+            id=task_id,
             description=problem,
             requirements=[],
             priority=TaskPriority.MEDIUM,

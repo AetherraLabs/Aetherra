@@ -24,17 +24,34 @@ def _register_dummy_service():
     asyncio.run(register_service("self_incorporation", _DummySelfInc()))
 
 
+def _unregister_dummy_service():
+    # Standard library imports
+    import asyncio
+
+    # Aetherra imports
+    from aetherra_service_registry import get_service_registry
+
+    async def _unregister() -> None:
+        registry = await get_service_registry()
+        await registry.unregister_service("self_incorporation")
+
+    asyncio.run(_unregister())
+
+
 def test_selfinc_status_endpoint_ok(monkeypatch):
     # Ensure environment does not trigger prod abort guard
     os.environ.pop("AETHERRA_PROFILE", None)
     app = create_app()
     _register_dummy_service()
-    client: FlaskClient = app.test_client()
-    resp = client.get("/api/selfinc/status")
-    assert resp.status_code == 200
-    data = resp.get_json()
-    assert data["status"] == "ok"
-    assert data["running"] is True
+    try:
+        client: FlaskClient = app.test_client()
+        resp = client.get("/api/selfinc/status")
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["status"] == "ok"
+        assert data["running"] is True
+    finally:
+        _unregister_dummy_service()
 
 
 def test_selfinc_status_endpoint_unavailable(monkeypatch):

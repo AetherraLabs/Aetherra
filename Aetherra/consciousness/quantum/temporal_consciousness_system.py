@@ -24,8 +24,10 @@ Date: August 5, 2025
 
 # Standard library imports
 import asyncio
+import hashlib
 import json
 import logging
+import os
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
@@ -37,6 +39,28 @@ import numpy as np
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _temporal_consciousness_capability_checker(
+    requester: str, capability: str
+) -> bool:
+    if requester == "consciousness:temporal" and capability in {
+        "consciousness:write",
+        "memory:read",
+        "memory:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
 
 
 class TemporalState(Enum):
@@ -144,6 +168,16 @@ class TemporalConsciousnessEngine:
             if timestamp is None:
                 timestamp = datetime.now()
 
+            self._guardian_preflight_temporal_consciousness_operation(
+                operation="process_moment",
+                capabilities=("consciousness:write", "memory:write"),
+                extra_metadata={
+                    "state_hash": _hash_value(consciousness_state),
+                    "state_field_names": sorted(str(key) for key in consciousness_state),
+                    "state_field_count": len(consciousness_state),
+                    "timestamp_hash": _hash_value(timestamp.isoformat()),
+                },
+            )
             moment_id = f"moment_{int(timestamp.timestamp())}"
 
             # Calculate temporal coherence with recent moments
@@ -183,6 +217,8 @@ class TemporalConsciousnessEngine:
 
             return moment_id
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Failed to process temporal moment: {e}")
             raise
@@ -192,6 +228,16 @@ class TemporalConsciousnessEngine:
     ) -> TemporalPrediction:
         """Predict future consciousness state using temporal patterns"""
         try:
+            self._guardian_preflight_temporal_consciousness_operation(
+                operation="predict_future",
+                capabilities=("consciousness:write", "memory:read", "memory:write"),
+                extra_metadata={
+                    "target_time_hash": _hash_value(target_time.isoformat()),
+                    "context_hash": _hash_value(consciousness_context),
+                    "context_field_names": sorted(str(key) for key in consciousness_context),
+                    "context_field_count": len(consciousness_context),
+                },
+            )
             time_delta = target_time - datetime.now()
             if time_delta > self.prediction_horizon:
                 self.logger.warning(f"Prediction time {target_time} beyond horizon")
@@ -250,6 +296,8 @@ class TemporalConsciousnessEngine:
 
             return prediction
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Future state prediction failed: {e}")
             raise
@@ -259,6 +307,16 @@ class TemporalConsciousnessEngine:
     ) -> Dict[str, Any]:
         """Integrate temporal memories around a specific time point"""
         try:
+            self._guardian_preflight_temporal_consciousness_operation(
+                operation="memory_integration",
+                capabilities=("consciousness:write", "memory:read", "memory:write"),
+                extra_metadata={
+                    "query_time_hash": _hash_value(query_time.isoformat()),
+                    "context_hash": _hash_value(context),
+                    "context_field_names": sorted(str(key) for key in context),
+                    "context_field_count": len(context),
+                },
+            )
             self.logger.info(f"🧠 Temporal memory integration for {query_time}")
 
             # Find moments within temporal window of query time
@@ -292,8 +350,8 @@ class TemporalConsciousnessEngine:
                 # Merge consciousness states with weighting
                 for key, value in moment.consciousness_state.items():
                     if key in integrated_state:
-                        if isinstance(value, (int, float)) and isinstance(
-                            integrated_state[key], (int, float)
+                        if isinstance(value, int | float) and isinstance(
+                            integrated_state[key], int | float
                         ):
                             integrated_state[key] = (integrated_state[key] + value * weight) / (
                                 1 + weight
@@ -303,12 +361,11 @@ class TemporalConsciousnessEngine:
                             integrated_state[key] = self._merge_dicts_weighted(
                                 integrated_state[key], value, weight
                             )
-                        elif isinstance(value, str):
+                        elif isinstance(value, str) and weight > 0.5:
                             # Handle string values - keep most weighted value
-                            if weight > 0.5:
-                                integrated_state[key] = value
+                            integrated_state[key] = value
                     else:
-                        if isinstance(value, (int, float)):
+                        if isinstance(value, int | float):
                             integrated_state[key] = value * weight
                         else:
                             integrated_state[key] = value
@@ -333,6 +390,8 @@ class TemporalConsciousnessEngine:
 
             return integration_result
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Temporal memory integration failed: {e}")
             return {
@@ -383,6 +442,8 @@ class TemporalConsciousnessEngine:
 
             return patterns
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Temporal pattern detection failed: {e}")
             return []
@@ -396,6 +457,16 @@ class TemporalConsciousnessEngine:
                 self.logger.warning(f"Prediction {prediction_id} not found")
                 return 0.0
 
+            self._guardian_preflight_temporal_consciousness_operation(
+                operation="validate_prediction",
+                capabilities=("consciousness:write", "memory:write"),
+                extra_metadata={
+                    "prediction_hash": _hash_value(prediction_id),
+                    "actual_state_hash": _hash_value(actual_state),
+                    "actual_state_field_names": sorted(str(key) for key in actual_state),
+                    "actual_state_field_count": len(actual_state),
+                },
+            )
             prediction = self.temporal_predictions[prediction_id]
 
             # Calculate accuracy by comparing predicted vs actual states
@@ -417,6 +488,8 @@ class TemporalConsciousnessEngine:
 
             return accuracy
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Prediction validation failed: {e}")
             return 0.0
@@ -452,6 +525,71 @@ class TemporalConsciousnessEngine:
         except Exception as e:
             self.logger.error(f"❌ Temporal coherence calculation failed: {e}")
             return 0.0
+
+    def _guardian_preflight_temporal_consciousness_operation(
+        self,
+        *,
+        operation: str,
+        capabilities: tuple[str, ...],
+        extra_metadata: Dict[str, Any] | None = None,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = (
+            os.getenv("AETHERRA_PRINCIPAL", "").strip()
+            or "consciousness:temporal"
+        )
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        metadata: Dict[str, Any] = {
+            "operation": operation,
+            "moment_count": len(self.temporal_moments),
+            "prediction_count": len(self.temporal_predictions),
+            "causal_chain_count": len(self.causal_chains),
+            "current_temporal_state": self.current_temporal_state.value,
+            "coherence_history_count": len(self.temporal_coherence_history),
+            "accuracy_history_count": len(self.prediction_accuracy_history),
+            "moments_processed": int(self.moments_processed),
+            "predictions_made": int(self.predictions_made),
+            "causal_chains_discovered": int(self.causal_chains_discovered),
+            "temporal_coherence": round(float(self.temporal_coherence), 6),
+            "avg_prediction_accuracy": round(float(self.avg_prediction_accuracy), 6),
+            "temporal_window_seconds": round(
+                float(self.temporal_window.total_seconds()), 6
+            ),
+            "prediction_horizon_seconds": round(
+                float(self.prediction_horizon.total_seconds()), 6
+            ),
+        }
+        if extra_metadata:
+            metadata.update(extra_metadata)
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action=f"consciousness.temporal_{operation}",
+                target="temporal_consciousness_engine",
+                purpose="Mutate experimental temporal consciousness state",
+                capabilities=capabilities,
+                evidence=(
+                    "TemporalConsciousnessEngine.process_temporal_moment",
+                    "TemporalConsciousnessEngine.predict_future_state",
+                    "TemporalConsciousnessEngine.temporal_memory_integration",
+                    "TemporalConsciousnessEngine.validate_prediction_accuracy",
+                ),
+                reversible=True,
+                rollback_plan=(
+                    "restore previous temporal moments, predictions, causal "
+                    "chains, coherence history, accuracy history, and metrics"
+                ),
+                metadata=metadata,
+            ),
+            approval_id=approval_id,
+            capability_checker=_temporal_consciousness_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
 
     async def _get_recent_moments(self, time_window: timedelta) -> List[TemporalMoment]:
         """Get temporal moments within specified time window"""
@@ -558,7 +696,9 @@ class TemporalConsciousnessEngine:
 
         for key, value in dict_b.items():
             if key in result:
-                if isinstance(value, (int, float)) and isinstance(result[key], (int, float)):
+                if isinstance(value, int | float) and isinstance(
+                    result[key], int | float
+                ):
                     result[key] = (result[key] + value * weight) / (1 + weight)
                 elif isinstance(value, dict) and isinstance(result[key], dict):
                     result[key] = self._merge_dicts_weighted(result[key], value, weight)
@@ -601,7 +741,7 @@ class TemporalConsciousnessEngine:
 
             # Apply modifications based on trend direction
             for key, value in projected_state.items():
-                if isinstance(value, (int, float)):
+                if isinstance(value, int | float):
                     if trends["direction"] == "increasing":
                         projected_state[key] = value * (1 + trend_factor * 0.1)
                     else:
@@ -651,13 +791,14 @@ class TemporalConsciousnessEngine:
         total_keys = 0
 
         for key in predicted_state:
-            if key in current_state:
-                if isinstance(predicted_state[key], (int, float)) and isinstance(
-                    current_state[key], (int, float)
-                ):
-                    diff = abs(predicted_state[key] - current_state[key])
-                    state_difference += diff
-                    total_keys += 1
+            if (
+                key in current_state
+                and isinstance(predicted_state[key], int | float)
+                and isinstance(current_state[key], int | float)
+            ):
+                diff = abs(predicted_state[key] - current_state[key])
+                state_difference += diff
+                total_keys += 1
 
         if total_keys == 0:
             return 0.5

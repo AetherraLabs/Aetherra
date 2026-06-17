@@ -243,6 +243,10 @@ deployments/local/tmp*/
 repository_cleanup*.py
 cleanup_*.py
 *_cleanup.py
+!tools/root_cleanup.py
+!tools/maintenance/focused_cleanup.py
+!tools/maintenance/safe_cleanup.py
+!tools/maintenance/smart_cleanup.py
 
 # Discord Bot directory (contains sensitive tokens and configurations)
 Discord Bot/

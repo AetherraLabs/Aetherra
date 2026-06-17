@@ -8,8 +8,11 @@ Addresses critical meta-memory coverage gap identified by AI OS self-reflection
 """
 
 # Standard library imports
+import copy
+import hashlib
 import json
 import logging
+import os
 import sqlite3
 import threading
 import time
@@ -18,6 +21,25 @@ from collections import defaultdict
 from dataclasses import dataclass  # Added for @dataclass usage
 from enum import Enum
 from typing import Any, Dict, List
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _meta_cognition_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "consciousness:meta_cognition" and capability in {
+        "consciousness:write",
+        "memory:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
 
 
 class SelfKnowledgeDomain(Enum):
@@ -213,6 +235,8 @@ class MetaCognitionSystem:
             learning_weight=self._calculate_learning_weight(domain, knowledge_data),
         )
 
+        self._guardian_preflight_meta_memory_node(node, source=source)
+
         # Store in memory and database
         self.meta_memory_nodes[node_id] = node
         self._persist_meta_memory_node(node)
@@ -265,12 +289,25 @@ class MetaCognitionSystem:
             meta_level=meta_level,
         )
 
-        # Store reflection
-        self.reflection_history.append(reflection)
-        self._persist_reflection(reflection)
+        previous_reflections = list(self.reflection_history)
+        previous_nodes = dict(self.meta_memory_nodes)
+        previous_coverage = copy.deepcopy(self.self_knowledge_coverage)
+        previous_cognitive_state = copy.deepcopy(self.cognitive_state)
+        try:
+            self._guardian_preflight_reflection(reflection)
 
-        # Apply insights to enhance knowledge
-        self._apply_reflection_insights(reflection)
+            # Store reflection
+            self.reflection_history.append(reflection)
+            self._persist_reflection(reflection)
+
+            # Apply insights to enhance knowledge
+            self._apply_reflection_insights(reflection)
+        except Exception:
+            self.reflection_history = previous_reflections
+            self.meta_memory_nodes = previous_nodes
+            self.self_knowledge_coverage = previous_coverage
+            self.cognitive_state = previous_cognitive_state
+            raise
 
         logging.info(f"Self-reflection completed - {len(insights)} insights generated")
         return reflection
@@ -544,6 +581,54 @@ class MetaCognitionSystem:
                 ),
             )
 
+    def _guardian_preflight_meta_memory_node(
+        self,
+        node: MetaMemoryNode,
+        *,
+        source: str,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "consciousness:meta_cognition"
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        content_payload = json.dumps(node.content, sort_keys=True, default=str)
+        annotations_payload = json.dumps(
+            node.meta_annotations,
+            sort_keys=True,
+            default=str,
+        )
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action="consciousness.meta_memory_node_persist",
+                target=f"meta_memory_domain:{node.knowledge_domain.value}",
+                purpose="Persist self-knowledge meta-memory for consciousness self-awareness",
+                capabilities=("consciousness:write", "memory:write"),
+                evidence=("MetaCognitionSystem.enhance_self_knowledge",),
+                reversible=True,
+                rollback_plan="delete the persisted meta-memory row and remove the in-memory node/domain coverage reference",
+                metadata={
+                    "db_path_hash": _hash_value(self.db_path),
+                    "node_id_hash": _hash_value(node.node_id),
+                    "domain": node.knowledge_domain.value,
+                    "source_hash": _hash_value(source),
+                    "content_hash": _hash_value(content_payload),
+                    "content_field_count": len(node.content),
+                    "annotation_hash": _hash_value(annotations_payload),
+                    "annotation_field_count": len(node.meta_annotations),
+                    "confidence": round(float(node.confidence), 6),
+                    "validation_status": node.validation_status,
+                    "learning_weight": round(float(node.learning_weight), 6),
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=_meta_cognition_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
+
     def _persist_reflection(self, reflection: SelfReflectionEntry):
         """Persist reflection to database"""
         with sqlite3.connect(self.db_path) as conn:
@@ -566,6 +651,53 @@ class MetaCognitionSystem:
                     reflection.meta_level,
                 ),
             )
+
+    def _guardian_preflight_reflection(self, reflection: SelfReflectionEntry):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "consciousness:meta_cognition"
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        assessment_payload = json.dumps(
+            reflection.self_assessment,
+            sort_keys=True,
+            default=str,
+        )
+        confidence_payload = json.dumps(
+            reflection.confidence_changes,
+            sort_keys=True,
+            default=str,
+        )
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action="consciousness.self_reflection_persist",
+                target=f"self_reflection:{reflection.reflection_type}",
+                purpose="Persist self-reflection and apply derived meta-cognitive learning updates",
+                capabilities=("consciousness:write", "memory:write"),
+                evidence=("MetaCognitionSystem.conduct_self_reflection",),
+                reversible=True,
+                rollback_plan="delete the persisted reflection row and restore the prior in-memory reflection/meta-knowledge state",
+                metadata={
+                    "db_path_hash": _hash_value(self.db_path),
+                    "reflection_id_hash": _hash_value(reflection.reflection_id),
+                    "reflection_type": reflection.reflection_type,
+                    "trigger_hash": _hash_value(reflection.trigger_event),
+                    "assessment_hash": _hash_value(assessment_payload),
+                    "assessment_key_count": len(reflection.self_assessment),
+                    "insight_count": len(reflection.insights_gained),
+                    "knowledge_update_count": len(reflection.knowledge_updates),
+                    "confidence_hash": _hash_value(confidence_payload),
+                    "confidence_domain_count": len(reflection.confidence_changes),
+                    "meta_level": int(reflection.meta_level),
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=_meta_cognition_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
 
     def _deserialize_memory_node(self, row) -> MetaMemoryNode:
         """Stub deserializer for persisted meta memory rows."""

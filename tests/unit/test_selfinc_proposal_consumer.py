@@ -1,6 +1,5 @@
 # Standard library imports
 import asyncio
-import os
 
 # Aetherra imports
 from aetherra_self_incorporation import (
@@ -16,11 +15,8 @@ async def _start_selfinc():
     return svc
 
 
-def test_proposal_consumer_optimize_adjusts_knobs_and_metrics():
-    # Ensure test profile for permissive behavior
-    os.environ.pop("AETHERRA_PROFILE", None)
-
-    svc = asyncio.get_event_loop().run_until_complete(_start_selfinc())
+async def _exercise_optimize_proposal():
+    svc = await _start_selfinc()
 
     # Baseline counters
     base_exec = int(svc.metrics.get("proposals_executed", 0))
@@ -32,9 +28,19 @@ def test_proposal_consumer_optimize_adjusts_knobs_and_metrics():
         "type": "optimize",
         "params": {"hint": "indexing", "value": True},
     }
-    res = asyncio.get_event_loop().run_until_complete(
-        svc.handle_message("selfimprovement.proposal", proposal)
-    )
+    res = await svc.handle_message("selfimprovement.proposal", proposal)
+
+    return svc, res, base_exec, base_acc
+
+
+def test_proposal_consumer_optimize_adjusts_knobs_and_metrics(monkeypatch):
+    # Ensure test profile for permissive behavior
+    monkeypatch.delenv("AETHERRA_PROFILE", raising=False)
+    monkeypatch.delenv("AETHERRA_NET_STRICT", raising=False)
+    monkeypatch.delenv("AETHERRA_SELFINC_STRICT", raising=False)
+    monkeypatch.setenv("AETHERRA_SELFINC_TRUST_MODE", "standard")
+
+    svc, res, base_exec, base_acc = asyncio.run(_exercise_optimize_proposal())
 
     assert isinstance(res, dict)
     assert res.get("status") in ("accepted", "rejected")

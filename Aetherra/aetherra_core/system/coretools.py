@@ -22,6 +22,9 @@ import zipfile
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+from Aetherra.security.capabilities import has_capability
+
 
 class CoreToolsPlugin:
     """Core utility tools for file access and common operations"""
@@ -63,6 +66,52 @@ class CoreToolsPlugin:
         self.temp_dir = tempfile.mkdtemp(prefix="aethercode_")
         self.operation_history = []
 
+    def _guardian_preflight(
+        self,
+        *,
+        action: str,
+        target_path: str,
+        capabilities: tuple[str, ...],
+        purpose: str,
+        reversible: bool,
+        rollback_plan: str | None,
+        metadata: dict[str, Any] | None = None,
+    ) -> None:
+        target = pathlib.Path(target_path).expanduser()
+        try:
+            target_label = str(target.resolve(strict=False))
+        except Exception:
+            target_label = str(target)
+        requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "coretools"
+        intent = IntentDeclaration(
+            requester=requester,
+            subsystem="coretools",
+            action=action,
+            target=f"file:{target_label}",
+            purpose=purpose,
+            capabilities=capabilities,
+            expected_outcome="Filesystem mutation is completed through CoreTools",
+            reversible=reversible,
+            rollback_plan=rollback_plan,
+            evidence=(f"path_name:{target.name}",),
+            metadata={
+                "path_name": target.name,
+                "path_suffix": target.suffix,
+                **(metadata or {}),
+            },
+        )
+        decision = evaluate_intent(intent, capability_checker=has_capability)
+        if decision.status not in {GuardianStatus.ALLOW, GuardianStatus.ALLOW_LIMITED}:
+            raise PermissionError(
+                f"Guardian denied CoreTools filesystem action {action}: {decision.reason}"
+            )
+
+    @staticmethod
+    def _ensure_parent_directory(file_path: str) -> None:
+        parent = os.path.dirname(file_path)
+        if parent:
+            os.makedirs(parent, exist_ok=True)
+
     # File Operations
     def read_file(self, file_path: str, encoding: str = "utf-8") -> str:
         """Read content from a file"""
@@ -80,8 +129,16 @@ class CoreToolsPlugin:
     def write_file(self, file_path: str, content: str, encoding: str = "utf-8") -> str:
         """Write content to a file"""
         try:
-            # Ensure directory exists
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            self._guardian_preflight(
+                action="filesystem.write",
+                target_path=file_path,
+                capabilities=("fs:write",),
+                purpose="Write file content through CoreTools",
+                reversible=True,
+                rollback_plan="Restore the previous file content from backup or version control",
+                metadata={"content_length": len(content), "encoding": encoding},
+            )
+            self._ensure_parent_directory(file_path)
 
             with open(file_path, "w", encoding=encoding) as f:
                 f.write(content)
@@ -96,6 +153,17 @@ class CoreToolsPlugin:
     def append_file(self, file_path: str, content: str, encoding: str = "utf-8") -> str:
         """Append content to a file"""
         try:
+            self._guardian_preflight(
+                action="filesystem.append",
+                target_path=file_path,
+                capabilities=("fs:write",),
+                purpose="Append file content through CoreTools",
+                reversible=True,
+                rollback_plan="Remove the appended range or restore the previous file content",
+                metadata={"content_length": len(content), "encoding": encoding},
+            )
+            self._ensure_parent_directory(file_path)
+
             with open(file_path, "a", encoding=encoding) as f:
                 f.write(content)
 
@@ -111,10 +179,7 @@ class CoreToolsPlugin:
         try:
             path_obj = pathlib.Path(directory)
 
-            if recursive:
-                files = list(path_obj.rglob(pattern))
-            else:
-                files = list(path_obj.glob(pattern))
+            files = list(path_obj.rglob(pattern)) if recursive else list(path_obj.glob(pattern))
 
             file_list = [str(f) for f in files if f.is_file()]
 
@@ -138,6 +203,14 @@ class CoreToolsPlugin:
     def create_directory(self, directory_path: str) -> str:
         """Create a directory"""
         try:
+            self._guardian_preflight(
+                action="filesystem.create_directory",
+                target_path=directory_path,
+                capabilities=("fs:write",),
+                purpose="Create directory through CoreTools",
+                reversible=True,
+                rollback_plan="Remove the created directory if it remains empty or restore from backup",
+            )
             os.makedirs(directory_path, exist_ok=True)
             self._log_operation("create_directory", {"directory_path": directory_path})
             return f"Directory created: {directory_path}"
@@ -151,6 +224,15 @@ class CoreToolsPlugin:
     def delete_file(self, file_path: str) -> str:
         """Delete a file"""
         try:
+            self._guardian_preflight(
+                action="filesystem.delete",
+                target_path=file_path,
+                capabilities=("fs:delete",),
+                purpose="Delete file or directory through CoreTools",
+                reversible=False,
+                rollback_plan=None,
+                metadata={"target_exists": os.path.exists(file_path)},
+            )
             if os.path.isfile(file_path):
                 os.remove(file_path)
                 self._log_operation("delete_file", {"file_path": file_path, "type": "file"})
@@ -169,8 +251,16 @@ class CoreToolsPlugin:
     def copy_file(self, source: str, destination: str) -> str:
         """Copy a file"""
         try:
-            # Ensure destination directory exists
-            os.makedirs(os.path.dirname(destination), exist_ok=True)
+            self._guardian_preflight(
+                action="filesystem.copy",
+                target_path=destination,
+                capabilities=("fs:write",),
+                purpose="Copy file through CoreTools",
+                reversible=True,
+                rollback_plan="Remove the copied destination file",
+                metadata={"source_name": pathlib.Path(source).name},
+            )
+            self._ensure_parent_directory(destination)
 
             shutil.copy2(source, destination)
             self._log_operation("copy_file", {"source": source, "destination": destination})
@@ -186,8 +276,16 @@ class CoreToolsPlugin:
     def move_file(self, source: str, destination: str) -> str:
         """Move a file"""
         try:
-            # Ensure destination directory exists
-            os.makedirs(os.path.dirname(destination), exist_ok=True)
+            self._guardian_preflight(
+                action="filesystem.move",
+                target_path=destination,
+                capabilities=("fs:write", "fs:delete"),
+                purpose="Move file through CoreTools",
+                reversible=True,
+                rollback_plan="Move the file back to its original source path",
+                metadata={"source_name": pathlib.Path(source).name},
+            )
+            self._ensure_parent_directory(destination)
 
             shutil.move(source, destination)
             self._log_operation("move_file", {"source": source, "destination": destination})
@@ -355,6 +453,17 @@ class CoreToolsPlugin:
             if not data:
                 return "No data to write"
 
+            self._guardian_preflight(
+                action="filesystem.write_csv",
+                target_path=file_path,
+                capabilities=("fs:write",),
+                purpose="Write CSV file through CoreTools",
+                reversible=True,
+                rollback_plan="Restore the previous CSV file from backup or version control",
+                metadata={"row_count": len(data), "field_count": len(data[0])},
+            )
+            self._ensure_parent_directory(file_path)
+
             fieldnames = list(data[0].keys())
 
             with open(file_path, "w", newline="", encoding="utf-8") as f:
@@ -373,6 +482,17 @@ class CoreToolsPlugin:
     def compress_files(self, file_paths: List[str], archive_path: str) -> str:
         """Compress files into a ZIP archive"""
         try:
+            self._guardian_preflight(
+                action="filesystem.compress",
+                target_path=archive_path,
+                capabilities=("fs:write",),
+                purpose="Create archive through CoreTools",
+                reversible=True,
+                rollback_plan="Remove the created archive file",
+                metadata={"file_count": len(file_paths)},
+            )
+            self._ensure_parent_directory(archive_path)
+
             with zipfile.ZipFile(archive_path, "w", zipfile.ZIP_DEFLATED) as zipf:
                 for file_path in file_paths:
                     if os.path.exists(file_path):
@@ -393,9 +513,17 @@ class CoreToolsPlugin:
     def extract_archive(self, archive_path: str, extract_to: str) -> str:
         """Extract files from a ZIP archive"""
         try:
+            self._guardian_preflight(
+                action="filesystem.extract_archive",
+                target_path=extract_to,
+                capabilities=("fs:write",),
+                purpose="Extract archive through CoreTools",
+                reversible=True,
+                rollback_plan="Remove extracted files or restore destination from backup",
+                metadata={"archive_name": pathlib.Path(archive_path).name},
+            )
             with zipfile.ZipFile(archive_path, "r") as zipf:
-                zipf.extractall(extract_to)
-                file_count = len(zipf.namelist())
+                file_count = self._extract_zip_safely(zipf, extract_to)
 
             self._log_operation(
                 "extract_archive",
@@ -410,6 +538,20 @@ class CoreToolsPlugin:
         except Exception as e:
             self._log_operation("extract_archive", {"archive_path": archive_path, "error": str(e)})
             raise Exception(f"Failed to extract archive {archive_path}: {e}") from e
+
+    @staticmethod
+    def _extract_zip_safely(zipf: zipfile.ZipFile, extract_to: str) -> int:
+        destination = pathlib.Path(extract_to).expanduser().resolve()
+        destination.mkdir(parents=True, exist_ok=True)
+        members = zipf.infolist()
+        for member in members:
+            member_path = destination / member.filename
+            resolved_member = member_path.resolve()
+            if resolved_member != destination and destination not in resolved_member.parents:
+                raise ValueError(f"Archive member escapes extraction directory: {member.filename}")
+        for member in members:
+            zipf.extract(member, destination)
+        return len(members)
 
     # Data Processing Operations
     def parse_text(self, text: str, pattern: str) -> List[str]:
@@ -450,12 +592,15 @@ class CoreToolsPlugin:
                         results["errors"].append(f"Missing required field: {field}")
                         results["valid"] = False
 
-            if "max_length" in validation_rules and isinstance(data, str):
-                if len(data) > validation_rules["max_length"]:
-                    results["errors"].append(
-                        f"String too long: {len(data)} > {validation_rules['max_length']}"
-                    )
-                    results["valid"] = False
+            if (
+                "max_length" in validation_rules
+                and isinstance(data, str)
+                and len(data) > validation_rules["max_length"]
+            ):
+                results["errors"].append(
+                    f"String too long: {len(data)} > {validation_rules['max_length']}"
+                )
+                results["valid"] = False
 
             self._log_operation("validate_data", {"valid": results["valid"]})
             return results
@@ -471,7 +616,7 @@ class CoreToolsPlugin:
                 return data.upper()
             elif transformation == "lowercase" and isinstance(data, str):
                 return data.lower()
-            elif transformation == "reverse" and isinstance(data, (str, list)):
+            elif transformation == "reverse" and isinstance(data, str | list):
                 return data[::-1]
             elif transformation == "sort" and isinstance(data, list):
                 return sorted(data, key=kwargs.get("key"))

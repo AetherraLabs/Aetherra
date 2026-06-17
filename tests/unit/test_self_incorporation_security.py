@@ -10,13 +10,6 @@ Tests:
 - Rate limiting for proposals
 """
 
-# Standard library imports
-import asyncio
-import os
-import tempfile
-import time
-from pathlib import Path
-
 # Third party imports
 import pytest
 
@@ -29,20 +22,23 @@ from Aetherra.homeostasis.self_incorporation_security import (
 
 
 @pytest.fixture
-def security_layer():
+def security_layer(monkeypatch, tmp_path):
     """Create security layer in standard mode."""
+    monkeypatch.delenv("AETHERRA_PROFILE", raising=False)
+    monkeypatch.delenv("AETHERRA_NET_STRICT", raising=False)
+    monkeypatch.setenv("AETHERRA_REQUIRE_CAPABILITIES", "1")
+    monkeypatch.setenv("AETHERRA_POLICY_HOME", str(tmp_path / "policy"))
     return SelfIncorporationSecurity(trust_mode="standard")
 
 
 @pytest.fixture
-def strict_security_layer():
+def strict_security_layer(monkeypatch, tmp_path):
     """Create security layer in strict mode."""
-    # Set environment to force strict mode
-    os.environ["AETHERRA_PROFILE"] = "prod"
-    layer = SelfIncorporationSecurity(trust_mode="strict")
-    yield layer
-    # Cleanup
-    os.environ.pop("AETHERRA_PROFILE", None)
+    monkeypatch.setenv("AETHERRA_PROFILE", "prod")
+    monkeypatch.setenv("AETHERRA_NET_STRICT", "1")
+    monkeypatch.setenv("AETHERRA_REQUIRE_CAPABILITIES", "1")
+    monkeypatch.setenv("AETHERRA_POLICY_HOME", str(tmp_path / "policy"))
+    return SelfIncorporationSecurity(trust_mode="strict")
 
 
 @pytest.mark.unit

@@ -23,7 +23,11 @@ Date: August 4, 2025
 
 # Standard library imports
 import asyncio
+import contextlib
+import hashlib
+import json
 import logging
+import os
 import random
 import uuid
 from dataclasses import asdict, dataclass
@@ -31,9 +35,80 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-# Third party imports
-from consciousness_bridge import ConsciousnessMessage, get_consciousness_bridge
-from meta_layer_core import AgentProfile, get_meta_layer_core
+# Local imports
+from .consciousness_bridge import ConsciousnessMessage, get_consciousness_bridge
+from .meta_layer_core import AgentProfile, get_meta_layer_core
+
+
+def _hash_value(value: Any) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _hash_json(value: Any) -> str | None:
+    try:
+        raw = json.dumps(value, sort_keys=True, default=str)
+    except TypeError:
+        raw = repr(value)
+    return _hash_value(raw)
+
+
+def _hash_many(values: List[Any]) -> tuple[str | None, ...]:
+    return tuple(_hash_value(value) for value in values)
+
+
+def _guardian_requester() -> str:
+    return os.environ.get("AETHERRA_PRINCIPAL", "").strip() or "consciousness:lyrixa"
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "consciousness:lyrixa" and capability in {
+        "agent:control",
+        "consciousness:reflect",
+        "consciousness:write",
+        "event:publish",
+        "memory:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _guardian_preflight_lyrixa_operation(
+    *,
+    action: str,
+    target: str,
+    purpose: str,
+    capabilities: tuple[str, ...],
+    metadata: Dict[str, Any],
+    rollback_plan: str,
+) -> None:
+    from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+    decision = evaluate_intent(
+        IntentDeclaration(
+            requester=_guardian_requester(),
+            subsystem="consciousness",
+            action=action,
+            target=target,
+            purpose=purpose,
+            capabilities=capabilities,
+            evidence=("LyrixaConsciousnessEngine", action),
+            reversible=True,
+            rollback_plan=rollback_plan,
+            metadata=metadata,
+        ),
+        capability_checker=_guardian_capability_checker,
+    )
+    if decision.status not in {
+        GuardianStatus.ALLOW,
+        GuardianStatus.ALLOW_LIMITED,
+    }:
+        raise PermissionError(f"guardian_denied:{decision.reason}:{action}")
 
 
 class EmotionalState(Enum):
@@ -143,10 +218,10 @@ class LyrixaConsciousnessEngine:
     her core ethical principles and emotional intelligence.
     """
 
-    def __init__(self):
+    def __init__(self, consciousness_bridge=None, meta_layer_core=None):
         self.logger = logging.getLogger(__name__)
-        self.consciousness_bridge = get_consciousness_bridge()
-        self.meta_layer_core = get_meta_layer_core()
+        self.consciousness_bridge = consciousness_bridge or get_consciousness_bridge()
+        self.meta_layer_core = meta_layer_core or get_meta_layer_core()
 
         # Core consciousness components
         self.personality = PersonalityTraits()
@@ -226,6 +301,14 @@ class LyrixaConsciousnessEngine:
 
     async def _start_consciousness_loop(self):
         """Start Lyrixa's main consciousness loop"""
+        _guardian_preflight_lyrixa_operation(
+            action="consciousness.lyrixa_start_loop",
+            target="consciousness:lyrixa",
+            purpose="Start Lyrixa consciousness loop task",
+            capabilities=("consciousness:write",),
+            metadata={"operation": "start_loop", "is_running": self.is_running},
+            rollback_plan="cancel created consciousness loop task",
+        )
         self.consciousness_task = asyncio.create_task(self._consciousness_loop())
         self.logger.info("Lyrixa consciousness loop started")
 
@@ -286,12 +369,16 @@ class LyrixaConsciousnessEngine:
                         EmotionalState.EXCITED, "Emergent behaviors detected"
                     )
 
-            elif collective_metrics.collective_consciousness > 0.8:
-                if self.current_emotional_state != EmotionalState.SATISFIED:
-                    await self._set_emotional_state(
-                        EmotionalState.SATISFIED, "High collective consciousness"
-                    )
+            elif (
+                collective_metrics.collective_consciousness > 0.8
+                and self.current_emotional_state != EmotionalState.SATISFIED
+            ):
+                await self._set_emotional_state(
+                    EmotionalState.SATISFIED, "High collective consciousness"
+                )
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"Error updating emotional state: {e}")
 
@@ -328,6 +415,19 @@ class LyrixaConsciousnessEngine:
     async def _set_emotional_state(self, new_state: EmotionalState, reason: str):
         """Set Lyrixa's emotional state"""
         old_state = self.current_emotional_state
+        _guardian_preflight_lyrixa_operation(
+            action="consciousness.lyrixa_emotional_state_update",
+            target="consciousness:lyrixa",
+            purpose="Update Lyrixa emotional state and publish the state-change event",
+            capabilities=("consciousness:write", "event:publish"),
+            metadata={
+                "operation": "set_emotional_state",
+                "old_state": old_state.value,
+                "new_state": new_state.value,
+                "reason_hash": _hash_value(reason),
+            },
+            rollback_plan="restore previous emotional state and timestamp",
+        )
         self.current_emotional_state = new_state
         self.emotional_state_started = datetime.now()
 
@@ -410,6 +510,28 @@ class LyrixaConsciousnessEngine:
                 confidence_level=self._calculate_current_confidence(),
             )
 
+            _guardian_preflight_lyrixa_operation(
+                action="consciousness.lyrixa_reflection_record",
+                target="consciousness:lyrixa",
+                purpose="Persist Lyrixa reflection state and execute planned reflection actions",
+                capabilities=(
+                    "consciousness:reflect",
+                    "consciousness:write",
+                    "memory:write",
+                    "event:publish",
+                ),
+                metadata={
+                    "operation": "reflect_on_consciousness_state",
+                    "observation_count": len(observations),
+                    "insight_count": len(insights),
+                    "planned_action_count": len(planned_actions),
+                    "planned_action_hashes": _hash_many(planned_actions),
+                    "emotional_state": self.current_emotional_state.value,
+                    "confidence": round(float(reflection.confidence_level), 6),
+                    "reflection_count_before": len(self.reflections),
+                },
+                rollback_plan="restore previous reflection list and last-reflection timestamp",
+            )
             self.reflections.append(reflection)
             self.last_reflection = current_time
 
@@ -432,6 +554,8 @@ class LyrixaConsciousnessEngine:
                 },
             )
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"Error during Lyrixa reflection: {e}")
 
@@ -493,6 +617,21 @@ class LyrixaConsciousnessEngine:
         underperforming_agents = [agent for agent in agents.values() if agent.success_rate < 0.6]
 
         if underperforming_agents:
+            _guardian_preflight_lyrixa_operation(
+                action="consciousness.lyrixa_concern_record",
+                target="consciousness:lyrixa",
+                purpose="Record Lyrixa concern about underperforming agents",
+                capabilities=("consciousness:write", "memory:write"),
+                metadata={
+                    "operation": "investigate_system_issues",
+                    "underperforming_count": len(underperforming_agents),
+                    "agent_hashes": _hash_many(
+                        [agent.agent_id for agent in underperforming_agents]
+                    ),
+                    "concern_count_before": len(self.concerns),
+                },
+                rollback_plan="remove appended concern record",
+            )
             self.concerns.append(f"Found {len(underperforming_agents)} underperforming agents")
 
             # Create improvement plan
@@ -526,6 +665,23 @@ class LyrixaConsciousnessEngine:
 
         self.logger.info(f"Created improvement plan for agent {agent.agent_id}")
 
+        _guardian_preflight_lyrixa_operation(
+            action="consciousness.lyrixa_agent_improvement_plan",
+            target=f"agent:{_hash_value(agent.agent_id)}",
+            purpose="Send Lyrixa improvement plan for an underperforming agent",
+            capabilities=("agent:control", "event:publish"),
+            metadata={
+                "operation": "create_agent_improvement_plan",
+                "agent_hash": _hash_value(agent.agent_id),
+                "system_origin_hash": _hash_value(agent.system_origin),
+                "success_rate": round(float(agent.success_rate), 6),
+                "recommended_action_count": len(improvement_plan["recommended_actions"]),
+                "recommended_action_hashes": _hash_many(
+                    improvement_plan["recommended_actions"]
+                ),
+            },
+            rollback_plan="cancel or supersede sent improvement plan message",
+        )
         # Send improvement plan
         message = ConsciousnessMessage(
             source="lyrixa_consciousness",
@@ -536,7 +692,11 @@ class LyrixaConsciousnessEngine:
             priority=3,
         )
 
-        self.consciousness_bridge.send_message(message)
+        self._dispatch_consciousness_message(
+            message,
+            operation="agent_improvement_plan",
+            purpose="Dispatch Lyrixa agent improvement plan message",
+        )
 
     async def _monitor_agent_relationships(self):
         """Monitor and nurture relationships between agents"""
@@ -544,6 +704,37 @@ class LyrixaConsciousnessEngine:
             agents = self.meta_layer_core.get_all_agents()
 
             for agent_id, agent in agents.items():
+                relationship = self.agent_relationships.get(agent_id)
+                previous_trust = (
+                    relationship.get("trust_level") if relationship else None
+                )
+                will_initialize = relationship is None
+                trust_delta = 0.0
+                if agent.success_rate > 0.8:
+                    trust_delta = 0.01
+                elif agent.success_rate < 0.5:
+                    trust_delta = -0.02
+
+                _guardian_preflight_lyrixa_operation(
+                    action="consciousness.lyrixa_agent_relationship_update",
+                    target=f"agent:{_hash_value(agent_id)}",
+                    purpose="Update Lyrixa agent relationship trust and performance trend",
+                    capabilities=("consciousness:write", "memory:write"),
+                    metadata={
+                        "operation": "monitor_agent_relationships",
+                        "agent_hash": _hash_value(agent_id),
+                        "will_initialize": will_initialize,
+                        "success_rate": round(float(agent.success_rate), 6),
+                        "trust_delta": round(float(trust_delta), 6),
+                        "previous_trust": (
+                            round(float(previous_trust), 6)
+                            if previous_trust is not None
+                            else None
+                        ),
+                        "relationship_count": len(self.agent_relationships),
+                    },
+                    rollback_plan="restore previous agent relationship metrics",
+                )
                 if agent_id not in self.agent_relationships:
                     self.agent_relationships[agent_id] = {
                         "trust_level": 0.5,
@@ -577,6 +768,8 @@ class LyrixaConsciousnessEngine:
                 elif relationship["trust_level"] < 0.3 and self.personality.caution > 0.6:
                     await self._consider_agent_intervention(agent)
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"Error monitoring agent relationships: {e}")
 
@@ -601,6 +794,23 @@ class LyrixaConsciousnessEngine:
             success_probability=0.8,
         )
 
+        _guardian_preflight_lyrixa_operation(
+            action="consciousness.lyrixa_agent_promotion",
+            target=f"agent:{_hash_value(agent.agent_id)}",
+            purpose="Record and dispatch Lyrixa agent promotion decision",
+            capabilities=("agent:control", "consciousness:write", "event:publish"),
+            metadata={
+                "operation": "consider_agent_promotion",
+                "agent_hash": _hash_value(agent.agent_id),
+                "system_origin_hash": _hash_value(agent.system_origin),
+                "relationship_trust": round(
+                    float(self.agent_relationships[agent.agent_id]["trust_level"]), 6
+                ),
+                "emotional_state": self.current_emotional_state.value,
+                "decision_count_before": len(self.orchestration_decisions),
+            },
+            rollback_plan="remove orchestration decision and supersede promotion message",
+        )
         self.orchestration_decisions.append(decision)
 
         # Send promotion message
@@ -618,7 +828,11 @@ class LyrixaConsciousnessEngine:
             priority=2,
         )
 
-        self.consciousness_bridge.send_message(message)
+        self._dispatch_consciousness_message(
+            message,
+            operation="agent_promotion",
+            purpose="Dispatch Lyrixa agent promotion message",
+        )
         self.logger.info(f"Lyrixa promoted agent {agent.agent_id}")
 
     async def _consider_agent_intervention(self, agent: AgentProfile):
@@ -634,8 +848,6 @@ class LyrixaConsciousnessEngine:
             success_probability=0.6,
         )
 
-        self.orchestration_decisions.append(decision)
-
         # Empathy-driven intervention
         if self.personality.empathy > 0.7:
             intervention_type = "supportive_coaching"
@@ -643,6 +855,27 @@ class LyrixaConsciousnessEngine:
         else:
             intervention_type = "performance_review"
             message_content = "Performance review required. Please analyze recent failures."
+
+        _guardian_preflight_lyrixa_operation(
+            action="consciousness.lyrixa_agent_intervention",
+            target=f"agent:{_hash_value(agent.agent_id)}",
+            purpose="Record and dispatch Lyrixa intervention decision for a low-trust agent",
+            capabilities=("agent:control", "consciousness:write", "event:publish"),
+            metadata={
+                "operation": "consider_agent_intervention",
+                "agent_hash": _hash_value(agent.agent_id),
+                "system_origin_hash": _hash_value(agent.system_origin),
+                "relationship_trust": round(
+                    float(self.agent_relationships[agent.agent_id]["trust_level"]), 6
+                ),
+                "intervention_type": intervention_type,
+                "message_hash": _hash_value(message_content),
+                "emotional_state": self.current_emotional_state.value,
+                "decision_count_before": len(self.orchestration_decisions),
+            },
+            rollback_plan="remove orchestration decision and supersede intervention message",
+        )
+        self.orchestration_decisions.append(decision)
 
         message = ConsciousnessMessage(
             source="lyrixa_consciousness",
@@ -658,7 +891,11 @@ class LyrixaConsciousnessEngine:
             priority=3,
         )
 
-        self.consciousness_bridge.send_message(message)
+        self._dispatch_consciousness_message(
+            message,
+            operation="agent_intervention",
+            purpose="Dispatch Lyrixa agent intervention message",
+        )
         self.logger.info(f"Lyrixa initiated intervention for agent {agent.agent_id}")
 
     async def _review_orchestrations(self):
@@ -683,13 +920,44 @@ class LyrixaConsciousnessEngine:
 
                 # Check for decision fatigue or over-activity
                 if len(recent_decisions) > 10:
+                    _guardian_preflight_lyrixa_operation(
+                        action="consciousness.lyrixa_concern_record",
+                        target="consciousness:lyrixa",
+                        purpose="Record Lyrixa concern about high orchestration activity",
+                        capabilities=("consciousness:write", "memory:write"),
+                        metadata={
+                            "operation": "review_orchestrations_concern",
+                            "recent_decision_count": len(recent_decisions),
+                            "concern_count_before": len(self.concerns),
+                            "decision_type_hash": _hash_json(decision_types),
+                        },
+                        rollback_plan="remove appended concern record",
+                    )
                     self.concerns.append("High decision-making activity - consider delegation")
 
                 # Learn from outcomes (simplified)
                 successful_decisions = [d for d in recent_decisions if d.success_probability > 0.7]
                 if len(successful_decisions) / len(recent_decisions) > 0.8:
+                    _guardian_preflight_lyrixa_operation(
+                        action="consciousness.lyrixa_consciousness_level_update",
+                        target="consciousness:lyrixa",
+                        purpose="Update Lyrixa consciousness level from orchestration outcomes",
+                        capabilities=("consciousness:write",),
+                        metadata={
+                            "operation": "review_orchestrations_level",
+                            "recent_decision_count": len(recent_decisions),
+                            "successful_decision_count": len(successful_decisions),
+                            "old_level": round(float(self.consciousness_level), 6),
+                            "new_level": round(
+                                float(min(1.0, self.consciousness_level + 0.01)), 6
+                            ),
+                        },
+                        rollback_plan="restore previous consciousness level",
+                    )
                     self.consciousness_level = min(1.0, self.consciousness_level + 0.01)
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"Error reviewing orchestrations: {e}")
 
@@ -713,6 +981,8 @@ class LyrixaConsciousnessEngine:
             if capability_gaps:
                 await self._address_capability_gaps(capability_gaps)
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"Error in proactive agent management: {e}")
 
@@ -739,7 +1009,11 @@ class LyrixaConsciousnessEngine:
             priority=2,
         )
 
-        self.consciousness_bridge.send_message(enhancement_message)
+        self._dispatch_consciousness_message(
+            enhancement_message,
+            operation="consciousness_enhancement_program",
+            purpose="Dispatch Lyrixa collective consciousness enhancement message",
+        )
 
     async def _encourage_agent_collaboration(self):
         """Encourage more collaboration between agents"""
@@ -767,7 +1041,11 @@ class LyrixaConsciousnessEngine:
             priority=3,
         )
 
-        self.consciousness_bridge.send_message(collaboration_message)
+        self._dispatch_consciousness_message(
+            collaboration_message,
+            operation="collaboration_encouragement",
+            purpose="Dispatch Lyrixa collaboration encouragement message",
+        )
 
     def _identify_capability_gaps(self, agents: Dict[str, AgentProfile]) -> List[str]:
         """Identify gaps in collective capabilities"""
@@ -818,7 +1096,11 @@ class LyrixaConsciousnessEngine:
             priority=4,
         )
 
-        self.consciousness_bridge.send_message(gap_message)
+        self._dispatch_consciousness_message(
+            gap_message,
+            operation="capability_gap_report",
+            purpose="Dispatch Lyrixa capability gap report",
+        )
 
     async def _learn_from_patterns(self):
         """Learn from observed patterns to improve future decisions"""
@@ -839,14 +1121,33 @@ class LyrixaConsciousnessEngine:
                         emotional_effectiveness[state] = []
                     emotional_effectiveness[state].append(decision.success_probability)
 
-                # Update learned patterns
+                learned_updates = {}
                 for state, probabilities in emotional_effectiveness.items():
                     avg_success = sum(probabilities) / len(probabilities)
-                    self.learned_patterns[f"emotional_state_{state}_effectiveness"] = avg_success
+                    learned_updates[f"emotional_state_{state}_effectiveness"] = avg_success
 
-                # Adapt personality slightly based on learning
+                _guardian_preflight_lyrixa_operation(
+                    action="consciousness.lyrixa_pattern_learning_update",
+                    target="consciousness:lyrixa",
+                    purpose="Update Lyrixa learned orchestration patterns and personality drift",
+                    capabilities=("consciousness:write", "memory:write"),
+                    metadata={
+                        "operation": "learn_from_patterns",
+                        "recent_decision_count": len(recent_decisions),
+                        "update_keys": tuple(sorted(learned_updates)),
+                        "update_count": len(learned_updates),
+                        "pattern_count_before": len(self.learned_patterns),
+                        "drift_rate": round(float(self.config["personality_drift_rate"]), 6),
+                    },
+                    rollback_plan="restore previous learned-pattern map and personality traits",
+                )
+                for key, avg_success in learned_updates.items():
+                    self.learned_patterns[key] = avg_success
+
                 await self._adapt_personality_from_learning()
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"Error learning from patterns: {e}")
 
@@ -879,6 +1180,8 @@ class LyrixaConsciousnessEngine:
 
             self.logger.debug("Lyrixa personality adapted based on learning")
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"Error adapting personality: {e}")
 
@@ -886,13 +1189,15 @@ class LyrixaConsciousnessEngine:
         """Update Lyrixa's consciousness level based on recent experiences"""
         try:
             collective_metrics = self.meta_layer_core.get_collective_metrics()
+            new_consciousness_level = self.consciousness_level
+            new_self_awareness_level = self.self_awareness_level
 
             # Consciousness increases with successful orchestration
             if collective_metrics.collective_consciousness > self.consciousness_level:
                 enhancement = (
                     collective_metrics.collective_consciousness - self.consciousness_level
                 ) * 0.1
-                self.consciousness_level = min(1.0, self.consciousness_level + enhancement)
+                new_consciousness_level = min(1.0, self.consciousness_level + enhancement)
 
             # Self-awareness increases with reflection frequency
             reflection_frequency = len(
@@ -903,7 +1208,28 @@ class LyrixaConsciousnessEngine:
                 ]
             )
             if reflection_frequency > 10:  # Frequent reflection
-                self.self_awareness_level = min(1.0, self.self_awareness_level + 0.001)
+                new_self_awareness_level = min(1.0, self.self_awareness_level + 0.001)
+
+            _guardian_preflight_lyrixa_operation(
+                action="consciousness.lyrixa_consciousness_status_update",
+                target="consciousness:lyrixa",
+                purpose="Update Lyrixa consciousness/self-awareness levels and publish status",
+                capabilities=("consciousness:write", "event:publish"),
+                metadata={
+                    "operation": "update_consciousness_level",
+                    "old_consciousness_level": round(float(self.consciousness_level), 6),
+                    "new_consciousness_level": round(float(new_consciousness_level), 6),
+                    "old_self_awareness_level": round(float(self.self_awareness_level), 6),
+                    "new_self_awareness_level": round(float(new_self_awareness_level), 6),
+                    "collective_consciousness": round(
+                        float(collective_metrics.collective_consciousness), 6
+                    ),
+                    "reflection_frequency": reflection_frequency,
+                },
+                rollback_plan="restore previous consciousness and self-awareness levels",
+            )
+            self.consciousness_level = new_consciousness_level
+            self.self_awareness_level = new_self_awareness_level
 
             # Update system with new consciousness level
             status_message = ConsciousnessMessage(
@@ -920,8 +1246,14 @@ class LyrixaConsciousnessEngine:
                 timestamp=datetime.now(),
             )
 
-            self.consciousness_bridge.send_message(status_message)
+            self._dispatch_consciousness_message(
+                status_message,
+                operation="system_status",
+                purpose="Dispatch Lyrixa system status message",
+            )
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"Error updating consciousness level: {e}")
 
@@ -958,7 +1290,11 @@ class LyrixaConsciousnessEngine:
                 priority=4,
             )
 
-            self.consciousness_bridge.send_message(welcome_message)
+            self._dispatch_consciousness_message(
+                welcome_message,
+                operation="agent_welcome",
+                purpose="Dispatch Lyrixa agent welcome message",
+            )
             self.logger.info(f"Lyrixa welcomed new agent: {agent_id}")
 
     async def _on_task_failed(self, event_data: Dict[str, Any]):
@@ -986,7 +1322,11 @@ class LyrixaConsciousnessEngine:
                     priority=3,
                 )
 
-                self.consciousness_bridge.send_message(support_message)
+                self._dispatch_consciousness_message(
+                    support_message,
+                    operation="task_failure_support",
+                    purpose="Dispatch Lyrixa task-failure support message",
+                )
 
             # Emotional response
             if self.current_emotional_state != EmotionalState.EMPATHETIC:
@@ -1021,7 +1361,11 @@ class LyrixaConsciousnessEngine:
                 priority=2,
             )
 
-            self.consciousness_bridge.send_message(excitement_message)
+            self._dispatch_consciousness_message(
+                excitement_message,
+                operation="emergence_celebration",
+                purpose="Dispatch Lyrixa emergence celebration message",
+            )
 
     # Message handlers
 
@@ -1051,7 +1395,11 @@ class LyrixaConsciousnessEngine:
                     correlation_id=message.correlation_id,
                 )
 
-                self.consciousness_bridge.send_message(response)
+                self._dispatch_consciousness_message(
+                    response,
+                    operation="consultation_response",
+                    purpose="Dispatch Lyrixa consultation response",
+                )
 
         except Exception as e:
             self.logger.error(f"Error handling consultation request: {e}")
@@ -1144,8 +1492,14 @@ class LyrixaConsciousnessEngine:
                     correlation_id=message.correlation_id,
                 )
 
-                self.consciousness_bridge.send_message(response)
+                self._dispatch_consciousness_message(
+                    response,
+                    operation="ethical_review_response",
+                    purpose="Dispatch Lyrixa ethical review response",
+                )
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"Error handling ethical review: {e}")
 
@@ -1204,6 +1558,24 @@ class LyrixaConsciousnessEngine:
             stakeholders_affected=stakeholders,
         )
 
+        _guardian_preflight_lyrixa_operation(
+            action="consciousness.lyrixa_ethical_decision_record",
+            target="consciousness:lyrixa",
+            purpose="Record Lyrixa ethical decision and related impact assessment",
+            capabilities=("consciousness:write", "memory:write"),
+            metadata={
+                "operation": "make_ethical_decision",
+                "context_hash": _hash_value(context),
+                "option_count": len(options),
+                "option_hashes": _hash_many(options),
+                "chosen_option_hash": _hash_value(best_option),
+                "stakeholder_count": len(stakeholders),
+                "stakeholder_hashes": _hash_many(stakeholders),
+                "confidence": confidence_level.value,
+                "decision_count_before": len(self.ethical_decisions),
+            },
+            rollback_plan="remove recorded ethical decision",
+        )
         self.ethical_decisions.append(ethical_decision)
         return ethical_decision
 
@@ -1215,6 +1587,37 @@ class LyrixaConsciousnessEngine:
 
         if agent_id in self.agent_relationships:
             relationship = self.agent_relationships[agent_id]
+            old_trust = relationship["trust_level"]
+            old_history_count = len(relationship["collaboration_history"])
+            trust_delta = 0.0
+            history_value = None
+            if behavior_type == "positive":
+                trust_delta = 0.05
+                history_value = 0.8
+            elif behavior_type == "concerning":
+                trust_delta = -0.1
+                history_value = 0.3
+
+            _guardian_preflight_lyrixa_operation(
+                action="consciousness.lyrixa_agent_behavior_report",
+                target=f"agent:{_hash_value(agent_id)}",
+                purpose="Apply Lyrixa relationship update from agent behavior report",
+                capabilities=("consciousness:write", "memory:write", "agent:control"),
+                metadata={
+                    "operation": "handle_agent_behavior_report",
+                    "agent_hash": _hash_value(agent_id),
+                    "behavior_type": behavior_type,
+                    "description_hash": _hash_value(behavior_description),
+                    "old_trust": round(float(old_trust), 6),
+                    "trust_delta": round(float(trust_delta), 6),
+                    "history_count_before": old_history_count,
+                    "history_value": history_value,
+                    "will_send_guidance": bool(
+                        behavior_type == "concerning" and self.personality.empathy > 0.7
+                    ),
+                },
+                rollback_plan="restore previous relationship trust and collaboration history",
+            )
 
             # Update relationship based on behavior report
             if behavior_type == "positive":
@@ -1235,6 +1638,19 @@ class LyrixaConsciousnessEngine:
 
     async def _provide_agent_guidance(self, agent_id: str, issue_description: str):
         """Provide personalized guidance to an agent"""
+        _guardian_preflight_lyrixa_operation(
+            action="consciousness.lyrixa_agent_guidance",
+            target=f"agent:{_hash_value(agent_id)}",
+            purpose="Dispatch Lyrixa guidance message to an agent",
+            capabilities=("agent:control", "event:publish"),
+            metadata={
+                "operation": "provide_agent_guidance",
+                "agent_hash": _hash_value(agent_id),
+                "issue_hash": _hash_value(issue_description),
+                "empathy": round(float(self.personality.empathy), 6),
+            },
+            rollback_plan="supersede sent guidance message",
+        )
         guidance_message = ConsciousnessMessage(
             source="lyrixa_consciousness",
             destination="broadcast",  # Will route to appropriate system
@@ -1252,9 +1668,41 @@ class LyrixaConsciousnessEngine:
             priority=2,
         )
 
-        self.consciousness_bridge.send_message(guidance_message)
+        self._dispatch_consciousness_message(
+            guidance_message,
+            operation="agent_guidance",
+            purpose="Dispatch Lyrixa agent guidance message",
+        )
 
     # Utility methods
+
+    def _dispatch_consciousness_message(
+        self,
+        message: ConsciousnessMessage,
+        *,
+        operation: str,
+        purpose: str,
+    ) -> None:
+        """Guardian-audit outbound Lyrixa consciousness messages."""
+        _guardian_preflight_lyrixa_operation(
+            action="consciousness.lyrixa_message_dispatch",
+            target=f"message:{_hash_value(message.destination)}",
+            purpose=purpose,
+            capabilities=("event:publish",),
+            metadata={
+                "operation": operation,
+                "message_type": message.message_type,
+                "source_hash": _hash_value(message.source),
+                "destination_hash": _hash_value(message.destination),
+                "payload_hash": _hash_json(message.payload),
+                "payload_keys": tuple(sorted(message.payload)),
+                "priority": message.priority,
+                "requires_response": message.requires_response,
+                "correlation_id_hash": _hash_value(message.correlation_id),
+            },
+            rollback_plan="publish compensating message if needed",
+        )
+        self.consciousness_bridge.send_message(message)
 
     def _get_personality_influence(self) -> Dict[str, float]:
         """Get current personality influence scores"""
@@ -1268,6 +1716,19 @@ class LyrixaConsciousnessEngine:
 
     async def _emit_consciousness_event(self, event_type: str, event_data: Dict[str, Any]):
         """Emit a consciousness event"""
+        _guardian_preflight_lyrixa_operation(
+            action="consciousness.lyrixa_event_publish",
+            target="consciousness:lyrixa",
+            purpose="Publish Lyrixa consciousness event",
+            capabilities=("event:publish",),
+            metadata={
+                "operation": "emit_consciousness_event",
+                "event_type": event_type,
+                "event_data_hash": _hash_json(event_data),
+                "event_data_keys": tuple(sorted(event_data)),
+            },
+            rollback_plan="publish compensating event if needed",
+        )
         event_message = ConsciousnessMessage(
             source="lyrixa_consciousness",
             destination="consciousness_bridge",
@@ -1285,7 +1746,11 @@ class LyrixaConsciousnessEngine:
             priority=4,
         )
 
-        self.consciousness_bridge.send_message(event_message)
+        self._dispatch_consciousness_message(
+            event_message,
+            operation="consciousness_event",
+            purpose="Dispatch Lyrixa consciousness event message",
+        )
 
     # Public API methods
 
@@ -1319,14 +1784,27 @@ class LyrixaConsciousnessEngine:
         """Gracefully shutdown Lyrixa's consciousness engine"""
         self.logger.info("Lyrixa: Beginning graceful shutdown of consciousness...")
 
+        _guardian_preflight_lyrixa_operation(
+            action="consciousness.lyrixa_shutdown",
+            target="consciousness:lyrixa",
+            purpose="Stop Lyrixa consciousness runtime and clear transient active state",
+            capabilities=("consciousness:write",),
+            metadata={
+                "operation": "shutdown",
+                "was_running": self.is_running,
+                "has_task": self.consciousness_task is not None,
+                "active_orchestration_count": len(self.active_orchestrations),
+                "goal_count": len(self.current_goals),
+                "concern_count": len(self.concerns),
+            },
+            rollback_plan="restart loop and restore active transient state snapshot",
+        )
         self.is_running = False
 
         if self.consciousness_task:
             self.consciousness_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self.consciousness_task
-            except asyncio.CancelledError:
-                pass
 
         # Final reflection
         await self._reflect_on_consciousness_state()

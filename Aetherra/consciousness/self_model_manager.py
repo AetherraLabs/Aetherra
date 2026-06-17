@@ -8,6 +8,7 @@ coherence scoring stub. Lightweight; persistence is JSON file based for Phase 1.
 from __future__ import annotations
 
 # Standard library imports
+import hashlib
 import json
 import os
 import threading
@@ -24,7 +25,69 @@ from .schemas.self_model import (
 )
 
 DEFAULT_SELF_MODEL_PATH = os.getenv("AETHERRA_SELF_MODEL_PATH", ".aetherra/self_model.json")
-LOCK = threading.Lock()
+LOCK = threading.RLock()
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _self_model_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "consciousness:self_model" and capability in {
+        "consciousness:write",
+        "identity:modify",
+        "fs:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _evaluate_self_model_guardian(
+    *,
+    path: Path,
+    before: SelfModel,
+    after: SelfModel,
+):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "consciousness:self_model"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    before_json = before.model_dump_json()
+    after_json = after.model_dump_json()
+    identity_changed = before.identity != after.identity
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="consciousness",
+            action="consciousness.self_model_update",
+            target="consciousness_self_model",
+            purpose="Persist an updated consciousness self-model snapshot",
+            capabilities=("consciousness:write", "identity:modify", "fs:write"),
+            evidence=("self_model_manager.update",),
+            reversible=True,
+            rollback_plan="restore the previous self-model JSON snapshot from backup or version control",
+            metadata={
+                "path_hash": _hash_value(path.resolve()),
+                "before_hash": _hash_value(before_json),
+                "after_hash": _hash_value(after_json),
+                "before_length": len(before_json),
+                "after_length": len(after_json),
+                "model_version": after.model_version,
+                "identity_changed": identity_changed,
+                "capability_count": len(after.capabilities),
+                "anomaly_count": len(after.anomalies),
+                "coherence_score": after.coherence_score,
+            },
+        ),
+        approval_id=approval_id,
+        capability_checker=_self_model_capability_checker,
+    )
 
 
 class SelfModelManager:
@@ -75,11 +138,20 @@ class SelfModelManager:
     def update(self, mutate: Callable[[SelfModel], None]) -> SelfModel:
         with LOCK:
             model = self.load()
+            before = model.model_copy(deep=True)
             mutate(model)
             model.updated_at = datetime.utcnow()
             # Integration point: compute coherence score with richer signals
             if model.coherence_score < 0.5 and "low_coherence" not in model.anomalies:
                 model.anomalies.append("low_coherence")
+            guardian_decision = _evaluate_self_model_guardian(
+                path=self._path,
+                before=before,
+                after=model,
+            )
+            if not guardian_decision.allowed:
+                self._model = before
+                raise PermissionError(f"guardian_denied:{guardian_decision.reason}")
             self._path.write_text(model.model_dump_json(indent=2), encoding="utf-8")
             return model
 

@@ -6,14 +6,117 @@
 Directory Documentation Generator - Creates README.md files for each major directory
 """
 
+from __future__ import annotations
+
 # Standard library imports
+import hashlib
 import json
+import os
+from dataclasses import dataclass
 from pathlib import Path
 
 
-def load_analysis():
+@dataclass(frozen=True)
+class DocumentationWritePlan:
+    file_path: Path
+    content: str
+    kind: str
+
+
+def _hash_value(value) -> str | None:
+    if value is None:
+        return None
+    raw = str(value)
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "maintenance" and capability in {
+        "maintenance:cleanup",
+        "fs:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _safe_relative_path(path: Path, root: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(root.resolve()))
+    except ValueError:
+        return str(path.resolve())
+
+
+def _guardian_preflight_documentation_write(
+    *,
+    project_root: Path,
+    plans: list[DocumentationWritePlan],
+):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="maintenance",
+            action="maintenance.documentation_generation",
+            target="maintenance:documentation_generation",
+            purpose="Write generated project documentation files",
+            capabilities=("maintenance:cleanup", "fs:write"),
+            expected_outcome="Planned documentation files are written to disk",
+            reversible=False,
+            rollback_plan="delete generated documentation or restore from version control",
+            metadata={
+                "project_root_hash": _hash_value(project_root.resolve()),
+                "document_count": len(plans),
+                "document_kind_counts": {
+                    kind: sum(1 for plan in plans if plan.kind == kind)
+                    for kind in sorted({plan.kind for plan in plans})
+                },
+                "document_path_hashes": [
+                    _hash_value(_safe_relative_path(plan.file_path, project_root))
+                    for plan in plans[:100]
+                ],
+                "total_document_length": sum(len(plan.content) for plan in plans),
+            },
+        ),
+        approval_id=approval_id,
+        capability_checker=_guardian_capability_checker,
+    )
+
+
+def write_documentation_plans(
+    *,
+    project_root: Path,
+    plans: list[DocumentationWritePlan],
+) -> int:
+    if not plans:
+        print("No documentation files to create.")
+        return 0
+
+    decision = _guardian_preflight_documentation_write(
+        project_root=project_root,
+        plans=plans,
+    )
+    if not decision.allowed:
+        print(f"Guardian denied documentation generation: {decision.reason}")
+        return 1
+
+    for plan in plans:
+        plan.file_path.parent.mkdir(parents=True, exist_ok=True)
+        plan.file_path.write_text(plan.content, encoding="utf-8")
+        print(f"Created: {plan.file_path}")
+    return 0
+
+
+def load_analysis(filename="aetherra_project_analysis.json"):
     """Load the updated project analysis"""
-    with open("aetherra_project_analysis.json", encoding="utf-8") as f:
+    with open(filename, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -118,13 +221,13 @@ When working with files in this directory:
     return readme_content
 
 
-def create_directory_readmes():
-    """Create README.md files for major directories"""
-    analysis = load_analysis()
+def plan_directory_readmes(analysis) -> tuple[list[DocumentationWritePlan], int]:
+    """Plan README.md files for major directories without writing them."""
     directories = analysis.get("directories", {})
 
-    created_count = 0
     skipped_count = 0
+    created_count = 0
+    plans: list[DocumentationWritePlan] = []
 
     print("📝 Generating directory README files...")
     print("=" * 50)
@@ -159,7 +262,13 @@ def create_directory_readmes():
             readme_content = generate_directory_readme(dir_path, dir_info)
 
             # Create the README file
-            readme_path.write_text(readme_content, encoding="utf-8")
+            plans.append(
+                DocumentationWritePlan(
+                    file_path=readme_path,
+                    content=readme_content,
+                    kind="directory_readme",
+                )
+            )
             print(f"✅ Created: {readme_path}")
             created_count += 1
 
@@ -171,11 +280,24 @@ def create_directory_readmes():
     print(f"   Created: {created_count} README files")
     print(f"   Skipped: {skipped_count} directories")
     print("✅ Directory documentation complete!")
+    return plans, skipped_count
 
 
-def create_main_project_breakdown():
-    """Create the main project breakdown document"""
-    analysis = load_analysis()
+def create_directory_readmes(analysis=None):
+    """Create README.md files for major directories after Guardian approval."""
+    loaded_analysis = analysis or load_analysis()
+    plans, skipped_count = plan_directory_readmes(loaded_analysis)
+    result = write_documentation_plans(project_root=Path.cwd(), plans=plans)
+    print()
+    print("README Generation Summary:")
+    print(f"   Created: {len(plans) if result == 0 else 0} README files")
+    print(f"   Skipped: {skipped_count} directories")
+    print("Directory documentation complete!")
+    return result
+
+
+def plan_main_project_breakdown(analysis, output_path="PROJECT_BREAKDOWN.md"):
+    """Plan the main project breakdown document without writing it."""
 
     breakdown_content = f"""# 🏗️ Aetherra Project Breakdown
 
@@ -286,10 +408,17 @@ For detailed information about specific directories and files, see:
 """
 
     # Save the breakdown
-    with open("PROJECT_BREAKDOWN.md", "w", encoding="utf-8") as f:
-        f.write(breakdown_content)
+    return DocumentationWritePlan(
+        file_path=Path(output_path),
+        content=breakdown_content,
+        kind="project_breakdown",
+    )
 
-    print("📋 Created PROJECT_BREAKDOWN.md")
+def create_main_project_breakdown(analysis=None):
+    """Create the main project breakdown document after Guardian approval."""
+    loaded_analysis = analysis or load_analysis()
+    plan = plan_main_project_breakdown(loaded_analysis)
+    return write_documentation_plans(project_root=Path.cwd(), plans=[plan])
 
 
 def main():
@@ -297,12 +426,20 @@ def main():
     print("🏗️ Creating comprehensive project documentation...")
     print()
 
-    # Create directory READMEs
-    create_directory_readmes()
-    print()
+    analysis = load_analysis()
+    readme_plans, skipped_count = plan_directory_readmes(analysis)
+    breakdown_plan = plan_main_project_breakdown(analysis)
+    result = write_documentation_plans(
+        project_root=Path.cwd(),
+        plans=[*readme_plans, breakdown_plan],
+    )
+    if result != 0:
+        return result
 
-    # Create main project breakdown
-    create_main_project_breakdown()
+    print()
+    print("README Generation Summary:")
+    print(f"   Created: {len(readme_plans)} README files")
+    print(f"   Skipped: {skipped_count} directories")
     print()
 
     print("🎉 Project documentation system complete!")
@@ -311,7 +448,8 @@ def main():
     print("   - Individual directory README.md files")
     print("   - PROJECT_BREAKDOWN.md (master overview)")
     print("   - Analysis reports (already generated)")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

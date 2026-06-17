@@ -5,6 +5,7 @@
 # core/interpreter.py
 import ast
 import difflib
+import hashlib
 import json
 import os
 import re
@@ -317,6 +318,68 @@ def suggest_next_actions(summary: str) -> str:
 
 PLUGIN_REGISTRY = {}
 
+
+def _hash_value(value: Any) -> str | None:
+    if value is None:
+        return None
+    raw = str(value)
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "agent:legacy_interpreter" and capability in {
+        "agent:execute_task",
+        "plugin:execute",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _guardian_preflight_plugin_dispatch(
+    *,
+    action: str,
+    plugin_name: str,
+    plugin_args: list[str],
+    source: str,
+    parameter_keys: list[str] | None = None,
+    extra_metadata: dict[str, Any] | None = None,
+):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "agent:legacy_interpreter"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    metadata = {
+        "plugin_hash": _hash_value(plugin_name),
+        "plugin_source": source,
+        "argument_count": len(plugin_args),
+        "argument_hashes": [_hash_value(arg) for arg in plugin_args],
+        "parameter_keys": sorted(parameter_keys or []),
+    }
+    if extra_metadata:
+        metadata.update(extra_metadata)
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="agents",
+            action=action,
+            target=f"agent_plugin:{_hash_value(plugin_name)}",
+            purpose="Dispatch a plugin command from the legacy agent interpreter",
+            capabilities=("agent:execute_task", "plugin:execute"),
+            evidence=(f"{action}:request",),
+            reversible=False,
+            rollback_plan="legacy plugin dispatch may have plugin-defined side effects",
+            metadata=metadata,
+        ),
+        approval_id=approval_id,
+        capability_checker=_guardian_capability_checker,
+    )
+
+
 # Import stdlib manager for standard plugins
 try:
     # Aetherra imports
@@ -561,6 +624,15 @@ class AetherraInterpreter:
             # Execute plugin with parameters
             try:
                 if plugin_name in PLUGIN_REGISTRY:
+                    decision = _guardian_preflight_plugin_dispatch(
+                        action="agent.legacy_plugin_execute",
+                        plugin_name=plugin_name,
+                        plugin_args=[],
+                        source="legacy_enhanced",
+                        parameter_keys=list(params),
+                    )
+                    if not decision.allowed:
+                        return f"[Guardian] Plugin execution denied: {decision.reason}"
                     plugin_result = PLUGIN_REGISTRY[plugin_name](**params)
                 else:
                     plugin_result = f"Plugin '{plugin_name}' not found"
@@ -944,6 +1016,14 @@ Answer this: {query}"""
         # First check stdlib plugins (standard library)
         if plugin_name in (self.stdlib.plugins if self.stdlib else {}):
             try:
+                decision = _guardian_preflight_plugin_dispatch(
+                    action="agent.stdlib_plugin_execute",
+                    plugin_name=plugin_name,
+                    plugin_args=plugin_args,
+                    source="stdlib",
+                )
+                if not decision.allowed:
+                    return f"[Guardian] Plugin execution denied: {decision.reason}"
                 # Convert args to a single action string if needed
                 action = " ".join(plugin_args) if plugin_args else "default"
                 result = (
@@ -959,6 +1039,14 @@ Answer this: {query}"""
 
         # Fallback to legacy plugin registry
         elif plugin_name in PLUGIN_REGISTRY:
+            decision = _guardian_preflight_plugin_dispatch(
+                action="agent.legacy_plugin_execute",
+                plugin_name=plugin_name,
+                plugin_args=plugin_args,
+                source="legacy",
+            )
+            if not decision.allowed:
+                return f"[Guardian] Plugin execution denied: {decision.reason}"
             result = PLUGIN_REGISTRY[plugin_name](*plugin_args)
             return f"[Plugin:{plugin_name}] {result}"
         else:
@@ -967,6 +1055,35 @@ Answer this: {query}"""
             available_legacy = list(PLUGIN_REGISTRY.keys())
             all_available = available_stdlib + available_legacy
             return f"[Plugin] '{plugin_name}' not found. Available: {all_available}"
+
+    def load_plugin(self, plugin_name: str, actions: str = "") -> str:
+        """Guard compiled plugin blocks before any plugin load or action dispatch."""
+        plugin_name = str(plugin_name or "").strip()
+        if not plugin_name:
+            return "[Plugin Load] No plugin name provided."
+
+        action_lines = [line for line in str(actions or "").splitlines() if line.strip()]
+        decision = _guardian_preflight_plugin_dispatch(
+            action="agent.compiled_plugin_load",
+            plugin_name=plugin_name,
+            plugin_args=[],
+            source="compiled",
+            extra_metadata={
+                "compiled_action_count": len(action_lines),
+                "compiled_actions_hash": _hash_value(actions),
+                "compiled_actions_length": len(str(actions or "")),
+            },
+        )
+        if not decision.allowed:
+            return f"[Guardian] Plugin load denied: {decision.reason}"
+
+        if action_lines:
+            return (
+                f"[Plugin Load:{plugin_name}] Guarded compiled plugin block accepted; "
+                "embedded actions require explicit guarded dispatch."
+            )
+
+        return self._handle_plugin(f"plugin: {plugin_name}")
 
     def _handle_list_plugins(self):
         """List all available plugins (stdlib and legacy)"""
@@ -1019,6 +1136,15 @@ Answer this: {query}"""
 
         plugin_name = parts[0]
         plugin_args = parts[1:]
+
+        decision = _guardian_preflight_plugin_dispatch(
+            action="agent.meta_plugin_execute",
+            plugin_name=plugin_name,
+            plugin_args=plugin_args,
+            source="meta",
+        )
+        if not decision.allowed:
+            return f"[Guardian] Meta-plugin execution denied: {decision.reason}"
 
         return self.meta_plugins.execute_meta_plugin(plugin_name, *plugin_args)
 

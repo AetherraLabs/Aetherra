@@ -23,7 +23,9 @@ Date: August 5, 2025
 
 # Standard library imports
 import asyncio
+import hashlib
 import logging
+import os
 import time
 from dataclasses import dataclass
 from datetime import datetime
@@ -38,10 +40,7 @@ try:
     import importlib.util
 
     qiskit_spec = importlib.util.find_spec("qiskit")
-    if qiskit_spec is not None:
-        QISKIT_AVAILABLE = True
-    else:
-        QISKIT_AVAILABLE = False
+    QISKIT_AVAILABLE = qiskit_spec is not None
 except ImportError:
     QISKIT_AVAILABLE = False
     print("⚠️  Qiskit not available - using quantum simulation")
@@ -49,6 +48,25 @@ except ImportError:
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _quantum_decision_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "consciousness:quantum_decision" and capability in {
+        "consciousness:write",
+        "autonomy:execute",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
 
 
 class DecisionState(Enum):
@@ -132,6 +150,10 @@ class QuantumDecisionEngine:
     async def initialize_quantum_decision_space(self, context: DecisionContext) -> bool:
         """Initialize quantum superposition space for decision making"""
         try:
+            self._guardian_preflight_quantum_decision_operation(
+                operation="initialize_space",
+                context=context,
+            )
             self.logger.info(
                 f"🌀 Initializing quantum decision space for context: {context.context_id}"
             )
@@ -168,6 +190,8 @@ class QuantumDecisionEngine:
             self.logger.info(f"✅ Quantum superposition established with {num_choices} states")
             return True
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Failed to initialize quantum decision space: {e}")
             return False
@@ -178,6 +202,10 @@ class QuantumDecisionEngine:
             return {}
 
         try:
+            self._guardian_preflight_quantum_decision_operation(
+                operation="apply_interference",
+                context=context,
+            )
             self.logger.info("🌊 Applying quantum interference patterns...")
 
             interference_patterns = {}
@@ -211,6 +239,8 @@ class QuantumDecisionEngine:
             self.logger.info(f"✅ Applied {len(interference_patterns)} interference patterns")
             return interference_patterns
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Failed to apply quantum interference: {e}")
             return {}
@@ -221,6 +251,10 @@ class QuantumDecisionEngine:
             return None
 
         try:
+            self._guardian_preflight_quantum_decision_operation(
+                operation="attempt_tunneling",
+                context=context,
+            )
             self.logger.info("🌀 Attempting quantum tunneling for breakthrough solutions...")
 
             # Look for high-barrier, high-reward choices
@@ -251,6 +285,8 @@ class QuantumDecisionEngine:
             self.logger.info("🔍 No viable tunneling paths detected")
             return None
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Quantum tunneling failed: {e}")
             return None
@@ -261,6 +297,10 @@ class QuantumDecisionEngine:
             raise ValueError("No quantum state initialized for measurement")
 
         try:
+            self._guardian_preflight_quantum_decision_operation(
+                operation="measure",
+                context=context,
+            )
             self.logger.info("📊 Measuring quantum decision state...")
             measurement_start = time.time()
 
@@ -341,6 +381,8 @@ class QuantumDecisionEngine:
 
             return result
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Quantum measurement failed: {e}")
             raise
@@ -356,6 +398,10 @@ class QuantumDecisionEngine:
         4. Measure and collapse to optimal decision
         """
         try:
+            self._guardian_preflight_quantum_decision_operation(
+                operation="make_decision",
+                context=context,
+            )
             self.logger.info(f"🧠 Starting quantum decision process for: {context.context_id}")
 
             # Phase 1: Initialize superposition
@@ -388,9 +434,79 @@ class QuantumDecisionEngine:
             )
             return result
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"❌ Quantum decision process failed: {e}")
             raise
+
+    def _guardian_preflight_quantum_decision_operation(
+        self,
+        *,
+        operation: str,
+        context: DecisionContext,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = (
+            os.getenv("AETHERRA_PRINCIPAL", "").strip()
+            or "consciousness:quantum_decision"
+        )
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        choices = list(context.available_choices)
+        quantum_state_name = None
+        if self.quantum_state:
+            state = self.quantum_state.get("state")
+            quantum_state_name = state.value if isinstance(state, DecisionState) else str(state)
+
+        metadata: Dict[str, Any] = {
+            "operation": operation,
+            "context_hash": _hash_value(context.context_id),
+            "choice_count": len(choices),
+            "choice_hashes": [_hash_value(choice.choice_id) for choice in choices[:16]],
+            "constraint_names": sorted(str(key) for key in context.constraints),
+            "objective_hashes": [_hash_value(objective) for objective in context.objectives[:16]],
+            "objective_count": len(context.objectives),
+            "consciousness_level": round(float(context.consciousness_level), 6),
+            "time_horizon": round(float(context.time_horizon), 6),
+            "decision_history_count": len(self.decision_history),
+            "decisions_made": int(self.decisions_made),
+            "successful_outcomes": int(self.successful_outcomes),
+            "quantum_advantages": int(self.quantum_advantages),
+            "coherence_time": round(float(self.coherence_time), 6),
+            "decision_accuracy": round(float(self.decision_accuracy), 6),
+            "quantum_state": quantum_state_name,
+            "has_quantum_state": self.quantum_state is not None,
+        }
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action=f"consciousness.quantum_decision_{operation}",
+                target="quantum_decision_engine",
+                purpose="Mutate experimental quantum decision state",
+                capabilities=("consciousness:write", "autonomy:execute"),
+                evidence=(
+                    "QuantumDecisionEngine.initialize_quantum_decision_space",
+                    "QuantumDecisionEngine.apply_quantum_interference",
+                    "QuantumDecisionEngine.attempt_quantum_tunneling",
+                    "QuantumDecisionEngine.measure_quantum_decision",
+                    "QuantumDecisionEngine.make_quantum_decision",
+                ),
+                reversible=True,
+                rollback_plan=(
+                    "restore previous quantum state, decision history, "
+                    "decision counters, accuracy metrics, and context choice list"
+                ),
+                metadata=metadata,
+            ),
+            approval_id=approval_id,
+            capability_checker=_quantum_decision_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
 
     def get_decision_metrics(self) -> Dict[str, Any]:
         """Get current quantum decision engine metrics"""

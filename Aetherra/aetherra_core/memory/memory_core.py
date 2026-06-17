@@ -9,6 +9,7 @@ All memory operations are delegated to the canonical engine.
 # Standard library imports
 import hashlib
 import json
+import os
 import sqlite3
 from contextlib import contextmanager, suppress
 from dataclasses import dataclass
@@ -18,6 +19,66 @@ from typing import Any, Dict, List, Optional
 # Local imports
 # Import the canonical engine from the package (exported via __init__)
 from .QuantumEnhancedMemoryEngine import QuantumEnhancedMemoryEngine
+
+
+def _hash_value(value) -> str | None:
+    if value is None:
+        return None
+    raw = str(value)
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _json_stable_default(value: Any) -> str:
+    if isinstance(value, datetime):
+        return value.isoformat()
+    return str(value)
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "memory:core" and capability in {
+        "memory:read",
+        "memory:write",
+        "fs:read",
+        "fs:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _guardian_preflight_memory_operation(
+    *,
+    action: str,
+    purpose: str,
+    capabilities: tuple[str, ...],
+    reversible: bool,
+    rollback_plan: str,
+    metadata: dict[str, Any],
+):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "memory:core"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="memory",
+            action=action,
+            target="memory:core",
+            purpose=purpose,
+            capabilities=capabilities,
+            evidence=(f"{action}:request",),
+            reversible=reversible,
+            rollback_plan=rollback_plan,
+            metadata=metadata,
+        ),
+        approval_id=approval_id,
+        capability_checker=_guardian_capability_checker,
+    )
 
 # Import the advanced memory engine with STORM support
 try:
@@ -436,6 +497,33 @@ class LyrixaMemorySystem:
             cutoff_date = (datetime.now() - timedelta(days=30)).isoformat()
             cursor.execute(
                 """
+                SELECT COUNT(*) FROM memories
+                WHERE importance < 0.3 AND created_at < ? AND access_count < 2
+            """,
+                (cutoff_date,),
+            )
+            delete_candidates = int(cursor.fetchone()[0] or 0)
+            cursor.execute("SELECT COUNT(*) FROM memories WHERE access_count > 5")
+            boost_candidates = int(cursor.fetchone()[0] or 0)
+            decision = _guardian_preflight_memory_operation(
+                action="memory.consolidate",
+                purpose="Consolidate memory records and update importance scores",
+                capabilities=("memory:write",),
+                reversible=True,
+                rollback_plan="restore memory database from backup or transaction snapshot",
+                metadata={
+                    "db_path_hash": _hash_value(self.db_path),
+                    "delete_candidate_count": delete_candidates,
+                    "importance_update_candidate_count": boost_candidates,
+                    "cutoff_age_days": 30,
+                },
+            )
+            if not decision.allowed:
+                print(f"Guardian denied memory consolidation: {decision.reason}")
+                return False
+
+            cursor.execute(
+                """
                 DELETE FROM memories
                 WHERE importance < 0.3 AND created_at < ? AND access_count < 2
             """,
@@ -452,6 +540,7 @@ class LyrixaMemorySystem:
             )
 
             self.ensure_connection().commit()
+            return True
 
             print("🧠 Memory consolidation completed")
 
@@ -491,8 +580,16 @@ class LyrixaMemorySystem:
         self, content: Dict[str, Any], context: Optional[Dict[str, Any]]
     ) -> str:
         """Generate a unique memory ID based on content and context"""
-        content_str = json.dumps(content, sort_keys=True)
-        context_str = json.dumps(context or {}, sort_keys=True)
+        content_str = json.dumps(
+            content,
+            sort_keys=True,
+            default=_json_stable_default,
+        )
+        context_str = json.dumps(
+            context or {},
+            sort_keys=True,
+            default=_json_stable_default,
+        )
         combined = f"{content_str}:{context_str}:{datetime.now().isoformat()}"
         # Use a strong, fast hash for IDs while keeping a compact 32-hex length
         return hashlib.blake2s(combined.encode(), digest_size=16).hexdigest()
@@ -640,12 +737,32 @@ class LyrixaMemorySystem:
         """Exports memory data to a file."""
         self.ensure_connection()  # Ensure the connection is open
         try:
+            output_path = os.path.abspath(file_path)
             cursor = self.ensure_connection().cursor()
+            cursor.execute("SELECT COUNT(*) FROM memories")
+            memory_count = int(cursor.fetchone()[0] or 0)
+            decision = _guardian_preflight_memory_operation(
+                action="memory.export",
+                purpose="Export memory records to a JSON file",
+                capabilities=("memory:read", "fs:write"),
+                reversible=True,
+                rollback_plan="delete generated memory export file",
+                metadata={
+                    "db_path_hash": _hash_value(self.db_path),
+                    "output_path_hash": _hash_value(output_path),
+                    "memory_count": memory_count,
+                },
+            )
+            if not decision.allowed:
+                print(f"Guardian denied memory export: {decision.reason}")
+                return False
+
             cursor.execute("SELECT * FROM memories")
             memories = cursor.fetchall()
 
-            with open(file_path, "w") as file:
+            with open(output_path, "w", encoding="utf-8") as file:
                 json.dump(memories, file)
+            return True
 
             print(f"🧠 Memory exported to {file_path}")
         except Exception as e:
@@ -655,21 +772,83 @@ class LyrixaMemorySystem:
         """Imports memory data from a file."""
         self.ensure_connection()  # Ensure the connection is open
         try:
-            with open(file_path) as file:
+            input_path = os.path.abspath(file_path)
+            file_size = os.path.getsize(input_path) if os.path.exists(input_path) else 0
+            decision = _guardian_preflight_memory_operation(
+                action="memory.import",
+                purpose="Import memory records from a JSON file",
+                capabilities=("memory:write", "fs:read"),
+                reversible=True,
+                rollback_plan="restore memory database from backup or remove imported records",
+                metadata={
+                    "db_path_hash": _hash_value(self.db_path),
+                    "input_path_hash": _hash_value(input_path),
+                    "input_size_bytes": file_size,
+                },
+            )
+            if not decision.allowed:
+                print(f"Guardian denied memory import: {decision.reason}")
+                return False
+
+            with open(input_path, encoding="utf-8") as file:
                 memories = json.load(file)
 
             cursor = self.ensure_connection().cursor()
             cursor.executemany(
                 """
-                INSERT OR REPLACE INTO memories (id, content, last_accessed, access_count)
-                VALUES (?, ?, ?, ?)
+                INSERT OR REPLACE INTO memories
+                (id, content, context, tags, importance, created_at, last_accessed, access_count, memory_type)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 memories,
             )
             self.ensure_connection().commit()
+            return True
             print(f"🧠 Memory imported from {file_path}")
         except Exception as e:
             print(f"❌ Memory import failed: {e}")
+
+    def delete_memory(self, memory_id: str) -> bool:
+        """Delete one memory by ID after Guardian approval."""
+        self.ensure_connection()
+        normalized_id = str(memory_id or "").strip()
+        if not normalized_id:
+            return False
+
+        try:
+            cursor = self.ensure_connection().cursor()
+            cursor.execute(
+                "SELECT memory_type, importance, created_at FROM memories WHERE id = ?",
+                (normalized_id,),
+            )
+            row = cursor.fetchone()
+            if not row:
+                return False
+
+            decision = _guardian_preflight_memory_operation(
+                action="memory.delete",
+                purpose="Delete a memory record by ID",
+                capabilities=("memory:write",),
+                reversible=True,
+                rollback_plan="restore deleted memory record from backup or export",
+                metadata={
+                    "db_path_hash": _hash_value(self.db_path),
+                    "memory_id_hash": _hash_value(normalized_id),
+                    "memory_type": row[0],
+                    "importance_bucket": round(float(row[1] or 0.0), 1),
+                    "created_at_present": bool(row[2]),
+                },
+            )
+            if not decision.allowed:
+                print(f"Guardian denied memory delete: {decision.reason}")
+                return False
+
+            cursor.execute("DELETE FROM memories WHERE id = ?", (normalized_id,))
+            self.ensure_connection().commit()
+            return cursor.rowcount > 0
+        except Exception as e:
+            print(f"âŒ Memory delete failed: {e}")
+            return False
 
     def close_connection(self):
         """Closes the database connection if open."""

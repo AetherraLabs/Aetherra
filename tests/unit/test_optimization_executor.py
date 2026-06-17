@@ -11,6 +11,7 @@ Tests cover:
 - Rollback on failure
 - Audit logging
 """
+# ruff: noqa: PT009
 
 import json
 import os
@@ -236,6 +237,7 @@ class TestOptimizationExecutor(unittest.TestCase):
         # Create workspace structure
         (self.workspace / "Aetherra").mkdir()
         (self.workspace / "tests").mkdir()
+        (self.workspace / "Aetherra" / "__init__.py").write_text("# test package\n")
 
     def tearDown(self):
         """Clean up."""

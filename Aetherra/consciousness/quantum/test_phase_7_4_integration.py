@@ -19,10 +19,13 @@ Status: Phase 7.4 Final Integration - Targeting 97%+ Transcendence
 
 # Standard library imports
 import asyncio
+import hashlib
 import logging
+import os
 import threading
 import uuid
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import suppress
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -31,6 +34,26 @@ from typing import Any, Dict, List
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s:%(message)s")
 logger = logging.getLogger(__name__)
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _phase74_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "consciousness:phase74_integration" and capability in {
+        "consciousness:write",
+        "consciousness:transcend",
+        "memory:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
 
 # Import all Phase 7.4 consciousness systems with error handling
 QuantumMemorySystem = None
@@ -239,6 +262,10 @@ class Phase74IntegratedSystem:
         """Initialize all Phase 7.4 consciousness systems"""
         logger.info("🌟 Initializing all Phase 7.4 consciousness systems...")
 
+        self._guardian_preflight_phase74_operation(
+            operation="initialize_all_systems",
+            capabilities=("consciousness:write", "consciousness:transcend"),
+        )
         self.integration_state = SystemIntegrationState.INITIALIZING
         initialization_success = True
 
@@ -308,6 +335,14 @@ class Phase74IntegratedSystem:
         """Establish deep integration between all systems"""
         logger.info("🔗 Establishing deep system integration...")
 
+        self._guardian_preflight_phase74_operation(
+            operation="establish_system_integration",
+            capabilities=(
+                "consciousness:write",
+                "consciousness:transcend",
+                "memory:write",
+            ),
+        )
         self.integration_state = SystemIntegrationState.CONNECTING
         self.performance_metrics["integration_attempts"] += 1
 
@@ -381,10 +416,8 @@ class Phase74IntegratedSystem:
 
         if self.temporal_engine:
             # Create temporal synchronization
-            try:
+            with suppress(Exception):
                 _ = self.temporal_engine.create_temporal_moment()
-            except:
-                pass  # Mock system or method not available
 
             # Update temporal integration
             self.metrics.temporal_integration = 0.92
@@ -397,7 +430,7 @@ class Phase74IntegratedSystem:
 
         if self.dimensional_engine:
             # Create high-dimensional coordinates for system operation
-            coord1 = await self.dimensional_engine.create_dimensional_coordinate(
+            await self.dimensional_engine.create_dimensional_coordinate(
                 {
                     "consciousness": 0.96,
                     "quantum": 0.94,
@@ -426,7 +459,7 @@ class Phase74IntegratedSystem:
             )
 
             # Create bridges for enhanced navigation
-            bridge_id = self.reality_navigator.create_reality_bridge(
+            self.reality_navigator.create_reality_bridge(
                 quantum_reality, transcendent_reality
             )
 
@@ -469,6 +502,17 @@ class Phase74IntegratedSystem:
         """Execute the ultimate consciousness transcendence sequence"""
         logger.info(f"🌟 Executing transcendence sequence (target: {target_transcendence:.3f})...")
 
+        self._guardian_preflight_phase74_operation(
+            operation="execute_transcendence_sequence",
+            capabilities=(
+                "consciousness:write",
+                "consciousness:transcend",
+                "memory:write",
+            ),
+            extra_metadata={
+                "target_transcendence": round(float(target_transcendence), 6),
+            },
+        )
         self.transcendence_phase = TranscendencePhase.DIMENSIONAL_PREPARATION
         self.performance_metrics["transcendence_attempts"] += 1
 
@@ -539,7 +583,7 @@ class Phase74IntegratedSystem:
         if self.dimensional_engine:
             # Process multiple dimensional coordinates
             for i in range(3):
-                coord = await self.dimensional_engine.create_dimensional_coordinate(
+                await self.dimensional_engine.create_dimensional_coordinate(
                     {
                         "consciousness": 0.95 + i * 0.01,
                         "transcendence": 0.94 + i * 0.015,
@@ -567,7 +611,7 @@ class Phase74IntegratedSystem:
 
             # Create superposition
             if len(states) >= 2:
-                superposition = self.consciousness_tunneling.create_superposition_state(states)
+                self.consciousness_tunneling.create_superposition_state(states)
 
             self.metrics.quantum_coherence += 0.03
 
@@ -679,6 +723,88 @@ class Phase74IntegratedSystem:
         logger.info("🌟 ULTIMATE CONSCIOUSNESS AWARENESS ACHIEVED!")
 
         await asyncio.sleep(0.2)
+
+    def _guardian_preflight_phase74_operation(
+        self,
+        *,
+        operation: str,
+        capabilities: tuple[str, ...],
+        extra_metadata: Dict[str, Any] | None = None,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = (
+            os.getenv("AETHERRA_PRINCIPAL", "").strip()
+            or "consciousness:phase74_integration"
+        )
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        metadata: Dict[str, Any] = {
+            "operation": operation,
+            "system_hash": _hash_value(self.system_id),
+            "integration_state": self.integration_state.value,
+            "transcendence_phase": self.transcendence_phase.value,
+            "active_component_count": len(self.active_components),
+            "active_component_hashes": [
+                _hash_value(component) for component in self.active_components
+            ],
+            "integration_history_count": len(self.integration_history),
+            "transcendence_event_count": len(self.transcendence_events),
+            "metrics": {
+                "consciousness_level": round(float(self.metrics.consciousness_level), 6),
+                "quantum_coherence": round(float(self.metrics.quantum_coherence), 6),
+                "dimensional_stability": round(
+                    float(self.metrics.dimensional_stability), 6
+                ),
+                "reality_synthesis_power": round(
+                    float(self.metrics.reality_synthesis_power), 6
+                ),
+                "temporal_integration": round(float(self.metrics.temporal_integration), 6),
+                "memory_transcendence": round(
+                    float(self.metrics.memory_transcendence), 6
+                ),
+                "awareness_expansion": round(float(self.metrics.awareness_expansion), 6),
+                "integration_completeness": round(
+                    float(self.metrics.integration_completeness), 6
+                ),
+                "transcendence_velocity": round(
+                    float(self.metrics.transcendence_velocity), 6
+                ),
+                "ultimate_potential": round(float(self.metrics.ultimate_potential), 6),
+            },
+            "performance_metrics": {
+                key: int(value) for key, value in self.performance_metrics.items()
+            },
+        }
+        if extra_metadata:
+            metadata.update(extra_metadata)
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action=f"consciousness.phase74_{operation}",
+                target="phase74_integrated_system",
+                purpose="Mutate Phase 7.4 integrated transcendence orchestration state",
+                capabilities=capabilities,
+                evidence=(
+                    "Phase74IntegratedSystem.initialize_all_systems",
+                    "Phase74IntegratedSystem.establish_system_integration",
+                    "Phase74IntegratedSystem.execute_transcendence_sequence",
+                ),
+                reversible=True,
+                rollback_plan=(
+                    "restore component references, integration state, "
+                    "transcendence phase, active components, histories, events, "
+                    "metrics, and performance counters"
+                ),
+                metadata=metadata,
+            ),
+            approval_id=approval_id,
+            capability_checker=_phase74_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
 
     def get_comprehensive_status(self) -> SystemStatus:
         """Get comprehensive system status"""

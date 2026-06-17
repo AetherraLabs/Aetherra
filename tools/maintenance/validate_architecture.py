@@ -11,12 +11,119 @@ Date: August 5, 2025
 Purpose: Prevent architectural confusion and validate directory structure
 """
 
+from __future__ import annotations
+
 # Standard library imports
+import hashlib
+import json
+import logging
 import os
 import re
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class ArchitectureValidationReportPlan:
+    file_path: Path
+    content: str
+    summary: dict
+
+
+def _hash_value(value) -> str | None:
+    if value is None:
+        return None
+    raw = str(value)
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "maintenance" and capability in {
+        "maintenance:cleanup",
+        "fs:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _safe_relative_path(path: Path, root: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(root.resolve()))
+    except ValueError:
+        return str(path.resolve())
+
+
+def _sanitize_validation_summary(summary: dict) -> dict:
+    return {
+        "files_scanned": summary.get("files_scanned", 0),
+        "errors_found": summary.get("errors_found", 0),
+        "warnings_found": summary.get("warnings_found", 0),
+        "correctly_placed": summary.get("correctly_placed", 0),
+        "misplaced_file_count": len(summary.get("misplaced_files", [])),
+    }
+
+
+def _guardian_preflight_architecture_validation_report(
+    *,
+    project_root: Path,
+    plan: ArchitectureValidationReportPlan,
+):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    sanitized_summary = _sanitize_validation_summary(plan.summary)
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="maintenance",
+            action="maintenance.architecture_validation_report",
+            target="maintenance:architecture_validation_report",
+            purpose="Write generated architecture validation report",
+            capabilities=("maintenance:cleanup", "fs:write"),
+            expected_outcome="Planned architecture validation report is written to disk",
+            reversible=False,
+            rollback_plan="delete generated validation report or restore from version control",
+            metadata={
+                "project_root_hash": _hash_value(project_root.resolve()),
+                "report_path_hash": _hash_value(
+                    _safe_relative_path(plan.file_path, project_root)
+                ),
+                "summary": sanitized_summary,
+                "summary_hash": _hash_value(json.dumps(sanitized_summary, sort_keys=True)),
+                "report_size_bytes": len(plan.content.encode("utf-8")),
+            },
+        ),
+        approval_id=approval_id,
+        capability_checker=_guardian_capability_checker,
+    )
+
+
+def write_architecture_validation_report(
+    *,
+    project_root: Path,
+    plan: ArchitectureValidationReportPlan,
+) -> bool:
+    decision = _guardian_preflight_architecture_validation_report(
+        project_root=project_root,
+        plan=plan,
+    )
+    if not decision.allowed:
+        print(f"Guardian denied architecture validation report: {decision.reason}")
+        return False
+
+    plan.file_path.parent.mkdir(parents=True, exist_ok=True)
+    plan.file_path.write_text(plan.content, encoding="utf-8")
+    print(f"Report saved to: {plan.file_path}")
+    return True
 
 
 @dataclass
@@ -189,8 +296,8 @@ class AetherraDirectoryValidator:
             if file_path.suffix == ".py":
                 with open(file_path, encoding="utf-8", errors="ignore") as f:
                     file_content = f.read()[:5000]  # First 5KB for analysis
-        except Exception:
-            pass
+        except OSError as exc:
+            logger.debug("Could not read file for classification %s: %s", file_path, exc)
 
         analysis_text = f"{file_name} {file_str} {file_content}"
 
@@ -262,8 +369,8 @@ class AetherraDirectoryValidator:
             if file_path.suffix == ".py":
                 with open(file_path, encoding="utf-8", errors="ignore") as f:
                     file_content = f.read()
-        except Exception:
-            pass
+        except OSError as exc:
+            logger.debug("Could not read file for forbidden checks %s: %s", file_path, exc)
 
         # Check import patterns
         if is_in_aetherra_core and "from lyrixa" in file_content:
@@ -481,8 +588,16 @@ def main():
 
     # Save report
     report_path = Path(project_root) / "ARCHITECTURE_VALIDATION_REPORT.md"
-    with open(report_path, "w", encoding="utf-8") as f:
-        f.write(report)
+    plan = ArchitectureValidationReportPlan(
+        file_path=report_path,
+        content=report,
+        summary=summary,
+    )
+    if not write_architecture_validation_report(
+        project_root=Path(project_root),
+        plan=plan,
+    ):
+        return 1
 
     print("📊 Validation complete!")
     print(f"📄 Report saved to: {report_path}")
@@ -494,7 +609,8 @@ def main():
         print("🔧 Run with --fix to generate fix commands")
     else:
         print("✅ Architecture validation passed - all files correctly placed!")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

@@ -25,6 +25,23 @@ Key properties:
 - Policy-driven safety constraints preventing destructive actions
 - Integration with all major Aetherra subsystems
 
+## Guardian enforcement
+
+Guardian protects the Homeostasis paths that can change operating mode, execute actions, trigger emergency state, or notify/escalate alerts:
+
+- Hub `/api/homeostasis/actuators/execute`, `/mode`, `/emergency_stop`, `/reset_emergency`, and `/rollback` declare Guardian intents before control-plane execution.
+- `HomeostasisOrchestrator.set_controller_mode`, `emergency_stop`, and `reset_emergency_stop` also declare Guardian intents directly, so callers below the Hub layer cannot bypass policy.
+- `HomeostasisActuators.execute_action` and rollback paths declare Guardian intents before direct actuator mutation or rollback-stack changes.
+- `HomeostasisController` autonomous action planning declares Guardian intent before placing corrective actions into the pending-action queue.
+- `IntelligentAlertManager` alert escalation and notification dispatch declare Guardian intent before severity/counter changes or outbound notification work.
+- Strict capability mode blocks explicit external callers without `homeostasis:control`, `homeostasis:emergency`, `homeostasis:actuate`, `homeostasis:rollback`, `homeostasis:escalate`, or notification capabilities.
+- Security, policy, or capability-affecting actuator work requests `security:modify` in addition to Homeostasis capabilities.
+- Audit metadata records modes, action types, target services, priorities, parameter keys, alert IDs/severities, and channel names without storing raw actuator parameters or notification payloads.
+
+Remaining Guardian scope:
+
+- Keep future runtime setpoint mutation, adaptive-threshold mutation, sleep-mode control, maintenance-mode toggles, or distributed node control APIs behind Guardian before enabling them.
+
 ## Core components
 
 ### 1) Stability Metrics Collection

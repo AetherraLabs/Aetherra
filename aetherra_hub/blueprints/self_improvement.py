@@ -7,19 +7,90 @@ Enables external tools to trigger proposal application with optional HMR integra
 from __future__ import annotations
 
 # Standard library imports
-import asyncio
 import logging
 
 # Third party imports
 from flask import Blueprint, jsonify, request
 from flask.typing import ResponseReturnValue
 
+from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
 # Local imports
+from ..services.control_auth import authorize_control_request
 from ..services.registry_client import get_service
+from ..utils.http import run_coro_blocking
 
 logger = logging.getLogger(__name__)
 
 bp = Blueprint("self_improvement", __name__, url_prefix="/api/selfimprove")
+
+
+def _authorize_control() -> ResponseReturnValue | None:
+    decision = authorize_control_request(request.headers, request.remote_addr)
+    if decision.allowed:
+        return None
+    return jsonify({"ok": False, "error": decision.error}), decision.status_code
+
+
+def _guardian_decision_for_proposal(data: dict, sender: str | None):
+    proposal_id = str(data.get("proposal_id") or "").strip()
+    method = str(data.get("method", "auto")).lower()
+    hmr_target = data.get("hmr_target")
+    hmr_source = data.get("hmr_source")
+    rollback_plan = data.get("rollback_plan") or data.get("rollback")
+    reversible = bool(data.get("reversible")) or bool(rollback_plan)
+    capabilities = ["self:modify"]
+    if method in {"auto", "hmr"} and (hmr_target or hmr_source):
+        capabilities.append("code:modify")
+        capabilities.append("system:reload")
+    target = str(hmr_target or hmr_source or proposal_id)
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=str(sender or data.get("sender") or "self_improvement"),
+            subsystem="self_improvement",
+            action="self.apply_proposal",
+            target=target,
+            purpose=str(data.get("description") or f"Apply proposal {proposal_id}"),
+            capabilities=tuple(capabilities),
+            reversible=reversible,
+            rollback_plan=str(rollback_plan) if rollback_plan else None,
+            evidence=tuple(
+                item
+                for item in (
+                    f"proposal:{proposal_id}" if proposal_id else None,
+                    f"hmr_target:{hmr_target}" if hmr_target else None,
+                    f"hmr_source:{hmr_source}" if hmr_source else None,
+                )
+                if item
+            ),
+            metadata={
+                "proposal_id": proposal_id,
+                "method": method,
+                "type": data.get("type"),
+            },
+        ),
+        approval_id=data.get("guardian_approval_id") or data.get("approval_id"),
+    )
+
+
+def _guardian_block_response(
+    proposal_id: str | None, decision
+) -> tuple[dict, int] | None:
+    if decision.status in {GuardianStatus.ALLOW, GuardianStatus.ALLOW_LIMITED}:
+        return None
+    status_code = 202 if decision.status == GuardianStatus.REQUIRE_APPROVAL else 403
+    return (
+        {
+            "ok": False,
+            "proposal_id": proposal_id,
+            "applied": False,
+            "restart_required": False,
+            "method": "guardian",
+            "guardian": decision.to_audit_dict(),
+            "error": decision.reason,
+        },
+        status_code,
+    )
 
 
 @bp.post("/apply")
@@ -38,6 +109,9 @@ def apply_proposal() -> ResponseReturnValue:
         "hmr_source": "Aetherra.adapters.memory_adapter"
     }
     """
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
     try:
         data = request.get_json() or {}
         proposal_id = data.get("proposal_id")
@@ -49,6 +123,12 @@ def apply_proposal() -> ResponseReturnValue:
 
         # Build a common payload for Self-Incorporation
         sender = request.headers.get("X-Aetherra-Principal") or data.get("sender")
+        guardian_decision = _guardian_decision_for_proposal(data, sender)
+        guardian_block = _guardian_block_response(proposal_id, guardian_decision)
+        if guardian_block is not None:
+            body, status_code = guardian_block
+            return jsonify(body), status_code
+
         proposal_payload = {
             "proposal_id": proposal_id,
             "type": data.get("type"),
@@ -67,8 +147,7 @@ def apply_proposal() -> ResponseReturnValue:
 
             if selfinc is not None:
                 try:
-                    loop = asyncio.get_event_loop()
-                    si_res = loop.run_until_complete(
+                    si_res = run_coro_blocking(
                         selfinc.handle_message(
                             "selfimprovement.proposal", proposal_payload
                         )
@@ -126,7 +205,7 @@ def apply_proposal() -> ResponseReturnValue:
                 )
 
             hmr_controller = get_service("hmr_controller")
-            if not hmr_controller:
+            if not hmr_controller or not hasattr(hmr_controller, "handle_kernel_task"):
                 logger.warning("[SELFIMPROVE] HMR requested but controller unavailable")
                 return jsonify(
                     {
@@ -138,9 +217,8 @@ def apply_proposal() -> ResponseReturnValue:
                     }
                 )
 
-            loop = asyncio.get_event_loop()
             try:
-                result = loop.run_until_complete(
+                result = run_coro_blocking(
                     hmr_controller.handle_kernel_task(
                         {
                             "type": "hmr_reload",
@@ -225,6 +303,9 @@ def batch_apply_proposals() -> ResponseReturnValue:
         "use_hmr": true  // optional, default true
     }
     """
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
     try:
         data = request.get_json() or {}
         proposals = data.get("proposals", [])
@@ -280,6 +361,12 @@ def _apply_single_proposal(data: dict) -> dict:
     """Internal helper to apply a single proposal (reused by batch endpoint)."""
     proposal_id = data.get("proposal_id")
     method = str(data.get("method", "auto")).lower()
+    guardian_decision = _guardian_decision_for_proposal(data, data.get("sender"))
+    guardian_block = _guardian_block_response(proposal_id, guardian_decision)
+    if guardian_block is not None:
+        body, status_code = guardian_block
+        body["status_code"] = status_code
+        return body
 
     # Try Self-Incorporation first if requested/auto
     if method in ("auto", "selfinc"):
@@ -298,8 +385,7 @@ def _apply_single_proposal(data: dict) -> dict:
                 "sender": data.get("sender"),
             }
             try:
-                loop = asyncio.get_event_loop()
-                si_res = loop.run_until_complete(
+                si_res = run_coro_blocking(
                     selfinc.handle_message("selfimprovement.proposal", payload)
                 )
             except Exception as exc:
@@ -343,7 +429,7 @@ def _apply_single_proposal(data: dict) -> dict:
             }
 
         hmr_controller = get_service("hmr_controller")
-        if not hmr_controller:
+        if not hmr_controller or not hasattr(hmr_controller, "handle_kernel_task"):
             return {
                 "proposal_id": proposal_id,
                 "ok": True,
@@ -352,9 +438,8 @@ def _apply_single_proposal(data: dict) -> dict:
                 "warning": "HMR not available",
             }
 
-        loop = asyncio.get_event_loop()
         try:
-            result = loop.run_until_complete(
+            result = run_coro_blocking(
                 hmr_controller.handle_kernel_task(
                     {
                         "type": "hmr_reload",

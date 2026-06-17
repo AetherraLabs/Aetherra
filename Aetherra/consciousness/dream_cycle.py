@@ -19,10 +19,67 @@ Design:
 
 from __future__ import annotations
 
+import hashlib
+import os
 import time
 from typing import Any, Dict, List, Optional
 
 from Aetherra.consciousness.continuity_memory import ContinuityMemory, ContinuitySnapshot
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_requester() -> str:
+    return os.environ.get("AETHERRA_PRINCIPAL", "").strip() or "dream_cycle"
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "dream_cycle" and capability in {
+        "consciousness:reflect",
+        "consciousness:write",
+        "memory:read",
+        "memory:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _guardian_preflight_dream_cycle(metadata: Dict[str, object]) -> None:
+    from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+    decision = evaluate_intent(
+        IntentDeclaration(
+            requester=_guardian_requester(),
+            subsystem="consciousness",
+            action="consciousness.dream_cycle_run",
+            target="consciousness:dream_cycle",
+            purpose="Run offline reflective learning and update dream-cycle state",
+            capabilities=(
+                "consciousness:reflect",
+                "consciousness:write",
+                "memory:read",
+                "memory:write",
+            ),
+            evidence=("DreamCycle.run",),
+            reversible=True,
+            rollback_plan="restore previous qualia learner parameters and dream-cycle state",
+            metadata=metadata,
+        ),
+        capability_checker=_guardian_capability_checker,
+    )
+    if decision.status not in {
+        GuardianStatus.ALLOW,
+        GuardianStatus.ALLOW_LIMITED,
+    }:
+        raise PermissionError(f"guardian_denied:{decision.reason}:consciousness.dream_cycle_run")
 
 
 class DreamCycle:
@@ -66,11 +123,20 @@ class DreamCycle:
         Returns:
             Dict with dream metrics and narrative
         """
-        self.last_run_ts = time.time()
-
         # Get recent snapshots
         recent = self.continuity.get_recent(self.analysis_window)
         if len(recent) < 10:
+            _guardian_preflight_dream_cycle(
+                {
+                    "operation": "run_insufficient_data",
+                    "snapshot_count": len(recent),
+                    "analysis_window": self.analysis_window,
+                    "max_adjustment": round(float(self.max_adjustment), 6),
+                    "will_adjust_params": False,
+                    "will_store_dream": False,
+                }
+            )
+            self.last_run_ts = time.time()
             return {
                 "status": "insufficient_data",
                 "snapshots_analyzed": len(recent),
@@ -83,6 +149,24 @@ class DreamCycle:
 
         # Reflective qualia adjustments
         adjustments = self._compute_reflective_adjustments(trends)
+        _guardian_preflight_dream_cycle(
+            {
+                "operation": "run",
+                "snapshot_count": len(recent),
+                "analysis_window": self.analysis_window,
+                "max_adjustment": round(float(self.max_adjustment), 6),
+                "trend_keys": tuple(sorted(trends)),
+                "adjustment_keys": tuple(sorted(adjustments)),
+                "adjustment_count": len(adjustments),
+                "focus_count": sum(len(snapshot.focuses) for snapshot in recent),
+                "intention_count": sum(len(snapshot.intentions) for snapshot in recent),
+                "trust_key_count": sum(len(snapshot.trust_scores) for snapshot in recent),
+                "qualia_learner_type_hash": _hash_value(type(qualia_learner).__name__),
+                "will_adjust_params": bool(adjustments),
+                "will_store_dream": True,
+            }
+        )
+        self.last_run_ts = time.time()
         self._apply_adjustments(qualia_learner, adjustments)
 
         # Symbolic event recombination

@@ -23,7 +23,9 @@ Date: August 5, 2025
 
 # Standard library imports
 import asyncio
+import hashlib
 import logging
+import os
 import time
 from dataclasses import dataclass
 from datetime import datetime
@@ -90,6 +92,31 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _hash_values(values: List[object] | None) -> List[str]:
+    return [hashed for value in values or [] if (hashed := _hash_value(value))]
+
+
+def _quantum_cognition_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "consciousness:quantum_cognition" and capability in {
+        "consciousness:write",
+        "consciousness:transcend",
+        "autonomy:execute",
+        "memory:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
 @dataclass
 class QuantumCognitionResult:
     """Complete result from quantum cognition process"""
@@ -153,6 +180,13 @@ class QuantumConsciousnessSystem:
 
     async def initialize_system(self) -> bool:
         """Initialize all quantum consciousness components"""
+        self._guardian_preflight_quantum_cognition_operation(
+            operation="initialize",
+            capabilities=("consciousness:write", "consciousness:transcend"),
+            extra_metadata={
+                "quantum_modules_available": bool(QUANTUM_MODULES_AVAILABLE),
+            },
+        )
         try:
             if not QUANTUM_MODULES_AVAILABLE:
                 self.logger.error("❌ Cannot initialize - quantum modules not available")
@@ -225,7 +259,7 @@ class QuantumConsciousnessSystem:
         # Resource constraints
         if "resources" in constraints:
             resource_limit = constraints["resources"]
-            if isinstance(resource_limit, (int, float)) and resource_limit < 0.8:
+            if isinstance(resource_limit, int | float) and resource_limit < 0.8:
                 barrier = create_resource_barrier(
                     height=0.9 - resource_limit,
                     description=f"Limited resources: {resource_limit}",
@@ -287,6 +321,33 @@ class QuantumConsciousnessSystem:
         """Process complete quantum cognition request"""
         if not self.system_initialized:
             raise RuntimeError("Quantum consciousness system not initialized")
+
+        self._guardian_preflight_quantum_cognition_operation(
+            operation="process_request",
+            capabilities=(
+                "consciousness:write",
+                "consciousness:transcend",
+                "autonomy:execute",
+                "memory:write",
+            ),
+            extra_metadata={
+                "request_hash": _hash_value(request.request_id),
+                "context_hash": _hash_value(request.context_description),
+                "choice_count": len(request.available_choices),
+                "choice_hashes": _hash_values(
+                    [choice.get("id") for choice in request.available_choices]
+                ),
+                "constraint_keys": sorted(request.constraints.keys()),
+                "constraint_hash": _hash_value(request.constraints),
+                "objective_count": len(request.objectives),
+                "objective_hashes": _hash_values(request.objectives),
+                "consciousness_level": round(float(request.consciousness_level), 6),
+                "time_horizon": round(float(request.time_horizon), 6),
+                "enable_tunneling": bool(request.enable_tunneling),
+                "enable_interference": bool(request.enable_interference),
+                "optimization_target_hash": _hash_value(request.optimization_target),
+            },
+        )
 
         try:
             processing_start = time.time()
@@ -441,6 +502,68 @@ class QuantumConsciousnessSystem:
         except Exception as e:
             self.logger.error(f"❌ Quantum cognition processing failed: {e}")
             raise
+
+    def _guardian_preflight_quantum_cognition_operation(
+        self,
+        *,
+        operation: str,
+        capabilities: tuple[str, ...],
+        extra_metadata: Dict[str, Any] | None = None,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = (
+            os.getenv("AETHERRA_PRINCIPAL", "").strip()
+            or "consciousness:quantum_cognition"
+        )
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        metadata: Dict[str, Any] = {
+            "operation": operation,
+            "system_initialized": bool(self.system_initialized),
+            "consciousness_level": round(float(self.consciousness_level), 6),
+            "has_decision_engine": self.decision_engine is not None,
+            "has_tunneling_engine": self.tunneling_engine is not None,
+            "has_interference_engine": self.interference_engine is not None,
+            "cognition_requests": int(self.cognition_requests),
+            "successful_cognitions": int(self.successful_cognitions),
+            "breakthrough_discoveries": int(self.breakthrough_discoveries),
+            "consciousness_enhancements": int(self.consciousness_enhancements),
+            "avg_processing_time": round(float(self.avg_processing_time), 6),
+            "quantum_advantage_rate": round(float(self.quantum_advantage_rate), 6),
+            "system_coherence": round(float(self.system_coherence), 6),
+        }
+        if extra_metadata:
+            metadata.update(extra_metadata)
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action=f"consciousness.quantum_cognition_{operation}",
+                target="quantum_consciousness_integration",
+                purpose="Mutate quantum cognition master-controller state",
+                capabilities=capabilities,
+                evidence=(
+                    "QuantumConsciousnessSystem.initialize_system",
+                    "QuantumConsciousnessSystem.process_quantum_cognition",
+                    "initialize_quantum_consciousness",
+                    "make_quantum_decision",
+                    "breakthrough_analysis",
+                ),
+                reversible=True,
+                rollback_plan=(
+                    "restore initialization state, engine references, cognition "
+                    "counters, consciousness level, processing metrics, and "
+                    "quantum advantage metrics"
+                ),
+                metadata=metadata,
+            ),
+            approval_id=approval_id,
+            capability_checker=_quantum_cognition_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
 
     def get_system_status(self) -> Dict[str, Any]:
         """Get comprehensive system status"""

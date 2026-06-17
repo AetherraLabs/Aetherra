@@ -17,6 +17,7 @@ import math
 import os
 import random
 import time
+from contextlib import suppress
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -78,11 +79,8 @@ class Telemetry:
         """
         self.dp_enabled = bool(enabled)
         if epsilon is not None:
-            try:
+            with suppress(TypeError, ValueError):
                 self.dp_epsilon = float(epsilon)
-            except Exception:
-                # Leave existing epsilon if parsing fails
-                pass
         # Persist alongside opt-in when possible
         try:
             APP_DIR.mkdir(parents=True, exist_ok=True)
@@ -127,13 +125,21 @@ class Telemetry:
                 if rk in redacted_keys:
                     payload["props"].pop(rk, None)
             for k, v in list(payload["props"].items()):
-                if isinstance(v, (int, float)):
+                if isinstance(v, int | float):
                     try:
                         payload["props"][k] = float(v) + _laplace_noise(scale)
                     except Exception:
                         continue
         try:
-            r = requests.post(self.endpoint, json=payload, timeout=2)
+            token = (
+                os.environ.get("AETHERRA_TELEMETRY_TOKEN")
+                or os.environ.get("AETHERRA_HUB_CONTROL_TOKEN")
+                or ""
+            ).strip()
+            request_kwargs = {"json": payload, "timeout": 2}
+            if token:
+                request_kwargs["headers"] = {"X-Aetherra-Token": token}
+            r = requests.post(self.endpoint, **request_kwargs)
             return r.status_code in (200, 201, 202)
         except Exception:
             return False

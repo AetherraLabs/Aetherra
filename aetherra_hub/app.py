@@ -32,6 +32,7 @@ from .blueprints import (  # pylint: disable=unused-import
     chat,
     consciousness,  # consciousness state API
     frontend,  # static file serving for Lyrixa UI
+    guardian,
     health,
     homeostasis,  # new
     interactive,  # Interactive Lyrixa emotions & expressions
@@ -65,6 +66,7 @@ BLUEPRINTS = [
     openapi.bp,
     metrics.bp,
     health.bp,
+    guardian.bp,
     site_status.bp,
     qfac_admin.bp,
     kernel.bp,
@@ -117,19 +119,11 @@ def create_app(cfg: Settings | None = None) -> Flask:
         api_enabled = os.environ.get("AETHERRA_AI_API_ENABLED", "0") == "1"
         if api_enabled:
             require_token_env = os.environ.get("AETHERRA_AI_API_REQUIRE_TOKEN", "0")
-            require_token = require_token_env == "1"
+            require_token = require_token_env == "1"  # noqa: S105 - env flag sentinel
             token_present = bool(
                 os.environ.get("AETHERRA_AI_API_TOKEN")
                 or os.environ.get("AETHERRA_HUB_CONTROL_TOKEN")
             )
-            # Auto-escalate to require_token when token exists but flag not set
-            if token_present and not require_token:
-                os.environ["AETHERRA_AI_API_REQUIRE_TOKEN"] = "1"
-                require_token = True
-                logger.info(
-                    "[SEC] Auto-enabled AI API token requirement (token present; flag was %s)",
-                    require_token_env,
-                )
             logger.info(
                 "[SEC][DIAG] AI API security check: require_token=%s token_present=%s token_len=%s hub_token_len=%s",
                 require_token,
@@ -137,8 +131,11 @@ def create_app(cfg: Settings | None = None) -> Flask:
                 len(os.environ.get("AETHERRA_AI_API_TOKEN", "")),
                 len(os.environ.get("AETHERRA_HUB_CONTROL_TOKEN", "")),
             )
-            # Only fail if token is REQUIRED AND missing. Previous logic aborted if either was false.
-            if require_token and not token_present:
+            if not require_token:
+                failures.append(
+                    "AI API token enforcement not enabled (AETHERRA_AI_API_REQUIRE_TOKEN=1)"
+                )
+            elif not token_present:
                 failures.append(
                     "AI API token enforcement failed (AETHERRA_AI_API_REQUIRE_TOKEN=1 but no token present)"
                 )
@@ -306,10 +303,16 @@ def create_app(cfg: Settings | None = None) -> Flask:
                             reg = _asyncio.run(_get_reg())
                             with contextlib.suppress(Exception):
                                 reg.mark_service_self_heartbeat("aetherra_hub", True)
-                        except Exception:
-                            pass
-                    except Exception:
-                        pass
+                        except Exception as exc:
+                            logger.debug(
+                                "Hub registry self-heartbeat marker failed: %s",
+                                exc,
+                                exc_info=True,
+                            )
+                    except Exception as exc:
+                        logger.debug(
+                            "Hub service registration failed: %s", exc, exc_info=True
+                        )
 
                     # Heartbeat loop
                     try:
@@ -318,24 +321,25 @@ def create_app(cfg: Settings | None = None) -> Flask:
                             interval = float(
                                 os.environ.get("AETHERRA_HUB_HEARTBEAT_SEC", "45") or 45
                             )
-                        except Exception:
+                        except (TypeError, ValueError):
                             interval = 45.0
                         while not _hub_hb_stop:
-                            try:
+                            with contextlib.suppress(Exception):
                                 _asyncio.run(_hb("aetherra_hub"))
-                            except Exception:
-                                pass
                             # split sleep for quicker teardown
                             slept = 0.0
                             step = min(1.0, interval)
                             while not _hub_hb_stop and slept < interval:
                                 _time.sleep(step)
                                 slept += step
-                    except Exception:
-                        pass
-                except Exception:
-                    # Silent failure to avoid impacting hub bring-up
-                    pass
+                    except Exception as exc:
+                        logger.debug("Hub heartbeat loop failed: %s", exc, exc_info=True)
+                except Exception as exc:
+                    logger.warning(
+                        "Hub registry heartbeat thread failed to initialize: %s",
+                        exc,
+                        exc_info=True,
+                    )
 
             _hub_hb_thread = threading.Thread(
                 target=_runner, name="hub-registry-heartbeat", daemon=True
@@ -347,7 +351,12 @@ def create_app(cfg: Settings | None = None) -> Flask:
             # Start registry registration + heartbeat in background
             try:
                 _start_registry_hb_thread()
-            except Exception:
+            except Exception as exc:
+                logger.warning(
+                    "Unable to start Hub registry heartbeat thread: %s",
+                    exc,
+                    exc_info=True,
+                )
                 logger.debug(
                     "[REG] hub registry heartbeat thread failed to start", exc_info=True
                 )

@@ -19,15 +19,10 @@ import json
 import os
 import threading
 import time
+from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
-
-try:
-    # Third party imports
-    import requests  # type: ignore
-except Exception:  # pragma: no cover - optional dep
-    requests = None  # type: ignore
 
 try:
     # Aetherra imports
@@ -84,8 +79,6 @@ class FederationManager:
             return list(self._federated_plugins.values())
 
     def start_background_sync(self):
-        if requests is None:
-            return  # requests not available
         t = threading.Thread(target=self._loop, daemon=True)
         t.start()
 
@@ -94,24 +87,28 @@ class FederationManager:
 
     def _loop(self):
         while not self._stop.is_set():
-            try:
+            with suppress(Exception):
                 self.sync_once()
-            except Exception:
-                pass
             self._stop.wait(self.interval)
 
     def sync_once(self):
-        if requests is None:
-            return
+        from Aetherra.security.net_policy import http_get
+
         merged: Dict[str, dict] = {}
         now = time.time()
         with self._lock:
             peers = list(self._peers.values())
         for peer in peers:
             try:
-                resp = requests.get(f"{peer.url}/api/plugins", timeout=5)
-                if resp.status_code != 200:
-                    raise RuntimeError(f"status {resp.status_code}")
+                resp = http_get(
+                    f"{peer.url}/api/plugins",
+                    timeout=5,
+                    requester="hub:federation:sync",
+                    headers=self._auth_headers(),
+                )
+                if resp is None or resp.status_code != 200:
+                    status = resp.status_code if resp is not None else "denied"
+                    raise RuntimeError(f"status {status}")
                 data = resp.json()
                 plugin_list = data.get("plugins", [])
                 for p in plugin_list:
@@ -131,23 +128,36 @@ class FederationManager:
 
     def announce_once(self):
         """Announce this hub to all known peers (best-effort)."""
-        if requests is None:
-            return
+        from Aetherra.security.net_policy import http_post
+
         now = time.time()
         with self._lock:
             peers = list(self._peers.values())
         for peer in peers:
             try:
-                resp = requests.post(
-                    f"{peer.url}/api/peers", json={"url": self.self_url}, timeout=5
+                resp = http_post(
+                    f"{peer.url}/api/peers",
+                    {"url": self.self_url},
+                    timeout=5,
+                    requester="hub:federation:announce",
+                    headers=self._auth_headers(),
                 )
-                if resp.status_code in (200, 201, 202):
+                if resp is not None and resp.status_code in (200, 201, 202):
                     peer.healthy = True
                     peer.last_seen = now
                 else:
                     peer.healthy = False
             except Exception:
                 peer.healthy = False
+
+    @staticmethod
+    def _auth_headers() -> dict[str, str] | None:
+        token = (
+            os.environ.get("AETHERRA_FEDERATION_TOKEN")
+            or os.environ.get("AETHERRA_HUB_CONTROL_TOKEN")
+            or ""
+        ).strip()
+        return {"Authorization": f"Bearer {token}"} if token else None
 
     # Persistence helpers (best-effort, never fatal)
     def _load_state(self):

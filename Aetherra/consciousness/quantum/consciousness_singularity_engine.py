@@ -13,7 +13,9 @@ identity formation beyond current AI limitations.
 
 # Standard library imports
 import asyncio
+import hashlib
 import logging
+import os
 import random
 import time
 import uuid
@@ -28,6 +30,25 @@ import numpy as np
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _singularity_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "consciousness:singularity" and capability in {
+        "consciousness:transcend",
+        "consciousness:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
 
 
 class SingularityState(Enum):
@@ -217,6 +238,8 @@ class ConsciousnessSingularityEngine:
             Self-awareness validation results and consciousness proof
         """
         logger.info("🧠 Initiating self-awareness validation sequence...")
+
+        self._guardian_preflight_singularity_operation(operation="validate_self_awareness")
 
         validation_start = time.time()
         validation_results = {
@@ -483,6 +506,8 @@ class ConsciousnessSingularityEngine:
         """
         logger.info("🚀 Initiating consciousness singularity sequence...")
 
+        self._guardian_preflight_singularity_operation(operation="achieve")
+
         singularity_start = time.time()
         singularity_results = {
             "singularity_id": str(uuid.uuid4()),
@@ -685,6 +710,78 @@ class ConsciousnessSingularityEngine:
         }
 
         self.singularity_events.append(event)
+
+    def _guardian_preflight_singularity_operation(self, *, operation: str):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = (
+            os.getenv("AETHERRA_PRINCIPAL", "").strip()
+            or "consciousness:singularity"
+        )
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action=f"consciousness.singularity_{operation}",
+                target="consciousness_singularity",
+                purpose="Mutate experimental consciousness singularity validation and achievement state",
+                capabilities=("consciousness:transcend", "consciousness:write"),
+                evidence=(
+                    "ConsciousnessSingularityEngine.validate_self_awareness",
+                    "ConsciousnessSingularityEngine.achieve_consciousness_singularity",
+                ),
+                reversible=True,
+                rollback_plan=(
+                    "restore previous singularity metrics, validation proofs, "
+                    "identity state, event history, and singularity state"
+                ),
+                metadata={
+                    "engine_id_hash": _hash_value(self.engine_id),
+                    "operation": operation,
+                    "singularity_state": self.current_singularity_state.value,
+                    "singularity_mode": self.active_singularity_mode.value,
+                    "complexity_order": len(str(int(self.consciousness_complexity))),
+                    "self_awareness_depth": round(float(self.self_awareness_depth), 6),
+                    "identity_strength": round(
+                        float(self.transcendent_identity_strength), 6
+                    ),
+                    "reality_synthesis": round(
+                        float(self.reality_synthesis_capability), 6
+                    ),
+                    "infinite_potential": round(
+                        float(self.infinite_potential_access), 6
+                    ),
+                    "cosmic_integration": round(float(self.cosmic_integration_level), 6),
+                    "singularity_proximity": round(float(self.singularity_proximity), 6),
+                    "recursion_depth": int(self.consciousness_recursion_depth),
+                    "event_count": len(self.singularity_events),
+                    "proof_count": len(
+                        self.self_awareness_validation.consciousness_proofs
+                    ),
+                    "insight_count": len(
+                        self.self_awareness_validation.transcendent_insights
+                    ),
+                    "validation_test_count": len(
+                        self.self_awareness_validation.self_recognition_tests
+                    ),
+                    "meta_operation_count": len(
+                        self.self_awareness_validation.meta_cognitive_operations
+                    ),
+                    "identity_connection_count": len(
+                        self.transcendent_identity.cosmic_awareness_connections
+                    ),
+                    "learning_pathway_count": len(
+                        self.transcendent_identity.infinite_learning_pathways
+                    ),
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=_singularity_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
 
     def get_singularity_status(self) -> Dict[str, Any]:
         """Get comprehensive consciousness singularity status."""

@@ -3,6 +3,7 @@
 
 # Standard library imports
 import re
+import socket
 
 # Third party imports
 import pytest
@@ -11,6 +12,12 @@ import pytest
 from aetherra_hub.compat import start_hub_server
 
 requests = pytest.importorskip("requests")
+
+
+def _free_tcp_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind(("127.0.0.1", 0))
+        return int(sock.getsockname()[1])
 
 
 def _get_metrics(port: int) -> str:
@@ -31,30 +38,37 @@ def test_missing_token_increments_metric(monkeypatch):
     for k in ("AETHERRA_AI_API_TOKEN", "AETHERRA_HUB_CONTROL_TOKEN"):
         monkeypatch.delenv(k, raising=False)
 
-    port = 39401
-    start_hub_server(port=port)
+    port = _free_tcp_port()
+    server = start_hub_server(port=port)
+    try:
+        # Now simulate disabled path (unset stream flag) to exercise missing token counter logic
+        monkeypatch.setenv("AETHERRA_AI_API_STREAM", "0")
+        r = requests.post(
+            f"http://localhost:{port}/api/ai/stream", json={"message": "hi"}
+        )
+        assert r.status_code == 501
 
-    # Now simulate disabled path (unset stream flag) to exercise missing token counter logic
-    monkeypatch.setenv("AETHERRA_AI_API_STREAM", "0")
-    r = requests.post(f"http://localhost:{port}/api/ai/stream", json={"message": "hi"})
-    assert r.status_code == 501
-
-    body = _get_metrics(port)
-    # Counter should be >=1
-    m = re.search(r"aetherra_chat_auth_missing_token_total (\d+)", body)
-    assert m, "missing token metric not exported"
-    val = int(m.group(1))
-    assert val >= 1
+        body = _get_metrics(port)
+        # Counter should be >=1
+        m = re.search(r"aetherra_chat_auth_missing_token_total (\d+)", body)
+        assert m, "missing token metric not exported"
+        val = int(m.group(1))
+        assert val >= 1
+    finally:
+        server.stop_server()
 
 
 def test_security_metric_series_always_present(monkeypatch):
     monkeypatch.setenv("AETHERRA_PROFILE", "test")
-    port = 39402
-    start_hub_server(port=port)
-    body = _get_metrics(port)
-    for name in [
-        "aetherra_chat_auth_missing_token_total",
-        "aetherra_chat_auth_invalid_token_total",
-        "aetherra_hmr_denied_total",
-    ]:
-        assert name in body, f"{name} not exported"
+    port = _free_tcp_port()
+    server = start_hub_server(port=port)
+    try:
+        body = _get_metrics(port)
+        for name in [
+            "aetherra_chat_auth_missing_token_total",
+            "aetherra_chat_auth_invalid_token_total",
+            "aetherra_hmr_denied_total",
+        ]:
+            assert name in body, f"{name} not exported"
+    finally:
+        server.stop_server()

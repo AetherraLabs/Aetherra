@@ -31,6 +31,8 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+from Aetherra.security.sandbox import SandboxViolation, safe_eval
+
 logger = logging.getLogger(__name__)
 
 
@@ -483,15 +485,11 @@ class StateMapper:
             Evaluated intensity (clamped to 0.0-1.0)
         """
         try:
-            # Add safe math functions
-            safe_globals = {
-                "min": min,
-                "max": max,
-                "__builtins__": {},
-            }
-            result = eval(formula, safe_globals, variables)
-            return max(0.0, min(1.0, result))  # Clamp to [0, 1]
-        except Exception as e:
+            result = safe_eval(formula, variables)
+            if isinstance(result, bool) or not isinstance(result, int | float):
+                raise SandboxViolation("Intensity formula must return a number")
+            return max(0.0, min(1.0, float(result)))
+        except (ArithmeticError, SandboxViolation, TypeError, ValueError) as e:
             logger.warning(f"⚠️ Failed to evaluate intensity formula '{formula}': {e}")
             return 0.5  # Safe default
 

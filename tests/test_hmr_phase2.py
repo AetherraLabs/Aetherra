@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
 # Standard library imports
+import asyncio
 import importlib
 
 
@@ -13,29 +14,21 @@ def test_hmr_source_gating_blocks_unlisted(monkeypatch):
     # attach controller if not present
     if not getattr(kernel, "hmr_controller", None):
         reg_mod = importlib.import_module("aetherra_service_registry")
-        registry = reg_mod.get_service_registry()
+        registry = asyncio.run(reg_mod.get_service_registry())
         ctrl = mod.HMRController(registry, kernel, strict=True)
-        # simulate start
-        # Standard library imports
-        import asyncio
-
-        asyncio.get_event_loop().run_until_complete(ctrl.start())
+        asyncio.run(ctrl.start())
         kernel.hmr_controller = ctrl
 
     # attempt a reload with an unlisted source
-    # Standard library imports
-    import asyncio
-
     async def run():
-        res = await kernel.hmr_controller.handle_kernel_task(
+        return await kernel.hmr_controller.handle_kernel_task(
             {
                 "type": "hmr_reload",
                 "data": {"target": "engine", "source": "not.allowed"},
             }
         )
-        return res
 
-    res = asyncio.get_event_loop().run_until_complete(run())
+    res = asyncio.run(run())
     assert res.get("ok") is False
     assert res.get("error") == "source_not_allowed"
 

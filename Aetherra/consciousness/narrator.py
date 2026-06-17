@@ -29,6 +29,8 @@ Future phases:
 from __future__ import annotations
 
 # Standard library imports
+import contextlib
+import hashlib
 import os
 import threading
 import time
@@ -88,6 +90,26 @@ def _now() -> datetime:
     return datetime.utcnow()
 
 
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _narrative_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "consciousness:narrative" and capability in {
+        "consciousness:write",
+        "memory:write",
+        "fs:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
 class NarrativeLayer:
     def __init__(self):
         self.enabled = os.getenv("AETHERRA_NARRATIVE_ENABLED", "0") == "1"
@@ -96,7 +118,6 @@ class NarrativeLayer:
         self.max_scan_events = int(os.getenv("AETHERRA_NARRATIVE_MAX_EVENTS", "120"))
         self.max_summary_chars = int(os.getenv("AETHERRA_NARRATIVE_MAX_SUMMARY_CHARS", "600"))
         self.chapter_dir = Path(os.getenv("AETHERRA_NARRATIVE_CHAPTER_DIR", ".aetherra/narrative"))
-        self.chapter_dir.mkdir(parents=True, exist_ok=True)
         self._last_chapter_ts: Optional[datetime] = None
         self._last_event_count: int = 0
         self._stop_flag = False
@@ -113,7 +134,7 @@ class NarrativeLayer:
             self._thread = threading.Thread(target=self._loop, daemon=True)
             self._thread.start()
         else:
-            self._loop()
+            self._maybe_generate_chapter()
 
     def stop(self):
         self._stop_flag = True
@@ -126,10 +147,8 @@ class NarrativeLayer:
     def _loop(self):
         # Poll every 30 seconds
         while not self._stop_flag:
-            try:
+            with contextlib.suppress(Exception):
                 self._maybe_generate_chapter()
-            except Exception:
-                pass
             time.sleep(30)
 
     def _recent_events(self) -> List[EpisodicEvent]:
@@ -149,12 +168,13 @@ class NarrativeLayer:
             if self._last_chapter_ts and latest_ts <= self._last_chapter_ts:
                 return
             new_event_count = len(events)
-            if new_event_count - self._last_event_count < self.min_events:
+            if (
+                new_event_count - self._last_event_count < self.min_events
+                and self._last_chapter_ts
+                and (_now() - self._last_chapter_ts) < timedelta(minutes=self.window_min)
+            ):
                 # Not enough new events yet
-                if self._last_chapter_ts and (_now() - self._last_chapter_ts) < timedelta(
-                    minutes=self.window_min
-                ):
-                    return
+                return
             start_time = time.time()
             chapter = self._build_chapter(events)
             # After building, compute identity coherence over scanned events
@@ -165,19 +185,15 @@ class NarrativeLayer:
                 except Exception:
                     pass
             if _metrics_obs_narrative_time is not None:
-                try:
+                with contextlib.suppress(Exception):
                     _metrics_obs_narrative_time(time.time() - start_time)
-                except Exception:
-                    pass
             self._persist_chapter(chapter)
             self._emit_events(chapter)
             self._last_chapter_ts = chapter.end_ts
             self._last_event_count = new_event_count
             if self._on_chapter:
-                try:
+                with contextlib.suppress(Exception):
                     self._on_chapter(chapter)
-                except Exception:
-                    pass
 
     # --- Chapter Construction -------------------------------------------------
     def _build_chapter(self, events: List[EpisodicEvent]) -> NarrativeChapter:
@@ -302,9 +318,47 @@ class NarrativeLayer:
         coherence = max(0.0, min(1.0, coherence))
         return coherence, anomalies
 
+    def _guardian_preflight_chapter_commit(self, chapter: NarrativeChapter, path: Path):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "consciousness:narrative"
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        key_event_hashes = [_hash_value(event_id) for event_id in chapter.key_events]
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action="consciousness.narrative_chapter_commit",
+                target="narrative_chapter",
+                purpose="Persist a generated narrative chapter and append its episodic memory marker",
+                capabilities=("consciousness:write", "memory:write", "fs:write"),
+                evidence=("NarrativeLayer._maybe_generate_chapter",),
+                reversible=True,
+                rollback_plan="delete the chapter JSON file and remove the appended narrative event from the episodic log",
+                metadata={
+                    "chapter_id_hash": _hash_value(chapter.id),
+                    "path_hash": _hash_value(path.resolve()),
+                    "summary_hash": _hash_value(chapter.summary),
+                    "summary_length": len(chapter.summary or ""),
+                    "referenced_event_count": len(chapter.key_events),
+                    "referenced_event_hashes": key_event_hashes[:12],
+                    "coherence_index": round(float(chapter.coherence_index), 6),
+                    "anomaly_count": len(chapter.anomalies),
+                    "anomaly_codes": sorted(str(code) for code in chapter.anomalies)[:10],
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=_narrative_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
+
     def _persist_chapter(self, chapter: NarrativeChapter):
+        path = self.chapter_dir / f"{chapter.id}.json"
+        self._guardian_preflight_chapter_commit(chapter, path)
         try:
-            path = self.chapter_dir / f"{chapter.id}.json"
+            self.chapter_dir.mkdir(parents=True, exist_ok=True)
             path.write_text(chapter.model_dump_json(indent=2), encoding="utf-8")
         except Exception:
             pass

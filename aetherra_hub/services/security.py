@@ -7,12 +7,16 @@ other context and handle HTTP layering themselves.
 from __future__ import annotations
 
 # Standard library imports
-import json
+import logging
 import os
 import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+
+from Aetherra.security.audit_ledger import AuditLedgerError, SecurityAuditLedger
+
+logger = logging.getLogger(__name__)
 
 __all__ = [
     "policy_snapshot",
@@ -111,27 +115,29 @@ def policy_snapshot() -> dict[str, Any]:
 def ledger_write(
     event: str, trace_id: str, details: dict[str, Any]
 ):  # pragma: no cover - side effect
+    if os.environ.get("AETHERRA_SECURITY_LEDGER", "1") != "1":
+        return
+    p_env = os.environ.get("AETHERRA_SECURITY_LEDGER_PATH", "").strip()
+    path = (
+        Path(p_env)
+        if p_env
+        else Path(os.getenv("AETHERRA_STATE_DIR", ".aetherra"))
+        / "security_ledger.jsonl"
+    )
     try:
-        if os.environ.get("AETHERRA_SECURITY_LEDGER", "1") != "1":
-            return
-        p_env = os.environ.get("AETHERRA_SECURITY_LEDGER_PATH", "").strip()
-        if p_env:
-            p = Path(p_env)
-        else:
-            p = Path(os.getenv("AETHERRA_STATE_DIR", ".aetherra")).joinpath(
-                "security_ledger.jsonl"
-            )
-        p.parent.mkdir(parents=True, exist_ok=True)
-        rec = {
-            "ts": datetime.now().isoformat(),
-            "event": event,
-            "trace_id": trace_id,
-            **details,
-        }
-        with open(p, "a", encoding="utf-8") as f:
-            f.write(json.dumps(rec) + "\n")
-    except Exception:
-        pass
+        SecurityAuditLedger(path).append(
+            actor="hub",
+            event_type=event,
+            details=details,
+            extra={
+                "event": event,
+                "trace_id": trace_id,
+                "ts": datetime.now().isoformat(),
+                **details,
+            },
+        )
+    except (AuditLedgerError, OSError, TypeError, ValueError) as exc:
+        logger.error("Unable to append Hub security ledger event %s: %s", event, exc)
 
 
 def redact_text(text: str) -> dict[str, Any]:

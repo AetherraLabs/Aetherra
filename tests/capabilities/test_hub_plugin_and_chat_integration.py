@@ -7,6 +7,7 @@ import os
 import socket
 import sys
 import time
+from contextlib import suppress
 from pathlib import Path
 
 # Third party imports
@@ -57,10 +58,11 @@ def hub_server():
 
     # Teardown best-effort
     try:
+        with suppress(Exception):
+            hub.stop_server()
+    finally:
         os.environ.clear()
         os.environ.update(env_backup)
-    except Exception:
-        pass
 
 
 @pytest.mark.asyncio

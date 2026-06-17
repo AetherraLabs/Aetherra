@@ -118,6 +118,93 @@ class AetherraServiceRegistry:
         except Exception:
             return name
 
+    def _guardian_requester(self, metadata: dict[str, Any] | None = None) -> str:
+        metadata = metadata or {}
+        requester = metadata.get("guardian_requester") or metadata.get("requester")
+        return str(requester or "service_registry").strip() or "service_registry"
+
+    def _service_instance_type(self, instance: Any) -> str:
+        cls = instance.__class__
+        module = getattr(cls, "__module__", "") or "unknown"
+        name = getattr(cls, "__name__", "") or "unknown"
+        return f"{module}.{name}"
+
+    def _registry_capability_checker(self, requester: str, capability: str) -> bool:
+        if requester == "service_registry" and capability in {
+            "registry:register",
+            "registry:unregister",
+            "registry:status",
+            "registry:heartbeat",
+            "registry:message",
+            "registry:broadcast",
+            "registry:subscribe",
+        }:
+            return True
+        from Aetherra.security.capabilities import has_capability
+
+        return has_capability(requester, capability)
+
+    def _guardian_preflight(
+        self,
+        *,
+        requester: str,
+        action: str,
+        service_name: str,
+        purpose: str,
+        capabilities: tuple[str, ...],
+        reversible: bool,
+        rollback_plan: str,
+        metadata: dict[str, Any],
+    ) -> None:
+        from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="service_registry",
+                action=action,
+                target="service_registry:service",
+                purpose=purpose,
+                capabilities=capabilities,
+                evidence=(f"service_name:{service_name}",),
+                reversible=reversible,
+                rollback_plan=rollback_plan,
+                metadata=metadata,
+            ),
+            capability_checker=self._registry_capability_checker,
+        )
+        if decision.status not in {
+            GuardianStatus.ALLOW,
+            GuardianStatus.ALLOW_LIMITED,
+        }:
+            raise PermissionError(
+                f"Guardian denied service registry action {action}: {decision.reason}"
+            )
+
+    def _message_metadata(self, data: Any) -> dict[str, Any]:
+        if isinstance(data, dict):
+            return {
+                "data_type": "dict",
+                "data_keys": tuple(sorted(str(key) for key in data)),
+                "data_size": len(data),
+            }
+        if isinstance(data, list | tuple | set):
+            return {
+                "data_type": type(data).__name__,
+                "data_size": len(data),
+            }
+        return {
+            "data_type": type(data).__name__,
+            "data_size": 0 if data is None else len(str(data)),
+        }
+
+    def _handler_type(self, handler: Callable) -> str:
+        module = getattr(handler, "__module__", "") or "unknown"
+        name = getattr(handler, "__qualname__", None) or getattr(
+            handler, "__name__", "unknown"
+        )
+        return f"{module}.{name}"
+
     def _should_log_no_handler(self, service_name: str) -> bool:
         if self._no_handler_silent:
             return False
@@ -165,11 +252,13 @@ class AetherraServiceRegistry:
         self._running = False
 
         if self._heartbeat_task:
-            self._heartbeat_task.cancel()
-            try:
-                await self._heartbeat_task
-            except asyncio.CancelledError:
-                pass
+            heartbeat_task = self._heartbeat_task
+            self._heartbeat_task = None
+            task_loop = heartbeat_task.get_loop()
+            if not task_loop.is_closed():
+                heartbeat_task.cancel()
+                with suppress(asyncio.CancelledError):
+                    await heartbeat_task
 
         # Notify all services of shutdown
         await self._broadcast_event("system.shutdown", {})
@@ -197,10 +286,26 @@ class AetherraServiceRegistry:
         """
         try:
             cname = self._canonical(name)
+            md = metadata or {}
+            self._guardian_preflight(
+                requester=self._guardian_requester(md),
+                action="service_registry.register",
+                service_name=cname,
+                purpose=f"Register service {cname}",
+                capabilities=("registry:register",),
+                reversible=True,
+                rollback_plan="unregister the service or restore the previous registration",
+                metadata={
+                    "service_name": cname,
+                    "already_registered": cname in self._services,
+                    "metadata_keys": tuple(sorted(str(key) for key in md)),
+                    "dependency_names": tuple(sorted(str(dep) for dep in dependencies or [])),
+                    "instance_type": self._service_instance_type(instance),
+                },
+            )
             if cname in self._services:
                 logger.warning(f"[WARN] Service {name} already registered, updating...")
 
-            md = metadata or {}
             # Normalize explicit self-heartbeat flag to bool if present
             if "self_heartbeat" in md:
                 with suppress(Exception):
@@ -234,8 +339,8 @@ class AetherraServiceRegistry:
                     metadata=md,
                     endpoints=endpoints if isinstance(endpoints, dict) else {},
                 )
-            except Exception:
-                pass  # Shared registry is optional
+            except Exception as exc:
+                logger.debug("Shared registry forward failed for %s: %s", cname, exc)
 
             # Broadcast registration event
             await self._broadcast_event(
@@ -268,8 +373,26 @@ class AetherraServiceRegistry:
                 logger.warning(f"[WARN] Service '{name}' not found for unregistration")
                 return False
 
+            service_info = self._services[cname]
+            self._guardian_preflight(
+                requester=self._guardian_requester(service_info.metadata),
+                action="service_registry.unregister",
+                service_name=cname,
+                purpose=f"Unregister service {cname}",
+                capabilities=("registry:unregister",),
+                reversible=True,
+                rollback_plan="re-register the service with its previous instance and metadata",
+                metadata={
+                    "service_name": cname,
+                    "status": service_info.status.value,
+                    "metadata_keys": tuple(sorted(str(key) for key in service_info.metadata)),
+                    "dependency_names": tuple(sorted(str(dep) for dep in service_info.dependencies)),
+                    "instance_type": self._service_instance_type(service_info.instance),
+                },
+            )
+
             # Update status to stopping
-            self._services[cname].status = ServiceStatus.STOPPING
+            service_info.status = ServiceStatus.STOPPING
 
             # Broadcast unregistration event
             await self._broadcast_event(
@@ -353,12 +476,30 @@ class AetherraServiceRegistry:
             logger.warning(f"[WARN] Cannot update status for unknown service '{name}'")
             return
 
-        old_status = self._services[cname].status
-        self._services[cname].status = status
-        self._services[cname].last_heartbeat = datetime.now()
+        service_info = self._services[cname]
+        old_status = service_info.status
+        metadata = metadata or {}
+        self._guardian_preflight(
+            requester=self._guardian_requester(metadata),
+            action="service_registry.status_update",
+            service_name=cname,
+            purpose=f"Update service {cname} status",
+            capabilities=("registry:status",),
+            reversible=True,
+            rollback_plan="restore the previous service status and metadata snapshot",
+            metadata={
+                "service_name": cname,
+                "old_status": old_status.value,
+                "new_status": status.value,
+                "metadata_keys": tuple(sorted(str(key) for key in metadata)),
+                "instance_type": self._service_instance_type(service_info.instance),
+            },
+        )
+        service_info.status = status
+        service_info.last_heartbeat = datetime.now()
 
         if metadata:
-            self._services[cname].metadata.update(metadata)
+            service_info.metadata.update(metadata)
 
         if old_status != status:
             logger.info(
@@ -376,7 +517,7 @@ class AetherraServiceRegistry:
                 },
             )
 
-    async def update_heartbeat(self, name: str):
+    async def update_heartbeat(self, name: str, requester: str | None = None):
         """[HEARTBEAT] Update service heartbeat timestamp."""
         cname = self._canonical(name)
         if cname not in self._services:
@@ -385,11 +526,29 @@ class AetherraServiceRegistry:
             )
             return
 
-        self._services[cname].last_heartbeat = datetime.now()
+        service_info = self._services[cname]
+        self._guardian_preflight(
+            requester=str(requester or "service_registry").strip() or "service_registry",
+            action="service_registry.heartbeat_update",
+            service_name=cname,
+            purpose=f"Update heartbeat for service {cname}",
+            capabilities=("registry:heartbeat",),
+            reversible=True,
+            rollback_plan="restore the previous heartbeat timestamp from registry state",
+            metadata={
+                "service_name": cname,
+                "status": service_info.status.value,
+                "self_heartbeat": bool(service_info.metadata.get("self_heartbeat")),
+                "instance_type": self._service_instance_type(service_info.instance),
+            },
+        )
+        service_info.last_heartbeat = datetime.now()
         logger.debug(f"[HEARTBEAT] Heartbeat updated for service '{cname}'")
 
     # ---- Self-heartbeat API ----
-    def mark_service_self_heartbeat(self, name: str, enabled: bool = True) -> bool:
+    def mark_service_self_heartbeat(
+        self, name: str, enabled: bool = True, requester: str | None = None
+    ) -> bool:
         """Mark/unmark a service as self-heartbeating (registry won't passively refresh it).
 
         Returns True if the service metadata was updated.
@@ -399,6 +558,21 @@ class AetherraServiceRegistry:
         if not svc:
             return False
         try:
+            self._guardian_preflight(
+                requester=str(requester or "service_registry").strip() or "service_registry",
+                action="service_registry.self_heartbeat_flag",
+                service_name=cname,
+                purpose=f"Update self-heartbeat flag for service {cname}",
+                capabilities=("registry:heartbeat",),
+                reversible=True,
+                rollback_plan="restore the previous self-heartbeat metadata flag",
+                metadata={
+                    "service_name": cname,
+                    "enabled": bool(enabled),
+                    "previous_enabled": bool(svc.metadata.get("self_heartbeat")),
+                    "instance_type": self._service_instance_type(svc.instance),
+                },
+            )
             svc.metadata["self_heartbeat"] = bool(enabled)
             return True
         except Exception:
@@ -415,7 +589,11 @@ class AetherraServiceRegistry:
             return False
 
     async def send_message(
-        self, target_service: str, message_type: str, data: Any
+        self,
+        target_service: str,
+        message_type: str,
+        data: Any,
+        requester: str | None = None,
     ) -> bool:
         """
         [SEND] Send a message to a specific service.
@@ -435,6 +613,25 @@ class AetherraServiceRegistry:
                     f"[WARN] Cannot send message to unknown service '{target_service}'"
                 )
                 return False
+            cname = self._canonical(target_service)
+            service_info = self._services[cname]
+            self._guardian_preflight(
+                requester=str(requester or "service_registry").strip()
+                or "service_registry",
+                action="service_registry.send_message",
+                service_name=cname,
+                purpose=f"Dispatch registry message {message_type} to service {cname}",
+                capabilities=("registry:message",),
+                reversible=False,
+                rollback_plan="message delivery cannot be automatically undone; handler must provide compensation if needed",
+                metadata={
+                    "service_name": cname,
+                    "message_type": str(message_type),
+                    "status": service_info.status.value,
+                    "instance_type": self._service_instance_type(service_info.instance),
+                    **self._message_metadata(data),
+                },
+            )
 
             # Check if service has message handler
             if hasattr(service, "handle_message"):
@@ -452,7 +649,11 @@ class AetherraServiceRegistry:
             return False
 
     async def broadcast_message(
-        self, message_type: str, data: Any, exclude: list[str] | None = None
+        self,
+        message_type: str,
+        data: Any,
+        exclude: list[str] | None = None,
+        requester: str | None = None,
     ):
         """
         [BROADCAST] Broadcast a message to all services.
@@ -463,6 +664,25 @@ class AetherraServiceRegistry:
             exclude: Optional list of service names to exclude
         """
         exclude = exclude or []
+        self._guardian_preflight(
+            requester=str(requester or "service_registry").strip() or "service_registry",
+            action="service_registry.broadcast_message",
+            service_name="*",
+            purpose=f"Broadcast registry message {message_type}",
+            capabilities=("registry:broadcast",),
+            reversible=False,
+            rollback_plan="broadcast delivery cannot be automatically undone; receivers must provide compensation if needed",
+            metadata={
+                "message_type": str(message_type),
+                "exclude_count": len(exclude),
+                "healthy_target_count": sum(
+                    1
+                    for name, info in self._services.items()
+                    if name not in exclude and info.status == ServiceStatus.HEALTHY
+                ),
+                **self._message_metadata(data),
+            },
+        )
 
         for service_name, service_info in self._services.items():
             if service_name in exclude or service_info.status != ServiceStatus.HEALTHY:
@@ -477,11 +697,18 @@ class AetherraServiceRegistry:
                     # Centralized no-handler logging
                     self._log_no_handler(service_name)
                     continue
-                await self.send_message(service_name, message_type, data)
+                await self.send_message(
+                    service_name,
+                    message_type,
+                    data,
+                    requester=requester,
+                )
             except Exception as e:
                 logger.error(f"[ERROR] Failed to broadcast to '{service_name}': {e}")
 
-    def subscribe_to_events(self, event_type: str, handler: Callable):
+    def subscribe_to_events(
+        self, event_type: str, handler: Callable, requester: str | None = None
+    ):
         """
         [SUBSCRIBE] Subscribe to registry events.
 
@@ -489,13 +716,29 @@ class AetherraServiceRegistry:
             event_type: Event type to subscribe to
             handler: Event handler function
         """
+        self._guardian_preflight(
+            requester=str(requester or "service_registry").strip() or "service_registry",
+            action="service_registry.subscribe",
+            service_name="event_bus",
+            purpose=f"Subscribe handler to registry event {event_type}",
+            capabilities=("registry:subscribe",),
+            reversible=True,
+            rollback_plan="unsubscribe the handler from the registry event",
+            metadata={
+                "event_type": str(event_type),
+                "handler_type": self._handler_type(handler),
+                "existing_handler_count": len(self._event_handlers.get(event_type, [])),
+            },
+        )
         if event_type not in self._event_handlers:
             self._event_handlers[event_type] = []
 
         self._event_handlers[event_type].append(handler)
         logger.debug(f"[SUBSCRIBE] Subscribed to event '{event_type}'")
 
-    def unsubscribe_from_events(self, event_type: str, handler: Callable):
+    def unsubscribe_from_events(
+        self, event_type: str, handler: Callable, requester: str | None = None
+    ):
         """
         [UNSUBSCRIBE] Unsubscribe from registry events.
 
@@ -503,6 +746,20 @@ class AetherraServiceRegistry:
             event_type: Event type to unsubscribe from
             handler: Event handler function to remove
         """
+        self._guardian_preflight(
+            requester=str(requester or "service_registry").strip() or "service_registry",
+            action="service_registry.unsubscribe",
+            service_name="event_bus",
+            purpose=f"Unsubscribe handler from registry event {event_type}",
+            capabilities=("registry:subscribe",),
+            reversible=True,
+            rollback_plan="re-subscribe the handler to the registry event",
+            metadata={
+                "event_type": str(event_type),
+                "handler_type": self._handler_type(handler),
+                "existing_handler_count": len(self._event_handlers.get(event_type, [])),
+            },
+        )
         if event_type in self._event_handlers:
             try:
                 self._event_handlers[event_type].remove(handler)
@@ -534,14 +791,13 @@ class AetherraServiceRegistry:
                     # Check for stale heartbeats (no update in configured window)
                     if (
                         current_time - service_info.last_heartbeat
-                    ).total_seconds() > self._stale_sec:
-                        if service_info.status == ServiceStatus.HEALTHY:
-                            logger.warning(
-                                f"[WARN] Service '{service_name}' heartbeat stale (> {self._stale_sec}s), marking as degraded"
-                            )
-                            await self.update_service_status(
-                                service_name, ServiceStatus.DEGRADED
-                            )
+                    ).total_seconds() > self._stale_sec and service_info.status == ServiceStatus.HEALTHY:
+                        logger.warning(
+                            f"[WARN] Service '{service_name}' heartbeat stale (> {self._stale_sec}s), marking as degraded"
+                        )
+                        await self.update_service_status(
+                            service_name, ServiceStatus.DEGRADED
+                        )
 
                     # Check if service instance is still alive
                     if hasattr(service_info.instance, "is_alive"):
@@ -553,8 +809,12 @@ class AetherraServiceRegistry:
                                 await self.update_service_status(
                                     service_name, ServiceStatus.FAILED
                                 )
-                        except Exception:
-                            pass
+                        except Exception as exc:
+                            logger.debug(
+                                "Service liveness check failed for %s: %s",
+                                service_name,
+                                exc,
+                            )
 
                 await asyncio.sleep(self._heartbeat_interval_sec)
 
@@ -633,10 +893,10 @@ async def get_service(name: str) -> Any | None:
     return registry.get_service(name)
 
 
-async def update_heartbeat(name: str):
+async def update_heartbeat(name: str, requester: str | None = None):
     """[HEARTBEAT] Update service heartbeat in the global registry."""
     registry = await get_service_registry()
-    await registry.update_heartbeat(name)
+    await registry.update_heartbeat(name, requester=requester)
 
 
 async def shutdown_service_registry():

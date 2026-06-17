@@ -19,6 +19,10 @@ import random
 import sys
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 try:
     # Third party imports
     import numpy as _np  # type: ignore
@@ -26,8 +30,8 @@ except Exception:
     _np = None
 
 # Aetherra imports
-from Aetherra.analysis.static_risk import analyze_paths  # type: ignore
-from Aetherra.security.script_signing import verify_embedded_signature  # type: ignore
+from Aetherra.analysis.static_risk import analyze_paths  # noqa: E402
+from Aetherra.security.script_signing import verify_embedded_signature  # noqa: E402
 
 
 def find_aether_files(root: Path) -> list[Path]:

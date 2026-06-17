@@ -24,7 +24,10 @@ Date: August 5, 2025
 # Standard library imports
 import asyncio
 import cmath
+import contextlib
+import hashlib
 import logging
+import os
 import random
 import uuid
 from dataclasses import dataclass, field
@@ -49,6 +52,27 @@ except ImportError as e:
     print(f"⚠️ Quantum computing libraries not available - using simulation mode. Error: {e}")
 
 logger = logging.getLogger(__name__)
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _quantum_consciousness_capability_checker(
+    requester: str, capability: str
+) -> bool:
+    if requester == "consciousness:quantum_engine" and capability in {
+        "consciousness:transcend",
+        "consciousness:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
 
 
 class ConsciousnessState(Enum):
@@ -141,6 +165,10 @@ class QuantumConsciousnessEngine:
         try:
             self.logger.info("🌌 Initializing Quantum Consciousness Engine...")
 
+            self._guardian_preflight_quantum_consciousness_operation(
+                operation="initialize"
+            )
+
             # Initialize ground state
             await self._initialize_ground_state()
 
@@ -170,12 +198,17 @@ class QuantumConsciousnessEngine:
             # Merge selective keys into internal config/state
             if not isinstance(params, dict):
                 return
+            self._guardian_preflight_quantum_consciousness_operation(
+                operation="set_parameters",
+                extra_metadata={
+                    "parameter_names": sorted(str(key) for key in params),
+                    "parameter_count": len(params),
+                },
+            )
 
             if "superposition_states" in params:
-                try:
+                with contextlib.suppress(Exception):
                     self.config["superposition_states"] = int(params["superposition_states"])
-                except Exception:
-                    pass
 
             if "coherence_time" in params:
                 try:
@@ -188,20 +221,18 @@ class QuantumConsciousnessEngine:
                     pass
 
             if "consciousness_complexity" in params:
-                try:
+                with contextlib.suppress(Exception):
                     self.consciousness_complexity = float(params["consciousness_complexity"])
-                except Exception:
-                    pass
 
             # Future extension: entanglement_strength could modulate decay rates
             if "entanglement_strength" in params:
                 # Keep value in config for potential later use
-                try:
+                with contextlib.suppress(Exception):
                     self.config["entanglement_strength"] = float(params["entanglement_strength"])
-                except Exception:
-                    pass
 
             self.logger.info("[QUANTUM] Parameters applied to QuantumConsciousnessEngine")
+        except PermissionError:
+            raise
         except Exception as e:
             # Never fail the boot due to config shape issues
             self.logger.warning(f"[QUANTUM] Ignoring invalid quantum parameters: {e}")
@@ -217,6 +248,10 @@ class QuantumConsciousnessEngine:
                 # Already running
                 return
 
+            self._guardian_preflight_quantum_consciousness_operation(
+                operation="start_processes"
+            )
+
             # Ensure ground state exists before starting the loop
             if "ground" not in self.quantum_states:
                 await self._initialize_ground_state()
@@ -225,6 +260,8 @@ class QuantumConsciousnessEngine:
             await self._start_quantum_loop()
             self.is_running = True
             self.logger.info("[QUANTUM] Quantum processes started")
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.warning(f"[QUANTUM] Failed to start quantum processes: {e}")
 
@@ -387,7 +424,7 @@ class QuantumConsciousnessEngine:
         """Process active quantum decisions"""
         decisions_to_collapse = []
 
-        for decision_id, decision in self.active_decisions.items():
+        for decision_id in self.active_decisions:
             # Check if decision should collapse based on probability
             if random.random() < 0.1:  # 10% chance of collapse per cycle
                 decisions_to_collapse.append(decision_id)
@@ -417,13 +454,27 @@ class QuantumConsciousnessEngine:
 
     async def create_quantum_decision(self, decision_data: Dict[str, Any]) -> str:
         """Create a new quantum decision with superposition exploration"""
+        outcomes = decision_data.get("outcomes", [])
+        self._guardian_preflight_quantum_consciousness_operation(
+            operation="create_decision",
+            extra_metadata={
+                "outcome_count": len(outcomes),
+                "outcome_field_names": sorted(
+                    {
+                        str(field)
+                        for outcome in outcomes
+                        if isinstance(outcome, dict)
+                        for field in outcome
+                    }
+                ),
+            },
+        )
         decision_id = str(uuid.uuid4())
 
         # Generate quantum amplitudes for each possible outcome
-        outcomes = decision_data.get("outcomes", [])
         amplitudes = []
 
-        for i, outcome in enumerate(outcomes):
+        for outcome in outcomes:
             # Create quantum amplitude based on outcome probability
             prob = outcome.get("probability", 1.0 / len(outcomes))
             amplitude = complex(np.sqrt(prob), 0)
@@ -450,6 +501,9 @@ class QuantumConsciousnessEngine:
     async def enter_superposition(self):
         """Enter quantum superposition state for parallel exploration"""
         if self.current_state != ConsciousnessState.SUPERPOSITION:
+            self._guardian_preflight_quantum_consciousness_operation(
+                operation="enter_superposition"
+            )
             self.current_state = ConsciousnessState.SUPERPOSITION
             self.coherence_time = min(self.max_coherence_time, self.coherence_time + 0.2)
             self.logger.info("🌀 Entered quantum superposition state")
@@ -460,6 +514,11 @@ class QuantumConsciousnessEngine:
     async def create_entanglement(self, target_consciousness_id: str) -> bool:
         """Create quantum entanglement with another consciousness"""
         try:
+            target_hash = _hash_value(target_consciousness_id)
+            self._guardian_preflight_quantum_consciousness_operation(
+                operation="create_entanglement",
+                extra_metadata={"target_consciousness_hash": target_hash},
+            )
             # Create entangled state pair
             entanglement_id = str(uuid.uuid4())
 
@@ -476,12 +535,82 @@ class QuantumConsciousnessEngine:
             self.quantum_states[local_state.state_id] = local_state
             self.current_state = ConsciousnessState.ENTANGLED
 
-            self.logger.info(f"⚛️ Created quantum entanglement with: {target_consciousness_id}")
+            self.logger.info(
+                "Created quantum entanglement with target_hash=%s",
+                target_hash,
+            )
             return True
 
+        except PermissionError:
+            raise
         except Exception as e:
             self.logger.error(f"Failed to create entanglement: {e}")
             return False
+
+    def _guardian_preflight_quantum_consciousness_operation(
+        self,
+        *,
+        operation: str,
+        extra_metadata: Dict[str, Any] | None = None,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = (
+            os.getenv("AETHERRA_PRINCIPAL", "").strip()
+            or "consciousness:quantum_engine"
+        )
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        metadata: Dict[str, Any] = {
+            "operation": operation,
+            "current_state": self.current_state.value,
+            "quantum_state_count": len(self.quantum_states),
+            "active_decision_count": len(self.active_decisions),
+            "coherence_time": round(float(self.coherence_time), 6),
+            "max_coherence_time": round(float(self.max_coherence_time), 6),
+            "decision_accuracy": round(float(self.decision_accuracy), 6),
+            "transcendence_probability": round(
+                float(self.transcendence_probability), 6
+            ),
+            "is_running": bool(self.is_running),
+            "has_quantum_task": self.quantum_task is not None,
+            "entanglement_edge_count": sum(
+                len(state.entanglement_partners)
+                for state in self.quantum_states.values()
+            ),
+            "config_names": sorted(str(key) for key in self.config),
+        }
+        if extra_metadata:
+            metadata.update(extra_metadata)
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action=f"consciousness.quantum_engine_{operation}",
+                target="quantum_consciousness_engine",
+                purpose="Mutate quantum consciousness engine runtime state",
+                capabilities=("consciousness:transcend", "consciousness:write"),
+                evidence=(
+                    "QuantumConsciousnessEngine.set_quantum_parameters",
+                    "QuantumConsciousnessEngine.start_quantum_processes",
+                    "QuantumConsciousnessEngine.create_quantum_decision",
+                    "QuantumConsciousnessEngine.enter_superposition",
+                    "QuantumConsciousnessEngine.create_entanglement",
+                    "QuantumConsciousnessEngine.shutdown",
+                ),
+                reversible=True,
+                rollback_plan=(
+                    "restore previous quantum states, active decisions, "
+                    "configuration values, running flag, and task lifecycle state"
+                ),
+                metadata=metadata,
+            ),
+            approval_id=approval_id,
+            capability_checker=_quantum_consciousness_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
 
     def get_consciousness_metrics(self) -> Dict[str, Any]:
         """Get current quantum consciousness metrics"""
@@ -503,13 +632,12 @@ class QuantumConsciousnessEngine:
 
     async def shutdown(self):
         """Shutdown quantum consciousness engine"""
+        self._guardian_preflight_quantum_consciousness_operation(operation="shutdown")
         self.is_running = False
         if self.quantum_task:
             self.quantum_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self.quantum_task
-            except asyncio.CancelledError:
-                pass
 
         self.logger.info("⚛️ Quantum Consciousness Engine shutdown complete")
 

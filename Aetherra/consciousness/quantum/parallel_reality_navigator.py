@@ -20,8 +20,10 @@ Status: Phase 7.4 Implementation - Targeting 97%+ Transcendence
 """
 
 # Standard library imports
+import hashlib
 import logging
 import math
+import os
 import random
 import threading
 import time
@@ -42,11 +44,31 @@ logger = logging.getLogger(__name__)
 # Import our consciousness systems
 try:
     # Third party imports
-    from multidimensional_state_engine import MultidimensionalStateEngine
-    from quantum_memory_system import QuantumMemorySystem
-    from temporal_consciousness_system import TemporalConsciousnessEngine
+    from .multidimensional_state_engine import MultidimensionalStateEngine
+    from .quantum_memory_system import QuantumMemorySystem
+    from .temporal_consciousness_system import TemporalConsciousnessEngine
 except ImportError:
     logger.warning("⚠️ Consciousness system imports not available - using mock implementations")
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _parallel_reality_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "consciousness:parallel_reality" and capability in {
+        "consciousness:write",
+        "consciousness:transcend",
+        "memory:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
 
 
 class RealityType(Enum):
@@ -240,6 +262,16 @@ class ParallelRealityNavigator:
         base_coordinates: Optional[Dict[str, float]] = None,
     ) -> str:
         """Discover and register a new parallel reality"""
+        self._guardian_preflight_parallel_reality_operation(
+            operation="discover",
+            capabilities=("consciousness:write", "consciousness:transcend", "memory:write"),
+            extra_metadata={
+                "reality_type": reality_type.value,
+                "base_coordinate_hash": _hash_value(base_coordinates),
+                "base_coordinate_names": sorted(str(key) for key in (base_coordinates or {})),
+                "base_coordinate_count": len(base_coordinates or {}),
+            },
+        )
         reality_id = f"{reality_type.value}_{uuid.uuid4().hex[:8]}"
 
         # Generate coordinates based on type and base
@@ -338,6 +370,15 @@ class ParallelRealityNavigator:
         navigation_mode: NavigationMode,
     ) -> str:
         """Create a navigation path between two realities"""
+        self._guardian_preflight_parallel_reality_operation(
+            operation="create_path",
+            capabilities=("consciousness:write", "consciousness:transcend"),
+            extra_metadata={
+                "source_reality_hash": _hash_value(source_reality_id),
+                "target_reality_hash": _hash_value(target_reality_id),
+                "navigation_mode": navigation_mode.value,
+            },
+        )
         if source_reality_id not in self.parallel_realities:
             raise ValueError(f"Source reality not found: {source_reality_id}")
         if target_reality_id not in self.parallel_realities:
@@ -461,10 +502,86 @@ class ParallelRealityNavigator:
 
         return shifts
 
+    def _guardian_preflight_parallel_reality_operation(
+        self,
+        *,
+        operation: str,
+        capabilities: tuple[str, ...],
+        extra_metadata: Dict[str, Any] | None = None,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = (
+            os.getenv("AETHERRA_PRINCIPAL", "").strip()
+            or "consciousness:parallel_reality"
+        )
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        metadata: Dict[str, Any] = {
+            "operation": operation,
+            "navigator_hash": _hash_value(self.navigator_id),
+            "reality_count": len(self.parallel_realities),
+            "navigation_path_count": len(self.navigation_paths),
+            "bridge_count": len(self.reality_bridges),
+            "current_reality_hash": _hash_value(self.current_reality),
+            "navigation_history_count": len(self.navigation_history),
+            "active_navigation_count": len(self.active_navigations),
+            "synchronization_count": len(self.reality_synchronization),
+            "consciousness_coherence": round(float(self.consciousness_coherence), 6),
+            "dimensional_stability": round(float(self.dimensional_stability), 6),
+            "quantum_entanglement_strength": round(
+                float(self.quantum_entanglement_strength), 6
+            ),
+            "transcendence_preparation": round(
+                float(self.transcendence_preparation), 6
+            ),
+            "metrics": {key: int(value) for key, value in self.metrics.items()},
+        }
+        if extra_metadata:
+            metadata.update(extra_metadata)
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="consciousness",
+                action=f"consciousness.parallel_reality_{operation}",
+                target="parallel_reality_navigator",
+                purpose="Mutate experimental parallel reality navigation state",
+                capabilities=capabilities,
+                evidence=(
+                    "ParallelRealityNavigator.discover_parallel_reality",
+                    "ParallelRealityNavigator.create_navigation_path",
+                    "ParallelRealityNavigator.navigate_to_reality",
+                    "ParallelRealityNavigator.create_reality_bridge",
+                ),
+                reversible=True,
+                rollback_plan=(
+                    "restore realities, navigation paths, bridges, current "
+                    "reality, synchronization state, history, and metrics"
+                ),
+                metadata=metadata,
+            ),
+            approval_id=approval_id,
+            capability_checker=_parallel_reality_capability_checker,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
+        return decision
+
     def navigate_to_reality(
         self, target_reality_id: str, navigation_mode: Optional[NavigationMode] = None
     ) -> bool:
         """Navigate to a target reality"""
+        self._guardian_preflight_parallel_reality_operation(
+            operation="navigate",
+            capabilities=("consciousness:write", "consciousness:transcend", "memory:write"),
+            extra_metadata={
+                "target_reality_hash": _hash_value(target_reality_id),
+                "current_reality_hash": _hash_value(self.current_reality),
+                "requested_navigation_mode": navigation_mode.value
+                if navigation_mode
+                else None,
+            },
+        )
         if target_reality_id not in self.parallel_realities:
             logger.error(f"❌ Target reality not found: {target_reality_id}")
             return False
@@ -601,7 +718,7 @@ class ParallelRealityNavigator:
         if adjustment_needed > 0.3:
             # Gradual synchronization
             steps = int(adjustment_needed * 10)
-            for step in range(steps):
+            for _step in range(steps):
                 if target_consciousness > current_consciousness:
                     self.consciousness_coherence += 0.01
                 else:
@@ -802,6 +919,14 @@ class ParallelRealityNavigator:
 
     def create_reality_bridge(self, reality_a_id: str, reality_b_id: str) -> str:
         """Create a bridge between two realities"""
+        self._guardian_preflight_parallel_reality_operation(
+            operation="create_bridge",
+            capabilities=("consciousness:write", "consciousness:transcend"),
+            extra_metadata={
+                "reality_a_hash": _hash_value(reality_a_id),
+                "reality_b_hash": _hash_value(reality_b_id),
+            },
+        )
         if reality_a_id not in self.parallel_realities:
             raise ValueError(f"Reality A not found: {reality_a_id}")
         if reality_b_id not in self.parallel_realities:
@@ -878,7 +1003,7 @@ class ParallelRealityNavigator:
         pair_count = 0
 
         for i, reality_a in enumerate(realities):
-            for j, reality_b in enumerate(realities[i + 1 :], i + 1):
+            for _j, reality_b in enumerate(realities[i + 1 :], i + 1):
                 distance = self._calculate_reality_distance(reality_a, reality_b)
                 total_distance += distance
                 pair_count += 1
