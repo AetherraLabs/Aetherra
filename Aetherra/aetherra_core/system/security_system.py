@@ -31,6 +31,9 @@ from Aetherra.core.memory_manager import MemoryManager
 # Import our security modules
 # Use the shared security and memory components available in the repo
 from Aetherra.security import api_keys
+from Aetherra.security.audit_ledger import AuditLedgerError, SecurityAuditLedger
+
+logger = logging.getLogger(__name__)
 
 # --- Safe logging & redaction helpers (to prevent sensitive data leaks) ---
 SENSITIVE_KEY_PATTERNS = (
@@ -96,23 +99,44 @@ def append_security_audit_entry(
     reason: Optional[str] = None,
     details: Optional[Dict[str, Any]] = None,
 ) -> Optional[Path]:
-    """Append a security audit event to the central JSONL ledger for the workspace."""
+    """Append a signed, hash-chained security audit event."""
     try:
         workspace_root = _get_workspace_root()
         audit_path = workspace_root / ".aetherra" / "security" / "audit.jsonl"
-        audit_path.parent.mkdir(parents=True, exist_ok=True)
-        entry = {
-            "timestamp": datetime.utcnow().isoformat() + "Z",
-            "actor": actor,
-            "event_type": event_type,
-            "reason": reason,
-            "details": redact_secrets(details or {}),
-        }
-        with audit_path.open("a", encoding="utf-8") as handle:
-            handle.write(json.dumps(entry) + "\n")
+        SecurityAuditLedger(audit_path).append(
+            actor=actor,
+            event_type=event_type,
+            reason=reason,
+            details=redact_secrets(details or {}),
+        )
         return audit_path
-    except Exception:
+    except (AuditLedgerError, OSError, TypeError, ValueError) as exc:
+        logger.error("Unable to append security audit event %s: %s", event_type, exc)
         return None
+
+
+def verify_security_audit_integrity() -> bool:
+    """Verify the central Security audit chain for the current workspace."""
+    audit_path = _get_workspace_root() / ".aetherra" / "security" / "audit.jsonl"
+    return SecurityAuditLedger(audit_path).verify_integrity()
+
+
+def _require_security_audit_entry(
+    actor: str,
+    event_type: str,
+    *,
+    reason: Optional[str] = None,
+    details: Optional[Dict[str, Any]] = None,
+) -> Path:
+    audit_path = append_security_audit_entry(
+        actor,
+        event_type,
+        reason=reason,
+        details=details,
+    )
+    if audit_path is None:
+        raise AuditLedgerError(f"required audit event could not be recorded: {event_type}")
+    return audit_path
 
 
 def _get_security_state_dir() -> Path:
@@ -348,6 +372,13 @@ def clear_security_lockdown(
             details={"reason": reason},
         )
         raise ValueError("recovery requires a recovery context")
+
+    _require_security_audit_entry(
+        actor,
+        "security_lockdown_clear_authorized",
+        reason=reason,
+        details={"recovery_context": recovery_context},
+    )
 
     try:
         state_path = _get_security_state_path("safe_mode.json")
@@ -640,10 +671,11 @@ class AetherraSecuritySystem:
         providers = ["openai", "anthropic", "google"]
         try:
             last_updated = None
-            if api_keys.KEYS_FILE.exists():
+            keys_file = api_keys.get_keys_file()
+            if keys_file.exists():
                 # Prefer __updated_at inside JSON (set when encrypted), else file mtime
                 try:
-                    data = json.loads(api_keys.KEYS_FILE.read_text(encoding="utf-8"))
+                    data = json.loads(keys_file.read_text(encoding="utf-8"))
                     ts = data.get("__updated_at")
                     if isinstance(ts, str):
                         # parse ISO-8601 best-effort
@@ -658,7 +690,7 @@ class AetherraSecuritySystem:
                     last_updated = None
                 if last_updated is None:
                     try:
-                        last_updated = api_keys.KEYS_FILE.stat().st_mtime
+                        last_updated = keys_file.stat().st_mtime
                     except Exception:
                         last_updated = None
 
@@ -825,18 +857,19 @@ class AetherraSecuritySystem:
             "last_updated": None,
         }
         try:
-            if api_keys.KEYS_FILE.exists():
-                data = json.loads(api_keys.KEYS_FILE.read_text(encoding="utf-8") or "{}")
+            keys_file = api_keys.get_keys_file()
+            if keys_file.exists():
+                data = json.loads(keys_file.read_text(encoding="utf-8") or "{}")
                 status["encrypted"] = bool(data.get("__encrypted__") is True)
                 # count non-internal entries
-                status["key_count"] = len([k for k in data.keys() if not k.startswith("__")])
+                status["key_count"] = len([k for k in data if not k.startswith("__")])
                 status["last_updated"] = data.get("__updated_at")
             # detect master key presence without generating it
             if os.getenv("AETHERRA_KEYS_MASTER"):
                 status["master_key_present"] = True
             else:
                 try:
-                    status["master_key_present"] = api_keys.MASTER_KEY_FILE.exists()
+                    status["master_key_present"] = api_keys.get_master_key_file().exists()
                 except Exception:
                     status["master_key_present"] = False
         except Exception:

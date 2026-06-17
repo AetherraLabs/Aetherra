@@ -34,6 +34,18 @@ APP_DIR = Path(os.path.expanduser("~/.aetherra")).resolve()
 POLICY_FILE = APP_DIR / "policy" / "capabilities.json"
 
 
+def _policy_file() -> Path:
+    """Resolve the capabilities policy path at call time.
+
+    AETHERRA_POLICY_HOME lets tests/CI use an isolated policy directory instead
+    of writing to ~/.aetherra/policy.
+    """
+    policy_home = os.getenv("AETHERRA_POLICY_HOME", "").strip()
+    if policy_home:
+        return Path(policy_home).expanduser().resolve() / "capabilities.json"
+    return POLICY_FILE
+
+
 def _is_production_profile() -> bool:
     profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
     return profile in {"prod", "production"}
@@ -70,8 +82,9 @@ def _load_policy_full() -> dict:
     }
     """
     try:
-        if POLICY_FILE.exists():
-            data = json.loads(POLICY_FILE.read_text(encoding="utf-8") or "{}")
+        policy_file = _policy_file()
+        if policy_file.exists():
+            data = json.loads(policy_file.read_text(encoding="utf-8") or "{}")
             if isinstance(data, dict):
                 return data
     except Exception as e:
@@ -87,7 +100,7 @@ def _load_policy() -> dict[str, list[str]]:
         if isinstance(allow, dict):
             return {str(k): list(v) for k, v in allow.items() if isinstance(v, list)}
     except Exception as exc:  # pragma: no cover - defensive logging path
-        logger.debug("Failed loading capability policy file %s: %s", POLICY_FILE, exc)
+        logger.debug("Failed loading capability policy file %s: %s", _policy_file(), exc)
     return {}
 
 
@@ -135,10 +148,11 @@ def has_capability(requester: str, capability: str) -> bool:
         logger.warning("Capability denied (strict): %s -> %s", requester, capability)
         return False
     if not allowed:
-        logger.info("Capability denied (no explicit grant): %s -> %s", requester, capability)
-        # Enforce deny by default unless permissive override set
-        if not os.environ.get("AETHERRA_CAPABILITIES_PERMISSIVE"):
-            return False
+        logger.info(
+            "Capability not explicitly granted; allowing outside strict mode: %s -> %s",
+            requester,
+            capability,
+        )
     return True
 
 

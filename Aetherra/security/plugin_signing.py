@@ -28,6 +28,24 @@ REVOCATIONS_FILE = APP_DIR / "revocations.json"
 TRANSPARENCY_LOG = APP_DIR / "signing_log.jsonl"
 
 
+def _app_dir() -> Path:
+    state_home = os.getenv("AETHERRA_STATE_DIR", "").strip()
+    if state_home:
+        return Path(state_home).expanduser().resolve()
+    policy_home = os.getenv("AETHERRA_POLICY_HOME", "").strip()
+    if policy_home:
+        return Path(policy_home).expanduser().resolve().parent
+    return APP_DIR
+
+
+def _revocations_file() -> Path:
+    return _app_dir() / "revocations.json"
+
+
+def _transparency_log() -> Path:
+    return _app_dir() / "signing_log.jsonl"
+
+
 def _is_production_profile() -> bool:
     profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
     return profile in {"prod", "production"}
@@ -85,8 +103,9 @@ def _manifest_bytes(manifest: dict) -> bytes:
 
 def _is_revoked(pubkey_b64: str | None, key_id: str | None = None) -> bool:
     try:
-        if REVOCATIONS_FILE.exists():
-            data = json.loads(REVOCATIONS_FILE.read_text(encoding="utf-8"))
+        revocations_file = _revocations_file()
+        if revocations_file.exists():
+            data = json.loads(revocations_file.read_text(encoding="utf-8"))
             revoked_keys = set(data.get("pubkeys", []))
             revoked_ids = set(data.get("key_ids", []))
             if pubkey_b64 and pubkey_b64 in revoked_keys:
@@ -100,8 +119,9 @@ def _is_revoked(pubkey_b64: str | None, key_id: str | None = None) -> bool:
 
 def _append_transparency(entry: dict) -> None:
     try:
-        APP_DIR.mkdir(parents=True, exist_ok=True)
-        with open(TRANSPARENCY_LOG, "a", encoding="utf-8") as f:
+        app_dir = _app_dir()
+        app_dir.mkdir(parents=True, exist_ok=True)
+        with open(_transparency_log(), "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, separators=(",", ":")) + "\n")
     except Exception as exc:  # pragma: no cover
         logging.debug("plugin_signing.transparency_append_failed: %s", exc)

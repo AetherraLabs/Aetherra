@@ -2,10 +2,12 @@
 
 This guide explains how Aetherra manages API keys locally and how to configure them safely.
 
-- Storage: `%USERPROFILE%/.aetherra/keys.json` on Windows (or `~/.aetherra/keys.json` cross-platform).
+- Storage: `%USERPROFILE%/.aetherra/keys.json` on Windows (or `~/.aetherra/keys.json` cross-platform). Set `AETHERRA_STATE_DIR` to use an isolated state directory.
 - Env override: any key named `foo` can be provided via `AETHERRA_FOO` environment variable.
 - Programmatic access: `from Aetherra.security.api_keys import get_key, set_key, delete_key`.
 - Git hygiene: never commit keys; `.aetherra/` is outside the repo.
+- Production and staging require encrypted storage unless `AETHERRA_KEYS_ALLOW_PLAINTEXT=1` is explicitly set.
+- Plugin and external callers should use `get_key_scoped`. Access is policy-controlled and deny-by-default.
 
 ## Examples
 
@@ -17,6 +19,18 @@ set_key("openai", "sk-...redacted...")
 
 # use it
 api_key = get_key("openai")
+```
+
+Core code may use `get_key` directly. Plugins and other delegated callers must use
+`get_key_scoped(name, requester)` and be listed in
+`<state-dir>/policy/keys_policy.json`:
+
+```json
+{
+  "allow": {
+    "plugin:example": ["openai_api_key"]
+  }
+}
 ```
 
 ## CLI suggestion

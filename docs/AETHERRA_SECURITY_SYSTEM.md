@@ -1,191 +1,346 @@
-# Aetherra Security System (Aetherra OS + Lyrixa)
+# Aetherra Security System
 
-Updated: 2025-08-27
+Updated: 2026-06-15
 
-This document describes the security measures implemented in Aetherra OS and Lyrixa today, how to configure them, and what’s planned next. It is grounded in the current codebase and tests to avoid over‑claiming.
+Status: Functional Safe Baseline Complete
+
+This document describes the current Aetherra Security System, the controls now implemented in the codebase, how to configure them, and what remains as continuous hardening work. The Security System is considered complete for the current development milestone: it is functional, tested, and safe enough to serve as Aetherra's active security foundation while the next systems are brought up to the same standard.
+
+Security is not treated as permanently finished. Any new capability, plugin surface, network path, memory behavior, or autonomous action path must continue to pass through security review.
 
 ## Principles
 
-- Least privilege and safe-by-default
-- Verify what runs: signatures, static checks, auditability
-- Opt-in telemetry and privacy first
-- Defense in depth with graceful fallbacks in dev
+- Safe by default in production.
+- Least privilege for control routes, plugins, keys, network access, and execution.
+- Fail closed when production security configuration is missing or invalid.
+- Prefer explicit policy over implicit trust.
+- Keep audit records tamper-evident and operationally useful.
+- Keep development ergonomics reasonable without weakening production posture.
 
-## At‑a‑glance status
+## Milestone Completion
 
-- Script signing (.aether): Done (HMAC-SHA256, strict mode available)
-- Plugin manifest signing (ed25519): Partial (strict toggle; PyNaCl optional)
-- Secrets (API keys): Improved (file store + env override; rotation and leak checks; encrypt-at-rest optional via master key)
-- Sandbox for eval: Partial (best-effort Python AST/eval restrictions; containers/policy engine planned)
-- Security scans (keys/memory/files/network): Done (periodic, alerting + auto-cleanup hooks)
-- Prompt injection defenses: New (heuristic scanner with high‑risk short‑circuit)
-- Capability enforcement: New (deny-by-default option with policy file)
-- Network policy: New (domain allow/deny with strict mode + safe HTTP wrappers)
-- Telemetry privacy: Partial (opt-in enforced by tests; minimal counters)
-- Audit and static risk for .aether: Done (report + thresholds; strict signature verify optional)
+The current milestone is complete because the core protection surfaces are implemented and verified:
 
-## Components and controls
+- Hub/control authentication is centralized and enforced on mutation/control routes.
+- Production API exposure fails closed when required token policy is not enabled.
+- API key storage supports encrypted state, scoped access, migration, validation, and safe-mode deletion protection.
+- Security audit records use a signed, hash-chained JSONL ledger.
+- Plugin execution is isolated by default in production when possible and fails closed when isolation cannot be established.
+- Expression/script execution no longer relies on unrestricted `eval`, `exec`, or shell execution paths.
+- Network egress is policy checked through safe HTTP wrappers.
+- Federation and telemetry surfaces are guarded by explicit enablement, local-only development behavior, token checks, and bounded payload/state handling.
+- Static and repository security scanners are part of the verification workflow.
 
-### 1) Identities and secret management
+## Verification Snapshot
 
-- API key store: `Aetherra/security/api_keys.py`
-  - Stores keys in user config dir: `~/.aetherra/keys.json` (Windows-friendly path), with an in-memory cache.
-  - Env override: any key can be provided via `AETHERRA_<NAME>` environment variable; env wins over file.
-  - Operations: `get_key(name)`, `set_key(name, value)`, `delete_key(name)`, `get_key_scoped(name, requester)`.
-  - Encrypt-at-rest (optional): set a Fernet master key via env `AETHERRA_KEYS_MASTER` or file `~/.aetherra/keys_master.key`.
-    - When a master key is present, keys are stored encrypted with structure `{ "__encrypted__": true, name: {"cipher": "..."} }`.
-    - Utility: `ensure_master_key()` will generate and persist a master key file and auto-upgrade existing plaintext entries.
-  - Scoped access: deny-by-default when a `requester` is specified unless allowed by `~/.aetherra/policy/keys_policy.json`.
+Latest verification for this milestone:
 
-- Rotation and leak checks: `Aetherra/aetherra_core/system/security_system.py`
-  - Rotation advisory based on age (configurable `api_key_rotation_days`, default 30 days).
-  - Leak checks scan environment variables and common files for “api_key”/“secret” strings.
-  - File permission checks on sensitive paths (e.g., `.aetherra/secure`, `.aetherra/keys`).
+- Security regression suite: `186 passed, 1 skipped`.
+- Repository security scan: `high=0`.
+- Static security scan: `0 findings`.
+- Ruff checks on touched security/scanner cleanup files: passed.
+- Python byte compilation on touched production/security modules: passed.
+- `git diff --check`: passed, with only Git line-ending warnings.
 
-### 2) Code and artifact signing
+The skipped test is an optional dependency case in hub signing when Flask or PyNaCl is unavailable.
 
-- .aether script signing: `Aetherra/security/script_signing.py`
-  - HMAC-SHA256 over the script body; signature embedded in first line as `# @signature: <hex>`.
-  - Secret source: API key store (`aether_script_signing_secret`) or dev fallback.
-  - Strict verification gate: set `AETHERRA_SCRIPT_VERIFY_STRICT=1` or pass `--strict` to the verifier.
-  - Tooling: `tools/verify_aether_scripts.py` generates `aether_static_report.md`, enforces thresholds, and validates signatures when strict.
+## Core Components
 
-- Plugin manifest signing: `Aetherra/security/plugin_signing.py`
-  - Ed25519 signatures via PyNaCl when available; permissive fallback otherwise.
-  - Strict mode: `AETHERRA_SIGNING_STRICT=1` makes unsigned/invalid manifests fail.
-  - Revocation: checks `~/.aetherra/revocations.json` for revoked pubkeys/key_ids.
-  - Transparency log: appends JSONL entries to `~/.aetherra/signing_log.jsonl` on sign.
-  - Optional integrity: when `code_hash` and `code_files` are present in the manifest, verify SHA256 over the file list.
+### Control Authentication
 
-### 3) Execution isolation and permissions
+Module: `aetherra_hub/services/control_auth.py`
 
-- Sandbox (best-effort): `Aetherra/security/sandbox.py`
-  - `safe_eval` uses AST checks to disallow dangerous nodes; tight builtin whitelist.
-  - Intended for small arithmetic/logic expressions only; not a general-purpose sandbox.
-  - Strong isolation (containers/VMs/policy engine) is recommended for untrusted plugins (planned).
-  - Quotas available: `run_with_timeout` (wall-clock) and `ensure_memory_budget` (RSS best-effort); exceptions `TimeBudgetExceeded` and `MemoryBudgetExceeded` raised on violations.
+Control authentication centralizes token handling for hub mutation and administrative routes.
 
-- Capability/permissions model (policy):
-  - Coding System spec establishes deny-by-default capabilities for plugins and policy‑mediated file/network/process access.
-  - Implementation: `Aetherra/security/capabilities.py` with optional strict mode via `AETHERRA_REQUIRE_CAPABILITIES=1` and policy file `~/.aetherra/policy/capabilities.json`:
-    {
-      "allow": { "core:webhook_manager": ["network:outbound", "network:webhook"] }
-    }
-  - Wired example: `Aetherra/core/webhook_manager.py` checks capability `network:webhook` before firing.
+Implemented behavior:
 
-### 4) System scanning and hardening
+- Supports `Authorization: Bearer <token>` and `X-Aetherra-Token`.
+- Uses constant-time token comparison.
+- Requires explicit token configuration for production control routes.
+- Allows limited development fallback behavior only where appropriate.
+- Provides structured authorization results for consistent route handling.
 
-- Security System Orchestrator: `Aetherra/aetherra_core/system/security_system.py`
-  - Periodic scans (threaded): API keys, memory, files, network → alerts and auto‑cleanup hooks.
-  - UI alerts feed: JSONL appended at `.aetherra/security/alerts.jsonl` for recent alerts display.
-  - Memory protection: integrates with the core `MemoryManager` for usage stats; high-usage log notice.
-  - File system scanning: flags suspicious extensions/patterns and permissive permissions.
-  - Network: placeholder open‑port checks (extend per deployment).
-  - Logging: security/audit files under `.aetherra/security/`.
+Guarded route areas include scripts, plugins, agents, telemetry, peers/federation, trainer, consciousness, homeostasis, self-improvement, self-incorporation, interactive routes, and QFAC administration.
 
-### 6) Prompt injection defenses
+### Production Security Guard
 
-- Module: `Aetherra/security/prompt_defense.py`
-  - Heuristic pattern-based scanner detects jailbreak/injection phrases and scores risk.
-  - Integrated into `Aetherra/core/chat_router.py`: high-risk (>= 0.6) short-circuits with a guarded response and emits a security alert if the orchestrator is available.
+Module: `aetherra_hub/app.py`
 
-### 7) Network policy and safe HTTP wrappers
+Production startup now validates unsafe configuration before enabling sensitive API behavior.
 
-- Module: `Aetherra/security/net_policy.py`
-  - Policy file `~/.aetherra/policy/net_policy.json` with `allow_domains`/`deny_domains`.
-  - Strict mode via `AETHERRA_NET_STRICT=1` denies non-allowlisted domains.
-  - Safe wrappers `http_get/http_post` enforce policy and timeouts; used by `Aetherra/core/webhook_manager.py`.
+Important behavior:
 
-### 5) Telemetry and privacy
+- If the AI API is enabled in production, `AETHERRA_AI_API_REQUIRE_TOKEN=1` must be set.
+- Missing required token enforcement causes startup/configuration failure instead of silently exposing control surfaces.
+- Development behavior remains usable without normalizing insecure production defaults.
 
-- Opt-in telemetry (tests): `tests/unit/test_telemetry_optin.py`
-  - Telemetry ingestion/stats exist in the Hub; opt‑in is enforced by environment/config (module: `Aetherra.telemetry.optin`).
-  - Defaults are conservative; tests verify explicit opt‑in is respected.
-  - Differential Privacy: runtime‑toggleable via Lyrixa Settings (Enable DP + epsilon). Backend applies via `Telemetry.set_dp(enabled, epsilon)` and persists DP flags to `~/.aetherra/telemetry.json`.
-  - Redactions and noise: filters out `content`, `prompt`, `message`; redacts common IDs; applies Laplace noise to numeric fields when DP is enabled.
+### API Key Security
 
-- Audit ledger for .aether runs
-  - When enabled, execution emits anonymized traces and audit records (see Coding System spec). Redaction hooks prevent sensitive content leakage in logs.
+Module: `Aetherra/security/api_keys.py`
 
-## Configuration (env flags and tasks)
+The API key layer is now a production-grade local secret manager for Aetherra's current stage.
 
-- Strict signing for plugins: set `AETHERRA_SIGNING_STRICT='1'`.
-- Strict signature verification for .aether: set `AETHERRA_SCRIPT_VERIFY_STRICT='1'`.
-- Strict require semantics in generated .aether: `AETHERRA_REQUIRE_STRICT='1'`.
-- Capabilities strict mode: `AETHERRA_REQUIRE_CAPABILITIES='1'` (deny-by-default without explicit grants). In production profile (`AETHERRA_PROFILE=prod|production`), this is enforced by default.
-- Network strict mode: `AETHERRA_NET_STRICT='1'` (deny-by-default for non-allowlisted domains). In production profile, strict mode is enabled by default; when no policy file exists, a safe allowlist is assumed: `localhost`, `127.0.0.1`, `.aetherra.dev`.
-- Deterministic/test profiles: see Coding/Memory specs (e.g., `AETHERRA_PROFILE=test`).
+Implemented behavior:
 
-VS Code Tasks (Terminal → Run Task):
+- Dynamic state directory support through environment-controlled state paths.
+- Atomic writes and file locking.
+- Key name validation.
+- Encrypted-at-rest storage with master-key support.
+- Plaintext-to-encrypted migration while preserving existing entries.
+- Scoped production access with deny-by-default behavior.
+- Corruption handling that fails closed.
+- Safe-mode protection that blocks destructive key deletion.
 
-- “Aether Verify (Quick, Test Profile)” → static .aether checks and signature validation (test profile).
-- “Aether Verify (Strict Signatures)” → strict signature checks across `.aether` files.
+Primary functions:
 
-PowerShell examples:
+- `get_key(name)`
+- `set_key(name, value)`
+- `delete_key(name)`
+- `get_key_scoped(name, requester)`
+- `ensure_master_key()`
+
+See also: `docs/api-keys.md`.
+
+### Audit Ledger
+
+Module: `Aetherra/security/audit_ledger.py`
+
+Security audit records are written to a signed, hash-chained JSONL ledger.
+
+Implemented behavior:
+
+- Sequence-numbered append-only records.
+- HMAC signatures.
+- Hash chaining between records.
+- Per-path locks for concurrent writers.
+- Atomic append behavior.
+- Sidecar key management.
+- Legacy prefix anchoring.
+- Integrity verification through `verify_integrity`.
+
+Integrated audit paths include:
+
+- `Aetherra/aetherra_core/system/security_system.py`
+- `aetherra_hub/services/security.py`
+- Plugin audit logging
+- Lockdown recovery authorization records
+
+Lockdown recovery fails closed if the audit ledger is tampered with or cannot be written.
+
+### Sandbox and Restricted Execution
+
+Module: `Aetherra/security/sandbox.py`
+
+The sandbox now separates three concerns: safe expression evaluation, restricted statement execution, and isolated process execution.
+
+Implemented behavior:
+
+- `safe_eval` supports only tightly validated expressions.
+- Dangerous AST nodes and calls are rejected.
+- Builtin shadowing, custom callables, oversized containers, unsafe sequence multiplication, and unsafe exponent behavior are rejected.
+- `execute_restricted_python` supports a narrow statement language for simple assignments, expressions, and captured `print`.
+- Imports, loops, functions, file access, process access, and other broad Python execution features are blocked in restricted mode.
+- `run_isolated` provides spawn-based process isolation with JSON-only args/results and hard timeout termination.
+- `run_command_no_shell` executes commands with `shell=False`, bounded output, token validation, and timeout handling.
+
+Important note:
+
+`run_with_timeout` remains a trusted/cooperative helper. It is not a security boundary for untrusted code.
+
+### Script and Command Executors
+
+Modules:
+
+- `Aetherra/stdlib/executor.py`
+- `Aetherra/aetherra_core/script_service/script_executor.py`
+
+Executor behavior has been hardened:
+
+- Raw unrestricted `exec` was removed from these paths.
+- Python snippets are routed through `execute_restricted_python`.
+- Shell commands are routed through `run_command_no_shell`.
+- Shell metacharacter/operator injection is rejected by the command parser.
+- Execution results preserve useful output without exposing broad host execution.
+
+### Plugin Security
+
+Primary modules:
+
+- `Aetherra/aetherra_core/plugins/plugin_manager.py`
+- `Aetherra/security/plugin_signing.py`
+- `aetherra_hub/blueprints/plugins.py`
+
+Implemented behavior:
+
+- Production plugin execution uses process isolation by default when reconstructable.
+- If a production plugin cannot be safely isolated, execution fails closed.
+- Plugin execution audit events are written through the signed ledger.
+- Plugin registration and mutation routes require control authorization.
+- Unsigned development-mode behavior is not allowed to downgrade production registration checks.
+- Plugin signing state honors dynamic policy/state directories.
+
+### Capability Policy
+
+Module: `Aetherra/security/capabilities.py`
+
+Capability checks support explicit policy-driven access.
+
+Implemented behavior:
+
+- Dynamic policy path support.
+- Strict production behavior.
+- Deny-by-default capability enforcement where strict mode applies.
+- Test coverage for allow/deny policy behavior and limits.
+
+### Network Policy and Federation
+
+Modules:
+
+- `Aetherra/security/net_policy.py`
+- `Aetherra/hub/federation.py`
+- `aetherra_hub/blueprints/peers.py`
+
+Implemented behavior:
+
+- Dynamic network policy path support.
+- Domain allow/deny policy enforcement.
+- Safe HTTP wrappers for outbound requests.
+- Federation peer management requires control authorization.
+- Peer URLs are validated.
+- Sync/announce behavior is disabled unless `AETHERRA_FEDERATION_ENABLED=1`.
+- Federation outbound calls use policy-checked HTTP wrappers and outbound auth headers.
+
+### Telemetry Privacy and Ingress Hardening
+
+Modules:
+
+- `Aetherra/telemetry/optin.py`
+- `aetherra_hub/blueprints/telemetry.py`
+
+Implemented behavior:
+
+- Telemetry remains opt-in.
+- Telemetry mutation/ingress routes use control authorization or local-only development behavior.
+- Payload size is bounded.
+- In-memory telemetry state is bounded.
+- Sender behavior includes token support.
+
+### Prompt and AI Route Safety
+
+Modules:
+
+- `Aetherra/security/prompt_defense.py`
+- `aetherra_hub/blueprints/ai_ask.py`
+- `aetherra_hub/blueprints/ai_stream.py`
+
+Implemented behavior:
+
+- AI ask routes run safety precheck before engine dispatch.
+- Policy violations return structured responses.
+- AI ask and stream auth use centralized token logic.
+- Missing-token bypass behavior was removed.
+
+## Configuration
+
+Common environment flags:
 
 ```powershell
-$env:AETHERRA_SCRIPT_VERIFY_STRICT='1'; python tools/verify_aether_scripts.py --strict --output aether_static_report.md
-$env:AETHERRA_SIGNING_STRICT='1'; pytest -q tests/test_hub_signing.py tests/test_discovery_signing.py
-# Bootstrap policy files (capabilities and network) with safe defaults
-python -m Aetherra.cli.policy_bootstrap --all
-python -m Aetherra.cli.policy_bootstrap --network --allow api.example.com .corp.example
+$env:AETHERRA_PROFILE='production'
+$env:AETHERRA_AI_API_ENABLED='1'
+$env:AETHERRA_AI_API_REQUIRE_TOKEN='1'
+$env:AETHERRA_AI_API_TOKEN='<strong-token>'
+$env:AETHERRA_REQUIRE_CAPABILITIES='1'
+$env:AETHERRA_NET_STRICT='1'
+$env:AETHERRA_SIGNING_STRICT='1'
+$env:AETHERRA_SCRIPT_VERIFY_STRICT='1'
+$env:AETHERRA_FEDERATION_ENABLED='0'
 ```
 
-## Observability and reports
+Policy/state path controls:
 
-- .aether static risk report: `aether_static_report.md` (generated by `tools/verify_aether_scripts.py`).
-- Security logs: `.aetherra/security/security.log` and `.aetherra/security/alerts.log`.
-- Docs verification: “Verify Docs Consistency” task checks env and endpoint references across docs.
-Lyrixa UI: Security Alerts panel displays `.aetherra/security/alerts.jsonl` in real time via the web bridge.
+- `AETHERRA_POLICY_HOME`
+- `AETHERRA_STATE_DIR`
+- `AETHERRA_KEYS_MASTER`
 
-Alerts CLI (view recent and follow live):
+Production guidance:
 
-- Module: `Aetherra/cli/alerts.py`
-- Show last N alerts (PowerShell):
+- Require tokens for all AI/control API exposure.
+- Enable strict capability and network policy.
+- Enable strict plugin/script signing where applicable.
+- Keep federation disabled unless actively deployed and policy-reviewed.
+- Use encrypted API key storage or environment-provided secrets.
+
+## Verification Commands
+
+Security regression suite:
 
 ```powershell
-python -m Aetherra.cli.alerts --recent 30
+python -m pytest tests\unit\test_security_audit_ledger.py tests\unit\test_api_keys_enforcement.py tests\unit\test_api_keys_prod_encryption_required.py tests\unit\test_plugin_manager_audit.py tests\unit\test_capabilities_policy.py tests\unit\test_capability_limits.py tests\unit\test_net_policy.py tests\unit\test_sandbox_isolation.py tests\capabilities\test_security_sandbox_placeholders.py tests\capabilities\test_security_capabilities_coverage.py tests\unit\test_control_auth.py tests\unit\test_hub_ingress_security.py tests\unit\test_hub_script_control_auth.py tests\unit\test_hub_plugin_control_security.py tests\unit\test_hub_mutation_control_auth.py tests\unit\test_hub_plugin_registration_non_strict.py tests\unit\test_prod_security_guard.py tests\unit\test_prod_security_defaults.py tests\unit\test_qfac_admin_endpoints.py tests\unit\test_invalid_token_metric.py tests\unit\test_security_metrics_phase0.py tests\unit\test_hub_ai_api.py tests\unit\test_hub_agents_api.py tests\unit\test_hub_chat_safety_preflight.py tests\unit\test_security_ledger_disabled.py tests\unit\test_federation_persistence.py tests\unit\test_hub_inthread.py tests\unit\test_state_mapper_formula_security.py tests\unit\test_stdlib_executor_security.py tests\unit\test_script_executor.py tests\integration\test_webhook_manager_security.py tests\test_hub_signing.py tests\test_core_ai_runtime_baseline.py -q --no-cov
 ```
 
-- Follow the live feed (Ctrl+C to stop):
+Repository security scan:
 
 ```powershell
-python -m Aetherra.cli.alerts --follow
+$env:AETHERRA_SCAN_VERBOSE='0'
+python tools\repo_security_scan.py
 ```
 
-- Custom path (defaults to `./.aetherra/security/alerts.jsonl`):
+Static security scan:
 
 ```powershell
-python -m Aetherra.cli.alerts --path C:\path\to\alerts.jsonl --recent 50
+python tools\static_security_scan.py --root Aetherra --json security_scan.json --md security_scan.md
 ```
 
-## Known limitations and roadmap
+## Known Limitations and Continuous Hardening
 
-- API key storage is plaintext today. Recommended mitigations: provide keys via environment variables or integrate an OS keychain/secret manager. A built‑in encrypt‑at‑rest option (e.g., keyring/cryptography) is planned.
-- The Python sandbox is intentionally narrow and not a substitute for containerization/VMs; stronger isolation and a central policy engine are planned.
-  - Recommended deployment tier for untrusted plugins: containerized plugin runner (per-plugin process/container boundary with network/FS policies). This is the suggested production posture until the integrated isolation layer ships.
-- Network/TLS hardening depends on deployment; add reverse proxy/TLS termination and CORS policies per environment.
-- Capability enforcement is partly policy/docs‑level; wire stricter checks into plugin execution and hub operations over time.
+The current milestone is complete, but these remain ongoing engineering responsibilities:
 
-## References (code and tests)
+- Security review must be repeated whenever new autonomous capabilities are added.
+- The Guardian System is not yet built; once implemented, it should sit above the Security layer as a higher-order oversight system.
+- Process isolation is the current production-grade plugin boundary; container or VM isolation should be considered for untrusted third-party plugin ecosystems.
+- Existing legacy systems outside the security boundary may still need quality cleanup as each system is completed.
+- Network/TLS/CORS hardening depends on deployment topology and should be reviewed per environment.
+- Threat modeling should be refreshed as Aetherra grows from a Cognitive Operating Layer toward more autonomous operation.
 
-- API keys: `Aetherra/security/api_keys.py`
-- Script signing (.aether): `Aetherra/security/script_signing.py`, `tools/verify_aether_scripts.py`, tests in `tests/unit/`
-- Plugin signing (ed25519): `Aetherra/security/plugin_signing.py`, hub/discovery tests `tests/test_hub_signing.py`, `tests/test_discovery_signing.py`
-- Security orchestration: `Aetherra/aetherra_core/system/security_system.py`
-- Sandbox: `Aetherra/security/sandbox.py`
-- Prompt injection: `Aetherra/security/prompt_defense.py`, integration in `Aetherra/core/chat_router.py`
-- Capabilities: `Aetherra/security/capabilities.py`, usage in `Aetherra/core/webhook_manager.py`
-- Network policy: `Aetherra/security/net_policy.py`, usage in `Aetherra/core/webhook_manager.py`
-- Telemetry (opt-in): `Aetherra/telemetry/optin.py` (referenced by tests), `tests/unit/test_telemetry_optin.py`
-- Policy/guardrails overview: `docs/AETHERRA_CODING_SYSTEM.md`
+## References
 
-See also:
+Primary code:
 
-- Aetherra Coding System: `docs/AETHERRA_CODING_SYSTEM.md`
-- Aetherra Memory System: `docs/AETHERRA_MEMORY_SYSTEM.md`
-- Security policy for reporting: `SECURITY.md`
+- `Aetherra/security/api_keys.py`
+- `Aetherra/security/audit_ledger.py`
+- `Aetherra/security/capabilities.py`
+- `Aetherra/security/net_policy.py`
+- `Aetherra/security/plugin_signing.py`
+- `Aetherra/security/prompt_defense.py`
+- `Aetherra/security/sandbox.py`
+- `Aetherra/aetherra_core/system/security_system.py`
+- `Aetherra/aetherra_core/plugins/plugin_manager.py`
+- `Aetherra/stdlib/executor.py`
+- `Aetherra/aetherra_core/script_service/script_executor.py`
+- `aetherra_hub/services/control_auth.py`
+- `aetherra_hub/services/security.py`
+
+Primary tests:
+
+- `tests/unit/test_security_audit_ledger.py`
+- `tests/unit/test_api_keys_enforcement.py`
+- `tests/unit/test_api_keys_prod_encryption_required.py`
+- `tests/unit/test_plugin_manager_audit.py`
+- `tests/unit/test_sandbox_isolation.py`
+- `tests/unit/test_control_auth.py`
+- `tests/unit/test_hub_ingress_security.py`
+- `tests/unit/test_hub_mutation_control_auth.py`
+- `tests/unit/test_state_mapper_formula_security.py`
+- `tests/unit/test_stdlib_executor_security.py`
+- `tests/unit/test_script_executor.py`
+- `tests/integration/test_webhook_manager_security.py`
+
+Related docs:
+
+- `docs/api-keys.md`
+- `docs/SECURITY_OPERATIONS_GUIDE.md`
+- `docs/AETHERRA_CODING_SYSTEM.md`
+- `SECURITY.md`
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
-

@@ -22,17 +22,31 @@ from __future__ import annotations
 import json
 import logging
 import os
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
 # Third party imports
 import requests
+from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
 
 logger = logging.getLogger(__name__)
 
 APP_DIR = Path(os.path.expanduser("~/.aetherra")).resolve()
 POLICY_FILE = APP_DIR / "policy" / "net_policy.json"
+
+
+def _policy_file() -> Path:
+    """Resolve the network policy path at call time.
+
+    Tests and isolated deployments can set AETHERRA_POLICY_HOME to avoid
+    mutating the real user profile.
+    """
+    policy_home = os.getenv("AETHERRA_POLICY_HOME", "").strip()
+    if policy_home:
+        return Path(policy_home).expanduser().resolve() / "net_policy.json"
+    return POLICY_FILE
 
 
 def _is_production_profile() -> bool:
@@ -48,8 +62,9 @@ def _strict_net_policy_enabled() -> bool:
 
 def _load_policy() -> dict[str, Any]:
     try:
-        if POLICY_FILE.exists():
-            data = json.loads(POLICY_FILE.read_text(encoding="utf-8") or "{}")
+        policy_file = _policy_file()
+        if policy_file.exists():
+            data = json.loads(policy_file.read_text(encoding="utf-8") or "{}")
             return data if isinstance(data, dict) else {}
     except Exception as e:
         logger.warning("Failed to load net policy: %s", e)
@@ -63,6 +78,39 @@ def _domain_of(url: str) -> str:
         return netloc.split(":")[0].lower()
     except Exception:
         return ""
+
+
+def _guardian_capability_for_requester(requester: str) -> str:
+    if requester == "core:webhook_manager" or requester.endswith(":webhook_manager"):
+        return "network:webhook"
+    return "network:outbound"
+
+
+def _guardian_allows_network(
+    *,
+    url: str,
+    requester: str,
+    method: str,
+) -> bool:
+    parsed = urlparse(url)
+    domain = _domain_of(url)
+    intent = IntentDeclaration(
+        requester=requester or "unknown",
+        subsystem="network",
+        action="network.request",
+        target=f"network:{domain or 'unknown'}",
+        purpose=f"Perform outbound {method.upper()} request",
+        capabilities=(_guardian_capability_for_requester(requester or "unknown"),),
+        evidence=(f"network_domain:{domain or 'unknown'}",),
+        reversible=False,
+        metadata={
+            "method": method.upper(),
+            "scheme": parsed.scheme,
+            "path_length": len(parsed.path or ""),
+        },
+    )
+    decision = evaluate_intent(intent)
+    return decision.status in {GuardianStatus.ALLOW, GuardianStatus.ALLOW_LIMITED}
 
 
 def is_domain_allowed(url: str, requester: str) -> bool:
@@ -106,23 +154,33 @@ def http_post(
     json_payload: dict[str, Any],
     timeout: float = 10.0,
     requester: str = "unknown",
+    headers: Mapping[str, str] | None = None,
 ) -> requests.Response | None:
     if not is_domain_allowed(url, requester):
         return None
+    if not _guardian_allows_network(url=url, requester=requester, method="POST"):
+        logger.warning("Guardian blocked HTTP POST: %s -> %s", requester, _domain_of(url))
+        return None
     try:
-        return requests.post(url, json=json_payload, timeout=timeout)
+        return requests.post(url, json=json_payload, timeout=timeout, headers=headers)
     except requests.RequestException as e:
         logger.warning("HTTP POST failed: %s -> %s", url, e)
         return None
 
 
 def http_get(
-    url: str, timeout: float = 10.0, requester: str = "unknown"
+    url: str,
+    timeout: float = 10.0,
+    requester: str = "unknown",
+    headers: Mapping[str, str] | None = None,
 ) -> requests.Response | None:
     if not is_domain_allowed(url, requester):
         return None
+    if not _guardian_allows_network(url=url, requester=requester, method="GET"):
+        logger.warning("Guardian blocked HTTP GET: %s -> %s", requester, _domain_of(url))
+        return None
     try:
-        return requests.get(url, timeout=timeout)
+        return requests.get(url, timeout=timeout, headers=headers)
     except requests.RequestException as e:
         logger.warning("HTTP GET failed: %s -> %s", url, e)
         return None

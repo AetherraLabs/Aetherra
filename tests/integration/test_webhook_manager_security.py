@@ -8,35 +8,40 @@ import json
 import pytest
 
 # Aetherra imports
+import Aetherra.security.capabilities as capabilities
+import Aetherra.security.net_policy as net_policy
 from Aetherra.core.webhook_manager import WebhookManager
-from Aetherra.security.capabilities import POLICY_FILE as CAP_FILE
-from Aetherra.security.net_policy import POLICY_FILE as NET_FILE
 
 
 def write_cap_policy(grant: bool):
-    CAP_FILE.parent.mkdir(parents=True, exist_ok=True)
+    cap_file = capabilities._policy_file()
+    cap_file.parent.mkdir(parents=True, exist_ok=True)
     allow = {"core:webhook_manager": ["network:webhook"]} if grant else {}
-    CAP_FILE.write_text(json.dumps({"allow": allow}), encoding="utf-8")
+    cap_file.write_text(json.dumps({"allow": allow}), encoding="utf-8")
 
 
 def write_net_policy(allow_domains):
-    NET_FILE.parent.mkdir(parents=True, exist_ok=True)
+    net_file = net_policy._policy_file()
+    net_file.parent.mkdir(parents=True, exist_ok=True)
     data = {"allow_domains": allow_domains, "deny_domains": []}
-    NET_FILE.write_text(json.dumps(data), encoding="utf-8")
+    net_file.write_text(json.dumps(data), encoding="utf-8")
 
 
 @pytest.fixture(autouse=True)
-def cleanup_files():
+def cleanup_files(tmp_path, monkeypatch):
+    monkeypatch.setenv("AETHERRA_POLICY_HOME", str(tmp_path / "policy"))
+    cap_file = capabilities._policy_file()
+    net_file = net_policy._policy_file()
     # ensure clean slate
-    if CAP_FILE.exists():
-        CAP_FILE.unlink()
-    if NET_FILE.exists():
-        NET_FILE.unlink()
+    if cap_file.exists():
+        cap_file.unlink()
+    if net_file.exists():
+        net_file.unlink()
     yield
-    if CAP_FILE.exists():
-        CAP_FILE.unlink()
-    if NET_FILE.exists():
-        NET_FILE.unlink()
+    if cap_file.exists():
+        cap_file.unlink()
+    if net_file.exists():
+        net_file.unlink()
 
 
 def test_trigger_blocked_without_capability(monkeypatch):
