@@ -12,7 +12,7 @@ lifecycle management, and comprehensive analytics integration.
 # Standard library imports
 import importlib
 import importlib.util
-import json
+import logging
 import os
 import sys
 import threading
@@ -20,6 +20,13 @@ import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
+
+from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+from Aetherra.guardian.containment import active_containments_for_intent
+from Aetherra.guardian.models import ContainmentAction
+from Aetherra.security.audit_ledger import AuditLedgerError, SecurityAuditLedger
+
+logger = logging.getLogger(__name__)
 
 try:
     from Aetherra.aetherra_core.system.security_system import append_security_audit_entry
@@ -56,14 +63,17 @@ except Exception:
 try:
     # Aetherra imports
     from Aetherra.security.sandbox import (
+        IsolatedCallSpec,
+        IsolatedExecutionError,
+        ensure_memory_budget,
+        run_isolated,
+        run_with_timeout,
+    )
+    from Aetherra.security.sandbox import (
         MemoryBudgetExceeded as _SandboxMemoryBudgetExceeded,  # type: ignore
     )
     from Aetherra.security.sandbox import (
         TimeBudgetExceeded as _SandboxTimeBudgetExceeded,  # type: ignore
-    )
-    from Aetherra.security.sandbox import (  # type: ignore
-        ensure_memory_budget,
-        run_with_timeout,
     )
 
     # Bind exception aliases to expected names
@@ -73,6 +83,14 @@ except Exception:
 
     def run_with_timeout(func, args=None, kwargs=None, timeout_sec: float = 5.0):  # type: ignore
         return func(*(args or ()), **(kwargs or {}))
+
+    IsolatedCallSpec = None  # type: ignore
+
+    class IsolatedExecutionError(Exception):  # type: ignore
+        pass
+
+    def run_isolated(*_args, **_kwargs):  # type: ignore
+        raise IsolatedExecutionError("process isolation is unavailable")
 
 
 def _is_production_profile() -> bool:
@@ -137,16 +155,13 @@ def _write_security_audit_entry(
         audit_path = _get_security_audit_path()
         if not audit_path:
             return
-        audit_path.parent.mkdir(parents=True, exist_ok=True)
-        entry = {
-            "timestamp": datetime.utcnow().isoformat() + "Z",
-            "event_type": event_type,
-            "plugin_name": plugin_name,
-            "reason": reason,
-            "details": details or {},
-        }
-        with audit_path.open("a", encoding="utf-8") as handle:
-            handle.write(json.dumps(entry) + "\n")
+        SecurityAuditLedger(audit_path).append(
+            actor=plugin_name,
+            event_type=event_type,
+            reason=reason,
+            details=details or {},
+            extra={"plugin_name": plugin_name},
+        )
 
         append_security_audit_entry(
             plugin_name,
@@ -154,8 +169,8 @@ def _write_security_audit_entry(
             reason=reason,
             details={**(details or {}), "plugin_audit_path": str(audit_path)},
         )
-    except Exception:
-        pass
+    except (AuditLedgerError, OSError, TypeError, ValueError) as exc:
+        logger.error("Unable to append plugin security audit event: %s", exc)
 
 
 class PluginState:
@@ -266,6 +281,9 @@ class PluginManager:
 
     def load_plugin(self, plugin_name: str, force_reload: bool = False) -> bool:
         """Load a plugin with comprehensive error handling."""
+        if not self._guardian_allows_plugin_load(plugin_name, force_reload=force_reload):
+            return False
+
         try:
             self.plugin_states[plugin_name] = PluginState.LOADING
 
@@ -284,7 +302,7 @@ class PluginManager:
 
             try:
                 module = importlib.import_module(module_path)
-            except ImportError:
+            except ImportError as exc:
                 # Try direct import
                 spec = importlib.util.spec_from_file_location(
                     plugin_name, os.path.join(self.plugins_dir, f"{plugin_name}.py")
@@ -293,7 +311,7 @@ class PluginManager:
                     module = importlib.util.module_from_spec(spec)
                     spec.loader.exec_module(module)
                 else:
-                    raise ImportError(f"Could not load spec for {plugin_name}")
+                    raise ImportError(f"Could not load spec for {plugin_name}") from exc
 
             # Keep module reference for policy checks
             self._plugin_modules[plugin_name] = module
@@ -343,6 +361,57 @@ class PluginManager:
             print(f"Error loading plugin {plugin_name}: {e}")
             return False
 
+    def _guardian_allows_plugin_load(self, plugin_name: str, *, force_reload: bool = False) -> bool:
+        """Authorize a plugin module load before importing untrusted code."""
+
+        plugin_file = Path(self.plugins_dir) / f"{plugin_name}.py"
+        intent = IntentDeclaration(
+            requester="plugin_manager",
+            subsystem="plugin_manager",
+            action="plugin.load",
+            target=plugin_name,
+            purpose="Load plugin module through PluginManager",
+            capabilities=("plugin:load",),
+            expected_outcome="Plugin module is imported and made available for execution",
+            reversible=True,
+            rollback_plan="Unload the plugin and remove it from the active plugin registry",
+            evidence=(f"plugin:{plugin_name}", f"plugin_file:{plugin_file.name}"),
+            metadata={
+                "plugin_name": plugin_name,
+                "force_reload": bool(force_reload),
+                "plugin_file": plugin_file.name,
+            },
+        )
+        if self._apply_plugin_containment(plugin_name, intent):
+            return False
+
+        guardian_decision = evaluate_intent(
+            intent,
+            capability_checker=has_capability,
+        )
+        if guardian_decision.status in {
+            GuardianStatus.ALLOW,
+            GuardianStatus.ALLOW_LIMITED,
+        }:
+            return True
+
+        self.plugin_states[plugin_name] = PluginState.DISABLED
+        _write_security_audit_entry(
+            plugin_name,
+            "plugin_denied",
+            reason=guardian_decision.reason,
+            details={
+                "requester": "plugin_manager",
+                "capability": "plugin:load",
+                "guardian_decision": guardian_decision.to_audit_dict(),
+            },
+        )
+        print(
+            f"Guardian denied load for plugin: {plugin_name} "
+            f"({guardian_decision.reason})"
+        )
+        return False
+
     def _load_plugin_metadata(self, plugin_name: str, module: Any):
         """Load plugin metadata from module attributes."""
         metadata = {
@@ -389,9 +458,22 @@ class PluginManager:
 
     def execute_plugin(self, plugin_name: str, *args, **kwargs) -> Any:
         """Execute a plugin with policy, quotas, signing checks, and analytics."""
-        if plugin_name not in self.plugins:
-            if not self.load_plugin(plugin_name):
-                return None
+        intent = IntentDeclaration(
+            requester=f"plugin:{plugin_name}",
+            subsystem="plugin_manager",
+            action="plugin.execute",
+            target=plugin_name,
+            purpose="Execute plugin through PluginManager",
+            capabilities=("execute",),
+            reversible=False,
+            evidence=(f"plugin:{plugin_name}",),
+            metadata={"plugin_name": plugin_name},
+        )
+        if self._apply_plugin_containment(plugin_name, intent):
+            return None
+
+        if plugin_name not in self.plugins and not self.load_plugin(plugin_name):
+            return None
 
         try:
             if _safe_mode_enabled():
@@ -404,31 +486,28 @@ class PluginManager:
                 print(f"Safe mode denied execution for plugin: {plugin_name}")
                 return None
 
-            # Capability policy (deny-by-default if strict mode set globally)
-            try:
-                has_permission = has_capability(f"plugin:{plugin_name}", "execute")
-            except Exception as exc:
+            guardian_decision = evaluate_intent(
+                intent,
+                capability_checker=has_capability,
+            )
+            if guardian_decision.status not in {
+                GuardianStatus.ALLOW,
+                GuardianStatus.ALLOW_LIMITED,
+            }:
                 _write_security_audit_entry(
                     plugin_name,
                     "plugin_denied",
-                    reason="capability_check_failed",
+                    reason=guardian_decision.reason,
                     details={
                         "requester": f"plugin:{plugin_name}",
                         "capability": "execute",
-                        "error": str(exc),
+                        "guardian_decision": guardian_decision.to_audit_dict(),
                     },
                 )
-                print(f"Capability check failed for plugin: {plugin_name}")
-                return None
-
-            if not has_permission:
-                _write_security_audit_entry(
-                    plugin_name,
-                    "plugin_denied",
-                    reason="missing_capability",
-                    details={"requester": f"plugin:{plugin_name}", "capability": "execute"},
+                print(
+                    f"Guardian denied execution for plugin: {plugin_name} "
+                    f"({guardian_decision.reason})"
                 )
-                print(f"Policy denied execution for plugin: {plugin_name}")
                 return None
 
             plugin = self.plugins[plugin_name]
@@ -473,9 +552,6 @@ class PluginManager:
             except Exception:
                 max_mb = None
 
-            # Pre-exec memory check
-            ensure_memory_budget(max_mb)
-
             def _call():
                 if hasattr(plugin, "execute"):
                     return plugin.execute(*args, **kwargs)
@@ -484,8 +560,40 @@ class PluginManager:
                 else:
                     return None
 
-            # Execute with wall-clock timeout
-            result = run_with_timeout(_call, timeout_sec=max_runtime)
+            isolation_mode = os.environ.get(
+                "AETHERRA_PLUGIN_ISOLATION",
+                "process" if _is_production_profile() else "thread",
+            ).strip().lower()
+            if isolation_mode == "process":
+                if IsolatedCallSpec is None or module is None:
+                    raise IsolatedExecutionError(
+                        "plugin cannot be reconstructed in an isolated worker"
+                    )
+                callable_name = "execute" if hasattr(plugin, "execute") else "main"
+                class_name = (
+                    plugin.__class__.__name__ if plugin is not module else None
+                )
+                module_name = str(getattr(module, "__name__", plugin_name))
+                module_path = getattr(module, "__file__", None)
+                result = run_isolated(
+                    IsolatedCallSpec(
+                        module_name=module_name,
+                        module_path=str(module_path) if module_path else None,
+                        class_name=class_name,
+                        callable_name=callable_name,
+                    ),
+                    args=args,
+                    kwargs=kwargs,
+                    timeout_sec=max_runtime,
+                    max_memory_mb=max_mb,
+                )
+            elif isolation_mode == "thread":
+                ensure_memory_budget(max_mb)
+                result = run_with_timeout(_call, timeout_sec=max_runtime)
+            else:
+                raise IsolatedExecutionError(
+                    f"unsupported plugin isolation mode: {isolation_mode}"
+                )
 
             _write_security_audit_entry(
                 plugin_name,
@@ -508,7 +616,11 @@ class PluginManager:
 
             return result
 
-        except (TimeBudgetExceeded, MemoryBudgetExceeded) as e:
+        except (
+            TimeBudgetExceeded,
+            MemoryBudgetExceeded,
+            IsolatedExecutionError,
+        ) as e:
             _write_security_audit_entry(
                 plugin_name,
                 "plugin_denied",
@@ -531,11 +643,49 @@ class PluginManager:
             print(f"Error executing plugin {plugin_name}: {e}")
             return None
 
+    def _apply_plugin_containment(
+        self, plugin_name: str, intent: IntentDeclaration
+    ) -> bool:
+        """Apply active Guardian containment actions for a plugin intent."""
+
+        containments = active_containments_for_intent(intent)
+        if not containments:
+            return False
+        for containment in containments:
+            action = containment.get("action")
+            containment_id = containment.get("containment_id")
+            if action == ContainmentAction.DISABLE_PLUGIN:
+                if plugin_name in self.plugins:
+                    self.unload_plugin(plugin_name)
+                self.plugin_states[plugin_name] = PluginState.DISABLED
+                self._plugin_modules.pop(plugin_name, None)
+                _write_security_audit_entry(
+                    plugin_name,
+                    "plugin_contained",
+                    reason="disable_plugin",
+                    details={"containment_id": containment_id},
+                )
+                return True
+            if action in {
+                ContainmentAction.BLOCK_ACTION,
+                ContainmentAction.ISOLATE_SUBSYSTEM,
+                ContainmentAction.EMERGENCY_STOP,
+            }:
+                self.plugin_states[plugin_name] = PluginState.DISABLED
+                _write_security_audit_entry(
+                    plugin_name,
+                    "plugin_contained",
+                    reason=str(action),
+                    details={"containment_id": containment_id},
+                )
+                return True
+        return False
+
     def execute_chain(self, user_message: str) -> str:
         """Execute a chain of plugins based on the user message."""
         try:
             # Example logic: iterate through plugins and execute matching ones
-            for plugin_name, plugin in self.plugins.items():
+            for _plugin_name, plugin in self.plugins.items():
                 if hasattr(plugin, "process_message"):
                     response = plugin.process_message(user_message)
                     if response:
@@ -605,10 +755,12 @@ class PluginManager:
                     if os.path.exists(plugin_file):
                         current_time = os.path.getmtime(plugin_file)
 
-                        if plugin_name in file_times:
-                            if current_time > file_times[plugin_name]:
-                                print(f"Reloading changed plugin: {plugin_name}")
-                                self.reload_plugin(plugin_name)
+                        if (
+                            plugin_name in file_times
+                            and current_time > file_times[plugin_name]
+                        ):
+                            print(f"Reloading changed plugin: {plugin_name}")
+                            self.reload_plugin(plugin_name)
 
                         file_times[plugin_name] = current_time
 

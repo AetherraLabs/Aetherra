@@ -9,24 +9,30 @@ Advanced intelligence and meta-reasoning capabilities for Lyrixa.
 Includes full AI intelligence integration and consciousness-aware processing.
 """
 
-# Local imports
-from .meta_reasoning import *
+from .meta_reasoning import (
+    ConfidenceLevel,
+    DecisionTrace,
+    DecisionType,
+    MetaReasoningEngine,
+)
 
 # Import the full intelligence system
 try:
     # Local imports
     from .lyrixa_full_intelligence import LyrixaIntelligenceCore
 
-    __all__ = ["LyrixaIntelligenceCore"]
+    __all__ = [
+        "ConfidenceLevel",
+        "DecisionTrace",
+        "DecisionType",
+        "LyrixaIntelligenceCore",
+        "MetaReasoningEngine",
+    ]
 except ImportError:
     LyrixaIntelligenceCore = None
-    __all__ = []
-
-# Add meta_reasoning exports to __all__
-try:
-    # Local imports
-    from .meta_reasoning import __all__ as meta_reasoning_all
-
-    __all__.extend(meta_reasoning_all)
-except (ImportError, AttributeError):
-    pass
+    __all__ = [
+        "ConfidenceLevel",
+        "DecisionTrace",
+        "DecisionType",
+        "MetaReasoningEngine",
+    ]

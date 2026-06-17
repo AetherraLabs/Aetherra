@@ -15,9 +15,12 @@ Intended to evolve alongside HMR and the kernel event bus.
 
 # Standard library imports
 import asyncio
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -45,14 +48,79 @@ class ModuleManager:
         # Concurrency guard
         self._lock = asyncio.Lock()
 
+    def _guardian_requester(self, spec: dict[str, Any] | None = None) -> str:
+        spec = spec or {}
+        requester = spec.get("guardian_requester") or spec.get("requester")
+        return str(requester or "module_manager").strip() or "module_manager"
+
+    def _guardian_capability_checker(self, requester: str, capability: str) -> bool:
+        if requester == "module_manager" and capability in {
+            "module:load",
+            "module:reload",
+            "module:unload",
+            "module:rollback",
+        }:
+            return True
+        from Aetherra.security.capabilities import has_capability
+
+        return has_capability(requester, capability)
+
+    def _guardian_preflight(
+        self,
+        *,
+        requester: str,
+        action: str,
+        module_name: str,
+        purpose: str,
+        capability: str,
+        metadata: dict[str, Any],
+    ) -> None:
+        from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="module_manager",
+                action=action,
+                target="module_manager:module",
+                purpose=purpose,
+                capabilities=(capability,),
+                evidence=(f"module_name:{module_name}",),
+                reversible=True,
+                rollback_plan="reload, unload, or roll back the module to the previous logical state",
+                metadata=metadata,
+            ),
+            capability_checker=self._guardian_capability_checker,
+        )
+        if decision.status not in {
+            GuardianStatus.ALLOW,
+            GuardianStatus.ALLOW_LIMITED,
+        }:
+            raise PermissionError(
+                f"Guardian denied module manager action {action}: {decision.reason}"
+            )
+
     # ---------------- Control-plane API ----------------
     async def load_module(
         self, name: str, spec: dict[str, Any] | None = None
     ) -> dict[str, Any]:
+        n = str(name).strip()
+        if not n:
+            return {"ok": False, "error": "invalid_name"}
+        spec_data = spec if isinstance(spec, dict) else {}
+        self._guardian_preflight(
+            requester=self._guardian_requester(spec_data),
+            action="module_manager.load",
+            module_name=n,
+            purpose=f"Load module {n}",
+            capability="module:load",
+            metadata={
+                "module_name": n,
+                "spec_keys": tuple(sorted(str(key) for key in spec_data)),
+                "has_version": "version" in spec_data,
+            },
+        )
         async with self._lock:
-            n = str(name).strip()
-            if not n:
-                return {"ok": False, "error": "invalid_name"}
             rec = self._modules.get(n)
             now = datetime.now()
             if rec is None:
@@ -61,20 +129,30 @@ class ModuleManager:
             rec.status = "active"
             rec.loaded_at = rec.loaded_at or now
             rec.last_updated = now
-            if isinstance(spec, dict):
-                rec.version = str(spec.get("version", rec.version) or rec.version)
-                rec.metadata.update({k: v for k, v in spec.items() if k != "version"})
+            if spec_data:
+                rec.version = str(spec_data.get("version", rec.version) or rec.version)
+                rec.metadata.update({k: v for k, v in spec_data.items() if k != "version"})
             self._metrics["loads_total"] += 1
         # Broadcast best-effort
         try:
             await self._broadcast("module.loaded", {"name": n, "version": rec.version})
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("KLM load broadcast failed for %s: %s", n, exc)
         return {"ok": True, "module": self._to_dict(rec)}
 
     async def unload_module(self, name: str) -> dict[str, Any]:
+        n = str(name).strip()
+        if not n:
+            return {"ok": False, "error": "invalid_name"}
+        self._guardian_preflight(
+            requester="module_manager",
+            action="module_manager.unload",
+            module_name=n,
+            purpose=f"Unload module {n}",
+            capability="module:unload",
+            metadata={"module_name": n},
+        )
         async with self._lock:
-            n = str(name).strip()
             rec = self._modules.get(n)
             if rec is None:
                 return {"ok": False, "error": "not_found"}
@@ -82,8 +160,8 @@ class ModuleManager:
             rec.last_updated = datetime.now()
         try:
             await self._broadcast("module.unloaded", {"name": n})
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("KLM unload broadcast failed for %s: %s", n, exc)
         return {"ok": True}
 
     async def rollback_module(self, name: str) -> dict[str, Any]:
@@ -93,8 +171,18 @@ class ModuleManager:
         rollback artifact isn't tracked yet. It increments the rollback
         counter and marks the module as active (best-effort no-op).
         """
+        n = str(name).strip()
+        if not n:
+            return {"ok": False, "error": "invalid_name"}
+        self._guardian_preflight(
+            requester="module_manager",
+            action="module_manager.rollback",
+            module_name=n,
+            purpose=f"Roll back module {n}",
+            capability="module:rollback",
+            metadata={"module_name": n},
+        )
         async with self._lock:
-            n = str(name).strip()
             rec = self._modules.get(n)
             if rec is None:
                 # Create an entry to reflect control-plane action
@@ -106,32 +194,50 @@ class ModuleManager:
             self._metrics["rollbacks_total"] += 1
         try:
             await self._broadcast("module.rolled_back", {"name": n})
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("KLM rollback broadcast failed for %s: %s", n, exc)
         return {"ok": True, "module": self._to_dict(rec)}
 
     async def reload_module(
         self, name: str, spec: dict[str, Any] | None = None
     ) -> dict[str, Any]:
+        n = str(name).strip()
+        if not n:
+            return {"ok": False, "error": "invalid_name"}
+        spec_data = spec if isinstance(spec, dict) else {}
+        self._guardian_preflight(
+            requester=self._guardian_requester(spec_data),
+            action="module_manager.reload",
+            module_name=n,
+            purpose=f"Reload module {n}",
+            capability="module:reload",
+            metadata={
+                "module_name": n,
+                "spec_keys": tuple(sorted(str(key) for key in spec_data)),
+                "has_version": "version" in spec_data,
+            },
+        )
         async with self._lock:
-            n = str(name).strip()
             rec = self._modules.get(n)
             if rec is None:
                 # Implicit load when missing
-                return await self.load_module(n, spec)
+                rec = ModuleRecord(name=n)
+                self._modules[n] = rec
+                self._metrics["loads_total"] += 1
             # Minimal canary: mark updating, then active
             rec.status = "active"
-            if isinstance(spec, dict):
-                rec.version = str(spec.get("version", rec.version) or rec.version)
-                rec.metadata.update({k: v for k, v in spec.items() if k != "version"})
+            rec.loaded_at = rec.loaded_at or datetime.now()
+            if spec_data:
+                rec.version = str(spec_data.get("version", rec.version) or rec.version)
+                rec.metadata.update({k: v for k, v in spec_data.items() if k != "version"})
             rec.last_updated = datetime.now()
             self._metrics["reloads_total"] += 1
         try:
             await self._broadcast(
                 "module.reloaded", {"name": n, "version": rec.version}
             )
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("KLM reload broadcast failed for %s: %s", n, exc)
         return {"ok": True, "module": self._to_dict(rec)}
 
     async def list_modules(self) -> dict[str, Any]:
@@ -188,8 +294,8 @@ class ModuleManager:
             return
         try:
             await self.registry.broadcast_message(f"klm.{msg_type}", data)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("KLM broadcast failed for %s: %s", msg_type, exc)
 
     @staticmethod
     def _to_dict(rec: ModuleRecord) -> dict[str, Any]:

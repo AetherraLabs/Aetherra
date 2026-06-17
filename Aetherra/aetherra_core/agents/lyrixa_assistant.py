@@ -16,7 +16,9 @@ Provides high-level assistant capabilities including:
 """
 
 # Standard library imports
+import hashlib
 import logging
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -29,6 +31,67 @@ sys.path.insert(0, str(project_root))
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def _hash_value(value: Any) -> str | None:
+    if value is None:
+        return None
+    raw = str(value)
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "ai:lyrixa_assistant" and capability in {
+        "agent:execute_task",
+        "ai:execute_task",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _guardian_preflight_assistant_task(
+    *,
+    task_id: str,
+    task_description: str,
+    task_type: str,
+    context: Dict[str, Any],
+    priority: Any,
+    has_agent_interface: bool,
+):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "ai:lyrixa_assistant"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="artificial_intelligence",
+            action="ai.assistant_execute_task",
+            target=f"assistant_task:{_hash_value(task_id)}",
+            purpose="Execute a Lyrixa assistant task through an agent interface or fallback",
+            capabilities=("ai:execute_task", "agent:execute_task"),
+            evidence=("ai.assistant_execute_task:request",),
+            reversible=True,
+            rollback_plan="remove the assistant task from active task state before side effects",
+            metadata={
+                "task_id_hash": _hash_value(task_id),
+                "task_description_hash": _hash_value(task_description),
+                "task_description_length": len(str(task_description or "")),
+                "task_type": str(task_type or "general"),
+                "context_keys": sorted(str(key) for key in context),
+                "priority": priority,
+                "has_agent_interface": has_agent_interface,
+            },
+        ),
+        approval_id=approval_id,
+        capability_checker=_guardian_capability_checker,
+    )
+
 
 # Import Lyrixa core components
 try:
@@ -218,13 +281,30 @@ class LyrixaAssistant:
         task_id = f"task_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
         try:
+            task_context = context or {}
+            priority = context.get("priority", 5) if context else 5
+            decision = _guardian_preflight_assistant_task(
+                task_id=task_id,
+                task_description=task_description,
+                task_type=task_type,
+                context=task_context,
+                priority=priority,
+                has_agent_interface=self.agent_interface is not None,
+            )
+            if not decision.allowed:
+                return {
+                    "error": "guardian_denied",
+                    "reason": decision.reason,
+                    "task_id": task_id,
+                }
+
             # Create task specification
             task_spec = {
                 "id": task_id,
                 "type": task_type,
                 "description": task_description,
-                "context": context or {},
-                "priority": context.get("priority", 5) if context else 5,
+                "context": task_context,
+                "priority": priority,
                 "created_at": datetime.now().isoformat(),
             }
 

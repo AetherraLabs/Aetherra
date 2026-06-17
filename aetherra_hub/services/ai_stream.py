@@ -31,6 +31,7 @@ from ..utils.http import run_coro_blocking
 
 # Import chat_metrics at module scope for type checkers (was imported lazily earlier)
 from .metrics_accum import chat_metrics as CHAT_METRICS
+from .guardian_chat import evaluate_chat_ingress
 from .security import policy_snapshot, safety_precheck
 from .tokenizer import count_tokens
 
@@ -270,6 +271,26 @@ def stream_sse(
         yield ctx.envelope("error", err)
         final = {"ok": False, **err}
         yield ctx.envelope("final", final)
+        return
+    guardian_decision = evaluate_chat_ingress(
+        message=str(red_prompt or ""),
+        route="/api/ai/stream",
+        principal=str(principal or "hub:chat"),
+        trace_id=trace_id,
+        priority=str(prio or "normal"),
+        context={"scratchpad_policy": body.get("scratchpad_policy")},
+        streaming=True,
+    )
+    if not guardian_decision.allowed:
+        err = {
+            "error": {
+                "code": "guardian_denied",
+                "message": "Request rejected by Guardian",
+                "details": {"reason": guardian_decision.reason},
+            }
+        }
+        yield ctx.envelope("error", err)
+        yield ctx.envelope("final", {"ok": False, **err})
         return
 
     # Optional debug snapshot frame if enabled

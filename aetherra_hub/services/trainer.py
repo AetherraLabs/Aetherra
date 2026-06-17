@@ -8,6 +8,7 @@ using background threads. No real ML tasks are executed.
 from __future__ import annotations
 
 # Standard library imports
+import hashlib
 import os
 import threading
 import time
@@ -47,6 +48,92 @@ _jobs: dict[str, _Job] = {}
 _evals: dict[str, _Eval] = {}
 _eval_last_score: float | None = None
 _eval_runs_total: int = 0
+
+
+def _hash_value(value: object) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "trainer:service" and capability in {
+        "trainer:submit",
+        "trainer:evaluate",
+        "model:train",
+        "model:evaluate",
+        "dataset:read",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _requester_from_payload(payload: dict) -> str:
+    explicit = payload.get("guardian_requester") or payload.get("principal")
+    return str(explicit or os.getenv("AETHERRA_PRINCIPAL", "")).strip() or "trainer:service"
+
+
+def _payload_metadata(payload: dict) -> dict[str, object]:
+    params = payload.get("params")
+    resources = payload.get("resources")
+    tags = payload.get("tags")
+    return {
+        "task": str(payload.get("task") or ""),
+        "base_model_hash": _hash_value(payload.get("base_model")),
+        "model_hash": _hash_value(payload.get("model")),
+        "dataset_id_hash": _hash_value(payload.get("dataset_id")),
+        "dataset_count": len(payload.get("dataset_id") or [])
+        if isinstance(payload.get("dataset_id"), list)
+        else (1 if payload.get("dataset_id") else 0),
+        "param_keys": sorted(str(key) for key in params)
+        if isinstance(params, dict)
+        else [],
+        "resource_keys": sorted(str(key) for key in resources)
+        if isinstance(resources, dict)
+        else [],
+        "tag_count": len(tags) if isinstance(tags, list) else 0,
+    }
+
+
+def _guardian_preflight_submit(payload: dict, *, kind: str):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    is_eval = kind == "eval"
+    action = "trainer.submit_eval" if is_eval else "trainer.submit_job"
+    capabilities = (
+        ("trainer:evaluate", "model:evaluate", "dataset:read")
+        if is_eval
+        else ("trainer:submit", "model:train", "dataset:read")
+    )
+    task = str(payload.get("task") or ("eval" if is_eval else "sft"))
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=_requester_from_payload(payload),
+            subsystem="trainer",
+            action=action,
+            target=f"trainer_{kind}:{task}",
+            purpose=(
+                "Submit an AI trainer evaluation request"
+                if is_eval
+                else "Submit an AI trainer training job"
+            ),
+            capabilities=capabilities,
+            evidence=(f"trainer_service.submit_{kind}",),
+            reversible=True,
+            rollback_plan="remove queued trainer item before execution or cancel the background runner",
+            metadata={
+                "kind": kind,
+                **_payload_metadata(payload),
+            },
+        ),
+        approval_id=approval_id,
+        capability_checker=_guardian_capability_checker,
+    )
 
 
 def _enabled() -> bool:
@@ -94,6 +181,9 @@ def _bg_transition_eval(eval_id: str):
 def submit_job(payload: dict) -> str | None:
     if not _enabled():
         return None
+    guardian_decision = _guardian_preflight_submit(payload, kind="job")
+    if not guardian_decision.allowed:
+        raise PermissionError(f"guardian_denied:{guardian_decision.reason}")
     jid = str(uuid.uuid4())
     job = _Job(
         job_id=jid,
@@ -111,6 +201,9 @@ def submit_job(payload: dict) -> str | None:
 def submit_eval(payload: dict) -> str | None:
     if not _enabled():
         return None
+    guardian_decision = _guardian_preflight_submit(payload, kind="eval")
+    if not guardian_decision.allowed:
+        raise PermissionError(f"guardian_denied:{guardian_decision.reason}")
     eid = str(uuid.uuid4())
     ev = _Eval(
         eval_id=eid,

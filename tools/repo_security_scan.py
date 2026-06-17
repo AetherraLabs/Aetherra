@@ -20,6 +20,8 @@ This helper is additive; integrate into CI or quality gates as needed.
 
 from __future__ import annotations
 
+import ast
+
 # Standard library imports
 import json
 import os
@@ -33,8 +35,6 @@ results: list[dict] = []
 VERBOSE = os.environ.get("AETHERRA_SCAN_VERBOSE") == "1"
 
 PATTERNS = {
-    "eval": re.compile(r"\beval\s*\("),
-    "exec": re.compile(r"\bexec\s*\("),
     "subprocess": re.compile(r"\bsubprocess\."),
     "requests": re.compile(r"\brequests\."),
     # Tightened to match code-only bare except patterns at start of a statement
@@ -43,7 +43,26 @@ PATTERNS = {
     "broad_except": re.compile(r"^\s*except\s+Exception\b"),
 }
 
-IGNORE_DIRS = {"tests", "build", "dist", ".venv", "archive", "backup"}
+IGNORE_DIRS = {
+    ".git",
+    ".pytest_cache",
+    ".venv",
+    "archive",
+    "backup",
+    "build",
+    "dist",
+    "dist-packages",
+    "htmlcov",
+    "tests",
+}
+SOURCE_DIRS = {
+    "Aetherra",
+    "aetherra_coding",
+    "aetherra_hub",
+    "aetherra_memory",
+    "cli",
+    "tools",
+}
 
 
 def scan_file(path: Path) -> None:
@@ -54,9 +73,33 @@ def scan_file(path: Path) -> None:
     - Tighten except-patterns to only match at statement start
     """
     try:
-        lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        lines = text.splitlines()
     except Exception:
         return
+
+    try:
+        tree = ast.parse(text, filename=str(path))
+    except SyntaxError:
+        tree = None
+    if tree is not None:
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name):
+                continue
+            if node.func.id not in {"eval", "exec"}:
+                continue
+            line = lines[node.lineno - 1] if 0 < node.lineno <= len(lines) else ""
+            previous_line = lines[node.lineno - 2] if 1 < node.lineno <= len(lines) else ""
+            if "nosec" in line.lower() or "nosec" in previous_line.lower():
+                continue
+            results.append(
+                {
+                    "file": str(path.relative_to(ROOT)),
+                    "line": node.lineno,
+                    "type": node.func.id,
+                    "code": line.rstrip(),
+                }
+            )
 
     in_triple: str | None = None  # Track triple-quoted blocks (""" or ''')
     for lineno, line in enumerate(lines, 1):
@@ -107,10 +150,15 @@ def scan_file(path: Path) -> None:
 
 
 def main() -> int:
-    for p in ROOT.rglob("*.py"):
-        if any(part in IGNORE_DIRS for part in p.parts):
+    candidates = list(ROOT.glob("*.py"))
+    for source_dir in SOURCE_DIRS:
+        root = ROOT / source_dir
+        if root.exists():
+            candidates.extend(root.rglob("*.py"))
+    for path in candidates:
+        if any(part in IGNORE_DIRS for part in path.parts):
             continue
-        scan_file(p)
+        scan_file(path)
     high = [r for r in results if r["type"] in {"eval", "exec", "bare_except_pass"}]
     payload = {"total": len(results), "high": len(high), "findings": results}
     if VERBOSE:

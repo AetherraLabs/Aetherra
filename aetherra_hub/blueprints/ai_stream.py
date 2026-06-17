@@ -11,9 +11,32 @@ from flask import Blueprint, Response, jsonify, request
 # Local imports
 from ..services import metrics_accum
 from ..services.ai_stream import stream_sse
+from ..services.control_auth import authorize_token_request
 from ..services.security import policy_snapshot
 
 bp = Blueprint("ai_stream", __name__)
+
+
+def _authorize_ai_request():
+    if os.environ.get("AETHERRA_AI_API_REQUIRE_TOKEN", "0") != "1":
+        return None
+    expected = os.environ.get("AETHERRA_AI_API_TOKEN") or os.environ.get(
+        "AETHERRA_HUB_CONTROL_TOKEN", ""
+    )
+    decision = authorize_token_request(
+        request.headers,
+        expected,
+        missing_configuration_error="ai_token_not_configured",
+        unauthorized_status=403,
+    )
+    if decision.allowed:
+        return None
+    with contextlib.suppress(Exception):
+        if decision.status_code == 503:
+            metrics_accum.inc_auth_missing_token()
+        else:
+            metrics_accum.inc_auth_invalid_token()
+    return jsonify({"error": decision.error}), decision.status_code
 
 
 def _build_response(gen_func):
@@ -57,16 +80,9 @@ def ai_stream_post():
         ):
             metrics_accum.inc_auth_missing_token()
         return jsonify({"error": "disabled"}), 501
-    # Enforce token if required (invalid token increments metric)
-    if os.environ.get("AETHERRA_AI_API_REQUIRE_TOKEN", "0") == "1":
-        expected = os.environ.get("AETHERRA_AI_API_TOKEN") or os.environ.get(
-            "AETHERRA_HUB_CONTROL_TOKEN", ""
-        )
-        provided = request.headers.get("X-Aetherra-Token", "")
-        if expected and provided and provided != expected:
-            with contextlib.suppress(Exception):
-                metrics_accum.inc_auth_invalid_token()
-            return jsonify({"error": "forbidden"}), 403
+    auth_error = _authorize_ai_request()
+    if auth_error is not None:
+        return auth_error
 
     def generate():
         yield from stream_sse(body, hdrs, last_event_id=last_event_id)
@@ -100,15 +116,9 @@ def ai_stream_get():
         ):
             metrics_accum.inc_auth_missing_token()
         return jsonify({"error": "disabled"}), 501
-    if os.environ.get("AETHERRA_AI_API_REQUIRE_TOKEN", "0") == "1":
-        expected = os.environ.get("AETHERRA_AI_API_TOKEN") or os.environ.get(
-            "AETHERRA_HUB_CONTROL_TOKEN", ""
-        )
-        provided = request.headers.get("X-Aetherra-Token", "")
-        if expected and provided and provided != expected:
-            with contextlib.suppress(Exception):
-                metrics_accum.inc_auth_invalid_token()
-            return jsonify({"error": "forbidden"}), 403
+    auth_error = _authorize_ai_request()
+    if auth_error is not None:
+        return auth_error
 
     def generate():
         yield from stream_sse(args, hdrs, last_event_id=last_event_id, method="GET")

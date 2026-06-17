@@ -11,7 +11,10 @@ from typing import Any
 # Third party imports
 from flask import Blueprint, Response, current_app, jsonify, request
 
+from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
 # Local imports
+from ..services.control_auth import authorize_control_request
 from ..services.idempotency_simple import IdempotencyStore
 from ..services.plugin_metrics import observe_registration_latency, plugin_metrics
 from ..services.plugin_security import (
@@ -54,6 +57,48 @@ def _merged_plugins() -> dict[str, dict[str, Any]]:
     except Exception:
         log.debug("Failed to access advanced plugin store")
     return merged
+
+
+def _guardian_decision_for_registration(payload: dict[str, Any], *, payload_kb: float):
+    plugin_name = str(payload.get("name") or "unknown").strip() or "unknown"
+    version = str(payload.get("version") or "unknown").strip() or "unknown"
+    category = str(payload.get("category") or "utilities").strip() or "utilities"
+    requester = request.headers.get("X-Aetherra-Principal") or "hub:plugins_api"
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=str(requester),
+            subsystem="plugin_registry",
+            action="plugin.register",
+            target=f"plugin:{plugin_name}",
+            purpose=f"Register plugin manifest for {plugin_name}",
+            capabilities=("plugin:register",),
+            expected_outcome="Plugin manifest is accepted into the Hub plugin registry",
+            reversible=True,
+            rollback_plan="Remove the plugin registry record before loading or execution",
+            evidence=(f"plugin:{plugin_name}", f"version:{version}"),
+            metadata={
+                "category": category,
+                "has_signature": bool(payload.get("signature")),
+                "has_pubkey": bool(payload.get("pubkey")),
+                "payload_keys": tuple(sorted(str(key) for key in payload)),
+                "payload_kb": round(float(payload_kb), 3),
+            },
+        )
+    )
+
+
+def _guardian_registration_block_response(decision) -> tuple[dict[str, Any], int] | None:
+    if decision.status in {GuardianStatus.ALLOW, GuardianStatus.ALLOW_LIMITED}:
+        return None
+    status_code = 202 if decision.status == GuardianStatus.REQUIRE_APPROVAL else 403
+    return (
+        {
+            "ok": False,
+            "error": decision.reason,
+            "guardian": decision.to_audit_dict(),
+        },
+        status_code,
+    )
 
 
 @bp.get("")
@@ -286,36 +331,23 @@ def register_plugin() -> Any:
     settings = current_app.settings  # type: ignore[attr-defined]
     start_t = perf_counter()
 
-    # Dev override: allow unsigned plugins when header present or env flag set.
-    # This lets local discovery succeed even if strict signing flags were enabled during hub start.
-    allow_unsigned = False
-    try:
-        from flask import request as _req  # local import for clarity
-
-        allow_unsigned = (
-            os.environ.get("AETHERRA_ALLOW_UNSIGNED_DEV", "0") == "1"
-            or _req.headers.get("X-Aeth-Allow-Unsigned") == "1"
+    auth_decision = authorize_control_request(request.headers, request.remote_addr)
+    if not auth_decision.allowed:
+        return (
+            jsonify({"error": auth_decision.error}),
+            auth_decision.status_code,
         )
-        if allow_unsigned:
-            # Temporarily relax signature requirement for this request path only.
-            # We don't mutate global settings object beyond this handler scope.
-            try:
-                # This attribute exists on Settings; best-effort downgrade
-                settings.require_plugin_signature = False  # type: ignore[attr-defined]
-            except Exception:
-                pass
-            # Also relax environment strict flags so advanced store logic downgrades.
-            os.environ["AETHERRA_SIGNING_STRICT"] = "0"
-            os.environ["AETHERRA_HUB_STRICT"] = "0"
-            os.environ["AETHERRA_STRICT"] = "0"
-            os.environ["AETH_ADVANCED_PLUGIN_VALIDATION"] = "0"
-            # Make override visible to store.register logic
-            os.environ["AETHERRA_ALLOW_UNSIGNED_DEV"] = "1"
-            log.debug(
-                "[PLUGINS][DEV] Unsigned registration override active (header/env)"
-            )
-    except Exception as _unsigned_exc:
-        log.debug("[PLUGINS][DEV] Unsigned override handling error: %s", _unsigned_exc)
+
+    profile = (os.environ.get("AETHERRA_PROFILE", "") or "").strip().lower()
+    allow_unsigned = (
+        profile not in {"prod", "production"}
+        and os.environ.get("AETHERRA_ALLOW_UNSIGNED_DEV", "0") == "1"
+    )
+    require_signature = bool(settings.require_plugin_signature) and not allow_unsigned
+    if allow_unsigned:
+        log.warning(
+            "[PLUGINS][DEV] Unsigned plugin registration enabled by process configuration"
+        )
 
     # Idempotency
     idem_key = request.headers.get("Idempotency-Key") or request.headers.get("Idem-Key")
@@ -342,6 +374,19 @@ def register_plugin() -> Any:
     except Exception:
         plugin_metrics["validation_errors_total"] += 1
         return jsonify({"error": "invalid_json"}), 400
+
+    strict_registration = require_signature or (
+        _advanced_mode(settings) and not allow_unsigned
+    )
+    if strict_registration and not (payload.get("signature") and payload.get("pubkey")):
+        plugin_metrics["signature_errors_total"] += 1
+        return jsonify({"error": "invalid signature"}), 400
+
+    guardian_decision = _guardian_decision_for_registration(payload, payload_kb=kb)
+    guardian_block = _guardian_registration_block_response(guardian_decision)
+    if guardian_block is not None:
+        body, status_code = guardian_block
+        return jsonify(body), status_code
 
     adv_used = False
     # Possible advanced path (skip when unsigned override is active)
@@ -382,7 +427,7 @@ def register_plugin() -> Any:
     try:
         validation_result = validate_and_register_plugin(
             payload=payload,
-            require_signature=settings.require_plugin_signature,
+            require_signature=require_signature,
             max_description_len=settings.max_description_len,
         )
     except PluginValidationError:

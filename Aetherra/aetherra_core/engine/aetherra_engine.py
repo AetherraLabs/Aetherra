@@ -11,11 +11,13 @@ reasoning, memory management, and intelligent task orchestration.
 
 # Standard library imports
 import asyncio
+import hashlib
 import json
 import logging
 import os
 import time
 import traceback
+from contextlib import suppress
 from datetime import datetime
 from threading import Lock
 from typing import Any, Dict, List, Optional
@@ -237,6 +239,74 @@ REQUIRED_COMPONENT_KEYS = {
     "reasoning_engine",
     "agent_orchestrator",
 }
+
+
+def _hash_value(value: Any) -> str | None:
+    if value is None:
+        return None
+    raw = str(value)
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "ai:engine" and capability in {
+        "agent:execute_task",
+        "ai:execute_task",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _guardian_preflight_engine_task(
+    *,
+    task_name: str,
+    task_data: Dict[str, Any],
+    priority: str,
+    sensitive: bool,
+    coherence_est: float,
+    require_human: bool,
+):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "ai:engine"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    required_capabilities = task_data.get("required_capabilities", [])
+    if not isinstance(required_capabilities, list):
+        required_capabilities = [str(required_capabilities)]
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="artificial_intelligence",
+            action="ai.engine_execute_task",
+            target=f"ai_task:{_hash_value(task_name)}",
+            purpose="Submit an AI-engine task to the agent orchestrator",
+            capabilities=("ai:execute_task", "agent:execute_task"),
+            evidence=("ai.engine_execute_task:request",),
+            reversible=True,
+            rollback_plan="cancel queued task or stop task before side effects",
+            metadata={
+                "task_name_hash": _hash_value(task_name),
+                "task_data_keys": sorted(str(key) for key in task_data),
+                "required_capability_count": len(required_capabilities),
+                "required_capability_hashes": [
+                    _hash_value(capability) for capability in required_capabilities
+                ],
+                "priority": priority,
+                "sensitive": sensitive,
+                "coherence_est": coherence_est,
+                "require_human": require_human,
+                "timeout_present": "timeout" in task_data,
+                "dependency_count": len(task_data.get("dependencies", []) or []),
+            },
+        ),
+        approval_id=approval_id,
+        capability_checker=_guardian_capability_checker,
+    )
 
 
 # Ensure a current event loop exists for legacy get_event_loop() callers on Windows/Python 3.13+
@@ -678,13 +748,11 @@ class AetherraEngine:
             dt_recall_ms = (datetime.now() - t_recall0).total_seconds() * 1000.0
             self._record_ab_metric(bucket, dt_recall_ms)
             # Observe recall latency (success path)
-            try:
+            with suppress(Exception):
                 self._observe_recall_latency(dt_recall_ms, success=True)
-            except Exception:
-                pass
 
             # Tool-like callback for memory recall
-            try:
+            with suppress(Exception):
                 _safe_call(
                     _on_tool,
                     {
@@ -693,8 +761,6 @@ class AetherraEngine:
                         "hits": len(relevant_memories),
                     },
                 )
-            except Exception:
-                pass
 
             # RAG evidence selection (prefer higher importance)
             def _importance(m):
@@ -709,7 +775,7 @@ class AetherraEngine:
             sorted_hits = sorted(relevant_memories or [], key=_importance, reverse=True)
             evidence = []
             for m in sorted_hits[:5]:
-                try:
+                with suppress(Exception):
                     evidence.append(
                         {
                             "id": getattr(m, "id", None)
@@ -720,8 +786,6 @@ class AetherraEngine:
                             "importance": _importance(m),
                         }
                     )
-                except Exception:
-                    pass
             if evidence:
                 self.session_metrics["rag_hits"] += 1
             else:
@@ -1179,6 +1243,16 @@ class AetherraEngine:
         # Coherence estimate (0..1) — env override, else simple heuristic from session metrics
         coherence_est = self._estimate_coherence()
         require_human = bool(task_data.get("require_human", False))
+        decision = _guardian_preflight_engine_task(
+            task_name=task_name,
+            task_data=task_data,
+            priority=priority,
+            sensitive=sensitive,
+            coherence_est=coherence_est,
+            require_human=require_human,
+        )
+        if not decision.allowed:
+            raise PermissionError(decision.reason)
 
         task = {
             "task_id": f"task_{datetime.now().isoformat()}",
@@ -1338,10 +1412,8 @@ class AetherraEngine:
             seed = 7
         key = f"{self.session_id or 'nosess'}:{self._msg_counter}:{seed}"
         bucket_val = abs(hash(key)) % 100
-        try:
+        with suppress(Exception):
             self._msg_counter += 1
-        except Exception:
-            pass
         return "quantum" if bucket_val < max(0, min(100, pct)) else "classical"
 
     def _record_ab_metric(self, bucket: str, dt_ms: float):
@@ -1397,7 +1469,7 @@ class AetherraEngine:
                 ),
             }
             # Store a brief narrative in memory (optional)
-            try:
+            with suppress(Exception):
                 await self.memory_system.store_memory(
                     content={
                         "narrative": {
@@ -1408,15 +1480,11 @@ class AetherraEngine:
                     tags=["narrative", "reflection"],
                     memory_type="reflection",
                 )
-            except Exception:
-                pass
             # Nudge self-improvement engine
-            try:
+            with suppress(Exception):
                 self.improvement_engine.record_performance_metric(
                     "rag_hit_rate", eval_summary["rag_hit_rate"], "ratio"
                 )
-            except Exception:
-                pass
             return {"status": "ok", "evaluation": eval_summary}
         except Exception as e:
             logger.debug(f"[REFLECT] Night reflection failed: {e}")
@@ -1517,7 +1585,7 @@ class AetherraEngine:
                 },
             ]
         timeout_sec = 3
-        if isinstance(plan, dict) and isinstance(plan.get("timeout_sec"), (int, float)):
+        if isinstance(plan, dict) and isinstance(plan.get("timeout_sec"), int | float):
             timeout_sec = int(plan["timeout_sec"])  # type: ignore[index]
 
         results: List[Dict[str, Any]] = []
@@ -1653,19 +1721,17 @@ class AetherraEngine:
             models = mgr.list_available_models()  # name -> info
             selected = None
             # If a model is forced and exists, use it
-            if force_model and force_model in models:
-                if mgr.set_model(force_model):
-                    self._llm_selected = True
-                    logger.info(f"[LLM] selected forced model: {force_model}")
-                    return True
+            if force_model and force_model in models and mgr.set_model(force_model):
+                self._llm_selected = True
+                logger.info(f"[LLM] selected forced model: {force_model}")
+                return True
             # Otherwise, pick by provider order, preferring local where possible
             for prov in order:
                 for name, info in models.items():
                     try:
-                        if str(info.get("provider", "")).lower() == prov:
-                            if mgr.set_model(name):
-                                selected = name
-                                break
+                        if str(info.get("provider", "")).lower() == prov and mgr.set_model(name):
+                            selected = name
+                            break
                     except Exception:
                         continue
                 if selected:

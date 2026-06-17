@@ -3510,6 +3510,66 @@ class QuarantineManager:
         self.policy_engine = policy_engine
         self.quarantined_items: dict[str, Any] = {}  # file_id -> metadata
 
+    @staticmethod
+    def _guardian_hash_value(value: Any | None) -> str | None:
+        if value is None:
+            return None
+        raw = str(value)
+        if not raw:
+            return None
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+    @staticmethod
+    def _guardian_capability_checker(requester: str, capability: str) -> bool:
+        if requester == "maintenance" and capability in {
+            "maintenance:quarantine",
+            "maintenance:deploy",
+        }:
+            return True
+
+        from Aetherra.security.capabilities import has_capability
+
+        return has_capability(requester, capability)
+
+    def _guardian_preflight_quarantine_change(
+        self,
+        *,
+        file_id: str,
+        item: dict[str, Any],
+        action: str,
+        purpose: str,
+        capabilities: tuple[str, ...],
+        metadata: dict[str, Any],
+        requester: str,
+        approval_id: str | None,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        return evaluate_intent(
+            IntentDeclaration(
+                requester=str(requester or "maintenance"),
+                subsystem="maintenance",
+                action=action,
+                target="maintenance:self_incorporation_quarantine",
+                purpose=purpose,
+                capabilities=capabilities,
+                evidence=(
+                    "self_incorporation.QuarantineManager",
+                    f"file_id_hash:{self._guardian_hash_value(file_id) or 'none'}",
+                ),
+                reversible=True,
+                rollback_plan="restore the prior quarantine metadata from audit or re-quarantine the item",
+                metadata={
+                    "file_id_hash": self._guardian_hash_value(file_id),
+                    "current_status": str(item.get("status") or "unknown"),
+                    "reason_hash": self._guardian_hash_value(item.get("reason")),
+                    **metadata,
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=self._guardian_capability_checker,
+        )
+
     def quarantine(
         self, file_id: str, reason: str, context: dict[str, Any] | None = None
     ) -> None:
@@ -3532,12 +3592,33 @@ class QuarantineManager:
             )
 
     def escalate(
-        self, file_id: str, new_level: int, approval: str | None = None
+        self,
+        file_id: str,
+        new_level: int,
+        approval: str | None = None,
+        *,
+        requester: str = "maintenance",
+        approval_id: str | None = None,
     ) -> None:
         """Escalate privileges for a quarantined item, with optional approval."""
         item = self.quarantined_items.get(file_id)
         if not item:
             raise ValueError(f"File {file_id} not in quarantine")
+        decision = self._guardian_preflight_quarantine_change(
+            file_id=file_id,
+            item=item,
+            action="maintenance.quarantine_escalate",
+            purpose="Escalate a self-incorporation quarantine item for remediation or review",
+            capabilities=("maintenance:quarantine",),
+            metadata={
+                "new_level": int(new_level),
+                "has_legacy_approval_note": bool(approval),
+            },
+            requester=requester,
+            approval_id=approval_id,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
         item["escalation_level"] = new_level
         item["status"] = "escalated"
         item["approval"] = approval
@@ -3551,11 +3632,38 @@ class QuarantineManager:
                 result={"level": new_level, "approval": approval},
             )
 
-    def release(self, file_id: str, approved: bool = False) -> None:
+    def release(
+        self,
+        file_id: str,
+        approved: bool = False,
+        *,
+        requester: str = "maintenance",
+        approval_id: str | None = None,
+    ) -> None:
         """Release a quarantined item (after approval or remediation)."""
         item = self.quarantined_items.get(file_id)
         if not item:
             raise ValueError(f"File {file_id} not in quarantine")
+        decision = self._guardian_preflight_quarantine_change(
+            file_id=file_id,
+            item=item,
+            action="maintenance.quarantine_release",
+            purpose="Release or reject a self-incorporation quarantine item",
+            capabilities=(
+                "maintenance:quarantine",
+                "maintenance:deploy",
+            )
+            if approved
+            else ("maintenance:quarantine",),
+            metadata={
+                "approved": bool(approved),
+                "escalation_level": int(item.get("escalation_level") or 0),
+            },
+            requester=requester,
+            approval_id=approval_id,
+        )
+        if not decision.allowed:
+            raise PermissionError(f"guardian_denied:{decision.reason}")
         item["status"] = "released" if approved else "rejected"
         item["released_at"] = datetime.now().isoformat()
         if self.audit_ledger:
@@ -4452,6 +4560,8 @@ class SelfIncorporationService:
         include_experimental: bool = False,
         force: bool = False,
         return_results: bool = False,
+        requester: str = "maintenance",
+        approval_id: str | None = None,
     ) -> dict[str, Any]:
         """Compute a plan (or reuse logic) and execute it via CoreIntegrator.
 
@@ -4472,6 +4582,34 @@ class SelfIncorporationService:
                 "plan_id": plan.get("plan_id"),
                 "status": status,
                 "reason": "plan_blocked",
+                "actions": len(plan.get("actions", [])),
+                "duration": time.time() - start_time,
+            }
+
+        from Aetherra.guardian import GuardianStatus
+
+        guardian_decision = self._guardian_preflight_integrate(
+            plan=plan,
+            dry_run=dry_run,
+            include_experimental=include_experimental,
+            force=force,
+            requester=requester,
+            approval_id=approval_id,
+        )
+        if guardian_decision.status not in {
+            GuardianStatus.ALLOW,
+            GuardianStatus.ALLOW_LIMITED,
+        }:
+            logger.warning(
+                "[SELFINC] Integration plan denied by Guardian: %s",
+                guardian_decision.reason,
+            )
+            return {
+                "ok": False,
+                "plan_id": plan.get("plan_id"),
+                "status": "guardian_denied",
+                "reason": guardian_decision.reason,
+                "guardian": guardian_decision.to_audit_dict(),
                 "actions": len(plan.get("actions", [])),
                 "duration": time.time() - start_time,
             }
@@ -4602,10 +4740,223 @@ class SelfIncorporationService:
             },
         }
 
-    async def trigger_rollback(self, rollback_token: str) -> dict[str, Any]:
+    @staticmethod
+    def _guardian_hash_value(value: Any | None) -> str | None:
+        if value is None:
+            return None
+        raw = str(value)
+        if not raw:
+            return None
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+    def _guardian_capability_checker(self, requester: str, capability: str) -> bool:
+        if requester == "maintenance" and capability in {
+            "maintenance:deploy",
+            "maintenance:plan",
+            "maintenance:rollback",
+            "system:reload",
+        }:
+            return True
+        from Aetherra.security.capabilities import has_capability
+
+        return has_capability(requester, capability)
+
+    def _guardian_canary_capabilities(self, dry_run: bool) -> tuple[str, ...]:
+        capabilities = ["maintenance:plan", "maintenance:deploy"]
+        if not dry_run:
+            capabilities.append("system:reload")
+        return tuple(capabilities)
+
+    def _guardian_integrate_capabilities(
+        self, *, plan: dict[str, Any], dry_run: bool
+    ) -> tuple[str, ...]:
+        capabilities = ["maintenance:plan"]
+        if not dry_run:
+            capabilities.append("maintenance:deploy")
+            actions = plan.get("actions", [])
+            if not isinstance(actions, list):
+                actions = []
+            hmr_actions = {"register_plugin", "register_agent", "load_aether_script"}
+            uses_hmr = any(
+                isinstance(action, dict)
+                and str(action.get("action") or "").strip() in hmr_actions
+                for action in actions
+            )
+            if self.config.hmr_enabled and uses_hmr:
+                capabilities.append("system:reload")
+        return tuple(capabilities)
+
+    def _guardian_plan_metadata(
+        self,
+        *,
+        plan: dict[str, Any],
+        tracking_plan_id: str | None,
+        canary_percent: float,
+        canary_duration: int,
+        health_check_interval: int,
+        rollback_threshold: float,
+        dry_run: bool,
+    ) -> dict[str, Any]:
+        actions = plan.get("actions", [])
+        if not isinstance(actions, list):
+            actions = []
+        action_types = sorted(
+            {
+                str(action.get("action") or action.get("op") or "unknown")[:80]
+                for action in actions
+                if isinstance(action, dict)
+            }
+        )
+        return {
+            "tracking_plan_id_hash": self._guardian_hash_value(tracking_plan_id),
+            "generated_plan_id_hash": self._guardian_hash_value(plan.get("plan_id")),
+            "plan_status": str(plan.get("status") or "unknown"),
+            "actions_count": len(actions),
+            "action_types": tuple(action_types[:10]),
+            "canary_percent": float(canary_percent),
+            "canary_duration": int(canary_duration),
+            "health_check_interval": int(health_check_interval),
+            "rollback_threshold": float(rollback_threshold),
+            "dry_run": bool(dry_run),
+        }
+
+    def _guardian_preflight_canary(
+        self,
+        *,
+        plan: dict[str, Any],
+        tracking_plan_id: str | None,
+        canary_percent: float,
+        canary_duration: int,
+        health_check_interval: int,
+        rollback_threshold: float,
+        dry_run: bool,
+        requester: str,
+        approval_id: str | None,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        generated_plan_id_hash = self._guardian_hash_value(plan.get("plan_id"))
+        return evaluate_intent(
+            IntentDeclaration(
+                requester=str(requester or "maintenance"),
+                subsystem="maintenance",
+                action="maintenance.canary_deploy",
+                target="maintenance:canary_deployment",
+                purpose="Evaluate and execute a canary deployment for a self-incorporation plan",
+                capabilities=self._guardian_canary_capabilities(dry_run),
+                evidence=(
+                    "self_incorporation.integrate_with_canary",
+                    f"plan_id_hash:{generated_plan_id_hash or 'none'}",
+                ),
+                reversible=True,
+                rollback_plan="use the generated HMR rollback token through self-incorporation rollback",
+                metadata=self._guardian_plan_metadata(
+                    plan=plan,
+                    tracking_plan_id=tracking_plan_id,
+                    canary_percent=canary_percent,
+                    canary_duration=canary_duration,
+                    health_check_interval=health_check_interval,
+                    rollback_threshold=rollback_threshold,
+                    dry_run=dry_run,
+                ),
+            ),
+            approval_id=approval_id,
+            capability_checker=self._guardian_capability_checker,
+        )
+
+    def _guardian_preflight_integrate(
+        self,
+        *,
+        plan: dict[str, Any],
+        dry_run: bool,
+        include_experimental: bool,
+        force: bool,
+        requester: str,
+        approval_id: str | None,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        generated_plan_id_hash = self._guardian_hash_value(plan.get("plan_id"))
+        return evaluate_intent(
+            IntentDeclaration(
+                requester=str(requester or "maintenance"),
+                subsystem="maintenance",
+                action="maintenance.integrate_plan",
+                target="maintenance:self_incorporation_plan",
+                purpose="Execute a self-incorporation integration plan",
+                capabilities=self._guardian_integrate_capabilities(
+                    plan=plan,
+                    dry_run=dry_run,
+                ),
+                expected_outcome="Self-incorporation plan is executed or simulated under existing safety gates",
+                evidence=(
+                    "self_incorporation.trigger_integrate",
+                    f"plan_id_hash:{generated_plan_id_hash or 'none'}",
+                ),
+                reversible=True,
+                rollback_plan="restore from generated integration audit/HMR rollback records or skip dry-run changes",
+                metadata={
+                    **self._guardian_plan_metadata(
+                        plan=plan,
+                        tracking_plan_id=None,
+                        canary_percent=0.0,
+                        canary_duration=0,
+                        health_check_interval=0,
+                        rollback_threshold=0.0,
+                        dry_run=dry_run,
+                    ),
+                    "include_experimental": bool(include_experimental),
+                    "force": bool(force),
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=self._guardian_capability_checker,
+        )
+
+    def _guardian_preflight_rollback(
+        self,
+        *,
+        rollback_token: str,
+        requester: str,
+        approval_id: str | None,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        token_hash = self._guardian_hash_value(rollback_token)
+        return evaluate_intent(
+            IntentDeclaration(
+                requester=str(requester or "maintenance"),
+                subsystem="maintenance",
+                action="maintenance.rollback",
+                target="maintenance:rollback_token",
+                purpose="Rollback a self-incorporation integration using an HMR rollback token",
+                capabilities=("maintenance:rollback",),
+                evidence=(
+                    "self_incorporation.trigger_rollback",
+                    f"rollback_token_hash:{token_hash or 'none'}",
+                ),
+                reversible=True,
+                rollback_plan="re-run the canary deployment only after health and policy checks pass",
+                metadata={
+                    "rollback_token_hash": token_hash,
+                    "rollback_token_length": len(rollback_token or ""),
+                    "hmr_enabled": bool(self.config.hmr_enabled),
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=self._guardian_capability_checker,
+        )
+
+    async def trigger_rollback(
+        self,
+        rollback_token: str,
+        requester: str = "maintenance",
+        approval_id: str | None = None,
+    ) -> dict[str, Any]:
         """Rollback an integration using HMR rollback token."""
         start_time = time.time()
-        logger.info(f"[SELFINC] Starting rollback for token: {rollback_token}")
+        token_hash = self._guardian_hash_value(rollback_token)
+        logger.info("[SELFINC] Starting rollback for token hash: %s", token_hash)
 
         if not rollback_token or not rollback_token.startswith("rb_"):
             return {
@@ -4639,6 +4990,28 @@ class SelfIncorporationService:
             }
 
         try:
+            from Aetherra.guardian import GuardianStatus
+
+            guardian_decision = self._guardian_preflight_rollback(
+                rollback_token=rollback_token,
+                requester=requester,
+                approval_id=approval_id,
+            )
+            if guardian_decision.status not in {
+                GuardianStatus.ALLOW,
+                GuardianStatus.ALLOW_LIMITED,
+            }:
+                logger.warning(
+                    "[SELFINC][HMR] Rollback denied by Guardian: %s",
+                    guardian_decision.reason,
+                )
+                return {
+                    "ok": False,
+                    "error": f"guardian_denied:{guardian_decision.reason}",
+                    "guardian": guardian_decision.to_audit_dict(),
+                    "duration": time.time() - start_time,
+                }
+
             # Guard policy: check rollback cascade before proceeding
             enforcer = getattr(self, "guard_enforcer", None)
             if enforcer is not None:
@@ -4740,6 +5113,8 @@ class SelfIncorporationService:
         health_check_interval: int = 10,
         rollback_threshold: float = 0.9,
         dry_run: bool = False,
+        requester: str = "maintenance",
+        approval_id: str | None = None,
     ) -> dict[str, Any]:
         """
         Integrate new capability using canary deployment strategy.
@@ -4759,6 +5134,8 @@ class SelfIncorporationService:
             health_check_interval: Seconds between health checks [default: 10]
             rollback_threshold: Minimum health score to keep canary (0.0-1.0) [default: 0.9]
             dry_run: If True, simulate without actual integration
+            requester: Security principal requesting the maintenance operation
+            approval_id: Optional Guardian approval request ID for high-risk environments
 
         Returns:
             {
@@ -4825,6 +5202,36 @@ class SelfIncorporationService:
                 "status": "error",
                 "error": "hmr_controller_unavailable",
                 "plan_id": generated_plan_id,
+                "duration": time.time() - start_time,
+            }
+
+        from Aetherra.guardian import GuardianStatus
+
+        guardian_decision = self._guardian_preflight_canary(
+            plan=plan,
+            tracking_plan_id=plan_id,
+            canary_percent=canary_percent,
+            canary_duration=canary_duration,
+            health_check_interval=health_check_interval,
+            rollback_threshold=rollback_threshold,
+            dry_run=dry_run,
+            requester=requester,
+            approval_id=approval_id,
+        )
+        if guardian_decision.status not in {
+            GuardianStatus.ALLOW,
+            GuardianStatus.ALLOW_LIMITED,
+        }:
+            logger.warning(
+                "[SELFINC][CANARY] Canary deployment denied by Guardian: %s",
+                guardian_decision.reason,
+            )
+            return {
+                "ok": False,
+                "status": "error",
+                "error": f"guardian_denied:{guardian_decision.reason}",
+                "plan_id": generated_plan_id,
+                "guardian": guardian_decision.to_audit_dict(),
                 "duration": time.time() - start_time,
             }
 

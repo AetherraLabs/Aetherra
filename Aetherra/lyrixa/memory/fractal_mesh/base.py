@@ -26,8 +26,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-# Third party imports
-from fractal_encoder import FractalEncoder, FractalPattern
+from Aetherra.aetherra_core.memory.fractal_encoder import FractalEncoder
+
+FractalPattern = Any
 
 
 @dataclass
@@ -500,7 +501,7 @@ class FractalHierarchies:
 
         # Calculate branching factor
         branching_factors = []
-        for level, clusters in hierarchy.items():
+        for _level, clusters in hierarchy.items():
             for cluster in clusters:
                 if cluster.child_cluster_ids:
                     branching_factors.append(len(cluster.child_cluster_ids))

@@ -3,70 +3,222 @@
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
 """
-[TOOL] Aetherra Import Fix Utility
-==============================
-Fixes common import issues for Aetherra contributors.
-
-This script addresses import errors that occur when contributors
-fork the repository by:
-1. Creating missing __init__.py files
-2. Setting up proper Python paths
-3. Installing missing dependencies
-4. Providing helpful debugging information
-
-Run this script after cloning/forking the repository to resolve
-import issues.
+Fix common Aetherra import setup issues with Guardian-gated mutations.
 """
 
-# Standard library imports
+from __future__ import annotations
+
+import hashlib
+import importlib
 import logging
+import os
 import subprocess
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
-# Setup logging
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
 
-class AetherraImportFixer:
-    """Utility class to fix import issues in Aetherra repository."""
+@dataclass(frozen=True)
+class InitFilePlan:
+    directory: Path
+    content: str
 
-    def __init__(self) -> None:
-        self.project_root = Path(__file__).parent
+    @property
+    def init_file(self) -> Path:
+        return self.directory / "__init__.py"
+
+
+@dataclass(frozen=True)
+class ReportPlan:
+    file_path: Path
+    content: str
+
+
+def _hash_value(value: object) -> str | None:
+    if value is None:
+        return None
+    raw = str(value)
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "maintenance" and capability in {
+        "maintenance:cleanup",
+        "fs:write",
+        "network:outbound",
+        "package:install",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+class AetherraImportFixer:
+    """Utility class to fix import issues in an Aetherra repository."""
+
+    def __init__(self, project_root: str | Path = ".") -> None:
+        self.project_root = Path(project_root)
         self.aetherra_dir = self.project_root / "Aetherra"
         self.issues_found: list[str] = []
         self.fixes_applied: list[str] = []
 
+    def _guardian_preflight_init_creation(self, plans: list[InitFilePlan]):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        return evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="maintenance",
+                action="maintenance.import_fix_init_creation",
+                target="maintenance:import_package_markers",
+                purpose="Create missing package marker files for Aetherra import setup",
+                capabilities=("maintenance:cleanup", "fs:write"),
+                expected_outcome="Missing package marker files are created for existing package directories",
+                reversible=False,
+                rollback_plan="delete generated package marker files or restore from version control",
+                metadata={
+                    "project_root_hash": _hash_value(self.project_root),
+                    "init_files_to_create": len(plans),
+                    "planned_directory_hashes": [
+                        _hash_value(plan.directory.relative_to(self.project_root))
+                        for plan in plans[:100]
+                    ],
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=_guardian_capability_checker,
+        )
+
+    def _guardian_preflight_report_write(self, plan: ReportPlan):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        return evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="maintenance",
+                action="maintenance.import_fix_report",
+                target="maintenance:import_fix_report",
+                purpose="Write import fix diagnostic report",
+                capabilities=("maintenance:cleanup", "fs:write"),
+                expected_outcome="Import fix diagnostic report is written",
+                reversible=False,
+                rollback_plan="delete generated diagnostic report or restore from version control",
+                metadata={
+                    "project_root_hash": _hash_value(self.project_root),
+                    "report_path_hash": _hash_value(plan.file_path.relative_to(self.project_root)),
+                    "report_length": len(plan.content),
+                    "issues_found": len(self.issues_found),
+                    "fixes_applied": len(self.fixes_applied),
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=_guardian_capability_checker,
+        )
+
+    def _guardian_preflight_file_writes(
+        self,
+        init_plans: list[InitFilePlan],
+        report_plan: ReportPlan,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        return evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="maintenance",
+                action="maintenance.import_fix",
+                target="maintenance:import_fix_file_writes",
+                purpose="Create package markers and write import fix diagnostics",
+                capabilities=("maintenance:cleanup", "fs:write"),
+                expected_outcome="Import setup file fixes and diagnostic report are written",
+                reversible=False,
+                rollback_plan="delete generated files or restore repository state from version control",
+                metadata={
+                    "project_root_hash": _hash_value(self.project_root),
+                    "init_files_to_create": len(init_plans),
+                    "report_path_hash": _hash_value(
+                        report_plan.file_path.relative_to(self.project_root)
+                    ),
+                    "report_length": len(report_plan.content),
+                    "planned_directory_hashes": [
+                        _hash_value(plan.directory.relative_to(self.project_root))
+                        for plan in init_plans[:100]
+                    ],
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=_guardian_capability_checker,
+        )
+
+    def _guardian_preflight_dependency_install(self, dependencies: list[str]):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        return evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="maintenance",
+                action="maintenance.import_dependency_install",
+                target="maintenance:import_dependency_install",
+                purpose="Install missing Python dependencies for import setup",
+                capabilities=("maintenance:cleanup", "network:outbound", "package:install"),
+                expected_outcome="Requested Python dependencies are installed by pip",
+                reversible=False,
+                rollback_plan="remove installed packages or restore environment from snapshot",
+                metadata={
+                    "project_root_hash": _hash_value(self.project_root),
+                    "dependency_count": len(dependencies),
+                    "dependency_hashes": [_hash_value(dep) for dep in dependencies[:100]],
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=_guardian_capability_checker,
+        )
+
     def check_python_version(self) -> bool:
         """Check if Python version is compatible."""
-        logger.info("🐍 Checking Python version...")
 
         version_info = sys.version_info
         if version_info.major < 3 or (
             version_info.major == 3 and version_info.minor < 8
         ):
             logger.error(
-                f"[ERROR] Python 3.8+ required, found {version_info.major}.{version_info.minor}"
+                "Python 3.8+ required, found %s.%s",
+                version_info.major,
+                version_info.minor,
             )
             self.issues_found.append("Incompatible Python version")
             return False
 
         logger.info(
-            f"[OK] Python {version_info.major}.{version_info.minor}.{version_info.micro} - Compatible"
+            "Python %s.%s.%s is compatible",
+            version_info.major,
+            version_info.minor,
+            version_info.micro,
         )
         return True
 
-    def find_missing_init_files(self) -> list[Path]:
-        """Find directories that need __init__.py files."""
-        logger.info("🔍 Scanning for missing __init__.py files...")
+    def important_package_dirs(self) -> list[Path]:
+        """Return important package directories for Aetherra imports."""
 
-        missing_init_dirs: list[Path] = []
-
-        # Key directories that should be Python packages
-        important_dirs = [
+        return [
             self.aetherra_dir / "aetherra_core",
             self.aetherra_dir / "aetherra_core" / "engine",
             self.aetherra_dir / "aetherra_core" / "orchestration",
@@ -83,367 +235,239 @@ class AetherraImportFixer:
             self.aetherra_dir / "runtime",
         ]
 
-        for dir_path in important_dirs:
-            if dir_path.exists() and dir_path.is_dir():
-                init_file = dir_path / "__init__.py"
-                if not init_file.exists():
-                    missing_init_dirs.append(dir_path)
-                    logger.warning(
-                        f"[WARN]  Missing __init__.py in {dir_path.relative_to(self.project_root)}"
-                    )
-
-        return missing_init_dirs
-
-    def create_init_file(self, directory: Path) -> bool:
-        """Create a basic __init__.py file for a directory."""
-        try:
-            init_file = directory / "__init__.py"
-            package_name = directory.name.replace("_", " ").title()
-
-            init_content = f'''#!/usr/bin/env python3
+    def _init_file_content(self, directory: Path) -> str:
+        package_name = directory.name.replace("_", " ").title()
+        return f'''#!/usr/bin/env python3
 """
 {package_name} Package
 {"=" * (len(package_name) + 8)}
-Auto-generated __init__.py file for Aetherra AI OS.
-
-This file was created automatically to fix import issues.
-You can customize it as needed for your specific package requirements.
+Auto-generated package marker file for Aetherra AI OS.
 """
 
 __version__ = "1.0.0"
 
-# Graceful imports with fallbacks
-import logging
-logger = logging.getLogger(__name__)
-
-# Package status
 PACKAGE_AVAILABLE = True
+
 
 def get_package_status():
     """Get the status of this package."""
-    return {{'available': PACKAGE_AVAILABLE}}
+    return {{"available": PACKAGE_AVAILABLE}}
 
-# Export main components
-__all__ = [
-    'get_package_status',
-    'PACKAGE_AVAILABLE',
-]
+
+__all__ = ["get_package_status", "PACKAGE_AVAILABLE"]
 '''
 
-            with open(init_file, "w", encoding="utf-8") as f:
-                f.write(init_content)
+    def plan_missing_init_files(self) -> list[InitFilePlan]:
+        """Find missing package marker files without mutating the filesystem."""
 
-            logger.info(
-                f"[OK] Created __init__.py in {directory.relative_to(self.project_root)}"
-            )
-            self.fixes_applied.append(f"Created __init__.py in {directory.name}")
+        plans: list[InitFilePlan] = []
+        for directory in self.important_package_dirs():
+            init_file = directory / "__init__.py"
+            if directory.exists() and directory.is_dir() and not init_file.exists():
+                plans.append(
+                    InitFilePlan(
+                        directory=directory,
+                        content=self._init_file_content(directory),
+                    )
+                )
+        return plans
+
+    def apply_init_file_plans(self, plans: list[InitFilePlan]) -> bool:
+        """Create planned package marker files after Guardian approval."""
+
+        if not plans:
             return True
 
-        except Exception as e:
-            logger.error(f"[ERROR] Failed to create __init__.py in {directory}: {e}")
+        decision = self._guardian_preflight_init_creation(plans)
+        if not decision.allowed:
+            logger.error("Guardian denied import package marker creation: %s", decision.reason)
             return False
+
+        self._apply_init_file_plans_unchecked(plans)
+        return True
+
+    def _apply_init_file_plans_unchecked(self, plans: list[InitFilePlan]) -> None:
+        for plan in plans:
+            plan.init_file.write_text(plan.content, encoding="utf-8")
+            self.fixes_applied.append(f"Created package marker in {plan.directory.name}")
+            logger.info("Created package marker in %s", plan.directory.name)
 
     def check_dependencies(self) -> dict[str, bool]:
         """Check if required dependencies are installed."""
-        logger.info("[DISC] Checking dependencies...")
 
         dependencies_status: dict[str, bool] = {}
+        core_deps = ["json", "logging", "pathlib", "asyncio", "flask", "requests"]
+        optional_deps = ["aiohttp", "rich", "dotenv", "psutil"]
 
-        # Core dependencies that are essential for basic functionality
-        core_deps = [
-            "json",  # Built-in
-            "logging",  # Built-in
-            "pathlib",  # Built-in
-            "asyncio",  # Built-in
-            "flask",  # Web framework
-            "requests",  # HTTP client
-        ]
-
-        # Optional dependencies that enhance functionality
-        optional_deps = [
-            "aiohttp",
-            "rich",
-            "python-dotenv",
-            "psutil",
-        ]
-
-        # Check core dependencies
         missing_core = []
         for dep in core_deps:
             try:
-                __import__(dep)
+                importlib.import_module(dep)
                 dependencies_status[dep] = True
-                logger.debug(f"[OK] {dep} - Available")
             except ImportError:
                 dependencies_status[dep] = False
                 missing_core.append(dep)
-                logger.warning(f"[WARN]  {dep} - Missing (core dependency)")
 
-        # Check optional dependencies
         for dep in optional_deps:
             try:
-                __import__(dep)
+                importlib.import_module(dep)
                 dependencies_status[dep] = True
-                logger.debug(f"[OK] {dep} - Available")
             except ImportError:
                 dependencies_status[dep] = False
-                logger.debug(f"ℹ️  {dep} - Missing (optional)")
 
-        # Only report core missing dependencies as issues
         for dep in missing_core:
-            if dep not in ["json", "logging", "pathlib", "asyncio"]:  # Skip built-ins
+            if dep not in {"json", "logging", "pathlib", "asyncio"}:
                 self.issues_found.append(f"Missing core dependency: {dep}")
 
         return dependencies_status
 
-    def install_missing_dependencies(self) -> bool:
-        """Install missing dependencies with timeout and fallback."""
-        logger.info("[DISC] Installing missing dependencies...")
+    def install_missing_dependencies(self, dependencies: list[str] | None = None) -> bool:
+        """Install missing dependencies only after a dedicated Guardian decision."""
 
-        # Try minimal requirements first for faster setup
-        minimal_deps = [
+        requested = dependencies or [
             "flask>=2.3.0",
             "requests>=2.31.0",
             "python-dotenv>=1.0.0",
             "rich>=13.4.0",
         ]
+        decision = self._guardian_preflight_dependency_install(requested)
+        if not decision.allowed:
+            logger.error("Guardian denied dependency installation: %s", decision.reason)
+            return False
 
-        logger.info("Installing core dependencies first...")
         success = True
-
-        for dep in minimal_deps:
+        for dep in requested:
             try:
-                logger.info(f"  Installing {dep}...")
-                result = subprocess.run(
+                subprocess.run(
                     [sys.executable, "-m", "pip", "install", dep],
                     capture_output=True,
                     text=True,
                     check=True,
                     timeout=120,
-                )  # 2 minute timeout per package
-
-            except subprocess.TimeoutExpired:
-                logger.warning(f"[WARN]  {dep} installation timed out - skipping")
-                success = False
-            except subprocess.CalledProcessError as e:
-                logger.warning(f"[WARN]  Failed to install {dep}: {e}")
-                success = False
-
-        if success:
-            logger.info("[OK] Core dependencies installed successfully")
-            self.fixes_applied.append("Installed core dependencies")
-        else:
-            logger.warning(
-                "[WARN]  Some dependencies failed to install - continuing anyway"
-            )
-            self.fixes_applied.append(
-                "Attempted to install dependencies (some may have failed)"
-            )
-
-        # Optionally try full requirements with timeout
-        requirements_file = self.project_root / "requirements.txt"
-        if requirements_file.exists():
-            logger.info("Attempting full requirements installation (with timeout)...")
-            try:
-                result = subprocess.run(
-                    [
-                        sys.executable,
-                        "-m",
-                        "pip",
-                        "install",
-                        "-r",
-                        str(requirements_file),
-                    ],
-                    capture_output=True,
-                    text=True,
-                    timeout=300,
-                )  # 5 minute timeout total
-
-                if result.returncode == 0:
-                    logger.info("[OK] Full requirements installed successfully")
-                    self.fixes_applied.append("Installed full requirements.txt")
-                else:
-                    logger.warning(
-                        "[WARN]  Some packages in requirements.txt failed to install"
-                    )
-
-            except subprocess.TimeoutExpired:
-                logger.warning(
-                    "[WARN]  Full requirements installation timed out - core packages should be sufficient"
                 )
-            except Exception as e:
-                logger.warning(f"[WARN]  Full requirements installation failed: {e}")
+            except (subprocess.TimeoutExpired, subprocess.CalledProcessError):
+                success = False
 
-        return True  # Return True as long as we tried - core deps are sufficient
-
-    def create_minimal_requirements(self) -> None:
-        """Create a minimal requirements.txt file."""
-        minimal_requirements = """# Minimal Aetherra requirements for development
-flask>=2.3.0
-flask-socketio>=5.5.1
-requests>=2.31.0
-aiohttp>=3.8.0
-psutil>=5.9.0
-python-dotenv>=1.0.0
-rich>=13.4.0
-"""
-
-        requirements_file = self.project_root / "requirements.txt"
-        with open(requirements_file, "w") as f:
-            f.write(minimal_requirements)
-
-        logger.info("📝 Created minimal requirements.txt")
+        self.fixes_applied.append(
+            "Installed core dependencies" if success else "Attempted dependency install"
+        )
+        return success
 
     def test_imports(self) -> dict[str, bool]:
         """Test common import patterns."""
-        logger.info("🧪 Testing import patterns...")
 
         import_tests: dict[str, bool] = {}
-
-        # Test imports that commonly fail
-        test_imports = [
-            ("aetherra_core", "from Aetherra.aetherra_core import get_system_status"),
-            ("kernel_loop", "from aetherra_kernel_loop import get_kernel"),
-            (
-                "service_registry",
-                "from aetherra_service_registry import get_service_registry",
-            ),
-            ("startup", "import aetherra_startup"),
+        tests = [
+            ("aetherra_core", "Aetherra.aetherra_core"),
+            ("kernel_loop", "aetherra_kernel_loop"),
+            ("service_registry", "aetherra_service_registry"),
+            ("startup", "aetherra_startup"),
         ]
 
-        for name, import_statement in test_imports:
+        for name, module_name in tests:
             try:
-                # Use compile + exec for safer dynamic import testing
-                compiled_code = compile(
-                    import_statement, f"<import_test:{name}>", "exec"
-                )
-                exec(compiled_code)  # nosec B102: Intentional dynamic import test in tooling
+                importlib.import_module(module_name)
                 import_tests[name] = True
-                logger.info(f"[OK] {name} import - Success")
-            except Exception as e:
+            except Exception as exc:  # noqa: BLE001 - diagnostic tool reports status
                 import_tests[name] = False
-                logger.warning(f"[WARN]  {name} import - Failed: {e}")
+                logger.warning("%s import failed: %s", name, exc)
 
         return import_tests
 
-    def fix_all_issues(self) -> bool:
-        """Run all fixes."""
-        logger.info("🚀 Starting Aetherra import fix process...")
+    def plan_report(
+        self,
+        deps_status: dict[str, bool],
+        import_results: dict[str, bool],
+    ) -> ReportPlan:
+        """Build an import fix diagnostic report without writing it."""
 
-        success = True
+        report = f"""# Aetherra Import Fix Report
 
-        # 1. Check Python version
+Python Environment:
+- Version: {sys.version}
+- Executable: {sys.executable}
+
+Issues Found: {len(self.issues_found)}
+{chr(10).join(f"- {issue}" for issue in self.issues_found)}
+
+Fixes Applied: {len(self.fixes_applied)}
+{chr(10).join(f"- {fix}" for fix in self.fixes_applied)}
+
+Dependency Status:
+{chr(10).join(f"- {dep}: {'OK' if status else 'MISSING'}" for dep, status in deps_status.items())}
+
+Import Tests:
+{chr(10).join(f"- {test}: {'OK' if status else 'FAILED'}" for test, status in import_results.items())}
+
+Next Steps:
+1. If any imports still fail, check the specific error messages.
+2. Consider running dependency installation separately with Guardian approval.
+3. Review contributor setup documentation.
+"""
+        return ReportPlan(
+            file_path=self.project_root / "import_fix_report.md",
+            content=report,
+        )
+
+    def write_report(self, plan: ReportPlan) -> bool:
+        """Write the diagnostic report after Guardian approval."""
+
+        decision = self._guardian_preflight_report_write(plan)
+        if not decision.allowed:
+            logger.error("Guardian denied import fix report write: %s", decision.reason)
+            return False
+
+        self._write_report_unchecked(plan)
+        return True
+
+    def _write_report_unchecked(self, plan: ReportPlan) -> None:
+        plan.file_path.write_text(plan.content, encoding="utf-8")
+        self.fixes_applied.append("Wrote import fix report")
+        logger.info("Report saved to %s", plan.file_path)
+
+    def fix_all_issues(self, *, install_dependencies: bool = False) -> bool:
+        """Run import checks and Guardian-gated fixes."""
+
         if not self.check_python_version():
             return False
 
-        # 2. Create missing __init__.py files
-        missing_inits = self.find_missing_init_files()
-        for directory in missing_inits:
-            if not self.create_init_file(directory):
-                success = False
-
-        # 3. Check dependencies (but don't fail if some are missing)
+        success = True
+        init_plans = self.plan_missing_init_files()
         deps_status = self.check_dependencies()
         missing_core_deps = [
-            dep
-            for dep, status in deps_status.items()
-            if not status and dep in ["flask", "requests"]  # Only essential ones
+            dep for dep, status in deps_status.items() if not status and dep in {"flask", "requests"}
         ]
 
-        if missing_core_deps:
-            logger.info(
-                f"Installing {len(missing_core_deps)} missing core dependencies..."
+        if install_dependencies and missing_core_deps:
+            install_success = self.install_missing_dependencies()
+            success = success and install_success
+        elif missing_core_deps:
+            logger.warning(
+                "Missing core dependencies detected; dependency installation requires explicit approval"
             )
-            # Try to install, but don't fail the whole process if it doesn't work
-            self.install_missing_dependencies()
-        else:
-            logger.info("[OK] Core dependencies are available")
 
-        # 4. Test imports
         import_results = self.test_imports()
+        report_plan = self.plan_report(deps_status, import_results)
+        decision = self._guardian_preflight_file_writes(init_plans, report_plan)
+        if not decision.allowed:
+            logger.error("Guardian denied import fixer file writes: %s", decision.reason)
+            return False
 
-        # 5. Generate report
-        self.generate_report(deps_status, import_results)
-
+        self._apply_init_file_plans_unchecked(init_plans)
+        self._write_report_unchecked(report_plan)
         return success
 
-    def generate_report(
-        self, deps_status: dict[str, bool], import_results: dict[str, bool]
-    ) -> None:
-        """Generate a summary report."""
-        logger.info("📊 Generating import fix report...")
 
-        report = f"""
-🌌 Aetherra Import Fix Report
-{"=" * 40}
+def main(project_root: str | Path = ".", *, install_dependencies: bool = False) -> int:
+    """Run the import fixer."""
 
-Python Environment:
-  Version: {sys.version}
-  Executable: {sys.executable}
-
-Issues Found: {len(self.issues_found)}
-{chr(10).join(f"  - {issue}" for issue in self.issues_found)}
-
-Fixes Applied: {len(self.fixes_applied)}
-{chr(10).join(f"  - {fix}" for fix in self.fixes_applied)}
-
-Dependency Status:
-{chr(10).join(f"  {dep}: {'[OK]' if status else '[ERROR]'}" for dep, status in deps_status.items())}
-
-Import Tests:
-{chr(10).join(f"  {test}: {'[OK]' if status else '[ERROR]'}" for test, status in import_results.items())}
-
-Next Steps:
-  1. If any imports still fail, check the specific error messages
-  2. Consider running: pip install -r requirements.txt --upgrade
-  3. For VS Code users, install recommended extensions (see CONTRIBUTING.md)
-  4. Join our Discord for support: https://discord.gg/aetherra
-
-Repository: https://github.com/AetherraLabs/Aetherra
-"""
-
-        print(report)
-
-        # Save report to file
-        report_file = self.project_root / "import_fix_report.md"
-        try:
-            with open(report_file, "w", encoding="utf-8") as f:
-                f.write(report)
-            logger.info(f"📄 Report saved to {report_file}")
-        except Exception as e:
-            logger.warning(f"[WARN]  Could not save report file: {e}")
-            # Try saving without emojis
-            try:
-                clean_report = report.encode("ascii", "ignore").decode("ascii")
-                with open(report_file, "w") as f:
-                    f.write(clean_report)
-                logger.info(f"📄 Report saved to {report_file} (ASCII only)")
-            except Exception:
-                logger.warning("Could not save report file")
-
-        logger.info("📄 Report completed")
-
-
-def main() -> int:
-    """Main function to run the import fixer."""
-    try:
-        fixer = AetherraImportFixer()
-        success = fixer.fix_all_issues()
-
-        if success:
-            print("\n🎉 Import fix completed successfully!")
-            print("   You should now be able to import Aetherra modules.")
-        else:
-            print("\n[WARN]  Import fix completed with some issues.")
-            print("   Check the report above for details.")
-
-        return 0 if success else 1
-
-    except Exception as e:
-        logger.error(f"[ERROR] Unexpected error: {e}")
-        return 1
+    fixer = AetherraImportFixer(project_root=project_root)
+    success = fixer.fix_all_issues(install_dependencies=install_dependencies)
+    return 0 if success else 1
 
 
 if __name__ == "__main__":
-    exit_code = main()
-    sys.exit(exit_code)
+    args = sys.argv[1:]
+    install = "--install-dependencies" in args
+    roots = [arg for arg in args if arg != "--install-dependencies"]
+    raise SystemExit(main(roots[0] if roots else ".", install_dependencies=install))

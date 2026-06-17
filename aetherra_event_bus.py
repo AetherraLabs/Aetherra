@@ -12,10 +12,14 @@ Prometheus via the Hub.
 
 # Standard library imports
 import asyncio
+import logging
 from collections import defaultdict, deque
+from contextlib import suppress
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -42,11 +46,111 @@ class EventBus:
         self._rate_per_sec = 100.0  # default publish allowance per topic
         self._max_backlog = 1000
 
+    def _guardian_requester(self, value: Any, fallback: str = "event_bus") -> str:
+        requester = str(value or fallback).strip()
+        return requester or fallback
+
+    def _guardian_capability_checker(self, requester: str, capability: str) -> bool:
+        if requester == "event_bus" and capability in {
+            "event:publish",
+            "event:subscribe",
+            "event:ack",
+            "event:command",
+        }:
+            return True
+        from Aetherra.security.capabilities import has_capability
+
+        return has_capability(requester, capability)
+
+    def _publish_capabilities(
+        self, topic: str, event_payload: dict[str, Any]
+    ) -> tuple[str, ...]:
+        capabilities = ["event:publish"]
+        event_type = str(event_payload.get("type") or "").strip().lower()
+        topic_parts = {
+            part
+            for part in topic.replace("-", ".").replace("_", ".").lower().split(".")
+            if part
+        }
+        event_parts = {
+            part
+            for part in event_type.replace("-", ".").replace("_", ".").split(".")
+            if part
+        }
+        privileged_markers = {
+            "admin",
+            "command",
+            "control",
+            "execute",
+            "reload",
+            "restart",
+            "shutdown",
+        }
+        if topic_parts & privileged_markers or event_parts & privileged_markers:
+            capabilities.append("event:command")
+        return tuple(capabilities)
+
+    def _guardian_preflight(
+        self,
+        *,
+        requester: str,
+        action: str,
+        topic: str,
+        purpose: str,
+        capabilities: tuple[str, ...],
+        metadata: dict[str, Any],
+    ) -> None:
+        from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="event_bus",
+                action=action,
+                target="event_bus:topic",
+                purpose=purpose,
+                capabilities=capabilities,
+                evidence=(f"topic:{topic}",),
+                reversible=True,
+                rollback_plan="ack, unsubscribe, or ignore queued event depending on operation",
+                metadata=metadata,
+            ),
+            capability_checker=self._guardian_capability_checker,
+        )
+        if decision.status not in {
+            GuardianStatus.ALLOW,
+            GuardianStatus.ALLOW_LIMITED,
+        }:
+            raise PermissionError(
+                f"Guardian denied event bus action {action}: {decision.reason}"
+            )
+
     # --------------- Control-plane API ---------------
     async def publish(self, topic: str, event: dict[str, Any]) -> dict[str, Any]:
         t = str(topic).strip()
         if not t:
             return {"ok": False, "error": "invalid_topic"}
+        event_payload = event if isinstance(event, dict) else {}
+        source = self._guardian_requester(event_payload.get("source"))
+        capabilities = self._publish_capabilities(t, event_payload)
+        self._guardian_preflight(
+            requester=source,
+            action=(
+                "event_bus.publish_command"
+                if "event:command" in capabilities
+                else "event_bus.publish"
+            ),
+            topic=t,
+            purpose=f"Publish event to topic {t}",
+            capabilities=capabilities,
+            metadata={
+                "topic": t,
+                "event_keys": tuple(sorted(str(key) for key in event_payload)),
+                "event_type": str(event_payload.get("type") or ""),
+                "source": source,
+                "privileged": "event:command" in capabilities,
+            },
+        )
         async with self._lock:
             top = self._topics.setdefault(t, Topic(name=t))
             # Rate limit (token bucket)
@@ -62,11 +166,9 @@ class EventBus:
             # Enqueue with cap
             if len(top.backlog) >= self._max_backlog:
                 # Drop oldest to keep headroom
-                try:
+                with suppress(Exception):
                     top.backlog.popleft()
-                except Exception:
-                    pass
-            top.backlog.append({"ts": datetime.now().isoformat(), **(event or {})})
+            top.backlog.append({"ts": datetime.now().isoformat(), **event_payload})
             self._metrics["events_published_total"] += 1
         # Fan-out best-effort without holding the lock
         await self._fanout(t)
@@ -77,6 +179,14 @@ class EventBus:
         s = str(service_name).strip()
         if not t or not s:
             return {"ok": False, "error": "invalid"}
+        self._guardian_preflight(
+            requester=self._guardian_requester(s),
+            action="event_bus.subscribe",
+            topic=t,
+            purpose=f"Subscribe service {s} to topic {t}",
+            capabilities=("event:subscribe",),
+            metadata={"topic": t, "service_name": s},
+        )
         async with self._lock:
             top = self._topics.setdefault(t, Topic(name=t))
             top.subscribers.add(s)
@@ -85,6 +195,16 @@ class EventBus:
     async def ack(self, topic: str, count: int = 1) -> dict[str, Any]:
         t = str(topic).strip()
         c = max(0, int(count))
+        if not t:
+            return {"ok": False, "error": "invalid_topic"}
+        self._guardian_preflight(
+            requester="event_bus",
+            action="event_bus.ack",
+            topic=t,
+            purpose=f"Acknowledge {c} event(s) on topic {t}",
+            capabilities=("event:ack",),
+            metadata={"topic": t, "count": c},
+        )
         async with self._lock:
             top = self._topics.get(t)
             if not top:
@@ -149,8 +269,8 @@ class EventBus:
         try:
             await self.registry.broadcast_message(f"keb.event.{topic}", evt)
             self._metrics["events_delivered_total"] += len(top.subscribers or [])
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("KEB fanout failed for topic %s: %s", topic, exc)
 
 
 # Global singleton factory

@@ -8,12 +8,15 @@ Multi-agent coordination and task distribution system.
 
 # Standard library imports
 import asyncio
+import hashlib
 import json
 import logging
+import os
 import sqlite3
 import time
 import traceback
 import uuid
+from contextlib import suppress
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum
@@ -21,6 +24,60 @@ from pathlib import Path
 from typing import Any, Dict, List, Set
 
 logger = logging.getLogger(__name__)
+
+
+def _hash_value(value: Any) -> str | None:
+    if value is None:
+        return None
+    raw = str(value)
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "agent:plugin_orchestrator" and capability in {
+        "agent:control",
+        "agent:execute_task",
+        "agent:register",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _guardian_preflight_agent_operation(
+    *,
+    action: str,
+    target: str,
+    purpose: str,
+    capabilities: tuple[str, ...],
+    reversible: bool,
+    rollback_plan: str,
+    metadata: dict[str, Any],
+):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "agent:plugin_orchestrator"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="agents",
+            action=action,
+            target=target,
+            purpose=purpose,
+            capabilities=capabilities,
+            evidence=(f"{action}:request",),
+            reversible=reversible,
+            rollback_plan=rollback_plan,
+            metadata=metadata,
+        ),
+        approval_id=approval_id,
+        capability_checker=_guardian_capability_checker,
+    )
 
 
 class AgentStatus(Enum):
@@ -131,12 +188,12 @@ class TaskQueue:
     def get_next_task(self, agent_capabilities: Set[str]) -> Task | None:
         """Get next suitable task for agent"""
         for task in self.tasks:
-            if task.status == TaskStatus.PENDING:
-                # Check if agent has required capabilities
-                if all(cap in agent_capabilities for cap in task.required_capabilities):
-                    # Check dependencies
-                    if self._dependencies_satisfied(task):
-                        return task
+            if (
+                task.status == TaskStatus.PENDING
+                and all(cap in agent_capabilities for cap in task.required_capabilities)
+                and self._dependencies_satisfied(task)
+            ):
+                return task
         return None
 
     def _dependencies_satisfied(self, task: Task) -> bool:
@@ -384,7 +441,7 @@ class AgentOrchestrator:
                 )
                 name = getattr(agent_obj, "name", agent_id)
                 raw_caps = getattr(agent_obj, "capabilities", [])
-                if not isinstance(raw_caps, (list, tuple, set)):
+                if not isinstance(raw_caps, list | tuple | set):
                     raw_caps = []
                 capabilities = list(raw_caps)
                 description = description or getattr(agent_obj, "description", "Test Agent (auto)")
@@ -405,7 +462,7 @@ class AgentOrchestrator:
                 if capabilities is None:
                     capabilities = []
                 if not isinstance(capabilities, list):
-                    if isinstance(capabilities, (set, tuple)):
+                    if isinstance(capabilities, set | tuple):
                         capabilities = list(capabilities)
                     else:
                         capabilities = [str(capabilities)]
@@ -423,6 +480,29 @@ class AgentOrchestrator:
                 agent_id = agent_id or name or f"agent_{len(self.agents) + 1:04d}"
                 name = name or agent_id
 
+            decision = _guardian_preflight_agent_operation(
+                action="agent.register",
+                target=f"agent:{_hash_value(agent_id)}",
+                purpose="Register an agent with the plugin agent orchestrator",
+                capabilities=("agent:register",),
+                reversible=True,
+                rollback_plan="unregister the agent and remove its persisted registry record",
+                metadata={
+                    "agent_id_hash": _hash_value(agent_id),
+                    "agent_name_hash": _hash_value(name),
+                    "capability_count": len(capabilities),
+                    "capability_hashes": [_hash_value(cap) for cap in capabilities],
+                    "interface_provided": interface is not None,
+                },
+            )
+            if not decision.allowed:
+                logger.warning(
+                    "Guardian denied plugin agent registration for hashed id %s: %s",
+                    _hash_value(agent_id),
+                    decision.reason,
+                )
+                return False
+
             # Deduplicate existing agent -> idempotent
             if agent_id in self.agents:
                 logger.info(f"Agent '{agent_id}' already registered; idempotent no-op")
@@ -437,12 +517,10 @@ class AgentOrchestrator:
                 # Build AgentCapability objects with baseline I/O type hints
                 cap_objs = []
                 for cap in capabilities:
-                    try:
+                    with suppress(Exception):
                         cap_objs.append(
                             AgentCapability(cap, f"Capability {cap}", ["input"], ["output"])
                         )
-                    except Exception:
-                        pass
                 agent = Agent(
                     agent_id=agent_id,
                     name=name,
@@ -475,12 +553,64 @@ class AgentOrchestrator:
     def unregister_agent(self, agent_id: str):
         """Unregister an agent"""
         if agent_id in self.agents:
+            decision = _guardian_preflight_agent_operation(
+                action="agent.unregister",
+                target=f"agent:{_hash_value(agent_id)}",
+                purpose="Unregister an agent from the plugin orchestrator",
+                capabilities=("agent:register", "agent:control"),
+                reversible=True,
+                rollback_plan="restore the agent registration from persisted registry metadata",
+                metadata={
+                    "agent_id_hash": _hash_value(agent_id),
+                    "has_interface": agent_id in self.agent_interfaces,
+                },
+            )
+            if not decision.allowed:
+                logger.warning(
+                    "Guardian denied plugin agent unregister for hashed id %s: %s",
+                    _hash_value(agent_id),
+                    decision.reason,
+                )
+                return False
+
             del self.agents[agent_id]
             del self.agent_interfaces[agent_id]
             logger.info(f"Unregistered agent: {agent_id}")
+            return True
+        return False
 
     async def submit_task(self, task: Task) -> str:
         """Submit a task for execution"""
+        decision = _guardian_preflight_agent_operation(
+            action="agent.submit_task",
+            target=f"agent_task:{_hash_value(task.task_id)}",
+            purpose="Submit a task into the plugin agent orchestrator queue",
+            capabilities=("agent:execute_task",),
+            reversible=True,
+            rollback_plan="remove the queued task and delete its persisted task record",
+            metadata={
+                "task_id_hash": _hash_value(task.task_id),
+                "task_name_hash": _hash_value(task.name),
+                "description_length": len(str(task.description or "")),
+                "required_capability_count": len(task.required_capabilities),
+                "required_capability_hashes": [
+                    _hash_value(capability)
+                    for capability in task.required_capabilities
+                ],
+                "input_type": type(task.input_data).__name__,
+                "priority": task.priority.value,
+                "max_execution_time": task.max_execution_time,
+                "dependency_count": len(task.dependencies),
+            },
+        )
+        if not decision.allowed:
+            logger.warning(
+                "Guardian denied plugin agent task submission for hashed id %s: %s",
+                _hash_value(task.task_id),
+                decision.reason,
+            )
+            raise PermissionError(decision.reason)
+
         self.task_queue.add_task(task)
         await self._store_task(task)
 
@@ -512,10 +642,8 @@ class AgentOrchestrator:
 
         if self.orchestration_task:
             self.orchestration_task.cancel()
-            try:
+            with suppress(asyncio.CancelledError):
                 await self.orchestration_task
-            except asyncio.CancelledError:
-                pass
 
         logger.info("Agent orchestration stopped")
 
@@ -551,8 +679,36 @@ class AgentOrchestrator:
             if task:
                 await self._assign_task(task, agent)
 
-    async def _assign_task(self, task: Task, agent: Agent):
+    async def _assign_task(self, task: Task, agent: Agent) -> bool:
         """Assign a task to an agent"""
+        decision = _guardian_preflight_agent_operation(
+            action="agent.assign_task",
+            target=f"agent:{_hash_value(agent.agent_id)}",
+            purpose="Assign a queued plugin-orchestrator task to an agent",
+            capabilities=("agent:execute_task", "agent:control"),
+            reversible=True,
+            rollback_plan="return the task to pending state and mark the agent idle",
+            metadata={
+                "task_id_hash": _hash_value(task.task_id),
+                "task_name_hash": _hash_value(task.name),
+                "agent_id_hash": _hash_value(agent.agent_id),
+                "required_capability_count": len(task.required_capabilities),
+                "required_capability_hashes": [
+                    _hash_value(capability)
+                    for capability in task.required_capabilities
+                ],
+                "priority": task.priority.value,
+            },
+        )
+        if not decision.allowed:
+            logger.warning(
+                "Guardian denied plugin task assignment for task hash %s to agent hash %s: %s",
+                _hash_value(task.task_id),
+                _hash_value(agent.agent_id),
+                decision.reason,
+            )
+            return False
+
         task.status = TaskStatus.ASSIGNED
         task.assigned_agent = agent.agent_id
         task.started_at = datetime.now()
@@ -565,6 +721,7 @@ class AgentOrchestrator:
 
         # Execute task in background
         asyncio.create_task(self._execute_task(task, agent))
+        return True
 
     async def _execute_task(self, task: Task, agent: Agent):
         """Execute a task with an agent"""

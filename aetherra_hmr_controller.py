@@ -16,11 +16,16 @@ Phase 1 scope:
 
 # Standard library imports
 import asyncio
+import hashlib
 import importlib
 import importlib.util
+import json
 import logging
 import os
+import shutil
 import time
+from contextlib import suppress
+from pathlib import PurePath
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -39,11 +44,11 @@ class HMRController:
         self.running = False
         self.state: dict[str, Any] = {"status": "idle"}
         # Allowed sources (module names or approved paths). Comma-separated env, optional.
-        self.allowed_sources = set(
+        self.allowed_sources = {
             s.strip()
             for s in os.getenv("AETHERRA_HMR_ALLOWED_SOURCES", "").split(",")
             if s.strip()
-        )
+        }
         # Audit log path for HMR ops
         self.audit_path = os.getenv(
             "AETHERRA_HMR_AUDIT_PATH", ".aetherra/hmr_audit.jsonl"
@@ -90,14 +95,97 @@ class HMRController:
             if not target or not source:
                 return {"ok": False, "error": "missing_target_or_source"}
             mode = data.get("mode", "safe")
-            return await self._reload_target(str(target), str(source), mode=str(mode))
+            return await self._reload_target(
+                str(target),
+                str(source),
+                mode=str(mode),
+                requester=self._guardian_requester(data),
+                approval_id=self._guardian_approval_id(data),
+            )
         if t == "hmr_status":
             return {"ok": True, "state": self.state}
         return {"ok": False, "error": "unsupported_hmr_task"}
 
+    def _guardian_requester(self, data: dict[str, Any] | None = None) -> str:
+        data = data or {}
+        requester = data.get("guardian_requester") or data.get("requester")
+        return str(requester or "hmr_controller").strip() or "hmr_controller"
+
+    def _guardian_approval_id(self, data: dict[str, Any] | None = None) -> str | None:
+        data = data or {}
+        value = data.get("guardian_approval_id") or data.get("approval_id")
+        if value is None:
+            return None
+        approval_id = str(value).strip()
+        return approval_id or None
+
+    def _guardian_capability_checker(self, requester: str, capability: str) -> bool:
+        if requester == "hmr_controller" and capability == "system:reload":
+            return True
+        from Aetherra.security.capabilities import has_capability
+
+        return has_capability(requester, capability)
+
+    def _guardian_source_metadata(self, source: str) -> dict[str, Any]:
+        source_ref = str(source)
+        source_hash = hashlib.sha256(source_ref.encode("utf-8")).hexdigest()
+        suffix = PurePath(source_ref).suffix.lower() if source_ref.endswith(".py") else ""
+        return {
+            "source_kind": "file" if source_ref.endswith(".py") else "module",
+            "source_sha256": source_hash,
+            "source_suffix": suffix,
+            "source_length": len(source_ref),
+            "allowed_sources_configured": bool(self.allowed_sources),
+        }
+
+    def _guardian_preflight(
+        self,
+        *,
+        requester: str,
+        target: str,
+        source: str,
+        mode: str,
+        approval_id: str | None,
+    ) -> None:
+        from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="hmr_controller",
+                action="hmr.reload",
+                target=f"hmr_controller:{target}",
+                purpose=f"Hot reload runtime target {target}",
+                capabilities=("system:reload",),
+                expected_outcome="Replace the runtime target with a validated shadow instance",
+                reversible=True,
+                rollback_plan="restore the previous runtime instance through kernel rollback_swap",
+                evidence=(f"hmr_target:{target}",),
+                metadata={
+                    "target": target,
+                    "mode": mode,
+                    **self._guardian_source_metadata(source),
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=self._guardian_capability_checker,
+        )
+        if decision.status not in {
+            GuardianStatus.ALLOW,
+            GuardianStatus.ALLOW_LIMITED,
+        }:
+            raise PermissionError(
+                f"Guardian denied HMR reload for {target}: {decision.reason}"
+            )
+
     # ---------------- Core flow ----------------
     async def _reload_target(
-        self, target: str, source: str, mode: str = "safe"
+        self,
+        target: str,
+        source: str,
+        mode: str = "safe",
+        requester: str = "hmr_controller",
+        approval_id: str | None = None,
     ) -> dict[str, Any]:
         """Prepare → Verify → Quiesce → Swap → Resume | Rollback"""
         start = time.time()
@@ -109,21 +197,26 @@ class HMRController:
         }
 
         # Strict gating: ensure source is allowed when configured
-        if self.allowed_sources:
-            if source not in self.allowed_sources and not any(
-                source.startswith(p.rstrip("/*")) for p in self.allowed_sources
-            ):
-                self._audit(
-                    "gated", target, source, ok=False, reason="source_not_allowed"
-                )
-                return {"ok": False, "error": "source_not_allowed"}
+        if self.allowed_sources and source not in self.allowed_sources and not any(
+            source.startswith(p.rstrip("/*")) for p in self.allowed_sources
+        ):
+            self._audit("gated", target, source, ok=False, reason="source_not_allowed")
+            return {"ok": False, "error": "source_not_allowed"}
+
+        self._guardian_preflight(
+            requester=requester,
+            target=target,
+            source=source,
+            mode=mode,
+            approval_id=approval_id,
+        )
 
         # Metrics attempt
         try:
             if hasattr(self.kernel, "record_hmr_attempt"):
                 self.kernel.record_hmr_attempt(str(target))
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("[HMR] attempt metric failed for %s: %s", target, exc)
 
         try:
             # Prepare: load shadow under a fresh module namespace
@@ -184,8 +277,8 @@ class HMRController:
                 try:
                     if hasattr(self.kernel, "record_hmr_rollback"):
                         self.kernel.record_hmr_rollback(str(target))
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logger.debug("[HMR] rollback metric failed for %s: %s", target, exc)
                 self._audit("post_swap_failed", target, source, ok=False)
                 return {"ok": False, "error": "post_swap_failed"}
 
@@ -193,15 +286,15 @@ class HMRController:
             try:
                 if hasattr(self.kernel, "resume_target"):
                     self.kernel.resume_target(str(target))
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.debug("[HMR] resume failed for %s: %s", target, exc)
 
             swap_ms = int((time.time() - start) * 1000)
             try:
                 if hasattr(self.kernel, "record_hmr_success"):
                     self.kernel.record_hmr_success(str(target), swap_ms)
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.debug("[HMR] success metric failed for %s: %s", target, exc)
 
             self.state = {"status": "swapped", "target": target, "swap_ms": swap_ms}
             self._audit("swapped", target, source, ok=True, extra={"swap_ms": swap_ms})
@@ -262,8 +355,8 @@ class HMRController:
         try:
             if hasattr(self.kernel, "quiesce_for_target"):
                 return await self.kernel.quiesce_for_target(str(target), timeout_sec)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("[HMR] quiesce failed for %s: %s", target, exc)
         # fallback: brief sleep as best-effort
         await asyncio.sleep(0.2)
         return True
@@ -280,8 +373,8 @@ class HMRController:
         try:
             if hasattr(self.kernel, "rollback_swap"):
                 await self.kernel.rollback_swap(str(target), old_instance)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("[HMR] rollback failed for %s: %s", target, exc)
 
     async def _post_swap_health(self, target: str) -> bool:
         try:
@@ -289,8 +382,8 @@ class HMRController:
             if hasattr(self.kernel, "get_status"):
                 status = self.kernel.get_status()
                 return bool(status)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("[HMR] post-swap health failed for %s: %s", target, exc)
         return True
 
     def _resolve_current_target(self, target: str) -> Any | None:
@@ -308,8 +401,8 @@ class HMRController:
         try:
             if hasattr(self.registry, "broadcast_message"):
                 await self.registry.broadcast_message(message_type, data)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("[HMR] broadcast failed for %s: %s", message_type, exc)
 
     def _audit(
         self,
@@ -340,17 +433,12 @@ class HMRController:
             # rotate if file too large before appending
             self._maybe_rotate_audit(path)
             with open(path, "a", encoding="utf-8") as f:
-                # Standard library imports
-                import json
-
                 f.write(json.dumps(record) + "\n")
             # increment in-memory counters
-            try:
+            with suppress(Exception):
                 self.audit_counters[event] = int(self.audit_counters.get(event, 0)) + 1
-            except Exception:
-                pass
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("[HMR] audit write failed for %s: %s", event, exc)
 
     def get_audit_counters(self) -> dict[str, int]:
         try:
@@ -409,9 +497,6 @@ class HMRController:
             ts = time.strftime("%Y%m%d-%H%M%S", time.localtime())
             rotated = f"{path}.{ts}"
             try:
-                # Standard library imports
-                import shutil
-
                 shutil.move(path, rotated)
             except Exception:
                 # If move fails, attempt to copy+truncate
@@ -440,14 +525,12 @@ class HMRController:
                 # Keep newest self.audit_max_backups, delete the rest
                 excess = max(0, len(candidates) - max(0, int(self.audit_max_backups)))
                 for i in range(excess):
-                    try:
+                    with suppress(Exception):
                         os.remove(candidates[i][1])
-                    except Exception:
-                        pass
-            except Exception:
-                pass
-        except Exception:
-            pass
+            except Exception as exc:
+                logger.debug("[HMR] audit backup pruning failed for %s: %s", path, exc)
+        except Exception as exc:
+            logger.debug("[HMR] audit rotation failed for %s: %s", path, exc)
 
 
 async def get_hmr_controller(registry, kernel, strict: bool = False) -> HMRController:

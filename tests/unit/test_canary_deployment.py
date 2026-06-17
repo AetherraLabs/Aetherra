@@ -9,6 +9,7 @@ Tests the integrate_with_canary() method in Self-Incorporation service.
 """
 
 import asyncio
+import json
 import tempfile
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -22,8 +23,12 @@ from aetherra_self_incorporation import (
 
 
 @pytest.fixture
-def temp_config():
+def temp_config(monkeypatch, tmp_path):
     """Create a temporary configuration for testing."""
+    monkeypatch.setenv("AETHERRA_PROFILE", "test")
+    monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(tmp_path))
+    monkeypatch.setenv("AETHERRA_GUARDIAN_MODE", "enforcing")
+    monkeypatch.delenv("AETHERRA_REQUIRE_CAPABILITIES", raising=False)
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
         config = SelfIncorporationConfig()
@@ -48,6 +53,15 @@ def mock_service(temp_config):
     service.service_registry = mock_registry
 
     return service
+
+
+def _audit_entries(root):
+    audit_path = root / ".aetherra" / "security" / "audit.jsonl"
+    return [
+        json.loads(line)
+        for line in audit_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
 
 
 @pytest.mark.asyncio
@@ -220,6 +234,123 @@ async def test_canary_deployment_configurable_parameters(mock_service):
         assert result["status"] == "canary_stable"
         assert result["baseline_health"] == 0.98
         assert result["avg_health"] == 0.98
+
+
+@pytest.mark.asyncio
+async def test_canary_deployment_writes_guardian_audit_without_raw_plan_ids(
+    mock_service, tmp_path
+):
+    """Canary deployment must pass through Guardian without leaking plan IDs."""
+    mock_plan = {
+        "plan_id": "plan-do-not-audit-this-value",
+        "status": "ready",
+        "actions": [{"action": "register_plugin", "target": {"file_id": "test_456"}}],
+    }
+
+    with (
+        patch.object(mock_service, "_run_integration_planning", return_value=mock_plan),
+        patch.object(mock_service, "_get_system_health_score", return_value=0.98),
+    ):
+        result = await mock_service.integrate_with_canary(
+            plan_id="tracking-do-not-audit-this-value",
+            canary_duration=0,
+            dry_run=True,
+        )
+
+    entries = _audit_entries(tmp_path)
+    audit_json = json.dumps(entries[-1])
+
+    assert result["ok"] is True
+    assert entries[-1]["details"]["intent"]["action"] == "maintenance.canary_deploy"
+    assert "maintenance_operation" in entries[-1]["details"]["risk"]["factors"]
+    assert "do-not-audit-this-value" not in audit_json
+
+
+@pytest.mark.asyncio
+async def test_canary_deployment_blocks_external_requester_without_capability(
+    monkeypatch, mock_service, tmp_path
+):
+    """Strict capability mode must stop untrusted operators before execution."""
+    monkeypatch.setenv("AETHERRA_REQUIRE_CAPABILITIES", "1")
+    monkeypatch.setenv("AETHERRA_POLICY_HOME", str(tmp_path / "policy"))
+    mock_plan = {
+        "plan_id": "test_plan_denied",
+        "status": "ready",
+        "actions": [{"action": "register_plugin", "target": {"file_id": "test_456"}}],
+    }
+
+    with (
+        patch.object(mock_service, "_run_integration_planning", return_value=mock_plan),
+        patch.object(
+            mock_service, "_get_system_health_score", new=AsyncMock()
+        ) as health_score,
+        patch.object(
+            mock_service.core_integrator, "execute_plan", new=AsyncMock()
+        ) as execute_plan,
+    ):
+        result = await mock_service.integrate_with_canary(
+            canary_duration=0,
+            dry_run=False,
+            requester="untrusted_operator",
+        )
+
+    assert result["ok"] is False
+    assert result["error"].startswith("guardian_denied:missing_capability")
+    assert health_score.await_count == 0
+    assert execute_plan.await_count == 0
+
+
+@pytest.mark.asyncio
+async def test_canary_rollback_writes_guardian_audit_without_raw_token(
+    mock_service, tmp_path
+):
+    """Rollback must be Guardian-audited without storing the raw rollback token."""
+    rollback_token = "rb_do-not-audit-this-value"
+    mock_service.audit_ledger.append(
+        plan_id="test-plan",
+        action="integration_plan",
+        status="applied",
+        target={"plan_id": "test-plan"},
+        result={"rollback_token": rollback_token},
+    )
+
+    result = await mock_service.trigger_rollback(rollback_token)
+    entries = _audit_entries(tmp_path)
+    audit_json = json.dumps(entries[-1])
+
+    assert result["ok"] is True
+    assert entries[-1]["details"]["intent"]["action"] == "maintenance.rollback"
+    assert "maintenance_operation" in entries[-1]["details"]["risk"]["factors"]
+    assert rollback_token not in audit_json
+    assert "do-not-audit-this-value" not in audit_json
+
+
+@pytest.mark.asyncio
+async def test_canary_rollback_blocks_external_requester_before_audit_mutation(
+    monkeypatch, mock_service, tmp_path
+):
+    """Denied rollback requests must not append self-incorporation rollback records."""
+    monkeypatch.setenv("AETHERRA_REQUIRE_CAPABILITIES", "1")
+    monkeypatch.setenv("AETHERRA_POLICY_HOME", str(tmp_path / "policy"))
+    rollback_token = "rb_test_denied"
+    mock_service.audit_ledger.append(
+        plan_id="test-plan",
+        action="integration_plan",
+        status="applied",
+        target={"plan_id": "test-plan"},
+        result={"rollback_token": rollback_token},
+    )
+    before = len(mock_service.audit_ledger.recent(limit=100))
+
+    result = await mock_service.trigger_rollback(
+        rollback_token,
+        requester="untrusted_operator",
+    )
+    after = len(mock_service.audit_ledger.recent(limit=100))
+
+    assert result["ok"] is False
+    assert result["error"].startswith("guardian_denied:missing_capability")
+    assert after == before
 
 
 @pytest.mark.asyncio

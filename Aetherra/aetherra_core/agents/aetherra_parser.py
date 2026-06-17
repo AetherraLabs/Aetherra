@@ -658,7 +658,7 @@ class AetherraCodeCompiler:
             actions_code.append("    " + self.compile_node(action))
 
         actions_str = "\\n".join(actions_code)
-        return f"interpreter.load_plugin('{node.plugin_name}', '''{actions_str}''')"
+        return f"interpreter.load_plugin({node.plugin_name!r}, {actions_str!r})"
 
     def compile_node(self, node: AetherraNode) -> str:
         if isinstance(node, GoalNode):

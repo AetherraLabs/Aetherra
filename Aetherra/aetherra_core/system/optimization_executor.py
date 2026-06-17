@@ -25,6 +25,7 @@ Example:
 
 import json
 import logging
+import os
 import shutil
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -32,6 +33,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
+
+from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+from Aetherra.security.capabilities import has_capability
 
 logger = logging.getLogger(__name__)
 
@@ -257,6 +261,91 @@ class OptimizationExecutor:
             f"OptimizationExecutor initialized: workspace={workspace}, dry_run={enable_dry_run}"
         )
 
+    def _guardian_preflight(self, proposal: OptimizationProposal) -> None:
+        target_paths = [
+            Path(change.file_path) for change in proposal.code_changes
+        ] + [
+            Path(change.config_path) for change in proposal.config_changes
+        ]
+        target_names = tuple(sorted({path.name for path in target_paths if path.name}))
+        target_suffixes = tuple(sorted({path.suffix for path in target_paths if path.suffix}))
+        target_hashes = tuple(
+            sorted(
+                {
+                    self._path_fingerprint(str(path.expanduser().resolve(strict=False)))
+                    for path in target_paths
+                }
+            )
+        )
+        requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "optimization_executor"
+        intent = IntentDeclaration(
+            requester=requester,
+            subsystem="optimization_executor",
+            action="optimization.apply",
+            target=f"optimization:{proposal.proposal_id}",
+            purpose=f"Apply optimization proposal: {proposal.title}",
+            capabilities=("fs:write", "code:modify"),
+            expected_outcome="Optimization proposal is applied with backup and verification",
+            reversible=True,
+            rollback_plan="Restore the workspace from the optimization backup",
+            evidence=(f"proposal:{proposal.proposal_id}",),
+            metadata={
+                "optimization_type": proposal.optimization_type,
+                "risk_level": proposal.risk_level,
+                "code_change_count": len(proposal.code_changes),
+                "config_change_count": len(proposal.config_changes),
+                "requires_verification": bool(proposal.requires_verification),
+                "dry_run": bool(self.enable_dry_run),
+                "target_names": target_names,
+                "target_suffixes": target_suffixes,
+                "target_path_hashes": target_hashes,
+            },
+        )
+        decision = evaluate_intent(intent, capability_checker=has_capability)
+        if decision.status not in {GuardianStatus.ALLOW, GuardianStatus.ALLOW_LIMITED}:
+            raise PermissionError(
+                f"Guardian denied optimization proposal {proposal.proposal_id}: {decision.reason}"
+            )
+
+    def _guardian_preflight_restore_backup(self, backup_id: str) -> None:
+        backup_path = self.backup_dir / backup_id
+        backup_items = (
+            tuple(sorted(item.name for item in backup_path.iterdir()))
+            if backup_path.exists()
+            else ()
+        )
+        requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "optimization_executor"
+        backup_hash = self._path_fingerprint(backup_id)
+        intent = IntentDeclaration(
+            requester=requester,
+            subsystem="maintenance",
+            action="maintenance.restore_backup",
+            target=f"maintenance:optimization_backup:{backup_hash}",
+            purpose="Restore workspace files from an optimization backup",
+            capabilities=("maintenance:restore", "fs:write"),
+            expected_outcome="Workspace files are restored from a selected optimization backup",
+            reversible=True,
+            rollback_plan="create or retain a newer backup before destructive restore operations",
+            evidence=("optimization_executor.restore_backup",),
+            metadata={
+                "backup_id_hash": backup_hash,
+                "backup_exists": backup_path.exists(),
+                "backup_item_count": len(backup_items),
+                "backup_item_names": backup_items[:10],
+            },
+        )
+        decision = evaluate_intent(intent, capability_checker=has_capability)
+        if decision.status not in {GuardianStatus.ALLOW, GuardianStatus.ALLOW_LIMITED}:
+            raise PermissionError(
+                f"Guardian denied optimization backup restore: {decision.reason}"
+            )
+
+    @staticmethod
+    def _path_fingerprint(path_value: str) -> str:
+        import hashlib
+
+        return hashlib.sha256(path_value.encode("utf-8", errors="replace")).hexdigest()[:16]
+
     def execute(
         self,
         proposal: OptimizationProposal,
@@ -295,6 +384,9 @@ class OptimizationExecutor:
                 return result
 
             result.audit_trail.append(f"[{datetime.now().isoformat()}] Proposal validation passed")
+
+            self._guardian_preflight(proposal)
+            result.audit_trail.append(f"[{datetime.now().isoformat()}] Guardian preflight passed")
 
             # Step 2: Capture baseline metrics
             result.metrics_before = self._capture_metrics()
@@ -606,6 +698,7 @@ class OptimizationExecutor:
             Tuple of (success, message)
         """
         try:
+            self._guardian_preflight_restore_backup(backup_id)
             self._restore_backup(backup_id)
             return True, f"Restored from backup: {backup_id}"
         except Exception as e:

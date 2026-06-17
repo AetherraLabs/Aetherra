@@ -114,6 +114,105 @@ class IntelligentAlertManager:
 
         logger.info("🚨 Intelligent Alert Manager initialized")
 
+    def _guardian_requester_for_alert(self, alert: IntelligentAlert) -> str:
+        context = alert.context_data if isinstance(alert.context_data, dict) else {}
+        requester = context.get("guardian_requester") or context.get("requester")
+        return str(requester or "homeostasis").strip() or "homeostasis"
+
+    def _guardian_capability_checker(self, requester: str, capability: str) -> bool:
+        if requester == "homeostasis" and capability in {
+            "homeostasis:escalate",
+            "homeostasis:notify",
+        }:
+            return True
+        from Aetherra.security.capabilities import has_capability
+
+        return has_capability(requester, capability)
+
+    def _guardian_allows_escalation(
+        self,
+        alert: IntelligentAlert,
+        rule: AlertEscalationRule,
+    ) -> bool:
+        from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+        next_level = int(alert.escalation_level) + 1
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=self._guardian_requester_for_alert(alert),
+                subsystem="homeostasis",
+                action="homeostasis.alert_escalate",
+                target="homeostasis:alert_escalation",
+                purpose=f"Escalate alert severity using rule {rule.name}",
+                capabilities=("homeostasis:escalate",),
+                evidence=(
+                    f"alert_id:{alert.alert_id}",
+                    f"rule:{rule.name}",
+                    f"category:{alert.category}",
+                ),
+                reversible=True,
+                rollback_plan="restore previous alert severity and escalation level before sending further notifications",
+                metadata={
+                    "alert_id": alert.alert_id,
+                    "category": alert.category,
+                    "old_severity": alert.severity.value,
+                    "new_severity": rule.target_severity.value,
+                    "rule_name": rule.name,
+                    "escalation_level_next": next_level,
+                    "notification_channels_enabled": sum(
+                        1 for channel in self.notification_channels if channel.enabled
+                    ),
+                },
+            ),
+            capability_checker=self._guardian_capability_checker,
+        )
+        return decision.status in {GuardianStatus.ALLOW, GuardianStatus.ALLOW_LIMITED}
+
+    def _guardian_capabilities_for_notification(
+        self,
+        channel: AlertNotificationChannel,
+    ) -> tuple[str, ...]:
+        capabilities = ["homeostasis:notify"]
+        if channel.channel_type in {"email", "webhook"}:
+            capabilities.append("network:outbound")
+        return tuple(capabilities)
+
+    def _guardian_allows_notification(
+        self,
+        channel: AlertNotificationChannel,
+        alert: IntelligentAlert,
+    ) -> bool:
+        from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=self._guardian_requester_for_alert(alert),
+                subsystem="homeostasis",
+                action="homeostasis.alert_notify",
+                target="homeostasis:alert_notification",
+                purpose=f"Dispatch alert notification through {channel.channel_type}",
+                capabilities=self._guardian_capabilities_for_notification(channel),
+                evidence=(
+                    f"alert_id:{alert.alert_id}",
+                    f"channel:{channel.name}",
+                    f"category:{alert.category}",
+                ),
+                reversible=False,
+                rollback_plan=None,
+                metadata={
+                    "alert_id": alert.alert_id,
+                    "category": alert.category,
+                    "severity": alert.severity.value,
+                    "channel_name": channel.name,
+                    "channel_type": channel.channel_type,
+                    "endpoint_configured": bool(channel.endpoint),
+                    "escalation_level": alert.escalation_level,
+                },
+            ),
+            capability_checker=self._guardian_capability_checker,
+        )
+        return decision.status in {GuardianStatus.ALLOW, GuardianStatus.ALLOW_LIMITED}
+
     def _init_database(self):
         """Initialize the alert management database."""
         try:
@@ -504,6 +603,14 @@ class IntelligentAlertManager:
                 if alert.severity not in channel.severity_filter:
                     continue
 
+                if not self._guardian_allows_notification(channel, alert):
+                    logger.warning(
+                        "Guardian blocked Homeostasis alert notification: %s via %s",
+                        alert.alert_id,
+                        channel.name,
+                    )
+                    continue
+
                 await self._send_notification(channel, alert)
                 self.notifications_sent += 1
 
@@ -600,6 +707,13 @@ class IntelligentAlertManager:
     async def _escalate_alert(self, alert: IntelligentAlert, rule: AlertEscalationRule):
         """Escalate an alert according to a rule."""
         try:
+            if not self._guardian_allows_escalation(alert, rule):
+                logger.warning(
+                    "Guardian blocked Homeostasis alert escalation: %s",
+                    alert.alert_id,
+                )
+                return
+
             old_severity = alert.severity
             alert.severity = rule.target_severity
             alert.escalation_level += 1

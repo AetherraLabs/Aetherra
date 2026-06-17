@@ -14,6 +14,9 @@ import os
 
 from flask import Blueprint, Response, jsonify, request
 
+# Local imports
+from ..services.control_auth import authorize_control_request
+
 logger = logging.getLogger(__name__)
 
 bp = Blueprint("interactive", __name__, url_prefix="/api/interactive")
@@ -192,6 +195,14 @@ def _check_admin_auth() -> tuple[Response, int] | None:
     return None
 
 
+def _check_control_auth() -> tuple[Response, int] | None:
+    """Authorize interactive mutations using the Hub control-plane policy."""
+    decision = authorize_control_request(request.headers, request.remote_addr)
+    if decision.allowed:
+        return None
+    return jsonify({"error": decision.error}), decision.status_code
+
+
 @bp.route("/trigger", methods=["POST"])
 def trigger_emotion() -> tuple[Response, int]:
     """
@@ -204,7 +215,7 @@ def trigger_emotion() -> tuple[Response, int]:
         "duration": 5.0        # seconds (optional)
     }
     """
-    auth_err = _check_admin_auth()
+    auth_err = _check_control_auth()
     if auth_err is not None:
         return auth_err
 

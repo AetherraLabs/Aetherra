@@ -14,6 +14,8 @@ from typing import Any
 # Third party imports
 from flask import Blueprint, jsonify, request
 
+from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
 # Avoid importing heavy homeostasis core types at module import time to prevent
 # circular imports; import lazily within request handlers.
 # Aetherra imports
@@ -21,9 +23,19 @@ from Aetherra.homeostasis.homeostasis_integration import (  # type: ignore
     get_homeostasis_orchestrator,
 )
 
+# Local imports
+from ..services.control_auth import authorize_control_request
+
 logger = logging.getLogger(__name__)
 
 bp = Blueprint("homeostasis", __name__, url_prefix="/api/homeostasis")
+
+
+def _authorize_control():
+    decision = authorize_control_request(request.headers, request.remote_addr)
+    if decision.allowed:
+        return None
+    return jsonify({"ok": False, "error": decision.error}), decision.status_code
 
 
 def _safe_run(coro: Any) -> Any:
@@ -45,6 +57,92 @@ def _safe_run(coro: Any) -> Any:
             return None
     except Exception:
         return None
+
+
+def _guardian_decision_for_actuator(data: dict[str, Any]):
+    action_type = str(data.get("action_type") or "").strip()
+    target_service = str(data.get("target_service") or "").strip()
+    controller_name = str(data.get("controller_name") or "homeostasis").strip()
+    reason = str(data.get("reason") or "ui_trigger").strip()
+    priority = str(data.get("priority") or "medium").lower().strip()
+    parameters = data.get("parameters") if isinstance(data.get("parameters"), dict) else {}
+    target_lower = f"{target_service} {action_type}".lower()
+    capabilities = ["homeostasis:actuate"]
+    if any(marker in target_lower for marker in ("security", "policy", "capability")):
+        capabilities.append("security:modify")
+
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=str(
+                request.headers.get("X-Aetherra-Principal")
+                or controller_name
+                or "homeostasis"
+            ),
+            subsystem="homeostasis",
+            action="homeostasis.actuate",
+            target=f"{target_service or 'system'}:{action_type}",
+            purpose=reason or f"Execute homeostasis actuator {action_type}",
+            capabilities=tuple(capabilities),
+            evidence=(f"homeostasis_action:{action_type}",),
+            reversible=True,
+            rollback_plan="use homeostasis actuator rollback or restore previous service state",
+            metadata={
+                "action_type": action_type,
+                "target_service": target_service,
+                "priority": priority,
+                "parameter_keys": tuple(sorted(str(key) for key in parameters)),
+            },
+        )
+    )
+
+
+def _guardian_requester(default: str = "homeostasis") -> str:
+    return str(
+        request.headers.get("X-Aetherra-Principal")
+        or default
+        or "homeostasis"
+    ).strip()
+
+
+def _guardian_decision_for_control(
+    *,
+    action: str,
+    target: str,
+    purpose: str,
+    capabilities: tuple[str, ...],
+    evidence: tuple[str, ...],
+    metadata: dict[str, Any],
+    rollback_plan: str,
+):
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=_guardian_requester(),
+            subsystem="homeostasis",
+            action=action,
+            target=target,
+            purpose=purpose,
+            capabilities=capabilities,
+            evidence=evidence,
+            reversible=True,
+            rollback_plan=rollback_plan,
+            metadata=metadata,
+        )
+    )
+
+
+def _guardian_block_response(decision) -> tuple[dict[str, Any], int] | None:
+    if decision.status in {GuardianStatus.ALLOW, GuardianStatus.ALLOW_LIMITED}:
+        return None
+    status_code = 202 if decision.status == GuardianStatus.REQUIRE_APPROVAL else 403
+    return (
+        {
+            "ok": False,
+            "executed": False,
+            "error": decision.reason,
+            "guardian": decision.to_audit_dict(),
+        },
+        status_code,
+    )
 
 
 @bp.get("/status")
@@ -156,6 +254,9 @@ def metrics_summary():
 @bp.post("/mode")
 def set_mode():
     """Set controller operating mode."""
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
     try:
         # Lazy import to avoid circular import during app startup
         from Aetherra.homeostasis.homeostasis_core import ControllerMode  # type: ignore
@@ -175,6 +276,20 @@ def set_mode():
         if mode_str not in mode_map:
             return jsonify({"ok": False, "error": "invalid_mode"}), 400
 
+        guardian_decision = _guardian_decision_for_control(
+            action="homeostasis.set_mode",
+            target="homeostasis:controller_mode",
+            purpose=reason or f"Set Homeostasis controller mode to {mode_str}",
+            capabilities=("homeostasis:control",),
+            evidence=(f"mode:{mode_str}",),
+            metadata={"mode": mode_str, "reason_present": bool(reason.strip())},
+            rollback_plan="restore the previous Homeostasis controller mode",
+        )
+        guardian_block = _guardian_block_response(guardian_decision)
+        if guardian_block is not None:
+            body, status_code = guardian_block
+            return jsonify(body), status_code
+
         orch = get_homeostasis_orchestrator()
         _safe_run(orch.set_controller_mode(mode_map[mode_str], reason))
         return jsonify({"ok": True, "mode": mode_str})
@@ -185,9 +300,26 @@ def set_mode():
 
 @bp.post("/emergency_stop")
 def emergency_stop():
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
     try:
         data = request.get_json(silent=True) or {}
         reason = str(data.get("reason") or "UI emergency stop")
+        guardian_decision = _guardian_decision_for_control(
+            action="homeostasis.emergency_stop",
+            target="homeostasis:emergency_stop",
+            purpose=reason or "Trigger Homeostasis emergency stop",
+            capabilities=("homeostasis:emergency",),
+            evidence=("emergency_stop",),
+            metadata={"reason_present": bool(reason.strip())},
+            rollback_plan="reset the Homeostasis emergency stop after manual review",
+        )
+        guardian_block = _guardian_block_response(guardian_decision)
+        if guardian_block is not None:
+            body, status_code = guardian_block
+            return jsonify(body), status_code
+
         orch = get_homeostasis_orchestrator()
         _safe_run(orch.emergency_stop(reason))
         return jsonify({"ok": True})
@@ -198,7 +330,24 @@ def emergency_stop():
 
 @bp.post("/reset_emergency")
 def reset_emergency():
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
     try:
+        guardian_decision = _guardian_decision_for_control(
+            action="homeostasis.reset_emergency",
+            target="homeostasis:emergency_stop",
+            purpose="Reset Homeostasis emergency stop",
+            capabilities=("homeostasis:emergency",),
+            evidence=("reset_emergency",),
+            metadata={},
+            rollback_plan="trigger emergency stop again if reset exposes unsafe conditions",
+        )
+        guardian_block = _guardian_block_response(guardian_decision)
+        if guardian_block is not None:
+            body, status_code = guardian_block
+            return jsonify(body), status_code
+
         orch = get_homeostasis_orchestrator()
         _safe_run(orch.reset_emergency_stop())
         return jsonify({"ok": True})
@@ -216,6 +365,9 @@ def actuators_execute():
       controller_name?: str, reason?: str, priority?: str, timeout?: number
     }
     """
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
     try:
         # Lazy import to avoid circular import during app startup
         from Aetherra.homeostasis.homeostasis_core import (  # type: ignore
@@ -234,6 +386,12 @@ def actuators_execute():
 
         if not action_type:
             return jsonify({"ok": False, "error": "missing_action_type"}), 400
+
+        guardian_decision = _guardian_decision_for_actuator(data)
+        guardian_block = _guardian_block_response(guardian_decision)
+        if guardian_block is not None:
+            body, status_code = guardian_block
+            return jsonify(body), status_code
 
         pr_map = {
             "low": ActionPriority.LOW,
@@ -277,12 +435,29 @@ def actuators_execute():
 
 @bp.post("/rollback")
 def rollback_last():
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
     try:
+        guardian_decision = _guardian_decision_for_control(
+            action="homeostasis.rollback",
+            target="homeostasis:actuator_history",
+            purpose="Rollback the most recent Homeostasis actuator action",
+            capabilities=("homeostasis:rollback",),
+            evidence=("rollback_last_action",),
+            metadata={},
+            rollback_plan="inspect action history and re-run the reverted actuator if rollback was unsafe",
+        )
+        guardian_block = _guardian_block_response(guardian_decision)
+        if guardian_block is not None:
+            body, status_code = guardian_block
+            return jsonify(body), status_code
+
         orch = get_homeostasis_orchestrator()
         if not getattr(orch, "actuators", None):
             return jsonify({"ok": False, "error": "actuators_unavailable"}), 503
         res = orch.actuators.rollback_last_action()  # type: ignore[attr-defined]
-        out = _safe_run(res)
+        out = _safe_run(res) if asyncio.iscoroutine(res) else res
         msg = None
         succ = False
         try:

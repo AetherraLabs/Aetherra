@@ -390,7 +390,7 @@ class HomeostasisController:
 
         # Process all control loops
         actions = []
-        for loop_name, control_loop in self.control_loops.items():
+        for control_loop in self.control_loops.values():
             if not control_loop.enabled:
                 continue
 
@@ -701,9 +701,72 @@ class HomeostasisController:
                 action.requires_confirmation = True
                 logger.info(f"🤔 Action requires human confirmation: {action.action_type}")
 
+            if not self._guardian_allows_control_action(action):
+                logger.warning(
+                    "Guardian blocked Homeostasis control action: %s",
+                    action.action_type,
+                )
+                self.stats["actions_blocked"] += 1
+                self._record_policy_violation("guardian_denied", action)
+                continue
+
             constrained_actions.append(action)
 
         return constrained_actions
+
+    def _guardian_requester_for_action(self, action: ControlAction) -> str:
+        requester = getattr(action, "guardian_requester", None) or getattr(
+            action, "requester", None
+        )
+        return str(requester or "homeostasis").strip() or "homeostasis"
+
+    def _guardian_capability_checker(self, requester: str, capability: str) -> bool:
+        if requester == "homeostasis" and capability in {
+            "homeostasis:actuate",
+            "security:modify",
+        }:
+            return True
+        from Aetherra.security.capabilities import has_capability
+
+        return has_capability(requester, capability)
+
+    def _guardian_capabilities_for_action(self, action: ControlAction) -> tuple[str, ...]:
+        capabilities = ["homeostasis:actuate"]
+        target_lower = f"{action.target_service} {action.action_type}".lower()
+        if any(marker in target_lower for marker in ("security", "policy", "capability")):
+            capabilities.append("security:modify")
+        return tuple(capabilities)
+
+    def _guardian_allows_control_action(self, action: ControlAction) -> bool:
+        from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+        parameters = action.parameters if isinstance(action.parameters, dict) else {}
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=self._guardian_requester_for_action(action),
+                subsystem="homeostasis",
+                action="homeostasis.plan_action",
+                target="homeostasis:control_action",
+                purpose=action.reason or f"Plan Homeostasis control action {action.action_type}",
+                capabilities=self._guardian_capabilities_for_action(action),
+                evidence=(
+                    f"homeostasis_action:{action.action_type}",
+                    f"target_service:{action.target_service or 'system'}",
+                ),
+                reversible=True,
+                rollback_plan="drop the queued action or use Homeostasis actuator rollback after execution",
+                metadata={
+                    "action_type": action.action_type,
+                    "target_service": action.target_service,
+                    "priority": action.priority.name.lower(),
+                    "controller_name": action.controller_name,
+                    "parameter_keys": tuple(sorted(str(key) for key in parameters)),
+                    "requires_confirmation": bool(action.requires_confirmation),
+                },
+            ),
+            capability_checker=self._guardian_capability_checker,
+        )
+        return decision.status in {GuardianStatus.ALLOW, GuardianStatus.ALLOW_LIMITED}
 
     def _should_take_action(self, current_time: float) -> bool:
         """Check if actions should be taken based on mode and time windows."""

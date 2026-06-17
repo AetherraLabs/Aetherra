@@ -3,175 +3,194 @@
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
 """
-🔧 Aetherra Unicode Issues Fixer
-===============================
-
-This script fixes the critical Unicode encoding issues that are causing
-the Aetherra OS to crash on Windows systems with cp1252 encoding.
-
-Issues Fixed:
-1. Unicode emoji characters in logging statements
-2. Console output encoding problems
-3. Missing imports and relative import issues
-4. Module path problems
+Plan and apply Unicode/import compatibility repairs through Guardian.
 """
 
-# Standard library imports
+from __future__ import annotations
+
+import hashlib
 import os
+import sys
+from dataclasses import dataclass
 from pathlib import Path
 
-
-def fix_unicode_in_files():
-    """Fix Unicode issues in all Python files"""
-
-    # Files that need Unicode fixes
-    files_to_fix = [
-        "aetherra_plugin_discovery.py",
-        "aetherra_os_launcher.py",
-        "aetherra_kernel_loop.py",
-        "aetherra_service_registry.py",
-        "Aetherra/aetherra_core/orchestration/scheduler.py",
-    ]
-
-    project_root = Path("c:/Users/enigm/Desktop/Aetherra Project")
-
-    # Unicode replacement mapping
-    unicode_fixes = {
-        # Error emojis
-        "❌": "[ERROR]",
-        "🔍": "[SCAN]",
-        "💡": "[INFO]",
-        # Status emojis
-        "✅": "[OK]",
-        "⚠️": "[WARN]",
-        "ℹ️": "[INFO]",
-        "🔥": "[INIT]",
-        "⚡": "[SYS]",
-        "🔗": "[LINK]",
-        "🌌": "[CORE]",
-        "🔄": "[LOOP]",
-        "🩺": "[HEALTH]",
-        "📊": "[STATS]",
-        "🎉": "[SUCCESS]",
-        "🚀": "[LAUNCH]",
-        "🌐": "[NET]",
-        "🧠": "[BRAIN]",
-        "🔌": "[PLUGIN]",
-        "💾": "[MEM]",
-        "📅": "[SCHED]",
-    }
-
-    for file_path in files_to_fix:
-        full_path = project_root / file_path
-        if full_path.exists():
-            print(f"🔧 Fixing Unicode in: {file_path}")
-
-            try:
-                # Read file with UTF-8 encoding
-                with open(full_path, encoding="utf-8") as f:
-                    content = f.read()
-
-                # Apply Unicode fixes
-                original_content = content
-                for emoji, replacement in unicode_fixes.items():
-                    content = content.replace(emoji, replacement)
-
-                # Only write if changes were made
-                if content != original_content:
-                    with open(full_path, "w", encoding="utf-8") as f:
-                        f.write(content)
-                    print(f"  ✓ Fixed Unicode characters in {file_path}")
-                else:
-                    print(f"  - No Unicode fixes needed in {file_path}")
-
-            except Exception as e:
-                print(f"  ❌ Error fixing {file_path}: {e}")
-        else:
-            print(f"  ⚠️ File not found: {file_path}")
+UNICODE_REPLACEMENTS: dict[str, str] = {
+    "âŒ": "[ERROR]",
+    "ðŸ”": "[SCAN]",
+    "ðŸ’¡": "[INFO]",
+    "âœ…": "[OK]",
+    "âš ï¸": "[WARN]",
+    "â„¹ï¸": "[INFO]",
+    "ðŸ”¥": "[INIT]",
+    "âš¡": "[SYS]",
+    "ðŸ”—": "[LINK]",
+    "ðŸŒŒ": "[CORE]",
+    "ðŸ”„": "[LOOP]",
+    "ðŸ©º": "[HEALTH]",
+    "ðŸ“Š": "[STATS]",
+    "ðŸŽ‰": "[SUCCESS]",
+    "ðŸš€": "[LAUNCH]",
+    "ðŸŒ": "[NET]",
+    "ðŸ§ ": "[BRAIN]",
+    "ðŸ”Œ": "[PLUGIN]",
+    "ðŸ’¾": "[MEM]",
+    "ðŸ“…": "[SCHED]",
+}
 
 
-def fix_import_issues():
-    """Fix import issues in plugin files"""
+UNICODE_TARGETS: tuple[str, ...] = (
+    "aetherra_plugin_discovery.py",
+    "aetherra_os_launcher.py",
+    "aetherra_kernel_loop.py",
+    "aetherra_service_registry.py",
+    "Aetherra/aetherra_core/orchestration/scheduler.py",
+)
 
-    project_root = Path("c:/Users/enigm/Desktop/Aetherra Project")
 
-    # Fix introspector_plugin.py relative import
-    introspector_path = (
-        project_root / "Aetherra/plugins/extra_plugins/introspector_plugin.py"
+IMPORT_TARGETS: tuple[str, ...] = (
+    "Aetherra/plugins/extra_plugins/introspector_plugin.py",
+    "Aetherra/plugins/memory_hooks/memory_aware_plugin_router.py",
+)
+
+
+@dataclass(frozen=True)
+class UnicodeRepairPlan:
+    file_path: Path
+    content: str
+    label: str
+    replacements: int
+
+
+def _hash_value(value: object) -> str | None:
+    if value is None:
+        return None
+    raw = str(value)
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "maintenance" and capability in {
+        "maintenance:cleanup",
+        "fs:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _guardian_preflight_unicode_fixes(
+    *,
+    project_root: Path,
+    plans: list[UnicodeRepairPlan],
+    directories_to_create: list[Path],
+):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="maintenance",
+            action="maintenance.unicode_compatibility_fix",
+            target="maintenance:unicode_compatibility_repairs",
+            purpose="Apply planned Unicode and import compatibility repairs",
+            capabilities=("maintenance:cleanup", "fs:write"),
+            expected_outcome="Planned compatibility repair files are written",
+            reversible=False,
+            rollback_plan="restore rewritten files and generated modules from version control or backup",
+            metadata={
+                "project_root_hash": _hash_value(project_root),
+                "files_to_write": len(plans),
+                "directories_to_create": len(directories_to_create),
+                "total_replacements": sum(plan.replacements for plan in plans),
+                "planned_file_hashes": [
+                    _hash_value(plan.file_path.relative_to(project_root))
+                    for plan in plans[:100]
+                ],
+                "planned_directory_hashes": [
+                    _hash_value(directory.relative_to(project_root))
+                    for directory in directories_to_create[:100]
+                ],
+                "plan_labels": [plan.label for plan in plans[:100]],
+            },
+        ),
+        approval_id=approval_id,
+        capability_checker=_guardian_capability_checker,
     )
-    if introspector_path.exists():
-        print("🔧 Fixing introspector_plugin.py imports...")
-        try:
-            with open(introspector_path, encoding="utf-8") as f:
-                content = f.read()
 
-            # Fix relative imports
-            content = content.replace(
-                "from ..memory.fractal_mesh.base import",
-                "from Aetherra.aetherra_core.memory.fractal_mesh.base import",
+
+def _plan_unicode_replacements(project_root: Path) -> list[UnicodeRepairPlan]:
+    plans: list[UnicodeRepairPlan] = []
+    for relative_path in UNICODE_TARGETS:
+        file_path = project_root / relative_path
+        if not file_path.exists():
+            continue
+        content = file_path.read_text(encoding="utf-8")
+        updated = content
+        replacements = 0
+        for old, new in UNICODE_REPLACEMENTS.items():
+            count = updated.count(old)
+            if count:
+                updated = updated.replace(old, new)
+                replacements += count
+        if updated != content:
+            plans.append(
+                UnicodeRepairPlan(
+                    file_path=file_path,
+                    content=updated,
+                    label="unicode_marker_replacement",
+                    replacements=replacements,
+                )
             )
+    return plans
 
-            with open(introspector_path, "w", encoding="utf-8") as f:
-                f.write(content)
-            print("  ✓ Fixed introspector_plugin.py imports")
 
-        except Exception as e:
-            print(f"  ❌ Error fixing introspector_plugin.py: {e}")
-
-    # Fix memory_aware_plugin_router.py
-    router_path = (
-        project_root / "Aetherra/plugins/memory_hooks/memory_aware_plugin_router.py"
-    )
-    if router_path.exists():
-        print("🔧 Fixing memory_aware_plugin_router.py imports...")
-        try:
-            with open(router_path, encoding="utf-8") as f:
-                content = f.read()
-
-            # Fix relative imports
-            content = content.replace(
-                "from ..memory.fractal_mesh.base import",
-                "from Aetherra.aetherra_core.memory.fractal_mesh.base import",
+def _plan_import_repairs(project_root: Path) -> list[UnicodeRepairPlan]:
+    plans: list[UnicodeRepairPlan] = []
+    for relative_path in IMPORT_TARGETS:
+        file_path = project_root / relative_path
+        if not file_path.exists():
+            continue
+        content = file_path.read_text(encoding="utf-8")
+        updated = content.replace(
+            "from ..memory.fractal_mesh.base import",
+            "from Aetherra.aetherra_core.memory.fractal_mesh.base import",
+        )
+        if updated != content:
+            plans.append(
+                UnicodeRepairPlan(
+                    file_path=file_path,
+                    content=updated,
+                    label="plugin_import_compatibility",
+                    replacements=1,
+                )
             )
-
-            with open(router_path, "w", encoding="utf-8") as f:
-                f.write(content)
-            print("  ✓ Fixed memory_aware_plugin_router.py imports")
-
-        except Exception as e:
-            print(f"  ❌ Error fixing memory_aware_plugin_router.py: {e}")
+    return plans
 
 
-def create_missing_quantum_memory_module():
-    """Create the missing QuantumEnhancedMemoryEngine module"""
-
-    project_root = Path("c:/Users/enigm/Desktop/Aetherra Project")
-    quantum_engine_dir = (
-        project_root / "Aetherra/aetherra_core/memory/QuantumEnhancedMemoryEngine"
-    )
-
-    # Create directory if it doesn't exist
-    quantum_engine_dir.mkdir(parents=True, exist_ok=True)
-
-    # Create quantum_memory_engine.py
-    quantum_engine_file = quantum_engine_dir / "quantum_memory_engine.py"
-    if not quantum_engine_file.exists():
-        print("🔧 Creating missing quantum_memory_engine.py...")
-
-        quantum_engine_content = '''"""
+def _quantum_engine_content() -> str:
+    return '''"""
 Quantum Enhanced Memory Engine
 =============================
 
 Quantum-enhanced memory processing for Aetherra OS.
 """
 
+from __future__ import annotations
+
 import logging
-from typing import Dict, List, Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 class QuantumEnhancedMemoryEngine:
-    """Quantum-enhanced memory processing engine"""
+    """Quantum-enhanced memory processing engine."""
 
     def __init__(self):
         self.quantum_state = "coherent"
@@ -179,92 +198,115 @@ class QuantumEnhancedMemoryEngine:
         self.entanglement_map = {}
         logger.info("[OK] QuantumEnhancedMemoryEngine initialized")
 
-    def process_memory(self, memory_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Process memory through quantum enhancement"""
-        try:
-            # Quantum processing simulation
-            enhanced_memory = {
-                "original": memory_data,
-                "quantum_enhanced": True,
-                "coherence_level": 0.94,
-                "entanglement_degree": 0.87
-            }
+    def process_memory(self, memory_data: dict[str, Any]) -> dict[str, Any]:
+        """Process memory through quantum enhancement."""
+        return {
+            "original": memory_data,
+            "quantum_enhanced": True,
+            "coherence_level": 0.94,
+            "entanglement_degree": 0.87,
+        }
 
-            return enhanced_memory
-
-        except Exception as e:
-            logger.error(f"[ERROR] Quantum memory processing failed: {e}")
-            return memory_data
-
-    def get_status(self) -> Dict[str, Any]:
-        """Get quantum engine status"""
+    def get_status(self) -> dict[str, Any]:
+        """Get quantum engine status."""
         return {
             "state": self.quantum_state,
             "fragments": len(self.memory_fragments),
             "entanglements": len(self.entanglement_map),
-            "coherence": 0.94
+            "coherence": 0.94,
         }
 '''
 
-        try:
-            with open(quantum_engine_file, "w", encoding="utf-8") as f:
-                f.write(quantum_engine_content)
-            print("  ✓ Created quantum_memory_engine.py")
-        except Exception as e:
-            print(f"  ❌ Error creating quantum_memory_engine.py: {e}")
 
-    # Update __init__.py
-    init_file = quantum_engine_dir / "__init__.py"
-    init_content = """from .quantum_memory_engine import QuantumEnhancedMemoryEngine
+def _plan_quantum_memory_module(
+    project_root: Path,
+) -> tuple[list[UnicodeRepairPlan], list[Path]]:
+    quantum_dir = (
+        project_root / "Aetherra" / "aetherra_core" / "memory" / "QuantumEnhancedMemoryEngine"
+    )
+    directories = [quantum_dir] if not quantum_dir.exists() else []
+    plans: list[UnicodeRepairPlan] = []
 
-__all__ = ['QuantumEnhancedMemoryEngine']
-"""
+    quantum_file = quantum_dir / "quantum_memory_engine.py"
+    if not quantum_file.exists():
+        plans.append(
+            UnicodeRepairPlan(
+                file_path=quantum_file,
+                content=_quantum_engine_content(),
+                label="quantum_memory_engine_module",
+                replacements=1,
+            )
+        )
 
-    try:
-        with open(init_file, "w", encoding="utf-8") as f:
-            f.write(init_content)
-        print("  ✓ Updated __init__.py")
-    except Exception as e:
-        print(f"  ❌ Error updating __init__.py: {e}")
+    init_file = quantum_dir / "__init__.py"
+    init_content = (
+        "from .quantum_memory_engine import QuantumEnhancedMemoryEngine\n\n"
+        '__all__ = ["QuantumEnhancedMemoryEngine"]\n'
+    )
+    if not init_file.exists() or init_file.read_text(encoding="utf-8") != init_content:
+        plans.append(
+            UnicodeRepairPlan(
+                file_path=init_file,
+                content=init_content,
+                label="quantum_memory_engine_init",
+                replacements=1,
+            )
+        )
+
+    return plans, directories
 
 
-def set_utf8_environment():
-    """Set UTF-8 environment variables"""
-    print("🔧 Setting UTF-8 environment variables...")
+def plan_unicode_compatibility_fixes(
+    project_root: str | Path = ".",
+) -> tuple[list[UnicodeRepairPlan], list[Path]]:
+    """Build all Unicode compatibility repair plans without mutating files."""
 
-    # Set environment variables for current session
+    root = Path(project_root)
+    plans = _plan_unicode_replacements(root)
+    plans.extend(_plan_import_repairs(root))
+    quantum_plans, directories = _plan_quantum_memory_module(root)
+    plans.extend(quantum_plans)
+    return plans, directories
+
+
+def apply_unicode_compatibility_fixes(project_root: str | Path = ".") -> int:
+    """Apply planned Unicode compatibility fixes after Guardian approval."""
+
+    root = Path(project_root)
+    plans, directories = plan_unicode_compatibility_fixes(root)
+    if not plans and not directories:
+        print("No Unicode compatibility fixes needed.")
+        return 0
+
+    decision = _guardian_preflight_unicode_fixes(
+        project_root=root,
+        plans=plans,
+        directories_to_create=directories,
+    )
+    if not decision.allowed:
+        print(f"Guardian denied Unicode compatibility fixes: {decision.reason}")
+        return 1
+
+    for directory in directories:
+        directory.mkdir(parents=True, exist_ok=True)
+    for plan in plans:
+        plan.file_path.parent.mkdir(parents=True, exist_ok=True)
+        plan.file_path.write_text(plan.content, encoding="utf-8")
+        print(f"Applied {plan.label}")
+    return 0
+
+
+def set_utf8_environment() -> None:
+    """Set UTF-8 environment variables for the current process only."""
+
     os.environ["PYTHONIOENCODING"] = "utf-8"
     os.environ["PYTHONUTF8"] = "1"
 
-    print("  ✓ Set PYTHONIOENCODING=utf-8")
-    print("  ✓ Set PYTHONUTF8=1")
 
-
-def main():
-    """Main fix function"""
-    print("🔧 Aetherra Unicode Issues Fixer")
-    print("=" * 40)
-
-    # Set UTF-8 environment
+def main(project_root: str | Path = ".") -> int:
     set_utf8_environment()
-
-    # Fix Unicode issues in files
-    fix_unicode_in_files()
-
-    # Fix import issues
-    fix_import_issues()
-
-    # Create missing modules
-    create_missing_quantum_memory_module()
-
-    print("\n✅ Unicode fixes completed!")
-    print("\n📋 Manual steps needed:")
-    print("1. Restart your terminal/command prompt")
-    print("2. Set environment variables permanently:")
-    print("   set PYTHONIOENCODING=utf-8")
-    print("   set PYTHONUTF8=1")
-    print("3. Re-run aetherra_os.py")
+    return apply_unicode_compatibility_fixes(project_root)
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main(sys.argv[1] if len(sys.argv) > 1 else "."))

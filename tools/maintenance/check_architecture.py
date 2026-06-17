@@ -11,10 +11,124 @@ Date: August 5, 2025
 Purpose: Ensure Aetherra OS and Lyrixa maintain proper separation
 """
 
+from __future__ import annotations
+
 # Standard library imports
+import hashlib
 import os
 import re
+from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
+
+
+@dataclass(frozen=True)
+class ArchitectureReportWritePlan:
+    file_path: Path
+    content: str
+    total_issue_count: int
+    issue_counts: dict[str, int]
+
+
+def _hash_value(value) -> str | None:
+    if value is None:
+        return None
+    raw = str(value)
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "maintenance" and capability in {
+        "maintenance:cleanup",
+        "fs:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _safe_relative_path(path: Path, root: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(root.resolve()))
+    except ValueError:
+        return str(path.resolve())
+
+
+def plan_architecture_report_write(
+    *,
+    project_root: Path,
+    report_path: Path,
+    report: str,
+    violations: dict[str, list[str]],
+) -> ArchitectureReportWritePlan:
+    """Build a side-effect-free write plan for the compliance report."""
+    output_path = report_path if report_path.is_absolute() else project_root / report_path
+    issue_counts = {name: len(items) for name, items in violations.items()}
+    return ArchitectureReportWritePlan(
+        file_path=output_path,
+        content=report,
+        total_issue_count=sum(issue_counts.values()),
+        issue_counts=issue_counts,
+    )
+
+
+def _guardian_preflight_architecture_report(
+    *,
+    project_root: Path,
+    plan: ArchitectureReportWritePlan,
+):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="maintenance",
+            action="maintenance.architecture_compliance_report",
+            target="maintenance:architecture_compliance_report",
+            purpose="Write generated architectural compliance report",
+            capabilities=("maintenance:cleanup", "fs:write"),
+            expected_outcome="Planned architecture compliance report is written to disk",
+            reversible=False,
+            rollback_plan="delete generated compliance report or restore from version control",
+            metadata={
+                "project_root_hash": _hash_value(project_root.resolve()),
+                "report_path_hash": _hash_value(
+                    _safe_relative_path(plan.file_path, project_root)
+                ),
+                "total_issue_count": plan.total_issue_count,
+                "issue_counts": plan.issue_counts,
+                "report_size_bytes": len(plan.content.encode("utf-8")),
+            },
+        ),
+        approval_id=approval_id,
+        capability_checker=_guardian_capability_checker,
+    )
+
+
+def write_architecture_report(
+    *,
+    project_root: Path,
+    plan: ArchitectureReportWritePlan,
+) -> bool:
+    """Write the planned architecture report after Guardian approval."""
+    decision = _guardian_preflight_architecture_report(
+        project_root=project_root,
+        plan=plan,
+    )
+    if not decision.allowed:
+        print(f"Guardian denied architecture compliance report: {decision.reason}")
+        return False
+
+    plan.file_path.parent.mkdir(parents=True, exist_ok=True)
+    plan.file_path.write_text(plan.content, encoding="utf-8")
+    print(f"Report saved to: {plan.file_path}")
+    return True
 
 
 class ArchitecturalChecker:
@@ -70,7 +184,6 @@ class ArchitecturalChecker:
     ):
         """Check for components in wrong directories"""
         is_in_lyrixa = self.lyrixa_root in file_path.parents
-        filename = file_path.name.lower()
 
         # Critical GUI components should be in Lyrixa
         gui_patterns = [
@@ -123,9 +236,7 @@ class ArchitecturalChecker:
         """Generate simple, actionable report"""
         report = []
         report.append("# 🎯 AETHERRA ARCHITECTURAL COMPLIANCE REPORT")
-        report.append(
-            f"**Generated**: {os.popen('date /t').read().strip()} {os.popen('time /t').read().strip()}"
-        )
+        report.append(f"**Generated**: {datetime.now().isoformat(timespec='seconds')}")
         report.append("")
 
         total_issues = sum(len(v) for v in violations.values())
@@ -236,8 +347,14 @@ def main():
 
     # Save report
     report_path = Path(project_root) / "ARCHITECTURAL_COMPLIANCE_REPORT.md"
-    with open(report_path, "w", encoding="utf-8") as f:
-        f.write(report)
+    plan = plan_architecture_report_write(
+        project_root=Path(project_root),
+        report_path=report_path,
+        report=report,
+        violations=violations,
+    )
+    if not write_architecture_report(project_root=Path(project_root), plan=plan):
+        return 1
 
     print(f"📄 Report saved to: {report_path}")
 
@@ -248,7 +365,8 @@ def main():
     else:
         print(f"❌ Found {total_issues} critical architectural violations")
         print("🔧 See report for detailed fixes")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 from __future__ import annotations
 
+import hashlib
 import os
 import time
 from dataclasses import dataclass
@@ -114,6 +115,67 @@ class StormEngine:
             "k_coarse": int(self.config.k_coarse),
             "last_recall": dict(self._last_recall_status),
         }
+
+    @staticmethod
+    def _guardian_hash_value(value: Any | None) -> str | None:
+        if value is None:
+            return None
+        raw = str(value)
+        if not raw:
+            return None
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+    @staticmethod
+    def _guardian_capability_checker(requester: str, capability: str) -> bool:
+        if requester == "maintenance" and capability in {
+            "maintenance:prune",
+            "memory:write",
+        }:
+            return True
+        from Aetherra.security.capabilities import has_capability
+
+        return has_capability(requester, capability)
+
+    def _guardian_preflight_maintenance(
+        self,
+        *,
+        requester: str,
+        approval_id: str | None,
+    ):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        task_names = (
+            "tt_rank_trim",
+            "barycenter_refresh",
+            "inconsistency_scan",
+            "ot_cache_prune",
+        )
+        return evaluate_intent(
+            IntentDeclaration(
+                requester=str(requester or "maintenance"),
+                subsystem="maintenance",
+                action="maintenance.storm_run",
+                target="maintenance:storm_memory",
+                purpose="Run periodic STORM memory maintenance tasks",
+                capabilities=("maintenance:prune", "memory:write"),
+                expected_outcome="STORM maintenance metrics and bounded memory maintenance state are refreshed",
+                evidence=("storm.run_maintenance",),
+                reversible=True,
+                rollback_plan="rerun STORM recall against persisted memory state and restore metrics from snapshots if needed",
+                metadata={
+                    "task_names": task_names,
+                    "tasks_count": len(task_names),
+                    "storm_enabled": bool(self.config.enabled),
+                    "shadow_mode": bool(self.config.shadow_mode),
+                    "storage_configured": self._storage is not None,
+                    "sqlite_path_hash": self._guardian_hash_value(
+                        self.config.sqlite_path
+                    ),
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=self._guardian_capability_checker,
+        )
 
     async def _fetch_candidates(
         self,
@@ -385,7 +447,12 @@ class StormEngine:
             metadata=meta,
         )
 
-    async def run_maintenance(self) -> Dict[str, Any]:
+    async def run_maintenance(
+        self,
+        *,
+        requester: str = "maintenance",
+        approval_id: str | None = None,
+    ) -> Dict[str, Any]:
         """Run periodic STORM maintenance tasks during night cycle.
 
         Performs the following operations:
@@ -402,6 +469,22 @@ class StormEngine:
             "inconsistency_scan": {"status": "ok", "avg_inconsistency": 0.0},
             "ot_cache_prune": {"status": "ok", "entries_pruned": 0},
         }
+
+        from Aetherra.guardian import GuardianStatus
+
+        guardian_decision = self._guardian_preflight_maintenance(
+            requester=requester,
+            approval_id=approval_id,
+        )
+        if guardian_decision.status not in {
+            GuardianStatus.ALLOW,
+            GuardianStatus.ALLOW_LIMITED,
+        }:
+            denial_status = f"guardian_denied:{guardian_decision.reason}"
+            for task_result in results.values():
+                task_result["status"] = denial_status
+            results["guardian"] = guardian_decision.to_audit_dict()
+            return results
 
         timestamp = time.time()
 

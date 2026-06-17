@@ -16,7 +16,13 @@ FLASK_AVAILABLE = getattr(hub_mod, "FLASK_AVAILABLE", False)
 
 
 @pytest.mark.skipif(not FLASK_AVAILABLE, reason="Flask not available")
-def test_hub_runs_in_thread_and_handles_federation_and_telemetry():
+def test_hub_runs_in_thread_and_handles_federation_and_telemetry(
+    monkeypatch, tmp_path
+):
+    monkeypatch.setenv("AETHERRA_PROFILE", "test")
+    monkeypatch.setenv("AETHERRA_POLICY_HOME", str(tmp_path / "policy"))
+    monkeypatch.delenv("AETHERRA_NET_STRICT", raising=False)
+    monkeypatch.delenv("AETHERRA_HUB_CONTROL_TOKEN", raising=False)
     # Find a free port for the hub
     s = socket.socket()
     s.bind(("localhost", 0))

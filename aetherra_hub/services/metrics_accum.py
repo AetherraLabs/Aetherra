@@ -471,11 +471,28 @@ def _trainer_metrics_lines() -> list[str]:
     return preamble + lines
 
 
+def _registry_metrics_lines() -> list[str]:
+    status = registry_client.get_registry_status() or {}
+    services = status.get("services") if isinstance(status, dict) else None
+    if isinstance(services, dict | list):
+        total = len(services)
+    elif isinstance(status, dict):
+        total = int(_num(status.get("total_services", 0)))
+    else:
+        total = 0
+    return [
+        "# HELP aetherra_registry_services_total Registered services visible to the Hub",
+        "# TYPE aetherra_registry_services_total gauge",
+        f"aetherra_registry_services_total {total}",
+    ]
+
+
 def build_all_metrics_lines() -> list[str]:  # core builder used by blueprint
     lines: list[str] = []
     # Chat
     baseline_reset_if_first(chat_metrics)
     lines.extend(chat_metrics_lines(chat_metrics))
+    lines.extend(_registry_metrics_lines())
 
     # Kernel
     # Kernel status (best-effort). If registry not yet started, skip.

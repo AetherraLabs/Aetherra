@@ -8,9 +8,11 @@ from __future__ import annotations
 
 import argparse
 import ast
+import hashlib
 import io
 import json
 import logging
+import os
 import re
 import tokenize
 from collections import Counter, defaultdict
@@ -63,6 +65,97 @@ class StubEntry:
     line_end: int
     reason: str
     severity: str
+
+
+@dataclass(frozen=True)
+class StubInventoryWritePlan:
+    file_path: Path
+    data: dict
+
+
+def _hash_value(value) -> str | None:
+    if value is None:
+        return None
+    raw = str(value)
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "maintenance" and capability in {
+        "maintenance:cleanup",
+        "fs:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _safe_relative_path(path: Path, root: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(root.resolve()))
+    except ValueError:
+        return str(path.resolve())
+
+
+def _guardian_preflight_stub_inventory(
+    *,
+    project_root: Path,
+    plan: StubInventoryWritePlan,
+):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    summary = plan.data.get("summary", {})
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="maintenance",
+            action="maintenance.stub_inventory_write",
+            target="maintenance:stub_inventory",
+            purpose="Write generated stub inventory JSON",
+            capabilities=("maintenance:cleanup", "fs:write"),
+            expected_outcome="Planned stub inventory JSON is written to disk",
+            reversible=False,
+            rollback_plan="delete generated stub inventory or restore from version control",
+            metadata={
+                "project_root_hash": _hash_value(project_root.resolve()),
+                "output_path_hash": _hash_value(
+                    _safe_relative_path(plan.file_path, project_root)
+                ),
+                "total_stubs": summary.get("total_stubs", 0),
+                "severity_counts": summary.get("by_severity", {}),
+                "module_count": len(summary.get("by_module", {})),
+                "inventory_size_bytes": len(
+                    json.dumps(plan.data, ensure_ascii=False, default=str)
+                ),
+            },
+        ),
+        approval_id=approval_id,
+        capability_checker=_guardian_capability_checker,
+    )
+
+
+def write_stub_inventory(
+    *,
+    project_root: Path = PROJECT_ROOT,
+    plan: StubInventoryWritePlan,
+) -> bool:
+    decision = _guardian_preflight_stub_inventory(project_root=project_root, plan=plan)
+    if not decision.allowed:
+        print(f"Guardian denied stub inventory write: {decision.reason}")
+        return False
+
+    plan.file_path.parent.mkdir(parents=True, exist_ok=True)
+    plan.file_path.write_text(
+        json.dumps(plan.data, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    return True
 
 
 def should_skip(path: Path) -> bool:
@@ -334,11 +427,10 @@ def main(
         "generated_at": datetime.now(UTC).isoformat(),
         "generator": "tools/maintenance/generate_stub_inventory.py",
     }
+    plan = StubInventoryWritePlan(file_path=output_path, data=output_data)
 
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(
-        json.dumps(output_data, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
+    if not write_stub_inventory(project_root=PROJECT_ROOT, plan=plan):
+        return 1
 
     print(f"Wrote {len(stubs)} stubs to {output_path}")
     return 0

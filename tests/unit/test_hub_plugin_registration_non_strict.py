@@ -27,7 +27,8 @@ def test_register_allows_unsigned_when_non_strict(monkeypatch):
 
     server = hub_mod.AetherraHubServer(port)
     ok = server.start_server()
-    assert ok and server.is_running()
+    assert ok
+    assert server.is_running()
 
     base = f"http://localhost:{port}"
 
@@ -40,4 +41,4 @@ def test_register_allows_unsigned_when_non_strict(monkeypatch):
     r = requests.post(f"{base}/api/plugins/register", json=payload, timeout=3)
     assert r.status_code == 200
     data = r.json()
-    assert data.get("status") == "success"
+    assert data.get("status") == "ok"

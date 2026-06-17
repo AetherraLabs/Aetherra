@@ -11,6 +11,8 @@ plugin packaging for distribution.
 """
 
 # Standard library imports
+import hashlib
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -78,6 +80,64 @@ class PluginGeneratorPlugin:
         self.templates = {}
         self.generated_plugins = {}
         self._load_default_templates()
+
+    def _hash_value(self, value: object) -> str | None:
+        raw = str(value) if value is not None else ""
+        if not raw:
+            return None
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+    def _guardian_requester(self) -> str:
+        return (
+            os.environ.get("AETHERRA_PRINCIPAL", "").strip()
+            or "plugin_generator"
+        )
+
+    def _guardian_capability_checker(self, requester: str, capability: str) -> bool:
+        if requester == "plugin_generator" and capability in {
+            "plugin:create",
+            "fs:write",
+        }:
+            return True
+
+        from Aetherra.security.capabilities import has_capability
+
+        return has_capability(requester, capability)
+
+    def _guardian_preflight_save(self, plugin: GeneratedPlugin, output_dir: str) -> None:
+        from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+        plugin_dir_name = f"{plugin.name.lower().replace(' ', '_')}_plugin"
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=self._guardian_requester(),
+                subsystem="coding",
+                action="coding.plugin_generator_save",
+                target="plugin_generator:generated_plugin",
+                purpose="Save generated plugin scaffold files to disk",
+                capabilities=("plugin:create", "fs:write"),
+                evidence=(f"plugin_template:{plugin.template_id}",),
+                reversible=True,
+                rollback_plan="delete generated plugin scaffold directory",
+                metadata={
+                    "plugin_id_hash": self._hash_value(plugin.plugin_id),
+                    "plugin_name_hash": self._hash_value(plugin.name),
+                    "template_id": plugin.template_id,
+                    "output_dir_hash": self._hash_value(Path(output_dir).resolve()),
+                    "plugin_dir_hash": self._hash_value(plugin_dir_name),
+                    "file_names": tuple(sorted(str(name) for name in plugin.files)),
+                    "file_count": len(plugin.files),
+                },
+            ),
+            capability_checker=self._guardian_capability_checker,
+        )
+        if decision.status not in {
+            GuardianStatus.ALLOW,
+            GuardianStatus.ALLOW_LIMITED,
+        }:
+            raise PermissionError(
+                f"guardian_denied:{decision.reason}:coding.plugin_generator_save"
+            )
 
     def _load_default_templates(self):
         """Load default plugin templates."""
@@ -528,6 +588,7 @@ class {class_name}Auth:
             return False
 
         plugin = self.generated_plugins[plugin_id]
+        self._guardian_preflight_save(plugin, output_dir)
         plugin_dir = Path(output_dir) / f"{plugin.name.lower().replace(' ', '_')}_plugin"
         plugin_dir.mkdir(parents=True, exist_ok=True)
 

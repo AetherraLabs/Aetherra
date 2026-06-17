@@ -3,11 +3,23 @@
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from Aetherra.aetherra_core.memory.storm.engine import StormConfig, StormEngine
 from Aetherra.aetherra_core.memory.storm.metrics import get_metrics
 from Aetherra.aetherra_core.memory.storm.ot_helpers import _generate_mock_embedding
+
+
+@pytest.fixture(autouse=True)
+def guardian_env(monkeypatch, tmp_path):
+    """Keep Guardian audit state isolated for STORM maintenance tests."""
+    monkeypatch.setenv("AETHERRA_PROFILE", "test")
+    monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(tmp_path))
+    monkeypatch.setenv("AETHERRA_GUARDIAN_MODE", "enforcing")
+    monkeypatch.delenv("AETHERRA_REQUIRE_CAPABILITIES", raising=False)
+    return tmp_path
 
 
 @pytest.fixture
@@ -19,6 +31,15 @@ def maintenance_engine():
         sqlite_path=":memory:",  # In-memory DB for testing
     )
     return StormEngine(config=config)
+
+
+def _audit_entries(root):
+    audit_path = root / ".aetherra" / "security" / "audit.jsonl"
+    return [
+        json.loads(line)
+        for line in audit_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
 
 
 @pytest.mark.asyncio
@@ -37,6 +58,51 @@ async def test_run_maintenance_all_tasks(maintenance_engine):
     assert results["barycenter_refresh"]["status"] == "ok"
     assert results["inconsistency_scan"]["status"] == "ok"
     assert results["ot_cache_prune"]["status"] == "ok"
+
+
+@pytest.mark.asyncio
+async def test_run_maintenance_writes_guardian_audit_without_storage_path(
+    guardian_env, tmp_path
+):
+    sqlite_path = tmp_path / "secret-storm-path.sqlite"
+    engine = StormEngine(
+        config=StormConfig(
+            enabled=True,
+            shadow_mode=False,
+            sqlite_path=str(sqlite_path),
+        )
+    )
+
+    results = await engine.run_maintenance()
+    entries = _audit_entries(guardian_env)
+    audit_json = json.dumps(entries[-1])
+
+    assert results["ot_cache_prune"]["status"] == "ok"
+    assert entries[-1]["details"]["intent"]["action"] == "maintenance.storm_run"
+    assert "maintenance_operation" in entries[-1]["details"]["risk"]["factors"]
+    assert "secret-storm-path" not in audit_json
+    assert str(sqlite_path) not in audit_json
+
+
+@pytest.mark.asyncio
+async def test_run_maintenance_blocks_external_requester_before_metrics(
+    monkeypatch, guardian_env, maintenance_engine
+):
+    monkeypatch.setenv("AETHERRA_REQUIRE_CAPABILITIES", "1")
+    monkeypatch.setenv("AETHERRA_POLICY_HOME", str(guardian_env / "policy"))
+    maintenance_engine.metrics.maintenance_total = 0
+    maintenance_engine.metrics.maintenance_last.clear()
+
+    results = await maintenance_engine.run_maintenance(requester="untrusted_operator")
+
+    assert results["tt_rank_trim"]["status"].startswith(
+        "guardian_denied:missing_capability"
+    )
+    assert results["ot_cache_prune"]["status"].startswith(
+        "guardian_denied:missing_capability"
+    )
+    assert maintenance_engine.metrics.maintenance_total == 0
+    assert maintenance_engine.metrics.maintenance_last == {}
 
 
 @pytest.mark.asyncio

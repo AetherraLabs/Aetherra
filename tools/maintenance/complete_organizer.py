@@ -10,6 +10,7 @@ Addresses ALL remaining organizational issues and fixes imports systematically.
 
 # Standard library imports
 import ast
+import hashlib
 import logging
 import os
 import re
@@ -28,14 +29,64 @@ class ComprehensiveAetherraOrganizer:
         self.moves_performed = []
         self.import_fixes = []
 
-        # Create backup directory
-        if not self.dry_run:
-            self.backup_dir.mkdir(exist_ok=True)
+    @staticmethod
+    def _hash_value(value) -> str | None:
+        if value is None:
+            return None
+        raw = str(value)
+        if not raw:
+            return None
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+    @staticmethod
+    def _guardian_capability_checker(requester: str, capability: str) -> bool:
+        if requester == "maintenance" and capability in {
+            "maintenance:cleanup",
+            "fs:write",
+            "fs:delete",
+        }:
+            return True
+
+        from Aetherra.security.capabilities import has_capability
+
+        return has_capability(requester, capability)
+
+    def _guardian_preflight_execute(self, moves: dict[str, str]):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        move_hashes = tuple(
+            sorted(
+                self._hash_value(f"{src}->{dst}") or ""
+                for src, dst in moves.items()
+            )
+        )
+        return evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="maintenance",
+                action="maintenance.complete_organization",
+                target="maintenance:aetherra_core_complete_organization",
+                purpose="Reorganize Aetherra core files and update affected imports",
+                capabilities=("maintenance:cleanup", "fs:write", "fs:delete"),
+                expected_outcome="Selected core files are backed up and moved, then affected imports are updated",
+                reversible=False,
+                rollback_plan="restore moved and rewritten files from comprehensive cleanup backups or version control",
+                metadata={
+                    "base_path_hash": self._hash_value(self.base_path),
+                    "backup_dir_hash": self._hash_value(self.backup_dir),
+                    "planned_move_count": len(moves),
+                    "planned_move_hashes": move_hashes[:20],
+                    "will_fix_imports": True,
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=self._guardian_capability_checker,
+        )
 
     def get_comprehensive_reorganization_plan(self) -> dict[str, str]:
         """Generate a comprehensive reorganization plan based on file analysis"""
-
-        reorganization_plan = {}
 
         # Agent-related files → agents/
         agent_files = {
@@ -125,9 +176,7 @@ class ComprehensiveAetherraOrganizer:
         all_moves.update(metrics_files)
 
         # Filter to only include actual moves (source != destination)
-        reorganization_plan = {src: dst for src, dst in all_moves.items() if src != dst}
-
-        return reorganization_plan
+        return {src: dst for src, dst in all_moves.items() if src != dst}
 
     def backup_file(self, filepath: Path) -> Path:
         """Create backup of file before modification"""
@@ -172,7 +221,7 @@ class ComprehensiveAetherraOrganizer:
     def find_all_python_files(self) -> list[Path]:
         """Find all Python files in the aetherra_core directory"""
         python_files = []
-        for root, dirs, files in os.walk(self.base_path):
+        for root, _dirs, files in os.walk(self.base_path):
             for file in files:
                 if file.endswith(".py"):
                     python_files.append(Path(root) / file)
@@ -288,7 +337,7 @@ class ComprehensiveAetherraOrganizer:
         """Remove empty directories after reorganization"""
         logger.info("🧹 Cleaning up empty directories...")
 
-        for root, dirs, files in os.walk(self.base_path, topdown=False):
+        for root, dirs, _files in os.walk(self.base_path, topdown=False):
             for dir_name in dirs:
                 dir_path = Path(root) / dir_name
                 try:
@@ -362,6 +411,16 @@ class ComprehensiveAetherraOrganizer:
         logger.info("=" * 60)
 
         try:
+            if not self.dry_run:
+                moves = self.get_comprehensive_reorganization_plan()
+                decision = self._guardian_preflight_execute(moves)
+                if not decision.allowed:
+                    logger.error(
+                        "Guardian denied complete organization: %s",
+                        decision.reason,
+                    )
+                    return
+
             # Step 1: Execute reorganization
             self.execute_reorganization()
 

@@ -22,6 +22,7 @@ from __future__ import annotations
 # Standard library imports
 import asyncio
 import contextlib
+import hashlib
 import os
 import time
 import uuid
@@ -39,6 +40,58 @@ except Exception:
 
     def _has_capability(requester: str, capability: str) -> bool:  # type: ignore
         return False
+
+
+def _hash_value(value: Any) -> str | None:
+    raw = str(value) if value is not None else ""
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _lyrixa_edit_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "lyrixa:chat" and capability in {"lyrixa:edit", "fs:write"}:
+        return True
+    return _has_capability(requester, capability)
+
+
+def _evaluate_safe_edit_guardian(
+    *,
+    action: str,
+    path: Path,
+    edit_root: Path,
+    suggestion: dict[str, Any],
+    original_length: int,
+    new_length: int,
+):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "lyrixa:chat"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="lyrixa",
+            action="lyrixa.apply_safe_edit",
+            target=f"lyrixa_safe_edit:{action}",
+            purpose="Apply a scoped Lyrixa safe-edit suggestion",
+            capabilities=("lyrixa:edit", "fs:write"),
+            evidence=("lyrixa_chat_safe_edit",),
+            reversible=True,
+            rollback_plan="restore target file from version control or backup before accepting further edits",
+            metadata={
+                "edit_action": action,
+                "file_hash": _hash_value(path.resolve()),
+                "edit_root_hash": _hash_value(edit_root.resolve()),
+                "title_hash": _hash_value(suggestion.get("title")),
+                "original_length": original_length,
+                "new_length": new_length,
+                "delta_length": new_length - original_length,
+            },
+        ),
+        approval_id=approval_id,
+        capability_checker=_lyrixa_edit_capability_checker,
+    )
 
 
 # Optional: import chat router and intelligence if present
@@ -233,7 +286,7 @@ class LyrixaChatService:
             # If older plan-shaped config exists directly under key
             if thr is None and isinstance(lyx.get("consciousness_integration"), dict):
                 thr = lyx["consciousness_integration"].get("coherence_threshold")
-            if isinstance(thr, (int, float)):
+            if isinstance(thr, int | float):
                 self._coherence_threshold = float(thr)
         except Exception:
             pass
@@ -976,6 +1029,19 @@ class LyrixaChatService:
                 return False, {"error": "unknown_action"}
 
             if new_text != original:
+                guardian_decision = _evaluate_safe_edit_guardian(
+                    action=str(action),
+                    path=path,
+                    edit_root=eroot,
+                    suggestion=suggestion,
+                    original_length=len(original),
+                    new_length=len(new_text),
+                )
+                if not guardian_decision.allowed:
+                    return False, {
+                        "error": "guardian_denied",
+                        "reason": guardian_decision.reason,
+                    }
                 path.write_text(new_text, encoding="utf-8")
                 return True, {"file": str(path), "action": action}
             else:

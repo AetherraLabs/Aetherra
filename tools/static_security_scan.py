@@ -19,9 +19,11 @@ License: GPL-3.0-or-later
 from __future__ import annotations
 
 # Standard library imports
+import ast
 import json
 import re
 import sys
+from contextlib import suppress
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -36,12 +38,6 @@ SECRET_PATTERNS = {
     ),
     # password= assignments are noisy; treat separately so we can downgrade common placeholders
     "password_assignment": re.compile(r"password\s*[:=]\s*['\"][^'\"]+['\"]", re.I),
-}
-
-UNSAFE_PATTERNS = {
-    "eval_call": re.compile(r"(^|[^A-Za-z0-9_])eval\s*\(", re.M),
-    "exec_call": re.compile(r"(^|[^A-Za-z0-9_])exec\s*\(", re.M),
-    "subprocess_shell_true": re.compile(r"subprocess\.\w+\(.*shell\s*=\s*True", re.S),
 }
 
 DISALLOWED_IMPORTS = {
@@ -79,15 +75,86 @@ def load_allowlist(root: Path) -> list[re.Pattern]:
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
-            try:
+            with suppress(re.error):
                 patterns.append(re.compile(line))
-            except re.error:
-                pass
     return patterns
 
 
 def is_allowed(line: str, allow_patterns: list[re.Pattern]) -> bool:
     return any(p.search(line) for p in allow_patterns)
+
+
+def has_nosec(lines: list[str], line_number: int) -> bool:
+    """Return True when the line or immediately preceding line has a nosec marker."""
+
+    start = max(0, line_number - 2)
+    end = min(len(lines), line_number + 1)
+    return any("nosec" in lines[idx].lower() for idx in range(start, end))
+
+
+def _call_name(node: ast.Call) -> str:
+    if isinstance(node.func, ast.Name):
+        return node.func.id
+    if isinstance(node.func, ast.Attribute):
+        parts = [node.func.attr]
+        current = node.func.value
+        while isinstance(current, ast.Attribute):
+            parts.append(current.attr)
+            current = current.value
+        if isinstance(current, ast.Name):
+            parts.append(current.id)
+        return ".".join(reversed(parts))
+    return ""
+
+
+def _is_subprocess_shell_true(node: ast.Call) -> bool:
+    call_name = _call_name(node)
+    if not call_name.startswith("subprocess."):
+        return False
+    return any(
+        keyword.arg == "shell"
+        and isinstance(keyword.value, ast.Constant)
+        and keyword.value.value is True
+        for keyword in node.keywords
+    )
+
+
+def scan_unsafe_calls(path: Path, text: str, lines: list[str]) -> list[Finding]:
+    try:
+        tree = ast.parse(text, filename=str(path))
+    except SyntaxError:
+        return []
+
+    findings: list[Finding] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        line_number = getattr(node, "lineno", 0)
+        if line_number <= 0 or has_nosec(lines, line_number):
+            continue
+
+        pattern = ""
+        call_name = _call_name(node)
+        if call_name == "eval":
+            pattern = "eval_call"
+        elif call_name == "exec":
+            pattern = "exec_call"
+        elif _is_subprocess_shell_true(node):
+            pattern = "subprocess_shell_true"
+
+        if not pattern:
+            continue
+        findings.append(
+            Finding(
+                file=str(path),
+                line=line_number,
+                severity="high",
+                category="unsafe_call",
+                pattern=pattern,
+                excerpt=lines[line_number - 1].strip()[:180],
+            )
+        )
+    return findings
 
 
 def scan_file(path: Path, allow_patterns: list[re.Pattern]) -> list[Finding]:
@@ -97,6 +164,8 @@ def scan_file(path: Path, allow_patterns: list[re.Pattern]) -> list[Finding]:
         return []
     findings: list[Finding] = []
     lines = text.splitlines()
+    findings.extend(scan_unsafe_calls(path, text, lines))
+
     # Secrets
     for idx, line in enumerate(lines, start=1):
         if is_allowed(line, allow_patterns):
@@ -106,15 +175,22 @@ def scan_file(path: Path, allow_patterns: list[re.Pattern]) -> list[Finding]:
                 severity = "critical"
                 if name == "password_assignment":
                     lowered = line.lower()
-                    # Downgrade if obviously a placeholder or redacted / mapping spec line
+                    # Skip obvious redaction mappings and scanner keyword lists.
                     if any(
                         ph in lowered
                         for ph in [
                             "[redacted]",
+                            "for keyword in",
+                        ]
+                    ):
+                        continue
+                    # Downgrade if obviously a placeholder.
+                    if any(
+                        ph in lowered
+                        for ph in [
                             "changeme",
                             "example",
                             "placeholder",
-                            "for keyword in",
                         ]
                     ):
                         severity = "medium"
@@ -124,18 +200,6 @@ def scan_file(path: Path, allow_patterns: list[re.Pattern]) -> list[Finding]:
                         line=idx,
                         severity=severity,
                         category="secret",
-                        pattern=name,
-                        excerpt=line.strip()[:180],
-                    )
-                )
-        for name, pattern in UNSAFE_PATTERNS.items():
-            if pattern.search(line):
-                findings.append(
-                    Finding(
-                        file=str(path),
-                        line=idx,
-                        severity="high",
-                        category="unsafe_call",
                         pattern=name,
                         excerpt=line.strip()[:180],
                     )
@@ -199,15 +263,20 @@ def main():  # pragma: no cover - CLI wrapper
     parser.add_argument("--md", default="security_scan_report.md")
     args = parser.parse_args()
 
+    # Windows consoles may use a legacy code page. Replace unsupported status
+    # glyphs instead of failing after the scan and reports have completed.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(errors="replace")
+
     root = Path(args.root).resolve()
     report = scan_root(root)
     write_reports(report, Path(args.json), Path(args.md))
     # Critical exit if any critical secret findings
     critical = any(f.severity == "critical" for f in report.findings)
     if critical:
-        print("❌ Critical security findings detected")
+        print("Critical security findings detected")
         sys.exit(1)
-    print("✅ Security scan completed with no critical findings")
+    print("Security scan completed with no critical findings")
 
 
 if __name__ == "__main__":

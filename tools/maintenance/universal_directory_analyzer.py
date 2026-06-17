@@ -7,13 +7,108 @@ Universal Directory Analyzer
 Analyzes any directory for duplicates and proper file organization
 """
 
+from __future__ import annotations
+
 # Standard library imports
 import hashlib
 import os
 import re
 import sys
 from collections import defaultdict
+from dataclasses import dataclass
 from pathlib import Path
+
+
+@dataclass(frozen=True)
+class DirectoryAnalysisReportPlan:
+    file_path: Path
+    content: str
+    target_directory: Path
+    summary: dict
+
+
+def _hash_value(value) -> str | None:
+    if value is None:
+        return None
+    raw = str(value)
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "maintenance" and capability in {
+        "maintenance:cleanup",
+        "fs:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _safe_relative_path(path: Path, root: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(root.resolve()))
+    except ValueError:
+        return str(path.resolve())
+
+
+def _guardian_preflight_directory_analysis_report(
+    *,
+    project_root: Path,
+    plan: DirectoryAnalysisReportPlan,
+):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="maintenance",
+            action="maintenance.directory_analysis_report",
+            target="maintenance:directory_analysis_report",
+            purpose="Write generated directory analysis report",
+            capabilities=("maintenance:cleanup", "fs:write"),
+            expected_outcome="Planned directory analysis report is written to disk",
+            reversible=False,
+            rollback_plan="delete generated directory analysis report or restore from version control",
+            metadata={
+                "project_root_hash": _hash_value(project_root.resolve()),
+                "target_directory_hash": _hash_value(
+                    _safe_relative_path(plan.target_directory, project_root)
+                ),
+                "report_path_hash": _hash_value(
+                    _safe_relative_path(plan.file_path, project_root)
+                ),
+                "summary": plan.summary,
+                "report_size_bytes": len(plan.content.encode("utf-8")),
+            },
+        ),
+        approval_id=approval_id,
+        capability_checker=_guardian_capability_checker,
+    )
+
+
+def write_directory_analysis_report(
+    *,
+    project_root: Path,
+    plan: DirectoryAnalysisReportPlan,
+) -> bool:
+    decision = _guardian_preflight_directory_analysis_report(
+        project_root=project_root,
+        plan=plan,
+    )
+    if not decision.allowed:
+        print(f"Guardian denied directory analysis report: {decision.reason}")
+        return False
+
+    plan.file_path.parent.mkdir(parents=True, exist_ok=True)
+    plan.file_path.write_text(plan.content, encoding="utf-8")
+    print(f"Report saved to: {plan.file_path}")
+    return True
 
 
 class UniversalDirectoryAnalyzer:
@@ -39,7 +134,6 @@ class UniversalDirectoryAnalyzer:
         file_path = Path(filepath)
         filename = file_path.name
         directory = file_path.parent.name
-        relative_path = str(file_path.relative_to(self.target_directory))
 
         # Common directory purpose mappings
         common_directories = {
@@ -115,13 +209,15 @@ class UniversalDirectoryAnalyzer:
 
         # Check if file is in appropriate directory
         for expected_dir, keywords in common_directories.items():
-            if any(keyword in filename.lower() for keyword in keywords):
-                if directory != expected_dir and expected_dir in [
-                    d.name for d in self.target_directory.iterdir() if d.is_dir()
-                ]:
-                    issues.append(
-                        f"Misplaced: {filename} should be in {expected_dir}/ not {directory}/"
-                    )
+            if (
+                any(keyword in filename.lower() for keyword in keywords)
+                and directory != expected_dir
+                and expected_dir
+                in [d.name for d in self.target_directory.iterdir() if d.is_dir()]
+            ):
+                issues.append(
+                    f"Misplaced: {filename} should be in {expected_dir}/ not {directory}/"
+                )
 
         return issues
 
@@ -134,7 +230,7 @@ class UniversalDirectoryAnalyzer:
 
         # Count total files
         total_files = 0
-        for root, dirs, files in os.walk(self.target_directory):
+        for _root, _dirs, files in os.walk(self.target_directory):
             total_files += len(
                 [f for f in files if f.endswith((".py", ".js", ".ts", ".json", ".md"))]
             )
@@ -185,7 +281,7 @@ class UniversalDirectoryAnalyzer:
             name: files for name, files in self.files_by_name.items() if len(files) > 1
         }
 
-        self.generate_report()
+        return self.generate_report()
 
     def compare_file_contents(self, file1, file2):
         """Compare two files line by line to show differences"""
@@ -200,7 +296,7 @@ class UniversalDirectoryAnalyzer:
 
             # Count different lines
             diff_count = 0
-            for i, (line1, line2) in enumerate(zip(content1, content2, strict=False)):
+            for _i, (line1, line2) in enumerate(zip(content1, content2, strict=False)):
                 if line1 != line2:
                     diff_count += 1
 
@@ -317,7 +413,7 @@ class UniversalDirectoryAnalyzer:
             if self.duplicate_names:
                 numbered_duplicates = [
                     name
-                    for name in self.duplicate_names.keys()
+                    for name in self.duplicate_names
                     if re.search(r"_\d+\.(py|js|ts|json)$", name)
                 ]
                 if numbered_duplicates:
@@ -348,13 +444,23 @@ class UniversalDirectoryAnalyzer:
 
         # Save report
         report_content = "\n".join(report)
-        report_filename = f"{self.directory_name.upper()}_DIRECTORY_ANALYSIS.md"
-
-        with open(report_filename, "w", encoding="utf-8") as f:
-            f.write(report_content)
+        report_path = Path(f"{self.directory_name.upper()}_DIRECTORY_ANALYSIS.md")
+        summary = {
+            "duplicates": len(self.duplicate_content),
+            "filename_duplicates": len(self.duplicate_names),
+            "misplaced": len(self.misplaced_files),
+            "total_files": sum(len(files) for files in self.files_by_name.values()),
+        }
+        plan = DirectoryAnalysisReportPlan(
+            file_path=report_path,
+            content=report_content,
+            target_directory=self.target_directory,
+            summary=summary,
+        )
+        if not write_directory_analysis_report(project_root=Path.cwd(), plan=plan):
+            return {**summary, "report_written": False}
 
         print("✅ Analysis complete!")
-        print(f"📄 Report saved to: {report_filename}")
         print("")
         print("🔍 Key Findings:")
         print(f"   - {len(self.duplicate_content)} exact duplicate groups")
@@ -363,12 +469,7 @@ class UniversalDirectoryAnalyzer:
             f"   - {len(self.misplaced_files)} files with potential organization improvements"
         )
 
-        return {
-            "duplicates": len(self.duplicate_content),
-            "filename_duplicates": len(self.duplicate_names),
-            "misplaced": len(self.misplaced_files),
-            "total_files": sum(len(files) for files in self.files_by_name.values()),
-        }
+        return {**summary, "report_written": True}
 
 
 def suggest_next_directory():
@@ -399,7 +500,7 @@ def suggest_next_directory():
         if dir_path.exists() and dir_path.is_dir():
             # Quick count of files
             file_count = 0
-            for root, dirs, files in os.walk(dir_path):
+            for _root, _dirs, files in os.walk(dir_path):
                 file_count += len(
                     [f for f in files if f.endswith((".py", ".js", ".ts", ".json"))]
                 )

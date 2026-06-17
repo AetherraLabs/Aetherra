@@ -17,6 +17,15 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
+def _unsigned_dev_override_enabled() -> bool:
+    profile = (os.environ.get("AETHERRA_PROFILE", "") or "").strip().lower()
+    return (
+        profile not in {"prod", "production"}
+        and os.environ.get("AETHERRA_ALLOW_UNSIGNED_DEV", "0") == "1"
+    )
+
+
 try:  # optional
     # Aetherra imports
     from Aetherra.plugins.manifest_schema import (  # type: ignore
@@ -57,9 +66,10 @@ class PluginStore:
         )
         strict = bool(strict_env)
         has_sig = bool(manifest.get("signature")) and bool(manifest.get("pubkey"))
+        unsigned_dev_override = _unsigned_dev_override_enabled()
         # Developer override: allow unsigned registration even when strict flags are set
         # if explicit env set AND verification libs unavailable.
-        if os.environ.get("AETHERRA_ALLOW_UNSIGNED_DEV", "0") == "1":
+        if unsigned_dev_override:
             # Temporarily downgrade strictness for this registration attempt only.
             strict = False
             logger.warning(
@@ -77,7 +87,7 @@ class PluginStore:
         if (
             strict
             and not has_sig
-            and os.environ.get("AETHERRA_ALLOW_UNSIGNED_DEV", "0") == "1"
+            and unsigned_dev_override
         ):
             strict = False
             logger.debug(
@@ -135,7 +145,7 @@ class PluginStore:
                 return False, {"error": "invalid signature"}
         else:
             # In dev override mode, we already stripped signature; skip optional verification entirely
-            if os.environ.get("AETHERRA_ALLOW_UNSIGNED_DEV", "0") != "1" and has_sig:
+            if not unsigned_dev_override and has_sig:
                 verifier, lib_ok = _load_verifier()
                 if verifier and lib_ok:
                     try:

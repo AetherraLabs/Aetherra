@@ -12,6 +12,7 @@ Purpose: Fix violations detected by architectural compliance checker
 """
 
 # Standard library imports
+import hashlib
 import os
 import re
 from pathlib import Path
@@ -25,6 +26,54 @@ class ArchitecturalFixer:
         self.aetherra_root = self.project_root / "Aetherra"
         self.lyrixa_root = self.aetherra_root / "lyrixa"
         self.dry_run = dry_run
+
+    @staticmethod
+    def _hash_value(value) -> str | None:
+        if value is None:
+            return None
+        raw = str(value)
+        if not raw:
+            return None
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+    @staticmethod
+    def _guardian_capability_checker(requester: str, capability: str) -> bool:
+        if requester == "maintenance" and capability in {
+            "maintenance:cleanup",
+            "fs:write",
+        }:
+            return True
+
+        from Aetherra.security.capabilities import has_capability
+
+        return has_capability(requester, capability)
+
+    def _guardian_preflight_apply(self):
+        from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+        requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
+        approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+        return evaluate_intent(
+            IntentDeclaration(
+                requester=requester,
+                subsystem="maintenance",
+                action="maintenance.architecture_import_fix",
+                target="maintenance:aetherra_architecture_import_fix",
+                purpose="Rewrite core Aetherra files to remove Lyrixa import violations",
+                capabilities=("maintenance:cleanup", "fs:write"),
+                expected_outcome="Architecture import violations are commented out in source files",
+                reversible=False,
+                rollback_plan="restore rewritten files from version control or a prior workspace backup",
+                metadata={
+                    "project_root_hash": self._hash_value(self.project_root),
+                    "aetherra_root_hash": self._hash_value(self.aetherra_root),
+                    "lyrixa_root_hash": self._hash_value(self.lyrixa_root),
+                    "dry_run": bool(self.dry_run),
+                },
+            ),
+            approval_id=approval_id,
+            capability_checker=self._guardian_capability_checker,
+        )
 
     def fix_import_violations(self) -> list[str]:
         """Fix core AI files importing from Lyrixa"""
@@ -87,6 +136,12 @@ class ArchitecturalFixer:
         """Apply all architectural fixes"""
         print("🔧 APPLYING ARCHITECTURAL FIXES")
         print("=" * 40)
+
+        if not self.dry_run:
+            decision = self._guardian_preflight_apply()
+            if not decision.allowed:
+                print(f"Guardian denied architecture import fixes: {decision.reason}")
+                return {"import_fixes": []}
 
         # Apply fixes
         import_fixes = self.fix_import_violations()

@@ -24,6 +24,7 @@ import asyncio
 import json
 import logging
 import os
+import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -37,6 +38,8 @@ sys.path.insert(0, "Aetherra")
 
 # Aetherra imports
 from Aetherra.aetherra_core.config import config_loader
+from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+from Aetherra.security.capabilities import has_capability
 
 logger = logging.getLogger(__name__)
 
@@ -248,6 +251,53 @@ class AetherraHubIntegration:
         self.hub_plugins_cache = {}
         self.last_sync_time = None
 
+    def _guardian_preflight(
+        self,
+        *,
+        action: str,
+        plugin_id: str,
+        target_path: Path,
+        capabilities: tuple[str, ...],
+        purpose: str,
+        reversible: bool,
+        rollback_plan: str | None,
+        metadata: dict[str, Any] | None = None,
+    ) -> None:
+        try:
+            target_label = str(target_path.expanduser().resolve(strict=False))
+        except Exception:
+            target_label = str(target_path)
+        requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "aetherra_hub_integration"
+        intent = IntentDeclaration(
+            requester=requester,
+            subsystem="hub_plugin_integration",
+            action=action,
+            target=f"plugin:{plugin_id}",
+            purpose=purpose,
+            capabilities=capabilities,
+            expected_outcome="Hub plugin integration mutation is completed",
+            reversible=reversible,
+            rollback_plan=rollback_plan,
+            evidence=(f"plugin:{plugin_id}", f"path_name:{target_path.name}"),
+            metadata={
+                "target_path_name": target_path.name,
+                "target_parent_name": target_path.parent.name,
+                "target_path_hash": self._path_fingerprint(target_label),
+                **(metadata or {}),
+            },
+        )
+        decision = evaluate_intent(intent, capability_checker=has_capability)
+        if decision.status not in {GuardianStatus.ALLOW, GuardianStatus.ALLOW_LIMITED}:
+            raise PermissionError(
+                f"Guardian denied Hub plugin integration action {action}: {decision.reason}"
+            )
+
+    @staticmethod
+    def _path_fingerprint(path_value: str) -> str:
+        import hashlib
+
+        return hashlib.sha256(path_value.encode("utf-8", errors="replace")).hexdigest()[:16]
+
     async def initialize(self):
         """Initialize the Hub integration"""
         if not self.enabled:
@@ -350,8 +400,8 @@ class AetherraHubIntegration:
                 if plugin_id:
                     self.hub_plugins_cache[plugin_id] = plugin
 
-            # Get categories
-            categories = await self.client.get_plugin_categories()
+            # Warm category request for clients that cache server metadata.
+            await self.client.get_plugin_categories()
 
             self.last_sync_time = datetime.now()
             logger.info(f"✅ Sync complete: {len(featured)} featured plugins cached")
@@ -406,12 +456,41 @@ class AetherraHubIntegration:
             if plugin_type == "aetherplugin":
                 # Install as .aetherplugin file
                 plugin_file = install_dir / f"{plugin_id}.aetherplugin"
+                self._guardian_preflight(
+                    action="hub.plugin_install",
+                    plugin_id=plugin_id,
+                    target_path=plugin_file,
+                    capabilities=("plugin:install", "fs:write"),
+                    purpose="Install aetherplugin package downloaded from Aetherra Hub",
+                    reversible=True,
+                    rollback_plan="Delete the installed aetherplugin package",
+                    metadata={
+                        "plugin_type": plugin_type,
+                        "version": str(version),
+                        "content_size": len(content),
+                    },
+                )
                 with open(plugin_file, "wb") as f:
                     f.write(content)
 
             else:
                 # Install as directory with extracted content
                 plugin_dir = install_dir / plugin_id
+                self._guardian_preflight(
+                    action="hub.plugin_install",
+                    plugin_id=plugin_id,
+                    target_path=plugin_dir,
+                    capabilities=("plugin:install", "fs:write"),
+                    purpose="Install plugin package downloaded from Aetherra Hub",
+                    reversible=True,
+                    rollback_plan="Delete the installed plugin directory and manifest",
+                    metadata={
+                        "plugin_type": plugin_type,
+                        "version": str(version),
+                        "content_size": len(content),
+                        "detail_keys": tuple(sorted(str(key) for key in details)),
+                    },
+                )
                 plugin_dir.mkdir(exist_ok=True)
 
                 # For now, just save as a package file
@@ -450,14 +529,21 @@ class AetherraHubIntegration:
 
             plugin_info = self.local_plugins[plugin_id]
             plugin_path = Path(plugin_info["path"])
+            self._guardian_preflight(
+                action="hub.plugin_uninstall",
+                plugin_id=plugin_id,
+                target_path=plugin_path,
+                capabilities=("plugin:uninstall", "fs:delete"),
+                purpose="Uninstall plugin managed by Aetherra Hub integration",
+                reversible=False,
+                rollback_plan=None,
+                metadata={"plugin_path_name": plugin_path.name},
+            )
 
             # Remove plugin files
             if plugin_path.is_file():
                 plugin_path.unlink()
             elif plugin_path.is_dir():
-                # Standard library imports
-                import shutil
-
                 shutil.rmtree(plugin_path)
 
             # Update local registry

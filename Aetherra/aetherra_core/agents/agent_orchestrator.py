@@ -11,8 +11,10 @@ Handles agent discovery, capability matching, task scheduling, and result aggreg
 
 # Standard library imports
 import asyncio
+import hashlib
 import json
 import logging
+import os
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
@@ -20,6 +22,60 @@ from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger(__name__)
+
+
+def _hash_value(value: Any) -> str | None:
+    if value is None:
+        return None
+    raw = str(value)
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "agent:orchestrator" and capability in {
+        "agent:control",
+        "agent:execute_task",
+        "agent:register",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _guardian_preflight_agent_operation(
+    *,
+    action: str,
+    target: str,
+    purpose: str,
+    capabilities: tuple[str, ...],
+    reversible: bool,
+    rollback_plan: str,
+    metadata: dict[str, Any],
+):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "agent:orchestrator"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="agents",
+            action=action,
+            target=target,
+            purpose=purpose,
+            capabilities=capabilities,
+            evidence=(f"{action}:request",),
+            reversible=reversible,
+            rollback_plan=rollback_plan,
+            metadata=metadata,
+        ),
+        approval_id=approval_id,
+        capability_checker=_guardian_capability_checker,
+    )
 
 
 class TaskPriority(Enum):
@@ -287,6 +343,28 @@ class AgentOrchestrator:
                     else [str(capabilities)]
                 )
 
+            decision = _guardian_preflight_agent_operation(
+                action="agent.register",
+                target=f"agent:{_hash_value(agent_id)}",
+                purpose="Register an agent with the orchestrator registry",
+                capabilities=("agent:register",),
+                reversible=True,
+                rollback_plan="unregister the agent and remove its persisted registry record",
+                metadata={
+                    "agent_id_hash": _hash_value(agent_id),
+                    "agent_name_hash": _hash_value(name),
+                    "capability_count": len(capabilities),
+                    "capability_hashes": [_hash_value(cap) for cap in capabilities],
+                },
+            )
+            if not decision.allowed:
+                logger.warning(
+                    "Guardian denied agent registration for hashed id %s: %s",
+                    _hash_value(agent_id),
+                    decision.reason,
+                )
+                return False
+
             agent = Agent(
                 agent_id=agent_id,
                 name=name,
@@ -311,6 +389,34 @@ class AgentOrchestrator:
             if not task.task_id:
                 self._task_counter += 1
                 task.task_id = f"task_{self._task_counter:06d}"
+
+            decision = _guardian_preflight_agent_operation(
+                action="agent.submit_task",
+                target=f"agent_task:{_hash_value(task.task_id)}",
+                purpose="Submit a task into the agent orchestrator queue",
+                capabilities=("agent:execute_task",),
+                reversible=True,
+                rollback_plan="remove the queued task and delete its persisted task record",
+                metadata={
+                    "task_id_hash": _hash_value(task.task_id),
+                    "task_name_hash": _hash_value(task.name),
+                    "description_length": len(str(task.description or "")),
+                    "required_capability_count": len(task.required_capabilities),
+                    "required_capability_hashes": [
+                        _hash_value(capability)
+                        for capability in task.required_capabilities
+                    ],
+                    "input_type": type(task.input_data).__name__,
+                    "priority": task.priority.value,
+                },
+            )
+            if not decision.allowed:
+                logger.warning(
+                    "Guardian denied agent task submission for hashed id %s: %s",
+                    _hash_value(task.task_id),
+                    decision.reason,
+                )
+                raise PermissionError(decision.reason)
 
             # Add to task registry and queue
             self.tasks[task.task_id] = task
@@ -364,8 +470,9 @@ class AgentOrchestrator:
             # Find suitable agent
             agent = self._find_suitable_agent(task.required_capabilities)
             if agent:
-                await self._assign_task_to_agent(task, agent)
-                self.task_queue.remove(task_id)
+                assigned = await self._assign_task_to_agent(task, agent)
+                if assigned:
+                    self.task_queue.remove(task_id)
 
     def _get_task_priority_value(self, task_id: str) -> int:
         """Get numeric priority value for sorting."""
@@ -406,9 +513,37 @@ class AgentOrchestrator:
         # Return agent with highest score
         return max(scored_agents, key=lambda x: x[0])[1]
 
-    async def _assign_task_to_agent(self, task: Task, agent: Agent):
+    async def _assign_task_to_agent(self, task: Task, agent: Agent) -> bool:
         """Assign a task to a specific agent."""
         try:
+            decision = _guardian_preflight_agent_operation(
+                action="agent.assign_task",
+                target=f"agent:{_hash_value(agent.agent_id)}",
+                purpose="Assign a queued task to an available agent for execution",
+                capabilities=("agent:execute_task", "agent:control"),
+                reversible=True,
+                rollback_plan="return the task to pending state and mark the agent available",
+                metadata={
+                    "task_id_hash": _hash_value(task.task_id),
+                    "task_name_hash": _hash_value(task.name),
+                    "agent_id_hash": _hash_value(agent.agent_id),
+                    "required_capability_count": len(task.required_capabilities),
+                    "required_capability_hashes": [
+                        _hash_value(capability)
+                        for capability in task.required_capabilities
+                    ],
+                    "priority": task.priority.value,
+                },
+            )
+            if not decision.allowed:
+                logger.warning(
+                    "Guardian denied task assignment for task hash %s to agent hash %s: %s",
+                    _hash_value(task.task_id),
+                    _hash_value(agent.agent_id),
+                    decision.reason,
+                )
+                return False
+
             task.assigned_agent = agent.agent_id
             task.status = TaskStatus.ASSIGNED
             task.started_at = datetime.now()
@@ -421,6 +556,7 @@ class AgentOrchestrator:
             self.running_tasks[task.task_id] = task_future
 
             logger.info(f"[AGENT] Assigned task '{task.name}' to agent '{agent.name}'")
+            return True
 
         except Exception as e:
             logger.error(f"❌ Failed to assign task {task.task_id} to agent {agent.agent_id}: {e}")
@@ -587,6 +723,29 @@ class AgentOrchestrator:
             TaskStatus.CANCELLED,
         ]:
             return False  # Cannot cancel already finished tasks
+
+        decision = _guardian_preflight_agent_operation(
+            action="agent.cancel_task",
+            target=f"agent_task:{_hash_value(task_id)}",
+            purpose="Cancel a pending or running agent task",
+            capabilities=("agent:control",),
+            reversible=True,
+            rollback_plan="resubmit the task from persisted task metadata if cancellation was unintended",
+            metadata={
+                "task_id_hash": _hash_value(task_id),
+                "task_name_hash": _hash_value(task.name),
+                "assigned_agent_hash": _hash_value(task.assigned_agent),
+                "status": task.status.value,
+                "running_task": task_id in self.running_tasks,
+            },
+        )
+        if not decision.allowed:
+            logger.warning(
+                "Guardian denied task cancellation for task hash %s: %s",
+                _hash_value(task_id),
+                decision.reason,
+            )
+            return False
 
         # Cancel the task
         task.status = TaskStatus.CANCELLED

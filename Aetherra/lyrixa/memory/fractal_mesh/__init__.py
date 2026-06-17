@@ -8,5 +8,16 @@ Fractal Mesh Memory System
 Advanced fractal-based memory organization and hierarchical pattern management.
 """
 
-# Local imports
-from .base import *
+from .base import (
+    FractalCluster,
+    FractalHierarchies,
+    HierarchyMetrics,
+    demo_fractal_hierarchies,
+)
+
+__all__ = [
+    "FractalCluster",
+    "FractalHierarchies",
+    "HierarchyMetrics",
+    "demo_fractal_hierarchies",
+]

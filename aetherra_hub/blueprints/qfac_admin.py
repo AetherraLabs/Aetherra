@@ -5,8 +5,8 @@ Routes:
 - POST /api/qfac/admin/reset -> tools.qfac_admin.do_reset()
 
 Security:
-- Optional bearer control token: set AETHERRA_HUB_CONTROL_TOKEN to enable; when set,
-  requests must include Authorization: Bearer <token> (or X-Aetherra-Control-Token header).
+- Uses the Hub control authorization policy. Production requires a configured
+  control token; local non-production access is allowed when no token is set.
 
 Notes:
 - Endpoints reuse the CLI logic and inherit its safe defaults (no live QFAC instance
@@ -25,19 +25,16 @@ import time
 # Third party imports
 from flask import Blueprint, jsonify, request
 
+from ..services.control_auth import authorize_control_request
+
 bp = Blueprint("qfac_admin", __name__)
 
 
-def _authorized() -> bool:
-    token = (os.getenv("AETHERRA_HUB_CONTROL_TOKEN") or "").strip()
-    if not token:
-        return True  # token guard disabled
-    # Accept Bearer or custom header
-    auth = request.headers.get("Authorization", "")
-    if auth.startswith("Bearer ") and auth.split(" ", 1)[1] == token:
-        return True
-    x = request.headers.get("X-Aetherra-Control-Token", "")
-    return x == token
+def _authorize():
+    decision = authorize_control_request(request.headers, request.remote_addr)
+    if decision.allowed:
+        return None
+    return jsonify({"ok": False, "error": decision.error}), decision.status_code
 
 
 def _load_cli_funcs():
@@ -56,10 +53,9 @@ def _load_cli_funcs():
 
 @bp.get("/api/qfac/admin/show")
 def qfac_admin_show():
-    if not _authorized():
-        resp = jsonify({"ok": False, "error": "unauthorized"})
-        resp.status_code = 401
-        return resp
+    auth_error = _authorize()
+    if auth_error is not None:
+        return auth_error
     do_show, _ = _load_cli_funcs()
     if not callable(do_show):
         resp = jsonify({"available": False, "error": "qfac_admin_unavailable"})
@@ -84,10 +80,9 @@ def qfac_admin_show():
 
 @bp.post("/api/qfac/admin/reset")
 def qfac_admin_reset():
-    if not _authorized():
-        resp = jsonify({"ok": False, "error": "unauthorized"})
-        resp.status_code = 401
-        return resp
+    auth_error = _authorize()
+    if auth_error is not None:
+        return auth_error
     _, do_reset = _load_cli_funcs()
     if not callable(do_reset):
         resp = jsonify({"ok": False, "error": "qfac_admin_unavailable"})

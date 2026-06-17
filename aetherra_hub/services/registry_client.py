@@ -408,6 +408,58 @@ def get_agent_task_status(task_id: str) -> dict[str, Any] | None:
         return None
 
 
+def execute_agent_task(
+    name: str,
+    data: dict[str, Any],
+    priority: str = "normal",
+) -> str | None:
+    """Submit a task through the engine's public task API when available."""
+
+    async def _go() -> str | None:
+        reg = await _get_registry_async()
+        info = reg.get_service_info("aetherra_engine")
+        engine = info.instance if info else None
+        if engine is None or not hasattr(engine, "execute_task"):
+            return None
+        result = await engine.execute_task(name, data, priority)
+        return result if isinstance(result, str) else None
+
+    result = _run_coro(_go())
+    return result if isinstance(result, str) else None
+
+
+def run_agent_evaluation(plan: dict[str, Any]) -> dict[str, Any] | None:
+    """Run the engine's agent evaluation harness."""
+
+    async def _go() -> dict[str, Any] | None:
+        reg = await _get_registry_async()
+        info = reg.get_service_info("aetherra_engine")
+        engine = info.instance if info else None
+        if engine is None or not hasattr(engine, "run_agent_evaluation"):
+            return None
+        report = await engine.run_agent_evaluation(plan)
+        return report if isinstance(report, dict) else None
+
+    result = _run_coro(_go())
+    return result if isinstance(result, dict) else None
+
+
+def get_last_agent_evaluation() -> dict[str, Any] | None:
+    """Return the engine's most recent agent evaluation report."""
+
+    async def _go() -> dict[str, Any] | None:
+        reg = await _get_registry_async()
+        info = reg.get_service_info("aetherra_engine")
+        engine = info.instance if info else None
+        if engine is None or not hasattr(engine, "get_last_agent_evaluation"):
+            return None
+        report = engine.get_last_agent_evaluation()
+        return report if isinstance(report, dict) else None
+
+    result = _run_coro(_go())
+    return result if isinstance(result, dict) else None
+
+
 def get_agent_task_list(
     limit: int = 50, include_completed: bool = True
 ) -> list[dict[str, Any]]:

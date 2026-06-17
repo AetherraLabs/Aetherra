@@ -23,6 +23,7 @@ Author: Aetherra Labs
 import asyncio
 import contextlib
 import logging
+import os
 import threading
 import time
 import weakref
@@ -434,7 +435,7 @@ class DLQMonitor:
                 # Normalize timestamp to epoch seconds to avoid type errors when comparing to floats
                 raw_ts = item.get("ts")
                 ts_epoch: float
-                if isinstance(raw_ts, (int, float)):
+                if isinstance(raw_ts, int | float):
                     ts_epoch = float(raw_ts)
                 elif isinstance(raw_ts, str):
                     # Try parsing as float string first, then ISO-8601
@@ -615,6 +616,62 @@ class HomeostasisOrchestrator:
         self.error_recovery_count = 0
 
         logger.info("🌐 Homeostasis orchestrator initialized")
+
+    def _guardian_requester(self, requester: str | None = None) -> str:
+        principal = (
+            requester
+            or os.environ.get("AETHERRA_PRINCIPAL", "").strip()
+            or "homeostasis"
+        )
+        return str(principal).strip() or "homeostasis"
+
+    def _guardian_capability_checker(self, requester: str, capability: str) -> bool:
+        if requester == "homeostasis" and capability in {
+            "homeostasis:control",
+            "homeostasis:emergency",
+        }:
+            return True
+
+        from Aetherra.security.capabilities import has_capability
+
+        return has_capability(requester, capability)
+
+    def _guardian_preflight_control(
+        self,
+        *,
+        requester: str | None,
+        action: str,
+        target: str,
+        purpose: str,
+        capabilities: tuple[str, ...],
+        evidence: tuple[str, ...],
+        metadata: dict[str, Any],
+        rollback_plan: str,
+    ) -> None:
+        from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+
+        decision = evaluate_intent(
+            IntentDeclaration(
+                requester=self._guardian_requester(requester),
+                subsystem="homeostasis",
+                action=action,
+                target=target,
+                purpose=purpose,
+                capabilities=capabilities,
+                evidence=evidence,
+                reversible=True,
+                rollback_plan=rollback_plan,
+                metadata=metadata,
+            ),
+            capability_checker=self._guardian_capability_checker,
+        )
+        if decision.status not in {
+            GuardianStatus.ALLOW,
+            GuardianStatus.ALLOW_LIMITED,
+        }:
+            raise PermissionError(
+                f"guardian_denied:{decision.reason}:homeostasis:{action}"
+            )
 
     async def initialize(self):
         """Initialize all homeostasis components."""
@@ -1370,16 +1427,45 @@ class HomeostasisOrchestrator:
 
         return status
 
-    async def set_controller_mode(self, mode: ControllerMode, reason: str = "External request"):
+    async def set_controller_mode(
+        self,
+        mode: ControllerMode,
+        reason: str = "External request",
+        requester: str | None = None,
+    ):
         """Set the controller operating mode."""
+        self._guardian_preflight_control(
+            requester=requester,
+            action="homeostasis.set_mode",
+            target="homeostasis:controller_mode",
+            purpose=reason or f"Set Homeostasis controller mode to {mode.value}",
+            capabilities=("homeostasis:control",),
+            evidence=(f"mode:{mode.value}",),
+            metadata={"mode": mode.value, "reason_present": bool(reason.strip())},
+            rollback_plan="restore the previous Homeostasis controller mode",
+        )
         if self.controller:
             self.controller.set_mode(mode)
             logger.info(f"🎛️ Controller mode set to {mode.value}: {reason}")
         else:
             logger.warning("Cannot set controller mode: controller not initialized")
 
-    async def emergency_stop(self, reason: str = "External emergency stop"):
+    async def emergency_stop(
+        self,
+        reason: str = "External emergency stop",
+        requester: str | None = None,
+    ):
         """Trigger emergency stop of all homeostasis actions."""
+        self._guardian_preflight_control(
+            requester=requester,
+            action="homeostasis.emergency_stop",
+            target="homeostasis:emergency_stop",
+            purpose=reason or "Trigger Homeostasis emergency stop",
+            capabilities=("homeostasis:emergency",),
+            evidence=("emergency_stop",),
+            metadata={"reason_present": bool(reason.strip())},
+            rollback_plan="reset the Homeostasis emergency stop after manual review",
+        )
         logger.critical(f"🚨 EMERGENCY STOP TRIGGERED: {reason}")
 
         if self.controller:
@@ -1390,8 +1476,18 @@ class HomeostasisOrchestrator:
                 self.supervisor.current_runlevel.__class__.FAILED, f"Emergency stop: {reason}"
             )
 
-    async def reset_emergency_stop(self):
+    async def reset_emergency_stop(self, requester: str | None = None):
         """Reset emergency stop condition."""
+        self._guardian_preflight_control(
+            requester=requester,
+            action="homeostasis.reset_emergency",
+            target="homeostasis:emergency_stop",
+            purpose="Reset Homeostasis emergency stop",
+            capabilities=("homeostasis:emergency",),
+            evidence=("reset_emergency",),
+            metadata={},
+            rollback_plan="trigger emergency stop again if reset exposes unsafe conditions",
+        )
         if self.controller:
             self.controller.reset_emergency_stop()
 

@@ -8,7 +8,6 @@ Built-in plugin for command scheduling and execution management
 """
 
 # Standard library imports
-import subprocess
 import threading
 import time
 import uuid
@@ -16,6 +15,15 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import datetime, timedelta
 from queue import PriorityQueue
 from typing import Any, Dict, List, Optional
+
+from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+from Aetherra.security.sandbox import (
+    IsolatedExecutionError,
+    SandboxViolation,
+    TimeBudgetExceeded,
+    execute_restricted_python,
+    run_command_no_shell,
+)
 
 
 class ExecutorPlugin:
@@ -386,6 +394,14 @@ class ExecutorPlugin:
 
     def _execute_command(self, command: str, context: Dict[str, Any]) -> Any:
         """Execute a single command"""
+        guardian_decision = self._evaluate_guardian(command, context)
+        if guardian_decision.status in {
+            GuardianStatus.DENY,
+            GuardianStatus.REQUIRE_APPROVAL,
+            GuardianStatus.CONTAIN,
+        }:
+            raise ValueError(f"Executor command blocked by Guardian: {guardian_decision.reason}")
+
         # Record execution start
         execution_record = {
             "command": command,
@@ -423,6 +439,36 @@ class ExecutorPlugin:
             self.execution_history.append(execution_record)
             raise e
 
+    def _evaluate_guardian(self, command: str, context: Dict[str, Any]):
+        """Evaluate Guardian policy before executor command execution."""
+
+        command_kind, capabilities = self._guardian_command_profile(command)
+        intent = IntentDeclaration(
+            requester="stdlib:executor",
+            subsystem="stdlib_executor",
+            action="executor.execute",
+            target=f"executor:{command_kind}",
+            purpose="Execute standard-library executor command",
+            capabilities=capabilities,
+            evidence=(f"executor_command:{command_kind}",),
+            metadata={
+                "command_kind": command_kind,
+                "context_keys": tuple(sorted(str(key) for key in context)),
+            },
+        )
+        return evaluate_intent(intent)
+
+    def _guardian_command_profile(self, command: str) -> tuple[str, tuple[str, ...]]:
+        """Return the Guardian command classification and required capabilities."""
+
+        if command.startswith("sys:"):
+            return "system", ("executor:execute", "system:execute")
+        if command.startswith("python:"):
+            return "python", ("executor:execute", "python:execute")
+        if command.startswith("aether:"):
+            return "aether", ("executor:execute", "aether:execute")
+        return "aether", ("executor:execute", "aether:execute")
+
     def _execute_aether_command(self, command: str, context: Dict[str, Any]) -> str:
         """Execute a AetherraCode-specific command"""
         # This would integrate with the main AetherraCode interpreter
@@ -432,48 +478,29 @@ class ExecutorPlugin:
     def _execute_system_command(self, command: str, context: Dict[str, Any]) -> str:
         """Execute a system command"""
         try:
-            result = subprocess.run(
+            result = run_command_no_shell(
                 command,
-                shell=True,
-                capture_output=True,
-                text=True,
-                timeout=context.get("timeout", 30),
+                timeout_sec=float(context.get("timeout", 30)),
             )
-
-            if result.returncode == 0:
+            if result.return_code == 0:
                 return result.stdout.strip()
-            else:
-                raise Exception(
-                    f"Command failed with exit code {result.returncode}: {result.stderr}"
-                )
-
-        except subprocess.TimeoutExpired:
-            raise Exception("Command timed out")
+            raise RuntimeError(
+                f"Command failed with exit code {result.return_code}: {result.stderr}"
+            )
+        except TimeBudgetExceeded as exc:
+            raise TimeoutError("Command timed out") from exc
+        except (IsolatedExecutionError, SandboxViolation) as exc:
+            raise ValueError(f"System command rejected: {exc}") from exc
 
     def _execute_python_code(self, code: str, context: Dict[str, Any]) -> Any:
-        """Execute Python code safely"""
-        # Limited Python execution for security
-        allowed_globals = {
-            "__builtins__": {
-                "print": print,
-                "len": len,
-                "str": str,
-                "int": int,
-                "float": float,
-                "list": list,
-                "dict": dict,
-                "range": range,
-                "enumerate": enumerate,
-                "zip": zip,
-            }
-        }
-
+        """Execute the restricted workflow statement language."""
         try:
-            # Execute in restricted environment
-            exec(code, allowed_globals, context)
-            return "Python code executed successfully"
-        except Exception as e:
-            raise Exception(f"Python execution error: {e}")
+            result = execute_restricted_python(code, context)
+            context.clear()
+            context.update(result.variables)
+            return "\n".join(result.output) or "Python code executed successfully"
+        except SandboxViolation as exc:
+            raise ValueError(f"Restricted Python execution rejected: {exc}") from exc
 
     def _handle_async_completion(self, task_id: str, future: Future):
         """Handle completion of async task"""

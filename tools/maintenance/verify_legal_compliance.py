@@ -12,13 +12,112 @@ This script verifies that all dependencies are compatible with GPL-3.0
 and generates a comprehensive legal compliance report.
 """
 
+from __future__ import annotations
+
 # Standard library imports
+import hashlib
+import os
 import re
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 # Third party imports
 import pkg_resources
+
+PROJECT_ROOT = Path(__file__).parent
+
+
+@dataclass(frozen=True)
+class LegalComplianceReportPlan:
+    file_path: Path
+    content: str
+    license_ok: bool
+    files_ok: bool
+
+
+def _hash_value(value) -> str | None:
+    if value is None:
+        return None
+    raw = str(value)
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "maintenance" and capability in {
+        "maintenance:cleanup",
+        "fs:write",
+    }:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _safe_relative_path(path: Path, root: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(root.resolve()))
+    except ValueError:
+        return str(path.resolve())
+
+
+def _guardian_preflight_legal_compliance_report(
+    *,
+    project_root: Path,
+    plan: LegalComplianceReportPlan,
+):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="maintenance",
+            action="maintenance.legal_compliance_report",
+            target="maintenance:legal_compliance_report",
+            purpose="Write generated legal compliance report",
+            capabilities=("maintenance:cleanup", "fs:write"),
+            expected_outcome="Planned legal compliance report is written to disk",
+            reversible=False,
+            rollback_plan="delete generated legal compliance report or restore from version control",
+            metadata={
+                "project_root_hash": _hash_value(project_root.resolve()),
+                "report_path_hash": _hash_value(
+                    _safe_relative_path(plan.file_path, project_root)
+                ),
+                "license_ok": plan.license_ok,
+                "files_ok": plan.files_ok,
+                "overall_ok": plan.license_ok and plan.files_ok,
+                "report_size_bytes": len(plan.content.encode("utf-8")),
+            },
+        ),
+        approval_id=approval_id,
+        capability_checker=_guardian_capability_checker,
+    )
+
+
+def write_legal_compliance_report(
+    *,
+    project_root: Path,
+    plan: LegalComplianceReportPlan,
+) -> bool:
+    decision = _guardian_preflight_legal_compliance_report(
+        project_root=project_root,
+        plan=plan,
+    )
+    if not decision.allowed:
+        print(f"Guardian denied legal compliance report: {decision.reason}")
+        return False
+
+    plan.file_path.parent.mkdir(parents=True, exist_ok=True)
+    plan.file_path.write_text(plan.content, encoding="utf-8")
+    print(f"Report saved to: {plan.file_path}")
+    return True
+
 
 # GPL-3.0 compatible licenses
 COMPATIBLE_LICENSES = {
@@ -56,7 +155,7 @@ def check_license_compatibility():
     incompatible_count = 0
     unknown_count = 0
 
-    installed_packages = [d for d in pkg_resources.working_set]
+    installed_packages = list(pkg_resources.working_set)
 
     print(f"📦 Found {len(installed_packages)} installed packages")
     print()
@@ -133,7 +232,7 @@ def verify_project_files():
         "LEGAL_COMPLIANCE.md": "Legal compliance documentation",
     }
 
-    project_root = Path(__file__).parent
+    project_root = PROJECT_ROOT
     all_present = True
 
     for filename, description in required_files.items():
@@ -189,11 +288,15 @@ Generated: {Path(__file__).name}
     print(report)
 
     # Save report to file
-    report_file = Path(__file__).parent / "LEGAL_COMPLIANCE_REPORT.txt"
-    with open(report_file, "w", encoding="utf-8") as f:
-        f.write(report)
+    report_file = PROJECT_ROOT / "LEGAL_COMPLIANCE_REPORT.txt"
+    plan = LegalComplianceReportPlan(
+        file_path=report_file,
+        content=report,
+        license_ok=license_ok,
+        files_ok=files_ok,
+    )
+    return write_legal_compliance_report(project_root=PROJECT_ROOT, plan=plan)
 
-    print(f"📄 Report saved to: {report_file}")
 
 
 if __name__ == "__main__":
@@ -202,7 +305,8 @@ if __name__ == "__main__":
     print()
 
     try:
-        generate_legal_report()
+        if not generate_legal_report():
+            sys.exit(1)
     except Exception as e:
         print(f"❌ Error during compliance check: {e}")
         sys.exit(1)

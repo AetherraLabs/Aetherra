@@ -15,17 +15,25 @@ from flask import Blueprint, jsonify, request
 from flask.typing import ResponseReturnValue
 
 # Local imports
+from ..services.control_auth import authorize_control_request
 from ..services.registry_client import get_service
 
 # Aetherra imports
 try:
-    from Aetherra.core import disclosure_policy as DP  # type: ignore
+    from Aetherra.core import disclosure_policy  # type: ignore
 except Exception:  # pragma: no cover - defensive import fallback
-    DP = None  # type: ignore
+    disclosure_policy = None  # type: ignore
 
 logger = logging.getLogger(__name__)
 
 bp = Blueprint("self_incorporation", __name__, url_prefix="/api/selfinc")
+
+
+def _authorize_control() -> ResponseReturnValue | None:
+    decision = authorize_control_request(request.headers, request.remote_addr)
+    if decision.allowed:
+        return None
+    return jsonify({"ok": False, "error": decision.error}), decision.status_code
 
 
 @bp.get("/status")
@@ -52,8 +60,8 @@ def get_status() -> ResponseReturnValue:
         loop = asyncio.get_event_loop()
         status = loop.run_until_complete(selfinc_service.get_status())
 
-        if DP and DP.is_free():
-            status = DP.redact_payload(status)
+        if disclosure_policy and disclosure_policy.is_free():
+            status = disclosure_policy.redact_payload(status)
         return jsonify(status)
     except Exception as e:
         logger.error(f"[SELFINC] Status error: {e}")
@@ -68,6 +76,9 @@ def get_status() -> ResponseReturnValue:
 @bp.post("/scan")
 def trigger_scan() -> ResponseReturnValue:
     """Trigger partial or full codebase scan."""
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
     try:
         selfinc_service = get_service("self_incorporation")
         if not selfinc_service:
@@ -83,8 +94,8 @@ def trigger_scan() -> ResponseReturnValue:
         loop = asyncio.get_event_loop()
         result = loop.run_until_complete(selfinc_service.trigger_scan(root_filter))
 
-        if DP and DP.is_free():
-            result = DP.redact_payload(result)
+        if disclosure_policy and disclosure_policy.is_free():
+            result = disclosure_policy.redact_payload(result)
         return jsonify(result)
     except Exception as e:
         logger.error(f"[SELFINC] Scan error: {e}")
@@ -94,6 +105,9 @@ def trigger_scan() -> ResponseReturnValue:
 @bp.post("/apply")
 def apply_plan() -> ResponseReturnValue:
     """Apply plan actions (subset or all)."""
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
     try:
         selfinc_service = get_service("self_incorporation")
         if not selfinc_service:
@@ -102,22 +116,31 @@ def apply_plan() -> ResponseReturnValue:
         # Get optional filters from request
         data = request.get_json() or {}
         dry_run = data.get("dry_run", False)
+        requester = (
+            request.headers.get("X-Aetherra-Principal")
+            or request.headers.get("X-Principal")
+            or "hub:self_incorporation"
+        )
+        approval_id = data.get("guardian_approval_id")
 
         # Disclosure policy: block integration in free tier; allow reflective dry-run with redaction
-        if DP and DP.is_free():
-            if not dry_run:
-                return jsonify(DP.deny_message("apply_plan")), 403
+        if disclosure_policy and disclosure_policy.is_free() and not dry_run:
+            return jsonify(disclosure_policy.deny_message("apply_plan")), 403
 
         # Standard library imports
         import asyncio
 
         loop = asyncio.get_event_loop()
         result = loop.run_until_complete(
-            selfinc_service.trigger_integrate(dry_run=dry_run)
+            selfinc_service.trigger_integrate(
+                dry_run=dry_run,
+                requester=requester,
+                approval_id=approval_id,
+            )
         )
 
-        if DP and DP.is_free():
-            result = DP.redact_payload(result)
+        if disclosure_policy and disclosure_policy.is_free():
+            result = disclosure_policy.redact_payload(result)
         return jsonify(result)
     except Exception as e:
         logger.error(f"[SELFINC] Apply error: {e}")
@@ -127,6 +150,9 @@ def apply_plan() -> ResponseReturnValue:
 @bp.post("/rollback")
 def rollback() -> ResponseReturnValue:
     """Rollback integration by rollback token."""
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
     try:
         data = request.get_json() or {}
         rb_token = data.get("rb_token")
@@ -139,14 +165,26 @@ def rollback() -> ResponseReturnValue:
             return jsonify({"error": "Self-incorporation service not available"}), 503
 
         # Disclosure policy: rollback implies integration capability; block in free tier
-        if DP and DP.is_free():
-            return jsonify(DP.deny_message("rollback")), 403
+        if disclosure_policy and disclosure_policy.is_free():
+            return jsonify(disclosure_policy.deny_message("rollback")), 403
 
         # Standard library imports
         import asyncio
 
         loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(selfinc_service.trigger_rollback(rb_token))
+        requester = (
+            request.headers.get("X-Aetherra-Principal")
+            or request.headers.get("X-Principal")
+            or "hub:self_incorporation"
+        )
+        approval_id = data.get("guardian_approval_id")
+        result = loop.run_until_complete(
+            selfinc_service.trigger_rollback(
+                rb_token,
+                requester=requester,
+                approval_id=approval_id,
+            )
+        )
 
         if result.get("ok"):
             return jsonify(result)
@@ -310,7 +348,9 @@ def get_ethics_overview() -> ResponseReturnValue:
 @bp.post("/ethics/evaluate")
 def evaluate_ethics() -> ResponseReturnValue:
     """Evaluate ethics for a specific action or plan (instrumented)."""
-    print("EVALUATE ENDPOINT HIT", flush=True)
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
     try:
         selfinc_service = get_service("self_incorporation")
         if not selfinc_service:
@@ -403,7 +443,7 @@ def evaluate_ethics() -> ResponseReturnValue:
             "risk_factors": ethics_score.risk_factors,
             "ethical_benefits": ethics_score.ethical_benefits,
         }
-        if DP and DP.is_free():
+        if disclosure_policy and disclosure_policy.is_free():
             # Limit to safe observables in free tier
             resp = {
                 "trace_id": trace_id,
@@ -486,8 +526,8 @@ def get_ethics_audit(trace_id: str) -> ResponseReturnValue:
             "target": record.get("target"),
         }
 
-        if DP and DP.is_free():
-            resp = DP.redact_payload(resp)
+        if disclosure_policy and disclosure_policy.is_free():
+            resp = disclosure_policy.redact_payload(resp)
         return jsonify(resp)
 
     except Exception as e:

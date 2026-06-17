@@ -14,6 +14,7 @@ Usage:
 """
 
 import asyncio
+import hashlib
 import os
 import sys
 from pathlib import Path
@@ -21,6 +22,61 @@ from pathlib import Path
 # Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
+
+METRICS_ENDPOINT = "http://localhost:3001/metrics"
+
+
+def _deployment_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "maintenance":
+        return capability in {
+            "maintenance:deploy",
+            "memory:write",
+            "network:outbound",
+        }
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _hash_value(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _guardian_preflight_full_validation():
+    from Aetherra.guardian.core import evaluate_intent
+    from Aetherra.guardian.models import IntentDeclaration
+
+    requester = os.getenv("AETHERRA_PRINCIPAL", "").strip() or "maintenance"
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="maintenance",
+            action="maintenance.deployment_gate",
+            target="maintenance:storm_shadow_deployment",
+            purpose="Validate STORM shadow-mode deployment readiness",
+            capabilities=(
+                "maintenance:deploy",
+                "memory:write",
+                "network:outbound",
+            ),
+            expected_outcome="STORM shadow-mode smoke validation and metrics readiness are checked",
+            reversible=True,
+            rollback_plan=(
+                "Remove validation memory entries tagged deployment/test if cleanup is required"
+            ),
+            metadata={
+                "check_only": False,
+                "storm_env_enabled": os.getenv("AETHERRA_MEMORY_STORM", "0") == "1",
+                "shadow_mode_env": os.getenv("AETHERRA_STORM_SHADOW_MODE", "0") == "1",
+                "metrics_endpoint_hash": _hash_value(METRICS_ENDPOINT),
+            },
+        ),
+        approval_id=approval_id,
+        capability_checker=_deployment_capability_checker,
+    )
 
 
 def print_header(text: str) -> None:
@@ -226,11 +282,11 @@ def check_metrics_available() -> tuple[bool, list[str]]:
         import requests
 
         # Try to reach metrics endpoint
-        response = requests.get("http://localhost:3001/metrics", timeout=5)
+        response = requests.get(METRICS_ENDPOINT, timeout=5)
 
         if response.status_code == 200:
             print_status(
-                "Metrics endpoint accessible", True, "http://localhost:3001/metrics"
+                "Metrics endpoint accessible", True, METRICS_ENDPOINT
             )
 
             # Check for STORM metrics
@@ -338,6 +394,19 @@ async def main(check_only: bool = False) -> int:
         return 1
 
     if not check_only:
+        guardian_decision = _guardian_preflight_full_validation()
+        guardian_ok = guardian_decision.allowed
+        all_checks["Guardian Deployment Gate"] = guardian_ok
+        print_status(
+            "Guardian deployment gate",
+            guardian_ok,
+            guardian_decision.reason,
+        )
+        if not guardian_ok:
+            print("\nGuardian denied full deployment validation. Stopping.")
+            print_deployment_summary(all_checks)
+            return 1
+
         # 4. Smoke test
         smoke_ok, smoke_issues = await run_smoke_test()
         all_checks["Smoke Test"] = smoke_ok
