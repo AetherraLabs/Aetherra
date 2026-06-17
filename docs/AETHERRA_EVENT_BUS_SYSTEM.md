@@ -47,6 +47,25 @@ The **Kernel Event Bus (KEB)** is a lightweight, in-memory publish-subscribe mes
 
 ---
 
+## Guardian enforcement
+
+Guardian protects the Event Bus paths that can mutate topic backlog or subscriber state:
+
+- `EventBus.publish` declares `event_bus.publish` before appending events to topic backlog or fanning out through the Service Registry.
+- `EventBus.subscribe` declares `event_bus.subscribe` before mutating topic subscriber sets.
+- `EventBus.ack` declares `event_bus.ack` before removing events from topic backlog.
+- Command/control/admin/reload/restart/shutdown/execute topics and event types are classified as privileged publishes.
+- Privileged publishes declare `event_bus.publish_command` and require both `event:publish` and `event:command` in strict capability mode.
+- Registry-routed `*.event.publish`, `*.event.subscribe`, and `*.event.ack` messages use the same guarded methods, so message ingress cannot bypass Guardian.
+- Denied publishes, subscriptions, or acknowledgements raise `PermissionError` before backlog, subscriber, metric, or fan-out state changes.
+- Audit metadata records topic names, event keys, event type, source, subscriber service names, acknowledgement counts, and privileged classification without storing raw event payload values.
+
+Remaining Guardian scope:
+
+- Keep future event replay, topic administration, external bridge, or event-triggered automation executor APIs behind Guardian before enabling them.
+
+---
+
 ## Architecture
 
 ### Event Flow

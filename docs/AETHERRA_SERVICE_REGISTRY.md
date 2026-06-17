@@ -39,6 +39,27 @@ The **Service Registry** is the central coordination system for Aetherra OS. It 
 
 ---
 
+## Guardian enforcement
+
+Guardian protects the registry trust-state mutation paths that decide whether a service exists, is healthy, or owns its own heartbeat:
+
+- `AetherraServiceRegistry.register_service` declares `service_registry.register` before adding or replacing a service registration.
+- `AetherraServiceRegistry.unregister_service` declares `service_registry.unregister` before moving a service to stopping state and removing it from the registry.
+- `AetherraServiceRegistry.update_service_status` declares `service_registry.status_update` before mutating service status, heartbeat timestamp, or metadata.
+- `AetherraServiceRegistry.update_heartbeat` declares `service_registry.heartbeat_update` before refreshing heartbeat timestamps.
+- `AetherraServiceRegistry.mark_service_self_heartbeat` declares `service_registry.self_heartbeat_flag` before changing heartbeat ownership metadata.
+- `AetherraServiceRegistry.send_message` declares `service_registry.send_message` before dispatching to a service message handler.
+- `AetherraServiceRegistry.broadcast_message` declares `service_registry.broadcast_message` before iterating healthy broadcast targets.
+- `AetherraServiceRegistry.subscribe_to_events` and `unsubscribe_from_events` declare Guardian intents before mutating event handler lists.
+- `aetherra_registry_client.http_get_status`, `http_register_service`, `http_update`, and `http_heartbeat` declare Guardian intents before outbound HTTP forwarding to an external registry daemon.
+- Internal registry bootstrap and maintenance use the internal `service_registry` requester so the system can start and self-monitor safely.
+- Explicit external callers are capability-checked in strict mode for registry register, unregister, status, heartbeat, message, broadcast, subscription, and outbound daemon-forwarding capabilities.
+- Audit metadata records service names, statuses, metadata keys, dependency names, instance types, message types, payload shapes, handler types, daemon host hashes, endpoint keys, and daemon operations without storing raw metadata values, message payload values, endpoint values, or daemon URLs.
+
+Remaining Guardian scope:
+
+- Keep future registry admin APIs, daemon mutation endpoints, or cross-process service-control messages behind Guardian before enabling them.
+
 ## Architecture
 
 ### Service Lifecycle
