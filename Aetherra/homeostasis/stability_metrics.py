@@ -657,6 +657,10 @@ class StabilityMetrics:
         """Get the most recent metrics snapshot."""
         return self.current_snapshot
 
+    def get_latest_snapshot(self) -> Optional[MetricSnapshot]:
+        """Compatibility alias for integrations using the previous accessor name."""
+        return self.get_current_snapshot()
+
     def get_historical_snapshots(self, count: int = 100) -> List[MetricSnapshot]:
         """Get recent historical snapshots."""
         return list(self.metric_history)[-count:]

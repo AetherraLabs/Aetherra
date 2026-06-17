@@ -3,7 +3,7 @@
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 """Generate integrity manifest for release artifacts.
 
-Computes SHA256 for selected project files (lock file, sbom, license report, wheel artifacts)
+Computes SHA256 for selected project files (lock files, sbom, license report, wheel artifacts)
 and emits a JSON manifest plus a plain-text summary suitable for signing.
 
 Usage:
@@ -27,6 +27,7 @@ from pathlib import Path
 
 DEFAULT_FILES = [
     "requirements.lock",
+    "requirements-ci.lock",
     "licenses_report.json",
     "sbom.json",
 ]

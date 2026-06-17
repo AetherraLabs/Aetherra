@@ -18,11 +18,23 @@ Validates:
 
 import asyncio
 import time
+from pathlib import Path
 
 import pytest
 
 # Aetherra imports
 from Aetherra.homeostasis.homeostasis_core import ControllerMode, HomeostasisController
+
+
+@pytest.fixture(autouse=True)
+def isolate_homeostasis_security_state(monkeypatch):
+    """Keep controller behavior tests independent from persisted lockdown state."""
+    monkeypatch.setenv(
+        "AETHERRA_WORKSPACE_ROOT",
+        str(Path.cwd() / ".pytest_homeostasis_wave_a5"),
+    )
+    monkeypatch.delenv("AETHERRA_SAFE_MODE", raising=False)
+    monkeypatch.delenv("AETHERRA_HOMEOSTASIS_RESTRICTED", raising=False)
 
 
 def test_homeostasis_initialization():

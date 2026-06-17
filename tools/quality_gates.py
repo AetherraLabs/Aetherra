@@ -22,7 +22,7 @@ Env/config:
     ARCH_CHECK                : 1 run architecture verifier (default 1)
     ARCH_CHECK_STRICT         : 1 fail gates if verifier non-zero (default 0)
     ARCH_PROBE_HUB            : 1 enable Hub probe (default 0)
-    LOCK_ENFORCE              : 1 enforce requirements.lock drift check (default 1 if lock present)
+    LOCK_ENFORCE              : 1 enforce dependency lock drift check (default 1 if lock present)
     LOCK_FILE                 : path to lock file (default requirements.lock)
     VULN_SCAN                 : 1 run vulnerability scan (default 1 if lock present)
     VULN_FAIL_LEVEL           : severity threshold (default high) passed through to vuln_scan.py
@@ -140,6 +140,14 @@ def main() -> int:
     # 0. Dependency lock enforcement & vulnerability scan (pre-test)
     lock_file = Path(os.getenv("LOCK_FILE", "requirements.lock"))
     lock_exists = lock_file.exists()
+    if (
+        "LICENSE_ENFORCE_HISTORY_FILE" not in os.environ
+        and lock_file.name != "requirements.lock"
+    ):
+        safe_lock_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", lock_file.name)
+        os.environ["LICENSE_ENFORCE_HISTORY_FILE"] = (
+            f"licenses_unknown_history.{safe_lock_name}.json"
+        )
 
     enforce_lock = os.getenv("LOCK_ENFORCE", "1") == "1" and lock_exists
     if enforce_lock:
@@ -692,6 +700,7 @@ def main() -> int:
             Path(os.getenv("SBOM_OUT", "sbom.json")),
             Path("integrity-manifest.json"),
             Path("requirements.lock"),
+            Path("requirements-ci.lock"),
         ]
         copied = 0
         for c in candidate_paths:

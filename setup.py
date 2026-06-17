@@ -91,8 +91,8 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "aetherra=aetherra_startup:main",
-            "aetherra-fix-imports=fix_imports:main",
+            "aetherra=Aetherra.cli.basic:main",
+            "lyrixa=Aetherra.lyrixa.launcher:main",
         ],
     },
     include_package_data=True,

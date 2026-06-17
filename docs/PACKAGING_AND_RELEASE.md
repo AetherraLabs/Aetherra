@@ -126,16 +126,16 @@ Deterministic, secure builds rely on four supporting scripts (all in `tools/`):
 | Script                 | Purpose                                                                                                   |
 | ---------------------- | --------------------------------------------------------------------------------------------------------- |
 | `dependency_lock.py`   | Generate a sorted `requirements.lock` from current environment (pin transitive versions).                 |
-| `enforce_lock_sync.py` | Fail if active env drifts from `requirements.lock` (add to CI before tests).                              |
+| `enforce_lock_sync.py` | Fail if active env drifts from the configured lock file (add to CI before tests).                         |
 | `vuln_scan.py`         | Aggregate vulnerability scan via `pip-audit` / `osv-scanner` if installed; fails on High+ (configurable). |
 | `license_report.py`    | Emit `licenses_report.json` + CSV-style stdout for license inventory (non-enforcing baseline).            |
 
 Suggested CI Order (excerpt):
 
 ```bash
-python tools/enforce_lock_sync.py
-python tools/vuln_scan.py --lock requirements.lock
-python tools/license_report.py --lock requirements.lock
+python tools/enforce_lock_sync.py --lock requirements-ci.lock
+python tools/vuln_scan.py --lock requirements-ci.lock
+python tools/license_report.py --lock requirements-ci.lock
 ```
 
 Regenerating the lock (after intentional dependency changes):
@@ -144,6 +144,11 @@ Regenerating the lock (after intentional dependency changes):
 python tools/dependency_lock.py
 git add requirements.lock
 ```
+
+For the GitHub Actions quality-gates runner, regenerate `requirements-ci.lock`
+from a clean Ubuntu Python 3.11 environment after installing `requirements.txt`.
+Keep `requirements.lock` for full runtime or release environments that include
+desktop/platform-specific packages.
 
 Future Enhancements (planned):
 

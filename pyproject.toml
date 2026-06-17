@@ -83,8 +83,8 @@ docs = [
 "Changelog" = "https://github.com/AetherraLabs/Aetherra/blob/main/CHANGELOG.md"
 
 [project.scripts]
-aetherra = "aetherra_os_launcher:main"
-lyrixa = "Aetherra.lyrixa.lyrixa_basic:main"
+aetherra = "Aetherra.cli.basic:main"
+lyrixa = "Aetherra.lyrixa.launcher:main"
 aether = "aether:main"
 
 [tool.setuptools.packages.find]

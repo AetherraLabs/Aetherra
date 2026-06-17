@@ -59,7 +59,7 @@ def create_venv(tmp: Path) -> Path:
 def install_and_probe(py: Path, wheel: Path):
     run([str(py), "-m", "pip", "install", str(wheel)])
     # Basic imports
-    run([str(py), "-c", "import aetherra, Aetherra.cli; print('imports_ok')"])
+    run([str(py), "-c", "import Aetherra, Aetherra.cli; print('imports_ok')"])
     # Console scripts (entry points) help output
     scripts_dir = py.parent
     aetherra_cmd = scripts_dir / ("aetherra.exe" if os.name == "nt" else "aetherra")

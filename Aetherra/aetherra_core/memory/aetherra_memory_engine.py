@@ -21,7 +21,7 @@ from typing import Any, Callable, Optional
 from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
 
 # Local imports
-from ..kernel.narrator import MemoryNarrative, MemoryNarrator
+from Aetherra.aetherra_core.kernel.narrator import MemoryNarrative, MemoryNarrator
 from .fractal_mesh import (
     ConceptClusterManager,
     CrossContextAnalogies,

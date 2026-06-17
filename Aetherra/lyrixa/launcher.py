@@ -13,6 +13,7 @@ sufficient for import-time validation and basic behavior in integration tests.
 # Standard library imports
 from __future__ import annotations
 
+import argparse
 import os
 from pathlib import Path
 from typing import Any, Dict, Optional, Type
@@ -109,3 +110,22 @@ class LyrixaOperatingSystem:
         except Exception:
             return False
         return False
+
+
+def main() -> None:
+    """Lightweight packaged CLI entry point for Lyrixa."""
+    parser = argparse.ArgumentParser(
+        description="Lyrixa launcher utilities",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Validate that the lightweight launcher can initialize.",
+    )
+    args = parser.parse_args()
+    if args.check:
+        loaded = load_env_file()
+        print(f"Lyrixa launcher ready; loaded_env={len(loaded)}")
+    else:
+        parser.print_help()
