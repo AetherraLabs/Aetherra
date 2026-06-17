@@ -50,6 +50,14 @@ async def _register_mock_engine(engine: MockEngine):
     await reg.register_service("aetherra_engine", engine)
 
 
+async def _unregister_mock_engine():
+    # Aetherra imports
+    from aetherra_service_registry import get_service_registry
+
+    reg = await get_service_registry()
+    await reg.unregister_service("aetherra_engine")
+
+
 def _free_port() -> int:
     s = socket.socket()
     s.bind(("localhost", 0))
@@ -70,19 +78,23 @@ def test_prometheus_ab_recall_series_exposed():
     assert server.start_server()
     base = f"http://localhost:{port}"
 
-    r = requests.get(f"{base}/metrics", timeout=3)
-    assert r.status_code == 200
-    body = r.text
+    try:
+        r = requests.get(f"{base}/metrics", timeout=3)
+        assert r.status_code == 200
+        body = r.text
 
-    # Totals
-    assert "aetherra_engine_ab_recall_total" in body
-    assert "aetherra_engine_ab_recall_classical_total" in body
-    assert "aetherra_engine_ab_recall_quantum_total" in body
-    # Latency aggregates with bucket labels
-    assert 'aetherra_engine_ab_recall_latency_ms_sum{bucket="classical"}' in body
-    assert 'aetherra_engine_ab_recall_latency_ms_count{bucket="classical"}' in body
-    assert 'aetherra_engine_ab_recall_latency_ms_sum{bucket="quantum"}' in body
-    assert 'aetherra_engine_ab_recall_latency_ms_count{bucket="quantum"}' in body
-    # Mode/pmem gauges
-    assert 'aetherra_engine_ab_mode{mode="abp"} 1' in body
-    assert "aetherra_engine_ab_pmem_ready" in body
+        # Totals
+        assert "aetherra_engine_ab_recall_total" in body
+        assert "aetherra_engine_ab_recall_classical_total" in body
+        assert "aetherra_engine_ab_recall_quantum_total" in body
+        # Latency aggregates with bucket labels
+        assert 'aetherra_engine_ab_recall_latency_ms_sum{bucket="classical"}' in body
+        assert 'aetherra_engine_ab_recall_latency_ms_count{bucket="classical"}' in body
+        assert 'aetherra_engine_ab_recall_latency_ms_sum{bucket="quantum"}' in body
+        assert 'aetherra_engine_ab_recall_latency_ms_count{bucket="quantum"}' in body
+        # Mode/pmem gauges
+        assert 'aetherra_engine_ab_mode{mode="abp"} 1' in body
+        assert "aetherra_engine_ab_pmem_ready" in body
+    finally:
+        server.stop_server()
+        asyncio.run(_unregister_mock_engine())

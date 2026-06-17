@@ -30,6 +30,12 @@ def _hash_value(value) -> str | None:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
+def _json_stable_default(value: Any) -> str:
+    if isinstance(value, datetime):
+        return value.isoformat()
+    return str(value)
+
+
 def _guardian_capability_checker(requester: str, capability: str) -> bool:
     if requester == "memory:core" and capability in {
         "memory:read",
@@ -574,8 +580,16 @@ class LyrixaMemorySystem:
         self, content: Dict[str, Any], context: Optional[Dict[str, Any]]
     ) -> str:
         """Generate a unique memory ID based on content and context"""
-        content_str = json.dumps(content, sort_keys=True)
-        context_str = json.dumps(context or {}, sort_keys=True)
+        content_str = json.dumps(
+            content,
+            sort_keys=True,
+            default=_json_stable_default,
+        )
+        context_str = json.dumps(
+            context or {},
+            sort_keys=True,
+            default=_json_stable_default,
+        )
         combined = f"{content_str}:{context_str}:{datetime.now().isoformat()}"
         # Use a strong, fast hash for IDs while keeping a compact 32-hex length
         return hashlib.blake2s(combined.encode(), digest_size=16).hexdigest()

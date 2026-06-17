@@ -33,11 +33,11 @@ jobs:
           if [ -f docs/requirements.txt ]; then pip install -r docs/requirements.txt; fi
       - name: Build docs
         run: |
-          if [ -d docs ]; then sphinx-build -b html docs docs/_build/html; else echo "No docs directory"; fi
+          if [ -f docs/conf.py ]; then sphinx-build -b html docs docs/_build/html; else echo "No Sphinx docs/conf.py; skipping Sphinx build"; fi
       - name: Link check (soft)
         continue-on-error: true
         run: |
-          if [ -d docs ]; then sphinx-build -b linkcheck docs docs/_build/linkcheck; fi
+          if [ -f docs/conf.py ]; then sphinx-build -b linkcheck docs docs/_build/linkcheck; fi
       - name: Upload artifact
         if: success()
         uses: actions/upload-artifact@v4

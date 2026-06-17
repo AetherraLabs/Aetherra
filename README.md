@@ -6,7 +6,8 @@
 > AI-native development environment unifying code, memory, and intelligent automation
 
 ![Status](https://img.shields.io/badge/Status-BETA%20READY-blue)
-![Version](https://img.shields.io/badge/Version-v0.1.0--beta.1-0891b2)
+![Version](https://img.shields.io/badge/Version-0.5.0--beta.0-0891b2)
+Version: **0.5.0-beta.0**
 ![License](https://img.shields.io/badge/License-GPLv3-0891b2)
 ![Language](https://img.shields.io/badge/Language-Python%20%2B%20Aetherra-8b5cf6)
 ![Responsible AI](https://img.shields.io/badge/Responsible%20AI-Policies%20Published-22c55e)

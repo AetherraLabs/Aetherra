@@ -43,6 +43,14 @@ async def _register_mock_engine(engine: MockEngine):
     await reg.register_service("aetherra_engine", engine)
 
 
+async def _unregister_mock_engine():
+    # Aetherra imports
+    from aetherra_service_registry import get_service_registry
+
+    reg = await get_service_registry()
+    await reg.unregister_service("aetherra_engine")
+
+
 def _free_port() -> int:
     s = socket.socket()
     s.bind(("localhost", 0))
@@ -64,18 +72,22 @@ def test_prometheus_orchestrator_metrics_exposed():
     assert server.start_server()
     base = f"http://localhost:{port}"
 
-    r = requests.get(f"{base}/metrics", timeout=3)
-    assert r.status_code == 200
-    body = r.text
+    try:
+        r = requests.get(f"{base}/metrics", timeout=3)
+        assert r.status_code == 200
+        body = r.text
 
-    # Basic presence
-    assert "aetherra_orchestrator_agents_total" in body
-    assert "aetherra_orchestrator_tasks_pending_total" in body
+        # Basic presence
+        assert "aetherra_orchestrator_agents_total" in body
+        assert "aetherra_orchestrator_tasks_pending_total" in body
 
-    # Labelled metrics
-    assert 'aetherra_orchestrator_tasks_pending{priority="high"}' in body
-    assert 'aetherra_orchestrator_tasks_total{status="pending"}' in body
+        # Labelled metrics
+        assert 'aetherra_orchestrator_tasks_pending{priority="high"}' in body
+        assert 'aetherra_orchestrator_tasks_total{status="pending"}' in body
 
-    # Generic counters
-    assert "aetherra_orchestrator_timeouts_total" in body
-    assert "aetherra_orchestrator_policy_denied_total" in body
+        # Generic counters
+        assert "aetherra_orchestrator_timeouts_total" in body
+        assert "aetherra_orchestrator_policy_denied_total" in body
+    finally:
+        server.stop_server()
+        asyncio.run(_unregister_mock_engine())

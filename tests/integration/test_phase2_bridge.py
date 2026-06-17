@@ -195,10 +195,17 @@ try:
         exit_code = test_phase2_bridge()
         sys.exit(exit_code)
 
-except Exception as e:
-    print(f"[ERROR] Error testing Phase 2 bridge: {e}")
-    # Standard library imports
-    import traceback
+except ModuleNotFoundError as e:
+    if (e.name or "").startswith("PySide6"):
+        # Third party imports
+        import pytest
 
-    traceback.print_exc()
-    sys.exit(1)
+        pytest.skip("PySide6 is not installed", allow_module_level=True)
+    raise
+except ImportError as e:
+    if "PySide6" in str(e):
+        # Third party imports
+        import pytest
+
+        pytest.skip("PySide6 is not installed", allow_module_level=True)
+    raise

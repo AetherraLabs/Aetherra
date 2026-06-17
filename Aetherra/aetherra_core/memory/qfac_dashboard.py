@@ -264,9 +264,9 @@ class QFACDashboard:
             # For unavailable state keep reason compatibility if a baseline reason exists.
             if "reason" not in summary:
                 summary["reason"] = (
-                    status.get("reason", "dashboard unavailable")
+                    status.get("reason", "dashboard stub")
                     if isinstance(status, dict)
-                    else "dashboard unavailable"
+                    else "dashboard stub"
                 )
         return summary
 

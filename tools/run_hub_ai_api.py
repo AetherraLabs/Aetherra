@@ -26,18 +26,23 @@ import os
 import sys
 import threading
 import time
+from contextlib import suppress
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     # Ensure UTF-8 stdio to avoid Windows charmap errors when dependencies print emojis
-    try:
+    with suppress(Exception):
         os.environ.setdefault("PYTHONIOENCODING", "utf-8")
         if hasattr(sys.stdout, "reconfigure"):
             sys.stdout.reconfigure(encoding="utf-8", errors="replace")
         if hasattr(sys.stderr, "reconfigure"):
             sys.stderr.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:
-        pass
+
     p = argparse.ArgumentParser()
     p.add_argument("--port", type=int, default=3001)
     p.add_argument(
@@ -48,7 +53,7 @@ def main() -> int:
     p.add_argument("--require-token", action="store_true")
     p.add_argument("--token", default="")
     p.add_argument("--control-token", default="")
-    args = p.parse_args()
+    args = p.parse_args(argv)
 
     # Desired flags for this run (store first; some loaders may override later)
     desired_flags = {
@@ -161,19 +166,15 @@ def main() -> int:
             metadata={"port": desired_port, "self_heartbeat": True},
             dependencies=["aetherra_engine"],
         )
-        try:
+        with suppress(Exception):
             reg = await get_service_registry()
             await reg.update_service_status("aetherra_hub", ServiceStatus.HEALTHY)
-        except Exception:
-            pass
 
         # Background self-heartbeat every 30s (daemon thread calling async API)
         def _hb_loop() -> None:
             while True:
-                try:
+                with suppress(Exception):
                     asyncio.run(update_heartbeat("aetherra_hub"))
-                except Exception:
-                    pass
                 time.sleep(30)
 
         threading.Thread(target=_hb_loop, daemon=True).start()

@@ -375,6 +375,30 @@ def register_plugin() -> Any:
         plugin_metrics["validation_errors_total"] += 1
         return jsonify({"error": "invalid_json"}), 400
 
+    manifest_schema_fields = {
+        "entry_point",
+        "permissions",
+        "data_classification",
+        "side_effects",
+        "timeout_ms",
+    }
+    if manifest_schema_fields.intersection(payload):
+        try:
+            # Aetherra imports
+            from Aetherra.plugins.manifest_schema import validate_manifest
+
+            ok, schema_errors, _normalized = validate_manifest(payload)
+        except Exception as exc:  # pragma: no cover - defensive schema guard
+            log.debug("manifest schema validation failed: %s", exc)
+            ok = False
+            schema_errors = ["manifest schema validation failed"]
+        if not ok:
+            plugin_metrics["validation_errors_total"] += 1
+            return (
+                jsonify({"error": "manifest_invalid", "details": schema_errors}),
+                400,
+            )
+
     strict_registration = require_signature or (
         _advanced_mode(settings) and not allow_unsigned
     )
@@ -413,7 +437,7 @@ def register_plugin() -> Any:
             observe_registration_latency(elapsed)
             return jsonify(
                 {
-                    "status": "ok",
+                    "status": "success",
                     "plugin": {**meta, "description": safe_desc},
                     "idempotency_key": idem_key,
                     "advanced": True,

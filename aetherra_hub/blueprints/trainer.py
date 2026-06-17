@@ -18,6 +18,10 @@ from ..services import trainer as trainer_service
 from ..services.control_auth import authorize_control_request
 
 bp = Blueprint("trainer", __name__)
+_GUARDIAN_DENIED_RESPONSE = {
+    "error": "guardian_denied",
+    "reason": "request denied by Guardian policy",
+}
 
 
 @bp.get("/api/trainer/status")
@@ -58,8 +62,8 @@ def submit_job():  # pragma: no cover
         return payload_error
     try:
         jid = trainer_service.submit_job(payload)  # returns None if disabled mid-flight
-    except PermissionError as exc:
-        return jsonify({"error": "guardian_denied", "reason": str(exc)}), 403
+    except PermissionError:
+        return jsonify(_GUARDIAN_DENIED_RESPONSE), 403
     if not jid:
         return jsonify({"error": "failed to enqueue job"}), 500
     return jsonify({"job_id": jid}), 200
@@ -97,8 +101,8 @@ def submit_eval():  # pragma: no cover
         return payload_error
     try:
         eid = trainer_service.submit_eval(payload)
-    except PermissionError as exc:
-        return jsonify({"error": "guardian_denied", "reason": str(exc)}), 403
+    except PermissionError:
+        return jsonify(_GUARDIAN_DENIED_RESPONSE), 403
     if not eid:
         return jsonify({"error": "failed to enqueue eval"}), 500
     return jsonify({"eval_id": eid}), 200

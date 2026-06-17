@@ -7,6 +7,7 @@ Routes build their own HTTP responses; this layer only returns duplication state
 from __future__ import annotations
 
 # Standard library imports
+import os
 import time
 from dataclasses import dataclass, field
 
@@ -39,10 +40,12 @@ class IdempotencyManager:
                 self._cache.pop(k, None)
         k = self._key(principal or "anonymous", client_id)
         exp = self._cache.get(k)
-        if self.enforce and exp and exp > now:
+        enforce = self.enforce or os.environ.get("AETHERRA_IDEMPOTENCY_ENFORCE") == "1"
+        if enforce and exp and exp > now:
             return True
         # (Re)write expiration
-        ttl = max(5, int(self.ttl_sec))
+        ttl_env = os.environ.get("AETHERRA_IDEMPOTENCY_TTL_SEC")
+        ttl = max(5, int(ttl_env or self.ttl_sec))
         self._cache[k] = now + float(ttl)
         return False
 

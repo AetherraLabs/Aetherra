@@ -12,6 +12,8 @@ from flask import Blueprint, jsonify, request
 from ..services.ai_stream import _get_engine  # reuse engine fetch
 from ..services.control_auth import authorize_token_request
 from ..services.guardian_chat import evaluate_chat_ingress
+from ..services.idempotency import manager as idempotency_manager
+from ..services.metrics_accum import inc_chat_rate_limited
 from ..services.security import safety_precheck
 
 bp = Blueprint("ai_ask", __name__)
@@ -72,11 +74,32 @@ def ai_ask_post():
             403,
         )
     message = str(sc.get("message") or message)
+    context = body.get("context") if isinstance(body.get("context"), dict) else {}
     principal = (
         request.headers.get("X-Aetherra-Principal")
         or request.headers.get("X-Principal")
+        or body.get("principal")
+        or context.get("principal")
         or "hub:chat"
     )
+    client_message_id = str(body.get("client_message_id") or "").strip()
+    if client_message_id and idempotency_manager.check_and_mark(
+        str(principal),
+        client_message_id,
+    ):
+        return (
+            jsonify(
+                {
+                    "ok": False,
+                    "client_message_id": client_message_id,
+                    "error": {
+                        "code": "duplicate",
+                        "message": "Duplicate client_message_id",
+                    },
+                }
+            ),
+            409,
+        )
     guardian_decision = evaluate_chat_ingress(
         message=message,
         route="/api/ai/ask",
@@ -132,6 +155,7 @@ def ai_ask_post():
     except Exception as e:  # pragma: no cover
         msg = str(e)
         if "rate limit" in msg.lower():
+            inc_chat_rate_limited()
             ra = os.environ.get("AETHERRA_RETRY_AFTER_SEC", "5")
             try:
                 ra_int = int(float(ra))

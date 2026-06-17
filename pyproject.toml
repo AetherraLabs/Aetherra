@@ -248,6 +248,7 @@ extend-exclude = '''
   | \.venv
   | build
   | dist
+  | dist-packages
   | node_modules
   | frontend/Lib
 )/
@@ -271,7 +272,9 @@ extend-exclude = [
     "__pycache__",
     "build",
     "dist",
+    "dist-packages",
     "node_modules",
+    "aetherra-website/node_modules",
     "frontend/Lib",
     # Short-term: exclude deprecated/inactive GUI modules and GUI tests
     "Aetherra/lyrixa/gui",

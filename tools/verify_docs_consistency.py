@@ -43,7 +43,7 @@ def find_env_vars_in_code() -> set[str]:
     found: set[str] = set()
     for path in ROOT.rglob("*.py"):
         if any(
-            part in {".venv", "__pycache__", "node_modules", ".git"}
+            part in {".venv", "__pycache__", "node_modules", ".git", "dist-packages"}
             for part in path.parts
         ):
             continue
@@ -76,7 +76,7 @@ def find_routes_in_code() -> set[str]:
     found: set[str] = set()
     for path in ROOT.rglob("*.py"):
         if any(
-            part in {".venv", "__pycache__", "node_modules", ".git"}
+            part in {".venv", "__pycache__", "node_modules", ".git", "dist-packages"}
             for part in path.parts
         ):
             continue
@@ -251,8 +251,11 @@ def main() -> int:
             b + "_bucket" for b in consciousness_hist_bases
         }
 
-    # Optional config to fine-tune reporting, without changing pass/fail semantics
+    # Optional config to fine-tune reporting while keeping suppressions explicit.
     cfg_ignore_extra_envs: set[str] = set()
+    cfg_ignore_missing_envs: set[str] = set()
+    cfg_ignore_extra_routes: set[str] = set()
+    cfg_ignore_missing_routes: set[str] = set()
     if DOCS_CFG.exists():
         try:
             cfg = json.loads(DOCS_CFG.read_text(encoding="utf-8"))
@@ -261,11 +264,20 @@ def main() -> int:
             )
             if isinstance(ignore_list, list):
                 cfg_ignore_extra_envs = {str(v) for v in ignore_list}
+            missing_envs_ignore = cfg.get("ignore_missing_envs", [])
+            if isinstance(missing_envs_ignore, list):
+                cfg_ignore_missing_envs = {str(v) for v in missing_envs_ignore}
+            extra_routes_ignore = cfg.get("ignore_extra_endpoints", [])
+            if isinstance(extra_routes_ignore, list):
+                cfg_ignore_extra_routes = {str(v) for v in extra_routes_ignore}
+            missing_routes_ignore = cfg.get("ignore_missing_endpoints", [])
+            if isinstance(missing_routes_ignore, list):
+                cfg_ignore_missing_routes = {str(v) for v in missing_routes_ignore}
         except Exception:
             # Best-effort; ignore config errors to keep tool resilient
             pass
 
-    missing_envs = sorted(code_envs - doc_envs)
+    missing_envs = sorted((code_envs - doc_envs) - cfg_ignore_missing_envs)
     raw_extra_envs = doc_envs - code_envs
 
     if debug:
@@ -277,8 +289,10 @@ def main() -> int:
             print("[debug] sample raw_extra_envs:", sorted(list(raw_extra_envs))[:10])
     # Suppress configured doc-only envs from the extra list for a cleaner report
     extra_envs = sorted([v for v in raw_extra_envs if v not in cfg_ignore_extra_envs])
-    missing_routes = sorted(code_routes - doc_routes)
-    extra_routes = sorted([r for r in doc_routes if r not in code_routes])
+    missing_routes = sorted((code_routes - doc_routes) - cfg_ignore_missing_routes)
+    extra_routes = sorted(
+        [r for r in doc_routes if r not in code_routes and r not in cfg_ignore_extra_routes]
+    )
 
     debug_json_path = ROOT / "docs" / "DOCS_CONSISTENCY_DEBUG.json"
     if debug:

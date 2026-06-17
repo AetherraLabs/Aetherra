@@ -4,33 +4,21 @@ Document: D:\Aetherra Project\docs\PROJECT_OVERVIEW.md
 
 ## Environment Variables
 
-Missing in docs (14):
-- AETHERRA_BOOT_SELECTION
-- AETHERRA_HUB_TOKEN
-- AETHERRA_HUB_URL
-- AETHERRA_KEEP_MONITOR
-- AETHERRA_MEMORY_STORM
-- AETHERRA_NO_FAKE_DATA
-- AETHERRA_QFAC_DASHBOARD
-- AETHERRA_QFAC_FAST_STUB
-- AETHERRA_QFAC_URL
-- AETHERRA_RUN_GUI_TESTS
-- AETHERRA_STORM_K_COARSE
-- AETHERRA_STORM_OT_BACKEND
-- AETHERRA_STORM_SHADOW_MODE
-- AETHERRA_STORM_TT_MAX_RANK
+Missing in docs (0):
 
-Documented but not found in code (0):
+Documented but not found in code (4):
+- AETHERRA_CAPABILITIES_PERMISSIVE
+- AETHERRA_EPISODIC_MAX_EVENTS
+- AETHERRA_EPISODIC_RETENTION_HOURS
+- AETHERRA_START_LOCAL_HUB
 
-(Note) Suppressed doc-only envs via docs_consistency.json (19):
+(Note) Suppressed doc-only envs via docs_consistency.json (17):
 - AETHERRA_AVAILABLE
 - AETHERRA_ENGINES_AVAILABLE
 - AETHERRA_ENGINE_AVAILABLE
 - AETHERRA_GUI_ENABLED
 - AETHERRA_IMPORT_UPDATE_REPORT
-- AETHERRA_INTELLIGENCE_PROVIDER
 - AETHERRA_LYRIXA_CLEANUP_REPORT
-- AETHERRA_MAX_TOKENS
 - AETHERRA_MEMORY_QUANTUM_ENABLED
 - AETHERRA_SENSITIVE_ACTIONS
 - AETHERRA_SERVER_AVAILABLE
@@ -47,8 +35,7 @@ Documented but not found in code (0):
 
 Missing in docs (0):
 
-Documented but not found in code (1):
-- /qfac/metrics
+Documented but not found in code (0):
 
 ## Consciousness Metrics Documentation
 

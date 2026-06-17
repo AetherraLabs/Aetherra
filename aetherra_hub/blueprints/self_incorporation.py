@@ -8,7 +8,11 @@ planning, and integration of the OS codebase.
 from __future__ import annotations
 
 # Standard library imports
+import asyncio
 import logging
+import threading
+from collections.abc import Awaitable
+from typing import TypeVar
 
 # Third party imports
 from flask import Blueprint, jsonify, request
@@ -27,6 +31,33 @@ except Exception:  # pragma: no cover - defensive import fallback
 logger = logging.getLogger(__name__)
 
 bp = Blueprint("self_incorporation", __name__, url_prefix="/api/selfinc")
+
+T = TypeVar("T")
+
+
+def _run_async(coro: Awaitable[T]) -> T:
+    """Run an async service call from Flask's synchronous request handlers."""
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+
+    result: dict[str, T] = {}
+    error: dict[str, BaseException] = {}
+
+    def _runner() -> None:
+        try:
+            result["value"] = asyncio.run(coro)
+        except BaseException as exc:  # pragma: no cover - surfaced to caller
+            error["value"] = exc
+
+    thread = threading.Thread(target=_runner, daemon=True)
+    thread.start()
+    thread.join()
+
+    if error:
+        raise error["value"]
+    return result["value"]
 
 
 def _authorize_control() -> ResponseReturnValue | None:
@@ -53,12 +84,7 @@ def get_status() -> ResponseReturnValue:
                 503,
             )
 
-        # Get status from the service
-        # Standard library imports
-        import asyncio
-
-        loop = asyncio.get_event_loop()
-        status = loop.run_until_complete(selfinc_service.get_status())
+        status = _run_async(selfinc_service.get_status())
 
         if disclosure_policy and disclosure_policy.is_free():
             status = disclosure_policy.redact_payload(status)
@@ -88,11 +114,7 @@ def trigger_scan() -> ResponseReturnValue:
         data = request.get_json() or {}
         root_filter = data.get("path")
 
-        # Standard library imports
-        import asyncio
-
-        loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(selfinc_service.trigger_scan(root_filter))
+        result = _run_async(selfinc_service.trigger_scan(root_filter))
 
         if disclosure_policy and disclosure_policy.is_free():
             result = disclosure_policy.redact_payload(result)
@@ -127,11 +149,7 @@ def apply_plan() -> ResponseReturnValue:
         if disclosure_policy and disclosure_policy.is_free() and not dry_run:
             return jsonify(disclosure_policy.deny_message("apply_plan")), 403
 
-        # Standard library imports
-        import asyncio
-
-        loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(
+        result = _run_async(
             selfinc_service.trigger_integrate(
                 dry_run=dry_run,
                 requester=requester,
@@ -168,17 +186,13 @@ def rollback() -> ResponseReturnValue:
         if disclosure_policy and disclosure_policy.is_free():
             return jsonify(disclosure_policy.deny_message("rollback")), 403
 
-        # Standard library imports
-        import asyncio
-
-        loop = asyncio.get_event_loop()
         requester = (
             request.headers.get("X-Aetherra-Principal")
             or request.headers.get("X-Principal")
             or "hub:self_incorporation"
         )
         approval_id = data.get("guardian_approval_id")
-        result = loop.run_until_complete(
+        result = _run_async(
             selfinc_service.trigger_rollback(
                 rb_token,
                 requester=requester,
@@ -209,13 +223,7 @@ def get_audit() -> ResponseReturnValue:
         action_filter = request.args.get("action")
         status_filter = request.args.get("status")
 
-        # Standard library imports
-        import asyncio
-
-        loop = asyncio.get_event_loop()
-
-        # Get audit summary with filters
-        summary = loop.run_until_complete(
+        summary = _run_async(
             selfinc_service.get_audit_summary(
                 action_filter=action_filter, status_filter=status_filter
             )
@@ -249,11 +257,7 @@ def get_metrics() -> ResponseReturnValue:
                 }
             )
 
-        # Standard library imports
-        import asyncio
-
-        loop = asyncio.get_event_loop()
-        status = loop.run_until_complete(selfinc_service.get_status())
+        status = _run_async(selfinc_service.get_status())
 
         # Convert status to Prometheus-style metrics
         metrics = {
