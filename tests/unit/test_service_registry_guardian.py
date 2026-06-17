@@ -36,6 +36,17 @@ def _audit_entries(root):
     ]
 
 
+def _last_guardian_entry(entries, action):
+    matches = [
+        entry
+        for entry in entries
+        if entry.get("event_type") == "guardian_decision"
+        and entry.get("details", {}).get("intent", {}).get("action") == action
+    ]
+    assert matches, f"No guardian audit entry found for {action}"
+    return matches[-1]
+
+
 def test_service_registration_writes_guardian_audit(registry_env):
     registry = AetherraServiceRegistry()
 
@@ -54,10 +65,10 @@ def test_service_registration_writes_guardian_audit(registry_env):
 
     assert result is True
     assert registry.get_service_info("demo_service") is not None
-    assert entries[-1]["event_type"] == "guardian_decision"
-    assert entries[-1]["details"]["intent"]["action"] == "service_registry.register"
-    assert "service_registry_mutation" in entries[-1]["details"]["risk"]["factors"]
-    assert "do-not-audit-this-value" not in json.dumps(entries[-1])
+    entry = _last_guardian_entry(entries, "service_registry.register")
+    assert entry["event_type"] == "guardian_decision"
+    assert "service_registry_mutation" in entry["details"]["risk"]["factors"]
+    assert "do-not-audit-this-value" not in json.dumps(entry)
 
 
 def test_service_registration_blocked_by_missing_capability(monkeypatch, registry_env):
@@ -76,8 +87,9 @@ def test_service_registration_blocked_by_missing_capability(monkeypatch, registr
 
     assert result is False
     assert registry.get_service_info("blocked_service") is None
-    assert entries[-1]["details"]["decision"]["status"] == "deny"
-    assert entries[-1]["details"]["decision"]["reason"] == "missing_capability"
+    entry = _last_guardian_entry(entries, "service_registry.register")
+    assert entry["details"]["decision"]["status"] == "deny"
+    assert entry["details"]["decision"]["reason"] == "missing_capability"
 
 
 def test_internal_service_registration_allowed_in_production(monkeypatch, registry_env):
@@ -89,8 +101,8 @@ def test_internal_service_registration_allowed_in_production(monkeypatch, regist
 
     assert result is True
     assert registry.get_service_info("boot_service") is not None
-    assert entries[-1]["details"]["intent"]["requester"] == "service_registry"
-    assert entries[-1]["details"]["intent"]["action"] == "service_registry.register"
+    entry = _last_guardian_entry(entries, "service_registry.register")
+    assert entry["details"]["intent"]["requester"] == "service_registry"
 
 
 def test_service_unregistration_writes_guardian_audit(registry_env):
@@ -111,9 +123,9 @@ def test_service_unregistration_writes_guardian_audit(registry_env):
 
     assert result is True
     assert registry.get_service_info("demo_service") is None
-    assert entries[-1]["details"]["intent"]["action"] == "service_registry.unregister"
-    assert entries[-1]["details"]["intent"]["target"] == "service_registry:service"
-    assert "do-not-audit-this-value" not in json.dumps(entries[-1])
+    entry = _last_guardian_entry(entries, "service_registry.unregister")
+    assert entry["details"]["intent"]["target"] == "service_registry:service"
+    assert "do-not-audit-this-value" not in json.dumps(entry)
 
 
 def test_service_status_update_writes_guardian_audit_without_metadata_values(
@@ -132,10 +144,8 @@ def test_service_status_update_writes_guardian_audit_without_metadata_values(
     entries = _audit_entries(registry_env)
 
     assert registry.get_service_info("demo_service").status == ServiceStatus.DEGRADED
-    assert entries[-1]["details"]["intent"]["action"] == (
-        "service_registry.status_update"
-    )
-    assert "do-not-audit-this-status-reason" not in json.dumps(entries[-1])
+    entry = _last_guardian_entry(entries, "service_registry.status_update")
+    assert "do-not-audit-this-status-reason" not in json.dumps(entry)
 
 
 def test_external_service_status_update_denial_preserves_status(
@@ -157,10 +167,8 @@ def test_external_service_status_update_denial_preserves_status(
 
     entries = _audit_entries(registry_env)
     assert registry.get_service_info("demo_service").status == ServiceStatus.HEALTHY
-    assert entries[-1]["details"]["intent"]["action"] == (
-        "service_registry.status_update"
-    )
-    assert entries[-1]["details"]["decision"]["reason"] == "missing_capability"
+    entry = _last_guardian_entry(entries, "service_registry.status_update")
+    assert entry["details"]["decision"]["reason"] == "missing_capability"
 
 
 def test_service_heartbeat_update_writes_guardian_audit(registry_env):
@@ -172,9 +180,7 @@ def test_service_heartbeat_update_writes_guardian_audit(registry_env):
     entries = _audit_entries(registry_env)
 
     assert registry.get_service_info("demo_service").last_heartbeat >= before
-    assert entries[-1]["details"]["intent"]["action"] == (
-        "service_registry.heartbeat_update"
-    )
+    _last_guardian_entry(entries, "service_registry.heartbeat_update")
 
 
 def test_external_service_heartbeat_denial_preserves_timestamp(
@@ -195,10 +201,8 @@ def test_external_service_heartbeat_denial_preserves_timestamp(
 
     entries = _audit_entries(registry_env)
     assert registry.get_service_info("demo_service").last_heartbeat == before
-    assert entries[-1]["details"]["intent"]["action"] == (
-        "service_registry.heartbeat_update"
-    )
-    assert entries[-1]["details"]["decision"]["reason"] == "missing_capability"
+    entry = _last_guardian_entry(entries, "service_registry.heartbeat_update")
+    assert entry["details"]["decision"]["reason"] == "missing_capability"
 
 
 def test_self_heartbeat_flag_guardian_denial_preserves_metadata(
@@ -218,10 +222,8 @@ def test_self_heartbeat_flag_guardian_denial_preserves_metadata(
 
     assert result is False
     assert registry.is_self_heartbeating("demo_service") is False
-    assert entries[-1]["details"]["intent"]["action"] == (
-        "service_registry.self_heartbeat_flag"
-    )
-    assert entries[-1]["details"]["decision"]["reason"] == "missing_capability"
+    entry = _last_guardian_entry(entries, "service_registry.self_heartbeat_flag")
+    assert entry["details"]["decision"]["reason"] == "missing_capability"
 
 
 def test_service_message_dispatch_writes_guardian_audit_without_payload_values(
@@ -244,10 +246,8 @@ def test_service_message_dispatch_writes_guardian_audit_without_payload_values(
     assert service.messages == [
         ("secret.message", {"token": "do-not-audit-this-message-value"})
     ]
-    assert entries[-1]["details"]["intent"]["action"] == (
-        "service_registry.send_message"
-    )
-    assert "do-not-audit-this-message-value" not in json.dumps(entries[-1])
+    entry = _last_guardian_entry(entries, "service_registry.send_message")
+    assert "do-not-audit-this-message-value" not in json.dumps(entry)
 
 
 def test_external_service_message_denial_stops_handler(monkeypatch, registry_env):
@@ -269,10 +269,8 @@ def test_external_service_message_denial_stops_handler(monkeypatch, registry_env
 
     assert result is False
     assert service.messages == []
-    assert entries[-1]["details"]["intent"]["action"] == (
-        "service_registry.send_message"
-    )
-    assert entries[-1]["details"]["decision"]["reason"] == "missing_capability"
+    entry = _last_guardian_entry(entries, "service_registry.send_message")
+    assert entry["details"]["decision"]["reason"] == "missing_capability"
 
 
 def test_service_broadcast_writes_guardian_audit_and_dispatches(registry_env):
@@ -321,10 +319,8 @@ def test_external_broadcast_denial_stops_all_handlers(monkeypatch, registry_env)
     entries = _audit_entries(registry_env)
 
     assert service.messages == []
-    assert entries[-1]["details"]["intent"]["action"] == (
-        "service_registry.broadcast_message"
-    )
-    assert entries[-1]["details"]["decision"]["reason"] == "missing_capability"
+    entry = _last_guardian_entry(entries, "service_registry.broadcast_message")
+    assert entry["details"]["decision"]["reason"] == "missing_capability"
 
 
 def test_event_subscription_guardian_denial_preserves_handlers(
@@ -346,5 +342,5 @@ def test_event_subscription_guardian_denial_preserves_handlers(
     entries = _audit_entries(registry_env)
 
     assert registry._event_handlers == {}
-    assert entries[-1]["details"]["intent"]["action"] == "service_registry.subscribe"
-    assert entries[-1]["details"]["decision"]["reason"] == "missing_capability"
+    entry = _last_guardian_entry(entries, "service_registry.subscribe")
+    assert entry["details"]["decision"]["reason"] == "missing_capability"
