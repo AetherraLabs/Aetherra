@@ -1288,6 +1288,14 @@ class AetherraOSLauncher:
                             "status": "ok",
                             "proposals": self.impl.list_active_proposals(),
                         }
+                    if mt.endswith("proposal"):
+                        proposal_id = str(payload.get("proposal_id") or "")
+                        proposal = self.impl.get_proposal(proposal_id)
+                        if proposal is None:
+                            return {"status": "not_found", "proposal": None}
+                        return {"status": "ok", "proposal": proposal}
+                    if mt.endswith("proposal_result"):
+                        return await self.impl.record_proposal_result(payload)
                     return {"error": "unknown_message"}
 
                 async def shutdown(self):

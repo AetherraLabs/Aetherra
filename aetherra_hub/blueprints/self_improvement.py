@@ -39,6 +39,12 @@ def _service_call(service: Any, message_type: str, payload: dict[str, Any] | Non
         return service.get_metric_trends()
     if message_type.endswith("proposals") and hasattr(service, "list_active_proposals"):
         return {"status": "ok", "proposals": service.list_active_proposals()}
+    if message_type.endswith("proposal") and hasattr(service, "get_proposal"):
+        proposal_id = str((payload or {}).get("proposal_id") or "")
+        proposal = service.get_proposal(proposal_id)
+        if proposal is None:
+            return {"status": "not_found", "proposal": None}
+        return {"status": "ok", "proposal": proposal}
     return None
 
 
@@ -161,6 +167,38 @@ def get_proposals() -> ResponseReturnValue:
         return jsonify({"status": "ok", "proposals": proposals})
     except Exception as exc:
         logger.error("[SELFIMPROVE] Proposals error: %s", exc)
+        return jsonify({"status": "error", "error": "Internal server error"}), 500
+
+
+@bp.get("/proposals/<proposal_id>")
+def get_proposal(proposal_id: str) -> ResponseReturnValue:
+    """Return one active improvement proposal without applying it."""
+    try:
+        service = _get_self_improvement_service()
+        if service is None:
+            return (
+                jsonify(
+                    {
+                        "status": "disabled",
+                        "proposal": None,
+                        "error": "Self-improvement engine not registered",
+                    }
+                ),
+                503,
+            )
+        result = _service_call(
+            service,
+            "selfimprovement.proposal",
+            {"proposal_id": proposal_id},
+        )
+        if not isinstance(result, dict) or result.get("status") == "not_found":
+            return jsonify({"status": "not_found", "proposal": None}), 404
+        proposal = result.get("proposal")
+        if not isinstance(proposal, dict):
+            return jsonify({"status": "not_found", "proposal": None}), 404
+        return jsonify({"status": "ok", "proposal": proposal})
+    except Exception as exc:
+        logger.error("[SELFIMPROVE] Proposal detail error: %s", exc)
         return jsonify({"status": "error", "error": "Internal server error"}), 500
 
 

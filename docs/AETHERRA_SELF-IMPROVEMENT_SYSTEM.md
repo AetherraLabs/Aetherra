@@ -73,7 +73,7 @@ Core flow:
 5. Applying a proposal calls `/api/selfimprove/apply` or `/batch-apply`.
 6. Guardian evaluates rollback, evidence, capabilities, containment, approvals, and risk.
 7. Approved execution is delegated to Self-Incorporation, HMR, or manual application.
-8. Outcomes are reported back for future learning.
+8. Outcomes are reported back through `selfimprovement.proposal_result` for bounded future learning.
 
 ## Guardian enforcement
 
@@ -116,6 +116,7 @@ Implemented endpoints:
 
 - `GET /api/selfimprove/status`
 - `GET /api/selfimprove/proposals`
+- `GET /api/selfimprove/proposals/<proposal_id>`
 - `GET /api/selfimprove/trends`
 - `POST /api/selfimprove/apply`
 - `POST /api/selfimprove/batch-apply`
@@ -145,6 +146,7 @@ Implemented behavior:
 
 - The engine analyzes metric patterns and metric statistics.
 - It can identify trend direction, correlation patterns, cyclical behavior, and degradation signals.
+- It attaches structured hypothesis fields: issue, potential cause, proposed change, and evidence.
 - It converts high-confidence findings into active proposals instead of executing them.
 - `GET /api/selfimprove/trends` exposes read-only metric trends.
 
@@ -155,22 +157,26 @@ Hypothesis work remains bounded to explaining what might be wrong and what might
 Implemented foundation:
 
 - Proposals include expected benefit, implementation cost, risk level, affected components, and success criteria.
+- Proposals include deterministic simulation estimates with bounded impact, cost, risk, confidence, testability,
+  rollback availability, and recommendation fields.
 - Guardian application paths require reversibility metadata or explicit approval.
 - Optimization execution supports validation, backup, rollback, and metrics comparison.
 - HMR paths distinguish applied, manual, unavailable, and failed outcomes with `restart_required`.
 
 Remaining simulation work:
 
-- Add deterministic dry-run estimators for each proposal type.
-- Attach structured simulation reports to proposals before Guardian review.
 - Expand rollback feasibility scoring beyond current rollback-plan presence and executor backup support.
+- Add deeper dry-run estimators for each proposal type using real subsystem-specific validation hooks.
 
 ## Phase 4 - Proposal
 
 Implemented behavior:
 
 - High-confidence proposals are stored with `active` status by default.
+- Reviewable proposals are persisted in the self-improvement database and reloaded on engine startup.
+- Terminal proposals such as accepted downstream results are not reloaded into the active review list.
 - Default operation does not self-implement generated proposals.
+- Active proposals include issue, potential cause, proposed change, evidence, simulation, and rollback metadata.
 - `GET /api/selfimprove/proposals` returns active proposals for UI/operator review.
 - Proposal application remains an explicit control-plane action.
 
@@ -205,8 +211,46 @@ Execution is intentionally delegated:
 - HMR applies safe reloads when available.
 - Manual application remains a valid outcome when automated execution is unavailable or undesirable.
 - Optimization Executor handles file/config changes with Guardian preflight, backup, verification, and rollback.
+- Self-Incorporation reports proposal results back to the Self-Improvement Engine through the service registry.
 
 Self-Improvement should never bypass these execution paths.
+
+## Phase 7 - Learning
+
+Implemented behavior:
+
+- The Self-Improvement Engine accepts `selfimprovement.proposal_result` messages from controlled downstream
+  execution paths.
+- Proposal status is updated from downstream outcomes.
+- A bounded `LearningOutcome` is recorded with proposal ID, plan ID, status, numeric improvement, and detail keys.
+- Raw execution payloads are not copied into the learning record.
+
+Adaptive proposal tuning remains future work.
+
+## Future record - Evolution Ledger
+
+Self-Improvement should eventually feed an **Evolution Ledger**. This should be a record, not a new control
+system.
+
+The ledger should correlate:
+
+1. Proposal
+2. Guardian result
+3. Execution result
+4. Observed outcome
+5. Long-term outcome
+
+Purpose:
+
+- identify which proposals worked
+- identify which proposals failed
+- identify which proposals caused regressions
+- identify which proposals improved performance, reliability, safety, or user experience
+- support future adaptive proposal ranking without giving Self-Improvement direct modification authority
+
+The current bounded `LearningOutcome` support is the first local substrate for this idea. A full Evolution
+Ledger should remain future work until proposal generation, Guardian review, controlled execution, and
+outcome observation are all stable across more systems.
 
 ## Completion criteria
 
@@ -220,6 +264,7 @@ Self-Improvement is complete for the current foundation milestone when:
 - proposal application routes through Guardian before Self-Incorporation, HMR, or manual execution
 - rollback requirements, approval consumption, containment, and audit are enforced
 - execution outcomes can be reported back for future learning
+- learning records store bounded outcome metadata without raw execution payloads
 - future autonomous implementation stays disabled unless explicitly enabled and Guardian-gated
 
 ## Tests

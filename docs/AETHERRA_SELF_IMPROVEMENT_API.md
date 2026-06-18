@@ -64,9 +64,55 @@ List active improvement proposals without applying them.
       "risk_level": 0.1,
       "affected_components": ["memory"],
       "success_criteria": ["retrieval latency improves"],
+      "issue": "Memory retrieval latency is increasing",
+      "potential_cause": "Index pressure or retrieval path contention",
+      "proposed_change": "Simulate and review memory index tuning",
+      "evidence": ["metric:memory_rtt", "trend:degrading"],
+      "simulation": {
+        "estimated_impact": 0.15,
+        "implementation_cost": 0.2,
+        "risk_level": 0.1,
+        "confidence": 0.785,
+        "testable": true,
+        "rollback_available": true,
+        "recommendation": "candidate"
+      },
+      "rollback_plan": "Restore prior memory index configuration",
       "status": "active"
     }
   ]
+}
+```
+
+### GET /api/selfimprove/proposals/{proposal_id}
+
+Return one active improvement proposal without applying it. Terminal proposals are not returned through this
+active-review endpoint.
+
+**Success response (HTTP 200):**
+
+```json
+{
+  "status": "ok",
+  "proposal": {
+    "proposal_id": "SI-42",
+    "status": "active",
+    "issue": "Memory retrieval latency is increasing",
+    "simulation": {
+      "confidence": 0.785,
+      "testable": true,
+      "rollback_available": true
+    }
+  }
+}
+```
+
+**Not found response (HTTP 404):**
+
+```json
+{
+  "status": "not_found",
+  "proposal": null
 }
 ```
 
@@ -237,6 +283,19 @@ Prior to 2025-01-26, the Self-Improvement API used multiple HTTP status codes to
 **Migration note:** Clients previously checking `res.status === 503` should now check `body.restart_required === true`.
 
 ## Hot Module Reload (HMR) integration
+
+## Service registry messages
+
+The Self-Improvement Engine also supports internal service-registry messages:
+
+- `selfimprovement.record_metric`: record a performance metric.
+- `selfimprovement.status`: return read-only engine status.
+- `selfimprovement.trends`: return read-only metric trends.
+- `selfimprovement.proposals`: return active proposals.
+- `selfimprovement.proposal_result`: record a bounded downstream outcome after controlled execution.
+
+`selfimprovement.proposal_result` records proposal ID, plan ID, status, numeric improvement, and result detail
+keys. It does not copy raw execution payload values into the learning record.
 
 HMR enables runtime application of approved proposals without OS restart. When HMR is enabled and available, the Self-Improvement API will attempt to apply proposals via the HMR Controller.
 

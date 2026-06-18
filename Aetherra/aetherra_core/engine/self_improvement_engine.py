@@ -15,7 +15,7 @@ import sqlite3
 import traceback
 import uuid
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
@@ -130,6 +130,12 @@ class ImprovementProposal:
     success_criteria: List[str]
     created_at: datetime
     status: str = "proposed"
+    issue: str = ""
+    potential_cause: str = ""
+    proposed_change: str = ""
+    evidence: List[str] = field(default_factory=list)
+    simulation: Dict[str, Any] = field(default_factory=dict)
+    rollback_plan: str = ""
 
 
 @dataclass
@@ -393,6 +399,22 @@ class ImprovementGenerator:
                 affected_components=[pattern["metric"]],
                 success_criteria=[f"Reverse negative trend in {pattern['metric']}"],
                 created_at=datetime.now(),
+                issue=f"{pattern['metric']} is trending downward",
+                potential_cause="Sustained degradation detected in recent metric history",
+                proposed_change=f"Review and tune the subsystem affecting {pattern['metric']}",
+                evidence=[
+                    f"pattern:type={pattern.get('type')}",
+                    f"metric:{pattern['metric']}",
+                    f"slope:{pattern.get('slope', 0)}",
+                ],
+                simulation=self._simulate(
+                    expected_benefit=0.3,
+                    implementation_cost=0.5,
+                    risk_level=0.2,
+                    rollback_available=True,
+                    testable=True,
+                ),
+                rollback_plan=f"Revert tuning changes for {pattern['metric']} if trend worsens",
             )
             proposals.append(proposal)
 
@@ -408,6 +430,21 @@ class ImprovementGenerator:
                 affected_components=[pattern["metric"]],
                 success_criteria=[f"Reduce amplitude of cycles in {pattern['metric']}"],
                 created_at=datetime.now(),
+                issue=f"{pattern['metric']} shows recurring cyclical variance",
+                potential_cause="Periodic workload or scheduling behavior may be amplifying variance",
+                proposed_change=f"Investigate smoothing or scheduling controls for {pattern['metric']}",
+                evidence=[
+                    f"pattern:type={pattern.get('type')}",
+                    f"metric:{pattern['metric']}",
+                ],
+                simulation=self._simulate(
+                    expected_benefit=0.2,
+                    implementation_cost=0.3,
+                    risk_level=0.1,
+                    rollback_available=True,
+                    testable=True,
+                ),
+                rollback_plan=f"Disable smoothing changes for {pattern['metric']} if variance increases",
             )
             proposals.append(proposal)
 
@@ -425,16 +462,60 @@ class ImprovementGenerator:
                     proposal_id=str(uuid.uuid4()),
                     improvement_type=ImprovementType.PERFORMANCE,
                     description="Optimize CPU usage - consistently high utilization detected",
-                    expected_benefit=0.4,
-                    implementation_cost=0.6,
-                    risk_level=0.3,
+                    expected_benefit=0.7,
+                    implementation_cost=0.3,
+                    risk_level=0.2,
                     affected_components=["cpu_scheduler", "process_manager"],
                     success_criteria=["Reduce average CPU usage to below 70%"],
                     created_at=datetime.now(),
+                    issue="CPU utilization is consistently high",
+                    potential_cause="Scheduler pressure, process contention, or inefficient work batching",
+                    proposed_change="Analyze CPU-heavy paths and propose scheduler or batching improvements",
+                    evidence=[
+                        f"metric:cpu_usage",
+                        f"mean:{cpu_stats.get('mean', 0)}",
+                        f"max:{cpu_stats.get('max', 0)}",
+                    ],
+                    simulation=self._simulate(
+                        expected_benefit=0.7,
+                        implementation_cost=0.3,
+                        risk_level=0.2,
+                        rollback_available=True,
+                        testable=True,
+                    ),
+                    rollback_plan="Restore previous scheduler or process-manager configuration",
                 )
                 proposals.append(proposal)
 
         return proposals
+
+    @staticmethod
+    def _simulate(
+        *,
+        expected_benefit: float,
+        implementation_cost: float,
+        risk_level: float,
+        rollback_available: bool,
+        testable: bool,
+    ) -> Dict[str, Any]:
+        """Create a deterministic, bounded simulation estimate for review."""
+        benefit = max(0.0, min(1.0, float(expected_benefit)))
+        cost = max(0.0, min(1.0, float(implementation_cost)))
+        risk = max(0.0, min(1.0, float(risk_level)))
+        confidence = max(0.0, min(1.0, (benefit * 0.5) + ((1.0 - cost) * 0.2) + ((1.0 - risk) * 0.3)))
+        return {
+            "estimated_impact": benefit,
+            "implementation_cost": cost,
+            "risk_level": risk,
+            "confidence": round(confidence, 3),
+            "testable": bool(testable),
+            "rollback_available": bool(rollback_available),
+            "recommendation": (
+                "review"
+                if risk >= 0.5 or not rollback_available
+                else "candidate"
+            ),
+        }
 
     def _generate_performance_improvements(self, context: Dict) -> List[ImprovementProposal]:
         """Generate performance-focused improvements"""
@@ -481,6 +562,7 @@ class SelfImprovementEngine:
         self._suppressed_exceptions: int = 0
         self._analysis_cycles: int = 0
         self._init_database()
+        self._load_reviewable_proposals()
 
     def _init_database(self):
         """Initialize self-improvement database"""
@@ -523,6 +605,7 @@ class SelfImprovementEngine:
                 )
             """
             )
+            self._ensure_proposal_columns(conn)
 
             conn.execute(
                 """
@@ -554,6 +637,105 @@ class SelfImprovementEngine:
             conn.commit()
         finally:
             conn.close()
+
+    @staticmethod
+    def _ensure_proposal_columns(conn: sqlite3.Connection) -> None:
+        """Add proposal metadata columns for existing databases."""
+        existing = {
+            row[1]
+            for row in conn.execute("PRAGMA table_info(improvement_proposals)").fetchall()
+        }
+        columns = {
+            "issue": "TEXT",
+            "potential_cause": "TEXT",
+            "proposed_change": "TEXT",
+            "evidence": "TEXT",
+            "simulation": "TEXT",
+            "rollback_plan": "TEXT",
+        }
+        for name, column_type in columns.items():
+            if name not in existing:
+                conn.execute(
+                    f"ALTER TABLE improvement_proposals ADD COLUMN {name} {column_type}"
+                )
+
+    def _load_reviewable_proposals(self) -> None:
+        """Load persisted proposals that are still useful for operator review."""
+        reviewable_statuses = {"active", "proposed", "proposed_for_review"}
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
+        try:
+            rows = conn.execute(
+                """
+                SELECT proposal_id, improvement_type, description, expected_benefit,
+                       implementation_cost, risk_level, affected_components,
+                       success_criteria, status, created_at, issue, potential_cause,
+                       proposed_change, evidence, simulation, rollback_plan
+                FROM improvement_proposals
+                WHERE status IN ('active', 'proposed', 'proposed_for_review')
+                ORDER BY created_at DESC
+                """
+            ).fetchall()
+        except sqlite3.Error as exc:
+            logger.warning("Failed to load persisted self-improvement proposals: %s", exc)
+            return
+        finally:
+            conn.close()
+
+        for row in rows:
+            try:
+                status = str(row["status"] or "proposed")
+                if status not in reviewable_statuses:
+                    continue
+                improvement_type = ImprovementType(str(row["improvement_type"]))
+                created_at = datetime.fromisoformat(str(row["created_at"]))
+                proposal = ImprovementProposal(
+                    proposal_id=str(row["proposal_id"]),
+                    improvement_type=improvement_type,
+                    description=str(row["description"]),
+                    expected_benefit=float(row["expected_benefit"]),
+                    implementation_cost=float(row["implementation_cost"]),
+                    risk_level=float(row["risk_level"]),
+                    affected_components=self._json_list(row["affected_components"]),
+                    success_criteria=self._json_list(row["success_criteria"]),
+                    created_at=created_at,
+                    status=status,
+                    issue=str(row["issue"] or ""),
+                    potential_cause=str(row["potential_cause"] or ""),
+                    proposed_change=str(row["proposed_change"] or ""),
+                    evidence=self._json_list(row["evidence"]),
+                    simulation=self._json_dict(row["simulation"]),
+                    rollback_plan=str(row["rollback_plan"] or ""),
+                )
+                self.active_proposals[proposal.proposal_id] = proposal
+            except Exception as exc:
+                logger.debug(
+                    "Skipping malformed self-improvement proposal row: %s", exc
+                )
+
+    @staticmethod
+    def _json_list(value: Any) -> list[Any]:
+        if isinstance(value, list):
+            return value
+        if value is None:
+            return []
+        try:
+            parsed = json.loads(str(value))
+        except (TypeError, ValueError, json.JSONDecodeError):
+            return []
+        return parsed if isinstance(parsed, list) else []
+
+    @staticmethod
+    def _json_dict(value: Any) -> dict[str, Any]:
+        if isinstance(value, dict):
+            return value
+        if value is None:
+            return {}
+        try:
+            parsed = json.loads(str(value))
+        except (TypeError, ValueError, json.JSONDecodeError):
+            return {}
+        return parsed if isinstance(parsed, dict) else {}
 
     async def start_improvement_cycle(self, loop: asyncio.AbstractEventLoop | None = None):
         """Start the continuous improvement cycle"""
@@ -779,6 +961,52 @@ class SelfImprovementEngine:
             proposal.status = "failed"
             logger.error(f"Failed to implement proposal {proposal.proposal_id}: {e}")
 
+    async def record_proposal_result(self, result: Dict[str, Any]) -> Dict[str, Any]:
+        """Record a downstream proposal result without executing any changes."""
+        proposal_id = str(result.get("proposal_id") or "").strip()
+        status = str(result.get("status") or "unknown").strip().lower()
+        details = result.get("details") if isinstance(result.get("details"), dict) else {}
+        if not proposal_id:
+            return {"status": "error", "error": "proposal_id required"}
+
+        proposal = self.active_proposals.get(proposal_id)
+        if proposal is not None:
+            proposal.status = status
+            await self._store_proposal(proposal)
+
+        improvement_achieved = details.get("improvement_achieved")
+        try:
+            achieved = float(improvement_achieved)
+        except (TypeError, ValueError):
+            achieved = 1.0 if status == "accepted" else 0.0
+
+        target_component = (
+            ",".join(proposal.affected_components)
+            if proposal is not None
+            else str(details.get("type") or "unknown")
+        )
+        outcome = LearningOutcome(
+            session_id=str(uuid.uuid4()),
+            method=LearningMethod.REINFORCEMENT,
+            target_component=target_component,
+            improvement_achieved=max(0.0, min(1.0, achieved)),
+            confidence=1.0 if status == "accepted" else 0.5,
+            learning_data={
+                "proposal_id": proposal_id,
+                "plan_id": str(result.get("plan_id") or ""),
+                "status": status,
+                "details_keys": sorted(str(key) for key in details.keys()),
+            },
+            timestamp=datetime.now(),
+        )
+        self.learning_outcomes.append(outcome)
+        await self._store_learning_outcome(outcome)
+        return {
+            "status": "ok",
+            "proposal_id": proposal_id,
+            "recorded_status": status,
+        }
+
     def record_performance_metric(
         self, name: str, value: float, unit: str, context: Dict[str, Any] | None = None
     ):
@@ -846,20 +1074,34 @@ class SelfImprovementEngine:
             reverse=True,
         )
         return [
-            {
-                "proposal_id": proposal.proposal_id,
-                "improvement_type": proposal.improvement_type.value,
-                "description": proposal.description,
-                "expected_benefit": proposal.expected_benefit,
-                "implementation_cost": proposal.implementation_cost,
-                "risk_level": proposal.risk_level,
-                "affected_components": list(proposal.affected_components),
-                "success_criteria": list(proposal.success_criteria),
-                "created_at": proposal.created_at.isoformat(),
-                "status": proposal.status,
-            }
-            for proposal in proposals
+            self._proposal_to_dict(proposal) for proposal in proposals
         ]
+
+    def get_proposal(self, proposal_id: str) -> dict[str, Any] | None:
+        """Return one active proposal by ID, if it is still reviewable."""
+        proposal = self.active_proposals.get(proposal_id)
+        return self._proposal_to_dict(proposal) if proposal is not None else None
+
+    @staticmethod
+    def _proposal_to_dict(proposal: ImprovementProposal) -> dict[str, Any]:
+        return {
+            "proposal_id": proposal.proposal_id,
+            "improvement_type": proposal.improvement_type.value,
+            "description": proposal.description,
+            "expected_benefit": proposal.expected_benefit,
+            "implementation_cost": proposal.implementation_cost,
+            "risk_level": proposal.risk_level,
+            "affected_components": list(proposal.affected_components),
+            "success_criteria": list(proposal.success_criteria),
+            "created_at": proposal.created_at.isoformat(),
+            "status": proposal.status,
+            "issue": proposal.issue,
+            "potential_cause": proposal.potential_cause,
+            "proposed_change": proposal.proposed_change,
+            "evidence": list(proposal.evidence),
+            "simulation": dict(proposal.simulation),
+            "rollback_plan": proposal.rollback_plan,
+        }
 
     def export_internal_metrics(
         self,
@@ -928,8 +1170,9 @@ class SelfImprovementEngine:
                 INSERT OR REPLACE INTO improvement_proposals
                 (proposal_id, improvement_type, description, expected_benefit,
                  implementation_cost, risk_level, affected_components, success_criteria,
-                 status, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 status, created_at, issue, potential_cause, proposed_change, evidence,
+                 simulation, rollback_plan)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
                 (
                     proposal.proposal_id,
@@ -942,6 +1185,12 @@ class SelfImprovementEngine:
                     json.dumps(proposal.success_criteria),
                     proposal.status,
                     proposal.created_at.isoformat(),
+                    proposal.issue,
+                    proposal.potential_cause,
+                    proposal.proposed_change,
+                    json.dumps(proposal.evidence),
+                    json.dumps(proposal.simulation),
+                    proposal.rollback_plan,
                 ),
             )
             conn.commit()

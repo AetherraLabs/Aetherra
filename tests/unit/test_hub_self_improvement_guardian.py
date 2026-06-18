@@ -24,6 +24,17 @@ class _FakeSelfImprovementService:
                     }
                 ],
             }
+        if message_type == "selfimprovement.proposal":
+            if data.get("proposal_id") != "SI-OBSERVE-1":
+                return {"status": "not_found", "proposal": None}
+            return {
+                "status": "ok",
+                "proposal": {
+                    "proposal_id": "SI-OBSERVE-1",
+                    "status": "active",
+                    "risk_level": 0.1,
+                },
+            }
         if message_type == "selfimprovement.trends":
             return {"response_time": {"trend_direction": "degrading"}}
         return {"error": "unknown_message"}
@@ -186,14 +197,20 @@ def test_self_improvement_read_only_status_proposals_and_trends(monkeypatch, tmp
     status = client.get("/api/selfimprove/status")
     proposals = client.get("/api/selfimprove/proposals")
     trends = client.get("/api/selfimprove/trends")
+    proposal = client.get("/api/selfimprove/proposals/SI-OBSERVE-1")
+    missing = client.get("/api/selfimprove/proposals/missing")
 
     status_payload = status.get_json()
     proposals_payload = proposals.get_json()
     trends_payload = trends.get_json()
+    proposal_payload = proposal.get_json()
     assert status.status_code == 200
     assert status_payload["autonomous_implementation_enabled"] is False
     assert proposals.status_code == 200
     assert proposals_payload["proposals"][0]["proposal_id"] == "SI-OBSERVE-1"
+    assert proposal.status_code == 200
+    assert proposal_payload["proposal"]["proposal_id"] == "SI-OBSERVE-1"
+    assert missing.status_code == 404
     assert trends.status_code == 200
     assert trends_payload["trends"]["response_time"]["trend_direction"] == "degrading"
 
