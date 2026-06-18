@@ -55,7 +55,7 @@ jobs:
           output-file: sbom.spdx.json
 
       - name: Trivy scan image
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@0.36.0
         with:
           image-ref: ghcr.io/${{ github.repository_owner }}/aetherra:${{ steps.vars.outputs.version }}
           format: 'table'
