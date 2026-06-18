@@ -195,6 +195,8 @@ Implemented behavior:
 - Default operation does not self-implement generated proposals.
 - The engine does not self-implement generated proposals even if `AETHERRA_SELF_IMPROVEMENT_AUTO_IMPLEMENT=1`;
   that request is surfaced in status and blocked in the proposal lifecycle history.
+- Direct engine-side implementation is disabled; accidental internal implementation attempts are recorded as
+  blocked lifecycle events.
 - Active proposals include issue, potential cause, proposed change, evidence, simulation, and rollback metadata.
 - `GET /api/selfimprove/proposals` returns active proposals for UI/operator review.
 - Active proposal listing supports read-only filters by status, improvement type, risk, confidence, and limit.

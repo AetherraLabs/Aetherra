@@ -118,6 +118,36 @@ async def test_auto_implementation_env_is_blocked_without_guardian_path(
 
 
 @pytest.mark.asyncio
+async def test_direct_implementation_path_is_blocked(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+    proposal = ImprovementProposal(
+        proposal_id="direct-implementation-blocked",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Block direct implementation",
+        expected_benefit=0.9,
+        implementation_cost=0.1,
+        risk_level=0.1,
+        affected_components=["scheduler"],
+        success_criteria=["Proposal remains unimplemented"],
+        created_at=datetime.now(),
+        status="active",
+    )
+
+    result = await eng._implement_proposal(proposal)
+
+    reloaded = eng._load_proposal_from_db("direct-implementation-blocked")
+    history = eng.get_proposal_history("direct-implementation-blocked")
+    assert result["status"] == "blocked"
+    assert reloaded.status == "active"
+    assert reloaded.status_reason == (
+        "direct implementation is disabled; use Guardian-controlled execution"
+    )
+    assert eng.get_improvement_status()["implemented_proposals"] == 0
+    assert eng.get_improvement_status()["learning_outcomes"] == 0
+    assert history[0]["event_type"] == "direct_implementation_blocked"
+
+
+@pytest.mark.asyncio
 async def test_generated_proposals_include_hypothesis_and_simulation(tmp_path):
     eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
 

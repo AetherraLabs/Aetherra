@@ -1527,40 +1527,26 @@ class SelfImprovementEngine:
         return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
 
     async def _implement_proposal(self, proposal: ImprovementProposal):
-        """Implement an improvement proposal"""
-        logger.info(f"Implementing proposal: {proposal.description}")
-
-        try:
-            # Record implementation
-            proposal.status = "implementing"
-
-            # Simulate implementation (in real system, this would apply actual changes)
-            await asyncio.sleep(1)
-
-            # Create learning outcome
-            outcome = LearningOutcome(
-                session_id=str(uuid.uuid4()),
-                method=LearningMethod.REINFORCEMENT,
-                target_component=",".join(proposal.affected_components),
-                improvement_achieved=proposal.expected_benefit,
-                confidence=0.8,
-                learning_data={
-                    "proposal_id": proposal.proposal_id,
-                    "implementation_method": "automatic",
-                    "success_criteria": proposal.success_criteria,
-                },
-                timestamp=datetime.now(),
-            )
-
-            self.learning_outcomes.append(outcome)
-            await self._store_learning_outcome(outcome)
-
-            proposal.status = "implemented"
-            logger.info(f"Successfully implemented: {proposal.description}")
-
-        except Exception as e:
-            proposal.status = "failed"
-            logger.error(f"Failed to implement proposal {proposal.proposal_id}: {e}")
+        """Block direct implementation; execution belongs to Guardian-gated paths."""
+        reason = "direct implementation is disabled; use Guardian-controlled execution"
+        previous_status = proposal.status
+        proposal.status_reason = reason
+        proposal.updated_at = datetime.now()
+        await self._store_proposal(proposal)
+        await self._record_proposal_lifecycle_event(
+            proposal_id=proposal.proposal_id,
+            event_type="direct_implementation_blocked",
+            from_status=previous_status,
+            to_status=proposal.status,
+            actor="self_improvement_engine",
+            reason=reason,
+            metadata={},
+        )
+        return {
+            "status": "blocked",
+            "proposal_id": proposal.proposal_id,
+            "reason": reason,
+        }
 
     async def record_proposal_result(self, result: Dict[str, Any]) -> Dict[str, Any]:
         """Record a downstream proposal result without executing any changes."""
