@@ -176,6 +176,9 @@ Remaining simulation work:
 Implemented behavior:
 
 - High-confidence proposals are stored with `active` status by default.
+- Generated proposals use stable fingerprints so repeated observations refresh an existing active proposal instead
+  of creating duplicate review items.
+- Dismissed or terminal proposals are not automatically reactivated by repeated observations.
 - Reviewable proposals are persisted in the self-improvement database and reloaded on engine startup.
 - Terminal proposals such as accepted downstream results are not reloaded into the active review list.
 - Default operation does not self-implement generated proposals.

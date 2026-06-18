@@ -92,6 +92,8 @@ Supported query parameters:
         "recommendation": "candidate"
       },
       "rollback_plan": "Restore prior memory index configuration",
+      "proposal_fingerprint": "ab12cd34ef56...",
+      "occurrence_count": 2,
       "status": "active"
     }
   ]

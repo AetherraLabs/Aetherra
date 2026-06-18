@@ -8,6 +8,7 @@ Continuous learning and system optimization capabilities.
 
 # Standard library imports
 import asyncio
+import hashlib
 import json
 import logging
 import os
@@ -138,6 +139,8 @@ class ImprovementProposal:
     rollback_plan: str = ""
     status_reason: str = ""
     updated_at: datetime | None = None
+    proposal_fingerprint: str = ""
+    occurrence_count: int = 1
 
 
 @dataclass
@@ -391,8 +394,16 @@ class ImprovementGenerator:
 
         if pattern["type"] == "trend" and pattern.get("slope", 0) < -0.1:
             # Degrading performance trend
+            issue = f"{pattern['metric']} is trending downward"
+            proposed_change = f"Review and tune the subsystem affecting {pattern['metric']}"
+            fingerprint = self._fingerprint(
+                ImprovementType.PERFORMANCE,
+                issue,
+                [pattern["metric"]],
+                proposed_change,
+            )
             proposal = ImprovementProposal(
-                proposal_id=str(uuid.uuid4()),
+                proposal_id=self._proposal_id(fingerprint),
                 improvement_type=ImprovementType.PERFORMANCE,
                 description=f"Address declining performance in {pattern['metric']}",
                 expected_benefit=0.3,
@@ -401,9 +412,9 @@ class ImprovementGenerator:
                 affected_components=[pattern["metric"]],
                 success_criteria=[f"Reverse negative trend in {pattern['metric']}"],
                 created_at=datetime.now(),
-                issue=f"{pattern['metric']} is trending downward",
+                issue=issue,
                 potential_cause="Sustained degradation detected in recent metric history",
-                proposed_change=f"Review and tune the subsystem affecting {pattern['metric']}",
+                proposed_change=proposed_change,
                 evidence=[
                     f"pattern:type={pattern.get('type')}",
                     f"metric:{pattern['metric']}",
@@ -417,13 +428,22 @@ class ImprovementGenerator:
                     testable=True,
                 ),
                 rollback_plan=f"Revert tuning changes for {pattern['metric']} if trend worsens",
+                proposal_fingerprint=fingerprint,
             )
             proposals.append(proposal)
 
         elif pattern["type"] == "cyclical":
             # Optimize cyclical patterns
+            issue = f"{pattern['metric']} shows recurring cyclical variance"
+            proposed_change = f"Investigate smoothing or scheduling controls for {pattern['metric']}"
+            fingerprint = self._fingerprint(
+                ImprovementType.EFFICIENCY,
+                issue,
+                [pattern["metric"]],
+                proposed_change,
+            )
             proposal = ImprovementProposal(
-                proposal_id=str(uuid.uuid4()),
+                proposal_id=self._proposal_id(fingerprint),
                 improvement_type=ImprovementType.EFFICIENCY,
                 description=f"Optimize cyclical pattern in {pattern['metric']}",
                 expected_benefit=0.2,
@@ -432,9 +452,9 @@ class ImprovementGenerator:
                 affected_components=[pattern["metric"]],
                 success_criteria=[f"Reduce amplitude of cycles in {pattern['metric']}"],
                 created_at=datetime.now(),
-                issue=f"{pattern['metric']} shows recurring cyclical variance",
+                issue=issue,
                 potential_cause="Periodic workload or scheduling behavior may be amplifying variance",
-                proposed_change=f"Investigate smoothing or scheduling controls for {pattern['metric']}",
+                proposed_change=proposed_change,
                 evidence=[
                     f"pattern:type={pattern.get('type')}",
                     f"metric:{pattern['metric']}",
@@ -447,6 +467,7 @@ class ImprovementGenerator:
                     testable=True,
                 ),
                 rollback_plan=f"Disable smoothing changes for {pattern['metric']} if variance increases",
+                proposal_fingerprint=fingerprint,
             )
             proposals.append(proposal)
 
@@ -460,8 +481,18 @@ class ImprovementGenerator:
         if "cpu_usage" in metrics:
             cpu_stats = metrics["cpu_usage"]
             if cpu_stats.get("mean", 0) > 80:
+                issue = "CPU utilization is consistently high"
+                proposed_change = (
+                    "Analyze CPU-heavy paths and propose scheduler or batching improvements"
+                )
+                fingerprint = self._fingerprint(
+                    ImprovementType.PERFORMANCE,
+                    issue,
+                    ["cpu_scheduler", "process_manager"],
+                    proposed_change,
+                )
                 proposal = ImprovementProposal(
-                    proposal_id=str(uuid.uuid4()),
+                    proposal_id=self._proposal_id(fingerprint),
                     improvement_type=ImprovementType.PERFORMANCE,
                     description="Optimize CPU usage - consistently high utilization detected",
                     expected_benefit=0.7,
@@ -470,9 +501,9 @@ class ImprovementGenerator:
                     affected_components=["cpu_scheduler", "process_manager"],
                     success_criteria=["Reduce average CPU usage to below 70%"],
                     created_at=datetime.now(),
-                    issue="CPU utilization is consistently high",
+                    issue=issue,
                     potential_cause="Scheduler pressure, process contention, or inefficient work batching",
-                    proposed_change="Analyze CPU-heavy paths and propose scheduler or batching improvements",
+                    proposed_change=proposed_change,
                     evidence=[
                         f"metric:cpu_usage",
                         f"mean:{cpu_stats.get('mean', 0)}",
@@ -486,10 +517,31 @@ class ImprovementGenerator:
                         testable=True,
                     ),
                     rollback_plan="Restore previous scheduler or process-manager configuration",
+                    proposal_fingerprint=fingerprint,
                 )
                 proposals.append(proposal)
 
         return proposals
+
+    @staticmethod
+    def _fingerprint(
+        improvement_type: ImprovementType,
+        issue: str,
+        affected_components: list[str],
+        proposed_change: str,
+    ) -> str:
+        payload = {
+            "type": improvement_type.value,
+            "issue": issue.strip().lower(),
+            "components": sorted(component.strip().lower() for component in affected_components),
+            "proposed_change": proposed_change.strip().lower(),
+        }
+        raw = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+
+    @staticmethod
+    def _proposal_id(fingerprint: str) -> str:
+        return f"si-{fingerprint}"
 
     @staticmethod
     def _simulate(
@@ -678,6 +730,8 @@ class SelfImprovementEngine:
             "rollback_plan": "TEXT",
             "status_reason": "TEXT",
             "updated_at": "TEXT",
+            "proposal_fingerprint": "TEXT",
+            "occurrence_count": "INTEGER DEFAULT 1",
         }
         for name, column_type in columns.items():
             if name not in existing:
@@ -697,7 +751,8 @@ class SelfImprovementEngine:
                        implementation_cost, risk_level, affected_components,
                        success_criteria, status, created_at, issue, potential_cause,
                        proposed_change, evidence, simulation, rollback_plan,
-                       status_reason, updated_at
+                       status_reason, updated_at, proposal_fingerprint,
+                       occurrence_count
                 FROM improvement_proposals
                 WHERE status IN ('active', 'proposed', 'proposed_for_review')
                 ORDER BY created_at DESC
@@ -733,7 +788,8 @@ class SelfImprovementEngine:
                        implementation_cost, risk_level, affected_components,
                        success_criteria, status, created_at, issue, potential_cause,
                        proposed_change, evidence, simulation, rollback_plan,
-                       status_reason, updated_at
+                       status_reason, updated_at, proposal_fingerprint,
+                       occurrence_count
                 FROM improvement_proposals
                 WHERE proposal_id = ?
                 """,
@@ -820,6 +876,8 @@ class SelfImprovementEngine:
             updated_at=datetime.fromisoformat(str(row["updated_at"]))
             if row["updated_at"]
             else None,
+            proposal_fingerprint=str(row["proposal_fingerprint"] or ""),
+            occurrence_count=max(1, int(row["occurrence_count"] or 1)),
         )
 
     @staticmethod
@@ -1012,7 +1070,47 @@ class SelfImprovementEngine:
         score = self._calculate_proposal_score(proposal)
 
         if score > 0.7:  # High-confidence proposals
+            if not proposal.proposal_fingerprint:
+                proposal.proposal_fingerprint = self._proposal_fingerprint(proposal)
+            if not proposal.proposal_id:
+                proposal.proposal_id = f"si-{proposal.proposal_fingerprint}"
+
+            persisted = self._load_proposal_from_db(proposal.proposal_id)
+            if persisted is not None and persisted.status not in {
+                "active",
+                "proposed",
+                "proposed_for_review",
+            }:
+                return
+
+            existing = self.active_proposals.get(proposal.proposal_id)
+            if existing is not None:
+                existing.expected_benefit = proposal.expected_benefit
+                existing.implementation_cost = proposal.implementation_cost
+                existing.risk_level = proposal.risk_level
+                existing.evidence = proposal.evidence
+                existing.simulation = proposal.simulation
+                existing.rollback_plan = proposal.rollback_plan
+                existing.occurrence_count += 1
+                existing.updated_at = datetime.now()
+                existing.status_reason = "refreshed from repeated analysis"
+                await self._store_proposal(existing)
+                await self._record_proposal_lifecycle_event(
+                    proposal_id=existing.proposal_id,
+                    event_type="refreshed",
+                    from_status=existing.status,
+                    to_status=existing.status,
+                    actor="self_improvement_engine",
+                    reason=existing.status_reason,
+                    metadata={
+                        "score": round(score, 3),
+                        "occurrence_count": existing.occurrence_count,
+                    },
+                )
+                return
+
             proposal.status = "active"
+            proposal.occurrence_count = max(1, proposal.occurrence_count)
             self.active_proposals[proposal.proposal_id] = proposal
             await self._store_proposal(proposal)
             await self._record_proposal_lifecycle_event(
@@ -1046,6 +1144,20 @@ class SelfImprovementEngine:
 
         # Weighted combination
         return benefit_score * 0.4 + cost_score * 0.3 + risk_score * 0.3
+
+    @staticmethod
+    def _proposal_fingerprint(proposal: ImprovementProposal) -> str:
+        payload = {
+            "type": proposal.improvement_type.value,
+            "issue": proposal.issue.strip().lower(),
+            "components": sorted(
+                component.strip().lower()
+                for component in proposal.affected_components
+            ),
+            "proposed_change": proposal.proposed_change.strip().lower(),
+        }
+        raw = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
 
     async def _implement_proposal(self, proposal: ImprovementProposal):
         """Implement an improvement proposal"""
@@ -1367,6 +1479,8 @@ class SelfImprovementEngine:
             "updated_at": proposal.updated_at.isoformat()
             if proposal.updated_at is not None
             else None,
+            "proposal_fingerprint": proposal.proposal_fingerprint,
+            "occurrence_count": proposal.occurrence_count,
         }
 
     async def _record_proposal_lifecycle_event(
@@ -1472,8 +1586,9 @@ class SelfImprovementEngine:
                 (proposal_id, improvement_type, description, expected_benefit,
                  implementation_cost, risk_level, affected_components, success_criteria,
                  status, created_at, issue, potential_cause, proposed_change, evidence,
-                 simulation, rollback_plan, status_reason, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 simulation, rollback_plan, status_reason, updated_at,
+                 proposal_fingerprint, occurrence_count)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
                 (
                     proposal.proposal_id,
@@ -1496,6 +1611,8 @@ class SelfImprovementEngine:
                     proposal.updated_at.isoformat()
                     if proposal.updated_at is not None
                     else None,
+                    proposal.proposal_fingerprint,
+                    proposal.occurrence_count,
                 ),
             )
             conn.commit()

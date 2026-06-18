@@ -104,6 +104,43 @@ async def test_generated_proposals_include_hypothesis_and_simulation(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_repeated_analysis_refreshes_existing_proposal(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+
+    for value in (85.0, 86.0, 87.5):
+        eng.record_performance_metric("cpu_usage", value, "percent")
+
+    await eng._analyze_and_improve()
+    await eng._analyze_and_improve()
+
+    proposals = eng.list_active_proposals()
+    history = eng.get_proposal_history(proposals[0]["proposal_id"])
+
+    assert len(proposals) == 1
+    assert proposals[0]["proposal_id"].startswith("si-")
+    assert proposals[0]["occurrence_count"] == 2
+    assert proposals[0]["proposal_fingerprint"]
+    assert history[0]["event_type"] == "refreshed"
+    assert history[1]["event_type"] == "created"
+
+
+@pytest.mark.asyncio
+async def test_dismissed_duplicate_proposal_is_not_reactivated(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+
+    for value in (85.0, 86.0, 87.5):
+        eng.record_performance_metric("cpu_usage", value, "percent")
+
+    await eng._analyze_and_improve()
+    proposal_id = eng.list_active_proposals()[0]["proposal_id"]
+    await eng.dismiss_proposal(proposal_id, reason="not now", actor="operator")
+    await eng._analyze_and_improve()
+
+    assert eng.list_active_proposals() == []
+    assert eng._load_proposal_from_db(proposal_id).status == "dismissed"
+
+
+@pytest.mark.asyncio
 async def test_proposal_result_records_bounded_learning_outcome(tmp_path):
     eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
     proposal = ImprovementProposal(
@@ -383,6 +420,8 @@ def test_existing_proposal_database_schema_is_migrated(tmp_path):
         "rollback_plan",
         "status_reason",
         "updated_at",
+        "proposal_fingerprint",
+        "occurrence_count",
     }.issubset(columns)
 
 
