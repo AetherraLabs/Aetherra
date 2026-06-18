@@ -8,6 +8,7 @@ from __future__ import annotations
 
 # Standard library imports
 import logging
+from typing import Any
 
 # Third party imports
 from flask import Blueprint, jsonify, request
@@ -23,6 +24,22 @@ from ..utils.http import run_coro_blocking
 logger = logging.getLogger(__name__)
 
 bp = Blueprint("self_improvement", __name__, url_prefix="/api/selfimprove")
+
+
+def _get_self_improvement_service() -> Any | None:
+    return get_service("self_improvement_engine")
+
+
+def _service_call(service: Any, message_type: str, payload: dict[str, Any] | None = None) -> Any:
+    if hasattr(service, "handle_message"):
+        return run_coro_blocking(service.handle_message(message_type, payload or {}))
+    if message_type.endswith("status") and hasattr(service, "get_improvement_status"):
+        return service.get_improvement_status()
+    if message_type.endswith("trends") and hasattr(service, "get_metric_trends"):
+        return service.get_metric_trends()
+    if message_type.endswith("proposals") and hasattr(service, "list_active_proposals"):
+        return {"status": "ok", "proposals": service.list_active_proposals()}
+    return None
 
 
 def _authorize_control() -> ResponseReturnValue | None:
@@ -91,6 +108,85 @@ def _guardian_block_response(
         },
         status_code,
     )
+
+
+@bp.get("/status")
+def get_status() -> ResponseReturnValue:
+    """Return read-only self-improvement engine status."""
+    try:
+        service = _get_self_improvement_service()
+        if service is None:
+            return (
+                jsonify(
+                    {
+                        "status": "disabled",
+                        "running": False,
+                        "error": "Self-improvement engine not registered",
+                    }
+                ),
+                503,
+            )
+        status = _service_call(service, "selfimprovement.status")
+        if not isinstance(status, dict):
+            return jsonify({"status": "error", "error": "status unavailable"}), 503
+        return jsonify(status)
+    except Exception as exc:
+        logger.error("[SELFIMPROVE] Status error: %s", exc)
+        return jsonify({"status": "error", "error": "Internal server error"}), 500
+
+
+@bp.get("/proposals")
+def get_proposals() -> ResponseReturnValue:
+    """Return active improvement proposals without applying them."""
+    try:
+        service = _get_self_improvement_service()
+        if service is None:
+            return (
+                jsonify(
+                    {
+                        "status": "disabled",
+                        "proposals": [],
+                        "error": "Self-improvement engine not registered",
+                    }
+                ),
+                503,
+            )
+        result = _service_call(service, "selfimprovement.proposals")
+        if isinstance(result, dict):
+            proposals = result.get("proposals", [])
+        elif isinstance(result, list):
+            proposals = result
+        else:
+            proposals = []
+        return jsonify({"status": "ok", "proposals": proposals})
+    except Exception as exc:
+        logger.error("[SELFIMPROVE] Proposals error: %s", exc)
+        return jsonify({"status": "error", "error": "Internal server error"}), 500
+
+
+@bp.get("/trends")
+def get_trends() -> ResponseReturnValue:
+    """Return read-only metric trends from the self-improvement engine."""
+    try:
+        service = _get_self_improvement_service()
+        if service is None:
+            return (
+                jsonify(
+                    {
+                        "status": "disabled",
+                        "trends": {},
+                        "error": "Self-improvement engine not registered",
+                    }
+                ),
+                503,
+            )
+        trends = _service_call(service, "selfimprovement.trends")
+        if not isinstance(trends, dict):
+            trends = {}
+        return jsonify({"status": "ok", "trends": trends})
+    except Exception as exc:
+        logger.error("[SELFIMPROVE] Trends error: %s", exc)
+        return jsonify({"status": "error", "error": "Internal server error"}), 500
 
 
 @bp.post("/apply")
@@ -308,11 +404,15 @@ def batch_apply_proposals() -> ResponseReturnValue:
         return auth_error
     try:
         data = request.get_json() or {}
-        proposals = data.get("proposals", [])
+        proposals = data.get("proposals")
+        proposal_ids = data.get("proposal_ids")
         method = str(data.get("method", "auto")).lower()
 
+        if proposals is None and isinstance(proposal_ids, list):
+            proposals = [{"proposal_id": proposal_id} for proposal_id in proposal_ids]
+
         if not proposals:
-            return jsonify({"error": "proposals array required"}), 400
+            return jsonify({"error": "proposals or proposal_ids array required"}), 400
 
         sender = request.headers.get("X-Aetherra-Principal") or data.get("sender")
 
@@ -334,6 +434,11 @@ def batch_apply_proposals() -> ResponseReturnValue:
                 "params": proposal.get("params"),
                 "hmr_target": proposal.get("hmr_target"),
                 "hmr_source": proposal.get("hmr_source"),
+                "reversible": proposal.get("reversible", data.get("reversible")),
+                "rollback_plan": proposal.get(
+                    "rollback_plan",
+                    proposal.get("rollback", data.get("rollback_plan") or data.get("rollback")),
+                ),
                 "sender": sender or proposal.get("sender"),
             }
 

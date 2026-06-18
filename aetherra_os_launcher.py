@@ -1283,6 +1283,11 @@ class AetherraOSLauncher:
                         return self.impl.get_improvement_status()
                     if mt.endswith("trends"):
                         return self.impl.get_metric_trends()
+                    if mt.endswith("proposals"):
+                        return {
+                            "status": "ok",
+                            "proposals": self.impl.list_active_proposals(),
+                        }
                     return {"error": "unknown_message"}
 
                 async def shutdown(self):

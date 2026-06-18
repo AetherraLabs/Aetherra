@@ -26,6 +26,69 @@ The API provides a human-in-the-loop gate for proposal application, ensuring saf
 
 ## Endpoints
 
+### GET /api/selfimprove/status
+
+Return read-only self-improvement engine status.
+
+**Success response (HTTP 200):**
+
+```json
+{
+  "improvement_active": true,
+  "total_proposals": 3,
+  "active_proposals": 3,
+  "implemented_proposals": 0,
+  "learning_outcomes": 0,
+  "tracked_metrics": 8,
+  "analysis_cycles": 12,
+  "autonomous_implementation_enabled": false
+}
+```
+
+### GET /api/selfimprove/proposals
+
+List active improvement proposals without applying them.
+
+**Success response (HTTP 200):**
+
+```json
+{
+  "status": "ok",
+  "proposals": [
+    {
+      "proposal_id": "SI-42",
+      "improvement_type": "performance",
+      "description": "Optimize memory retrieval indexing",
+      "expected_benefit": 0.15,
+      "implementation_cost": 0.2,
+      "risk_level": 0.1,
+      "affected_components": ["memory"],
+      "success_criteria": ["retrieval latency improves"],
+      "status": "active"
+    }
+  ]
+}
+```
+
+### GET /api/selfimprove/trends
+
+Return read-only metric trends from the self-improvement engine.
+
+**Success response (HTTP 200):**
+
+```json
+{
+  "status": "ok",
+  "trends": {
+    "response_time": {
+      "trend_direction": "degrading",
+      "trend_value": 0.04,
+      "statistics": {}
+    }
+  }
+}
+```
+
 ### POST /api/selfimprove/apply
 
 Apply a single improvement proposal with optional HMR-based hot reload.
@@ -99,6 +162,22 @@ Apply multiple improvement proposals in a single operation.
   "proposal_ids": ["string", ...],  // Required: Array of proposal IDs
   "force": false,                   // Optional: Skip safety checks (default: false)
   "user": "string"                  // Optional: User ID for audit trail
+}
+```
+
+The endpoint also accepts expanded proposal objects when per-proposal metadata is needed:
+
+```json
+{
+  "proposals": [
+    {
+      "proposal_id": "string",
+      "method": "auto",
+      "description": "string",
+      "rollback_plan": "string"
+    }
+  ],
+  "user": "string"
 }
 ```
 

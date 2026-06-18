@@ -10,6 +10,7 @@ Continuous learning and system optimization capabilities.
 import asyncio
 import json
 import logging
+import os
 import sqlite3
 import traceback
 import uuid
@@ -459,7 +460,7 @@ class ImprovementGenerator:
 class SelfImprovementEngine:
     """
     Advanced self-improvement engine that analyzes system performance
-    and automatically generates optimization proposals
+    and generates optimization proposals for controlled review.
     """
 
     def __init__(self, db_path: str = "self_improvement.db"):
@@ -471,6 +472,9 @@ class SelfImprovementEngine:
         self.learning_outcomes: List[LearningOutcome] = []
         self.improvement_active = False
         self.improvement_task = None
+        self.autonomous_implementation_enabled = (
+            os.getenv("AETHERRA_SELF_IMPROVEMENT_AUTO_IMPLEMENT", "0") == "1"
+        )
         # Event loop on which the improvement task was created (for cross-loop shutdown)
         self._task_loop = None  # type: ignore[assignment]
         # Lightweight counters
@@ -717,13 +721,17 @@ class SelfImprovementEngine:
         score = self._calculate_proposal_score(proposal)
 
         if score > 0.7:  # High-confidence proposals
+            proposal.status = "active"
             self.active_proposals[proposal.proposal_id] = proposal
             await self._store_proposal(proposal)
 
             logger.info(f"High-confidence proposal: {proposal.description} (score: {score:.2f})")
 
-            # Auto-implement low-risk, high-benefit proposals
-            if proposal.risk_level < 0.3 and proposal.expected_benefit > 0.5:
+            if (
+                self.autonomous_implementation_enabled
+                and proposal.risk_level < 0.3
+                and proposal.expected_benefit > 0.5
+            ):
                 await self._implement_proposal(proposal)
 
     def _calculate_proposal_score(self, proposal: ImprovementProposal) -> float:
@@ -827,7 +835,31 @@ class SelfImprovementEngine:
             "last_analysis": datetime.now().isoformat(),
             "analysis_cycles": self._analysis_cycles,
             "suppressed_exceptions": self._suppressed_exceptions,
+            "autonomous_implementation_enabled": self.autonomous_implementation_enabled,
         }
+
+    def list_active_proposals(self) -> list[dict[str, Any]]:
+        """Return active proposals in a JSON-safe, read-only representation."""
+        proposals = sorted(
+            self.active_proposals.values(),
+            key=lambda proposal: proposal.created_at,
+            reverse=True,
+        )
+        return [
+            {
+                "proposal_id": proposal.proposal_id,
+                "improvement_type": proposal.improvement_type.value,
+                "description": proposal.description,
+                "expected_benefit": proposal.expected_benefit,
+                "implementation_cost": proposal.implementation_cost,
+                "risk_level": proposal.risk_level,
+                "affected_components": list(proposal.affected_components),
+                "success_criteria": list(proposal.success_criteria),
+                "created_at": proposal.created_at.isoformat(),
+                "status": proposal.status,
+            }
+            for proposal in proposals
+        ]
 
     def export_internal_metrics(
         self,

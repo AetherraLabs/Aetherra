@@ -1,6 +1,6 @@
 # Aetherra System Index
 
-Last updated: 2025-08-28
+Last updated: 2026-06-17
 
 This dashboard lists the core system documents, their purpose, and current implementation status across the Aetherra architecture.
 
@@ -61,6 +61,17 @@ Legend: ✅ implemented · 🚧 partial · 🔮 planned
     monitoring, deviation detection, and automatic corrective actions to maintain system health and reliability.
   - Status: ✅ Implemented
   - Dependencies: integrates with all core systems (Kernel, Memory, AI, Hub, Agents)
+
+- Aetherra Guardian System - ./AETHERRA_GUARDIAN_SYSTEM.md
+  - Purpose: Central governance, safety, policy, approval, containment, and audit authority above Security.
+  - Status: Implemented
+  - Dependencies: Security, Kernel, Plugins, Agents, Homeostasis, Self-Improvement
+
+- Aetherra Self-Improvement System - ./AETHERRA_SELF-IMPROVEMENT_SYSTEM.md
+  - Purpose: Observation, hypothesis, simulation, and structured improvement proposals. It proposes changes; it
+    does not directly modify the system in the foundation milestone.
+  - Status: Partial
+  - Dependencies: Homeostasis, Guardian, Security, Self-Incorporation, Maintenance
 
 ---
 
