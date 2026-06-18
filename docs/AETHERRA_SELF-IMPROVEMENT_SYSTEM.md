@@ -3,7 +3,7 @@
 > Maintained and officially operated by **Aetherra Labs**.
 > **Powered by Aetherra Labs.**
 
-Status: v0.1 Functional Proposal Foundation Complete
+Status: v0.1 Functional Alpha Foundation Complete
 
 The Aetherra Self-Improvement System observes system behavior, analyzes recurring issues, forms hypotheses,
 simulates expected impact, and produces structured improvement proposals. It does not directly modify the
@@ -49,9 +49,10 @@ Self-Improvement must mature in strict phases:
 5. **Guardian**: submit the proposal to Guardian for allow, deny, approval required, or containment.
 6. **Execution**: execute only through controlled downstream systems after approval and policy enforcement.
 
-Current completion focus: **Phase 6 - Controlled Execution Delegation**
+Current completion focus: **Foundation closeout and Alpha readiness**
 
-Completion status: **Functional foundation complete; advanced simulation and adaptive learning remain future work.**
+Completion status: **Functionally complete for Alpha/Foundation use. Advanced simulation, adaptive ranking, and
+the full Evolution Ledger remain future work.**
 
 ## Architecture overview
 
@@ -202,6 +203,8 @@ Implemented behavior:
 - Active proposals include issue, potential cause, proposed change, evidence, simulation, and rollback metadata.
 - `GET /api/selfimprove/proposals` returns active proposals for UI/operator review.
 - Active proposal listing supports read-only filters by status, improvement type, risk, confidence, and limit.
+- Review query limits are bounded; malformed optional limits and numeric filters fall back to safe behavior instead
+  of failing the request.
 - Active proposal listing returns compact review summary counts by status, type, and risk band.
 - Proposals are classified by readiness: `candidate`, `needs_evidence`, or `blocked`, with explicit reasons.
 - Readiness classification is review guidance only; it does not authorize execution or bypass Guardian.
@@ -243,6 +246,10 @@ Execution is intentionally delegated:
 - Manual application remains a valid outcome when automated execution is unavailable or undesirable.
 - Optimization Executor handles file/config changes with Guardian preflight, backup, verification, and rollback.
 - Self-Incorporation reports proposal results back to the Self-Improvement Engine through the service registry.
+- Downstream Self-Incorporation and HMR results are minimized before being returned to clients.
+- Downstream execution failures use stable error codes instead of reflecting raw exception text or detailed payloads.
+- Batch proposal application forwards Guardian approval IDs into per-proposal execution so approved batch HMR paths
+  remain Guardian-bound.
 
 Self-Improvement should never bypass these execution paths.
 
@@ -256,7 +263,8 @@ Implemented behavior:
 - A bounded `LearningOutcome` is recorded with proposal ID, plan ID, status, numeric improvement, and detail keys.
 - Raw execution payloads are not copied into the learning record.
 - Downstream result status is validated against a controlled vocabulary before proposal state changes are recorded.
-- Learning detail key metadata is bounded to prevent large or sensitive payload shape leakage.
+- Learning plan IDs, fallback component labels, and detail key metadata are bounded to prevent large or sensitive
+  payload shape leakage.
 - `GET /api/selfimprove/learning/outcomes` exposes sanitized outcome history for operators and future review
   surfaces.
 - Outcome listing supports bounded filters by proposal ID, status, and limit.
@@ -293,18 +301,31 @@ outcome observation are all stable across more systems.
 
 Self-Improvement is complete for the current foundation milestone when:
 
-- observation reports engine state and tracked metrics without side effects
-- hypothesis/trend inspection explains likely improvement opportunities without mutation
-- active proposals can be listed through a read-only API
-- proposals can be dismissed and reopened without applying them
-- generated proposals remain recommendations by default
-- proposal application requires Hub control authorization
-- proposal application routes through Guardian before Self-Incorporation, HMR, or manual execution
-- rollback requirements, approval consumption, containment, and audit are enforced
-- execution outcomes can be reported back for future learning
-- learning records store bounded outcome metadata without raw execution payloads
-- learning outcome history can be inspected through a read-only API
-- future autonomous implementation stays disabled unless explicitly enabled and Guardian-gated
+Status: **Complete for Alpha/Foundation.**
+
+- [x] observation reports engine state and tracked metrics without side effects
+- [x] metric intake validates values, bounds metadata, persists observations, and reloads restart state
+- [x] hypothesis/trend inspection explains likely improvement opportunities without mutation
+- [x] active proposals can be listed through a read-only API
+- [x] proposal lists, history, and learning outcome queries use bounded limits and tolerate malformed optional filters
+- [x] proposals can be dismissed and reopened without applying them
+- [x] generated proposals remain recommendations by default
+- [x] direct engine-side implementation is blocked and recorded
+- [x] proposal application requires Hub control authorization
+- [x] proposal application routes through Guardian before Self-Incorporation, HMR, or manual execution
+- [x] rollback requirements, approval consumption, containment, and audit are enforced
+- [x] downstream apply errors use stable error codes and do not expose raw exception text
+- [x] downstream apply results are minimized before returning to clients
+- [x] execution outcomes can be reported back for future learning
+- [x] learning records store bounded outcome metadata without raw execution payloads
+- [x] learning outcome history can be inspected through a read-only API
+- [x] future autonomous implementation stays disabled unless explicitly enabled and Guardian-gated
+
+Deferred beyond Alpha/Foundation:
+
+- [ ] deeper dry-run simulation and subsystem-specific validation models
+- [ ] adaptive proposal ranking based on long-term outcome quality
+- [ ] full Evolution Ledger across proposal, Guardian, execution, immediate outcome, and long-term outcome records
 
 ## Tests
 
