@@ -203,6 +203,11 @@ Implemented foundation:
 - Containment event persistence: `.aetherra/guardian/containment.jsonl`
 - Performance and scope architecture documented for decision tiers, preauthorization, conservative caching, async/nonblocking work, and non-Guardian telemetry paths
 - Guardian decisions now include `decision_tier` metadata for `critical`, `privileged`, `routine_guarded`, `observational`, and `telemetry_internal` classification
+- Scoped preauthorization grants for low-risk `routine_guarded` intents:
+  - grants are exact-scope, short-lived, max-use bounded, and persisted to `.aetherra/guardian/preauthorizations.jsonl`
+  - grants are valid only when requester, subsystem, action, target, capabilities, Guardian mode, policy fingerprint, risk level, and decision tier remain unchanged
+  - grants cannot authorize critical, privileged, high-risk, non-reversible, policy-changed, expired, exhausted, or mismatched intents
+  - Hub exposes read-only preauthorization status through `GET /api/guardian/preauthorizations` and `GET /api/guardian/preauthorizations/<grant_id>`
 - First enforcement target: plugin execution through `PluginManager.execute_plugin`
 - Reversibility validation for risky/mutating intents
 - Second enforcement target: self-improvement proposal application via `/api/selfimprove/apply` and batch helper reuse
