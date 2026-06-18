@@ -208,6 +208,8 @@ async def test_proposal_result_records_bounded_learning_outcome(tmp_path):
     assert result["status"] == "ok"
     assert eng.active_proposals["learn-from-result"].status == "accepted"
     assert status["learning_outcomes"] == 1
+    assert status["learning_summary"]["total_outcomes"] == 1
+    assert status["learning_summary"]["by_status"] == {"accepted": 1}
     assert outcome.improvement_achieved == 0.4
     assert outcome.learning_data["details_keys"] == [
         "improvement_achieved",
@@ -399,6 +401,8 @@ async def test_proposal_review_filters_and_summary(tmp_path):
     assert summary["by_readiness"]["candidate"] == 1
     assert summary["by_readiness"]["blocked"] == 1
     assert summary["risk_bands"] == {"low": 1, "medium": 1, "high": 0}
+    status = eng.get_improvement_status()
+    assert status["review_summary"] == summary
 
 
 @pytest.mark.asyncio

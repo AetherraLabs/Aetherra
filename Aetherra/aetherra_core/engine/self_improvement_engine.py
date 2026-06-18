@@ -1505,6 +1505,8 @@ class SelfImprovementEngine:
             "autonomous_implementation_enabled": self.autonomous_implementation_enabled,
             "autonomous_implementation_requested": self.autonomous_implementation_requested,
             "implementation_authority": "guardian_controlled_execution",
+            "review_summary": self.get_review_summary(),
+            "learning_summary": self.get_learning_summary(),
         }
 
     def list_active_proposals(

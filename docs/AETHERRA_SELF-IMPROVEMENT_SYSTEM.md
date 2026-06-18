@@ -140,6 +140,8 @@ Implemented behavior:
 - The engine tracks metric history and exposes read-only status.
 - `GET /api/selfimprove/status` reports activity, proposal counts, tracked metrics, analysis cycles, and whether
   autonomous implementation is enabled.
+- Status includes compact review and learning summaries so operator dashboards can understand queue shape without
+  applying proposals.
 - Autonomous implementation is disabled in the foundation milestone; legacy auto-implementation requests are
   recorded as requested but blocked until a Guardian-gated controlled execution path exists.
 

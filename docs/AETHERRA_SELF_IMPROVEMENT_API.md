@@ -43,7 +43,19 @@ Return read-only self-improvement engine status.
   "analysis_cycles": 12,
   "autonomous_implementation_enabled": false,
   "autonomous_implementation_requested": false,
-  "implementation_authority": "guardian_controlled_execution"
+  "implementation_authority": "guardian_controlled_execution",
+  "review_summary": {
+    "total_reviewable": 3,
+    "by_status": {"active": 3},
+    "by_type": {"performance": 2, "reliability": 1},
+    "by_readiness": {"candidate": 2, "needs_evidence": 1},
+    "risk_bands": {"low": 2, "medium": 1, "high": 0}
+  },
+  "learning_summary": {
+    "total_outcomes": 1,
+    "by_status": {"accepted": 1},
+    "average_improvement_achieved": 0.25
+  }
 }
 ```
 
