@@ -55,11 +55,10 @@ virtualenv/
 
 # ===== IDE & EDITOR FILES =====
 # Visual Studio Code
-.vscode/
-.vscode/settings.json
-.vscode/tasks.json
-.vscode/launch.json
-.vscode/extensions.json
+**/.vscode/
+**/.vscode/*
+!/.vscode/
+!/.vscode/tasks.json
 
 # PyCharm
 .idea/
@@ -146,6 +145,10 @@ live_file_index.json
 evolution_history.aether
 self_organizer.aether
 *.aether
+!Aetherra/aetherra_core/system/*.aether
+!Aetherra/plugins/examples/**/*.aether
+!Aetherra/scripts/*.aether
+!Aetherra/tools/*.aether
 outbox/*.jsonl
 audit/*.jsonl
 ui_standards_report.md
@@ -269,6 +272,10 @@ cleanup_*.py
 !tools/maintenance/focused_cleanup.py
 !tools/maintenance/safe_cleanup.py
 !tools/maintenance/smart_cleanup.py
+!Aetherra/aetherra_core/agents/cleanup_project.py
+!Aetherra/scripts/cleanup_project.py
+!Aetherra/scripts/conservative_cleanup.py
+!Aetherra/scripts/fast_cleanup.py
 
 # Discord Bot directory (contains sensitive tokens and configurations)
 Discord Bot/

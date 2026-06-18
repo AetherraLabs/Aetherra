@@ -130,7 +130,7 @@ System documents under `docs/AETHERRA_*_SYSTEM.md` should remain first-class.
 
 ## Phase 4 - Root Script Triage
 
-Status: Pending explicit review
+Status: In progress
 
 Many executable Python files live at the repository root. They should be
 classified into one of these outcomes:
@@ -153,6 +153,11 @@ Likely root files to keep:
 - `pyproject.toml`
 
 Everything else should be triaged before moving.
+
+Initial classification is recorded in
+`docs/ROOT_SCRIPT_WORKFLOW_TRIAGE.md`. The safest first move is a focused
+standalone-test migration, because many root tests are outside normal pytest
+discovery but some harnesses still call exact root filenames.
 
 ## Phase 5 - GitHub Hygiene
 

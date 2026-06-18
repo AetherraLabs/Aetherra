@@ -1111,6 +1111,7 @@ docs/
   RISK_ACCEPTANCE.md — Risk Acceptance Register (Alpha)
   ROADMAP_TRACKING.md — Roadmap Tracking Baseline
   ROOT_CLEANUP_PLAN.md — Root Cleanup Plan (Alpha → Beta Hardening)
+  ROOT_SCRIPT_WORKFLOW_TRIAGE.md — Root Script and Workflow Triage
   SECURITY_FEDERATION_ENHANCEMENTS_2025-08-12.md — Security, Signing, and Federation Enhancements (2025-08-12)
   SECURITY_OPERATIONS_GUIDE.md — Aetherra Security Operations Guide
   SELFINC_PRODUCTION_READINESS.md — Aetherra Self-Incorporation System – Production Readiness Guide
