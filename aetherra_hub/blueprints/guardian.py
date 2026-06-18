@@ -16,6 +16,7 @@ from Aetherra.guardian.containment import (
     list_containment_statuses,
 )
 from Aetherra.guardian.core import guardian_enabled, guardian_mode
+from Aetherra.guardian.mode import guardian_mode_status, set_guardian_mode
 from Aetherra.guardian.preauthorization import (
     list_preauthorization_statuses,
     preauthorization_status,
@@ -59,6 +60,7 @@ def guardian_status() -> ResponseReturnValue:
             "guardian": {
                 "enabled": guardian_enabled(),
                 "mode": guardian_mode().value,
+                "mode_state": guardian_mode_status().get("state"),
                 "approvals": {
                     "total": len(approvals),
                     "pending": len(pending_approvals),
@@ -74,6 +76,32 @@ def guardian_status() -> ResponseReturnValue:
             },
         }
     )
+
+
+@bp.post("/mode")
+def change_guardian_mode() -> ResponseReturnValue:
+    """Persist a Guardian operating-mode change."""
+
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
+    payload = request.get_json(silent=True) or {}
+    mode = str(payload.get("mode") or "").strip().lower()
+    reason = str(payload.get("reason") or "").strip()
+    if not mode:
+        return jsonify({"ok": False, "error": "mode required"}), 400
+    if not reason:
+        return jsonify({"ok": False, "error": "reason required"}), 400
+    changed_by = (
+        request.headers.get("X-Aetherra-Principal")
+        or payload.get("changed_by")
+        or "user"
+    )
+    try:
+        result = set_guardian_mode(mode, reason=reason, changed_by=str(changed_by))
+    except ValueError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 400
+    return jsonify({"ok": True, "mode": result})
 
 
 @bp.get("/approvals")

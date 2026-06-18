@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .core import evaluate_intent, guardian_enabled, guardian_mode
+from .core import evaluate_intent, guardian_enabled, guardian_mode, record_outcome
 from .models import (
     ApprovalRequest,
     ApprovalState,
@@ -22,6 +22,7 @@ from .models import (
     RiskAssessment,
     RiskLevel,
 )
+from .mode import guardian_mode_events, guardian_mode_status, set_guardian_mode
 from .policy import GuardianPolicy, load_guardian_policy
 from .preauthorization import (
     consume_preauthorization,
@@ -58,9 +59,13 @@ __all__ = [
     "classify_decision_tier",
     "guardian_enabled",
     "guardian_mode",
+    "guardian_mode_events",
+    "guardian_mode_status",
     "list_preauthorization_events",
     "list_preauthorization_statuses",
     "load_guardian_policy",
     "preauthorization_status",
+    "record_outcome",
+    "set_guardian_mode",
     "validate_preauthorization",
 ]

@@ -2,11 +2,16 @@ import json
 
 from Aetherra.guardian import (
     GuardianDecisionTier,
+    GuardianMode,
     GuardianStatus,
     IntentDeclaration,
     RiskLevel,
     classify_decision_tier,
     evaluate_intent,
+    guardian_mode,
+    guardian_mode_status,
+    record_outcome,
+    set_guardian_mode,
 )
 from Aetherra.guardian.approval import list_approval_events
 from Aetherra.guardian.containment import list_containment_events
@@ -49,6 +54,50 @@ def test_guardian_allows_safe_plugin_execution_and_audits(monkeypatch, tmp_path)
     assert entries[-1]["event_type"] == "guardian_decision"
     assert entries[-1]["details"]["decision"]["status"] == "allow_limited"
     assert entries[-1]["details"]["decision"]["details"]["decision_tier"] == "privileged"
+    assert decision.audit_id == entries[-1]["hash"]
+
+
+def test_guardian_records_bounded_outcome_without_raw_payload(monkeypatch, tmp_path):
+    monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(tmp_path))
+    monkeypatch.setenv("AETHERRA_GUARDIAN_MODE", "enforcing")
+
+    decision = evaluate_intent(
+        _plugin_intent(),
+        capability_checker=lambda requester, capability: True,
+    )
+
+    outcome_id = record_outcome(
+        decision.audit_id,
+        {
+            "status": "completed",
+            "summary": "Plugin finished without side effects",
+            "duration_ms": 42.5,
+            "metrics": {
+                "files_changed": 0,
+                "result_label": "sensitive internal label",
+            },
+            "raw_payload": "private execution payload",
+        },
+    )
+
+    audit_path = tmp_path / ".aetherra" / "security" / "audit.jsonl"
+    entries = [
+        json.loads(line)
+        for line in audit_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    outcome_entry = entries[-1]
+    outcome = outcome_entry["details"]["outcome"]
+
+    assert outcome_id == outcome_entry["hash"]
+    assert outcome_entry["event_type"] == "guardian_outcome"
+    assert outcome_entry["details"]["decision_audit_id"] == decision.audit_id
+    assert outcome["status"] == "completed"
+    assert outcome["duration_ms"] == 42.5
+    assert outcome["metrics"]["files_changed"] == 0
+    assert outcome["metrics"]["result_label"]["sha256"]
+    assert "raw_payload" in outcome["omitted_fields"]
+    assert "private execution payload" not in audit_path.read_text(encoding="utf-8")
 
 
 def test_guardian_denies_missing_capability(monkeypatch, tmp_path):
@@ -62,6 +111,48 @@ def test_guardian_denies_missing_capability(monkeypatch, tmp_path):
 
     assert decision.status == GuardianStatus.DENY
     assert decision.reason == "missing_capability"
+
+
+def test_guardian_mode_changes_are_persisted_and_audited(monkeypatch, tmp_path):
+    monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(tmp_path))
+    monkeypatch.delenv("AETHERRA_GUARDIAN_MODE", raising=False)
+
+    result = set_guardian_mode(
+        "strict",
+        reason="production_hardening",
+        changed_by="guardian-admin",
+    )
+
+    assert result["mode"] == "strict"
+    assert result["previous_mode"] == "enforcing"
+    assert result["audit_id"]
+    assert guardian_mode() == GuardianMode.STRICT
+    assert guardian_mode_status()["state"] == "persisted"
+
+    audit_path = tmp_path / ".aetherra" / "security" / "audit.jsonl"
+    entries = [
+        json.loads(line)
+        for line in audit_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    assert entries[-1]["event_type"] == "guardian_mode_changed"
+    assert entries[-1]["details"]["mode"] == "strict"
+
+
+def test_guardian_mode_environment_override_wins(monkeypatch, tmp_path):
+    monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(tmp_path))
+    monkeypatch.setenv("AETHERRA_GUARDIAN_MODE", "emergency")
+
+    result = set_guardian_mode(
+        GuardianMode.STRICT,
+        reason="persisted fallback",
+        changed_by="guardian-admin",
+    )
+
+    assert result["mode"] == "strict"
+    assert result["env_override_active"] is True
+    assert guardian_mode() == GuardianMode.EMERGENCY
+    assert guardian_mode_status()["state"] == "env_override"
 
 
 def test_guardian_emergency_mode_contains_non_recovery_action(monkeypatch, tmp_path):

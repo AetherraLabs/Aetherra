@@ -94,9 +94,67 @@ def test_guardian_status_summarizes_operational_state(monkeypatch, tmp_path):
     payload = response.get_json()["guardian"]
     assert payload["enabled"] is True
     assert payload["mode"] == "strict"
+    assert payload["mode_state"] == "env_override"
     assert payload["approvals"] == {"total": 1, "pending": 1}
     assert payload["containment"] == {"total": 1, "active": 1}
     assert payload["preauthorizations"] == {"total": 1, "active": 1}
+
+
+def test_guardian_mode_api_requires_control_token(monkeypatch, tmp_path):
+    client = _client(monkeypatch, tmp_path)
+
+    response = client.post(
+        "/api/guardian/mode",
+        json={"mode": "strict", "reason": "test"},
+    )
+
+    assert response.status_code == 401
+    assert response.get_json()["error"] == "unauthorized"
+
+
+def test_guardian_mode_api_sets_persisted_mode(monkeypatch, tmp_path):
+    monkeypatch.delenv("AETHERRA_GUARDIAN_MODE", raising=False)
+    client = _client(monkeypatch, tmp_path)
+    headers = {
+        "Authorization": "Bearer control-secret",
+        "X-Aetherra-Principal": "guardian-admin",
+    }
+
+    changed = client.post(
+        "/api/guardian/mode",
+        json={"mode": "strict", "reason": "production_hardening"},
+        headers=headers,
+    )
+    status = client.get("/api/guardian/status", headers=headers)
+
+    assert changed.status_code == 200
+    body = changed.get_json()["mode"]
+    assert body["mode"] == "strict"
+    assert body["changed_by"] == "guardian-admin"
+    assert body["audit_id"]
+    assert status.get_json()["guardian"]["mode"] == "strict"
+    assert status.get_json()["guardian"]["mode_state"] == "persisted"
+
+
+def test_guardian_mode_api_validates_payload(monkeypatch, tmp_path):
+    client = _client(monkeypatch, tmp_path)
+    headers = {"Authorization": "Bearer control-secret"}
+
+    missing_reason = client.post(
+        "/api/guardian/mode",
+        json={"mode": "strict"},
+        headers=headers,
+    )
+    invalid_mode = client.post(
+        "/api/guardian/mode",
+        json={"mode": "unsupported", "reason": "test"},
+        headers=headers,
+    )
+
+    assert missing_reason.status_code == 400
+    assert missing_reason.get_json()["error"] == "reason required"
+    assert invalid_mode.status_code == 400
+    assert "invalid Guardian mode" in invalid_mode.get_json()["error"]
 
 
 def test_guardian_approvals_api_lists_and_resolves(monkeypatch, tmp_path):

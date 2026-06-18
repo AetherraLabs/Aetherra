@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Mapping
+from typing import Any
 
 from .approval import consume_approval, create_approval_request
-from .audit import append_guardian_decision
+from .audit import append_guardian_decision, record_guardian_outcome
 from .containment import find_active_containment, record_containment
 from .models import (
     ContainmentAction,
@@ -15,6 +17,7 @@ from .models import (
     IntentDeclaration,
     RiskLevel,
 )
+from .mode import current_guardian_mode
 from .policy import CapabilityChecker, evaluate_capabilities, evaluate_guardian_policy
 from .preauthorization import consume_preauthorization
 from .reversibility import validate_reversibility
@@ -36,11 +39,7 @@ def guardian_enabled() -> bool:
 def guardian_mode() -> GuardianMode:
     """Return the configured Guardian operating mode."""
 
-    raw = (os.getenv("AETHERRA_GUARDIAN_MODE", "enforcing") or "").strip().lower()
-    try:
-        return GuardianMode(raw)
-    except ValueError:
-        return GuardianMode.ENFORCING
+    return current_guardian_mode()
 
 
 def evaluate_intent(
@@ -278,6 +277,12 @@ def evaluate_intent(
         details=_decision_details(mode, risk, tier),
     )
     return _with_audit(intent, risk, decision, write_audit)
+
+
+def record_outcome(audit_id: str, outcome: Mapping[str, Any]) -> str | None:
+    """Record a bounded post-action outcome for a Guardian decision."""
+
+    return record_guardian_outcome(audit_id, outcome)
 
 
 def _with_audit(
