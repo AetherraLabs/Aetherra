@@ -11,6 +11,7 @@ import asyncio
 import hashlib
 import json
 import logging
+import math
 import os
 import sqlite3
 import traceback
@@ -1637,15 +1638,57 @@ class SelfImprovementEngine:
         keys = sorted(str(key)[:120] for key in details.keys())
         return keys[:50]
 
+    @staticmethod
+    def _sanitize_metric_context(
+        context: Dict[str, Any] | None,
+    ) -> Dict[str, Any] | None:
+        if not isinstance(context, dict):
+            return None
+
+        sanitized: Dict[str, Any] = {}
+        for key, value in list(context.items())[:25]:
+            safe_key = str(key).strip()[:80]
+            if not safe_key:
+                continue
+
+            if value is None or isinstance(value, bool):
+                sanitized[safe_key] = value
+            elif isinstance(value, (int, float)):
+                sanitized[safe_key] = value if math.isfinite(float(value)) else None
+            elif isinstance(value, str):
+                sanitized[safe_key] = value[:200]
+            else:
+                sanitized[safe_key] = str(value)[:200]
+
+        return sanitized or None
+
     def record_performance_metric(
         self, name: str, value: float, unit: str, context: Dict[str, Any] | None = None
     ):
         """Record a performance metric for analysis"""
-        self.metrics_collector.record_metric(name, value, unit, context)
+        try:
+            metric_value = float(value)
+        except (TypeError, ValueError):
+            self._suppressed_exceptions += 1
+            logger.warning("Rejected invalid self-improvement metric value")
+            return
+
+        if not math.isfinite(metric_value):
+            self._suppressed_exceptions += 1
+            logger.warning("Rejected non-finite self-improvement metric value")
+            return
+
+        metric_name = str(name or "metric").strip()[:120] or "metric"
+        metric_unit = str(unit or "unit").strip()[:40] or "unit"
+        metric_context = self._sanitize_metric_context(context)
+
+        self.metrics_collector.record_metric(
+            metric_name, metric_value, metric_unit, metric_context
+        )
 
         # Store in database
         self._schedule_or_run(
-            self._store_metric(name, value, unit, context),
+            self._store_metric(metric_name, metric_value, metric_unit, metric_context),
             operation="store_metric",
         )
 

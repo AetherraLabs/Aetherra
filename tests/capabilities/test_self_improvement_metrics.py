@@ -254,6 +254,55 @@ def test_record_performance_metric_persists_without_running_loop(tmp_path):
     assert trends["response_time"]["statistics"]["mean"] == pytest.approx(640.0)
 
 
+def test_record_performance_metric_rejects_non_finite_value(tmp_path):
+    db_path = tmp_path / "self_improvement.db"
+    eng = SelfImprovementEngine(db_path=str(db_path))
+
+    eng.record_performance_metric("response_time", float("nan"), "ms")
+    eng.record_performance_metric("response_time", float("inf"), "ms")
+
+    status = eng.get_improvement_status()
+    assert status["tracked_metrics"] == 0
+    assert status["suppressed_exceptions"] == 2
+
+    reloaded = SelfImprovementEngine(db_path=str(db_path))
+    assert reloaded.get_improvement_status()["tracked_metrics"] == 0
+
+
+def test_record_performance_metric_bounds_metadata(tmp_path):
+    db_path = tmp_path / "self_improvement.db"
+    eng = SelfImprovementEngine(db_path=str(db_path))
+    long_name = "cpu_usage_" + ("x" * 180)
+    long_unit = "percent_" + ("u" * 80)
+    long_key = "component_" + ("k" * 120)
+
+    eng.record_performance_metric(
+        long_name,
+        92,
+        long_unit,
+        {
+            long_key: "alpha" * 80,
+            "nested": {"unsafe": "object"},
+            "not_finite": float("inf"),
+        },
+    )
+
+    stored_name = long_name[:120]
+    metric = eng.metrics_collector.metrics_history[stored_name][0]
+
+    assert metric.value == pytest.approx(92.0)
+    assert metric.unit == long_unit[:40]
+    assert metric.context is not None
+    assert len(metric.context) == 3
+    assert len(next(key for key in metric.context if key.startswith("component_"))) == 80
+    assert metric.context["nested"] == "{'unsafe': 'object'}"
+    assert metric.context["not_finite"] is None
+
+    reloaded = SelfImprovementEngine(db_path=str(db_path))
+    reloaded_metric = reloaded.metrics_collector.metrics_history[stored_name][0]
+    assert reloaded_metric.context == metric.context
+
+
 def test_record_performance_metric_suppresses_sync_persistence_failure(
     monkeypatch, tmp_path
 ):

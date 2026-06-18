@@ -441,13 +441,15 @@ Prior to 2025-01-26, the Self-Improvement API used multiple HTTP status codes to
 
 The Self-Improvement Engine also supports internal service-registry messages:
 
-- `selfimprovement.record_metric`: record a performance metric.
+- `selfimprovement.record_metric`: record a validated, bounded performance metric.
 - `selfimprovement.status`: return read-only engine status.
 - `selfimprovement.trends`: return read-only metric trends.
 - `selfimprovement.proposals`: return active proposals.
 - `selfimprovement.proposal_history`: return bounded lifecycle history for a proposal.
 - `selfimprovement.learning_outcomes`: return bounded sanitized downstream outcome history.
 - `selfimprovement.proposal_result`: record a bounded downstream outcome after controlled execution.
+
+Metric intake rejects non-finite values and bounds names, units, and context metadata before storing observations.
 
 `selfimprovement.proposal_result` records proposal ID, plan ID, status, numeric improvement, and result detail
 keys. It does not copy raw execution payload values into the learning record.
