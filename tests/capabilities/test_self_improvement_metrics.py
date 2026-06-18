@@ -206,6 +206,44 @@ async def test_persisted_metrics_reload_for_status_trends_and_analysis(tmp_path)
     assert proposals[0]["issue"] == "CPU utilization is consistently high"
 
 
+def test_record_performance_metric_persists_without_running_loop(tmp_path):
+    db_path = tmp_path / "self_improvement.db"
+    eng = SelfImprovementEngine(db_path=str(db_path))
+
+    eng.record_performance_metric(
+        "response_time",
+        640.0,
+        "ms",
+        {"source": "sync-test"},
+    )
+
+    reloaded = SelfImprovementEngine(db_path=str(db_path))
+    trends = reloaded.get_metric_trends()
+
+    assert trends["response_time"]["statistics"]["count"] == 1
+    assert trends["response_time"]["statistics"]["mean"] == pytest.approx(640.0)
+
+
+def test_analyze_interaction_persists_review_proposal_without_running_loop(tmp_path):
+    db_path = tmp_path / "self_improvement.db"
+    eng = SelfImprovementEngine(db_path=str(db_path))
+
+    eng.analyze_interaction(
+        {
+            "id": "sync-low-confidence",
+            "confidence": 0.2,
+            "query": "Why did the response fail?",
+            "path_used": "lyrixa_chat",
+        }
+    )
+
+    reloaded = SelfImprovementEngine(db_path=str(db_path))
+    proposal = reloaded.get_proposal("review-sync-low-confidence")
+
+    assert proposal["status"] == "proposed_for_review"
+    assert proposal["improvement_type"] == "accuracy"
+
+
 def test_improvement_generator_rule_hooks_return_structured_proposals():
     generator = ImprovementGenerator()
     metrics = {

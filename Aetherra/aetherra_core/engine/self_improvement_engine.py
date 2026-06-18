@@ -1658,7 +1658,7 @@ class SelfImprovementEngine:
         self.metrics_collector.record_metric(name, value, unit, context)
 
         # Store in database
-        asyncio.create_task(self._store_metric(name, value, unit, context))
+        self._schedule_or_run(self._store_metric(name, value, unit, context))
 
     def analyze_interaction(self, interaction_data: Dict[str, Any]):
         """
@@ -1688,7 +1688,17 @@ class SelfImprovementEngine:
                 status="proposed_for_review",
             )
             # Store this special proposal
-            asyncio.create_task(self._store_proposal(proposal))
+            self._schedule_or_run(self._store_proposal(proposal))
+
+    @staticmethod
+    def _schedule_or_run(coro) -> None:
+        """Schedule a coroutine when possible, otherwise run it to completion."""
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            asyncio.run(coro)
+            return
+        loop.create_task(coro)
 
     def get_improvement_status(self) -> Dict[str, Any]:
         """Get current improvement system status"""
