@@ -57,6 +57,18 @@ def _safe_result_summary(result: Any) -> dict[str, Any] | None:
     return {"ok": bool(result.get("ok"))}
 
 
+def _safe_selfinc_summary(result: Any) -> dict[str, Any] | None:
+    if not isinstance(result, dict):
+        return None
+    summary: dict[str, Any] = {
+        "status": _safe_error_code(result.get("status"), default="unknown"),
+    }
+    plan_id = str(result.get("plan_id") or "").strip()
+    if plan_id and len(plan_id) <= 120:
+        summary["plan_id"] = plan_id
+    return summary
+
+
 def _service_call(service: Any, message_type: str, payload: dict[str, Any] | None = None) -> Any:
     if hasattr(service, "handle_message"):
         return run_coro_blocking(service.handle_message(message_type, payload or {}))
@@ -566,7 +578,7 @@ def apply_proposal() -> ResponseReturnValue:
                             "applied": True,
                             "restart_required": False,
                             "method": "selfinc",
-                            "selfinc_result": si_res,
+                            "selfinc_result": _safe_selfinc_summary(si_res),
                         }
                     )
 
@@ -583,7 +595,7 @@ def apply_proposal() -> ResponseReturnValue:
                                 si_res.get("reason") if isinstance(si_res, dict) else None,
                                 default="selfinc_failed",
                             ),
-                            "selfinc_result": si_res,
+                            "selfinc_result": _safe_selfinc_summary(si_res),
                         }
                     ), 400
 
@@ -646,7 +658,7 @@ def apply_proposal() -> ResponseReturnValue:
                             "applied": True,
                             "restart_required": False,
                             "method": "hmr",
-                            "hmr_result": result,
+                            "hmr_result": _safe_result_summary(result),
                         }
                     )
 
@@ -827,7 +839,7 @@ def _apply_single_proposal(data: dict) -> dict:
                     "applied": True,
                     "restart_required": False,
                     "method": "selfinc",
-                    "selfinc_result": si_res,
+                    "selfinc_result": _safe_selfinc_summary(si_res),
                 }
 
             if method == "selfinc":
@@ -841,7 +853,7 @@ def _apply_single_proposal(data: dict) -> dict:
                         si_res.get("reason") if isinstance(si_res, dict) else None,
                         default="selfinc_failed",
                     ),
-                    "selfinc_result": si_res,
+                    "selfinc_result": _safe_selfinc_summary(si_res),
                 }
 
     # HMR explicit or fallback
@@ -888,7 +900,7 @@ def _apply_single_proposal(data: dict) -> dict:
                     "applied": True,
                     "restart_required": False,
                     "method": "hmr",
-                    "hmr_result": result,
+                    "hmr_result": _safe_result_summary(result),
                 }
             return {
                 "proposal_id": proposal_id,

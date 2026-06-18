@@ -144,6 +144,15 @@ class _FailingHmrController:
         return {"ok": False, "error": "Traceback: leaked hmr result"}
 
 
+class _AcceptingSelfIncorporation:
+    async def handle_message(self, *_args, **_kwargs):
+        return {
+            "status": "accepted",
+            "plan_id": "plan-safe-summary",
+            "raw_payload": "secret execution payload",
+        }
+
+
 def _client(monkeypatch, tmp_path):
     monkeypatch.setenv("AETHERRA_PROFILE", "test")
     monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(tmp_path))
@@ -495,6 +504,39 @@ def test_self_improvement_apply_sanitizes_downstream_errors(monkeypatch, tmp_pat
     assert hmr.status_code == 400
     assert hmr_payload["error"] == "hmr_exception"
     assert "Traceback" not in str(hmr_payload)
+
+
+def test_self_improvement_apply_summarizes_success_payloads(monkeypatch, tmp_path):
+    client = _client(monkeypatch, tmp_path)
+
+    def fake_get_service(name):
+        if name == "self_incorporation":
+            return _AcceptingSelfIncorporation()
+        return None
+
+    monkeypatch.setattr(self_improvement, "get_service", fake_get_service)
+    response = client.post(
+        "/api/selfimprove/apply",
+        json={
+            "proposal_id": "SI-SAFE-SUMMARY-1",
+            "method": "selfinc",
+            "description": "Reversible self-incorporation proposal",
+            "reversible": True,
+            "rollback_plan": "restore prior state",
+        },
+        headers={
+            "Authorization": "Bearer control-secret",
+            "X-Aetherra-Principal": "self_improvement_engine",
+        },
+    )
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload["selfinc_result"] == {
+        "status": "accepted",
+        "plan_id": "plan-safe-summary",
+    }
+    assert "secret execution payload" not in str(payload)
 
 
 def test_self_improvement_batch_sanitizes_hmr_result_errors(monkeypatch, tmp_path):

@@ -586,8 +586,9 @@ const approveMultiple = async (proposalIds: string[]) => {
 
 ## Error handling
 
-Downstream Self-Incorporation and HMR failures are reported with stable error codes. Raw exception messages,
-tracebacks, and detailed component failure payloads are logged server-side and are not reflected to clients.
+Downstream Self-Incorporation and HMR results are summarized before returning to clients. Raw exception messages,
+tracebacks, detailed component failure payloads, and execution payload values are logged server-side and are not
+reflected to clients.
 
 ### Common error scenarios
 
