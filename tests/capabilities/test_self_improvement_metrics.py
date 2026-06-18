@@ -19,6 +19,7 @@ import pytest
 
 # Aetherra imports
 from Aetherra.aetherra_core.engine.self_improvement_engine import (
+    ImprovementGenerator,
     ImprovementProposal,
     ImprovementType,
     SelfImprovementEngine,
@@ -135,6 +136,60 @@ async def test_generated_proposals_include_hypothesis_and_simulation(tmp_path):
     assert proposal["rollback_plan"]
     assert proposal["readiness_status"] == "candidate"
     assert proposal["readiness_reasons"] == ["ready_for_review"]
+
+
+@pytest.mark.asyncio
+async def test_generated_proposals_cover_latency_memory_and_error_pressure(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+
+    for value in (650.0, 700.0, 720.0):
+        eng.record_performance_metric("response_time", value, "ms")
+    for value in (88.0, 91.0, 93.0):
+        eng.record_performance_metric("memory_usage", value, "percent")
+    for value in (0.08, 0.09, 0.1):
+        eng.record_performance_metric("error_rate", value, "ratio")
+
+    await eng._analyze_and_improve()
+
+    by_issue = {proposal["issue"]: proposal for proposal in eng.list_active_proposals()}
+    assert "Response latency is consistently elevated" in by_issue
+    assert "Memory utilization is consistently high" in by_issue
+    assert "Error rate is above the reliability threshold" in by_issue
+    assert by_issue["Memory utilization is consistently high"]["improvement_type"] == (
+        "efficiency"
+    )
+    assert by_issue["Error rate is above the reliability threshold"][
+        "improvement_type"
+    ] == "reliability"
+    assert all(proposal["rollback_plan"] for proposal in by_issue.values())
+    assert all(
+        proposal["readiness_status"] == "candidate"
+        for proposal in by_issue.values()
+    )
+
+
+def test_improvement_generator_rule_hooks_return_structured_proposals():
+    generator = ImprovementGenerator()
+    metrics = {
+        "memory_usage": {"mean": 91.0, "max": 94.0},
+        "error_rate": {"mean": 0.08, "max": 0.12},
+    }
+    pattern = {
+        "type": "cyclical",
+        "metric": "queue_depth",
+        "confidence": 0.8,
+    }
+
+    efficiency = generator._generate_efficiency_improvements({"metrics": metrics})
+    reliability = generator._generate_reliability_improvements({"metrics": metrics})
+    pattern_based = generator._generate_pattern_improvements(
+        {"pattern": pattern, "metrics": metrics}
+    )
+
+    assert efficiency[0].improvement_type == ImprovementType.EFFICIENCY
+    assert reliability[0].improvement_type == ImprovementType.RELIABILITY
+    assert pattern_based[0].proposal_id.startswith("si-")
+    assert pattern_based[0].simulation["testable"] is True
 
 
 @pytest.mark.asyncio

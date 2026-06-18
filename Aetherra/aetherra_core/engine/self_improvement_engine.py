@@ -494,47 +494,175 @@ class ImprovementGenerator:
         if "cpu_usage" in metrics:
             cpu_stats = metrics["cpu_usage"]
             if cpu_stats.get("mean", 0) > 80:
-                issue = "CPU utilization is consistently high"
-                proposed_change = (
-                    "Analyze CPU-heavy paths and propose scheduler or batching improvements"
-                )
-                fingerprint = self._fingerprint(
-                    ImprovementType.PERFORMANCE,
-                    issue,
-                    ["cpu_scheduler", "process_manager"],
-                    proposed_change,
-                )
-                proposal = ImprovementProposal(
-                    proposal_id=self._proposal_id(fingerprint),
-                    improvement_type=ImprovementType.PERFORMANCE,
-                    description="Optimize CPU usage - consistently high utilization detected",
-                    expected_benefit=0.7,
-                    implementation_cost=0.3,
-                    risk_level=0.2,
-                    affected_components=["cpu_scheduler", "process_manager"],
-                    success_criteria=["Reduce average CPU usage to below 70%"],
-                    created_at=datetime.now(),
-                    issue=issue,
-                    potential_cause="Scheduler pressure, process contention, or inefficient work batching",
-                    proposed_change=proposed_change,
-                    evidence=[
-                        f"metric:cpu_usage",
-                        f"mean:{cpu_stats.get('mean', 0)}",
-                        f"max:{cpu_stats.get('max', 0)}",
-                    ],
-                    simulation=self._simulate(
+                proposals.append(
+                    self._build_metric_proposal(
+                        improvement_type=ImprovementType.PERFORMANCE,
+                        issue="CPU utilization is consistently high",
+                        potential_cause=(
+                            "Scheduler pressure, process contention, or inefficient "
+                            "work batching"
+                        ),
+                        proposed_change=(
+                            "Analyze CPU-heavy paths and propose scheduler or "
+                            "batching improvements"
+                        ),
+                        description=(
+                            "Optimize CPU usage - consistently high utilization detected"
+                        ),
                         expected_benefit=0.7,
                         implementation_cost=0.3,
                         risk_level=0.2,
-                        rollback_available=True,
-                        testable=True,
-                    ),
-                    rollback_plan="Restore previous scheduler or process-manager configuration",
-                    proposal_fingerprint=fingerprint,
+                        affected_components=["cpu_scheduler", "process_manager"],
+                        success_criteria=["Reduce average CPU usage to below 70%"],
+                        evidence=[
+                            "metric:cpu_usage",
+                            f"mean:{cpu_stats.get('mean', 0)}",
+                            f"max:{cpu_stats.get('max', 0)}",
+                        ],
+                        rollback_plan=(
+                            "Restore previous scheduler or process-manager configuration"
+                        ),
+                    )
                 )
-                proposals.append(proposal)
+
+        if "response_time" in metrics:
+            response_stats = metrics["response_time"]
+            if response_stats.get("mean", 0) > 500:
+                proposals.append(
+                    self._build_metric_proposal(
+                        improvement_type=ImprovementType.PERFORMANCE,
+                        issue="Response latency is consistently elevated",
+                        potential_cause=(
+                            "Request routing, model invocation, or downstream service "
+                            "latency may be degrading response time"
+                        ),
+                        proposed_change=(
+                            "Profile high-latency request paths and propose queueing, "
+                            "cache, or routing improvements"
+                        ),
+                        description="Investigate sustained response latency",
+                        expected_benefit=0.7,
+                        implementation_cost=0.3,
+                        risk_level=0.2,
+                        affected_components=["request_router", "latency_pipeline"],
+                        success_criteria=["Reduce mean response time below 500 ms"],
+                        evidence=[
+                            "metric:response_time",
+                            f"mean:{response_stats.get('mean', 0)}",
+                            f"max:{response_stats.get('max', 0)}",
+                        ],
+                        rollback_plan="Restore previous request routing and cache settings",
+                    )
+                )
+
+        if "memory_usage" in metrics:
+            memory_stats = metrics["memory_usage"]
+            if memory_stats.get("mean", 0) > 85:
+                proposals.append(
+                    self._build_metric_proposal(
+                        improvement_type=ImprovementType.EFFICIENCY,
+                        issue="Memory utilization is consistently high",
+                        potential_cause=(
+                            "Cache growth, retained contexts, or memory-intensive "
+                            "workers may be increasing pressure"
+                        ),
+                        proposed_change=(
+                            "Review cache bounds, context retention, and worker memory "
+                            "budgets before proposing changes"
+                        ),
+                        description="Investigate sustained memory pressure",
+                        expected_benefit=0.75,
+                        implementation_cost=0.3,
+                        risk_level=0.25,
+                        affected_components=["memory_manager", "cache_layer"],
+                        success_criteria=["Reduce average memory usage below 80%"],
+                        evidence=[
+                            "metric:memory_usage",
+                            f"mean:{memory_stats.get('mean', 0)}",
+                            f"max:{memory_stats.get('max', 0)}",
+                        ],
+                        rollback_plan="Restore previous cache and memory budget settings",
+                    )
+                )
+
+        if "error_rate" in metrics:
+            error_stats = metrics["error_rate"]
+            if error_stats.get("mean", 0) > 0.05:
+                proposals.append(
+                    self._build_metric_proposal(
+                        improvement_type=ImprovementType.RELIABILITY,
+                        issue="Error rate is above the reliability threshold",
+                        potential_cause=(
+                            "A service, integration path, or retry policy may be "
+                            "producing recurring failures"
+                        ),
+                        proposed_change=(
+                            "Analyze error sources and propose targeted reliability "
+                            "or retry policy improvements"
+                        ),
+                        description="Investigate elevated error rate",
+                        expected_benefit=0.8,
+                        implementation_cost=0.35,
+                        risk_level=0.25,
+                        affected_components=["error_handling", "service_health"],
+                        success_criteria=["Reduce average error rate below 5%"],
+                        evidence=[
+                            "metric:error_rate",
+                            f"mean:{error_stats.get('mean', 0)}",
+                            f"max:{error_stats.get('max', 0)}",
+                        ],
+                        rollback_plan="Restore previous error-handling or retry policy",
+                    )
+                )
 
         return proposals
+
+    def _build_metric_proposal(
+        self,
+        *,
+        improvement_type: ImprovementType,
+        issue: str,
+        potential_cause: str,
+        proposed_change: str,
+        description: str,
+        expected_benefit: float,
+        implementation_cost: float,
+        risk_level: float,
+        affected_components: list[str],
+        success_criteria: list[str],
+        evidence: list[str],
+        rollback_plan: str,
+    ) -> ImprovementProposal:
+        fingerprint = self._fingerprint(
+            improvement_type,
+            issue,
+            affected_components,
+            proposed_change,
+        )
+        return ImprovementProposal(
+            proposal_id=self._proposal_id(fingerprint),
+            improvement_type=improvement_type,
+            description=description,
+            expected_benefit=expected_benefit,
+            implementation_cost=implementation_cost,
+            risk_level=risk_level,
+            affected_components=affected_components,
+            success_criteria=success_criteria,
+            created_at=datetime.now(),
+            issue=issue,
+            potential_cause=potential_cause,
+            proposed_change=proposed_change,
+            evidence=evidence,
+            simulation=self._simulate(
+                expected_benefit=expected_benefit,
+                implementation_cost=implementation_cost,
+                risk_level=risk_level,
+                rollback_available=True,
+                testable=True,
+            ),
+            rollback_plan=rollback_plan,
+            proposal_fingerprint=fingerprint,
+        )
 
     @staticmethod
     def _fingerprint(
@@ -586,22 +714,43 @@ class ImprovementGenerator:
 
     def _generate_performance_improvements(self, context: Dict) -> List[ImprovementProposal]:
         """Generate performance-focused improvements"""
-        # Implementation for performance improvements
+        metrics = context.get("metrics") if isinstance(context, dict) else None
+        if isinstance(metrics, dict):
+            return [
+                proposal
+                for proposal in self._generate_from_metrics(metrics)
+                if proposal.improvement_type == ImprovementType.PERFORMANCE
+            ]
         return []
 
     def _generate_efficiency_improvements(self, context: Dict) -> List[ImprovementProposal]:
         """Generate efficiency improvements"""
-        # Implementation for efficiency improvements
+        metrics = context.get("metrics") if isinstance(context, dict) else None
+        if isinstance(metrics, dict):
+            return [
+                proposal
+                for proposal in self._generate_from_metrics(metrics)
+                if proposal.improvement_type == ImprovementType.EFFICIENCY
+            ]
         return []
 
     def _generate_reliability_improvements(self, context: Dict) -> List[ImprovementProposal]:
         """Generate reliability improvements"""
-        # Implementation for reliability improvements
+        metrics = context.get("metrics") if isinstance(context, dict) else None
+        if isinstance(metrics, dict):
+            return [
+                proposal
+                for proposal in self._generate_from_metrics(metrics)
+                if proposal.improvement_type == ImprovementType.RELIABILITY
+            ]
         return []
 
     def _generate_pattern_improvements(self, context: Dict) -> List[ImprovementProposal]:
         """Generate improvements based on pattern analysis"""
-        # Implementation for pattern-based improvements
+        pattern = context.get("pattern") if isinstance(context, dict) else None
+        metrics = context.get("metrics", {}) if isinstance(context, dict) else {}
+        if isinstance(pattern, dict) and isinstance(metrics, dict):
+            return self._generate_from_pattern(pattern, metrics)
         return []
 
 
