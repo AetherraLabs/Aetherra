@@ -155,6 +155,7 @@ Implemented behavior:
 - The engine analyzes metric patterns and metric statistics.
 - It can identify trend direction, correlation patterns, cyclical behavior, and degradation signals.
 - Direct metric analysis covers CPU utilization, response latency, memory pressure, and error-rate pressure.
+- Direct metric proposals require multiple samples above threshold to avoid creating review noise from one-off spikes.
 - It attaches structured hypothesis fields: issue, potential cause, proposed change, and evidence.
 - It converts high-confidence findings into active proposals instead of executing them.
 - `GET /api/selfimprove/trends` exposes read-only metric trends.

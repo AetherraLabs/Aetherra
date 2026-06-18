@@ -168,11 +168,23 @@ async def test_generated_proposals_cover_latency_memory_and_error_pressure(tmp_p
     )
 
 
+@pytest.mark.asyncio
+async def test_metric_proposals_require_persistent_samples(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+
+    eng.record_performance_metric("memory_usage", 99.0, "percent")
+    eng.record_performance_metric("error_rate", 0.5, "ratio")
+
+    await eng._analyze_and_improve()
+
+    assert eng.list_active_proposals() == []
+
+
 def test_improvement_generator_rule_hooks_return_structured_proposals():
     generator = ImprovementGenerator()
     metrics = {
-        "memory_usage": {"mean": 91.0, "max": 94.0},
-        "error_rate": {"mean": 0.08, "max": 0.12},
+        "memory_usage": {"mean": 91.0, "max": 94.0, "count": 3},
+        "error_rate": {"mean": 0.08, "max": 0.12, "count": 3},
     }
     pattern = {
         "type": "cyclical",

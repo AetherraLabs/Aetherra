@@ -493,7 +493,7 @@ class ImprovementGenerator:
         # Example: CPU usage consistently high
         if "cpu_usage" in metrics:
             cpu_stats = metrics["cpu_usage"]
-            if cpu_stats.get("mean", 0) > 80:
+            if self._metric_mean_exceeds(cpu_stats, 80):
                 proposals.append(
                     self._build_metric_proposal(
                         improvement_type=ImprovementType.PERFORMANCE,
@@ -527,7 +527,7 @@ class ImprovementGenerator:
 
         if "response_time" in metrics:
             response_stats = metrics["response_time"]
-            if response_stats.get("mean", 0) > 500:
+            if self._metric_mean_exceeds(response_stats, 500):
                 proposals.append(
                     self._build_metric_proposal(
                         improvement_type=ImprovementType.PERFORMANCE,
@@ -557,7 +557,7 @@ class ImprovementGenerator:
 
         if "memory_usage" in metrics:
             memory_stats = metrics["memory_usage"]
-            if memory_stats.get("mean", 0) > 85:
+            if self._metric_mean_exceeds(memory_stats, 85):
                 proposals.append(
                     self._build_metric_proposal(
                         improvement_type=ImprovementType.EFFICIENCY,
@@ -587,7 +587,7 @@ class ImprovementGenerator:
 
         if "error_rate" in metrics:
             error_stats = metrics["error_rate"]
-            if error_stats.get("mean", 0) > 0.05:
+            if self._metric_mean_exceeds(error_stats, 0.05):
                 proposals.append(
                     self._build_metric_proposal(
                         improvement_type=ImprovementType.RELIABILITY,
@@ -616,6 +616,21 @@ class ImprovementGenerator:
                 )
 
         return proposals
+
+    @staticmethod
+    def _metric_mean_exceeds(
+        stats: dict[str, Any],
+        threshold: float,
+        *,
+        minimum_samples: int = 3,
+    ) -> bool:
+        """Return whether a metric is persistently above threshold."""
+        try:
+            count = int(stats.get("count", 0))
+            mean = float(stats.get("mean", 0.0))
+        except (TypeError, ValueError):
+            return False
+        return count >= minimum_samples and mean > threshold
 
     def _build_metric_proposal(
         self,
