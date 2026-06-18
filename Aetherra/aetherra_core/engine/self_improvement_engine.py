@@ -141,6 +141,8 @@ class ImprovementProposal:
     updated_at: datetime | None = None
     proposal_fingerprint: str = ""
     occurrence_count: int = 1
+    readiness_status: str = "unknown"
+    readiness_reasons: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -732,6 +734,8 @@ class SelfImprovementEngine:
             "updated_at": "TEXT",
             "proposal_fingerprint": "TEXT",
             "occurrence_count": "INTEGER DEFAULT 1",
+            "readiness_status": "TEXT",
+            "readiness_reasons": "TEXT",
         }
         for name, column_type in columns.items():
             if name not in existing:
@@ -752,7 +756,7 @@ class SelfImprovementEngine:
                        success_criteria, status, created_at, issue, potential_cause,
                        proposed_change, evidence, simulation, rollback_plan,
                        status_reason, updated_at, proposal_fingerprint,
-                       occurrence_count
+                       occurrence_count, readiness_status, readiness_reasons
                 FROM improvement_proposals
                 WHERE status IN ('active', 'proposed', 'proposed_for_review')
                 ORDER BY created_at DESC
@@ -789,7 +793,7 @@ class SelfImprovementEngine:
                        success_criteria, status, created_at, issue, potential_cause,
                        proposed_change, evidence, simulation, rollback_plan,
                        status_reason, updated_at, proposal_fingerprint,
-                       occurrence_count
+                       occurrence_count, readiness_status, readiness_reasons
                 FROM improvement_proposals
                 WHERE proposal_id = ?
                 """,
@@ -878,6 +882,10 @@ class SelfImprovementEngine:
             else None,
             proposal_fingerprint=str(row["proposal_fingerprint"] or ""),
             occurrence_count=max(1, int(row["occurrence_count"] or 1)),
+            readiness_status=str(row["readiness_status"] or "unknown"),
+            readiness_reasons=[
+                str(reason) for reason in self._json_list(row["readiness_reasons"])
+            ],
         )
 
     @staticmethod
@@ -1070,6 +1078,7 @@ class SelfImprovementEngine:
         score = self._calculate_proposal_score(proposal)
 
         if score > 0.7:  # High-confidence proposals
+            self._assess_proposal_readiness(proposal)
             if not proposal.proposal_fingerprint:
                 proposal.proposal_fingerprint = self._proposal_fingerprint(proposal)
             if not proposal.proposal_id:
@@ -1091,6 +1100,8 @@ class SelfImprovementEngine:
                 existing.evidence = proposal.evidence
                 existing.simulation = proposal.simulation
                 existing.rollback_plan = proposal.rollback_plan
+                existing.readiness_status = proposal.readiness_status
+                existing.readiness_reasons = proposal.readiness_reasons
                 existing.occurrence_count += 1
                 existing.updated_at = datetime.now()
                 existing.status_reason = "refreshed from repeated analysis"
@@ -1144,6 +1155,42 @@ class SelfImprovementEngine:
 
         # Weighted combination
         return benefit_score * 0.4 + cost_score * 0.3 + risk_score * 0.3
+
+    @staticmethod
+    def _assess_proposal_readiness(proposal: ImprovementProposal) -> None:
+        """Classify whether a proposal is ready for serious review."""
+        reasons: list[str] = []
+        simulation = proposal.simulation if isinstance(proposal.simulation, dict) else {}
+        rollback_available = bool(simulation.get("rollback_available")) or bool(
+            proposal.rollback_plan
+        )
+        testable = bool(simulation.get("testable"))
+        try:
+            confidence = float(simulation.get("confidence", 0.0))
+        except (TypeError, ValueError):
+            confidence = 0.0
+
+        if not rollback_available:
+            reasons.append("rollback_missing")
+        if not testable:
+            reasons.append("not_testable")
+        if proposal.risk_level >= 0.67:
+            reasons.append("risk_high")
+        if len(proposal.evidence) < 2:
+            reasons.append("evidence_sparse")
+        if confidence < 0.6:
+            reasons.append("confidence_low")
+
+        blocking = {"rollback_missing", "not_testable", "risk_high"}
+        if blocking.intersection(reasons):
+            readiness = "blocked"
+        elif reasons:
+            readiness = "needs_evidence"
+        else:
+            readiness = "candidate"
+
+        proposal.readiness_status = readiness
+        proposal.readiness_reasons = reasons or ["ready_for_review"]
 
     @staticmethod
     def _proposal_fingerprint(proposal: ImprovementProposal) -> str:
@@ -1320,6 +1367,7 @@ class SelfImprovementEngine:
         *,
         status: str | None = None,
         improvement_type: str | None = None,
+        readiness_status: str | None = None,
         max_risk: float | None = None,
         min_confidence: float | None = None,
         limit: int = 100,
@@ -1336,6 +1384,8 @@ class SelfImprovementEngine:
             if status and proposal.status != status:
                 continue
             if improvement_type and proposal.improvement_type.value != improvement_type:
+                continue
+            if readiness_status and proposal.readiness_status != readiness_status:
                 continue
             if max_risk is not None and proposal.risk_level > max_risk:
                 continue
@@ -1355,11 +1405,14 @@ class SelfImprovementEngine:
         """Return compact review-queue counts for operators."""
         by_status: dict[str, int] = {}
         by_type: dict[str, int] = {}
+        by_readiness: dict[str, int] = {}
         risk_bands = {"low": 0, "medium": 0, "high": 0}
         for proposal in self.active_proposals.values():
             by_status[proposal.status] = by_status.get(proposal.status, 0) + 1
             ptype = proposal.improvement_type.value
             by_type[ptype] = by_type.get(ptype, 0) + 1
+            readiness = proposal.readiness_status or "unknown"
+            by_readiness[readiness] = by_readiness.get(readiness, 0) + 1
             if proposal.risk_level >= 0.67:
                 risk_bands["high"] += 1
             elif proposal.risk_level >= 0.34:
@@ -1370,6 +1423,7 @@ class SelfImprovementEngine:
             "total_reviewable": len(self.active_proposals),
             "by_status": dict(sorted(by_status.items())),
             "by_type": dict(sorted(by_type.items())),
+            "by_readiness": dict(sorted(by_readiness.items())),
             "risk_bands": risk_bands,
         }
 
@@ -1481,6 +1535,8 @@ class SelfImprovementEngine:
             else None,
             "proposal_fingerprint": proposal.proposal_fingerprint,
             "occurrence_count": proposal.occurrence_count,
+            "readiness_status": proposal.readiness_status,
+            "readiness_reasons": list(proposal.readiness_reasons),
         }
 
     async def _record_proposal_lifecycle_event(
@@ -1587,8 +1643,9 @@ class SelfImprovementEngine:
                  implementation_cost, risk_level, affected_components, success_criteria,
                  status, created_at, issue, potential_cause, proposed_change, evidence,
                  simulation, rollback_plan, status_reason, updated_at,
-                 proposal_fingerprint, occurrence_count)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 proposal_fingerprint, occurrence_count, readiness_status,
+                 readiness_reasons)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
                 (
                     proposal.proposal_id,
@@ -1613,6 +1670,8 @@ class SelfImprovementEngine:
                     else None,
                     proposal.proposal_fingerprint,
                     proposal.occurrence_count,
+                    proposal.readiness_status,
+                    json.dumps(proposal.readiness_reasons),
                 ),
             )
             conn.commit()

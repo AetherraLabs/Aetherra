@@ -186,6 +186,8 @@ Implemented behavior:
 - `GET /api/selfimprove/proposals` returns active proposals for UI/operator review.
 - Active proposal listing supports read-only filters by status, improvement type, risk, confidence, and limit.
 - Active proposal listing returns compact review summary counts by status, type, and risk band.
+- Proposals are classified by readiness: `candidate`, `needs_evidence`, or `blocked`, with explicit reasons.
+- Readiness classification is review guidance only; it does not authorize execution or bypass Guardian.
 - Operators can dismiss or reopen proposals through Hub-control-authorized lifecycle endpoints.
 - Dismiss/reopen changes review state only; it does not execute, modify code, reload modules, or bypass Guardian.
 - Proposal review lifecycle events are appended to a local history record with event type, status transition, actor,

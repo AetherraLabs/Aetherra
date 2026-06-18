@@ -50,6 +50,7 @@ def _service_call(service: Any, message_type: str, payload: dict[str, Any] | Non
             "proposals": service.list_active_proposals(
                 status=payload.get("status"),
                 improvement_type=payload.get("improvement_type"),
+                readiness_status=payload.get("readiness_status"),
                 max_risk=payload.get("max_risk"),
                 min_confidence=payload.get("min_confidence"),
                 limit=int(payload.get("limit") or 100),
@@ -193,6 +194,8 @@ def get_proposals() -> ResponseReturnValue:
                 "status": request.args.get("status"),
                 "improvement_type": request.args.get("type")
                 or request.args.get("improvement_type"),
+                "readiness_status": request.args.get("readiness")
+                or request.args.get("readiness_status"),
                 "max_risk": request.args.get("max_risk", type=float),
                 "min_confidence": request.args.get("min_confidence", type=float),
                 "limit": request.args.get("limit", 100, type=int),

@@ -101,6 +101,8 @@ async def test_generated_proposals_include_hypothesis_and_simulation(tmp_path):
     assert proposal["simulation"]["testable"] is True
     assert proposal["simulation"]["rollback_available"] is True
     assert proposal["rollback_plan"]
+    assert proposal["readiness_status"] == "candidate"
+    assert proposal["readiness_reasons"] == ["ready_for_review"]
 
 
 @pytest.mark.asyncio
@@ -230,7 +232,9 @@ async def test_proposal_review_filters_and_summary(tmp_path):
             affected_components=["kernel"],
             success_criteria=["Review low risk"],
             created_at=datetime.now(),
-            simulation={"confidence": 0.9},
+            evidence=["metric:kernel", "trend:degrading"],
+            simulation={"confidence": 0.9, "testable": True, "rollback_available": True},
+            rollback_plan="Restore prior settings",
         ),
         ImprovementProposal(
             proposal_id="review-medium",
@@ -242,7 +246,8 @@ async def test_proposal_review_filters_and_summary(tmp_path):
             affected_components=["memory"],
             success_criteria=["Review medium risk"],
             created_at=datetime.now(),
-            simulation={"confidence": 0.7},
+            evidence=["metric:memory", "trend:degrading"],
+            simulation={"confidence": 0.7, "testable": False},
         ),
     ]
     for proposal in proposals:
@@ -251,15 +256,75 @@ async def test_proposal_review_filters_and_summary(tmp_path):
     low_risk = eng.list_active_proposals(max_risk=0.2)
     confident = eng.list_active_proposals(min_confidence=0.8)
     reliability = eng.list_active_proposals(improvement_type="reliability")
+    candidates = eng.list_active_proposals(readiness_status="candidate")
     summary = eng.get_review_summary()
 
     assert [proposal["proposal_id"] for proposal in low_risk] == ["review-low"]
     assert [proposal["proposal_id"] for proposal in confident] == ["review-low"]
     assert [proposal["proposal_id"] for proposal in reliability] == ["review-medium"]
+    assert [proposal["proposal_id"] for proposal in candidates] == ["review-low"]
     assert summary["total_reviewable"] == 2
     assert summary["by_type"]["performance"] == 1
     assert summary["by_type"]["reliability"] == 1
+    assert summary["by_readiness"]["candidate"] == 1
+    assert summary["by_readiness"]["blocked"] == 1
     assert summary["risk_bands"] == {"low": 1, "medium": 1, "high": 0}
+
+
+@pytest.mark.asyncio
+async def test_proposal_readiness_classification(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+    candidate = ImprovementProposal(
+        proposal_id="readiness-candidate",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Ready candidate",
+        expected_benefit=0.8,
+        implementation_cost=0.2,
+        risk_level=0.1,
+        affected_components=["kernel"],
+        success_criteria=["Ready"],
+        created_at=datetime.now(),
+        evidence=["metric:latency", "trend:degrading"],
+        simulation={"confidence": 0.8, "testable": True, "rollback_available": True},
+        rollback_plan="Restore prior state",
+    )
+    needs_evidence = ImprovementProposal(
+        proposal_id="readiness-evidence",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Needs more evidence",
+        expected_benefit=0.8,
+        implementation_cost=0.2,
+        risk_level=0.1,
+        affected_components=["memory"],
+        success_criteria=["More evidence"],
+        created_at=datetime.now(),
+        evidence=["metric:memory"],
+        simulation={"confidence": 0.7, "testable": True, "rollback_available": True},
+        rollback_plan="Restore memory setting",
+    )
+    blocked = ImprovementProposal(
+        proposal_id="readiness-blocked",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Blocked proposal",
+        expected_benefit=0.8,
+        implementation_cost=0.2,
+        risk_level=0.1,
+        affected_components=["agent"],
+        success_criteria=["Blocked"],
+        created_at=datetime.now(),
+        evidence=["metric:agent", "trend:degrading"],
+        simulation={"confidence": 0.8, "testable": False},
+    )
+
+    for proposal in (candidate, needs_evidence, blocked):
+        await eng._process_proposal(proposal)
+
+    by_id = {proposal["proposal_id"]: proposal for proposal in eng.list_active_proposals()}
+    assert by_id["readiness-candidate"]["readiness_status"] == "candidate"
+    assert by_id["readiness-evidence"]["readiness_status"] == "needs_evidence"
+    assert by_id["readiness-evidence"]["readiness_reasons"] == ["evidence_sparse"]
+    assert by_id["readiness-blocked"]["readiness_status"] == "blocked"
+    assert "not_testable" in by_id["readiness-blocked"]["readiness_reasons"]
 
 
 @pytest.mark.asyncio
@@ -422,6 +487,8 @@ def test_existing_proposal_database_schema_is_migrated(tmp_path):
         "updated_at",
         "proposal_fingerprint",
         "occurrence_count",
+        "readiness_status",
+        "readiness_reasons",
     }.issubset(columns)
 
 

@@ -1290,6 +1290,7 @@ class AetherraOSLauncher:
                             "proposals": self.impl.list_active_proposals(
                                 status=payload.get("status"),
                                 improvement_type=payload.get("improvement_type"),
+                                readiness_status=payload.get("readiness_status"),
                                 max_risk=payload.get("max_risk"),
                                 min_confidence=payload.get("min_confidence"),
                                 limit=int(payload.get("limit") or 100),

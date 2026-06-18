@@ -53,6 +53,7 @@ Supported query parameters:
 
 - `status`
 - `type` or `improvement_type`
+- `readiness` or `readiness_status`
 - `max_risk`
 - `min_confidence`
 - `limit`
@@ -66,6 +67,7 @@ Supported query parameters:
     "total_reviewable": 3,
     "by_status": {"active": 3},
     "by_type": {"performance": 2, "reliability": 1},
+    "by_readiness": {"candidate": 2, "needs_evidence": 1},
     "risk_bands": {"low": 2, "medium": 1, "high": 0}
   },
   "proposals": [
@@ -94,6 +96,8 @@ Supported query parameters:
       "rollback_plan": "Restore prior memory index configuration",
       "proposal_fingerprint": "ab12cd34ef56...",
       "occurrence_count": 2,
+      "readiness_status": "candidate",
+      "readiness_reasons": ["ready_for_review"],
       "status": "active"
     }
   ]

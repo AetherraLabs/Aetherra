@@ -25,6 +25,7 @@ class _FakeSelfImprovementService:
                     "total_reviewable": 1,
                     "by_status": {"active": 1},
                     "by_type": {"performance": 1},
+                    "by_readiness": {"candidate": 1},
                     "risk_bands": {"low": 1, "medium": 0, "high": 0},
                 },
                 "proposals": [
@@ -33,6 +34,7 @@ class _FakeSelfImprovementService:
                         "status": "active",
                         "risk_level": 0.1,
                         "improvement_type": "performance",
+                        "readiness_status": "candidate",
                         "simulation": {"confidence": 0.9},
                     }
                 ],
@@ -260,6 +262,7 @@ def test_self_improvement_read_only_status_proposals_and_trends(monkeypatch, tmp
     status = client.get("/api/selfimprove/status")
     proposals = client.get(
         "/api/selfimprove/proposals?type=performance&max_risk=0.2&min_confidence=0.8&limit=5"
+        "&readiness=candidate"
     )
     trends = client.get("/api/selfimprove/trends")
     proposal = client.get("/api/selfimprove/proposals/SI-OBSERVE-1")
@@ -275,6 +278,7 @@ def test_self_improvement_read_only_status_proposals_and_trends(monkeypatch, tmp
     assert proposals_payload["proposals"][0]["proposal_id"] == "SI-OBSERVE-1"
     assert proposals_payload["summary"]["total_reviewable"] == 1
     assert service.last_proposal_filter["improvement_type"] == "performance"
+    assert service.last_proposal_filter["readiness_status"] == "candidate"
     assert service.last_proposal_filter["max_risk"] == 0.2
     assert service.last_proposal_filter["min_confidence"] == 0.8
     assert service.last_proposal_filter["limit"] == 5
