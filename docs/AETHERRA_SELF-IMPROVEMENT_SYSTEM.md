@@ -138,6 +138,8 @@ Implemented behavior:
 - Homeostasis forwards stability metrics to the Self-Improvement Engine.
 - Runtime systems can record performance metrics with name, value, unit, and context.
 - The engine tracks metric history and exposes read-only status.
+- Recent persisted metrics are reloaded on startup so status, trends, and proposal analysis retain observation
+  continuity after restart.
 - `GET /api/selfimprove/status` reports activity, proposal counts, tracked metrics, analysis cycles, and whether
   autonomous implementation is enabled.
 - Status includes compact review and learning summaries so operator dashboards can understand queue shape without

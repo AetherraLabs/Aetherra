@@ -180,6 +180,32 @@ async def test_metric_proposals_require_persistent_samples(tmp_path):
     assert eng.list_active_proposals() == []
 
 
+@pytest.mark.asyncio
+async def test_persisted_metrics_reload_for_status_trends_and_analysis(tmp_path):
+    db_path = tmp_path / "self_improvement.db"
+    eng = SelfImprovementEngine(db_path=str(db_path))
+    for value in (86.0, 87.0, 88.0):
+        await eng._store_metric(
+            "cpu_usage",
+            value,
+            "percent",
+            {"source": "restart-test"},
+        )
+
+    reloaded = SelfImprovementEngine(db_path=str(db_path))
+    status = reloaded.get_improvement_status()
+    trends = reloaded.get_metric_trends()
+
+    assert status["tracked_metrics"] == 1
+    assert trends["cpu_usage"]["statistics"]["count"] == 3
+    assert trends["cpu_usage"]["statistics"]["mean"] == pytest.approx(87.0)
+
+    await reloaded._analyze_and_improve()
+
+    proposals = reloaded.list_active_proposals()
+    assert proposals[0]["issue"] == "CPU utilization is consistently high"
+
+
 def test_improvement_generator_rule_hooks_return_structured_proposals():
     generator = ImprovementGenerator()
     metrics = {

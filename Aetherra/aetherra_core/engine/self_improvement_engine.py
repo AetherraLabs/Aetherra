@@ -794,6 +794,7 @@ class SelfImprovementEngine:
         self._suppressed_exceptions: int = 0
         self._analysis_cycles: int = 0
         self._init_database()
+        self._load_recent_metrics_from_db()
         self._load_reviewable_proposals()
 
     def _init_database(self):
@@ -918,6 +919,46 @@ class SelfImprovementEngine:
                 conn.execute(
                     f"ALTER TABLE improvement_proposals ADD COLUMN {name} {column_type}"
                 )
+
+    def _load_recent_metrics_from_db(self, *, max_rows: int = 5000) -> None:
+        """Load a bounded set of recent metrics into memory for restart continuity."""
+        safe_limit = max(1, min(20000, int(max_rows)))
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
+        try:
+            rows = conn.execute(
+                """
+                SELECT name, value, unit, timestamp, context
+                FROM performance_metrics
+                ORDER BY timestamp DESC, id DESC
+                LIMIT ?
+                """,
+                (safe_limit,),
+            ).fetchall()
+        except sqlite3.Error as exc:
+            logger.warning("Failed to load persisted self-improvement metrics: %s", exc)
+            return
+        finally:
+            conn.close()
+
+        for row in reversed(rows):
+            try:
+                name = str(row["name"])
+                self.metrics_collector.metrics_history[name].append(
+                    PerformanceMetric(
+                        name=name,
+                        value=float(row["value"]),
+                        unit=str(row["unit"]),
+                        timestamp=datetime.fromisoformat(str(row["timestamp"])),
+                        context=self._json_dict(row["context"]),
+                    )
+                )
+                if len(self.metrics_collector.metrics_history[name]) > 1000:
+                    self.metrics_collector.metrics_history[name] = (
+                        self.metrics_collector.metrics_history[name][-1000:]
+                    )
+            except Exception as exc:
+                logger.debug("Skipping malformed self-improvement metric row: %s", exc)
 
     def _load_reviewable_proposals(self) -> None:
         """Load persisted proposals that are still useful for operator review."""
