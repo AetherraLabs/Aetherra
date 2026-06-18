@@ -179,6 +179,10 @@ reports/
 data/artifacts/*.sarif
 data/artifacts/coverage*.json
 data/artifacts/*scan*.json
+data/artifacts/*report*.md
+data/artifacts/gate_sign_off.md
+data/artifacts/parse_baseline*.json
+data/artifacts/workflow_failures*
 *.report.json
 cleanup_report.json
 *audit*.json

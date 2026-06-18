@@ -71,7 +71,9 @@ Candidates to remove from Git history going forward:
 - root-level `*.db`, `*.db-shm`, and `*.db-wal`
 - root-level `*.log`
 - root-level generated backup snapshots such as `*_backup.json`
+- populated local env files such as `.env.autonomy.staging`
 - generated `data/artifacts/*.sarif`, coverage, and scan reports - removed in the first artifact cleanup pass
+- generated workflow failure summaries and parse baselines under `data/artifacts/`
 
 Before removal, confirm whether any workflow still depends on the file being
 present in the repository.
@@ -97,6 +99,16 @@ Second pass notes:
   a plugin catalog backup with local absolute paths.
 - Kept `sbom.json`, license trend history, docs consistency config, and stub
   inventories because they are referenced by active workflows, tools, or docs.
+
+Third pass notes:
+
+- Removed `.env.autonomy.staging` from Git tracking while leaving the ignored
+  local file available for the operator environment.
+- Removed generated workflow-failure summaries, parse baselines, duplicated
+  verification/sign-off artifacts, and the doctor last-run output.
+- Removed a placeholder generated downloads page under `docs/downloads/`.
+- Kept active `.aether` workflows even though broad ignore rules match them;
+  they are operational source files and require a separate policy decision.
 
 ## Phase 3 - Historical Documentation Reorganization
 
