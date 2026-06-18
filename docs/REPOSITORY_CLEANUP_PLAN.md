@@ -38,7 +38,7 @@ separate reviewed cleanup commit.
 
 ## Phase 1 - Non-Destructive GitHub Presentation
 
-Status: In progress
+Status: Complete
 
 - [x] Replace root README with a current Alpha/Foundation overview.
 - [x] Document active system completion status.
@@ -48,29 +48,42 @@ Status: In progress
 
 ## Phase 2 - Candidate Artifact Removal
 
-Status: Pending explicit review
+Status: In progress
 
 Candidates to remove from Git history going forward:
 
-- `dist-packages/`
+- `dist-packages/` - removed from source control in the first artifact cleanup pass
 - `build/`
 - `htmlcov/`
 - `.coverage`
 - `coverage.xml`
 - `ruff_report*.json`
-- `ruff_report*.txt`
-- `security_scan.json`
+- `ruff_report*.txt` - obvious tracked root reports removed in the first artifact cleanup pass
+- `security_scan.json` - removed in the first artifact cleanup pass
 - `licenses_report.json`
-- `gate_results.json`
+- `gate_results.json` - removed in the first artifact cleanup pass
 - `demo_dashboard_report.json`
 - `pre_pack_validation*_report.json`
 - `phase*_validation_report_*.json`
 - root-level `*.db`, `*.db-shm`, and `*.db-wal`
 - root-level `*.log`
-- generated `data/artifacts/*.sarif`, coverage, and scan reports
+- generated `data/artifacts/*.sarif`, coverage, and scan reports - removed in the first artifact cleanup pass
 
 Before removal, confirm whether any workflow still depends on the file being
 present in the repository.
+
+First pass notes:
+
+- Removed the checked-in packaged Windows distribution output under
+  `dist-packages/`.
+- Removed old duplicate root files: `.gitignore.new`, `.gitignore.old`, and
+  `README_OLD.md`.
+- Removed generated SARIF, coverage, quality gate, lint, and scan reports that
+  should be produced by CI rather than committed as source.
+- Removed obvious local runtime outputs such as `hub_runtime_url.txt` and
+  tracked database sidecar artifacts.
+- Left source workflows, root scripts, and ambiguous data files for later
+  targeted triage.
 
 ## Phase 3 - Historical Documentation Reorganization
 
