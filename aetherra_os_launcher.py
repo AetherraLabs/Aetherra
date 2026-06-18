@@ -1266,19 +1266,31 @@ class AetherraOSLauncher:
 
                 async def handle_message(self, message_type, data):
                     mt = (message_type or "").lower()
-                    payload = data or {}
+                    payload = data if isinstance(data, dict) else {}
                     if mt.endswith("record_metric"):
                         # { name, value, unit, context }
                         try:
-                            self.impl.record_performance_metric(
+                            accepted = self.impl.record_performance_metric(
                                 payload.get("name", "metric"),
-                                float(payload.get("value", 0.0)),
+                                payload.get("value", 0.0),
                                 payload.get("unit", "unit"),
                                 payload.get("context"),
                             )
+                            if not accepted:
+                                return {
+                                    "status": "rejected",
+                                    "reason": "invalid_metric",
+                                }
                             return {"status": "ok"}
-                        except Exception as e:
-                            return {"status": "error", "error": str(e)}
+                        except Exception:
+                            logger.warning(
+                                "[SELF_IMPROVEMENT] Metric intake failed",
+                                exc_info=True,
+                            )
+                            return {
+                                "status": "error",
+                                "error": "metric_intake_failed",
+                            }
                     if mt.endswith("status"):
                         return self.impl.get_improvement_status()
                     if mt.endswith("trends"):

@@ -1664,19 +1664,23 @@ class SelfImprovementEngine:
 
     def record_performance_metric(
         self, name: str, value: float, unit: str, context: Dict[str, Any] | None = None
-    ):
-        """Record a performance metric for analysis"""
+    ) -> bool:
+        """Record a performance metric for analysis.
+
+        Returns True when the metric was accepted for in-memory analysis and
+        persistence, or False when the observation was rejected at intake.
+        """
         try:
             metric_value = float(value)
         except (TypeError, ValueError):
             self._suppressed_exceptions += 1
             logger.warning("Rejected invalid self-improvement metric value")
-            return
+            return False
 
         if not math.isfinite(metric_value):
             self._suppressed_exceptions += 1
             logger.warning("Rejected non-finite self-improvement metric value")
-            return
+            return False
 
         metric_name = str(name or "metric").strip()[:120] or "metric"
         metric_unit = str(unit or "unit").strip()[:40] or "unit"
@@ -1691,6 +1695,7 @@ class SelfImprovementEngine:
             self._store_metric(metric_name, metric_value, metric_unit, metric_context),
             operation="store_metric",
         )
+        return True
 
     def analyze_interaction(self, interaction_data: Dict[str, Any]):
         """

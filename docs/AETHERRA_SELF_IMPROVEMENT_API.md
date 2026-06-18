@@ -450,6 +450,8 @@ The Self-Improvement Engine also supports internal service-registry messages:
 - `selfimprovement.proposal_result`: record a bounded downstream outcome after controlled execution.
 
 Metric intake rejects non-finite values and bounds names, units, and context metadata before storing observations.
+The service message returns `{"status":"ok"}` for accepted observations and `{"status":"rejected","reason":"invalid_metric"}`
+for invalid observations.
 
 `selfimprovement.proposal_result` records proposal ID, plan ID, status, numeric improvement, and result detail
 keys. It does not copy raw execution payload values into the learning record.

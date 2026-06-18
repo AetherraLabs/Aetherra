@@ -255,7 +255,7 @@ def test_record_performance_metric_persists_without_running_loop(tmp_path):
     db_path = tmp_path / "self_improvement.db"
     eng = SelfImprovementEngine(db_path=str(db_path))
 
-    eng.record_performance_metric(
+    accepted = eng.record_performance_metric(
         "response_time",
         640.0,
         "ms",
@@ -265,6 +265,7 @@ def test_record_performance_metric_persists_without_running_loop(tmp_path):
     reloaded = SelfImprovementEngine(db_path=str(db_path))
     trends = reloaded.get_metric_trends()
 
+    assert accepted is True
     assert trends["response_time"]["statistics"]["count"] == 1
     assert trends["response_time"]["statistics"]["mean"] == pytest.approx(640.0)
 
@@ -273,10 +274,12 @@ def test_record_performance_metric_rejects_non_finite_value(tmp_path):
     db_path = tmp_path / "self_improvement.db"
     eng = SelfImprovementEngine(db_path=str(db_path))
 
-    eng.record_performance_metric("response_time", float("nan"), "ms")
-    eng.record_performance_metric("response_time", float("inf"), "ms")
+    rejected_nan = eng.record_performance_metric("response_time", float("nan"), "ms")
+    rejected_inf = eng.record_performance_metric("response_time", float("inf"), "ms")
 
     status = eng.get_improvement_status()
+    assert rejected_nan is False
+    assert rejected_inf is False
     assert status["tracked_metrics"] == 0
     assert status["suppressed_exceptions"] == 2
 
@@ -291,7 +294,7 @@ def test_record_performance_metric_bounds_metadata(tmp_path):
     long_unit = "percent_" + ("u" * 80)
     long_key = "component_" + ("k" * 120)
 
-    eng.record_performance_metric(
+    accepted = eng.record_performance_metric(
         long_name,
         92,
         long_unit,
@@ -305,6 +308,7 @@ def test_record_performance_metric_bounds_metadata(tmp_path):
     stored_name = long_name[:120]
     metric = eng.metrics_collector.metrics_history[stored_name][0]
 
+    assert accepted is True
     assert metric.value == pytest.approx(92.0)
     assert metric.unit == long_unit[:40]
     assert metric.context is not None
