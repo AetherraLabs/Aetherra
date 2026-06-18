@@ -85,6 +85,38 @@ async def test_high_confidence_proposals_remain_recommendations_by_default(
 
 
 @pytest.mark.asyncio
+async def test_auto_implementation_env_is_blocked_without_guardian_path(
+    monkeypatch, tmp_path
+):
+    monkeypatch.setenv("AETHERRA_SELF_IMPROVEMENT_AUTO_IMPLEMENT", "1")
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+    proposal = ImprovementProposal(
+        proposal_id="legacy-auto-blocked",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Do not auto-implement even with legacy env enabled",
+        expected_benefit=0.9,
+        implementation_cost=0.1,
+        risk_level=0.1,
+        affected_components=["scheduler"],
+        success_criteria=["Proposal remains reviewable"],
+        created_at=datetime.now(),
+    )
+
+    await eng._process_proposal(proposal)
+
+    status = eng.get_improvement_status()
+    active = eng.get_proposal("legacy-auto-blocked")
+    history = eng.get_proposal_history("legacy-auto-blocked")
+    assert status["autonomous_implementation_requested"] is True
+    assert status["autonomous_implementation_enabled"] is False
+    assert status["implementation_authority"] == "guardian_controlled_execution"
+    assert status["implemented_proposals"] == 0
+    assert active["status"] == "active"
+    assert "Guardian-gated" in active["status_reason"]
+    assert history[0]["event_type"] == "auto_implementation_blocked"
+
+
+@pytest.mark.asyncio
 async def test_generated_proposals_include_hypothesis_and_simulation(tmp_path):
     eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
 

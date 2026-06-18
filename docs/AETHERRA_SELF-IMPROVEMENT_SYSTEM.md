@@ -140,6 +140,8 @@ Implemented behavior:
 - The engine tracks metric history and exposes read-only status.
 - `GET /api/selfimprove/status` reports activity, proposal counts, tracked metrics, analysis cycles, and whether
   autonomous implementation is enabled.
+- Autonomous implementation is disabled in the foundation milestone; legacy auto-implementation requests are
+  recorded as requested but blocked until a Guardian-gated controlled execution path exists.
 
 Observation is read-only. It does not apply proposals, modify files, reload modules, change policies, or update
 capabilities.
@@ -183,6 +185,8 @@ Implemented behavior:
 - Reviewable proposals are persisted in the self-improvement database and reloaded on engine startup.
 - Terminal proposals such as accepted downstream results are not reloaded into the active review list.
 - Default operation does not self-implement generated proposals.
+- The engine does not self-implement generated proposals even if `AETHERRA_SELF_IMPROVEMENT_AUTO_IMPLEMENT=1`;
+  that request is surfaced in status and blocked in the proposal lifecycle history.
 - Active proposals include issue, potential cause, proposed change, evidence, simulation, and rollback metadata.
 - `GET /api/selfimprove/proposals` returns active proposals for UI/operator review.
 - Active proposal listing supports read-only filters by status, improvement type, risk, confidence, and limit.

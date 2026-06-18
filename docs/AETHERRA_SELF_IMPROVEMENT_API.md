@@ -41,9 +41,16 @@ Return read-only self-improvement engine status.
   "learning_outcomes": 0,
   "tracked_metrics": 8,
   "analysis_cycles": 12,
-  "autonomous_implementation_enabled": false
+  "autonomous_implementation_enabled": false,
+  "autonomous_implementation_requested": false,
+  "implementation_authority": "guardian_controlled_execution"
 }
 ```
+
+`autonomous_implementation_enabled` remains `false` for the foundation milestone. If the legacy
+`AETHERRA_SELF_IMPROVEMENT_AUTO_IMPLEMENT=1` environment flag is present, the status response reports
+`autonomous_implementation_requested: true`, but generated proposals remain reviewable recommendations until a
+Guardian-gated controlled execution path handles application.
 
 ### GET /api/selfimprove/proposals
 

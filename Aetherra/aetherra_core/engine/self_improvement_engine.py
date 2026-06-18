@@ -609,9 +609,10 @@ class SelfImprovementEngine:
         self.learning_outcomes: List[LearningOutcome] = []
         self.improvement_active = False
         self.improvement_task = None
-        self.autonomous_implementation_enabled = (
+        self.autonomous_implementation_requested = (
             os.getenv("AETHERRA_SELF_IMPROVEMENT_AUTO_IMPLEMENT", "0") == "1"
         )
+        self.autonomous_implementation_enabled = False
         # Event loop on which the improvement task was created (for cross-loop shutdown)
         self._task_loop = None  # type: ignore[assignment]
         # Lightweight counters
@@ -1233,12 +1234,22 @@ class SelfImprovementEngine:
 
             logger.info(f"High-confidence proposal: {proposal.description} (score: {score:.2f})")
 
-            if (
-                self.autonomous_implementation_enabled
-                and proposal.risk_level < 0.3
-                and proposal.expected_benefit > 0.5
-            ):
-                await self._implement_proposal(proposal)
+            if self.autonomous_implementation_requested:
+                proposal.status_reason = (
+                    "autonomous implementation request blocked; Guardian-gated "
+                    "controlled execution is required"
+                )
+                proposal.updated_at = datetime.now()
+                await self._store_proposal(proposal)
+                await self._record_proposal_lifecycle_event(
+                    proposal_id=proposal.proposal_id,
+                    event_type="auto_implementation_blocked",
+                    from_status=proposal.status,
+                    to_status=proposal.status,
+                    actor="self_improvement_engine",
+                    reason=proposal.status_reason,
+                    metadata={"requested_env": "AETHERRA_SELF_IMPROVEMENT_AUTO_IMPLEMENT"},
+                )
 
     def _calculate_proposal_score(self, proposal: ImprovementProposal) -> float:
         """Calculate score for improvement proposal"""
@@ -1453,6 +1464,8 @@ class SelfImprovementEngine:
             "analysis_cycles": self._analysis_cycles,
             "suppressed_exceptions": self._suppressed_exceptions,
             "autonomous_implementation_enabled": self.autonomous_implementation_enabled,
+            "autonomous_implementation_requested": self.autonomous_implementation_requested,
+            "implementation_authority": "guardian_controlled_execution",
         }
 
     def list_active_proposals(
