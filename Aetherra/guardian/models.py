@@ -236,6 +236,43 @@ class CapabilityGrant:
 
 
 @dataclass(frozen=True, slots=True)
+class PreauthorizationGrant:
+    """A scoped, short-lived Guardian grant for repeated routine actions."""
+
+    grant_id: str
+    requester: str
+    subsystem: str
+    action: str
+    target: str
+    capabilities: tuple[str, ...] = ()
+    intent_fingerprint: str = ""
+    decision_tier: GuardianDecisionTier = GuardianDecisionTier.ROUTINE_GUARDED
+    guardian_mode: GuardianMode = GuardianMode.ENFORCING
+    policy_fingerprint: str = ""
+    max_uses: int = 1
+    created_at: str = field(
+        default_factory=lambda: datetime.now(UTC).isoformat().replace("+00:00", "Z")
+    )
+    expires_at: str | None = None
+    granted_by: str = "guardian"
+    audit_required: bool = True
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    def to_record(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True, slots=True)
+class PreauthorizationValidationResult:
+    """Result of validating a preauthorization grant against an intent."""
+
+    valid: bool
+    reason: str
+    grant_id: str | None = None
+    details: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True, slots=True)
 class ContainmentResult:
     """Recorded containment action result."""
 

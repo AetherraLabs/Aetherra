@@ -3,17 +3,17 @@
     "framer-motion": "^12.23.12",
     "lucide-react": "^0.539.0",
     "react-markdown": "^10.1.0",
-    "react-router-dom": "^7.8.0"
+    "react-router-dom": "^7.18.0"
   },
   "devDependencies": {
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
-    "@vitejs/plugin-react": "^5.0.0",
+    "@vitejs/plugin-react": "^5.2.0",
     "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.6",
+    "postcss": "^8.5.15",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "tailwindcss": "^4.1.11",
-    "vite": "^7.1.5"
+    "vite": "^8.0.16"
   }
 }
