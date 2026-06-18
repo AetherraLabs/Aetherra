@@ -5,6 +5,11 @@ from __future__ import annotations
 from flask import Blueprint, jsonify, request
 from flask.typing import ResponseReturnValue
 
+from Aetherra.guardian.audit import (
+    GUARDIAN_AUDIT_EVENT_TYPES,
+    guardian_audit_integrity_ok,
+    list_guardian_audit_records,
+)
 from Aetherra.guardian.approval import (
     approval_status,
     list_approval_statuses,
@@ -77,6 +82,9 @@ def guardian_status() -> ResponseReturnValue:
                     "total": len(preauthorizations),
                     "active": len(active_preauthorizations),
                 },
+                "audit": {
+                    "integrity_ok": guardian_audit_integrity_ok(),
+                },
             },
         }
     )
@@ -101,6 +109,38 @@ def get_guardian_mode() -> ResponseReturnValue:
             "mode": guardian_mode_status(),
             "events": events[-limit:],
             "total": len(events),
+        }
+    )
+
+
+@bp.get("/audit")
+def list_guardian_audit() -> ResponseReturnValue:
+    """Return bounded Guardian audit records from the signed Security ledger."""
+
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
+
+    try:
+        limit = int(request.args.get("limit", "50"))
+    except ValueError:
+        return jsonify({"ok": False, "error": "limit must be an integer"}), 400
+
+    event_type = request.args.get("event_type")
+    if event_type is not None:
+        event_type = event_type.strip()
+    if event_type and event_type not in GUARDIAN_AUDIT_EVENT_TYPES:
+        return jsonify({"ok": False, "error": "unsupported event_type"}), 400
+
+    records = list_guardian_audit_records(limit=limit, event_type=event_type)
+    return jsonify(
+        {
+            "ok": True,
+            "audit": {
+                "integrity_ok": guardian_audit_integrity_ok(),
+                "records": records,
+                "total_returned": len(records),
+            },
         }
     )
 

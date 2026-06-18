@@ -1,4 +1,9 @@
-from Aetherra.guardian import GuardianMode, IntentDeclaration
+from Aetherra.guardian import (
+    GuardianMode,
+    IntentDeclaration,
+    evaluate_intent,
+    record_outcome,
+)
 from Aetherra.guardian.approval import create_approval_request
 from Aetherra.guardian.containment import record_containment
 from Aetherra.guardian.models import ContainmentAction
@@ -98,6 +103,7 @@ def test_guardian_status_summarizes_operational_state(monkeypatch, tmp_path):
     assert payload["approvals"] == {"total": 1, "pending": 1}
     assert payload["containment"] == {"total": 1, "active": 1}
     assert payload["preauthorizations"] == {"total": 1, "active": 1}
+    assert payload["audit"]["integrity_ok"] is True
 
 
 def test_guardian_mode_api_requires_control_token(monkeypatch, tmp_path):
@@ -200,6 +206,91 @@ def test_guardian_mode_api_validates_history_limit(monkeypatch, tmp_path):
 
     assert response.status_code == 400
     assert response.get_json()["error"] == "limit must be an integer"
+
+
+def test_guardian_audit_api_requires_control_token(monkeypatch, tmp_path):
+    client = _client(monkeypatch, tmp_path)
+
+    response = client.get("/api/guardian/audit")
+
+    assert response.status_code == 401
+    assert response.get_json()["error"] == "unauthorized"
+
+
+def test_guardian_audit_api_returns_signed_guardian_records(monkeypatch, tmp_path):
+    monkeypatch.setenv("AETHERRA_GUARDIAN_MODE", "enforcing")
+    client = _client(monkeypatch, tmp_path)
+    intent = IntentDeclaration(
+        requester="plugin:demo",
+        subsystem="plugin_manager",
+        action="plugin.execute",
+        target="demo",
+        purpose="Execute plugin",
+        capabilities=("execute",),
+        evidence=("plugin:demo",),
+    )
+    decision = evaluate_intent(
+        intent,
+        capability_checker=lambda requester, capability: True,
+    )
+    record_outcome(
+        decision.audit_id,
+        {
+            "status": "completed",
+            "summary": "Finished safely",
+            "raw_payload": "private execution payload",
+        },
+    )
+
+    response = client.get(
+        "/api/guardian/audit",
+        headers={"Authorization": "Bearer control-secret"},
+    )
+
+    assert response.status_code == 200
+    audit = response.get_json()["audit"]
+    assert audit["integrity_ok"] is True
+    assert audit["total_returned"] == 2
+    assert [record["event_type"] for record in audit["records"]] == [
+        "guardian_decision",
+        "guardian_outcome",
+    ]
+    assert audit["records"][0]["hash"] == decision.audit_id
+    assert "private execution payload" not in response.get_data(as_text=True)
+
+
+def test_guardian_audit_api_filters_event_type_and_validates_inputs(
+    monkeypatch, tmp_path
+):
+    monkeypatch.setenv("AETHERRA_GUARDIAN_MODE", "enforcing")
+    client = _client(monkeypatch, tmp_path)
+    intent = IntentDeclaration(
+        requester="plugin:demo",
+        subsystem="plugin_manager",
+        action="plugin.execute",
+        target="demo",
+        purpose="Execute plugin",
+        capabilities=("execute",),
+        evidence=("plugin:demo",),
+    )
+    evaluate_intent(intent, capability_checker=lambda requester, capability: True)
+    headers = {"Authorization": "Bearer control-secret"}
+
+    filtered = client.get(
+        "/api/guardian/audit?event_type=guardian_decision&limit=1",
+        headers=headers,
+    )
+    bad_limit = client.get("/api/guardian/audit?limit=bad", headers=headers)
+    bad_type = client.get("/api/guardian/audit?event_type=security", headers=headers)
+
+    assert filtered.status_code == 200
+    records = filtered.get_json()["audit"]["records"]
+    assert len(records) == 1
+    assert records[0]["event_type"] == "guardian_decision"
+    assert bad_limit.status_code == 400
+    assert bad_limit.get_json()["error"] == "limit must be an integer"
+    assert bad_type.status_code == 400
+    assert bad_type.get_json()["error"] == "unsupported event_type"
 
 
 def test_guardian_approvals_api_lists_and_resolves(monkeypatch, tmp_path):
