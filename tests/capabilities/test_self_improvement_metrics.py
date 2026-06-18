@@ -180,6 +180,52 @@ async def test_reviewable_proposals_reload_from_database(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_proposal_review_filters_and_summary(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+    proposals = [
+        ImprovementProposal(
+            proposal_id="review-low",
+            improvement_type=ImprovementType.PERFORMANCE,
+            description="Low-risk performance proposal",
+            expected_benefit=0.8,
+            implementation_cost=0.2,
+            risk_level=0.1,
+            affected_components=["kernel"],
+            success_criteria=["Review low risk"],
+            created_at=datetime.now(),
+            simulation={"confidence": 0.9},
+        ),
+        ImprovementProposal(
+            proposal_id="review-medium",
+            improvement_type=ImprovementType.RELIABILITY,
+            description="Medium-risk reliability proposal",
+            expected_benefit=0.8,
+            implementation_cost=0.2,
+            risk_level=0.5,
+            affected_components=["memory"],
+            success_criteria=["Review medium risk"],
+            created_at=datetime.now(),
+            simulation={"confidence": 0.7},
+        ),
+    ]
+    for proposal in proposals:
+        await eng._process_proposal(proposal)
+
+    low_risk = eng.list_active_proposals(max_risk=0.2)
+    confident = eng.list_active_proposals(min_confidence=0.8)
+    reliability = eng.list_active_proposals(improvement_type="reliability")
+    summary = eng.get_review_summary()
+
+    assert [proposal["proposal_id"] for proposal in low_risk] == ["review-low"]
+    assert [proposal["proposal_id"] for proposal in confident] == ["review-low"]
+    assert [proposal["proposal_id"] for proposal in reliability] == ["review-medium"]
+    assert summary["total_reviewable"] == 2
+    assert summary["by_type"]["performance"] == 1
+    assert summary["by_type"]["reliability"] == 1
+    assert summary["risk_bands"] == {"low": 1, "medium": 1, "high": 0}
+
+
+@pytest.mark.asyncio
 async def test_terminal_proposals_do_not_reload_for_review(tmp_path):
     db_path = tmp_path / "self_improvement.db"
     eng = SelfImprovementEngine(db_path=str(db_path))

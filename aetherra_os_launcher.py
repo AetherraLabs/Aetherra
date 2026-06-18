@@ -1286,7 +1286,14 @@ class AetherraOSLauncher:
                     if mt.endswith("proposals"):
                         return {
                             "status": "ok",
-                            "proposals": self.impl.list_active_proposals(),
+                            "summary": self.impl.get_review_summary(),
+                            "proposals": self.impl.list_active_proposals(
+                                status=payload.get("status"),
+                                improvement_type=payload.get("improvement_type"),
+                                max_risk=payload.get("max_risk"),
+                                min_confidence=payload.get("min_confidence"),
+                                limit=int(payload.get("limit") or 100),
+                            ),
                         }
                     if mt.endswith("dismiss_proposal"):
                         return await self.impl.dismiss_proposal(

@@ -1203,16 +1203,63 @@ class SelfImprovementEngine:
             "autonomous_implementation_enabled": self.autonomous_implementation_enabled,
         }
 
-    def list_active_proposals(self) -> list[dict[str, Any]]:
-        """Return active proposals in a JSON-safe, read-only representation."""
+    def list_active_proposals(
+        self,
+        *,
+        status: str | None = None,
+        improvement_type: str | None = None,
+        max_risk: float | None = None,
+        min_confidence: float | None = None,
+        limit: int = 100,
+    ) -> list[dict[str, Any]]:
+        """Return reviewable proposals in a JSON-safe, read-only representation."""
+        safe_limit = max(1, min(500, int(limit)))
         proposals = sorted(
             self.active_proposals.values(),
             key=lambda proposal: proposal.created_at,
             reverse=True,
         )
-        return [
-            self._proposal_to_dict(proposal) for proposal in proposals
-        ]
+        filtered: list[ImprovementProposal] = []
+        for proposal in proposals:
+            if status and proposal.status != status:
+                continue
+            if improvement_type and proposal.improvement_type.value != improvement_type:
+                continue
+            if max_risk is not None and proposal.risk_level > max_risk:
+                continue
+            confidence = proposal.simulation.get("confidence")
+            if min_confidence is not None:
+                try:
+                    if float(confidence) < min_confidence:
+                        continue
+                except (TypeError, ValueError):
+                    continue
+            filtered.append(proposal)
+            if len(filtered) >= safe_limit:
+                break
+        return [self._proposal_to_dict(proposal) for proposal in filtered]
+
+    def get_review_summary(self) -> dict[str, Any]:
+        """Return compact review-queue counts for operators."""
+        by_status: dict[str, int] = {}
+        by_type: dict[str, int] = {}
+        risk_bands = {"low": 0, "medium": 0, "high": 0}
+        for proposal in self.active_proposals.values():
+            by_status[proposal.status] = by_status.get(proposal.status, 0) + 1
+            ptype = proposal.improvement_type.value
+            by_type[ptype] = by_type.get(ptype, 0) + 1
+            if proposal.risk_level >= 0.67:
+                risk_bands["high"] += 1
+            elif proposal.risk_level >= 0.34:
+                risk_bands["medium"] += 1
+            else:
+                risk_bands["low"] += 1
+        return {
+            "total_reviewable": len(self.active_proposals),
+            "by_status": dict(sorted(by_status.items())),
+            "by_type": dict(sorted(by_type.items())),
+            "risk_bands": risk_bands,
+        }
 
     def get_proposal(self, proposal_id: str) -> dict[str, Any] | None:
         """Return one active proposal by ID, if it is still reviewable."""

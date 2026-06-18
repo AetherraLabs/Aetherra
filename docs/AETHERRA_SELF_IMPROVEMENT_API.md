@@ -49,11 +49,25 @@ Return read-only self-improvement engine status.
 
 List active improvement proposals without applying them.
 
+Supported query parameters:
+
+- `status`
+- `type` or `improvement_type`
+- `max_risk`
+- `min_confidence`
+- `limit`
+
 **Success response (HTTP 200):**
 
 ```json
 {
   "status": "ok",
+  "summary": {
+    "total_reviewable": 3,
+    "by_status": {"active": 3},
+    "by_type": {"performance": 2, "reliability": 1},
+    "risk_bands": {"low": 2, "medium": 1, "high": 0}
+  },
   "proposals": [
     {
       "proposal_id": "SI-42",

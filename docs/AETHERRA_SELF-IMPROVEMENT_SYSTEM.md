@@ -181,6 +181,8 @@ Implemented behavior:
 - Default operation does not self-implement generated proposals.
 - Active proposals include issue, potential cause, proposed change, evidence, simulation, and rollback metadata.
 - `GET /api/selfimprove/proposals` returns active proposals for UI/operator review.
+- Active proposal listing supports read-only filters by status, improvement type, risk, confidence, and limit.
+- Active proposal listing returns compact review summary counts by status, type, and risk band.
 - Operators can dismiss or reopen proposals through Hub-control-authorized lifecycle endpoints.
 - Dismiss/reopen changes review state only; it does not execute, modify code, reload modules, or bypass Guardian.
 - Proposal review lifecycle events are appended to a local history record with event type, status transition, actor,

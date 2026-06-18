@@ -38,7 +38,23 @@ def _service_call(service: Any, message_type: str, payload: dict[str, Any] | Non
     if message_type.endswith("trends") and hasattr(service, "get_metric_trends"):
         return service.get_metric_trends()
     if message_type.endswith("proposals") and hasattr(service, "list_active_proposals"):
-        return {"status": "ok", "proposals": service.list_active_proposals()}
+        payload = payload or {}
+        summary = (
+            service.get_review_summary()
+            if hasattr(service, "get_review_summary")
+            else {}
+        )
+        return {
+            "status": "ok",
+            "summary": summary,
+            "proposals": service.list_active_proposals(
+                status=payload.get("status"),
+                improvement_type=payload.get("improvement_type"),
+                max_risk=payload.get("max_risk"),
+                min_confidence=payload.get("min_confidence"),
+                limit=int(payload.get("limit") or 100),
+            ),
+        }
     if message_type.endswith("dismiss_proposal") and hasattr(service, "dismiss_proposal"):
         return run_coro_blocking(service.dismiss_proposal(**(payload or {})))
     if message_type.endswith("reopen_proposal") and hasattr(service, "reopen_proposal"):
@@ -170,14 +186,28 @@ def get_proposals() -> ResponseReturnValue:
                 ),
                 503,
             )
-        result = _service_call(service, "selfimprovement.proposals")
+        result = _service_call(
+            service,
+            "selfimprovement.proposals",
+            {
+                "status": request.args.get("status"),
+                "improvement_type": request.args.get("type")
+                or request.args.get("improvement_type"),
+                "max_risk": request.args.get("max_risk", type=float),
+                "min_confidence": request.args.get("min_confidence", type=float),
+                "limit": request.args.get("limit", 100, type=int),
+            },
+        )
         if isinstance(result, dict):
             proposals = result.get("proposals", [])
+            summary = result.get("summary", {})
         elif isinstance(result, list):
             proposals = result
+            summary = {}
         else:
             proposals = []
-        return jsonify({"status": "ok", "proposals": proposals})
+            summary = {}
+        return jsonify({"status": "ok", "summary": summary, "proposals": proposals})
     except Exception as exc:
         logger.error("[SELFIMPROVE] Proposals error: %s", exc)
         return jsonify({"status": "error", "error": "Internal server error"}), 500
