@@ -672,6 +672,15 @@ Configuration available via `config.json`:
 
 Self-Improvement API metrics exposed via `/metrics` endpoint:
 
+- `suppressed_exceptions`: Suppressed Self-Improvement exceptions visible for operational review
+- `analysis_cycles`: Self-Improvement analysis cycles completed
+- `tracked_metrics`: Metric families currently tracked by the engine
+- `proposals_total`: Proposals currently known to the engine
+- `proposals_active`: Active proposals awaiting review or controlled execution
+- `proposals_candidate`: Proposals with enough evidence to be review candidates
+- `proposals_needs_evidence`: Proposals retained but not yet ready for action
+- `proposals_blocked`: Proposals classified as blocked by risk/readiness checks
+- `learning_outcomes`: Persisted downstream proposal outcomes
 - `aetherra_selfimprove_apply_total`: Total apply attempts (labels: status, restart_required)
 - `aetherra_selfimprove_apply_duration_seconds`: Apply operation duration
 - `aetherra_selfimprove_hmr_success_total`: Successful HMR applications

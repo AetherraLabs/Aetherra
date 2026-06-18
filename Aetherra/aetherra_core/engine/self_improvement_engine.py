@@ -1989,10 +1989,23 @@ class SelfImprovementEngine:
     def export_internal_metrics(
         self,
     ) -> Dict[str, Any]:  # pragma: no cover - simple accessor
+        review_summary = self.get_review_summary()
+        by_status = review_summary.get("by_status", {})
+        by_readiness = review_summary.get("by_readiness", {})
         return {
             "suppressed_exceptions": self._suppressed_exceptions,
             "analysis_cycles": self._analysis_cycles,
             "tracked_metrics": len(self.metrics_collector.metrics_history),
+            "proposals_total": len(self.active_proposals),
+            "proposals_active": by_status.get("active", 0),
+            "proposals_proposed_for_review": by_status.get("proposed_for_review", 0),
+            "proposals_candidate": by_readiness.get("candidate", 0),
+            "proposals_needs_evidence": by_readiness.get("needs_evidence", 0),
+            "proposals_blocked": by_readiness.get("blocked", 0),
+            "learning_outcomes": self._count_persisted_learning_outcomes(),
+            "autonomous_implementation_requested": int(
+                self.autonomous_implementation_requested
+            ),
         }
 
     def get_metric_trends(self) -> Dict[str, Dict[str, Any]]:

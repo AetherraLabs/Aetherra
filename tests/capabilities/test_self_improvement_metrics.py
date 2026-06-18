@@ -42,9 +42,19 @@ async def test_analysis_cycle_and_exception_counters_increment():
     assert eng._analysis_cycles == before_cycles + 1
     assert eng._suppressed_exceptions == before_suppressed + 1
     metrics = eng.export_internal_metrics()
-    assert {"suppressed_exceptions", "analysis_cycles", "tracked_metrics"}.issubset(
-        metrics.keys()
-    )
+    expected_keys = {
+        "suppressed_exceptions",
+        "analysis_cycles",
+        "tracked_metrics",
+        "proposals_total",
+        "proposals_active",
+        "proposals_candidate",
+        "proposals_needs_evidence",
+        "proposals_blocked",
+        "learning_outcomes",
+        "autonomous_implementation_requested",
+    }
+    assert expected_keys.issubset(metrics.keys())
 
 
 @pytest.mark.asyncio
@@ -83,6 +93,11 @@ async def test_high_confidence_proposals_remain_recommendations_by_default(
     assert proposals[0]["proposal_id"] == "safe-recommendation"
     assert eng.get_improvement_status()["implemented_proposals"] == 0
     assert eng.get_improvement_status()["autonomous_implementation_enabled"] is False
+    metrics = eng.export_internal_metrics()
+    assert metrics["proposals_total"] == 1
+    assert metrics["proposals_active"] == 1
+    assert metrics["proposals_candidate"] >= 0
+    assert metrics["proposals_blocked"] >= 0
 
 
 @pytest.mark.asyncio
@@ -708,6 +723,12 @@ async def test_proposal_readiness_classification(tmp_path):
     assert by_id["readiness-evidence"]["readiness_reasons"] == ["evidence_sparse"]
     assert by_id["readiness-blocked"]["readiness_status"] == "blocked"
     assert "not_testable" in by_id["readiness-blocked"]["readiness_reasons"]
+
+    metrics = eng.export_internal_metrics()
+    assert metrics["proposals_total"] == 3
+    assert metrics["proposals_candidate"] == 1
+    assert metrics["proposals_needs_evidence"] == 1
+    assert metrics["proposals_blocked"] == 1
 
 
 @pytest.mark.asyncio
