@@ -220,6 +220,9 @@ Implemented foundation:
 - Public Guardian status helpers expose enabled state and operating mode
 - Guarded Hub API for read-only Guardian operations status:
   - `GET /api/guardian/status`
+- Guarded Hub API for Guardian mode state, bounded history, and persisted mode changes:
+  - `GET /api/guardian/mode`
+  - `POST /api/guardian/mode`
 - Guarded Hub API for listing and resolving Guardian approvals:
   - `GET /api/guardian/approvals`
   - `GET /api/guardian/approvals/<request_id>`

@@ -103,13 +103,16 @@ def test_guardian_status_summarizes_operational_state(monkeypatch, tmp_path):
 def test_guardian_mode_api_requires_control_token(monkeypatch, tmp_path):
     client = _client(monkeypatch, tmp_path)
 
-    response = client.post(
+    get_response = client.get("/api/guardian/mode")
+    post_response = client.post(
         "/api/guardian/mode",
         json={"mode": "strict", "reason": "test"},
     )
 
-    assert response.status_code == 401
-    assert response.get_json()["error"] == "unauthorized"
+    assert get_response.status_code == 401
+    assert get_response.get_json()["error"] == "unauthorized"
+    assert post_response.status_code == 401
+    assert post_response.get_json()["error"] == "unauthorized"
 
 
 def test_guardian_mode_api_sets_persisted_mode(monkeypatch, tmp_path):
@@ -136,6 +139,36 @@ def test_guardian_mode_api_sets_persisted_mode(monkeypatch, tmp_path):
     assert status.get_json()["guardian"]["mode_state"] == "persisted"
 
 
+def test_guardian_mode_api_returns_bounded_history(monkeypatch, tmp_path):
+    monkeypatch.delenv("AETHERRA_GUARDIAN_MODE", raising=False)
+    client = _client(monkeypatch, tmp_path)
+    headers = {
+        "Authorization": "Bearer control-secret",
+        "X-Aetherra-Principal": "guardian-admin",
+    }
+    client.post(
+        "/api/guardian/mode",
+        json={"mode": "strict", "reason": "first"},
+        headers=headers,
+    )
+    client.post(
+        "/api/guardian/mode",
+        json={"mode": "observe", "reason": "second"},
+        headers=headers,
+    )
+
+    response = client.get("/api/guardian/mode?limit=1", headers=headers)
+
+    assert response.status_code == 200
+    body = response.get_json()
+    assert body["mode"]["mode"] == "observe"
+    assert body["mode"]["persisted_mode"] == "observe"
+    assert body["mode"]["state"] == "persisted"
+    assert body["total"] == 2
+    assert len(body["events"]) == 1
+    assert body["events"][0]["mode"] == "observe"
+
+
 def test_guardian_mode_api_validates_payload(monkeypatch, tmp_path):
     client = _client(monkeypatch, tmp_path)
     headers = {"Authorization": "Bearer control-secret"}
@@ -155,6 +188,18 @@ def test_guardian_mode_api_validates_payload(monkeypatch, tmp_path):
     assert missing_reason.get_json()["error"] == "reason required"
     assert invalid_mode.status_code == 400
     assert "invalid Guardian mode" in invalid_mode.get_json()["error"]
+
+
+def test_guardian_mode_api_validates_history_limit(monkeypatch, tmp_path):
+    client = _client(monkeypatch, tmp_path)
+
+    response = client.get(
+        "/api/guardian/mode?limit=bad",
+        headers={"Authorization": "Bearer control-secret"},
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["error"] == "limit must be an integer"
 
 
 def test_guardian_approvals_api_lists_and_resolves(monkeypatch, tmp_path):

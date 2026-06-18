@@ -9,6 +9,7 @@ from Aetherra.guardian import (
     classify_decision_tier,
     evaluate_intent,
     guardian_mode,
+    guardian_mode_events,
     guardian_mode_status,
     record_outcome,
     set_guardian_mode,
@@ -153,6 +154,30 @@ def test_guardian_mode_environment_override_wins(monkeypatch, tmp_path):
     assert result["env_override_active"] is True
     assert guardian_mode() == GuardianMode.EMERGENCY
     assert guardian_mode_status()["state"] == "env_override"
+
+
+def test_guardian_mode_metadata_is_sanitized(monkeypatch, tmp_path):
+    monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(tmp_path))
+    monkeypatch.delenv("AETHERRA_GUARDIAN_MODE", raising=False)
+
+    set_guardian_mode(
+        "strict",
+        reason="operator_requested",
+        changed_by="guardian-admin",
+        metadata={
+            "ticket": "SEC-1234",
+            "raw_context": {"private": "value"},
+        },
+    )
+
+    event = guardian_mode_events()[-1]
+
+    assert event["metadata"]["ticket"]["sha256"]
+    assert event["metadata"]["ticket"]["length"] == 8
+    assert event["metadata"]["raw_context"] == {"type": "dict"}
+    assert "SEC-1234" not in (tmp_path / ".aetherra" / "guardian" / "mode.jsonl").read_text(
+        encoding="utf-8"
+    )
 
 
 def test_guardian_emergency_mode_contains_non_recovery_action(monkeypatch, tmp_path):

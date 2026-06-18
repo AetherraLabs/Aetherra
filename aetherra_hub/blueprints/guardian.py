@@ -16,7 +16,11 @@ from Aetherra.guardian.containment import (
     list_containment_statuses,
 )
 from Aetherra.guardian.core import guardian_enabled, guardian_mode
-from Aetherra.guardian.mode import guardian_mode_status, set_guardian_mode
+from Aetherra.guardian.mode import (
+    guardian_mode_events,
+    guardian_mode_status,
+    set_guardian_mode,
+)
 from Aetherra.guardian.preauthorization import (
     list_preauthorization_statuses,
     preauthorization_status,
@@ -74,6 +78,29 @@ def guardian_status() -> ResponseReturnValue:
                     "active": len(active_preauthorizations),
                 },
             },
+        }
+    )
+
+
+@bp.get("/mode")
+def get_guardian_mode() -> ResponseReturnValue:
+    """Return Guardian operating-mode state and bounded history."""
+
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
+    try:
+        limit = int(request.args.get("limit", "25"))
+    except ValueError:
+        return jsonify({"ok": False, "error": "limit must be an integer"}), 400
+    limit = max(1, min(limit, 100))
+    events = guardian_mode_events()
+    return jsonify(
+        {
+            "ok": True,
+            "mode": guardian_mode_status(),
+            "events": events[-limit:],
+            "total": len(events),
         }
     )
 

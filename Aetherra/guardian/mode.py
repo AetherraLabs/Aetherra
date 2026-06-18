@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 from datetime import UTC, datetime
 from typing import Any
@@ -50,7 +51,7 @@ def set_guardian_mode(
         "reason": clean_reason,
         "changed_by": clean_actor,
         "changed_at": _now(),
-        "metadata": metadata or {},
+        "metadata": _sanitize_metadata(metadata or {}),
         "env_override_active": _parse_mode(os.getenv("AETHERRA_GUARDIAN_MODE")) is not None,
     }
     append_jsonl(_mode_log_path(), record)
@@ -105,6 +106,26 @@ def _parse_mode(raw: str | None) -> GuardianMode | None:
         return GuardianMode(value)
     except ValueError:
         return None
+
+
+def _sanitize_metadata(metadata: dict[str, Any]) -> dict[str, Any]:
+    sanitized: dict[str, Any] = {}
+    for key, value in metadata.items():
+        clean_key = str(key)[:120]
+        if value is None or isinstance(value, (bool, int)):
+            sanitized[clean_key] = value
+        elif isinstance(value, float):
+            sanitized[clean_key] = value if value == value else "nan"
+        elif isinstance(value, str):
+            encoded = value.encode("utf-8", errors="replace")
+            sanitized[clean_key] = {
+                "type": "str",
+                "length": len(value),
+                "sha256": hashlib.sha256(encoded).hexdigest(),
+            }
+        else:
+            sanitized[clean_key] = {"type": type(value).__name__}
+    return sanitized
 
 
 def _now() -> str:
