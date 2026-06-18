@@ -5,6 +5,7 @@ import contextlib
 
 # Standard library imports
 import ipaddress
+import json
 import os
 
 from flask import Blueprint, Response, jsonify, request
@@ -44,9 +45,6 @@ def _authorize_ai_request():
 
 
 def _build_response(gen_func):
-    # Standard library imports
-    import json
-
     headers = {
         "Cache-Control": "no-cache",
         "Connection": "keep-alive",
@@ -54,7 +52,60 @@ def _build_response(gen_func):
         # Surface current policy in responses (gate8 expectation)
         "X-Aetherra-Policy": json.dumps(policy_snapshot()),
     }
+    retry_after = _configured_retry_after_header()
+    if retry_after is not None:
+        headers["X-Aetherra-Retry-After"] = retry_after
     return Response(gen_func(), mimetype="text/event-stream", headers=headers)
+
+
+def _sse_frame_to_json(frame: str) -> dict:
+    event_id: int | None = None
+    event_type = "message"
+    data_lines: list[str] = []
+    for raw_line in frame.splitlines():
+        line = raw_line.strip()
+        if line.startswith("id:"):
+            try:
+                event_id = int(line.split(":", 1)[1].strip())
+            except ValueError:
+                event_id = None
+        elif line.startswith("event:"):
+            event_type = line.split(":", 1)[1].strip() or event_type
+        elif line.startswith("data:"):
+            data_lines.append(line.split(":", 1)[1].strip())
+
+    data_raw = "\n".join(data_lines)
+    try:
+        payload = json.loads(data_raw) if data_raw else {}
+    except json.JSONDecodeError:
+        payload = {"data": data_raw}
+
+    if isinstance(payload, dict):
+        payload.setdefault("type", event_type)
+        if event_id is not None:
+            payload.setdefault("id", event_id)
+        return payload
+
+    response = {"type": event_type, "data": payload}
+    if event_id is not None:
+        response["id"] = event_id
+    return response
+
+
+def _configured_retry_after_header() -> str | None:
+    raw_value = os.environ.get("AETHERRA_RETRY_AFTER_SEC")
+    if raw_value is None:
+        return None
+    retry_after = raw_value.strip()
+    if not retry_after:
+        return None
+    try:
+        retry_after_seconds = float(retry_after)
+    except ValueError:
+        return None
+    if retry_after_seconds < 0:
+        return None
+    return retry_after
 
 
 def _request_source() -> str:
@@ -134,6 +185,75 @@ def _duplicate_response(body: dict, headers):
         ),
         409,
     )
+
+
+def _duplicate_ws_message(body: dict, headers: dict[str, str]) -> dict | None:
+    client_message_id = str(body.get("client_message_id") or "").strip()
+    if not client_message_id:
+        return None
+    principal = _principal_from_payload(body, headers)
+    if not idempotency_manager.check_and_mark(principal, client_message_id):
+        return None
+    return {
+        "ok": False,
+        "code": "duplicate",
+        "client_message_id": client_message_id,
+        "error": {
+            "code": "duplicate",
+            "message": "Duplicate client_message_id",
+        },
+    }
+
+
+def register_websocket_routes(app) -> bool:
+    try:
+        # Third party imports
+        from flask_sock import Sock
+    except Exception:
+        return False
+
+    sock = Sock(app)
+
+    @sock.route("/ws/ai/stream")
+    def ai_stream_ws(ws):
+        if os.environ.get("AETHERRA_AI_API_WS", "0") != "1":
+            ws.send(json.dumps({"ok": False, "code": "ws_disabled"}))
+            return
+        if (
+            os.environ.get("AETHERRA_AI_API_ENABLED", "0") != "1"
+            or os.environ.get("AETHERRA_AI_API_STREAM", "0") != "1"
+        ):
+            ws.send(json.dumps({"ok": False, "code": "disabled"}))
+            return
+
+        raw_message = ws.receive()
+        try:
+            body = json.loads(raw_message or "{}")
+        except json.JSONDecodeError:
+            ws.send(json.dumps({"ok": False, "code": "invalid_json"}))
+            return
+        if not isinstance(body, dict):
+            ws.send(json.dumps({"ok": False, "code": "invalid_payload"}))
+            return
+
+        principal = _principal_from_payload(body, {})
+        headers = {"trace_id": "", "X-Aetherra-Principal": principal}
+        duplicate = _duplicate_ws_message(body, headers)
+        if duplicate is not None:
+            ws.send(json.dumps(duplicate))
+            return
+
+        last_event_id_raw = body.get("last_event_id")
+        last_event_id = str(last_event_id_raw) if last_event_id_raw is not None else None
+        for frame in stream_sse(
+            body,
+            headers,
+            last_event_id=last_event_id,
+            method="WS",
+        ):
+            ws.send(json.dumps(_sse_frame_to_json(frame)))
+
+    return True
 
 
 @bp.get("/api/ai/stream_ws")

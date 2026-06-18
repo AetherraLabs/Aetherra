@@ -16,19 +16,14 @@ Features:
 """
 
 # Standard library imports
+import importlib
+import importlib.util
 import logging
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-try:
-    # Third party imports
-    import discord
-    from discord.ext import commands
-
-    DISCORD_AVAILABLE = True
-except ImportError:
-    DISCORD_AVAILABLE = False
+DISCORD_AVAILABLE = importlib.util.find_spec("discord") is not None
 
 try:
     # Third party imports
@@ -38,6 +33,18 @@ try:
     SLACK_AVAILABLE = True
 except ImportError:
     SLACK_AVAILABLE = False
+
+
+def _load_discord_runtime():
+    """Load optional Discord dependencies only when the bot is started."""
+    if not DISCORD_AVAILABLE:
+        return None, None
+    try:
+        discord_module = importlib.import_module("discord")
+        commands_module = importlib.import_module("discord.ext.commands")
+        return discord_module, commands_module
+    except ImportError:
+        return None, None
 
 
 @dataclass
@@ -80,13 +87,14 @@ class UnifiedBotManager:
         self.logger.info(f"Added bot config: {config}")
 
     async def start_discord_bot(self, config: BotConfig):
-        if not DISCORD_AVAILABLE:
+        discord_module, commands_module = _load_discord_runtime()
+        if discord_module is None or commands_module is None:
             self.logger.error("Discord.py not available")
             return
-        intents = discord.Intents.default()
+        intents = discord_module.Intents.default()
         intents.messages = True
         intents.guilds = True
-        bot = commands.Bot(command_prefix="!", intents=intents)
+        bot = commands_module.Bot(command_prefix="!", intents=intents)
 
         @bot.event
         async def on_ready():

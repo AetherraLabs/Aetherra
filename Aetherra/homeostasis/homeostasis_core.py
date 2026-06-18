@@ -55,6 +55,7 @@ class ControllerMode(Enum):
     ADVISORY = "advisory"
     ACTIVE_LIMITED = "active_limited"
     ACTIVE = "active"
+    CORRECTIVE_ACTIVE = "active"
     EMERGENCY = "emergency"
     DISABLED = "disabled"
 
@@ -410,6 +411,70 @@ class HomeostasisController:
         logger.debug(f"🎛️ Control step generated {len(actions)} actions")
         return actions
 
+    async def evaluate_and_act(
+        self, metrics: MetricSnapshot | Dict[str, Any]
+    ) -> List[ControlAction]:
+        """Evaluate supplied metrics and queue generated actions.
+
+        This bypasses collection and interval timing for deterministic
+        integrations that supply their own monitoring snapshot.
+        """
+        snapshot = (
+            metrics
+            if isinstance(metrics, MetricSnapshot)
+            else self._snapshot_from_metric_dict(metrics)
+        )
+        if self.mode in (ControllerMode.DISABLED, ControllerMode.OBSERVE_ONLY):
+            return []
+
+        current_time = time.time()
+        actions: List[ControlAction] = []
+        for control_loop in self.control_loops.values():
+            if not control_loop.enabled:
+                continue
+            actions.extend(
+                await self._process_control_loop(control_loop, snapshot, current_time)
+            )
+
+        actions = self._filter_and_prioritize_actions(actions)
+        actions = self._apply_policy_constraints(actions)
+        for action in actions:
+            self.pending_actions.append(action)
+        return actions
+
+    def _snapshot_from_metric_dict(self, metrics: Dict[str, Any]) -> MetricSnapshot:
+        """Normalize external metric dictionaries into MetricSnapshot fields."""
+
+        def _float_value(*names: str, default: float = 0.0) -> float:
+            for name in names:
+                if name in metrics and metrics[name] is not None:
+                    try:
+                        return float(metrics[name])
+                    except (TypeError, ValueError):
+                        return default
+            return default
+
+        plugin_success = _float_value(
+            "plugin_load_success",
+            "plugin_load_success_rate",
+            default=100.0,
+        )
+        if 0.0 <= plugin_success <= 1.0:
+            plugin_success *= 100.0
+
+        return MetricSnapshot(
+            timestamp=_float_value("timestamp", default=time.time()),
+            memory_rtt=_float_value("memory_rtt", "memory_rtt_p95"),
+            task_latency=_float_value("task_latency", "task_latency_p95"),
+            plugin_load_success=plugin_success,
+            hub_connection=_float_value("hub_connection", default=1.0),
+            registry_health=_float_value("registry_health", default=1.0),
+            exception_suppression=_float_value(
+                "exception_suppression", "exception_rate"
+            ),
+            raw_data=dict(metrics),
+        )
+
     async def _process_control_loop(
         self, control_loop: ControlLoop, snapshot: MetricSnapshot, current_time: float
     ) -> List[ControlAction]:
@@ -581,12 +646,14 @@ class HomeostasisController:
                 )
 
         elif control_loop.name == "memory_rtt_control":
-            if output > 0:  # Memory RTT too high
+            if output < 0:  # Memory RTT too high
                 actions.append(
                     ControlAction(
                         action_type="optimize_memory_cache",
                         target_service="memory_system",
-                        parameters={"cache_size_multiplier": min(2.0, 1.0 + output * 0.05)},
+                        parameters={
+                            "cache_size_multiplier": min(2.0, 1.0 + abs(output) * 0.05)
+                        },
                         priority=ActionPriority.MEDIUM,
                         timestamp=current_time,
                         controller_name=control_loop.name,
@@ -597,12 +664,14 @@ class HomeostasisController:
                 )
 
         elif control_loop.name == "task_latency_control":
-            if output > 0:  # Task latency too high
+            if output < 0:  # Task latency too high
                 actions.append(
                     ControlAction(
                         action_type="increase_task_workers",
                         target_service="kernel_system",
-                        parameters={"worker_count_delta": min(3, int(output))},
+                        parameters={
+                            "worker_count_delta": min(3, max(1, int(abs(output))))
+                        },
                         priority=ActionPriority.MEDIUM,
                         timestamp=current_time,
                         controller_name=control_loop.name,

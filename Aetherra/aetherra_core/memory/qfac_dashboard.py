@@ -357,3 +357,59 @@ class QFACDashboard:
         if inspect.isawaitable(res):
             return cast(dict[str, Any], await res)
         return res if isinstance(res, dict) else {}
+
+
+class _LegacyDashboardAnalyzer:
+    def monitor_compression_performance(self) -> dict[str, Any]:
+        return {
+            "overall_health": 1.0,
+            "overall_ratio": 1.0,
+            "space_saved_percentage": 0.0,
+            "performance_by_type": {},
+            "performance_issues": [],
+            "optimization_suggestions": [],
+        }
+
+
+class _LegacyDashboardMemorySystem:
+    def get_system_status(self) -> dict[str, Any]:
+        return {
+            "size_statistics": {
+                "overall_compression_ratio": 1.0,
+                "space_saved_percentage": 0.0,
+            },
+            "system_health": 1.0,
+            "node_statistics": {
+                "total_nodes": 0,
+                "compressed_nodes": 0,
+                "compression_percentage": 0.0,
+            },
+        }
+
+
+def _run_dashboard_summary(dashboard: QFACDashboard) -> dict[str, Any]:
+    try:
+        return asyncio.run(dashboard.get_dashboard_summary())
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        try:
+            return loop.run_until_complete(dashboard.get_dashboard_summary())
+        finally:
+            loop.close()
+
+
+def _create_legacy_flask_app() -> Any:
+    legacy_app = cast(Any, Flask)("qfac_dashboard")
+    dashboard = QFACDashboard(
+        analyzer=_LegacyDashboardAnalyzer(),
+        memory_system=_LegacyDashboardMemorySystem(),
+    )
+
+    @legacy_app.get("/qfac/metrics")
+    def _qfac_metrics():
+        return jsonify(_run_dashboard_summary(dashboard))
+
+    return legacy_app
+
+
+app = _create_legacy_flask_app() if _FLASK_AVAILABLE else None

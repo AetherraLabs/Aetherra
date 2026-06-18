@@ -78,32 +78,36 @@ async def test_homeostasis_detects_memory_rtt_drift():
     mock_metrics = MagicMock(spec=StabilityMetrics)
 
     # Normal latency - should be stable
-    mock_metrics.get_latest_snapshot.return_value = MetricSnapshot(
+    mock_metrics.get_current_snapshot.return_value = MetricSnapshot(
         timestamp=time.time(),
         memory_rtt=50.0,  # At target
         task_latency=100.0,
-        plugin_load_success=0.95,
-        exception_rate=0.0,
+        plugin_load_success=95.0,
+        hub_connection=1.0,
+        registry_health=1.0,
+        exception_suppression=0.0,
     )
 
     controller = HomeostasisController(metrics=mock_metrics)
     controller.mode = ControllerMode.ACTIVE
 
     # First step - should not generate actions
-    actions = await controller.step()
+    actions = await controller.evaluate_and_act(mock_metrics.get_current_snapshot())
     assert len(actions) == 0, "No actions should trigger at target latency"
 
     # Inject drift: 130ms (exceeds max acceptable 120ms)
-    mock_metrics.get_latest_snapshot.return_value = MetricSnapshot(
+    mock_metrics.get_current_snapshot.return_value = MetricSnapshot(
         timestamp=time.time(),
         memory_rtt=130.0,  # Above max acceptable
         task_latency=100.0,
-        plugin_load_success=0.95,
-        exception_rate=0.0,
+        plugin_load_success=95.0,
+        hub_connection=1.0,
+        registry_health=1.0,
+        exception_suppression=0.0,
     )
 
     # Controller should detect violation
-    actions = await controller.step()
+    actions = await controller.evaluate_and_act(mock_metrics.get_current_snapshot())
 
     # Verify corrective action was generated
     assert len(actions) > 0, (
@@ -117,12 +121,14 @@ async def test_homeostasis_triggers_action_within_slo():
     mock_metrics = MagicMock(spec=StabilityMetrics)
 
     # Inject high latency
-    mock_metrics.get_latest_snapshot.return_value = MetricSnapshot(
+    mock_metrics.get_current_snapshot.return_value = MetricSnapshot(
         timestamp=time.time(),
         memory_rtt=140.0,  # Well above max acceptable
         task_latency=100.0,
-        plugin_load_success=0.95,
-        exception_rate=0.0,
+        plugin_load_success=95.0,
+        hub_connection=1.0,
+        registry_health=1.0,
+        exception_suppression=0.0,
     )
 
     controller = HomeostasisController(metrics=mock_metrics)
@@ -131,7 +137,7 @@ async def test_homeostasis_triggers_action_within_slo():
     start_time = time.time()
 
     # Run evaluation cycle
-    actions = await controller.step()
+    actions = await controller.evaluate_and_act(mock_metrics.get_current_snapshot())
 
     detection_time = time.time() - start_time
 

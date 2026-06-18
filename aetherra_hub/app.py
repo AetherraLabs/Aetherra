@@ -215,6 +215,7 @@ def create_app(cfg: Settings | None = None) -> Flask:
             app.register_blueprint(bp, url_prefix="/api/plugins")
         else:
             app.register_blueprint(bp)
+    ai_stream.register_websocket_routes(app)
 
     # Optional engine reset on startup (test/support use-cases)
     def _maybe_reset_engine() -> None:
