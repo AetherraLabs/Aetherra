@@ -224,6 +224,45 @@ def test_record_performance_metric_persists_without_running_loop(tmp_path):
     assert trends["response_time"]["statistics"]["mean"] == pytest.approx(640.0)
 
 
+def test_record_performance_metric_suppresses_sync_persistence_failure(
+    monkeypatch, tmp_path
+):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+
+    async def fail_store(*_args, **_kwargs):
+        raise RuntimeError("persistence failed")
+
+    monkeypatch.setattr(eng, "_store_metric", fail_store)
+
+    eng.record_performance_metric("response_time", 640.0, "ms")
+
+    status = eng.get_improvement_status()
+    assert status["tracked_metrics"] == 1
+    assert status["suppressed_exceptions"] == 1
+
+
+@pytest.mark.asyncio
+async def test_record_performance_metric_observes_async_persistence_failure(
+    monkeypatch, tmp_path
+):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+
+    async def fail_store(*_args, **_kwargs):
+        raise RuntimeError("async persistence failed")
+
+    monkeypatch.setattr(eng, "_store_metric", fail_store)
+
+    eng.record_performance_metric("response_time", 640.0, "ms")
+    for _ in range(5):
+        if eng.get_improvement_status()["suppressed_exceptions"] == 1:
+            break
+        await asyncio.sleep(0)
+
+    status = eng.get_improvement_status()
+    assert status["tracked_metrics"] == 1
+    assert status["suppressed_exceptions"] == 1
+
+
 def test_analyze_interaction_persists_review_proposal_without_running_loop(tmp_path):
     db_path = tmp_path / "self_improvement.db"
     eng = SelfImprovementEngine(db_path=str(db_path))

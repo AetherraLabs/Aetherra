@@ -138,6 +138,7 @@ Implemented behavior:
 - Homeostasis forwards stability metrics to the Self-Improvement Engine.
 - Runtime systems can record performance metrics with name, value, unit, and context.
 - Metric intake persists observations from both asynchronous services and synchronous callers.
+- Metric intake remains available if persistence fails; failures are logged and counted as suppressed exceptions.
 - The engine tracks metric history and exposes read-only status.
 - Recent persisted metrics are reloaded on startup so status, trends, and proposal analysis retain observation
   continuity after restart.

@@ -1658,7 +1658,10 @@ class SelfImprovementEngine:
         self.metrics_collector.record_metric(name, value, unit, context)
 
         # Store in database
-        self._schedule_or_run(self._store_metric(name, value, unit, context))
+        self._schedule_or_run(
+            self._store_metric(name, value, unit, context),
+            operation="store_metric",
+        )
 
     def analyze_interaction(self, interaction_data: Dict[str, Any]):
         """
@@ -1688,17 +1691,35 @@ class SelfImprovementEngine:
                 status="proposed_for_review",
             )
             # Store this special proposal
-            self._schedule_or_run(self._store_proposal(proposal))
+            self._schedule_or_run(
+                self._store_proposal(proposal),
+                operation="store_interaction_review_proposal",
+            )
 
-    @staticmethod
-    def _schedule_or_run(coro) -> None:
+    def _schedule_or_run(self, coro, *, operation: str) -> None:
         """Schedule a coroutine when possible, otherwise run it to completion."""
         try:
             loop = asyncio.get_running_loop()
         except RuntimeError:
-            asyncio.run(coro)
+            try:
+                asyncio.run(coro)
+            except Exception as exc:
+                self._suppressed_exceptions += 1
+                logger.warning("Self-improvement background %s failed: %s", operation, exc)
             return
-        loop.create_task(coro)
+        task = loop.create_task(coro)
+        task.add_done_callback(
+            lambda done: self._log_background_task_result(done, operation)
+        )
+
+    def _log_background_task_result(self, task: asyncio.Task, operation: str) -> None:
+        try:
+            task.result()
+        except asyncio.CancelledError:
+            logger.debug("Self-improvement background %s was cancelled", operation)
+        except Exception as exc:
+            self._suppressed_exceptions += 1
+            logger.warning("Self-improvement background %s failed: %s", operation, exc)
 
     def get_improvement_status(self) -> Dict[str, Any]:
         """Get current improvement system status"""
