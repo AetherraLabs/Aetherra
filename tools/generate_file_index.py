@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import os
 import re
+import subprocess
 import sys
 from collections.abc import Iterable
 from pathlib import Path
@@ -34,6 +35,36 @@ DEFAULT_EXCLUDE_DIRS = {
 }
 
 TOP_LEVEL_ONLY = set()  # keep empty to allow full traversal
+
+
+def git_tracked_files(root: Path, include_ext: set[str]) -> list[Path] | None:
+    """Return tracked repository files, or None when git is unavailable."""
+    scoped_dirs = {"Aetherra", "tools", "tests", "docs"}
+    try:
+        proc = subprocess.run(
+            ["git", "ls-files"],
+            cwd=root,
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="ignore",
+        )
+    except Exception:
+        return None
+
+    paths: list[Path] = []
+    for rel in proc.stdout.splitlines():
+        rel_path = Path(rel)
+        if len(rel_path.parts) > 1 and rel_path.parts[0] not in scoped_dirs:
+            continue
+        path = root / rel
+        if path.suffix.lower() not in include_ext:
+            continue
+        if not path.exists() or any(part in DEFAULT_EXCLUDE_DIRS for part in path.parts):
+            continue
+        paths.append(path)
+    return paths
 
 
 def extract_python_summary(path: Path) -> str | None:
@@ -150,25 +181,29 @@ def main():
         e.lower() if e.startswith(".") else f".{e.lower()}" for e in args.ext
     }
 
-    # Collect from important subtrees to keep scope relevant
-    candidates: list[Path] = []
-    include_paths = [
-        root / "Aetherra",
-        root / "tools",
-        root / "tests",
-        root / "docs",
-    ]
-    # also add selected top-level python files
-    for item in root.iterdir():
-        if item.is_file() and item.suffix.lower() in include_ext:
-            candidates.append(item)
+    tracked = git_tracked_files(root, include_ext)
+    if tracked is not None:
+        paths = sorted(set(tracked))
+    else:
+        # Collect from important subtrees to keep scope relevant
+        candidates: list[Path] = []
+        include_paths = [
+            root / "Aetherra",
+            root / "tools",
+            root / "tests",
+            root / "docs",
+        ]
+        # also add selected top-level python files
+        for item in root.iterdir():
+            if item.is_file() and item.suffix.lower() in include_ext:
+                candidates.append(item)
 
-    for p in include_paths:
-        if p.exists():
-            candidates.extend(collect_files(p, include_ext))
+        for p in include_paths:
+            if p.exists():
+                candidates.extend(collect_files(p, include_ext))
 
-    # Deduplicate
-    paths = sorted(set(candidates))
+        # Deduplicate
+        paths = sorted(set(candidates))
 
     # Build lines
     lines = [

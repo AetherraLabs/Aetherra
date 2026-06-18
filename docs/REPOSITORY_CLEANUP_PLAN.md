@@ -65,8 +65,12 @@ Candidates to remove from Git history going forward:
 - `demo_dashboard_report.json`
 - `pre_pack_validation*_report.json`
 - `phase*_validation_report_*.json`
+- `homeostasis_metrics_*.json`
+- `rollback_test.json`
+- `integrity_manifest.json`
 - root-level `*.db`, `*.db-shm`, and `*.db-wal`
 - root-level `*.log`
+- root-level generated backup snapshots such as `*_backup.json`
 - generated `data/artifacts/*.sarif`, coverage, and scan reports - removed in the first artifact cleanup pass
 
 Before removal, confirm whether any workflow still depends on the file being
@@ -84,6 +88,15 @@ First pass notes:
   tracked database sidecar artifacts.
 - Left source workflows, root scripts, and ambiguous data files for later
   targeted triage.
+
+Second pass notes:
+
+- Removed timestamped Homeostasis metrics exports and rollback test output.
+- Removed stale generated release integrity output from the repository root.
+- Removed old generated backup snapshots, including an empty cleanup marker and
+  a plugin catalog backup with local absolute paths.
+- Kept `sbom.json`, license trend history, docs consistency config, and stub
+  inventories because they are referenced by active workflows, tools, or docs.
 
 ## Phase 3 - Historical Documentation Reorganization
 

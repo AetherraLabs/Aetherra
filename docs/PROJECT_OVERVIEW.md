@@ -97,7 +97,6 @@ Additional parity test added: `tests/integration/test_hub_compat_parity.py` (ens
 - AETHERRA_PLUGIN_SOFTLOAD
 - AETHERRA_SAFE_MODE
 - AETHERRA_SERVER_AVAILABLE
-- AETHERRA_START_LOCAL_HUB
 - AETHERRA_TELEMETRY_ENDPOINT
 // Security & Policies
 - AETHERRA_KEYS_ALLOW_UNSCOPED
@@ -651,6 +650,8 @@ and workspace scheduling.
 | `AETHERRA_NARRATIVE_CHAPTER_DIR`           | path                               | Directory for persisted narrative chapter artifacts (if enabled).                  |
 | `AETHERRA_EPISODIC_MAX_EVENTS`             | int (default 10000)                | Maximum episodic events retained before compaction/pruning.                        |
 | `AETHERRA_EPISODIC_RETENTION_HOURS`        | int (default 168)                  | Hours to retain episodic events (time-based GC).                                   |
+| `AETHERRA_GUARDIAN_PREAUTH_TIMEOUT_SEC`    | int seconds (default 60)           | Maximum lifetime for low-risk Guardian preauthorization grants.                    |
+| `AETHERRA_SELF_IMPROVEMENT_AUTO_IMPLEMENT` | 1/0 (default 0)                    | Requests autonomous implementation mode; the engine remains proposal-only unless a Guardian-approved execution path exists. |
 | `AETHERRA_FILE_SENSOR_DEBOUNCE_SEC`        | int (default 2)                    | Debounce interval for file system sensor events to avoid burst floods.             |
 | `AETHERRA_SENSOR_SYSTEM_CPU`               | 1/0 (default 1)                    | Enable periodic CPU sensor sampling for system metrics.                            |
 | `AETHERRA_SENSOR_SYSTEM_MEM`               | 1/0 (default 1)                    | Enable memory usage sensor sampling.                                               |

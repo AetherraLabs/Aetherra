@@ -183,6 +183,9 @@ data/artifacts/*scan*.json
 cleanup_report.json
 *audit*.json
 *report*.json
+homeostasis_metrics_*.json
+rollback_test.json
+integrity_manifest.json
 ruff_report*.json
 ruff_report*.txt
 security_scan.json
@@ -194,6 +197,7 @@ docs/docs_architecture_report.json  # Ephemeral generated docs architecture scan
 # Backup files
 backups/
 *.backup.*
+*_backup.json
 backup_*/
 
 # ===== TESTING & COVERAGE =====
