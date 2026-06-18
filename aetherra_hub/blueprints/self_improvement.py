@@ -38,6 +38,25 @@ def _bounded_limit(value: Any, *, default: int, maximum: int) -> int:
     return max(1, min(maximum, parsed))
 
 
+def _safe_error_code(value: Any, *, default: str) -> str:
+    text = str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
+    if not text:
+        return default
+    if len(text) > 80:
+        return default
+    if not all(char.isalnum() or char == "_" for char in text):
+        return default
+    if "traceback" in text or "exception" in text or "error:" in text:
+        return default
+    return text
+
+
+def _safe_result_summary(result: Any) -> dict[str, Any] | None:
+    if not isinstance(result, dict):
+        return None
+    return {"ok": bool(result.get("ok"))}
+
+
 def _service_call(service: Any, message_type: str, payload: dict[str, Any] | None = None) -> Any:
     if hasattr(service, "handle_message"):
         return run_coro_blocking(service.handle_message(message_type, payload or {}))
@@ -533,7 +552,11 @@ def apply_proposal() -> ResponseReturnValue:
                         )
                     )
                 except Exception as exc:
-                    si_res = {"status": "error", "error": str(exc)}
+                    logger.warning(
+                        "[SELFIMPROVE] Self-Incorporation proposal failed: %s",
+                        type(exc).__name__,
+                    )
+                    si_res = {"status": "error", "error": "selfinc_failed"}
 
                 if isinstance(si_res, dict) and si_res.get("status") == "accepted":
                     return jsonify(
@@ -556,9 +579,10 @@ def apply_proposal() -> ResponseReturnValue:
                             "applied": False,
                             "restart_required": False,
                             "method": "selfinc",
-                            "error": si_res.get("reason")
-                            if isinstance(si_res, dict)
-                            else "selfinc_failed",
+                            "error": _safe_error_code(
+                                si_res.get("reason") if isinstance(si_res, dict) else None,
+                                default="selfinc_failed",
+                            ),
                             "selfinc_result": si_res,
                         }
                     ), 400
@@ -634,13 +658,21 @@ def apply_proposal() -> ResponseReturnValue:
                         "applied": False,
                         "restart_required": True,
                         "method": "hmr",
-                        "error": (result or {}).get("error", "hmr_failed"),
-                        "hmr_result": result,
+                        "error": _safe_error_code(
+                            (result or {}).get("error"),
+                            default="hmr_failed",
+                        ),
+                        "hmr_result": _safe_result_summary(result),
                     }
                 ), 400
 
             except Exception as exc:
-                logger.error(f"[SELFIMPROVE] HMR exception for {proposal_id}: {exc}")
+                logger.error(
+                    "[SELFIMPROVE] HMR exception for %s: %s",
+                    proposal_id,
+                    type(exc).__name__,
+                    exc_info=True,
+                )
                 return jsonify(
                     {
                         "ok": False,
@@ -648,7 +680,7 @@ def apply_proposal() -> ResponseReturnValue:
                         "applied": False,
                         "restart_required": True,
                         "method": "hmr",
-                        "error": f"HMR exception: {str(exc)}",
+                        "error": "hmr_exception",
                     }
                 ), 400
 
@@ -665,8 +697,8 @@ def apply_proposal() -> ResponseReturnValue:
             }
         )
 
-    except Exception as e:
-        logger.error(f"[SELFIMPROVE] Apply error: {e}")
+    except Exception:
+        logger.error("[SELFIMPROVE] Apply error", exc_info=True)
         return jsonify({"error": "Failed to apply proposal"}), 500
 
 
@@ -723,6 +755,10 @@ def batch_apply_proposals() -> ResponseReturnValue:
                     "rollback_plan",
                     proposal.get("rollback", data.get("rollback_plan") or data.get("rollback")),
                 ),
+                "guardian_approval_id": proposal.get(
+                    "guardian_approval_id",
+                    data.get("guardian_approval_id"),
+                ),
                 "sender": sender or proposal.get("sender"),
             }
 
@@ -741,8 +777,8 @@ def batch_apply_proposals() -> ResponseReturnValue:
             }
         )
 
-    except Exception as e:
-        logger.error(f"[SELFIMPROVE] Batch apply error: {e}")
+    except Exception:
+        logger.error("[SELFIMPROVE] Batch apply error", exc_info=True)
         return jsonify({"error": "Failed to batch apply proposals"}), 500
 
 
@@ -778,7 +814,11 @@ def _apply_single_proposal(data: dict) -> dict:
                     selfinc.handle_message("selfimprovement.proposal", payload)
                 )
             except Exception as exc:
-                si_res = {"status": "error", "error": str(exc)}
+                logger.warning(
+                    "[SELFIMPROVE] Self-Incorporation proposal failed: %s",
+                    type(exc).__name__,
+                )
+                si_res = {"status": "error", "error": "selfinc_failed"}
 
             if isinstance(si_res, dict) and si_res.get("status") == "accepted":
                 return {
@@ -797,9 +837,10 @@ def _apply_single_proposal(data: dict) -> dict:
                     "applied": False,
                     "restart_required": False,
                     "method": "selfinc",
-                    "error": si_res.get("reason")
-                    if isinstance(si_res, dict)
-                    else "selfinc_failed",
+                    "error": _safe_error_code(
+                        si_res.get("reason") if isinstance(si_res, dict) else None,
+                        default="selfinc_failed",
+                    ),
                     "selfinc_result": si_res,
                 }
 
@@ -855,17 +896,26 @@ def _apply_single_proposal(data: dict) -> dict:
                 "applied": False,
                 "restart_required": True,
                 "method": "hmr",
-                "error": (result or {}).get("error", "hmr_failed"),
-                "hmr_result": result,
+                "error": _safe_error_code(
+                    (result or {}).get("error"),
+                    default="hmr_failed",
+                ),
+                "hmr_result": _safe_result_summary(result),
             }
         except Exception as exc:
+            logger.error(
+                "[SELFIMPROVE] HMR exception for %s: %s",
+                proposal_id,
+                type(exc).__name__,
+                exc_info=True,
+            )
             return {
                 "proposal_id": proposal_id,
                 "ok": False,
                 "applied": False,
                 "restart_required": True,
                 "method": "hmr",
-                "error": f"HMR exception: {str(exc)}",
+                "error": "hmr_exception",
             }
 
     # Manual fallback

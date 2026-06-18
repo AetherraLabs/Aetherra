@@ -586,6 +586,9 @@ const approveMultiple = async (proposalIds: string[]) => {
 
 ## Error handling
 
+Downstream Self-Incorporation and HMR failures are reported with stable error codes. Raw exception messages,
+tracebacks, and detailed component failure payloads are logged server-side and are not reflected to clients.
+
 ### Common error scenarios
 
 **Invalid proposal ID:**
@@ -603,8 +606,8 @@ const approveMultiple = async (proposalIds: string[]) => {
 ```json
 {
   "ok": false,
-  "error": "HMR application failed",
-  "details": "Module reload failed: ImportError in target module"
+  "error": "hmr_failed",
+  "hmr_result": {"ok": false}
 }
 ```
 
@@ -613,8 +616,7 @@ const approveMultiple = async (proposalIds: string[]) => {
 ```json
 {
   "ok": false,
-  "error": "Self-Incorporation service not available",
-  "details": "Cannot apply proposal without selfinc service"
+  "error": "selfinc_failed"
 }
 ```
 

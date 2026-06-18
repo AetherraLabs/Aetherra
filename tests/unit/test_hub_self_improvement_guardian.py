@@ -129,6 +129,21 @@ class _FakeSelfImprovementService:
         return {"error": "unknown_message"}
 
 
+class _RaisingSelfIncorporation:
+    async def handle_message(self, *_args, **_kwargs):
+        raise RuntimeError("Traceback: leaked selfinc path")
+
+
+class _RaisingHmrController:
+    async def handle_kernel_task(self, *_args, **_kwargs):
+        raise RuntimeError("Traceback: leaked hmr path")
+
+
+class _FailingHmrController:
+    async def handle_kernel_task(self, *_args, **_kwargs):
+        return {"ok": False, "error": "Traceback: leaked hmr result"}
+
+
 def _client(monkeypatch, tmp_path):
     monkeypatch.setenv("AETHERRA_PROFILE", "test")
     monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(tmp_path))
@@ -420,3 +435,108 @@ def test_self_improvement_batch_apply_accepts_documented_proposal_ids(
     assert payload["ok"] is True
     assert payload["total"] == 1
     assert payload["results"][0]["proposal_id"] == "SI-BATCH-1"
+
+
+def test_self_improvement_apply_sanitizes_downstream_errors(monkeypatch, tmp_path):
+    client = _client(monkeypatch, tmp_path)
+
+    def fake_get_service(name):
+        if name == "self_incorporation":
+            return _RaisingSelfIncorporation()
+        if name == "hmr_controller":
+            return _RaisingHmrController()
+        return None
+
+    monkeypatch.setattr(self_improvement, "get_service", fake_get_service)
+    headers = {
+        "Authorization": "Bearer control-secret",
+        "X-Aetherra-Principal": "self_improvement_engine",
+    }
+    hmr_proposal = {
+        "proposal_id": "SI-SAFE-ERROR-2",
+        "method": "hmr",
+        "hmr_target": "kernel",
+        "hmr_source": "Aetherra.kernel.patch",
+        "reversible": True,
+        "rollback_plan": "restore prior state",
+    }
+
+    selfinc = client.post(
+        "/api/selfimprove/apply",
+        json={
+            "proposal_id": "SI-SAFE-ERROR-1",
+            "method": "selfinc",
+            "description": "Reversible self-incorporation proposal",
+            "reversible": True,
+            "rollback_plan": "restore prior state",
+        },
+        headers=headers,
+    )
+    approval_request = client.post(
+        "/api/selfimprove/apply",
+        json=hmr_proposal,
+        headers=headers,
+    )
+    approval_id = approval_request.get_json()["guardian"]["details"][
+        "approval_request_id"
+    ]
+    resolve_approval(approval_id, approved=True, approver="user")
+    hmr = client.post(
+        "/api/selfimprove/apply",
+        json={**hmr_proposal, "guardian_approval_id": approval_id},
+        headers=headers,
+    )
+
+    selfinc_payload = selfinc.get_json()
+    hmr_payload = hmr.get_json()
+    assert selfinc.status_code == 400
+    assert selfinc_payload["error"] == "selfinc_failed"
+    assert "Traceback" not in str(selfinc_payload)
+    assert hmr.status_code == 400
+    assert hmr_payload["error"] == "hmr_exception"
+    assert "Traceback" not in str(hmr_payload)
+
+
+def test_self_improvement_batch_sanitizes_hmr_result_errors(monkeypatch, tmp_path):
+    client = _client(monkeypatch, tmp_path)
+
+    def fake_get_service(name):
+        if name == "hmr_controller":
+            return _FailingHmrController()
+        return None
+
+    monkeypatch.setattr(self_improvement, "get_service", fake_get_service)
+    headers = {
+        "Authorization": "Bearer control-secret",
+        "X-Aetherra-Principal": "self_improvement_engine",
+    }
+    proposal = {
+        "proposal_id": "SI-SAFE-ERROR-3",
+        "method": "hmr",
+        "hmr_target": "kernel",
+        "hmr_source": "Aetherra.kernel.patch",
+        "reversible": True,
+        "rollback_plan": "restore prior state",
+    }
+    approval_request = client.post(
+        "/api/selfimprove/apply",
+        json=proposal,
+        headers=headers,
+    )
+    approval_id = approval_request.get_json()["guardian"]["details"][
+        "approval_request_id"
+    ]
+    resolve_approval(approval_id, approved=True, approver="user")
+    response = client.post(
+        "/api/selfimprove/batch-apply",
+        json={
+            "proposals": [proposal],
+            "guardian_approval_id": approval_id,
+        },
+        headers=headers,
+    )
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload["results"][0]["error"] == "hmr_failed"
+    assert "Traceback" not in str(payload)
