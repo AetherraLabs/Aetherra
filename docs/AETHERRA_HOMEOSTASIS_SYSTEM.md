@@ -8,6 +8,22 @@ Aetherra OS. Like an autonomic nervous system, it continuously monitors system h
 optimal operating conditions, and automatically applies corrective actions to maintain system stability and
 ensure reliable operation.
 
+## Completion strategy
+
+Homeostasis must mature in layers. Autonomous correction is useful only after the system can first observe,
+diagnose, and recommend clearly.
+
+1. **Observation**: answer what is happening through metrics, health, state, pressure, and risk. No actions.
+2. **Diagnosis**: explain why it is happening through bounded causal categories such as memory pressure,
+   agent overload, service degradation, trust collapse, or Guardian containment. No actions.
+3. **Recommendation**: propose what should be done, with expected impact and risk. No execution.
+4. **Controlled Action**: submit recommended actions to Guardian and Security before execution.
+5. **Learning**: measure whether corrections worked and improve future recommendations.
+
+Current completion focus: **Phase 5 - Learning**
+
+Completion status: **Functional foundation complete; advanced adaptive optimization remains future work.**
+
 ## Architecture overview
 
 The homeostasis system operates on a closed-loop control principle with four primary layers:
@@ -41,6 +57,109 @@ Guardian protects the Homeostasis paths that can change operating mode, execute 
 Remaining Guardian scope:
 
 - Keep future runtime setpoint mutation, adaptive-threshold mutation, sleep-mode control, maintenance-mode toggles, or distributed node control APIs behind Guardian before enabling them.
+
+## Phase 1 - Observation
+
+Implemented files:
+
+- `Aetherra/homeostasis/observation.py`
+- `Aetherra/homeostasis/stability_metrics.py`
+- Hub endpoint: `GET /api/homeostasis/observation`
+
+Observation is read-only. It does not set controller mode, queue control actions, execute actuators,
+trigger emergency state, mutate rollback stacks, write Guardian approvals, or run autonomous correction.
+
+The observation report answers:
+
+- **Metrics**: current observed values for core, cognitive, and service-health signals.
+- **Health**: latest health status and score from the metrics collector.
+- **State**: controller mode, emergency-stop state, pending action count, supervisor runlevel, and actuator history size.
+- **Pressure**: per-metric pressure classification against setpoints: `nominal`, `elevated`, `high`, or `critical`.
+- **Risk**: aggregate risk level, bounded score, and contributing factors.
+
+This phase intentionally stops before diagnosis, recommendation, or execution.
+
+## Phase 2 - Diagnosis
+
+Implemented files:
+
+- `Aetherra/homeostasis/diagnosis.py`
+- Hub endpoint: `GET /api/homeostasis/diagnosis`
+
+Diagnosis is read-only. It explains likely causes from the observation report without proposing or executing
+corrective actions.
+
+The diagnosis report currently uses bounded causal categories:
+
+- `memory_pressure`
+- `agent_or_kernel_overload`
+- `service_degradation`
+- `cognitive_instability`
+- `interface_degradation`
+- `controller_backlog`
+- `emergency_state`
+- `guardian_containment`
+
+This phase intentionally stops before recommendation or execution.
+
+## Phase 3 - Recommendation
+
+Implemented files:
+
+- `Aetherra/homeostasis/recommendation.py`
+- Hub endpoint: `GET /api/homeostasis/recommendations`
+
+Recommendation is read-only. It suggests bounded actions from diagnosis causes, includes expected impact,
+priority, evidence, required capabilities, and an explicit `requires_guardian` flag. It does not execute
+actuators or mutate Homeostasis state.
+
+Execution remains reserved for Phase 4, where Guardian reviews and Security enforces the proposed action
+before any actuator runs.
+
+## Phase 4 - Controlled Action
+
+Implemented endpoint:
+
+- `POST /api/homeostasis/recommendations/execute`
+
+Controlled action execution requires:
+
+- a current recommendation from the live observation/diagnosis/recommendation chain
+- exact `action_type` and `target_service` match
+- explicit `confirm_execution: true`
+- an executable recommendation requiring `homeostasis:actuate`
+- Hub control authorization
+- Guardian review immediately before actuator execution
+- Security capability enforcement through Guardian's capability checks
+
+This endpoint refuses stale, missing, unconfirmed, or non-actuator recommendations. It does not make
+Homeostasis autonomous by default; it provides a controlled bridge from recommendation to action.
+
+## Phase 5 - Learning
+
+Implemented behavior:
+
+- controlled actuator execution records a bounded Guardian outcome through the signed Security audit ledger
+- the outcome is linked to the Guardian decision audit ID
+- `GET /api/homeostasis/learning` returns a read-only effectiveness summary from signed Guardian decisions and outcomes
+- outcome metadata records completion/failure, affected count, rollback state, and bounded numeric metrics
+- raw actuator parameters and private runtime payloads are not written to the Guardian audit record
+
+This provides the first learning substrate: Homeostasis can now ask whether a controlled correction worked
+by correlating recommendation, Guardian decision, actuator result, and signed outcome audit record. Adaptive
+self-tuning remains future work and must stay behind Guardian before activation.
+
+## Completion criteria
+
+Homeostasis is complete for the current foundation milestone when:
+
+- observation answers what is happening without side effects
+- diagnosis explains likely causes without action
+- recommendation proposes bounded actions without execution
+- controlled action requires Hub control auth, explicit confirmation, current recommendation matching, Guardian review, and Security capability enforcement
+- controlled actions write signed decision and outcome records
+- learning reports summarize signed outcomes without mutating policy or setpoints
+- future self-tuning, adaptive threshold mutation, maintenance-mode changes, sleep-mode control, or distributed node control remain disabled or Guardian-gated before activation
 
 ## Core components
 
@@ -357,6 +476,12 @@ Comprehensive audit capabilities:
 Current implementation state:
 
 - ✅ Core metrics collection and analysis
+- ✅ Phase 1 Observation report and read-only Hub API
+- ✅ Phase 2 Diagnosis report and read-only Hub API
+- ✅ Phase 3 Recommendation report and read-only Hub API
+- ✅ Phase 4 Controlled recommendation execution with Guardian review
+- ✅ Phase 5 Outcome correlation for controlled actions
+- ✅ Phase 5 Learning report over signed Guardian outcomes
 - ✅ Setpoints configuration and validation
 - ✅ Basic PID control loop implementation
 - ✅ Safety-validated actuator framework
