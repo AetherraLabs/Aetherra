@@ -69,6 +69,25 @@ def _service_call(service: Any, message_type: str, payload: dict[str, Any] | Non
             "proposal_id": proposal_id,
             "events": service.get_proposal_history(proposal_id, limit=limit),
         }
+    if message_type.endswith("learning_outcomes") and hasattr(service, "list_learning_outcomes"):
+        payload = payload or {}
+        proposal_id = str(payload.get("proposal_id") or "").strip() or None
+        status = str(payload.get("status") or "").strip() or None
+        limit = int(payload.get("limit") or 50)
+        summary = (
+            service.get_learning_summary(proposal_id=proposal_id, status=status)
+            if hasattr(service, "get_learning_summary")
+            else {}
+        )
+        return {
+            "status": "ok",
+            "summary": summary,
+            "outcomes": service.list_learning_outcomes(
+                proposal_id=proposal_id,
+                status=status,
+                limit=limit,
+            ),
+        }
     if message_type.endswith("proposal") and hasattr(service, "get_proposal"):
         proposal_id = str((payload or {}).get("proposal_id") or "")
         proposal = service.get_proposal(proposal_id)
@@ -278,6 +297,45 @@ def get_proposal_history(proposal_id: str) -> ResponseReturnValue:
         return jsonify({"status": "ok", "proposal_id": proposal_id, "events": events})
     except Exception as exc:
         logger.error("[SELFIMPROVE] Proposal history error: %s", exc)
+        return jsonify({"status": "error", "error": "Internal server error"}), 500
+
+
+@bp.get("/learning/outcomes")
+def get_learning_outcomes() -> ResponseReturnValue:
+    """Return sanitized learning outcomes without exposing raw execution payloads."""
+    try:
+        service = _get_self_improvement_service()
+        if service is None:
+            return (
+                jsonify(
+                    {
+                        "status": "disabled",
+                        "outcomes": [],
+                        "error": "Self-improvement engine not registered",
+                    }
+                ),
+                503,
+            )
+        result = _service_call(
+            service,
+            "selfimprovement.learning_outcomes",
+            {
+                "proposal_id": request.args.get("proposal_id"),
+                "status": request.args.get("status"),
+                "limit": request.args.get("limit", 50, type=int),
+            },
+        )
+        if not isinstance(result, dict):
+            return jsonify({"status": "error", "error": "learning outcomes unavailable"}), 503
+        outcomes = result.get("outcomes")
+        if not isinstance(outcomes, list):
+            outcomes = []
+        summary = result.get("summary")
+        if not isinstance(summary, dict):
+            summary = {}
+        return jsonify({"status": "ok", "summary": summary, "outcomes": outcomes})
+    except Exception as exc:
+        logger.error("[SELFIMPROVE] Learning outcomes error: %s", exc)
         return jsonify({"status": "error", "error": "Internal server error"}), 500
 
 

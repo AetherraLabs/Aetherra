@@ -1,6 +1,6 @@
 # Aetherra Self-Improvement API
 
-Updated: 2025-01-26
+Updated: 2026-06-17
 
 This document describes the Self-Improvement API endpoints exposed by the Aetherra Hub, which enable manual approval and application of autonomously generated improvement proposals. These endpoints integrate with the Lyrixa GUI Self-Improve tab and support both Hot Module Reload (HMR) and manual OS restart workflows.
 
@@ -210,6 +210,46 @@ Reopen a dismissed proposal for active review. Requires Hub control authorizatio
 Lifecycle endpoints mutate only proposal review state. They do not apply proposals, modify code, reload modules,
 or bypass Guardian. Applying a proposal still requires `/api/selfimprove/apply` or `/batch-apply`.
 
+### GET /api/selfimprove/learning/outcomes
+
+Return bounded, sanitized learning outcomes recorded after controlled downstream execution.
+
+Supported query parameters:
+
+- `proposal_id`
+- `status`
+- `limit`
+
+The response does not include raw execution payload values. It exposes only proposal linkage, outcome status,
+numeric outcome metadata, and the names of result detail fields that were present.
+
+**Success response (HTTP 200):**
+
+```json
+{
+  "status": "ok",
+  "summary": {
+    "total_outcomes": 1,
+    "by_status": {"accepted": 1},
+    "average_improvement_achieved": 0.25
+  },
+  "outcomes": [
+    {
+      "session_id": "session-1",
+      "method": "reinforcement",
+      "target_component": "memory",
+      "improvement_achieved": 0.25,
+      "confidence": 1.0,
+      "timestamp": "2026-06-17T00:00:00",
+      "proposal_id": "SI-42",
+      "plan_id": "plan-1",
+      "status": "accepted",
+      "details_keys": ["improvement_achieved", "raw_payload"]
+    }
+  ]
+}
+```
+
 ### GET /api/selfimprove/trends
 
 Return read-only metric trends from the self-improvement engine.
@@ -387,6 +427,7 @@ The Self-Improvement Engine also supports internal service-registry messages:
 - `selfimprovement.trends`: return read-only metric trends.
 - `selfimprovement.proposals`: return active proposals.
 - `selfimprovement.proposal_history`: return bounded lifecycle history for a proposal.
+- `selfimprovement.learning_outcomes`: return bounded sanitized downstream outcome history.
 - `selfimprovement.proposal_result`: record a bounded downstream outcome after controlled execution.
 
 `selfimprovement.proposal_result` records proposal ID, plan ID, status, numeric improvement, and result detail

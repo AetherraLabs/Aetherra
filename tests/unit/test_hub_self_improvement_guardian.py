@@ -9,6 +9,7 @@ class _FakeSelfImprovementService:
     def __init__(self):
         self.proposal_status = "active"
         self.last_proposal_filter = {}
+        self.last_outcome_filter = {}
 
     async def handle_message(self, message_type, data):
         if message_type == "selfimprovement.status":
@@ -96,6 +97,30 @@ class _FakeSelfImprovementService:
                         "reason": "not useful now",
                         "timestamp": "2026-06-17T00:00:00",
                         "metadata": {},
+                    }
+                ],
+            }
+        if message_type == "selfimprovement.learning_outcomes":
+            self.last_outcome_filter = dict(data or {})
+            return {
+                "status": "ok",
+                "summary": {
+                    "total_outcomes": 1,
+                    "by_status": {"accepted": 1},
+                    "average_improvement_achieved": 0.25,
+                },
+                "outcomes": [
+                    {
+                        "session_id": "session-1",
+                        "method": "reinforcement",
+                        "target_component": "memory",
+                        "improvement_achieved": 0.25,
+                        "confidence": 1.0,
+                        "timestamp": "2026-06-17T00:00:00",
+                        "proposal_id": "SI-OBSERVE-1",
+                        "plan_id": "plan-1",
+                        "status": "accepted",
+                        "details_keys": ["improvement_achieved", "raw_payload"],
                     }
                 ],
             }
@@ -266,12 +291,17 @@ def test_self_improvement_read_only_status_proposals_and_trends(monkeypatch, tmp
     )
     trends = client.get("/api/selfimprove/trends")
     proposal = client.get("/api/selfimprove/proposals/SI-OBSERVE-1")
+    outcomes = client.get(
+        "/api/selfimprove/learning/outcomes"
+        "?proposal_id=SI-OBSERVE-1&status=accepted&limit=5"
+    )
     missing = client.get("/api/selfimprove/proposals/missing")
 
     status_payload = status.get_json()
     proposals_payload = proposals.get_json()
     trends_payload = trends.get_json()
     proposal_payload = proposal.get_json()
+    outcomes_payload = outcomes.get_json()
     assert status.status_code == 200
     assert status_payload["autonomous_implementation_enabled"] is False
     assert proposals.status_code == 200
@@ -284,6 +314,18 @@ def test_self_improvement_read_only_status_proposals_and_trends(monkeypatch, tmp
     assert service.last_proposal_filter["limit"] == 5
     assert proposal.status_code == 200
     assert proposal_payload["proposal"]["proposal_id"] == "SI-OBSERVE-1"
+    assert outcomes.status_code == 200
+    assert outcomes_payload["summary"]["total_outcomes"] == 1
+    assert outcomes_payload["outcomes"][0]["proposal_id"] == "SI-OBSERVE-1"
+    assert outcomes_payload["outcomes"][0]["details_keys"] == [
+        "improvement_achieved",
+        "raw_payload",
+    ]
+    assert service.last_outcome_filter == {
+        "proposal_id": "SI-OBSERVE-1",
+        "status": "accepted",
+        "limit": 5,
+    }
     assert missing.status_code == 404
     assert trends.status_code == 200
     assert trends_payload["trends"]["response_time"]["trend_direction"] == "degrading"

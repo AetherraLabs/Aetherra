@@ -1319,6 +1319,22 @@ class AetherraOSLauncher:
                                 limit=limit,
                             ),
                         }
+                    if mt.endswith("learning_outcomes"):
+                        proposal_id = str(payload.get("proposal_id") or "").strip() or None
+                        status = str(payload.get("status") or "").strip() or None
+                        limit = int(payload.get("limit") or 50)
+                        return {
+                            "status": "ok",
+                            "summary": self.impl.get_learning_summary(
+                                proposal_id=proposal_id,
+                                status=status,
+                            ),
+                            "outcomes": self.impl.list_learning_outcomes(
+                                proposal_id=proposal_id,
+                                status=status,
+                                limit=limit,
+                            ),
+                        }
                     if mt.endswith("proposal"):
                         proposal_id = str(payload.get("proposal_id") or "")
                         proposal = self.impl.get_proposal(proposal_id)

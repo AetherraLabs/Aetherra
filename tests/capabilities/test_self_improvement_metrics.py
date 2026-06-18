@@ -181,6 +181,31 @@ async def test_proposal_result_records_bounded_learning_outcome(tmp_path):
         "raw_payload",
     ]
     assert "do-not-store-this-value" not in str(outcome.learning_data)
+    outcomes = eng.list_learning_outcomes(
+        proposal_id="learn-from-result",
+        status="accepted",
+    )
+    summary = eng.get_learning_summary(
+        proposal_id="learn-from-result",
+        status="accepted",
+    )
+    assert outcomes == [
+        {
+            "session_id": outcome.session_id,
+            "method": "reinforcement",
+            "target_component": "memory",
+            "improvement_achieved": 0.4,
+            "confidence": 1.0,
+            "timestamp": outcome.timestamp.isoformat(),
+            "proposal_id": "learn-from-result",
+            "plan_id": "plan-123",
+            "status": "accepted",
+            "details_keys": ["improvement_achieved", "raw_payload"],
+        }
+    ]
+    assert summary["total_outcomes"] == 1
+    assert summary["by_status"] == {"accepted": 1}
+    assert "do-not-store-this-value" not in str(outcomes)
 
 
 @pytest.mark.asyncio

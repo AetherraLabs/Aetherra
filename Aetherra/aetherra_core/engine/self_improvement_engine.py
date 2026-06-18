@@ -852,6 +852,88 @@ class SelfImprovementEngine:
             for row in rows
         ]
 
+    def list_learning_outcomes(
+        self,
+        *,
+        proposal_id: str | None = None,
+        status: str | None = None,
+        limit: int = 50,
+    ) -> list[dict[str, Any]]:
+        """Return bounded, sanitized learning outcomes for review surfaces."""
+        safe_limit = max(1, min(200, int(limit)))
+        normalized_proposal_id = str(proposal_id or "").strip()
+        normalized_status = str(status or "").strip().lower()
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
+        try:
+            rows = conn.execute(
+                """
+                SELECT session_id, method, target_component, improvement_achieved,
+                       confidence, learning_data, timestamp
+                FROM learning_outcomes
+                ORDER BY timestamp DESC
+                LIMIT ?
+                """,
+                (max(safe_limit, 1000),),
+            ).fetchall()
+        finally:
+            conn.close()
+
+        outcomes: list[dict[str, Any]] = []
+        for row in rows:
+            learning_data = self._json_dict(row["learning_data"])
+            outcome_proposal_id = str(learning_data.get("proposal_id") or "")
+            outcome_status = str(learning_data.get("status") or "").lower()
+            if normalized_proposal_id and outcome_proposal_id != normalized_proposal_id:
+                continue
+            if normalized_status and outcome_status != normalized_status:
+                continue
+            details_keys = learning_data.get("details_keys")
+            if not isinstance(details_keys, list):
+                details_keys = []
+            outcomes.append(
+                {
+                    "session_id": str(row["session_id"]),
+                    "method": str(row["method"]),
+                    "target_component": str(row["target_component"]),
+                    "improvement_achieved": float(row["improvement_achieved"]),
+                    "confidence": float(row["confidence"]),
+                    "timestamp": str(row["timestamp"]),
+                    "proposal_id": outcome_proposal_id,
+                    "plan_id": str(learning_data.get("plan_id") or ""),
+                    "status": outcome_status,
+                    "details_keys": sorted(str(key) for key in details_keys),
+                }
+            )
+            if len(outcomes) >= safe_limit:
+                break
+        return outcomes
+
+    def get_learning_summary(
+        self,
+        *,
+        proposal_id: str | None = None,
+        status: str | None = None,
+    ) -> dict[str, Any]:
+        """Return compact counts for bounded learning outcome review."""
+        outcomes = self.list_learning_outcomes(
+            proposal_id=proposal_id,
+            status=status,
+            limit=200,
+        )
+        by_status: dict[str, int] = {}
+        total_improvement = 0.0
+        for outcome in outcomes:
+            outcome_status = str(outcome.get("status") or "unknown")
+            by_status[outcome_status] = by_status.get(outcome_status, 0) + 1
+            total_improvement += float(outcome.get("improvement_achieved") or 0.0)
+        average = total_improvement / len(outcomes) if outcomes else 0.0
+        return {
+            "total_outcomes": len(outcomes),
+            "by_status": dict(sorted(by_status.items())),
+            "average_improvement_achieved": round(average, 4),
+        }
+
     def _proposal_from_row(
         self,
         row: sqlite3.Row,

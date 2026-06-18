@@ -118,6 +118,7 @@ Implemented endpoints:
 - `GET /api/selfimprove/proposals`
 - `GET /api/selfimprove/proposals/<proposal_id>`
 - `GET /api/selfimprove/proposals/<proposal_id>/history`
+- `GET /api/selfimprove/learning/outcomes`
 - `GET /api/selfimprove/trends`
 - `POST /api/selfimprove/proposals/<proposal_id>/dismiss`
 - `POST /api/selfimprove/proposals/<proposal_id>/reopen`
@@ -238,6 +239,9 @@ Implemented behavior:
 - Proposal status is updated from downstream outcomes.
 - A bounded `LearningOutcome` is recorded with proposal ID, plan ID, status, numeric improvement, and detail keys.
 - Raw execution payloads are not copied into the learning record.
+- `GET /api/selfimprove/learning/outcomes` exposes sanitized outcome history for operators and future review
+  surfaces.
+- Outcome listing supports bounded filters by proposal ID, status, and limit.
 
 Adaptive proposal tuning remains future work.
 
@@ -280,6 +284,7 @@ Self-Improvement is complete for the current foundation milestone when:
 - rollback requirements, approval consumption, containment, and audit are enforced
 - execution outcomes can be reported back for future learning
 - learning records store bounded outcome metadata without raw execution payloads
+- learning outcome history can be inspected through a read-only API
 - future autonomous implementation stays disabled unless explicitly enabled and Guardian-gated
 
 ## Tests
