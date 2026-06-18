@@ -1,18 +1,18 @@
 """Standalone acceptance tests for Production Roadmap Phase 2b gates.
 
 Run with:
-    python test_phase2b_acceptance_standalone.py
+    python tests/legacy/root_standalone/test_phase2b_acceptance_standalone.py
 """
 
 from __future__ import annotations
 
-import os
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT_DIR))
 
 from aetherra_coding.analysis import ImpactAnalyzer
 from aetherra_coding.orchestrator import CodeOrchestrator

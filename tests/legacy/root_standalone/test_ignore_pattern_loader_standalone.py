@@ -4,7 +4,7 @@ Standalone test runner for IgnorePatternLoader.
 
 Avoids Aetherra engine initialization.
 
-Run: python test_ignore_pattern_loader_standalone.py
+Run: python tests/legacy/root_standalone/test_ignore_pattern_loader_standalone.py
 """
 
 import shutil
@@ -14,7 +14,8 @@ import unittest
 from pathlib import Path
 
 # Add workspace root to path
-sys.path.insert(0, str(Path(__file__).parent))
+ROOT_DIR = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT_DIR))
 
 from Aetherra.aetherra_core.system.ignore_pattern_loader import (
     IgnorePattern,
@@ -310,9 +311,9 @@ def run_tests():
     print()
 
     if result.wasSuccessful():
-        print("✓ ALL TESTS PASSED")
+        print("PASS ALL TESTS PASSED")
         return 0
-    print("✗ SOME TESTS FAILED")
+    print("FAIL SOME TESTS FAILED")
     if result.failures:
         print("\nFailures:")
         for test, traceback in result.failures:

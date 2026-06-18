@@ -1,7 +1,7 @@
 """Standalone tests for aetherra_coding.analysis.
 
 Run with:
-    python test_analysis_engine_standalone.py
+    python tests/legacy/root_standalone/test_analysis_engine_standalone.py
 """
 
 from __future__ import annotations

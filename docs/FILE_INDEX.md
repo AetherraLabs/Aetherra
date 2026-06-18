@@ -1286,6 +1286,32 @@ tests/
     test_provenance_wrapper_fallback.py
     test_retry_scheduling.py
   legacy/
+    root_standalone/
+      test_alert_intelligence_standalone.py — Test that we can import the core components."""
+      test_analysis_engine_standalone.py — Standalone tests for aetherra_coding.analysis.
+      test_hub_blueprints_standalone.py — Create a minimal Flask test app with all three blueprints registered."""
+      test_ignore_pattern_loader_standalone.py — Standalone tests for IgnorePatternLoader without engine dependencies."""
+      test_optimization_executor_standalone.py — Standalone tests for OptimizationExecutor without engine dependencies."""
+      test_orchestrator_task5_standalone.py
+      test_phase2a_reflector_acceptance_standalone.py — Standalone acceptance tests for Production Roadmap Phase 2a reflector gates.
+      test_phase2b_acceptance_standalone.py — Standalone acceptance tests for Production Roadmap Phase 2b gates.
+      test_phase3_modules_standalone.py — Standalone tests for Phase 3 modules.
+      test_phase4_autonomy_learning_chain_standalone.py — Standalone integration tests for Decision -> Governor -> Learning chain.
+      test_phase4_learning_loop_standalone.py — Standalone tests for Phase 4 learning loop.
+      test_phase4_learning_quality_and_latency_standalone.py — Standalone tests for Phase 4 learning quality and latency checkpoints.
+      test_phase4_memory_engine_enhancement_standalone.py — Standalone tests for Phase 4 memory-engine enhancement slice.
+      test_phase5_bundle_artifacts_standalone.py
+      test_phase5_manifest_policy_standalone.py — Standalone tests for tools/verify_phase5_manifest_policy.py.
+      test_phase5_report_rollup_standalone.py — Standalone tests for tools/phase5_report_rollup.py.
+      test_phase5_validation_harness_standalone.py — Standalone tests for tools/phase5_validation_harness.py.
+      test_plugin_system_standalone.py
+      test_plugins_reflector_standalone.py — Standalone tests for Aetherra.plugins.reflector.ReflectorPlugin.
+      test_policy_manager_standalone.py — Standalone tests for PolicyManager without engine dependencies."""
+      test_script_executor_standalone.py — Simple test runner with colored output."""
+      test_script_service_logging_standalone.py — Simple test runner with colored output."""
+      test_script_validator_standalone.py — Simple test runner with colored output."""
+      test_signature_verifier_standalone.py — Standalone tests for SignatureVerifier."""
+      test_verification_engine_standalone.py — Standalone tests for aetherra_coding.verification.
     phase_7_4_test.py — Test Phase 7.4 multidimensional consciousness integration."""
     phase_7_4_ultimate_test.py — Execute ultimate Phase 7.4 transcendence test."""
     phase_7_5_test.py — Test Phase 7.5 transcendence consolidation integration."""
@@ -1914,47 +1940,22 @@ STUB_INVENTORY.json
 STUB_INVENTORY.md — STUB INVENTORY ANALYSIS - March 10, 2026
 SUPPORT.md — Support
 test_agent_api.py — Test submitting a task to the agent orchestrator.
-test_alert_intelligence_standalone.py — Test that we can import the core components."""
-test_analysis_engine_standalone.py — Standalone tests for aetherra_coding.analysis.
 test_audit_trace_layer.py — Test basic audit trace workflow."""
 test_comprehensive.py — Comprehensive test of all 6 phases of homeostasis implementation.
 test_engine_metrics.py — Test that engine metrics are exported.
 test_ethical_cognitive_integration.py — Mock bias detector for testing."""
 test_ethics_audit_integration.py — Test the core ethics evaluation engine."""
 test_hmr_integration.py — Test HMR integration functionality."""
-test_hub_blueprints_standalone.py — Create a minimal Flask test app with all three blueprints registered."""
-test_ignore_pattern_loader_standalone.py — Standalone tests for IgnorePatternLoader without engine dependencies."""
 test_lyrixa_gui.py — Launch the test GUI.
-test_optimization_executor_standalone.py — Standalone tests for OptimizationExecutor without engine dependencies."""
-test_orchestrator_task5_standalone.py
-test_phase2a_reflector_acceptance_standalone.py — Standalone acceptance tests for Production Roadmap Phase 2a reflector gates.
-test_phase2b_acceptance_standalone.py — Standalone acceptance tests for Production Roadmap Phase 2b gates.
 test_phase3.py — Quick test for Phase 3 homeostasis implementation.
 test_phase3_full.py — Full test for Phase 3 homeostasis implementation including watchdog.
-test_phase3_modules_standalone.py — Standalone tests for Phase 3 modules.
 test_phase4.py — Test for Phase 4 homeostasis cross-system feedback implementation.
-test_phase4_autonomy_learning_chain_standalone.py — Standalone integration tests for Decision -> Governor -> Learning chain.
-test_phase4_learning_loop_standalone.py — Standalone tests for Phase 4 learning loop.
-test_phase4_learning_quality_and_latency_standalone.py — Standalone tests for Phase 4 learning quality and latency checkpoints.
-test_phase4_memory_engine_enhancement_standalone.py — Standalone tests for Phase 4 memory-engine enhancement slice.
 test_phase5.py — Test for Phase 5 homeostasis continuous validation implementation.
-test_phase5_bundle_artifacts_standalone.py — Standalone tests for tools/phase5_bundle_artifacts.py.
-test_phase5_manifest_policy_standalone.py — Standalone tests for tools/verify_phase5_manifest_policy.py.
-test_phase5_report_rollup_standalone.py — Standalone tests for tools/phase5_report_rollup.py.
-test_phase5_validation_harness_standalone.py — Standalone tests for tools/phase5_validation_harness.py.
 test_phase6.py — Test for Phase 6 homeostasis live observability implementation.
-test_plugin_system_standalone.py
-test_plugins_reflector_standalone.py — Standalone tests for Aetherra.plugins.reflector.ReflectorPlugin.
-test_policy_manager_standalone.py — Standalone tests for PolicyManager without engine dependencies."""
-test_script_executor_standalone.py — Simple test runner with colored output."""
-test_script_service_logging_standalone.py — Simple test runner with colored output."""
-test_script_validator_standalone.py — Simple test runner with colored output."""
-test_signature_verifier_standalone.py — Standalone tests for SignatureVerifier."""
 test_storm_canary.py — Test STORM canary with 10% sampling rate.
 test_storm_metrics.py — Quick test to trigger STORM metrics collection.
 test_storm_skeleton.py — Quick smoke test for STORM skeleton integration
 test_unicode_workflow_fix.py — Test that Unicode issues are resolved
-test_verification_engine_standalone.py — Standalone tests for aetherra_coding.verification.
 unicode_logger.py — Unicode-Safe Logging Configuration for Aetherra OS.
 website_truth_audit.md — Aetherra Website Truth Audit
 what is Aether Script.md — Aether Script (`.aether`) Language Overview

@@ -1,27 +1,27 @@
 """Standalone tests for tools/phase5_bundle_artifacts.py.
 
 Run with:
-    python test_phase5_bundle_artifacts_standalone.py
+    python tests/legacy/root_standalone/test_phase5_bundle_artifacts_standalone.py
 """
 
 from __future__ import annotations
 
 import json
-import os
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT_DIR))
 
 
 class TestPhase5BundleArtifacts(unittest.TestCase):
     def test_cli_dry_run(self):
         cmd = [
             sys.executable,
-            "tools/phase5_bundle_artifacts.py",
+            str(ROOT_DIR / "tools" / "phase5_bundle_artifacts.py"),
             "--profile",
             "quick",
             "--runs",
@@ -32,7 +32,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
         ]
         proc = subprocess.run(
             cmd,
-            cwd=os.path.dirname(os.path.abspath(__file__)),
+            cwd=str(ROOT_DIR),
             capture_output=True,
             text=True,
             encoding="utf-8",
@@ -53,7 +53,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             stamp = "standalone_test"
             cmd = [
                 sys.executable,
-                "tools/phase5_bundle_artifacts.py",
+                str(ROOT_DIR / "tools" / "phase5_bundle_artifacts.py"),
                 "--profile",
                 "quick",
                 "--runs",
@@ -67,7 +67,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             ]
             proc = subprocess.run(
                 cmd,
-                cwd=os.path.dirname(os.path.abspath(__file__)),
+                cwd=str(ROOT_DIR),
                 capture_output=True,
                 text=True,
                 encoding="utf-8",
@@ -104,7 +104,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             stamp = "manifest_emit"
             cmd = [
                 sys.executable,
-                "tools/phase5_bundle_artifacts.py",
+                str(ROOT_DIR / "tools" / "phase5_bundle_artifacts.py"),
                 "--profile",
                 "quick",
                 "--runs",
@@ -121,7 +121,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             ]
             proc = subprocess.run(
                 cmd,
-                cwd=os.path.dirname(os.path.abspath(__file__)),
+                cwd=str(ROOT_DIR),
                 capture_output=True,
                 text=True,
                 encoding="utf-8",
@@ -143,7 +143,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
     def test_bundle_rejects_negative_failure_budget(self):
         cmd = [
             sys.executable,
-            "tools/phase5_bundle_artifacts.py",
+            str(ROOT_DIR / "tools" / "phase5_bundle_artifacts.py"),
             "--profile",
             "quick",
             "--runs",
@@ -153,7 +153,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
         ]
         proc = subprocess.run(
             cmd,
-            cwd=os.path.dirname(os.path.abspath(__file__)),
+            cwd=str(ROOT_DIR),
             capture_output=True,
             text=True,
             encoding="utf-8",
@@ -166,7 +166,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             stamp = "budget_quick"
             cmd = [
                 sys.executable,
-                "tools/phase5_bundle_artifacts.py",
+                str(ROOT_DIR / "tools" / "phase5_bundle_artifacts.py"),
                 "--profile",
                 "quick",
                 "--runs",
@@ -182,7 +182,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             ]
             proc = subprocess.run(
                 cmd,
-                cwd=os.path.dirname(os.path.abspath(__file__)),
+                cwd=str(ROOT_DIR),
                 capture_output=True,
                 text=True,
                 encoding="utf-8",
@@ -200,7 +200,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             stamp = "scenario_threshold_fail"
             cmd = [
                 sys.executable,
-                "tools/phase5_bundle_artifacts.py",
+                str(ROOT_DIR / "tools" / "phase5_bundle_artifacts.py"),
                 "--profile",
                 "quick",
                 "--runs",
@@ -216,7 +216,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             ]
             proc = subprocess.run(
                 cmd,
-                cwd=os.path.dirname(os.path.abspath(__file__)),
+                cwd=str(ROOT_DIR),
                 capture_output=True,
                 text=True,
                 encoding="utf-8",
@@ -234,7 +234,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             stamp = "category_threshold_fail"
             cmd = [
                 sys.executable,
-                "tools/phase5_bundle_artifacts.py",
+                str(ROOT_DIR / "tools" / "phase5_bundle_artifacts.py"),
                 "--profile",
                 "quick",
                 "--runs",
@@ -250,7 +250,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             ]
             proc = subprocess.run(
                 cmd,
-                cwd=os.path.dirname(os.path.abspath(__file__)),
+                cwd=str(ROOT_DIR),
                 capture_output=True,
                 text=True,
                 encoding="utf-8",
@@ -287,7 +287,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             stamp = "trend_check"
             cmd = [
                 sys.executable,
-                "tools/phase5_bundle_artifacts.py",
+                str(ROOT_DIR / "tools" / "phase5_bundle_artifacts.py"),
                 "--profile",
                 "quick",
                 "--runs",
@@ -303,7 +303,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             ]
             proc = subprocess.run(
                 cmd,
-                cwd=os.path.dirname(os.path.abspath(__file__)),
+                cwd=str(ROOT_DIR),
                 capture_output=True,
                 text=True,
                 encoding="utf-8",
@@ -328,7 +328,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             stamp = "threshold_fail"
             cmd = [
                 sys.executable,
-                "tools/phase5_bundle_artifacts.py",
+                str(ROOT_DIR / "tools" / "phase5_bundle_artifacts.py"),
                 "--profile",
                 "quick",
                 "--runs",
@@ -344,7 +344,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             ]
             proc = subprocess.run(
                 cmd,
-                cwd=os.path.dirname(os.path.abspath(__file__)),
+                cwd=str(ROOT_DIR),
                 capture_output=True,
                 text=True,
                 encoding="utf-8",
@@ -362,7 +362,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             stamp = "performance_threshold_fail"
             cmd = [
                 sys.executable,
-                "tools/phase5_bundle_artifacts.py",
+                str(ROOT_DIR / "tools" / "phase5_bundle_artifacts.py"),
                 "--profile",
                 "quick",
                 "--runs",
@@ -382,7 +382,7 @@ class TestPhase5BundleArtifacts(unittest.TestCase):
             ]
             proc = subprocess.run(
                 cmd,
-                cwd=os.path.dirname(os.path.abspath(__file__)),
+                cwd=str(ROOT_DIR),
                 capture_output=True,
                 text=True,
                 encoding="utf-8",

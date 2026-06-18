@@ -25,8 +25,8 @@ from pathlib import Path
 from unittest.mock import Mock
 
 # Add project root to path for direct module import
-project_root = str(Path(__file__).parent.parent.parent)
-sys.path.insert(0, project_root)
+ROOT_DIR = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT_DIR))
 
 # Import modules directly (no engine init)
 from Aetherra.aetherra_core.script_service.script_executor import (
@@ -56,18 +56,18 @@ class TestRunner:
         try:
             test_func()
             self.passed += 1
-            print(f"  ✓ test_{self.total:02d}: {name}")
+            print(f"  PASS test_{self.total:02d}: {name}")
             return True
         except AssertionError as e:
             self.failed += 1
             self.errors.append((name, str(e)))
-            print(f"  ✗ test_{self.total:02d}: {name}")
+            print(f"  FAIL test_{self.total:02d}: {name}")
             print(f"      AssertionError: {e}")
             return False
         except Exception as e:
             self.failed += 1
             self.errors.append((name, f"{type(e).__name__}: {e}"))
-            print(f"  ✗ test_{self.total:02d}: {name}")
+            print(f"  FAIL test_{self.total:02d}: {name}")
             print(f"      {type(e).__name__}: {e}")
             return False
 
@@ -310,8 +310,9 @@ def test_execute_shell_success():
             f.write("# Test")
 
         executor = ScriptExecutor(script_path)
+        command = f'"{sys.executable}" -c "print(\'test\')"'
         success, stdout, stderr, code = executor._execute_shell(
-            Mock(command="echo test"), timeout=10
+            Mock(command=command), timeout=10
         )
 
         assert success

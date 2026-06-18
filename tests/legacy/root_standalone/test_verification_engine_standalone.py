@@ -1,7 +1,7 @@
 """Standalone tests for aetherra_coding.verification.
 
 Run with:
-    python test_verification_engine_standalone.py
+    python tests/legacy/root_standalone/test_verification_engine_standalone.py
 """
 
 from __future__ import annotations

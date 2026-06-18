@@ -5,14 +5,14 @@ Scope: Production Roadmap Phase 2a acceptance gate evidence for reflector latenc
 
 ## Commands Executed
 
-- `D:/Aetherra Project/.venv/Scripts/python.exe test_phase2a_reflector_acceptance_standalone.py`
-- `D:/Aetherra Project/.venv/Scripts/python.exe test_plugins_reflector_standalone.py`
+- `D:/Aetherra Project/.venv/Scripts/python.exe tests/legacy/root_standalone/test_phase2a_reflector_acceptance_standalone.py`
+- `D:/Aetherra Project/.venv/Scripts/python.exe tests/legacy/root_standalone/test_plugins_reflector_standalone.py`
 
 ## Results
 
 ### Phase 2a Acceptance Pack
 
-- File: `test_phase2a_reflector_acceptance_standalone.py`
+- File: `tests/legacy/root_standalone/test_phase2a_reflector_acceptance_standalone.py`
 - Result: `3/3 passed`
 - Includes:
   - Kernel compatibility reflector time-range analysis returns valid insights/session data
@@ -21,7 +21,7 @@ Scope: Production Roadmap Phase 2a acceptance gate evidence for reflector latenc
 
 ### Plugin Reflector Standalone Suite
 
-- File: `test_plugins_reflector_standalone.py`
+- File: `tests/legacy/root_standalone/test_plugins_reflector_standalone.py`
 - Result: `16/16 passed`
 - Confirms behavior analytics, pattern extraction, decision analysis, and recommendation helpers remain stable.
 

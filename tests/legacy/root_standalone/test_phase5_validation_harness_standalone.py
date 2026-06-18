@@ -1,20 +1,20 @@
 """Standalone tests for tools/phase5_validation_harness.py.
 
 Run with:
-    python test_phase5_validation_harness_standalone.py
+    python tests/legacy/root_standalone/test_phase5_validation_harness_standalone.py
 """
 
 from __future__ import annotations
 
 import json
-import os
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT_DIR))
 
 from tools.phase5_validation_harness import build_plan, run_validation
 
@@ -112,7 +112,7 @@ class TestPhase5ValidationHarness(unittest.TestCase):
             out = Path(td) / "report.json"
             cmd = [
                 sys.executable,
-                "tools/phase5_validation_harness.py",
+                str(ROOT_DIR / "tools" / "phase5_validation_harness.py"),
                 "--profile",
                 "quick",
                 "--runs",
@@ -123,7 +123,7 @@ class TestPhase5ValidationHarness(unittest.TestCase):
             ]
             proc = subprocess.run(
                 cmd,
-                cwd=os.path.dirname(os.path.abspath(__file__)),
+                cwd=str(ROOT_DIR),
                 capture_output=True,
                 text=True,
                 encoding="utf-8",

@@ -8,7 +8,7 @@ Covers:
 - CodeOrchestrator E2E flow (10 tests)
 
 Run with:
-    python test_orchestrator_task5_standalone.py
+    python tests/legacy/root_standalone/test_orchestrator_task5_standalone.py
 """
 
 from __future__ import annotations

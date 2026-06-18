@@ -1,7 +1,7 @@
 """Standalone tests for tools/phase5_report_rollup.py.
 
 Run with:
-    python test_phase5_report_rollup_standalone.py
+    python tests/legacy/root_standalone/test_phase5_report_rollup_standalone.py
 """
 
 from __future__ import annotations

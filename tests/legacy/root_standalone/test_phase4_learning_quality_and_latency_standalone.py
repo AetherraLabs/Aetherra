@@ -1,7 +1,7 @@
 """Standalone tests for Phase 4 learning quality and latency checkpoints.
 
 Run with:
-    python test_phase4_learning_quality_and_latency_standalone.py
+    python tests/legacy/root_standalone/test_phase4_learning_quality_and_latency_standalone.py
 """
 
 from __future__ import annotations

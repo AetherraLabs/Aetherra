@@ -18,11 +18,20 @@ from pathlib import Path
 from typing import Any
 
 
+ROOT_DIR = Path(__file__).resolve().parents[1]
+LEGACY_STANDALONE_TEST_DIR = ROOT_DIR / "tests" / "legacy" / "root_standalone"
+
+
 @dataclass
 class Scenario:
     name: str
     command: list[str]
     category: str
+
+
+def _legacy_standalone_test(filename: str) -> str:
+    """Return an absolute path for a legacy standalone validation script."""
+    return str(LEGACY_STANDALONE_TEST_DIR / filename)
 
 
 def build_plan(profile: str = "quick") -> list[Scenario]:
@@ -32,7 +41,9 @@ def build_plan(profile: str = "quick") -> list[Scenario]:
             name="decision-governor-learning-chain",
             command=[
                 sys.executable,
-                "test_phase4_autonomy_learning_chain_standalone.py",
+                _legacy_standalone_test(
+                    "test_phase4_autonomy_learning_chain_standalone.py"
+                ),
             ],
             category="governance",
         ),
@@ -40,7 +51,9 @@ def build_plan(profile: str = "quick") -> list[Scenario]:
             name="learning-quality-and-latency",
             command=[
                 sys.executable,
-                "test_phase4_learning_quality_and_latency_standalone.py",
+                _legacy_standalone_test(
+                    "test_phase4_learning_quality_and_latency_standalone.py"
+                ),
             ],
             category="performance",
         ),
@@ -48,7 +61,9 @@ def build_plan(profile: str = "quick") -> list[Scenario]:
             name="memory-recall-and-consolidation",
             command=[
                 sys.executable,
-                "test_phase4_memory_engine_enhancement_standalone.py",
+                _legacy_standalone_test(
+                    "test_phase4_memory_engine_enhancement_standalone.py"
+                ),
             ],
             category="performance",
         ),
@@ -60,17 +75,26 @@ def build_plan(profile: str = "quick") -> list[Scenario]:
         [
             Scenario(
                 name="reflector-codegen-apply-chain",
-                command=[sys.executable, "test_orchestrator_task5_standalone.py"],
+                command=[
+                    sys.executable,
+                    _legacy_standalone_test("test_orchestrator_task5_standalone.py"),
+                ],
                 category="integration",
             ),
             Scenario(
                 name="codegen-impact-approval-chain",
-                command=[sys.executable, "test_analysis_engine_standalone.py"],
+                command=[
+                    sys.executable,
+                    _legacy_standalone_test("test_analysis_engine_standalone.py"),
+                ],
                 category="integration",
             ),
             Scenario(
                 name="code-verification-gates",
-                command=[sys.executable, "test_verification_engine_standalone.py"],
+                command=[
+                    sys.executable,
+                    _legacy_standalone_test("test_verification_engine_standalone.py"),
+                ],
                 category="security",
             ),
         ]
@@ -78,39 +102,59 @@ def build_plan(profile: str = "quick") -> list[Scenario]:
         + [
             Scenario(
                 name="phase3-core-modules",
-                command=[sys.executable, "test_phase3_modules_standalone.py"],
+                command=[
+                    sys.executable,
+                    _legacy_standalone_test("test_phase3_modules_standalone.py"),
+                ],
                 category="integration",
             ),
             Scenario(
                 name="plugin-reflector",
-                command=[sys.executable, "test_plugins_reflector_standalone.py"],
+                command=[
+                    sys.executable,
+                    _legacy_standalone_test("test_plugins_reflector_standalone.py"),
+                ],
                 category="integration",
             ),
             Scenario(
                 name="plugin-system-safety",
-                command=[sys.executable, "test_plugin_system_standalone.py"],
+                command=[
+                    sys.executable,
+                    _legacy_standalone_test("test_plugin_system_standalone.py"),
+                ],
                 category="security",
             ),
             Scenario(
                 name="hub-blueprints-integration",
-                command=[sys.executable, "test_hub_blueprints_standalone.py"],
+                command=[
+                    sys.executable,
+                    _legacy_standalone_test("test_hub_blueprints_standalone.py"),
+                ],
                 category="integration",
             ),
             Scenario(
                 name="policy-governance-guardrails",
-                command=[sys.executable, "test_policy_manager_standalone.py"],
+                command=[
+                    sys.executable,
+                    _legacy_standalone_test("test_policy_manager_standalone.py"),
+                ],
                 category="governance",
             ),
             Scenario(
                 name="signature-verifier-security",
-                command=[sys.executable, "test_signature_verifier_standalone.py"],
+                command=[
+                    sys.executable,
+                    _legacy_standalone_test("test_signature_verifier_standalone.py"),
+                ],
                 category="security",
             ),
             Scenario(
                 name="optimization-executor-safety",
                 command=[
                     sys.executable,
-                    "test_optimization_executor_standalone.py",
+                    _legacy_standalone_test(
+                        "test_optimization_executor_standalone.py"
+                    ),
                 ],
                 category="performance",
             ),
@@ -118,13 +162,18 @@ def build_plan(profile: str = "quick") -> list[Scenario]:
                 name="phase5-harness-self-check",
                 command=[
                     sys.executable,
-                    "test_phase5_validation_harness_standalone.py",
+                    _legacy_standalone_test(
+                        "test_phase5_validation_harness_standalone.py"
+                    ),
                 ],
                 category="integration",
             ),
             Scenario(
                 name="phase5-rollup-self-check",
-                command=[sys.executable, "test_phase5_report_rollup_standalone.py"],
+                command=[
+                    sys.executable,
+                    _legacy_standalone_test("test_phase5_report_rollup_standalone.py"),
+                ],
                 category="integration",
             ),
         ]
@@ -140,6 +189,14 @@ def _run_subprocess(command: list[str], timeout: int) -> dict[str, Any]:
     child_env = dict(os.environ)
     child_env.setdefault("PYTHONIOENCODING", "utf-8")
     child_env.setdefault("PYTHONUTF8", "1")
+    existing_python_path = child_env.get("PYTHONPATH")
+    root_python_path = str(ROOT_DIR)
+    if existing_python_path:
+        child_env["PYTHONPATH"] = os.pathsep.join(
+            [root_python_path, existing_python_path]
+        )
+    else:
+        child_env["PYTHONPATH"] = root_python_path
     try:
         proc = subprocess.run(
             command,

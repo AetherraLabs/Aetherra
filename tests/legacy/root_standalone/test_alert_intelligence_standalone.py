@@ -14,7 +14,8 @@ import sys
 from pathlib import Path
 
 # Add the project to Python path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+ROOT_DIR = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT_DIR))
 
 
 def test_basic_imports():

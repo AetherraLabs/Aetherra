@@ -1,7 +1,7 @@
 """Standalone tests for tools/verify_phase5_manifest_policy.py.
 
 Run with:
-    python test_phase5_manifest_policy_standalone.py
+    python tests/legacy/root_standalone/test_phase5_manifest_policy_standalone.py
 """
 
 from __future__ import annotations
@@ -13,7 +13,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT_DIR))
 
 from tools.verify_phase5_manifest_policy import verify_policy, verify_required_env_var
 

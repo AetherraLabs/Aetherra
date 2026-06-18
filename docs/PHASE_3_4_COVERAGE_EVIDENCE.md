@@ -7,7 +7,7 @@ Scope: Roadmap checklist items for autonomy guardrails and learning benchmark br
 
 ### Test Runs
 
-- `test_phase3_modules_standalone.py` → `19/19 passed`
+- `tests/legacy/root_standalone/test_phase3_modules_standalone.py` → `19/19 passed`
 
 ### Added Negative-Path Coverage
 
@@ -26,10 +26,10 @@ Scope: Roadmap checklist items for autonomy guardrails and learning benchmark br
 
 ### Test Runs
 
-- `test_phase4_learning_loop_standalone.py` → `7/7 passed`
-- `test_phase4_autonomy_learning_chain_standalone.py` → `3/3 passed`
-- `test_phase4_learning_quality_and_latency_standalone.py` → `3/3 passed`
-- `test_phase4_memory_engine_enhancement_standalone.py` → `5/5 passed`
+- `tests/legacy/root_standalone/test_phase4_learning_loop_standalone.py` → `7/7 passed`
+- `tests/legacy/root_standalone/test_phase4_autonomy_learning_chain_standalone.py` → `3/3 passed`
+- `tests/legacy/root_standalone/test_phase4_learning_quality_and_latency_standalone.py` → `3/3 passed`
+- `tests/legacy/root_standalone/test_phase4_memory_engine_enhancement_standalone.py` → `5/5 passed`
 
 ### Benchmark/Behavior Evidence
 

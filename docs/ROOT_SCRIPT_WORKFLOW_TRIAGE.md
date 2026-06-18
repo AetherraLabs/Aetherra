@@ -3,7 +3,7 @@
 > Maintained and officially operated by **Aetherra Labs**.
 > **Powered by Aetherra Labs.**
 
-Status: Initial classification pass
+Status: Legacy standalone test migration started
 
 This document records the cautious root script and `.aether` workflow triage.
 It is intentionally conservative: files are classified before any move/delete
@@ -27,6 +27,8 @@ are not broken by cleanup.
 - `.gitignore` now explicitly preserves the tracked root `.vscode/tasks.json`.
 - `.gitignore` now explicitly preserves tracked Aetherra cleanup utilities.
 - `git ls-files -ci --exclude-standard` should remain empty after this pass.
+- Phase 5 harness-owned and remaining non-workflow standalone tests now live
+  under `tests/legacy/root_standalone/`.
 
 ## Keep At Root
 
@@ -82,13 +84,18 @@ runtime path discovery are updated together.
 
 ## Next Safe Step
 
-Start with root standalone tests:
+Continue root test cleanup:
 
-1. Create `tests/legacy/root_standalone/`.
-2. Move a small batch of root `test_*_standalone.py` files.
-3. Update `tools/phase5_validation_harness.py` command paths.
-4. Update docs that mention those exact root paths.
-5. Run the moved tests directly and the Phase 5 harness slice.
+1. Keep `test_unicode_workflow_fix.py` at root until
+   `.github/workflows/auto-fix-workflow-failures.yml` and
+   `quick_fix_workflows.py` are updated together.
+2. Review remaining root `test_phase*.py`, STORM probes, and demo/manual test
+   scripts before deciding whether they belong in `tests/`, `tests/storm/`, or
+   `demos/`.
+3. Move only one referenced group at a time and update callers before removing
+   root paths.
+4. Run the moved tests directly and any workflow or harness slice that calls
+   them.
 
 This keeps the cleanup reversible and avoids mixing test-layout migration with
 runtime module relocation.

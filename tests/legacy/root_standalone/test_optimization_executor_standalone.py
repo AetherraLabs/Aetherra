@@ -4,7 +4,7 @@ Standalone test runner for OptimizationExecutor.
 
 Avoids Aetherra engine initialization to prevent Unicode encoding issues.
 
-Run: python test_optimization_executor_standalone.py
+Run: python tests/legacy/root_standalone/test_optimization_executor_standalone.py
 """
 
 import json
@@ -380,9 +380,9 @@ def run_tests():
     print()
 
     if result.wasSuccessful():
-        print("✓ ALL TESTS PASSED")
+        print("PASS ALL TESTS PASSED")
         return 0
-    print("✗ SOME TESTS FAILED")
+    print("FAIL SOME TESTS FAILED")
     if result.failures:
         print("\nFailures:")
         for test, traceback in result.failures:

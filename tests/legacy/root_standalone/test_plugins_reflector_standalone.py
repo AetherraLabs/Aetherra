@@ -1,7 +1,7 @@
 """Standalone tests for Aetherra.plugins.reflector.ReflectorPlugin.
 
 Run with:
-    python test_plugins_reflector_standalone.py
+    python tests/legacy/root_standalone/test_plugins_reflector_standalone.py
 """
 
 from __future__ import annotations

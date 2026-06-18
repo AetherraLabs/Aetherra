@@ -1,7 +1,7 @@
 """
 Standalone tests for SignatureVerifier (no Aetherra engine dependencies)
 
-Run with: python test_signature_verifier_standalone.py
+Run with: python tests/legacy/root_standalone/test_signature_verifier_standalone.py
 """
 
 import json
@@ -51,7 +51,7 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
         # Hash should be 64 characters (SHA-256)
         self.assertEqual(len(file_hash), 64)
         self.assertTrue(all(c in "0123456789abcdef" for c in file_hash))
-        print("✓ test_01_compute_file_hash PASSED")
+        print("PASS test_01_compute_file_hash PASSED")
 
     def test_02_empty_file_hash(self):
         """Test empty file hashing."""
@@ -64,7 +64,7 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
         # Known SHA-256 of empty string
         expected = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         self.assertEqual(file_hash, expected)
-        print("✓ test_02_empty_file_hash PASSED")
+        print("PASS test_02_empty_file_hash PASSED")
 
     def test_03_is_trusted_location(self):
         """Test trusted location detection."""
@@ -75,7 +75,7 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
         self.assertTrue(verifier._is_trusted_location("src/lyrixa/test.py"))
         self.assertFalse(verifier._is_trusted_location("tests/test.py"))
         self.assertFalse(verifier._is_trusted_location("demos/test.py"))
-        print("✓ test_03_is_trusted_location PASSED")
+        print("PASS test_03_is_trusted_location PASSED")
 
     def test_04_path_based_trust_trusted_file(self):
         """Test path-based trust with trusted file."""
@@ -90,7 +90,7 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
         self.assertTrue(is_valid)
         self.assertEqual(info.method, "path_based_trust")
         self.assertTrue(info.trusted_location)
-        print("✓ test_04_path_based_trust_trusted_file PASSED")
+        print("PASS test_04_path_based_trust_trusted_file PASSED")
 
     def test_05_path_based_trust_untrusted_file(self):
         """Test path-based trust with untrusted file."""
@@ -103,7 +103,7 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
         self.assertFalse(is_valid)
         self.assertEqual(info.method, "path_based_trust")
         self.assertFalse(info.trusted_location)
-        print("✓ test_05_path_based_trust_untrusted_file PASSED")
+        print("PASS test_05_path_based_trust_untrusted_file PASSED")
 
     def test_06_manifest_loading(self):
         """Test manifest file loading."""
@@ -122,7 +122,7 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
 
         self.assertEqual(verifier.manifest["test.py"], "abc123")
         self.assertEqual(verifier.manifest_metadata["version"], "1.0")
-        print("✓ test_06_manifest_loading PASSED")
+        print("PASS test_06_manifest_loading PASSED")
 
     def test_07_manifest_verification_valid(self):
         """Test manifest verification with valid hash."""
@@ -150,7 +150,7 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
 
         self.assertTrue(is_valid)
         self.assertTrue(info.signature_valid)
-        print("✓ test_07_manifest_verification_valid PASSED")
+        print("PASS test_07_manifest_verification_valid PASSED")
 
     def test_08_manifest_verification_invalid(self):
         """Test manifest verification with invalid hash."""
@@ -174,7 +174,7 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
 
         self.assertFalse(is_valid)
         self.assertFalse(info.signature_valid)
-        print("✓ test_08_manifest_verification_invalid PASSED")
+        print("PASS test_08_manifest_verification_invalid PASSED")
 
     def test_09_batch_verification(self):
         """Test batch verification."""
@@ -190,7 +190,7 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
         self.assertEqual(len(results), 3)
         for file_path, (is_valid, info) in results.items():
             self.assertIsInstance(info, SignatureInfo)
-        print("✓ test_09_batch_verification PASSED")
+        print("PASS test_09_batch_verification PASSED")
 
     def test_10_caching(self):
         """Test verification caching."""
@@ -209,7 +209,7 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
         self.assertEqual(is_valid1, is_valid2)
         # Timestamps should be identical (from cache)
         self.assertEqual(info1.timestamp, info2.timestamp)
-        print("✓ test_10_caching PASSED")
+        print("PASS test_10_caching PASSED")
 
     def test_11_clear_cache(self):
         """Test cache clearing."""
@@ -222,7 +222,7 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
         self.assertGreater(len(verifier.verification_cache), 0)
         verifier.clear_cache()
         self.assertEqual(len(verifier.verification_cache), 0)
-        print("✓ test_11_clear_cache PASSED")
+        print("PASS test_11_clear_cache PASSED")
 
     def test_12_generate_manifest(self):
         """Test manifest generation."""
@@ -246,7 +246,7 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
 
         self.assertEqual(len(manifest_data["hashes"]), 3)
         self.assertEqual(manifest_data["version"], "1.0")
-        print("✓ test_12_generate_manifest PASSED")
+        print("PASS test_12_generate_manifest PASSED")
 
     def test_13_audit_logging(self):
         """Test audit log generation."""
@@ -267,7 +267,7 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
         self.assertIn("timestamp", log_entry)
         self.assertIn("file_path", log_entry)
         self.assertIn("is_valid", log_entry)
-        print("✓ test_13_audit_logging PASSED")
+        print("PASS test_13_audit_logging PASSED")
 
     def test_14_normalize_manifest_key(self):
         """Test manifest key normalization."""
@@ -278,7 +278,7 @@ class TestSignatureVerifierStandalone(unittest.TestCase):
 
         normalized = verifier._normalize_manifest_key("path/to/file.py")
         self.assertEqual(normalized, "path/to/file.py")
-        print("✓ test_14_normalize_manifest_key PASSED")
+        print("PASS test_14_normalize_manifest_key PASSED")
 
 
 def run_tests():
@@ -298,10 +298,10 @@ def run_tests():
     print("=" * 70 + "\n")
 
     if result.wasSuccessful():
-        print("✓ ALL TESTS PASSED")
+        print("PASS ALL TESTS PASSED")
         return 0
     else:
-        print("✗ SOME TESTS FAILED")
+        print("FAIL SOME TESTS FAILED")
         return 1
 
 

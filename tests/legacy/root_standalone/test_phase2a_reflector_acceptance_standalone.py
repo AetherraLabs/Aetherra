@@ -1,7 +1,7 @@
 """Standalone acceptance tests for Production Roadmap Phase 2a reflector gates.
 
 Run with:
-    python test_phase2a_reflector_acceptance_standalone.py
+    python tests/legacy/root_standalone/test_phase2a_reflector_acceptance_standalone.py
 """
 
 from __future__ import annotations
@@ -12,8 +12,10 @@ import tempfile
 import time
 import unittest
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT_DIR))
 
 from Aetherra.aetherra_core.kernel.reflector import MemoryReflector
 from Aetherra.aetherra_core.memory.fractal_mesh.base import (

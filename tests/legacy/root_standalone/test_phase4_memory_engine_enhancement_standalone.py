@@ -1,7 +1,7 @@
 """Standalone tests for Phase 4 memory-engine enhancement slice.
 
 Run with:
-    python test_phase4_memory_engine_enhancement_standalone.py
+    python tests/legacy/root_standalone/test_phase4_memory_engine_enhancement_standalone.py
 """
 
 from __future__ import annotations

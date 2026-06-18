@@ -5,7 +5,7 @@ Standalone test runner for PolicyManager.
 Avoids Aetherra engine initialization to prevent Unicode encoding issues
 in Windows cmd.exe environment.
 
-Run: python test_policy_manager_standalone.py
+Run: python tests/legacy/root_standalone/test_policy_manager_standalone.py
 """
 
 import sys
@@ -215,9 +215,9 @@ def run_tests():
     print()
 
     if result.wasSuccessful():
-        print("✓ ALL TESTS PASSED")
+        print("PASS ALL TESTS PASSED")
         return 0
-    print("✗ SOME TESTS FAILED")
+    print("FAIL SOME TESTS FAILED")
     if result.failures:
         print("\nFailures:")
         for test, traceback in result.failures:

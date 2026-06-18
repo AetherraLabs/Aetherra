@@ -6,7 +6,7 @@ Covers:
 - Aetherra.plugins.manager
 
 Run with:
-    python test_phase3_modules_standalone.py
+    python tests/legacy/root_standalone/test_phase3_modules_standalone.py
 """
 
 from __future__ import annotations

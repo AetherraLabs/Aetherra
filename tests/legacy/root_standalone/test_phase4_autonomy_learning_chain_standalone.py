@@ -1,7 +1,7 @@
 """Standalone integration tests for Decision -> Governor -> Learning chain.
 
 Run with:
-    python test_phase4_autonomy_learning_chain_standalone.py
+    python tests/legacy/root_standalone/test_phase4_autonomy_learning_chain_standalone.py
 """
 
 from __future__ import annotations

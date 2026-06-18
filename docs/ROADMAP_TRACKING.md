@@ -54,32 +54,32 @@ Source of truth roadmap: `PRODUCTION_ROADMAP.md`
 Completed now:
 
 - Implemented `aetherra_coding/verification.py` (new verifier engine)
-- Added standalone tests: `test_verification_engine_standalone.py` (15/15 passing)
+- Added standalone tests: `tests/legacy/root_standalone/test_verification_engine_standalone.py` (15/15 passing)
 - Upgraded `aetherra_coding/analysis.py` with `DependencyGraphBuilder` + `ImpactAnalyzer`
-- Added standalone tests: `test_analysis_engine_standalone.py` (10/10 passing)
+- Added standalone tests: `tests/legacy/root_standalone/test_analysis_engine_standalone.py` (10/10 passing)
 - Replaced placeholder helper methods in `Aetherra/plugins/reflector.py` with data-driven implementations
-- Added standalone tests: `test_plugins_reflector_standalone.py` (16/16 passing)
+- Added standalone tests: `tests/legacy/root_standalone/test_plugins_reflector_standalone.py` (16/16 passing)
 - Implemented Phase 3 core modules:
   - `Aetherra/consciousness/decision_engine.py`
   - `Aetherra/consciousness/autonomy_governor.py`
   - `Aetherra/plugins/manager.py`
-- Added standalone tests: `test_phase3_modules_standalone.py` (17/17 passing)
+- Added standalone tests: `tests/legacy/root_standalone/test_phase3_modules_standalone.py` (17/17 passing)
 - Implemented Phase 4 learning loop:
   - `Aetherra/consciousness/learning_loop.py`
   - Integrates decision outcomes + episodic recording + adaptive decision hints + persisted learning state
-- Added standalone tests: `test_phase4_learning_loop_standalone.py` (7/7 passing)
+- Added standalone tests: `tests/legacy/root_standalone/test_phase4_learning_loop_standalone.py` (7/7 passing)
 - Implemented Phase 4 memory-engine enhancement slice:
   - Enhanced `Aetherra/aetherra_core/memory/aetherra_memory_engine.py` with semantic recall ranking,
     consolidation hooks, importance scoring, and decay support
-- Added standalone tests: `test_phase4_memory_engine_enhancement_standalone.py` (5/5 passing)
+- Added standalone tests: `tests/legacy/root_standalone/test_phase4_memory_engine_enhancement_standalone.py` (5/5 passing)
 - Added standalone integration tests for autonomy-learning chain:
-  - `test_phase4_autonomy_learning_chain_standalone.py` (3/3 passing)
+  - `tests/legacy/root_standalone/test_phase4_autonomy_learning_chain_standalone.py` (3/3 passing)
 - Added standalone Phase 4 quality/latency checkpoint tests:
-  - `test_phase4_learning_quality_and_latency_standalone.py` (3/3 passing)
+  - `tests/legacy/root_standalone/test_phase4_learning_quality_and_latency_standalone.py` (3/3 passing)
   - Demonstrates learning improvement over 10+ iterations and <100ms checks for memory recall and reflector behavior analysis
 - Started formal Phase 5 validation harness:
   - `tools/phase5_validation_harness.py`
-  - `test_phase5_validation_harness_standalone.py` (5/5 passing)
+  - `tests/legacy/root_standalone/test_phase5_validation_harness_standalone.py` (5/5 passing)
   - Includes repeat-run mode (`--runs`) and run pass-rate evidence in JSON output
   - Hardened subprocess execution for Windows (`PYTHONIOENCODING=utf-8`, `PYTHONUTF8=1`) to avoid cp1252 crashes in child test runs
   - Interruption-resilient runner handling for subprocess timeout/interrupt/runner exceptions
@@ -108,7 +108,7 @@ Completed now:
   - Adds grouped historical trend deltas against prior rollup artifacts
 - Added Phase 5 bundle utility:
   - `tools/phase5_bundle_artifacts.py`
-  - `test_phase5_bundle_artifacts_standalone.py` (10/10 passing)
+  - `tests/legacy/root_standalone/test_phase5_bundle_artifacts_standalone.py` (10/10 passing)
   - Runs harness + rollup in one command and writes bundled artifacts under a target directory
   - Supports threshold gates via `--min-run-pass-rate` and writes gate outcomes in bundle summary metadata
   - Supports per-scenario threshold gates via `--scenario-min-pass-rate <scenario>=<rate>`
@@ -130,7 +130,7 @@ Completed now:
   - Adds explicit key-presence precheck via `tools/verify_phase5_manifest_policy.py --require-env-var AETHERRA_RELEASE_PRIVKEY`
   - `main` push now runs a production-style Phase 5 bundle with `--emit-release-manifest`
   - Enforces signature presence via `tools/verify_phase5_manifest_policy.py --require-signature`
-  - New standalone tests: `test_phase5_manifest_policy_standalone.py` (5/5 passing)
+  - New standalone tests: `tests/legacy/root_standalone/test_phase5_manifest_policy_standalone.py` (5/5 passing)
 - Generated full-profile bundle evidence artifact:
   - `.aetherra/reports/phase5/phase5_bundle_full_x3_evidence.json`
   - Result: `harness_ok=true`, `rollup_ok=true`, `gates_ok=true`
@@ -161,26 +161,26 @@ Completed now:
   - Result: `harness_ok=true`, `rollup_ok=true`, `gates_ok=true`
   - Includes category threshold gate results plus rollup category/performance delta propagation
 - Added Phase 2a reflector acceptance evidence pack:
-  - `test_phase2a_reflector_acceptance_standalone.py` (3/3 passing)
-  - `test_plugins_reflector_standalone.py` re-run (16/16 passing)
+  - `tests/legacy/root_standalone/test_phase2a_reflector_acceptance_standalone.py` (3/3 passing)
+  - `tests/legacy/root_standalone/test_plugins_reflector_standalone.py` re-run (16/16 passing)
   - `docs/REFLECTOR_PERFORMANCE.md` documents command outputs and latency gate evidence
   - Confirms active reflector architecture stability (`kernel` compatibility adapter + plugin reflector latency <100ms)
 - Closed Phase 2b acceptance gates:
-  - `test_phase2b_acceptance_standalone.py` (3/3 passing)
+  - `tests/legacy/root_standalone/test_phase2b_acceptance_standalone.py` (3/3 passing)
   - Re-validated core Phase 2b suites:
-    - `test_analysis_engine_standalone.py` (10/10 passing)
-    - `test_verification_engine_standalone.py` (15/15 passing)
-    - `test_orchestrator_task5_standalone.py` (60/60 passing)
+    - `tests/legacy/root_standalone/test_analysis_engine_standalone.py` (10/10 passing)
+    - `tests/legacy/root_standalone/test_verification_engine_standalone.py` (15/15 passing)
+    - `tests/legacy/root_standalone/test_orchestrator_task5_standalone.py` (60/60 passing)
   - Evidence doc: `docs/PHASE_2B_ACCEPTANCE_EVIDENCE.md`
 - Expanded Phase 3 guardrail coverage:
-  - `test_phase3_modules_standalone.py` expanded to 19/19 passing
+  - `tests/legacy/root_standalone/test_phase3_modules_standalone.py` expanded to 19/19 passing
   - Added plugin negative-path checks (load failure reporting, unknown capability path)
   - Evidence doc: `docs/PHASE_3_4_COVERAGE_EVIDENCE.md`
 - Expanded Phase 4 learning benchmark coverage (all passing):
-  - `test_phase4_learning_loop_standalone.py` (7/7)
-  - `test_phase4_autonomy_learning_chain_standalone.py` (3/3)
-  - `test_phase4_learning_quality_and_latency_standalone.py` (3/3)
-  - `test_phase4_memory_engine_enhancement_standalone.py` (5/5)
+  - `tests/legacy/root_standalone/test_phase4_learning_loop_standalone.py` (7/7)
+  - `tests/legacy/root_standalone/test_phase4_autonomy_learning_chain_standalone.py` (3/3)
+  - `tests/legacy/root_standalone/test_phase4_learning_quality_and_latency_standalone.py` (3/3)
+  - `tests/legacy/root_standalone/test_phase4_memory_engine_enhancement_standalone.py` (5/5)
   - Evidence doc: `docs/PHASE_3_4_COVERAGE_EVIDENCE.md`
 - Completed Week 10 integration matrix and regression/load-style repeat runs:
   - `.aetherra/reports/phase5/phase5_validation_report_full_week10_matrix.json` (`15/15`, pass)
