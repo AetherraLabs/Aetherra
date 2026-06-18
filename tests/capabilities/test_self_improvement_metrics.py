@@ -144,7 +144,8 @@ async def test_dismissed_duplicate_proposal_is_not_reactivated(tmp_path):
 
 @pytest.mark.asyncio
 async def test_proposal_result_records_bounded_learning_outcome(tmp_path):
-    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+    db_path = tmp_path / "self_improvement.db"
+    eng = SelfImprovementEngine(db_path=str(db_path))
     proposal = ImprovementProposal(
         proposal_id="learn-from-result",
         improvement_type=ImprovementType.PERFORMANCE,
@@ -206,6 +207,9 @@ async def test_proposal_result_records_bounded_learning_outcome(tmp_path):
     assert summary["total_outcomes"] == 1
     assert summary["by_status"] == {"accepted": 1}
     assert "do-not-store-this-value" not in str(outcomes)
+    reloaded = SelfImprovementEngine(db_path=str(db_path))
+    assert reloaded.get_improvement_status()["learning_outcomes"] == 1
+    assert reloaded.list_learning_outcomes(proposal_id="learn-from-result") == outcomes
 
 
 @pytest.mark.asyncio

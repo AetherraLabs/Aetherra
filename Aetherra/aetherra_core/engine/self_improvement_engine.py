@@ -934,6 +934,17 @@ class SelfImprovementEngine:
             "average_improvement_achieved": round(average, 4),
         }
 
+    def _count_persisted_learning_outcomes(self) -> int:
+        """Return the persisted learning outcome count with an in-memory fallback."""
+        conn = sqlite3.connect(self.db_path)
+        try:
+            row = conn.execute("SELECT COUNT(*) FROM learning_outcomes").fetchone()
+            return int(row[0] if row is not None else 0)
+        except sqlite3.Error:
+            return len(self.learning_outcomes)
+        finally:
+            conn.close()
+
     def _proposal_from_row(
         self,
         row: sqlite3.Row,
@@ -1436,7 +1447,7 @@ class SelfImprovementEngine:
             "total_proposals": len(self.active_proposals),
             "active_proposals": active_count,
             "implemented_proposals": implemented_count,
-            "learning_outcomes": len(self.learning_outcomes),
+            "learning_outcomes": self._count_persisted_learning_outcomes(),
             "tracked_metrics": len(self.metrics_collector.metrics_history),
             "last_analysis": datetime.now().isoformat(),
             "analysis_cycles": self._analysis_cycles,

@@ -242,6 +242,7 @@ Implemented behavior:
 - `GET /api/selfimprove/learning/outcomes` exposes sanitized outcome history for operators and future review
   surfaces.
 - Outcome listing supports bounded filters by proposal ID, status, and limit.
+- Engine status reports persisted learning outcome counts so outcome visibility remains consistent after restart.
 
 Adaptive proposal tuning remains future work.
 
