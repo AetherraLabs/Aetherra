@@ -674,6 +674,40 @@ async def test_proposal_review_filters_and_summary(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_review_queries_tolerate_malformed_optional_filters(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+    proposal = ImprovementProposal(
+        proposal_id="review-filter-tolerance",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Tolerate malformed optional filters",
+        expected_benefit=0.8,
+        implementation_cost=0.2,
+        risk_level=0.1,
+        affected_components=["kernel"],
+        success_criteria=["Malformed optional filters do not fail review"],
+        created_at=datetime.now(),
+        evidence=["metric:kernel", "trend:degrading"],
+        simulation={"confidence": 0.9, "testable": True, "rollback_available": True},
+        rollback_plan="Restore prior settings",
+    )
+    await eng._process_proposal(proposal)
+
+    proposals = eng.list_active_proposals(
+        max_risk="not-a-number",  # type: ignore[arg-type]
+        min_confidence="nan",  # type: ignore[arg-type]
+        limit="also-bad",  # type: ignore[arg-type]
+    )
+    history = eng.get_proposal_history("review-filter-tolerance", limit="bad")  # type: ignore[arg-type]
+    outcomes = eng.list_learning_outcomes(limit="bad")  # type: ignore[arg-type]
+
+    assert [proposal["proposal_id"] for proposal in proposals] == [
+        "review-filter-tolerance"
+    ]
+    assert isinstance(history, list)
+    assert outcomes == []
+
+
+@pytest.mark.asyncio
 async def test_proposal_readiness_classification(tmp_path):
     eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
     candidate = ImprovementProposal(

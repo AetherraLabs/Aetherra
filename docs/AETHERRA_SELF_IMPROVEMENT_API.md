@@ -77,6 +77,8 @@ Supported query parameters:
 - `min_confidence`
 - `limit`
 
+Limits are bounded by the API. Malformed limits fall back to the endpoint default instead of failing the request.
+
 **Success response (HTTP 200):**
 
 ```json

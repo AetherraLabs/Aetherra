@@ -1264,6 +1264,14 @@ class AetherraOSLauncher:
                 def __init__(self, impl):
                     self.impl = impl
 
+                @staticmethod
+                def _bounded_limit(value, *, default, maximum):
+                    try:
+                        parsed = int(value)
+                    except (TypeError, ValueError):
+                        parsed = default
+                    return max(1, min(maximum, parsed))
+
                 async def handle_message(self, message_type, data):
                     mt = (message_type or "").lower()
                     payload = data if isinstance(data, dict) else {}
@@ -1305,7 +1313,11 @@ class AetherraOSLauncher:
                                 readiness_status=payload.get("readiness_status"),
                                 max_risk=payload.get("max_risk"),
                                 min_confidence=payload.get("min_confidence"),
-                                limit=int(payload.get("limit") or 100),
+                                limit=self._bounded_limit(
+                                    payload.get("limit"),
+                                    default=100,
+                                    maximum=500,
+                                ),
                             ),
                         }
                     if mt.endswith("dismiss_proposal"):
@@ -1322,7 +1334,11 @@ class AetherraOSLauncher:
                         )
                     if mt.endswith("proposal_history"):
                         proposal_id = str(payload.get("proposal_id") or "")
-                        limit = int(payload.get("limit") or 50)
+                        limit = self._bounded_limit(
+                            payload.get("limit"),
+                            default=50,
+                            maximum=200,
+                        )
                         return {
                             "status": "ok",
                             "proposal_id": proposal_id,
@@ -1334,7 +1350,11 @@ class AetherraOSLauncher:
                     if mt.endswith("learning_outcomes"):
                         proposal_id = str(payload.get("proposal_id") or "").strip() or None
                         status = str(payload.get("status") or "").strip() or None
-                        limit = int(payload.get("limit") or 50)
+                        limit = self._bounded_limit(
+                            payload.get("limit"),
+                            default=50,
+                            maximum=200,
+                        )
                         return {
                             "status": "ok",
                             "summary": self.impl.get_learning_summary(

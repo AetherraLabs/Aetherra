@@ -331,6 +331,26 @@ def test_self_improvement_read_only_status_proposals_and_trends(monkeypatch, tmp
     assert trends_payload["trends"]["response_time"]["trend_direction"] == "degrading"
 
 
+def test_self_improvement_read_only_limits_are_bounded(monkeypatch, tmp_path):
+    client = _client(monkeypatch, tmp_path)
+    service = _FakeSelfImprovementService()
+    monkeypatch.setattr(
+        self_improvement,
+        "_get_self_improvement_service",
+        lambda: service,
+    )
+
+    proposals = client.get("/api/selfimprove/proposals?limit=999999")
+    outcomes = client.get("/api/selfimprove/learning/outcomes?limit=not-a-number")
+    history = client.get("/api/selfimprove/proposals/SI-OBSERVE-1/history?limit=0")
+
+    assert proposals.status_code == 200
+    assert service.last_proposal_filter["limit"] == 500
+    assert outcomes.status_code == 200
+    assert service.last_outcome_filter["limit"] == 50
+    assert history.status_code == 200
+
+
 def test_self_improvement_proposal_lifecycle_requires_auth_and_updates_review(
     monkeypatch, tmp_path
 ):

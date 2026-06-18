@@ -923,7 +923,9 @@ class SelfImprovementEngine:
 
     def _load_recent_metrics_from_db(self, *, max_rows: int = 5000) -> None:
         """Load a bounded set of recent metrics into memory for restart continuity."""
-        safe_limit = max(1, min(20000, int(max_rows)))
+        safe_limit = self._coerce_bounded_int(
+            max_rows, default=5000, minimum=1, maximum=20000
+        )
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
         try:
@@ -1039,7 +1041,7 @@ class SelfImprovementEngine:
         limit: int = 50,
     ) -> list[dict[str, Any]]:
         """Return bounded lifecycle history for a proposal."""
-        safe_limit = max(1, min(200, int(limit)))
+        safe_limit = self._coerce_bounded_int(limit, default=50, minimum=1, maximum=200)
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
         try:
@@ -1078,7 +1080,7 @@ class SelfImprovementEngine:
         limit: int = 50,
     ) -> list[dict[str, Any]]:
         """Return bounded, sanitized learning outcomes for review surfaces."""
-        safe_limit = max(1, min(200, int(limit)))
+        safe_limit = self._coerce_bounded_int(limit, default=50, minimum=1, maximum=200)
         normalized_proposal_id = str(proposal_id or "").strip()
         normalized_status = str(status or "").strip().lower()
         conn = sqlite3.connect(self.db_path)
@@ -1639,6 +1641,24 @@ class SelfImprovementEngine:
         return keys[:50]
 
     @staticmethod
+    def _coerce_bounded_int(value: Any, *, default: int, minimum: int, maximum: int) -> int:
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError):
+            parsed = default
+        return max(minimum, min(maximum, parsed))
+
+    @staticmethod
+    def _coerce_optional_float(value: Any) -> float | None:
+        if value is None:
+            return None
+        try:
+            parsed = float(value)
+        except (TypeError, ValueError):
+            return None
+        return parsed if math.isfinite(parsed) else None
+
+    @staticmethod
     def _sanitize_metric_context(
         context: Dict[str, Any] | None,
     ) -> Dict[str, Any] | None:
@@ -1790,7 +1810,9 @@ class SelfImprovementEngine:
         limit: int = 100,
     ) -> list[dict[str, Any]]:
         """Return reviewable proposals in a JSON-safe, read-only representation."""
-        safe_limit = max(1, min(500, int(limit)))
+        safe_limit = self._coerce_bounded_int(limit, default=100, minimum=1, maximum=500)
+        safe_max_risk = self._coerce_optional_float(max_risk)
+        safe_min_confidence = self._coerce_optional_float(min_confidence)
         proposals = sorted(
             self.active_proposals.values(),
             key=lambda proposal: proposal.created_at,
@@ -1804,12 +1826,12 @@ class SelfImprovementEngine:
                 continue
             if readiness_status and proposal.readiness_status != readiness_status:
                 continue
-            if max_risk is not None and proposal.risk_level > max_risk:
+            if safe_max_risk is not None and proposal.risk_level > safe_max_risk:
                 continue
             confidence = proposal.simulation.get("confidence")
-            if min_confidence is not None:
+            if safe_min_confidence is not None:
                 try:
-                    if float(confidence) < min_confidence:
+                    if float(confidence) < safe_min_confidence:
                         continue
                 except (TypeError, ValueError):
                     continue

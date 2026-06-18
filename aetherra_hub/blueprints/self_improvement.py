@@ -30,6 +30,14 @@ def _get_self_improvement_service() -> Any | None:
     return get_service("self_improvement_engine")
 
 
+def _bounded_limit(value: Any, *, default: int, maximum: int) -> int:
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        parsed = default
+    return max(1, min(maximum, parsed))
+
+
 def _service_call(service: Any, message_type: str, payload: dict[str, Any] | None = None) -> Any:
     if hasattr(service, "handle_message"):
         return run_coro_blocking(service.handle_message(message_type, payload or {}))
@@ -53,7 +61,7 @@ def _service_call(service: Any, message_type: str, payload: dict[str, Any] | Non
                 readiness_status=payload.get("readiness_status"),
                 max_risk=payload.get("max_risk"),
                 min_confidence=payload.get("min_confidence"),
-                limit=int(payload.get("limit") or 100),
+                limit=_bounded_limit(payload.get("limit"), default=100, maximum=500),
             ),
         }
     if message_type.endswith("dismiss_proposal") and hasattr(service, "dismiss_proposal"):
@@ -63,7 +71,7 @@ def _service_call(service: Any, message_type: str, payload: dict[str, Any] | Non
     if message_type.endswith("proposal_history") and hasattr(service, "get_proposal_history"):
         payload = payload or {}
         proposal_id = str(payload.get("proposal_id") or "")
-        limit = int(payload.get("limit") or 50)
+        limit = _bounded_limit(payload.get("limit"), default=50, maximum=200)
         return {
             "status": "ok",
             "proposal_id": proposal_id,
@@ -73,7 +81,7 @@ def _service_call(service: Any, message_type: str, payload: dict[str, Any] | Non
         payload = payload or {}
         proposal_id = str(payload.get("proposal_id") or "").strip() or None
         status = str(payload.get("status") or "").strip() or None
-        limit = int(payload.get("limit") or 50)
+        limit = _bounded_limit(payload.get("limit"), default=50, maximum=200)
         summary = (
             service.get_learning_summary(proposal_id=proposal_id, status=status)
             if hasattr(service, "get_learning_summary")
@@ -217,7 +225,11 @@ def get_proposals() -> ResponseReturnValue:
                 or request.args.get("readiness_status"),
                 "max_risk": request.args.get("max_risk", type=float),
                 "min_confidence": request.args.get("min_confidence", type=float),
-                "limit": request.args.get("limit", 100, type=int),
+                "limit": _bounded_limit(
+                    request.args.get("limit"),
+                    default=100,
+                    maximum=500,
+                ),
             },
         )
         if isinstance(result, dict):
@@ -283,7 +295,7 @@ def get_proposal_history(proposal_id: str) -> ResponseReturnValue:
                 ),
                 503,
             )
-        limit = request.args.get("limit", 50, type=int)
+        limit = _bounded_limit(request.args.get("limit"), default=50, maximum=200)
         result = _service_call(
             service,
             "selfimprovement.proposal_history",
@@ -322,7 +334,11 @@ def get_learning_outcomes() -> ResponseReturnValue:
             {
                 "proposal_id": request.args.get("proposal_id"),
                 "status": request.args.get("status"),
-                "limit": request.args.get("limit", 50, type=int),
+                "limit": _bounded_limit(
+                    request.args.get("limit"),
+                    default=50,
+                    maximum=200,
+                ),
             },
         )
         if not isinstance(result, dict):
