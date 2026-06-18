@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import math
 from collections.abc import Mapping
+from pathlib import Path
 from typing import Any
 
 from .models import GuardianDecision, IntentDeclaration, RiskAssessment
@@ -13,6 +15,14 @@ from .paths import workspace_root
 _MAX_TEXT_LENGTH = 240
 _MAX_METRIC_FIELDS = 25
 _MAX_OMITTED_FIELDS = 50
+_MAX_AUDIT_RECORD_LIMIT = 200
+GUARDIAN_AUDIT_EVENT_TYPES = frozenset(
+    {
+        "guardian_decision",
+        "guardian_mode_changed",
+        "guardian_outcome",
+    }
+)
 _OUTCOME_SCALAR_FIELDS = {
     "status",
     "summary",
@@ -23,6 +33,58 @@ _OUTCOME_SCALAR_FIELDS = {
     "rollback_performed",
     "containment_action",
 }
+
+
+def guardian_audit_integrity_ok() -> bool:
+    """Return whether the signed Security audit ledger verifies successfully."""
+
+    from Aetherra.security.audit_ledger import SecurityAuditLedger
+
+    return SecurityAuditLedger(_security_audit_path()).verify_integrity()
+
+
+def list_guardian_audit_records(
+    *,
+    limit: int = 50,
+    event_type: str | None = None,
+) -> list[dict[str, Any]]:
+    """Return recent Guardian audit records from the signed Security ledger.
+
+    The ledger is append-only and may contain unrelated Security records, so the
+    read model is intentionally narrow: Guardian actor, known Guardian event
+    types, bounded result size, and no mutation.
+    """
+
+    if not isinstance(limit, int):
+        raise TypeError("limit must be an integer")
+    bounded_limit = max(1, min(limit, _MAX_AUDIT_RECORD_LIMIT))
+
+    normalized_event_type = event_type.strip() if isinstance(event_type, str) else None
+    if normalized_event_type and normalized_event_type not in GUARDIAN_AUDIT_EVENT_TYPES:
+        raise ValueError(f"unsupported Guardian audit event type: {normalized_event_type}")
+
+    audit_path = _security_audit_path()
+    if not audit_path.exists():
+        return []
+
+    records: list[dict[str, Any]] = []
+    with audit_path.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            record = json.loads(line)
+            if not isinstance(record, dict):
+                continue
+            if record.get("actor") != "guardian":
+                continue
+            record_type = record.get("event_type")
+            if record_type not in GUARDIAN_AUDIT_EVENT_TYPES:
+                continue
+            if normalized_event_type and record_type != normalized_event_type:
+                continue
+            records.append(record)
+
+    return records[-bounded_limit:]
 
 
 def append_guardian_decision(
@@ -93,7 +155,7 @@ def _append_guardian_event(
     from Aetherra.aetherra_core.system.security_system import redact_secrets
     from Aetherra.security.audit_ledger import AuditLedgerError, SecurityAuditLedger
 
-    audit_path = workspace_root() / ".aetherra" / "security" / "audit.jsonl"
+    audit_path = _security_audit_path()
     audit_details = dict(details)
     if event_type != "guardian_outcome":
         audit_details = redact_secrets(audit_details)
@@ -108,6 +170,10 @@ def _append_guardian_event(
         return None
     record_hash = record.get("hash")
     return record_hash if isinstance(record_hash, str) else None
+
+
+def _security_audit_path() -> Path:
+    return workspace_root() / ".aetherra" / "security" / "audit.jsonl"
 
 
 def _sanitize_outcome(outcome: Mapping[str, Any]) -> dict[str, Any]:

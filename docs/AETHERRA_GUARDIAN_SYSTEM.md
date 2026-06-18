@@ -3,7 +3,7 @@
 > Maintained and officially operated by **Aetherra Labs**.
 > **Powered by Aetherra Labs.**
 
-Status: v0.1 Foundation In Progress
+Status: v0.1 Functional Foundation Complete; System Integration Ongoing
 
 The Aetherra Guardian System is the central governance, safety, and ethical enforcement layer of Aetherra. It sits above the Security System and evaluates whether meaningful actions should be allowed before they execute.
 
@@ -201,6 +201,7 @@ Implemented foundation:
 - Signed Security audit integration for every Guardian decision
 - Signed decision hashes returned as `GuardianDecision.audit_id` for downstream correlation
 - Bounded Guardian outcome recording through `record_outcome`, with raw payload fields omitted and metrics numeric or hashed
+- Bounded Guardian audit inspection through the signed Security ledger, with integrity reporting and Guardian-event filtering
 - Runtime Guardian mode control with persisted mode history, environment override precedence, and signed `guardian_mode_changed` audit events
 - Approval queue persistence: `.aetherra/guardian/approvals.jsonl`
 - Containment event persistence: `.aetherra/guardian/containment.jsonl`
@@ -220,9 +221,13 @@ Implemented foundation:
 - Public Guardian status helpers expose enabled state and operating mode
 - Guarded Hub API for read-only Guardian operations status:
   - `GET /api/guardian/status`
+  - includes mode, approval, containment, preauthorization, and signed-audit integrity summary
 - Guarded Hub API for Guardian mode state, bounded history, and persisted mode changes:
   - `GET /api/guardian/mode`
   - `POST /api/guardian/mode`
+- Guarded Hub API for signed Guardian audit visibility:
+  - `GET /api/guardian/audit`
+  - supports bounded `limit` and `event_type` filtering for `guardian_decision`, `guardian_outcome`, and `guardian_mode_changed`
 - Guarded Hub API for listing and resolving Guardian approvals:
   - `GET /api/guardian/approvals`
   - `GET /api/guardian/approvals/<request_id>`
@@ -1008,7 +1013,7 @@ Legend:
 | System document | Guardian coverage | Current Guardian enforcement | Remaining Guardian scope |
 | --- | --- | --- | --- |
 | `AETHERRA_SECURITY_SYSTEM.md` | Covered | Guardian consumes Security capabilities, sandbox, network policy, plugin signing, and signed audit ledger. | Keep Security as the lower enforcement substrate; add Guardian policy tests as Security capabilities expand. |
-| `AETHERRA_GUARDIAN_SYSTEM.md` | N/A | Guardian core, policy, risk, approval, audit, and containment are implemented. | Continue expanding system integrations and add final cross-system completion criteria. |
+| `AETHERRA_GUARDIAN_SYSTEM.md` | Covered | Guardian core, policy, risk, approval, audit, containment, preauthorization, mode control, Hub operations APIs, and signed audit visibility are implemented. | Keep the Guardian completion rule current as new privileged surfaces are introduced. |
 | `AETHERRA_PLUGIN_SYSTEM.md` | Covered | Plugin registration, loading, execution, install/uninstall, template creation, marketplace package install, and plugin containment are guarded. | Review any plugin generator or UI-only plugin creation paths that bypass `LyrixaPluginSystem`. |
 | `Aether_Script_Language_System.md` | Covered | `ScriptExecutor.execute` declares `script.execute` before parsing or running workflow steps. | Add coverage for legacy parser backup/fix commands if they remain active runtime surfaces. |
 | `AETHERRA_MEMORY_SYSTEM.md` | Partial | Advanced memory writes through `AetherraMemoryEngineAdvanced.remember` are guarded, including identity/core-self containment; QFAC store and budgeted rewrite mutations declare Guardian intents before mutation; core memory export/import/consolidation and direct deletion/plugin forget are guarded. | Add Guardian checks for memory restore operations if/when an active restore path is introduced outside guarded imports. |
@@ -1092,6 +1097,8 @@ Primary APIs:
 
 - `evaluate_intent(intent: IntentDeclaration) -> GuardianDecision`
 - `record_outcome(audit_id: str, outcome: Mapping[str, Any]) -> str | None`
+- `list_guardian_audit_records(limit: int = 50, event_type: str | None = None) -> list[dict]`
+- `guardian_audit_integrity_ok() -> bool`
 - `guardian_mode() -> GuardianMode`
 - `guardian_enabled() -> bool`
 - `set_guardian_mode(mode: GuardianMode | str, reason: str, changed_by: str = "guardian") -> dict`
@@ -1100,7 +1107,7 @@ Primary APIs:
 
 ### 2) Intent Declaration Layer
 
-Planned file: `Aetherra/guardian/models.py`
+Implemented file: `Aetherra/guardian/models.py`
 
 Every meaningful action begins with an intent declaration. This prevents hidden or ambiguous privileged behavior.
 
@@ -1136,7 +1143,7 @@ Example:
 
 ### 3) Policy Engine
 
-Planned file: `Aetherra/guardian/policy_engine.py`
+Implemented file: `Aetherra/guardian/policy.py`
 
 The Policy Engine determines whether an action is permitted by explicit Guardian policy.
 
@@ -1159,13 +1166,13 @@ Default rule:
 
 Primary APIs:
 
-- `load_policy(path: Path | None = None) -> GuardianPolicy`
-- `evaluate_policy(intent: IntentDeclaration) -> PolicyResult`
-- `explain_policy_result(result: PolicyResult) -> str`
+- `load_guardian_policy(path: Path | str | None = None) -> GuardianPolicy`
+- `evaluate_guardian_policy(intent: IntentDeclaration, policy: GuardianPolicy | None = None) -> PolicyResult`
+- `evaluate_capabilities(intent: IntentDeclaration, capability_checker: CapabilityChecker | None = None) -> PolicyResult`
 
 ### 4) Capability Gate
 
-Planned file: `Aetherra/guardian/capability_gate.py`
+Implemented in: `Aetherra/guardian/policy.py`
 
 Capabilities define what an entity is allowed to do. No subsystem should perform privileged actions without Guardian-approved capability grants.
 
@@ -1188,13 +1195,14 @@ Example capabilities:
 
 Primary APIs:
 
-- `check_capabilities(intent: IntentDeclaration) -> PolicyResult`
-- `grant_capability(entity: str, capability: str, scope: str) -> CapabilityGrant`
-- `revoke_capability(entity: str, capability: str, reason: str) -> None`
+- `evaluate_capabilities(intent: IntentDeclaration, capability_checker: CapabilityChecker | None = None) -> PolicyResult`
+- `security_capability_checker(requester: str, capability: str) -> bool`
+
+Capability grant and revocation authority remains in the Security System. Guardian consumes Security capability state and decides whether an action may proceed; it does not duplicate the lower-level capability store.
 
 ### 5) Risk Evaluator
 
-Planned file: `Aetherra/guardian/risk.py`
+Implemented file: `Aetherra/guardian/risk.py`
 
 The Risk Evaluator classifies actions before execution.
 
@@ -1246,7 +1254,7 @@ Primary APIs:
 
 ### 6) Evidence Validator
 
-Planned file: `Aetherra/guardian/evidence.py`
+Current implementation: evidence references are part of `IntentDeclaration` and are evaluated by `Aetherra/guardian/core.py`.
 
 Guardian enforces evidence-based action. Before Aetherra makes claims, diagnoses code, modifies files, or reports system state, Guardian should verify that evidence exists.
 
@@ -1275,7 +1283,7 @@ Primary APIs:
 
 ### 7) Reversibility Manager
 
-Planned file: `Aetherra/guardian/reversibility.py`
+Implemented file: `Aetherra/guardian/reversibility.py`
 
 Guardian requires rollback paths for meaningful changes.
 
@@ -1296,9 +1304,7 @@ If an action cannot be reversed, it requires elevated approval.
 
 Primary APIs:
 
-- `validate_rollback(intent: IntentDeclaration) -> ReversibilityResult`
-- `create_file_snapshot(path: Path) -> SnapshotRef`
-- `capture_git_diff(scope: str | None = None) -> RollbackRef`
+- `validate_reversibility(intent: IntentDeclaration) -> ReversibilityResult`
 
 ### 8) Guardian Audit Ledger
 
@@ -1325,12 +1331,14 @@ Primary APIs:
 
 - `append_guardian_decision(intent: IntentDeclaration, risk: RiskAssessment, decision: GuardianDecision) -> str | None`
 - `record_outcome(audit_id: str, outcome: Mapping[str, Any]) -> str | None`
+- `list_guardian_audit_records(limit: int = 50, event_type: str | None = None) -> list[dict]`
+- `guardian_audit_integrity_ok() -> bool`
 
 Outcome records are intentionally bounded. They preserve status, summary, reason, error type, duration, affected count, rollback status, containment action, and numeric/hashed metrics. Unexpected fields are omitted by name so raw execution payloads, private runtime state, and user data do not become audit content.
 
 ### 9) Approval System
 
-Planned file: `Aetherra/guardian/approval.py`
+Implemented file: `Aetherra/guardian/approval.py`
 
 Some actions require human confirmation or stronger Guardian validation.
 
@@ -1351,13 +1359,16 @@ Approval states:
 
 Primary APIs:
 
-- `request_approval(intent: IntentDeclaration, decision: GuardianDecision) -> ApprovalRequest`
-- `resolve_approval(request_id: str, approved: bool, approver: str) -> ApprovalResult`
-- `expire_pending_approvals() -> int`
+- `create_approval_request(intent: IntentDeclaration, risk: RiskAssessment) -> ApprovalRequest`
+- `resolve_approval(request_id: str, approved: bool, approver: str) -> dict`
+- `validate_approval(request_id: str | None, intent: IntentDeclaration) -> ApprovalValidationResult`
+- `consume_approval(request_id: str, intent: IntentDeclaration) -> ApprovalValidationResult`
+- `approval_status(request_id: str) -> dict`
+- `list_approval_statuses() -> list[dict]`
 
 ### 10) Containment System
 
-Planned file: `Aetherra/guardian/containment.py`
+Implemented file: `Aetherra/guardian/containment.py`
 
 Guardian must be able to restrict or halt unsafe behavior.
 
@@ -1383,10 +1394,12 @@ Containment should trigger when:
 
 Primary APIs:
 
-- `contain(intent: IntentDeclaration, reason: str) -> ContainmentResult`
-- `revoke_entity_capabilities(entity: str, reason: str) -> None`
-- `activate_emergency_stop(reason: str) -> ContainmentResult`
-- `clear_containment(containment_id: str, approver: str) -> GuardianDecision`
+- `record_containment(intent: IntentDeclaration, action: ContainmentAction, reason: str) -> ContainmentResult`
+- `active_containments_for_intent(intent: IntentDeclaration) -> list[dict]`
+- `find_active_containment(intent: IntentDeclaration) -> dict | None`
+- `clear_containment(containment_id: str, cleared_by: str, reason: str) -> dict`
+- `containment_status(containment_id: str) -> dict`
+- `list_containment_statuses() -> list[dict]`
 
 ## Integration points
 
@@ -1760,23 +1773,21 @@ Guardian is operational when:
 - Self-improvement cannot modify core systems without approval.
 - Emergency containment works.
 
-## Initial test plan
+## Verification coverage
 
-Planned test files:
+Implemented Guardian coverage includes:
 
-- `tests/unit/test_guardian_models.py`
-- `tests/unit/test_guardian_policy_engine.py`
-- `tests/unit/test_guardian_capability_gate.py`
-- `tests/unit/test_guardian_risk.py`
-- `tests/unit/test_guardian_reversibility.py`
-- `tests/unit/test_guardian_approval.py`
-- `tests/unit/test_guardian_containment.py`
-- `tests/unit/test_guardian_audit.py`
-- `tests/integration/test_guardian_plugin_execution.py`
-- `tests/integration/test_guardian_script_execution.py`
-- `tests/integration/test_guardian_homeostasis_gate.py`
+- Core data model, policy, risk, approval, containment, preauthorization, mode, audit, and Hub API tests.
+- Plugin execution, plugin loading, script execution, executor command dispatch, CoreTools filesystem mutation, and plugin generation tests.
+- Agent task, agent orchestration, collaboration, goal lifecycle, AI engine task, Lyrixa assistant, and chat ingress tests.
+- Memory write/import/export/delete/consolidation, QFAC, memory plugin bridge, and temporal memory integration tests.
+- Homeostasis actuator, alert, controller, orchestrator, Hub control, emergency, and rollback tests.
+- Kernel control, HMR, module manager, Service Registry, registry daemon client, and Event Bus tests.
+- Maintenance, cleanup, backup/restore, deployment gate, report generation, architecture validation, and legal compliance tests.
+- Consciousness, quantum, transcendence, temporal, multidimensional, parallel-reality, synthesis, and singularity mutation tests.
+- AI trainer job and evaluation submission tests.
 
-Minimum verification target for v0.1:
+Minimum verification target:
 
 - Safe read-only action is allowed.
 - Missing capability is denied.
@@ -1789,38 +1800,41 @@ Minimum verification target for v0.1:
 
 ### v0.1 - Functional Guardian Core
 
-- Data contracts
-- Policy engine
-- Capability gate
-- Risk scoring
-- Audit records
-- Approval-required decisions
-- Basic containment
-- Initial integration with file/plugin/script actions
+- Data contracts - implemented
+- Policy engine - implemented
+- Capability gate through Security - implemented
+- Risk scoring - implemented
+- Signed audit records - implemented
+- Approval-required decisions - implemented
+- Basic containment - implemented
+- Initial integration with file/plugin/script actions - implemented
 
 ### v0.2 - System Integration
 
-- Agent task gating
-- Memory mutation gating
-- Homeostasis actuator gating
-- Self-improvement gating
-- Network action gating
-- Guardian mode management
+- Agent task gating - implemented
+- Memory mutation gating - implemented for active mutation/import/export/delete/consolidation paths
+- Homeostasis actuator gating - implemented
+- Self-improvement gating - implemented
+- Network action gating - implemented through Security wrappers
+- Guardian mode management - implemented
+- Cross-system enforcement matrix - implemented and maintained in this document
 
 ### v0.3 - Visibility and Operations
 
-- Guardian dashboard
-- Approval queue UI
-- Decision search
-- Risk event timeline
-- Containment state panel
+- Authenticated Guardian status API - implemented
+- Authenticated mode history API - implemented
+- Authenticated approval queue API - implemented
+- Authenticated containment state API - implemented
+- Authenticated preauthorization status API - implemented
+- Authenticated signed-audit visibility API - implemented
+- Dashboard UI panels - future work
 
 ### v1.0 - Production Governance Layer
 
 - Strict production defaults
 - Signed Guardian policies
-- Complete privileged-action coverage
-- Full audit correlation between Guardian and Security
+- Complete privileged-action coverage for all enabled production surfaces
+- Full audit correlation between Guardian and Security - implemented for Guardian decisions, outcomes, and mode changes
 - Recovery workflows for emergency mode
 
 ## Final principle

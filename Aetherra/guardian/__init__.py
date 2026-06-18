@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from .audit import guardian_audit_integrity_ok, list_guardian_audit_records
 from .core import evaluate_intent, guardian_enabled, guardian_mode, record_outcome
 from .models import (
     ApprovalRequest,
@@ -57,10 +58,12 @@ __all__ = [
     "consume_preauthorization",
     "create_preauthorization",
     "classify_decision_tier",
+    "guardian_audit_integrity_ok",
     "guardian_enabled",
     "guardian_mode",
     "guardian_mode_events",
     "guardian_mode_status",
+    "list_guardian_audit_records",
     "list_preauthorization_events",
     "list_preauthorization_statuses",
     "load_guardian_policy",
