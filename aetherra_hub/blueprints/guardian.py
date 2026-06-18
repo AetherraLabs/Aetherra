@@ -16,6 +16,15 @@ from Aetherra.guardian.containment import (
     list_containment_statuses,
 )
 from Aetherra.guardian.core import guardian_enabled, guardian_mode
+from Aetherra.guardian.mode import (
+    guardian_mode_events,
+    guardian_mode_status,
+    set_guardian_mode,
+)
+from Aetherra.guardian.preauthorization import (
+    list_preauthorization_statuses,
+    preauthorization_status,
+)
 
 from ..services.control_auth import authorize_control_request
 
@@ -39,11 +48,15 @@ def guardian_status() -> ResponseReturnValue:
 
     approvals = list_approval_statuses()
     containment = list_containment_statuses()
+    preauthorizations = list_preauthorization_statuses()
     pending_approvals = [
         approval for approval in approvals if approval.get("state") == "pending_user"
     ]
     active_containment = [
         record for record in containment if record.get("state") == "active"
+    ]
+    active_preauthorizations = [
+        grant for grant in preauthorizations if grant.get("state") == "active"
     ]
     return jsonify(
         {
@@ -51,6 +64,7 @@ def guardian_status() -> ResponseReturnValue:
             "guardian": {
                 "enabled": guardian_enabled(),
                 "mode": guardian_mode().value,
+                "mode_state": guardian_mode_status().get("state"),
                 "approvals": {
                     "total": len(approvals),
                     "pending": len(pending_approvals),
@@ -59,9 +73,62 @@ def guardian_status() -> ResponseReturnValue:
                     "total": len(containment),
                     "active": len(active_containment),
                 },
+                "preauthorizations": {
+                    "total": len(preauthorizations),
+                    "active": len(active_preauthorizations),
+                },
             },
         }
     )
+
+
+@bp.get("/mode")
+def get_guardian_mode() -> ResponseReturnValue:
+    """Return Guardian operating-mode state and bounded history."""
+
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
+    try:
+        limit = int(request.args.get("limit", "25"))
+    except ValueError:
+        return jsonify({"ok": False, "error": "limit must be an integer"}), 400
+    limit = max(1, min(limit, 100))
+    events = guardian_mode_events()
+    return jsonify(
+        {
+            "ok": True,
+            "mode": guardian_mode_status(),
+            "events": events[-limit:],
+            "total": len(events),
+        }
+    )
+
+
+@bp.post("/mode")
+def change_guardian_mode() -> ResponseReturnValue:
+    """Persist a Guardian operating-mode change."""
+
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
+    payload = request.get_json(silent=True) or {}
+    mode = str(payload.get("mode") or "").strip().lower()
+    reason = str(payload.get("reason") or "").strip()
+    if not mode:
+        return jsonify({"ok": False, "error": "mode required"}), 400
+    if not reason:
+        return jsonify({"ok": False, "error": "reason required"}), 400
+    changed_by = (
+        request.headers.get("X-Aetherra-Principal")
+        or payload.get("changed_by")
+        or "user"
+    )
+    try:
+        result = set_guardian_mode(mode, reason=reason, changed_by=str(changed_by))
+    except ValueError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 400
+    return jsonify({"ok": True, "mode": result})
 
 
 @bp.get("/approvals")
@@ -160,3 +227,26 @@ def clear_containment_record(containment_id: str) -> ResponseReturnValue:
         code = 404 if state == "not_found" else 409
         return jsonify({"ok": False, "containment": result, "error": state}), code
     return jsonify({"ok": True, "containment": result})
+
+
+@bp.get("/preauthorizations")
+def list_preauthorizations() -> ResponseReturnValue:
+    """List Guardian preauthorization grants with summarized state."""
+
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
+    grants = list_preauthorization_statuses()
+    return jsonify({"ok": True, "preauthorizations": grants, "total": len(grants)})
+
+
+@bp.get("/preauthorizations/<grant_id>")
+def get_preauthorization(grant_id: str) -> ResponseReturnValue:
+    """Return one Guardian preauthorization grant summary."""
+
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
+    status = preauthorization_status(grant_id)
+    code = 404 if status.get("state") == "not_found" else 200
+    return jsonify({"ok": code == 200, "preauthorization": status}), code

@@ -199,10 +199,18 @@ Implemented foundation:
 - Security capability bridge: `Aetherra/guardian/policy.py`
 - JSON Guardian policy loading with explicit allow/deny/default behavior
 - Signed Security audit integration for every Guardian decision
+- Signed decision hashes returned as `GuardianDecision.audit_id` for downstream correlation
+- Bounded Guardian outcome recording through `record_outcome`, with raw payload fields omitted and metrics numeric or hashed
+- Runtime Guardian mode control with persisted mode history, environment override precedence, and signed `guardian_mode_changed` audit events
 - Approval queue persistence: `.aetherra/guardian/approvals.jsonl`
 - Containment event persistence: `.aetherra/guardian/containment.jsonl`
 - Performance and scope architecture documented for decision tiers, preauthorization, conservative caching, async/nonblocking work, and non-Guardian telemetry paths
 - Guardian decisions now include `decision_tier` metadata for `critical`, `privileged`, `routine_guarded`, `observational`, and `telemetry_internal` classification
+- Scoped preauthorization grants for low-risk `routine_guarded` intents:
+  - grants are exact-scope, short-lived, max-use bounded, and persisted to `.aetherra/guardian/preauthorizations.jsonl`
+  - grants are valid only when requester, subsystem, action, target, capabilities, Guardian mode, policy fingerprint, risk level, and decision tier remain unchanged
+  - grants cannot authorize critical, privileged, high-risk, non-reversible, policy-changed, expired, exhausted, or mismatched intents
+  - Hub exposes read-only preauthorization status through `GET /api/guardian/preauthorizations` and `GET /api/guardian/preauthorizations/<grant_id>`
 - First enforcement target: plugin execution through `PluginManager.execute_plugin`
 - Reversibility validation for risky/mutating intents
 - Second enforcement target: self-improvement proposal application via `/api/selfimprove/apply` and batch helper reuse
@@ -212,6 +220,9 @@ Implemented foundation:
 - Public Guardian status helpers expose enabled state and operating mode
 - Guarded Hub API for read-only Guardian operations status:
   - `GET /api/guardian/status`
+- Guarded Hub API for Guardian mode state, bounded history, and persisted mode changes:
+  - `GET /api/guardian/mode`
+  - `POST /api/guardian/mode`
 - Guarded Hub API for listing and resolving Guardian approvals:
   - `GET /api/guardian/approvals`
   - `GET /api/guardian/approvals/<request_id>`
@@ -1044,7 +1055,12 @@ Before adding new Guardian calls to a system, answer these questions:
 
 ### 1) Guardian Core
 
-Planned file: `Aetherra/guardian/guardian_core.py`
+Implemented files:
+
+- `Aetherra/guardian/core.py`
+- `Aetherra/guardian/models.py`
+- `Aetherra/guardian/risk.py`
+- `Aetherra/guardian/tiers.py`
 
 The Guardian Core is the central evaluator.
 
@@ -1075,10 +1091,12 @@ GuardianDecision(
 Primary APIs:
 
 - `evaluate_intent(intent: IntentDeclaration) -> GuardianDecision`
-- `enforce(intent: IntentDeclaration) -> GuardianDecision`
-- `record_outcome(audit_id: str, outcome: dict) -> None`
-- `get_mode() -> GuardianMode`
-- `set_mode(mode: GuardianMode, reason: str) -> GuardianDecision`
+- `record_outcome(audit_id: str, outcome: Mapping[str, Any]) -> str | None`
+- `guardian_mode() -> GuardianMode`
+- `guardian_enabled() -> bool`
+- `set_guardian_mode(mode: GuardianMode | str, reason: str, changed_by: str = "guardian") -> dict`
+
+`GuardianDecision.audit_id` is the signed Security audit ledger record hash for the decision event. Callers can pass that value into `record_outcome` after execution to create a correlated Guardian outcome event.
 
 ### 2) Intent Declaration Layer
 
@@ -1284,7 +1302,7 @@ Primary APIs:
 
 ### 8) Guardian Audit Ledger
 
-Planned file: `Aetherra/guardian/audit.py`
+Implemented file: `Aetherra/guardian/audit.py`
 
 Guardian decisions must be auditable. The first version should reuse the signed Security audit ledger in `Aetherra/security/audit_ledger.py` rather than inventing a separate trust chain.
 
@@ -1305,9 +1323,10 @@ Audit records should include:
 
 Primary APIs:
 
-- `append_guardian_audit(record: GuardianAuditRecord) -> str`
-- `record_decision(intent: IntentDeclaration, decision: GuardianDecision) -> str`
-- `record_outcome(audit_id: str, outcome: dict) -> None`
+- `append_guardian_decision(intent: IntentDeclaration, risk: RiskAssessment, decision: GuardianDecision) -> str | None`
+- `record_outcome(audit_id: str, outcome: Mapping[str, Any]) -> str | None`
+
+Outcome records are intentionally bounded. They preserve status, summary, reason, error type, duration, affected count, rollback status, containment action, and numeric/hashed metrics. Unexpected fields are omitted by name so raw execution payloads, private runtime state, and user data do not become audit content.
 
 ### 9) Approval System
 
@@ -1714,6 +1733,8 @@ $env:AETHERRA_GUARDIAN_REQUIRE_ROLLBACK='1'
 $env:AETHERRA_GUARDIAN_APPROVAL_TIMEOUT_SEC='900'
 $env:AETHERRA_GUARDIAN_STRICT_PRODUCTION='1'
 ```
+
+`AETHERRA_GUARDIAN_MODE` is a deployment override. When it is set to a valid mode it takes precedence over persisted runtime mode state. When it is unset, `set_guardian_mode` persists mode changes to `.aetherra/guardian/mode.jsonl` and writes a signed `guardian_mode_changed` audit event.
 
 Suggested production defaults:
 

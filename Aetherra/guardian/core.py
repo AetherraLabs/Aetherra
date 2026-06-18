@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Mapping
+from typing import Any
 
 from .approval import consume_approval, create_approval_request
-from .audit import append_guardian_decision
+from .audit import append_guardian_decision, record_guardian_outcome
 from .containment import find_active_containment, record_containment
 from .models import (
     ContainmentAction,
@@ -15,7 +17,9 @@ from .models import (
     IntentDeclaration,
     RiskLevel,
 )
+from .mode import current_guardian_mode
 from .policy import CapabilityChecker, evaluate_capabilities, evaluate_guardian_policy
+from .preauthorization import consume_preauthorization
 from .reversibility import validate_reversibility
 from .risk import assess_risk
 from .tiers import classify_decision_tier
@@ -35,17 +39,14 @@ def guardian_enabled() -> bool:
 def guardian_mode() -> GuardianMode:
     """Return the configured Guardian operating mode."""
 
-    raw = (os.getenv("AETHERRA_GUARDIAN_MODE", "enforcing") or "").strip().lower()
-    try:
-        return GuardianMode(raw)
-    except ValueError:
-        return GuardianMode.ENFORCING
+    return current_guardian_mode()
 
 
 def evaluate_intent(
     intent: IntentDeclaration,
     *,
     approval_id: str | None = None,
+    preauthorization_id: str | None = None,
     capability_checker: CapabilityChecker | None = None,
     write_audit: bool = True,
 ) -> GuardianDecision:
@@ -108,6 +109,42 @@ def evaluate_intent(
             },
         )
         return _with_audit(intent, risk, decision, write_audit)
+
+    if preauthorization_id:
+        preauthorized = consume_preauthorization(
+            preauthorization_id,
+            intent,
+            risk,
+            decision_tier=tier,
+            guardian_mode=mode,
+        )
+        if preauthorized.valid:
+            if intent.capabilities:
+                policy = evaluate_capabilities(intent, capability_checker=capability_checker)
+                if not policy.allowed:
+                    decision = GuardianDecision(
+                        status=GuardianStatus.DENY,
+                        risk_level=risk.level,
+                        reason=policy.reason,
+                        details={
+                            **_decision_details(mode, risk, tier),
+                            "missing_capabilities": policy.missing_capabilities,
+                            "preauthorization_grant_id": preauthorized.grant_id,
+                        },
+                    )
+                    return _with_audit(intent, risk, decision, write_audit)
+            decision = GuardianDecision(
+                status=GuardianStatus.ALLOW_LIMITED,
+                risk_level=risk.level,
+                reason="preauthorized_guardian_grant",
+                constraints=("guardian_preauthorization_consumed",),
+                details={
+                    **_decision_details(mode, risk, tier),
+                    "preauthorization_grant_id": preauthorized.grant_id,
+                    "preauthorization": preauthorized.details,
+                },
+            )
+            return _with_audit(intent, risk, decision, write_audit)
 
     policy = evaluate_capabilities(intent, capability_checker=capability_checker)
     if not policy.allowed:
@@ -240,6 +277,12 @@ def evaluate_intent(
         details=_decision_details(mode, risk, tier),
     )
     return _with_audit(intent, risk, decision, write_audit)
+
+
+def record_outcome(audit_id: str, outcome: Mapping[str, Any]) -> str | None:
+    """Record a bounded post-action outcome for a Guardian decision."""
+
+    return record_guardian_outcome(audit_id, outcome)
 
 
 def _with_audit(
