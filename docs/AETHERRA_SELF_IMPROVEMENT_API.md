@@ -116,6 +116,55 @@ active-review endpoint.
 }
 ```
 
+### POST /api/selfimprove/proposals/{proposal_id}/dismiss
+
+Dismiss a reviewable proposal without applying it. Requires Hub control authorization.
+
+**Request body:**
+
+```json
+{
+  "reason": "Not useful for the current milestone"
+}
+```
+
+**Success response (HTTP 200):**
+
+```json
+{
+  "ok": true,
+  "status": "ok",
+  "proposal_id": "SI-42",
+  "proposal_status": "dismissed"
+}
+```
+
+### POST /api/selfimprove/proposals/{proposal_id}/reopen
+
+Reopen a dismissed proposal for active review. Requires Hub control authorization.
+
+**Request body:**
+
+```json
+{
+  "reason": "Reconsider after new evidence"
+}
+```
+
+**Success response (HTTP 200):**
+
+```json
+{
+  "ok": true,
+  "status": "ok",
+  "proposal_id": "SI-42",
+  "proposal_status": "active"
+}
+```
+
+Lifecycle endpoints mutate only proposal review state. They do not apply proposals, modify code, reload modules,
+or bypass Guardian. Applying a proposal still requires `/api/selfimprove/apply` or `/batch-apply`.
+
 ### GET /api/selfimprove/trends
 
 Return read-only metric trends from the self-improvement engine.

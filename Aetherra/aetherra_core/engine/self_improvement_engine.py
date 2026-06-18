@@ -136,6 +136,8 @@ class ImprovementProposal:
     evidence: List[str] = field(default_factory=list)
     simulation: Dict[str, Any] = field(default_factory=dict)
     rollback_plan: str = ""
+    status_reason: str = ""
+    updated_at: datetime | None = None
 
 
 @dataclass
@@ -652,6 +654,8 @@ class SelfImprovementEngine:
             "evidence": "TEXT",
             "simulation": "TEXT",
             "rollback_plan": "TEXT",
+            "status_reason": "TEXT",
+            "updated_at": "TEXT",
         }
         for name, column_type in columns.items():
             if name not in existing:
@@ -670,7 +674,8 @@ class SelfImprovementEngine:
                 SELECT proposal_id, improvement_type, description, expected_benefit,
                        implementation_cost, risk_level, affected_components,
                        success_criteria, status, created_at, issue, potential_cause,
-                       proposed_change, evidence, simulation, rollback_plan
+                       proposed_change, evidence, simulation, rollback_plan,
+                       status_reason, updated_at
                 FROM improvement_proposals
                 WHERE status IN ('active', 'proposed', 'proposed_for_review')
                 ORDER BY created_at DESC
@@ -689,29 +694,73 @@ class SelfImprovementEngine:
                     continue
                 improvement_type = ImprovementType(str(row["improvement_type"]))
                 created_at = datetime.fromisoformat(str(row["created_at"]))
-                proposal = ImprovementProposal(
-                    proposal_id=str(row["proposal_id"]),
-                    improvement_type=improvement_type,
-                    description=str(row["description"]),
-                    expected_benefit=float(row["expected_benefit"]),
-                    implementation_cost=float(row["implementation_cost"]),
-                    risk_level=float(row["risk_level"]),
-                    affected_components=self._json_list(row["affected_components"]),
-                    success_criteria=self._json_list(row["success_criteria"]),
-                    created_at=created_at,
-                    status=status,
-                    issue=str(row["issue"] or ""),
-                    potential_cause=str(row["potential_cause"] or ""),
-                    proposed_change=str(row["proposed_change"] or ""),
-                    evidence=self._json_list(row["evidence"]),
-                    simulation=self._json_dict(row["simulation"]),
-                    rollback_plan=str(row["rollback_plan"] or ""),
-                )
+                proposal = self._proposal_from_row(row, improvement_type, created_at, status)
                 self.active_proposals[proposal.proposal_id] = proposal
             except Exception as exc:
                 logger.debug(
                     "Skipping malformed self-improvement proposal row: %s", exc
                 )
+
+    def _load_proposal_from_db(self, proposal_id: str) -> ImprovementProposal | None:
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
+        try:
+            row = conn.execute(
+                """
+                SELECT proposal_id, improvement_type, description, expected_benefit,
+                       implementation_cost, risk_level, affected_components,
+                       success_criteria, status, created_at, issue, potential_cause,
+                       proposed_change, evidence, simulation, rollback_plan,
+                       status_reason, updated_at
+                FROM improvement_proposals
+                WHERE proposal_id = ?
+                """,
+                (proposal_id,),
+            ).fetchone()
+        finally:
+            conn.close()
+        if row is None:
+            return None
+        try:
+            return self._proposal_from_row(
+                row,
+                ImprovementType(str(row["improvement_type"])),
+                datetime.fromisoformat(str(row["created_at"])),
+                str(row["status"] or "proposed"),
+            )
+        except Exception as exc:
+            logger.debug("Failed to load self-improvement proposal %s: %s", proposal_id, exc)
+            return None
+
+    def _proposal_from_row(
+        self,
+        row: sqlite3.Row,
+        improvement_type: ImprovementType,
+        created_at: datetime,
+        status: str,
+    ) -> ImprovementProposal:
+        return ImprovementProposal(
+            proposal_id=str(row["proposal_id"]),
+            improvement_type=improvement_type,
+            description=str(row["description"]),
+            expected_benefit=float(row["expected_benefit"]),
+            implementation_cost=float(row["implementation_cost"]),
+            risk_level=float(row["risk_level"]),
+            affected_components=self._json_list(row["affected_components"]),
+            success_criteria=self._json_list(row["success_criteria"]),
+            created_at=created_at,
+            status=status,
+            issue=str(row["issue"] or ""),
+            potential_cause=str(row["potential_cause"] or ""),
+            proposed_change=str(row["proposed_change"] or ""),
+            evidence=self._json_list(row["evidence"]),
+            simulation=self._json_dict(row["simulation"]),
+            rollback_plan=str(row["rollback_plan"] or ""),
+            status_reason=str(row["status_reason"] or ""),
+            updated_at=datetime.fromisoformat(str(row["updated_at"]))
+            if row["updated_at"]
+            else None,
+        )
 
     @staticmethod
     def _json_list(value: Any) -> list[Any]:
@@ -972,6 +1021,8 @@ class SelfImprovementEngine:
         proposal = self.active_proposals.get(proposal_id)
         if proposal is not None:
             proposal.status = status
+            proposal.status_reason = str(details.get("reason") or "")
+            proposal.updated_at = datetime.now()
             await self._store_proposal(proposal)
 
         improvement_achieved = details.get("improvement_achieved")
@@ -1082,6 +1133,66 @@ class SelfImprovementEngine:
         proposal = self.active_proposals.get(proposal_id)
         return self._proposal_to_dict(proposal) if proposal is not None else None
 
+    async def dismiss_proposal(
+        self,
+        proposal_id: str,
+        *,
+        reason: str = "",
+        actor: str = "",
+    ) -> dict[str, Any]:
+        """Dismiss a reviewable proposal without applying it."""
+        proposal = self.active_proposals.get(proposal_id) or self._load_proposal_from_db(
+            proposal_id
+        )
+        if proposal is None:
+            return {"status": "not_found", "proposal_id": proposal_id}
+        if proposal.status not in {"active", "proposed", "proposed_for_review"}:
+            return {
+                "status": "invalid_state",
+                "proposal_id": proposal_id,
+                "current_status": proposal.status,
+            }
+        proposal.status = "dismissed"
+        proposal.status_reason = reason[:500]
+        proposal.updated_at = datetime.now()
+        await self._store_proposal(proposal)
+        self.active_proposals.pop(proposal_id, None)
+        return {
+            "status": "ok",
+            "proposal_id": proposal_id,
+            "proposal_status": proposal.status,
+            "actor": actor,
+        }
+
+    async def reopen_proposal(
+        self,
+        proposal_id: str,
+        *,
+        reason: str = "",
+        actor: str = "",
+    ) -> dict[str, Any]:
+        """Reopen a dismissed proposal for review."""
+        proposal = self._load_proposal_from_db(proposal_id)
+        if proposal is None:
+            return {"status": "not_found", "proposal_id": proposal_id}
+        if proposal.status != "dismissed":
+            return {
+                "status": "invalid_state",
+                "proposal_id": proposal_id,
+                "current_status": proposal.status,
+            }
+        proposal.status = "active"
+        proposal.status_reason = reason[:500]
+        proposal.updated_at = datetime.now()
+        await self._store_proposal(proposal)
+        self.active_proposals[proposal_id] = proposal
+        return {
+            "status": "ok",
+            "proposal_id": proposal_id,
+            "proposal_status": proposal.status,
+            "actor": actor,
+        }
+
     @staticmethod
     def _proposal_to_dict(proposal: ImprovementProposal) -> dict[str, Any]:
         return {
@@ -1101,6 +1212,10 @@ class SelfImprovementEngine:
             "evidence": list(proposal.evidence),
             "simulation": dict(proposal.simulation),
             "rollback_plan": proposal.rollback_plan,
+            "status_reason": proposal.status_reason,
+            "updated_at": proposal.updated_at.isoformat()
+            if proposal.updated_at is not None
+            else None,
         }
 
     def export_internal_metrics(
@@ -1171,8 +1286,8 @@ class SelfImprovementEngine:
                 (proposal_id, improvement_type, description, expected_benefit,
                  implementation_cost, risk_level, affected_components, success_criteria,
                  status, created_at, issue, potential_cause, proposed_change, evidence,
-                 simulation, rollback_plan)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 simulation, rollback_plan, status_reason, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
                 (
                     proposal.proposal_id,
@@ -1191,6 +1306,10 @@ class SelfImprovementEngine:
                     json.dumps(proposal.evidence),
                     json.dumps(proposal.simulation),
                     proposal.rollback_plan,
+                    proposal.status_reason,
+                    proposal.updated_at.isoformat()
+                    if proposal.updated_at is not None
+                    else None,
                 ),
             )
             conn.commit()

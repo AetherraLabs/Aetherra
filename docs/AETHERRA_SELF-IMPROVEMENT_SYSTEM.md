@@ -118,6 +118,8 @@ Implemented endpoints:
 - `GET /api/selfimprove/proposals`
 - `GET /api/selfimprove/proposals/<proposal_id>`
 - `GET /api/selfimprove/trends`
+- `POST /api/selfimprove/proposals/<proposal_id>/dismiss`
+- `POST /api/selfimprove/proposals/<proposal_id>/reopen`
 - `POST /api/selfimprove/apply`
 - `POST /api/selfimprove/batch-apply`
 - `GET /api/selfinc/status`
@@ -178,6 +180,8 @@ Implemented behavior:
 - Default operation does not self-implement generated proposals.
 - Active proposals include issue, potential cause, proposed change, evidence, simulation, and rollback metadata.
 - `GET /api/selfimprove/proposals` returns active proposals for UI/operator review.
+- Operators can dismiss or reopen proposals through Hub-control-authorized lifecycle endpoints.
+- Dismiss/reopen changes review state only; it does not execute, modify code, reload modules, or bypass Guardian.
 - Proposal application remains an explicit control-plane action.
 
 Example proposal shape:
@@ -259,6 +263,7 @@ Self-Improvement is complete for the current foundation milestone when:
 - observation reports engine state and tracked metrics without side effects
 - hypothesis/trend inspection explains likely improvement opportunities without mutation
 - active proposals can be listed through a read-only API
+- proposals can be dismissed and reopened without applying them
 - generated proposals remain recommendations by default
 - proposal application requires Hub control authorization
 - proposal application routes through Guardian before Self-Incorporation, HMR, or manual execution

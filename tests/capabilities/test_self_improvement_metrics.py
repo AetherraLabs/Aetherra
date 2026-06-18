@@ -209,6 +209,77 @@ async def test_terminal_proposals_do_not_reload_for_review(tmp_path):
     assert reloaded.list_active_proposals() == []
 
 
+@pytest.mark.asyncio
+async def test_proposal_lifecycle_dismiss_and_reopen(tmp_path):
+    db_path = tmp_path / "self_improvement.db"
+    eng = SelfImprovementEngine(db_path=str(db_path))
+    proposal = ImprovementProposal(
+        proposal_id="review-lifecycle",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Manage proposal review lifecycle",
+        expected_benefit=0.8,
+        implementation_cost=0.2,
+        risk_level=0.1,
+        affected_components=["scheduler"],
+        success_criteria=["Proposal can be dismissed and reopened"],
+        created_at=datetime.now(),
+    )
+    await eng._process_proposal(proposal)
+
+    dismissed = await eng.dismiss_proposal(
+        "review-lifecycle",
+        reason="not needed now",
+        actor="operator",
+    )
+    after_dismiss_reload = SelfImprovementEngine(db_path=str(db_path))
+    assert after_dismiss_reload.list_active_proposals() == []
+
+    reopened = await after_dismiss_reload.reopen_proposal(
+        "review-lifecycle",
+        reason="review again",
+        actor="operator",
+    )
+
+    assert dismissed["status"] == "ok"
+    assert eng.list_active_proposals() == []
+    assert reopened["status"] == "ok"
+    assert after_dismiss_reload.get_proposal("review-lifecycle")["status"] == "active"
+    assert after_dismiss_reload.get_proposal("review-lifecycle")["status_reason"] == (
+        "review again"
+    )
+
+
+@pytest.mark.asyncio
+async def test_proposal_lifecycle_rejects_terminal_state_reopen(tmp_path):
+    db_path = tmp_path / "self_improvement.db"
+    eng = SelfImprovementEngine(db_path=str(db_path))
+    proposal = ImprovementProposal(
+        proposal_id="terminal-lifecycle",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Do not reopen accepted proposal",
+        expected_benefit=0.8,
+        implementation_cost=0.2,
+        risk_level=0.1,
+        affected_components=["memory"],
+        success_criteria=["Terminal proposal stays terminal"],
+        created_at=datetime.now(),
+    )
+    await eng._process_proposal(proposal)
+    await eng.record_proposal_result(
+        {
+            "proposal_id": "terminal-lifecycle",
+            "plan_id": "plan-terminal",
+            "status": "accepted",
+            "details": {},
+        }
+    )
+
+    result = await eng.reopen_proposal("terminal-lifecycle", reason="try reopen")
+
+    assert result["status"] == "invalid_state"
+    assert result["current_status"] == "accepted"
+
+
 def test_existing_proposal_database_schema_is_migrated(tmp_path):
     db_path = tmp_path / "legacy_self_improvement.db"
     conn = sqlite3.connect(db_path)

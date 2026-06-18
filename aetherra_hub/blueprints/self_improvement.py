@@ -39,6 +39,10 @@ def _service_call(service: Any, message_type: str, payload: dict[str, Any] | Non
         return service.get_metric_trends()
     if message_type.endswith("proposals") and hasattr(service, "list_active_proposals"):
         return {"status": "ok", "proposals": service.list_active_proposals()}
+    if message_type.endswith("dismiss_proposal") and hasattr(service, "dismiss_proposal"):
+        return run_coro_blocking(service.dismiss_proposal(**(payload or {})))
+    if message_type.endswith("reopen_proposal") and hasattr(service, "reopen_proposal"):
+        return run_coro_blocking(service.reopen_proposal(**(payload or {})))
     if message_type.endswith("proposal") and hasattr(service, "get_proposal"):
         proposal_id = str((payload or {}).get("proposal_id") or "")
         proposal = service.get_proposal(proposal_id)
@@ -225,6 +229,99 @@ def get_trends() -> ResponseReturnValue:
     except Exception as exc:
         logger.error("[SELFIMPROVE] Trends error: %s", exc)
         return jsonify({"status": "error", "error": "Internal server error"}), 500
+
+
+def _proposal_lifecycle_response(result: Any) -> ResponseReturnValue:
+    if not isinstance(result, dict):
+        return jsonify({"ok": False, "error": "lifecycle operation failed"}), 500
+    status = result.get("status")
+    if status == "ok":
+        return jsonify({"ok": True, **result})
+    if status == "not_found":
+        return jsonify({"ok": False, **result}), 404
+    if status == "invalid_state":
+        return jsonify({"ok": False, **result}), 409
+    return jsonify({"ok": False, **result}), 400
+
+
+@bp.post("/proposals/<proposal_id>/dismiss")
+def dismiss_proposal(proposal_id: str) -> ResponseReturnValue:
+    """Dismiss a proposal from active review without applying it."""
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
+    try:
+        service = _get_self_improvement_service()
+        if service is None:
+            return (
+                jsonify(
+                    {
+                        "ok": False,
+                        "status": "disabled",
+                        "error": "Self-improvement engine not registered",
+                    }
+                ),
+                503,
+            )
+        data = request.get_json(silent=True) or {}
+        actor = (
+            request.headers.get("X-Aetherra-Principal")
+            or data.get("actor")
+            or "hub:self_improvement"
+        )
+        result = _service_call(
+            service,
+            "selfimprovement.dismiss_proposal",
+            {
+                "proposal_id": proposal_id,
+                "reason": str(data.get("reason") or ""),
+                "actor": str(actor),
+            },
+        )
+        return _proposal_lifecycle_response(result)
+    except Exception as exc:
+        logger.error("[SELFIMPROVE] Dismiss proposal error: %s", exc)
+        return jsonify({"ok": False, "error": "Internal server error"}), 500
+
+
+@bp.post("/proposals/<proposal_id>/reopen")
+def reopen_proposal(proposal_id: str) -> ResponseReturnValue:
+    """Reopen a dismissed proposal for active review."""
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
+    try:
+        service = _get_self_improvement_service()
+        if service is None:
+            return (
+                jsonify(
+                    {
+                        "ok": False,
+                        "status": "disabled",
+                        "error": "Self-improvement engine not registered",
+                    }
+                ),
+                503,
+            )
+        data = request.get_json(silent=True) or {}
+        actor = (
+            request.headers.get("X-Aetherra-Principal")
+            or data.get("actor")
+            or "hub:self_improvement"
+        )
+        result = _service_call(
+            service,
+            "selfimprovement.reopen_proposal",
+            {
+                "proposal_id": proposal_id,
+                "reason": str(data.get("reason") or ""),
+                "actor": str(actor),
+            },
+        )
+        return _proposal_lifecycle_response(result)
+    except Exception as exc:
+        logger.error("[SELFIMPROVE] Reopen proposal error: %s", exc)
+        return jsonify({"ok": False, "error": "Internal server error"}), 500
 
 
 @bp.post("/apply")

@@ -6,6 +6,9 @@ from aetherra_hub.blueprints import self_improvement
 
 
 class _FakeSelfImprovementService:
+    def __init__(self):
+        self.proposal_status = "active"
+
     async def handle_message(self, message_type, data):
         if message_type == "selfimprovement.status":
             return {
@@ -25,15 +28,47 @@ class _FakeSelfImprovementService:
                 ],
             }
         if message_type == "selfimprovement.proposal":
-            if data.get("proposal_id") != "SI-OBSERVE-1":
+            if data.get("proposal_id") != "SI-OBSERVE-1" or self.proposal_status != "active":
                 return {"status": "not_found", "proposal": None}
             return {
                 "status": "ok",
                 "proposal": {
                     "proposal_id": "SI-OBSERVE-1",
-                    "status": "active",
+                    "status": self.proposal_status,
                     "risk_level": 0.1,
                 },
+            }
+        if message_type == "selfimprovement.dismiss_proposal":
+            if data.get("proposal_id") != "SI-OBSERVE-1":
+                return {"status": "not_found", "proposal_id": data.get("proposal_id")}
+            if self.proposal_status != "active":
+                return {
+                    "status": "invalid_state",
+                    "proposal_id": data.get("proposal_id"),
+                    "current_status": self.proposal_status,
+                }
+            self.proposal_status = "dismissed"
+            return {
+                "status": "ok",
+                "proposal_id": data.get("proposal_id"),
+                "proposal_status": "dismissed",
+                "actor": data.get("actor"),
+            }
+        if message_type == "selfimprovement.reopen_proposal":
+            if data.get("proposal_id") != "SI-OBSERVE-1":
+                return {"status": "not_found", "proposal_id": data.get("proposal_id")}
+            if self.proposal_status != "dismissed":
+                return {
+                    "status": "invalid_state",
+                    "proposal_id": data.get("proposal_id"),
+                    "current_status": self.proposal_status,
+                }
+            self.proposal_status = "active"
+            return {
+                "status": "ok",
+                "proposal_id": data.get("proposal_id"),
+                "proposal_status": "active",
+                "actor": data.get("actor"),
             }
         if message_type == "selfimprovement.trends":
             return {"response_time": {"trend_direction": "degrading"}}
@@ -188,10 +223,11 @@ def test_self_improvement_subsystem_containment_blocks_until_cleared(
 
 def test_self_improvement_read_only_status_proposals_and_trends(monkeypatch, tmp_path):
     client = _client(monkeypatch, tmp_path)
+    service = _FakeSelfImprovementService()
     monkeypatch.setattr(
         self_improvement,
         "_get_self_improvement_service",
-        lambda: _FakeSelfImprovementService(),
+        lambda: service,
     )
 
     status = client.get("/api/selfimprove/status")
@@ -213,6 +249,48 @@ def test_self_improvement_read_only_status_proposals_and_trends(monkeypatch, tmp
     assert missing.status_code == 404
     assert trends.status_code == 200
     assert trends_payload["trends"]["response_time"]["trend_direction"] == "degrading"
+
+
+def test_self_improvement_proposal_lifecycle_requires_auth_and_updates_review(
+    monkeypatch, tmp_path
+):
+    client = _client(monkeypatch, tmp_path)
+    service = _FakeSelfImprovementService()
+    monkeypatch.setattr(
+        self_improvement,
+        "_get_self_improvement_service",
+        lambda: service,
+    )
+
+    unauthorized = client.post("/api/selfimprove/proposals/SI-OBSERVE-1/dismiss")
+    dismissed = client.post(
+        "/api/selfimprove/proposals/SI-OBSERVE-1/dismiss",
+        json={"reason": "not useful now"},
+        headers={
+            "Authorization": "Bearer control-secret",
+            "X-Aetherra-Principal": "self-improvement-reviewer",
+        },
+    )
+    detail_after_dismiss = client.get("/api/selfimprove/proposals/SI-OBSERVE-1")
+    dismiss_again = client.post(
+        "/api/selfimprove/proposals/SI-OBSERVE-1/dismiss",
+        headers={"Authorization": "Bearer control-secret"},
+    )
+    reopened = client.post(
+        "/api/selfimprove/proposals/SI-OBSERVE-1/reopen",
+        json={"reason": "needs review"},
+        headers={"Authorization": "Bearer control-secret"},
+    )
+    detail_after_reopen = client.get("/api/selfimprove/proposals/SI-OBSERVE-1")
+
+    assert unauthorized.status_code == 401
+    assert dismissed.status_code == 200
+    assert dismissed.get_json()["proposal_status"] == "dismissed"
+    assert detail_after_dismiss.status_code == 404
+    assert dismiss_again.status_code == 409
+    assert reopened.status_code == 200
+    assert reopened.get_json()["proposal_status"] == "active"
+    assert detail_after_reopen.status_code == 200
 
 
 def test_self_improvement_batch_apply_accepts_documented_proposal_ids(

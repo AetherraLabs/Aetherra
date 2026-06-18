@@ -1288,6 +1288,18 @@ class AetherraOSLauncher:
                             "status": "ok",
                             "proposals": self.impl.list_active_proposals(),
                         }
+                    if mt.endswith("dismiss_proposal"):
+                        return await self.impl.dismiss_proposal(
+                            str(payload.get("proposal_id") or ""),
+                            reason=str(payload.get("reason") or ""),
+                            actor=str(payload.get("actor") or ""),
+                        )
+                    if mt.endswith("reopen_proposal"):
+                        return await self.impl.reopen_proposal(
+                            str(payload.get("proposal_id") or ""),
+                            reason=str(payload.get("reason") or ""),
+                            actor=str(payload.get("actor") or ""),
+                        )
                     if mt.endswith("proposal"):
                         proposal_id = str(payload.get("proposal_id") or "")
                         proposal = self.impl.get_proposal(proposal_id)
