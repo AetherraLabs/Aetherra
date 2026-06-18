@@ -243,6 +243,8 @@ Implemented behavior:
 - Proposal status is updated from downstream outcomes.
 - A bounded `LearningOutcome` is recorded with proposal ID, plan ID, status, numeric improvement, and detail keys.
 - Raw execution payloads are not copied into the learning record.
+- Downstream result status is validated against a controlled vocabulary before proposal state changes are recorded.
+- Learning detail key metadata is bounded to prevent large or sensitive payload shape leakage.
 - `GET /api/selfimprove/learning/outcomes` exposes sanitized outcome history for operators and future review
   surfaces.
 - Outcome listing supports bounded filters by proposal ID, status, and limit.

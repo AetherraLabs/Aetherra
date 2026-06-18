@@ -83,6 +83,17 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+_VALID_PROPOSAL_RESULT_STATUSES = frozenset(
+    {
+        "accepted",
+        "rejected",
+        "failed",
+        "error",
+        "rolled_back",
+        "manual_required",
+    }
+)
+
 
 class ImprovementType(Enum):
     """Types of improvements"""
@@ -1349,16 +1360,23 @@ class SelfImprovementEngine:
     async def record_proposal_result(self, result: Dict[str, Any]) -> Dict[str, Any]:
         """Record a downstream proposal result without executing any changes."""
         proposal_id = str(result.get("proposal_id") or "").strip()
-        status = str(result.get("status") or "unknown").strip().lower()
+        status = self._normalize_result_status(result.get("status"))
         details = result.get("details") if isinstance(result.get("details"), dict) else {}
+        details_keys = self._bounded_detail_keys(details)
         if not proposal_id:
             return {"status": "error", "error": "proposal_id required"}
+        if status is None:
+            return {
+                "status": "error",
+                "error": "invalid proposal result status",
+                "allowed_statuses": sorted(_VALID_PROPOSAL_RESULT_STATUSES),
+            }
 
         proposal = self.active_proposals.get(proposal_id)
         if proposal is not None:
             previous_status = proposal.status
             proposal.status = status
-            proposal.status_reason = str(details.get("reason") or "")
+            proposal.status_reason = str(details.get("reason") or "")[:500]
             proposal.updated_at = datetime.now()
             await self._store_proposal(proposal)
             await self._record_proposal_lifecycle_event(
@@ -1370,7 +1388,7 @@ class SelfImprovementEngine:
                 reason=proposal.status_reason,
                 metadata={
                     "plan_id": str(result.get("plan_id") or ""),
-                    "details_keys": sorted(str(key) for key in details.keys()),
+                    "details_keys": details_keys,
                 },
             )
 
@@ -1395,7 +1413,7 @@ class SelfImprovementEngine:
                 "proposal_id": proposal_id,
                 "plan_id": str(result.get("plan_id") or ""),
                 "status": status,
-                "details_keys": sorted(str(key) for key in details.keys()),
+                "details_keys": details_keys,
             },
             timestamp=datetime.now(),
         )
@@ -1406,6 +1424,27 @@ class SelfImprovementEngine:
             "proposal_id": proposal_id,
             "recorded_status": status,
         }
+
+    @staticmethod
+    def _normalize_result_status(value: Any) -> str | None:
+        status = str(value or "").strip().lower()
+        aliases = {
+            "applied": "accepted",
+            "success": "accepted",
+            "succeeded": "accepted",
+            "denied": "rejected",
+            "blocked": "rejected",
+            "failure": "failed",
+            "rollback": "rolled_back",
+            "manual": "manual_required",
+        }
+        status = aliases.get(status, status)
+        return status if status in _VALID_PROPOSAL_RESULT_STATUSES else None
+
+    @staticmethod
+    def _bounded_detail_keys(details: dict[str, Any]) -> list[str]:
+        keys = sorted(str(key)[:120] for key in details.keys())
+        return keys[:50]
 
     def record_performance_metric(
         self, name: str, value: float, unit: str, context: Dict[str, Any] | None = None

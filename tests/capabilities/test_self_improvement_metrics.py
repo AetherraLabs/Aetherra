@@ -245,6 +245,75 @@ async def test_proposal_result_records_bounded_learning_outcome(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_proposal_result_rejects_invalid_status_without_mutation(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+    proposal = ImprovementProposal(
+        proposal_id="invalid-result-status",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Reject malformed result status",
+        expected_benefit=0.8,
+        implementation_cost=0.2,
+        risk_level=0.1,
+        affected_components=["memory"],
+        success_criteria=["Invalid results do not mutate state"],
+        created_at=datetime.now(),
+    )
+    await eng._process_proposal(proposal)
+
+    result = await eng.record_proposal_result(
+        {
+            "proposal_id": "invalid-result-status",
+            "status": "active",
+            "details": {"reason": "status injection attempt"},
+        }
+    )
+
+    assert result["status"] == "error"
+    assert result["error"] == "invalid proposal result status"
+    assert eng.get_proposal("invalid-result-status")["status"] == "active"
+    assert eng.get_improvement_status()["learning_outcomes"] == 0
+    assert [
+        event["event_type"]
+        for event in eng.get_proposal_history("invalid-result-status")
+    ] == ["created"]
+
+
+@pytest.mark.asyncio
+async def test_proposal_result_normalizes_status_and_bounds_detail_keys(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+    proposal = ImprovementProposal(
+        proposal_id="bounded-result-keys",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Bound result detail keys",
+        expected_benefit=0.8,
+        implementation_cost=0.2,
+        risk_level=0.1,
+        affected_components=["memory"],
+        success_criteria=["Details are bounded"],
+        created_at=datetime.now(),
+    )
+    await eng._process_proposal(proposal)
+    details = {f"key-{index:03d}-{'x' * 160}": index for index in range(75)}
+    details["improvement_achieved"] = 0.6
+
+    result = await eng.record_proposal_result(
+        {
+            "proposal_id": "bounded-result-keys",
+            "plan_id": "plan-bounded",
+            "status": "success",
+            "details": details,
+        }
+    )
+
+    outcome = eng.list_learning_outcomes(proposal_id="bounded-result-keys")[0]
+    assert result["recorded_status"] == "accepted"
+    assert len(outcome["details_keys"]) == 50
+    assert all(len(key) <= 120 for key in outcome["details_keys"])
+    assert "improvement_achieved" in outcome["details_keys"]
+    assert outcome["status"] == "accepted"
+
+
+@pytest.mark.asyncio
 async def test_reviewable_proposals_reload_from_database(tmp_path):
     db_path = tmp_path / "self_improvement.db"
     eng = SelfImprovementEngine(db_path=str(db_path))

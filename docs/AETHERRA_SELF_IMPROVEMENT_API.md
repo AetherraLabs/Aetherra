@@ -440,6 +440,19 @@ The Self-Improvement Engine also supports internal service-registry messages:
 `selfimprovement.proposal_result` records proposal ID, plan ID, status, numeric improvement, and result detail
 keys. It does not copy raw execution payload values into the learning record.
 
+Accepted proposal result statuses are:
+
+- `accepted`
+- `rejected`
+- `failed`
+- `error`
+- `rolled_back`
+- `manual_required`
+
+The engine also normalizes common aliases such as `success` to `accepted` and `denied` to `rejected`.
+Unknown statuses are rejected and do not mutate proposal state or write learning outcomes. Detail key metadata is
+bounded before storage.
+
 HMR enables runtime application of approved proposals without OS restart. When HMR is enabled and available, the Self-Improvement API will attempt to apply proposals via the HMR Controller.
 
 ### Enabling HMR
