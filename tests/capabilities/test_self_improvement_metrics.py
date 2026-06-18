@@ -584,6 +584,37 @@ async def test_proposal_result_normalizes_status_and_bounds_detail_keys(tmp_path
 
 
 @pytest.mark.asyncio
+async def test_proposal_result_bounds_identifier_metadata(tmp_path):
+    db_path = tmp_path / "self_improvement.db"
+    eng = SelfImprovementEngine(db_path=str(db_path))
+    long_plan_id = "plan-" + ("x" * 300)
+    long_component = "component-" + ("y" * 300)
+
+    result = await eng.record_proposal_result(
+        {
+            "proposal_id": "unknown-proposal",
+            "plan_id": long_plan_id,
+            "status": "manual_required",
+            "details": {
+                "type": long_component,
+                "improvement_achieved": 0.1,
+            },
+        }
+    )
+
+    outcome = eng.list_learning_outcomes(proposal_id="unknown-proposal")[0]
+    reloaded = SelfImprovementEngine(db_path=str(db_path))
+    reloaded_outcome = reloaded.list_learning_outcomes(proposal_id="unknown-proposal")[0]
+
+    assert result["status"] == "ok"
+    assert outcome["plan_id"] == long_plan_id[:120]
+    assert outcome["target_component"] == long_component[:120]
+    assert long_plan_id not in str(outcome)
+    assert long_component not in str(outcome)
+    assert reloaded_outcome == outcome
+
+
+@pytest.mark.asyncio
 async def test_reviewable_proposals_reload_from_database(tmp_path):
     db_path = tmp_path / "self_improvement.db"
     eng = SelfImprovementEngine(db_path=str(db_path))

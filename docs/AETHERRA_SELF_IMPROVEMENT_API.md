@@ -457,6 +457,7 @@ for invalid observations.
 
 `selfimprovement.proposal_result` records proposal ID, plan ID, status, numeric improvement, and result detail
 keys. It does not copy raw execution payload values into the learning record.
+Plan identifiers, component labels, and detail-key names are bounded before persistence.
 
 Accepted proposal result statuses are:
 

@@ -1557,6 +1557,7 @@ class SelfImprovementEngine:
         status = self._normalize_result_status(result.get("status"))
         details = result.get("details") if isinstance(result.get("details"), dict) else {}
         details_keys = self._bounded_detail_keys(details)
+        plan_id = self._bounded_text(result.get("plan_id"), default="", limit=120)
         if not proposal_id:
             return {"status": "error", "error": "proposal_id required"}
         if status is None:
@@ -1581,7 +1582,7 @@ class SelfImprovementEngine:
                 actor="controlled_execution",
                 reason=proposal.status_reason,
                 metadata={
-                    "plan_id": str(result.get("plan_id") or ""),
+                    "plan_id": plan_id,
                     "details_keys": details_keys,
                 },
             )
@@ -1595,7 +1596,7 @@ class SelfImprovementEngine:
         target_component = (
             ",".join(proposal.affected_components)
             if proposal is not None
-            else str(details.get("type") or "unknown")
+            else self._bounded_text(details.get("type"), default="unknown", limit=120)
         )
         outcome = LearningOutcome(
             session_id=str(uuid.uuid4()),
@@ -1605,7 +1606,7 @@ class SelfImprovementEngine:
             confidence=1.0 if status == "accepted" else 0.5,
             learning_data={
                 "proposal_id": proposal_id,
-                "plan_id": str(result.get("plan_id") or ""),
+                "plan_id": plan_id,
                 "status": status,
                 "details_keys": details_keys,
             },
@@ -1639,6 +1640,13 @@ class SelfImprovementEngine:
     def _bounded_detail_keys(details: dict[str, Any]) -> list[str]:
         keys = sorted(str(key)[:120] for key in details.keys())
         return keys[:50]
+
+    @staticmethod
+    def _bounded_text(value: Any, *, default: str, limit: int) -> str:
+        text = str(value or "").strip()
+        if not text:
+            return default
+        return text[:limit] or default
 
     @staticmethod
     def _coerce_bounded_int(value: Any, *, default: int, minimum: int, maximum: int) -> int:
