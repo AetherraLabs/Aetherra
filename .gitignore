@@ -9,6 +9,10 @@ aetherra-website/
 # ===== ENVIRONMENT VARIABLES & SECRETS =====
 # Never commit API keys, passwords, or sensitive configuration
 .env
+.env.*
+!.env.example
+!.env.template
+!.env.*.template
 .env.local
 .env.production
 .env.staging
@@ -23,6 +27,7 @@ __pycache__/
 *.so
 .Python
 build/
+dist-packages/
 develop-eggs/
 dist/
 downloads/
@@ -171,10 +176,19 @@ embeddings_cache/
 debug_output/
 test_output/
 reports/
+data/artifacts/*.sarif
+data/artifacts/coverage*.json
+data/artifacts/*scan*.json
 *.report.json
 cleanup_report.json
 *audit*.json
 *report*.json
+ruff_report*.json
+ruff_report*.txt
+security_scan.json
+licenses_report.json
+gate_results.json
+doctor_last_run.txt
 docs/docs_architecture_report.json  # Ephemeral generated docs architecture scan (not versioned)
 
 # Backup files
