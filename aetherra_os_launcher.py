@@ -1300,6 +1300,17 @@ class AetherraOSLauncher:
                             reason=str(payload.get("reason") or ""),
                             actor=str(payload.get("actor") or ""),
                         )
+                    if mt.endswith("proposal_history"):
+                        proposal_id = str(payload.get("proposal_id") or "")
+                        limit = int(payload.get("limit") or 50)
+                        return {
+                            "status": "ok",
+                            "proposal_id": proposal_id,
+                            "events": self.impl.get_proposal_history(
+                                proposal_id,
+                                limit=limit,
+                            ),
+                        }
                     if mt.endswith("proposal"):
                         proposal_id = str(payload.get("proposal_id") or "")
                         proposal = self.impl.get_proposal(proposal_id)

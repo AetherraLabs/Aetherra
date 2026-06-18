@@ -70,6 +70,23 @@ class _FakeSelfImprovementService:
                 "proposal_status": "active",
                 "actor": data.get("actor"),
             }
+        if message_type == "selfimprovement.proposal_history":
+            return {
+                "status": "ok",
+                "proposal_id": data.get("proposal_id"),
+                "events": [
+                    {
+                        "proposal_id": data.get("proposal_id"),
+                        "event_type": "dismissed",
+                        "from_status": "active",
+                        "to_status": "dismissed",
+                        "actor": "self-improvement-reviewer",
+                        "reason": "not useful now",
+                        "timestamp": "2026-06-17T00:00:00",
+                        "metadata": {},
+                    }
+                ],
+            }
         if message_type == "selfimprovement.trends":
             return {"response_time": {"trend_direction": "degrading"}}
         return {"error": "unknown_message"}
@@ -272,6 +289,7 @@ def test_self_improvement_proposal_lifecycle_requires_auth_and_updates_review(
         },
     )
     detail_after_dismiss = client.get("/api/selfimprove/proposals/SI-OBSERVE-1")
+    history = client.get("/api/selfimprove/proposals/SI-OBSERVE-1/history")
     dismiss_again = client.post(
         "/api/selfimprove/proposals/SI-OBSERVE-1/dismiss",
         headers={"Authorization": "Bearer control-secret"},
@@ -287,6 +305,8 @@ def test_self_improvement_proposal_lifecycle_requires_auth_and_updates_review(
     assert dismissed.status_code == 200
     assert dismissed.get_json()["proposal_status"] == "dismissed"
     assert detail_after_dismiss.status_code == 404
+    assert history.status_code == 200
+    assert history.get_json()["events"][0]["event_type"] == "dismissed"
     assert dismiss_again.status_code == 409
     assert reopened.status_code == 200
     assert reopened.get_json()["proposal_status"] == "active"

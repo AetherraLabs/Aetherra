@@ -625,6 +625,28 @@ class SelfImprovementEngine:
 
             conn.execute(
                 """
+                CREATE TABLE IF NOT EXISTS proposal_lifecycle_events (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    proposal_id TEXT NOT NULL,
+                    event_type TEXT NOT NULL,
+                    from_status TEXT,
+                    to_status TEXT NOT NULL,
+                    actor TEXT,
+                    reason TEXT,
+                    timestamp TEXT NOT NULL,
+                    metadata TEXT
+                )
+            """
+            )
+            conn.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_proposal_lifecycle_proposal_time
+                ON proposal_lifecycle_events(proposal_id, timestamp)
+            """
+            )
+
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS system_evolution (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     component TEXT NOT NULL,
@@ -731,6 +753,44 @@ class SelfImprovementEngine:
         except Exception as exc:
             logger.debug("Failed to load self-improvement proposal %s: %s", proposal_id, exc)
             return None
+
+    def get_proposal_history(
+        self,
+        proposal_id: str,
+        *,
+        limit: int = 50,
+    ) -> list[dict[str, Any]]:
+        """Return bounded lifecycle history for a proposal."""
+        safe_limit = max(1, min(200, int(limit)))
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
+        try:
+            rows = conn.execute(
+                """
+                SELECT proposal_id, event_type, from_status, to_status, actor,
+                       reason, timestamp, metadata
+                FROM proposal_lifecycle_events
+                WHERE proposal_id = ?
+                ORDER BY timestamp DESC, id DESC
+                LIMIT ?
+                """,
+                (proposal_id, safe_limit),
+            ).fetchall()
+        finally:
+            conn.close()
+        return [
+            {
+                "proposal_id": str(row["proposal_id"]),
+                "event_type": str(row["event_type"]),
+                "from_status": row["from_status"],
+                "to_status": str(row["to_status"]),
+                "actor": row["actor"],
+                "reason": row["reason"],
+                "timestamp": str(row["timestamp"]),
+                "metadata": self._json_dict(row["metadata"]),
+            }
+            for row in rows
+        ]
 
     def _proposal_from_row(
         self,
@@ -955,6 +1015,19 @@ class SelfImprovementEngine:
             proposal.status = "active"
             self.active_proposals[proposal.proposal_id] = proposal
             await self._store_proposal(proposal)
+            await self._record_proposal_lifecycle_event(
+                proposal_id=proposal.proposal_id,
+                event_type="created",
+                from_status=None,
+                to_status=proposal.status,
+                actor="self_improvement_engine",
+                reason="proposal generated from analysis",
+                metadata={
+                    "score": round(score, 3),
+                    "improvement_type": proposal.improvement_type.value,
+                    "risk_level": proposal.risk_level,
+                },
+            )
 
             logger.info(f"High-confidence proposal: {proposal.description} (score: {score:.2f})")
 
@@ -1020,10 +1093,23 @@ class SelfImprovementEngine:
 
         proposal = self.active_proposals.get(proposal_id)
         if proposal is not None:
+            previous_status = proposal.status
             proposal.status = status
             proposal.status_reason = str(details.get("reason") or "")
             proposal.updated_at = datetime.now()
             await self._store_proposal(proposal)
+            await self._record_proposal_lifecycle_event(
+                proposal_id=proposal_id,
+                event_type="result_recorded",
+                from_status=previous_status,
+                to_status=status,
+                actor="controlled_execution",
+                reason=proposal.status_reason,
+                metadata={
+                    "plan_id": str(result.get("plan_id") or ""),
+                    "details_keys": sorted(str(key) for key in details.keys()),
+                },
+            )
 
         improvement_achieved = details.get("improvement_achieved")
         try:
@@ -1156,6 +1242,15 @@ class SelfImprovementEngine:
         proposal.status_reason = reason[:500]
         proposal.updated_at = datetime.now()
         await self._store_proposal(proposal)
+        await self._record_proposal_lifecycle_event(
+            proposal_id=proposal_id,
+            event_type="dismissed",
+            from_status="active",
+            to_status=proposal.status,
+            actor=actor,
+            reason=proposal.status_reason,
+            metadata={},
+        )
         self.active_proposals.pop(proposal_id, None)
         return {
             "status": "ok",
@@ -1185,6 +1280,15 @@ class SelfImprovementEngine:
         proposal.status_reason = reason[:500]
         proposal.updated_at = datetime.now()
         await self._store_proposal(proposal)
+        await self._record_proposal_lifecycle_event(
+            proposal_id=proposal_id,
+            event_type="reopened",
+            from_status="dismissed",
+            to_status=proposal.status,
+            actor=actor,
+            reason=proposal.status_reason,
+            metadata={},
+        )
         self.active_proposals[proposal_id] = proposal
         return {
             "status": "ok",
@@ -1217,6 +1321,41 @@ class SelfImprovementEngine:
             if proposal.updated_at is not None
             else None,
         }
+
+    async def _record_proposal_lifecycle_event(
+        self,
+        *,
+        proposal_id: str,
+        event_type: str,
+        from_status: str | None,
+        to_status: str,
+        actor: str,
+        reason: str,
+        metadata: dict[str, Any],
+    ) -> None:
+        conn = sqlite3.connect(self.db_path)
+        try:
+            conn.execute(
+                """
+                INSERT INTO proposal_lifecycle_events
+                (proposal_id, event_type, from_status, to_status, actor, reason,
+                 timestamp, metadata)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    proposal_id,
+                    event_type,
+                    from_status,
+                    to_status,
+                    actor[:200],
+                    reason[:500],
+                    datetime.now().isoformat(),
+                    json.dumps(metadata, sort_keys=True),
+                ),
+            )
+            conn.commit()
+        finally:
+            conn.close()
 
     def export_internal_metrics(
         self,

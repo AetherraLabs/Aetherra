@@ -117,6 +117,7 @@ Implemented endpoints:
 - `GET /api/selfimprove/status`
 - `GET /api/selfimprove/proposals`
 - `GET /api/selfimprove/proposals/<proposal_id>`
+- `GET /api/selfimprove/proposals/<proposal_id>/history`
 - `GET /api/selfimprove/trends`
 - `POST /api/selfimprove/proposals/<proposal_id>/dismiss`
 - `POST /api/selfimprove/proposals/<proposal_id>/reopen`
@@ -182,6 +183,8 @@ Implemented behavior:
 - `GET /api/selfimprove/proposals` returns active proposals for UI/operator review.
 - Operators can dismiss or reopen proposals through Hub-control-authorized lifecycle endpoints.
 - Dismiss/reopen changes review state only; it does not execute, modify code, reload modules, or bypass Guardian.
+- Proposal review lifecycle events are appended to a local history record with event type, status transition, actor,
+  reason, timestamp, and bounded metadata.
 - Proposal application remains an explicit control-plane action.
 
 Example proposal shape:

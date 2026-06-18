@@ -116,6 +116,31 @@ active-review endpoint.
 }
 ```
 
+### GET /api/selfimprove/proposals/{proposal_id}/history
+
+Return bounded review lifecycle history for one proposal.
+
+**Success response (HTTP 200):**
+
+```json
+{
+  "status": "ok",
+  "proposal_id": "SI-42",
+  "events": [
+    {
+      "proposal_id": "SI-42",
+      "event_type": "dismissed",
+      "from_status": "active",
+      "to_status": "dismissed",
+      "actor": "operator",
+      "reason": "Not useful for the current milestone",
+      "timestamp": "2026-06-17T00:00:00",
+      "metadata": {}
+    }
+  ]
+}
+```
+
 ### POST /api/selfimprove/proposals/{proposal_id}/dismiss
 
 Dismiss a reviewable proposal without applying it. Requires Hub control authorization.
@@ -341,6 +366,7 @@ The Self-Improvement Engine also supports internal service-registry messages:
 - `selfimprovement.status`: return read-only engine status.
 - `selfimprovement.trends`: return read-only metric trends.
 - `selfimprovement.proposals`: return active proposals.
+- `selfimprovement.proposal_history`: return bounded lifecycle history for a proposal.
 - `selfimprovement.proposal_result`: record a bounded downstream outcome after controlled execution.
 
 `selfimprovement.proposal_result` records proposal ID, plan ID, status, numeric improvement, and result detail

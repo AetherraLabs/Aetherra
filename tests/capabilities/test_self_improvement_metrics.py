@@ -234,19 +234,29 @@ async def test_proposal_lifecycle_dismiss_and_reopen(tmp_path):
     after_dismiss_reload = SelfImprovementEngine(db_path=str(db_path))
     assert after_dismiss_reload.list_active_proposals() == []
 
+    assert dismissed["status"] == "ok"
+    assert eng.list_active_proposals() == []
+    dismiss_history = eng.get_proposal_history("review-lifecycle")
+    assert dismiss_history[0]["event_type"] == "dismissed"
+    assert dismiss_history[0]["actor"] == "operator"
+    assert dismiss_history[0]["reason"] == "not needed now"
+
     reopened = await after_dismiss_reload.reopen_proposal(
         "review-lifecycle",
         reason="review again",
         actor="operator",
     )
 
-    assert dismissed["status"] == "ok"
-    assert eng.list_active_proposals() == []
     assert reopened["status"] == "ok"
     assert after_dismiss_reload.get_proposal("review-lifecycle")["status"] == "active"
     assert after_dismiss_reload.get_proposal("review-lifecycle")["status_reason"] == (
         "review again"
     )
+    reopen_history = after_dismiss_reload.get_proposal_history("review-lifecycle")
+    assert [event["event_type"] for event in reopen_history[:2]] == [
+        "reopened",
+        "dismissed",
+    ]
 
 
 @pytest.mark.asyncio
@@ -325,6 +335,8 @@ def test_existing_proposal_database_schema_is_migrated(tmp_path):
         "evidence",
         "simulation",
         "rollback_plan",
+        "status_reason",
+        "updated_at",
     }.issubset(columns)
 
 
