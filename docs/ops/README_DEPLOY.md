@@ -16,7 +16,7 @@ Aetherra/
 │   └── vite.config.ts            # Vite configuration
 ├── docs/                         # Built website (GitHub Pages source)
 ├── .github/workflows/deploy.yml  # GitHub Actions deployment
-└── README_DEPLOY.md              # This file
+└── docs/ops/README_DEPLOY.md     # This file
 ```
 
 ## ⚙️ Configuration

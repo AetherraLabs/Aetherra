@@ -184,6 +184,11 @@ Root utility cleanup notes:
   `docs/archive/root-reports/`.
 - Root orientation/reference docs for the master map, mind map, claims
   validation, and Aether Script legacy references were moved under `docs/`.
+- Generated root verification reports were removed from Git tracking and added
+  to `.gitignore`.
+- Deployment and smoke profile root docs were moved under `docs/ops/`.
+- Documentation-only root files for Lyrixa AI setup and the historical stub
+  inventory report were moved under `docs/`.
 
 ## Phase 5 - GitHub Hygiene
 

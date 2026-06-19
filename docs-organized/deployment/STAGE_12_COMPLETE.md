@@ -67,7 +67,7 @@
 - GitHub Actions CI/CD pipeline via `.github/workflows/gh-pages-deploy.yml`
 - SPA routing fallback through `public/404.html`
 - Production build configuration in `vite.config.ts`
-- Comprehensive deployment guide via `README_DEPLOY.md`
+- Comprehensive deployment guide via `docs/ops/README_DEPLOY.md`
 - Complete deployment documentation in `DEPLOYMENT_COMPLETE.md`
 
 ---

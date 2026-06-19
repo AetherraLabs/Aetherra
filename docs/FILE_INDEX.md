@@ -1012,8 +1012,11 @@ docs/
     release_notes_template.md — Release Notes — Aetherra OS — Self-Incorporation v1
     selfinc_v1_backlog.md — Aetherra OS — Self-Incorporation v1 Backlog (Copy/Paste Issues)
   ops/
+    DEPLOYMENT_TIERS.md — Aetherra Deployment Tiers
     HUB_CONTROL_TOKEN.md — Hub Control Token
     OPERATOR_RUNBOOK.md — Aetherra Operator Runbook (Alpha)
+    README_DEPLOY.md — Aetherra Deployment Guide
+    SMOKE_PROFILE.md — Deterministic Smoke Profile
   roadmap/
     Aetherra Memory System Evolution Roadmap.md — 🧠 Aetherra Memory System Evolution Roadmap
     AETHERRA_CODING_SYSTEM_ROADMAP.md — Aetherra Coding System Roadmap (Lyrixa Code Studio)
@@ -1104,6 +1107,7 @@ docs/
   INTERACTIVE_LYRIXA.md — 🌟 Interactive Lyrixa — Architecture & Implementation
   INTERACTIVE_LYRIXA_QUICKSTART.md — 🚀 Interactive Lyrixa — Quick Start Integration Guide
   KEY_ROTATION.md — Aetherra Key Rotation & Signing Appendix
+  LYRIXA_AI_SETUP.md — Setting Up Lyrixa AI-Powered Chat
   LYRIXA_CHAT_ENDPOINT.md — Lyrixa Chat Endpoint
   LYRIXA_UI_STANDARDS.md — Lyrixa UI Standards (React/TypeScript)
   manifesto.md — AETHERRA MANIFESTO (v6.0 – July 2025)
@@ -1163,6 +1167,7 @@ docs/
   storm_runbook.md — STORM On-Call Runbook
   STORM_SECURITY_VERIFICATION.md — STORM Security Gates Verification Report
   STUB_INVENTORY.json
+  STUB_INVENTORY.md — STUB INVENTORY ANALYSIS - March 10, 2026
   SYSTEM_INDEX.md — Aetherra System Index
   TESTING_GUIDE.md — Aetherra Testing Guide
   THREAT_MODEL.md — Aetherra Threat Model (Alpha)
@@ -1880,8 +1885,6 @@ tools/
   vuln_scan.py — Lightweight vulnerability scan wrapper (alpha implementation).
 .markdownlint.json
 aether.py — Execute Aether Script content."""
-aether_static_report.md — .aether Verification Report
-aether_verification_report.md — .aether Verification Report
 aetherra_aar_broker.py — !/usr/bin/env python3
 aetherra_adaptive_behavior.py — Represents a learned behavior pattern."""
 aetherra_agent_daemon.py — !/usr/bin/env python3
@@ -1921,10 +1924,8 @@ config.json
 config.production.json
 CONTRIBUTING.md — Contributing
 copyright_header.py — !/usr/bin/env python3
-DEPLOYMENT_TIERS.md — Aetherra Deployment Tiers
 ENGINE_CURATION_PROPOSAL.md — Engine Curation Proposal (Dry-Run Plan)
 ENGINE_USAGE_MATRIX.md — Engine Usage Matrix
-gate_sign_off.md — Go / No-Go Gate Sign-Off
 GOVERNANCE.md — Project Governance
 INSTALL.md — Installation & Quickstart
 intelligence_report_generator.py — Load analysis data from JSON file"""
@@ -1933,7 +1934,6 @@ LEGAL_COMPLIANCE.md — Aetherra Project - Legal Compliance Documentation
 LICENSE_POLICY.md — License Policy & Enforcement Gates
 licenses_unknown_history.json
 licenses_unknown_history.requirements-ci.lock.json
-LYRIXA_AI_SETUP.md — Setting Up Lyrixa AI-Powered Chat
 main.py — Convenience launcher alias for aetherra_os main entry point.
 OWNERSHIP.md — Ownership & Release Authority
 package-lock.json
@@ -1946,17 +1946,14 @@ PRODUCTION_ROADMAP.md — Aetherra Production Roadmap
 quantum_memory_bridge.py — Quantum memory bridge placeholder (alpha stub)."""
 QUICK_START.md — Aetherra Turn-Key Development Quick Start
 README.md — Aetherra
-README_DEPLOY.md — Aetherra Deployment Guide
 RELEASE_NOTES_0.5.0-beta.0.md — Aetherra 0.5.0-beta.0 Release Notes
 ROADMAP.md — Aetherra Roadmap
 sbom.json
 SECURITY.md — Security Policy
 setup.py — !/usr/bin/env python3
 setup_dev.py — Print the Aetherra setup banner"""
-SMOKE_PROFILE.md — Deterministic Smoke Profile
 STEWARDSHIP.md — Aetherra Stewardship Statement
 STUB_INVENTORY.json
-STUB_INVENTORY.md — STUB INVENTORY ANALYSIS - March 10, 2026
 SUPPORT.md — Support
 test_unicode_workflow_fix.py — Test that Unicode issues are resolved
 unicode_logger.py — Unicode-Safe Logging Configuration for Aetherra OS.

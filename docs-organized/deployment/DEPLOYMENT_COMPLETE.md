@@ -10,7 +10,7 @@
 ### 📁 Deployment Files Created
 - [OK] `.github/workflows/gh-pages-deploy.yml` - GitHub Actions CI/CD pipeline
 - [OK] `public/404.html` - SPA routing fallback with neural theme
-- [OK] `README_DEPLOY.md` - Comprehensive deployment guide
+- [OK] `docs/ops/README_DEPLOY.md` - Comprehensive deployment guide
 - [OK] Updated `index.html` - Correct favicon path for GitHub Pages
 
 ### [TOOL] Configuration Verified
