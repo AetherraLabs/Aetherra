@@ -201,6 +201,9 @@ Root utility cleanup notes:
   truth for strict script checks and readiness validation.
 - The standalone docs consistency workflow was removed because `ci.yml` already
   runs the docs consistency gate; the separate docs build workflow remains.
+- Auto-committing risk badge updates and scheduled parse/classification drift
+  reports were removed; the underlying tools remain available through manual
+  runs and focused on-change workflows.
 
 ## Phase 5 - GitHub Hygiene
 
