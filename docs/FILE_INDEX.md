@@ -1033,6 +1033,7 @@ docs/
     README.md — Self-Incorporation (v1)
   workflow-fixes/
     README.md — Automated Workflow Failure Fixes
+  Aether_Script_Language_Specification.md — Aether Script Language System (`.aether`) — Legacy Spec (v1.0)
   Aether_Script_Language_System.md — Aether Script Language System (`.aether`)
   Aether_Script_Operator_Guide.md — Aether Script Operator Guide
   aether_script_protection.md — Aether Script Protection and Signing
@@ -1043,6 +1044,7 @@ docs/
   AETHERRA_ARTIFICIAL_INTELLIGENCE_SYSTEM.md — Aetherra Artificial Intelligence System
   AETHERRA_BOOT_INTERACTION_CONTRACT_V1.md — Aetherra Boot Interaction Contract v1
   AETHERRA_CHAT_SYSTEM.md — Aetherra Chat System
+  AETHERRA_CLAIMS_VALIDATION.md — Aetherra OS — Capabilities Validation Snapshot (2025-08-12)
   AETHERRA_CODING_SYSTEM.md — Aetherra Coding System (Lyrixa Code Studio)
   AETHERRA_COMPLETE_OVERVIEW_2026-03-12.md — Aetherra: Complete System Overview & Architecture
   AETHERRA_CONSCIOUSNESS_SYSTEM.md — Aetherra Consciousness System
@@ -1055,7 +1057,9 @@ docs/
   AETHERRA_KERNEL_SYSTEM.md — Aetherra Kernel System
   AETHERRA_LYRIXA_SYSTEM.md — Aetherra Lyrixa System
   AETHERRA_MAINTENANCE_SYSTEM.md — Aetherra Maintenance System
+  AETHERRA_MASTER_MAP.md — 🌌 Aetherra Master Map — Complete System Architecture & Status
   AETHERRA_MEMORY_SYSTEM.md — Aetherra Memory System
+  AETHERRA_MIND_MAP.md — 🧠 Aetherra Master Mind Map
   aetherra_os_architecture_map_v_1.md — Aetherra OS • Architecture Map (v1.0)
   AETHERRA_PLUGIN_SYSTEM.md — Aetherra Plugin System
   aetherra_quantum_roadmap_v_1.md — Aetherra • Quantum Roadmap (v1.0)
@@ -1169,6 +1173,7 @@ docs/
   WAVE_A_COMPLIANCE_REPORT.md — Wave A Production Readiness - Compliance Report
   WAVE_A_DEPLOYMENT_PROCEDURE.md — Wave A Production Deployment Procedure
   WEEK10_VALIDATION_EVIDENCE.md — Week 10 Validation Evidence (Integration Matrix + Regression)
+  what_is_Aether_Script.md — Aether Script (`.aether`) Language Overview
 tests/
   acceptance/
     test_autonomous_error_correction_golden_paths.py — Setup the error corrector (async)."""
@@ -1874,7 +1879,6 @@ tools/
   verify_version_badge.py — Verify README version badge matches declared version.
   vuln_scan.py — Lightweight vulnerability scan wrapper (alpha implementation).
 .markdownlint.json
-Aether Script Language Specification.md — Aether Script Language System (`.aether`) — Legacy Spec (v1.0)
 aether.py — Execute Aether Script content."""
 aether_static_report.md — .aether Verification Report
 aether_verification_report.md — .aether Verification Report
@@ -1882,7 +1886,6 @@ aetherra_aar_broker.py — !/usr/bin/env python3
 aetherra_adaptive_behavior.py — Represents a learned behavior pattern."""
 aetherra_agent_daemon.py — !/usr/bin/env python3
 aetherra_agent_fabric.py — Register Agent Fabric agents with the AgentOrchestrator for task management."""
-AETHERRA_CLAIMS_VALIDATION.md — Aetherra OS — Capabilities Validation Snapshot (2025-08-12)
 aetherra_cognitive_task_manager.py — Initialize Flask app and routes."""
 aetherra_cognitive_task_manager_simple.py — Simplified cognitive task manager that definitely works."""
 aetherra_event_bus.py — !/usr/bin/env python3
@@ -1890,9 +1893,7 @@ aetherra_file_watcher.py — Determine if a file should be processed."""
 aetherra_hmr_controller.py — Hot Module Reload controller service.
 aetherra_kernel_loop.py — Evaluate production backpressure & plugin safety invariants.
 aetherra_live_monitor.py — !/usr/bin/env python3
-AETHERRA_MASTER_MAP.md — 🌌 Aetherra Master Map — Complete System Architecture & Status
 aetherra_meta_memory.py — Initialize the meta-memory database."""
-AETHERRA_MIND_MAP.md — 🧠 Aetherra Master Mind Map
 aetherra_module_manager.py — Minimal, safe module manager with a clear contract."""
 aetherra_os.py — Launch the designated Aetherra GUI interface and start OS backend"""
 aetherra_os_launcher.py — Return the most recent launcher readiness snapshot, if available."""
@@ -1959,5 +1960,4 @@ STUB_INVENTORY.md — STUB INVENTORY ANALYSIS - March 10, 2026
 SUPPORT.md — Support
 test_unicode_workflow_fix.py — Test that Unicode issues are resolved
 unicode_logger.py — Unicode-Safe Logging Configuration for Aetherra OS.
-what is Aether Script.md — Aether Script (`.aether`) Language Overview
 ```

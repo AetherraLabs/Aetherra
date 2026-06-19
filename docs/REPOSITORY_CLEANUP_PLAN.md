@@ -182,6 +182,8 @@ Root utility cleanup notes:
 - Older analysis, autonomous integration, Homeostasis fix, Self-Incorporation
   completion, and phase-planning notes were also moved under
   `docs/archive/root-reports/`.
+- Root orientation/reference docs for the master map, mind map, claims
+  validation, and Aether Script legacy references were moved under `docs/`.
 
 ## Phase 5 - GitHub Hygiene
 

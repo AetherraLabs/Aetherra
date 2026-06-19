@@ -91,7 +91,7 @@ Aetherra OS is **production-ready** for beta release with comprehensive feature 
 
 | Document                                       | Purpose                                      | Status    | Last Updated      |
 | ---------------------------------------------- | -------------------------------------------- | --------- | ----------------- |
-| **AETHERRA_MASTER_MAP.md**                     | Complete system architecture overview        | ✅         | Oct 2025          |
+| **docs/AETHERRA_MASTER_MAP.md**                | Complete system architecture overview        | ✅         | Oct 2025          |
 | **SYSTEM_INDEX.md**                            | Navigation guide for core docs               | ✅         | Aug 2025          |
 | **AETHERRA_KERNEL_SYSTEM.md**                  | Kernel architecture & lifecycle              | ✅         | Implemented       |
 | **AETHERRA_CONSCIOUSNESS_SYSTEM.md**           | Consciousness loop & adaptive awareness      | ✅         | Current           |

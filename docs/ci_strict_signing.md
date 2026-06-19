@@ -91,6 +91,6 @@ Make executable: `chmod +x .git/hooks/pre-commit`
 
 ## Related Documentation
 
-- [AETHERRA_CLAIMS_VALIDATION.md](../AETHERRA_CLAIMS_VALIDATION.md) - Capability validation status
+- [AETHERRA_CLAIMS_VALIDATION.md](AETHERRA_CLAIMS_VALIDATION.md) - Capability validation status
 - [Aetherra Script Language Specification.md](../Aetherra%20Script%20Language%20Specification.md) - Language reference
 - `Aetherra/security/script_signing.py` - Signing implementation

@@ -4,7 +4,7 @@ This document summarizes what the project is, how it’s organized, what’s wor
 
 ## Summary at a Glance
 
-- Core vision: AI-native OS where Lyrixa is the cognitive interface and .aether encodes intent (see Aetherra_Lyrixa_Description.md and Aether Script Language Specification.md).
+- Core vision: AI-native OS where Lyrixa is the cognitive interface and .aether encodes intent (see Aetherra_Lyrixa_Description.md and Aether_Script_Language_System.md).
 - Status: Phase 6 UI and intelligence are implemented; service registry, kernel loop, plugin hub, and mock fallbacks exist; quantum/consciousness scaffolding is wired.
 - Launchers: aetherra_os_launcher.py (full OS orchestration), aetherra_os.py (entry with GUI routing), Aetherra/lyrixa/launcher.py (Lyrixa backend orchestrator), Aetherra/lyrixa/lyrixa_basic.py (main Lyrixa GUI entry).
 - UI: PySide6 + embedded web panels; Phase 3–6 features present (auto-generation, cognitive UI, plugin UI, personality/state memory).
@@ -95,7 +95,7 @@ This document summarizes what the project is, how it’s organized, what’s wor
 
 ## .aether Language — Current State vs Spec
 
-- Spec is defined (Aether Script Language Specification.md) with goals, memory, assignments, calls, conditionals, loops, workflow blocks, and built-ins.
+- Spec is defined (Aether_Script_Language_System.md) with goals, memory, assignments, calls, conditionals, loops, workflow blocks, and built-ins.
 - Runtime:
   - aetherra_os_launcher.py wires aetherra_script_service via get_aether_script_service() if available; mocks otherwise.
   - Next lift: implement/verify parser + executor to fully match the published EBNF and built-ins; add tests for workflows, conditionals, and memory ops.

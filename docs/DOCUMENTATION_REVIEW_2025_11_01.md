@@ -44,7 +44,7 @@ The Aetherra documentation is **comprehensive and well-maintained**, with all ma
 
 | Document                          | Status              | Last Updated | Recommendation           |
 | --------------------------------- | ------------------- | ------------ | ------------------------ |
-| **AETHERRA_CLAIMS_VALIDATION.md** | ⚠️ Slightly outdated | 2025-08-12   | Minor update recommended |
+| **docs/AETHERRA_CLAIMS_VALIDATION.md** | ⚠️ Slightly outdated | 2025-08-12   | Minor update recommended |
 
 ---
 
@@ -241,7 +241,7 @@ The Aetherra documentation is **comprehensive and well-maintained**, with all ma
 
 ### 1. Minor Gap: Claims Validation Update ⚠️
 
-**File:** `AETHERRA_CLAIMS_VALIDATION.md`
+**File:** `docs/AETHERRA_CLAIMS_VALIDATION.md`
 **Last Updated:** 2025-08-12
 **Issue:** Doesn't reflect recent Self-Improvement API enhancements
 
@@ -356,7 +356,7 @@ Reviewed 296+ markdown files, focusing on:
 **Effort:** 1 hour
 **Impact:** Medium
 
-Update `AETHERRA_CLAIMS_VALIDATION.md` to reflect:
+Update `docs/AETHERRA_CLAIMS_VALIDATION.md` to reflect:
 - Self-Improvement API implementation status
 - Phase 2A completion (autonomous maintenance triangle)
 - Recent HMR enhancements

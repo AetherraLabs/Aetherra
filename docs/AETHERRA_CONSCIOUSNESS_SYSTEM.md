@@ -1319,7 +1319,7 @@ Acceptance tests validate Phase 4 behaviors:
 - [AETHERRA_HOMEOSTASIS_SYSTEM.md](./AETHERRA_HOMEOSTASIS_SYSTEM.md) - System stability and health monitoring
 - [AETHERRA_SECURITY_SYSTEM.md](./AETHERRA_SECURITY_SYSTEM.md) - Safety Envelope and policy enforcement
 - [AETHERRA_PLUGIN_SYSTEM.md](./AETHERRA_PLUGIN_SYSTEM.md) - Perception bus adapter architecture
-- [Aether Script Language Specification.md](../Aether%20Script%20Language%20Specification.md) - Scripting capabilities used by Safety Envelope
+- [Aether Script Language System](Aether_Script_Language_System.md) - Scripting capabilities used by Safety Envelope
 
 ## Contributing
 

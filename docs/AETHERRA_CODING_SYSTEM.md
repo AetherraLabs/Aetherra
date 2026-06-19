@@ -247,7 +247,7 @@ Example (PowerShell):
 
 ### Aether Script v1.1 — Tightened Spec (superset of 1.0)
 
-Reference: see "Aether Script Language Specification.md" for 1.0; this section defines 1.1 additions and clarifications adopted by Aetherra OS.
+Reference: see `Aether_Script_Language_System.md` for the current spec and `Aether_Script_Language_Specification.md` for the retained legacy v1.0 reference.
 
 #### Updated EBNF (selected)
 
