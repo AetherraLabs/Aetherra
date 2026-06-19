@@ -1017,6 +1017,10 @@ docs/
     OPERATOR_RUNBOOK.md — Aetherra Operator Runbook (Alpha)
     README_DEPLOY.md — Aetherra Deployment Guide
     SMOKE_PROFILE.md — Deterministic Smoke Profile
+  prepack/
+    PRE_PACK_CHECKLIST_TRACKING.md — Aetherra & Lyrixa — Pre-Pack Validation Tracking
+    PRE_PACK_SESSION_REPORT.md — Pre-Pack Validation Session Report
+    PRE_PACK_VALIDATION_SUMMARY.md — Aetherra & Lyrixa Pre-Pack Validation - Quick Summary
   roadmap/
     Aetherra Memory System Evolution Roadmap.md — 🧠 Aetherra Memory System Evolution Roadmap
     AETHERRA_CODING_SYSTEM_ROADMAP.md — Aetherra Coding System Roadmap (Lyrixa Code Studio)
@@ -1938,9 +1942,6 @@ main.py — Convenience launcher alias for aetherra_os main entry point.
 OWNERSHIP.md — Ownership & Release Authority
 package-lock.json
 package.json
-PRE_PACK_CHECKLIST_TRACKING.md — Aetherra & Lyrixa — Pre-Pack Validation Tracking
-PRE_PACK_SESSION_REPORT.md — Pre-Pack Validation Session Report
-PRE_PACK_VALIDATION_SUMMARY.md — Aetherra & Lyrixa Pre-Pack Validation - Quick Summary
 PRIVACY.md — Privacy Policy (Project Repository)
 PRODUCTION_ROADMAP.md — Aetherra Production Roadmap
 quantum_memory_bridge.py — Quantum memory bridge placeholder (alpha stub)."""

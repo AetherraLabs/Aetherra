@@ -18,7 +18,7 @@ python tools/pre_pack_validation.py --profile prod --verbose
 ```
 
 ### 2. 📋 Master Tracking Document
-**File:** `PRE_PACK_CHECKLIST_TRACKING.md`
+**File:** `docs/prepack/PRE_PACK_CHECKLIST_TRACKING.md`
 
 - Complete tracking spreadsheet with status indicators (🟢 🟡 🔴)
 - Organized by all 15 sections from your original checklist
@@ -94,7 +94,7 @@ python tools/run_go_no_go_gates.py --all
 # 5. Review all reports
 # - pre_pack_validation_report.json
 # - aether_static_report.md
-# - PRE_PACK_CHECKLIST_TRACKING.md
+# - docs/prepack/PRE_PACK_CHECKLIST_TRACKING.md
 
 # 6. Sign off only if ZERO failures
 ```
@@ -108,7 +108,7 @@ Aetherra Project/
 │   └── run_pre_pack_validation.ps1      # PowerShell launcher
 ├── docs/
 │   └── PRE_PACK_VALIDATION_GUIDE.md     # User guide
-├── PRE_PACK_CHECKLIST_TRACKING.md       # Master tracking doc
+├── docs/prepack/PRE_PACK_CHECKLIST_TRACKING.md       # Master tracking doc
 ├── pre_pack_validation_report.json      # Generated report (after run)
 └── aether_static_report.md              # Aether script report (after run)
 ```
@@ -143,7 +143,7 @@ Based on the original checklist analysis:
 1. **Start with automated validation** - It catches most issues quickly
 2. **Set prod flags early** - Use the PowerShell script's `-SetProdFlags`
 3. **Run with system live** - Some checks need running services
-4. **Track progress** - Update `PRE_PACK_CHECKLIST_TRACKING.md` as you go
+4. **Track progress** - Update `docs/prepack/PRE_PACK_CHECKLIST_TRACKING.md` as you go
 5. **Don't rush** - Each failure is a potential production issue
 
 ## 🔧 Next Immediate Steps
@@ -170,7 +170,7 @@ Based on the original checklist analysis:
 ## 📞 Support
 
 - **Validation Guide:** `docs/PRE_PACK_VALIDATION_GUIDE.md`
-- **Tracking Document:** `PRE_PACK_CHECKLIST_TRACKING.md`
+- **Tracking Document:** `docs/prepack/PRE_PACK_CHECKLIST_TRACKING.md`
 - **Original Checklist:** See user prompt (comprehensive reference)
 
 ## ✨ Benefits of This System

@@ -116,7 +116,7 @@ $env:AETHERRA_MEMORY_STORM = "0"
 After validation, check these files:
 
 1. **`pre_pack_validation_report.json`** - Detailed JSON report with all results
-2. **`PRE_PACK_CHECKLIST_TRACKING.md`** - Master tracking document with status
+2. **`docs/prepack/PRE_PACK_CHECKLIST_TRACKING.md`** - Master tracking document with status
 3. **`aether_static_report.md`** - Aether script verification report
 
 ## Step-by-Step Pre-Package Workflow
@@ -169,7 +169,7 @@ pytest -q tests/smoke
 
 ### Step 6: Sign-Off
 
-Check `PRE_PACK_CHECKLIST_TRACKING.md` and verify:
+Check `docs/prepack/PRE_PACK_CHECKLIST_TRACKING.md` and verify:
 
 - [ ] All critical blockers resolved
 - [ ] Security flags properly set
@@ -292,7 +292,7 @@ python tools/pre_pack_validation.py --profile prod
 ### Documentation
 
 - **Full checklist:** See original document in the prompt
-- **Tracking:** `PRE_PACK_CHECKLIST_TRACKING.md`
+- **Tracking:** `docs/prepack/PRE_PACK_CHECKLIST_TRACKING.md`
 - **Scripts:** `tools/pre_pack_validation.py` (well-commented)
 
 ### Support
@@ -300,7 +300,7 @@ python tools/pre_pack_validation.py --profile prod
 If you encounter issues:
 
 1. Check the validation report for detailed error messages
-2. Review `PRE_PACK_CHECKLIST_TRACKING.md` for context
+2. Review `docs/prepack/PRE_PACK_CHECKLIST_TRACKING.md` for context
 3. Ensure all dependencies are installed
 4. Verify Python environment is activated
 5. Check that required services are running (for endpoint tests)
@@ -314,12 +314,12 @@ To add new checks:
 1. Edit `tools/pre_pack_validation.py`
 2. Add a new validation method (follow existing patterns)
 3. Call it from `run_all_validations()`
-4. Update `PRE_PACK_CHECKLIST_TRACKING.md` with the new check
+4. Update `docs/prepack/PRE_PACK_CHECKLIST_TRACKING.md` with the new check
 5. Test thoroughly
 
 ### Updating the Tracking Document
 
-`PRE_PACK_CHECKLIST_TRACKING.md` should be updated as you progress:
+`docs/prepack/PRE_PACK_CHECKLIST_TRACKING.md` should be updated as you progress:
 
 - Mark items complete: ✅
 - Update status indicators: 🟢 🟡 🔴

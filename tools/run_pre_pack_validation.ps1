@@ -1,4 +1,4 @@
-# Aetherra Pre-Pack Validation Quick Start
+﻿# Aetherra Pre-Pack Validation Quick Start
 # PowerShell script to run comprehensive validation
 
 param(
@@ -22,40 +22,40 @@ param(
     [switch]$Full
 )
 
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•" -ForegroundColor Cyan
 Write-Host " Aetherra & Lyrixa Pre-Pack Validation Suite" -ForegroundColor Cyan
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•" -ForegroundColor Cyan
 Write-Host ""
 
 # Configuration
-$ProjectRoot = $PSScriptRoot
+$ProjectRoot = Split-Path -Parent $PSScriptRoot
 $ReportFile = Join-Path $ProjectRoot "pre_pack_validation_report.json"
-$TrackingFile = Join-Path $ProjectRoot "PRE_PACK_CHECKLIST_TRACKING.md"
+$TrackingFile = Join-Path $ProjectRoot "docs\prepack\PRE_PACK_CHECKLIST_TRACKING.md"
 
 # Helper Functions
 function Write-Step {
     param([string]$Message)
-    Write-Host "`n🔹 $Message" -ForegroundColor Cyan
+    Write-Host "`nðŸ”¹ $Message" -ForegroundColor Cyan
 }
 
 function Write-Success {
     param([string]$Message)
-    Write-Host "  ✅ $Message" -ForegroundColor Green
+    Write-Host "  âœ… $Message" -ForegroundColor Green
 }
 
 function Write-Warning {
     param([string]$Message)
-    Write-Host "  ⚠️  $Message" -ForegroundColor Yellow
+    Write-Host "  âš ï¸  $Message" -ForegroundColor Yellow
 }
 
 function Write-Error {
     param([string]$Message)
-    Write-Host "  ❌ $Message" -ForegroundColor Red
+    Write-Host "  âŒ $Message" -ForegroundColor Red
 }
 
 function Write-Info {
     param([string]$Message)
-    Write-Host "  ℹ️  $Message" -ForegroundColor Gray
+    Write-Host "  â„¹ï¸  $Message" -ForegroundColor Gray
 }
 
 # Set Production Flags if requested
@@ -131,12 +131,12 @@ if (Test-Path $ReportFile) {
         $summary = $report.summary
 
         Write-Host ""
-        Write-Host "  📊 Validation Summary:" -ForegroundColor Cyan
-        Write-Host "     Total Checks: $($report.metadata.total_checks)"
-        Write-Host "     ✅ Passed:    $($summary.passed)" -ForegroundColor Green
-        Write-Host "     ❌ Failed:    $($summary.failed)" -ForegroundColor Red
-        Write-Host "     ⚠️  Warnings:  $($summary.warned)" -ForegroundColor Yellow
-        Write-Host "     ⏭️  Skipped:   $($summary.skipped)" -ForegroundColor Gray
+        Write-Host "  Validation Summary:" -ForegroundColor Cyan
+        Write-Host ("     Total Checks: {0}" -f $report.metadata.total_checks)
+        Write-Host ("     Passed:       {0}" -f $summary.passed) -ForegroundColor Green
+        Write-Host ("     Failed:       {0}" -f $summary.failed) -ForegroundColor Red
+        Write-Host ("     Warnings:     {0}" -f $summary.warned) -ForegroundColor Yellow
+        Write-Host ("     Skipped:      {0}" -f $summary.skipped) -ForegroundColor Gray
     }
     catch {
         Write-Warning "Could not parse report file"
@@ -216,24 +216,24 @@ if (Test-Path "tools\verify_llm_setup.py") {
 
 # Final Summary
 Write-Host ""
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "==================================================" -ForegroundColor Cyan
 Write-Host " Validation Complete" -ForegroundColor Cyan
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "==================================================" -ForegroundColor Cyan
 
 if (Test-Path $ReportFile) {
     Write-Host ""
-    Write-Host "📄 Full report: $ReportFile" -ForegroundColor Gray
+    Write-Host "[REPORT] Full report: $ReportFile" -ForegroundColor Gray
 }
 
 if (Test-Path $TrackingFile) {
-    Write-Host "📋 Tracking document: $TrackingFile" -ForegroundColor Gray
+    Write-Host "[TRACKING] Tracking document: $TrackingFile" -ForegroundColor Gray
 }
 
 Write-Host ""
 
 # Critical Blockers Check
 if ($Profile -in @("prod", "production")) {
-    Write-Host "🔒 CRITICAL SECURITY CHECKLIST:" -ForegroundColor Yellow
+    Write-Host "SECURITY: CRITICAL SECURITY CHECKLIST:" -ForegroundColor Yellow
     Write-Host ""
 
     $criticalChecks = @(
@@ -247,22 +247,23 @@ if ($Profile -in @("prod", "production")) {
 
     $allPass = $true
     foreach ($check in $criticalChecks) {
+        $currentValue = $check.Current
         if ($check.Current -eq $check.Required) {
-            Write-Host "  ✅ $($check.Name) = $($check.Current)" -ForegroundColor Green
+            Write-Host ("  OK: {0} = {1}" -f $check.Name, $currentValue) -ForegroundColor Green
         }
         else {
-            Write-Host "  ❌ $($check.Name) = $($check.Current) (Expected: $($check.Required))" -ForegroundColor Red
+            Write-Host ("  FAIL: {0} = {1} (Expected: {2})" -f $check.Name, $currentValue, $check.Required) -ForegroundColor Red
             $allPass = $false
         }
     }
 
     Write-Host ""
     if ($allPass) {
-        Write-Host "✅ ALL CRITICAL SECURITY FLAGS CONFIGURED" -ForegroundColor Green
+        Write-Host "OK: ALL CRITICAL SECURITY FLAGS CONFIGURED" -ForegroundColor Green
         Write-Host "   Ready for production packaging" -ForegroundColor Green
     }
     else {
-        Write-Host "❌ CRITICAL SECURITY FLAGS NOT PROPERLY SET" -ForegroundColor Red
+        Write-Host "FAIL: CRITICAL SECURITY FLAGS NOT PROPERLY SET" -ForegroundColor Red
         Write-Host "   DO NOT PACKAGE FOR PRODUCTION" -ForegroundColor Red
     }
 }

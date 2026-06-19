@@ -204,6 +204,8 @@ Root utility cleanup notes:
 - Auto-committing risk badge updates and scheduled parse/classification drift
   reports were removed; the underlying tools remain available through manual
   runs and focused on-change workflows.
+- Root pre-pack validation tracking and session reports were moved under
+  `docs/prepack/`; the launcher now points at the relocated tracking document.
 
 ## Phase 5 - GitHub Hygiene
 
