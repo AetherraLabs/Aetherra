@@ -34,6 +34,7 @@ are not broken by cleanup.
   active workflows call that exact path.
 - Root maintenance, GitHub administration, and operator helper scripts were
   moved into `tools/maintenance/`, `tools/github/`, and `tools/ops/`.
+- Root demo/manual UI launchers were moved into `demos/`.
 
 ## Keep At Root
 
@@ -72,7 +73,7 @@ These should be moved in focused follow-up commits, not all at once.
 | `tools/maintenance/` | Future maintenance utilities discovered at root | Existing known maintenance utilities have been moved. |
 | `tools/github/` | Future GitHub administration helpers discovered at root | Existing known GitHub helpers have been moved. |
 | `tools/ops/` | Future operator diagnostics discovered at root | Existing known operator helpers have been moved. |
-| `demos/` | `adk_demo_ui.py`, `agent_pipeline_ui.py`, `chat_stream_ui.py`, `kernel_status_ui.py`, `storm_traffic_test.py` | Demo or manual probe scripts. |
+| `demos/` | Future root demo/manual launchers discovered at root | Existing known demo launchers have been moved. |
 
 ## Protect Workflows
 
@@ -94,12 +95,11 @@ Continue root script cleanup:
 1. Keep `test_unicode_workflow_fix.py` at root until
    `.github/workflows/auto-fix-workflow-failures.yml` and
    `quick_fix_workflows.py` are updated together.
-2. Review root demo/UI scripts and move clear manual launchers into `demos/`.
-3. Review historical root reports and move still-useful records into
+2. Review historical root reports and move still-useful records into
    `docs/archive/` or `docs/reports/`.
-4. Review root runtime databases/logs and remove tracked generated artifacts
+3. Review root runtime databases/logs and remove tracked generated artifacts
    after confirming no workflow depends on them.
-5. Run targeted smoke checks after each group.
+4. Run targeted smoke checks after each group.
 
 This keeps the cleanup reversible and avoids mixing test-layout migration with
 runtime module relocation.

@@ -167,7 +167,7 @@ This confirms:
 ## 🚀 Next Steps
 
 1. **Restart OS** to see improved logging in action
-2. **Run traffic test** (`python storm_traffic_test.py`) to populate cells
+2. **Run traffic test** (`python demos/storm_traffic_test.py`) to populate cells
 3. **Check metrics** at `http://localhost:3001/metrics` for STORM series
 4. **Monitor logs** for the enhanced STORM status messages
 

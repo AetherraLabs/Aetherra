@@ -176,6 +176,7 @@ Root utility cleanup notes:
 - Operator diagnostics and stack helpers were moved under `tools/ops/`.
 - The superseded root `generate_stub_inventory.py` duplicate was removed; the
   maintained implementation remains at `tools/maintenance/generate_stub_inventory.py`.
+- Root demo/manual UI launchers were moved under `demos/`.
 
 ## Phase 5 - GitHub Hygiene
 

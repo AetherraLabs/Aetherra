@@ -11,7 +11,7 @@ Demos:
   - chat_stream: runs chat stream CLI and shows awareness pane
 
 Usage:
-  python adk_demo_ui.py --demo chat_stream --prompt "Explain HMR briefly"
+  python demos/adk_demo_ui.py --demo chat_stream --prompt "Explain HMR briefly"
 """
 
 from __future__ import annotations
@@ -906,7 +906,7 @@ if __name__ == "__main__":
         demo = os.environ.get("AETHERRA_DEMO")
     if not demo:
         print(
-            "Usage: python adk_demo_ui.py --demo <kernel_status|agent_pipeline|chat_stream>"
+            "Usage: python demos/adk_demo_ui.py --demo <kernel_status|agent_pipeline|chat_stream>"
         )
         sys.exit(2)
     launch(demo)

@@ -55,10 +55,10 @@ Observed UI surface fragmentation includes:
 ## B) Likely Archive (do not hard-delete first pass)
 
 - Root demo UIs:
-  - `adk_demo_ui.py`
-  - `chat_stream_ui.py`
-  - `agent_pipeline_ui.py`
-  - `kernel_status_ui.py`
+  - `demos/adk_demo_ui.py`
+  - `demos/chat_stream_ui.py`
+  - `demos/agent_pipeline_ui.py`
+  - `demos/kernel_status_ui.py`
 - Legacy Lyrixa UIs:
   - `Aetherra/gui/lyrixa_gui.py`
   - `Aetherra/lyrixa/lyrixa_basic_gui.py`

@@ -108,7 +108,7 @@ curl http://localhost:3001/api/memory/status
 
 ```powershell
 # Run traffic generator to create recall operations
-python storm_traffic_test.py
+python demos/storm_traffic_test.py
 ```
 
 **Expected:**
@@ -248,7 +248,7 @@ python -c "import os; print('STORM:', os.environ.get('AETHERRA_MEMORY_STORM', '0
 # Look for: [STORM] enabled=True shadow_mode=True
 
 # 3. Run traffic test to exercise STORM
-python storm_traffic_test.py
+python demos/storm_traffic_test.py
 ```
 
 ### Hub Won't Start?
@@ -277,7 +277,7 @@ Only `hub_link` needs to clear (by starting Hub).
 1. **Stop current OS** (Ctrl+C)
 2. **Run:** `.\tools\restart_os_with_storm.ps1`
 3. **In new terminal, run:** `.\tools\start_hub_with_storm.ps1`
-4. **Verify:** `python storm_traffic_test.py`
+4. **Verify:** `python demos/storm_traffic_test.py`
 5. **Check metrics:** `curl http://localhost:3001/metrics`
 
 **Done!** STORM is now running in shadow mode. 🌩️

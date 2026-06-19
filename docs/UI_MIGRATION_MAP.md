@@ -44,10 +44,10 @@ Purpose: Exact disposition map for UI-related surfaces during Aetherra unificati
 
 | Path                   | Decision | Wave   | Notes                                      |
 | ---------------------- | -------- | ------ | ------------------------------------------ |
-| `adk_demo_ui.py`       | ARCHIVE  | Wave 1 | Demo-only; keep out of active root runtime |
-| `chat_stream_ui.py`    | ARCHIVE  | Wave 1 | Duplicate chat experiment                  |
-| `agent_pipeline_ui.py` | ARCHIVE  | Wave 1 | Developer demo                             |
-| `kernel_status_ui.py`  | ARCHIVE  | Wave 1 | Replace with canonical status panel        |
+| `demos/adk_demo_ui.py`       | ARCHIVE  | Wave 1 | Demo-only; keep out of active root runtime |
+| `demos/chat_stream_ui.py`    | ARCHIVE  | Wave 1 | Duplicate chat experiment                  |
+| `demos/agent_pipeline_ui.py` | ARCHIVE  | Wave 1 | Developer demo                             |
+| `demos/kernel_status_ui.py`  | ARCHIVE  | Wave 1 | Replace with canonical status panel        |
 
 ## 4) Lyrixa UI Surface
 

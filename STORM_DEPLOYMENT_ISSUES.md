@@ -306,7 +306,7 @@ storm_maintenance_cycles_total 3
 
 1. **Restart OS** with new `.env` configuration
 2. **Start Hub** for metrics export and status API
-3. **Exercise STORM** with recall operations (see `storm_traffic_test.py`)
+3. **Exercise STORM** with recall operations (see `demos/storm_traffic_test.py`)
 4. **Monitor metrics** for 1-2 weeks in shadow mode
 5. **Evaluate Phase 2** hybrid rollout based on metrics
 
@@ -317,7 +317,7 @@ storm_maintenance_cycles_total 3
 - **STORM Integration Summary**: `docs/STORM_INTEGRATION_SUMMARY.md`
 - **Memory System Docs**: `docs/AETHERRA_MEMORY_SYSTEM.md` (Section 6)
 - **Hub Startup**: `tools/run_hub_ai_api.py`
-- **Traffic Generator**: `storm_traffic_test.py`
+- **Traffic Generator**: `demos/storm_traffic_test.py`
 - **Monitoring Tools**: `tools/monitor_storm_shadow.py`
 
 ---

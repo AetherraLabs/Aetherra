@@ -61,7 +61,7 @@ STORM transforms memory recall from keyword matching to geometric optimization u
 - ✅ 34 STORM unit tests (100% passing)
 - ✅ Acceptance test suite (`test_storm_acceptance.py`)
 - ✅ Hub metrics export test
-- ✅ Traffic generation tool (`storm_traffic_test.py`)
+- ✅ Traffic generation tool (`demos/storm_traffic_test.py`)
 - ✅ All capability tests passing
 - ✅ All smoke tests passing
 - ✅ Quality gates passing (13.80% coverage, no regression)

@@ -377,7 +377,7 @@ See `docs/STORM_SECURITY_VERIFICATION.md` for detailed audit results.
 - `tools/monitor_storm_shadow.py` - Daily health checks
 - `tools/storm_weekly_summary.py` - Weekly rollup
 - `tools/deploy_storm_shadow.py` - Deployment verification
-- `storm_traffic_test.py` - Targeted recall exercise (this run)
+- `demos/storm_traffic_test.py` - Targeted recall exercise (this run)
 
 ---
 

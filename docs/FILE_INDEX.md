@@ -1848,7 +1848,6 @@ tools/
   verify_version_badge.py — Verify README version badge matches declared version.
   vuln_scan.py — Lightweight vulnerability scan wrapper (alpha implementation).
 .markdownlint.json
-adk_demo_ui.py — Validate that URL is safe and well-formed.
 Aether Script Language Specification.md — Aether Script Language System (`.aether`) — Legacy Spec (v1.0)
 aether.py — Execute Aether Script content."""
 aether_static_report.md — .aether Verification Report
@@ -1885,14 +1884,12 @@ aetherra_self_organizer.py — Comprehensive metadata for each file in the syste
 aetherra_service_registry.py — Service health status enumeration."""
 aetherra_shared_service_registry.py — Service health status enumeration."""
 aetherra_startup.py — SPDX-License-Identifier: GPL-3.0-or-later
-agent_pipeline_ui.py — SPDX-License-Identifier: GPL-3.0-or-later
 ARCHITECTURAL_ANALYSIS.md — Aetherra Project: Comprehensive Architectural Analysis
 AUTONOMOUS_ERROR_CORRECTION.md — 🔧 Autonomous Error Correction System
 AUTONOMOUS_SYSTEMS_INTEGRATION_ANALYSIS.md — Autonomous Systems Integration Analysis
 BETA_READINESS_REPORT.md — Aetherra Beta Readiness Report
 beyond_transcendence_engine.py — Legacy import shim for BeyondTranscendenceEngine.
 CHANGELOG.md — Changelog
-chat_stream_ui.py — SPDX-License-Identifier: GPL-3.0-or-later
 CODE_OF_CONDUCT.md — Code of Conduct
 COMPREHENSIVE_COMMIT_MESSAGE.md — Commit: Hub Improvements + Legacy Cleanup
 config.autonomy.production.json
@@ -1914,7 +1911,6 @@ INSTALL.md — Installation & Quickstart
 intelligence_report_generator.py — Load analysis data from JSON file"""
 INTERACTIVE_LYRIXA_IMPLEMENTATION_COMPLETE.md — 🎉 Interactive Lyrixa Implementation — Complete
 INTERACTIVE_LYRIXA_RESTRUCTURE_COMPLETE.md — Interactive Lyrixa Restructuring Complete ✅
-kernel_status_ui.py — SPDX-License-Identifier: GPL-3.0-or-later
 launch_aetherra_unicode.py — Legacy shim retained for backward compatibility; delegates to aetherra_os."""
 LEGACY_HUB_REMOVAL_COMMIT.md — Commit Message: Legacy Hub Removal
 LEGAL_COMPLIANCE.md — Aetherra Project - Legal Compliance Documentation
@@ -1955,7 +1951,6 @@ STEWARDSHIP.md — Aetherra Stewardship Statement
 STORM_COMMIT_MESSAGE.md — STORM Phase 1: Production-Ready Shadow Mode Deployment
 STORM_DEPLOYMENT_ISSUES.md — STORM Deployment Issues - Diagnostic Report
 STORM_QUICK_FIX.md — STORM Deployment Issues - Quick Fix Guide
-storm_traffic_test.py — !/usr/bin/env python3
 STUB_INVENTORY.json
 STUB_INVENTORY.md — STUB INVENTORY ANALYSIS - March 10, 2026
 SUPPORT.md — Support

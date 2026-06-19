@@ -90,7 +90,7 @@ async def gate1_launcher_smoke() -> tuple[bool, dict[str, Any]]:
         ok = not missing
         # Attempt kernel status file evidence (if produced by launcher)
         kernel_status_path = Path(
-            "kernel_status_ui.py"
+            "demos/kernel_status_ui.py"
         )  # placeholder; adjust if real status artifact exists
         return ok, {
             "services": sorted(services),
