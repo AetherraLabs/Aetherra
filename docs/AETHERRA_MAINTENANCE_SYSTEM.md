@@ -1135,8 +1135,8 @@ error_correction:
 - [Aetherra Homeostasis System](./AETHERRA_HOMEOSTASIS_SYSTEM.md) - Detailed homeostasis documentation
 - [Aetherra Kernel System](./AETHERRA_KERNEL_SYSTEM.md) - OS kernel and lifecycle
 - [Aetherra Security System](./AETHERRA_SECURITY_SYSTEM.md) - Security policies and enforcement
-- [Autonomous Error Correction](../AUTONOMOUS_ERROR_CORRECTION.md) - Error correction system details
-- [Self-Incorporation Integration](../SELF_INCORPORATION_INTEGRATION_COMPLETE.md) - Integration implementation
+- [Autonomous Error Correction](archive/root-reports/AUTONOMOUS_ERROR_CORRECTION.md) - Error correction system details
+- [Self-Incorporation Integration](archive/root-reports/SELF_INCORPORATION_INTEGRATION_COMPLETE.md) - Integration implementation
 
 ## API reference
 

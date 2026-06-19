@@ -956,9 +956,13 @@ docs/
     DEPENDENCY_GRAPH.md — Dependency Graph (Phase 1.1)
   archive/
     root-reports/
+      ARCHITECTURAL_ANALYSIS.md — Aetherra Project: Comprehensive Architectural Analysis
+      AUTONOMOUS_ERROR_CORRECTION.md — 🔧 Autonomous Error Correction System
+      AUTONOMOUS_SYSTEMS_INTEGRATION_ANALYSIS.md — Autonomous Systems Integration Analysis
       COMPREHENSIVE_COMMIT_MESSAGE.md — Commit: Hub Improvements + Legacy Cleanup
       COVERAGE_PROGRESS.md — Coverage Uplift Summary
       CRITICAL_FIX_DATA_PATH.md — 🔧 Critical Fix Applied - Data Directory Path Issue
+      HOMEOSTASIS_FIXES.md — Homeostasis Error & Warning Fixes
       HUB_IMPROVEMENTS_SUMMARY.md — Hub Improvements Summary
       INTERACTIVE_LYRIXA_IMPLEMENTATION_COMPLETE.md — 🎉 Interactive Lyrixa Implementation — Complete
       INTERACTIVE_LYRIXA_RESTRUCTURE_COMPLETE.md — Interactive Lyrixa Restructuring Complete ✅
@@ -967,7 +971,11 @@ docs/
       PACKAGING_COMPLETE.md — 🎉 PACKAGING COMPLETE - SUCCESS! 🎉
       PACKAGING_FIX_REPORT.md — 🎯 Aetherra OS Packaging - Key Issues Resolved
       PACKAGING_SUCCESS_REPORT.md — Aetherra OS - Packaging Success Report
+      PHASE_1_IMPLEMENTATION_PLAN.md — PHASE 1 IMPLEMENTATION PLAN - DETAILED TASK BREAKDOWN
+      PHASE_5_MILESTONE.md
       QUANTUM_CONSCIOUSNESS_BREAKTHROUGH_ANNOUNCEMENT.md — 🎉 PHASE 7.2 ADVANCED QUANTUM COGNITION - COMPLETE! ✅
+      SELF_INCORPORATION_INTEGRATION_COMPLETE.md — Self-Incorporation Integration - COMPLETE ✅
+      SESSION_SUMMARY_AUTONOMOUS_INTEGRATION.md — Autonomous Systems Integration - Session Summary
       STORM_COMMIT_MESSAGE.md — STORM Phase 1: Production-Ready Shadow Mode Deployment
       STORM_DEPLOYMENT_ISSUES.md — STORM Deployment Issues - Diagnostic Report
       STORM_QUICK_FIX.md — STORM Deployment Issues - Quick Fix Guide
@@ -1902,9 +1910,6 @@ aetherra_self_organizer.py — Comprehensive metadata for each file in the syste
 aetherra_service_registry.py — Service health status enumeration."""
 aetherra_shared_service_registry.py — Service health status enumeration."""
 aetherra_startup.py — SPDX-License-Identifier: GPL-3.0-or-later
-ARCHITECTURAL_ANALYSIS.md — Aetherra Project: Comprehensive Architectural Analysis
-AUTONOMOUS_ERROR_CORRECTION.md — 🔧 Autonomous Error Correction System
-AUTONOMOUS_SYSTEMS_INTEGRATION_ANALYSIS.md — Autonomous Systems Integration Analysis
 BETA_READINESS_REPORT.md — Aetherra Beta Readiness Report
 beyond_transcendence_engine.py — Legacy import shim for BeyondTranscendenceEngine.
 CHANGELOG.md — Changelog
@@ -1920,7 +1925,6 @@ ENGINE_CURATION_PROPOSAL.md — Engine Curation Proposal (Dry-Run Plan)
 ENGINE_USAGE_MATRIX.md — Engine Usage Matrix
 gate_sign_off.md — Go / No-Go Gate Sign-Off
 GOVERNANCE.md — Project Governance
-HOMEOSTASIS_FIXES.md — Homeostasis Error & Warning Fixes
 INSTALL.md — Installation & Quickstart
 intelligence_report_generator.py — Load analysis data from JSON file"""
 launch_aetherra_unicode.py — Legacy shim retained for backward compatibility; delegates to aetherra_os."""
@@ -1933,8 +1937,6 @@ main.py — Convenience launcher alias for aetherra_os main entry point.
 OWNERSHIP.md — Ownership & Release Authority
 package-lock.json
 package.json
-PHASE_1_IMPLEMENTATION_PLAN.md — PHASE 1 IMPLEMENTATION PLAN - DETAILED TASK BREAKDOWN
-PHASE_5_MILESTONE.md
 PRE_PACK_CHECKLIST_TRACKING.md — Aetherra & Lyrixa — Pre-Pack Validation Tracking
 PRE_PACK_SESSION_REPORT.md — Pre-Pack Validation Session Report
 PRE_PACK_VALIDATION_SUMMARY.md — Aetherra & Lyrixa Pre-Pack Validation - Quick Summary
@@ -1948,8 +1950,6 @@ RELEASE_NOTES_0.5.0-beta.0.md — Aetherra 0.5.0-beta.0 Release Notes
 ROADMAP.md — Aetherra Roadmap
 sbom.json
 SECURITY.md — Security Policy
-SELF_INCORPORATION_INTEGRATION_COMPLETE.md — Self-Incorporation Integration - COMPLETE ✅
-SESSION_SUMMARY_AUTONOMOUS_INTEGRATION.md — Autonomous Systems Integration - Session Summary
 setup.py — !/usr/bin/env python3
 setup_dev.py — Print the Aetherra setup banner"""
 SMOKE_PROFILE.md — Deterministic Smoke Profile

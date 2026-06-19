@@ -179,6 +179,9 @@ Root utility cleanup notes:
 - Root demo/manual UI launchers were moved under `demos/`.
 - Low-risk historical root reports and completion notes were moved under
   `docs/archive/root-reports/`.
+- Older analysis, autonomous integration, Homeostasis fix, Self-Incorporation
+  completion, and phase-planning notes were also moved under
+  `docs/archive/root-reports/`.
 
 ## Phase 5 - GitHub Hygiene
 

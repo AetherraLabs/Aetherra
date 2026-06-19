@@ -32,7 +32,7 @@ Source of truth roadmap: `PRODUCTION_ROADMAP.md`
 - High-change areas:
   - test suites and standalone runners
   - task implementation files from Task 1-5
-  - planning docs (`PHASE_1_IMPLEMENTATION_PLAN.md`, `STUB_INVENTORY.md`)
+  - planning docs (`docs/archive/root-reports/PHASE_1_IMPLEMENTATION_PLAN.md`, `STUB_INVENTORY.md`)
 
 ### Drift Classification (Initial)
 
@@ -44,7 +44,7 @@ Source of truth roadmap: `PRODUCTION_ROADMAP.md`
   - `Aetherra/aetherra_core/script_service/*.py`
   - corresponding `tests/unit/*` and `test_*_standalone.py`
 - Review required before keeping:
-  - `PHASE_1_IMPLEMENTATION_PLAN.md`
+  - `docs/archive/root-reports/PHASE_1_IMPLEMENTATION_PLAN.md`
   - `STUB_INVENTORY.md`
   - `tools/find_stubs.py`, `tools/maintenance/analyze_stubs.py`, `tools/maintenance/generate_stub_inventory.py`
   - `tools/maintenance/stub_finder.py`

@@ -124,7 +124,8 @@ Aetherra OS is **production-ready** for beta release with comprehensive feature 
 ### 🔋 Supporting Documentation (50+ additional files)
 
 - Foundational: Manifesto, Aetherra Labs Vision
-- Analysis: ARCHITECTURAL_ANALYSIS.md, AUTONOMOUS_SYSTEMS_INTEGRATION_ANALYSIS.md
+- Analysis: docs/archive/root-reports/ARCHITECTURAL_ANALYSIS.md,
+  docs/archive/root-reports/AUTONOMOUS_SYSTEMS_INTEGRATION_ANALYSIS.md
 - Phases: PHASE_2A_COMPLETION_SUMMARY.md, PHASE_2B_ACCEPTANCE_EVIDENCE.md, PHASE_3_4_COVERAGE_EVIDENCE.md, WEEK10_VALIDATION_EVIDENCE.md
 - Operations: TROUBLESHOOTING_GUIDE.md, METRICS_AND_MONITORING_GUIDE.md, BACKUP_AND_RECOVERY.md
 - Features: CONSCIOUSNESS_PHASE1_COMPLETE.md, CONSCIOUSNESS_UI_INTEGRATION.md, INTERACTIVE_LYRIXA_QUICKSTART.md, QFAC_MODE_GUIDE.md
