@@ -189,6 +189,8 @@ Root utility cleanup notes:
 - Deployment and smoke profile root docs were moved under `docs/ops/`.
 - Documentation-only root files for Lyrixa AI setup and the historical stub
   inventory report were moved under `docs/`.
+- The unreferenced legacy `pyproject_old.toml` was removed; `pyproject.toml`
+  remains the active packaging, tooling, and test configuration.
 
 ## Phase 5 - GitHub Hygiene
 
