@@ -191,6 +191,8 @@ Root utility cleanup notes:
   inventory report were moved under `docs/`.
 - The unreferenced legacy `pyproject_old.toml` was removed; `pyproject.toml`
   remains the active packaging, tooling, and test configuration.
+- Empty, deprecated, and obsolete duplicate GitHub workflow files were removed;
+  active CI, quality, docs, security, release, and deploy workflows remain.
 
 ## Phase 5 - GitHub Hygiene
 
