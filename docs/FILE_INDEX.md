@@ -954,6 +954,24 @@ docs/
     ADR_004_Plugin_Sandboxing.md — ADR 004: Plugin Sandboxing Model
     ADR_005_Memory_Persistence_Strategy.md — ADR 005: Memory Persistence Strategy
     DEPENDENCY_GRAPH.md — Dependency Graph (Phase 1.1)
+  archive/
+    root-reports/
+      COMPREHENSIVE_COMMIT_MESSAGE.md — Commit: Hub Improvements + Legacy Cleanup
+      COVERAGE_PROGRESS.md — Coverage Uplift Summary
+      CRITICAL_FIX_DATA_PATH.md — 🔧 Critical Fix Applied - Data Directory Path Issue
+      HUB_IMPROVEMENTS_SUMMARY.md — Hub Improvements Summary
+      INTERACTIVE_LYRIXA_IMPLEMENTATION_COMPLETE.md — 🎉 Interactive Lyrixa Implementation — Complete
+      INTERACTIVE_LYRIXA_RESTRUCTURE_COMPLETE.md — Interactive Lyrixa Restructuring Complete ✅
+      LEGACY_HUB_REMOVAL_COMMIT.md — Commit Message: Legacy Hub Removal
+      OS_LAUNCHER_IMPROVEMENTS.md — OS Launcher Improvements - STORM Integration
+      PACKAGING_COMPLETE.md — 🎉 PACKAGING COMPLETE - SUCCESS! 🎉
+      PACKAGING_FIX_REPORT.md — 🎯 Aetherra OS Packaging - Key Issues Resolved
+      PACKAGING_SUCCESS_REPORT.md — Aetherra OS - Packaging Success Report
+      QUANTUM_CONSCIOUSNESS_BREAKTHROUGH_ANNOUNCEMENT.md — 🎉 PHASE 7.2 ADVANCED QUANTUM COGNITION - COMPLETE! ✅
+      STORM_COMMIT_MESSAGE.md — STORM Phase 1: Production-Ready Shadow Mode Deployment
+      STORM_DEPLOYMENT_ISSUES.md — STORM Deployment Issues - Diagnostic Report
+      STORM_QUICK_FIX.md — STORM Deployment Issues - Quick Fix Guide
+      website_truth_audit.md — Aetherra Website Truth Audit
   contributing/
     docs-consistency.md
   grafana/
@@ -1891,41 +1909,30 @@ BETA_READINESS_REPORT.md — Aetherra Beta Readiness Report
 beyond_transcendence_engine.py — Legacy import shim for BeyondTranscendenceEngine.
 CHANGELOG.md — Changelog
 CODE_OF_CONDUCT.md — Code of Conduct
-COMPREHENSIVE_COMMIT_MESSAGE.md — Commit: Hub Improvements + Legacy Cleanup
 config.autonomy.production.json
 config.autonomy.staging.json
 config.json
 config.production.json
 CONTRIBUTING.md — Contributing
 copyright_header.py — !/usr/bin/env python3
-COVERAGE_PROGRESS.md — Coverage Uplift Summary
-CRITICAL_FIX_DATA_PATH.md — 🔧 Critical Fix Applied - Data Directory Path Issue
 DEPLOYMENT_TIERS.md — Aetherra Deployment Tiers
 ENGINE_CURATION_PROPOSAL.md — Engine Curation Proposal (Dry-Run Plan)
 ENGINE_USAGE_MATRIX.md — Engine Usage Matrix
 gate_sign_off.md — Go / No-Go Gate Sign-Off
 GOVERNANCE.md — Project Governance
 HOMEOSTASIS_FIXES.md — Homeostasis Error & Warning Fixes
-HUB_IMPROVEMENTS_SUMMARY.md — Hub Improvements Summary
 INSTALL.md — Installation & Quickstart
 intelligence_report_generator.py — Load analysis data from JSON file"""
-INTERACTIVE_LYRIXA_IMPLEMENTATION_COMPLETE.md — 🎉 Interactive Lyrixa Implementation — Complete
-INTERACTIVE_LYRIXA_RESTRUCTURE_COMPLETE.md — Interactive Lyrixa Restructuring Complete ✅
 launch_aetherra_unicode.py — Legacy shim retained for backward compatibility; delegates to aetherra_os."""
-LEGACY_HUB_REMOVAL_COMMIT.md — Commit Message: Legacy Hub Removal
 LEGAL_COMPLIANCE.md — Aetherra Project - Legal Compliance Documentation
 LICENSE_POLICY.md — License Policy & Enforcement Gates
 licenses_unknown_history.json
 licenses_unknown_history.requirements-ci.lock.json
 LYRIXA_AI_SETUP.md — Setting Up Lyrixa AI-Powered Chat
 main.py — Convenience launcher alias for aetherra_os main entry point.
-OS_LAUNCHER_IMPROVEMENTS.md — OS Launcher Improvements - STORM Integration
 OWNERSHIP.md — Ownership & Release Authority
 package-lock.json
 package.json
-PACKAGING_COMPLETE.md — 🎉 PACKAGING COMPLETE - SUCCESS! 🎉
-PACKAGING_FIX_REPORT.md — 🎯 Aetherra OS Packaging - Key Issues Resolved
-PACKAGING_SUCCESS_REPORT.md — Aetherra OS - Packaging Success Report
 PHASE_1_IMPLEMENTATION_PLAN.md — PHASE 1 IMPLEMENTATION PLAN - DETAILED TASK BREAKDOWN
 PHASE_5_MILESTONE.md
 PRE_PACK_CHECKLIST_TRACKING.md — Aetherra & Lyrixa — Pre-Pack Validation Tracking
@@ -1933,7 +1940,6 @@ PRE_PACK_SESSION_REPORT.md — Pre-Pack Validation Session Report
 PRE_PACK_VALIDATION_SUMMARY.md — Aetherra & Lyrixa Pre-Pack Validation - Quick Summary
 PRIVACY.md — Privacy Policy (Project Repository)
 PRODUCTION_ROADMAP.md — Aetherra Production Roadmap
-QUANTUM_CONSCIOUSNESS_BREAKTHROUGH_ANNOUNCEMENT.md — 🎉 PHASE 7.2 ADVANCED QUANTUM COGNITION - COMPLETE! ✅
 quantum_memory_bridge.py — Quantum memory bridge placeholder (alpha stub)."""
 QUICK_START.md — Aetherra Turn-Key Development Quick Start
 README.md — Aetherra
@@ -1948,14 +1954,10 @@ setup.py — !/usr/bin/env python3
 setup_dev.py — Print the Aetherra setup banner"""
 SMOKE_PROFILE.md — Deterministic Smoke Profile
 STEWARDSHIP.md — Aetherra Stewardship Statement
-STORM_COMMIT_MESSAGE.md — STORM Phase 1: Production-Ready Shadow Mode Deployment
-STORM_DEPLOYMENT_ISSUES.md — STORM Deployment Issues - Diagnostic Report
-STORM_QUICK_FIX.md — STORM Deployment Issues - Quick Fix Guide
 STUB_INVENTORY.json
 STUB_INVENTORY.md — STUB INVENTORY ANALYSIS - March 10, 2026
 SUPPORT.md — Support
 test_unicode_workflow_fix.py — Test that Unicode issues are resolved
 unicode_logger.py — Unicode-Safe Logging Configuration for Aetherra OS.
-website_truth_audit.md — Aetherra Website Truth Audit
 what is Aether Script.md — Aether Script (`.aether`) Language Overview
 ```

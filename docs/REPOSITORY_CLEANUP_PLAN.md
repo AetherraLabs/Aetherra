@@ -177,6 +177,8 @@ Root utility cleanup notes:
 - The superseded root `generate_stub_inventory.py` duplicate was removed; the
   maintained implementation remains at `tools/maintenance/generate_stub_inventory.py`.
 - Root demo/manual UI launchers were moved under `demos/`.
+- Low-risk historical root reports and completion notes were moved under
+  `docs/archive/root-reports/`.
 
 ## Phase 5 - GitHub Hygiene
 
