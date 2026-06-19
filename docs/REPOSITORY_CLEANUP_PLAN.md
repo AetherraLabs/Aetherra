@@ -193,6 +193,9 @@ Root utility cleanup notes:
   remains the active packaging, tooling, and test configuration.
 - Empty, deprecated, and obsolete duplicate GitHub workflow files were removed;
   active CI, quality, docs, security, release, and deploy workflows remain.
+- Risky or placeholder workflows were removed, including scheduled auto-fix
+  commits, placeholder site sync, external endpoint monitoring, and duplicate
+  manual/debug Pages deploy paths.
 
 ## Phase 5 - GitHub Hygiene
 

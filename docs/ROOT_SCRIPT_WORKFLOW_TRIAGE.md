@@ -93,8 +93,8 @@ runtime path discovery are updated together.
 Continue root script cleanup:
 
 1. Keep `test_unicode_workflow_fix.py` at root until
-   `.github/workflows/auto-fix-workflow-failures.yml` and
-   `quick_fix_workflows.py` are updated together.
+   `tools/github/quick_fix_workflows.py` and related manual verification docs
+   are updated together.
 2. Review historical root reports and move still-useful records into
    `docs/archive/` or `docs/reports/`.
 3. Review root runtime databases/logs and remove tracked generated artifacts

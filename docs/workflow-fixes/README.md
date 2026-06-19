@@ -63,13 +63,16 @@ python tools/classify_aether_workflow_failures.py
 ```
 This analyzes and categorizes current workflow failures.
 
-## Automated Workflow
+## Manual Workflow
 
-The repository includes a GitHub Actions workflow (`.github/workflows/auto-fix-workflow-failures.yml`) that can:
+The repository keeps the Unicode/workflow repair scripts as manual maintenance
+tools. The former scheduled GitHub Actions auto-fix workflow was removed during
+repository cleanup because it could commit broad automated rewrites from CI.
+Run these tools intentionally from a reviewed working tree instead.
 
-- Run automatically on a schedule
-- Be triggered manually with different scopes
-- Apply fixes and commit them automatically
+- Classify workflow failures before editing files
+- Apply focused fixes from a local branch
+- Review diffs before committing
 - Generate reports on workflow health
 
 ## What Gets Fixed
@@ -98,7 +101,6 @@ The repository includes a GitHub Actions workflow (`.github/workflows/auto-fix-w
 - `tools/auto_fix_workflow_failures.py` - Main comprehensive fix tool
 - `tools/github/quick_fix_workflows.py` - Simple quick fix script
 - `test_unicode_workflow_fix.py` - Verification test script
-- `.github/workflows/auto-fix-workflow-failures.yml` - GitHub Actions workflow
 - `tools/classify_aether_workflow_failures.py` - Workflow failure analyzer
 
 ## Testing
