@@ -111,7 +111,7 @@ Aetherra OS is **production-ready** for beta release with comprehensive feature 
 | **ROADMAP_TRACKING.md**                        | Phase status, evidence, drift audit          | ✅         | 2026-03-12        |
 | **GO_NO_GO_GATES.md**                          | 8 deterministic release gates                | ✅         | Current           |
 | **SELFINC_PRODUCTION_READINESS.md**            | Self-incorporation hardening, env vars       | ✅         | Sept 2025         |
-| **BETA_READINESS_REPORT.md**                   | Structural integrity, coverage signals       | ✅         | Sept 2025         |
+| **docs/reports/release/BETA_READINESS_REPORT.md** | Structural integrity, coverage signals    | ✅         | Sept 2025         |
 | **PRODUCTION_BASELINE_ANALYSIS_2026-03-10.md** | Stub reduction, debt cleanup, progress delta | ✅         | 2026-03-10        |
 
 ### ⚙️ Partial / In Progress
@@ -373,7 +373,7 @@ These items are **intentionally deferred** until after roadmap implementation co
 - [ROADMAP_TRACKING.md](./docs/ROADMAP_TRACKING.md) — Detailed progress status
 - [GO_NO_GO_GATES.md](./docs/GO_NO_GO_GATES.md) — Release gates and validation criteria
 - [DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md) — Multi-tier deployment procedures
-- [BETA_READINESS_REPORT.md](./BETA_READINESS_REPORT.md) — Structural integrity metrics
+- [BETA_READINESS_REPORT.md](./reports/release/BETA_READINESS_REPORT.md) — Structural integrity metrics
 
 ---
 

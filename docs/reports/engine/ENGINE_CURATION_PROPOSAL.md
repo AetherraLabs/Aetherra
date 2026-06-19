@@ -76,7 +76,8 @@ Validation Plan
 2) Run backend smoke boot (quiet) and UI checks:
    - Verify Aetherra UI task
    - Verify UI Standards task
-3) Generate updated ENGINE_USAGE_MATRIX.md and ENGINE_INSPECTION_REPORT.md.
+3) Generate updated `docs/reports/engine/ENGINE_USAGE_MATRIX.md` and
+   `docs/reports/engine/ENGINE_INSPECTION_REPORT.md`.
 
 Notes
 

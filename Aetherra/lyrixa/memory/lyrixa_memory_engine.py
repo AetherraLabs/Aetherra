@@ -6,7 +6,8 @@
 =======================
 
 DEPRECATED (Lyrixa-only): Superseded by `Aetherra/aetherra_core/memory/memory_kernel.py`.
-Kept temporarily for backward compatibility per ENGINE_CURATION_PROPOSAL.md.
+Kept temporarily for backward compatibility per
+docs/reports/engine/ENGINE_CURATION_PROPOSAL.md.
 
 Core memory management system for the Aetherra AI OS.
 Handles various types of memory storage, retrieval, and organization.

@@ -206,6 +206,9 @@ Root utility cleanup notes:
   runs and focused on-change workflows.
 - Root pre-pack validation tracking and session reports were moved under
   `docs/prepack/`; the launcher now points at the relocated tracking document.
+- Engine curation/matrix reports and the beta readiness report were moved under
+  `docs/reports/`; generator defaults and release bundling paths now use the
+  relocated report locations.
 
 ## Phase 5 - GitHub Hygiene
 

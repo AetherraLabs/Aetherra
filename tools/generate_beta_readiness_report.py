@@ -120,7 +120,10 @@ def build_report(data: dict) -> str:
 
 def main():  # pragma: no cover
     parser = argparse.ArgumentParser(description="Generate beta readiness report")
-    parser.add_argument("--output", default="BETA_READINESS_REPORT.md")
+    parser.add_argument(
+        "--output",
+        default="docs/reports/release/BETA_READINESS_REPORT.md",
+    )
     args = parser.parse_args()
 
     root = Path.cwd()
@@ -141,7 +144,9 @@ def main():  # pragma: no cover
         "kernel_metrics": kernel_metrics,
     }
     report_md = build_report(data)
-    Path(args.output).write_text(report_md, encoding="utf-8")
+    output_path = Path(args.output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(report_md, encoding="utf-8")
     print(f"Beta readiness report written: {args.output}")
 
 

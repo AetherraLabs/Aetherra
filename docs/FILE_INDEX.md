@@ -1021,6 +1021,12 @@ docs/
     PRE_PACK_CHECKLIST_TRACKING.md — Aetherra & Lyrixa — Pre-Pack Validation Tracking
     PRE_PACK_SESSION_REPORT.md — Pre-Pack Validation Session Report
     PRE_PACK_VALIDATION_SUMMARY.md — Aetherra & Lyrixa Pre-Pack Validation - Quick Summary
+  reports/
+    engine/
+      ENGINE_CURATION_PROPOSAL.md — Engine Curation Proposal (Dry-Run Plan)
+      ENGINE_USAGE_MATRIX.md — Engine Usage Matrix
+    release/
+      BETA_READINESS_REPORT.md — Aetherra Beta Readiness Report
   roadmap/
     Aetherra Memory System Evolution Roadmap.md — 🧠 Aetherra Memory System Evolution Roadmap
     AETHERRA_CODING_SYSTEM_ROADMAP.md — Aetherra Coding System Roadmap (Lyrixa Code Studio)
@@ -1918,7 +1924,6 @@ aetherra_self_organizer.py — Comprehensive metadata for each file in the syste
 aetherra_service_registry.py — Service health status enumeration."""
 aetherra_shared_service_registry.py — Service health status enumeration."""
 aetherra_startup.py — SPDX-License-Identifier: GPL-3.0-or-later
-BETA_READINESS_REPORT.md — Aetherra Beta Readiness Report
 beyond_transcendence_engine.py — Legacy import shim for BeyondTranscendenceEngine.
 CHANGELOG.md — Changelog
 CODE_OF_CONDUCT.md — Code of Conduct
@@ -1928,8 +1933,6 @@ config.json
 config.production.json
 CONTRIBUTING.md — Contributing
 copyright_header.py — !/usr/bin/env python3
-ENGINE_CURATION_PROPOSAL.md — Engine Curation Proposal (Dry-Run Plan)
-ENGINE_USAGE_MATRIX.md — Engine Usage Matrix
 GOVERNANCE.md — Project Governance
 INSTALL.md — Installation & Quickstart
 intelligence_report_generator.py — Load analysis data from JSON file"""

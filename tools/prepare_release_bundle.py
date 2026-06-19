@@ -2,7 +2,7 @@
 
 Collects core artifacts for archival / distribution:
   * README.md, LICENSE, NOTICE
-  * BETA_READINESS_REPORT.md (generate first externally)
+  * docs/reports/release/BETA_READINESS_REPORT.md (generate first externally)
   * RELEASE_NOTES* matching version substring
   * Core doc indices (docs/INDEX.md, docs/SYSTEM_INDEX.md, docs/DOCS_ARCHITECTURE.md)
   * Selected policies (THREAT_MODEL.md, COVERAGE_POLICY.md, GO_NO_GO_GATES.md)
@@ -32,7 +32,12 @@ DEFAULT_DOCS = [
     "docs/THREAT_MODEL.md",
 ]
 
-ROOT_FILES = ["README.md", "LICENSE", "NOTICE", "BETA_READINESS_REPORT.md"]
+ROOT_FILES = [
+    "README.md",
+    "LICENSE",
+    "NOTICE",
+    "docs/reports/release/BETA_READINESS_REPORT.md",
+]
 
 
 def existing(paths: Iterable[str]) -> list[str]:
