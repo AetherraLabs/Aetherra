@@ -190,6 +190,7 @@ data/artifacts/parse_baseline*.json
 aether_static_report.md
 aether_verification_report.md
 gate_sign_off.md
+/STUB_INVENTORY.json
 data/artifacts/workflow_failures*
 *.report.json
 cleanup_report.json

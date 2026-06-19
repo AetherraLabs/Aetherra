@@ -1,6 +1,6 @@
 import json
 
-from Aetherra.guardian.approval import resolve_approval
+from Aetherra.guardian.models import GuardianStatus
 from tools.maintenance.generate_stub_inventory import (
     StubInventoryWritePlan,
     _guardian_preflight_stub_inventory,
@@ -56,7 +56,7 @@ def _plan(output_file):
     )
 
 
-def test_stub_inventory_write_requires_approval_and_sanitizes_audit(
+def test_stub_inventory_write_allows_reversible_write_and_sanitizes_audit(
     monkeypatch,
     tmp_path,
 ):
@@ -64,9 +64,6 @@ def test_stub_inventory_write_requires_approval_and_sanitizes_audit(
     output_file = tmp_path / "docs" / "STUB_INVENTORY.json"
     plan = _plan(output_file)
     pending = _guardian_preflight_stub_inventory(project_root=tmp_path, plan=plan)
-    approval_id = pending.details["approval_request_id"]
-    resolve_approval(approval_id, approved=True, approver="guardian-test")
-    monkeypatch.setenv("AETHERRA_GUARDIAN_APPROVAL_ID", approval_id)
 
     result = write_stub_inventory(project_root=tmp_path, plan=plan)
     entries = _guardian_entries(audit_root)
@@ -74,6 +71,8 @@ def test_stub_inventory_write_requires_approval_and_sanitizes_audit(
         audit_root / ".aetherra" / "security" / "audit.jsonl"
     ).read_text(encoding="utf-8")
 
+    assert pending.status == GuardianStatus.ALLOW_LIMITED
+    assert pending.reason == "allowed_with_constraints"
     assert result is True
     assert output_file.exists()
     assert json.loads(output_file.read_text(encoding="utf-8"))["summary"][
@@ -82,9 +81,7 @@ def test_stub_inventory_write_requires_approval_and_sanitizes_audit(
     assert entries[-1]["details"]["intent"]["action"] == (
         "maintenance.stub_inventory_write"
     )
-    assert entries[-1]["details"]["decision"]["reason"] == (
-        "approved_with_guardian_approval"
-    )
+    assert entries[-1]["details"]["decision"]["reason"] == "allowed_with_constraints"
     assert "maintenance_operation" in entries[-1]["details"]["risk"]["factors"]
     assert "STUB_INVENTORY.json" not in ledger_text
     assert "Aetherra/core/example.py" not in ledger_text

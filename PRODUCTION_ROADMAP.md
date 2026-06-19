@@ -59,7 +59,7 @@ Week 1-2    Week 3-4    Week 5-6    Week 7-8    Week 9-10   Week 11-12
 
 ### Key Deliverables
 
-#### 1.1.1 Stub Inventory (`STUB_INVENTORY.json`)
+#### 1.1.1 Stub Inventory (`docs/STUB_INVENTORY.json`)
 
 **Owner**: Lead Developer
 **Effort**: 8-16 hours
@@ -100,7 +100,7 @@ Week 1-2    Week 3-4    Week 5-6    Week 7-8    Week 9-10   Week 11-12
 
 ```bash
 # Generate stub inventory
-python tools/maintenance/advanced_analyzer_fixed.py --find-stubs --output STUB_INVENTORY.json
+python tools/maintenance/generate_stub_inventory.py
 ```
 
 #### 1.1.2 Dependency Graph (`DEPENDENCY_GRAPH.md`)

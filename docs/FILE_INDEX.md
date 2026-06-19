@@ -1953,7 +1953,6 @@ SECURITY.md — Security Policy
 setup.py — !/usr/bin/env python3
 setup_dev.py — Print the Aetherra setup banner"""
 STEWARDSHIP.md — Aetherra Stewardship Statement
-STUB_INVENTORY.json
 SUPPORT.md — Support
 test_unicode_workflow_fix.py — Test that Unicode issues are resolved
 unicode_logger.py — Unicode-Safe Logging Configuration for Aetherra OS.
