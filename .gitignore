@@ -144,6 +144,7 @@ user_data.json
 live_file_index.json
 evolution_history.aether
 self_organizer.aether
+.lyrixa_last_introspection
 *.aether
 !Aetherra/aetherra_core/system/*.aether
 !Aetherra/plugins/examples/**/*.aether

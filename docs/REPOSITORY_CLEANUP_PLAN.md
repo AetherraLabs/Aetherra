@@ -212,6 +212,9 @@ Root utility cleanup notes:
 - The Self-Incorporation GitHub issue CSV was moved under `docs/reports/selfinc/`
   and GitHub helper scripts now default to that path. The obsolete duplicate
   `AetherraOS.spec` was removed; `aetherra_os.spec` remains the build spec.
+- Generated Lyrixa introspection state was removed from tracking and ignored.
+  The old desktop-copy batch helper was removed, and the manual simple
+  cognitive task manager moved under `tools/ops/`.
 
 ## Phase 5 - GitHub Hygiene
 

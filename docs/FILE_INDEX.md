@@ -1768,6 +1768,7 @@ tools/
     verify_imports.py — Return True if the import target should be considered valid.
     verify_legal_compliance.py — Check all installed packages for GPL-3.0 compatibility."""
   ops/
+    aetherra_cognitive_task_manager_simple.py — Simplified cognitive task manager that definitely works."""
     check_agents.py — Quick script to check registered agents in orchestrator.
     check_metrics.py — Check what metrics are exposed
     force_homeostasis_active.py — Force the homeostasis system into active mode."""
@@ -1900,7 +1901,6 @@ aetherra_adaptive_behavior.py — Represents a learned behavior pattern."""
 aetherra_agent_daemon.py — !/usr/bin/env python3
 aetherra_agent_fabric.py — Register Agent Fabric agents with the AgentOrchestrator for task management."""
 aetherra_cognitive_task_manager.py — Initialize Flask app and routes."""
-aetherra_cognitive_task_manager_simple.py — Simplified cognitive task manager that definitely works."""
 aetherra_event_bus.py — !/usr/bin/env python3
 aetherra_file_watcher.py — Determine if a file should be processed."""
 aetherra_hmr_controller.py — Hot Module Reload controller service.
