@@ -28,7 +28,7 @@ Source of truth roadmap: `PRODUCTION_ROADMAP.md`
 ## Drift Audit (Working Tree)
 
 - Tracked modified files: 36
-- Untracked files: 2 (`aetherra_coding/verification.py`, `stub_finder.py`)
+- Untracked files: 2 (`aetherra_coding/verification.py`, `tools/maintenance/stub_finder.py`)
 - High-change areas:
   - test suites and standalone runners
   - task implementation files from Task 1-5
@@ -46,8 +46,8 @@ Source of truth roadmap: `PRODUCTION_ROADMAP.md`
 - Review required before keeping:
   - `PHASE_1_IMPLEMENTATION_PLAN.md`
   - `STUB_INVENTORY.md`
-  - `tools/find_stubs.py`, `analyze_stubs.py`, `generate_stub_inventory.py`
-  - `stub_finder.py`
+  - `tools/find_stubs.py`, `tools/maintenance/analyze_stubs.py`, `tools/maintenance/generate_stub_inventory.py`
+  - `tools/maintenance/stub_finder.py`
 
 ## Gap Closure Progress
 

@@ -1675,12 +1675,24 @@ tests/
   test_sse_envelope_sanitizer.py — Verify that all internal keys defined in _INTERNAL_KEYS are stripped from final results."""
   test_sse_v2.py — SPDX-License-Identifier: GPL-3.0-or-later
 tools/
+  github/
+    create_github_issues.py — !/usr/bin/env python3
+    create_labels.py — !/usr/bin/env python3
+    quick_fix_workflows.py — Set up Unicode environment variables
   maintenance/
     __init__.py — Maintenance utilities used by repository quality and Guardian checks.
     advanced_analyzer.py — Deep analysis of file content and purpose"""
     advanced_analyzer_fixed.py — Extract decorator name from AST node"""
+    aetherra_core_analyzer.py — Calculate SHA256 hash of file content"""
+    aetherra_core_cleaner.py — Remove exact duplicate files, keeping the one in the most appropriate directory"""
+    aetherra_import_updater.py — Update import statements in a single file"""
+    aetherra_lyrixa_cleaner.py — Safely move a file to new location"""
+    aetherra_plugins_cleaner.py — Safely remove a file with backup info"""
+    analyze_stubs.py
     check_architecture.py — Build a side-effect-free write plan for the compliance report."""
     check_unicode.py — Check for Unicode characters in a file.
+    clean_hub_tmp.py — 🧩 Built-in Aetherra Hub Server"""
+    clean_hub_tmp_utf8.py — 🧩 Built-in Aetherra Hub Server (UTF-8 cleaned copy)
     complete_organizer.py — Generate a comprehensive reorganization plan based on file analysis"""
     create_documentation.py — Load the updated project analysis"""
     debug_registry_connection.py — !/usr/bin/env python3
@@ -1704,10 +1716,17 @@ tools/
     quick_fix_imports.py — Check if Python version is compatible."""
     safe_cleanup.py — Load the project analysis"""
     smart_cleanup.py — Only the most obvious misplacements"""
+    stub_finder.py
     universal_directory_analyzer.py — Calculate SHA256 hash of file content"""
     validate_architecture.py — Result of directory validation"""
     verify_imports.py — Return True if the import target should be considered valid.
     verify_legal_compliance.py — Check all installed packages for GPL-3.0 compatibility."""
+  ops/
+    check_agents.py — Quick script to check registered agents in orchestrator.
+    check_metrics.py — Check what metrics are exposed
+    force_homeostasis_active.py — Force the homeostasis system into active mode."""
+    restart_aetherra.py — Perform pre-restart system checks"""
+    start_aetherra_stack.py — Unified Aetherra Stack Starter
   __init__.py — Repository maintenance and developer tooling package.
   ab_recall_benchmark.py — A/B recall benchmark harness for classical vs quantum-enriched recall.
   agents_probe.py — Agent fabric probe utility (simplified placeholder)."""
@@ -1841,15 +1860,11 @@ aetherra_agent_fabric.py — Register Agent Fabric agents with the AgentOrchestr
 AETHERRA_CLAIMS_VALIDATION.md — Aetherra OS — Capabilities Validation Snapshot (2025-08-12)
 aetherra_cognitive_task_manager.py — Initialize Flask app and routes."""
 aetherra_cognitive_task_manager_simple.py — Simplified cognitive task manager that definitely works."""
-aetherra_core_analyzer.py — Calculate SHA256 hash of file content"""
-aetherra_core_cleaner.py — Remove exact duplicate files, keeping the one in the most appropriate directory"""
 aetherra_event_bus.py — !/usr/bin/env python3
 aetherra_file_watcher.py — Determine if a file should be processed."""
 aetherra_hmr_controller.py — Hot Module Reload controller service.
-aetherra_import_updater.py — Update import statements in a single file"""
 aetherra_kernel_loop.py — Evaluate production backpressure & plugin safety invariants.
 aetherra_live_monitor.py — !/usr/bin/env python3
-aetherra_lyrixa_cleaner.py — Safely move a file to new location"""
 AETHERRA_MASTER_MAP.md — 🌌 Aetherra Master Map — Complete System Architecture & Status
 aetherra_meta_memory.py — Initialize the meta-memory database."""
 AETHERRA_MIND_MAP.md — 🧠 Aetherra Master Mind Map
@@ -1861,7 +1876,6 @@ aetherra_persistent_memory.py — Individual memory node with cognitive metadata
 aetherra_plugin_catalog.json
 aetherra_plugin_discovery.py — Plugin metadata structure."""
 aetherra_plugin_viewer.py — Simple GUI to view discovered plugins."""
-aetherra_plugins_cleaner.py — Safely remove a file with backup info"""
 aetherra_quantum_meta_learning.py — Calculate measurement probability for this state."""
 aetherra_registry_client.py — SPDX-License-Identifier: GPL-3.0-or-later
 aetherra_registry_daemon.py — !/usr/bin/env python3
@@ -1872,7 +1886,6 @@ aetherra_service_registry.py — Service health status enumeration."""
 aetherra_shared_service_registry.py — Service health status enumeration."""
 aetherra_startup.py — SPDX-License-Identifier: GPL-3.0-or-later
 agent_pipeline_ui.py — SPDX-License-Identifier: GPL-3.0-or-later
-analyze_stubs.py
 ARCHITECTURAL_ANALYSIS.md — Aetherra Project: Comprehensive Architectural Analysis
 AUTONOMOUS_ERROR_CORRECTION.md — 🔧 Autonomous Error Correction System
 AUTONOMOUS_SYSTEMS_INTEGRATION_ANALYSIS.md — Autonomous Systems Integration Analysis
@@ -1880,10 +1893,6 @@ BETA_READINESS_REPORT.md — Aetherra Beta Readiness Report
 beyond_transcendence_engine.py — Legacy import shim for BeyondTranscendenceEngine.
 CHANGELOG.md — Changelog
 chat_stream_ui.py — SPDX-License-Identifier: GPL-3.0-or-later
-check_agents.py — Quick script to check registered agents in orchestrator.
-check_metrics.py — Check what metrics are exposed
-clean_hub_tmp.py — 🧩 Built-in Aetherra Hub Server"""
-clean_hub_tmp_utf8.py — 🧩 Built-in Aetherra Hub Server (UTF-8 cleaned copy)
 CODE_OF_CONDUCT.md — Code of Conduct
 COMPREHENSIVE_COMMIT_MESSAGE.md — Commit: Hub Improvements + Legacy Cleanup
 config.autonomy.production.json
@@ -1893,15 +1902,11 @@ config.production.json
 CONTRIBUTING.md — Contributing
 copyright_header.py — !/usr/bin/env python3
 COVERAGE_PROGRESS.md — Coverage Uplift Summary
-create_github_issues.py — !/usr/bin/env python3
-create_labels.py — !/usr/bin/env python3
 CRITICAL_FIX_DATA_PATH.md — 🔧 Critical Fix Applied - Data Directory Path Issue
 DEPLOYMENT_TIERS.md — Aetherra Deployment Tiers
 ENGINE_CURATION_PROPOSAL.md — Engine Curation Proposal (Dry-Run Plan)
 ENGINE_USAGE_MATRIX.md — Engine Usage Matrix
-force_homeostasis_active.py — Force the homeostasis system into active mode."""
 gate_sign_off.md — Go / No-Go Gate Sign-Off
-generate_stub_inventory.py
 GOVERNANCE.md — Project Governance
 HOMEOSTASIS_FIXES.md — Homeostasis Error & Warning Fixes
 HUB_IMPROVEMENTS_SUMMARY.md — Hub Improvements Summary
@@ -1934,12 +1939,10 @@ PRIVACY.md — Privacy Policy (Project Repository)
 PRODUCTION_ROADMAP.md — Aetherra Production Roadmap
 QUANTUM_CONSCIOUSNESS_BREAKTHROUGH_ANNOUNCEMENT.md — 🎉 PHASE 7.2 ADVANCED QUANTUM COGNITION - COMPLETE! ✅
 quantum_memory_bridge.py — Quantum memory bridge placeholder (alpha stub)."""
-quick_fix_workflows.py — Set up Unicode environment variables
 QUICK_START.md — Aetherra Turn-Key Development Quick Start
 README.md — Aetherra
 README_DEPLOY.md — Aetherra Deployment Guide
 RELEASE_NOTES_0.5.0-beta.0.md — Aetherra 0.5.0-beta.0 Release Notes
-restart_aetherra.py — Perform pre-restart system checks"""
 ROADMAP.md — Aetherra Roadmap
 sbom.json
 SECURITY.md — Security Policy
@@ -1948,13 +1951,11 @@ SESSION_SUMMARY_AUTONOMOUS_INTEGRATION.md — Autonomous Systems Integration - S
 setup.py — !/usr/bin/env python3
 setup_dev.py — Print the Aetherra setup banner"""
 SMOKE_PROFILE.md — Deterministic Smoke Profile
-start_aetherra_stack.py — Unified Aetherra Stack Starter
 STEWARDSHIP.md — Aetherra Stewardship Statement
 STORM_COMMIT_MESSAGE.md — STORM Phase 1: Production-Ready Shadow Mode Deployment
 STORM_DEPLOYMENT_ISSUES.md — STORM Deployment Issues - Diagnostic Report
 STORM_QUICK_FIX.md — STORM Deployment Issues - Quick Fix Guide
 storm_traffic_test.py — !/usr/bin/env python3
-stub_finder.py
 STUB_INVENTORY.json
 STUB_INVENTORY.md — STUB INVENTORY ANALYSIS - March 10, 2026
 SUPPORT.md — Support

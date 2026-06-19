@@ -15,7 +15,7 @@ Environment overrides (optional):
   AETHERRA_HUB_URL=http://127.0.0.1:3012 (desired port; auto-fix if busy)
 
 Usage:
-  python start_aetherra_stack.py
+  python tools/ops/start_aetherra_stack.py
 
 """
 
@@ -24,9 +24,11 @@ from __future__ import annotations
 import asyncio
 import os
 import sys
+from pathlib import Path
 
 REG_DEFAULT = "http://127.0.0.1:3030"
 HUB_DEFAULT = "http://127.0.0.1:3012"
+ROOT_DIR = Path(__file__).resolve().parents[2]
 
 
 async def reachable(url: str, path: str) -> bool:
@@ -59,10 +61,10 @@ async def ensure_registry(reg_url: str) -> None:
         return
     host_port = parse_port(reg_url)
     print(f"[STACK] Starting Registry Daemon @ {reg_url} ...")
-    script = os.path.join(os.getcwd(), "aetherra_registry_daemon.py")
+    script = ROOT_DIR / "aetherra_registry_daemon.py"
     await asyncio.create_subprocess_exec(
         sys.executable,
-        script,
+        str(script),
         "--host",
         "127.0.0.1",
         "--port",
@@ -103,13 +105,13 @@ async def ensure_hub(hub_url: str) -> str:
         if chosen != desired_port:
             print(f"[STACK] Desired hub port {desired_port} busy; using {chosen}")
     print(f"[STACK] Starting Hub @ http://127.0.0.1:{chosen} ...")
-    script = os.path.join(os.getcwd(), "tools", "run_hub_ai_api.py")
+    script = ROOT_DIR / "tools" / "run_hub_ai_api.py"
     # Minimal production hardening escalation if token present
     if os.environ.get("AETHERRA_AI_API_TOKEN"):
         os.environ.setdefault("AETHERRA_AI_API_REQUIRE_TOKEN", "1")
     await asyncio.create_subprocess_exec(
         sys.executable,
-        script,
+        str(script),
         "--port",
         str(chosen),
         stdout=asyncio.subprocess.DEVNULL,
@@ -131,10 +133,10 @@ async def ensure_hub(hub_url: str) -> str:
 
 async def launch_os() -> int:
     print("[STACK] Launching Aetherra OS (full mode)...")
-    script = os.path.join(os.getcwd(), "aetherra_os_launcher.py")
+    script = ROOT_DIR / "aetherra_os_launcher.py"
     proc = await asyncio.create_subprocess_exec(
         sys.executable,
-        script,
+        str(script),
         "--mode",
         "full",
         stdout=sys.stdout,

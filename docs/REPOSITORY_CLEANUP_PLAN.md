@@ -169,6 +169,14 @@ Root test cleanup notes:
 - `test_unicode_workflow_fix.py` remains at root because active workflow and
   helper scripts call that exact path.
 
+Root utility cleanup notes:
+
+- Maintenance utilities were moved under `tools/maintenance/`.
+- GitHub administration helpers were moved under `tools/github/`.
+- Operator diagnostics and stack helpers were moved under `tools/ops/`.
+- The superseded root `generate_stub_inventory.py` duplicate was removed; the
+  maintained implementation remains at `tools/maintenance/generate_stub_inventory.py`.
+
 ## Phase 5 - GitHub Hygiene
 
 Status: Pending

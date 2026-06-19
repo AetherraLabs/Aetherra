@@ -179,6 +179,6 @@ Based on this analysis, the revised **Phase 1** should focus on:
 
 ---
 
-**Generated**: Python script `generate_stub_inventory.py`
+**Generated**: Python script `tools/maintenance/generate_stub_inventory.py`
 **Last Updated**: March 10, 2026
 **Report Location**: `STUB_INVENTORY.md`

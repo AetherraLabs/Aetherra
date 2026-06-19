@@ -3,7 +3,7 @@
 > Maintained and officially operated by **Aetherra Labs**.
 > **Powered by Aetherra Labs.**
 
-Status: Root test migration complete
+Status: Root test and utility migration complete
 
 This document records the cautious root script and `.aether` workflow triage.
 It is intentionally conservative: files are classified before any move/delete
@@ -32,6 +32,8 @@ are not broken by cleanup.
 - Root manual probes were moved into focused `tests/*/manual/` folders or
   `demos/`. Only `test_unicode_workflow_fix.py` remains at the root because
   active workflows call that exact path.
+- Root maintenance, GitHub administration, and operator helper scripts were
+  moved into `tools/maintenance/`, `tools/github/`, and `tools/ops/`.
 
 ## Keep At Root
 
@@ -67,9 +69,9 @@ These should be moved in focused follow-up commits, not all at once.
 | Destination | Candidates | Notes |
 | --- | --- | --- |
 | `tests/legacy/` or targeted `tests/*/` folders | remaining workflow-pinned root tests | `test_unicode_workflow_fix.py` still has exact workflow references and should move only with workflow updates. |
-| `tools/maintenance/` | `aetherra_core_analyzer.py`, `aetherra_core_cleaner.py`, `aetherra_import_updater.py`, `aetherra_lyrixa_cleaner.py`, `aetherra_plugins_cleaner.py`, `analyze_stubs.py`, `stub_finder.py`, `generate_stub_inventory.py` | Maintenance utilities should not remain root-level long term. |
-| `tools/github/` | `create_github_issues.py`, `create_labels.py`, `quick_fix_workflows.py` | GitHub administration helpers. |
-| `tools/ops/` | `check_agents.py`, `check_metrics.py`, `force_homeostasis_active.py`, `restart_aetherra.py`, `start_aetherra_stack.py` | Operator actions and diagnostics. |
+| `tools/maintenance/` | Future maintenance utilities discovered at root | Existing known maintenance utilities have been moved. |
+| `tools/github/` | Future GitHub administration helpers discovered at root | Existing known GitHub helpers have been moved. |
+| `tools/ops/` | Future operator diagnostics discovered at root | Existing known operator helpers have been moved. |
 | `demos/` | `adk_demo_ui.py`, `agent_pipeline_ui.py`, `chat_stream_ui.py`, `kernel_status_ui.py`, `storm_traffic_test.py` | Demo or manual probe scripts. |
 
 ## Protect Workflows
@@ -92,10 +94,11 @@ Continue root script cleanup:
 1. Keep `test_unicode_workflow_fix.py` at root until
    `.github/workflows/auto-fix-workflow-failures.yml` and
    `quick_fix_workflows.py` are updated together.
-2. Move maintenance utilities into `tools/maintenance/` after checking imports,
-   docs, and workflow references.
-3. Move GitHub administration helpers into `tools/github/`.
-4. Move operator diagnostics into `tools/ops/`.
+2. Review root demo/UI scripts and move clear manual launchers into `demos/`.
+3. Review historical root reports and move still-useful records into
+   `docs/archive/` or `docs/reports/`.
+4. Review root runtime databases/logs and remove tracked generated artifacts
+   after confirming no workflow depends on them.
 5. Run targeted smoke checks after each group.
 
 This keeps the cleanup reversible and avoids mixing test-layout migration with

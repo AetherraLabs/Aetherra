@@ -20,7 +20,7 @@
 **Tools Built:**
 - ✅ `tools/monitor_storm_shadow.py` - Daily monitoring and health checks
 - ✅ `tools/storm_weekly_summary.py` - Weekly trend analysis
-- ✅ `check_metrics.py` - Raw metrics inspection
+- ✅ `tools/ops/check_metrics.py` - Raw metrics inspection
 - ✅ `tests/storm/manual/storm_metrics_probe.py` - Manual recall testing
 
 **Documentation:**
@@ -235,7 +235,7 @@ curl http://localhost:3001/api/memory/status
 python tests/storm/manual/storm_metrics_probe.py
 
 # Metrics inspection
-python check_metrics.py
+python tools/ops/check_metrics.py
 
 # Deployment verification
 python tools/deploy_storm_shadow.py --check-only
@@ -324,7 +324,7 @@ curl http://localhost:3001/health
 ### Tools
 - **Monitor Script:** `tools/monitor_storm_shadow.py`
 - **Weekly Summary:** `tools/storm_weekly_summary.py`
-- **Metrics Check:** `check_metrics.py`
+- **Metrics Check:** `tools/ops/check_metrics.py`
 - **Recall Test:** `tests/storm/manual/storm_metrics_probe.py`
 
 ---

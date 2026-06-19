@@ -64,7 +64,7 @@ CORE_FILES = {
     "aetherra_persistent_memory.py",
     "aetherra_adaptive_behavior.py",
     "aetherra_os.py",
-    "restart_aetherra.py",
+    "tools/ops/restart_aetherra.py",
     "aetherra_hmr_controller.py",
 }
 

@@ -26,4 +26,4 @@ ci:
   - '.github/workflows/*.yml'
 performance:
   - 'aetherra_quantum_meta_learning.py'
-  - 'aetherra_core_analyzer.py'
+  - 'tools/maintenance/aetherra_core_analyzer.py'

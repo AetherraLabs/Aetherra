@@ -11,7 +11,7 @@ This guide gets a full local Aetherra stack (Registry + Hub + OS + Plugin Market
 ## 2. One-Command Stack Startup
 
 ```powershell
-python start_aetherra_stack.py
+python tools/ops/start_aetherra_stack.py
 ```
 
 What happens:

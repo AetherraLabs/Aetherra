@@ -7,7 +7,7 @@ This script provides a simple way to automatically fix Unicode encoding issues
 that are causing workflow failures in the Aetherra repository.
 
 Usage:
-    python quick_fix_workflows.py [scope]
+    python tools/github/quick_fix_workflows.py [scope]
 
     scope options:
     - critical: Fix only critical files (default)
@@ -19,6 +19,11 @@ Usage:
 import os
 import sys
 from pathlib import Path
+
+
+ROOT_DIR = Path(__file__).resolve().parents[2]
+TOOLS_DIR = ROOT_DIR / "tools"
+UNICODE_WORKFLOW_TEST = ROOT_DIR / "test_unicode_workflow_fix.py"
 
 
 def setup_unicode_environment():
@@ -40,9 +45,8 @@ def main():
     setup_unicode_environment()
 
     # Add tools directory to path
-    tools_dir = Path(__file__).parent / "tools"
-    if str(tools_dir) not in sys.path:
-        sys.path.insert(0, str(tools_dir))
+    if str(TOOLS_DIR) not in sys.path:
+        sys.path.insert(0, str(TOOLS_DIR))
 
     try:
         # Import and run the comprehensive fix
@@ -55,7 +59,7 @@ def main():
             # Standard library imports
             import subprocess
 
-            result = subprocess.run([sys.executable, "test_unicode_workflow_fix.py"])
+            result = subprocess.run([sys.executable, str(UNICODE_WORKFLOW_TEST)])
             sys.exit(result.returncode)
         elif scope == "critical":
             print("🔧 Applying critical fixes...")
@@ -87,7 +91,7 @@ def main():
         # Standard library imports
         import subprocess
 
-        result = subprocess.run([sys.executable, "test_unicode_workflow_fix.py"])
+        result = subprocess.run([sys.executable, str(UNICODE_WORKFLOW_TEST)])
 
         if result.returncode == 0:
             print("\n🎉 All workflow failures should now be fixed!")
