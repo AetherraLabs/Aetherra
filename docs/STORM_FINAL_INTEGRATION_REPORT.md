@@ -125,7 +125,7 @@ STORM (Sheaf-Theoretic Optimal Recall via Manifolds) has successfully completed 
 | `test_storm_contracts.py`      | 5     | ✅ All pass       | API contracts             |
 | `test_storm_integration.py`    | 5     | ✅ All pass       | Memory engine integration |
 | `test_storm_maintenance.py`    | 10    | ✅ All pass       | Cleanup and health        |
-| `test_storm_metrics.py`        | 10    | ✅ All pass       | Metrics collection        |
+| `tests/storm/manual/storm_metrics_probe.py` | 10 | ✅ All pass | Metrics collection |
 | `test_storm_ot.py`             | 10    | ✅ All pass       | Optimal transport         |
 | `test_storm_persistence.py`    | 4     | ✅ All pass       | Database operations       |
 | `test_storm_security.py`       | 8     | ⚠️ 6 pass, 2 fail | See security note†        |
@@ -216,7 +216,7 @@ storm_recall_latency_seconds{quantile="0.95"}
 storm_recall_latency_seconds{quantile="0.99"}
 ```
 
-**Validation**: All metrics increment correctly during test runs (verified via `test_storm_metrics.py`).
+**Validation**: All metrics increment correctly during test runs (verified via `tests/storm/manual/storm_metrics_probe.py`).
 
 ### Status API Verification
 

@@ -133,7 +133,7 @@ aetherra_storm_sheaf_inconsistency
 
 ## Test Files Created
 
-### `test_storm_metrics.py`
+### `tests/storm/manual/storm_metrics_probe.py`
 - Triggers STORM recall to verify shadow mode behavior
 - Checks metrics endpoint for STORM metrics
 - **Result:** Shadow mode verified, metrics endpoint accessible
@@ -240,7 +240,7 @@ python tools/deploy_storm_shadow.py --check-only
 - `docs/STORM_DEPLOYMENT_CHECKLIST.md` - Full deployment guide
 - `docs/STORM_QUICK_START.md` - 5-minute setup guide
 - `tools/deploy_storm_shadow.py` - Automated verification script
-- `test_storm_metrics.py` - STORM recall test
+- `tests/storm/manual/storm_metrics_probe.py` - STORM recall test
 - `check_metrics.py` - Metrics analysis tool
 
 **Updated:**

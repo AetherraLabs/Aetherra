@@ -13,8 +13,8 @@ from pathlib import Path
 os.environ["AETHERRA_STORM_CANARY_PCT"] = "10"
 
 # Add project to path
-project_root = Path(__file__).parent
-sys.path.insert(0, str(project_root))
+ROOT_DIR = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT_DIR))
 
 from aetherra_hub.app import create_app
 

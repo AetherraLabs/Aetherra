@@ -10,77 +10,60 @@
 ![Status](https://img.shields.io/badge/Status-Alpha%20Foundation-2563eb)
 ![Safety](https://img.shields.io/badge/Safety-Guardian%20Mediated-22c55e)
 
-Aetherra is an experimental AI operating layer built around modular systems,
-auditable decisions, persistent memory, service orchestration, and controlled
-self-improvement. It is currently in an Alpha/Foundation phase: the focus is
-not broad autonomy, but making each core system functional, bounded, testable,
-and safe before expanding capability.
+Aetherra is an experimental AI operating layer for modular agents, persistent
+memory, policy-mediated execution, auditable decisions, and controlled
+self-improvement.
 
-The project direction is deliberately conservative:
+The project is in an Alpha/Foundation hardening phase. The current goal is not
+unbounded autonomy. The current goal is to complete each core system until it is
+functional, testable, bounded, and safe enough to support later alpha testing.
 
-1. Observe before acting.
-2. Propose before modifying.
-3. Route privileged actions through Guardian and Security.
-4. Record decisions and outcomes for review.
-5. Keep autonomous execution disabled until the safety architecture is ready.
+## Current Priorities
 
-## Current Foundation Status
+1. Keep privileged actions mediated by Guardian and Security.
+2. Prefer observation and proposal before autonomous modification.
+3. Keep system behavior auditable through signed and structured records.
+4. Complete one system at a time to a functional foundation standard.
+5. Clean the repository so source, docs, tests, and generated artifacts are easy
+   to tell apart.
 
-| System | Status | Notes |
+## System Status
+
+| System | Foundation status | Notes |
 | --- | --- | --- |
-| Security | Functional foundation complete | Capability checks, audit ledger, signing, sandbox and policy surfaces. |
-| Guardian | Functional foundation complete | Intent evaluation, risk assessment, approval, containment, audit integration, performance policy. |
-| Homeostasis | Functional foundation complete | Observation, diagnosis, recommendations, Guardian-mediated controlled actions. |
-| Self-Improvement | Functional Alpha/Foundation complete | Proposal-only loop, Guardian-mediated execution delegation, bounded learning outcomes. |
-| Other systems | In progress | Systems are being completed one at a time to the same standard. |
+| Security | Functional foundation complete | Capability checks, sandbox policy, signing, audit, and enforcement surfaces. |
+| Guardian | Functional foundation complete | Intent evaluation, risk assessment, approval, containment, audit integration, and performance policy. |
+| Homeostasis | Functional foundation complete | Observation, diagnosis, recommendations, and Guardian-mediated controlled action paths. |
+| Self-Improvement | Functional foundation complete | Proposal-only loop with Guardian review and execution delegation; no direct mutation in the foundation milestone. |
+| Kernel, Hub, Memory, Plugins, Agents, Lyrixa, Aether Script | In progress | These systems are being completed and cleaned up in focused passes. |
 
-See the system documents in [`docs/`](docs/) for current implementation status.
+Primary system documents live in [`docs/`](docs/), especially:
 
-## What Aetherra Is
-
-Aetherra is not a single chatbot, plugin runner, or automation script. It is a
-layered runtime for AI-native operations:
-
-- **Aetherra Kernel**: service coordination, event routing, and runtime lifecycle.
-- **Aetherra Hub**: local APIs, metrics, and control-plane endpoints.
-- **Lyrixa**: assistant and interface layer.
-- **Security System**: capability, sandbox, signing, audit, and policy controls.
-- **Guardian System**: intent evaluation and risk mediation for privileged actions.
-- **Homeostasis System**: health observation, diagnosis, and controlled recovery recommendations.
-- **Self-Improvement System**: safe proposal generation and outcome learning without direct mutation.
-- **Aether Script**: intent-oriented workflow language for controlled automation.
-- **Memory Systems**: persistent and experimental memory layers.
-- **Plugin System**: extensibility with policy and capability boundaries.
-
-## Safety Model
-
-Aetherra is designed for powerful behavior, so the foundation assumes privileged
-actions are dangerous until proven safe.
-
-Core safety principles:
-
-- Self-Improvement does not directly modify the system.
-- Guardian evaluates privileged intent before execution.
-- Security enforces capabilities, sandboxing, signing, and audit policy.
-- Homeostasis recommends before it acts.
-- Controlled execution paths must support rollback or explicit approval.
-- Downstream errors and execution payloads are minimized before reaching clients.
-- Generated observations, results, and metadata are bounded before persistence.
-
-## Repository State
-
-This repository is under active cleanup. Some generated artifacts, historical
-reports, packaged builds, local databases, and legacy root-level scripts are
-still present in the tracked tree. They are being handled deliberately to avoid
-removing useful project history or breaking current workflows.
-
-Cleanup tracking:
-
-- [`docs/REPOSITORY_CLEANUP_PLAN.md`](docs/REPOSITORY_CLEANUP_PLAN.md)
 - [`docs/AETHERRA_SECURITY_SYSTEM.md`](docs/AETHERRA_SECURITY_SYSTEM.md)
 - [`docs/AETHERRA_GUARDIAN_SYSTEM.md`](docs/AETHERRA_GUARDIAN_SYSTEM.md)
 - [`docs/AETHERRA_HOMEOSTASIS_SYSTEM.md`](docs/AETHERRA_HOMEOSTASIS_SYSTEM.md)
 - [`docs/AETHERRA_SELF-IMPROVEMENT_SYSTEM.md`](docs/AETHERRA_SELF-IMPROVEMENT_SYSTEM.md)
+- [`docs/SYSTEM_INDEX.md`](docs/SYSTEM_INDEX.md)
+
+## Architecture Shape
+
+Aetherra is not a single chatbot, plugin runner, or automation script. It is a
+layered runtime with safety boundaries:
+
+```text
+Lyrixa / Interfaces / Tools
+        |
+Agents, Plugins, Aether Script, Self-Improvement, Homeostasis
+        |
+Guardian policy and risk mediation
+        |
+Security enforcement, sandboxing, signing, and audit
+        |
+Kernel, Hub, service registry, memory, and runtime systems
+```
+
+Important design rule: Self-Improvement proposes. Guardian reviews. Security
+enforces. Execution is delegated only after policy allows it.
 
 ## Quick Start
 
@@ -88,16 +71,36 @@ Requirements:
 
 - Python 3.11+
 - Git
-- A virtual environment is strongly recommended
+- A virtual environment
+
+Create and activate a virtual environment:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+On Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
 
 Install dependencies:
 
 ```bash
+python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
-python -m pip install -r requirements-ci.lock
 ```
 
-Run focused system tests:
+Run a basic smoke check:
+
+```bash
+python tools/os_smoke.py
+```
+
+Run focused safety and self-improvement tests:
 
 ```bash
 python -m pytest -q -o addopts= \
@@ -109,10 +112,10 @@ python -m pytest -q -o addopts= \
   tests/unit/test_selfinc_proposal_consumer.py
 ```
 
-Run a basic smoke check:
+Run the Phase 5 validation harness quick profile:
 
 ```bash
-python tools/os_smoke.py
+python tools/phase5_validation_harness.py --profile quick --timeout 60
 ```
 
 Start the local Hub:
@@ -128,26 +131,56 @@ curl http://localhost:3001/api/health
 curl http://localhost:3001/metrics
 ```
 
-## Important Paths
+## Repository Map
 
 | Path | Purpose |
 | --- | --- |
 | [`Aetherra/`](Aetherra/) | Primary package and runtime systems. |
-| [`aetherra_hub/`](aetherra_hub/) | Hub API blueprints and local service surfaces. |
-| [`docs/`](docs/) | System documentation and implementation status. |
-| [`tests/`](tests/) | Unit, capability, integration, and acceptance tests. |
-| [`tools/`](tools/) | Verification, smoke, maintenance, and developer utilities. |
-| [`requirements/`](requirements/) | Additional dependency inputs. |
+| [`aetherra_hub/`](aetherra_hub/) | Hub API blueprints, local services, and control-plane surfaces. |
+| [`aetherra_coding/`](aetherra_coding/) | Coding, analysis, verification, and orchestration utilities. |
+| [`docs/`](docs/) | Active system documentation, guides, policy docs, and cleanup plans. |
+| [`tests/`](tests/) | Unit, integration, capability, acceptance, and legacy standalone tests. |
+| [`tools/`](tools/) | Verification, smoke, release, maintenance, and developer utilities. |
 | [`scripts/`](scripts/) | Operational and maintenance scripts. |
+| [`requirements/`](requirements/) | Dependency input files beyond the root requirements locks. |
 
-## Development Notes
+The repository is still being cleaned. Some root-level files are historical,
+generated, local runtime artifacts, or compatibility launchers. Cleanup tracking
+is maintained in:
+
+- [`docs/REPOSITORY_CLEANUP_PLAN.md`](docs/REPOSITORY_CLEANUP_PLAN.md)
+- [`docs/ROOT_SCRIPT_WORKFLOW_TRIAGE.md`](docs/ROOT_SCRIPT_WORKFLOW_TRIAGE.md)
+- [`docs/FILE_INDEX.md`](docs/FILE_INDEX.md)
+
+## Safety Model
+
+Aetherra assumes powerful actions are dangerous until policy says otherwise.
+
+Core rules:
+
+- Self-Improvement must not directly modify the system during the foundation
+  milestone.
+- Guardian must evaluate privileged intent before execution.
+- Security must enforce capabilities, sandboxing, signing, and audit policy.
+- Homeostasis should recommend before taking controlled action.
+- Rollback, containment, and approval paths are first-class requirements.
+- Exceptions and execution payloads must be sanitized before reaching external
+  clients.
+
+This is an active research and engineering project. Do not run it as an
+unreviewed autonomous production system.
+
+## Development Rules
 
 - Keep changes scoped to the system being completed.
-- Do not add direct autonomous mutation paths.
-- Prefer bounded structured data over raw payload persistence.
-- Add tests for safety boundaries, not just happy paths.
-- Keep generated logs, databases, build outputs, and local state out of commits.
-- Use system docs in `docs/` as the source of truth for system completion.
+- Prefer structured models and explicit policy decisions over ad hoc payloads.
+- Add tests for safety boundaries, denial paths, and audit behavior.
+- Keep generated logs, databases, build outputs, packaged distributions, and
+  local state out of commits.
+- Update the relevant `docs/AETHERRA_*_SYSTEM.md` document when a system's
+  behavior or completion status changes.
+- Avoid direct mutation loops. Proposal, review, approval, execution, and
+  outcome learning should remain separate concerns.
 
 ## License
 

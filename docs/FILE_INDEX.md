@@ -1162,6 +1162,8 @@ tests/
     test_neural_interface_quick.py — Quick test of Neural Interface functionality
     test_openai_integration.py — Load environment variables from .env file."""
   api/
+    manual/
+      engine_metrics_probe.py — Test that engine metrics are exported.
     test_approvals_api.py — SPDX-License-Identifier: GPL-3.0-or-later
   capabilities/
     test_aether_e2e.py — SPDX-License-Identifier: GPL-3.0-or-later
@@ -1259,9 +1261,21 @@ tests/
     test_lyrixa_gui.py — Test the Lyrixa Hybrid GUI directly
     test_plugin_cards_mode.py — Tests for plugin card mode (feature-flagged).
     test_theme_fallback.py — Test that LyrixaBasicWindow applies either theme or fallback stylesheet.
+  homeostasis/
+    manual/
+      audit_trace_layer_probe.py — Test basic audit trace workflow."""
+      comprehensive_homeostasis_probe.py — Comprehensive test of all 6 phases of homeostasis implementation.
+      ethical_cognitive_integration_probe.py — Mock bias detector for testing."""
+      phase3_full_probe.py — Full test for Phase 3 homeostasis implementation including watchdog.
+      phase3_probe.py — Quick test for Phase 3 homeostasis implementation.
+      phase4_feedback_probe.py — Test for Phase 4 homeostasis cross-system feedback implementation.
+      phase5_validation_probe.py — Test for Phase 5 homeostasis continuous validation implementation.
+      phase6_observability_probe.py — Test for Phase 6 homeostasis live observability implementation.
   integration/
+    hmr_integration_probe.py — Test HMR integration functionality."""
     README.md — integration
     test_consciousness_integration.py — Test that all consciousness components can be imported"""
+    test_ethics_audit_integration.py — Test the core ethics evaluation engine."""
     test_homeostasis_latency_response.py — Mock actuator that records actions for verification"""
     test_hub_maintenance_status_live.py — !/usr/bin/env python3
     test_hub_plugins.py — !/usr/bin/env python3
@@ -1287,6 +1301,7 @@ tests/
     test_retry_scheduling.py
   legacy/
     root_standalone/
+      __init__.py — Legacy standalone root tests preserved during repository cleanup.
       test_alert_intelligence_standalone.py — Test that we can import the core components."""
       test_analysis_engine_standalone.py — Standalone tests for aetherra_coding.analysis.
       test_hub_blueprints_standalone.py — Create a minimal Flask test app with all three blueprints registered."""
@@ -1300,7 +1315,7 @@ tests/
       test_phase4_learning_loop_standalone.py — Standalone tests for Phase 4 learning loop.
       test_phase4_learning_quality_and_latency_standalone.py — Standalone tests for Phase 4 learning quality and latency checkpoints.
       test_phase4_memory_engine_enhancement_standalone.py — Standalone tests for Phase 4 memory-engine enhancement slice.
-      test_phase5_bundle_artifacts_standalone.py
+      test_phase5_bundle_artifacts_standalone.py — Standalone tests for tools/phase5_bundle_artifacts.py.
       test_phase5_manifest_policy_standalone.py — Standalone tests for tools/verify_phase5_manifest_policy.py.
       test_phase5_report_rollup_standalone.py — Standalone tests for tools/phase5_report_rollup.py.
       test_phase5_validation_harness_standalone.py — Standalone tests for tools/phase5_validation_harness.py.
@@ -1338,6 +1353,10 @@ tests/
     test_policy_bootstrap_import.py
     test_run_hub_ai_api_import.py
   storm/
+    manual/
+      storm_canary_probe.py — Test STORM canary with 10% sampling rate.
+      storm_metrics_probe.py — Quick test to trigger STORM metrics collection.
+      storm_skeleton_probe.py — Quick smoke test for STORM skeleton integration
     __init__.py — STORM integration test suite
     test_storm_basic.py — Test basic STORM engine operations"""
     test_storm_candidates.py — Mock LyrixaMemorySystem for candidate fetching tests."""
@@ -1939,22 +1958,6 @@ stub_finder.py
 STUB_INVENTORY.json
 STUB_INVENTORY.md — STUB INVENTORY ANALYSIS - March 10, 2026
 SUPPORT.md — Support
-test_agent_api.py — Test submitting a task to the agent orchestrator.
-test_audit_trace_layer.py — Test basic audit trace workflow."""
-test_comprehensive.py — Comprehensive test of all 6 phases of homeostasis implementation.
-test_engine_metrics.py — Test that engine metrics are exported.
-test_ethical_cognitive_integration.py — Mock bias detector for testing."""
-test_ethics_audit_integration.py — Test the core ethics evaluation engine."""
-test_hmr_integration.py — Test HMR integration functionality."""
-test_lyrixa_gui.py — Launch the test GUI.
-test_phase3.py — Quick test for Phase 3 homeostasis implementation.
-test_phase3_full.py — Full test for Phase 3 homeostasis implementation including watchdog.
-test_phase4.py — Test for Phase 4 homeostasis cross-system feedback implementation.
-test_phase5.py — Test for Phase 5 homeostasis continuous validation implementation.
-test_phase6.py — Test for Phase 6 homeostasis live observability implementation.
-test_storm_canary.py — Test STORM canary with 10% sampling rate.
-test_storm_metrics.py — Quick test to trigger STORM metrics collection.
-test_storm_skeleton.py — Quick smoke test for STORM skeleton integration
 test_unicode_workflow_fix.py — Test that Unicode issues are resolved
 unicode_logger.py — Unicode-Safe Logging Configuration for Aetherra OS.
 website_truth_audit.md — Aetherra Website Truth Audit

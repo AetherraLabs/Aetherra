@@ -3,8 +3,10 @@
 """Quick test for Phase 3 homeostasis implementation."""
 
 import sys
+from pathlib import Path
 
-sys.path.append(".")
+ROOT_DIR = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT_DIR))
 
 from Aetherra.homeostasis.homeostasis_integration import (
     get_homeostasis_orchestrator,

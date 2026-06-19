@@ -3,7 +3,7 @@
 > Maintained and officially operated by **Aetherra Labs**.
 > **Powered by Aetherra Labs.**
 
-Status: Legacy standalone test migration started
+Status: Root test migration complete
 
 This document records the cautious root script and `.aether` workflow triage.
 It is intentionally conservative: files are classified before any move/delete
@@ -29,6 +29,9 @@ are not broken by cleanup.
 - `git ls-files -ci --exclude-standard` should remain empty after this pass.
 - Phase 5 harness-owned and remaining non-workflow standalone tests now live
   under `tests/legacy/root_standalone/`.
+- Root manual probes were moved into focused `tests/*/manual/` folders or
+  `demos/`. Only `test_unicode_workflow_fix.py` remains at the root because
+  active workflows call that exact path.
 
 ## Keep At Root
 
@@ -63,11 +66,11 @@ These should be moved in focused follow-up commits, not all at once.
 
 | Destination | Candidates | Notes |
 | --- | --- | --- |
-| `tests/legacy/` or targeted `tests/*/` folders | root `test_*.py` files | `pyproject.toml` discovers `tests/` only, but `tools/phase5_validation_harness.py` and at least one GitHub workflow call exact root test filenames. Update those references first. |
+| `tests/legacy/` or targeted `tests/*/` folders | remaining workflow-pinned root tests | `test_unicode_workflow_fix.py` still has exact workflow references and should move only with workflow updates. |
 | `tools/maintenance/` | `aetherra_core_analyzer.py`, `aetherra_core_cleaner.py`, `aetherra_import_updater.py`, `aetherra_lyrixa_cleaner.py`, `aetherra_plugins_cleaner.py`, `analyze_stubs.py`, `stub_finder.py`, `generate_stub_inventory.py` | Maintenance utilities should not remain root-level long term. |
 | `tools/github/` | `create_github_issues.py`, `create_labels.py`, `quick_fix_workflows.py` | GitHub administration helpers. |
 | `tools/ops/` | `check_agents.py`, `check_metrics.py`, `force_homeostasis_active.py`, `restart_aetherra.py`, `start_aetherra_stack.py` | Operator actions and diagnostics. |
-| `demos/` | `adk_demo_ui.py`, `agent_pipeline_ui.py`, `chat_stream_ui.py`, `kernel_status_ui.py`, `test_agent_api.py`, `storm_traffic_test.py` | Demo or manual probe scripts. |
+| `demos/` | `adk_demo_ui.py`, `agent_pipeline_ui.py`, `chat_stream_ui.py`, `kernel_status_ui.py`, `storm_traffic_test.py` | Demo or manual probe scripts. |
 
 ## Protect Workflows
 
@@ -84,18 +87,16 @@ runtime path discovery are updated together.
 
 ## Next Safe Step
 
-Continue root test cleanup:
+Continue root script cleanup:
 
 1. Keep `test_unicode_workflow_fix.py` at root until
    `.github/workflows/auto-fix-workflow-failures.yml` and
    `quick_fix_workflows.py` are updated together.
-2. Review remaining root `test_phase*.py`, STORM probes, and demo/manual test
-   scripts before deciding whether they belong in `tests/`, `tests/storm/`, or
-   `demos/`.
-3. Move only one referenced group at a time and update callers before removing
-   root paths.
-4. Run the moved tests directly and any workflow or harness slice that calls
-   them.
+2. Move maintenance utilities into `tools/maintenance/` after checking imports,
+   docs, and workflow references.
+3. Move GitHub administration helpers into `tools/github/`.
+4. Move operator diagnostics into `tools/ops/`.
+5. Run targeted smoke checks after each group.
 
 This keeps the cleanup reversible and avoids mixing test-layout migration with
 runtime module relocation.

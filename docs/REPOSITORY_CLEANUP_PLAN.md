@@ -159,6 +159,16 @@ Initial classification is recorded in
 standalone-test migration, because many root tests are outside normal pytest
 discovery but some harnesses still call exact root filenames.
 
+Root test cleanup notes:
+
+- Root standalone validation scripts were moved under
+  `tests/legacy/root_standalone/`.
+- Root manual Homeostasis probes were moved under `tests/homeostasis/manual/`.
+- Root STORM probes were moved under `tests/storm/manual/`.
+- Root API/manual GUI probes were moved under `tests/api/manual/` or `demos/`.
+- `test_unicode_workflow_fix.py` remains at root because active workflow and
+  helper scripts call that exact path.
+
 ## Phase 5 - GitHub Hygiene
 
 Status: Pending
