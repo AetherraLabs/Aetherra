@@ -18,6 +18,17 @@ The project is in an Alpha/Foundation hardening phase. The current goal is not
 unbounded autonomy. The current goal is to complete each core system until it is
 functional, testable, bounded, and safe enough to support later alpha testing.
 
+## Maturity and Safety Notice
+
+Aetherra is not production-ready autonomous infrastructure. Treat it as an
+active alpha-stage research and engineering codebase.
+
+- Run it in a reviewed development environment.
+- Keep Guardian and Security enforcement enabled for privileged paths.
+- Do not connect it to sensitive systems without explicit review.
+- Expect some systems to be functional foundations rather than final products.
+- Prefer manual approval, rollback plans, and audit review for risky actions.
+
 ## Current Priorities
 
 1. Keep privileged actions mediated by Guardian and Security.
@@ -143,10 +154,15 @@ curl http://localhost:3001/metrics
 | [`tools/`](tools/) | Verification, smoke, release, maintenance, and developer utilities. |
 | [`scripts/`](scripts/) | Operational and maintenance scripts. |
 | [`requirements/`](requirements/) | Dependency input files beyond the root requirements locks. |
+| [`.github/workflows/`](.github/workflows/) | Focused CI, security, release, docs, and repository hygiene workflows. |
 
-The repository is still being cleaned. Some root-level files are historical,
-generated, local runtime artifacts, or compatibility launchers. Cleanup tracking
-is maintained in:
+The repository is still being cleaned. Tracked root-level files are being
+limited to public docs, package/config files, compatibility launchers, and
+current operational entry points. Generated runtime state, reports, databases,
+logs, coverage output, and packaged builds should stay ignored or be published
+as release artifacts instead of source.
+
+Cleanup tracking is maintained in:
 
 - [`docs/REPOSITORY_CLEANUP_PLAN.md`](docs/REPOSITORY_CLEANUP_PLAN.md)
 - [`docs/ROOT_SCRIPT_WORKFLOW_TRIAGE.md`](docs/ROOT_SCRIPT_WORKFLOW_TRIAGE.md)
