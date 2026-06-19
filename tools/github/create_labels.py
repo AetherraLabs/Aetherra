@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 # Standard library imports
 import csv
+import os
 import subprocess
+
+CSV_PATH = os.getenv(
+    "CSV_PATH",
+    "docs/reports/selfinc/aetherra_selfinc_issues.csv",
+)
 
 # Read CSV and extract all unique labels
 labels = set()
-with open("aetherra_selfinc_issues.csv", encoding="utf-8") as f:
+with open(CSV_PATH, encoding="utf-8") as f:
     reader = csv.DictReader(f)
     for row in reader:
         label_list = row["labels"].strip()

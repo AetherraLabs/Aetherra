@@ -209,6 +209,9 @@ Root utility cleanup notes:
 - Engine curation/matrix reports and the beta readiness report were moved under
   `docs/reports/`; generator defaults and release bundling paths now use the
   relocated report locations.
+- The Self-Incorporation GitHub issue CSV was moved under `docs/reports/selfinc/`
+  and GitHub helper scripts now default to that path. The obsolete duplicate
+  `AetherraOS.spec` was removed; `aetherra_os.spec` remains the build spec.
 
 ## Phase 5 - GitHub Hygiene
 

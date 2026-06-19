@@ -5,7 +5,10 @@ import os
 import subprocess
 import sys
 
-CSV_PATH = os.getenv("CSV_PATH", "aetherra_selfinc_issues.csv")
+CSV_PATH = os.getenv(
+    "CSV_PATH",
+    "docs/reports/selfinc/aetherra_selfinc_issues.csv",
+)
 REPO = os.getenv("REPO")  # e.g., AetherraLabs/Aetherra
 ASSIGNEES = os.getenv("ASSIGNEES", "")  # comma-separated GitHub handles
 MILESTONE_MAP = {}  # optional: {"Phase 1": "1", "Phase 2": "2"} if you prefer numeric IDs
