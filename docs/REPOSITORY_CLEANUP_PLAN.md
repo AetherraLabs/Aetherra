@@ -196,6 +196,11 @@ Root utility cleanup notes:
 - Risky or placeholder workflows were removed, including scheduled auto-fix
   commits, placeholder site sync, external endpoint monitoring, and duplicate
   manual/debug Pages deploy paths.
+- Duplicate `.aether` verification workflow variants were removed; the
+  comprehensive Aether Script Verification workflow remains the CI source of
+  truth for strict script checks and readiness validation.
+- The standalone docs consistency workflow was removed because `ci.yml` already
+  runs the docs consistency gate; the separate docs build workflow remains.
 
 ## Phase 5 - GitHub Hygiene
 
