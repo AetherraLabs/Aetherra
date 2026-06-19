@@ -29,7 +29,7 @@ Status: PRUNE PHASE COMPLETED. All 19 planned operations successfully moved (cop
 | Data / DB Files                    | `*.db`, `aetherra_kernel_metrics.json`, `live_file_index.json`, `concept_clusters.db` etc.                                                 | Consolidate                           | `data/` (already partial) |
 | Logs                               | `aetherra_os.log`, `lyrixa_system.log`, `lyrixa_basic.log`                                                                                 | Consolidate (already `logs/`)         | `logs/`                   |
 | Cleanup Plan/Applied JSON          | `PROJECT_CLEANUP_PLAN.json`, `PROJECT_CLEANUP_APPLIED.json`                                                                                | Keep (audit)                          | `archive/plans/`          |
-| Misc Root Markdown (announcements) | `QUANTUM_CONSCIOUSNESS_BREAKTHROUGH_ANNOUNCEMENT.md`                                                                                       | Keep or Archive                       | Decide later              |
+| Misc Root Markdown (announcements) | `docs/archive/root-reports/QUANTUM_CONSCIOUSNESS_BREAKTHROUGH_ANNOUNCEMENT.md`                                                            | Archived                              | Completed                 |
 
 ## First Batch (Proposed NOW – Non‑Destructive)
 

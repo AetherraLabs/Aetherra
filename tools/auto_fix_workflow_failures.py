@@ -282,7 +282,8 @@ if __name__ == "__main__":
     main()
 '''
 
-        script_path = ROOT_DIR / "quick_fix_workflows.py"
+        script_path = ROOT_DIR / "tools" / "github" / "quick_fix_workflows.py"
+        script_path.parent.mkdir(parents=True, exist_ok=True)
         if not self.dry_run:
             script_path.write_text(script_content, encoding="utf-8")
             script_path.chmod(0o755)

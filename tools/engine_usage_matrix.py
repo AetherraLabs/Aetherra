@@ -9,7 +9,7 @@ Builds a classification of engine-like modules and whether they are referenced b
 - Lyrixa/UI paths (Aetherra/lyrixa/**, Aetherra/gui/**, Aetherra/core/**)
 
 Outputs:
-- ENGINE_USAGE_MATRIX.md
+- docs/reports/engine/ENGINE_USAGE_MATRIX.md
 - engine_usage_matrix.json
 """
 
@@ -182,12 +182,14 @@ def main() -> int:
         md_lines.append(
             f"| {u.file.replace(str(REPO_ROOT) + os.sep, '')} | {', '.join(u.classes)} | {'✅' if u.used_by_os else '—'} | {'✅' if u.used_by_lyrixa else '—'} | {u.notes} |"
         )
-    (REPO_ROOT / "ENGINE_USAGE_MATRIX.md").write_text(
+    md_path = REPO_ROOT / "docs" / "reports" / "engine" / "ENGINE_USAGE_MATRIX.md"
+    md_path.parent.mkdir(parents=True, exist_ok=True)
+    md_path.write_text(
         "\n".join(md_lines), encoding="utf-8"
     )
 
     print(
-        "Engine usage matrix generated: ENGINE_USAGE_MATRIX.md, engine_usage_matrix.json"
+        "Engine usage matrix generated: docs/reports/engine/ENGINE_USAGE_MATRIX.md, engine_usage_matrix.json"
     )
     return 0
 

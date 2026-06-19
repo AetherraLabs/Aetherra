@@ -314,7 +314,7 @@ Browse available icons: https://lucide.dev/icons
 
 For issues, questions, or contributions:
 - Check `docs/` in workspace root
-- Review `AETHERRA_MASTER_MAP.md` for architecture
+- Review `docs/AETHERRA_MASTER_MAP.md` for architecture
 - See `CONTRIBUTING.md` for contribution guidelines
 
 ---

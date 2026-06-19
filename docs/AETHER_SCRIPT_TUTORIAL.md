@@ -848,7 +848,7 @@ python -c "from aetherra_plugin_discovery import discover_plugins; print(discove
 
 ## Related Documentation
 
-- [Aether Script Language Specification](../Aether Script Language Specification.md) - Complete language spec
+- [Aether Script Language System](Aether_Script_Language_System.md) - Complete language spec
 - [PLUGIN_DEVELOPMENT_GUIDE.md](./PLUGIN_DEVELOPMENT_GUIDE.md) - Create custom plugins
 - [AETHERRA_MEMORY_SYSTEM.md](./AETHERRA_MEMORY_SYSTEM.md) - Memory operations
 - [TROUBLESHOOTING_GUIDE.md](./TROUBLESHOOTING_GUIDE.md) - Script troubleshooting

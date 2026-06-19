@@ -24,19 +24,19 @@ The automated fix system:
 
 ### 1. Simple Quick Fix
 ```bash
-python quick_fix_workflows.py
+python tools/github/quick_fix_workflows.py
 ```
 This applies critical fixes to the most important files.
 
 ### 2. Comprehensive Fix
 ```bash
-python quick_fix_workflows.py all
+python tools/github/quick_fix_workflows.py all
 ```
 This fixes all Python files with Unicode issues.
 
 ### 3. Test Only
 ```bash
-python quick_fix_workflows.py test
+python tools/github/quick_fix_workflows.py test
 ```
 This only tests if the current fixes are working.
 
@@ -63,13 +63,16 @@ python tools/classify_aether_workflow_failures.py
 ```
 This analyzes and categorizes current workflow failures.
 
-## Automated Workflow
+## Manual Workflow
 
-The repository includes a GitHub Actions workflow (`.github/workflows/auto-fix-workflow-failures.yml`) that can:
+The repository keeps the Unicode/workflow repair scripts as manual maintenance
+tools. The former scheduled GitHub Actions auto-fix workflow was removed during
+repository cleanup because it could commit broad automated rewrites from CI.
+Run these tools intentionally from a reviewed working tree instead.
 
-- Run automatically on a schedule
-- Be triggered manually with different scopes
-- Apply fixes and commit them automatically
+- Classify workflow failures before editing files
+- Apply focused fixes from a local branch
+- Review diffs before committing
 - Generate reports on workflow health
 
 ## What Gets Fixed
@@ -96,9 +99,8 @@ The repository includes a GitHub Actions workflow (`.github/workflows/auto-fix-w
 ## Files Included
 
 - `tools/auto_fix_workflow_failures.py` - Main comprehensive fix tool
-- `quick_fix_workflows.py` - Simple quick fix script
+- `tools/github/quick_fix_workflows.py` - Simple quick fix script
 - `test_unicode_workflow_fix.py` - Verification test script
-- `.github/workflows/auto-fix-workflow-failures.yml` - GitHub Actions workflow
 - `tools/classify_aether_workflow_failures.py` - Workflow failure analyzer
 
 ## Testing
@@ -149,7 +151,7 @@ When adding new Unicode characters to the codebase:
 
 2. Apply comprehensive fixes:
    ```bash
-   python quick_fix_workflows.py all
+   python tools/github/quick_fix_workflows.py all
    ```
 
 3. Check environment variables are set:

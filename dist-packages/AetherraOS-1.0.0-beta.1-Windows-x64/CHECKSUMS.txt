@@ -1,6 +1,0 @@
-﻿Aetherra OS - File Checksums (SHA256)
-Generated: 2025-10-31 14:46:42
-Version: 1.0.0-beta.1
-================================================================================
-
-31C36CA101FD761BE70A30CFAFD5DC3C85B3781C3C06BF34B2C21505EE06AD00  AetherraOS.exe  (79.05 MB)

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 # Standard library imports
 import logging
+from typing import Any
 
 # Third party imports
 from flask import Blueprint, jsonify, request
@@ -23,6 +24,116 @@ from ..utils.http import run_coro_blocking
 logger = logging.getLogger(__name__)
 
 bp = Blueprint("self_improvement", __name__, url_prefix="/api/selfimprove")
+
+
+def _get_self_improvement_service() -> Any | None:
+    return get_service("self_improvement_engine")
+
+
+def _bounded_limit(value: Any, *, default: int, maximum: int) -> int:
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        parsed = default
+    return max(1, min(maximum, parsed))
+
+
+def _safe_error_code(value: Any, *, default: str) -> str:
+    text = str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
+    if not text:
+        return default
+    if len(text) > 80:
+        return default
+    if not all(char.isalnum() or char == "_" for char in text):
+        return default
+    if "traceback" in text or "exception" in text or "error:" in text:
+        return default
+    return text
+
+
+def _safe_result_summary(result: Any) -> dict[str, Any] | None:
+    if not isinstance(result, dict):
+        return None
+    return {"ok": bool(result.get("ok"))}
+
+
+def _safe_selfinc_summary(result: Any) -> dict[str, Any] | None:
+    if not isinstance(result, dict):
+        return None
+    summary: dict[str, Any] = {
+        "status": _safe_error_code(result.get("status"), default="unknown"),
+    }
+    plan_id = str(result.get("plan_id") or "").strip()
+    if plan_id and len(plan_id) <= 120:
+        summary["plan_id"] = plan_id
+    return summary
+
+
+def _service_call(service: Any, message_type: str, payload: dict[str, Any] | None = None) -> Any:
+    if hasattr(service, "handle_message"):
+        return run_coro_blocking(service.handle_message(message_type, payload or {}))
+    if message_type.endswith("status") and hasattr(service, "get_improvement_status"):
+        return service.get_improvement_status()
+    if message_type.endswith("trends") and hasattr(service, "get_metric_trends"):
+        return service.get_metric_trends()
+    if message_type.endswith("proposals") and hasattr(service, "list_active_proposals"):
+        payload = payload or {}
+        summary = (
+            service.get_review_summary()
+            if hasattr(service, "get_review_summary")
+            else {}
+        )
+        return {
+            "status": "ok",
+            "summary": summary,
+            "proposals": service.list_active_proposals(
+                status=payload.get("status"),
+                improvement_type=payload.get("improvement_type"),
+                readiness_status=payload.get("readiness_status"),
+                max_risk=payload.get("max_risk"),
+                min_confidence=payload.get("min_confidence"),
+                limit=_bounded_limit(payload.get("limit"), default=100, maximum=500),
+            ),
+        }
+    if message_type.endswith("dismiss_proposal") and hasattr(service, "dismiss_proposal"):
+        return run_coro_blocking(service.dismiss_proposal(**(payload or {})))
+    if message_type.endswith("reopen_proposal") and hasattr(service, "reopen_proposal"):
+        return run_coro_blocking(service.reopen_proposal(**(payload or {})))
+    if message_type.endswith("proposal_history") and hasattr(service, "get_proposal_history"):
+        payload = payload or {}
+        proposal_id = str(payload.get("proposal_id") or "")
+        limit = _bounded_limit(payload.get("limit"), default=50, maximum=200)
+        return {
+            "status": "ok",
+            "proposal_id": proposal_id,
+            "events": service.get_proposal_history(proposal_id, limit=limit),
+        }
+    if message_type.endswith("learning_outcomes") and hasattr(service, "list_learning_outcomes"):
+        payload = payload or {}
+        proposal_id = str(payload.get("proposal_id") or "").strip() or None
+        status = str(payload.get("status") or "").strip() or None
+        limit = _bounded_limit(payload.get("limit"), default=50, maximum=200)
+        summary = (
+            service.get_learning_summary(proposal_id=proposal_id, status=status)
+            if hasattr(service, "get_learning_summary")
+            else {}
+        )
+        return {
+            "status": "ok",
+            "summary": summary,
+            "outcomes": service.list_learning_outcomes(
+                proposal_id=proposal_id,
+                status=status,
+                limit=limit,
+            ),
+        }
+    if message_type.endswith("proposal") and hasattr(service, "get_proposal"):
+        proposal_id = str((payload or {}).get("proposal_id") or "")
+        proposal = service.get_proposal(proposal_id)
+        if proposal is None:
+            return {"status": "not_found", "proposal": None}
+        return {"status": "ok", "proposal": proposal}
+    return None
 
 
 def _authorize_control() -> ResponseReturnValue | None:
@@ -93,6 +204,306 @@ def _guardian_block_response(
     )
 
 
+@bp.get("/status")
+def get_status() -> ResponseReturnValue:
+    """Return read-only self-improvement engine status."""
+    try:
+        service = _get_self_improvement_service()
+        if service is None:
+            return (
+                jsonify(
+                    {
+                        "status": "disabled",
+                        "running": False,
+                        "error": "Self-improvement engine not registered",
+                    }
+                ),
+                503,
+            )
+        status = _service_call(service, "selfimprovement.status")
+        if not isinstance(status, dict):
+            return jsonify({"status": "error", "error": "status unavailable"}), 503
+        return jsonify(status)
+    except Exception as exc:
+        logger.error("[SELFIMPROVE] Status error: %s", exc)
+        return jsonify({"status": "error", "error": "Internal server error"}), 500
+
+
+@bp.get("/proposals")
+def get_proposals() -> ResponseReturnValue:
+    """Return active improvement proposals without applying them."""
+    try:
+        service = _get_self_improvement_service()
+        if service is None:
+            return (
+                jsonify(
+                    {
+                        "status": "disabled",
+                        "proposals": [],
+                        "error": "Self-improvement engine not registered",
+                    }
+                ),
+                503,
+            )
+        result = _service_call(
+            service,
+            "selfimprovement.proposals",
+            {
+                "status": request.args.get("status"),
+                "improvement_type": request.args.get("type")
+                or request.args.get("improvement_type"),
+                "readiness_status": request.args.get("readiness")
+                or request.args.get("readiness_status"),
+                "max_risk": request.args.get("max_risk", type=float),
+                "min_confidence": request.args.get("min_confidence", type=float),
+                "limit": _bounded_limit(
+                    request.args.get("limit"),
+                    default=100,
+                    maximum=500,
+                ),
+            },
+        )
+        if isinstance(result, dict):
+            proposals = result.get("proposals", [])
+            summary = result.get("summary", {})
+        elif isinstance(result, list):
+            proposals = result
+            summary = {}
+        else:
+            proposals = []
+            summary = {}
+        return jsonify({"status": "ok", "summary": summary, "proposals": proposals})
+    except Exception as exc:
+        logger.error("[SELFIMPROVE] Proposals error: %s", exc)
+        return jsonify({"status": "error", "error": "Internal server error"}), 500
+
+
+@bp.get("/proposals/<proposal_id>")
+def get_proposal(proposal_id: str) -> ResponseReturnValue:
+    """Return one active improvement proposal without applying it."""
+    try:
+        service = _get_self_improvement_service()
+        if service is None:
+            return (
+                jsonify(
+                    {
+                        "status": "disabled",
+                        "proposal": None,
+                        "error": "Self-improvement engine not registered",
+                    }
+                ),
+                503,
+            )
+        result = _service_call(
+            service,
+            "selfimprovement.proposal",
+            {"proposal_id": proposal_id},
+        )
+        if not isinstance(result, dict) or result.get("status") == "not_found":
+            return jsonify({"status": "not_found", "proposal": None}), 404
+        proposal = result.get("proposal")
+        if not isinstance(proposal, dict):
+            return jsonify({"status": "not_found", "proposal": None}), 404
+        return jsonify({"status": "ok", "proposal": proposal})
+    except Exception as exc:
+        logger.error("[SELFIMPROVE] Proposal detail error: %s", exc)
+        return jsonify({"status": "error", "error": "Internal server error"}), 500
+
+
+@bp.get("/proposals/<proposal_id>/history")
+def get_proposal_history(proposal_id: str) -> ResponseReturnValue:
+    """Return lifecycle history for one proposal."""
+    try:
+        service = _get_self_improvement_service()
+        if service is None:
+            return (
+                jsonify(
+                    {
+                        "status": "disabled",
+                        "events": [],
+                        "error": "Self-improvement engine not registered",
+                    }
+                ),
+                503,
+            )
+        limit = _bounded_limit(request.args.get("limit"), default=50, maximum=200)
+        result = _service_call(
+            service,
+            "selfimprovement.proposal_history",
+            {"proposal_id": proposal_id, "limit": limit},
+        )
+        if not isinstance(result, dict):
+            return jsonify({"status": "error", "error": "history unavailable"}), 503
+        events = result.get("events")
+        if not isinstance(events, list):
+            events = []
+        return jsonify({"status": "ok", "proposal_id": proposal_id, "events": events})
+    except Exception as exc:
+        logger.error("[SELFIMPROVE] Proposal history error: %s", exc)
+        return jsonify({"status": "error", "error": "Internal server error"}), 500
+
+
+@bp.get("/learning/outcomes")
+def get_learning_outcomes() -> ResponseReturnValue:
+    """Return sanitized learning outcomes without exposing raw execution payloads."""
+    try:
+        service = _get_self_improvement_service()
+        if service is None:
+            return (
+                jsonify(
+                    {
+                        "status": "disabled",
+                        "outcomes": [],
+                        "error": "Self-improvement engine not registered",
+                    }
+                ),
+                503,
+            )
+        result = _service_call(
+            service,
+            "selfimprovement.learning_outcomes",
+            {
+                "proposal_id": request.args.get("proposal_id"),
+                "status": request.args.get("status"),
+                "limit": _bounded_limit(
+                    request.args.get("limit"),
+                    default=50,
+                    maximum=200,
+                ),
+            },
+        )
+        if not isinstance(result, dict):
+            return jsonify({"status": "error", "error": "learning outcomes unavailable"}), 503
+        outcomes = result.get("outcomes")
+        if not isinstance(outcomes, list):
+            outcomes = []
+        summary = result.get("summary")
+        if not isinstance(summary, dict):
+            summary = {}
+        return jsonify({"status": "ok", "summary": summary, "outcomes": outcomes})
+    except Exception as exc:
+        logger.error("[SELFIMPROVE] Learning outcomes error: %s", exc)
+        return jsonify({"status": "error", "error": "Internal server error"}), 500
+
+
+@bp.get("/trends")
+def get_trends() -> ResponseReturnValue:
+    """Return read-only metric trends from the self-improvement engine."""
+    try:
+        service = _get_self_improvement_service()
+        if service is None:
+            return (
+                jsonify(
+                    {
+                        "status": "disabled",
+                        "trends": {},
+                        "error": "Self-improvement engine not registered",
+                    }
+                ),
+                503,
+            )
+        trends = _service_call(service, "selfimprovement.trends")
+        if not isinstance(trends, dict):
+            trends = {}
+        return jsonify({"status": "ok", "trends": trends})
+    except Exception as exc:
+        logger.error("[SELFIMPROVE] Trends error: %s", exc)
+        return jsonify({"status": "error", "error": "Internal server error"}), 500
+
+
+def _proposal_lifecycle_response(result: Any) -> ResponseReturnValue:
+    if not isinstance(result, dict):
+        return jsonify({"ok": False, "error": "lifecycle operation failed"}), 500
+    status = result.get("status")
+    if status == "ok":
+        return jsonify({"ok": True, **result})
+    if status == "not_found":
+        return jsonify({"ok": False, **result}), 404
+    if status == "invalid_state":
+        return jsonify({"ok": False, **result}), 409
+    return jsonify({"ok": False, **result}), 400
+
+
+@bp.post("/proposals/<proposal_id>/dismiss")
+def dismiss_proposal(proposal_id: str) -> ResponseReturnValue:
+    """Dismiss a proposal from active review without applying it."""
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
+    try:
+        service = _get_self_improvement_service()
+        if service is None:
+            return (
+                jsonify(
+                    {
+                        "ok": False,
+                        "status": "disabled",
+                        "error": "Self-improvement engine not registered",
+                    }
+                ),
+                503,
+            )
+        data = request.get_json(silent=True) or {}
+        actor = (
+            request.headers.get("X-Aetherra-Principal")
+            or data.get("actor")
+            or "hub:self_improvement"
+        )
+        result = _service_call(
+            service,
+            "selfimprovement.dismiss_proposal",
+            {
+                "proposal_id": proposal_id,
+                "reason": str(data.get("reason") or ""),
+                "actor": str(actor),
+            },
+        )
+        return _proposal_lifecycle_response(result)
+    except Exception as exc:
+        logger.error("[SELFIMPROVE] Dismiss proposal error: %s", exc)
+        return jsonify({"ok": False, "error": "Internal server error"}), 500
+
+
+@bp.post("/proposals/<proposal_id>/reopen")
+def reopen_proposal(proposal_id: str) -> ResponseReturnValue:
+    """Reopen a dismissed proposal for active review."""
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
+    try:
+        service = _get_self_improvement_service()
+        if service is None:
+            return (
+                jsonify(
+                    {
+                        "ok": False,
+                        "status": "disabled",
+                        "error": "Self-improvement engine not registered",
+                    }
+                ),
+                503,
+            )
+        data = request.get_json(silent=True) or {}
+        actor = (
+            request.headers.get("X-Aetherra-Principal")
+            or data.get("actor")
+            or "hub:self_improvement"
+        )
+        result = _service_call(
+            service,
+            "selfimprovement.reopen_proposal",
+            {
+                "proposal_id": proposal_id,
+                "reason": str(data.get("reason") or ""),
+                "actor": str(actor),
+            },
+        )
+        return _proposal_lifecycle_response(result)
+    except Exception as exc:
+        logger.error("[SELFIMPROVE] Reopen proposal error: %s", exc)
+        return jsonify({"ok": False, "error": "Internal server error"}), 500
+
+
 @bp.post("/apply")
 def apply_proposal() -> ResponseReturnValue:
     """Apply an approved self-improvement proposal.
@@ -153,7 +564,11 @@ def apply_proposal() -> ResponseReturnValue:
                         )
                     )
                 except Exception as exc:
-                    si_res = {"status": "error", "error": str(exc)}
+                    logger.warning(
+                        "[SELFIMPROVE] Self-Incorporation proposal failed: %s",
+                        type(exc).__name__,
+                    )
+                    si_res = {"status": "error", "error": "selfinc_failed"}
 
                 if isinstance(si_res, dict) and si_res.get("status") == "accepted":
                     return jsonify(
@@ -163,7 +578,7 @@ def apply_proposal() -> ResponseReturnValue:
                             "applied": True,
                             "restart_required": False,
                             "method": "selfinc",
-                            "selfinc_result": si_res,
+                            "selfinc_result": _safe_selfinc_summary(si_res),
                         }
                     )
 
@@ -176,10 +591,11 @@ def apply_proposal() -> ResponseReturnValue:
                             "applied": False,
                             "restart_required": False,
                             "method": "selfinc",
-                            "error": si_res.get("reason")
-                            if isinstance(si_res, dict)
-                            else "selfinc_failed",
-                            "selfinc_result": si_res,
+                            "error": _safe_error_code(
+                                si_res.get("reason") if isinstance(si_res, dict) else None,
+                                default="selfinc_failed",
+                            ),
+                            "selfinc_result": _safe_selfinc_summary(si_res),
                         }
                     ), 400
 
@@ -242,7 +658,7 @@ def apply_proposal() -> ResponseReturnValue:
                             "applied": True,
                             "restart_required": False,
                             "method": "hmr",
-                            "hmr_result": result,
+                            "hmr_result": _safe_result_summary(result),
                         }
                     )
 
@@ -254,13 +670,21 @@ def apply_proposal() -> ResponseReturnValue:
                         "applied": False,
                         "restart_required": True,
                         "method": "hmr",
-                        "error": (result or {}).get("error", "hmr_failed"),
-                        "hmr_result": result,
+                        "error": _safe_error_code(
+                            (result or {}).get("error"),
+                            default="hmr_failed",
+                        ),
+                        "hmr_result": _safe_result_summary(result),
                     }
                 ), 400
 
             except Exception as exc:
-                logger.error(f"[SELFIMPROVE] HMR exception for {proposal_id}: {exc}")
+                logger.error(
+                    "[SELFIMPROVE] HMR exception for %s: %s",
+                    proposal_id,
+                    type(exc).__name__,
+                    exc_info=True,
+                )
                 return jsonify(
                     {
                         "ok": False,
@@ -268,7 +692,7 @@ def apply_proposal() -> ResponseReturnValue:
                         "applied": False,
                         "restart_required": True,
                         "method": "hmr",
-                        "error": f"HMR exception: {str(exc)}",
+                        "error": "hmr_exception",
                     }
                 ), 400
 
@@ -285,8 +709,8 @@ def apply_proposal() -> ResponseReturnValue:
             }
         )
 
-    except Exception as e:
-        logger.error(f"[SELFIMPROVE] Apply error: {e}")
+    except Exception:
+        logger.error("[SELFIMPROVE] Apply error", exc_info=True)
         return jsonify({"error": "Failed to apply proposal"}), 500
 
 
@@ -308,11 +732,15 @@ def batch_apply_proposals() -> ResponseReturnValue:
         return auth_error
     try:
         data = request.get_json() or {}
-        proposals = data.get("proposals", [])
+        proposals = data.get("proposals")
+        proposal_ids = data.get("proposal_ids")
         method = str(data.get("method", "auto")).lower()
 
+        if proposals is None and isinstance(proposal_ids, list):
+            proposals = [{"proposal_id": proposal_id} for proposal_id in proposal_ids]
+
         if not proposals:
-            return jsonify({"error": "proposals array required"}), 400
+            return jsonify({"error": "proposals or proposal_ids array required"}), 400
 
         sender = request.headers.get("X-Aetherra-Principal") or data.get("sender")
 
@@ -334,6 +762,15 @@ def batch_apply_proposals() -> ResponseReturnValue:
                 "params": proposal.get("params"),
                 "hmr_target": proposal.get("hmr_target"),
                 "hmr_source": proposal.get("hmr_source"),
+                "reversible": proposal.get("reversible", data.get("reversible")),
+                "rollback_plan": proposal.get(
+                    "rollback_plan",
+                    proposal.get("rollback", data.get("rollback_plan") or data.get("rollback")),
+                ),
+                "guardian_approval_id": proposal.get(
+                    "guardian_approval_id",
+                    data.get("guardian_approval_id"),
+                ),
                 "sender": sender or proposal.get("sender"),
             }
 
@@ -352,8 +789,8 @@ def batch_apply_proposals() -> ResponseReturnValue:
             }
         )
 
-    except Exception as e:
-        logger.error(f"[SELFIMPROVE] Batch apply error: {e}")
+    except Exception:
+        logger.error("[SELFIMPROVE] Batch apply error", exc_info=True)
         return jsonify({"error": "Failed to batch apply proposals"}), 500
 
 
@@ -389,7 +826,11 @@ def _apply_single_proposal(data: dict) -> dict:
                     selfinc.handle_message("selfimprovement.proposal", payload)
                 )
             except Exception as exc:
-                si_res = {"status": "error", "error": str(exc)}
+                logger.warning(
+                    "[SELFIMPROVE] Self-Incorporation proposal failed: %s",
+                    type(exc).__name__,
+                )
+                si_res = {"status": "error", "error": "selfinc_failed"}
 
             if isinstance(si_res, dict) and si_res.get("status") == "accepted":
                 return {
@@ -398,7 +839,7 @@ def _apply_single_proposal(data: dict) -> dict:
                     "applied": True,
                     "restart_required": False,
                     "method": "selfinc",
-                    "selfinc_result": si_res,
+                    "selfinc_result": _safe_selfinc_summary(si_res),
                 }
 
             if method == "selfinc":
@@ -408,10 +849,11 @@ def _apply_single_proposal(data: dict) -> dict:
                     "applied": False,
                     "restart_required": False,
                     "method": "selfinc",
-                    "error": si_res.get("reason")
-                    if isinstance(si_res, dict)
-                    else "selfinc_failed",
-                    "selfinc_result": si_res,
+                    "error": _safe_error_code(
+                        si_res.get("reason") if isinstance(si_res, dict) else None,
+                        default="selfinc_failed",
+                    ),
+                    "selfinc_result": _safe_selfinc_summary(si_res),
                 }
 
     # HMR explicit or fallback
@@ -458,7 +900,7 @@ def _apply_single_proposal(data: dict) -> dict:
                     "applied": True,
                     "restart_required": False,
                     "method": "hmr",
-                    "hmr_result": result,
+                    "hmr_result": _safe_result_summary(result),
                 }
             return {
                 "proposal_id": proposal_id,
@@ -466,17 +908,26 @@ def _apply_single_proposal(data: dict) -> dict:
                 "applied": False,
                 "restart_required": True,
                 "method": "hmr",
-                "error": (result or {}).get("error", "hmr_failed"),
-                "hmr_result": result,
+                "error": _safe_error_code(
+                    (result or {}).get("error"),
+                    default="hmr_failed",
+                ),
+                "hmr_result": _safe_result_summary(result),
             }
         except Exception as exc:
+            logger.error(
+                "[SELFIMPROVE] HMR exception for %s: %s",
+                proposal_id,
+                type(exc).__name__,
+                exc_info=True,
+            )
             return {
                 "proposal_id": proposal_id,
                 "ok": False,
                 "applied": False,
                 "restart_required": True,
                 "method": "hmr",
-                "error": f"HMR exception: {str(exc)}",
+                "error": "hmr_exception",
             }
 
     # Manual fallback

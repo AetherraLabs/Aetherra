@@ -11,12 +11,19 @@ from __future__ import annotations
 
 # Standard library imports
 import asyncio
+import sqlite3
+from datetime import datetime
 
 # Third party imports
 import pytest
 
 # Aetherra imports
-from Aetherra.aetherra_core.engine.self_improvement_engine import SelfImprovementEngine
+from Aetherra.aetherra_core.engine.self_improvement_engine import (
+    ImprovementGenerator,
+    ImprovementProposal,
+    ImprovementType,
+    SelfImprovementEngine,
+)
 from Aetherra.observability.metrics_service import MetricsService
 
 
@@ -35,9 +42,19 @@ async def test_analysis_cycle_and_exception_counters_increment():
     assert eng._analysis_cycles == before_cycles + 1
     assert eng._suppressed_exceptions == before_suppressed + 1
     metrics = eng.export_internal_metrics()
-    assert {"suppressed_exceptions", "analysis_cycles", "tracked_metrics"}.issubset(
-        metrics.keys()
-    )
+    expected_keys = {
+        "suppressed_exceptions",
+        "analysis_cycles",
+        "tracked_metrics",
+        "proposals_total",
+        "proposals_active",
+        "proposals_candidate",
+        "proposals_needs_evidence",
+        "proposals_blocked",
+        "learning_outcomes",
+        "autonomous_implementation_requested",
+    }
+    assert expected_keys.issubset(metrics.keys())
 
 
 @pytest.mark.asyncio
@@ -49,6 +66,903 @@ async def test_metrics_service_snapshot_smoke():
     snap = svc.current_snapshot()
     assert "self_improvement" in snap
     assert "analysis_cycles" in snap["self_improvement"]
+
+
+@pytest.mark.asyncio
+async def test_high_confidence_proposals_remain_recommendations_by_default(
+    monkeypatch, tmp_path
+):
+    monkeypatch.delenv("AETHERRA_SELF_IMPROVEMENT_AUTO_IMPLEMENT", raising=False)
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+    proposal = ImprovementProposal(
+        proposal_id="safe-recommendation",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Recommend a low-risk performance improvement",
+        expected_benefit=0.9,
+        implementation_cost=0.1,
+        risk_level=0.1,
+        affected_components=["scheduler"],
+        success_criteria=["Latency improves"],
+        created_at=datetime.now(),
+    )
+
+    await eng._process_proposal(proposal)
+
+    proposals = eng.list_active_proposals()
+    assert proposal.status == "active"
+    assert proposals[0]["proposal_id"] == "safe-recommendation"
+    assert eng.get_improvement_status()["implemented_proposals"] == 0
+    assert eng.get_improvement_status()["autonomous_implementation_enabled"] is False
+    metrics = eng.export_internal_metrics()
+    assert metrics["proposals_total"] == 1
+    assert metrics["proposals_active"] == 1
+    assert metrics["proposals_candidate"] >= 0
+    assert metrics["proposals_blocked"] >= 0
+
+
+@pytest.mark.asyncio
+async def test_auto_implementation_env_is_blocked_without_guardian_path(
+    monkeypatch, tmp_path
+):
+    monkeypatch.setenv("AETHERRA_SELF_IMPROVEMENT_AUTO_IMPLEMENT", "1")
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+    proposal = ImprovementProposal(
+        proposal_id="legacy-auto-blocked",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Do not auto-implement even with legacy env enabled",
+        expected_benefit=0.9,
+        implementation_cost=0.1,
+        risk_level=0.1,
+        affected_components=["scheduler"],
+        success_criteria=["Proposal remains reviewable"],
+        created_at=datetime.now(),
+    )
+
+    await eng._process_proposal(proposal)
+
+    status = eng.get_improvement_status()
+    active = eng.get_proposal("legacy-auto-blocked")
+    history = eng.get_proposal_history("legacy-auto-blocked")
+    assert status["autonomous_implementation_requested"] is True
+    assert status["autonomous_implementation_enabled"] is False
+    assert status["implementation_authority"] == "guardian_controlled_execution"
+    assert status["implemented_proposals"] == 0
+    assert active["status"] == "active"
+    assert "Guardian-gated" in active["status_reason"]
+    assert history[0]["event_type"] == "auto_implementation_blocked"
+
+
+@pytest.mark.asyncio
+async def test_direct_implementation_path_is_blocked(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+    proposal = ImprovementProposal(
+        proposal_id="direct-implementation-blocked",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Block direct implementation",
+        expected_benefit=0.9,
+        implementation_cost=0.1,
+        risk_level=0.1,
+        affected_components=["scheduler"],
+        success_criteria=["Proposal remains unimplemented"],
+        created_at=datetime.now(),
+        status="active",
+    )
+
+    result = await eng._implement_proposal(proposal)
+
+    reloaded = eng._load_proposal_from_db("direct-implementation-blocked")
+    history = eng.get_proposal_history("direct-implementation-blocked")
+    assert result["status"] == "blocked"
+    assert reloaded.status == "active"
+    assert reloaded.status_reason == (
+        "direct implementation is disabled; use Guardian-controlled execution"
+    )
+    assert eng.get_improvement_status()["implemented_proposals"] == 0
+    assert eng.get_improvement_status()["learning_outcomes"] == 0
+    assert history[0]["event_type"] == "direct_implementation_blocked"
+
+
+@pytest.mark.asyncio
+async def test_generated_proposals_include_hypothesis_and_simulation(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+
+    for value in (85.0, 86.0, 87.5):
+        eng.record_performance_metric("cpu_usage", value, "percent")
+
+    await eng._analyze_and_improve()
+
+    proposals = eng.list_active_proposals()
+    assert proposals
+    proposal = proposals[0]
+    assert proposal["issue"] == "CPU utilization is consistently high"
+    assert "Scheduler pressure" in proposal["potential_cause"]
+    assert proposal["simulation"]["testable"] is True
+    assert proposal["simulation"]["rollback_available"] is True
+    assert proposal["rollback_plan"]
+    assert proposal["readiness_status"] == "candidate"
+    assert proposal["readiness_reasons"] == ["ready_for_review"]
+
+
+@pytest.mark.asyncio
+async def test_generated_proposals_cover_latency_memory_and_error_pressure(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+
+    for value in (650.0, 700.0, 720.0):
+        eng.record_performance_metric("response_time", value, "ms")
+    for value in (88.0, 91.0, 93.0):
+        eng.record_performance_metric("memory_usage", value, "percent")
+    for value in (0.08, 0.09, 0.1):
+        eng.record_performance_metric("error_rate", value, "ratio")
+
+    await eng._analyze_and_improve()
+
+    by_issue = {proposal["issue"]: proposal for proposal in eng.list_active_proposals()}
+    assert "Response latency is consistently elevated" in by_issue
+    assert "Memory utilization is consistently high" in by_issue
+    assert "Error rate is above the reliability threshold" in by_issue
+    assert by_issue["Memory utilization is consistently high"]["improvement_type"] == (
+        "efficiency"
+    )
+    assert by_issue["Error rate is above the reliability threshold"][
+        "improvement_type"
+    ] == "reliability"
+    assert all(proposal["rollback_plan"] for proposal in by_issue.values())
+    assert all(
+        proposal["readiness_status"] == "candidate"
+        for proposal in by_issue.values()
+    )
+
+
+@pytest.mark.asyncio
+async def test_metric_proposals_require_persistent_samples(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+
+    eng.record_performance_metric("memory_usage", 99.0, "percent")
+    eng.record_performance_metric("error_rate", 0.5, "ratio")
+
+    await eng._analyze_and_improve()
+
+    assert eng.list_active_proposals() == []
+
+
+@pytest.mark.asyncio
+async def test_persisted_metrics_reload_for_status_trends_and_analysis(tmp_path):
+    db_path = tmp_path / "self_improvement.db"
+    eng = SelfImprovementEngine(db_path=str(db_path))
+    for value in (86.0, 87.0, 88.0):
+        await eng._store_metric(
+            "cpu_usage",
+            value,
+            "percent",
+            {"source": "restart-test"},
+        )
+
+    reloaded = SelfImprovementEngine(db_path=str(db_path))
+    status = reloaded.get_improvement_status()
+    trends = reloaded.get_metric_trends()
+
+    assert status["tracked_metrics"] == 1
+    assert trends["cpu_usage"]["statistics"]["count"] == 3
+    assert trends["cpu_usage"]["statistics"]["mean"] == pytest.approx(87.0)
+
+    await reloaded._analyze_and_improve()
+
+    proposals = reloaded.list_active_proposals()
+    assert proposals[0]["issue"] == "CPU utilization is consistently high"
+
+
+def test_record_performance_metric_persists_without_running_loop(tmp_path):
+    db_path = tmp_path / "self_improvement.db"
+    eng = SelfImprovementEngine(db_path=str(db_path))
+
+    accepted = eng.record_performance_metric(
+        "response_time",
+        640.0,
+        "ms",
+        {"source": "sync-test"},
+    )
+
+    reloaded = SelfImprovementEngine(db_path=str(db_path))
+    trends = reloaded.get_metric_trends()
+
+    assert accepted is True
+    assert trends["response_time"]["statistics"]["count"] == 1
+    assert trends["response_time"]["statistics"]["mean"] == pytest.approx(640.0)
+
+
+def test_record_performance_metric_rejects_non_finite_value(tmp_path):
+    db_path = tmp_path / "self_improvement.db"
+    eng = SelfImprovementEngine(db_path=str(db_path))
+
+    rejected_nan = eng.record_performance_metric("response_time", float("nan"), "ms")
+    rejected_inf = eng.record_performance_metric("response_time", float("inf"), "ms")
+
+    status = eng.get_improvement_status()
+    assert rejected_nan is False
+    assert rejected_inf is False
+    assert status["tracked_metrics"] == 0
+    assert status["suppressed_exceptions"] == 2
+
+    reloaded = SelfImprovementEngine(db_path=str(db_path))
+    assert reloaded.get_improvement_status()["tracked_metrics"] == 0
+
+
+def test_record_performance_metric_bounds_metadata(tmp_path):
+    db_path = tmp_path / "self_improvement.db"
+    eng = SelfImprovementEngine(db_path=str(db_path))
+    long_name = "cpu_usage_" + ("x" * 180)
+    long_unit = "percent_" + ("u" * 80)
+    long_key = "component_" + ("k" * 120)
+
+    accepted = eng.record_performance_metric(
+        long_name,
+        92,
+        long_unit,
+        {
+            long_key: "alpha" * 80,
+            "nested": {"unsafe": "object"},
+            "not_finite": float("inf"),
+        },
+    )
+
+    stored_name = long_name[:120]
+    metric = eng.metrics_collector.metrics_history[stored_name][0]
+
+    assert accepted is True
+    assert metric.value == pytest.approx(92.0)
+    assert metric.unit == long_unit[:40]
+    assert metric.context is not None
+    assert len(metric.context) == 3
+    assert len(next(key for key in metric.context if key.startswith("component_"))) == 80
+    assert metric.context["nested"] == "{'unsafe': 'object'}"
+    assert metric.context["not_finite"] is None
+
+    reloaded = SelfImprovementEngine(db_path=str(db_path))
+    reloaded_metric = reloaded.metrics_collector.metrics_history[stored_name][0]
+    assert reloaded_metric.context == metric.context
+
+
+def test_record_performance_metric_suppresses_sync_persistence_failure(
+    monkeypatch, tmp_path
+):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+
+    async def fail_store(*_args, **_kwargs):
+        raise RuntimeError("persistence failed")
+
+    monkeypatch.setattr(eng, "_store_metric", fail_store)
+
+    eng.record_performance_metric("response_time", 640.0, "ms")
+
+    status = eng.get_improvement_status()
+    assert status["tracked_metrics"] == 1
+    assert status["suppressed_exceptions"] == 1
+
+
+@pytest.mark.asyncio
+async def test_record_performance_metric_observes_async_persistence_failure(
+    monkeypatch, tmp_path
+):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+
+    async def fail_store(*_args, **_kwargs):
+        raise RuntimeError("async persistence failed")
+
+    monkeypatch.setattr(eng, "_store_metric", fail_store)
+
+    eng.record_performance_metric("response_time", 640.0, "ms")
+    for _ in range(5):
+        if eng.get_improvement_status()["suppressed_exceptions"] == 1:
+            break
+        await asyncio.sleep(0)
+
+    status = eng.get_improvement_status()
+    assert status["tracked_metrics"] == 1
+    assert status["suppressed_exceptions"] == 1
+
+
+def test_analyze_interaction_persists_review_proposal_without_running_loop(tmp_path):
+    db_path = tmp_path / "self_improvement.db"
+    eng = SelfImprovementEngine(db_path=str(db_path))
+
+    eng.analyze_interaction(
+        {
+            "id": "sync-low-confidence",
+            "confidence": 0.2,
+            "query": "Why did the response fail?",
+            "path_used": "lyrixa_chat",
+        }
+    )
+
+    reloaded = SelfImprovementEngine(db_path=str(db_path))
+    proposal = reloaded.get_proposal("review-sync-low-confidence")
+
+    assert proposal["status"] == "proposed_for_review"
+    assert proposal["improvement_type"] == "accuracy"
+
+
+def test_improvement_generator_rule_hooks_return_structured_proposals():
+    generator = ImprovementGenerator()
+    metrics = {
+        "memory_usage": {"mean": 91.0, "max": 94.0, "count": 3},
+        "error_rate": {"mean": 0.08, "max": 0.12, "count": 3},
+    }
+    pattern = {
+        "type": "cyclical",
+        "metric": "queue_depth",
+        "confidence": 0.8,
+    }
+
+    efficiency = generator._generate_efficiency_improvements({"metrics": metrics})
+    reliability = generator._generate_reliability_improvements({"metrics": metrics})
+    pattern_based = generator._generate_pattern_improvements(
+        {"pattern": pattern, "metrics": metrics}
+    )
+
+    assert efficiency[0].improvement_type == ImprovementType.EFFICIENCY
+    assert reliability[0].improvement_type == ImprovementType.RELIABILITY
+    assert pattern_based[0].proposal_id.startswith("si-")
+    assert pattern_based[0].simulation["testable"] is True
+
+
+@pytest.mark.asyncio
+async def test_repeated_analysis_refreshes_existing_proposal(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+
+    for value in (85.0, 86.0, 87.5):
+        eng.record_performance_metric("cpu_usage", value, "percent")
+
+    await eng._analyze_and_improve()
+    await eng._analyze_and_improve()
+
+    proposals = eng.list_active_proposals()
+    history = eng.get_proposal_history(proposals[0]["proposal_id"])
+
+    assert len(proposals) == 1
+    assert proposals[0]["proposal_id"].startswith("si-")
+    assert proposals[0]["occurrence_count"] == 2
+    assert proposals[0]["proposal_fingerprint"]
+    assert history[0]["event_type"] == "refreshed"
+    assert history[1]["event_type"] == "created"
+
+
+@pytest.mark.asyncio
+async def test_dismissed_duplicate_proposal_is_not_reactivated(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+
+    for value in (85.0, 86.0, 87.5):
+        eng.record_performance_metric("cpu_usage", value, "percent")
+
+    await eng._analyze_and_improve()
+    proposal_id = eng.list_active_proposals()[0]["proposal_id"]
+    await eng.dismiss_proposal(proposal_id, reason="not now", actor="operator")
+    await eng._analyze_and_improve()
+
+    assert eng.list_active_proposals() == []
+    assert eng._load_proposal_from_db(proposal_id).status == "dismissed"
+
+
+@pytest.mark.asyncio
+async def test_proposal_result_records_bounded_learning_outcome(tmp_path):
+    db_path = tmp_path / "self_improvement.db"
+    eng = SelfImprovementEngine(db_path=str(db_path))
+    proposal = ImprovementProposal(
+        proposal_id="learn-from-result",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Learn from a controlled proposal result",
+        expected_benefit=0.8,
+        implementation_cost=0.2,
+        risk_level=0.1,
+        affected_components=["memory"],
+        success_criteria=["Outcome is recorded"],
+        created_at=datetime.now(),
+    )
+    await eng._process_proposal(proposal)
+
+    result = await eng.record_proposal_result(
+        {
+            "proposal_id": "learn-from-result",
+            "plan_id": "plan-123",
+            "status": "accepted",
+            "details": {
+                "improvement_achieved": 0.4,
+                "raw_payload": "do-not-store-this-value",
+            },
+        }
+    )
+
+    status = eng.get_improvement_status()
+    outcome = eng.learning_outcomes[-1]
+    assert result["status"] == "ok"
+    assert eng.active_proposals["learn-from-result"].status == "accepted"
+    assert status["learning_outcomes"] == 1
+    assert status["learning_summary"]["total_outcomes"] == 1
+    assert status["learning_summary"]["by_status"] == {"accepted": 1}
+    assert outcome.improvement_achieved == 0.4
+    assert outcome.learning_data["details_keys"] == [
+        "improvement_achieved",
+        "raw_payload",
+    ]
+    assert "do-not-store-this-value" not in str(outcome.learning_data)
+    outcomes = eng.list_learning_outcomes(
+        proposal_id="learn-from-result",
+        status="accepted",
+    )
+    summary = eng.get_learning_summary(
+        proposal_id="learn-from-result",
+        status="accepted",
+    )
+    assert outcomes == [
+        {
+            "session_id": outcome.session_id,
+            "method": "reinforcement",
+            "target_component": "memory",
+            "improvement_achieved": 0.4,
+            "confidence": 1.0,
+            "timestamp": outcome.timestamp.isoformat(),
+            "proposal_id": "learn-from-result",
+            "plan_id": "plan-123",
+            "status": "accepted",
+            "details_keys": ["improvement_achieved", "raw_payload"],
+        }
+    ]
+    assert summary["total_outcomes"] == 1
+    assert summary["by_status"] == {"accepted": 1}
+    assert "do-not-store-this-value" not in str(outcomes)
+    reloaded = SelfImprovementEngine(db_path=str(db_path))
+    assert reloaded.get_improvement_status()["learning_outcomes"] == 1
+    assert reloaded.list_learning_outcomes(proposal_id="learn-from-result") == outcomes
+
+
+@pytest.mark.asyncio
+async def test_proposal_result_rejects_invalid_status_without_mutation(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+    proposal = ImprovementProposal(
+        proposal_id="invalid-result-status",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Reject malformed result status",
+        expected_benefit=0.8,
+        implementation_cost=0.2,
+        risk_level=0.1,
+        affected_components=["memory"],
+        success_criteria=["Invalid results do not mutate state"],
+        created_at=datetime.now(),
+    )
+    await eng._process_proposal(proposal)
+
+    result = await eng.record_proposal_result(
+        {
+            "proposal_id": "invalid-result-status",
+            "status": "active",
+            "details": {"reason": "status injection attempt"},
+        }
+    )
+
+    assert result["status"] == "error"
+    assert result["error"] == "invalid proposal result status"
+    assert eng.get_proposal("invalid-result-status")["status"] == "active"
+    assert eng.get_improvement_status()["learning_outcomes"] == 0
+    assert [
+        event["event_type"]
+        for event in eng.get_proposal_history("invalid-result-status")
+    ] == ["created"]
+
+
+@pytest.mark.asyncio
+async def test_proposal_result_normalizes_status_and_bounds_detail_keys(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+    proposal = ImprovementProposal(
+        proposal_id="bounded-result-keys",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Bound result detail keys",
+        expected_benefit=0.8,
+        implementation_cost=0.2,
+        risk_level=0.1,
+        affected_components=["memory"],
+        success_criteria=["Details are bounded"],
+        created_at=datetime.now(),
+    )
+    await eng._process_proposal(proposal)
+    details = {f"key-{index:03d}-{'x' * 160}": index for index in range(75)}
+    details["improvement_achieved"] = 0.6
+
+    result = await eng.record_proposal_result(
+        {
+            "proposal_id": "bounded-result-keys",
+            "plan_id": "plan-bounded",
+            "status": "success",
+            "details": details,
+        }
+    )
+
+    outcome = eng.list_learning_outcomes(proposal_id="bounded-result-keys")[0]
+    assert result["recorded_status"] == "accepted"
+    assert len(outcome["details_keys"]) == 50
+    assert all(len(key) <= 120 for key in outcome["details_keys"])
+    assert "improvement_achieved" in outcome["details_keys"]
+    assert outcome["status"] == "accepted"
+
+
+@pytest.mark.asyncio
+async def test_proposal_result_bounds_identifier_metadata(tmp_path):
+    db_path = tmp_path / "self_improvement.db"
+    eng = SelfImprovementEngine(db_path=str(db_path))
+    long_plan_id = "plan-" + ("x" * 300)
+    long_component = "component-" + ("y" * 300)
+
+    result = await eng.record_proposal_result(
+        {
+            "proposal_id": "unknown-proposal",
+            "plan_id": long_plan_id,
+            "status": "manual_required",
+            "details": {
+                "type": long_component,
+                "improvement_achieved": 0.1,
+            },
+        }
+    )
+
+    outcome = eng.list_learning_outcomes(proposal_id="unknown-proposal")[0]
+    reloaded = SelfImprovementEngine(db_path=str(db_path))
+    reloaded_outcome = reloaded.list_learning_outcomes(proposal_id="unknown-proposal")[0]
+
+    assert result["status"] == "ok"
+    assert outcome["plan_id"] == long_plan_id[:120]
+    assert outcome["target_component"] == long_component[:120]
+    assert long_plan_id not in str(outcome)
+    assert long_component not in str(outcome)
+    assert reloaded_outcome == outcome
+
+
+@pytest.mark.asyncio
+async def test_reviewable_proposals_reload_from_database(tmp_path):
+    db_path = tmp_path / "self_improvement.db"
+    eng = SelfImprovementEngine(db_path=str(db_path))
+    proposal = ImprovementProposal(
+        proposal_id="reload-reviewable",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Persist active proposal for review",
+        expected_benefit=0.8,
+        implementation_cost=0.2,
+        risk_level=0.1,
+        affected_components=["kernel"],
+        success_criteria=["Proposal remains reviewable after restart"],
+        created_at=datetime.now(),
+        issue="Kernel latency is elevated",
+        potential_cause="Queue contention",
+        proposed_change="Review queue scheduling",
+        evidence=["metric:queue_depth"],
+        simulation={"confidence": 0.8, "testable": True},
+        rollback_plan="Restore prior scheduler settings",
+    )
+    await eng._process_proposal(proposal)
+
+    reloaded = SelfImprovementEngine(db_path=str(db_path))
+    proposals = reloaded.list_active_proposals()
+
+    assert proposals[0]["proposal_id"] == "reload-reviewable"
+    assert proposals[0]["issue"] == "Kernel latency is elevated"
+    assert proposals[0]["simulation"]["confidence"] == 0.8
+    assert reloaded.get_proposal("reload-reviewable")["proposal_id"] == (
+        "reload-reviewable"
+    )
+    assert reloaded.get_proposal("missing") is None
+
+
+@pytest.mark.asyncio
+async def test_proposal_review_filters_and_summary(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+    proposals = [
+        ImprovementProposal(
+            proposal_id="review-low",
+            improvement_type=ImprovementType.PERFORMANCE,
+            description="Low-risk performance proposal",
+            expected_benefit=0.8,
+            implementation_cost=0.2,
+            risk_level=0.1,
+            affected_components=["kernel"],
+            success_criteria=["Review low risk"],
+            created_at=datetime.now(),
+            evidence=["metric:kernel", "trend:degrading"],
+            simulation={"confidence": 0.9, "testable": True, "rollback_available": True},
+            rollback_plan="Restore prior settings",
+        ),
+        ImprovementProposal(
+            proposal_id="review-medium",
+            improvement_type=ImprovementType.RELIABILITY,
+            description="Medium-risk reliability proposal",
+            expected_benefit=0.8,
+            implementation_cost=0.2,
+            risk_level=0.5,
+            affected_components=["memory"],
+            success_criteria=["Review medium risk"],
+            created_at=datetime.now(),
+            evidence=["metric:memory", "trend:degrading"],
+            simulation={"confidence": 0.7, "testable": False},
+        ),
+    ]
+    for proposal in proposals:
+        await eng._process_proposal(proposal)
+
+    low_risk = eng.list_active_proposals(max_risk=0.2)
+    confident = eng.list_active_proposals(min_confidence=0.8)
+    reliability = eng.list_active_proposals(improvement_type="reliability")
+    candidates = eng.list_active_proposals(readiness_status="candidate")
+    summary = eng.get_review_summary()
+
+    assert [proposal["proposal_id"] for proposal in low_risk] == ["review-low"]
+    assert [proposal["proposal_id"] for proposal in confident] == ["review-low"]
+    assert [proposal["proposal_id"] for proposal in reliability] == ["review-medium"]
+    assert [proposal["proposal_id"] for proposal in candidates] == ["review-low"]
+    assert summary["total_reviewable"] == 2
+    assert summary["by_type"]["performance"] == 1
+    assert summary["by_type"]["reliability"] == 1
+    assert summary["by_readiness"]["candidate"] == 1
+    assert summary["by_readiness"]["blocked"] == 1
+    assert summary["risk_bands"] == {"low": 1, "medium": 1, "high": 0}
+    status = eng.get_improvement_status()
+    assert status["review_summary"] == summary
+
+
+@pytest.mark.asyncio
+async def test_review_queries_tolerate_malformed_optional_filters(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+    proposal = ImprovementProposal(
+        proposal_id="review-filter-tolerance",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Tolerate malformed optional filters",
+        expected_benefit=0.8,
+        implementation_cost=0.2,
+        risk_level=0.1,
+        affected_components=["kernel"],
+        success_criteria=["Malformed optional filters do not fail review"],
+        created_at=datetime.now(),
+        evidence=["metric:kernel", "trend:degrading"],
+        simulation={"confidence": 0.9, "testable": True, "rollback_available": True},
+        rollback_plan="Restore prior settings",
+    )
+    await eng._process_proposal(proposal)
+
+    proposals = eng.list_active_proposals(
+        max_risk="not-a-number",  # type: ignore[arg-type]
+        min_confidence="nan",  # type: ignore[arg-type]
+        limit="also-bad",  # type: ignore[arg-type]
+    )
+    history = eng.get_proposal_history("review-filter-tolerance", limit="bad")  # type: ignore[arg-type]
+    outcomes = eng.list_learning_outcomes(limit="bad")  # type: ignore[arg-type]
+
+    assert [proposal["proposal_id"] for proposal in proposals] == [
+        "review-filter-tolerance"
+    ]
+    assert isinstance(history, list)
+    assert outcomes == []
+
+
+@pytest.mark.asyncio
+async def test_proposal_readiness_classification(tmp_path):
+    eng = SelfImprovementEngine(db_path=str(tmp_path / "self_improvement.db"))
+    candidate = ImprovementProposal(
+        proposal_id="readiness-candidate",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Ready candidate",
+        expected_benefit=0.8,
+        implementation_cost=0.2,
+        risk_level=0.1,
+        affected_components=["kernel"],
+        success_criteria=["Ready"],
+        created_at=datetime.now(),
+        evidence=["metric:latency", "trend:degrading"],
+        simulation={"confidence": 0.8, "testable": True, "rollback_available": True},
+        rollback_plan="Restore prior state",
+    )
+    needs_evidence = ImprovementProposal(
+        proposal_id="readiness-evidence",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Needs more evidence",
+        expected_benefit=0.8,
+        implementation_cost=0.2,
+        risk_level=0.1,
+        affected_components=["memory"],
+        success_criteria=["More evidence"],
+        created_at=datetime.now(),
+        evidence=["metric:memory"],
+        simulation={"confidence": 0.7, "testable": True, "rollback_available": True},
+        rollback_plan="Restore memory setting",
+    )
+    blocked = ImprovementProposal(
+        proposal_id="readiness-blocked",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Blocked proposal",
+        expected_benefit=0.8,
+        implementation_cost=0.2,
+        risk_level=0.1,
+        affected_components=["agent"],
+        success_criteria=["Blocked"],
+        created_at=datetime.now(),
+        evidence=["metric:agent", "trend:degrading"],
+        simulation={"confidence": 0.8, "testable": False},
+    )
+
+    for proposal in (candidate, needs_evidence, blocked):
+        await eng._process_proposal(proposal)
+
+    by_id = {proposal["proposal_id"]: proposal for proposal in eng.list_active_proposals()}
+    assert by_id["readiness-candidate"]["readiness_status"] == "candidate"
+    assert by_id["readiness-evidence"]["readiness_status"] == "needs_evidence"
+    assert by_id["readiness-evidence"]["readiness_reasons"] == ["evidence_sparse"]
+    assert by_id["readiness-blocked"]["readiness_status"] == "blocked"
+    assert "not_testable" in by_id["readiness-blocked"]["readiness_reasons"]
+
+    metrics = eng.export_internal_metrics()
+    assert metrics["proposals_total"] == 3
+    assert metrics["proposals_candidate"] == 1
+    assert metrics["proposals_needs_evidence"] == 1
+    assert metrics["proposals_blocked"] == 1
+
+
+@pytest.mark.asyncio
+async def test_terminal_proposals_do_not_reload_for_review(tmp_path):
+    db_path = tmp_path / "self_improvement.db"
+    eng = SelfImprovementEngine(db_path=str(db_path))
+    proposal = ImprovementProposal(
+        proposal_id="reload-terminal",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Terminal proposal should not reload",
+        expected_benefit=0.8,
+        implementation_cost=0.2,
+        risk_level=0.1,
+        affected_components=["memory"],
+        success_criteria=["Terminal status is hidden from active review"],
+        created_at=datetime.now(),
+    )
+    await eng._process_proposal(proposal)
+    await eng.record_proposal_result(
+        {
+            "proposal_id": "reload-terminal",
+            "plan_id": "plan-terminal",
+            "status": "accepted",
+            "details": {"improvement_achieved": 0.2},
+        }
+    )
+
+    reloaded = SelfImprovementEngine(db_path=str(db_path))
+
+    assert reloaded.list_active_proposals() == []
+
+
+@pytest.mark.asyncio
+async def test_proposal_lifecycle_dismiss_and_reopen(tmp_path):
+    db_path = tmp_path / "self_improvement.db"
+    eng = SelfImprovementEngine(db_path=str(db_path))
+    proposal = ImprovementProposal(
+        proposal_id="review-lifecycle",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Manage proposal review lifecycle",
+        expected_benefit=0.8,
+        implementation_cost=0.2,
+        risk_level=0.1,
+        affected_components=["scheduler"],
+        success_criteria=["Proposal can be dismissed and reopened"],
+        created_at=datetime.now(),
+    )
+    await eng._process_proposal(proposal)
+
+    dismissed = await eng.dismiss_proposal(
+        "review-lifecycle",
+        reason="not needed now",
+        actor="operator",
+    )
+    after_dismiss_reload = SelfImprovementEngine(db_path=str(db_path))
+    assert after_dismiss_reload.list_active_proposals() == []
+
+    assert dismissed["status"] == "ok"
+    assert eng.list_active_proposals() == []
+    dismiss_history = eng.get_proposal_history("review-lifecycle")
+    assert dismiss_history[0]["event_type"] == "dismissed"
+    assert dismiss_history[0]["actor"] == "operator"
+    assert dismiss_history[0]["reason"] == "not needed now"
+
+    reopened = await after_dismiss_reload.reopen_proposal(
+        "review-lifecycle",
+        reason="review again",
+        actor="operator",
+    )
+
+    assert reopened["status"] == "ok"
+    assert after_dismiss_reload.get_proposal("review-lifecycle")["status"] == "active"
+    assert after_dismiss_reload.get_proposal("review-lifecycle")["status_reason"] == (
+        "review again"
+    )
+    reopen_history = after_dismiss_reload.get_proposal_history("review-lifecycle")
+    assert [event["event_type"] for event in reopen_history[:2]] == [
+        "reopened",
+        "dismissed",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_proposal_lifecycle_rejects_terminal_state_reopen(tmp_path):
+    db_path = tmp_path / "self_improvement.db"
+    eng = SelfImprovementEngine(db_path=str(db_path))
+    proposal = ImprovementProposal(
+        proposal_id="terminal-lifecycle",
+        improvement_type=ImprovementType.PERFORMANCE,
+        description="Do not reopen accepted proposal",
+        expected_benefit=0.8,
+        implementation_cost=0.2,
+        risk_level=0.1,
+        affected_components=["memory"],
+        success_criteria=["Terminal proposal stays terminal"],
+        created_at=datetime.now(),
+    )
+    await eng._process_proposal(proposal)
+    await eng.record_proposal_result(
+        {
+            "proposal_id": "terminal-lifecycle",
+            "plan_id": "plan-terminal",
+            "status": "accepted",
+            "details": {},
+        }
+    )
+
+    result = await eng.reopen_proposal("terminal-lifecycle", reason="try reopen")
+
+    assert result["status"] == "invalid_state"
+    assert result["current_status"] == "accepted"
+
+
+def test_existing_proposal_database_schema_is_migrated(tmp_path):
+    db_path = tmp_path / "legacy_self_improvement.db"
+    conn = sqlite3.connect(db_path)
+    try:
+        conn.execute(
+            """
+            CREATE TABLE improvement_proposals (
+                proposal_id TEXT PRIMARY KEY,
+                improvement_type TEXT NOT NULL,
+                description TEXT NOT NULL,
+                expected_benefit REAL NOT NULL,
+                implementation_cost REAL NOT NULL,
+                risk_level REAL NOT NULL,
+                affected_components TEXT NOT NULL,
+                success_criteria TEXT NOT NULL,
+                status TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                implemented_at TEXT,
+                outcome TEXT
+            )
+            """
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    SelfImprovementEngine(db_path=str(db_path))
+    migrated = sqlite3.connect(db_path)
+    try:
+        columns = {
+            row[1]
+            for row in migrated.execute(
+                "PRAGMA table_info(improvement_proposals)"
+            ).fetchall()
+        }
+    finally:
+        migrated.close()
+
+    assert {
+        "issue",
+        "potential_cause",
+        "proposed_change",
+        "evidence",
+        "simulation",
+        "rollback_plan",
+        "status_reason",
+        "updated_at",
+        "proposal_fingerprint",
+        "occurrence_count",
+        "readiness_status",
+        "readiness_reasons",
+    }.issubset(columns)
 
 
 if __name__ == "__main__":  # pragma: no cover

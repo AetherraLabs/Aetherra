@@ -7,7 +7,8 @@ Engine Usage Probe (dry-run)
 Scans repository for static references to engine modules/classes and reports
 which areas reference them (OS launcher, Lyrixa, tests, docs).
 
-This does not move or delete anything. Use it to validate ENGINE_USAGE_MATRIX.md.
+This does not move or delete anything. Use it to validate
+docs/reports/engine/ENGINE_USAGE_MATRIX.md.
 """
 
 from __future__ import annotations

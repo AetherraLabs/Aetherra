@@ -88,12 +88,12 @@ $env:AETHERRA_AI_API_STREAM = "1"
 
 1. **Console output** - Immediate pass/fail results
 2. **`pre_pack_validation_report.json`** - Detailed results
-3. **`PRE_PACK_CHECKLIST_TRACKING.md`** - Full tracking document
+3. **`docs/prepack/PRE_PACK_CHECKLIST_TRACKING.md`** - Full tracking document
 4. **`aether_static_report.md`** - Script signing report
 
 ### Current Status
 
-Check the dashboard in `PRE_PACK_CHECKLIST_TRACKING.md`:
+Check the dashboard in `docs/prepack/PRE_PACK_CHECKLIST_TRACKING.md`:
 
 ```markdown
 | Category | Status | Blockers | Notes    |
@@ -130,8 +130,8 @@ $env:AETHERRA_HMR_ENABLED = "0"
 ## 📞 Documentation
 
 - **Full Guide:** `docs/PRE_PACK_VALIDATION_GUIDE.md`
-- **Tracking:** `PRE_PACK_CHECKLIST_TRACKING.md`
-- **Summary:** `PRE_PACK_VALIDATION_SUMMARY.md`
+- **Tracking:** `docs/prepack/PRE_PACK_CHECKLIST_TRACKING.md`
+- **Summary:** `docs/prepack/PRE_PACK_VALIDATION_SUMMARY.md`
 - **This Card:** `docs/PRE_PACK_QUICK_REFERENCE.md`
 
 ## 🎬 Complete Workflow (5 Minutes)

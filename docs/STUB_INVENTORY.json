@@ -1,15 +1,37 @@
 {
   "summary": {
-    "total_stubs": 0,
+    "total_stubs": 2,
     "by_severity": {
       "critical": 0,
       "high": 0,
-      "medium": 0,
+      "medium": 2,
       "low": 0
     },
-    "by_module": {}
+    "by_module": {
+      "Aetherra.aetherra_core.plugins.plugin_manager": 1,
+      "Aetherra.lyrixa.gui.main_window": 1
+    }
   },
-  "stubs": [],
-  "generated_at": "2026-03-10T08:32:24.385481+00:00",
+  "stubs": [
+    {
+      "id": "STUB_0001",
+      "file": "Aetherra/aetherra_core/plugins/plugin_manager.py",
+      "function": "IsolatedExecutionError",
+      "severity": "medium",
+      "reason": "pass-only class",
+      "lines": "89-90",
+      "blocking_count": 1
+    },
+    {
+      "id": "STUB_0002",
+      "file": "Aetherra/lyrixa/gui/main_window.py",
+      "function": "LyrixaHybridWindow",
+      "severity": "medium",
+      "reason": "pass-only class",
+      "lines": "46-47",
+      "blocking_count": 3
+    }
+  ],
+  "generated_at": "2026-06-19T02:26:54.278799+00:00",
   "generator": "tools/maintenance/generate_stub_inventory.py"
 }

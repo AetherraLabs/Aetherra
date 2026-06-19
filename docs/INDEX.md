@@ -6,10 +6,15 @@ This is the canonical navigation surface for active (living) specifications, ope
 
 - System Status Dashboard: `SYSTEM_INDEX.md`
 - Documentation Architecture: `DOCS_ARCHITECTURE.md`
+- Master Map: `AETHERRA_MASTER_MAP.md`
+- Mind Map: `AETHERRA_MIND_MAP.md`
+- Claims Validation: `AETHERRA_CLAIMS_VALIDATION.md`
 
 ## Core Language & Workflow
 
 - Aether Script Language System (v1.1): `Aether_Script_Language_System.md`
+- Aether Script Language Specification (legacy v1.0): `Aether_Script_Language_Specification.md`
+- Aether Script Overview: `what_is_Aether_Script.md`
 - Aether Script Operator Guide: `Aether_Script_Operator_Guide.md`
 
 ## System Specifications

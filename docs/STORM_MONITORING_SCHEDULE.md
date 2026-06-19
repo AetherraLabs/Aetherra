@@ -191,8 +191,8 @@ python tools/storm_weekly_summary.py --readiness
 | ------------------------- | ---------------------- | --------- |
 | `monitor_storm_shadow.py` | Daily health check     | Daily     |
 | `storm_weekly_summary.py` | Weekly trend analysis  | Weekly    |
-| `check_metrics.py`        | Raw metrics inspection | As needed |
-| `test_storm_metrics.py`   | Manual recall test     | As needed |
+| `tools/ops/check_metrics.py` | Raw metrics inspection | As needed |
+| `tests/storm/manual/storm_metrics_probe.py` | Manual recall test | As needed |
 
 ### Quick Commands
 
@@ -210,10 +210,10 @@ python tools/monitor_storm_shadow.py
 python tools/storm_weekly_summary.py
 
 # Metrics inspection
-python check_metrics.py
+python tools/ops/check_metrics.py
 
 # Manual recall test
-python test_storm_metrics.py
+python tests/storm/manual/storm_metrics_probe.py
 ```
 
 ---

@@ -34,7 +34,7 @@ This document describes the Aetherra Kernel: the core runtime loop, service regi
 - Concurrency and retries: New (per-plugin concurrency caps, jittered retries)
   - Timeouts & resilience consolidated: plugin invoke timeouts + simple circuit breaker
   - Heartbeat stale thresholds configurable: `AETHERRA_REGISTRY_HEARTBEAT_SEC` (default 60) & `AETHERRA_REGISTRY_STALE_SEC` (default 3x heartbeat)
-  - See `DEPLOYMENT_TIERS.md` for recommended production vs. test thresholds
+  - See `ops/DEPLOYMENT_TIERS.md` for recommended production vs. test thresholds
 - Hot Module Reload (HMR): Phase 1 implemented (controller, tasks, basic quiesce/swap)
 - HMR Phase 2 improvements: in‑flight counters per target, source gating, audit logging
 - New services: KLM (Module Manager) and KEB (Event Bus) wired in Phase 2; Hub exports their metrics

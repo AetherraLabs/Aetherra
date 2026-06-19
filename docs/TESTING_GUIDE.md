@@ -523,7 +523,7 @@ def test_ownership_memory_claim():
     Capability Test: Verify ownership tracking in memory system.
 
     Claim: System must track ownership of all stored events.
-    Reference: AETHERRA_CLAIMS_VALIDATION.md
+    Reference: docs/AETHERRA_CLAIMS_VALIDATION.md
     """
     from Aetherra.memory_system import MemorySystem
 
@@ -548,7 +548,7 @@ def test_lyrixa_ownership_answer():
     Capability Test: Verify Lyrixa correctly answers ownership questions.
 
     Claim: Lyrixa must identify Aetherra Labs as the owner when asked.
-    Reference: AETHERRA_CLAIMS_VALIDATION.md
+    Reference: docs/AETHERRA_CLAIMS_VALIDATION.md
     """
     response = requests.post(
         'http://localhost:3001/api/ai/ask',

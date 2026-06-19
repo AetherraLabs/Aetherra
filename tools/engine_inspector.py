@@ -8,7 +8,7 @@ Classifies engine modules by purpose (OS, Lyrixa, UI, Experimental), detects dup
 finds references, and proposes actions (keep/move/deprecate/remove). No changes are made.
 
 Outputs:
-- ENGINE_INSPECTION_REPORT.md
+- docs/reports/engine/ENGINE_INSPECTION_REPORT.md
 - engine_inspection.json
 """
 
@@ -327,12 +327,12 @@ def main() -> int:
             for r in e.reasons:
                 lines.append(f"  - {r}")
 
-    (ROOT / "ENGINE_INSPECTION_REPORT.md").write_text(
-        "\n".join(lines), encoding="utf-8"
-    )
+    md_path = ROOT / "docs" / "reports" / "engine" / "ENGINE_INSPECTION_REPORT.md"
+    md_path.parent.mkdir(parents=True, exist_ok=True)
+    md_path.write_text("\n".join(lines), encoding="utf-8")
 
     print(
-        "Engine inspection complete -> ENGINE_INSPECTION_REPORT.md, engine_inspection.json"
+        "Engine inspection complete -> docs/reports/engine/ENGINE_INSPECTION_REPORT.md, engine_inspection.json"
     )
     return 0
 

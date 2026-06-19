@@ -5,10 +5,10 @@ Scope: Production Roadmap Phase 2b acceptance gates (impact analysis, safe codeg
 
 ## Test Runs
 
-- `test_phase2b_acceptance_standalone.py` → `3/3 passed`
-- `test_analysis_engine_standalone.py` → `10/10 passed`
-- `test_verification_engine_standalone.py` → `15/15 passed`
-- `test_orchestrator_task5_standalone.py` → `60/60 passed`
+- `tests/legacy/root_standalone/test_phase2b_acceptance_standalone.py` → `3/3 passed`
+- `tests/legacy/root_standalone/test_analysis_engine_standalone.py` → `10/10 passed`
+- `tests/legacy/root_standalone/test_verification_engine_standalone.py` → `15/15 passed`
+- `tests/legacy/root_standalone/test_orchestrator_task5_standalone.py` → `60/60 passed`
 
 ## Gate Coverage
 
@@ -19,8 +19,8 @@ Scope: Production Roadmap Phase 2b acceptance gates (impact analysis, safe codeg
 
 ## Files Added/Updated for Gate Closure
 
-- `test_phase2b_acceptance_standalone.py`
+- `tests/legacy/root_standalone/test_phase2b_acceptance_standalone.py`
 - Existing suites re-run for acceptance evidence:
-  - `test_analysis_engine_standalone.py`
-  - `test_verification_engine_standalone.py`
-  - `test_orchestrator_task5_standalone.py`
+  - `tests/legacy/root_standalone/test_analysis_engine_standalone.py`
+  - `tests/legacy/root_standalone/test_verification_engine_standalone.py`
+  - `tests/legacy/root_standalone/test_orchestrator_task5_standalone.py`

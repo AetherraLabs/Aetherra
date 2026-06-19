@@ -1,6 +1,6 @@
 # Aetherra Self-Improvement API
 
-Updated: 2025-01-26
+Updated: 2026-06-17
 
 This document describes the Self-Improvement API endpoints exposed by the Aetherra Hub, which enable manual approval and application of autonomously generated improvement proposals. These endpoints integrate with the Lyrixa GUI Self-Improve tab and support both Hot Module Reload (HMR) and manual OS restart workflows.
 
@@ -25,6 +25,270 @@ The Self-Improvement API is part of the Aetherra Maintenance System autonomous f
 The API provides a human-in-the-loop gate for proposal application, ensuring safe evolution with user oversight.
 
 ## Endpoints
+
+### GET /api/selfimprove/status
+
+Return read-only self-improvement engine status.
+
+**Success response (HTTP 200):**
+
+```json
+{
+  "improvement_active": true,
+  "total_proposals": 3,
+  "active_proposals": 3,
+  "implemented_proposals": 0,
+  "learning_outcomes": 0,
+  "tracked_metrics": 8,
+  "analysis_cycles": 12,
+  "autonomous_implementation_enabled": false,
+  "autonomous_implementation_requested": false,
+  "implementation_authority": "guardian_controlled_execution",
+  "review_summary": {
+    "total_reviewable": 3,
+    "by_status": {"active": 3},
+    "by_type": {"performance": 2, "reliability": 1},
+    "by_readiness": {"candidate": 2, "needs_evidence": 1},
+    "risk_bands": {"low": 2, "medium": 1, "high": 0}
+  },
+  "learning_summary": {
+    "total_outcomes": 1,
+    "by_status": {"accepted": 1},
+    "average_improvement_achieved": 0.25
+  }
+}
+```
+
+`autonomous_implementation_enabled` remains `false` for the foundation milestone. If the legacy
+`AETHERRA_SELF_IMPROVEMENT_AUTO_IMPLEMENT=1` environment flag is present, the status response reports
+`autonomous_implementation_requested: true`, but generated proposals remain reviewable recommendations until a
+Guardian-gated controlled execution path handles application.
+
+### GET /api/selfimprove/proposals
+
+List active improvement proposals without applying them.
+
+Supported query parameters:
+
+- `status`
+- `type` or `improvement_type`
+- `readiness` or `readiness_status`
+- `max_risk`
+- `min_confidence`
+- `limit`
+
+Limits are bounded by the API. Malformed limits fall back to the endpoint default instead of failing the request.
+
+**Success response (HTTP 200):**
+
+```json
+{
+  "status": "ok",
+  "summary": {
+    "total_reviewable": 3,
+    "by_status": {"active": 3},
+    "by_type": {"performance": 2, "reliability": 1},
+    "by_readiness": {"candidate": 2, "needs_evidence": 1},
+    "risk_bands": {"low": 2, "medium": 1, "high": 0}
+  },
+  "proposals": [
+    {
+      "proposal_id": "SI-42",
+      "improvement_type": "performance",
+      "description": "Optimize memory retrieval indexing",
+      "expected_benefit": 0.15,
+      "implementation_cost": 0.2,
+      "risk_level": 0.1,
+      "affected_components": ["memory"],
+      "success_criteria": ["retrieval latency improves"],
+      "issue": "Memory retrieval latency is increasing",
+      "potential_cause": "Index pressure or retrieval path contention",
+      "proposed_change": "Simulate and review memory index tuning",
+      "evidence": ["metric:memory_rtt", "trend:degrading"],
+      "simulation": {
+        "estimated_impact": 0.15,
+        "implementation_cost": 0.2,
+        "risk_level": 0.1,
+        "confidence": 0.785,
+        "testable": true,
+        "rollback_available": true,
+        "recommendation": "candidate"
+      },
+      "rollback_plan": "Restore prior memory index configuration",
+      "proposal_fingerprint": "ab12cd34ef56...",
+      "occurrence_count": 2,
+      "readiness_status": "candidate",
+      "readiness_reasons": ["ready_for_review"],
+      "status": "active"
+    }
+  ]
+}
+```
+
+### GET /api/selfimprove/proposals/{proposal_id}
+
+Return one active improvement proposal without applying it. Terminal proposals are not returned through this
+active-review endpoint.
+
+**Success response (HTTP 200):**
+
+```json
+{
+  "status": "ok",
+  "proposal": {
+    "proposal_id": "SI-42",
+    "status": "active",
+    "issue": "Memory retrieval latency is increasing",
+    "simulation": {
+      "confidence": 0.785,
+      "testable": true,
+      "rollback_available": true
+    }
+  }
+}
+```
+
+**Not found response (HTTP 404):**
+
+```json
+{
+  "status": "not_found",
+  "proposal": null
+}
+```
+
+### GET /api/selfimprove/proposals/{proposal_id}/history
+
+Return bounded review lifecycle history for one proposal.
+
+**Success response (HTTP 200):**
+
+```json
+{
+  "status": "ok",
+  "proposal_id": "SI-42",
+  "events": [
+    {
+      "proposal_id": "SI-42",
+      "event_type": "dismissed",
+      "from_status": "active",
+      "to_status": "dismissed",
+      "actor": "operator",
+      "reason": "Not useful for the current milestone",
+      "timestamp": "2026-06-17T00:00:00",
+      "metadata": {}
+    }
+  ]
+}
+```
+
+### POST /api/selfimprove/proposals/{proposal_id}/dismiss
+
+Dismiss a reviewable proposal without applying it. Requires Hub control authorization.
+
+**Request body:**
+
+```json
+{
+  "reason": "Not useful for the current milestone"
+}
+```
+
+**Success response (HTTP 200):**
+
+```json
+{
+  "ok": true,
+  "status": "ok",
+  "proposal_id": "SI-42",
+  "proposal_status": "dismissed"
+}
+```
+
+### POST /api/selfimprove/proposals/{proposal_id}/reopen
+
+Reopen a dismissed proposal for active review. Requires Hub control authorization.
+
+**Request body:**
+
+```json
+{
+  "reason": "Reconsider after new evidence"
+}
+```
+
+**Success response (HTTP 200):**
+
+```json
+{
+  "ok": true,
+  "status": "ok",
+  "proposal_id": "SI-42",
+  "proposal_status": "active"
+}
+```
+
+Lifecycle endpoints mutate only proposal review state. They do not apply proposals, modify code, reload modules,
+or bypass Guardian. Applying a proposal still requires `/api/selfimprove/apply` or `/batch-apply`.
+
+### GET /api/selfimprove/learning/outcomes
+
+Return bounded, sanitized learning outcomes recorded after controlled downstream execution.
+
+Supported query parameters:
+
+- `proposal_id`
+- `status`
+- `limit`
+
+The response does not include raw execution payload values. It exposes only proposal linkage, outcome status,
+numeric outcome metadata, and the names of result detail fields that were present.
+
+**Success response (HTTP 200):**
+
+```json
+{
+  "status": "ok",
+  "summary": {
+    "total_outcomes": 1,
+    "by_status": {"accepted": 1},
+    "average_improvement_achieved": 0.25
+  },
+  "outcomes": [
+    {
+      "session_id": "session-1",
+      "method": "reinforcement",
+      "target_component": "memory",
+      "improvement_achieved": 0.25,
+      "confidence": 1.0,
+      "timestamp": "2026-06-17T00:00:00",
+      "proposal_id": "SI-42",
+      "plan_id": "plan-1",
+      "status": "accepted",
+      "details_keys": ["improvement_achieved", "raw_payload"]
+    }
+  ]
+}
+```
+
+### GET /api/selfimprove/trends
+
+Return read-only metric trends from the self-improvement engine.
+
+**Success response (HTTP 200):**
+
+```json
+{
+  "status": "ok",
+  "trends": {
+    "response_time": {
+      "trend_direction": "degrading",
+      "trend_value": 0.04,
+      "statistics": {}
+    }
+  }
+}
+```
 
 ### POST /api/selfimprove/apply
 
@@ -102,6 +366,22 @@ Apply multiple improvement proposals in a single operation.
 }
 ```
 
+The endpoint also accepts expanded proposal objects when per-proposal metadata is needed:
+
+```json
+{
+  "proposals": [
+    {
+      "proposal_id": "string",
+      "method": "auto",
+      "description": "string",
+      "rollback_plan": "string"
+    }
+  ],
+  "user": "string"
+}
+```
+
 **Success response (HTTP 200):**
 
 ```json
@@ -158,6 +438,39 @@ Prior to 2025-01-26, the Self-Improvement API used multiple HTTP status codes to
 **Migration note:** Clients previously checking `res.status === 503` should now check `body.restart_required === true`.
 
 ## Hot Module Reload (HMR) integration
+
+## Service registry messages
+
+The Self-Improvement Engine also supports internal service-registry messages:
+
+- `selfimprovement.record_metric`: record a validated, bounded performance metric.
+- `selfimprovement.status`: return read-only engine status.
+- `selfimprovement.trends`: return read-only metric trends.
+- `selfimprovement.proposals`: return active proposals.
+- `selfimprovement.proposal_history`: return bounded lifecycle history for a proposal.
+- `selfimprovement.learning_outcomes`: return bounded sanitized downstream outcome history.
+- `selfimprovement.proposal_result`: record a bounded downstream outcome after controlled execution.
+
+Metric intake rejects non-finite values and bounds names, units, and context metadata before storing observations.
+The service message returns `{"status":"ok"}` for accepted observations and `{"status":"rejected","reason":"invalid_metric"}`
+for invalid observations.
+
+`selfimprovement.proposal_result` records proposal ID, plan ID, status, numeric improvement, and result detail
+keys. It does not copy raw execution payload values into the learning record.
+Plan identifiers, component labels, and detail-key names are bounded before persistence.
+
+Accepted proposal result statuses are:
+
+- `accepted`
+- `rejected`
+- `failed`
+- `error`
+- `rolled_back`
+- `manual_required`
+
+The engine also normalizes common aliases such as `success` to `accepted` and `denied` to `rejected`.
+Unknown statuses are rejected and do not mutate proposal state or write learning outcomes. Detail key metadata is
+bounded before storage.
 
 HMR enables runtime application of approved proposals without OS restart. When HMR is enabled and available, the Self-Improvement API will attempt to apply proposals via the HMR Controller.
 
@@ -274,6 +587,10 @@ const approveMultiple = async (proposalIds: string[]) => {
 
 ## Error handling
 
+Downstream Self-Incorporation and HMR results are summarized before returning to clients. Raw exception messages,
+tracebacks, detailed component failure payloads, and execution payload values are logged server-side and are not
+reflected to clients.
+
 ### Common error scenarios
 
 **Invalid proposal ID:**
@@ -291,8 +608,8 @@ const approveMultiple = async (proposalIds: string[]) => {
 ```json
 {
   "ok": false,
-  "error": "HMR application failed",
-  "details": "Module reload failed: ImportError in target module"
+  "error": "hmr_failed",
+  "hmr_result": {"ok": false}
 }
 ```
 
@@ -301,8 +618,7 @@ const approveMultiple = async (proposalIds: string[]) => {
 ```json
 {
   "ok": false,
-  "error": "Self-Incorporation service not available",
-  "details": "Cannot apply proposal without selfinc service"
+  "error": "selfinc_failed"
 }
 ```
 
@@ -364,6 +680,15 @@ Configuration available via `config.json`:
 
 Self-Improvement API metrics exposed via `/metrics` endpoint:
 
+- `suppressed_exceptions`: Suppressed Self-Improvement exceptions visible for operational review
+- `analysis_cycles`: Self-Improvement analysis cycles completed
+- `tracked_metrics`: Metric families currently tracked by the engine
+- `proposals_total`: Proposals currently known to the engine
+- `proposals_active`: Active proposals awaiting review or controlled execution
+- `proposals_candidate`: Proposals with enough evidence to be review candidates
+- `proposals_needs_evidence`: Proposals retained but not yet ready for action
+- `proposals_blocked`: Proposals classified as blocked by risk/readiness checks
+- `learning_outcomes`: Persisted downstream proposal outcomes
 - `aetherra_selfimprove_apply_total`: Total apply attempts (labels: status, restart_required)
 - `aetherra_selfimprove_apply_duration_seconds`: Apply operation duration
 - `aetherra_selfimprove_hmr_success_total`: Successful HMR applications

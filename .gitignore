@@ -9,6 +9,10 @@ aetherra-website/
 # ===== ENVIRONMENT VARIABLES & SECRETS =====
 # Never commit API keys, passwords, or sensitive configuration
 .env
+.env.*
+!.env.example
+!.env.template
+!.env.*.template
 .env.local
 .env.production
 .env.staging
@@ -23,6 +27,7 @@ __pycache__/
 *.so
 .Python
 build/
+dist-packages/
 develop-eggs/
 dist/
 downloads/
@@ -50,11 +55,10 @@ virtualenv/
 
 # ===== IDE & EDITOR FILES =====
 # Visual Studio Code
-.vscode/
-.vscode/settings.json
-.vscode/tasks.json
-.vscode/launch.json
-.vscode/extensions.json
+**/.vscode/
+**/.vscode/*
+!/.vscode/
+!/.vscode/tasks.json
 
 # PyCharm
 .idea/
@@ -140,7 +144,12 @@ user_data.json
 live_file_index.json
 evolution_history.aether
 self_organizer.aether
+.lyrixa_last_introspection
 *.aether
+!Aetherra/aetherra_core/system/*.aether
+!Aetherra/plugins/examples/**/*.aether
+!Aetherra/scripts/*.aether
+!Aetherra/tools/*.aether
 outbox/*.jsonl
 audit/*.jsonl
 ui_standards_report.md
@@ -171,15 +180,38 @@ embeddings_cache/
 debug_output/
 test_output/
 reports/
+data/artifacts/*.sarif
+data/artifacts/coverage*.json
+data/artifacts/*scan*.json
+data/artifacts/*report*.md
+data/artifacts/gate_sign_off.md
+data/artifacts/parse_baseline*.json
+
+# Generated verification/gate reports
+aether_static_report.md
+aether_verification_report.md
+gate_sign_off.md
+/STUB_INVENTORY.json
+data/artifacts/workflow_failures*
 *.report.json
 cleanup_report.json
 *audit*.json
 *report*.json
+homeostasis_metrics_*.json
+rollback_test.json
+integrity_manifest.json
+ruff_report*.json
+ruff_report*.txt
+security_scan.json
+licenses_report.json
+gate_results.json
+doctor_last_run.txt
 docs/docs_architecture_report.json  # Ephemeral generated docs architecture scan (not versioned)
 
 # Backup files
 backups/
 *.backup.*
+*_backup.json
 backup_*/
 
 # ===== TESTING & COVERAGE =====
@@ -247,6 +279,10 @@ cleanup_*.py
 !tools/maintenance/focused_cleanup.py
 !tools/maintenance/safe_cleanup.py
 !tools/maintenance/smart_cleanup.py
+!Aetherra/aetherra_core/agents/cleanup_project.py
+!Aetherra/scripts/cleanup_project.py
+!Aetherra/scripts/conservative_cleanup.py
+!Aetherra/scripts/fast_cleanup.py
 
 # Discord Bot directory (contains sensitive tokens and configurations)
 Discord Bot/

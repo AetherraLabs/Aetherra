@@ -24,6 +24,7 @@ import sys
 import time
 import traceback
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 # Early .env loader: ensure API keys and config from .env are available at startup
@@ -1264,25 +1265,117 @@ class AetherraOSLauncher:
                 def __init__(self, impl):
                     self.impl = impl
 
+                @staticmethod
+                def _bounded_limit(value, *, default, maximum):
+                    try:
+                        parsed = int(value)
+                    except (TypeError, ValueError):
+                        parsed = default
+                    return max(1, min(maximum, parsed))
+
                 async def handle_message(self, message_type, data):
                     mt = (message_type or "").lower()
-                    payload = data or {}
+                    payload = data if isinstance(data, dict) else {}
                     if mt.endswith("record_metric"):
                         # { name, value, unit, context }
                         try:
-                            self.impl.record_performance_metric(
+                            accepted = self.impl.record_performance_metric(
                                 payload.get("name", "metric"),
-                                float(payload.get("value", 0.0)),
+                                payload.get("value", 0.0),
                                 payload.get("unit", "unit"),
                                 payload.get("context"),
                             )
+                            if not accepted:
+                                return {
+                                    "status": "rejected",
+                                    "reason": "invalid_metric",
+                                }
                             return {"status": "ok"}
-                        except Exception as e:
-                            return {"status": "error", "error": str(e)}
+                        except Exception:
+                            logger.warning(
+                                "[SELF_IMPROVEMENT] Metric intake failed",
+                                exc_info=True,
+                            )
+                            return {
+                                "status": "error",
+                                "error": "metric_intake_failed",
+                            }
                     if mt.endswith("status"):
                         return self.impl.get_improvement_status()
                     if mt.endswith("trends"):
                         return self.impl.get_metric_trends()
+                    if mt.endswith("proposals"):
+                        return {
+                            "status": "ok",
+                            "summary": self.impl.get_review_summary(),
+                            "proposals": self.impl.list_active_proposals(
+                                status=payload.get("status"),
+                                improvement_type=payload.get("improvement_type"),
+                                readiness_status=payload.get("readiness_status"),
+                                max_risk=payload.get("max_risk"),
+                                min_confidence=payload.get("min_confidence"),
+                                limit=self._bounded_limit(
+                                    payload.get("limit"),
+                                    default=100,
+                                    maximum=500,
+                                ),
+                            ),
+                        }
+                    if mt.endswith("dismiss_proposal"):
+                        return await self.impl.dismiss_proposal(
+                            str(payload.get("proposal_id") or ""),
+                            reason=str(payload.get("reason") or ""),
+                            actor=str(payload.get("actor") or ""),
+                        )
+                    if mt.endswith("reopen_proposal"):
+                        return await self.impl.reopen_proposal(
+                            str(payload.get("proposal_id") or ""),
+                            reason=str(payload.get("reason") or ""),
+                            actor=str(payload.get("actor") or ""),
+                        )
+                    if mt.endswith("proposal_history"):
+                        proposal_id = str(payload.get("proposal_id") or "")
+                        limit = self._bounded_limit(
+                            payload.get("limit"),
+                            default=50,
+                            maximum=200,
+                        )
+                        return {
+                            "status": "ok",
+                            "proposal_id": proposal_id,
+                            "events": self.impl.get_proposal_history(
+                                proposal_id,
+                                limit=limit,
+                            ),
+                        }
+                    if mt.endswith("learning_outcomes"):
+                        proposal_id = str(payload.get("proposal_id") or "").strip() or None
+                        status = str(payload.get("status") or "").strip() or None
+                        limit = self._bounded_limit(
+                            payload.get("limit"),
+                            default=50,
+                            maximum=200,
+                        )
+                        return {
+                            "status": "ok",
+                            "summary": self.impl.get_learning_summary(
+                                proposal_id=proposal_id,
+                                status=status,
+                            ),
+                            "outcomes": self.impl.list_learning_outcomes(
+                                proposal_id=proposal_id,
+                                status=status,
+                                limit=limit,
+                            ),
+                        }
+                    if mt.endswith("proposal"):
+                        proposal_id = str(payload.get("proposal_id") or "")
+                        proposal = self.impl.get_proposal(proposal_id)
+                        if proposal is None:
+                            return {"status": "not_found", "proposal": None}
+                        return {"status": "ok", "proposal": proposal}
+                    if mt.endswith("proposal_result"):
+                        return await self.impl.record_proposal_result(payload)
                     return {"error": "unknown_message"}
 
                 async def shutdown(self):

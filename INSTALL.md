@@ -87,7 +87,7 @@ Remove-Item -Recurse -Force .venv
 ## 8. Next Steps
 
 - Explore metrics at `http://localhost:3001/metrics`
-- Inspect `BETA_READINESS_REPORT.md`
+- Inspect `docs/reports/release/BETA_READINESS_REPORT.md`
 - Sign workflows: `python tools/sign_aether.py workflows/parallel_workflow_demo.aether`
 
 ## 9. Run OS with STORM (Shadow Mode)

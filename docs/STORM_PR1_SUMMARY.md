@@ -34,7 +34,7 @@
 - **test_storm_contracts.py** (5 tests): Contract compliance, metadata fields, evidence tags
 - **test_storm_integration.py** (5 tests): Memory engine integration, backward compat
 - **test_storm_status.py** (7 tests): Status field verification
-- **test_storm_metrics.py** (10 tests): Metrics stubs, counters, snapshot
+- **tests/storm/manual/storm_metrics_probe.py** (10 tests): Metrics stubs, counters, snapshot
 
 **Total: 34 tests, all passing** ✅
 
@@ -94,7 +94,7 @@
 - `tests/storm/test_storm_integration.py`
 - `tests/storm/test_storm_status.py`
 - `tests/storm/test_storm_metrics.py`
-- `test_storm_skeleton.py` (ad-hoc smoke test)
+- `tests/storm/manual/storm_skeleton_probe.py` (ad-hoc smoke test)
 
 ### Modified Files (2)
 - `Aetherra/aetherra_core/memory/models.py` (added storm sources to RecallSource)

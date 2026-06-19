@@ -1,806 +1,207 @@
-﻿<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
 
 # Aetherra
 
-> AI-native development environment unifying code, memory, and intelligent automation
+> A safety-first cognitive operating layer for agentic AI systems.
 
-![Status](https://img.shields.io/badge/Status-BETA%20READY-blue)
-![Version](https://img.shields.io/badge/Version-0.5.0--beta.0-0891b2)
-Version: **0.5.0-beta.0**
-![License](https://img.shields.io/badge/License-GPLv3-0891b2)
+[![License](https://img.shields.io/badge/License-GPLv3-0891b2)](LICENSE)
+![Version](https://img.shields.io/badge/Version-0.5.0--beta.0-0f766e)
 ![Language](https://img.shields.io/badge/Language-Python%20%2B%20Aetherra-8b5cf6)
-![Responsible AI](https://img.shields.io/badge/Responsible%20AI-Policies%20Published-22c55e)
-![STORM](https://img.shields.io/badge/STORM-Production%20Shadow%20Mode-8b5cf6)
+![Status](https://img.shields.io/badge/Status-Alpha%20Foundation-2563eb)
+![Safety](https://img.shields.io/badge/Safety-Guardian%20Mediated-22c55e)
 
-Aetherra pairs a lightweight Hub (APIs + metrics) with the Lyrixa AI assistant,
-pluggable memory systems, an intent-driven workflow language (.aether), and
-first-class observability. Core subsystems ship ready-to-use: **Engine**,
-**Memory**, **Agents**, **Kernel**, **Chat**, **Security**, and **Coding system**.
+Version: **0.5.0-beta.0**
 
-## Production Readiness Status (March 12, 2026)
+Aetherra is an experimental AI operating layer for modular agents, persistent
+memory, policy-mediated execution, auditable decisions, and controlled
+self-improvement.
 
-**✅ READY FOR BETA RELEASE CANDIDATE**
+The project is in an Alpha/Foundation hardening phase. The current goal is not
+unbounded autonomy. The current goal is to complete each core system until it is
+functional, testable, bounded, and safe enough to support later alpha testing.
 
-All validation gates passing:
+## Maturity and Safety Notice
 
-- ✅ Phase 2a (Reflector): 19/19 tests ✓
-- ✅ Phase 2b (Analysis & Code Gen): 100/100 tests ✓
-- ✅ Phase 3 (Consciousness & Autonomy): 19/19 tests ✓
-- ✅ Phase 4 (Memory & Learning): 18/18 tests ✓
-- ✅ Week-10 Integration Matrix: 15/15 scenarios ✓
-- ✅ Regression Stability: 10/10 repeat runs @ 100% pass rate ✓
+Aetherra is not production-ready autonomous infrastructure. Treat it as an
+active alpha-stage research and engineering codebase.
 
-**See**: [`docs/PRODUCTION_READINESS_REVIEW_2026-03-12.md`](./docs/PRODUCTION_READINESS_REVIEW_2026-03-12.md) for complete review.
-**Full Overview**: [`docs/AETHERRA_COMPLETE_OVERVIEW_2026-03-12.md`](./docs/AETHERRA_COMPLETE_OVERVIEW_2026-03-12.md) explains every system and how it works.
+- Run it in a reviewed development environment.
+- Keep Guardian and Security enforcement enabled for privileged paths.
+- Do not connect it to sensitive systems without explicit review.
+- Expect some systems to be functional foundations rather than final products.
+- Prefer manual approval, rollback plans, and audit review for risky actions.
 
-## Stable Release Acceptance Checklist
+## Current Priorities
 
-✅ **Chat streams**: SSE v2 resume (Last-Event-ID), consistent final payload
-with evidence[] and scratchpad_policy.
+1. Keep privileged actions mediated by Guardian and Security.
+2. Prefer observation and proposal before autonomous modification.
+3. Keep system behavior auditable through signed and structured records.
+4. Complete one system at a time to a functional foundation standard.
+5. Clean the repository so source, docs, tests, and generated artifacts are easy
+   to tell apart.
 
-✅ **Plugin UX**: install/uninstall from GUI; sidebar/panels auto-reconfigure
-without blocking chat. (Hub lists/install endpoints provide the backend.)
+## System Status
 
-✅ **Plugin safety**: manifest signing on (or policy explained), capability
-gates enforced, network allowlist documented.
+| System | Foundation status | Notes |
+| --- | --- | --- |
+| Security | Functional foundation complete | Capability checks, sandbox policy, signing, audit, and enforcement surfaces. |
+| Guardian | Functional foundation complete | Intent evaluation, risk assessment, approval, containment, audit integration, and performance policy. |
+| Homeostasis | Functional foundation complete | Observation, diagnosis, recommendations, and Guardian-mediated controlled action paths. |
+| Self-Improvement | Functional foundation complete | Proposal-only loop with Guardian review and execution delegation; no direct mutation in the foundation milestone. |
+| Kernel, Hub, Memory, Plugins, Agents, Lyrixa, Aether Script | In progress | These systems are being completed and cleaned up in focused passes. |
 
-✅ **Kernel health**: night cycle runs; heartbeats/metrics green; backpressure
-limits set in env (document defaults).
+Primary system documents live in [`docs/`](docs/), especially:
 
-✅ **Memory health**: core works even when optional components are absent;
-typed recall + legacy adapters described.
+- [`docs/AETHERRA_SECURITY_SYSTEM.md`](docs/AETHERRA_SECURITY_SYSTEM.md)
+- [`docs/AETHERRA_GUARDIAN_SYSTEM.md`](docs/AETHERRA_GUARDIAN_SYSTEM.md)
+- [`docs/AETHERRA_HOMEOSTASIS_SYSTEM.md`](docs/AETHERRA_HOMEOSTASIS_SYSTEM.md)
+- [`docs/AETHERRA_SELF-IMPROVEMENT_SYSTEM.md`](docs/AETHERRA_SELF-IMPROVEMENT_SYSTEM.md)
+- [`docs/SYSTEM_INDEX.md`](docs/SYSTEM_INDEX.md)
 
-✅ **Spec→Tests gate** enabled in your dev flow; tools/verify_aether_scripts.py
-wired in CI.
+## Architecture Shape
 
-## v0.1.0-beta.1 Release Status
+Aetherra is not a single chatbot, plugin runner, or automation script. It is a
+layered runtime with safety boundaries:
 
-| Area               | Status                                                      |
-| ------------------ | ----------------------------------------------------------- |
-| Phase Coverage     | 2a-4 complete + Week-10 validation (all evidence generated) |
-| Integration Tests  | 150+ scenarios passing, 100% regression stable              |
-| Security           | All gates passing (script signing, sandbox, audit logging)  |
-| Memory Systems     | Core stable, STORM in production shadow mode                |
-| Code Quality       | PEP 585, all critical systems documented                    |
-| Consciousness Loop | Phenomenological loop + adaptive qualia learning live       |
-| Plugin System      | 14 plugins discovered, 6 with PySide6 GUI                   |
+```text
+Lyrixa / Interfaces / Tools
+        |
+Agents, Plugins, Aether Script, Self-Improvement, Homeostasis
+        |
+Guardian policy and risk mediation
+        |
+Security enforcement, sandboxing, signing, and audit
+        |
+Kernel, Hub, service registry, memory, and runtime systems
+```
 
-**🚀 v0.1.0-beta.1 Ready** - Complete roadmap validation, production safety gates passing, comprehensive documentation.
+Important design rule: Self-Improvement proposes. Guardian reviews. Security
+enforces. Execution is delegated only after policy allows it.
 
-### Coverage Plan (Post-Beta Release)
+## Quick Start
 
-- **v0.2.0 (≤ 30 days):** Advanced deployment runbooks (K8s, Docker, systemd)
-- **v0.2.1 (≤ 60 days):** Trend-aware release criteria & advanced monitoring
-- **v1.0 (Q2 2026):** Production go-live procedures & disaster recovery
+Requirements:
 
----
+- Python 3.11+
+- Git
+- A virtual environment
 
-## Project Features
+Create and activate a virtual environment:
 
-All 10 core subsystems implemented and validated:
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
 
-| Subsystem         | Status   | Core Capabilities                                           | Value Proposition                          |
-| ----------------- | -------- | ----------------------------------------------------------- | ------------------------------------------ |
-| **Kernel**        | ✅ Stable | Event-driven service coordination with backpressure control | Predictable resource management            |
-| **Consciousness** | ✅ Stable | Phenomenological loop, adaptive qualia, semantic resonance  | Autonomous awareness & self-trust learning |
-| **Memory**        | ✅ Stable | Persistent + quantum-augmented (QFAC) layers, STORM shadow  | Rich recall & experimentation continuity   |
-| **Engine**        | ✅ Stable | Multi-provider AI routing with deterministic fallbacks      | Reliable intelligence even under outages   |
-| **Agents**        | ✅ Stable | Orchestrator API with task submission and status tracking   | Composable automation workflows            |
-| **Chat**          | ✅ Stable | SSE v2 streaming with resume capability                     | Flawless conversational experience         |
-| **Security**      | ✅ Stable | Script/plugin signing, capability gates, network allowlist  | Trust & audit trail for automation         |
-| **Coding system** | ✅ Stable | .aether workflow language with static verification          | Intent-driven development surface          |
-| **Plugins**       | ✅ Stable | 14 plugins, 6 with GUI (PySide6), safe sandboxed execution  | Extensible without forking core            |
-| **Homeostasis**   | ✅ Stable | Continuous monitoring with autonomous self-healing          | Predictable system health & recovery       |
+On Windows PowerShell:
 
-**Why Aetherra**: Explicit feature gating via environment flags (secure by default),
-Prometheus-first metrics for every subsystem, and human-readable workflow artifacts
-for auditable evolution.
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
 
-## STORM Memory System 🌩️
+Install dependencies:
 
-Aetherra/
-            ├── aetherra_core/           # Core engine, kernel, and orchestration
+```bash
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
 
-            │   ├── aetherra_os.py      # Main OS launcher
-
-            │   ├── aetherra_kernel_loop.py
-
-            │   └── aetherra_agent_fabric.py
-
-            ├── lyrixa/                 # AI assistant and chat interfaces
-
-            │   ├── lyrixa_basic.py     # Core chat implementation
-
-            │   └── ui/                 # GUI components
-
-            └── plugins/                # Extensible plugin system
-
-            ├── memory_plugins/
-
-            └── agent_plugins/
-
-**Public Hub Endpoints** (default port 3001):
-
-- /api/ai/ask - Direct chat interface
-- /api/ai/stream - SSE streaming chat
-- /api/lyrixa/chat - Lyrixa bridge
-- /api/agents/submit - Task orchestrator
-- /api/plugins/* - Plugin management
-- /metrics - Prometheus metrics
-
----
-
-## Quickstart
-
-### 1. Headless Smoke Test
-
-Verify kernel and services start properly:
+Run a basic smoke check:
 
 ```bash
 python tools/os_smoke.py
 ```
 
-### 2. Start the Hub (recommended)
+Run focused safety and self-improvement tests:
 
-Launch local APIs and services with the AI API enabled:
+```bash
+python -m pytest -q -o addopts= \
+  tests/capabilities/test_self_improvement_metrics.py \
+  tests/capabilities/test_self_maintenance_services.py \
+  tests/unit/test_hub_self_improvement_guardian.py \
+  tests/unit/test_optimization_executor_guardian.py \
+  tests/unit/test_selfinc_integration_guardian.py \
+  tests/unit/test_selfinc_proposal_consumer.py
+```
+
+Run the Phase 5 validation harness quick profile:
+
+```bash
+python tools/phase5_validation_harness.py --profile quick --timeout 60
+```
+
+Start the local Hub:
 
 ```bash
 python tools/run_hub_ai_api.py --port 3001
-# Hub starts on http://localhost:3001 (AI API enabled, streaming on by default)
 ```
 
-### 3. Test Chat Endpoints
-
-**Direct Ask**:
+Then inspect:
 
 ```bash
-curl -X POST http://localhost:3001/api/ai/ask \
-  -H "Content-Type: application/json" \
-  -d '{"query": "Hello, what can you help me with?"}'
-```
-
-**SSE Streaming**:
-
-```bash
-curl -N http://localhost:3001/api/ai/stream \
-  -H "Accept: text/event-stream" \
-  -d "query=Tell me about Aetherra"
-```
-
-**Lyrixa Bridge**:
-
-```bash
-curl -X POST http://localhost:3001/api/lyrixa/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "System status check", "context": {}}'
-```
-
-### 4. Verify Setup
-
-Check system health:
-
-```bash
+curl http://localhost:3001/api/health
 curl http://localhost:3001/metrics
-curl http://localhost:3001/api/health
 ```
 
----
-
-## STORM Memory System 🌩️
-
-**STORM** (Sheaf-Theoretic Optimal Recall via Manifolds) brings mathematically optimal semantic memory retrieval to Aetherra using optimal transport theory and sheaf coherence.
-
-### What is STORM?
-
-STORM transforms memory recall from keyword matching to geometric optimization:
-
-- **Optimal Transport**: Uses Wasserstein distance to find the "cheapest" path between query and memory embeddings
-- **Sheaf Coherence**: Ensures retrieved memories form a mathematically consistent structure
-- **Quality Guarantee**: Retrieval is provably optimal under geometric constraints
-
-### Key Features
-
-| Feature              | Description                                             | Benefit                            |
-| -------------------- | ------------------------------------------------------- | ---------------------------------- |
-| **Hybrid Recall**    | Combines STORM with baseline for graceful degradation   | Reliable even under STORM failures |
-| **Shadow Mode**      | Run STORM in parallel, collect metrics, return baseline | Safe production testing            |
-| **Sheaf Validation** | Coherence checks prevent inconsistent memory clusters   | Trustworthy results                |
-| **Evidence Tags**    | Transport cost and inconsistency metrics in responses   | Transparency and debugging         |
-
-### Using STORM
-
-**In Python**:
-
-```python
-from Aetherra.aetherra_core.memory.aetherra_memory_engine import AetherraMemoryEngineAdvanced
-
-engine = AetherraMemoryEngineAdvanced()
-
-# Store memories
-await engine.remember(
-    content="STORM uses optimal transport for recall",
-    tags=["storm", "memory"],
-    category="docs"
-)
-
-# Recall with STORM (hybrid mode recommended)
-result = await engine.recall_typed(
-    query="how does STORM work?",
-    recall_strategy="storm_hybrid",  # or "storm" for pure STORM
-    limit=5
-)
-
-# Access results
-for item in result.items:
-    print(item)
-
-# Check STORM metadata
-storm_meta = result.metadata.get("storm_meta", {})
-print(f"Transport cost: {storm_meta.get('transport_cost')}")
-print(f"Sheaf inconsistency: {storm_meta.get('sheaf_inconsistency')}")
-```
-
-**In .aether Scripts**:
-
-```aether
-# Query STORM from workflow scripts
-@recall
-  query: "memory optimization techniques"
-  strategy: storm_hybrid
-  limit: 10
-
-# Check coherence health
-@storm.sheaf_status
-  -> Returns: {cells: N, inconsistency: float, health: "ok"|"warning"|"critical"}
-
-# Guard workflow execution
-@storm.coherence_guard
-  threshold: 0.3
-  -> Aborts if sheaf inconsistency > threshold
-```
-
-### Recall Strategies
-
-- **`base`**: Traditional keyword/embedding recall (baseline)
-- **`storm`**: Pure STORM optimal transport (experimental)
-- **`storm_hybrid`**: STORM with baseline fallback (**recommended**)
-
-**Production Recommendation**: Use `storm_hybrid` for best reliability while collecting metrics in shadow mode.
-
-### Performance
-
-STORM acceptance testing shows:
-
-- **Quality**: Recall relevance ≥ baseline (mathematically optimal)
-- **Latency**: p95 < 500ms (avg ~160ms on test corpus)
-- **Stability**: Sheaf inconsistency < 0.3 (coherent structure)
-- **Robustness**: Graceful degradation on failures
-
-See `docs/STORM_AB_TESTING_RESULTS.md` for full acceptance test results.
-
-### Configuration
-
-Enable STORM in your environment:
-
-```bash
-# Enable STORM with shadow mode (safe production testing)
-export AETHERRA_MEMORY_STORM=1
-export AETHERRA_STORM_SHADOW_MODE=1
-
-# Or use hybrid mode directly
-export AETHERRA_MEMORY_STORM=1
-export AETHERRA_STORM_SHADOW_MODE=0
-```
-
-Monitor STORM metrics at `/metrics`:
-
-- `storm_recalls_total` - Total STORM recalls
-- `storm_shadow_comparisons_total` - Shadow mode comparisons
-- `storm_sheaf_inconsistency` - Current coherence health
-
-### Security
-
-STORM respects all memory policy guards:
-
-- Data flows only through policy-protected core memory
-- `storm_cells` table stores 200-char excerpts (not full content)
-- Privacy classes enforced before STORM access
-- No bypass paths around redaction hooks
-
-See `docs/STORM_SECURITY_VERIFICATION.md` for security audit details.
-
----
-
-### 5. Run the OS with STORM (Shadow Mode)
-
-Start the OS with STORM integrated (shadow mode collects metrics, returns baseline results):
-
-```bash
-export AETHERRA_MEMORY_STORM=1
-export AETHERRA_STORM_SHADOW_MODE=1
-python aetherra_os_launcher.py --mode full -v
-```
-
-On successful boot, logs include a post-boot STORM status line like:
-
-```
-[STORM:POST-BOOT] enabled=1 shadow_mode=1 backend=ot:earthmover tt_rank_cap=128
-```
-
----
-
-## Documentation & Next Steps
-
-### For Release & Deployment
-
-- **Production Readiness Review** → [`docs/PRODUCTION_READINESS_REVIEW_2026-03-12.md`](./docs/PRODUCTION_READINESS_REVIEW_2026-03-12.md)
-  - Executive summary of all systems
-  - Validation evidence for phases 2a-4 and week-10
-  - Production readiness checklist
-  - Risk assessment & mitigation
-
-- **Complete System Overview** → [`docs/AETHERRA_COMPLETE_OVERVIEW_2026-03-12.md`](./docs/AETHERRA_COMPLETE_OVERVIEW_2026-03-12.md)
-  - What Aetherra is and how it works
-  - Each of 10 subsystems explained with examples
-  - Architecture diagrams and data flows
-  - Configuration, APIs, and testing
-  - Release & packaging procedures
-
-### Core Documentation
-
-- **System Index** → [`docs/SYSTEM_INDEX.md`](./docs/SYSTEM_INDEX.md) — Navigate all system docs
-- **Deployment Guide** → [`docs/DEPLOYMENT_GUIDE.md`](./docs/DEPLOYMENT_GUIDE.md) — Multi-tier setup
-- **Testing Guide** → [`docs/TESTING_GUIDE.md`](./docs/TESTING_GUIDE.md) — Test suite organization
-- **Security Operations** → [`docs/SECURITY_OPERATIONS_GUIDE.md`](./docs/SECURITY_OPERATIONS_GUIDE.md)
-- **Go/No-Go Gates** → [`docs/GO_NO_GO_GATES.md`](./docs/GO_NO_GO_GATES.md) — 8 release gates
-- **Master Map** → [`AETHERRA_MASTER_MAP.md`](./AETHERRA_MASTER_MAP.md) — Complete architecture
-
-### Release Candidate Build
-
-```bash
-# 1. Run release gates
-python tools/run_go_no_go_gates.py --all --strict-manual
-
-# 2. Build wheel and sdist
-python -m build
-
-# 3. Generate SBOM and manifest (with optional signing)
-python tools/build_release_bundle.py --version 0.1.0-beta.1
-
-# 4. Verify artifacts
-ls -la dist/
-```
-
----
-
-## Agents Quick Demo
-
-Submit tasks to the orchestrator and track their progress:
-
-### Submit a Task
-
-```bash
-curl -X POST http://localhost:3001/api/agents/submit \
-  -H "Content-Type: application/json" \
-  -d '{
-    "task_type": "analysis",
-    "description": "Analyze system performance metrics",
-    "priority": "normal",
-    "context": {}
-  }'
-```
-
-**Task Shape**:
-
-- `task_type`: analysis, automation, monitoring, custom
-- `description`: Human-readable task description
-- `priority`: low, normal, high, urgent
-- `context`: Additional parameters and data
-
-### Check Task Status
-
-```bash
-# Get task by ID
-curl http://localhost:3001/api/agents/status/{task_id}
-
-# List all tasks
-curl http://localhost:3001/api/agents/tasks
-```
-
-**Task States**: `pending` → `running` → `completed` | `failed` | `cancelled`
-
----
-
-## Plugins
-
-Manage plugins dynamically through Hub endpoints with automatic UI updates:
-
-### Plugin Management
-
-```bash
-# List installed plugins
-curl http://localhost:3001/api/plugins/list
-
-# Install plugin
-curl -X POST http://localhost:3001/api/plugins/install \
-  -H "Content-Type: application/json" \
-  -d '{"name": "plugin_name", "source": "local|registry"}'
-
-# Uninstall plugin
-curl -X DELETE http://localhost:3001/api/plugins/uninstall/plugin_name
-
-# Plugin status and metadata
-curl http://localhost:3001/api/plugins/status/plugin_name
-```
-
-### Plugin UI Integration
-
-Lyrixa's GUI automatically refreshes when plugins change:
-
-- **Sidebar panels**: Auto-generated when plugin declares UI surface
-- **Install/uninstall**: Available directly from the GUI
-- **Non-intrusive**: Plugin operations don't block chat functionality
-- **Real-time updates**: Plugin status changes reflect immediately
-
-See `/api/plugins/*` endpoints for complete plugin management API.
-
----
-
-## Lyrixa GUI Stability
-
-"Stable" GUI means flawless user experience across all core interactions:
-
-### Chat Experience
-
-- **SSE v2 resume**: Last-Event-ID support for reliable stream resumption
-- **Consistent payloads**: Final responses include evidence[] and scratchpad_policy
-- **No interruptions**: Plugin operations never block chat functionality
-
-### Plugin Integration
-
-- **UI auto-generation**: Panels automatically appear when plugins declare UI surfaces
-- **Live install/uninstall**: Direct from GUI without service restarts
-- **Sidebar management**: Plugin panels dynamically reconfigure layout
-- **State preservation**: Chat context maintained during plugin changes
-
-### Technical Guarantees
-
-- Streaming connections handle network interruptions gracefully
-- Plugin manifest validation before UI integration
-- Resource isolation prevents plugin failures from affecting chat
-- Responsive design adapts to plugin panel additions/removals
-
-The GUI meets "stable" criteria when these behaviors work consistently
-under normal operation and edge cases (network drops, plugin failures).
-
----
-
-## Configuration (Environment Flags)
-
-High-value environment variables for system behavior:
-
-### Core APIs & Tokens
-
-```bash
-# Enable AI APIs with authentication
-export AETHERRA_AI_API_ENABLED=1
-export AETHERRA_AI_API_TOKEN=your_secure_token
-export AETHERRA_AI_API_REQUIRE_TOKEN=1
-
-# Enable streaming chat
-export AETHERRA_AI_API_STREAM=1
-```
-
-### Safety & Network
-
-```bash
-# Enable safety mode (strict validation)
-export AETHERRA_SAFETY_MODE=1
-
-# Network allowlist for security
-export AETHERRA_NETWORK_ALLOWLIST="localhost,127.0.0.1,.aetherra.dev"
-export AETHERRA_NET_STRICT=1
-```
-
-### Performance & Limits
-
-```bash
-# Kernel queue and backpressure control
-export AETHERRA_KERNEL_QUEUE_SIZE=1000
-export AETHERRA_KERNEL_BACKPRESSURE_LIMIT=5000
-
-# Plugin timeouts and concurrency
-export AETHERRA_PLUGIN_TIMEOUT=30
-export AETHERRA_PLUGIN_MAX_CONCURRENT=10
-```
-
-See [Environment Variables Index](docs/ENVIRONMENT_VARIABLES.md) for complete list.
-
----
-
-## Security & Privacy
-
-### Script & Plugin Signing
-
-- **Manifest verification**: All plugins require signed manifests
-- **Code integrity**: .aether scripts validated with cryptographic signatures
-- **Trust chains**: Configurable signing authorities and key management
-
-### Capability Gates
-
-- **Permission model**: Plugins request specific capabilities (network, file, memory)
-- **Runtime enforcement**: Capability violations terminate plugin execution
-- **Audit logging**: All capability requests and denials logged
-
-### Network Security
-
-- **Allowlist enforcement**: Configurable network destination restrictions
-- **Protocol filtering**: HTTP/HTTPS only in strict mode
-- **Proxy support**: Corporate network compatibility
-
-### Privacy & Telemetry
-
-- **Opt-in telemetry**: No data collection without explicit consent
-- **Differential privacy**: Statistical noise added to usage metrics
-- **Local-first**: Core functionality works without network connectivity
-
-### Strict Mode Toggles
-
-```bash
-# Lock down all security features
-export AETHERRA_PROFILE=prod
-export AETHERRA_NET_STRICT=1
-export AETHERRA_SCRIPT_VERIFY_STRICT=1
-export AETHERRA_PLUGIN_SIGNING_REQUIRED=1
-```
-
----
-
-## .aether Script Basics
-
-Intent-driven workflow language with static verification:
-
-### Basic Structure
-
-```aether
-goal: "Analyze system performance and generate report"
-
-workflow:
-  - step: "collect_metrics"
-    plugin: "system_monitor"
-    params:
-      duration: "5m"
-
-  - step: "analyze_data"
-    plugin: "data_analyzer"
-    depends_on: ["collect_metrics"]
-
-parallel:
-  - task: "cpu_analysis"
-    plugin: "cpu_profiler"
-  - task: "memory_analysis"
-    plugin: "memory_profiler"
-
-policy:
-  timeout: "10m"
-  retry_count: 3
-  failure_action: "notify"
-
-require:
-  capabilities: ["system_read", "file_write"]
-  plugins: ["system_monitor>=1.0", "data_analyzer"]
-```
-
-### Static Verification
-
-Verify .aether scripts in CI/CD:
-
-```bash
-# Basic verification
-python tools/verify_aether_scripts.py --root .
-
-# Strict mode (production)
-python tools/verify_aether_scripts.py --root . --strict
-export AETHERRA_SCRIPT_VERIFY_STRICT=1
-```
-
-Verification checks:
-
-- Syntax validity and schema compliance
-- Plugin dependency resolution
-- Capability requirement validation
-- Signature verification (in strict mode)
-
----
-
-## Observability
-
-### Health & Status Monitoring
-
-```bash
-# Kernel status and metrics
-curl http://localhost:3001/api/kernel/status
-curl http://localhost:3001/api/kernel/metrics
-
-# Memory system health
-curl http://localhost:3001/api/memory/status
-curl http://localhost:3001/api/memory/stats
-
-# Overall system health
-curl http://localhost:3001/api/health
-```
-
-### Prometheus Metrics
-
-Access metrics at `http://localhost:3001/metrics`:
-
-- **aetherra_kernel_tasks_total**: Total tasks processed
-- **aetherra_memory_operations_total**: Memory read/write operations
-- **aetherra_plugin_executions_total**: Plugin execution counts
-- **aetherra_api_requests_total**: HTTP API request metrics
-- **aetherra_errors_total**: Error counts by subsystem
-
-### Security Alerts Feed
-
-```bash
-# Security events and alerts
-curl http://localhost:3001/api/security/alerts
-curl http://localhost:3001/api/security/events/recent
-```
-
-Alerts include capability violations, signature failures, and network policy breaches.
-
----
-
-## Quality Gates & Tests
-
-### Smoke Tests
-
-```bash
-# Basic system boot verification
-python tools/os_smoke.py
-
-# Headless mode (CI/CD)
-AETHERRA_QUIET=1 python tools/os_smoke.py
-```
-
-### Spec→Tests Gate
-
-```bash
-# Verify specification compliance
-python tools/spec_tests_gate.py
-
-# Check that tests cover documented features
-python tools/verify_docs_consistency.py
-```
-
-### Coverage Protection
-
-```bash
-# Run tests with coverage no-drop validation
-python tools/quality_gates.py
-
-# Coverage must not decrease from baseline
-pytest --cov=aetherra_core --cov-fail-under=85
-```
-
-### Static Verification
-
-```bash
-# .aether script validation
-python tools/verify_aether_scripts.py --strict
-
-# Code quality and security
-python tools/quality_gates.py --all
-```
-
-### Capability Tests
-
-Located in `tests/capabilities/`:
-
-- **test_ownership_memory.py**: Memory ownership and isolation
-- **test_lyrixa_ownership_answer.py**: Chat ownership validation
-- **test_hub_metrics_observability.py**: Metrics and monitoring
-- **test_lyrixa_chat_bridge_schema.py**: API schema compliance
-
-```bash
-# Run all capability tests
-pytest tests/capabilities/
-
-# Run specific capability validation
-pytest tests/capabilities/test_ownership_memory.py
-```
-
----
-
-## v0.3.0 Release Highlights
-
-### 🎯 Stability Achieved
-
-- **QFAC**: Fixed timing-based test; system passes stability checks
-- **Type system**: Full PEP 585 modernization (Dict→dict, Optional→| None)
-- **Security**: All scanners clean; strict defaults validated
-- **Tests**: 98 passed, 1 skipped; 13.80% coverage (up from 8.36%)
-
-### 🔒 Security Hardening
-
-- Script/plugin signing with manifest verification
-- Capability gates enforced at runtime
-- Network allowlist with strict mode toggles
-- Audit logging for all security events
-
-### 🚀 Performance & Reliability
-
-- SSE v2 with Last-Event-ID resume capability
-- Event-driven kernel with backpressure control
-- Plugin UI auto-generation without chat blocking
-- Prometheus metrics for all subsystems
-
-### 📈 Quality Gates
-
-- No-regression coverage gate (13.80% baseline)
-- Spec→Tests gate enabled in CI
-- Static verification for .aether scripts with `tools/verify_aether_scripts.py --strict`
-- Enhanced test reliability across all subsystems
-- System readiness checks via `workflows/system_readiness.aether`
-
-See [AETHERRA_CLAIMS_VALIDATION.md](AETHERRA_CLAIMS_VALIDATION.md) for detailed capability status and proof points.
-
----
-
-## Roadmap & Status
-
-### ✅ Implemented (Stable)
-
-- **Chat/Kernel**: SSE v2 streaming, event-driven coordination
-- **Agents**: Task orchestrator with status tracking
-- **Memory**: Persistent + quantum-augmented layers
-- **Security**: Script signing, capability gates, network allowlist
-- **Observability**: Prometheus metrics, health endpoints
-
-### 🚧 Partial Implementation
-
-- **Plugin Ecosystem**: Core system ready, expanding plugin library
-- **GUI Stability**: Chat stable, plugin UI refinements ongoing
-- **Documentation**: API docs complete, user guides expanding
-
-### 🔮 Planned Features
-
-- **AI Trainer System**: Adaptive model fine-tuning
-- **Advanced Memory**: Semantic search and graph relationships
-- **Enterprise Features**: SSO integration, advanced RBAC
-- **Multi-tenant**: Isolated workspaces and resource quotas
-
-### Development Status
-
-**🚀 v0.3.0 Released as Stable** (Current)
-
-Major achievements:
-
-- 98 passed, 1 skipped tests (99% pass rate)
-- All security scans clean
-- QFAC & core systems operational
-- PEP 585 modernization complete
-- Coverage improved from 8.36% → 13.80%
-
-**Next Focus: Coverage Growth & Enhancement**
-
-- **v0.3.1 (≤ 30 days):** Coverage to 25%, plugin ecosystem expansion
-- **v0.3.2 (≤ 60 days):** Coverage to 40%, GUI stability improvements
-- **v0.3.3 (≤ 90 days):** Coverage to 60%, advanced memory features
-
-Track progress at [GitHub Issues](https://github.com/AetherraLabs/Aetherra/issues)
-and [Project Board](https://github.com/AetherraLabs/Aetherra/projects).
-
----
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding standards,
-and contribution guidelines.
+## Repository Map
+
+| Path | Purpose |
+| --- | --- |
+| [`Aetherra/`](Aetherra/) | Primary package and runtime systems. |
+| [`aetherra_hub/`](aetherra_hub/) | Hub API blueprints, local services, and control-plane surfaces. |
+| [`aetherra_coding/`](aetherra_coding/) | Coding, analysis, verification, and orchestration utilities. |
+| [`docs/`](docs/) | Active system documentation, guides, policy docs, and cleanup plans. |
+| [`tests/`](tests/) | Unit, integration, capability, acceptance, and legacy standalone tests. |
+| [`tools/`](tools/) | Verification, smoke, release, maintenance, and developer utilities. |
+| [`scripts/`](scripts/) | Operational and maintenance scripts. |
+| [`requirements/`](requirements/) | Dependency input files beyond the root requirements locks. |
+| [`.github/workflows/`](.github/workflows/) | Focused CI, security, release, docs, and repository hygiene workflows. |
+
+The repository is still being cleaned. Tracked root-level files are being
+limited to public docs, package/config files, compatibility launchers, and
+current operational entry points. Generated runtime state, reports, databases,
+logs, coverage output, and packaged builds should stay ignored or be published
+as release artifacts instead of source.
+
+Cleanup tracking is maintained in:
+
+- [`docs/REPOSITORY_CLEANUP_PLAN.md`](docs/REPOSITORY_CLEANUP_PLAN.md)
+- [`docs/ROOT_SCRIPT_WORKFLOW_TRIAGE.md`](docs/ROOT_SCRIPT_WORKFLOW_TRIAGE.md)
+- [`docs/FILE_INDEX.md`](docs/FILE_INDEX.md)
+
+## Safety Model
+
+Aetherra assumes powerful actions are dangerous until policy says otherwise.
+
+Core rules:
+
+- Self-Improvement must not directly modify the system during the foundation
+  milestone.
+- Guardian must evaluate privileged intent before execution.
+- Security must enforce capabilities, sandboxing, signing, and audit policy.
+- Homeostasis should recommend before taking controlled action.
+- Rollback, containment, and approval paths are first-class requirements.
+- Exceptions and execution payloads must be sanitized before reaching external
+  clients.
+
+This is an active research and engineering project. Do not run it as an
+unreviewed autonomous production system.
+
+## Development Rules
+
+- Keep changes scoped to the system being completed.
+- Prefer structured models and explicit policy decisions over ad hoc payloads.
+- Add tests for safety boundaries, denial paths, and audit behavior.
+- Keep generated logs, databases, build outputs, packaged distributions, and
+  local state out of commits.
+- Update the relevant `docs/AETHERRA_*_SYSTEM.md` document when a system's
+  behavior or completion status changes.
+- Avoid direct mutation loops. Proposal, review, approval, execution, and
+  outcome learning should remain separate concerns.
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0 or later.
-See [LICENSE](LICENSE) for details.
+Aetherra is licensed under the GNU General Public License v3.0 or later. See
+[`LICENSE`](LICENSE), [`NOTICE`](NOTICE), and [`COPYRIGHT`](COPYRIGHT).

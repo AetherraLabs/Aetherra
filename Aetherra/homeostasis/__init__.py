@@ -31,6 +31,10 @@ Licensed under GNU General Public License v3.0
 
 from .homeostasis_actuators import HomeostasisActuators
 from .homeostasis_core import HomeostasisController
+from .diagnosis import build_diagnosis_report
+from .learning import build_learning_report
+from .observation import build_observation_report
+from .recommendation import build_recommendation_report
 from .stability_metrics import StabilityMetrics
 from .system_supervisor import SystemSupervisor
 
@@ -40,4 +44,8 @@ __all__ = [
     "StabilityMetrics",
     "SystemSupervisor",
     "HomeostasisActuators",
+    "build_diagnosis_report",
+    "build_learning_report",
+    "build_observation_report",
+    "build_recommendation_report",
 ]

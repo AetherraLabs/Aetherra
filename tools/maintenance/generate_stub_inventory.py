@@ -120,7 +120,7 @@ def _guardian_preflight_stub_inventory(
             purpose="Write generated stub inventory JSON",
             capabilities=("maintenance:cleanup", "fs:write"),
             expected_outcome="Planned stub inventory JSON is written to disk",
-            reversible=False,
+            reversible=True,
             rollback_plan="delete generated stub inventory or restore from version control",
             metadata={
                 "project_root_hash": _hash_value(project_root.resolve()),

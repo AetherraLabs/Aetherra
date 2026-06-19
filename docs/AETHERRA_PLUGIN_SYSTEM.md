@@ -35,7 +35,7 @@ Primary files & artifacts (current codebase):
 
 - `aetherra_plugin_discovery.py` — Scans plugin directories, builds catalog
 - `aetherra_plugin_viewer.py` — Introspection / human‑readable listing utilities
-- `aetherra_plugins_cleaner.py` — Removes stale / invalid plugin entries
+- `tools/maintenance/aetherra_plugins_cleaner.py` — Removes stale / invalid plugin entries
 - `aetherra_plugin_catalog.json` — Generated catalog / registry snapshot (local)
 - `tools/agents_probe.py --create-tool` (Toolsmith path) — Can scaffold plugin‑adjacent tools
 - `Aetherra/plugins/` — Source tree of core & experimental plugins

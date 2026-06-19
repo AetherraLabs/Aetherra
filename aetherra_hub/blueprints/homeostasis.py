@@ -14,7 +14,13 @@ from typing import Any
 # Third party imports
 from flask import Blueprint, jsonify, request
 
-from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+from Aetherra.guardian import (
+    GuardianStatus,
+    IntentDeclaration,
+    evaluate_intent,
+    record_outcome,
+)
+from Aetherra.guardian.audit import list_guardian_audit_records
 
 # Avoid importing heavy homeostasis core types at module import time to prevent
 # circular imports; import lazily within request handlers.
@@ -22,6 +28,10 @@ from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
 from Aetherra.homeostasis.homeostasis_integration import (  # type: ignore
     get_homeostasis_orchestrator,
 )
+from Aetherra.homeostasis.diagnosis import build_diagnosis_report
+from Aetherra.homeostasis.learning import build_learning_report
+from Aetherra.homeostasis.observation import build_observation_report
+from Aetherra.homeostasis.recommendation import build_recommendation_report
 
 # Local imports
 from ..services.control_auth import authorize_control_request
@@ -71,6 +81,7 @@ def _guardian_decision_for_actuator(data: dict[str, Any]):
     if any(marker in target_lower for marker in ("security", "policy", "capability")):
         capabilities.append("security:modify")
 
+    approval_id = data.get("guardian_approval_id") or data.get("approval_id")
     return evaluate_intent(
         IntentDeclaration(
             requester=str(
@@ -89,10 +100,12 @@ def _guardian_decision_for_actuator(data: dict[str, Any]):
             metadata={
                 "action_type": action_type,
                 "target_service": target_service,
+                "controller_name": controller_name,
                 "priority": priority,
                 "parameter_keys": tuple(sorted(str(key) for key in parameters)),
             },
-        )
+        ),
+        approval_id=str(approval_id).strip() if approval_id else None,
     )
 
 
@@ -143,6 +156,87 @@ def _guardian_block_response(decision) -> tuple[dict[str, Any], int] | None:
         },
         status_code,
     )
+
+
+def _priority_from_string(priority: str):
+    from Aetherra.homeostasis.homeostasis_core import ActionPriority  # type: ignore
+
+    pr_map = {
+        "low": ActionPriority.LOW,
+        "medium": ActionPriority.MEDIUM,
+        "high": ActionPriority.HIGH,
+        "critical": ActionPriority.CRITICAL,
+        "emergency": ActionPriority.EMERGENCY,
+    }
+    return pr_map.get(str(priority or "medium").lower(), ActionPriority.MEDIUM)
+
+
+def _execute_homeostasis_action(data: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    from Aetherra.homeostasis.homeostasis_core import ControlAction  # type: ignore
+
+    action_type = str(data.get("action_type") or "").strip()
+    target_service = str(data.get("target_service") or "").strip()
+    parameters = data.get("parameters") or {}
+    controller_name = str(data.get("controller_name") or "homeostasis")
+    reason = str(data.get("reason") or "ui_trigger")
+    timeout = float(data.get("timeout") or 300.0)
+    priority = _priority_from_string(str(data.get("priority") or "medium"))
+
+    if not action_type:
+        return {"ok": False, "error": "missing_action_type"}, 400
+
+    guardian_decision = _guardian_decision_for_actuator(data)
+    guardian_block = _guardian_block_response(guardian_decision)
+    if guardian_block is not None:
+        body, status_code = guardian_block
+        return body, status_code
+
+    orch = get_homeostasis_orchestrator()
+    if not getattr(orch, "actuators", None):
+        return {"ok": False, "error": "actuators_unavailable"}, 503
+
+    action = ControlAction(
+        action_type=action_type,
+        target_service=target_service or "",
+        parameters=parameters if isinstance(parameters, dict) else {},
+        priority=priority,
+        timestamp=0.0,
+        controller_name=controller_name,
+        reason=reason,
+        timeout=timeout,
+    )
+
+    exec_method = getattr(orch.actuators, "execute_action_via_kernel", None)  # type: ignore[attr-defined]
+    if callable(exec_method):
+        res = exec_method(action)
+        executed = bool(_safe_run(res) if asyncio.iscoroutine(res) else res)
+    else:
+        res = orch.actuators.execute_action(action)  # type: ignore[attr-defined]
+        executed = bool(_safe_run(res) if asyncio.iscoroutine(res) else res)
+
+    outcome_audit_id = None
+    if guardian_decision.audit_id:
+        outcome_audit_id = record_outcome(
+            guardian_decision.audit_id,
+            {
+                "status": "completed" if executed else "failed",
+                "summary": "Homeostasis actuator execution completed"
+                if executed
+                else "Homeostasis actuator execution failed",
+                "affected_count": 1 if executed else 0,
+                "rollback_performed": False,
+                "metrics": {
+                    "executed": int(executed),
+                },
+            },
+        )
+
+    return {
+        "ok": True,
+        "executed": executed,
+        "audit_id": guardian_decision.audit_id,
+        "outcome_audit_id": outcome_audit_id,
+    }, 200
 
 
 @bp.get("/status")
@@ -249,6 +343,197 @@ def metrics_summary():
     except Exception as exc:
         logger.debug("[HOMEOSTASIS] metrics summary failed: %s", exc)
         return jsonify({"ok": False}), 500
+
+
+def _build_homeostasis_observation() -> dict[str, Any]:
+    orch = get_homeostasis_orchestrator()
+
+    health = {}
+    try:
+        health = _safe_run(orch.get_system_health_status()) or {}
+    except Exception:
+        health = {}
+
+    snapshot = {}
+    try:
+        snapshot = health.get("current_snapshot") or _safe_run(
+            orch.get_metrics_snapshot()
+        ) or {}
+    except Exception:
+        snapshot = {}
+
+    controller = {}
+    loops = {}
+    setpoints = {}
+    try:
+        controller_obj = getattr(orch, "controller", None)
+        if controller_obj is not None:
+            controller = controller_obj.get_controller_status()
+            loops = controller_obj.get_control_loop_status()
+            setpoints = getattr(controller_obj, "setpoints", {}) or {}
+    except Exception:
+        controller = {}
+        loops = {}
+        setpoints = {}
+
+    actuators = {}
+    try:
+        actuator_obj = getattr(orch, "actuators", None)
+        if actuator_obj is not None:
+            actuators = actuator_obj.get_actuator_status()
+    except Exception:
+        actuators = {}
+
+    supervisor = {}
+    try:
+        supervisor_obj = getattr(orch, "supervisor", None)
+        if supervisor_obj is not None:
+            supervisor = supervisor_obj.get_supervisor_status()
+    except Exception:
+        supervisor = {}
+
+    return build_observation_report(
+        metrics_snapshot=snapshot,
+        health_summary=health.get("metrics") or health.get("health") or {},
+        controller_status=controller,
+        control_loops=loops,
+        actuator_status=actuators,
+        supervisor_status=supervisor,
+        setpoints=setpoints,
+    )
+
+
+@bp.get("/observation")
+def observation():
+    """Return a read-only Homeostasis awareness report."""
+
+    try:
+        return jsonify({"ok": True, "observation": _build_homeostasis_observation()})
+    except Exception as exc:  # pragma: no cover - best effort
+        logger.error("[HOMEOSTASIS] observation failed: %s", exc, exc_info=True)
+        return jsonify({"ok": False, "error": "observation_failed"}), 500
+
+
+@bp.get("/diagnosis")
+def diagnosis():
+    """Return a read-only Homeostasis diagnosis report."""
+
+    try:
+        observation_report = _build_homeostasis_observation()
+        return jsonify(
+            {
+                "ok": True,
+                "observation": observation_report,
+                "diagnosis": build_diagnosis_report(observation_report),
+            }
+        )
+    except Exception as exc:  # pragma: no cover - best effort
+        logger.error("[HOMEOSTASIS] diagnosis failed: %s", exc, exc_info=True)
+        return jsonify({"ok": False, "error": "diagnosis_failed"}), 500
+
+
+@bp.get("/recommendations")
+def recommendations():
+    """Return read-only Homeostasis recommendations."""
+
+    try:
+        observation_report = _build_homeostasis_observation()
+        diagnosis_report = build_diagnosis_report(observation_report)
+        return jsonify(
+            {
+                "ok": True,
+                "observation": observation_report,
+                "diagnosis": diagnosis_report,
+                "recommendations": build_recommendation_report(
+                    observation_report,
+                    diagnosis_report,
+                ),
+            }
+        )
+    except Exception as exc:  # pragma: no cover - best effort
+        logger.error("[HOMEOSTASIS] recommendations failed: %s", exc, exc_info=True)
+        return jsonify({"ok": False, "error": "recommendations_failed"}), 500
+
+
+@bp.get("/learning")
+def learning():
+    """Return read-only Homeostasis action outcome learning summary."""
+
+    try:
+        try:
+            limit = int(request.args.get("limit", "100"))
+        except ValueError:
+            return jsonify({"ok": False, "error": "limit must be an integer"}), 400
+        records = list_guardian_audit_records(limit=max(1, min(limit, 200)))
+        return jsonify({"ok": True, "learning": build_learning_report(records)})
+    except Exception as exc:  # pragma: no cover - best effort
+        logger.error("[HOMEOSTASIS] learning report failed: %s", exc, exc_info=True)
+        return jsonify({"ok": False, "error": "learning_failed"}), 500
+
+
+@bp.post("/recommendations/execute")
+def execute_recommendation():
+    """Execute a current actuator recommendation after explicit confirmation."""
+
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
+
+    payload = request.get_json(silent=True) or {}
+    if payload.get("confirm_execution") is not True:
+        return jsonify({"ok": False, "error": "confirm_execution required"}), 400
+
+    requested_action = str(payload.get("action_type") or "").strip()
+    requested_target = str(payload.get("target_service") or "").strip()
+    if not requested_action or not requested_target:
+        return jsonify({"ok": False, "error": "action_type and target_service required"}), 400
+
+    try:
+        observation_report = _build_homeostasis_observation()
+        diagnosis_report = build_diagnosis_report(observation_report)
+        recommendation_report = build_recommendation_report(
+            observation_report,
+            diagnosis_report,
+        )
+        current = next(
+            (
+                item
+                for item in recommendation_report.get("recommendations", [])
+                if item.get("action_type") == requested_action
+                and item.get("target_service") == requested_target
+            ),
+            None,
+        )
+        if current is None:
+            return jsonify({"ok": False, "error": "recommendation_not_current"}), 409
+
+        capabilities = set(current.get("required_capabilities") or [])
+        if "homeostasis:actuate" not in capabilities:
+            return jsonify({"ok": False, "error": "recommendation_not_executable"}), 409
+
+        action_payload = {
+            "action_type": current["action_type"],
+            "target_service": current["target_service"],
+            "parameters": current.get("parameters") or {},
+            "guardian_approval_id": payload.get("guardian_approval_id")
+            or payload.get("approval_id"),
+            "priority": payload.get("priority") or "medium",
+            "controller_name": "homeostasis_recommendation",
+            "reason": payload.get("reason")
+            or f"Execute Homeostasis recommendation for {current['cause_category']}",
+            "timeout": payload.get("timeout") or 300.0,
+        }
+        result, status_code = _execute_homeostasis_action(action_payload)
+        result["recommendation"] = current
+        result["controlled_action"] = {
+            "source": "current_recommendation",
+            "guardian_reviewed": status_code == 200,
+            "executed": bool(result.get("executed")),
+        }
+        return jsonify(result), status_code
+    except Exception as exc:  # pragma: no cover - best effort
+        logger.error("[HOMEOSTASIS] recommendation execution failed: %s", exc, exc_info=True)
+        return jsonify({"ok": False, "error": "recommendation_execution_failed"}), 500
 
 
 @bp.post("/mode")
@@ -369,65 +654,9 @@ def actuators_execute():
     if auth_error is not None:
         return auth_error
     try:
-        # Lazy import to avoid circular import during app startup
-        from Aetherra.homeostasis.homeostasis_core import (  # type: ignore
-            ActionPriority,
-            ControlAction,
-        )
-
         data = request.get_json(silent=True) or {}
-        action_type = str(data.get("action_type") or "").strip()
-        target_service = str(data.get("target_service") or "").strip()
-        parameters = data.get("parameters") or {}
-        controller_name = str(data.get("controller_name") or "homeostasis")
-        reason = str(data.get("reason") or "ui_trigger")
-        timeout = float(data.get("timeout") or 300.0)
-        priority_str = str(data.get("priority") or "medium").lower()
-
-        if not action_type:
-            return jsonify({"ok": False, "error": "missing_action_type"}), 400
-
-        guardian_decision = _guardian_decision_for_actuator(data)
-        guardian_block = _guardian_block_response(guardian_decision)
-        if guardian_block is not None:
-            body, status_code = guardian_block
-            return jsonify(body), status_code
-
-        pr_map = {
-            "low": ActionPriority.LOW,
-            "medium": ActionPriority.MEDIUM,
-            "high": ActionPriority.HIGH,
-            "critical": ActionPriority.CRITICAL,
-            "emergency": ActionPriority.EMERGENCY,
-        }
-        pr = pr_map.get(priority_str, ActionPriority.MEDIUM)
-
-        orch = get_homeostasis_orchestrator()
-        if not getattr(orch, "actuators", None):
-            return jsonify({"ok": False, "error": "actuators_unavailable"}), 503
-
-        action = ControlAction(
-            action_type=action_type,
-            target_service=target_service or "",
-            parameters=parameters if isinstance(parameters, dict) else {},
-            priority=pr,
-            timestamp=0.0,
-            controller_name=controller_name,
-            reason=reason,
-            timeout=timeout,
-        )
-
-        # Prefer kernel envelope when available
-        exec_method = getattr(orch.actuators, "execute_action_via_kernel", None)  # type: ignore[attr-defined]
-        ok = False
-        if callable(exec_method):
-            res = exec_method(action)
-            ok = bool(_safe_run(res) if asyncio.iscoroutine(res) else res)
-        else:
-            res = orch.actuators.execute_action(action)  # type: ignore[attr-defined]
-            ok = bool(_safe_run(res) if asyncio.iscoroutine(res) else res)
-
-        return jsonify({"ok": True, "executed": bool(ok)})
+        result, status_code = _execute_homeostasis_action(data)
+        return jsonify(result), status_code
     except Exception as exc:  # pragma: no cover - best effort
         logger.error("[HOMEOSTASIS] actuators.execute failed: %s", exc, exc_info=True)
         return jsonify({"ok": False}), 500

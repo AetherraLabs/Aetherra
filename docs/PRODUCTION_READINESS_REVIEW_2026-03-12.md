@@ -91,7 +91,7 @@ Aetherra OS is **production-ready** for beta release with comprehensive feature 
 
 | Document                                       | Purpose                                      | Status    | Last Updated      |
 | ---------------------------------------------- | -------------------------------------------- | --------- | ----------------- |
-| **AETHERRA_MASTER_MAP.md**                     | Complete system architecture overview        | ✅         | Oct 2025          |
+| **docs/AETHERRA_MASTER_MAP.md**                | Complete system architecture overview        | ✅         | Oct 2025          |
 | **SYSTEM_INDEX.md**                            | Navigation guide for core docs               | ✅         | Aug 2025          |
 | **AETHERRA_KERNEL_SYSTEM.md**                  | Kernel architecture & lifecycle              | ✅         | Implemented       |
 | **AETHERRA_CONSCIOUSNESS_SYSTEM.md**           | Consciousness loop & adaptive awareness      | ✅         | Current           |
@@ -111,7 +111,7 @@ Aetherra OS is **production-ready** for beta release with comprehensive feature 
 | **ROADMAP_TRACKING.md**                        | Phase status, evidence, drift audit          | ✅         | 2026-03-12        |
 | **GO_NO_GO_GATES.md**                          | 8 deterministic release gates                | ✅         | Current           |
 | **SELFINC_PRODUCTION_READINESS.md**            | Self-incorporation hardening, env vars       | ✅         | Sept 2025         |
-| **BETA_READINESS_REPORT.md**                   | Structural integrity, coverage signals       | ✅         | Sept 2025         |
+| **docs/reports/release/BETA_READINESS_REPORT.md** | Structural integrity, coverage signals    | ✅         | Sept 2025         |
 | **PRODUCTION_BASELINE_ANALYSIS_2026-03-10.md** | Stub reduction, debt cleanup, progress delta | ✅         | 2026-03-10        |
 
 ### ⚙️ Partial / In Progress
@@ -124,7 +124,8 @@ Aetherra OS is **production-ready** for beta release with comprehensive feature 
 ### 🔋 Supporting Documentation (50+ additional files)
 
 - Foundational: Manifesto, Aetherra Labs Vision
-- Analysis: ARCHITECTURAL_ANALYSIS.md, AUTONOMOUS_SYSTEMS_INTEGRATION_ANALYSIS.md
+- Analysis: docs/archive/root-reports/ARCHITECTURAL_ANALYSIS.md,
+  docs/archive/root-reports/AUTONOMOUS_SYSTEMS_INTEGRATION_ANALYSIS.md
 - Phases: PHASE_2A_COMPLETION_SUMMARY.md, PHASE_2B_ACCEPTANCE_EVIDENCE.md, PHASE_3_4_COVERAGE_EVIDENCE.md, WEEK10_VALIDATION_EVIDENCE.md
 - Operations: TROUBLESHOOTING_GUIDE.md, METRICS_AND_MONITORING_GUIDE.md, BACKUP_AND_RECOVERY.md
 - Features: CONSCIOUSNESS_PHASE1_COMPLETE.md, CONSCIOUSNESS_UI_INTEGRATION.md, INTERACTIVE_LYRIXA_QUICKSTART.md, QFAC_MODE_GUIDE.md
@@ -372,7 +373,7 @@ These items are **intentionally deferred** until after roadmap implementation co
 - [ROADMAP_TRACKING.md](./docs/ROADMAP_TRACKING.md) — Detailed progress status
 - [GO_NO_GO_GATES.md](./docs/GO_NO_GO_GATES.md) — Release gates and validation criteria
 - [DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md) — Multi-tier deployment procedures
-- [BETA_READINESS_REPORT.md](./BETA_READINESS_REPORT.md) — Structural integrity metrics
+- [BETA_READINESS_REPORT.md](./reports/release/BETA_READINESS_REPORT.md) — Structural integrity metrics
 
 ---
 

@@ -133,12 +133,12 @@ aetherra_storm_sheaf_inconsistency
 
 ## Test Files Created
 
-### `test_storm_metrics.py`
+### `tests/storm/manual/storm_metrics_probe.py`
 - Triggers STORM recall to verify shadow mode behavior
 - Checks metrics endpoint for STORM metrics
 - **Result:** Shadow mode verified, metrics endpoint accessible
 
-### `check_metrics.py`
+### `tools/ops/check_metrics.py`
 - Analyzes current metrics exposure
 - Groups metrics by prefix
 - **Result:** 117 aetherra_ metrics, no STORM metrics yet
@@ -155,7 +155,7 @@ aetherra_storm_sheaf_inconsistency
 
 2. **Review Metrics**
    ```powershell
-   python check_metrics.py
+   python tools/ops/check_metrics.py
    ```
 
 3. **Monitor STORM Metrics** (once visible)
@@ -240,8 +240,8 @@ python tools/deploy_storm_shadow.py --check-only
 - `docs/STORM_DEPLOYMENT_CHECKLIST.md` - Full deployment guide
 - `docs/STORM_QUICK_START.md` - 5-minute setup guide
 - `tools/deploy_storm_shadow.py` - Automated verification script
-- `test_storm_metrics.py` - STORM recall test
-- `check_metrics.py` - Metrics analysis tool
+- `tests/storm/manual/storm_metrics_probe.py` - STORM recall test
+- `tools/ops/check_metrics.py` - Metrics analysis tool
 
 **Updated:**
 - Added Hub startup instructions
