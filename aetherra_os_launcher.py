@@ -24,6 +24,7 @@ import sys
 import time
 import traceback
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 # Early .env loader: ensure API keys and config from .env are available at startup
