@@ -3,7 +3,7 @@
 > Maintained and officially operated by **Aetherra Labs**.
 > **Powered by Aetherra Labs.**
 
-Updated: 2025-08-27
+Updated: 2026-06-20
 
 This document describes the Aetherra Artificial Intelligence System: the core AI engine, its subsystems, contracts, observability, and extension points. It mirrors the structure of other system docs and is grounded in the current codebase.
 
@@ -15,6 +15,7 @@ This document describes the Aetherra Artificial Intelligence System: the core AI
 
 ## At‑a‑glance status
 
+- System status: Functional foundation complete
 - Engine core: Implemented (AetherraEngine)
 - Memory integration: Implemented (async core memory APIs with graceful mock fallback)
 - Reasoning: Basic mock; placeholder for production LLM/tool-augmented reasoning
@@ -24,6 +25,85 @@ This document describes the Aetherra Artificial Intelligence System: the core AI
 - Introspection/health: Implemented with graceful fallback
 - Conversational loop: Implemented (store/recall + response synthesis)
 - Developer AI HTTP APIs: Implemented (opt-in) — /api/ai/ask (JSON), /api/ai/stream (SSE)
+
+## Functional foundation completion
+
+The Artificial Intelligence System is functionally foundation complete for the
+current Aetherra milestone. The completed foundation is not "full autonomous
+intelligence" or final LLM-backed reasoning. It is a bounded AI engine contract
+with message processing, memory handoff, basic reasoning, task submission,
+Guardian-protected task execution, graceful component degradation, metrics, and
+read-only readiness reporting.
+
+This foundation is safe for alpha preparation because risky execution authority
+remains outside the AI engine. The AI engine can process messages and submit
+tasks through guarded paths, but Guardian, Security, Kernel, Memory,
+Self-Improvement, Self-Incorporation, and Maintenance retain their own
+authority.
+
+New Hub status surface:
+
+- `GET /api/ai/status` reports AI engine readiness, component state, safety
+  signals, session metrics, and authority boundaries.
+
+### Understanding Rule
+
+What it does:
+
+- Provides the core AI engine entrypoint for message processing and task
+  submission.
+- Builds reasoning context from conversation state and memory recall.
+- Produces bounded response payloads with confidence and session metrics.
+- Submits AI tasks to the agent orchestrator through Guardian-audited controls.
+- Exposes `GET /api/ai/status` for read-only readiness and authority reporting.
+
+Why it exists:
+
+- Aetherra needs one central AI processing layer that coordinates reasoning,
+  memory, agents, tools, and improvement signals without giving any one feature
+  unchecked authority.
+- The AI system gives Hub, Lyrixa, agents, and future clients a stable engine
+  contract while the deeper model/tool/RAG layers continue to evolve.
+
+Authority it owns:
+
+- AI message processing.
+- Reasoning context construction.
+- Conversation memory handoff.
+- AI task submission to agent orchestration.
+- AI subsystem status and readiness reporting.
+
+Authority it does not own:
+
+- Guardian approval decisions.
+- Security capability, sandbox, signing, or network policy.
+- Kernel scheduling or lifecycle control.
+- Memory persistence policy and storage authority.
+- Self-Improvement proposal approval.
+- Self-Incorporation execution.
+- Chat transport policy and client-facing routing.
+
+How it fails:
+
+- If the engine is not registered or unavailable, `/api/ai/status` reports
+  `offline` and Hub AI request routes return bounded offline/disabled responses.
+- If required status fields or required components are unavailable, readiness
+  reports `blocked`.
+- If components are present but degraded or inactive, readiness reports
+  `degraded` and clients should avoid treating AI output as fully reliable.
+- If Guardian denies a task submission, the task is not submitted and no active
+  task record is created.
+- If memory or reasoning operations fail during message processing, the engine
+  falls back to conservative error handling rather than granting new authority.
+
+How it interacts with other systems:
+
+- Hub exposes opt-in AI request/stream routes and the read-only AI status route.
+- Guardian reviews AI task execution intents before agent orchestration.
+- Security supplies capability and policy enforcement expectations.
+- Memory supplies recall and persistence when available.
+- Agent System receives approved AI task submissions.
+- Kernel and Hub surface AI status and metrics for operators.
 
 ### 1) AetherraEngine
 
@@ -238,6 +318,7 @@ Scheduling is triggered by Kernel maintenance; the engine exposes idempotent ent
 Developer ergonomics (implemented):
 
 - Optional HTTP interface for local testing without the full OS boot
+  - GET `/api/ai/status` - read-only AI engine readiness and authority contract
   - POST `/api/ai/ask` — conversational request, returns response JSON
   - POST `/api/ai/stream` — Server-Sent Events (SSE) stream
 - Environment flags (all opt-in, default off):

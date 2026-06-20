@@ -74,6 +74,30 @@ def openapi_spec():
                     },
                 }
             },
+            "/api/ai/status": {
+                "get": {
+                    "summary": "AI engine readiness status",
+                    "description": "Read-only readiness assessment for the Aetherra AI engine, including engine activity, component health, session metrics, and authority boundaries.",
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "headers": {
+                                "Cache-Control": {
+                                    "schema": {"type": "string"},
+                                    "description": "Always no-store for live AI status.",
+                                }
+                            },
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/AiStatusResponse"
+                                    }
+                                }
+                            },
+                        }
+                    },
+                }
+            },
             "/api/lyrixa/status": {
                 "get": {
                     "summary": "Lyrixa service status",
@@ -816,6 +840,48 @@ def openapi_spec():
                         },
                     },
                     "required": ["ok", "settings", "readiness"],
+                },
+                "AiStatusResponse": {
+                    "type": "object",
+                    "properties": {
+                        "ok": {"type": "boolean"},
+                        "engine": {"type": ["object", "null"]},
+                        "readiness": {
+                            "type": "object",
+                            "properties": {
+                                "ok": {"type": "boolean"},
+                                "system": {"type": "string"},
+                                "contract_version": {"type": "string"},
+                                "readiness": {
+                                    "type": "string",
+                                    "enum": [
+                                        "ready",
+                                        "degraded",
+                                        "blocked",
+                                        "offline",
+                                    ],
+                                },
+                                "safe_for_requests": {"type": "boolean"},
+                                "reasons": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                },
+                                "checks": {"type": "object"},
+                                "authority": {"type": "object"},
+                            },
+                            "required": [
+                                "ok",
+                                "system",
+                                "contract_version",
+                                "readiness",
+                                "safe_for_requests",
+                                "reasons",
+                                "checks",
+                                "authority",
+                            ],
+                        },
+                    },
+                    "required": ["ok", "engine", "readiness"],
                 },
                 "LyrixaStatusResponse": {
                     "type": "object",

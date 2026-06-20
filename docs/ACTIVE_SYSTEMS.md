@@ -38,7 +38,7 @@ Status meanings:
 
 | System | Status | Primary Reference |
 | --- | --- | --- |
-| Artificial Intelligence | In progress | `docs/AETHERRA_ARTIFICIAL_INTELLIGENCE_SYSTEM.md` |
+| Artificial Intelligence | Functional foundation complete | `docs/AETHERRA_ARTIFICIAL_INTELLIGENCE_SYSTEM.md` |
 | Consciousness | Functional foundation complete | `docs/AETHERRA_CONSCIOUSNESS_SYSTEM.md` |
 | Coding | In progress | `docs/AETHERRA_CODING_SYSTEM.md` |
 | Chat | In progress | `docs/AETHERRA_CHAT_SYSTEM.md` |

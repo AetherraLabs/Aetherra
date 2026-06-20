@@ -34,7 +34,7 @@ Status meanings:
 
 - Aetherra Artificial Intelligence System - ./AETHERRA_ARTIFICIAL_INTELLIGENCE_SYSTEM.md
   - Purpose: Core AI engine, subsystems, contracts, observability, and extension points.
-  - Status: Partial
+  - Status: Functional foundation complete
 
 - Aetherra Consciousness System - ./AETHERRA_CONSCIOUSNESS_SYSTEM.md
   - Purpose: Always-on awareness loop, qualia, attention, reflection, continuity, and governed autonomous action.
@@ -115,8 +115,8 @@ Status meanings:
 ## Quick Status
 
 - Functional complete: 2
-- Functional foundation complete: 13
-- Partial: 3
+- Functional foundation complete: 14
+- Partial: 2
 - Planned: 1
 
 ## How To Use

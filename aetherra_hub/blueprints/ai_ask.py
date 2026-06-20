@@ -8,7 +8,10 @@ import time
 # Third party imports
 from flask import Blueprint, jsonify, request
 
+from Aetherra.aetherra_core.engine import build_ai_readiness_payload
+
 # Local imports
+from ..services import registry_client
 from ..services.ai_stream import _get_engine  # reuse engine fetch
 from ..services.control_auth import authorize_token_request
 from ..services.guardian_chat import evaluate_chat_ingress
@@ -18,6 +21,17 @@ from ..services.security import safety_precheck
 
 bp = Blueprint("ai_ask", __name__)
 logger = logging.getLogger(__name__)
+
+
+def _json_no_store(payload):
+    response = jsonify(payload)
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@bp.get("/api/ai/status")
+def ai_status_get():
+    return _json_no_store(build_ai_readiness_payload(registry_client.get_engine_status()))
 
 
 @bp.post("/api/ai/ask")

@@ -25,7 +25,8 @@ focused tests or verification, then move to the next system.
 | 13 | Kernel | Runtime readiness foundation | Complete |
 | 14 | Hub | API integration readiness foundation | Complete |
 | 15 | Lyrixa | Guided interaction foundation | Complete |
-| 16 | Public Alpha | Controlled alpha release | Pending |
+| 16 | Artificial Intelligence | Engine readiness foundation | Complete |
+| 17 | Public Alpha | Controlled alpha release | Pending |
 
 ## Near-Term Focus
 
