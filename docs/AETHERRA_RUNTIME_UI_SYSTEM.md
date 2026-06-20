@@ -27,6 +27,8 @@ Current foundation:
 - `Aetherra/runtime_ui/observatory.py`
 - `Aetherra/runtime_ui/scene.py`
 - `aetherra_hub/blueprints/runtime_ui.py`
+- `Aetherra/lyrixa/gui/src/App.tsx`
+- `Aetherra/lyrixa/gui/src/index.css`
 - `tests/unit/test_runtime_ui_observatory.py`
 - `tests/unit/test_runtime_ui_scene.py`
 - `tests/unit/test_runtime_ui_snapshot.py`
@@ -36,8 +38,22 @@ Current foundation:
 - `tests/unit/test_runtime_ui_query.py`
 - `tests/unit/test_runtime_ui_api.py`
 
-This is not a visual implementation yet. It is the read-only state contract the
-future Cognitive Observatory should render.
+The API foundation is renderer-agnostic, and the first visual alpha shell now
+renders that contract through the existing Vite/React/Three build path. The
+served app is a read-only Cognitive Observatory shell, not the legacy Lyrixa
+dashboard.
+
+Visual alpha shell:
+
+- Uses the Runtime UI bootstrap contract as its primary data source.
+- Renders a full-screen living architecture map with 3D subsystem nodes and
+  active relationships.
+- Falls back to a bounded local snapshot when the Hub API is unavailable during
+  static artifact inspection.
+- Shows Guardian, Security, Homeostasis, Memory, subsystem status, activity,
+  authority, and recent events.
+- Exposes no mutation controls and keeps `controls_enabled: false` as the
+  expected foundation posture.
 
 ## Design Direction: Cognitive Observatory
 
@@ -180,6 +196,18 @@ The Runtime UI reaches foundation-complete when:
 - Contract validation reports the bootstrap payload as coherent.
 - The build order and system dashboards point to this document.
 
+The Runtime UI reaches alpha-shell readiness when:
+
+- The app builds with the existing frontend toolchain.
+- The first viewport immediately communicates Aetherra as a living system.
+- The visual shell consumes `/api/runtime-ui/bootstrap` when available.
+- The shell remains useful in read-only fallback mode for local artifact
+  inspection.
+- No legacy dashboard layout, desktop metaphor, or dangerous control surface is
+  presented.
+- The Hub frontend catch-all can serve the generated build artifact from
+  `Aetherra/lyrixa/gui/dist` without committing generated assets.
+
 ## Implementation Notes
 
 The current foundation provides:
@@ -204,6 +232,7 @@ The current foundation provides:
 - `parse_observatory_mode()`
 - `parse_limit()`
 - `validate_runtime_ui_payload()`
+- Runtime Observatory alpha shell in `Aetherra/lyrixa/gui/src/App.tsx`
 
 These models are intentionally renderer-agnostic. A future 3D or graph-based
 client can render them without importing legacy UI code.
