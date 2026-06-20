@@ -74,6 +74,30 @@ def openapi_spec():
                     },
                 }
             },
+            "/api/lyrixa/status": {
+                "get": {
+                    "summary": "Lyrixa service status",
+                    "description": "Read-only Lyrixa readiness and capability status. Reports live registered service status when available and a bounded offline fallback when Lyrixa is not registered.",
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "headers": {
+                                "Cache-Control": {
+                                    "schema": {"type": "string"},
+                                    "description": "Always no-store for live Lyrixa status.",
+                                }
+                            },
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/LyrixaStatusResponse"
+                                    }
+                                }
+                            },
+                        }
+                    },
+                }
+            },
             "/api/maintenance/status": {
                 "get": {
                     "summary": "Unified maintenance status",
@@ -792,6 +816,34 @@ def openapi_spec():
                         },
                     },
                     "required": ["ok", "settings", "readiness"],
+                },
+                "LyrixaStatusResponse": {
+                    "type": "object",
+                    "properties": {
+                        "ok": {"type": "boolean"},
+                        "system": {"type": "string"},
+                        "service": {"type": "string"},
+                        "readiness": {
+                            "type": "string",
+                            "enum": ["ready", "degraded", "offline"],
+                        },
+                        "safe_for_interaction": {"type": "boolean"},
+                        "initialized": {"type": "boolean"},
+                        "forced_offline": {"type": "boolean"},
+                        "degraded_components": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                        },
+                        "capabilities": {"type": "object"},
+                        "authority": {"type": "object"},
+                    },
+                    "required": [
+                        "ok",
+                        "system",
+                        "service",
+                        "readiness",
+                        "safe_for_interaction",
+                    ],
                 },
                 "KernelReadinessResponse": {
                     "type": "object",

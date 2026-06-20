@@ -102,7 +102,7 @@ Status meanings:
 
 - Aetherra Lyrixa System - ./AETHERRA_LYRIXA_SYSTEM.md
   - Purpose: Conversational and interface layer for Aetherra OS.
-  - Status: Partial
+  - Status: Functional foundation complete
 
 - Aetherra Chat System - ./AETHERRA_CHAT_SYSTEM.md
   - Purpose: Platform-level conversational service for message transport, streaming, safety middleware, and observability.
@@ -115,8 +115,8 @@ Status meanings:
 ## Quick Status
 
 - Functional complete: 2
-- Functional foundation complete: 12
-- Partial: 4
+- Functional foundation complete: 13
+- Partial: 3
 - Planned: 1
 
 ## How To Use

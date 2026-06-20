@@ -229,6 +229,7 @@ class ChatResponse:
 class LyrixaChatService:
     def __init__(self, workspace_root: Path | None = None):
         self.root = Path(workspace_root) if workspace_root else WORKSPACE_ROOT
+        self.initialized = False
         self.router = create_chat_router(str(self.root)) if create_chat_router else None
         self.registry = None
         self._intelligence = None
@@ -275,6 +276,7 @@ class LyrixaChatService:
             # Note degraded components for visibility
             with contextlib.suppress(Exception):
                 self._cfg.setdefault("lyrixa_chat", {})["degraded_components"] = ["forced_offline"]
+            self.initialized = True
             return
         # Extract optional coherence threshold from multiple possible config shapes
         try:
@@ -381,6 +383,69 @@ class LyrixaChatService:
                 await self._proactive_monitor.start_monitoring()
             except Exception:
                 self._proactive_monitor = None
+        self.initialized = True
+
+    def get_status(self) -> dict[str, Any]:
+        """Return Lyrixa's bounded, read-only service status."""
+
+        degraded_components = []
+        with contextlib.suppress(Exception):
+            lyrixa_cfg = self._cfg.get("lyrixa_chat", {})
+            if isinstance(lyrixa_cfg, dict):
+                degraded = lyrixa_cfg.get("degraded_components", [])
+                if isinstance(degraded, list):
+                    degraded_components = [str(item) for item in degraded]
+
+        if self._forced_offline:
+            readiness = "offline"
+        elif not self.initialized:
+            readiness = "degraded"
+        else:
+            readiness = "ready"
+
+        if degraded_components and readiness == "ready":
+            readiness = "degraded"
+
+        return {
+            "ok": True,
+            "system": "lyrixa",
+            "service": "lyrixa_chat",
+            "readiness": readiness,
+            "safe_for_interaction": readiness in {"ready", "degraded"},
+            "initialized": self.initialized,
+            "forced_offline": self._forced_offline,
+            "workspace_root": str(self.root),
+            "degraded_components": degraded_components,
+            "capabilities": {
+                "identity_answers": True,
+                "offline_fallback": True,
+                "safe_edits": True,
+                "safe_edits_require_guardian": True,
+                "router_available": self.router is not None,
+                "intelligence_available": self._intelligence is not None,
+                "registry_connected": self.registry is not None,
+                "memory_connected": self._pmemory is not None,
+                "consciousness_connected": self._conscious is not None,
+                "system_monitor_available": self._system_monitor is not None,
+            },
+            "authority": {
+                "owns": [
+                    "Lyrixa identity and guidance responses",
+                    "bounded chat-service fallback behavior",
+                    "safe-edit suggestion formatting",
+                    "service-level awareness summaries",
+                ],
+                "does_not_own": [
+                    "Guardian approval decisions",
+                    "Security capability policy",
+                    "Kernel scheduling",
+                    "Memory persistence authority",
+                    "Self-Incorporation execution",
+                    "Runtime UI rendering",
+                    "legacy GUI lifecycle",
+                ],
+            },
+        }
 
     # ---- Service Registry broadcast hook ----
     async def handle_message(

@@ -31,7 +31,7 @@ Status meanings:
 | Aether Script | Functional foundation complete | `docs/Aether_Script_Language_System.md` |
 | Integration Validation | Functional foundation complete | `docs/AETHERRA_INTEGRATION_VALIDATION.md` |
 | Runtime UI | Functional foundation complete | `docs/AETHERRA_RUNTIME_UI_SYSTEM.md` |
-| Lyrixa | In progress | `docs/AETHERRA_LYRIXA_SYSTEM.md` |
+| Lyrixa | Functional foundation complete | `docs/AETHERRA_LYRIXA_SYSTEM.md` |
 | Hub | Functional foundation complete | `docs/AETHERRA_HUB_API_REFERENCE.md` |
 
 ## Cognitive And Intelligence Systems
@@ -47,7 +47,7 @@ Status meanings:
 ## Governance Rule
 
 Security, Guardian, Homeostasis, Self-Improvement, Maintenance,
-Self-Incorporation, Memory, Kernel, Hub, Consciousness, Agent System,
+Self-Incorporation, Memory, Kernel, Hub, Lyrixa, Consciousness, Agent System,
 Aether Script, and Integration Validation are the current safety and
 operations foundation. New systems should integrate with those foundations
 instead of bypassing them.

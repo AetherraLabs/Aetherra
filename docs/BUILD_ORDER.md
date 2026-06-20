@@ -24,7 +24,8 @@ focused tests or verification, then move to the next system.
 | 12 | Runtime UI | Cognitive Observatory foundation | Complete |
 | 13 | Kernel | Runtime readiness foundation | Complete |
 | 14 | Hub | API integration readiness foundation | Complete |
-| 15 | Public Alpha | Controlled alpha release | Pending |
+| 15 | Lyrixa | Guided interaction foundation | Complete |
+| 16 | Public Alpha | Controlled alpha release | Pending |
 
 ## Near-Term Focus
 
