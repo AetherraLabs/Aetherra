@@ -23,7 +23,8 @@ focused tests or verification, then move to the next system.
 | 11 | Integration Validation | Cross-system alpha readiness foundation | Complete |
 | 12 | Runtime UI | Cognitive Observatory foundation | Complete |
 | 13 | Kernel | Runtime readiness foundation | Complete |
-| 14 | Public Alpha | Controlled alpha release | Pending |
+| 14 | Hub | API integration readiness foundation | Complete |
+| 15 | Public Alpha | Controlled alpha release | Pending |
 
 ## Near-Term Focus
 

@@ -91,6 +91,11 @@ Status meanings:
   - Status: Functional foundation complete
   - Dependencies: Guardian, Security, Homeostasis, Maintenance, Aether Script, Integration Validation, Hub
 
+- Aetherra Hub System - ./AETHERRA_HUB_API_REFERENCE.md
+  - Purpose: HTTP, SSE, WebSocket, metrics, OpenAPI, health, and readiness integration boundary for Aetherra runtime systems and clients.
+  - Status: Functional foundation complete
+  - Dependencies: Guardian, Security, Kernel, Runtime UI, Maintenance
+
 - Aetherra Coding System - ./AETHERRA_CODING_SYSTEM.md
   - Purpose: AI-native coding orchestration, testing, security, signing, and shipping.
   - Status: Partial
@@ -110,7 +115,7 @@ Status meanings:
 ## Quick Status
 
 - Functional complete: 2
-- Functional foundation complete: 11
+- Functional foundation complete: 12
 - Partial: 4
 - Planned: 1
 

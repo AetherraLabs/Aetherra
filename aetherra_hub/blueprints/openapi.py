@@ -135,6 +135,30 @@ def openapi_spec():
                     },
                 }
             },
+            "/api/hub/readiness": {
+                "get": {
+                    "summary": "Hub readiness contract",
+                    "description": "Read-only readiness assessment for Hub route registration, production security posture, service registry visibility, and Kernel dependency visibility.",
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "headers": {
+                                "Cache-Control": {
+                                    "schema": {"type": "string"},
+                                    "description": "Always no-store for live Hub readiness state.",
+                                }
+                            },
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/HubReadinessResponse"
+                                    }
+                                }
+                            },
+                        }
+                    },
+                }
+            },
             "/api/runtime-ui/manifest": {
                 "get": {
                     "summary": "Runtime UI contract and safety manifest",
@@ -732,6 +756,43 @@ def openapi_spec():
         },
         "components": {
             "schemas": {
+                "HubReadinessResponse": {
+                    "type": "object",
+                    "properties": {
+                        "ok": {"type": "boolean"},
+                        "settings": {"type": "object"},
+                        "readiness": {
+                            "type": "object",
+                            "properties": {
+                                "ok": {"type": "boolean"},
+                                "system": {"type": "string"},
+                                "contract_version": {"type": "string"},
+                                "readiness": {
+                                    "type": "string",
+                                    "enum": ["ready", "degraded", "blocked"],
+                                },
+                                "safe_for_clients": {"type": "boolean"},
+                                "reasons": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                },
+                                "checks": {"type": "object"},
+                                "authority": {"type": "object"},
+                            },
+                            "required": [
+                                "ok",
+                                "system",
+                                "contract_version",
+                                "readiness",
+                                "safe_for_clients",
+                                "reasons",
+                                "checks",
+                                "authority",
+                            ],
+                        },
+                    },
+                    "required": ["ok", "settings", "readiness"],
+                },
                 "KernelReadinessResponse": {
                     "type": "object",
                     "properties": {
