@@ -1169,6 +1169,7 @@ class AetherraOSLauncher:
 
         # Load homeostasis system for autonomous stability control
         await self._load_homeostasis_system(system_config)
+        await self._load_maintenance_system(system_config)
 
         # Load Interactive Lyrixa (reactive expressions + emotion system)
         await self._load_interactive_lyrixa(system_config)
@@ -3042,6 +3043,38 @@ class AetherraOSLauncher:
             logger.info("[OK] Homeostasis System loaded")
         except Exception as e:
             logger.warning(f"[WARN] Homeostasis System unavailable: {e}")
+
+    async def _load_maintenance_system(self, config: dict[str, Any]):
+        """Load the Maintenance coordination service."""
+        try:
+            enabled = config.get("maintenance_enabled")
+            if enabled is None:
+                enabled = os.getenv("AETHERRA_MAINTENANCE_ENABLED", "1") != "0"
+            if not enabled:
+                logger.info("[INFO] Maintenance System disabled in configuration")
+                return
+
+            logger.info("[MAINT] Loading Maintenance System...")
+
+            from Aetherra.maintenance import register_maintenance_service
+
+            maintenance = await register_maintenance_service(project_root=Path("."))
+            self.systems["maintenance"] = maintenance
+
+            if self.service_registry:
+                with contextlib.suppress(Exception):
+                    await self.service_registry.update_service_status(
+                        "maintenance_system", ServiceStatus.HEALTHY
+                    )
+                with contextlib.suppress(Exception):
+                    await self.service_registry.update_service_status(
+                        "aetherra_maintenance", ServiceStatus.HEALTHY
+                    )
+
+            logger.info("[OK] Maintenance System online")
+
+        except Exception as e:
+            logger.warning(f"[WARN] Maintenance System unavailable: {e}")
 
     async def _start_kernel_loop(self):
         """[SYS] Start the OS kernel loop."""

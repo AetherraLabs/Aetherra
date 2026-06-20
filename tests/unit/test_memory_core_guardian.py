@@ -2,7 +2,7 @@ import asyncio
 import json
 from datetime import datetime, timedelta
 
-from Aetherra.aetherra_core.memory.memory_core import LyrixaMemorySystem
+from Aetherra.aetherra_core.memory.memory_core import LyrixaMemorySystem, MemoryQuery
 
 
 def _configure_guardian(monkeypatch, tmp_path):
@@ -27,7 +27,15 @@ def _guardian_entries(root):
     ]
 
 
-def _seed_memory(system, *, memory_id="m1", content="secret memory"):
+def _seed_memory(
+    system,
+    *,
+    memory_id="m1",
+    content="secret memory",
+    tags=None,
+    importance=0.1,
+    memory_type="conversation",
+):
     cursor = system.ensure_connection().cursor()
     now = datetime.now()
     cursor.execute(
@@ -40,12 +48,12 @@ def _seed_memory(system, *, memory_id="m1", content="secret memory"):
             memory_id,
             json.dumps({"text": content}),
             json.dumps({"source": "test"}),
-            json.dumps(["private"]),
-            0.1,
+            json.dumps(tags or ["private"]),
+            importance,
             (now - timedelta(days=45)).isoformat(),
             now.isoformat(),
             0,
-            "conversation",
+            memory_type,
         ),
     )
     system.ensure_connection().commit()
@@ -199,3 +207,38 @@ def test_memory_delete_denies_external_requester_before_database_mutation(
     assert count == 1
     assert entries[-1]["details"]["intent"]["requester"] == "untrusted_operator"
     assert entries[-1]["details"]["decision"]["reason"] == "missing_capability"
+
+
+def test_memory_search_combines_filters_once(monkeypatch, tmp_path):
+    _configure_guardian(monkeypatch, tmp_path)
+    with LyrixaMemorySystem(str(tmp_path / "memory.db")) as system:
+        _seed_memory(
+            system,
+            memory_id="matching-memory",
+            content="alpha planning note",
+            tags=["planning", "private"],
+            importance=0.8,
+            memory_type="project",
+        )
+        _seed_memory(
+            system,
+            memory_id="wrong-type",
+            content="alpha planning note",
+            tags=["planning"],
+            importance=0.9,
+            memory_type="conversation",
+        )
+
+        results = asyncio.run(
+            system.search_memories(
+                MemoryQuery(
+                    text="alpha",
+                    tags=["planning"],
+                    memory_type="project",
+                    importance_threshold=0.5,
+                    limit=5,
+                )
+            )
+        )
+
+    assert [memory.id for memory in results] == ["matching-memory"]

@@ -70,7 +70,10 @@ def _guardian_preflight_qfac_store(
                 "content_length": len(content_text),
                 "record_id_hash": _hash_value(record_id),
                 "embedding_dimension": len(record_embedding or []),
-                "observer_state_keys": sorted((observer_state or {}).keys()),
+                "observer_label_count": len(observer_state or {}),
+                "observer_label_hashes": tuple(
+                    _hash_value(key) for key in sorted((observer_state or {}).keys())
+                ),
             },
         ),
         approval_id=approval_id,

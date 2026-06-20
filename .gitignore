@@ -6,6 +6,68 @@ aetherra-website/
 # This file specifies which files and directories Git should ignore
 # ===================================================================
 
+# ===== REPOSITORY HYGIENE GUARDS =====
+# Build products, packaged apps, runtime state, generated reports, and vendored
+# dependency bundles must stay out of source control. Keep source, hand-written
+# docs, tests, and reproducible lockfiles tracked instead.
+
+# Build outputs and distribution/package artifacts
+/build/
+/dist/
+/dist-packages/
+/downloads/
+/sdist/
+/wheels/
+/release/
+/releases/
+/packages/
+/packaging/output/
+*.egg-info/
+*.spec.bak
+
+# Runtime, cache, and temporary state
+/.aetherra/
+/.aetherra_temp*/
+/.cache/
+/.mypy_cache/
+/.pytest_cache/
+/.pytest_tmp/
+/.ruff_cache/
+/debug_output/
+/test_output/
+/tmp/
+/temp/
+/.temp/
+/.tmp/
+/.lyrixa_last_introspection
+
+# Generated reports and scanner outputs
+/artifacts/
+/reports/
+/data/artifacts/
+/gate_results.json
+/gate_sign_off.md
+/integrity_manifest.json
+/licenses_report.json
+/ruff_report*.json
+/ruff_report*.txt
+/security_scan.json
+/aether_static_report.md
+/aether_verification_report.md
+/*_metrics_*.json
+/*audit*.json
+/*report*.json
+
+# Vendored dependency bundles and installed package trees
+/vendor/
+/vendors/
+/third_party/vendor/
+/node_modules/
+**/node_modules/
+**/site-packages/
+**/*.dist-info/
+**/*.egg-info/
+
 # ===== ENVIRONMENT VARIABLES & SECRETS =====
 # Never commit API keys, passwords, or sensitive configuration
 .env
@@ -206,7 +268,8 @@ security_scan.json
 licenses_report.json
 gate_results.json
 doctor_last_run.txt
-docs/docs_architecture_report.json  # Ephemeral generated docs architecture scan (not versioned)
+# Ephemeral generated docs architecture scan (not versioned)
+docs/docs_architecture_report.json
 
 # Backup files
 backups/

@@ -32,14 +32,18 @@ class RiskFinding:
     snippet: str
 
 
-def analyze_file(path: Path) -> List[RiskFinding]:
+def analyze_text(text: str) -> List[RiskFinding]:
     findings: List[RiskFinding] = []
-    text = path.read_text(encoding="utf-8", errors="ignore")
     for i, line in enumerate(text.splitlines(), start=1):
         for rx, kind in RISKY_PATTERNS:
             if rx.search(line):
                 findings.append(RiskFinding(kind=kind, line=i, snippet=line.strip()[:200]))
     return findings
+
+
+def analyze_file(path: Path) -> List[RiskFinding]:
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    return analyze_text(text)
 
 
 def risk_score(findings: List[RiskFinding]) -> int:

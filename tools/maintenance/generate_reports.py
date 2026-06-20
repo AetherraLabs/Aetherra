@@ -13,6 +13,8 @@ from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
+from Aetherra.maintenance import require_allowed_report_destination
+
 
 @dataclass(frozen=True)
 class AnalysisReportPlan:
@@ -238,12 +240,25 @@ def plan_analysis_reports(analysis, output_dir=".") -> list[AnalysisReportPlan]:
     ]
 
 
-def write_analysis_reports(plans: list[AnalysisReportPlan], output_dir=".") -> int:
+def write_analysis_reports(
+    plans: list[AnalysisReportPlan],
+    output_dir=".",
+    *,
+    project_root: Path | str | None = None,
+) -> int:
     """Write planned reports after Guardian approval."""
     output_path = Path(output_dir)
+    policy_root = Path(project_root) if project_root is not None else Path.cwd()
     if not plans:
         print("No analysis reports to generate.")
         return 0
+
+    try:
+        for plan in plans:
+            require_allowed_report_destination(plan.file_path, policy_root)
+    except ValueError as exc:
+        print(f"Maintenance report path blocked: {exc}")
+        return 1
 
     decision = _guardian_preflight_report_generation(
         output_dir=output_path,
@@ -260,13 +275,17 @@ def write_analysis_reports(plans: list[AnalysisReportPlan], output_dir=".") -> i
     return 0
 
 
-def main(analysis_file="aetherra_project_analysis.json", output_dir=".") -> int:
+def main(
+    analysis_file="artifacts/maintenance/aetherra_project_analysis.json",
+    output_dir="reports/maintenance",
+) -> int:
     """Generate comprehensive analysis reports."""
     print("Generating analysis reports...")
     analysis = load_analysis(analysis_file)
     result = write_analysis_reports(
         plan_analysis_reports(analysis, output_dir=output_dir),
         output_dir=output_dir,
+        project_root=Path.cwd(),
     )
     if result != 0:
         return result

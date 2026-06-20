@@ -21,6 +21,8 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+from Aetherra.maintenance import require_allowed_report_destination
+
 logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -145,6 +147,12 @@ def write_stub_inventory(
     project_root: Path = PROJECT_ROOT,
     plan: StubInventoryWritePlan,
 ) -> bool:
+    try:
+        require_allowed_report_destination(plan.file_path, project_root)
+    except ValueError as exc:
+        print(f"Maintenance report path blocked: {exc}")
+        return False
+
     decision = _guardian_preflight_stub_inventory(project_root=project_root, plan=plan)
     if not decision.allowed:
         print(f"Guardian denied stub inventory write: {decision.reason}")

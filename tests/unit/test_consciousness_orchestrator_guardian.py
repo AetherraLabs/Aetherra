@@ -210,6 +210,9 @@ def test_orchestrator_metrics_write_is_guardian_audited_without_raw_path_or_id(
 
     assert orchestrator.last_narrative_coherence == 0.91
     assert metrics_path.exists()
+    metrics_text = metrics_path.read_text(encoding="utf-8")
+    assert "private-chapter-id" not in metrics_text
+    assert "chapter_hash=" in metrics_text
     ledger_text = _audit_text(tmp_path)
     assert "private-chapter-id" not in ledger_text
     assert str(metrics_path) not in ledger_text

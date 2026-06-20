@@ -54,7 +54,7 @@ def test_project_analysis_write_uses_guardian_approval_and_sanitized_audit(
 ):
     audit_root = _configure_guardian(monkeypatch, tmp_path)
     analyzer = _analyzer(tmp_path)
-    output_file = tmp_path / "project_analysis.json"
+    output_file = tmp_path / "artifacts" / "maintenance" / "project_analysis.json"
     plan = analyzer.plan_analysis_write(output_file)
     pending = _guardian_preflight_analysis_write(
         project_root=tmp_path,
@@ -94,7 +94,7 @@ def test_project_analysis_write_denies_external_requester_before_write(
     monkeypatch.setenv("AETHERRA_POLICY_HOME", str(audit_root / "policy"))
     monkeypatch.setenv("AETHERRA_PRINCIPAL", "untrusted_operator")
     analyzer = _analyzer(tmp_path)
-    output_file = tmp_path / "project_analysis.json"
+    output_file = tmp_path / "artifacts" / "maintenance" / "project_analysis.json"
     plan = analyzer.plan_analysis_write(output_file)
 
     result = analyzer.save_analysis(plan=plan)
@@ -104,3 +104,19 @@ def test_project_analysis_write_denies_external_requester_before_write(
     assert not output_file.exists()
     assert entries[-1]["details"]["intent"]["requester"] == "untrusted_operator"
     assert entries[-1]["details"]["decision"]["reason"] == "missing_capability"
+
+
+def test_project_analysis_write_blocks_unapproved_report_destination(
+    monkeypatch,
+    tmp_path,
+):
+    audit_root = _configure_guardian(monkeypatch, tmp_path)
+    analyzer = _analyzer(tmp_path)
+    output_file = tmp_path / "project_analysis.json"
+    plan = analyzer.plan_analysis_write(output_file)
+
+    result = analyzer.save_analysis(plan=plan)
+
+    assert result is False
+    assert not output_file.exists()
+    assert _guardian_entries(audit_root) == []

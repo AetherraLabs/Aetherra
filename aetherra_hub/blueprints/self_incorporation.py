@@ -9,10 +9,11 @@ from __future__ import annotations
 
 # Standard library imports
 import asyncio
+import hashlib
 import logging
 import threading
 from collections.abc import Awaitable
-from typing import TypeVar
+from typing import Any, TypeVar
 
 # Third party imports
 from flask import Blueprint, jsonify, request
@@ -65,6 +66,89 @@ def _authorize_control() -> ResponseReturnValue | None:
     if decision.allowed:
         return None
     return jsonify({"ok": False, "error": decision.error}), decision.status_code
+
+
+def _hash_audit_value(value: Any) -> str:
+    """Return a bounded hash for values that should not be echoed through Hub."""
+
+    raw = json_safe_repr(value).encode("utf-8", errors="replace")
+    return hashlib.sha256(raw).hexdigest()[:16]
+
+
+def json_safe_repr(value: Any) -> str:
+    """Build a deterministic compact representation for audit hashing."""
+
+    try:
+        import json
+
+        return json.dumps(value, sort_keys=True, default=str, separators=(",", ":"))
+    except Exception:
+        return str(value)
+
+
+def _safe_key_list(mapping: dict[str, Any], *, limit: int = 20) -> list[str]:
+    return sorted(str(key) for key in mapping.keys())[:limit]
+
+
+def _audit_target_summary(action: str, target: dict[str, Any]) -> dict[str, Any]:
+    """Summarize an ethics target without exposing raw private identifiers."""
+
+    summary: dict[str, Any] = {
+        "action": str(action or "unknown"),
+        "target_keys": _safe_key_list(target),
+    }
+    for field in ("file_id", "plan_id", "name", "path"):
+        if target.get(field):
+            summary[f"{field}_hash"] = _hash_audit_value(target.get(field))
+
+    capabilities = target.get("declared_capabilities")
+    if isinstance(capabilities, list):
+        summary["declared_capability_count"] = len(capabilities)
+        summary["declared_capability_hashes"] = [
+            _hash_audit_value(capability) for capability in capabilities[:20]
+        ]
+
+    if "complexity_score" in target:
+        try:
+            summary["complexity_score"] = float(target.get("complexity_score") or 0.0)
+        except (TypeError, ValueError):
+            summary["complexity_score_hash"] = _hash_audit_value(
+                target.get("complexity_score")
+            )
+    return summary
+
+
+def _audit_result_summary(result: Any) -> dict[str, Any]:
+    """Summarize an audit result for Hub readback."""
+
+    if not isinstance(result, dict):
+        return {"value_hash": _hash_audit_value(result)}
+
+    summary: dict[str, Any] = {}
+    for key, value in result.items():
+        key_text = str(key)
+        if key_text in {
+            "overall_score",
+            "utilitarian_score",
+            "deontological_score",
+            "virtue_score",
+            "care_score",
+            "confidence",
+            "risk_level",
+            "rollback_token_count",
+        }:
+            summary[key_text] = value
+        elif isinstance(value, list):
+            summary[f"{key_text}_count"] = len(value)
+            summary[f"{key_text}_hashes"] = [
+                _hash_audit_value(item) for item in value[:20]
+            ]
+        elif isinstance(value, dict):
+            summary[f"{key_text}_keys"] = _safe_key_list(value)
+            summary[f"{key_text}_hash"] = _hash_audit_value(value)
+        else:
+            summary[f"{key_text}_hash"] = _hash_audit_value(value)
+    return summary
 
 
 @bp.get("/status")
@@ -213,6 +297,9 @@ def rollback() -> ResponseReturnValue:
 @bp.get("/audit")
 def get_audit() -> ResponseReturnValue:
     """Get audit records with optional filtering."""
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
     try:
         selfinc_service = get_service("self_incorporation")
         if not selfinc_service:
@@ -342,7 +429,6 @@ def get_ethics_overview() -> ResponseReturnValue:
             "risk_assessment": risk_assessment,
             "framework_weights": selfinc_service.ethics_engine._load_ethics_profile(),
         }
-        print(f"OVERVIEW DEBUG resp={resp}", flush=True)
         return jsonify(resp)
     except Exception as e:  # pragma: no cover
         logger.error(f"[SELFINC] Ethics overview error: {e}")
@@ -394,44 +480,38 @@ def evaluate_ethics() -> ResponseReturnValue:
                 complexity_score = 0.0
             if complexity_score >= 0.6:
                 risk_level = "medium"
-        # Standard library imports
-        import hashlib
-        import sqlite3
         import time as _time
 
         raw = f"{action}:{target.get('file_id')}:{ethics_score.overall_score}:{_time.time()}".encode()
         trace_id = hashlib.sha256(raw).hexdigest()[:16]
-        audit_db_path = getattr(selfinc_service.config, "audit_db_path", None)
         logger.info(
-            f"[SELFINC][DEBUG] evaluate_ethics: trace_id={trace_id} audit_db_path={audit_db_path}"
+            "[SELFINC][ETHICS] evaluation recorded trace_id=%s audit_db_configured=%s",
+            trace_id,
+            bool(getattr(selfinc_service.config, "audit_db_path", None)),
         )
         try:
             selfinc_service.audit_ledger.append(
                 plan_id=target.get("plan_id", "ad_hoc"),
                 action="integration_plan",
                 status="applied",
-                target={"action": action, "target": target},
+                target=_audit_target_summary(action, target),
                 result={
                     "overall_score": ethics_score.overall_score,
-                    "risk_factors": ethics_score.risk_factors,
-                    "benefits": ethics_score.ethical_benefits,
+                    "risk_factor_count": len(ethics_score.risk_factors),
+                    "risk_factor_hashes": [
+                        _hash_audit_value(item)
+                        for item in ethics_score.risk_factors[:20]
+                    ],
+                    "benefit_count": len(ethics_score.ethical_benefits),
+                    "benefit_hashes": [
+                        _hash_audit_value(item)
+                        for item in ethics_score.ethical_benefits[:20]
+                    ],
                 },
                 trace_id=trace_id,
                 ethics_overall=ethics_score.overall_score,
                 risk_level=risk_level,
             )
-            conn = sqlite3.connect(selfinc_service.config.audit_db_path)
-            try:
-                cur = conn.execute(
-                    "SELECT COUNT(*) FROM audit_records WHERE trace_id = ?", (trace_id,)
-                )
-                row_count = cur.fetchone()[0]
-                print(
-                    f"EVALUATE DEBUG trace_id={trace_id} row_count_after_insert={row_count}",
-                    flush=True,
-                )
-            finally:
-                conn.close()
         except Exception as e:  # pragma: no cover
             logger.debug(f"[SELFINC][ETHICS] Failed to append evaluation audit: {e}")
         resp = {
@@ -465,43 +545,25 @@ def evaluate_ethics() -> ResponseReturnValue:
 
 @bp.get("/ethics/audit/<string:trace_id>")
 def get_ethics_audit(trace_id: str) -> ResponseReturnValue:
-    print(f"AUDIT ENDPOINT HIT: {trace_id}", flush=True)
     """Get detailed ethics audit for a specific integration."""
+    auth_error = _authorize_control()
+    if auth_error is not None:
+        return auth_error
     try:
         selfinc_service = get_service("self_incorporation")
         if not selfinc_service:
             return jsonify({"error": "Self-incorporation service not available"}), 503
 
-        # Debug: print trace_id and audit DB path (absolute)
-        # Standard library imports
-        import os
-
         audit_db_path = getattr(selfinc_service.config, "audit_db_path", None)
-        abs_audit_db_path = os.path.abspath(audit_db_path) if audit_db_path else None
         logger.info(
-            f"[SELFINC][DEBUG] get_ethics_audit: trace_id={trace_id} audit_db_path={audit_db_path} abs_audit_db_path={abs_audit_db_path}"
+            "[SELFINC][ETHICS] audit lookup trace_id=%s audit_db_configured=%s",
+            trace_id,
+            bool(audit_db_path),
         )
 
         record = None
         if hasattr(selfinc_service, "audit_ledger"):
             try:
-                # instrumentation: count rows with trace_id first
-                # Standard library imports
-                import sqlite3
-
-                conn = sqlite3.connect(selfinc_service.config.audit_db_path)
-                try:
-                    cur = conn.execute(
-                        "SELECT COUNT(*) FROM audit_records WHERE trace_id = ?",
-                        (trace_id,),
-                    )
-                    pre_lookup = cur.fetchone()[0]
-                finally:
-                    conn.close()
-                print(
-                    f"AUDIT DEBUG pre_lookup_count={pre_lookup} trace_id={trace_id}",
-                    flush=True,
-                )
                 record = selfinc_service.audit_ledger.get_by_trace(trace_id)
             except Exception as e:  # pragma: no cover - defensive
                 logger.debug(f"[SELFINC][ETHICS] Trace lookup error: {e}")
@@ -526,8 +588,8 @@ def get_ethics_audit(trace_id: str) -> ResponseReturnValue:
             "timestamp": record.get("timestamp"),
             "ethics_overall": record.get("ethics_overall"),
             "risk_level": record.get("risk_level"),
-            "result": record.get("result"),
-            "target": record.get("target"),
+            "result": _audit_result_summary(record.get("result")),
+            "target": _audit_result_summary(record.get("target")),
         }
 
         if disclosure_policy and disclosure_policy.is_free():

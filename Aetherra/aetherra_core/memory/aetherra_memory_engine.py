@@ -11,6 +11,7 @@ All memory operations are delegated to the canonical engine.
 
 # Standard library imports
 import asyncio
+import hashlib
 import math
 import re
 import uuid
@@ -660,7 +661,8 @@ class AetherraMemoryEngineAdvanced:
             ),
             metadata={
                 "category": normalized_category,
-                "tags": normalized_tags,
+                "tag_count": len(normalized_tags),
+                "tag_hashes": tuple(self._hash_audit_value(tag) for tag in normalized_tags),
                 "narrative_role": narrative_role,
                 "identity_memory": is_identity,
             },
@@ -698,6 +700,13 @@ class AetherraMemoryEngineAdvanced:
                 bool(metadata.get("identity")),
             )
         )
+
+    @staticmethod
+    def _hash_audit_value(value: Any) -> str:
+        """Return a stable short digest for audit correlation without raw values."""
+
+        digest = hashlib.sha256(str(value).encode("utf-8")).hexdigest()
+        return digest[:16]
 
     def _apply_policy_guard(self, content: Any, metadata: Optional[dict]) -> None:
         """Apply minimal policy hooks; default config disables enforcement.

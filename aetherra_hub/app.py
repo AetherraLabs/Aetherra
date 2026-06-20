@@ -48,6 +48,7 @@ from .blueprints import (  # pylint: disable=unused-import
     policy,
     qfac_admin,
     quantum,  # new
+    runtime_ui,
     scripts,  # new
     security,  # new
     self_improvement,  # new
@@ -91,6 +92,7 @@ BLUEPRINTS = [
     self_improvement.bp,
     scripts.bp,
     security.bp,
+    runtime_ui.bp,
     # Frontend MUST be last - catches all remaining routes for SPA
     frontend.bp,
 ]

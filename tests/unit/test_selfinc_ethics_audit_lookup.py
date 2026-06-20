@@ -43,7 +43,10 @@ def test_ethics_audit_lookup(selfinc_base_url):
         f"{selfinc_base_url}/ethics/evaluate",
         json={
             "action": "register_plugin",
-            "target": {"file_id": "plugin3", "declared_capabilities": ["network"]},
+            "target": {
+                "file_id": "private-plugin-id",
+                "declared_capabilities": ["private-network-capability"],
+            },
         },
         timeout=10,
     )
@@ -57,3 +60,5 @@ def test_ethics_audit_lookup(selfinc_base_url):
     assert "ethics_overall" in data
     assert "risk_level" in data
     assert "result" in data
+    assert "private-plugin-id" not in audit.text
+    assert "private-network-capability" not in audit.text

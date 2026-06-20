@@ -68,6 +68,7 @@ class HMRController:
             self.audit_max_backups = 3
         # In-memory audit counters by event for Prometheus exposure
         self.audit_counters: dict[str, int] = {}
+        self._rollback_tokens: dict[str, dict[str, Any]] = {}
 
     async def start(self):
         self.running = True
@@ -137,6 +138,207 @@ class HMRController:
             "source_length": len(source_ref),
             "allowed_sources_configured": bool(self.allowed_sources),
         }
+
+    def _token_hash(self, rollback_token: str) -> str:
+        return hashlib.sha256(str(rollback_token).encode("utf-8")).hexdigest()[:16]
+
+    def supports_rollback_action(self, action: str) -> bool:
+        """Return whether this controller can truthfully roll back an action."""
+
+        if action == "register_plugin":
+            plugin_manager = self._resolve_plugin_manager()
+            return bool(plugin_manager and hasattr(plugin_manager, "unload_plugin"))
+        if action == "register_agent":
+            agent_orchestrator = self._resolve_agent_orchestrator()
+            return bool(
+                agent_orchestrator
+                and self._find_agent_unregister(agent_orchestrator) is not None
+            )
+        return False
+
+    def register_rollback_token(
+        self,
+        rollback_token: str,
+        action: str,
+        result: dict[str, Any],
+        target: dict[str, Any] | None = None,
+        rollback_context: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Register rollback metadata for a completed HMR-backed action."""
+
+        token = str(rollback_token or "").strip()
+        action_name = str(action or "").strip()
+        if not token.startswith("rb_"):
+            return {"ok": False, "error": "invalid_rollback_token"}
+
+        if action_name == "register_plugin":
+            plugin_manager = None
+            if isinstance(rollback_context, dict):
+                plugin_manager = rollback_context.get("plugin_manager")
+            if plugin_manager is None:
+                plugin_manager = self._resolve_plugin_manager()
+            if not plugin_manager or not hasattr(plugin_manager, "unload_plugin"):
+                return {
+                    "ok": False,
+                    "error": "rollback_action_unsupported",
+                    "action": action_name,
+                }
+            plugin_name = str((result or {}).get("name") or "").strip()
+            if not plugin_name:
+                return {
+                    "ok": False,
+                    "error": "rollback_target_missing",
+                    "action": action_name,
+                }
+            self._rollback_tokens[token] = {
+                "action": action_name,
+                "plugin_name": plugin_name,
+                "plugin_manager": plugin_manager,
+                "registered_at": time.time(),
+                "target_hash": hashlib.sha256(
+                    json.dumps(target or {}, sort_keys=True, default=str).encode(
+                        "utf-8"
+                    )
+                ).hexdigest()[:16],
+            }
+            self._audit(
+                "rollback_token_registered",
+                action_name,
+                "self_incorporation",
+                ok=True,
+                extra={"rollback_token_hash": self._token_hash(token)},
+            )
+            return {"ok": True, "action": action_name}
+
+        if action_name == "register_agent":
+            agent_orchestrator = None
+            if isinstance(rollback_context, dict):
+                agent_orchestrator = rollback_context.get("agent_orchestrator")
+            if agent_orchestrator is None:
+                agent_orchestrator = self._resolve_agent_orchestrator()
+            if (
+                not agent_orchestrator
+                or self._find_agent_unregister(agent_orchestrator) is None
+            ):
+                return {
+                    "ok": False,
+                    "error": "rollback_action_unsupported",
+                    "action": action_name,
+                }
+            agent_id = str((result or {}).get("id") or "").strip()
+            if not agent_id:
+                return {
+                    "ok": False,
+                    "error": "rollback_target_missing",
+                    "action": action_name,
+                }
+            self._rollback_tokens[token] = {
+                "action": action_name,
+                "agent_id": agent_id,
+                "agent_orchestrator": agent_orchestrator,
+                "registered_at": time.time(),
+                "target_hash": hashlib.sha256(
+                    json.dumps(target or {}, sort_keys=True, default=str).encode(
+                        "utf-8"
+                    )
+                ).hexdigest()[:16],
+            }
+            self._audit(
+                "rollback_token_registered",
+                action_name,
+                "self_incorporation",
+                ok=True,
+                extra={"rollback_token_hash": self._token_hash(token)},
+            )
+            return {"ok": True, "action": action_name}
+
+        return {"ok": False, "error": "rollback_action_unsupported"}
+
+    async def rollback_token(self, rollback_token: str) -> dict[str, Any]:
+        """Roll back a previously registered token-bound HMR action."""
+
+        token = str(rollback_token or "").strip()
+        token_hash = self._token_hash(token)
+        record = self._rollback_tokens.get(token)
+        if not record:
+            self._audit(
+                "rollback_token_missing",
+                "unknown",
+                "self_incorporation",
+                ok=False,
+                reason="rollback_token_not_found",
+                extra={"rollback_token_hash": token_hash},
+            )
+            return {"ok": False, "error": "rollback_token_not_found"}
+
+        action = str(record.get("action") or "")
+        if action == "register_plugin":
+            plugin_name = str(record.get("plugin_name") or "")
+            rollback_result = await self._rollback_registered_plugin_with_manager(
+                plugin_name,
+                record.get("plugin_manager"),
+            )
+            if rollback_result.get("ok"):
+                self._rollback_tokens.pop(token, None)
+                with suppress(Exception):
+                    if hasattr(self.kernel, "record_hmr_rollback"):
+                        self.kernel.record_hmr_rollback("register_plugin")
+            self._audit(
+                "rollback_token_consumed",
+                action,
+                "self_incorporation",
+                ok=bool(rollback_result.get("ok")),
+                reason=rollback_result.get("error"),
+                extra={
+                    "rollback_token_hash": token_hash,
+                    "plugin_name_hash": hashlib.sha256(
+                        plugin_name.encode("utf-8")
+                    ).hexdigest()[:16],
+                },
+            )
+            return {**rollback_result, "action": action}
+
+        if action == "register_agent":
+            agent_id = str(record.get("agent_id") or "")
+            rollback_result = await self._rollback_registered_agent_with_orchestrator(
+                agent_id,
+                record.get("agent_orchestrator"),
+            )
+            if rollback_result.get("ok"):
+                self._rollback_tokens.pop(token, None)
+                with suppress(Exception):
+                    if hasattr(self.kernel, "record_hmr_rollback"):
+                        self.kernel.record_hmr_rollback("register_agent")
+            self._audit(
+                "rollback_token_consumed",
+                action,
+                "self_incorporation",
+                ok=bool(rollback_result.get("ok")),
+                reason=rollback_result.get("error"),
+                extra={
+                    "rollback_token_hash": token_hash,
+                    "agent_id_hash": hashlib.sha256(agent_id.encode("utf-8")).hexdigest()[
+                        :16
+                    ],
+                },
+            )
+            return {**rollback_result, "action": action}
+
+        return {
+            "ok": False,
+            "error": "rollback_action_unsupported",
+            "action": action or "unknown",
+        }
+
+    async def rollback_by_token(self, rollback_token: str) -> dict[str, Any]:
+        """Compatibility alias for token-bound rollback."""
+
+        return await self.rollback_token(rollback_token)
+
+    async def rollback_integration(self, rollback_token: str) -> dict[str, Any]:
+        """Compatibility alias for token-bound rollback."""
+
+        return await self.rollback_token(rollback_token)
 
     def _guardian_preflight(
         self,
@@ -396,6 +598,83 @@ class HMRController:
         if target in ("adapter:lyrixa_chat", "lyrixa_chat"):
             return getattr(self.kernel, "lyrixa_chat", None)
         return None
+
+    def _resolve_plugin_manager(self) -> Any | None:
+        plugin_manager = getattr(self.kernel, "plugin_manager", None)
+        if plugin_manager is not None:
+            return plugin_manager
+        try:
+            if hasattr(self.registry, "get_service"):
+                return self.registry.get_service("plugin_manager")
+        except Exception:
+            return None
+        return None
+
+    def _resolve_agent_orchestrator(self) -> Any | None:
+        agent_orchestrator = getattr(self.kernel, "agent_orchestrator", None)
+        if agent_orchestrator is not None:
+            return agent_orchestrator
+        try:
+            if hasattr(self.registry, "get_service"):
+                return self.registry.get_service("agent_orchestrator")
+        except Exception:
+            return None
+        return None
+
+    def _find_agent_unregister(self, agent_orchestrator: Any) -> Any | None:
+        for attr in ("unregister_agent", "remove_agent", "deregister_agent"):
+            unregister = getattr(agent_orchestrator, attr, None)
+            if callable(unregister):
+                return unregister
+        return None
+
+    async def _rollback_registered_plugin(self, plugin_name: str) -> dict[str, Any]:
+        return await self._rollback_registered_plugin_with_manager(plugin_name, None)
+
+    async def _rollback_registered_plugin_with_manager(
+        self,
+        plugin_name: str,
+        plugin_manager: Any | None,
+    ) -> dict[str, Any]:
+        if not plugin_name:
+            return {"ok": False, "error": "rollback_target_missing"}
+        plugin_manager = plugin_manager or self._resolve_plugin_manager()
+        if not plugin_manager or not hasattr(plugin_manager, "unload_plugin"):
+            return {"ok": False, "error": "plugin_manager_unavailable"}
+
+        unload = plugin_manager.unload_plugin
+        result = unload(plugin_name)
+        if asyncio.iscoroutine(result):
+            result = await result
+        return {
+            "ok": bool(result),
+            "plugin_name_hash": hashlib.sha256(plugin_name.encode("utf-8")).hexdigest()[
+                :16
+            ],
+        }
+
+    async def _rollback_registered_agent_with_orchestrator(
+        self,
+        agent_id: str,
+        agent_orchestrator: Any | None,
+    ) -> dict[str, Any]:
+        if not agent_id:
+            return {"ok": False, "error": "rollback_target_missing"}
+        agent_orchestrator = agent_orchestrator or self._resolve_agent_orchestrator()
+        if not agent_orchestrator:
+            return {"ok": False, "error": "agent_orchestrator_unavailable"}
+
+        unregister = self._find_agent_unregister(agent_orchestrator)
+        if not unregister:
+            return {"ok": False, "error": "agent_unregister_unavailable"}
+
+        result = unregister(agent_id)
+        if asyncio.iscoroutine(result):
+            result = await result
+        return {
+            "ok": bool(result),
+            "agent_id_hash": hashlib.sha256(agent_id.encode("utf-8")).hexdigest()[:16],
+        }
 
     async def _broadcast(self, message_type: str, data: dict[str, Any]):
         try:

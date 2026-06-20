@@ -26,7 +26,23 @@ class _FakeKernel:
         return {
             "running": True,
             "paused": self.paused,
+            "uptime": 1.0,
+            "cycle_count": 1,
+            "plugin_invoke_timeout_sec": 20.0,
+            "backpressure_guard_pass": True,
+            "backpressure_guard_violations": [],
+            "night_schedule_guard_pass": True,
+            "metrics": {"errors_count": 0},
+            "queue_sizes": {
+                "high_priority": 0,
+                "normal_priority": 0,
+                "background": 0,
+            },
             "queue_limits": dict(self.queue_limits),
+            "plugin_cb_open": False,
+            "dlq_count": 0,
+            "hmr": {"attempts": 0, "success": 0, "rollback": 0},
+            "inflight": {},
         }
 
 
@@ -40,6 +56,11 @@ def _client(monkeypatch, tmp_path, fake_kernel):
         kernel_bp.registry_client,
         "get_service",
         lambda service_name: fake_kernel if service_name == "kernel_loop" else None,
+    )
+    monkeypatch.setattr(
+        kernel_bp.registry_client,
+        "get_kernel_status",
+        lambda: fake_kernel.get_status(),
     )
     return create_app().test_client()
 
@@ -103,3 +124,17 @@ def test_kernel_queue_limits_audit_does_not_store_limit_values(monkeypatch, tmp_
     assert fake_kernel.queue_limits == {"normal_priority": "do-not-audit-limit-value"}
     assert "kernel.set_queue_limits" in ledger_text
     assert "do-not-audit-limit-value" not in ledger_text
+
+
+def test_kernel_readiness_endpoint_reports_ready(monkeypatch, tmp_path):
+    fake_kernel = _FakeKernel()
+    client = _client(monkeypatch, tmp_path, fake_kernel)
+
+    response = client.get("/api/kernel/readiness")
+    payload = response.get_json()
+
+    assert response.status_code == 200
+    assert response.headers["Cache-Control"] == "no-store"
+    assert payload["ok"] is True
+    assert payload["readiness"]["readiness"] == "ready"
+    assert payload["readiness"]["safe_to_schedule"] is True

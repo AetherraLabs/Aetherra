@@ -1,6 +1,6 @@
 # Aetherra Agent System
 
-Updated: 2025-11-01
+Updated: 2026-06-20
 
 This document describes the Aetherra Agent System: the orchestrator and agent components responsible for coordinating specialized AI agents to execute tasks. It mirrors the structure of other system docs and reflects the current codebase.
 
@@ -10,14 +10,15 @@ This document describes the Aetherra Agent System: the orchestrator and agent co
 - Model tasks, capabilities, and policies; schedule work across agents with priorities
 - Integrate with the AI Engine, Memory System, Kernel, and Hub for a cohesive OS experience
 
-## At‑a‑glance status
+## At-a-glance status
 
+- Overall status: Functional foundation complete
 - Orchestrator core: Implemented (AgentOrchestrator with graceful fallbacks)
 - Agent registry: In-memory in orchestrator; integrates with broader Service Registry for discovery where available
 - Task model: Basic task submission, priority, and status; sequential/parallel patterns available in stubs
-- Policies and capabilities: Basic capability checks; Kernel capability enforcement recommended for critical ops
+- Policies and capabilities: Guardian-gated registration, submission, assignment, cancellation, collaboration, and goal mutations; Kernel capability enforcement remains the long-term backpressure layer
 - Retries/timeout: Simple retry/timebox hooks; expand with Kernel backpressure for production
-- Telemetry: Basic counters and status; expand via Hub/Prometheus exposure
+- Telemetry: Basic counters and status; guarded paths use bounded audit metadata and privacy-preserving runtime logs
 - Engine integration: Implemented — `AetherraEngine.execute_task()` delegates to the orchestrator
 
 ### 1) Core components
@@ -249,6 +250,23 @@ Resource management and quotas (planned):
 - Capability gates checked before executing tools or external actions
 - Policy contexts include budgets (time/compute/network) and scopes (files, endpoints)
 - Leverage Kernel security and rate-limits for network/file/process operations
+
+Functional foundation checkpoint (2026-06-20):
+
+- Core agent registration, task submission, task assignment, and cancellation are routed through Guardian intent evaluation.
+- Collaboration task creation, quick-solve delegation, and collaboration agent registry changes are Guardian-gated.
+- Goal and subtask mutations are Guardian-gated, including create, update, delete, and completion paths.
+- Guardian audit metadata avoids raw task payloads, problem text, requirements, goal descriptions, subtask descriptions, metadata labels, update field names, agent ids, and capability names. Guarded paths use hashes, counts, lengths, status labels, and priority labels instead.
+- Runtime logs for guarded paths avoid raw task, goal, subtask, agent, problem, and requirement text.
+- Collaboration history stores problem hashes and lengths instead of raw problem text.
+
+Verification:
+
+```powershell
+python -m pytest -q -o addopts= --basetemp .pytest_tmp tests\unit\test_agent_orchestrator_guardian.py tests\unit\test_agent_collaboration_guardian.py tests\unit\test_agent_goals_guardian.py tests\unit\test_agent_legacy_plugin_guardian.py tests\unit\test_hub_agents_guardian.py
+python -m ruff check --select E9,F63,F7,F82,F841 Aetherra\aetherra_core\agents\agent_orchestrator.py Aetherra\aetherra_core\agents\collaboration.py Aetherra\aetherra_core\agents\goals.py tests\unit\test_agent_orchestrator_guardian.py tests\unit\test_agent_collaboration_guardian.py tests\unit\test_agent_goals_guardian.py
+python -m py_compile Aetherra\aetherra_core\agents\agent_orchestrator.py Aetherra\aetherra_core\agents\collaboration.py Aetherra\aetherra_core\agents\goals.py tests\unit\test_agent_orchestrator_guardian.py tests\unit\test_agent_collaboration_guardian.py tests\unit\test_agent_goals_guardian.py
+```
 
 Security extensions (planned):
 

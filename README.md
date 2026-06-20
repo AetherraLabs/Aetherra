@@ -49,6 +49,7 @@ active alpha-stage research and engineering codebase.
 | Guardian | Functional foundation complete | Intent evaluation, risk assessment, approval, containment, audit integration, and performance policy. |
 | Homeostasis | Functional foundation complete | Observation, diagnosis, recommendations, and Guardian-mediated controlled action paths. |
 | Self-Improvement | Functional foundation complete | Proposal-only loop with Guardian review and execution delegation; no direct mutation in the foundation milestone. |
+| Maintenance | Next target | Umbrella loop for observe, diagnose, propose, review, approve, apply, verify, and learn. |
 | Kernel, Hub, Memory, Plugins, Agents, Lyrixa, Aether Script | In progress | These systems are being completed and cleaned up in focused passes. |
 
 Primary system documents live in [`docs/`](docs/), especially:
@@ -57,6 +58,7 @@ Primary system documents live in [`docs/`](docs/), especially:
 - [`docs/AETHERRA_GUARDIAN_SYSTEM.md`](docs/AETHERRA_GUARDIAN_SYSTEM.md)
 - [`docs/AETHERRA_HOMEOSTASIS_SYSTEM.md`](docs/AETHERRA_HOMEOSTASIS_SYSTEM.md)
 - [`docs/AETHERRA_SELF-IMPROVEMENT_SYSTEM.md`](docs/AETHERRA_SELF-IMPROVEMENT_SYSTEM.md)
+- [`docs/AETHERRA_MAINTENANCE_SYSTEM.md`](docs/AETHERRA_MAINTENANCE_SYSTEM.md)
 - [`docs/SYSTEM_INDEX.md`](docs/SYSTEM_INDEX.md)
 
 ## Architecture Shape
@@ -167,6 +169,9 @@ as release artifacts instead of source.
 
 Cleanup tracking is maintained in:
 
+- [`docs/ACTIVE_SYSTEMS.md`](docs/ACTIVE_SYSTEMS.md)
+- [`docs/BUILD_ORDER.md`](docs/BUILD_ORDER.md)
+- [`docs/REPOSITORY_STRUCTURE.md`](docs/REPOSITORY_STRUCTURE.md)
 - [`docs/REPOSITORY_CLEANUP_PLAN.md`](docs/REPOSITORY_CLEANUP_PLAN.md)
 - [`docs/ROOT_SCRIPT_WORKFLOW_TRIAGE.md`](docs/ROOT_SCRIPT_WORKFLOW_TRIAGE.md)
 - [`docs/FILE_INDEX.md`](docs/FILE_INDEX.md)

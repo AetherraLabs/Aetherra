@@ -53,7 +53,8 @@ class DummyHomeostasis:
 
 
 class DummyHMRController:
-    pass
+    async def rollback_token(self, token: str):
+        return {"ok": True, "token": token}
 
 
 async def setup_service_with_stubs(health_sequence: list[float]):

@@ -105,3 +105,18 @@ def test_stub_inventory_write_denies_external_requester_before_write(
     assert not output_file.exists()
     assert entries[-1]["details"]["intent"]["requester"] == "untrusted_operator"
     assert entries[-1]["details"]["decision"]["reason"] == "missing_capability"
+
+
+def test_stub_inventory_write_blocks_unapproved_report_destination(
+    monkeypatch,
+    tmp_path,
+):
+    audit_root = _configure_guardian(monkeypatch, tmp_path)
+    output_file = tmp_path / "STUB_INVENTORY.json"
+    plan = _plan(output_file)
+
+    result = write_stub_inventory(project_root=tmp_path, plan=plan)
+
+    assert result is False
+    assert not output_file.exists()
+    assert _guardian_entries(audit_root) == []

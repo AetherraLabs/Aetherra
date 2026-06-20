@@ -20,11 +20,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import os
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -92,6 +95,8 @@ class ContinuityMemory:
 
         buffer = snapshots if snapshots is not None else self.buffer
         latest = buffer[-1] if buffer else None
+        qualia_labels = tuple(sorted(latest.qualia)) if latest else ()
+        trust_labels = tuple(sorted(latest.trust_scores)) if latest else ()
         decision = evaluate_intent(
             IntentDeclaration(
                 requester=self._guardian_requester(),
@@ -109,10 +114,16 @@ class ContinuityMemory:
                     "max_snapshots": self.max_snaps,
                     "latest_tick": latest.tick if latest else None,
                     "latest_ts": round(float(latest.ts), 3) if latest else None,
-                    "qualia_keys": tuple(sorted(latest.qualia)) if latest else (),
+                    "qualia_label_count": len(qualia_labels),
+                    "qualia_label_hashes": tuple(
+                        self._hash_value(label) for label in qualia_labels
+                    ),
                     "focus_count": len(latest.focuses) if latest else 0,
                     "intention_count": len(latest.intentions) if latest else 0,
-                    "trust_keys": tuple(sorted(latest.trust_scores)) if latest else (),
+                    "trust_label_count": len(trust_labels),
+                    "trust_label_hashes": tuple(
+                        self._hash_value(label) for label in trust_labels
+                    ),
                 },
             ),
             capability_checker=self._guardian_capability_checker,
@@ -213,7 +224,11 @@ class ContinuityMemory:
 
         except Exception as e:
             # Corrupt file: reset to empty buffer
-            print(f"[ContinuityMemory] Warning: Failed to load {self.path}: {e}")
+            logger.warning(
+                "Failed to load continuity memory from path hash %s: %s",
+                self._hash_value(Path(self.path).resolve()),
+                type(e).__name__,
+            )
             self.buffer = []
 
     def latest(self) -> Optional[ContinuitySnapshot]:

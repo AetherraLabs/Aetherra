@@ -10,12 +10,15 @@ Coordinates multiple AI agents to solve complex problems collaboratively
 # Standard library imports
 import asyncio
 import hashlib
+import logging
 import os
 import time
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 
 def _hash_value(value: Any) -> str | None:
@@ -519,18 +522,21 @@ class AICollaborationFramework:
 
         self.active_tasks[task_id] = task
 
-        print(f"🤝 Starting collaborative problem solving: {problem}")
-        print(f"   Task ID: {task_id}")
-        print(f"   Agents involved: {len(task.assigned_agents)}")
+        logger.info(
+            "Starting collaborative solve task_id_hash=%s problem_hash=%s agent_count=%s",
+            _hash_value(task_id),
+            _hash_value(problem),
+            len(task.assigned_agents),
+        )
 
         # Stage 1: Code Generation
-        print("🧠 Stage 1: Code Generation")
+        logger.info("Collaboration stage started task_id_hash=%s stage=code_generation", _hash_value(task_id))
         code_agent = self.ai_agents[AgentRole.CODE_GENERATOR]
         code_response = await code_agent.process_task(task)
         task.context["generated_code"] = code_response.solution
 
         # Stage 2: Optimization
-        print("⚡ Stage 2: Performance Optimization")
+        logger.info("Collaboration stage started task_id_hash=%s stage=optimization", _hash_value(task_id))
         optimizer_agent = self.ai_agents[AgentRole.OPTIMIZER]
         task.context["code"] = code_response.solution
         optimization_response = await optimizer_agent.process_task(task)
@@ -544,7 +550,7 @@ class AICollaborationFramework:
         task.context["validated_code"] = debug_response.solution
 
         # Stage 4: Documentation
-        print("📚 Stage 4: Documentation Generation")
+        logger.info("Collaboration stage started task_id_hash=%s stage=documentation", _hash_value(task_id))
         doc_agent = self.ai_agents[AgentRole.DOCUMENTER]
         task.context["code"] = debug_response.solution
         doc_response = await doc_agent.process_task(task)
@@ -606,17 +612,19 @@ class AICollaborationFramework:
             {
                 "timestamp": time.time(),
                 "task_id": task_id,
-                "problem": problem,
+                "problem_hash": _hash_value(problem),
+                "problem_length": len(str(problem or "")),
                 "agents_used": [agent.value for agent in task.assigned_agents],
                 "success": True,
                 "metrics": final_solution["collaboration_metrics"],
             }
         )
 
-        print("✅ Collaborative solution completed!")
-        print(f"   Total time: {final_solution['collaboration_metrics']['total_time']:.2f}s")
-        print(
-            f"   Average confidence: {final_solution['collaboration_metrics']['average_confidence']:.0%}"
+        logger.info(
+            "Collaborative solve completed task_id_hash=%s total_time=%.2f average_confidence=%.3f",
+            _hash_value(task_id),
+            final_solution["collaboration_metrics"]["total_time"],
+            final_solution["collaboration_metrics"]["average_confidence"],
         )
 
         return final_solution
@@ -644,7 +652,11 @@ class AICollaborationFramework:
             return
 
         self.ai_agents[agent.role] = agent
-        print(f"🤖 Added new AI agent: {agent.role.value}")
+        logger.info(
+            "Added collaboration agent agent_role=%s capability_count=%s",
+            agent.role.value,
+            len(agent_capabilities),
+        )
 
     def get_agent_capabilities(self) -> Dict[str, List[str]]:
         """Get capabilities of all agents"""
@@ -676,7 +688,6 @@ class AICollaborationFramework:
 
     async def quick_solve(self, problem: str) -> str:
         """Quick problem solving with minimal collaboration"""
-        print(f"🚀 Quick solve: {problem}")
 
         # Use only code generator for quick solutions
         code_agent = self.ai_agents[AgentRole.CODE_GENERATOR]
@@ -697,6 +708,12 @@ class AICollaborationFramework:
         )
         if not decision.allowed:
             return "[Guardian] Quick solve denied"
+
+        logger.info(
+            "Starting quick solve task_id_hash=%s problem_hash=%s",
+            _hash_value(task_id),
+            _hash_value(problem),
+        )
 
         task = CollaborationTask(
             id=task_id,

@@ -17,12 +17,61 @@ from typing import Any
 # Third party imports
 from flask import Blueprint, jsonify
 
+# Aetherra imports
+from Aetherra.maintenance import get_maintenance_contract, get_maintenance_loop
+
 # Local imports
 from ..services import registry_client
 
 logger = logging.getLogger(__name__)
 
 bp = Blueprint("maintenance", __name__, url_prefix="/api/maintenance")
+
+
+def _build_loop_readiness(
+    *,
+    homeostasis_available: bool,
+    self_improvement_available: bool,
+    self_incorporation_available: bool,
+    maintenance_available: bool,
+) -> dict[str, Any]:
+    """Map Maintenance loop phases to owning subsystem availability."""
+
+    availability = {
+        "homeostasis": (homeostasis_available, "runtime"),
+        "self_improvement": (self_improvement_available, "runtime"),
+        "guardian": (True, "contract"),
+        "security": (True, "contract"),
+        "self_incorporation": (self_incorporation_available, "runtime"),
+        "maintenance": (maintenance_available, "runtime"),
+    }
+    phases = []
+    for phase in get_maintenance_loop():
+        owner = phase["owner"]
+        ready, source = availability.get(owner, (False, "runtime"))
+        phases.append(
+            {
+                **phase,
+                "ready": bool(ready),
+                "readiness_source": source,
+            }
+        )
+    missing = [
+        {
+            "phase": item["phase"],
+            "owner": item["owner"],
+            "readiness_source": item["readiness_source"],
+        }
+        for item in phases
+        if not item["ready"]
+    ]
+    return {
+        "ready": all(item["ready"] for item in phases),
+        "ready_count": sum(1 for item in phases if item["ready"]),
+        "phase_count": len(phases),
+        "missing_phases": missing,
+        "phases": phases,
+    }
 
 
 def _safe_run(coro: Any) -> Any:
@@ -93,6 +142,7 @@ def maintenance_status():
     homeo: dict[str, Any] = {"available": False}
     sie: dict[str, Any] = {"available": False}
     selfinc: dict[str, Any] = {"available": False}
+    maintenance: dict[str, Any] = {"available": False}
     overall_runlevel = "UNKNOWN"
     overall_health_pct = None
     critical_health_pct = None
@@ -324,9 +374,41 @@ def maintenance_status():
     except Exception as exc:
         logger.debug("[MAINT] selfinc lookup failed: %s", exc)
 
+    # Maintenance coordinator (optional)
+    try:
+        maintenance_service = registry_client.get_service(
+            "maintenance_system"
+        ) or registry_client.get_service("aetherra_maintenance")
+        if maintenance_service:
+            status = {}
+            try:
+                if hasattr(maintenance_service, "get_status"):
+                    status = _coerce_json_safe(maintenance_service.get_status() or {})
+            except Exception as exc:
+                logger.debug("[MAINT] maintenance coordinator status failed: %s", exc)
+                status = {
+                    "available": False,
+                    "degraded": True,
+                    "reason": "maintenance_status_unavailable",
+                }
+            maintenance = (
+                status
+                if isinstance(status, dict) and status
+                else {"available": True, "status": "unknown"}
+            )
+            maintenance.setdefault("available", True)
+    except Exception as exc:
+        logger.debug("[MAINT] maintenance coordinator lookup failed: %s", exc)
+
     # Overall view
     overall_running = bool(homeo.get("available") and homeo.get("running"))
     ok = True  # Endpoint succeeds even if some subsystems unavailable
+    loop_readiness = _build_loop_readiness(
+        homeostasis_available=bool(homeo.get("available")),
+        self_improvement_available=bool(sie.get("available")),
+        self_incorporation_available=bool(selfinc.get("available")),
+        maintenance_available=bool(maintenance.get("available")),
+    )
 
     body = {
         "ok": ok,
@@ -338,6 +420,9 @@ def maintenance_status():
             "overall_running": overall_running,
         },
         "kpis": kpis,
+        "contract": get_maintenance_contract(),
+        "loop_readiness": loop_readiness,
+        "maintenance": maintenance,
         "homeostasis": homeo,
         "self_improvement": sie,
         "self_incorporation": selfinc,
