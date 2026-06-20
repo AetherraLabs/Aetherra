@@ -122,6 +122,30 @@ def openapi_spec():
                     },
                 }
             },
+            "/api/chat/status": {
+                "get": {
+                    "summary": "Chat transport readiness status",
+                    "description": "Read-only readiness assessment for Chat transport, including AI ask/stream availability, token posture, safety mode, Lyrixa bridge fallback, and authority boundaries.",
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "headers": {
+                                "Cache-Control": {
+                                    "schema": {"type": "string"},
+                                    "description": "Always no-store for live Chat status.",
+                                }
+                            },
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/ChatStatusResponse"
+                                    }
+                                }
+                            },
+                        }
+                    },
+                }
+            },
             "/api/maintenance/status": {
                 "get": {
                     "summary": "Unified maintenance status",
@@ -882,6 +906,44 @@ def openapi_spec():
                         },
                     },
                     "required": ["ok", "engine", "readiness"],
+                },
+                "ChatStatusResponse": {
+                    "type": "object",
+                    "properties": {
+                        "ok": {"type": "boolean"},
+                        "settings": {"type": "object"},
+                        "policy": {"type": "object"},
+                        "readiness": {
+                            "type": "object",
+                            "properties": {
+                                "ok": {"type": "boolean"},
+                                "system": {"type": "string"},
+                                "contract_version": {"type": "string"},
+                                "readiness": {
+                                    "type": "string",
+                                    "enum": ["ready", "degraded", "blocked"],
+                                },
+                                "safe_for_clients": {"type": "boolean"},
+                                "reasons": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                },
+                                "checks": {"type": "object"},
+                                "authority": {"type": "object"},
+                            },
+                            "required": [
+                                "ok",
+                                "system",
+                                "contract_version",
+                                "readiness",
+                                "safe_for_clients",
+                                "reasons",
+                                "checks",
+                                "authority",
+                            ],
+                        },
+                    },
+                    "required": ["ok", "settings", "policy", "readiness"],
                 },
                 "LyrixaStatusResponse": {
                     "type": "object",

@@ -41,7 +41,7 @@ Status meanings:
 | Artificial Intelligence | Functional foundation complete | `docs/AETHERRA_ARTIFICIAL_INTELLIGENCE_SYSTEM.md` |
 | Consciousness | Functional foundation complete | `docs/AETHERRA_CONSCIOUSNESS_SYSTEM.md` |
 | Coding | In progress | `docs/AETHERRA_CODING_SYSTEM.md` |
-| Chat | In progress | `docs/AETHERRA_CHAT_SYSTEM.md` |
+| Chat | Functional foundation complete | `docs/AETHERRA_CHAT_SYSTEM.md` |
 | AI Trainer | Planned | `docs/AETHERRA_AI_TRAINER_SYSTEM.md` |
 
 ## Governance Rule

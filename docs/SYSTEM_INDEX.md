@@ -106,7 +106,7 @@ Status meanings:
 
 - Aetherra Chat System - ./AETHERRA_CHAT_SYSTEM.md
   - Purpose: Platform-level conversational service for message transport, streaming, safety middleware, and observability.
-  - Status: Partial
+  - Status: Functional foundation complete
 
 - Aetherra AI Trainer System - ./AETHERRA_AI_TRAINER_SYSTEM.md
   - Purpose: Reproducible training/evaluation pipeline for models and policies used by Aetherra.
@@ -115,8 +115,8 @@ Status meanings:
 ## Quick Status
 
 - Functional complete: 2
-- Functional foundation complete: 14
-- Partial: 2
+- Functional foundation complete: 15
+- Partial: 1
 - Planned: 1
 
 ## How To Use

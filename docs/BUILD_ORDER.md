@@ -26,7 +26,8 @@ focused tests or verification, then move to the next system.
 | 14 | Hub | API integration readiness foundation | Complete |
 | 15 | Lyrixa | Guided interaction foundation | Complete |
 | 16 | Artificial Intelligence | Engine readiness foundation | Complete |
-| 17 | Public Alpha | Controlled alpha release | Pending |
+| 17 | Chat | Transport readiness foundation | Complete |
+| 18 | Public Alpha | Controlled alpha release | Pending |
 
 ## Near-Term Focus
 

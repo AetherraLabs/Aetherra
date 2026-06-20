@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 # Third party imports
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, current_app, jsonify, request
 
 # Local imports
+from ..config import settings as default_settings
+from ..services.chat_status import build_chat_status_payload
 from ..services.chat_bridge import get_lyrixa_status, handle_chat
 from ..services.state import hub_state
 
@@ -20,6 +22,13 @@ def _json_no_store(payload):
 def lyrixa_status():
     hub_state.incr_requests()
     return _json_no_store(get_lyrixa_status())
+
+
+@bp.get("/api/chat/status")
+def chat_status():
+    hub_state.incr_requests()
+    settings = getattr(current_app, "settings", default_settings)
+    return _json_no_store(build_chat_status_payload(settings))
 
 
 @bp.post("/api/lyrixa/chat")
