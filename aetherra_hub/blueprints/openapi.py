@@ -170,6 +170,30 @@ def openapi_spec():
                     },
                 }
             },
+            "/api/trainer/status": {
+                "get": {
+                    "summary": "AI Trainer readiness status",
+                    "description": "Read-only readiness assessment for the AI Trainer scaffold. Reports whether guarded in-memory job/eval queues are enabled while explicitly marking real training, dataset ingestion, registry writes, and artifact publishing as disabled.",
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "headers": {
+                                "Cache-Control": {
+                                    "schema": {"type": "string"},
+                                    "description": "Always no-store for live Trainer status.",
+                                }
+                            },
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/TrainerStatusResponse"
+                                    }
+                                }
+                            },
+                        }
+                    },
+                }
+            },
             "/api/maintenance/status": {
                 "get": {
                     "summary": "Unified maintenance status",
@@ -1037,6 +1061,62 @@ def openapi_spec():
                         },
                     },
                     "required": ["ok", "read_only", "readiness"],
+                },
+                "TrainerStatusResponse": {
+                    "type": "object",
+                    "properties": {
+                        "ok": {"type": "boolean"},
+                        "read_only": {"type": "boolean"},
+                        "enabled": {"type": "boolean"},
+                        "jobs": {"type": "object"},
+                        "jobs_running": {"type": "integer"},
+                        "evals": {"type": "object"},
+                        "eval_runs_total": {"type": "integer"},
+                        "eval_last_score": {"type": ["number", "null"]},
+                        "readiness": {
+                            "type": "object",
+                            "properties": {
+                                "ok": {"type": "boolean"},
+                                "system": {"type": "string"},
+                                "contract_version": {"type": "string"},
+                                "readiness": {
+                                    "type": "string",
+                                    "enum": ["disabled", "guarded"],
+                                },
+                                "safe_for_status": {"type": "boolean"},
+                                "safe_for_queue_submission": {"type": "boolean"},
+                                "safe_for_real_training": {"type": "boolean"},
+                                "reasons": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                },
+                                "checks": {"type": "object"},
+                                "authority": {"type": "object"},
+                                "failure_modes": {"type": "object"},
+                            },
+                            "required": [
+                                "ok",
+                                "system",
+                                "contract_version",
+                                "readiness",
+                                "safe_for_status",
+                                "safe_for_queue_submission",
+                                "safe_for_real_training",
+                                "reasons",
+                                "checks",
+                                "authority",
+                                "failure_modes",
+                            ],
+                        },
+                    },
+                    "required": [
+                        "ok",
+                        "read_only",
+                        "enabled",
+                        "jobs",
+                        "evals",
+                        "readiness",
+                    ],
                 },
                 "KernelReadinessResponse": {
                     "type": "object",

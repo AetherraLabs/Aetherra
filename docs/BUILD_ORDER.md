@@ -28,7 +28,7 @@ focused tests or verification, then move to the next system.
 | 16 | Artificial Intelligence | Engine readiness foundation | Complete |
 | 17 | Chat | Transport readiness foundation | Complete |
 | 18 | Coding | Proposal and verification foundation | Complete |
-| 19 | AI Trainer | Training readiness foundation | Pending |
+| 19 | AI Trainer | Training readiness foundation | Complete |
 | 20 | Public Alpha | Controlled alpha release | Pending |
 
 ## Near-Term Focus
@@ -38,9 +38,8 @@ security, Guardian, or repository hygiene issue blocks progress.
 
 Current next candidate:
 
-1. AI Trainer readiness foundation.
-2. Public Alpha readiness planning.
-3. Repository or CI stabilization if a merge, release, or CI gate requires
+1. Public Alpha readiness planning.
+2. Repository or CI stabilization if a merge, release, or CI gate requires
    immediate stabilization.
 
 Primary reference for the current target:

@@ -110,15 +110,16 @@ Status meanings:
   - Status: Functional foundation complete
 
 - Aetherra AI Trainer System - ./AETHERRA_AI_TRAINER_SYSTEM.md
-  - Purpose: Reproducible training/evaluation pipeline for models and policies used by Aetherra.
-  - Status: Planned
+  - Purpose: Governed training/evaluation readiness, guarded queue scaffolding, metrics, and future model/policy improvement path.
+  - Status: Functional foundation complete
+  - Dependencies: Guardian, Security, Hub, Artificial Intelligence, Self-Improvement, Maintenance
 
 ## Quick Status
 
 - Functional complete: 2
-- Functional foundation complete: 16
+- Functional foundation complete: 17
 - Partial: 0
-- Planned: 1
+- Planned: 0
 
 ## How To Use
 

@@ -1,8 +1,46 @@
 # Aetherra AI Trainer System
 
-Updated: 2025-08-27
+Updated: 2026-06-20
 
-This document defines the Aetherra AI Trainer System: the training and evaluation layer that will enable Aetherra OS to fine-tune models, run structured experiments, and evolve capabilities safely over time. It is forward-looking; core training functionality is not yet implemented. This doc establishes contracts and a roadmap so we can build iteratively.
+This document defines the Aetherra AI Trainer System: the training and evaluation layer that will enable Aetherra OS to fine-tune models, run structured experiments, and evolve capabilities safely over time. The current implementation is a guarded foundation, not a real training backend.
+
+Status: Functional foundation complete.
+
+Current foundation:
+
+- `GET /api/trainer/status` exposes a read-only Trainer readiness contract and
+  legacy metrics fields.
+- Guarded in-memory job and evaluation queues exist behind Hub control auth,
+  Guardian review, and capability checks.
+- Real model training, dataset ingestion/export, model registry writes,
+  artifact publishing, and artifact signing are explicitly disabled at this
+  foundation stage.
+- Disabled-by-default is the safe posture. A disabled trainer still exposes
+  status and metrics, but rejects submissions.
+
+## Understanding Rule
+
+Before this system is considered complete, it must be explainable without
+looking at the code:
+
+- What it does: exposes a governed trainer scaffold for status, metrics,
+  training request intake, and evaluation request intake.
+- Why it exists: gives Aetherra a controlled path for future model and policy
+  improvement without allowing unreviewed training, dataset use, or model
+  promotion.
+- Authority it owns: trainer readiness reporting, trainer metrics snapshots,
+  and guarded in-memory job/eval queue state.
+- Authority it does not own: dataset consent, model promotion, real backend
+  training execution, artifact signing, Guardian approval, Security
+  enforcement, or Self-Incorporation application.
+- How it fails: disabled mode rejects submissions while status remains
+  available; Guardian denial returns 403 without queue mutation; auth failures
+  stop before payload handling; invalid payloads are rejected before mutation;
+  missing real backend support is reported as scaffold-only.
+- How it interacts with other systems: Guardian decides whether queue mutation
+  is allowed, Security enforces capabilities, Hub exposes status and submit
+  routes, future Maintenance can observe outcomes, and future Self-Improvement
+  can propose training/evaluation work without directly starting it.
 
 ## Purpose and scope
 
@@ -13,12 +51,14 @@ This document defines the Aetherra AI Trainer System: the training and evaluatio
 
 ## At‑a‑glance status
 
-- Core trainer services: Planned (orchestrator, job runner, dataset manager)
-- Datasets and curation: Planned (dataset registry, curation policies, redaction)
-- Training backends: Planned (local adapters + pluggable cloud/HF backends)
-- Evaluation harness: Planned (benchmarks, regression suites, safety evals)
-- Model registry: Planned (versioning, lineage, rollback)
-- Hub/metrics: Planned (training/eval Prometheus series, Hub surfaces)
+- Core trainer services: Functional foundation complete for guarded in-memory
+  job/eval queue scaffolding.
+- Datasets and curation: Planned; no ingestion/export authority yet.
+- Training backends: Planned; real backend execution disabled.
+- Evaluation harness: Foundation queue scaffolding only; real benchmark suites
+  planned.
+- Model registry: Planned; writes disabled.
+- Hub/metrics: Functional foundation complete for status and metrics exposure.
 
 ## Core components (design)
 
@@ -81,9 +121,12 @@ Prometheus metrics (planned series):
 - `aetherra_trainer_eval_scores{suite,metric}` — gauges for key eval metrics
 - `aetherra_trainer_data_records_total{dataset}` — counters for ingested/filtered records
 
-Hub surfaces (planned):
+Hub surfaces:
 
-- `/api/trainer/jobs` (list/submit/status), `/api/trainer/evals`, and `/metrics` integration
+- `GET /api/trainer/status` - read-only readiness and metrics contract.
+- `/api/trainer/jobs` and `/api/trainer/evals` - guarded in-memory queue
+  scaffolding when `AETHERRA_TRAINER_ENABLED=1`.
+- `/metrics` integration exposes trainer metric series.
 
 ## Configuration and environment (draft)
 
@@ -125,7 +168,9 @@ Remaining Guardian scope:
 
 ---
 
-Status: 🔮 Planned — This system is a design blueprint to guide upcoming implementation work.
+Status: Functional foundation complete. Real training backends, dataset
+pipelines, model registry writes, artifact signing, and promotion remain future
+work and must be added behind Guardian, Security, and explicit approval gates.
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
