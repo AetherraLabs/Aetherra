@@ -2,6 +2,46 @@
 
 This document defines the autonomous coding system for Aetherra OS that enables Lyrixa to plan, write, modify, test, secure, and ship code across the entire stack, including .aether scripts and Aetherra plugins. It functions like a full IDE (akin to VS Code) with an AI-native autonomy layer.
 
+Status: Functional foundation complete.
+
+Current foundation:
+
+- `GET /api/coding/status` exposes a read-only Coding readiness contract for
+  Hub and future Runtime UI clients.
+- `Aetherra.coding.assess_coding_readiness()` verifies that required Coding,
+  Guardian, Security, Aether Script, signing, quality gate, and
+  Self-Incorporation contracts exist before the system is considered ready.
+- The current foundation is proposal-only by default. It does not apply
+  patches, execute generated code, or mutate repository files.
+- Any future mutation path must flow through Coding proposal, Guardian review,
+  Security enforcement, Self-Incorporation staged apply, Homeostasis
+  verification, and Maintenance recording.
+
+## Understanding Rule
+
+Before this system is considered complete, it must be explainable without
+looking at the code:
+
+- What it does: analyzes coding intent, plans implementation work, proposes
+  candidate changes, coordinates tests, verification, signing, and review
+  readiness.
+- Why it exists: gives Aetherra a governed AI-native coding layer without
+  letting code generation become an uncontrolled self-modification loop.
+- Authority it owns: coding analysis, implementation planning, test planning,
+  candidate patch proposal, review readiness, and signing workflow
+  coordination.
+- Authority it does not own: direct repository mutation, privileged execution,
+  Guardian approval, Security enforcement, Self-Incorporation apply/rollback,
+  Kernel scheduling, or release publishing.
+- How it fails: missing required contracts block readiness; verification
+  failures stop application; Guardian denial or Security block terminates the
+  proposal; apply failures are handled by Self-Incorporation rollback and
+  quarantine.
+- How it interacts with other systems: Guardian decides, Security enforces,
+  Self-Incorporation applies approved changes, Homeostasis verifies outcomes,
+  Maintenance records the lifecycle, and Aether Script provides script
+  verification/signing surfaces.
+
 ## Objectives
 
 - First-class, AI-native software development for general, advanced, and .aether code

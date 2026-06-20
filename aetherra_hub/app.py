@@ -30,6 +30,7 @@ from .blueprints import (  # pylint: disable=unused-import
     ai_ask,
     ai_stream,
     chat,
+    coding,
     consciousness,  # consciousness state API
     frontend,  # static file serving for Lyrixa UI
     guardian,
@@ -80,6 +81,7 @@ BLUEPRINTS = [
     interactive.bp,  # Interactive Lyrixa emotions & expressions
     agents.bp,
     chat.bp,
+    coding.bp,
     policy.bp,
     ai_ask.bp,
     ai_stream.bp,

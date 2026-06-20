@@ -146,6 +146,30 @@ def openapi_spec():
                     },
                 }
             },
+            "/api/coding/status": {
+                "get": {
+                    "summary": "Coding System readiness status",
+                    "description": "Read-only readiness assessment for the Aetherra Coding System. Reports governed proposal, verification, signing, Guardian, Security, and Self-Incorporation prerequisites without applying code changes.",
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "headers": {
+                                "Cache-Control": {
+                                    "schema": {"type": "string"},
+                                    "description": "Always no-store for live Coding status.",
+                                }
+                            },
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/CodingStatusResponse"
+                                    }
+                                }
+                            },
+                        }
+                    },
+                }
+            },
             "/api/maintenance/status": {
                 "get": {
                     "summary": "Unified maintenance status",
@@ -972,6 +996,47 @@ def openapi_spec():
                         "readiness",
                         "safe_for_interaction",
                     ],
+                },
+                "CodingStatusResponse": {
+                    "type": "object",
+                    "properties": {
+                        "ok": {"type": "boolean"},
+                        "read_only": {"type": "boolean"},
+                        "readiness": {
+                            "type": "object",
+                            "properties": {
+                                "ok": {"type": "boolean"},
+                                "system": {"type": "string"},
+                                "contract_version": {"type": "string"},
+                                "readiness": {
+                                    "type": "string",
+                                    "enum": ["ready", "blocked"],
+                                },
+                                "safe_for_assist": {"type": "boolean"},
+                                "safe_for_autonomous_apply": {"type": "boolean"},
+                                "reasons": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                },
+                                "checks": {"type": "object"},
+                                "authority": {"type": "object"},
+                                "failure_modes": {"type": "object"},
+                            },
+                            "required": [
+                                "ok",
+                                "system",
+                                "contract_version",
+                                "readiness",
+                                "safe_for_assist",
+                                "safe_for_autonomous_apply",
+                                "reasons",
+                                "checks",
+                                "authority",
+                                "failure_modes",
+                            ],
+                        },
+                    },
+                    "required": ["ok", "read_only", "readiness"],
                 },
                 "KernelReadinessResponse": {
                     "type": "object",

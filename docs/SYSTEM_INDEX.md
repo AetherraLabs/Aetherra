@@ -97,8 +97,9 @@ Status meanings:
   - Dependencies: Guardian, Security, Kernel, Runtime UI, Maintenance
 
 - Aetherra Coding System - ./AETHERRA_CODING_SYSTEM.md
-  - Purpose: AI-native coding orchestration, testing, security, signing, and shipping.
-  - Status: Partial
+  - Purpose: AI-native coding orchestration, testing, verification, security, signing, and governed change proposal.
+  - Status: Functional foundation complete
+  - Dependencies: Guardian, Security, Aether Script, Self-Incorporation, Homeostasis, Maintenance
 
 - Aetherra Lyrixa System - ./AETHERRA_LYRIXA_SYSTEM.md
   - Purpose: Conversational and interface layer for Aetherra OS.
@@ -115,8 +116,8 @@ Status meanings:
 ## Quick Status
 
 - Functional complete: 2
-- Functional foundation complete: 15
-- Partial: 1
+- Functional foundation complete: 16
+- Partial: 0
 - Planned: 1
 
 ## How To Use

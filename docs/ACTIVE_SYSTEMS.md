@@ -40,7 +40,7 @@ Status meanings:
 | --- | --- | --- |
 | Artificial Intelligence | Functional foundation complete | `docs/AETHERRA_ARTIFICIAL_INTELLIGENCE_SYSTEM.md` |
 | Consciousness | Functional foundation complete | `docs/AETHERRA_CONSCIOUSNESS_SYSTEM.md` |
-| Coding | In progress | `docs/AETHERRA_CODING_SYSTEM.md` |
+| Coding | Functional foundation complete | `docs/AETHERRA_CODING_SYSTEM.md` |
 | Chat | Functional foundation complete | `docs/AETHERRA_CHAT_SYSTEM.md` |
 | AI Trainer | Planned | `docs/AETHERRA_AI_TRAINER_SYSTEM.md` |
 
@@ -48,7 +48,7 @@ Status meanings:
 
 Security, Guardian, Homeostasis, Self-Improvement, Maintenance,
 Self-Incorporation, Memory, Kernel, Hub, Lyrixa, Consciousness, Agent System,
-Aether Script, and Integration Validation are the current safety and
+Aether Script, Coding, and Integration Validation are the current safety and
 operations foundation. New systems should integrate with those foundations
 instead of bypassing them.
 
