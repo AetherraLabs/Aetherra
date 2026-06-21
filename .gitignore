@@ -50,6 +50,7 @@ aetherra-website/
 /data/engine_usage_matrix.json
 /data/explanations_log.jsonl*
 /config/advanced_project_intelligence.json
+/Aetherra/file_routing_log.json
 /Aetherra/data/share/
 /Aetherra/data/*_data/*.json
 /docs-organized/reports/

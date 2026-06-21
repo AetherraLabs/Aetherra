@@ -58,9 +58,7 @@ class AetherraFileRouter:
         if any(part in IGNORED_DIRS for part in file.parts):
             return True
         # Prevent moving gui_generator.py or plugin_registry.py from kernel
-        if file.name in ("gui_generator.py", "plugin_registry.py") and "kernel" in file.parts:
-            return True
-        return False
+        return file.name in ("gui_generator.py", "plugin_registry.py") and "kernel" in file.parts
 
     def _classify(self, file):
         fname = file.name.lower()
@@ -101,12 +99,15 @@ class AetherraFileRouter:
         self.routes.append({"file": file.name, "to": str(target_path), "type": category})
 
     def export_log(self):
-        with open(self.root / "file_routing_log.json", "w") as f:
+        report_path = self.root.parent / ".aetherra" / "reports" / "file_routing_log.json"
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(report_path, "w", encoding="utf-8") as f:
             json.dump(self.routes, f, indent=2)
+        return report_path
 
 
 if __name__ == "__main__":
     router = AetherraFileRouter()
     router.run()
-    router.export_log()
-    print("✅ File routing complete. See file_routing_log.json for details.")
+    report_path = router.export_log()
+    print(f"File routing complete. See {report_path} for details.")

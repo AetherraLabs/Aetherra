@@ -925,7 +925,6 @@ Aetherra/
   __init__.py — Aetherra package public API.
   aetherra_file_router.py — SPDX-License-Identifier: GPL-3.0-or-later
   aetherra_hub_integration.py — Async context manager entry"""
-  file_routing_log.json
   main.py — SPDX-License-Identifier: GPL-3.0-or-later
   README.md — Aetherra - AI-Native Development Platform
   verify_lyrixa_merge.py — !/usr/bin/env python3
