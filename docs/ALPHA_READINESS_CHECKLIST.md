@@ -94,7 +94,7 @@ python -m pytest -q -o addopts= --basetemp .pytest_tmp_alpha_validation tests\un
 
 ## Gate 4: Runtime Boot Path
 
-Status: Pending
+Status: In progress
 
 Required before alpha:
 
@@ -109,14 +109,15 @@ Required before alpha:
 Initial validation target:
 
 ```powershell
+python tools\alpha_boot_validation.py
+```
+
+Optional live validation target:
+
+```powershell
 python tools\os_smoke.py
 python tools\run_hub_ai_api.py --port 3001
 ```
-
-Expected follow-up:
-
-- Add or update a boot validation script that can run in CI without opening a
-  browser or requiring private local state.
 
 ## Gate 5: Runtime UI Observatory
 
@@ -246,9 +247,8 @@ Decision record:
 
 ## Current Next Actions
 
-1. Add a CI-friendly runtime boot validation path.
-2. Create the alpha operator runbook.
-3. Continue repository hygiene on generated artifacts and stale root files.
+1. Create the alpha operator runbook.
+2. Continue repository hygiene on generated artifacts and stale root files.
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
