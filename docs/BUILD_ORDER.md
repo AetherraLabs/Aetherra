@@ -46,6 +46,7 @@ Primary reference for the current target:
 
 - `docs/BUILD_ORDER.md`
 - `docs/ACTIVE_SYSTEMS.md`
+- `docs/ALPHA_READINESS_CHECKLIST.md`
 
 ## Completion Checklist
 
