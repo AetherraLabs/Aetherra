@@ -248,7 +248,7 @@ Decision record:
 ## Current Next Actions
 
 1. Continue repository hygiene on generated artifacts and stale root files.
-2. Draft the alpha readiness decision template.
+2. Run the full alpha readiness command set and record known limitations.
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
