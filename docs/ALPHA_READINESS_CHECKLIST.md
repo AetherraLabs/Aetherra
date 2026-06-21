@@ -246,11 +246,9 @@ Decision record:
 
 ## Current Next Actions
 
-1. Expand Integration Validation to include the Self-Incorporation approved
-   scope lock and rollback fail-closed behavior.
-2. Add a CI-friendly runtime boot validation path.
-3. Create the alpha operator runbook.
-4. Continue repository hygiene on generated artifacts and stale root files.
+1. Add a CI-friendly runtime boot validation path.
+2. Create the alpha operator runbook.
+3. Continue repository hygiene on generated artifacts and stale root files.
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
