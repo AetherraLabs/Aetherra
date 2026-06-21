@@ -44,6 +44,9 @@ except ImportError:
     sys.path.append(".")
 
 
+DEFAULT_INTELLIGENCE_DATA_DIR = Path(".aetherra") / "aether_intelligence_data"
+
+
 class AetherScriptExecutor:
     """
     Executes the curiosity_conflict_resolution.aether script with enhanced intelligence
@@ -71,12 +74,13 @@ class AetherScriptExecutor:
         print("=" * 70)
 
         # Initialize learning loop integration agent (enhanced with meta-learning)
-        self.learning_agent = LearningLoopIntegrationAgent(data_dir="aether_intelligence_data")
+        data_dir = str(DEFAULT_INTELLIGENCE_DATA_DIR)
+        self.learning_agent = LearningLoopIntegrationAgent(data_dir=data_dir)
         await self.learning_agent.initialize()
         print("[OK] LearningLoopIntegrationAgent: Meta-learning tracker operational")
 
         # Initialize contradiction detection agent (enhanced with resolution)
-        self.contradiction_agent = ContradictionDetectionAgent(data_dir="aether_intelligence_data")
+        self.contradiction_agent = ContradictionDetectionAgent(data_dir=data_dir)
         await self.contradiction_agent.initialize()
         print("[OK] ContradictionDetectionAgent: Multi-type conflict resolution operational")
 
