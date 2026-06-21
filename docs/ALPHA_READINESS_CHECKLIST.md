@@ -213,7 +213,7 @@ GitHub Actions remain the source of truth for remote CI status.
 
 ## Gate 9: Operator Runbook
 
-Status: Pending
+Status: In progress
 
 Required before alpha:
 
@@ -224,7 +224,7 @@ Required before alpha:
 - The runbook explains rollback expectations and limitations.
 - The runbook explains what should not be connected during alpha.
 
-Suggested file:
+Primary file:
 
 - `docs/ALPHA_OPERATOR_RUNBOOK.md`
 
@@ -247,8 +247,8 @@ Decision record:
 
 ## Current Next Actions
 
-1. Create the alpha operator runbook.
-2. Continue repository hygiene on generated artifacts and stale root files.
+1. Continue repository hygiene on generated artifacts and stale root files.
+2. Draft the alpha readiness decision template.
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
