@@ -41,6 +41,36 @@ class _Kernel:
         return {"ok": True}
 
 
+class _PluginManager:
+    def __init__(self):
+        self.unloaded = []
+
+    def unload_plugin(self, plugin_name):
+        self.unloaded.append(plugin_name)
+        return True
+
+
+class _KernelWithPlugins(_Kernel):
+    def __init__(self):
+        super().__init__()
+        self.plugin_manager = _PluginManager()
+
+
+class _AgentOrchestrator:
+    def __init__(self):
+        self.unregistered = []
+
+    def unregister_agent(self, agent_id):
+        self.unregistered.append(agent_id)
+        return True
+
+
+class _KernelWithAgents(_Kernel):
+    def __init__(self):
+        super().__init__()
+        self.agent_orchestrator = _AgentOrchestrator()
+
+
 @pytest.fixture
 def guardian_env(monkeypatch, tmp_path):
     monkeypatch.setenv("AETHERRA_PROFILE", "test")
@@ -142,3 +172,97 @@ def test_hmr_guardian_audit_omits_raw_source_path(monkeypatch, guardian_env):
     assert result["ok"] is True
     assert "do-not-audit-this-value" not in json.dumps(entries[-1])
     assert source not in json.dumps(entries[-1])
+
+
+def test_hmr_register_plugin_rollback_token_contract(guardian_env):
+    kernel = _KernelWithPlugins()
+    controller = HMRController(_Registry(), kernel, strict=True)
+    token = "rb_register_plugin_private-plugin_1_abcd"
+
+    registration = controller.register_rollback_token(
+        token,
+        "register_plugin",
+        {"status": "applied", "name": "private-plugin"},
+        {"file_id": "private-file"},
+    )
+    rollback = asyncio.run(controller.rollback_token(token))
+
+    assert registration["ok"] is True
+    assert rollback["ok"] is True
+    assert kernel.plugin_manager.unloaded == ["private-plugin"]
+    assert kernel.rollbacks == 1
+    assert token not in controller._rollback_tokens
+
+
+def test_hmr_register_plugin_rollback_audit_omits_raw_token_and_plugin(
+    guardian_env,
+):
+    kernel = _KernelWithPlugins()
+    controller = HMRController(_Registry(), kernel, strict=True)
+    token = "rb_register_plugin_do-not-audit-token_1_abcd"
+
+    controller.register_rollback_token(
+        token,
+        "register_plugin",
+        {"status": "applied", "name": "do-not-audit-plugin"},
+        {"file_id": "private-file"},
+    )
+    asyncio.run(controller.rollback_token(token))
+
+    audit_text = (guardian_env / "hmr_audit.jsonl").read_text(encoding="utf-8")
+    assert token not in audit_text
+    assert "do-not-audit-plugin" not in audit_text
+
+
+def test_hmr_unsupported_action_does_not_register_token(guardian_env):
+    controller = HMRController(_Registry(), _KernelWithPlugins(), strict=True)
+
+    result = controller.register_rollback_token(
+        "rb_register_agent_private-agent_1_abcd",
+        "register_agent",
+        {"status": "applied", "id": "private-agent"},
+        {},
+    )
+
+    assert result["ok"] is False
+    assert result["error"] == "rollback_action_unsupported"
+
+
+def test_hmr_register_agent_rollback_token_contract(guardian_env):
+    kernel = _KernelWithAgents()
+    controller = HMRController(_Registry(), kernel, strict=True)
+    token = "rb_register_agent_private-agent_1_abcd"
+
+    registration = controller.register_rollback_token(
+        token,
+        "register_agent",
+        {"status": "applied", "id": "private-agent"},
+        {"file_id": "private-agent-file"},
+    )
+    rollback = asyncio.run(controller.rollback_token(token))
+
+    assert registration["ok"] is True
+    assert rollback["ok"] is True
+    assert kernel.agent_orchestrator.unregistered == ["private-agent"]
+    assert kernel.rollbacks == 1
+    assert token not in controller._rollback_tokens
+
+
+def test_hmr_register_agent_rollback_audit_omits_raw_token_and_agent(
+    guardian_env,
+):
+    kernel = _KernelWithAgents()
+    controller = HMRController(_Registry(), kernel, strict=True)
+    token = "rb_register_agent_do-not-audit-token_1_abcd"
+
+    controller.register_rollback_token(
+        token,
+        "register_agent",
+        {"status": "applied", "id": "do-not-audit-agent"},
+        {"file_id": "private-agent-file"},
+    )
+    asyncio.run(controller.rollback_token(token))
+
+    audit_text = (guardian_env / "hmr_audit.jsonl").read_text(encoding="utf-8")
+    assert token not in audit_text
+    assert "do-not-audit-agent" not in audit_text

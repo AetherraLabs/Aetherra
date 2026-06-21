@@ -3,7 +3,7 @@
 > Maintained and officially operated by **Aetherra Labs**.
 > **Powered by Aetherra Labs.**
 
-Updated: 2025-11-01
+Updated: 2026-06-20
 
 This document provides a comprehensive reference for all REST API endpoints exposed by the Aetherra Hub server. The Hub acts as the primary integration point between the Aetherra OS core, frontend clients, and external services.
 
@@ -17,11 +17,88 @@ This document provides a comprehensive reference for all REST API endpoints expo
 
 ## At-a-glance status
 
+- **System status**: Functional foundation complete
 - **Base URL**: `http://localhost:3001` (default, configurable via `--port`)
 - **Protocol**: HTTP/1.1, WebSocket, Server-Sent Events (SSE)
 - **Authentication**: Token-based (optional, configurable)
 - **Content-Type**: `application/json` (primary), `text/event-stream` (SSE)
 - **API Version**: v1 (implicit, no version prefix)
+- **Readiness**: `GET /api/hub/readiness`
+
+## Functional foundation completion
+
+The Hub is functionally foundation complete for the current Aetherra milestone.
+It provides the bounded HTTP integration layer, modular blueprint routing,
+token-gated control surfaces, production hardening checks, OpenAPI discovery,
+metrics, health/status endpoints, and a read-only readiness contract for alpha
+clients.
+
+Functional completion here does not mean every endpoint is final. It means the
+Hub has a stable and inspectable API foundation that exposes system state
+without bypassing Guardian, Security, Kernel, Runtime UI, or Maintenance
+authority.
+
+### Understanding Rule
+
+What it does:
+
+- Hosts Aetherra REST, SSE, WebSocket, metrics, OpenAPI, and health endpoints.
+- Registers modular blueprints for Kernel, Guardian, Security, Maintenance,
+  Self-Improvement, Self-Incorporation, Runtime UI, agents, plugins, chat,
+  memory, telemetry, KLM, and KEB.
+- Enforces request authentication gates for protected AI, control, script, and
+  administrative paths.
+- Registers the Hub with the service registry and emits Hub heartbeat signals.
+- Exposes `GET /api/hub/readiness` so clients can determine whether the Hub is
+  ready, degraded, or blocked.
+
+Why it exists:
+
+- Aetherra needs one stable integration boundary between runtime systems,
+  operator clients, future UI clients, local tools, and external integrations.
+- The Hub prevents each subsystem from inventing its own public transport and
+  safety posture.
+
+Authority it owns:
+
+- HTTP route registration and API response contracts.
+- Request authentication and control-token checks at the Hub boundary.
+- OpenAPI discovery for exposed Hub endpoints.
+- Hub service registration, heartbeat, health, metrics, and readiness reporting.
+
+Authority it does not own:
+
+- Guardian approval decisions.
+- Security capability, sandbox, signing, and network policy.
+- Kernel scheduling or lifecycle authority.
+- Memory persistence authority.
+- Self-Incorporation execution authority.
+- Runtime UI rendering or client interaction behavior.
+- Business logic owned by subsystems behind Hub endpoints.
+
+How it fails:
+
+- If required routes are missing, Hub readiness reports `blocked`.
+- If production security posture is incomplete, startup can fail fast and Hub
+  readiness reports `blocked`.
+- If Kernel or service registry state is unavailable, Hub readiness reports
+  `degraded` while keeping read-only endpoints available where possible.
+- If protected endpoint authentication fails, the request is rejected before the
+  downstream subsystem is invoked.
+- If downstream systems are unavailable, Hub endpoints return bounded error or
+  unavailable states instead of assuming success.
+
+How it interacts with other systems:
+
+- Kernel, KLM, and KEB provide runtime, module, and event status through Hub
+  read-only and guarded control endpoints.
+- Guardian reviews privileged actions that pass through Hub control surfaces.
+- Security supplies authentication, capability, signing, and policy enforcement
+  expectations.
+- Runtime UI consumes Hub read-only state contracts for the Cognitive
+  Observatory.
+- Maintenance, Homeostasis, Self-Improvement, and Self-Incorporation expose
+  status and governed workflows through Hub routes.
 
 ## General conventions
 

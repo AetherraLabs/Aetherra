@@ -48,6 +48,18 @@ except ImportError as e:
     logger.debug(f"Intelligence modules not available: {e}")
     INTELLIGENCE_AVAILABLE = False
 
+try:
+    from .readiness import (
+        AI_READINESS_CONTRACT_VERSION,
+        assess_ai_readiness,
+        build_ai_readiness_payload,
+    )
+except ImportError as e:
+    logger.debug(f"AI readiness contract not available: {e}")
+    AI_READINESS_CONTRACT_VERSION = "unavailable"
+    assess_ai_readiness = None
+    build_ai_readiness_payload = None
+
 # Engine status
 ENGINE_SYSTEMS = {
     "aetherra": AETHERRA_ENGINE_AVAILABLE,
@@ -67,4 +79,7 @@ __all__ = [
     "ENGINE_SYSTEMS",
     "AETHERRA_ENGINE_AVAILABLE",
     "INTELLIGENCE_AVAILABLE",
+    "AI_READINESS_CONTRACT_VERSION",
+    "assess_ai_readiness",
+    "build_ai_readiness_payload",
 ]

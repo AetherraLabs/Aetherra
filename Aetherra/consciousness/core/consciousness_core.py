@@ -13,11 +13,12 @@ from __future__ import annotations
 
 import contextlib
 import hashlib
+import logging
 import os
 import time
 from typing import List, Optional
 
-from Aetherra.aetherra_core.memory.qfac.qfac_api import qfac_store
+from Aetherra.aetherra_core.memory.qfac import qfac_store
 
 # Consciousness components (alphabetical)
 from Aetherra.consciousness.autopilot_manager import AutopilotManager
@@ -42,6 +43,8 @@ from .types import (
     PlanStep,
     QualiaVector,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def _hash_value(value: object) -> str | None:
@@ -726,9 +729,10 @@ class ConsciousnessCore:
 
         # Log rehydration
         age_seconds = self.continuity.get_age_seconds()
-        print(
-            f"[Continuity] Rehydrated from snapshot {age_seconds:.0f}s old "
-            f"(valence: {latest.qualia.get('valence', 0.0):.2f})"
+        logger.info(
+            "Rehydrated consciousness continuity snapshot age_seconds=%.0f valence=%.2f",
+            age_seconds,
+            latest.qualia.get("valence", 0.0),
         )
 
     def _record_continuity_snapshot(self) -> None:

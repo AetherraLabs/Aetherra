@@ -19,6 +19,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
+from Aetherra.maintenance import require_allowed_report_destination
+
 
 @dataclass(frozen=True)
 class ProjectAnalysisWritePlan:
@@ -332,7 +334,10 @@ class AetherraProjectAnalyzer:
             "duplicate_files": sum(d["count"] - 1 for d in self.duplicate_groups),
         }
 
-    def plan_analysis_write(self, output_file="project_analysis.json"):
+    def plan_analysis_write(
+        self,
+        output_file="artifacts/maintenance/aetherra_project_analysis.json",
+    ):
         """Build a side-effect-free JSON write plan for analysis results."""
         output_path = Path(output_file)
         if not output_path.is_absolute():
@@ -347,9 +352,20 @@ class AetherraProjectAnalyzer:
         }
         return ProjectAnalysisWritePlan(file_path=output_path, data=analysis_data)
 
-    def save_analysis(self, output_file="project_analysis.json", *, plan=None):
+    def save_analysis(
+        self,
+        output_file="artifacts/maintenance/aetherra_project_analysis.json",
+        *,
+        plan=None,
+    ):
         """Save analysis results to JSON file after Guardian approval."""
         write_plan = plan or self.plan_analysis_write(output_file)
+        try:
+            require_allowed_report_destination(write_plan.file_path, self.project_root)
+        except ValueError as exc:
+            print(f"Maintenance report path blocked: {exc}")
+            return False
+
         decision = _guardian_preflight_analysis_write(
             project_root=self.project_root,
             plan=write_plan,
@@ -373,5 +389,5 @@ if __name__ == "__main__":
     analyzer = AetherraProjectAnalyzer(".")
     analyzer.analyze_project()
     raise SystemExit(
-        0 if analyzer.save_analysis("aetherra_project_analysis.json") else 1
+        0 if analyzer.save_analysis() else 1
     )

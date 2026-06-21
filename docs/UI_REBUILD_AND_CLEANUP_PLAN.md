@@ -1,12 +1,12 @@
 # UI Rebuild and Cleanup Plan
 
-Status: Draft v1 (execution plan)
-Goal: Rebuild Aetherra UX around one canonical interaction surface while reducing UI sprawl.
+Status: Draft v2 (Cognitive Observatory direction)
+Goal: Rebuild Aetherra UX around one canonical Cognitive Observatory while reducing UI sprawl.
 
 ## 1) Outcome We Want
 
 - One user-facing identity: **Aetherra**.
-- One canonical frontend stack for primary interaction.
+- One canonical Runtime UI direction: **Aetherra Cognitive Observatory**.
 - No uncontrolled UI duplicates across root, `Aetherra/gui`, and Lyrixa legacy trees.
 - Safe cleanup: no accidental deletion of bundled/runtime/vendor artifacts.
 
@@ -24,35 +24,48 @@ Observed UI surface fragmentation includes:
 
 ## 3) Canonical Direction
 
+The new Runtime UI is not a continuation of the current UI surfaces. Existing
+PySide, Lyrixa GUI, dashboard, and demo UI files are legacy evidence only. The
+product direction is defined in `AETHERRA_RUNTIME_UI_SYSTEM.md`.
+
+The foundation is observer-first:
+
+- Living architecture map, not desktop/window/taskbar metaphor.
+- Read-only status and event visualization first.
+- Guardian, Security, Maintenance, Homeostasis, Aether Script, and Integration
+  Validation activity visible.
+- Lyrixa acts as contextual guide, not as a separate application shell.
+- Dangerous controls come later and must be Guardian/Security mediated.
+
 ### Keep as Product Surface
 
 - `aetherra_os.py` (launcher contract)
 - `aetherra_os_launcher.py` (orchestration/boot flow)
-- `frontend/` (canonical web UX)
+- `Aetherra/runtime_ui/` (canonical UI state contract)
+- Future observatory frontend (location to be confirmed)
 - `aetherra_hub/` backend routes/services that support frontend runtime
 
-### Keep as Transitional Compatibility (short-term)
+### Transitional Compatibility
 
-- `Aetherra/gui/aetherra_os_gui.py`
-- `Aetherra/gui/launch_enhanced_neural_os.py`
-- `Aetherra/gui/run_aetherra_os.py`
+No old UI is considered the product direction. Keep only files still required
+by runtime imports, tests, or launcher compatibility until replacement exists.
 
 ### Internalize / Deprecate Branding
 
-- User-facing "Lyrixa" naming should be phased out from launch surfaces and docs.
+- User-facing "Lyrixa as app" naming should be phased out from launch surfaces and docs.
 - Any retained Lyrixa modules are internal implementation detail only.
 
 ## 4) Classification Matrix
 
-## A) Likely Keep / Consolidate Into Canonical UX
+## A) Keep / Build Around New Runtime UI Contract
 
-- `frontend/`
+- `Aetherra/runtime_ui/`
 - `aetherra_hub/`
 - `aetherra_os.py`
 - `aetherra_os_launcher.py`
-- `Aetherra/gui/aetherra_os_gui.py` (transitional)
+- Future observatory frontend after stack confirmation
 
-## B) Likely Archive (do not hard-delete first pass)
+## B) Likely Legacy / Remove After Reference Checks
 
 - Root demo UIs:
   - `demos/adk_demo_ui.py`

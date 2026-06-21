@@ -80,8 +80,13 @@ def test_continuity_record_is_guardian_audited_without_private_values(
     assert "0.93" not in ledger_text
     entry = _audit_entries(tmp_path)[-1]
     assert entry["details"]["intent"]["action"] == "consciousness.continuity_save"
-    assert entry["details"]["intent"]["metadata"]["snapshot_count"] == 1
-    assert entry["details"]["intent"]["metadata"]["latest_tick"] == 42
+    metadata = entry["details"]["intent"]["metadata"]
+    assert metadata["snapshot_count"] == 1
+    assert metadata["latest_tick"] == 42
+    assert metadata["qualia_label_count"] == 6
+    assert metadata["trust_label_count"] == 1
+    assert "qualia_keys" not in metadata
+    assert "trust_keys" not in metadata
 
 
 def test_continuity_record_denial_preserves_buffer_and_file(monkeypatch, tmp_path):

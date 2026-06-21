@@ -33,7 +33,7 @@ def test_qfac_store_uses_guardian_and_sanitizes_audit(monkeypatch, tmp_path):
     record = qfac.qfac_store(
         "secret memory content",
         embedding=[1.0, 0.0],
-        observer_state={"agent": "lyrixa"},
+        observer_state={"agent": "lyrixa", "do-not-audit-observer-key": "private"},
     )
     entries = _guardian_entries(audit_root)
     ledger_text = (
@@ -44,8 +44,10 @@ def test_qfac_store_uses_guardian_and_sanitizes_audit(monkeypatch, tmp_path):
     assert entries[-1]["details"]["intent"]["action"] == "memory.qfac_store"
     assert entries[-1]["details"]["decision"]["status"] in {"allow", "allow_limited"}
     assert entries[-1]["details"]["intent"]["metadata"]["embedding_dimension"] == 2
+    assert entries[-1]["details"]["intent"]["metadata"]["observer_label_count"] == 2
     assert "secret memory content" not in ledger_text
     assert "lyrixa" not in ledger_text
+    assert "do-not-audit-observer-key" not in ledger_text
 
 
 def test_qfac_rewrite_uses_guardian(monkeypatch, tmp_path):

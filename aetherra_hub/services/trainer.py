@@ -49,6 +49,8 @@ _evals: dict[str, _Eval] = {}
 _eval_last_score: float | None = None
 _eval_runs_total: int = 0
 
+TRAINER_READINESS_CONTRACT_VERSION = "1.0"
+
 
 def _hash_value(value: object) -> str | None:
     raw = str(value) if value is not None else ""
@@ -261,3 +263,70 @@ def snapshot_metrics() -> dict:  # consumed by metrics_accum
             "eval_runs_total": _eval_runs_total,
             "eval_last_score": _eval_last_score,
         }
+
+
+def assess_trainer_readiness() -> dict:
+    """Assess the Trainer scaffold without starting training or eval work."""
+
+    enabled = _enabled()
+    reasons: list[str] = []
+    if not enabled:
+        reasons.append("trainer_disabled_safe_default")
+
+    readiness = "guarded" if enabled else "disabled"
+    return {
+        "ok": True,
+        "system": "ai_trainer",
+        "contract_version": TRAINER_READINESS_CONTRACT_VERSION,
+        "readiness": readiness,
+        "safe_for_status": True,
+        "safe_for_queue_submission": enabled,
+        "safe_for_real_training": False,
+        "reasons": reasons or ["ready"],
+        "checks": {
+            "enabled": enabled,
+            "real_training_backend_enabled": False,
+            "in_memory_queue_only": True,
+            "guardian_required_for_submit": True,
+            "control_auth_required_for_submit": True,
+            "dataset_ingestion_enabled": False,
+            "model_registry_writes_enabled": False,
+            "artifact_publishing_enabled": False,
+        },
+        "authority": {
+            "owns": [
+                "training and evaluation request intake",
+                "trainer job and eval queue state",
+                "trainer metrics snapshot",
+                "trainer readiness reporting",
+            ],
+            "does_not_own": [
+                "dataset consent authority",
+                "model promotion authority",
+                "real training backend execution",
+                "artifact signing authority",
+                "Guardian approval decisions",
+                "Security capability enforcement",
+                "Self-Incorporation application",
+            ],
+        },
+        "failure_modes": {
+            "disabled": "reject submissions while status and metrics remain available",
+            "guardian_denial": "return 403 and do not mutate trainer queues",
+            "control_auth_failure": "return authorization failure before payload handling",
+            "payload_invalid": "reject request before queue mutation",
+            "backend_unavailable": "do not start real training; report readiness as scaffold-only",
+        },
+    }
+
+
+def build_trainer_status_payload() -> dict:
+    """Build Trainer status while preserving legacy metrics fields."""
+
+    metrics = snapshot_metrics()
+    return {
+        **metrics,
+        "ok": True,
+        "read_only": True,
+        "readiness": assess_trainer_readiness(),
+    }

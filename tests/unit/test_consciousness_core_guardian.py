@@ -184,6 +184,36 @@ def test_consciousness_micro_reflection_denial_skips_narrative_append(
     assert entry["details"]["decision"]["reason"] == "missing_capability"
 
 
+def test_consciousness_reflection_qfac_persistence_uses_guarded_memory_path(
+    monkeypatch, tmp_path
+):
+    _guardian_env(monkeypatch, tmp_path)
+    monkeypatch.setattr(core_config, "ENABLE_QFAC_PERSISTENCE", True)
+    core = ConsciousnessCore(StubBus(), safety_envelope=None, memory_engine=None)
+    focus = Focus(
+        event=Event(
+            type="private.qfac.focus",
+            payload={"secret": "do-not-audit-this-payload"},
+            source="private-source",
+        ),
+        resonance=0.9,
+        reason="private reason",
+    )
+
+    core._reflect_micro([focus], [_intent()])
+
+    ledger_text = _audit_text(tmp_path)
+    actions = [
+        entry["details"]["intent"]["action"]
+        for entry in _audit_entries(tmp_path)
+    ]
+    assert "consciousness.micro_reflection_update" in actions
+    assert "memory.qfac_store" in actions
+    assert "private.qfac.focus" not in ledger_text
+    assert "do-not-audit-this-payload" not in ledger_text
+    assert "Stabilize private-service-name" not in ledger_text
+
+
 def test_consciousness_macro_reflection_denial_skips_learning_decay_and_qfac(
     monkeypatch, tmp_path
 ):

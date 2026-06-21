@@ -15,7 +15,7 @@
 
 These changes are backward compatible and covered by new capability tests and validators.
 
-Updated: 2025-08-31
+Updated: 2026-06-20
 
 This document describes the Aetherra Chat System: a platform-level conversational service that provides message transport, streaming, safety middleware, and observability for multiple clients (Lyrixa UI/CLI, tools, and future apps).
 
@@ -33,6 +33,79 @@ This document describes the Aetherra Chat System: a platform-level conversationa
 - Safety filters, RAG hooks, scratchpad, confidence calibration — Implemented/Partial
 - Backpressure/queue limits/retries/DLQ — Implemented at Hub/Orchestrator
 - Prometheus chat series — Implemented
+
+## Functional foundation completion
+
+The Chat System is functionally foundation complete for the current Aetherra
+milestone. The completed foundation is the bounded transport, safety preflight,
+fallback, trace, policy, streaming, and readiness layer. It does not own AI
+reasoning, Lyrixa identity, Memory persistence, or Kernel scheduling.
+
+New Hub status surface:
+
+- `GET /api/chat/status` reports Chat transport readiness, ask/stream enablement,
+  token posture, safety mode, fallback availability, and authority boundaries.
+
+### Understanding Rule
+
+What it does:
+
+- Provides synchronous AI ask transport through `POST /api/ai/ask`.
+- Provides SSE stream transport through `POST /api/ai/stream` and
+  `GET /api/ai/stream`.
+- Provides Lyrixa bridge transport through `POST /api/lyrixa/chat`.
+- Applies chat ingress safety preflight, policy headers, trace IDs, and guarded
+  fallback behavior.
+- Exposes `GET /api/chat/status` for read-only transport readiness and authority
+  reporting.
+
+Why it exists:
+
+- Aetherra needs one reusable chat transport layer for Lyrixa, tools, future UI
+  clients, and local developer clients.
+- Chat keeps transport, streaming, policy, tracing, and fallback separate from
+  AI reasoning and Lyrixa identity.
+
+Authority it owns:
+
+- Chat HTTP transport.
+- SSE stream transport.
+- Chat ingress safety preflight.
+- Trace and policy response headers.
+- Offline chat fallback routing.
+- Chat transport readiness reporting.
+
+Authority it does not own:
+
+- AI engine reasoning authority.
+- Lyrixa identity authority.
+- Guardian approval decisions.
+- Security capability policy.
+- Kernel scheduling.
+- Memory persistence authority.
+
+How it fails:
+
+- If AI developer APIs are disabled, chat status reports `degraded` while the
+  Lyrixa bridge fallback can remain available.
+- If production chat APIs are enabled without token enforcement or token
+  configuration, chat status reports `blocked`.
+- If safety mode is invalid, chat status reports `blocked`.
+- If Guardian/Security deny a request, the downstream engine or Lyrixa service
+  is not invoked.
+- If downstream AI/Lyrixa services are unavailable, bounded fallback responses or
+  status contracts are returned.
+
+How it interacts with other systems:
+
+- Hub hosts Chat endpoints and OpenAPI discovery.
+- Guardian reviews chat ingress before downstream execution.
+- Security provides safety preflight, policy snapshots, token checks, and
+  capability expectations.
+- AI engine handles reasoning after Chat transport approval.
+- Lyrixa handles identity/guidance after Chat transport approval.
+- Kernel and Agent System handle downstream scheduling only through their own
+  contracts.
 
 ## Architecture overview
 

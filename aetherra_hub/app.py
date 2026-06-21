@@ -30,6 +30,7 @@ from .blueprints import (  # pylint: disable=unused-import
     ai_ask,
     ai_stream,
     chat,
+    coding,
     consciousness,  # consciousness state API
     frontend,  # static file serving for Lyrixa UI
     guardian,
@@ -48,6 +49,7 @@ from .blueprints import (  # pylint: disable=unused-import
     policy,
     qfac_admin,
     quantum,  # new
+    runtime_ui,
     scripts,  # new
     security,  # new
     self_improvement,  # new
@@ -79,6 +81,7 @@ BLUEPRINTS = [
     interactive.bp,  # Interactive Lyrixa emotions & expressions
     agents.bp,
     chat.bp,
+    coding.bp,
     policy.bp,
     ai_ask.bp,
     ai_stream.bp,
@@ -91,6 +94,7 @@ BLUEPRINTS = [
     self_improvement.bp,
     scripts.bp,
     security.bp,
+    runtime_ui.bp,
     # Frontend MUST be last - catches all remaining routes for SPA
     frontend.bp,
 ]

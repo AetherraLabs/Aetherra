@@ -4,6 +4,8 @@ This is the canonical navigation surface for active (living) specifications, ope
 
 ## Dashboards & Meta
 
+- Active Systems Dashboard: `ACTIVE_SYSTEMS.md`
+- Build Order: `BUILD_ORDER.md`
 - System Status Dashboard: `SYSTEM_INDEX.md`
 - Documentation Architecture: `DOCS_ARCHITECTURE.md`
 - Master Map: `AETHERRA_MASTER_MAP.md`
@@ -27,10 +29,19 @@ This is the canonical navigation surface for active (living) specifications, ope
 - Lyrixa System: `AETHERRA_LYRIXA_SYSTEM.md`
 - Chat System: `AETHERRA_CHAT_SYSTEM.md`
 - Security System: `AETHERRA_SECURITY_SYSTEM.md`
+- Guardian System: `AETHERRA_GUARDIAN_SYSTEM.md`
+- Homeostasis System: `AETHERRA_HOMEOSTASIS_SYSTEM.md`
+- Self-Improvement System: `AETHERRA_SELF-IMPROVEMENT_SYSTEM.md`
+- Maintenance System: `AETHERRA_MAINTENANCE_SYSTEM.md`
+- Self-Incorporation System: `AETHERRA_SELF-INCORPORATION_SYSTEM.md`
+- Integration Validation System: `AETHERRA_INTEGRATION_VALIDATION.md`
+- Runtime UI System: `AETHERRA_RUNTIME_UI_SYSTEM.md`
 - AI Trainer System (🔮 Planned): `AETHERRA_AI_TRAINER_SYSTEM.md`
 
 ## Policies & Process
 
+- Understanding Rule: `UNDERSTANDING_RULE.md`
+- Repository Structure: `REPOSITORY_STRUCTURE.md`
 - Release Process: `RELEASE_PROCESS.md`
 - Coverage Policy: `COVERAGE_POLICY.md`
 - Go / No-Go Gates: `GO_NO_GO_GATES.md`
@@ -56,6 +67,7 @@ This is the canonical navigation surface for active (living) specifications, ope
 - Demo Playbook: `Demo_Playbook.md`
 - Import Map: `import_map.md`
 - API Keys Guide: `api-keys.md`
+- Maintenance Tool Inventory: `MAINTENANCE_TOOL_INVENTORY.md`
 
 ## Examples & Workflows
 

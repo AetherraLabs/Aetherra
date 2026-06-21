@@ -48,6 +48,8 @@ def mock_service(temp_config):
     mock_registry = MagicMock()
     mock_hmr_info = MagicMock()
     mock_hmr_info.instance = MagicMock()
+    mock_hmr_info.instance.rollback_token.return_value = {"ok": True}
+    mock_hmr_info.instance.supports_rollback_action.return_value = True
     mock_registry.get_service_info.return_value = mock_hmr_info
 
     service.service_registry = mock_registry
@@ -74,6 +76,33 @@ async def test_canary_deployment_hmr_disabled(mock_service):
     assert result["ok"] is False
     assert result["status"] == "error"
     assert result["error"] == "hmr_disabled"
+
+
+@pytest.mark.asyncio
+async def test_canary_deployment_blocks_hmr_without_token_rollback_support(
+    mock_service,
+):
+    """Non-dry-run canary requires HMR token rollback support."""
+    mock_hmr_info = MagicMock()
+    mock_hmr_info.instance = object()
+    mock_service.service_registry.get_service_info.return_value = mock_hmr_info
+    mock_plan = {
+        "plan_id": "test_plan_rollback_unsupported",
+        "status": "ready",
+        "actions": [{"action": "register_plugin", "target": {"file_id": "test_123"}}],
+    }
+
+    with patch.object(
+        mock_service, "_run_integration_planning", return_value=mock_plan
+    ):
+        result = await mock_service.integrate_with_canary(dry_run=False)
+
+    assert result["ok"] is False
+    assert result["status"] == "error"
+    assert (
+        result["error"]
+        == "rollback_unavailable:register_plugin:hmr_token_rollback_unsupported"
+    )
 
 
 @pytest.mark.asyncio
@@ -306,12 +335,19 @@ async def test_canary_rollback_writes_guardian_audit_without_raw_token(
 ):
     """Rollback must be Guardian-audited without storing the raw rollback token."""
     rollback_token = "rb_do-not-audit-this-value"
+    mock_service._workflows = {
+        "workflow-test": {
+            "path": None,
+            "file_id": "workflow-test",
+            "rollback_token": rollback_token,
+        }
+    }
     mock_service.audit_ledger.append(
         plan_id="test-plan",
-        action="integration_plan",
+        action="register_workflow",
         status="applied",
         target={"plan_id": "test-plan"},
-        result={"rollback_token": rollback_token},
+        result={"name": "workflow-test", "rollback_token": rollback_token},
     )
 
     result = await mock_service.trigger_rollback(rollback_token)
@@ -319,6 +355,7 @@ async def test_canary_rollback_writes_guardian_audit_without_raw_token(
     audit_json = json.dumps(entries[-1])
 
     assert result["ok"] is True
+    assert "workflow-test" not in mock_service._workflows
     assert entries[-1]["details"]["intent"]["action"] == "maintenance.rollback"
     assert "maintenance_operation" in entries[-1]["details"]["risk"]["factors"]
     assert rollback_token not in audit_json

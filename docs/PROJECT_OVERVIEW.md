@@ -90,6 +90,7 @@ Additional parity test added: `tests/integration/test_hub_compat_parity.py` (ens
 - AETHERRA_INTERFACE_TYPE
 - AETHERRA_LOG_LEVEL
 - AETHERRA_LYRIXA_CLEANUP_REPORT
+- AETHERRA_MAINTENANCE_ENABLED
 - AETHERRA_MAX_TOKENS
 - AETHERRA_MEMORY_QUANTUM_ENABLED
 - AETHERRA_AGENT_TIMEOUT_MS
@@ -600,6 +601,7 @@ Chat and client defaults:
 - `AETHERRA_SECURITY_LEDGER_PATH`
 - `AETHERRA_RETRY_AFTER_SEC`
 - `AETHERRA_LYRIXA_FORCE_OFFLINE` — 1/0 to force Lyrixa to operate offline (no external AI API calls; use deterministic fallbacks).
+- `AETHERRA_MAINTENANCE_ENABLED` — 1/0 to enable the Maintenance coordinator service loop when the runtime starts.
 
 - `AETHERRA_SSE_REPLAY_MAX_AGE_S` — Max age in seconds for SSE replay buffer entries.
 - `AETHERRA_SSE_REPLAY_MAX_EVENTS` — Max number of SSE replay events retained.

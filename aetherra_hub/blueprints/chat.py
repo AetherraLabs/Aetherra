@@ -1,16 +1,39 @@
 from __future__ import annotations
 
 # Third party imports
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, current_app, jsonify, request
 
 # Local imports
-from ..services.chat_bridge import handle_chat
+from ..config import settings as default_settings
+from ..services.chat_status import build_chat_status_payload
+from ..services.chat_bridge import get_lyrixa_status, handle_chat
+from ..services.state import hub_state
 
 bp = Blueprint("chat", __name__)
 
 
+def _json_no_store(payload):
+    response = jsonify(payload)
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@bp.get("/api/lyrixa/status")
+def lyrixa_status():
+    hub_state.incr_requests()
+    return _json_no_store(get_lyrixa_status())
+
+
+@bp.get("/api/chat/status")
+def chat_status():
+    hub_state.incr_requests()
+    settings = getattr(current_app, "settings", default_settings)
+    return _json_no_store(build_chat_status_payload(settings))
+
+
 @bp.post("/api/lyrixa/chat")
 def lyrixa_chat():
+    hub_state.incr_requests()
     try:
         payload = request.get_json(silent=True) or {}
     except Exception:

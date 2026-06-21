@@ -83,6 +83,11 @@ def test_collaborative_solve_is_guardian_audited_without_problem_payload(
     assert framework.active_tasks == {}
     assert len(framework.completed_tasks) == 1
     assert len(framework.collaboration_history) == 1
+    assert "problem" not in framework.collaboration_history[0]
+    assert framework.collaboration_history[0]["problem_hash"]
+    assert framework.collaboration_history[0]["problem_length"] == len(
+        "do-not-audit-this-problem"
+    )
 
 
 def test_collaborative_solve_denial_does_not_start_agents_or_mutate_state(

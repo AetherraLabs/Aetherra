@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: GPL-3.0-or-later
+﻿# SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
 """
@@ -9,6 +9,7 @@ All memory operations are delegated to the canonical engine.
 # Standard library imports
 import hashlib
 import json
+import logging
 import os
 import sqlite3
 from contextlib import contextmanager, suppress
@@ -19,6 +20,8 @@ from typing import Any, Dict, List, Optional
 # Local imports
 # Import the canonical engine from the package (exported via __init__)
 from .QuantumEnhancedMemoryEngine import QuantumEnhancedMemoryEngine
+
+logger = logging.getLogger(__name__)
 
 
 def _hash_value(value) -> str | None:
@@ -199,7 +202,7 @@ class LyrixaMemorySystem:
     def ensure_connection(self) -> sqlite3.Connection:
         """Ensures the database connection is open and returns it."""
         if self.conn is None:
-            print("🔄 Reopening database connection...")
+            logger.info("Reopening memory database connection")
             self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
         return self.conn
 
@@ -234,10 +237,10 @@ class LyrixaMemorySystem:
 
             conn.commit()
 
-            print("✅ Lyrixa memory system initialized")
+            logger.debug("Lyrixa memory system initialized")
 
-        except Exception as e:
-            print(f"❌ Failed to initialize memory database: {e}")
+        except Exception:
+            logger.exception("Failed to initialize memory database")
 
     def normalize_importance(self, value: Any) -> float:
         """Normalize importance to a float between 0.0 and 1.0."""
@@ -331,12 +334,12 @@ class LyrixaMemorySystem:
 
             return memory_id
 
-        except (ValueError, TypeError) as e:
-            print(f"❌ Failed to store memory due to type error: {e}")
+        except (ValueError, TypeError):
+            logger.exception("Failed to store memory due to invalid input")
             return ""
 
-        except Exception as e:
-            print(f"❌ Failed to store memory: {e}")
+        except Exception:
+            logger.exception("Failed to store memory")
             return ""
 
     async def recall_memories(
@@ -399,8 +402,8 @@ class LyrixaMemorySystem:
 
             return memories
 
-        except Exception as e:
-            print(f"❌ Failed to recall memories: {e}")
+        except Exception:
+            logger.exception("Failed to recall memories")
             return []
 
     async def get_conversation_context(self, session_id: str, limit: int = 10) -> List[Memory]:
@@ -519,7 +522,7 @@ class LyrixaMemorySystem:
                 },
             )
             if not decision.allowed:
-                print(f"Guardian denied memory consolidation: {decision.reason}")
+                logger.warning("Guardian denied memory consolidation: %s", decision.reason)
                 return False
 
             cursor.execute(
@@ -542,10 +545,11 @@ class LyrixaMemorySystem:
             self.ensure_connection().commit()
             return True
 
-            print("🧠 Memory consolidation completed")
+            logger.debug("Memory consolidation completed")
 
-        except Exception as e:
-            print(f"❌ Memory consolidation failed: {e}")
+        except Exception:
+            logger.exception("Memory consolidation failed")
+            return False
 
     async def _update_memory_access(self, memory_id: str):
         """Update memory access statistics"""
@@ -571,10 +575,10 @@ class LyrixaMemorySystem:
             #     {"memory_id": memory_id, "timestamp": datetime.now().isoformat()},
             # )
 
-            print("🧠 Memory access updated")
+            logger.debug("Memory access updated")
 
-        except Exception as e:
-            print(f"❌ Memory access update failed: {e}")
+        except Exception:
+            logger.exception("Memory access update failed")
 
     def _generate_memory_id(
         self, content: Dict[str, Any], context: Optional[Dict[str, Any]]
@@ -628,30 +632,6 @@ class LyrixaMemorySystem:
                         [start_time.isoformat(), end_time.isoformat()]
                     )  # Cast to str explicitly
 
-                if self.conn is None:
-                    self.ensure_connection()  # Ensure connection is initialized
-
-                # Validate and cast query parameters
-                if query.memory_type:
-                    sql += " AND memory_type = ?"
-                    params.append(str(query.memory_type))  # Cast to str explicitly
-
-                if query.text:
-                    sql += " AND (content LIKE ? OR tags LIKE ?)"
-                    params.extend([f"%{query.text}%", f"%{query.text}%"])  # Cast to str explicitly
-
-                if query.tags:
-                    for tag in query.tags:
-                        sql += " AND tags LIKE ?"
-                        params.append(f"%{tag}%")  # Cast to str explicitly
-
-                if query.time_range:
-                    start_time, end_time = query.time_range
-                    sql += " AND created_at BETWEEN ? AND ?"
-                    params.extend(
-                        [start_time.isoformat(), end_time.isoformat()]
-                    )  # Cast to str explicitly
-
                 sql += " ORDER BY importance DESC, created_at DESC LIMIT ?"
                 params.append(query.limit)
 
@@ -675,8 +655,8 @@ class LyrixaMemorySystem:
 
                 return memories
 
-            except Exception as e:
-                print(f"❌ Memory search failed: {e}")
+            except Exception:
+                logger.exception("Memory search failed")
                 return []
 
     async def get_memory_stats(self) -> Dict[str, Any]:
@@ -709,8 +689,8 @@ class LyrixaMemorySystem:
                 "cache_size": len(self.memory_cache),
             }
 
-        except Exception as e:
-            print(f"❌ Failed to get memory stats: {e}")
+        except Exception:
+            logger.exception("Failed to get memory stats")
             return {}
 
     def _prepare_query_params(self, query):
@@ -754,7 +734,7 @@ class LyrixaMemorySystem:
                 },
             )
             if not decision.allowed:
-                print(f"Guardian denied memory export: {decision.reason}")
+                logger.warning("Guardian denied memory export: %s", decision.reason)
                 return False
 
             cursor.execute("SELECT * FROM memories")
@@ -762,11 +742,11 @@ class LyrixaMemorySystem:
 
             with open(output_path, "w", encoding="utf-8") as file:
                 json.dump(memories, file)
+            logger.debug("Memory exported")
             return True
-
-            print(f"🧠 Memory exported to {file_path}")
-        except Exception as e:
-            print(f"❌ Memory export failed: {e}")
+        except Exception:
+            logger.exception("Memory export failed")
+            return False
 
     def import_memory(self, file_path: str):
         """Imports memory data from a file."""
@@ -787,7 +767,7 @@ class LyrixaMemorySystem:
                 },
             )
             if not decision.allowed:
-                print(f"Guardian denied memory import: {decision.reason}")
+                logger.warning("Guardian denied memory import: %s", decision.reason)
                 return False
 
             with open(input_path, encoding="utf-8") as file:
@@ -803,10 +783,11 @@ class LyrixaMemorySystem:
                 memories,
             )
             self.ensure_connection().commit()
+            logger.debug("Memory imported")
             return True
-            print(f"🧠 Memory imported from {file_path}")
-        except Exception as e:
-            print(f"❌ Memory import failed: {e}")
+        except Exception:
+            logger.exception("Memory import failed")
+            return False
 
     def delete_memory(self, memory_id: str) -> bool:
         """Delete one memory by ID after Guardian approval."""
@@ -840,14 +821,14 @@ class LyrixaMemorySystem:
                 },
             )
             if not decision.allowed:
-                print(f"Guardian denied memory delete: {decision.reason}")
+                logger.warning("Guardian denied memory delete: %s", decision.reason)
                 return False
 
             cursor.execute("DELETE FROM memories WHERE id = ?", (normalized_id,))
             self.ensure_connection().commit()
             return cursor.rowcount > 0
-        except Exception as e:
-            print(f"âŒ Memory delete failed: {e}")
+        except Exception:
+            logger.exception("Memory delete failed")
             return False
 
     def close_connection(self):
@@ -856,9 +837,9 @@ class LyrixaMemorySystem:
             if self.conn:
                 self.conn.close()
                 self.conn = None
-                print("✅ Database connection closed.")
-        except Exception as e:
-            print(f"❌ Failed to close database connection: {e}")
+                logger.debug("Memory database connection closed")
+        except Exception:
+            logger.exception("Failed to close memory database connection")
 
     @contextmanager
     def db_session(self):
@@ -871,8 +852,8 @@ class LyrixaMemorySystem:
                 yield cursor
             else:
                 raise RuntimeError("Database connection is not initialized.")
-        except Exception as e:
-            print(f"❌ Database operation failed: {e}")
+        except Exception:
+            logger.exception("Memory database operation failed")
             if self.conn:
                 self.conn.rollback()
         finally:

@@ -12,6 +12,7 @@ from typing import Any
 from flask import Blueprint, jsonify, request
 
 from Aetherra.guardian import GuardianStatus, IntentDeclaration, evaluate_intent
+from Aetherra.aetherra_core.os_kernel import build_kernel_readiness_payload
 
 # Local imports
 from ..services import registry_client
@@ -120,11 +121,24 @@ def _get_kernel_or_500() -> tuple[Any | None, Any | None]:
     return kernel, None
 
 
+def _json_no_store(payload: dict[str, Any]):
+    response = jsonify(payload)
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 @bp.get("/status")
 def kernel_status():
     hub_state.incr_requests()
     ks = registry_client.get_kernel_status() or {"running": False}
-    return jsonify(ks)
+    return _json_no_store(ks)
+
+
+@bp.get("/readiness")
+def kernel_readiness():
+    hub_state.incr_requests()
+    ks = registry_client.get_kernel_status()
+    return _json_no_store(build_kernel_readiness_payload(ks))
 
 
 @bp.get("/metrics")
@@ -135,7 +149,7 @@ def kernel_metrics():
     payload = {"hub_ts": datetime.now().isoformat(), "kernel": ks}
     if hmr:
         payload["hmr"] = hmr
-    return jsonify(payload)
+    return _json_no_store(payload)
 
 
 @bp.post("/control/pause")

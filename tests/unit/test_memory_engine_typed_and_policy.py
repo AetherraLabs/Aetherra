@@ -116,6 +116,33 @@ async def test_guardian_audit_does_not_store_memory_content(monkeypatch, tmp_pat
 
 
 @pytest.mark.asyncio
+async def test_guardian_audit_hashes_memory_tags(monkeypatch, tmp_path):
+    monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(tmp_path))
+    monkeypatch.setenv("AETHERRA_GUARDIAN_MODE", "enforcing")
+    engine = AetherraMemoryEngineAdvanced(config=_memory_config(tmp_path))
+
+    result = await engine.remember(
+        "private tagged memory",
+        tags=["project", "do-not-audit-this-private-tag"],
+        category="project",
+    )
+    audit_path = tmp_path / ".aetherra" / "security" / "audit.jsonl"
+    ledger_text = audit_path.read_text(encoding="utf-8")
+    entries = [
+        json.loads(line)
+        for line in ledger_text.splitlines()
+        if line.strip()
+    ]
+    metadata = entries[-1]["details"]["intent"]["metadata"]
+
+    assert result.success is True
+    assert "do-not-audit-this-private-tag" not in ledger_text
+    assert metadata["tag_count"] == 2
+    assert len(metadata["tag_hashes"]) == 2
+    assert "tags" not in metadata
+
+
+@pytest.mark.asyncio
 async def test_identity_memory_write_is_contained_by_guardian(monkeypatch, tmp_path):
     monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(tmp_path))
     monkeypatch.setenv("AETHERRA_GUARDIAN_MODE", "enforcing")

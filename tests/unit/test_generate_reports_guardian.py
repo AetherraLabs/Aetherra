@@ -57,7 +57,7 @@ def test_generate_reports_uses_guardian_approval_and_sanitized_audit(
     monkeypatch, tmp_path
 ):
     audit_root = _configure_guardian(monkeypatch, tmp_path)
-    output_dir = tmp_path / "reports"
+    output_dir = tmp_path / "reports" / "maintenance"
     plans = generate_reports.plan_analysis_reports(_analysis(), output_dir)
     pending = generate_reports._guardian_preflight_report_generation(
         output_dir=output_dir,
@@ -67,7 +67,11 @@ def test_generate_reports_uses_guardian_approval_and_sanitized_audit(
     resolve_approval(approval_id, approved=True, approver="guardian-test")
     monkeypatch.setenv("AETHERRA_GUARDIAN_APPROVAL_ID", approval_id)
 
-    result = generate_reports.write_analysis_reports(plans, output_dir=output_dir)
+    result = generate_reports.write_analysis_reports(
+        plans,
+        output_dir=output_dir,
+        project_root=tmp_path,
+    )
     entries = _guardian_entries(audit_root)
     ledger_text = (
         audit_root / ".aetherra" / "security" / "audit.jsonl"
@@ -92,13 +96,36 @@ def test_generate_reports_denies_external_requester_before_write(
     monkeypatch.setenv("AETHERRA_REQUIRE_CAPABILITIES", "1")
     monkeypatch.setenv("AETHERRA_POLICY_HOME", str(audit_root / "policy"))
     monkeypatch.setenv("AETHERRA_PRINCIPAL", "untrusted_operator")
-    output_dir = tmp_path / "reports"
+    output_dir = tmp_path / "reports" / "maintenance"
     plans = generate_reports.plan_analysis_reports(_analysis(), output_dir)
 
-    result = generate_reports.write_analysis_reports(plans, output_dir=output_dir)
+    result = generate_reports.write_analysis_reports(
+        plans,
+        output_dir=output_dir,
+        project_root=tmp_path,
+    )
     entries = _guardian_entries(audit_root)
 
     assert result == 1
     assert not output_dir.exists()
     assert entries[-1]["details"]["intent"]["requester"] == "untrusted_operator"
     assert entries[-1]["details"]["decision"]["reason"] == "missing_capability"
+
+
+def test_generate_reports_blocks_unapproved_report_destination(
+    monkeypatch,
+    tmp_path,
+):
+    audit_root = _configure_guardian(monkeypatch, tmp_path)
+    output_dir = tmp_path / "manual_reports"
+    plans = generate_reports.plan_analysis_reports(_analysis(), output_dir)
+
+    result = generate_reports.write_analysis_reports(
+        plans,
+        output_dir=output_dir,
+        project_root=tmp_path,
+    )
+
+    assert result == 1
+    assert not output_dir.exists()
+    assert _guardian_entries(audit_root) == []

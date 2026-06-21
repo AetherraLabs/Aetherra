@@ -1,11 +1,25 @@
 # Aether Script Language System (`.aether`)
 
 > Version: 1.1
-> Status: Stable
+> Status: Runtime validation foundation complete
 > Maintainer: Aetherra Labs
 > Purpose: Defines the syntax, structure, execution rules, and
 > operational profiles of `.aether` (Aether Script), the native language
 > of the Aetherra Operating System.
+
+## Functional Foundation Checkpoint (2026-06-20)
+
+Aether Script is functional for the current runtime validation foundation:
+
+- `aetherra_script_service.py` is the bounded lightweight runtime path for current `.aether` execution tests.
+- Script execution is Guardian-gated through a `script.execute` intent before parsing or execution.
+- Guardian execution metadata avoids raw script contents, goal text, declared capability labels, declared plugin labels, and filename contents; it records hashes, counts, lengths, suffix, static-risk score, static-risk kinds, and signature status instead.
+- Strict capability mode can deny external script runners before interpreter state mutates.
+- Signature verification remains optional outside production/strict mode and mandatory when `AETHERRA_SCRIPT_VERIFY_STRICT=1` or production policy requires it.
+- Static risk analysis is available without execution for CI/preflight and now supports both file-based and content-based analysis.
+- Runtime audit logging remains sanitized and separately controlled by `AETHERRA_AUDIT`.
+
+This checkpoint does not mean the full language is final. The advanced parser/runtime paths still need consolidation, first-class effect execution needs deeper policy design, and distributed `.aether` workflows should be signed and verified before trusted deployment.
 
 ## Runtime Execution Semantics: Retry & Timeout
 
@@ -191,14 +205,11 @@ payload["rollback_registry"]: {
         capability is missing for the current requester.
 
 - Not yet implemented:
-  - Active runtime execution for retry/timeout
   - on_error exception dispatch
   - break/continue
   - function invocation (calls preserved as strings)
 
-- **Test coverage:** 46/46 tests passing across Options 1-3 (13 control flow, 5 parallel/await/transaction/policy/require, 10
-    dict literals/typed assignments/enforcement, 4 arithmetic precedence, 1 workflow kwargs/durations, 3 capability verification,
-    2 transaction rollback, 4 boolean precedence, 2 policy duration normalization, 2 workflow requires inheritance).
+- **Test coverage:** 126 focused Aether Script tests passing across expression evaluation, control flow, workflow retry/timeout, policy, require blocks, capability enforcement, transaction rollback, signing, static risk, sanitized audit logging, and Guardian-gated runtime execution.
 
 - Architecture note: advanced runtime/parsers under `Aetherra/core` and `Aetherra/runtime` are broader but not yet
     unified with the new block-aware lightweight path.

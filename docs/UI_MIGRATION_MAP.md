@@ -17,7 +17,8 @@ Purpose: Exact disposition map for UI-related surfaces during Aetherra unificati
 | ------------------------- | -------- | ---------------------------------------------- |
 | `aetherra_os.py`          | KEEP     | Primary launcher contract                      |
 | `aetherra_os_launcher.py` | KEEP     | Core orchestration and boot flow               |
-| `frontend/`               | KEEP     | Canonical user-facing UI stack                 |
+| `Aetherra/runtime_ui/`    | KEEP     | Canonical Cognitive Observatory state contract |
+| `frontend/`               | REVIEW   | Existing frontend is not assumed canonical     |
 | `aetherra_hub/`           | KEEP     | Backend services supporting canonical frontend |
 
 ## 2) Aetherra GUI Directory

@@ -2662,8 +2662,124 @@ class CoreIntegrator:
             return False
 
         # Use HMR for live module updates that could affect running services
-        hmr_actions = {"register_plugin", "register_agent", "load_aether_script"}
+        hmr_actions = {"register_plugin", "register_agent"}
         return action in hmr_actions
+
+    def _is_locally_reversible_action(self, action: str | None) -> bool:
+        """Return whether an action has a local rollback implementation."""
+
+        return action in {"register_workflow", "load_aether_script"}
+
+    def _hmr_supports_token_rollback(self, hmr_controller: Any) -> bool:
+        """Return whether an HMR controller can roll back by token."""
+
+        return any(
+            callable(getattr(hmr_controller, attr, None))
+            for attr in (
+                "rollback_token",
+                "rollback_by_token",
+                "rollback_integration",
+            )
+        )
+
+    def _hmr_supports_action_rollback(
+        self, hmr_controller: Any, action: str | None
+    ) -> bool:
+        """Return whether HMR can roll back a specific action."""
+
+        if not self._hmr_supports_token_rollback(hmr_controller):
+            return False
+        supports_action = getattr(hmr_controller, "supports_rollback_action", None)
+        if callable(supports_action):
+            try:
+                if bool(supports_action(str(action or ""))):
+                    return True
+            except Exception:
+                pass
+        has_explicit_registration = callable(
+            getattr(hmr_controller, "register_rollback_token", None)
+        )
+        if has_explicit_registration:
+            if action == "register_plugin":
+                plugin_manager = getattr(self.service, "plugin_manager", None)
+                return bool(plugin_manager and hasattr(plugin_manager, "unload_plugin"))
+            if action == "register_agent":
+                agent_orchestrator = getattr(self.service, "agent_orchestrator", None)
+                return bool(
+                    agent_orchestrator
+                    and any(
+                        callable(getattr(agent_orchestrator, attr, None))
+                        for attr in (
+                            "unregister_agent",
+                            "remove_agent",
+                            "deregister_agent",
+                        )
+                    )
+                )
+        if callable(supports_action):
+            return False
+        return True
+
+    async def _call_hmr_token_rollback(
+        self,
+        hmr_controller: Any,
+        rollback_token: str,
+    ) -> dict[str, Any]:
+        """Call the HMR controller's public token rollback API."""
+
+        for attr in ("rollback_token", "rollback_by_token", "rollback_integration"):
+            rollback_fn = getattr(hmr_controller, attr, None)
+            if not callable(rollback_fn):
+                continue
+            result = rollback_fn(rollback_token)
+            if asyncio.iscoroutine(result):
+                result = await result
+            if isinstance(result, dict):
+                return result
+            return {"ok": bool(result), "method": attr}
+        return {
+            "ok": False,
+            "error": "hmr_token_rollback_unsupported",
+        }
+
+    async def _register_hmr_rollback_token(
+        self,
+        hmr_controller: Any,
+        *,
+        rollback_token: str,
+        action: str,
+        result: dict[str, Any],
+        target: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Register rollback details with a token-aware HMR controller."""
+
+        register = getattr(hmr_controller, "register_rollback_token", None)
+        if not callable(register):
+            return {"ok": True, "registered": False, "reason": "implicit_contract"}
+        rollback_context: dict[str, Any] = {}
+        if action == "register_plugin":
+            rollback_context["plugin_manager"] = getattr(
+                self.service, "plugin_manager", None
+            )
+        elif action == "register_agent":
+            rollback_context["agent_orchestrator"] = getattr(
+                self.service, "agent_orchestrator", None
+            )
+        try:
+            registration = register(
+                rollback_token,
+                action,
+                result,
+                target,
+                rollback_context=rollback_context,
+            )
+        except TypeError:
+            registration = register(rollback_token, action, result, target)
+        if asyncio.iscoroutine(registration):
+            registration = await registration
+        if isinstance(registration, dict):
+            return registration
+        return {"ok": bool(registration)}
 
     async def _execute_with_hmr(
         self, action: str, target: dict[str, Any], deps: list[str], dry_run: bool
@@ -2675,9 +2791,32 @@ class CoreIntegrator:
         hmr_controller = self._get_hmr_controller()
         if not hmr_controller:
             logger.warning(
-                "[SELFINC][HMR] HMR controller not available, proceeding without HMR"
+                "[SELFINC][HMR] HMR controller not available; refusing non-dry-run HMR action"
             )
-            return await self._dispatch_action(action, target, deps, dry_run)
+            return {
+                "status": "error",
+                "action": action,
+                "error": "rollback_unavailable:hmr_controller_unavailable",
+            }
+        if not self._hmr_supports_token_rollback(hmr_controller):
+            logger.warning(
+                "[SELFINC][HMR] HMR controller lacks token rollback support; refusing non-dry-run HMR action"
+            )
+            return {
+                "status": "error",
+                "action": action,
+                "error": "rollback_unavailable:hmr_token_rollback_unsupported",
+            }
+        if not self._hmr_supports_action_rollback(hmr_controller, action):
+            logger.warning(
+                "[SELFINC][HMR] HMR controller cannot roll back action %s; refusing non-dry-run action",
+                action,
+            )
+            return {
+                "status": "error",
+                "action": action,
+                "error": f"rollback_unavailable:{action}:hmr_action_rollback_unsupported",
+            }
 
         # Generate rollback token
         rollback_token = self._generate_rollback_token(action, target)
@@ -2693,6 +2832,23 @@ class CoreIntegrator:
 
             # Record HMR action in audit
             success = result.get("status") == "applied"
+            if success:
+                registration = await self._register_hmr_rollback_token(
+                    hmr_controller,
+                    rollback_token=rollback_token,
+                    action=action,
+                    result=result,
+                    target=target,
+                )
+                if not registration.get("ok"):
+                    result = {
+                        **result,
+                        "status": "error",
+                        "error": registration.get(
+                            "error", "rollback_registration_failed"
+                        ),
+                    }
+                    success = False
             await self._record_hmr_action(action, target, rollback_token, success)
 
             # Add rollback token to result
@@ -2746,6 +2902,24 @@ class CoreIntegrator:
                     res = await self._execute_with_hmr(
                         action_type, target, deps, dry_run
                     )
+                elif (
+                    not dry_run
+                    and self._is_locally_reversible_action(action_type)
+                    and isinstance(target, dict)
+                ):
+                    rollback_token = self._generate_rollback_token(
+                        str(action_type), target
+                    )
+                    target = {**target, "rollback_token": rollback_token}
+                    res = await self._dispatch_action(
+                        action_type, target, deps, dry_run
+                    )
+                    if res.get("status") == "applied":
+                        res["rollback_token"] = rollback_token
+                        with contextlib.suppress(Exception):
+                            self.service.metrics["last_rollback_token"] = (
+                                rollback_token
+                            )
                 else:
                     res = await self._dispatch_action(
                         action_type, target, deps, dry_run
@@ -2945,6 +3119,8 @@ class CoreIntegrator:
                     "status": "applied" if result.get("success") else "error",
                     "action": action,
                     "path": path,
+                    "script_key": script_key,
+                    "rollback_scope": "selfinc_applied_script_marker",
                     "result": result,
                 }
             except Exception as e:
@@ -2983,12 +3159,14 @@ class CoreIntegrator:
                 "registered_at": datetime.now().isoformat(),
                 "file_id": file_id,
                 "trust": trust,
+                "rollback_token": target.get("rollback_token"),
             }
             return {
                 "status": "applied",
                 "action": action,
                 "name": workflow_name,
                 "path": path,
+                "rollback_token": target.get("rollback_token"),
             }
 
         # --- other actions ---
@@ -4053,14 +4231,35 @@ class SelfIncorporationService:
                     actions = params["integration_plan"].get("actions")
 
                 if actions:
-                    plan = {"plan_id": plan_id, "actions": actions}
-                    exec_res = await self.core_integrator.execute_plan(
-                        plan, dry_run=bool(params.get("dry_run", False))
-                    )
+                    async def _proposal_plan(include_experimental=False):
+                        return {
+                            "plan_id": plan_id,
+                            "status": "ready",
+                            "actions": actions,
+                        }
+
+                    original_plan_runner = self._run_integration_planning
+                    self._run_integration_planning = _proposal_plan
+                    try:
+                        exec_res = await self.trigger_integrate(
+                            dry_run=bool(params.get("dry_run", False)),
+                            requester=str(auth_result.sender or "self_improvement"),
+                            approval_id=params.get("guardian_approval_id"),
+                            return_results=True,
+                        )
+                    finally:
+                        self._run_integration_planning = original_plan_runner
+
+                    if not exec_res.get("ok"):
+                        action_status = "rejected"
+                        details["reason"] = exec_res.get("reason") or exec_res.get(
+                            "status"
+                        ) or "integration_rejected"
                     details["integration"] = {
                         "applied": exec_res.get("applied"),
                         "skipped": exec_res.get("skipped"),
                         "errors": exec_res.get("errors"),
+                        "status": exec_res.get("status"),
                     }
                     # If plan executed with errors, treat as rejected best-effort
                     if int(exec_res.get("errors", 0)) > 0:
@@ -4614,6 +4813,24 @@ class SelfIncorporationService:
                 "duration": time.time() - start_time,
             }
 
+        rollback_error = self._plan_rollback_support_error(
+            plan=plan,
+            dry_run=dry_run,
+        )
+        if rollback_error is not None:
+            logger.warning(
+                "[SELFINC] Integration plan blocked before execution: %s",
+                rollback_error,
+            )
+            return {
+                "ok": False,
+                "plan_id": plan.get("plan_id"),
+                "status": "rollback_unavailable",
+                "reason": rollback_error,
+                "actions": len(plan.get("actions", [])),
+                "duration": time.time() - start_time,
+            }
+
         # Ethics evaluation before execution
         ethics_evaluation = await self._evaluate_plan_ethics(plan)
         ethics_threshold = float(os.getenv("AETHERRA_ETHICS_THRESHOLD", "0.6"))
@@ -4669,6 +4886,12 @@ class SelfIncorporationService:
             }
 
         exec_result = await self.core_integrator.execute_plan(plan, dry_run=dry_run)
+        execution_results = exec_result.get("results", [])
+        rollback_tokens = [
+            str(item.get("rollback_token"))
+            for item in execution_results
+            if isinstance(item, dict) and item.get("rollback_token")
+        ]
         if exec_result.get("ok"):
             self.metrics["files_integrated"] = self.metrics.get(
                 "files_integrated", 0
@@ -4692,6 +4915,7 @@ class SelfIncorporationService:
                     "risk_factors": ethics_evaluation.get("risk_factors", []),
                     "applied": exec_result.get("applied"),
                     "errors": exec_result.get("errors"),
+                    "rollback_token_count": len(rollback_tokens),
                 },
                 trace_id=plan_trace_id,
                 ethics_overall=ethics_evaluation.get("overall_score"),
@@ -4707,8 +4931,11 @@ class SelfIncorporationService:
             "errors": exec_result.get("errors", 0),
             "duration": time.time() - start_time,
         }
+        if rollback_tokens:
+            result["rollback_tokens"] = rollback_tokens
+            result["last_rollback_token"] = rollback_tokens[-1]
         if return_results:
-            result["results"] = exec_result.get("results", [])
+            result["results"] = execution_results
         return result
 
     async def get_integration_status(self) -> dict[str, Any]:
@@ -4913,6 +5140,54 @@ class SelfIncorporationService:
             capability_checker=self._guardian_capability_checker,
         )
 
+    def _plan_rollback_support_error(
+        self,
+        *,
+        plan: dict[str, Any],
+        dry_run: bool,
+    ) -> str | None:
+        """Return a failure reason when a non-dry-run plan cannot be rolled back."""
+
+        if dry_run:
+            return None
+
+        actions = plan.get("actions", [])
+        if not isinstance(actions, list):
+            return "invalid_actions"
+
+        hmr_actions = {"register_plugin", "register_agent"}
+        local_actions = {"register_workflow", "load_aether_script"}
+        for item in actions:
+            if hasattr(item, "action"):
+                action = str(getattr(item, "action") or "")
+            elif isinstance(item, dict):
+                action = str(item.get("action") or "")
+            else:
+                return "invalid_action_entry"
+
+            if not action:
+                return "missing_action"
+            if action in local_actions:
+                continue
+            if action in hmr_actions:
+                if not self.config.hmr_enabled:
+                    return f"rollback_unavailable:{action}:hmr_disabled"
+                hmr_controller = self.core_integrator._get_hmr_controller()
+                if not hmr_controller:
+                    return f"rollback_unavailable:{action}:hmr_controller_unavailable"
+                if not self.core_integrator._hmr_supports_token_rollback(
+                    hmr_controller
+                ):
+                    return f"rollback_unavailable:{action}:hmr_token_rollback_unsupported"
+                if not self.core_integrator._hmr_supports_action_rollback(
+                    hmr_controller,
+                    action,
+                ):
+                    return f"rollback_unavailable:{action}:hmr_action_rollback_unsupported"
+                continue
+
+        return None
+
     def _guardian_preflight_rollback(
         self,
         *,
@@ -4947,6 +5222,141 @@ class SelfIncorporationService:
             capability_checker=self._guardian_capability_checker,
         )
 
+    def _find_rollback_audit_records(
+        self, rollback_token: str
+    ) -> list[dict[str, Any]]:
+        """Find audit records that reference a rollback token."""
+
+        if not hasattr(self, "audit_ledger") or not self.audit_ledger:
+            return []
+        all_records = self.audit_ledger.recent(limit=1000)
+        return [
+            record
+            for record in all_records
+            if record.get("result", {}).get("rollback_token") == rollback_token
+        ]
+
+    async def _execute_local_rollback(
+        self,
+        audit_record: dict[str, Any],
+        rollback_token: str,
+    ) -> dict[str, Any]:
+        """Execute a local rollback for supported bounded actions."""
+
+        action = str(audit_record.get("action") or "")
+        result = audit_record.get("result") or {}
+        if action == "register_workflow":
+            workflow_name = str(result.get("name") or "").strip()
+            workflows = getattr(self, "_workflows", None)
+            if not workflow_name:
+                return {
+                    "ok": False,
+                    "error": "rollback_target_missing",
+                    "action": action,
+                }
+            if not isinstance(workflows, dict):
+                return {
+                    "ok": False,
+                    "error": "workflow_registry_missing",
+                    "action": action,
+                    "workflow": workflow_name,
+                }
+            existing = workflows.get(workflow_name)
+            if existing is None:
+                return {
+                    "ok": False,
+                    "error": "rollback_target_not_found",
+                    "action": action,
+                    "workflow": workflow_name,
+                }
+            if existing.get("rollback_token") != rollback_token:
+                return {
+                    "ok": False,
+                    "error": "rollback_token_mismatch",
+                    "action": action,
+                    "workflow": workflow_name,
+                }
+            del workflows[workflow_name]
+            return {
+                "ok": True,
+                "action": action,
+                "workflow": workflow_name,
+                "status": "rolled_back",
+            }
+
+        if action == "load_aether_script":
+            script_key = str(result.get("script_key") or "").strip()
+            applied_scripts = getattr(self.core_integrator, "_applied_scripts", None)
+            if not script_key:
+                return {
+                    "ok": False,
+                    "error": "rollback_target_missing",
+                    "action": action,
+                }
+            if not isinstance(applied_scripts, set):
+                return {
+                    "ok": False,
+                    "error": "script_marker_registry_missing",
+                    "action": action,
+                }
+            if script_key not in applied_scripts:
+                return {
+                    "ok": False,
+                    "error": "rollback_target_not_found",
+                    "action": action,
+                }
+            applied_scripts.remove(script_key)
+            return {
+                "ok": True,
+                "action": action,
+                "status": "rolled_back",
+                "rollback_scope": "selfinc_applied_script_marker",
+            }
+
+        if action in {
+            "register_plugin",
+            "register_agent",
+            "hmr_register_plugin",
+            "hmr_register_agent",
+            "hmr_load_aether_script",
+        }:
+            hmr_controller = self.core_integrator._get_hmr_controller()
+            if not hmr_controller:
+                return {
+                    "ok": False,
+                    "error": "hmr_controller_unavailable",
+                    "action": action,
+                }
+            if not self.core_integrator._hmr_supports_token_rollback(hmr_controller):
+                return {
+                    "ok": False,
+                    "error": "hmr_token_rollback_unsupported",
+                    "action": action,
+                }
+            rollback_result = await self.core_integrator._call_hmr_token_rollback(
+                hmr_controller,
+                rollback_token,
+            )
+            return {
+                "ok": bool(rollback_result.get("ok")),
+                "action": action,
+                "status": "rolled_back"
+                if rollback_result.get("ok")
+                else "rollback_failed",
+                "hmr": rollback_result,
+                **(
+                    {}
+                    if rollback_result.get("ok")
+                    else {"error": rollback_result.get("error", "hmr_rollback_failed")}
+                ),
+            }
+
+        return {
+            "ok": False,
+            "error": "rollback_operation_unsupported",
+            "action": action or "unknown",
+        }
+
     async def trigger_rollback(
         self,
         rollback_token: str,
@@ -4962,29 +5372,6 @@ class SelfIncorporationService:
             return {
                 "ok": False,
                 "error": "invalid_rollback_token",
-                "token": rollback_token,
-                "duration": time.time() - start_time,
-            }
-
-        # Check if HMR is enabled
-        if not self.config.hmr_enabled:
-            return {
-                "ok": False,
-                "error": "hmr_disabled",
-                "token": rollback_token,
-                "duration": time.time() - start_time,
-            }
-
-        # Get HMR controller
-        hmr_controller = None
-        if self.service_registry:
-            info = self.service_registry.get_service_info("hmr_controller")
-            hmr_controller = info.instance if info else None
-
-        if not hmr_controller:
-            return {
-                "ok": False,
-                "error": "hmr_controller_unavailable",
                 "token": rollback_token,
                 "duration": time.time() - start_time,
             }
@@ -5045,16 +5432,7 @@ class SelfIncorporationService:
                         "token": rollback_token,
                         "duration": time.time() - start_time,
                     }
-            # Look up the rollback token in audit records
-            audit_records = []
-            if hasattr(self, "audit_ledger") and self.audit_ledger:
-                # Search for records with this rollback token
-                all_records = self.audit_ledger.recent(limit=1000)
-                audit_records = [
-                    r
-                    for r in all_records
-                    if r.get("result", {}).get("rollback_token") == rollback_token
-                ]
+            audit_records = self._find_rollback_audit_records(rollback_token)
 
             if not audit_records:
                 return {
@@ -5064,23 +5442,38 @@ class SelfIncorporationService:
                     "duration": time.time() - start_time,
                 }
 
-            # For now, we'll log the rollback attempt and return success
-            # In a full implementation, this would interface with the HMR controller
-            # to actually perform the rollback operation
-            logger.info(
-                f"[SELFINC][HMR] Rollback requested for {len(audit_records)} integration(s)"
+            rollback_result = await self._execute_local_rollback(
+                audit_records[0],
+                rollback_token,
             )
+            if not rollback_result.get("ok"):
+                return {
+                    "ok": False,
+                    "error": rollback_result.get("error", "rollback_failed"),
+                    "token": rollback_token,
+                    "affected_integrations": len(audit_records),
+                    "duration": time.time() - start_time,
+                    "details": {
+                        key: value
+                        for key, value in rollback_result.items()
+                        if key not in {"ok", "error"}
+                    },
+                }
 
             # Record the rollback attempt in audit
             if hasattr(self, "audit_ledger") and self.audit_ledger:
                 self.audit_ledger.append(
                     plan_id="rollback",
-                    action="hmr_rollback",
+                    action="selfinc_rollback",
                     status="applied",
-                    target={"rollback_token": rollback_token},
+                    target={
+                        "rollback_token_hash": token_hash,
+                        "rolled_back_action": rollback_result.get("action"),
+                    },
                     result={
-                        "rollback_token": rollback_token,
+                        "rollback_token_hash": token_hash,
                         "affected_integrations": len(audit_records),
+                        "rollback": rollback_result,
                         "timestamp": time.time(),
                     },
                 )
@@ -5092,8 +5485,8 @@ class SelfIncorporationService:
                 "ok": True,
                 "token": rollback_token,
                 "affected_integrations": len(audit_records),
+                "rollback": rollback_result,
                 "duration": time.time() - start_time,
-                "note": "rollback_logged_hmr_implementation_pending",
             }
 
         except Exception as e:
@@ -5201,6 +5594,23 @@ class SelfIncorporationService:
                 "ok": False,
                 "status": "error",
                 "error": "hmr_controller_unavailable",
+                "plan_id": generated_plan_id,
+                "duration": time.time() - start_time,
+            }
+
+        rollback_support_error = self._plan_rollback_support_error(
+            plan=plan,
+            dry_run=dry_run,
+        )
+        if rollback_support_error is not None:
+            logger.warning(
+                "[SELFINC][CANARY] Rollback support unavailable: %s",
+                rollback_support_error,
+            )
+            return {
+                "ok": False,
+                "status": "error",
+                "error": rollback_support_error,
                 "plan_id": generated_plan_id,
                 "duration": time.time() - start_time,
             }

@@ -26,8 +26,9 @@ _GUARDIAN_DENIED_RESPONSE = {
 
 @bp.get("/api/trainer/status")
 def trainer_status():  # pragma: no cover - tested via capabilities
-    snap = trainer_service.snapshot_metrics()
-    return jsonify(snap), 200
+    response = jsonify(trainer_service.build_trainer_status_payload())
+    response.headers["Cache-Control"] = "no-store"
+    return response, 200
 
 
 def _enabled() -> bool:

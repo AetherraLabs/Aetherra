@@ -16,6 +16,7 @@ verification can be enabled via environment flags for protection.
 
 # Standard library imports
 import importlib
+import hashlib
 import json
 import logging
 import os
@@ -38,6 +39,58 @@ except Exception:  # Fallback for variations in path
 logger = logging.getLogger(__name__)
 
 SIGNATURE_MARKER = "# @signature:"
+
+
+def _hash_value(value: Any) -> str | None:
+    if value is None:
+        return None
+    raw = str(value)
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _guardian_capability_checker(requester: str, capability: str) -> bool:
+    if requester == "aether_script:runtime" and capability in {"script:run"}:
+        return True
+
+    from Aetherra.security.capabilities import has_capability
+
+    return has_capability(requester, capability)
+
+
+def _guardian_preflight_script_execution(
+    *,
+    requester: str,
+    filename: str,
+    script_content: str,
+    metadata: dict[str, Any],
+):
+    from Aetherra.guardian import IntentDeclaration, evaluate_intent
+
+    approval_id = os.getenv("AETHERRA_GUARDIAN_APPROVAL_ID", "").strip() or None
+    return evaluate_intent(
+        IntentDeclaration(
+            requester=requester,
+            subsystem="aether_script",
+            action="script.execute",
+            target=f"aether_script:{_hash_value(filename)}",
+            purpose="Execute an Aether Script through the bounded lightweight runtime",
+            capabilities=("script:run",),
+            expected_outcome="script parsed and executed with bounded workflow semantics",
+            reversible=False,
+            rollback_plan=None,
+            evidence=("aether_script.execute:request",),
+            metadata={
+                **metadata,
+                "filename_hash": _hash_value(filename),
+                "script_hash": _hash_value(script_content),
+                "script_length": len(script_content or ""),
+            },
+        ),
+        approval_id=approval_id,
+        capability_checker=_guardian_capability_checker,
+    )
 
 
 class AetherScriptService:
@@ -91,11 +144,36 @@ class AetherScriptService:
         context: dict | None = None,
     ) -> dict[str, Any]:
         try:
+            context = context or {}
+            guardian_metadata = self._build_guardian_execution_metadata(
+                script_content,
+                filename,
+            )
+            requester = (
+                str(context.get("_requester") or "").strip()
+                or os.getenv("AETHERRA_PRINCIPAL", "").strip()
+                or "aether_script:runtime"
+            )
+            decision = _guardian_preflight_script_execution(
+                requester=requester,
+                filename=filename,
+                script_content=script_content,
+                metadata=guardian_metadata,
+            )
+            if not decision.allowed:
+                return {
+                    "success": False,
+                    "error": "guardian_denied",
+                    "reason": decision.reason,
+                    "audit_id": decision.audit_id,
+                    "file": filename,
+                }
+
             # Optional strict signature verification
             self._maybe_verify_signature(script_content, filename)
             # Prefer block-aware execution for v1.1 features
             # Seed a requester principal for capability checks
-            seeded_context = dict(context or {})
+            seeded_context = dict(context)
             try:
                 seeded_context.setdefault("_requester", f"script:{Path(filename).name}")
             except Exception:
@@ -137,7 +215,7 @@ class AetherScriptService:
             import contextlib
 
             with contextlib.suppress(Exception):
-                self._audit_run(script_content, payload, context or {}, filename)
+                self._audit_run(script_content, payload, context, filename)
             return {"success": True, "result": payload}
         except Exception as e:
             logger.error(f"[AETHER] Execute failed: {e}")
@@ -1678,6 +1756,91 @@ class AetherScriptService:
         ok, reason = verify_embedded_signature(script_content)
         if not ok:
             raise ValueError(f"Signature verification failed for {filename}: {reason}")
+
+    def _build_guardian_execution_metadata(
+        self,
+        script_content: str,
+        filename: str,
+    ) -> dict[str, Any]:
+        """Build bounded Guardian metadata without preserving script source."""
+
+        signature_present = script_content.lstrip().startswith(SIGNATURE_MARKER)
+        signature_valid = False
+        signature_reason_hash = None
+        try:
+            from Aetherra.security.script_signing import verify_embedded_signature
+
+            signature_valid, signature_reason = verify_embedded_signature(script_content)
+            signature_reason_hash = _hash_value(signature_reason)
+        except Exception as exc:  # pragma: no cover - defensive optional path
+            signature_reason_hash = _hash_value(type(exc).__name__)
+
+        risk_findings: list[Any] = []
+        risk_score = 0
+        risk_kinds: list[str] = []
+        try:
+            from Aetherra.analysis.static_risk import analyze_text, risk_score as score_risk
+
+            risk_findings = analyze_text(script_content)
+            risk_score = score_risk(risk_findings)
+            risk_kinds = sorted({str(getattr(finding, "kind", "")) for finding in risk_findings})
+        except Exception as exc:  # pragma: no cover - defensive optional path
+            logger.debug("Aether Script static risk metadata failed: %s", type(exc).__name__)
+
+        declared_capabilities = self._extract_declared_capabilities(script_content)
+        declared_plugins = self._extract_declared_plugins(script_content)
+        line_count = len((script_content or "").splitlines())
+
+        return {
+            "line_count": line_count,
+            "filename_suffix": Path(filename).suffix.lower(),
+            "signature_present": signature_present,
+            "signature_valid": signature_valid,
+            "signature_reason_hash": signature_reason_hash,
+            "static_risk_score": risk_score,
+            "static_risk_finding_count": len(risk_findings),
+            "static_risk_kinds": risk_kinds,
+            "declared_capability_count": len(declared_capabilities),
+            "declared_capability_hashes": [
+                _hash_value(capability) for capability in declared_capabilities
+            ],
+            "declared_plugin_count": len(declared_plugins),
+            "declared_plugin_hashes": [_hash_value(plugin) for plugin in declared_plugins],
+        }
+
+    def _extract_declared_capabilities(self, script_content: str) -> list[str]:
+        capabilities: list[str] = []
+        for match in re.finditer(
+            r"capabilities\s*(?::|=)\s*\[(.*?)\]",
+            script_content,
+            flags=re.IGNORECASE | re.DOTALL,
+        ):
+            for item in match.group(1).split(","):
+                token = item.strip().strip("\"'")
+                if token and token not in capabilities:
+                    capabilities.append(token)
+        return capabilities
+
+    def _extract_declared_plugins(self, script_content: str) -> list[str]:
+        plugins: list[str] = []
+        for match in re.finditer(
+            r"plugins\s*(?::|=)\s*\[(.*?)\]",
+            script_content,
+            flags=re.IGNORECASE | re.DOTALL,
+        ):
+            for item in match.group(1).split(","):
+                token = item.strip().strip("\"'")
+                if token and token not in plugins:
+                    plugins.append(token)
+        for match in re.finditer(
+            r"^\s*require\s+plugin\s+([A-Za-z0-9_.-]+)",
+            script_content,
+            flags=re.IGNORECASE | re.MULTILINE,
+        ):
+            token = match.group(1).strip()
+            if token and token not in plugins:
+                plugins.append(token)
+        return plugins
 
     def _audit_run(
         self,

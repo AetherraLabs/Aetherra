@@ -1034,6 +1034,33 @@ GET /api/health         # Aggregate health (kernel, registry, orchestrator, memo
 - System health diagnostics
 - Performance optimization
 
+## Functional Refinement Checkpoint
+
+Current refinement status:
+
+- Core SQLite-backed memory mutation surfaces are Guardian-gated:
+  `consolidate_memories`, `export_memory`, `import_memory`, and
+  `delete_memory`.
+- Plugin-associated forget operations are Guardian-gated through the memory
+  plugin bridge.
+- Guardian audit metadata is bounded and avoids raw memory content, tags,
+  contexts, private memory IDs, and import/export file paths.
+- Advanced `remember(...)` decisions audit tag counts and short tag hashes
+  instead of raw tag labels.
+- QFAC store decisions audit observer-state label counts and short label hashes
+  instead of raw observer-state labels or values.
+- Core memory operations now use module logging instead of direct console
+  prints, keeping library behavior suitable for services and tests.
+- `search_memories` builds each query filter once and has regression coverage
+  for combined type, text, tag, and importance filters.
+
+Focused verification:
+
+```powershell
+python -m pytest -q -o addopts= --basetemp .pytest_tmp tests\unit\test_memory_core_guardian.py tests\unit\test_memory_plugin_bridge_guardian.py tests\unit\test_engine_memory_compatibility.py
+python -m pytest -q -o addopts= --basetemp .pytest_tmp tests\unit\test_memory_engine_typed_and_policy.py tests\unit\test_qfac_guardian.py tests\unit\test_storm_backup_guardian.py tests\unit\test_storm_deployment_guardian.py tests\unit\test_qfac_policy.py tests\unit\test_qfac_modes.py
+```
+
 ## Keeping this document current
 
 - Use the VS Code task "Verify Docs Consistency" to catch path/section drifts.

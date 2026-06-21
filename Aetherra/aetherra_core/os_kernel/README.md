@@ -14,6 +14,14 @@ Public imports:
 
 - `from Aetherra.aetherra_core.os_kernel import AetherraKernelLoop, get_kernel`
 - `from Aetherra.aetherra_core.os_kernel import HMRController, get_hmr_controller`
+- `from Aetherra.aetherra_core.os_kernel import assess_kernel_readiness`
+
+Readiness contract:
+
+- `assess_kernel_readiness(status)` converts a Kernel status dictionary into a
+  read-only operator contract: `ready`, `degraded`, `blocked`, or `offline`.
+- `build_kernel_readiness_payload(status)` wraps the readiness result for Hub
+  API responses without mutating Kernel state.
 
 Later, the implementations can be moved here and the forwarders removed.
 

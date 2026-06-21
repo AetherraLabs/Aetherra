@@ -61,6 +61,88 @@ def _registry_call(
         return None
 
 
+def _registry_status_call() -> dict[str, Any] | None:
+    try:
+        # Aetherra imports
+        from aetherra_service_registry import get_service_registry  # type: ignore
+
+        async def _call():
+            reg = await get_service_registry()
+            svc = reg.get_service("lyrixa_chat")
+            if not svc:
+                return None
+            get_status = getattr(svc, "get_status", None)
+            if callable(get_status):
+                status = get_status()
+                return status if isinstance(status, dict) else None
+            return {
+                "ok": True,
+                "system": "lyrixa",
+                "service": "lyrixa_chat",
+                "readiness": "degraded",
+                "safe_for_interaction": True,
+                "reason": "registered_service_without_status_contract",
+            }
+
+        result = run_coro_blocking(_call())
+        return result if isinstance(result, dict) else None
+    except Exception:
+        return None
+
+
+def get_lyrixa_status() -> dict[str, Any]:
+    """Return a normalized Lyrixa status payload for Hub clients."""
+
+    status = _registry_status_call()
+    if status:
+        status.setdefault("ok", True)
+        status.setdefault("system", "lyrixa")
+        status.setdefault("service", "lyrixa_chat")
+        status.setdefault("readiness", "ready")
+        status.setdefault("safe_for_interaction", True)
+        return status
+
+    return {
+        "ok": True,
+        "system": "lyrixa",
+        "service": "lyrixa_chat",
+        "readiness": "offline",
+        "safe_for_interaction": True,
+        "initialized": False,
+        "forced_offline": True,
+        "degraded_components": ["service_registry_unavailable_or_service_offline"],
+        "capabilities": {
+            "identity_answers": True,
+            "offline_fallback": True,
+            "safe_edits": False,
+            "safe_edits_require_guardian": True,
+            "router_available": False,
+            "intelligence_available": False,
+            "registry_connected": False,
+            "memory_connected": False,
+            "consciousness_connected": False,
+            "system_monitor_available": False,
+        },
+        "authority": {
+            "owns": [
+                "Lyrixa identity and guidance responses",
+                "bounded chat-service fallback behavior",
+                "safe-edit suggestion formatting",
+                "service-level awareness summaries",
+            ],
+            "does_not_own": [
+                "Guardian approval decisions",
+                "Security capability policy",
+                "Kernel scheduling",
+                "Memory persistence authority",
+                "Self-Incorporation execution",
+                "Runtime UI rendering",
+                "legacy GUI lifecycle",
+            ],
+        },
+    }
+
+
 def handle_chat(payload: dict[str, Any]) -> tuple[dict[str, Any], int, dict[str, str]]:
     t0 = time.time()
     message = str(payload.get("message") or payload.get("content") or "")

@@ -13,11 +13,14 @@ Helps users set, track, and achieve development goals.
 # Standard library imports
 import hashlib
 import json
+import logging
 import os
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 
 def _hash_value(value: Any) -> str | None:
@@ -203,12 +206,20 @@ class LyrixaGoalSystem:
                         )
                         self.subtasks[subtask.id] = subtask
 
-                print(f"✅ Loaded {len(self.goals)} goals and {len(self.subtasks)} subtasks")
+                logger.info(
+                    "Loaded goals goal_count=%s subtask_count=%s",
+                    len(self.goals),
+                    len(self.subtasks),
+                )
 
             except Exception as e:
-                print(f"❌ Failed to load goals: {e}")
+                logger.warning(
+                    "Failed to load goals goals_file_hash=%s error_type=%s",
+                    _hash_value(self.goals_file),
+                    type(e).__name__,
+                )
         else:
-            print("📝 No existing goals file found, starting fresh")
+            logger.info("No existing goals file found; starting fresh")
 
     def _save_goals(self):
         """Save goals to the JSON file"""
@@ -252,7 +263,11 @@ class LyrixaGoalSystem:
                 json.dump(data, f, indent=2, ensure_ascii=False)
 
         except Exception as e:
-            print(f"❌ Failed to save goals: {e}")
+            logger.error(
+                "Failed to save goals goals_file_hash=%s error_type=%s",
+                _hash_value(self.goals_file),
+                type(e).__name__,
+            )
 
     async def create_goal(
         self,
@@ -279,7 +294,10 @@ class LyrixaGoalSystem:
                 "priority": priority.value,
                 "has_due_date": due_date is not None,
                 "tag_count": len(tags or []),
-                "metadata_keys": sorted(str(key) for key in metadata or {}),
+                "metadata_label_count": len(metadata or {}),
+                "metadata_label_hashes": [
+                    _hash_value(key) for key in sorted(str(key) for key in metadata or {})
+                ],
             },
         )
         if not decision.allowed:
@@ -301,7 +319,12 @@ class LyrixaGoalSystem:
         self.goals[goal_id] = goal
         self._save_goals()
 
-        print(f"🎯 Created goal: {title}")
+        logger.info(
+            "Created goal goal_id_hash=%s title_hash=%s priority=%s",
+            _hash_value(goal_id),
+            _hash_value(title),
+            priority.value,
+        )
         return goal_id
 
     async def update_goal(self, goal_id: str, **updates) -> bool:
@@ -311,6 +334,7 @@ class LyrixaGoalSystem:
 
         goal = self.goals[goal_id]
         normalized_updates = sorted(str(key) for key in updates)
+        metadata_labels = sorted(str(key) for key in updates.get("metadata") or {})
         decision = _guardian_preflight_goal_operation(
             action="agent.goal_update",
             target=f"agent_goal:{_hash_value(goal_id)}",
@@ -323,9 +347,11 @@ class LyrixaGoalSystem:
                 "title_hash": _hash_value(goal.title),
                 "current_status": goal.status.value,
                 "requested_status": str(updates.get("status", "")) or None,
-                "update_fields": normalized_updates,
+                "update_field_count": len(normalized_updates),
+                "update_field_hashes": [_hash_value(field) for field in normalized_updates],
                 "tag_count": len(updates.get("tags", []) or []),
-                "metadata_keys": sorted(str(key) for key in updates.get("metadata") or {}),
+                "metadata_label_count": len(metadata_labels),
+                "metadata_label_hashes": [_hash_value(key) for key in metadata_labels],
             },
         )
         if not decision.allowed:
@@ -355,7 +381,12 @@ class LyrixaGoalSystem:
         goal.updated_at = datetime.now()
         self._save_goals()
 
-        print(f"🔄 Updated goal: {goal.title}")
+        logger.info(
+            "Updated goal goal_id_hash=%s title_hash=%s update_field_count=%s",
+            _hash_value(goal_id),
+            _hash_value(goal.title),
+            len(normalized_updates),
+        )
         return True
 
     async def complete_goal(self, goal_id: str) -> bool:
@@ -394,7 +425,12 @@ class LyrixaGoalSystem:
         del self.goals[goal_id]
         self._save_goals()
 
-        print(f"🗑️ Deleted goal: {goal.title}")
+        logger.info(
+            "Deleted goal goal_id_hash=%s title_hash=%s subtask_count=%s",
+            _hash_value(goal_id),
+            _hash_value(goal.title),
+            len(subtasks_to_delete),
+        )
         return True
 
     async def add_subtask(self, goal_id: str, title: str, description: str = "") -> str:
@@ -432,7 +468,12 @@ class LyrixaGoalSystem:
 
         self._save_goals()
 
-        print(f"📋 Added subtask to {goal.title}: {title}")
+        logger.info(
+            "Added subtask goal_id_hash=%s subtask_id_hash=%s title_hash=%s",
+            _hash_value(goal_id),
+            _hash_value(subtask_id),
+            _hash_value(title),
+        )
         return subtask_id
 
     async def complete_subtask(self, subtask_id: str) -> bool:
@@ -466,7 +507,12 @@ class LyrixaGoalSystem:
 
         self._save_goals()
 
-        print(f"✅ Completed subtask: {subtask.title}")
+        logger.info(
+            "Completed subtask goal_id_hash=%s subtask_id_hash=%s title_hash=%s",
+            _hash_value(subtask.goal_id),
+            _hash_value(subtask_id),
+            _hash_value(subtask.title),
+        )
         return True
 
     async def _update_goal_progress(self, goal_id: str):

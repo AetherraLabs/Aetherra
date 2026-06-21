@@ -1,6 +1,6 @@
 # Aetherra Lyrixa System
 
-Updated: 2025-08-27
+Updated: 2026-06-20
 
 This document explains how Lyrixa functions within Aetherra OS, what behaviors are expected, and how Lyrixa connects to the rest of the system (Service Registry, Hub Server, Engine, Memory, Agents, and Plugins).
 
@@ -15,12 +15,90 @@ See also: Aetherra Chat System (./AETHERRA_CHAT_SYSTEM.md) for transport, stream
 
 ## At‑a‑glance status
 
+- System status: Functional foundation complete
 - Chat service (identity/awareness, heuristics, safe edits): Implemented
 - Hub chat bridge (POST /api/lyrixa/chat): Implemented (best‑effort, fallback)
 - GUI integration (Basic/Hybrid PySide6): Partial (auto‑selection, backends wired)
 - Plugin system (Lyrixa plugins; create/install/activate/execute): Implemented (local)
 - Deep intelligence (Lyrixa full intelligence, router): Partial/Planned per env
 - Prometheus metrics (Lyrixa‑specific): Planned (today uses Hub/Engine/Orchestrator series)
+
+## Functional foundation completion
+
+Lyrixa is functionally foundation complete for the current Aetherra milestone.
+The completed foundation is the bounded identity, guidance, chat, safe-edit,
+fallback, and status contract. It does not depend on the old GUI stack and does
+not claim that Lyrixa's future Cognitive Observatory presentation is complete.
+
+The current foundation gives Aetherra a stable human-facing guide that can
+answer identity and system-awareness questions, degrade safely when optional
+intelligence systems are unavailable, and expose clear readiness to Hub clients.
+
+New Hub status surface:
+
+- `GET /api/lyrixa/status` reports Lyrixa readiness, capabilities, degraded
+  components, safe-edit posture, and authority boundaries.
+
+### Understanding Rule
+
+What it does:
+
+- Provides Lyrixa identity, guidance, and awareness responses.
+- Accepts chat requests through the internal `LyrixaChatService` and Hub
+  `POST /api/lyrixa/chat`.
+- Returns deterministic offline fallback responses when the service is not
+  registered.
+- Suggests conservative safe edits and only applies them through Guardian-audited
+  scoped edits.
+- Exposes readiness, capabilities, degraded components, and authority boundaries
+  through `GET /api/lyrixa/status`.
+
+Why it exists:
+
+- Lyrixa is the user-facing guide for Aetherra. It helps the user understand,
+  inspect, and interact with the system without turning every subsystem into its
+  own conversational surface.
+- Lyrixa gives the future Cognitive Observatory a voice and guide layer while
+  keeping actual authority in Guardian, Security, Kernel, and subsystem owners.
+
+Authority it owns:
+
+- Lyrixa identity and guidance responses.
+- Bounded chat-service fallback behavior.
+- Safe-edit suggestion formatting.
+- Service-level awareness summaries for user-facing explanation.
+- Lyrixa readiness and capability reporting.
+
+Authority it does not own:
+
+- Guardian approval decisions.
+- Security capability, sandbox, network, or signing policy.
+- Kernel scheduling or lifecycle control.
+- Memory persistence authority.
+- Self-Incorporation execution authority.
+- Runtime UI rendering.
+- Legacy GUI lifecycle or future Observatory rendering.
+
+How it fails:
+
+- If Lyrixa is not registered, Hub chat returns a deterministic offline fallback
+  and `/api/lyrixa/status` reports `offline`.
+- If optional intelligence, memory, consciousness, or monitoring components are
+  unavailable, Lyrixa reports degraded components and continues with safe
+  deterministic behavior.
+- If a chat request violates Guardian/Security policy, the request is rejected
+  before the registry service is invoked.
+- If safe-edit approval is denied, no file mutation occurs and the denial is
+  recorded through Guardian audit.
+
+How it interacts with other systems:
+
+- Hub exposes Lyrixa chat and status endpoints.
+- Guardian reviews chat ingress and safe-edit mutation attempts.
+- Security provides capability checks for evidence and edit authority.
+- Memory and consciousness integrations enrich responses when available, but are
+  optional for the foundation.
+- Runtime UI can consume Lyrixa status and guidance as a read-only guide layer.
 
 ## Architecture overview
 
@@ -111,6 +189,8 @@ Related Hub/Agents developer APIs (opt‑in, token‑guarded):
 ## Service and Endpoint Summary
 
 - Hub
+  - `GET /api/lyrixa/status` - readiness, capabilities, degraded components,
+    and authority boundaries
   - `POST /api/lyrixa/chat` — chat bridge to Lyrixa (best‑effort)
   - `GET /api/stats` — includes `lyrixa_chat` registration status
 - Service Registry

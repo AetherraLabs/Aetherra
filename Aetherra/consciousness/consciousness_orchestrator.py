@@ -800,7 +800,12 @@ class ConsciousnessOrchestrator:
             except Exception:
                 pass
             # Lightweight metric export using environment-driven file sink (MVP)
-            line = f'narrative_coherence {chapter.coherence_index:.3f} chapter_id="{chapter.id}" ts="{chapter.end_ts.isoformat()}"\n'
+            chapter_id_hash = _hash_value(getattr(chapter, "id", None)) or ""
+            line = (
+                f'narrative_coherence {chapter.coherence_index:.3f} '
+                f'chapter_hash="{chapter_id_hash[:16]}" '
+                f'ts="{chapter.end_ts.isoformat()}"\n'
+            )
             metrics_file = Path(path)
             metrics_file.parent.mkdir(parents=True, exist_ok=True)
             with metrics_file.open("a", encoding="utf-8") as f:

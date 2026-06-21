@@ -48,10 +48,18 @@ def test_goal_create_and_subtask_complete_are_guardian_audited_without_payload(
     audit_path = tmp_path / ".aetherra" / "security" / "audit.jsonl"
     ledger_text = audit_path.read_text(encoding="utf-8")
     entries = [json.loads(line) for line in ledger_text.splitlines() if line.strip()]
+    create_entry = next(
+        entry
+        for entry in entries
+        if entry["details"]["intent"]["action"] == "agent.goal_create"
+    )
 
     assert "do-not-audit-this-goal-description" not in ledger_text
     assert "do-not-audit-this-subtask-description" not in ledger_text
     assert "do-not-audit-this-metadata-value" not in ledger_text
+    assert "private_note" not in ledger_text
+    assert create_entry["details"]["intent"]["metadata"]["metadata_label_count"] == 1
+    assert create_entry["details"]["intent"]["metadata"]["metadata_label_hashes"]
     assert entries[-1]["details"]["intent"]["action"] == "agent.subtask_complete"
     assert goals.goals[goal_id].status == GoalStatus.COMPLETED
 
@@ -105,6 +113,43 @@ def test_goal_update_and_delete_denials_leave_existing_state_unchanged(
     assert goal_id in goals.goals
     assert goals.goals[goal_id].status == GoalStatus.ACTIVE
     assert goals.goals[goal_id].progress == 0.0
+
+
+def test_goal_update_audit_uses_hashed_field_labels(monkeypatch, tmp_path):
+    _guardian_env(monkeypatch, tmp_path)
+    goals = LyrixaGoalSystem(str(tmp_path / "goals.json"))
+    goal_id = asyncio.run(
+        goals.create_goal(
+            "Original Goal",
+            "Original description",
+            priority=GoalPriority.MEDIUM,
+        )
+    )
+
+    assert asyncio.run(
+        goals.update_goal(
+            goal_id,
+            progress=0.5,
+            metadata={"sensitive_update_label": "do-not-audit-this-update-value"},
+        )
+    )
+
+    audit_path = tmp_path / ".aetherra" / "security" / "audit.jsonl"
+    ledger_text = audit_path.read_text(encoding="utf-8")
+    entries = [json.loads(line) for line in ledger_text.splitlines() if line.strip()]
+    update_entry = next(
+        entry
+        for entry in reversed(entries)
+        if entry["details"]["intent"]["action"] == "agent.goal_update"
+    )
+    metadata = update_entry["details"]["intent"]["metadata"]
+
+    assert "sensitive_update_label" not in ledger_text
+    assert "do-not-audit-this-update-value" not in ledger_text
+    assert metadata["update_field_count"] == 2
+    assert len(metadata["update_field_hashes"]) == 2
+    assert metadata["metadata_label_count"] == 1
+    assert metadata["metadata_label_hashes"]
 
 
 def test_subtask_create_denial_does_not_mutate_goal(monkeypatch, tmp_path):

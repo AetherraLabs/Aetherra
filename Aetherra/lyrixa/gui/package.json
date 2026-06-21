@@ -1,8 +1,8 @@
 {
-    "name": "@aetherra/lyrixa-gui",
+    "name": "@aetherra/runtime-observatory",
     "version": "0.1.0",
     "private": true,
-    "description": "Modern GUI for Aetherra Lyrixa AI System",
+    "description": "Runtime UI alpha shell for the Aetherra Cognitive Observatory",
     "type": "module",
     "scripts": {
         "dev": "vite",

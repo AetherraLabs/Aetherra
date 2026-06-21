@@ -24,6 +24,11 @@ from .kernel_loop import (
     shutdown_kernel,
     start_kernel,
 )
+from .readiness import (
+    KERNEL_READINESS_CONTRACT_VERSION,
+    assess_kernel_readiness,
+    build_kernel_readiness_payload,
+)
 
 __all__ = [
     "AetherraKernelLoop",
@@ -33,4 +38,7 @@ __all__ = [
     "kernel_loop",
     "HMRController",
     "get_hmr_controller",
+    "KERNEL_READINESS_CONTRACT_VERSION",
+    "assess_kernel_readiness",
+    "build_kernel_readiness_payload",
 ]

@@ -164,7 +164,11 @@ class AgentOrchestrator:
         # Load persistent data
         self._load_state()
 
-        logger.info(f"[AGENT] Agent Orchestrator initialized with {len(self.agents)} agents")
+        logger.info(
+            "Agent orchestrator initialized agent_count=%s pending_task_count=%s",
+            len(self.agents),
+            len(self.tasks),
+        )
 
     def _load_state(self):
         """Load orchestrator state from persistent storage."""
@@ -194,11 +198,17 @@ class AgentOrchestrator:
                         self.task_queue.append(task.task_id)
 
                 logger.info(
-                    f"✅ Loaded {len(self.agents)} agents and {len(self.tasks)} pending tasks"
+                    "Loaded agent orchestrator state agent_count=%s pending_task_count=%s",
+                    len(self.agents),
+                    len(self.tasks),
                 )
 
         except Exception as e:
-            logger.warning(f"⚠️ Could not load orchestrator state: {e}")
+            logger.warning(
+                "Could not load orchestrator state db_path_hash=%s error_type=%s",
+                _hash_value(self.db_path),
+                type(e).__name__,
+            )
 
     def _save_state(self):
         """Save orchestrator state to persistent storage."""
@@ -231,7 +241,11 @@ class AgentOrchestrator:
                 json.dump(data, f, indent=2, default=str)
 
         except Exception as e:
-            logger.error(f"❌ Could not save orchestrator state: {e}")
+            logger.error(
+                "Could not save orchestrator state db_path_hash=%s error_type=%s",
+                _hash_value(self.db_path),
+                type(e).__name__,
+            )
 
     async def start_orchestration(self):
         """Start the orchestration process."""
@@ -375,11 +389,16 @@ class AgentOrchestrator:
             self.agents[agent_id] = agent
             self._save_state()
 
-            logger.info(f"✅ Registered agent '{name}' with capabilities: {capabilities}")
+            logger.info(
+                "Registered agent agent_id_hash=%s agent_name_hash=%s capability_count=%s",
+                _hash_value(agent_id),
+                _hash_value(name),
+                len(capabilities),
+            )
             return True
 
         except Exception as e:  # pragma: no cover - defensive path
-            logger.error(f"❌ Failed to register agent: {e}")
+            logger.error("Failed to register agent error_type=%s", type(e).__name__)
             return False
 
     async def submit_task(self, task: Task) -> str:
@@ -424,11 +443,20 @@ class AgentOrchestrator:
 
             self._save_state()
 
-            logger.info(f"📋 Submitted task '{task.name}' (ID: {task.task_id})")
+            logger.info(
+                "Submitted task task_id_hash=%s task_name_hash=%s priority=%s",
+                _hash_value(task.task_id),
+                _hash_value(task.name),
+                task.priority.value,
+            )
             return task.task_id
 
         except Exception as e:
-            logger.error(f"❌ Failed to submit task: {e}")
+            logger.error(
+                "Failed to submit task task_id_hash=%s error_type=%s",
+                _hash_value(getattr(task, "task_id", None)),
+                type(e).__name__,
+            )
             raise
 
     async def _orchestration_loop(self):
@@ -450,7 +478,7 @@ class AgentOrchestrator:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"❌ Error in orchestration loop: {e}")
+                logger.error("Error in orchestration loop error_type=%s", type(e).__name__)
                 await asyncio.sleep(5.0)
 
     async def _process_task_queue(self):
@@ -555,11 +583,21 @@ class AgentOrchestrator:
             task_future = asyncio.create_task(self._execute_task(task, agent))
             self.running_tasks[task.task_id] = task_future
 
-            logger.info(f"[AGENT] Assigned task '{task.name}' to agent '{agent.name}'")
+            logger.info(
+                "Assigned task task_id_hash=%s task_name_hash=%s agent_id_hash=%s",
+                _hash_value(task.task_id),
+                _hash_value(task.name),
+                _hash_value(agent.agent_id),
+            )
             return True
 
         except Exception as e:
-            logger.error(f"❌ Failed to assign task {task.task_id} to agent {agent.agent_id}: {e}")
+            logger.error(
+                "Failed to assign task task_id_hash=%s agent_id_hash=%s error_type=%s",
+                _hash_value(task.task_id),
+                _hash_value(agent.agent_id),
+                type(e).__name__,
+            )
             task.status = TaskStatus.FAILED
             task.error_message = str(e)
 
@@ -604,12 +642,22 @@ class AgentOrchestrator:
             )
 
             self._save_state()
-            logger.info(f"✅ Task '{task.name}' completed by agent '{agent.name}'")
+            logger.info(
+                "Task completed task_id_hash=%s task_name_hash=%s agent_id_hash=%s",
+                _hash_value(task.task_id),
+                _hash_value(task.name),
+                _hash_value(agent.agent_id),
+            )
 
             return result
 
         except Exception as e:
-            logger.error(f"❌ Task execution failed: {e}")
+            logger.error(
+                "Task execution failed task_id_hash=%s agent_id_hash=%s error_type=%s",
+                _hash_value(task.task_id),
+                _hash_value(agent.agent_id),
+                type(e).__name__,
+            )
             task.status = TaskStatus.FAILED
             task.error_message = str(e)
             agent.status = AgentStatus.AVAILABLE
@@ -767,7 +815,11 @@ class AgentOrchestrator:
             self.task_queue.remove(task_id)
 
         self._save_state()
-        logger.info(f"🚫 Cancelled task '{task.name}' (ID: {task_id})")
+        logger.info(
+            "Cancelled task task_id_hash=%s task_name_hash=%s",
+            _hash_value(task_id),
+            _hash_value(task.name),
+        )
 
         return True
 

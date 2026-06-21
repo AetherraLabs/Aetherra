@@ -3,7 +3,7 @@
 > Maintained and officially operated by **Aetherra Labs**.
 > **Powered by Aetherra Labs.**
 
-Updated: 2025-08-28
+Updated: 2026-06-20
 
 This document describes the Aetherra Kernel: the core runtime loop, service registry, and launcher phases that bring the AI OS online and keep it healthy. It mirrors the structure of other system docs and is grounded in the current codebase and tasks.
 
@@ -16,6 +16,7 @@ This document describes the Aetherra Kernel: the core runtime loop, service regi
 
 ## At‑a‑glance status
 
+- System status: Functional foundation complete
 - Kernel loop: Implemented (priority queues, concurrent loops, metrics)
 - Heartbeats: Implemented (per-service and kernel via registry)
 - Health monitoring: Implemented (periodic metrics and checks)
@@ -38,6 +39,83 @@ This document describes the Aetherra Kernel: the core runtime loop, service regi
 - Hot Module Reload (HMR): Phase 1 implemented (controller, tasks, basic quiesce/swap)
 - HMR Phase 2 improvements: in‑flight counters per target, source gating, audit logging
 - New services: KLM (Module Manager) and KEB (Event Bus) wired in Phase 2; Hub exports their metrics
+- Kernel readiness contract: Implemented (`assess_kernel_readiness` and Hub `/api/kernel/readiness`)
+
+## Functional foundation completion
+
+The Kernel is functionally foundation complete for the current Aetherra
+milestone. It provides the bounded runtime loop, service heartbeat integration,
+priority queue scheduling, operational metrics, guarded lifecycle controls, and
+read-only readiness assessment needed before alpha validation.
+
+Functional completion here does not mean every future runtime feature is
+finished. It means the Kernel has a safe, inspectable, Guardian-mediated
+foundation that other systems can depend on without bypassing Security,
+Guardian, Homeostasis, Maintenance, or Self-Incorporation.
+
+### Understanding Rule
+
+What it does:
+
+- Runs the core Aetherra runtime loop.
+- Accepts bounded priority work through high, normal, and background queues.
+- Coordinates injected systems such as memory, plugins, engine, scheduler, HMR,
+  KLM, and KEB.
+- Emits heartbeat, health, queue, HMR, backpressure, DLQ, and runtime metrics.
+- Exposes read-only status, metrics, and readiness contracts through the Hub.
+
+Why it exists:
+
+- Aetherra needs a single runtime coordination layer that can bring services
+  online, schedule work, monitor health, and provide stable liveness signals to
+  the rest of the architecture.
+- The Kernel turns independent systems into an operating environment instead of
+  a loose collection of modules.
+
+Authority it owns:
+
+- Runtime loop scheduling.
+- Kernel lifecycle state: running, paused, shutdown.
+- Kernel queue limits, queue draining, DLQ routing, and priority queue pressure.
+- Kernel-held references used by HMR swaps.
+- Kernel heartbeat and runtime status reporting.
+
+Authority it does not own:
+
+- Guardian approval policy.
+- Security capability policy, sandbox policy, network policy, or signing policy.
+- Homeostasis diagnosis and verification.
+- Self-Improvement proposal generation.
+- Self-Incorporation execution of approved changes.
+- Runtime UI rendering or operator interaction design.
+- Business logic owned by memory, agents, plugins, Aether Script, or AI systems.
+
+How it fails:
+
+- If the Kernel is unavailable, readiness reports blocked or offline and
+  dependent systems must avoid scheduling new runtime work.
+- If backpressure or night-cycle guards fail, readiness blocks scheduling until
+  configuration is corrected.
+- If queues approach or exceed limits, readiness degrades and operators should
+  reduce load or drain safely through guarded controls.
+- If plugin circuit breakers open, readiness degrades and plugin execution
+  should remain constrained until recovery.
+- If privileged lifecycle controls are denied by Guardian or Security, Kernel
+  state remains unchanged and the attempt is audited.
+
+How it interacts with other systems:
+
+- Guardian reviews privileged lifecycle, queue, HMR, service registry, KLM, and
+  KEB control paths.
+- Security supplies capability checks and enforcement for privileged callers.
+- Homeostasis observes Kernel health and uses Kernel status as a stability
+  signal.
+- Maintenance coordinates Kernel-related findings without directly bypassing
+  Kernel authority.
+- Self-Incorporation uses Kernel/HMR paths only after approval and verification
+  requirements are satisfied.
+- Runtime UI consumes Kernel readiness and status as read-only Observatory
+  state.
 
 ## Guardian enforcement
 
@@ -284,6 +362,7 @@ Rollback semantics (KLM)
 Read-only JSON endpoints (Hub)
 
 - Kernel: `GET /api/kernel/status`, `GET /api/kernel/metrics`
+- Kernel readiness: `GET /api/kernel/readiness`
 - Module Manager (KLM): `GET /api/klm/status`, `GET /api/klm/metrics`
 - Event Bus (KEB): `GET /api/keb/status`, `GET /api/keb/metrics`
 
@@ -305,6 +384,9 @@ Defaults and timing
 - Metrics file: `aetherra_kernel_metrics.json` (written on shutdown)
 - Metrics API: via Hub
   - `GET /api/kernel/metrics` → `{ hub_ts, kernel: get_status() }`
+  - `GET /api/kernel/readiness` -> read-only readiness contract with
+    `ready`, `degraded`, `blocked`, or `offline` status and scheduling safety
+    reasons
   - `GET /metrics` → Prometheus-format counters/gauges (kernel + registry + orchestrator + chat + memory + HMR)
 - OS status file: OS writes `aetherra_os_status.json` to system temp dir with liveness info
 - Service registry: `get_registry_status()` counts and timestamps; per-service status available
@@ -351,15 +433,20 @@ python tools/verify_aether_scripts.py --profile test
   - With `AETHERRA_REQUIRE_CAPABILITIES=1`, kernel enforces `kernel:invoke_plugin` for plugin_invoke tasks to prevent bypassing the security layer
   - Optional simple per-requester rate limiting via `AETHERRA_KERNEL_RATE_LIMIT_PER_MIN`
 
-## Known limitations and roadmap
+## Active limitations and roadmap
 
-- No durable task queue persistence across restarts (tasks in memory)
+- Optional durable task snapshots are best-effort and are not a transactional
+  task database.
 - Scheduling is minimal; complex cron-like semantics should live in the scheduler module
-- Backpressure and rate limiting are basic; consider bounded queues and load-shedding policies
+- Backpressure and rate limiting are conservative foundations; future work can
+  add richer load-shedding policies.
   - Concurrency capping and retry logic are conservative; per-capability limits are now supported via capabilities policy and env map
-- Night cycle timing is fixed; future: config-driven windows and multi-phase maintenance
-- Health metrics are coarse; future: expose Prometheus-style endpoints or richer telemetry
-- HMR Phase 1 uses heuristic quiesce; Phase 2 will add per-target in‑flight tracking, SLO gates, and audit/signature enforcement
+- Night cycle timing is configurable, but multi-phase maintenance orchestration
+  should remain owned by Maintenance/Homeostasis.
+- Health metrics are useful but still coarse; future work can add richer
+  telemetry and SLO policy.
+- HMR has safer quiesce and audit foundations, but artifact signature and
+  rollback guarantees should continue to harden before broad autonomous use.
 
 ## References (code and tasks)
 
