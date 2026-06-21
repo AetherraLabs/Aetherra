@@ -52,6 +52,14 @@ aetherra-website/
 /config/advanced_project_intelligence.json
 /Aetherra/data/share/
 /Aetherra/data/*_data/*.json
+/docs-organized/reports/
+/docs/reports/*
+!/docs/reports/engine/
+!/docs/reports/engine/**
+!/docs/reports/release/
+!/docs/reports/release/**
+!/docs/reports/selfinc/
+!/docs/reports/selfinc/**
 /gate_results.json
 /gate_sign_off.md
 /integrity_manifest.json
@@ -249,7 +257,7 @@ embeddings_cache/
 # Generated reports and outputs
 debug_output/
 test_output/
-reports/
+/reports/
 data/artifacts/*.sarif
 data/artifacts/coverage*.json
 data/artifacts/*scan*.json
