@@ -49,6 +49,56 @@ Strict foundation rule:
 **Self-Incorporation executes approved changes. It does not decide whether those
 changes should exist.**
 
+## Trust Milestones
+
+Self-Incorporation is organized around four trust milestones.
+
+### Milestone 1: Trustworthy Discovery
+
+Goal: find and understand candidates without changing the runtime.
+
+Discovery, classification, and risk analysis are read-oriented. They may update
+Self-Incorporation's own index and audit metadata, but they must not activate,
+integrate, execute, or register discovered candidates.
+
+### Milestone 2: Trustworthy Planning
+
+Goal: create a plan that is complete enough to review.
+
+Every executable plan must answer:
+
+- What changes?
+- Why does the change exist?
+- What is the risk?
+- What rollback path exists?
+- What dependencies are involved?
+- What benefit is expected?
+
+If a plan cannot answer those questions, it is not executable.
+
+### Milestone 3: Trustworthy Execution
+
+Goal: apply exactly what was approved and nothing else.
+
+Before Guardian review, Self-Incorporation attaches an approved-scope lock to
+the plan. The lock records the action count and a deterministic hash of the
+execution-relevant action scope. The core integrator validates that lock before
+dispatching any action. If the action list changes after approval, execution
+fails closed with `scope_mismatch`.
+
+Scope expansion is not allowed. A plan approved for one plugin must not execute
+that plugin plus unrelated updates, registrations, or runtime mutations.
+
+### Milestone 4: Trustworthy Rollback
+
+Goal: make every non-dry-run integration reversible or block it before mutation.
+
+Rollback is more important than integration during the foundation milestone.
+Non-dry-run mutation must have a truthful rollback path before execution. HMR
+actions require token rollback support from the controller. Locally reversible
+actions must emit bounded rollback tokens and audit records. Unsupported
+rollback claims fail closed instead of reporting success.
+
 ## Authority Ownership
 
 | Authority | Owning System | Self-Incorporation Behavior |
@@ -206,6 +256,7 @@ Execution modes:
 Execution requirements:
 
 - Honor the approved plan scope.
+- Validate the approved-scope lock before action dispatch.
 - Record trace IDs.
 - Emit metrics.
 - Produce or consume rollback tokens where applicable.

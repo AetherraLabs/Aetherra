@@ -17,6 +17,10 @@ Aetherra is an experimental AI operating layer for modular agents, persistent
 memory, policy-mediated execution, auditable decisions, and controlled
 self-improvement.
 
+In the project architecture, **Aetherra is the entity** and **Lyrixa is the
+persona**. Lyrixa is how Aetherra presents itself to users; it is not a separate
+intelligence.
+
 The project is in an Alpha/Foundation hardening phase. The current goal is not
 unbounded autonomy. The current goal is to complete each core system until it is
 functional, testable, bounded, and safe enough to support later alpha testing.
@@ -45,15 +49,17 @@ active alpha-stage research and engineering codebase.
 
 | System | Foundation status | Notes |
 | --- | --- | --- |
-| Security | Functional foundation complete | Capability checks, sandbox policy, signing, audit, and enforcement surfaces. |
-| Guardian | Functional foundation complete | Intent evaluation, risk assessment, approval, containment, audit integration, and performance policy. |
+| Security | Functional complete | Capability checks, sandbox policy, signing, audit, and enforcement surfaces. |
+| Guardian | Functional complete | Intent evaluation, risk assessment, approval, containment, audit integration, and performance policy. |
 | Homeostasis | Functional foundation complete | Observation, diagnosis, recommendations, and Guardian-mediated controlled action paths. |
 | Self-Improvement | Functional foundation complete | Proposal-only loop with Guardian review and execution delegation; no direct mutation in the foundation milestone. |
-| Maintenance | Next target | Umbrella loop for observe, diagnose, propose, review, approve, apply, verify, and learn. |
-| Kernel, Hub, Memory, Plugins, Agents, Lyrixa, Aether Script | In progress | These systems are being completed and cleaned up in focused passes. |
+| Maintenance | Functional foundation complete | Umbrella loop for observe, diagnose, propose, review, approve, apply, verify, and learn. |
+| Self-Incorporation, Memory, Kernel, Agent System, Aether Script, Integration Validation, Runtime UI, Lyrixa, Hub | Functional foundation complete | Current operating foundations with bounded responsibilities and documented safety limits. |
+| Artificial Intelligence, Consciousness, Coding, Chat, AI Trainer | Functional foundation complete | Cognitive and intelligence foundations with governed readiness surfaces. |
 
 Primary system documents live in [`docs/`](docs/), especially:
 
+- [`docs/WHO_IS_AETHERRA.md`](docs/WHO_IS_AETHERRA.md)
 - [`docs/AETHERRA_SECURITY_SYSTEM.md`](docs/AETHERRA_SECURITY_SYSTEM.md)
 - [`docs/AETHERRA_GUARDIAN_SYSTEM.md`](docs/AETHERRA_GUARDIAN_SYSTEM.md)
 - [`docs/AETHERRA_HOMEOSTASIS_SYSTEM.md`](docs/AETHERRA_HOMEOSTASIS_SYSTEM.md)
@@ -80,6 +86,12 @@ Kernel, Hub, service registry, memory, and runtime systems
 
 Important design rule: Self-Improvement proposes. Guardian reviews. Security
 enforces. Execution is delegated only after policy allows it.
+
+The core lifecycle is:
+
+```text
+Observe -> Understand -> Propose -> Review -> Approve -> Execute -> Verify -> Learn
+```
 
 ## Quick Start
 

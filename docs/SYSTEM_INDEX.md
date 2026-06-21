@@ -16,6 +16,7 @@ Status meanings:
 
 ## Foundational Documents
 
+- Who Is Aetherra? - ./WHO_IS_AETHERRA.md
 - Aetherra Manifesto - ./../Aetherra/docs/AETHERRA_MANIFESTO.md
 - AI OS Manifesto - ./../Aetherra/docs/AI_OS_MANIFESTO.md
 - Aetherra Labs Vision - ./../Aetherra/docs/aetherra_labs_vision.md

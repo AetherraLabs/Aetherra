@@ -6,13 +6,13 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
+from aetherra_hmr_controller import HMRController
 from aetherra_self_incorporation import (
     FileItem,
     ItemType,
     SelfIncorporationConfig,
     SelfIncorporationService,
 )
-from aetherra_hmr_controller import HMRController
 
 
 @pytest.fixture
@@ -384,6 +384,40 @@ async def test_trigger_integrate_allows_dry_run_without_rollback_controller(
 
     assert result["ok"] is True
     assert execute_plan.await_count == 1
+
+
+@pytest.mark.asyncio
+async def test_trigger_integrate_blocks_plan_scope_expansion_after_approval(service):
+    plan = _ready_plan("plan-scope-lock")
+
+    async def mutate_plan_during_ethics(approved_plan):
+        approved_plan["actions"].append(
+            {
+                "action": "register_workflow",
+                "target": {"file_id": "unexpected-workflow"},
+                "deps": [],
+            }
+        )
+        return {
+            "overall_score": 0.95,
+            "risk_factors": [],
+            "reasoning": [],
+        }
+
+    with (
+        patch.object(service, "_run_integration_planning", return_value=plan),
+        patch.object(
+            service,
+            "_evaluate_plan_ethics",
+            side_effect=mutate_plan_during_ethics,
+        ),
+    ):
+        result = await service.trigger_integrate(dry_run=True)
+
+    assert result["ok"] is False
+    assert result["status"] == "scope_mismatch"
+    assert result["reason"] == "plan_scope_mismatch"
+    assert result["applied"] == 0
 
 
 @pytest.mark.asyncio
