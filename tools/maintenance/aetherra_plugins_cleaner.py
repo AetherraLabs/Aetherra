@@ -115,10 +115,6 @@ class AetherraPluginsCleaner:
                 "moves": [
                     ("agent_adapters/agent_base.py", "core/agent_base.py"),
                     (
-                        "agent_adapters/agent_bridge.py",
-                        "agent_components/agent_bridge.py",
-                    ),
-                    (
                         "agent_adapters/agent_discovery_and_integration.py",
                         "agent_components/agent_discovery_and_integration.py",
                     ),
@@ -175,15 +171,16 @@ class AetherraPluginsCleaner:
 
         # Check for empty directories in reverse order (deepest first)
         empty_dirs = []
-        for root, dirs, files in os.walk(self.base_path, topdown=False):
+        for root, dirs, _files in os.walk(self.base_path, topdown=False):
             for dir_name in dirs:
                 dir_path = Path(root) / dir_name
                 try:
                     # Check if directory is empty
                     if not any(dir_path.iterdir()):
                         empty_dirs.append(dir_path)
-                except:
-                    pass  # Directory might have been already removed
+                except OSError:
+                    # Directory might have been removed while the cleaner is running.
+                    continue
 
         for empty_dir in empty_dirs:
             try:

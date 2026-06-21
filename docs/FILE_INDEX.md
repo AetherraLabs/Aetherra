@@ -15,7 +15,6 @@ Aetherra/
       agent_executor.py — SPDX-License-Identifier: GPL-3.0-or-later
       agent_orchestrator.py — Task priority levels for orchestration."""
       base.py — Main execution entry point - parses and executes a single line"""
-      chat_router_old.py — Types of user intents"""
       cleanup_project.py — Main cleanup orchestrator for Aetherra project"""
       cognitive_adapters.py — SPDX-License-Identifier: GPL-3.0-or-later
       collaboration.py — Roles for different AI agents"""
@@ -444,7 +443,6 @@ Aetherra/
     ai_runtime.py — Load environment variables from .env file"""
     chat_router.py — Types of user intents"""
     chat_router_new.py — Types of user intents"""
-    chat_router_old.py — Types of user intents"""
     config.py — Global configuration for Aetherra"""
     disclosure_policy.py — Return a metadata-only representation suitable for the Free tier.
     enhanced_language.py — Parse .aether source code into AST"""
@@ -588,7 +586,6 @@ Aetherra/
     protocols/
       README.md — protocols
     __init__.py — Get current integration system status."""
-    agent_registry.json
     README.md — integration
   interface/
     launch_aetherra_os.py — Check if required dependencies are installed"""
