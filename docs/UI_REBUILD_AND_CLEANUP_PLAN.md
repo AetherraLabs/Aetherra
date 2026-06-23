@@ -133,9 +133,12 @@ Exit criteria:
 Use a single archive root to avoid workspace clutter:
 
 - `docs/archived/ui/` for historical docs and migration map
-- `archive/ui_legacy/` for code snapshots pending final deletion
+- Dedicated branch/tag snapshots for legacy code that should not remain in
+  mainline
 
-If repository policy avoids large archives in mainline, place snapshots in a dedicated branch/tag instead.
+Legacy UI code snapshots were removed from mainline once the Runtime
+Observatory became the canonical UI shell. Use Git history or a dedicated
+archive branch/tag for recovery.
 
 ## 7) Validation Checklist
 
