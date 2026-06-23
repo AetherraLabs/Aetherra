@@ -754,16 +754,12 @@ Aetherra/
       agent_base.py — Standard response format for all agents"""
       agent_plugin.py — Perform AI agent reflection on a given topic"""
       collaborative_multi_agent_system.py — Different agent roles in the collaborative system"""
-      comprehensive_agent_discovery.py — Comprehensive scan for ALL agents in the entire codebase"""
       curiosity_agent_8.py — Represents an identified gap in understanding"""
       lyrixa_agent_integration.py — Submit a task for execution"""
       multi_agent_system.py — Available agent roles"""
       plugin_agent.py — Agent responsible for plugin discovery, recommendation, and usage assistance"""
       README.md — agent_adapters
-      real_agent_discovery.py — Find actual agents, not every file with 'agent' in the name"""
-      smart_agent_migrator.py — Load the latest agent discovery report"""
     agent_components/
-      agent_bridge.py — Bridge to manage agent integration in clean architecture"""
       agent_discovery_and_integration.py — Information about discovered components"""
       agent_orchestrator.py — Status of an agent"""
     core/

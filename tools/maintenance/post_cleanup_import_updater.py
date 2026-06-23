@@ -49,11 +49,9 @@ class PostCleanupImportUpdater:
         self.specific_mappings = {
             # Plugins reorganization mappings.
             r"from\s+Aetherra\.plugins\.agent_adapters\.agent_orchestrator": "from Aetherra.plugins.agent_components.agent_orchestrator",
-            r"from\s+Aetherra\.plugins\.agent_adapters\.agent_bridge": "from Aetherra.plugins.agent_components.agent_bridge",
             r"from\s+Aetherra\.plugins\.agent_adapters\.agent_discovery_and_integration": "from Aetherra.plugins.agent_components.agent_discovery_and_integration",
             r"from\s+Aetherra\.plugins\.agent_adapters\.agent_base": "from Aetherra.plugins.core.agent_base",
             r"import\s+Aetherra\.plugins\.agent_adapters\.agent_orchestrator": "import Aetherra.plugins.agent_components.agent_orchestrator",
-            r"import\s+Aetherra\.plugins\.agent_adapters\.agent_bridge": "import Aetherra.plugins.agent_components.agent_bridge",
             r"import\s+Aetherra\.plugins\.agent_adapters\.agent_discovery_and_integration": "import Aetherra.plugins.agent_components.agent_discovery_and_integration",
             r"import\s+Aetherra\.plugins\.agent_adapters\.agent_base": "import Aetherra.plugins.core.agent_base",
             # Lyrixa reorganization mappings.
@@ -67,7 +65,6 @@ class PostCleanupImportUpdater:
             r"import\s+Aetherra\.lyrixa\.enhanced_conversation_manager": "import Aetherra.lyrixa.agents.enhanced_conversation_manager",
             # Alternative import patterns without the Aetherra prefix.
             r"from\s+plugins\.agent_adapters\.agent_orchestrator": "from plugins.agent_components.agent_orchestrator",
-            r"from\s+plugins\.agent_adapters\.agent_bridge": "from plugins.agent_components.agent_bridge",
             r"from\s+plugins\.agent_adapters\.agent_discovery_and_integration": "from plugins.agent_components.agent_discovery_and_integration",
             r"from\s+plugins\.agent_adapters\.agent_base": "from plugins.core.agent_base",
             r"from\s+lyrixa\.advanced_memory_integration": "from lyrixa.memory.advanced_memory_integration",

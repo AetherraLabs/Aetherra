@@ -217,7 +217,6 @@ class AetherraPluginsCleaner:
                 "The following import statements may need to be updated:",
                 "",
                 "- Change `from Aetherra.plugins.agent_components.agent_orchestrator` to `from Aetherra.plugins.agent_components.agent_orchestrator`",
-                "- Change `from Aetherra.plugins.agent_components.agent_bridge` to `from Aetherra.plugins.agent_components.agent_bridge`",
                 "- Change `from Aetherra.plugins.agent_components.agent_discovery_and_integration` to `from Aetherra.plugins.agent_components.agent_discovery_and_integration`",
                 "- Change `from Aetherra.plugins.core.agent_base` to `from Aetherra.plugins.core.agent_base`",
                 "",

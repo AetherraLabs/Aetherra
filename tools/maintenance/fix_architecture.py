@@ -86,20 +86,19 @@ class ArchitecturalFixer:
         print("🔧 Fixing core import violations...")
 
         violations = [
-            "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\verify_lyrixa_merge.py",
-            "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\consciousness\\consciousness_orchestrator.py",
-            "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\gui\\main.py",
-            "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\tools\\quantum_dashboard_launcher.py",
-            "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\agent_adapters\\smart_agent_migrator.py",
-            "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\core\\plugin_system.py",
-            "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\aetherra_core\\agents\\optimized_integration.py",
-            "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\aetherra_core\\agents\\reflexive_loop.py",
+            "verify_lyrixa_merge.py",
+            "consciousness/consciousness_orchestrator.py",
+            "gui/main.py",
+            "tools/quantum_dashboard_launcher.py",
+            "plugins/core/plugin_system.py",
+            "aetherra_core/agents/optimized_integration.py",
+            "aetherra_core/agents/reflexive_loop.py",
         ]
 
         fixed_files = []
 
-        for file_path in violations:
-            path = Path(file_path)
+        for file_rel_path in violations:
+            path = self.aetherra_root / file_rel_path
             if not path.exists():
                 continue
 

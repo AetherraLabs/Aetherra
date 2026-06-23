@@ -84,7 +84,6 @@ class ArchitecturalFixer:
             "consciousness/consciousness_orchestrator.py",
             "gui/main.py",
             "tools/quantum_dashboard_launcher.py",
-            "plugins/agent_adapters/smart_agent_migrator.py",
             "plugins/core/plugin_system.py",
             "aetherra_core/agents/optimized_integration.py",
             "aetherra_core/agents/reflexive_loop.py",
