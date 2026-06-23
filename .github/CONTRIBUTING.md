@@ -96,23 +96,17 @@ TELEGRAM_BOT_TOKEN=your_telegram_token_here
 
 ### 🎨 Testing the Unified GUI (Recommended)
 
-The Aetherra project now features a unified React + Flask GUI system. This is the easiest way to test your setup:
+The Runtime Observatory is the active alpha UI shell. It consumes Hub runtime
+state when available and remains read-only.
 
 ```bash
-# Install Node.js/npm dependencies for React frontend
-cd frontend
+# Install Node.js/npm dependencies for the active Runtime Observatory
+cd Aetherra/lyrixa/gui
 npm install
 
-# Return to project root and launch unified GUI
-cd ..
-python aetherra_os.py --interface hybrid
+# Start the UI development server
+npm run dev
 ```
-
-This will start:
-
-- **React Frontend**: [http://localhost:3000](http://localhost:3000) (Modern cyberpunk interface)
-- **Flask API Server**: [http://localhost:8686](http://localhost:8686) (Backend with Socket.IO)
-- **Real-time Communication**: WebSocket connection between frontend and backend
 
 **[TOOL] Testing Individual Components**
 
@@ -123,8 +117,8 @@ python aetherra_os_launcher.py --mode test
 # Test API server only (Flask backend)
 python aetherra_os.py --interface web
 
-# Test React frontend only (requires separate API server)
-cd frontend && npm run dev
+# Test Runtime Observatory UI only
+cd Aetherra/lyrixa/gui && npm run dev
 
 # Run tests (if available)
 pytest
@@ -192,12 +186,8 @@ isort .
 # Run any available tests
 pytest
 
-# Test the unified GUI (recommended)
-python aetherra_os.py --interface hybrid
-
-# Or test components individually:
-# React frontend only
-cd frontend && npm run dev
+# Test the Runtime Observatory UI
+cd Aetherra/lyrixa/gui && npm run dev
 
 # Flask API server only
 python aetherra_os.py --interface web
