@@ -134,9 +134,9 @@ CONFIRMED_RUNTIME_PREFIXES = {
 
 REVIEW_OVERRIDES = {
     "beyond_transcendence_engine.py": (
-        "legacy-or-experimental-review",
-        "Root-level transcendence compatibility file; verify active use",
-        "needs-evidence",
+        "rename-debt",
+        "Legacy advanced cognition compatibility shim; retain until professionally renamed",
+        "keep-rename",
     ),
 }
 

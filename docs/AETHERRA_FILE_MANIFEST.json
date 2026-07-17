@@ -3,8 +3,8 @@
     "configuration": 98,
     "documentation": 307,
     "legacy-or-archive": 4,
-    "legacy-or-experimental-review": 1,
     "operational-runtime": 579,
+    "rename-debt": 1,
     "test": 512,
     "tooling": 226,
     "unclassified": 279
@@ -9324,12 +9324,12 @@
       "purpose": "Badge metadata"
     },
     {
-      "category": "legacy-or-experimental-review",
-      "keep_status": "needs-evidence",
+      "category": "rename-debt",
+      "keep_status": "keep-rename",
       "lifecycle": "unknown-or-compatibility",
       "owner": "review",
       "path": "beyond_transcendence_engine.py",
-      "purpose": "Root-level transcendence compatibility file; verify active use"
+      "purpose": "Legacy advanced cognition compatibility shim; retain until professionally renamed"
     },
     {
       "category": "operational-runtime",
@@ -17864,7 +17864,7 @@
   "keep_status": {
     "candidate-review": 4,
     "keep": 249,
-    "needs-evidence": 1,
+    "keep-rename": 1,
     "needs-review": 279,
     "provisional-runtime": 478,
     "review-by-suite": 512,

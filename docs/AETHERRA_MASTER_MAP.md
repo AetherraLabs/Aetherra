@@ -19,15 +19,15 @@ marked for review before removal.
 - Tracked directories: 257
 - Files confirmed keep: 249
 - Files requiring suite/doc/tool/provisional review: 1757
-- Runtime/candidate/unknown files needing evidence: 762
+- Runtime/candidate/unknown files needing evidence: 761
 
 ### By Category
 
 - configuration: 98
 - documentation: 307
 - legacy-or-archive: 4
-- legacy-or-experimental-review: 1
 - operational-runtime: 579
+- rename-debt: 1
 - test: 512
 - tooling: 226
 - unclassified: 279
@@ -598,7 +598,7 @@ yet proven direct active use.
 - `Aetherra/aetherra_core/memory/memory_kernel.py` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/memory/memory_learning.py` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/memory/models.py` - provisional-runtime; Core runtime package
-- ... 642 more in `docs/AETHERRA_FILE_MANIFEST.json`
+- ... 641 more in `docs/AETHERRA_FILE_MANIFEST.json`
 
 ## Cleanup Process
 

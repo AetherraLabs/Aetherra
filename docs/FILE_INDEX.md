@@ -394,7 +394,7 @@ Aetherra/
       system_sensor.py — System Sensor Stub
     transcendence/
       __init__.py — SPDX-License-Identifier: GPL-3.0-or-later
-      beyond_transcendence_engine.py — Namespaced Beyond Transcendence Engine adapter.
+      beyond_transcendence_engine.py — Advanced cognition metrics adapter with legacy naming.
     active_inference.py — Active Inference Wrapper (MVP)
     affect_engine.py — Affect Engine MVP
     autonomy_governor.py — Autonomy Governor.
@@ -1877,7 +1877,7 @@ aetherra_self_incorporation.py — Track user activity patterns for night cycle 
 aetherra_service_registry.py — Service health status enumeration."""
 aetherra_shared_service_registry.py — Service health status enumeration."""
 aetherra_startup.py — SPDX-License-Identifier: GPL-3.0-or-later
-beyond_transcendence_engine.py — Legacy import shim for BeyondTranscendenceEngine.
+beyond_transcendence_engine.py — Legacy import shim for the advanced cognition metrics adapter.
 CHANGELOG.md — Changelog
 CODE_OF_CONDUCT.md — Code of Conduct
 config.autonomy.production.json
