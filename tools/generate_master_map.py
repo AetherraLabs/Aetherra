@@ -133,16 +133,6 @@ CONFIRMED_RUNTIME_PREFIXES = {
 }
 
 REVIEW_OVERRIDES = {
-    "Aetherra/aetherra_core/engine/lyrixa_engine.py": (
-        "duplicate-engine-review",
-        "Legacy or duplicate Engine implementation; verify before keeping",
-        "needs-evidence",
-    ),
-    "Aetherra/aetherra_core/agents/lyrixa_aetherra_integration.py": (
-        "compatibility-review",
-        "Contains SimpleAetherraEngine compatibility code; verify active use",
-        "needs-evidence",
-    ),
     "beyond_transcendence_engine.py": (
         "legacy-or-experimental-review",
         "Root-level transcendence compatibility file; verify active use",

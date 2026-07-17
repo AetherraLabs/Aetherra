@@ -15,18 +15,16 @@ marked for review before removal.
 
 ## Current Inventory
 
-- Tracked files: 2008
+- Tracked files: 2006
 - Tracked directories: 257
 - Files confirmed keep: 249
-- Files requiring suite/doc/tool/provisional review: 1759
-- Runtime/candidate/unknown files needing evidence: 764
+- Files requiring suite/doc/tool/provisional review: 1757
+- Runtime/candidate/unknown files needing evidence: 762
 
 ### By Category
 
-- compatibility-review: 1
 - configuration: 98
 - documentation: 307
-- duplicate-engine-review: 1
 - legacy-or-archive: 4
 - legacy-or-experimental-review: 1
 - operational-runtime: 579
@@ -49,14 +47,14 @@ marked for review before removal.
 - runtime-support: 2
 - runtime-ui: 3
 - unknown: 279
-- unknown-or-compatibility: 3
+- unknown-or-compatibility: 1
 - verification: 512
 
 ## Top-Level Folder Map
 
 | Folder | Files | Category | Status |
 | --- | ---: | --- | --- |
-| `Aetherra/` | 769 | operational-runtime | provisional-runtime |
+| `Aetherra/` | 767 | operational-runtime | provisional-runtime |
 | `tests/` | 512 | test | review-by-suite |
 | `docs/` | 266 | documentation | review-doc |
 | `tools/` | 188 | tooling | review-tool |
@@ -514,7 +512,6 @@ yet proven direct active use.
 - `Aetherra/aetherra_core/agents/grammar.py` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/agents/learning_loop_integration_agent.py` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/agents/lyrixa.yaml` - provisional-runtime; Core runtime package
-- `Aetherra/aetherra_core/agents/lyrixa_aetherra_integration.py` - needs-evidence; Contains SimpleAetherraEngine compatibility code; verify active use
 - `Aetherra/aetherra_core/agents/lyrixa_assistant.py` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/agents/lyrixa_memory.json` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/agents/lyrixa_script_integration.py` - provisional-runtime; Core runtime package
@@ -542,7 +539,6 @@ yet proven direct active use.
 - `Aetherra/aetherra_core/engine/intelligence/README.md` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/engine/intelligence/__init__.py` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/engine/intelligence/intent_recognition.js` - provisional-runtime; Core runtime package
-- `Aetherra/aetherra_core/engine/lyrixa_engine.py` - needs-evidence; Legacy or duplicate Engine implementation; verify before keeping
 - `Aetherra/aetherra_core/engine/lyrixa_memory.json` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/engine/prompt_engine.py` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/engine/readiness.py` - provisional-runtime; Core runtime package
@@ -600,7 +596,9 @@ yet proven direct active use.
 - `Aetherra/aetherra_core/memory/memory_core.py` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/memory/memory_core_adapter.py` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/memory/memory_kernel.py` - provisional-runtime; Core runtime package
-- ... 644 more in `docs/AETHERRA_FILE_MANIFEST.json`
+- `Aetherra/aetherra_core/memory/memory_learning.py` - provisional-runtime; Core runtime package
+- `Aetherra/aetherra_core/memory/models.py` - provisional-runtime; Core runtime package
+- ... 642 more in `docs/AETHERRA_FILE_MANIFEST.json`
 
 ## Cleanup Process
 

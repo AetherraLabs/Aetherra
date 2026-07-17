@@ -4,13 +4,14 @@
 # Standard library imports
 import importlib
 import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 modules = [
     "Aetherra.aetherra_core.engine.aetherra_engine",
-    "Aetherra.aetherra_core.engine.lyrixa_engine",
-    "cosmic_consciousness_engine",
-    "Aetherra.consciousness.cosmic.cosmic_consciousness_engine",
-    "Aetherra.consciousness.quantum.quantum_consciousness_engine",
 ]
 
 failed = []

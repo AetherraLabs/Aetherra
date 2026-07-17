@@ -8,8 +8,7 @@
 Core intelligence and processing engine for Aetherra AI OS.
 
 This package contains the main processing engines that power
-Aetherra's cognitive capabilities, including the Lyrixa engine
-and various intelligence modules.
+Aetherra's cognitive capabilities and supporting intelligence modules.
 """
 
 __version__ = "1.0.0"
@@ -35,10 +34,10 @@ except ImportError as e:
         """Mock AetherraEngine for development when actual engine isn't available."""
 
         def __init__(self, *args, **kwargs):
-            logger.warning("Using mock LyrixaEngine - actual engine not available")
+            logger.warning("Using mock AetherraEngine - actual engine not available")
 
         async def process(self, *args, **kwargs):
-            return {"status": "mock", "message": "LyrixaEngine not available"}
+            return {"status": "mock", "message": "AetherraEngine not available"}
 
 
 # Try to import intelligence modules

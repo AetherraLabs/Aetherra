@@ -1,9 +1,7 @@
 {
   "categories": {
-    "compatibility-review": 1,
     "configuration": 98,
     "documentation": 307,
-    "duplicate-engine-review": 1,
     "legacy-or-archive": 4,
     "legacy-or-experimental-review": 1,
     "operational-runtime": 579,
@@ -79,21 +77,21 @@
       "direct_file_count": 9,
       "dominant_category": "operational-runtime",
       "dominant_keep_status": "provisional-runtime",
-      "file_count": 769,
+      "file_count": 767,
       "path": "Aetherra/"
     },
     {
       "direct_file_count": 2,
       "dominant_category": "operational-runtime",
       "dominant_keep_status": "provisional-runtime",
-      "file_count": 237,
+      "file_count": 235,
       "path": "Aetherra/aetherra_core/"
     },
     {
-      "direct_file_count": 40,
+      "direct_file_count": 39,
       "dominant_category": "operational-runtime",
       "dominant_keep_status": "provisional-runtime",
-      "file_count": 40,
+      "file_count": 39,
       "path": "Aetherra/aetherra_core/agents/"
     },
     {
@@ -125,10 +123,10 @@
       "path": "Aetherra/aetherra_core/conversation/"
     },
     {
-      "direct_file_count": 10,
+      "direct_file_count": 9,
       "dominant_category": "operational-runtime",
       "dominant_keep_status": "provisional-runtime",
-      "file_count": 13,
+      "file_count": 12,
       "path": "Aetherra/aetherra_core/engine/"
     },
     {
@@ -2574,14 +2572,6 @@
       "purpose": "Core runtime package"
     },
     {
-      "category": "compatibility-review",
-      "keep_status": "needs-evidence",
-      "lifecycle": "unknown-or-compatibility",
-      "owner": "review",
-      "path": "Aetherra/aetherra_core/agents/lyrixa_aetherra_integration.py",
-      "purpose": "Contains SimpleAetherraEngine compatibility code; verify active use"
-    },
-    {
       "category": "operational-runtime",
       "keep_status": "provisional-runtime",
       "lifecycle": "runtime",
@@ -2796,14 +2786,6 @@
       "owner": "Aetherra/aetherra_core",
       "path": "Aetherra/aetherra_core/engine/intelligence/intent_recognition.js",
       "purpose": "Core runtime package"
-    },
-    {
-      "category": "duplicate-engine-review",
-      "keep_status": "needs-evidence",
-      "lifecycle": "unknown-or-compatibility",
-      "owner": "review",
-      "path": "Aetherra/aetherra_core/engine/lyrixa_engine.py",
-      "purpose": "Legacy or duplicate Engine implementation; verify before keeping"
     },
     {
       "category": "operational-runtime",
@@ -17882,7 +17864,7 @@
   "keep_status": {
     "candidate-review": 4,
     "keep": 249,
-    "needs-evidence": 3,
+    "needs-evidence": 1,
     "needs-review": 279,
     "provisional-runtime": 478,
     "review-by-suite": 512,
@@ -17890,5 +17872,5 @@
     "review-tool": 226
   },
   "tracked_directory_count": 257,
-  "tracked_file_count": 2008
+  "tracked_file_count": 2006
 }

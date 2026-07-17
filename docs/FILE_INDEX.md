@@ -37,7 +37,6 @@ Aetherra/
       goals.py — Goal status enumeration"""
       grammar.py — AetherraCode Abstract Syntax Tree node"""
       learning_loop_integration_agent.py — Represents an autonomous learning goal generated from memory analysis"""
-      lyrixa_aetherra_integration.py — Simple mock of Aetherra engine for basic functionality"""
       lyrixa_assistant.py — Generate a fallback response when core is not available"""
       lyrixa_memory.json
       lyrixa_script_integration.py — Initialize the script integration system"""
@@ -69,7 +68,6 @@ Aetherra/
       __init__.py — Mock AetherraEngine for development when actual engine isn't available."""
       aetherra_engine.py — Raised when an unavailable optional component is used."""
       assistant.py — Create unique session identifier with enhanced metadata"""
-      lyrixa_engine.py — Main Lyrixa execution engine that coordinates all subsystems"""
       lyrixa_memory.json
       prompt_engine.py — Load memory from JSON file"""
       readiness.py — Read-only readiness contract for the Aetherra AI engine."""
