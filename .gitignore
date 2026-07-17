@@ -362,9 +362,6 @@ cleanup_*.py
 !tools/maintenance/safe_cleanup.py
 !tools/maintenance/smart_cleanup.py
 !Aetherra/aetherra_core/agents/cleanup_project.py
-!Aetherra/scripts/cleanup_project.py
-!Aetherra/scripts/conservative_cleanup.py
-!Aetherra/scripts/fast_cleanup.py
 
 # Discord Bot directory (contains sensitive tokens and configurations)
 Discord Bot/

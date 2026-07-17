@@ -450,7 +450,7 @@ Aetherra/
     AETHERRA_MANIFESTO.md — AETHERRA MANIFESTO (v6.0 – July 2025)
     AI_OS_MANIFESTO.md — 🧬 The AI Operating System Manifesto
     README.md — docs
-    SELF_ORGANIZING_INTELLIGENCE.md — 🧠 Aetherra Self-Organizing Intelligence System
+    SELF_ORGANIZING_INTELLIGENCE.md — Aetherra Self-Organizing Intelligence
   guardian/
     __init__.py — Aetherra Guardian System public API.
     approval.py — Approval request persistence for Guardian."""
@@ -773,15 +773,8 @@ Aetherra/
   scripts/
     utilities/
       README.md — utilities
-    audit_file_usage.py — Scan entire project for Python files and their relationships"""
-    check_deployment_readiness.py — Comprehensive deployment readiness validation"""
-    cleanup_project.py — Main cleanup orchestrator for Aetherra project"""
-    conservative_cleanup.py — Move only obviously safe-to-move files"""
-    fast_cleanup.py — Perform quick cleanup of obviously unused files"""
-    organize_system.py — Main launcher for Aetherra self-organizing intelligence."""
-    README.md — scripts
+    README.md — Aetherra Scripts
     self_organizer.aether
-    simple_audit.py — Just count Python files quickly"""
   security/
     api_keys.py — Local API-key storage with encryption-at-rest and scoped retrieval."""
     audit_ledger.py — Tamper-evident append-only JSONL audit ledger."""

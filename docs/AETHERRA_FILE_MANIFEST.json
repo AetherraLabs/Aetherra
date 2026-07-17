@@ -6,7 +6,7 @@
     "operational-runtime": 793,
     "rename-debt": 1,
     "test": 514,
-    "tooling": 248
+    "tooling": 241
   },
   "directories": [
     {
@@ -76,7 +76,7 @@
       "direct_file_count": 6,
       "dominant_category": "operational-runtime",
       "dominant_keep_status": "provisional-runtime",
-      "file_count": 734,
+      "file_count": 727,
       "path": "Aetherra/"
     },
     {
@@ -892,10 +892,10 @@
       "path": "Aetherra/schedulers/"
     },
     {
-      "direct_file_count": 9,
+      "direct_file_count": 2,
       "dominant_category": "tooling",
       "dominant_keep_status": "review-tool",
-      "file_count": 10,
+      "file_count": 3,
       "path": "Aetherra/scripts/"
     },
     {
@@ -7589,63 +7589,7 @@
       "keep_status": "review-tool",
       "lifecycle": "maintenance",
       "owner": "Aetherra/scripts",
-      "path": "Aetherra/scripts/audit_file_usage.py",
-      "purpose": "Aetherra package maintenance scripts"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/scripts",
-      "path": "Aetherra/scripts/check_deployment_readiness.py",
-      "purpose": "Aetherra package maintenance scripts"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/scripts",
-      "path": "Aetherra/scripts/cleanup_project.py",
-      "purpose": "Aetherra package maintenance scripts"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/scripts",
-      "path": "Aetherra/scripts/conservative_cleanup.py",
-      "purpose": "Aetherra package maintenance scripts"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/scripts",
-      "path": "Aetherra/scripts/fast_cleanup.py",
-      "purpose": "Aetherra package maintenance scripts"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/scripts",
-      "path": "Aetherra/scripts/organize_system.py",
-      "purpose": "Aetherra package maintenance scripts"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/scripts",
       "path": "Aetherra/scripts/self_organizer.aether",
-      "purpose": "Aetherra package maintenance scripts"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/scripts",
-      "path": "Aetherra/scripts/simple_audit.py",
       "purpose": "Aetherra package maintenance scripts"
     },
     {
@@ -17417,8 +17361,8 @@
     "provisional-runtime": 690,
     "review-by-suite": 514,
     "review-doc": 264,
-    "review-tool": 248
+    "review-tool": 241
   },
   "tracked_directory_count": 235,
-  "tracked_file_count": 1969
+  "tracked_file_count": 1962
 }
