@@ -47,6 +47,10 @@ OPERATIONAL_ROOT_FILES = {
     "aetherra_registry_client.py": ("Registry client", "runtime"),
     "aetherra_registry_daemon.py": ("Registry daemon", "runtime"),
     "aetherra_plugin_discovery.py": ("Plugin discovery and Hub sync support", "plugin-runtime"),
+    "aetherra_agent_fabric.py": ("Agent Fabric runtime support", "runtime"),
+    "aetherra_agent_daemon.py": ("Agent Fabric daemon entry", "runtime"),
+    "aetherra_aar_broker.py": ("Agent runtime HTTP broker", "runtime-api"),
+    "aetherra_outbox.py": ("Agent runtime write-ahead outbox", "runtime-support"),
     "quantum_memory_bridge.py": ("Quantum memory bridge compatibility entry", "runtime"),
     "unicode_logger.py": ("Unicode-safe logging support", "runtime-support"),
 }
@@ -186,14 +190,10 @@ LEGACY_PREFIXES = {
 }
 
 REVIEW_ROOT_FILES = {
-    "aetherra_aar_broker.py",
     "aetherra_adaptive_behavior.py",
-    "aetherra_agent_daemon.py",
-    "aetherra_agent_fabric.py",
     "aetherra_cognitive_task_manager.py",
     "aetherra_live_monitor.py",
     "aetherra_meta_memory.py",
-    "aetherra_outbox.py",
     "aetherra_plugin_catalog.json",
     "aetherra_plugin_viewer.py",
     "aetherra_quantum_meta_learning.py",

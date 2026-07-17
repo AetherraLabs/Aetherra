@@ -1861,21 +1861,17 @@ tools/
 .markdownlint.json
 aether.py — Execute Aether Script content."""
 aetherra_aar_broker.py — !/usr/bin/env python3
-aetherra_adaptive_behavior.py — Represents a learned behavior pattern."""
 aetherra_agent_daemon.py — !/usr/bin/env python3
 aetherra_agent_fabric.py — Register Agent Fabric agents with the AgentOrchestrator for task management."""
-aetherra_cognitive_task_manager.py — Initialize Flask app and routes."""
 aetherra_event_bus.py — !/usr/bin/env python3
 aetherra_hmr_controller.py — Hot Module Reload controller service.
 aetherra_kernel_loop.py — Evaluate production backpressure & plugin safety invariants.
-aetherra_meta_memory.py — Initialize the meta-memory database."""
 aetherra_module_manager.py — Minimal, safe module manager with a clear contract."""
 aetherra_os.py — Launch the designated Aetherra GUI interface and start OS backend"""
 aetherra_os_launcher.py — Return the most recent launcher readiness snapshot, if available."""
 aetherra_outbox.py — !/usr/bin/env python3
 aetherra_persistent_memory.py — Individual memory node with cognitive metadata."""
 aetherra_plugin_discovery.py — Plugin metadata structure."""
-aetherra_quantum_meta_learning.py — Calculate measurement probability for this state."""
 aetherra_registry_client.py — SPDX-License-Identifier: GPL-3.0-or-later
 aetherra_registry_daemon.py — !/usr/bin/env python3
 aetherra_script_service.py — Minimal .aether interpreter with async interface."""

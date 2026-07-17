@@ -15,11 +15,11 @@ marked for review before removal.
 
 ## Current Inventory
 
-- Tracked files: 2012
+- Tracked files: 2008
 - Tracked directories: 257
-- Files confirmed keep: 245
-- Files requiring suite/doc/tool/provisional review: 1767
-- Runtime/candidate/unknown files needing evidence: 772
+- Files confirmed keep: 249
+- Files requiring suite/doc/tool/provisional review: 1759
+- Runtime/candidate/unknown files needing evidence: 764
 
 ### By Category
 
@@ -29,8 +29,7 @@ marked for review before removal.
 - duplicate-engine-review: 1
 - legacy-or-archive: 4
 - legacy-or-experimental-review: 1
-- operational-runtime: 575
-- root-review-candidate: 8
+- operational-runtime: 579
 - test: 512
 - tooling: 226
 - unclassified: 279
@@ -45,12 +44,12 @@ marked for review before removal.
 - maintenance: 226
 - operator: 1
 - plugin-runtime: 86
-- runtime: 396
-- runtime-api: 56
-- runtime-support: 1
+- runtime: 398
+- runtime-api: 57
+- runtime-support: 2
 - runtime-ui: 3
 - unknown: 279
-- unknown-or-compatibility: 11
+- unknown-or-compatibility: 3
 - verification: 512
 
 ## Top-Level Folder Map
@@ -212,7 +211,7 @@ runtime, governed runtime, API operation, plugin operation, or Runtime UI.
 - `Aetherra/aetherra_core/memory/models.py` - Core runtime package (runtime; provisional-runtime)
 - `Aetherra/aetherra_core/memory/narrator/README.md` - Core runtime package (runtime; provisional-runtime)
 - `Aetherra/aetherra_core/memory/narrator/__init__.py` - Core runtime package (runtime; provisional-runtime)
-- ... 455 more in `docs/AETHERRA_FILE_MANIFEST.json`
+- ... 459 more in `docs/AETHERRA_FILE_MANIFEST.json`
 
 ## Configuration And Build Files
 
@@ -601,7 +600,7 @@ yet proven direct active use.
 - `Aetherra/aetherra_core/memory/memory_core.py` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/memory/memory_core_adapter.py` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/memory/memory_kernel.py` - provisional-runtime; Core runtime package
-- ... 652 more in `docs/AETHERRA_FILE_MANIFEST.json`
+- ... 644 more in `docs/AETHERRA_FILE_MANIFEST.json`
 
 ## Cleanup Process
 
