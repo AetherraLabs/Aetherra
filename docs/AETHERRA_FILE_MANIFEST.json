@@ -6,7 +6,7 @@
     "operational-runtime": 793,
     "rename-debt": 1,
     "test": 514,
-    "tooling": 227
+    "tooling": 212
   },
   "directories": [
     {
@@ -1060,10 +1060,10 @@
       "path": "configs/sql/"
     },
     {
-      "direct_file_count": 18,
+      "direct_file_count": 3,
       "dominant_category": "tooling",
       "dominant_keep_status": "review-tool",
-      "file_count": 18,
+      "file_count": 3,
       "path": "demos/"
     },
     {
@@ -8846,127 +8846,7 @@
       "keep_status": "review-tool",
       "lifecycle": "maintenance",
       "owner": "demos",
-      "path": "demos/agent_api_probe.py",
-      "purpose": "Demonstrations"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "demos",
-      "path": "demos/agent_pipeline_demo.py",
-      "purpose": "Demonstrations"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "demos",
-      "path": "demos/chat_stream_demo.py",
-      "purpose": "Demonstrations"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "demos",
-      "path": "demos/demo_advanced_memory_systems.py",
-      "purpose": "Demonstrations"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "demos",
-      "path": "demos/demo_analytics_enhanced.py",
-      "purpose": "Demonstrations"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "demos",
-      "path": "demos/demo_analytics_final.py",
-      "purpose": "Demonstrations"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "demos",
-      "path": "demos/demo_analytics_insights_engine.py",
-      "purpose": "Demonstrations"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "demos",
-      "path": "demos/demo_analytics_standalone.py",
-      "purpose": "Demonstrations"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "demos",
-      "path": "demos/demo_enhanced_agents.py",
-      "purpose": "Demonstrations"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "demos",
-      "path": "demos/demo_enhanced_conversation_7.py",
-      "purpose": "Demonstrations"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "demos",
-      "path": "demos/demo_hub_plugin_integration.py",
-      "purpose": "Demonstrations"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "demos",
-      "path": "demos/demo_intelligent_error_handler_8.py",
-      "purpose": "Demonstrations"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "demos",
-      "path": "demos/demo_standalone_memory.py",
-      "purpose": "Demonstrations"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "demos",
       "path": "demos/run_demo.py",
-      "purpose": "Demonstrations"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "demos",
-      "path": "demos/self_healing_demo.py",
-      "purpose": "Demonstrations"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "demos",
-      "path": "demos/self_improvement_demo.py",
       "purpose": "Demonstrations"
     },
     {
@@ -17242,8 +17122,8 @@
     "provisional-runtime": 690,
     "review-by-suite": 514,
     "review-doc": 264,
-    "review-tool": 227
+    "review-tool": 212
   },
   "tracked_directory_count": 234,
-  "tracked_file_count": 1948
+  "tracked_file_count": 1933
 }

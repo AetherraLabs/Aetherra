@@ -15,10 +15,10 @@ marked for review before removal.
 
 ## Current Inventory
 
-- Tracked files: 1948
+- Tracked files: 1933
 - Tracked directories: 234
 - Files confirmed keep: 248
-- Files requiring suite/doc/tool/provisional review: 1700
+- Files requiring suite/doc/tool/provisional review: 1685
 - Runtime/candidate/unknown files needing evidence: 694
 
 ### By Category
@@ -29,7 +29,7 @@ marked for review before removal.
 - operational-runtime: 793
 - rename-debt: 1
 - test: 514
-- tooling: 227
+- tooling: 212
 
 ### By Lifecycle
 
@@ -38,7 +38,7 @@ marked for review before removal.
 - documentation: 314
 - governed-runtime: 30
 - historical: 4
-- maintenance: 227
+- maintenance: 212
 - operator: 9
 - plugin-runtime: 91
 - runtime: 543
@@ -59,7 +59,6 @@ marked for review before removal.
 | `aetherra_hub/` | 56 | operational-runtime | keep |
 | `.github/` | 45 | configuration | keep |
 | `docs-organized/` | 21 | documentation | review-doc |
-| `demos/` | 18 | tooling | review-tool |
 | `plugins/` | 11 | operational-runtime | provisional-runtime |
 | `aetherra_coding/` | 7 | operational-runtime | provisional-runtime |
 | `scripts/` | 7 | tooling | review-tool |
@@ -67,6 +66,7 @@ marked for review before removal.
 | `archive/` | 4 | legacy-or-archive | candidate-review |
 | `config/` | 3 | configuration | keep |
 | `configs/` | 3 | configuration | keep |
+| `demos/` | 3 | tooling | review-tool |
 | `ISSUE_TEMPLATE/` | 2 | tooling | review-tool |
 | `examples/` | 2 | tooling | review-tool |
 | `lyrixa/` | 2 | operational-runtime | provisional-runtime |
