@@ -9,6 +9,7 @@ This is the canonical navigation surface for active (living) specifications, ope
 - System Status Dashboard: `SYSTEM_INDEX.md`
 - Documentation Architecture: `DOCS_ARCHITECTURE.md`
 - Master Map: `AETHERRA_MASTER_MAP.md`
+- File Manifest: `AETHERRA_FILE_MANIFEST.json`
 - Mind Map: `AETHERRA_MIND_MAP.md`
 - Claims Validation: `AETHERRA_CLAIMS_VALIDATION.md`
 
@@ -80,6 +81,7 @@ This is the canonical navigation surface for active (living) specifications, ope
 
 ## Generated & Reports
 
+- Aetherra File Manifest: `AETHERRA_FILE_MANIFEST.json`
 - File Index: `FILE_INDEX.md`
 - Docs Consistency: `DOCS_CONSISTENCY.md`
 - Docs Consistency Report: `DOCS_CONSISTENCY_REPORT.md`

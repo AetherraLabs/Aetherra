@@ -1011,6 +1011,7 @@ docs/
   AETHERRA_COMPLETE_OVERVIEW_2026-03-12.md — Aetherra: Complete System Overview & Architecture
   AETHERRA_CONSCIOUSNESS_SYSTEM.md — Aetherra Consciousness System
   AETHERRA_EVENT_BUS_SYSTEM.md — Aetherra Kernel Event Bus (KEB) System
+  AETHERRA_FILE_MANIFEST.json
   AETHERRA_GUARDIAN_SYSTEM.md — Aetherra Guardian System
   AETHERRA_HMR_GUIDE.md — Aetherra Hot Module Reload (HMR) Guide
   AETHERRA_HOMEOSTASIS_SYSTEM.md — Aetherra Homeostasis System
@@ -1020,7 +1021,7 @@ docs/
   AETHERRA_KERNEL_SYSTEM.md — Aetherra Kernel System
   AETHERRA_LYRIXA_SYSTEM.md — Aetherra Lyrixa System
   AETHERRA_MAINTENANCE_SYSTEM.md — Aetherra Maintenance System
-  AETHERRA_MASTER_MAP.md — 🌌 Aetherra Master Map — Complete System Architecture & Status
+  AETHERRA_MASTER_MAP.md — Aetherra Master Map
   AETHERRA_MEMORY_SYSTEM.md — Aetherra Memory System
   AETHERRA_MIND_MAP.md — 🧠 Aetherra Master Mind Map
   aetherra_os_architecture_map_v_1.md — Aetherra OS • Architecture Map (v1.0)
@@ -1071,6 +1072,7 @@ docs/
   LYRIXA_CHAT_ENDPOINT.md — Lyrixa Chat Endpoint
   MAINTENANCE_TOOL_INVENTORY.md — Maintenance Tool Inventory
   manifesto.md — AETHERRA MANIFESTO (v6.0 – July 2025)
+  MASTER_ROADMAP.md — Aetherra Master Roadmap
   memory_system.md — Memory System
   METRICS_AND_MONITORING_GUIDE.md — Aetherra Metrics and Monitoring Guide
   METRICS_REFERENCE.md — Aetherra Metrics Reference
@@ -1384,6 +1386,7 @@ tests/
     test_aether_script_signing.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_aether_script_transactions_trace.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_aether_static_risk.py — SPDX-License-Identifier: GPL-3.0-or-later
+    test_aetherra_engine_hardening.py — SPDX-License-Identifier: GPL-3.0-or-later
     test_aetherra_hub_integration_guardian.py
     test_agent_collaboration_guardian.py
     test_agent_goals_guardian.py
@@ -1776,6 +1779,7 @@ tools/
   generate_beta_readiness_report.py — Generate or update the Beta Readiness Report.
   generate_file_index.py — Return tracked repository files, or None when git is unavailable."""
   generate_integrity_manifest.py — Generate integrity manifest for release artifacts.
+  generate_master_map.py — Generate Aetherra's operational Master Map and file manifest.
   generate_metrics_reference.py — Generate docs/METRICS_REFERENCE.md from live metrics_accum definitions.
   generate_parse_baseline.py — Generate a baseline parse status JSON for all .aether workflows.
   generate_qfac_file_index.py — SPDX-License-Identifier: GPL-3.0-or-later

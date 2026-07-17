@@ -20,6 +20,8 @@ operator guides.
 | --- | --- |
 | `INDEX.md` | Canonical index of active specs and guides |
 | `SYSTEM_INDEX.md` | Implementation maturity and quick navigation |
+| `AETHERRA_MASTER_MAP.md` | Operational repository map and cleanup authority |
+| `AETHERRA_FILE_MANIFEST.json` | Per-file and per-directory tracked inventory |
 | `MASTER_ROADMAP.md` | Consolidated project roadmap and roadmap claims audit |
 | `Aether_Script_Language_System.md` | Formal language and execution semantics |
 | `Aether_Script_Operator_Guide.md` | Practical usage from authoring to verification |

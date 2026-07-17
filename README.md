@@ -182,6 +182,7 @@ as release artifacts instead of source.
 Cleanup tracking is maintained in:
 
 - [`docs/ACTIVE_SYSTEMS.md`](docs/ACTIVE_SYSTEMS.md)
+- [`docs/AETHERRA_MASTER_MAP.md`](docs/AETHERRA_MASTER_MAP.md)
 - [`docs/MASTER_ROADMAP.md`](docs/MASTER_ROADMAP.md)
 - [`docs/ALPHA_READINESS_CHECKLIST.md`](docs/ALPHA_READINESS_CHECKLIST.md)
 - [`docs/ALPHA_OPERATOR_RUNBOOK.md`](docs/ALPHA_OPERATOR_RUNBOOK.md)
@@ -189,6 +190,7 @@ Cleanup tracking is maintained in:
 - [`docs/REPOSITORY_STRUCTURE.md`](docs/REPOSITORY_STRUCTURE.md)
 - [`docs/REPOSITORY_CLEANUP_PLAN.md`](docs/REPOSITORY_CLEANUP_PLAN.md)
 - [`docs/ROOT_SCRIPT_WORKFLOW_TRIAGE.md`](docs/ROOT_SCRIPT_WORKFLOW_TRIAGE.md)
+- [`docs/AETHERRA_FILE_MANIFEST.json`](docs/AETHERRA_FILE_MANIFEST.json)
 - [`docs/FILE_INDEX.md`](docs/FILE_INDEX.md)
 
 ## Safety Model
