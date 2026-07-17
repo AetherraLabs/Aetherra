@@ -129,7 +129,7 @@ Status meanings:
 
 - Start here for system overviews and contracts.
 - Use `docs/ACTIVE_SYSTEMS.md` for the current operational dashboard.
-- Use `docs/BUILD_ORDER.md` for the active build sequence.
+- Use `docs/MASTER_ROADMAP.md` for the active build sequence and roadmap claims audit.
 - Use `docs/UNDERSTANDING_RULE.md` before marking any system complete.
 - For a full repository file index, see `docs/FILE_INDEX.md`.
 

@@ -56,4 +56,4 @@ operations foundation. New systems should integrate with those foundations
 instead of bypassing them.
 
 When a system reaches a functional milestone, update this file, the system
-document, and `docs/BUILD_ORDER.md` in the same change.
+document, and `docs/MASTER_ROADMAP.md` in the same change.

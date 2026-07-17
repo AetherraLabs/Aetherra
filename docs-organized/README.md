@@ -26,12 +26,7 @@ This directory contains all organized documentation for the Aetherra project, sy
 - `MULTI_AI_SETUP_GUIDE.md` - Multi-AI system setup
 
 ### 🗺️ Roadmaps (`roadmaps/`)
-Complete development roadmaps (7 files):
-- Aetherra Memory System Evolution Roadmap
-- Aetherra QFAC Roadmap
-- Plugin Development Roadmap
-- Future Development Plans
-- Soul Kernel Cognitive Architecture
+Roadmap planning is consolidated in `../docs/MASTER_ROADMAP.md`.
 
 ### 📜 Manifesto (`manifesto/`)
 Project vision and philosophy:

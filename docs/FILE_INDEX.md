@@ -413,7 +413,6 @@ Aetherra/
     ethics_critic.py — Ethics Critic MVP
     event_bus.py — Unified Event Bus (Phase 1)
     explanation_engine.py — Structured explanation record.
-    EXTENDED_ROADMAP.md — 🧠 AETHERRA EXTENDED ROADMAP
     health_checks.py — Probe chat system health via Hub API.
     learning_loop.py — Consciousness Learning Loop.
     metrics_exporter.py — Prometheus Metrics Exporter (Optional)
@@ -423,7 +422,6 @@ Aetherra/
     PHASE_8_3_ACHIEVEMENT_REPORT.md — Phase 8.3: Beyond Transcendence Achievement Report
     policy_reasoner.py — Minimal changes to move a decision toward allowed.
     qualia_learning.py — Learned parameters for qualia update dynamics.
-    ROADMAP.md — Aetherra Consciousness Orchestrator - Meta-Layer Roadmap
     self_model.py — Self-Model API (Phase 1)
     self_model_manager.py — Self-Model Manager
     self_trust.py — Trust metrics for a single subsystem."""
@@ -988,17 +986,6 @@ docs/
       ENGINE_USAGE_MATRIX.md — Engine Usage Matrix
     release/
       BETA_READINESS_REPORT.md — Aetherra Beta Readiness Report
-  roadmap/
-    Aetherra Memory System Evolution Roadmap.md — 🧠 Aetherra Memory System Evolution Roadmap
-    AETHERRA_CODING_SYSTEM_ROADMAP.md — Aetherra Coding System Roadmap (Lyrixa Code Studio)
-    Aetherra_Living_Roadmap.md — Aetherra Labs — Living Roadmap
-    AETHERRA_PLUGIN_ROADMAP.md — 🔌 Aetherra Plugin Registry Roadmap
-    aetherra_quantum_roadmap_v_1.md — Aetherra • Quantum Roadmap (v1.0)
-    AETHERRA_ROADMAP.md — 🚀 aetherra + LyrixaDevelopment Roadmap
-    FUTURE_ROADMAP.md — 🧬 Aetherra Future Enhancement Strategy
-    MEMORY_SYSTEM_ROADMAP.md — 🧠 Aetherra Memory System Redesign - Implementation Roadmap
-    README.md — Roadmaps Directory
-    Soul Kernel Cognitive Architecture Roadmap.md
   schemas/
     memory_item.schema.json
   sections/
@@ -1038,7 +1025,6 @@ docs/
   AETHERRA_MIND_MAP.md — 🧠 Aetherra Master Mind Map
   aetherra_os_architecture_map_v_1.md — Aetherra OS • Architecture Map (v1.0)
   AETHERRA_PLUGIN_SYSTEM.md — Aetherra Plugin System
-  aetherra_quantum_roadmap_v_1.md — Aetherra • Quantum Roadmap (v1.0)
   AETHERRA_RUNTIME_UI_SYSTEM.md — Aetherra Runtime UI System
   AETHERRA_SECURITY_SYSTEM.md — Aetherra Security System
   AETHERRA_SELF-IMPROVEMENT_SYSTEM.md — Aetherra Self-Improvement System
@@ -1057,8 +1043,6 @@ docs/
   AUTONOMY_ACTIVATION_RUNBOOK.md — Aetherra OS Autonomy Activation Runbook
   BACKUP_AND_RECOVERY.md — Aetherra Backup and Recovery Guide
   BETA_MILESTONE.md — Beta Milestone Planning (Draft)
-  BETA_ROADMAP_0.5.0.md — Aetherra 0.5.0 Beta Roadmap & Community Focus
-  BUILD_ORDER.md — Build Order
   BUILD_REPRODUCIBILITY.md — Build Reproducibility & Verification (Alpha)
   ci_strict_signing.md — CI/CD Integration for Strict .aether Script Verification
   conf.py — Minimal Sphinx configuration for Aetherra documentation builds.
@@ -1120,7 +1104,6 @@ docs/
   REPOSITORY_CLEANUP_PLAN.md — Aetherra Repository Cleanup Plan
   REPOSITORY_STRUCTURE.md — Repository Structure
   RISK_ACCEPTANCE.md — Risk Acceptance Register (Alpha)
-  ROADMAP_TRACKING.md — Roadmap Tracking Baseline
   ROOT_CLEANUP_PLAN.md — Root Cleanup Plan (Alpha → Beta Hardening)
   ROOT_SCRIPT_WORKFLOW_TRIAGE.md — Root Script and Workflow Triage
   SECURITY_FEDERATION_ENHANCEMENTS_2025-08-12.md — Security, Signing, and Federation Enhancements (2025-08-12)
@@ -1921,12 +1904,10 @@ licenses_unknown_history.requirements-ci.lock.json
 main.py — Convenience launcher alias for aetherra_os main entry point.
 OWNERSHIP.md — Ownership & Release Authority
 PRIVACY.md — Privacy Policy (Project Repository)
-PRODUCTION_ROADMAP.md — Aetherra Production Roadmap
 quantum_memory_bridge.py — Quantum memory bridge placeholder (alpha stub)."""
 QUICK_START.md — Aetherra Turn-Key Development Quick Start
 README.md — Aetherra
 RELEASE_NOTES_0.5.0-beta.0.md — Aetherra 0.5.0-beta.0 Release Notes
-ROADMAP.md — Aetherra Roadmap
 SECURITY.md — Security Policy
 setup.py — !/usr/bin/env python3
 setup_dev.py — Print the Aetherra setup banner"""

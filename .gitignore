@@ -32,6 +32,7 @@ aetherra-website/
 /.mypy_cache/
 /.pytest_cache/
 /.pytest_tmp/
+/.pytest_tmp*/
 /.ruff_cache/
 /debug_output/
 /test_output/

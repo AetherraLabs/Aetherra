@@ -27,7 +27,7 @@ Core focus areas this Beta cycle:
 
 Good First Issues: look for `good-first-issue` or propose one (open an issue starting title with `good-first-issue:` and mark scope ≤ ~50 LOC or docs-only).
 
-Before starting larger work: comment on (or create) a Discussion thread referencing the Beta Roadmap (see: GitHub Discussions → “0.5.0 Beta Roadmap & Community Focus”).
+Before starting larger work: comment on (or create) a Discussion thread referencing `docs/MASTER_ROADMAP.md`.
 
 Checklist for a solid first PR:
 

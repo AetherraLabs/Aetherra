@@ -44,7 +44,7 @@ The goal is to provide both: (a) a fast, authoritative surface for engineers and
 | Operator Guides     | How to run / operate / verify        | `Aether_Script_Operator_Guide.md`                   | Must link to tests or tasks |
 | Policies & Process  | Release, coverage, security posture  | `RELEASE_PROCESS.md`, `COVERAGE_POLICY.md`          | Must declare scope          |
 | Architecture Maps   | High-level diagrams & maps           | `aetherra_os_architecture_map_v_1.md`               | Optional                    |
-| Roadmaps            | Evolutionary plans; time-sequenced   | `BETA_ROADMAP_0.5.0.md`                             | Mark date/version           |
+| Roadmaps            | Evolutionary plans; time-sequenced   | `MASTER_ROADMAP.md`                                  | Keep as single source       |
 | Reports             | Generated or curated audits          | `GO_NO_GO_GATES.md`                                 | Dated filename              |
 | Research & Vision   | Narrative / exploratory              | `manifesto.md`, `CONSCIOUSNESS_UNIFIED_IDENTITY.md` | Mark non‑normative          |
 | Historical / Legacy | Superseded or archived               | `docs-organized/legacy/`                            | Excluded from strict checks |
