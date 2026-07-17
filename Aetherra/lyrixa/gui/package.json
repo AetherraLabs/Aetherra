@@ -16,7 +16,7 @@
         "@radix-ui/react-slot": "^1.0.2",
         "@radix-ui/react-tabs": "^1.1.17",
         "@react-three/drei": "^9.92.3",
-        "@react-three/fiber": "^8.15.11",
+        "@react-three/fiber": "^9.6.1",
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.0.0",
         "framer-motion": "^10.16.4",
