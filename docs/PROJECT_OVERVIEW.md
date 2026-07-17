@@ -446,13 +446,12 @@ sum by () (aetherra_style_empathy_total)
 
 ## Environment Variables — Chat and Base URLs (Aug 31, 2025)
 
-The chat system and demos recognize these common variables:
+The chat system and API clients recognize these common variables:
 
 - `AETHERRA_BASE_URL` — Base URL for Hub/API when clients are external to the process
 - `AETHERRA_CHAT_MAX_TOKENS` — Default output token cap for chat completions
 - `AETHERRA_CHAT_SAFETY_MODE` — Safety preset: strict | standard (affects policy gates)
 - `AETHERRA_CHAT_TEMPERATURE` — Default sampling temperature for chat
-- `AETHERRA_DEMO` — 1/0 to enable demo paths/features in UIs and tools
 - `AETHERRA_LLM_MODEL` — Preferred default LLM model identifier
 // Chat transport, versioning, and idempotency
 - `AETHERRA_AI_API_WS` — 1/0 to enable WebSocket transport endpoints; when enabled, clients can use ws://.../ws/ai/stream
@@ -582,7 +581,6 @@ Chat and client defaults:
 - `AETHERRA_CHAT_MAX_TOKENS`
 - `AETHERRA_CHAT_SAFETY_MODE`
 - `AETHERRA_CHAT_TEMPERATURE`
-- `AETHERRA_DEMO`
 - `AETHERRA_LLM_MODEL`
 // Chat transport, versioning, and idempotency
 - `AETHERRA_AI_API_WS`

@@ -67,7 +67,7 @@ by runtime imports, tests, or launcher compatibility until replacement exists.
 
 ## B) Likely Legacy / Remove After Reference Checks
 
-- Root demo UIs:
+- Root demo UIs removed:
   - `demos/adk_demo_ui.py`
   - `demos/chat_stream_ui.py`
   - `demos/agent_pipeline_ui.py`

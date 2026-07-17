@@ -6,7 +6,7 @@
     "operational-runtime": 793,
     "rename-debt": 1,
     "test": 514,
-    "tooling": 252
+    "tooling": 248
   },
   "directories": [
     {
@@ -1067,10 +1067,10 @@
       "path": "configs/sql/"
     },
     {
-      "direct_file_count": 22,
+      "direct_file_count": 18,
       "dominant_category": "tooling",
       "dominant_keep_status": "review-tool",
-      "file_count": 22,
+      "file_count": 18,
       "path": "demos/"
     },
     {
@@ -9021,14 +9021,6 @@
       "keep_status": "review-tool",
       "lifecycle": "maintenance",
       "owner": "demos",
-      "path": "demos/adk_demo_ui.py",
-      "purpose": "Demonstrations"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "demos",
       "path": "demos/agent_api_probe.py",
       "purpose": "Demonstrations"
     },
@@ -9045,23 +9037,7 @@
       "keep_status": "review-tool",
       "lifecycle": "maintenance",
       "owner": "demos",
-      "path": "demos/agent_pipeline_ui.py",
-      "purpose": "Demonstrations"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "demos",
       "path": "demos/chat_stream_demo.py",
-      "purpose": "Demonstrations"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "demos",
-      "path": "demos/chat_stream_ui.py",
       "purpose": "Demonstrations"
     },
     {
@@ -9142,14 +9118,6 @@
       "lifecycle": "maintenance",
       "owner": "demos",
       "path": "demos/demo_standalone_memory.py",
-      "purpose": "Demonstrations"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "demos",
-      "path": "demos/kernel_status_ui.py",
       "purpose": "Demonstrations"
     },
     {
@@ -17449,8 +17417,8 @@
     "provisional-runtime": 690,
     "review-by-suite": 514,
     "review-doc": 264,
-    "review-tool": 252
+    "review-tool": 248
   },
   "tracked_directory_count": 235,
-  "tracked_file_count": 1973
+  "tracked_file_count": 1969
 }
