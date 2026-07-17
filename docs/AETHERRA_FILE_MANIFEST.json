@@ -10906,7 +10906,7 @@
       "keep_status": "review-tool",
       "lifecycle": "maintenance",
       "owner": "examples",
-      "path": "examples/consciousness_demo.py",
+      "path": "examples/daily_anomaly_digest.aether",
       "purpose": "Examples"
     },
     {
@@ -16830,7 +16830,7 @@
       "purpose": "Unicode-safe logging support"
     }
   ],
-  "generated_on": "2026-07-16",
+  "generated_on": "2026-07-17",
   "keep_status": {
     "candidate-review": 4,
     "keep": 248,

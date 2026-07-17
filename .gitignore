@@ -229,6 +229,7 @@ self_organizer.aether
 !Aetherra/plugins/examples/**/*.aether
 !Aetherra/scripts/*.aether
 !Aetherra/tools/*.aether
+!examples/*.aether
 outbox/*.jsonl
 audit/*.jsonl
 ui_standards_report.md

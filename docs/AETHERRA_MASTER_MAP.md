@@ -1,6 +1,6 @@
 # Aetherra Master Map
 
-Updated: 2026-07-16
+Updated: 2026-07-17
 
 This is the operational map for the Aetherra repository. It is generated
 from tracked files and is paired with `docs/AETHERRA_FILE_MANIFEST.json`,
