@@ -1,13 +1,13 @@
 {
   "categories": {
-    "configuration": 98,
-    "documentation": 307,
+    "configuration": 94,
+    "documentation": 313,
     "legacy-or-archive": 4,
-    "operational-runtime": 579,
+    "operational-runtime": 791,
     "rename-debt": 1,
     "test": 512,
-    "tooling": 226,
-    "unclassified": 279
+    "tooling": 252,
+    "unclassified": 26
   },
   "directories": [
     {
@@ -77,7 +77,7 @@
       "direct_file_count": 9,
       "dominant_category": "operational-runtime",
       "dominant_keep_status": "provisional-runtime",
-      "file_count": 767,
+      "file_count": 754,
       "path": "Aetherra/"
     },
     {
@@ -326,93 +326,79 @@
       "path": "Aetherra/aetherra_core/system/"
     },
     {
-      "direct_file_count": 0,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 9,
-      "path": "Aetherra/aetherra_hub/"
-    },
-    {
-      "direct_file_count": 9,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 9,
-      "path": "Aetherra/aetherra_hub/aetherra_hub/"
-    },
-    {
       "direct_file_count": 2,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 2,
       "path": "Aetherra/ai_engine/"
     },
     {
       "direct_file_count": 2,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 2,
       "path": "Aetherra/analysis/"
     },
     {
       "direct_file_count": 8,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 14,
       "path": "Aetherra/api/"
     },
     {
       "direct_file_count": 2,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 2,
       "path": "Aetherra/api/auth/"
     },
     {
       "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 1,
       "path": "Aetherra/api/middleware/"
     },
     {
       "direct_file_count": 2,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 2,
       "path": "Aetherra/api/rest/"
     },
     {
       "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 1,
       "path": "Aetherra/api/websocket/"
     },
     {
       "direct_file_count": 8,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 8,
       "path": "Aetherra/cli/"
     },
     {
       "direct_file_count": 2,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 2,
       "path": "Aetherra/coding/"
     },
     {
       "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "configuration",
+      "dominant_keep_status": "keep",
       "file_count": 5,
       "path": "Aetherra/config/"
     },
     {
       "direct_file_count": 4,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "configuration",
+      "dominant_keep_status": "keep",
       "file_count": 4,
       "path": "Aetherra/config/quantum/"
     },
@@ -502,15 +488,15 @@
     },
     {
       "direct_file_count": 22,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 23,
       "path": "Aetherra/core/"
     },
     {
       "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 1,
       "path": "Aetherra/core/utils/"
     },
@@ -635,8 +621,8 @@
     },
     {
       "direct_file_count": 6,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "documentation",
+      "dominant_keep_status": "review-doc",
       "file_count": 6,
       "path": "Aetherra/docs/"
     },
@@ -670,113 +656,106 @@
     },
     {
       "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 1,
       "path": "Aetherra/hub/"
     },
     {
       "direct_file_count": 2,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 10,
       "path": "Aetherra/integration/"
     },
     {
       "direct_file_count": 2,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 2,
       "path": "Aetherra/integration/adapters/"
     },
     {
       "direct_file_count": 4,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 4,
       "path": "Aetherra/integration/bridges/"
     },
     {
       "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 1,
       "path": "Aetherra/integration/monitoring/"
     },
     {
       "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 1,
       "path": "Aetherra/integration/protocols/"
     },
     {
-      "direct_file_count": 4,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 4,
-      "path": "Aetherra/interface/"
-    },
-    {
       "direct_file_count": 2,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 2,
       "path": "Aetherra/interface_bridge/"
     },
     {
       "direct_file_count": 8,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 96,
       "path": "Aetherra/lyrixa/"
     },
     {
       "direct_file_count": 2,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 6,
       "path": "Aetherra/lyrixa/LyrixaCore/"
     },
     {
       "direct_file_count": 4,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 4,
       "path": "Aetherra/lyrixa/LyrixaCore/IdentityAgent/"
     },
     {
       "direct_file_count": 17,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 17,
       "path": "Aetherra/lyrixa/agents/"
     },
     {
       "direct_file_count": 3,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 3,
       "path": "Aetherra/lyrixa/awareness/"
     },
     {
       "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 1,
       "path": "Aetherra/lyrixa/chat/"
     },
     {
       "direct_file_count": 5,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 5,
       "path": "Aetherra/lyrixa/ethics_agent/"
     },
     {
       "direct_file_count": 10,
-      "dominant_category": "configuration",
-      "dominant_keep_status": "keep",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 13,
       "path": "Aetherra/lyrixa/gui/"
     },
@@ -789,85 +768,85 @@
     },
     {
       "direct_file_count": 3,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 3,
       "path": "Aetherra/lyrixa/integrations/"
     },
     {
       "direct_file_count": 4,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 4,
       "path": "Aetherra/lyrixa/intelligence/"
     },
     {
       "direct_file_count": 6,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 6,
       "path": "Aetherra/lyrixa/interactive/"
     },
     {
       "direct_file_count": 7,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 9,
       "path": "Aetherra/lyrixa/memory/"
     },
     {
       "direct_file_count": 2,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 2,
       "path": "Aetherra/lyrixa/memory/fractal_mesh/"
     },
     {
       "direct_file_count": 12,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 17,
       "path": "Aetherra/lyrixa/plugins/"
     },
     {
       "direct_file_count": 2,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 2,
       "path": "Aetherra/lyrixa/plugins/advanced-memory-system/"
     },
     {
       "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 1,
       "path": "Aetherra/lyrixa/plugins/interaction/"
     },
     {
       "direct_file_count": 2,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 2,
       "path": "Aetherra/lyrixa/plugins/workflow_builder/"
     },
     {
       "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 1,
       "path": "Aetherra/lyrixa/proactive/"
     },
     {
       "direct_file_count": 3,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 3,
       "path": "Aetherra/lyrixa/reflection_engine/"
     },
     {
       "direct_file_count": 5,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 5,
       "path": "Aetherra/lyrixa_plugins/"
     },
@@ -915,22 +894,22 @@
     },
     {
       "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 1,
       "path": "Aetherra/observability/"
     },
     {
       "direct_file_count": 3,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 7,
       "path": "Aetherra/perception_bus/"
     },
     {
       "direct_file_count": 4,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 4,
       "path": "Aetherra/perception_bus/adapters/"
     },
@@ -1006,8 +985,8 @@
     },
     {
       "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 1,
       "path": "Aetherra/quantum/"
     },
@@ -1020,15 +999,15 @@
     },
     {
       "direct_file_count": 9,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 9,
       "path": "Aetherra/runtime/"
     },
     {
       "direct_file_count": 9,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 9,
       "path": "Aetherra/runtime_ui/"
     },
@@ -1048,15 +1027,15 @@
     },
     {
       "direct_file_count": 9,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "tooling",
+      "dominant_keep_status": "review-tool",
       "file_count": 10,
       "path": "Aetherra/scripts/"
     },
     {
       "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "tooling",
+      "dominant_keep_status": "review-tool",
       "file_count": 1,
       "path": "Aetherra/scripts/utilities/"
     },
@@ -1069,57 +1048,57 @@
     },
     {
       "direct_file_count": 7,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 7,
       "path": "Aetherra/stdlib/"
     },
     {
       "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 1,
       "path": "Aetherra/telemetry/"
     },
     {
       "direct_file_count": 13,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "tooling",
+      "dominant_keep_status": "review-tool",
       "file_count": 16,
       "path": "Aetherra/tools/"
     },
     {
       "direct_file_count": 3,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "tooling",
+      "dominant_keep_status": "review-tool",
       "file_count": 3,
       "path": "Aetherra/tools/migration/"
     },
     {
       "direct_file_count": 5,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 5,
       "path": "Aetherra/utils/"
     },
     {
       "direct_file_count": 2,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 8,
       "path": "Aetherra/web/"
     },
     {
       "direct_file_count": 2,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 2,
       "path": "Aetherra/web/components/"
     },
     {
       "direct_file_count": 4,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 4,
       "path": "Aetherra/web/server/"
     },
@@ -1517,8 +1496,8 @@
     },
     {
       "direct_file_count": 2,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
+      "dominant_category": "operational-runtime",
+      "dominant_keep_status": "provisional-runtime",
       "file_count": 2,
       "path": "lyrixa/"
     },
@@ -4208,96 +4187,24 @@
       "keep_status": "needs-review",
       "lifecycle": "unknown",
       "owner": "unknown",
-      "path": "Aetherra/aetherra_hub/aetherra_hub/README.md",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/aetherra_hub/aetherra_hub/aetherra-hub-api.js",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/aetherra_hub/aetherra_hub/aetherra-hub-client.js",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/aetherra_hub/aetherra_hub/index.html",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/aetherra_hub/aetherra_hub/package-lock.json",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/aetherra_hub/aetherra_hub/package.json",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/aetherra_hub/aetherra_hub/server.js",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/aetherra_hub/aetherra_hub/start-aetherra-hub.bat",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/aetherra_hub/aetherra_hub/start-aetherra-hub.sh",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
       "path": "Aetherra/aetherra_hub_integration.py",
       "purpose": "No current classification rule matched this tracked file"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/ai_engine",
       "path": "Aetherra/ai_engine/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "AI coordination package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/ai_engine",
       "path": "Aetherra/ai_engine/coordinator.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "AI coordination package"
     },
     {
       "category": "unclassified",
@@ -4308,252 +4215,252 @@
       "purpose": "No current classification rule matched this tracked file"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/analysis",
       "path": "Aetherra/analysis/.aether_risk_static.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Static analysis and risk helpers"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/analysis",
       "path": "Aetherra/analysis/static_risk.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Static analysis and risk helpers"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-api",
+      "owner": "Aetherra/api",
       "path": "Aetherra/api/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra API package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-api",
+      "owner": "Aetherra/api",
       "path": "Aetherra/api/aether_server.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra API package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-api",
+      "owner": "Aetherra/api",
       "path": "Aetherra/api/approvals.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra API package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-api",
+      "owner": "Aetherra/api",
       "path": "Aetherra/api/auth/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra API package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-api",
+      "owner": "Aetherra/api",
       "path": "Aetherra/api/auth/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra API package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-api",
+      "owner": "Aetherra/api",
       "path": "Aetherra/api/job_controller.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra API package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-api",
+      "owner": "Aetherra/api",
       "path": "Aetherra/api/job_store.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra API package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-api",
+      "owner": "Aetherra/api",
       "path": "Aetherra/api/middleware/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra API package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-api",
+      "owner": "Aetherra/api",
       "path": "Aetherra/api/models.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra API package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-api",
+      "owner": "Aetherra/api",
       "path": "Aetherra/api/requirements.txt",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra API package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-api",
+      "owner": "Aetherra/api",
       "path": "Aetherra/api/rest/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra API package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-api",
+      "owner": "Aetherra/api",
       "path": "Aetherra/api/rest/run_server.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra API package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-api",
+      "owner": "Aetherra/api",
       "path": "Aetherra/api/run_server.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra API package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-api",
+      "owner": "Aetherra/api",
       "path": "Aetherra/api/websocket/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra API package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "operator",
+      "owner": "Aetherra/cli",
       "path": "Aetherra/cli/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra command-line package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "operator",
+      "owner": "Aetherra/cli",
       "path": "Aetherra/cli/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra command-line package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "operator",
+      "owner": "Aetherra/cli",
       "path": "Aetherra/cli/alerts.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra command-line package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "operator",
+      "owner": "Aetherra/cli",
       "path": "Aetherra/cli/basic.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra command-line package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "operator",
+      "owner": "Aetherra/cli",
       "path": "Aetherra/cli/main.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra command-line package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "operator",
+      "owner": "Aetherra/cli",
       "path": "Aetherra/cli/persona.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra command-line package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "operator",
+      "owner": "Aetherra/cli",
       "path": "Aetherra/cli/plugin.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra command-line package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "operator",
+      "owner": "Aetherra/cli",
       "path": "Aetherra/cli/policy_bootstrap.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra command-line package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "governed-runtime",
+      "owner": "Aetherra/coding",
       "path": "Aetherra/coding/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Coding readiness package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "governed-runtime",
+      "owner": "Aetherra/coding",
       "path": "Aetherra/coding/readiness.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Coding readiness package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "configuration",
+      "keep_status": "keep",
+      "lifecycle": "build-or-ci",
+      "owner": "Aetherra/config",
       "path": "Aetherra/config/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package configuration"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "configuration",
+      "keep_status": "keep",
+      "lifecycle": "build-or-ci",
+      "owner": "Aetherra/config",
       "path": "Aetherra/config/quantum/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package configuration"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "configuration",
+      "keep_status": "keep",
+      "lifecycle": "build-or-ci",
+      "owner": "Aetherra/config",
       "path": "Aetherra/config/quantum/monitoring_config.json",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package configuration"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "configuration",
+      "keep_status": "keep",
+      "lifecycle": "build-or-ci",
+      "owner": "Aetherra/config",
       "path": "Aetherra/config/quantum/quantum_config.json",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package configuration"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "configuration",
+      "keep_status": "keep",
+      "lifecycle": "build-or-ci",
+      "owner": "Aetherra/config",
       "path": "Aetherra/config/quantum/scaling_config.json",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package configuration"
     },
     {
       "category": "operational-runtime",
@@ -5324,188 +5231,188 @@
       "purpose": "Consciousness processing package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/aether_runtime.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/aetherra_grammar.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/aetherra_interpreter.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/aetherra_memory.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/aetherra_parser.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/aetherra_self_organizer.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/agent.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/ai_runtime.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/chat_router.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/chat_router_new.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/config.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/disclosure_policy.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/enhanced_language.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/lyrixa_memory.json",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/memory_manager.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/multi_llm_manager.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/os_interface.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/prompt_engine.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/syntax_tree.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/utils/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/core",
       "path": "Aetherra/core/webhook_manager.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy core compatibility package"
     },
     {
       "category": "unclassified",
@@ -5628,52 +5535,52 @@
       "purpose": "No current classification rule matched this tracked file"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "documentation",
+      "keep_status": "review-doc",
+      "lifecycle": "documentation",
+      "owner": "Aetherra/docs",
       "path": "Aetherra/docs/AETHERRA_MANIFESTO.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy package documentation"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "documentation",
+      "keep_status": "review-doc",
+      "lifecycle": "documentation",
+      "owner": "Aetherra/docs",
       "path": "Aetherra/docs/AI_OS_MANIFESTO.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy package documentation"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "documentation",
+      "keep_status": "review-doc",
+      "lifecycle": "documentation",
+      "owner": "Aetherra/docs",
       "path": "Aetherra/docs/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy package documentation"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "documentation",
+      "keep_status": "review-doc",
+      "lifecycle": "documentation",
+      "owner": "Aetherra/docs",
       "path": "Aetherra/docs/SELF_ORGANIZING_INTELLIGENCE.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy package documentation"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "documentation",
+      "keep_status": "review-doc",
+      "lifecycle": "documentation",
+      "owner": "Aetherra/docs",
       "path": "Aetherra/docs/aetherra_labs_vision.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy package documentation"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "documentation",
+      "keep_status": "review-doc",
+      "lifecycle": "documentation",
+      "owner": "Aetherra/docs",
       "path": "Aetherra/docs/architecture_diagram.png.png",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Legacy package documentation"
     },
     {
       "category": "unclassified",
@@ -6012,92 +5919,92 @@
       "purpose": "Homeostasis observation and verification"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-api",
+      "owner": "Aetherra/hub",
       "path": "Aetherra/hub/federation.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Hub federation package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/integration",
       "path": "Aetherra/integration/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Integration bridge package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/integration",
       "path": "Aetherra/integration/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Integration bridge package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/integration",
       "path": "Aetherra/integration/adapters/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Integration bridge package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/integration",
       "path": "Aetherra/integration/adapters/memory_adapter_impl.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Integration bridge package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/integration",
       "path": "Aetherra/integration/bridges/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Integration bridge package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/integration",
       "path": "Aetherra/integration/bridges/aetherra_lyrixa_bridge.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Integration bridge package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/integration",
       "path": "Aetherra/integration/bridges/memory_adapter.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Integration bridge package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/integration",
       "path": "Aetherra/integration/bridges/memory_adapter_impl.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Integration bridge package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/integration",
       "path": "Aetherra/integration/monitoring/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Integration bridge package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/integration",
       "path": "Aetherra/integration/protocols/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Integration bridge package"
     },
     {
       "category": "unclassified",
@@ -6108,860 +6015,828 @@
       "purpose": "No current classification rule matched this tracked file"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/interface/README.md",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/interface/launch_aetherra_os.py",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/interface/main_window.py",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/interface/web_panels.py",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/interface_bridge",
       "path": "Aetherra/interface_bridge/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Interface bridge compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/interface_bridge",
       "path": "Aetherra/interface_bridge/memory_api.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Interface bridge compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/LyrixaCore/IdentityAgent/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/LyrixaCore/IdentityAgent/core_beliefs.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/LyrixaCore/IdentityAgent/personal_history.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/LyrixaCore/IdentityAgent/self_model.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/LyrixaCore/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/LyrixaCore/interface_bridge.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/agents/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/agents/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/agents/agent_base.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/agents/agent_collaboration_manager.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/agents/contradiction_detection_agent.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/agents/conversation_manager.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/agents/curiosity_agent.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/agents/data_agent.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/agents/enhanced_conversation_manager.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/agents/escalation_agent.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/agents/goal_agent.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/agents/learning_loop_integration_agent.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/agents/lyrixa_ai.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/agents/security_agent.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/agents/self_question_generator_agent.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/agents/support_agent.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/agents/technical_agent.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/analytics_dashboard.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/analytics_insights_engine.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/awareness/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/awareness/context_analyzer.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/awareness/system_monitor.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/chat/lyrixa_chat_service.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/consciousness_integration.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/ethics.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/ethics_agent/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/ethics_agent/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/ethics_agent/bias_detector.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/ethics_agent/moral_reasoning.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/ethics_agent/value_alignment.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "configuration",
-      "keep_status": "keep",
-      "lifecycle": "build-or-ci",
-      "owner": "Aetherra/lyrixa/gui",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/gui/.gitignore",
-      "purpose": "Runtime UI package/build configuration"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "configuration",
-      "keep_status": "keep",
-      "lifecycle": "build-or-ci",
-      "owner": "Aetherra/lyrixa/gui",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/gui/README.md",
-      "purpose": "Runtime UI package/build configuration"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "configuration",
-      "keep_status": "keep",
-      "lifecycle": "build-or-ci",
-      "owner": "Aetherra/lyrixa/gui",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/gui/index.html",
-      "purpose": "Runtime UI package/build configuration"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "configuration",
-      "keep_status": "keep",
-      "lifecycle": "build-or-ci",
-      "owner": "Aetherra/lyrixa/gui",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/gui/package-lock.json",
-      "purpose": "Runtime UI package/build configuration"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "configuration",
-      "keep_status": "keep",
-      "lifecycle": "build-or-ci",
-      "owner": "Aetherra/lyrixa/gui",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/gui/package.json",
-      "purpose": "Runtime UI package/build configuration"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "configuration",
-      "keep_status": "keep",
-      "lifecycle": "build-or-ci",
-      "owner": "Aetherra/lyrixa/gui",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/gui/postcss.config.js",
-      "purpose": "Runtime UI package/build configuration"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
       "category": "operational-runtime",
       "keep_status": "provisional-runtime",
-      "lifecycle": "runtime-ui",
-      "owner": "Aetherra/lyrixa/gui/src",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/gui/src/App.tsx",
-      "purpose": "Runtime UI source"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
       "category": "operational-runtime",
       "keep_status": "provisional-runtime",
-      "lifecycle": "runtime-ui",
-      "owner": "Aetherra/lyrixa/gui/src",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/gui/src/index.css",
-      "purpose": "Runtime UI source"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
       "category": "operational-runtime",
       "keep_status": "provisional-runtime",
-      "lifecycle": "runtime-ui",
-      "owner": "Aetherra/lyrixa/gui/src",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/gui/src/main.tsx",
-      "purpose": "Runtime UI source"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "configuration",
-      "keep_status": "keep",
-      "lifecycle": "build-or-ci",
-      "owner": "Aetherra/lyrixa/gui",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/gui/tailwind.config.js",
-      "purpose": "Runtime UI package/build configuration"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "configuration",
-      "keep_status": "keep",
-      "lifecycle": "build-or-ci",
-      "owner": "Aetherra/lyrixa/gui",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/gui/tsconfig.json",
-      "purpose": "Runtime UI package/build configuration"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "configuration",
-      "keep_status": "keep",
-      "lifecycle": "build-or-ci",
-      "owner": "Aetherra/lyrixa/gui",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/gui/tsconfig.node.json",
-      "purpose": "Runtime UI package/build configuration"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "configuration",
-      "keep_status": "keep",
-      "lifecycle": "build-or-ci",
-      "owner": "Aetherra/lyrixa/gui",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/gui/vite.config.ts",
-      "purpose": "Runtime UI package/build configuration"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/integrations/aetherra_hub_connector.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/integrations/memory_adapter.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/integrations/style_manager.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/intelligence/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/intelligence/adaptive_orchestrator.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/intelligence/lyrixa_full_intelligence.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/intelligence/meta_reasoning.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/intelligence_integration.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/interactive/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/interactive/expression_manager.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/interactive/integration.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/interactive/interactive_loop.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/interactive/state_map.json",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/interactive/state_mapper.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/launcher.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/memory/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/memory/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/memory/advanced_memory_integration.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/memory/fractal_mesh/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/memory/fractal_mesh/base.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/memory/lyrixa_memory_engine.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/memory/multidimensional_memory.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/memory/quantum_memory_integration.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/memory/simple_memory_adapter.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/plugins/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/plugins/advanced-memory-system/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/plugins/advanced-memory-system/aetherra-plugin.json",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/plugins/advanced_memory_system_ui.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/plugins/ai_plugin_generator_ui.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/plugins/assistant_trainer_plugin_ui.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/plugins/context_aware_surfacing_ui.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/plugins/installed_plugins.json",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/plugins/interaction/voice_responder.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/plugins/introspector_plugin_ui.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/plugins/memory_aware_plugin_router.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/plugins/plugin_analytics_ui.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/plugins/plugin_creation_wizard_ui.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/plugins/plugin_manager.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/plugins/workflow_builder/index.html",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/plugins/workflow_builder/manifest.json",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/plugins/workflow_builder_ui.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/proactive/proactive_consciousness.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/reflection_engine/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/reflection_engine/shadow_state_forker.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/lyrixa",
       "path": "Aetherra/lyrixa/reflection_engine/validation_engine.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa persona and plugin package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "plugin-runtime",
+      "owner": "Aetherra/lyrixa_plugins",
       "path": "Aetherra/lyrixa_plugins/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa plugin compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "plugin-runtime",
+      "owner": "Aetherra/lyrixa_plugins",
       "path": "Aetherra/lyrixa_plugins/emotion_detector.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa plugin compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "plugin-runtime",
+      "owner": "Aetherra/lyrixa_plugins",
       "path": "Aetherra/lyrixa_plugins/emotional_intelligence.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa plugin compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "plugin-runtime",
+      "owner": "Aetherra/lyrixa_plugins",
       "path": "Aetherra/lyrixa_plugins/emotional_intelligence_integration.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa plugin compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "plugin-runtime",
+      "owner": "Aetherra/lyrixa_plugins",
       "path": "Aetherra/lyrixa_plugins/mini_lyrixa_avatar.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa plugin compatibility package"
     },
     {
       "category": "unclassified",
@@ -7108,68 +6983,68 @@
       "purpose": "No current classification rule matched this tracked file"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/observability",
       "path": "Aetherra/observability/metrics_service.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Observability and metrics package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/perception_bus",
       "path": "Aetherra/perception_bus/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Perception bus package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/perception_bus",
       "path": "Aetherra/perception_bus/adapters/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Perception bus package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/perception_bus",
       "path": "Aetherra/perception_bus/adapters/common.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Perception bus package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/perception_bus",
       "path": "Aetherra/perception_bus/adapters/linux.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Perception bus package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/perception_bus",
       "path": "Aetherra/perception_bus/adapters/windows.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Perception bus package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/perception_bus",
       "path": "Aetherra/perception_bus/bus.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Perception bus package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/perception_bus",
       "path": "Aetherra/perception_bus/event_types.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Perception bus package"
     },
     {
       "category": "operational-runtime",
@@ -7764,20 +7639,20 @@
       "purpose": "Plugin runtime package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "configuration",
+      "keep_status": "keep",
+      "lifecycle": "build-or-ci",
+      "owner": "Aetherra/pyproject.toml",
       "path": "Aetherra/pyproject.toml",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package configuration"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/quantum",
       "path": "Aetherra/quantum/chat_consciousness_bridge.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Quantum integration compatibility package"
     },
     {
       "category": "operational-runtime",
@@ -7796,148 +7671,148 @@
       "purpose": "Runtime runner entrypoints"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/runtime",
       "path": "Aetherra/runtime/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aether Script runtime package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/runtime",
       "path": "Aetherra/runtime/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aether Script runtime package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/runtime",
       "path": "Aetherra/runtime/aether_executor.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aether Script runtime package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/runtime",
       "path": "Aetherra/runtime/aether_parser.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aether Script runtime package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/runtime",
       "path": "Aetherra/runtime/aether_runtime.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aether Script runtime package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/runtime",
       "path": "Aetherra/runtime/script_memory_integrator.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aether Script runtime package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/runtime",
       "path": "Aetherra/runtime/script_registry_loader.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aether Script runtime package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/runtime",
       "path": "Aetherra/runtime/script_router.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aether Script runtime package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/runtime",
       "path": "Aetherra/runtime/script_runner.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aether Script runtime package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-ui",
+      "owner": "Aetherra/runtime_ui",
       "path": "Aetherra/runtime_ui/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Runtime UI contract and payload package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-ui",
+      "owner": "Aetherra/runtime_ui",
       "path": "Aetherra/runtime_ui/contract.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Runtime UI contract and payload package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-ui",
+      "owner": "Aetherra/runtime_ui",
       "path": "Aetherra/runtime_ui/manifest.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Runtime UI contract and payload package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-ui",
+      "owner": "Aetherra/runtime_ui",
       "path": "Aetherra/runtime_ui/observatory.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Runtime UI contract and payload package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-ui",
+      "owner": "Aetherra/runtime_ui",
       "path": "Aetherra/runtime_ui/payload.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Runtime UI contract and payload package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-ui",
+      "owner": "Aetherra/runtime_ui",
       "path": "Aetherra/runtime_ui/profiles.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Runtime UI contract and payload package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-ui",
+      "owner": "Aetherra/runtime_ui",
       "path": "Aetherra/runtime_ui/query.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Runtime UI contract and payload package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-ui",
+      "owner": "Aetherra/runtime_ui",
       "path": "Aetherra/runtime_ui/scene.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Runtime UI contract and payload package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-ui",
+      "owner": "Aetherra/runtime_ui",
       "path": "Aetherra/runtime_ui/snapshot.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Runtime UI contract and payload package"
     },
     {
       "category": "operational-runtime",
@@ -7988,84 +7863,84 @@
       "purpose": "Runtime schedulers"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/scripts",
       "path": "Aetherra/scripts/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package maintenance scripts"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/scripts",
       "path": "Aetherra/scripts/audit_file_usage.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package maintenance scripts"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/scripts",
       "path": "Aetherra/scripts/check_deployment_readiness.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package maintenance scripts"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/scripts",
       "path": "Aetherra/scripts/cleanup_project.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package maintenance scripts"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/scripts",
       "path": "Aetherra/scripts/conservative_cleanup.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package maintenance scripts"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/scripts",
       "path": "Aetherra/scripts/fast_cleanup.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package maintenance scripts"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/scripts",
       "path": "Aetherra/scripts/organize_system.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package maintenance scripts"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/scripts",
       "path": "Aetherra/scripts/self_organizer.aether",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package maintenance scripts"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/scripts",
       "path": "Aetherra/scripts/simple_audit.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package maintenance scripts"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/scripts",
       "path": "Aetherra/scripts/utilities/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package maintenance scripts"
     },
     {
       "category": "operational-runtime",
@@ -8132,236 +8007,236 @@
       "purpose": "Security enforcement system"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/stdlib",
       "path": "Aetherra/stdlib/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aether Script standard library"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/stdlib",
       "path": "Aetherra/stdlib/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aether Script standard library"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/stdlib",
       "path": "Aetherra/stdlib/executor.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aether Script standard library"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/stdlib",
       "path": "Aetherra/stdlib/optimizer.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aether Script standard library"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/stdlib",
       "path": "Aetherra/stdlib/selfrepair.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aether Script standard library"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/stdlib",
       "path": "Aetherra/stdlib/sysmon.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aether Script standard library"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime",
+      "owner": "Aetherra/stdlib",
       "path": "Aetherra/stdlib/whisper.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aether Script standard library"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/telemetry",
       "path": "Aetherra/telemetry/optin.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Telemetry opt-in package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/tools",
       "path": "Aetherra/tools/AETHER_GUI_DEPRECATION_LIST.txt",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package tools"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/tools",
       "path": "Aetherra/tools/AETHER_SCRIPT_DEMONSTRATION_SUMMARY.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package tools"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/tools",
       "path": "Aetherra/tools/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package tools"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/tools",
       "path": "Aetherra/tools/aether_script_executor.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package tools"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/tools",
       "path": "Aetherra/tools/aetherra_file_watcher.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package tools"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/tools",
       "path": "Aetherra/tools/async_memory_integration.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package tools"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/tools",
       "path": "Aetherra/tools/causal_branch_simulator.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package tools"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/tools",
       "path": "Aetherra/tools/code_generator.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package tools"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/tools",
       "path": "Aetherra/tools/curiosity_conflict_resolution.aether",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package tools"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/tools",
       "path": "Aetherra/tools/memory_analyzer.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package tools"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/tools",
       "path": "Aetherra/tools/migration/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package tools"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/tools",
       "path": "Aetherra/tools/migration/component_migrator.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package tools"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/tools",
       "path": "Aetherra/tools/migration/migration_plan.json",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package tools"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/tools",
       "path": "Aetherra/tools/qfac_integration.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package tools"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/tools",
       "path": "Aetherra/tools/quantum_dashboard_launcher.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package tools"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "tooling",
+      "keep_status": "review-tool",
+      "lifecycle": "maintenance",
+      "owner": "Aetherra/tools",
       "path": "Aetherra/tools/quantum_memory_bridge.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package tools"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/utils",
       "path": "Aetherra/utils/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Runtime utility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/utils",
       "path": "Aetherra/utils/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Runtime utility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/utils",
       "path": "Aetherra/utils/launch_utils.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Runtime utility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/utils",
       "path": "Aetherra/utils/logging_utils.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Runtime utility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/utils",
       "path": "Aetherra/utils/unicode_logger.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Runtime utility package"
     },
     {
       "category": "unclassified",
@@ -8372,68 +8247,68 @@
       "purpose": "No current classification rule matched this tracked file"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/web",
       "path": "Aetherra/web/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Web adapter compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/web",
       "path": "Aetherra/web/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Web adapter compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/web",
       "path": "Aetherra/web/components/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Web adapter compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/web",
       "path": "Aetherra/web/components/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Web adapter compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/web",
       "path": "Aetherra/web/server/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Web adapter compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/web",
       "path": "Aetherra/web/server/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Web adapter compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/web",
       "path": "Aetherra/web/server/web_adapter.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Web adapter compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra/web",
       "path": "Aetherra/web/server/web_bridge.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Web adapter compatibility package"
     },
     {
       "category": "documentation",
@@ -11940,20 +11815,20 @@
       "purpose": "Repository configuration"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "lyrixa",
       "path": "lyrixa/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa import compatibility shim"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "provisional-runtime",
+      "lifecycle": "runtime-support",
+      "owner": "lyrixa",
       "path": "lyrixa/launcher.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Lyrixa import compatibility shim"
     },
     {
       "category": "operational-runtime",
@@ -17863,14 +17738,14 @@
   "generated_on": "2026-07-16",
   "keep_status": {
     "candidate-review": 4,
-    "keep": 249,
+    "keep": 245,
     "keep-rename": 1,
-    "needs-review": 279,
-    "provisional-runtime": 478,
+    "needs-review": 26,
+    "provisional-runtime": 690,
     "review-by-suite": 512,
-    "review-doc": 257,
-    "review-tool": 226
+    "review-doc": 263,
+    "review-tool": 252
   },
-  "tracked_directory_count": 257,
-  "tracked_file_count": 2006
+  "tracked_directory_count": 254,
+  "tracked_file_count": 1993
 }

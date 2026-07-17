@@ -272,11 +272,6 @@ Aetherra/
       utils.aether
     __init__.py — Get the status of all core systems."""
     README.md — aetherra_core
-  aetherra_hub/
-    aetherra_hub/
-      package-lock.json
-      package.json
-      README.md — aetherhub - The AI Package Manager
   ai_engine/
     __init__.py — SPDX-License-Identifier: GPL-3.0-or-later
     coordinator.py — AI Coordinator stub for validation - delegates to actual AI runtime"""
@@ -547,11 +542,6 @@ Aetherra/
       README.md — protocols
     __init__.py — Get current integration system status."""
     README.md — integration
-  interface/
-    launch_aetherra_os.py — Check if required dependencies are installed"""
-    main_window.py — Background thread for monitoring Aetherra OS state"""
-    README.md — interface
-    web_panels.py — Create enhanced dashboard panel HTML"""
   interface_bridge/
     memory_api.py — Clean memory interface for Lyrixa"""
     README.md — interface_bridge

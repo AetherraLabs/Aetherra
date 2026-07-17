@@ -106,7 +106,12 @@ PUBLIC_DOC_ROOT_FILES = {
 }
 
 RUNTIME_PREFIXES = {
+    "Aetherra/api/": ("Aetherra API package", "runtime-api"),
+    "Aetherra/ai_engine/": ("AI coordination package", "runtime"),
+    "Aetherra/analysis/": ("Static analysis and risk helpers", "runtime-support"),
     "Aetherra/aetherra_core/": ("Core runtime package", "runtime"),
+    "Aetherra/cli/": ("Aetherra command-line package", "operator"),
+    "Aetherra/coding/": ("Coding readiness package", "governed-runtime"),
     "Aetherra/guardian/": ("Guardian governance system", "governed-runtime"),
     "Aetherra/security/": ("Security enforcement system", "runtime"),
     "Aetherra/homeostasis/": ("Homeostasis observation and verification", "runtime"),
@@ -114,12 +119,28 @@ RUNTIME_PREFIXES = {
     "Aetherra/self_improvement/": ("Self-Improvement proposal system", "governed-runtime"),
     "Aetherra/self_incorporation/": ("Self-Incorporation execution package", "governed-runtime"),
     "Aetherra/consciousness/": ("Consciousness processing package", "runtime"),
+    "Aetherra/core/": ("Legacy core compatibility package", "runtime"),
+    "Aetherra/hub/": ("Hub federation package", "runtime-api"),
+    "Aetherra/integration/": ("Integration bridge package", "runtime-support"),
+    "Aetherra/interface_bridge/": ("Interface bridge compatibility package", "runtime-support"),
+    "Aetherra/lyrixa/": ("Lyrixa persona and plugin package", "runtime"),
+    "Aetherra/lyrixa_plugins/": ("Lyrixa plugin compatibility package", "plugin-runtime"),
+    "Aetherra/observability/": ("Observability and metrics package", "runtime-support"),
+    "Aetherra/perception_bus/": ("Perception bus package", "runtime"),
+    "Aetherra/quantum/": ("Quantum integration compatibility package", "runtime"),
+    "Aetherra/runtime/": ("Aether Script runtime package", "runtime"),
+    "Aetherra/runtime_ui/": ("Runtime UI contract and payload package", "runtime-ui"),
     "Aetherra/schedulers/": ("Runtime schedulers", "runtime"),
     "Aetherra/safety_envelope/": ("Safety policy envelope", "runtime"),
     "Aetherra/memory/": ("Memory compatibility package", "runtime"),
     "Aetherra/runners/": ("Runtime runner entrypoints", "runtime"),
+    "Aetherra/stdlib/": ("Aether Script standard library", "runtime"),
+    "Aetherra/telemetry/": ("Telemetry opt-in package", "runtime-support"),
+    "Aetherra/utils/": ("Runtime utility package", "runtime-support"),
+    "Aetherra/web/": ("Web adapter compatibility package", "runtime-support"),
     "aetherra_hub/": ("Hub API and service layer", "runtime-api"),
     "aetherra_coding/": ("Coding system operations", "governed-runtime"),
+    "lyrixa/": ("Lyrixa import compatibility shim", "runtime-support"),
     "cli/": ("Command-line interfaces", "operator"),
     "plugins/": ("Plugin examples/catalog support", "plugin-runtime"),
     "Aetherra/plugins/": ("Plugin runtime package", "plugin-runtime"),
@@ -149,6 +170,8 @@ CONFIG_PREFIXES = {
     "configs/": "Configuration files",
     "requirements/": "Dependency requirements",
     "schema_validators/": "Schema validation support",
+    "Aetherra/config/": "Aetherra package configuration",
+    "Aetherra/pyproject.toml": "Aetherra package configuration",
     "Aetherra/lyrixa/gui/": "Runtime UI package/build configuration",
 }
 
@@ -161,6 +184,7 @@ DOC_PREFIXES = {
     "docs-organized/": "Historical/thematic documentation",
     "documentation/": "Documentation compatibility folder",
     "metadata/": "Project metadata",
+    "Aetherra/docs/": "Legacy package documentation",
 }
 
 TOOL_PREFIXES = {
@@ -173,6 +197,8 @@ TOOL_PREFIXES = {
     "ISSUE_TEMPLATE/": "Issue template compatibility folder",
     "badge/": "Badge metadata",
     "metrics/": "Metrics support assets",
+    "Aetherra/scripts/": "Aetherra package maintenance scripts",
+    "Aetherra/tools/": "Aetherra package tools",
 }
 
 LEGACY_PREFIXES = {

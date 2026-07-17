@@ -15,38 +15,38 @@ marked for review before removal.
 
 ## Current Inventory
 
-- Tracked files: 2006
-- Tracked directories: 257
-- Files confirmed keep: 249
-- Files requiring suite/doc/tool/provisional review: 1757
-- Runtime/candidate/unknown files needing evidence: 761
+- Tracked files: 1993
+- Tracked directories: 254
+- Files confirmed keep: 245
+- Files requiring suite/doc/tool/provisional review: 1748
+- Runtime/candidate/unknown files needing evidence: 720
 
 ### By Category
 
-- configuration: 98
-- documentation: 307
+- configuration: 94
+- documentation: 313
 - legacy-or-archive: 4
-- operational-runtime: 579
+- operational-runtime: 791
 - rename-debt: 1
 - test: 512
-- tooling: 226
-- unclassified: 279
+- tooling: 252
+- unclassified: 26
 
 ### By Lifecycle
 
 - boot: 4
-- build-or-ci: 98
-- documentation: 307
-- governed-runtime: 28
+- build-or-ci: 94
+- documentation: 313
+- governed-runtime: 30
 - historical: 4
-- maintenance: 226
-- operator: 1
-- plugin-runtime: 86
-- runtime: 398
-- runtime-api: 57
-- runtime-support: 2
-- runtime-ui: 3
-- unknown: 279
+- maintenance: 252
+- operator: 9
+- plugin-runtime: 91
+- runtime: 543
+- runtime-api: 72
+- runtime-support: 33
+- runtime-ui: 9
+- unknown: 26
 - unknown-or-compatibility: 1
 - verification: 512
 
@@ -54,7 +54,7 @@ marked for review before removal.
 
 | Folder | Files | Category | Status |
 | --- | ---: | --- | --- |
-| `Aetherra/` | 767 | operational-runtime | provisional-runtime |
+| `Aetherra/` | 754 | operational-runtime | provisional-runtime |
 | `tests/` | 512 | test | review-by-suite |
 | `docs/` | 266 | documentation | review-doc |
 | `tools/` | 188 | tooling | review-tool |
@@ -71,7 +71,7 @@ marked for review before removal.
 | `configs/` | 3 | configuration | keep |
 | `ISSUE_TEMPLATE/` | 2 | tooling | review-tool |
 | `examples/` | 2 | tooling | review-tool |
-| `lyrixa/` | 2 | unclassified | needs-review |
+| `lyrixa/` | 2 | operational-runtime | provisional-runtime |
 | `schema_validators/` | 2 | configuration | keep |
 | `toolshed/` | 2 | tooling | review-tool |
 | `.devcontainer/` | 1 | configuration | keep |
@@ -209,7 +209,7 @@ runtime, governed runtime, API operation, plugin operation, or Runtime UI.
 - `Aetherra/aetherra_core/memory/models.py` - Core runtime package (runtime; provisional-runtime)
 - `Aetherra/aetherra_core/memory/narrator/README.md` - Core runtime package (runtime; provisional-runtime)
 - `Aetherra/aetherra_core/memory/narrator/__init__.py` - Core runtime package (runtime; provisional-runtime)
-- ... 459 more in `docs/AETHERRA_FILE_MANIFEST.json`
+- ... 671 more in `docs/AETHERRA_FILE_MANIFEST.json`
 
 ## Configuration And Build Files
 
@@ -274,16 +274,12 @@ runtime, governed runtime, API operation, plugin operation, or Runtime UI.
 - `.pre-commit-config.yaml` - Repository configuration (build-or-ci; keep)
 - `.vscode/tasks.json` - Workspace task configuration (build-or-ci; keep)
 - `.yamllint.yaml` - Repository configuration (build-or-ci; keep)
-- `Aetherra/lyrixa/gui/.gitignore` - Runtime UI package/build configuration (build-or-ci; keep)
-- `Aetherra/lyrixa/gui/README.md` - Runtime UI package/build configuration (build-or-ci; keep)
-- `Aetherra/lyrixa/gui/index.html` - Runtime UI package/build configuration (build-or-ci; keep)
-- `Aetherra/lyrixa/gui/package-lock.json` - Runtime UI package/build configuration (build-or-ci; keep)
-- `Aetherra/lyrixa/gui/package.json` - Runtime UI package/build configuration (build-or-ci; keep)
-- `Aetherra/lyrixa/gui/postcss.config.js` - Runtime UI package/build configuration (build-or-ci; keep)
-- `Aetherra/lyrixa/gui/tailwind.config.js` - Runtime UI package/build configuration (build-or-ci; keep)
-- `Aetherra/lyrixa/gui/tsconfig.json` - Runtime UI package/build configuration (build-or-ci; keep)
-- `Aetherra/lyrixa/gui/tsconfig.node.json` - Runtime UI package/build configuration (build-or-ci; keep)
-- `Aetherra/lyrixa/gui/vite.config.ts` - Runtime UI package/build configuration (build-or-ci; keep)
+- `Aetherra/config/README.md` - Aetherra package configuration (build-or-ci; keep)
+- `Aetherra/config/quantum/README.md` - Aetherra package configuration (build-or-ci; keep)
+- `Aetherra/config/quantum/monitoring_config.json` - Aetherra package configuration (build-or-ci; keep)
+- `Aetherra/config/quantum/quantum_config.json` - Aetherra package configuration (build-or-ci; keep)
+- `Aetherra/config/quantum/scaling_config.json` - Aetherra package configuration (build-or-ci; keep)
+- `Aetherra/pyproject.toml` - Aetherra package configuration (build-or-ci; keep)
 - `Dockerfile` - Repository configuration (build-or-ci; keep)
 - `MANIFEST.in` - Repository configuration (build-or-ci; keep)
 - `commitlint.config.js` - Repository configuration (build-or-ci; keep)
@@ -293,7 +289,11 @@ runtime, governed runtime, API operation, plugin operation, or Runtime UI.
 - `config.production.json` - Repository configuration (build-or-ci; keep)
 - `config/config.json` - Configuration files (build-or-ci; keep)
 - `config/lyrixa_intelligence.json` - Configuration files (build-or-ci; keep)
-- ... 18 more in `docs/AETHERRA_FILE_MANIFEST.json`
+- `config/self_model.json` - Configuration files (build-or-ci; keep)
+- `configs/qfac.yaml` - Configuration files (build-or-ci; keep)
+- `configs/sql/storm_schema_v1.sql` - Configuration files (build-or-ci; keep)
+- `configs/storm.yaml` - Configuration files (build-or-ci; keep)
+- ... 14 more in `docs/AETHERRA_FILE_MANIFEST.json`
 
 ## Verification Surface
 
@@ -387,6 +387,12 @@ mapped to a current system, replaced, or intentionally retired.
 Documentation is retained when it is active, architectural, legal,
 operator-facing, or historical material that still explains project context.
 
+- `Aetherra/docs/AETHERRA_MANIFESTO.md` - Legacy package documentation (documentation; review-doc)
+- `Aetherra/docs/AI_OS_MANIFESTO.md` - Legacy package documentation (documentation; review-doc)
+- `Aetherra/docs/README.md` - Legacy package documentation (documentation; review-doc)
+- `Aetherra/docs/SELF_ORGANIZING_INTELLIGENCE.md` - Legacy package documentation (documentation; review-doc)
+- `Aetherra/docs/aetherra_labs_vision.md` - Legacy package documentation (documentation; review-doc)
+- `Aetherra/docs/architecture_diagram.png.png` - Legacy package documentation (documentation; review-doc)
 - `CHANGELOG.md` - Public project documentation (documentation; keep)
 - `CODE_OF_CONDUCT.md` - Public project documentation (documentation; keep)
 - `CONTRIBUTING.md` - Public project documentation (documentation; keep)
@@ -461,13 +467,7 @@ operator-facing, or historical material that still explains project context.
 - `docs/AETHERRA_WEBSOCKET_API.md` - Active documentation (documentation; keep)
 - `docs/AETHER_SCRIPT_TUTORIAL.md` - Active documentation (documentation; review-doc)
 - `docs/ALPHA_OPERATOR_RUNBOOK.md` - Active documentation (documentation; review-doc)
-- `docs/ALPHA_READINESS.md` - Active documentation (documentation; review-doc)
-- `docs/ALPHA_READINESS_CHECKLIST.md` - Active documentation (documentation; review-doc)
-- `docs/ALPHA_READINESS_DECISION.md` - Active documentation (documentation; review-doc)
-- `docs/ALPHA_RELEASE_GAP_ANALYSIS.md` - Active documentation (documentation; review-doc)
-- `docs/ALPHA_TEST_STRATEGY.md` - Active documentation (documentation; review-doc)
-- `docs/ATTESTATION.md` - Active documentation (documentation; review-doc)
-- ... 227 more in `docs/AETHERRA_FILE_MANIFEST.json`
+- ... 233 more in `docs/AETHERRA_FILE_MANIFEST.json`
 
 ## Review Queues
 
@@ -598,7 +598,7 @@ yet proven direct active use.
 - `Aetherra/aetherra_core/memory/memory_kernel.py` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/memory/memory_learning.py` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/memory/models.py` - provisional-runtime; Core runtime package
-- ... 641 more in `docs/AETHERRA_FILE_MANIFEST.json`
+- ... 600 more in `docs/AETHERRA_FILE_MANIFEST.json`
 
 ## Cleanup Process
 

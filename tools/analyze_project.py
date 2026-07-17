@@ -19,6 +19,7 @@ from __future__ import annotations
 # Standard library imports
 import ast
 import json
+import logging
 import os
 import re
 import sys
@@ -98,10 +99,8 @@ def parse_py(text: str) -> ModuleInfo:
     for node in ast.walk(tree):
         if isinstance(node, ast.ClassDef):
             classes.append((node.name, ast.get_docstring(node)))
-        elif isinstance(node, ast.FunctionDef):
-            # ignore dunder
-            if not node.name.startswith("__"):
-                functions.append((node.name, ast.get_docstring(node)))
+        elif isinstance(node, ast.FunctionDef) and not node.name.startswith("__"):
+            functions.append((node.name, ast.get_docstring(node)))
     return ModuleInfo(path="", doc=doc, classes=classes, functions=functions)
 
 
@@ -174,7 +173,7 @@ def summarize_presence(root: Path) -> dict[str, Any]:
     hub = {
         "server": exists("aetherra_hub/compat.py"),
         "federation": exists("Aetherra/hub"),
-        "node_assets": exists("Aetherra/aetherra_hub/aetherra_hub"),
+        "blueprints": exists("aetherra_hub/blueprints"),
     }
     qfac = {
         "integration": exists("Aetherra/aetherra_core/memory/qfac_integration.py"),
@@ -189,13 +188,11 @@ def summarize_presence(root: Path) -> dict[str, Any]:
 def read_snippet(path: Path, needle: str) -> str | None:
     """Read file and return a small snippet line containing needle, if any."""
     try:
-        for i, line in enumerate(
-            path.read_text(encoding="utf-8", errors="ignore").splitlines()
-        ):
+        for line in path.read_text(encoding="utf-8", errors="ignore").splitlines():
             if needle in line:
                 return line.strip()
-    except Exception:
-        pass
+    except Exception as exc:
+        logging.getLogger(__name__).debug("Unable to read snippet from %s: %s", path, exc)
     return None
 
 
@@ -359,7 +356,7 @@ def analyze(root: Path) -> dict[str, Any]:
         "generated_at": int(time.time()),
         "env_vars": sorted(env_vars),
         "flask_routes": sorted(flask_routes),
-        "express_routes": sorted(list(express_routes)),
+        "express_routes": sorted(express_routes),
         "services": sorted(services),
         "modules_indexed": len(modules),
         "tests": tests,
