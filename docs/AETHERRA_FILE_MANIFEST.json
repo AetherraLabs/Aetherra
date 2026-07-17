@@ -6,7 +6,7 @@
     "operational-runtime": 793,
     "rename-debt": 1,
     "test": 514,
-    "tooling": 241
+    "tooling": 239
   },
   "directories": [
     {
@@ -76,7 +76,7 @@
       "direct_file_count": 6,
       "dominant_category": "operational-runtime",
       "dominant_keep_status": "provisional-runtime",
-      "file_count": 727,
+      "file_count": 725,
       "path": "Aetherra/"
     },
     {
@@ -927,10 +927,10 @@
       "path": "Aetherra/telemetry/"
     },
     {
-      "direct_file_count": 13,
+      "direct_file_count": 11,
       "dominant_category": "tooling",
       "dominant_keep_status": "review-tool",
-      "file_count": 16,
+      "file_count": 14,
       "path": "Aetherra/tools/"
     },
     {
@@ -7733,14 +7733,6 @@
       "keep_status": "review-tool",
       "lifecycle": "maintenance",
       "owner": "Aetherra/tools",
-      "path": "Aetherra/tools/AETHER_GUI_DEPRECATION_LIST.txt",
-      "purpose": "Aetherra package tools"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/tools",
       "path": "Aetherra/tools/AETHER_SCRIPT_DEMONSTRATION_SUMMARY.md",
       "purpose": "Aetherra package tools"
     },
@@ -7838,14 +7830,6 @@
       "lifecycle": "maintenance",
       "owner": "Aetherra/tools",
       "path": "Aetherra/tools/qfac_integration.py",
-      "purpose": "Aetherra package tools"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/tools",
-      "path": "Aetherra/tools/quantum_dashboard_launcher.py",
       "purpose": "Aetherra package tools"
     },
     {
@@ -17361,8 +17345,8 @@
     "provisional-runtime": 690,
     "review-by-suite": 514,
     "review-doc": 264,
-    "review-tool": 241
+    "review-tool": 239
   },
   "tracked_directory_count": 235,
-  "tracked_file_count": 1962
+  "tracked_file_count": 1960
 }

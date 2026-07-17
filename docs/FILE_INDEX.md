@@ -808,7 +808,6 @@ Aetherra/
     curiosity_conflict_resolution.aether
     memory_analyzer.py — Analyzes memory patterns and generates insights"""
     qfac_integration.py — Manages integration between QFAC phases with graceful degradation"""
-    quantum_dashboard_launcher.py — Launch the quantum dashboard in specified mode"""
     quantum_memory_bridge.py — Compatibility wrapper for execute function"""
     README.md — tools
   utils/

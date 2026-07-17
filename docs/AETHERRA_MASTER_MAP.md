@@ -15,10 +15,10 @@ marked for review before removal.
 
 ## Current Inventory
 
-- Tracked files: 1962
+- Tracked files: 1960
 - Tracked directories: 235
 - Files confirmed keep: 248
-- Files requiring suite/doc/tool/provisional review: 1714
+- Files requiring suite/doc/tool/provisional review: 1712
 - Runtime/candidate/unknown files needing evidence: 694
 
 ### By Category
@@ -29,7 +29,7 @@ marked for review before removal.
 - operational-runtime: 793
 - rename-debt: 1
 - test: 514
-- tooling: 241
+- tooling: 239
 
 ### By Lifecycle
 
@@ -38,7 +38,7 @@ marked for review before removal.
 - documentation: 314
 - governed-runtime: 30
 - historical: 4
-- maintenance: 241
+- maintenance: 239
 - operator: 9
 - plugin-runtime: 91
 - runtime: 543
@@ -52,7 +52,7 @@ marked for review before removal.
 
 | Folder | Files | Category | Status |
 | --- | ---: | --- | --- |
-| `Aetherra/` | 727 | operational-runtime | provisional-runtime |
+| `Aetherra/` | 725 | operational-runtime | provisional-runtime |
 | `tests/` | 512 | test | review-by-suite |
 | `docs/` | 266 | documentation | review-doc |
 | `tools/` | 188 | tooling | review-tool |
