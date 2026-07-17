@@ -23,7 +23,7 @@ Status: PRUNE PHASE COMPLETED. All 19 planned operations successfully moved (cop
 | Backups / Cleanup Snapshots        | `backups/`, `comprehensive_cleanup_backup/`, `final_organization_backup/`, `focused_cleanup_backup/`, `smart_cleanup_backup/`              | Archive                               | `archive/backups/`        |
 | Backup Info JSON                   | `plugins_cleanup_backup_info.json`, `lyrixa_cleanup_backup_info.json`                                                                      | Archive                               | `archive/metadata/`       |
 | Phase Test Scripts (legacy)        | `phase_7_4_test.py`, `phase_7_4_ultimate_test.py`, `phase_7_5_test.py`, `phase_8_1_test.py`, `phase_8_2_test.py`, `phase_8_3_test.py`      | Move                                  | `tests/legacy/`           |
-| Legacy Docs Trees                  | `docs-organized/`, `documentation/`                                                                                                        | Archive (flatten key docs if missing) | `archive/docs/`           |
+| Legacy Docs Trees                  | `documentation/`                                                                                                                           | Keep as compatibility pointer          | `documentation/`          |
 | Engine / Experimental Scripts      | `beyond_transcendence_engine.py`, `cosmic_consciousness_engine.py`, `intelligent_error_handler_8.py`, `enhanced_conversation_manager_7.py` | Review (plugin or experimental)       | `experiments/`            |
 | Large Report Artifacts             | *All reports currently in root (none new)*                                                                                                 | Move (already mostly in `docs/`)      | —                         |
 | Data / DB Files                    | `*.db`, `aetherra_kernel_metrics.json`, `live_file_index.json`, `concept_clusters.db` etc.                                                 | Consolidate                           | `data/` (already partial) |
@@ -84,7 +84,8 @@ Outcome: copy journal recorded (`root_cleanup_apply.json`), followed by prune jo
 
 * Add `ROOT_POLICY.md` summarizing allowed root items (pending).
 * Introduce `lint-root-structure` CI check.
-* Collapse `docs-organized/` + `documentation/` into curated `docs/legacy/` subtree.
+* Collapse legacy documentation into curated `docs/archive/` material only when
+  it has ongoing traceability value.
 
 ---
 Generated: initial manual draft (tool will embed hash once executed).

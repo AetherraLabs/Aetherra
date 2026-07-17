@@ -193,7 +193,6 @@ TEST_PREFIXES = {
 
 DOC_PREFIXES = {
     "docs/": "Active documentation",
-    "docs-organized/": "Historical/thematic documentation",
     "documentation/": "Documentation compatibility folder",
     "metadata/": "Project metadata",
     "Aetherra/docs/": "Legacy package documentation",

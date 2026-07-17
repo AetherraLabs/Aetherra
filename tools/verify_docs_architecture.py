@@ -54,7 +54,7 @@ class ArchitectureReport:
     total_docs_found: int
     required_missing: list[str]
     statuses: list[DocStatus]
-    docs_organized_present: bool
+    legacy_docs_tree_present: bool
     documentation_dir_present: bool
 
     def to_json(self) -> str:
@@ -64,7 +64,7 @@ class ArchitectureReport:
                 "total_docs_found": self.total_docs_found,
                 "required_missing": self.required_missing,
                 "statuses": [asdict(s) for s in self.statuses],
-                "docs_organized_present": self.docs_organized_present,
+                "legacy_docs_tree_present": self.legacy_docs_tree_present,
                 "documentation_dir_present": self.documentation_dir_present,
             },
             indent=2,
@@ -97,7 +97,7 @@ def build_report(root: Path) -> ArchitectureReport:
         total_docs_found=len(md_rel),
         required_missing=required_missing,
         statuses=statuses,
-        docs_organized_present=(root / "docs-organized").exists(),
+        legacy_docs_tree_present=(root / "docs-organized").exists(),
         documentation_dir_present=(root / "documentation").exists(),
     )
 

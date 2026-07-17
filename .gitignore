@@ -54,7 +54,6 @@ aetherra-website/
 /Aetherra/file_routing_log.json
 /Aetherra/data/share/
 /Aetherra/data/*_data/*.json
-/docs-organized/reports/
 /docs/reports/*
 !/docs/reports/engine/
 !/docs/reports/engine/**

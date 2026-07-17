@@ -1,7 +1,7 @@
 {
   "categories": {
     "configuration": 95,
-    "documentation": 314,
+    "documentation": 293,
     "legacy-or-archive": 4,
     "operational-runtime": 793,
     "rename-debt": 1,
@@ -1065,69 +1065,6 @@
       "dominant_keep_status": "review-doc",
       "file_count": 266,
       "path": "docs/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "documentation",
-      "dominant_keep_status": "review-doc",
-      "file_count": 21,
-      "path": "docs-organized/"
-    },
-    {
-      "direct_file_count": 2,
-      "dominant_category": "documentation",
-      "dominant_keep_status": "review-doc",
-      "file_count": 2,
-      "path": "docs-organized/cleanup/"
-    },
-    {
-      "direct_file_count": 3,
-      "dominant_category": "documentation",
-      "dominant_keep_status": "review-doc",
-      "file_count": 3,
-      "path": "docs-organized/deployment/"
-    },
-    {
-      "direct_file_count": 3,
-      "dominant_category": "documentation",
-      "dominant_keep_status": "review-doc",
-      "file_count": 3,
-      "path": "docs-organized/fixes/"
-    },
-    {
-      "direct_file_count": 2,
-      "dominant_category": "documentation",
-      "dominant_keep_status": "review-doc",
-      "file_count": 2,
-      "path": "docs-organized/guides/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "documentation",
-      "dominant_keep_status": "review-doc",
-      "file_count": 1,
-      "path": "docs-organized/legacy/"
-    },
-    {
-      "direct_file_count": 4,
-      "dominant_category": "documentation",
-      "dominant_keep_status": "review-doc",
-      "file_count": 4,
-      "path": "docs-organized/manifesto/"
-    },
-    {
-      "direct_file_count": 3,
-      "dominant_category": "documentation",
-      "dominant_keep_status": "review-doc",
-      "file_count": 3,
-      "path": "docs-organized/project/"
-    },
-    {
-      "direct_file_count": 2,
-      "dominant_category": "documentation",
-      "dominant_keep_status": "review-doc",
-      "file_count": 2,
-      "path": "docs-organized/tools/"
     },
     {
       "direct_file_count": 6,
@@ -8819,174 +8756,6 @@
       "owner": "demos",
       "path": "demos/storm_traffic_test.py",
       "purpose": "Demonstrations"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/README.md",
-      "purpose": "Historical/thematic documentation"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/cleanup/CLEANUP_ANALYSIS.md",
-      "purpose": "Historical/thematic documentation"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/cleanup/README.md",
-      "purpose": "Historical/thematic documentation"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/deployment/DEPLOYMENT_COMPLETE.md",
-      "purpose": "Historical/thematic documentation"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/deployment/README.md",
-      "purpose": "Historical/thematic documentation"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/deployment/STAGE_12_COMPLETE.md",
-      "purpose": "Historical/thematic documentation"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/fixes/IMPORT_FIXES.md",
-      "purpose": "Historical/thematic documentation"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/fixes/README.md",
-      "purpose": "Historical/thematic documentation"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/fixes/WEBSOCKET_CONNECTION_FIX.md",
-      "purpose": "Historical/thematic documentation"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/guides/MULTI_AI_SETUP_GUIDE.md",
-      "purpose": "Historical/thematic documentation"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/guides/README.md",
-      "purpose": "Historical/thematic documentation"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/legacy/README.md",
-      "purpose": "Historical/thematic documentation"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/manifesto/AETHERRA_MANIFESTO.md",
-      "purpose": "Historical/thematic documentation"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/manifesto/AI_OS_MANIFESTO.md",
-      "purpose": "Historical/thematic documentation"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/manifesto/README.md",
-      "purpose": "Historical/thematic documentation"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/manifesto/SELF_ORGANIZING_INTELLIGENCE.md",
-      "purpose": "Historical/thematic documentation"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/project/CONTRIBUTING.md",
-      "purpose": "Historical/thematic documentation"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/project/README.md",
-      "purpose": "Historical/thematic documentation"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/project/quantum fractal adaptive compression.md",
-      "purpose": "Historical/thematic documentation"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/tools/AETHER_SCRIPT_DEMONSTRATION_SUMMARY.md",
-      "purpose": "Historical/thematic documentation"
-    },
-    {
-      "category": "documentation",
-      "keep_status": "review-doc",
-      "lifecycle": "documentation",
-      "owner": "docs-organized",
-      "path": "docs-organized/tools/README.md",
-      "purpose": "Historical/thematic documentation"
     },
     {
       "category": "documentation",
@@ -17068,9 +16837,9 @@
     "keep-rename": 1,
     "provisional-runtime": 690,
     "review-by-suite": 514,
-    "review-doc": 264,
+    "review-doc": 243,
     "review-tool": 208
   },
-  "tracked_directory_count": 231,
-  "tracked_file_count": 1929
+  "tracked_directory_count": 222,
+  "tracked_file_count": 1908
 }

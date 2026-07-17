@@ -15,16 +15,16 @@ marked for review before removal.
 
 ## Current Inventory
 
-- Tracked files: 1929
-- Tracked directories: 231
+- Tracked files: 1908
+- Tracked directories: 222
 - Files confirmed keep: 248
-- Files requiring suite/doc/tool/provisional review: 1681
+- Files requiring suite/doc/tool/provisional review: 1660
 - Runtime/candidate/unknown files needing evidence: 694
 
 ### By Category
 
 - configuration: 95
-- documentation: 314
+- documentation: 293
 - legacy-or-archive: 4
 - operational-runtime: 793
 - rename-debt: 1
@@ -35,7 +35,7 @@ marked for review before removal.
 
 - boot: 4
 - build-or-ci: 95
-- documentation: 314
+- documentation: 293
 - governed-runtime: 30
 - historical: 4
 - maintenance: 208
@@ -58,7 +58,6 @@ marked for review before removal.
 | `tools/` | 188 | tooling | review-tool |
 | `aetherra_hub/` | 56 | operational-runtime | keep |
 | `.github/` | 45 | configuration | keep |
-| `docs-organized/` | 21 | documentation | review-doc |
 | `plugins/` | 11 | operational-runtime | provisional-runtime |
 | `aetherra_coding/` | 7 | operational-runtime | provisional-runtime |
 | `scripts/` | 7 | tooling | review-tool |
@@ -407,27 +406,6 @@ operator-facing, or historical material that still explains project context.
 - `SECURITY.md` - Public project documentation (documentation; keep)
 - `STEWARDSHIP.md` - Public project documentation (documentation; keep)
 - `SUPPORT.md` - Public project documentation (documentation; keep)
-- `docs-organized/README.md` - Historical/thematic documentation (documentation; review-doc)
-- `docs-organized/cleanup/CLEANUP_ANALYSIS.md` - Historical/thematic documentation (documentation; review-doc)
-- `docs-organized/cleanup/README.md` - Historical/thematic documentation (documentation; review-doc)
-- `docs-organized/deployment/DEPLOYMENT_COMPLETE.md` - Historical/thematic documentation (documentation; review-doc)
-- `docs-organized/deployment/README.md` - Historical/thematic documentation (documentation; review-doc)
-- `docs-organized/deployment/STAGE_12_COMPLETE.md` - Historical/thematic documentation (documentation; review-doc)
-- `docs-organized/fixes/IMPORT_FIXES.md` - Historical/thematic documentation (documentation; review-doc)
-- `docs-organized/fixes/README.md` - Historical/thematic documentation (documentation; review-doc)
-- `docs-organized/fixes/WEBSOCKET_CONNECTION_FIX.md` - Historical/thematic documentation (documentation; review-doc)
-- `docs-organized/guides/MULTI_AI_SETUP_GUIDE.md` - Historical/thematic documentation (documentation; review-doc)
-- `docs-organized/guides/README.md` - Historical/thematic documentation (documentation; review-doc)
-- `docs-organized/legacy/README.md` - Historical/thematic documentation (documentation; review-doc)
-- `docs-organized/manifesto/AETHERRA_MANIFESTO.md` - Historical/thematic documentation (documentation; review-doc)
-- `docs-organized/manifesto/AI_OS_MANIFESTO.md` - Historical/thematic documentation (documentation; review-doc)
-- `docs-organized/manifesto/README.md` - Historical/thematic documentation (documentation; review-doc)
-- `docs-organized/manifesto/SELF_ORGANIZING_INTELLIGENCE.md` - Historical/thematic documentation (documentation; review-doc)
-- `docs-organized/project/CONTRIBUTING.md` - Historical/thematic documentation (documentation; review-doc)
-- `docs-organized/project/README.md` - Historical/thematic documentation (documentation; review-doc)
-- `docs-organized/project/quantum fractal adaptive compression.md` - Historical/thematic documentation (documentation; review-doc)
-- `docs-organized/tools/AETHER_SCRIPT_DEMONSTRATION_SUMMARY.md` - Historical/thematic documentation (documentation; review-doc)
-- `docs-organized/tools/README.md` - Historical/thematic documentation (documentation; review-doc)
 - `docs/404.html` - Active documentation (documentation; review-doc)
 - `docs/ACTIVE_SYSTEMS.md` - Active documentation (documentation; review-doc)
 - `docs/AETHERRA_AGENT_SYSTEM.md` - Active documentation (documentation; keep)
@@ -462,7 +440,28 @@ operator-facing, or historical material that still explains project context.
 - `docs/AETHERRA_SERVICE_REGISTRY.md` - Active documentation (documentation; keep)
 - `docs/AETHERRA_WEBSOCKET_API.md` - Active documentation (documentation; keep)
 - `docs/AETHER_SCRIPT_TUTORIAL.md` - Active documentation (documentation; review-doc)
-- ... 234 more in `docs/AETHERRA_FILE_MANIFEST.json`
+- `docs/ALPHA_OPERATOR_RUNBOOK.md` - Active documentation (documentation; review-doc)
+- `docs/ALPHA_READINESS.md` - Active documentation (documentation; review-doc)
+- `docs/ALPHA_READINESS_CHECKLIST.md` - Active documentation (documentation; review-doc)
+- `docs/ALPHA_READINESS_DECISION.md` - Active documentation (documentation; review-doc)
+- `docs/ALPHA_RELEASE_GAP_ANALYSIS.md` - Active documentation (documentation; review-doc)
+- `docs/ALPHA_TEST_STRATEGY.md` - Active documentation (documentation; review-doc)
+- `docs/ATTESTATION.md` - Active documentation (documentation; review-doc)
+- `docs/AUTONOMY_ACTIVATION_RUNBOOK.md` - Active documentation (documentation; review-doc)
+- `docs/Aether_Script_Language_Specification.md` - Active documentation (documentation; review-doc)
+- `docs/Aether_Script_Language_System.md` - Active documentation (documentation; review-doc)
+- `docs/Aether_Script_Operator_Guide.md` - Active documentation (documentation; review-doc)
+- `docs/Aetherra Chat System.md` - Active documentation (documentation; review-doc)
+- `docs/BACKUP_AND_RECOVERY.md` - Active documentation (documentation; review-doc)
+- `docs/BETA_MILESTONE.md` - Active documentation (documentation; review-doc)
+- `docs/BUILD_REPRODUCIBILITY.md` - Active documentation (documentation; review-doc)
+- `docs/CNAME` - Active documentation (documentation; review-doc)
+- `docs/CONSCIOUSNESS_PHASE1_COMPLETE.md` - Active documentation (documentation; review-doc)
+- `docs/CONSCIOUSNESS_UNIFIED_IDENTITY.md` - Active documentation (documentation; review-doc)
+- `docs/COVERAGE_POLICY.md` - Active documentation (documentation; review-doc)
+- `docs/DEPLOYMENT_GUIDE.md` - Active documentation (documentation; review-doc)
+- `docs/DEVELOPER_ONBOARDING.md` - Active documentation (documentation; review-doc)
+- ... 213 more in `docs/AETHERRA_FILE_MANIFEST.json`
 
 ## Review Queues
 

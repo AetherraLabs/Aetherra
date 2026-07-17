@@ -358,7 +358,6 @@ be recreated as separate roadmap sources:
 - `docs/QFAC_ROADMAP.ipynb`
 - `docs/aetherra_quantum_roadmap_v_1.md`
 - `docs/roadmap/*`
-- `docs-organized/roadmaps/*`
 
 ## Maintenance Rule
 

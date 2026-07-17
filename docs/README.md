@@ -31,18 +31,12 @@ operator guides.
 | `GO_NO_GO_GATES.md` | Readiness criteria and gating model |
 | `DOCS_ARCHITECTURE.md` | How docs are structured and validated |
 
-## Extended Library
+## Historical Material
 
-Thematic and historical material is organized under `../docs-organized/` and
-intentionally separated from the high-signal active spec layer to reduce noise.
-Roadmap planning is consolidated in `MASTER_ROADMAP.md`.
-
-| Category | Path | Contents |
-| --- | --- | --- |
-| Reports | `../docs-organized/reports/` | Completion, test, and phase reports |
-| Manifestos & Vision | `../docs-organized/manifesto/` | Narrative, intent, and philosophy |
-| Fixes & Cleanup | `../docs-organized/fixes/`, `../docs-organized/cleanup/` | Technical and structural remediation notes |
-| Legacy | `../docs-organized/legacy/` | Superseded material kept for traceability |
+Historical reports and superseded notes belong under `docs/archive/` when they
+have ongoing traceability value. Active planning is consolidated in
+`MASTER_ROADMAP.md`; active system status is tracked in `ACTIVE_SYSTEMS.md` and
+`SYSTEM_INDEX.md`.
 
 ## Validation
 

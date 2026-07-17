@@ -1,6 +1,8 @@
 # Aetherra Documentation Index
 
-This is the canonical navigation surface for active (living) specifications, operator guides, and core system references. For broader thematic and historical material, see `../docs-organized/`.
+This is the canonical navigation surface for active specifications, operator
+guides, and core system references. Historical material lives under
+`docs/archive/` when it must be retained for traceability.
 
 ## Dashboards & Meta
 
