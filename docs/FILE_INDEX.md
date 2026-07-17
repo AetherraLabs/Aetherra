@@ -1866,7 +1866,6 @@ aetherra_agent_daemon.py — !/usr/bin/env python3
 aetherra_agent_fabric.py — Register Agent Fabric agents with the AgentOrchestrator for task management."""
 aetherra_cognitive_task_manager.py — Initialize Flask app and routes."""
 aetherra_event_bus.py — !/usr/bin/env python3
-aetherra_file_watcher.py — Determine if a file should be processed."""
 aetherra_hmr_controller.py — Hot Module Reload controller service.
 aetherra_kernel_loop.py — Evaluate production backpressure & plugin safety invariants.
 aetherra_meta_memory.py — Initialize the meta-memory database."""
@@ -1881,7 +1880,6 @@ aetherra_registry_client.py — SPDX-License-Identifier: GPL-3.0-or-later
 aetherra_registry_daemon.py — !/usr/bin/env python3
 aetherra_script_service.py — Minimal .aether interpreter with async interface."""
 aetherra_self_incorporation.py — Track user activity patterns for night cycle scheduling."""
-aetherra_self_organizer.py — Comprehensive metadata for each file in the system."""
 aetherra_service_registry.py — Service health status enumeration."""
 aetherra_shared_service_registry.py — Service health status enumeration."""
 aetherra_startup.py — SPDX-License-Identifier: GPL-3.0-or-later

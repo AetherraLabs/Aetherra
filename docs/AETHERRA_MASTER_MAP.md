@@ -15,22 +15,22 @@ marked for review before removal.
 
 ## Current Inventory
 
-- Tracked files: 2014
+- Tracked files: 2012
 - Tracked directories: 257
-- Files confirmed keep: 240
-- Files requiring suite/doc/tool/provisional review: 1774
-- Runtime/candidate/unknown files needing evidence: 779
+- Files confirmed keep: 245
+- Files requiring suite/doc/tool/provisional review: 1767
+- Runtime/candidate/unknown files needing evidence: 772
 
 ### By Category
 
 - compatibility-review: 1
-- configuration: 94
+- configuration: 98
 - documentation: 307
 - duplicate-engine-review: 1
 - legacy-or-archive: 4
 - legacy-or-experimental-review: 1
-- operational-runtime: 574
-- root-review-candidate: 15
+- operational-runtime: 575
+- root-review-candidate: 8
 - test: 512
 - tooling: 226
 - unclassified: 279
@@ -38,19 +38,19 @@ marked for review before removal.
 ### By Lifecycle
 
 - boot: 4
-- build-or-ci: 94
+- build-or-ci: 98
 - documentation: 307
 - governed-runtime: 28
 - historical: 4
 - maintenance: 226
 - operator: 1
-- plugin-runtime: 85
+- plugin-runtime: 86
 - runtime: 396
 - runtime-api: 56
 - runtime-support: 1
 - runtime-ui: 3
 - unknown: 279
-- unknown-or-compatibility: 18
+- unknown-or-compatibility: 11
 - verification: 512
 
 ## Top-Level Folder Map
@@ -212,7 +212,7 @@ runtime, governed runtime, API operation, plugin operation, or Runtime UI.
 - `Aetherra/aetherra_core/memory/models.py` - Core runtime package (runtime; provisional-runtime)
 - `Aetherra/aetherra_core/memory/narrator/README.md` - Core runtime package (runtime; provisional-runtime)
 - `Aetherra/aetherra_core/memory/narrator/__init__.py` - Core runtime package (runtime; provisional-runtime)
-- ... 454 more in `docs/AETHERRA_FILE_MANIFEST.json`
+- ... 455 more in `docs/AETHERRA_FILE_MANIFEST.json`
 
 ## Configuration And Build Files
 
@@ -290,13 +290,13 @@ runtime, governed runtime, API operation, plugin operation, or Runtime UI.
 - `Dockerfile` - Repository configuration (build-or-ci; keep)
 - `MANIFEST.in` - Repository configuration (build-or-ci; keep)
 - `commitlint.config.js` - Repository configuration (build-or-ci; keep)
+- `config.autonomy.production.json` - Repository configuration (build-or-ci; keep)
+- `config.autonomy.staging.json` - Repository configuration (build-or-ci; keep)
+- `config.json` - Repository configuration (build-or-ci; keep)
+- `config.production.json` - Repository configuration (build-or-ci; keep)
 - `config/config.json` - Configuration files (build-or-ci; keep)
 - `config/lyrixa_intelligence.json` - Configuration files (build-or-ci; keep)
-- `config/self_model.json` - Configuration files (build-or-ci; keep)
-- `configs/qfac.yaml` - Configuration files (build-or-ci; keep)
-- `configs/sql/storm_schema_v1.sql` - Configuration files (build-or-ci; keep)
-- `configs/storm.yaml` - Configuration files (build-or-ci; keep)
-- ... 14 more in `docs/AETHERRA_FILE_MANIFEST.json`
+- ... 18 more in `docs/AETHERRA_FILE_MANIFEST.json`
 
 ## Verification Surface
 
@@ -601,7 +601,7 @@ yet proven direct active use.
 - `Aetherra/aetherra_core/memory/memory_core.py` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/memory/memory_core_adapter.py` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/memory/memory_kernel.py` - provisional-runtime; Core runtime package
-- ... 659 more in `docs/AETHERRA_FILE_MANIFEST.json`
+- ... 652 more in `docs/AETHERRA_FILE_MANIFEST.json`
 
 ## Cleanup Process
 

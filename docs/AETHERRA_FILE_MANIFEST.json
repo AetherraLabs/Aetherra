@@ -1,13 +1,13 @@
 {
   "categories": {
     "compatibility-review": 1,
-    "configuration": 94,
+    "configuration": 98,
     "documentation": 307,
     "duplicate-engine-review": 1,
     "legacy-or-archive": 4,
     "legacy-or-experimental-review": 1,
-    "operational-runtime": 574,
-    "root-review-candidate": 15,
+    "operational-runtime": 575,
+    "root-review-candidate": 8,
     "test": 512,
     "tooling": 226,
     "unclassified": 279
@@ -8743,14 +8743,6 @@
       "purpose": "Kernel event bus"
     },
     {
-      "category": "root-review-candidate",
-      "keep_status": "needs-evidence",
-      "lifecycle": "unknown-or-compatibility",
-      "owner": "repo-root",
-      "path": "aetherra_file_watcher.py",
-      "purpose": "Root-level compatibility, legacy, or unverified operational file"
-    },
-    {
       "category": "operational-runtime",
       "keep_status": "keep",
       "lifecycle": "governed-runtime",
@@ -9271,12 +9263,12 @@
       "purpose": "Persistent memory facade"
     },
     {
-      "category": "root-review-candidate",
-      "keep_status": "needs-evidence",
-      "lifecycle": "unknown-or-compatibility",
-      "owner": "repo-root",
+      "category": "operational-runtime",
+      "keep_status": "keep",
+      "lifecycle": "plugin-runtime",
+      "owner": "runtime",
       "path": "aetherra_plugin_discovery.py",
-      "purpose": "Root-level compatibility, legacy, or unverified operational file"
+      "purpose": "Plugin discovery and Hub sync support"
     },
     {
       "category": "root-review-candidate",
@@ -9317,14 +9309,6 @@
       "owner": "runtime",
       "path": "aetherra_self_incorporation.py",
       "purpose": "Self-Incorporation service entry"
-    },
-    {
-      "category": "root-review-candidate",
-      "keep_status": "needs-evidence",
-      "lifecycle": "unknown-or-compatibility",
-      "owner": "repo-root",
-      "path": "aetherra_self_organizer.py",
-      "purpose": "Root-level compatibility, legacy, or unverified operational file"
     },
     {
       "category": "operational-runtime",
@@ -9415,36 +9399,36 @@
       "purpose": "Repository configuration"
     },
     {
-      "category": "root-review-candidate",
-      "keep_status": "needs-evidence",
-      "lifecycle": "unknown-or-compatibility",
+      "category": "configuration",
+      "keep_status": "keep",
+      "lifecycle": "build-or-ci",
       "owner": "repo-root",
       "path": "config.autonomy.production.json",
-      "purpose": "Root-level compatibility, legacy, or unverified operational file"
+      "purpose": "Repository configuration"
     },
     {
-      "category": "root-review-candidate",
-      "keep_status": "needs-evidence",
-      "lifecycle": "unknown-or-compatibility",
+      "category": "configuration",
+      "keep_status": "keep",
+      "lifecycle": "build-or-ci",
       "owner": "repo-root",
       "path": "config.autonomy.staging.json",
-      "purpose": "Root-level compatibility, legacy, or unverified operational file"
+      "purpose": "Repository configuration"
     },
     {
-      "category": "root-review-candidate",
-      "keep_status": "needs-evidence",
-      "lifecycle": "unknown-or-compatibility",
+      "category": "configuration",
+      "keep_status": "keep",
+      "lifecycle": "build-or-ci",
       "owner": "repo-root",
       "path": "config.json",
-      "purpose": "Root-level compatibility, legacy, or unverified operational file"
+      "purpose": "Repository configuration"
     },
     {
-      "category": "root-review-candidate",
-      "keep_status": "needs-evidence",
-      "lifecycle": "unknown-or-compatibility",
+      "category": "configuration",
+      "keep_status": "keep",
+      "lifecycle": "build-or-ci",
       "owner": "repo-root",
       "path": "config.production.json",
-      "purpose": "Root-level compatibility, legacy, or unverified operational file"
+      "purpose": "Repository configuration"
     },
     {
       "category": "configuration",
@@ -17930,8 +17914,8 @@
   "generated_on": "2026-07-16",
   "keep_status": {
     "candidate-review": 4,
-    "keep": 240,
-    "needs-evidence": 18,
+    "keep": 245,
+    "needs-evidence": 11,
     "needs-review": 279,
     "provisional-runtime": 478,
     "review-by-suite": 512,
@@ -17939,5 +17923,5 @@
     "review-tool": 226
   },
   "tracked_directory_count": 257,
-  "tracked_file_count": 2014
+  "tracked_file_count": 2012
 }
