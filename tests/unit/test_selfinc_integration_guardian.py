@@ -673,12 +673,25 @@ async def test_proposal_actions_require_guardian_before_execution(
     service,
     guardian_env,
 ):
+    from Aetherra.homeostasis import self_incorporation_security
+    from Aetherra.security import capabilities
+
     monkeypatch.setenv("AETHERRA_REQUIRE_CAPABILITIES", "1")
     monkeypatch.setenv("AETHERRA_POLICY_HOME", str(guardian_env / "policy"))
+    monkeypatch.setattr(
+        self_incorporation_security,
+        "has_capability",
+        lambda requester, capability: (
+            requester == "self_improvement_engine"
+            and capability == "maintenance:proposal:optimize"
+        ),
+    )
+    monkeypatch.setattr(capabilities, "has_capability", lambda *_args: False)
     service._running = True
     proposal = {
         "proposal_id": "proposal-action-denied",
         "type": "optimize",
+        "sender": "self_improvement_engine",
         "params": {
             "actions": [
                 {

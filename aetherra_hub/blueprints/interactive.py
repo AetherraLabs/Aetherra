@@ -30,8 +30,8 @@ def _get_interactive_system():
         from ..utils.http import run_coro_blocking
 
         return run_coro_blocking(get_interactive_system())
-    except Exception as e:
-        logger.warning(f"Failed to get interactive system: {e}")
+    except Exception:
+        logger.warning("Failed to get interactive system", exc_info=True)
         return None
 
 
@@ -58,12 +58,12 @@ def get_status() -> tuple[Response, int]:
             }
         ), 200
 
-    except Exception as e:
-        logger.error(f"Error getting interactive status: {e}", exc_info=True)
+    except Exception:
+        logger.exception("Error getting interactive status")
         return jsonify(
             {
                 "error": "status_error",
-                "message": str(e),
+                "message": "interactive_status_unavailable",
             }
         ), 500
 
@@ -97,12 +97,12 @@ def get_emotion() -> tuple[Response, int]:
             }
         ), 200
 
-    except Exception as e:
-        logger.error(f"Error getting emotion: {e}", exc_info=True)
+    except Exception:
+        logger.exception("Error getting emotion")
         return jsonify(
             {
                 "error": "emotion_error",
-                "message": str(e),
+                "message": "emotion_unavailable",
             }
         ), 500
 
@@ -136,12 +136,12 @@ def get_expression() -> tuple[Response, int]:
             }
         ), 200
 
-    except Exception as e:
-        logger.error(f"Error getting expression: {e}", exc_info=True)
+    except Exception:
+        logger.exception("Error getting expression")
         return jsonify(
             {
                 "error": "expression_error",
-                "message": str(e),
+                "message": "expression_unavailable",
             }
         ), 500
 
@@ -167,12 +167,12 @@ def get_metrics() -> tuple[Response, int]:
             }
         ), 200
 
-    except Exception as e:
-        logger.error(f"Error getting metrics: {e}", exc_info=True)
+    except Exception:
+        logger.exception("Error getting metrics")
         return jsonify(
             {
                 "error": "metrics_error",
-                "message": str(e),
+                "message": "metrics_unavailable",
             }
         ), 500
 
@@ -247,11 +247,11 @@ def trigger_emotion() -> tuple[Response, int]:
             intensity = float(intensity)
             if not 0.0 <= intensity <= 1.0:
                 raise ValueError("Intensity must be between 0.0 and 1.0")
-        except ValueError as e:
+        except ValueError:
             return jsonify(
                 {
                     "error": "invalid_intensity",
-                    "message": str(e),
+                    "message": "intensity must be between 0.0 and 1.0",
                 }
             ), 400
 
@@ -289,11 +289,11 @@ def trigger_emotion() -> tuple[Response, int]:
             }
         ), 503
 
-    except Exception as e:
-        logger.error(f"Error triggering emotion: {e}", exc_info=True)
+    except Exception:
+        logger.exception("Error triggering emotion")
         return jsonify(
             {
                 "error": "trigger_error",
-                "message": str(e),
+                "message": "trigger_failed",
             }
         ), 500
