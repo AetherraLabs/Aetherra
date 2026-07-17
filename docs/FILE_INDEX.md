@@ -795,21 +795,8 @@ Aetherra/
   telemetry/
     optin.py — Enable/disable Differential Privacy and optionally set epsilon.
   tools/
-    migration/
-      component_migrator.py — Migrates existing components to clean architecture"""
-      migration_plan.json
-      README.md — migration
-    AETHER_SCRIPT_DEMONSTRATION_SUMMARY.md — 🧠 AETHER SCRIPT DEMONSTRATION SUMMARY
-    aether_script_executor.py — Initialize all enhanced autonomous intelligence agents"""
-    aetherra_file_watcher.py — Determine if a file should be processed."""
-    async_memory_integration.py — Decorator to convert async function to sync using event loop"""
-    causal_branch_simulator.py — Represents a potential future memory state with probability weighting"""
-    code_generator.py — Generates .aether code from natural language descriptions"""
     curiosity_conflict_resolution.aether
-    memory_analyzer.py — Analyzes memory patterns and generates insights"""
-    qfac_integration.py — Manages integration between QFAC phases with graceful degradation"""
-    quantum_memory_bridge.py — Compatibility wrapper for execute function"""
-    README.md — tools
+    README.md — Aetherra Package Tools
   utils/
     __init__.py — SPDX-License-Identifier: GPL-3.0-or-later
     launch_utils.py — Check if a port is available for connection"""

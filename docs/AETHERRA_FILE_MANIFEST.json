@@ -6,7 +6,7 @@
     "operational-runtime": 793,
     "rename-debt": 1,
     "test": 514,
-    "tooling": 239
+    "tooling": 227
   },
   "directories": [
     {
@@ -76,7 +76,7 @@
       "direct_file_count": 6,
       "dominant_category": "operational-runtime",
       "dominant_keep_status": "provisional-runtime",
-      "file_count": 725,
+      "file_count": 713,
       "path": "Aetherra/"
     },
     {
@@ -927,18 +927,11 @@
       "path": "Aetherra/telemetry/"
     },
     {
-      "direct_file_count": 11,
+      "direct_file_count": 2,
       "dominant_category": "tooling",
       "dominant_keep_status": "review-tool",
-      "file_count": 14,
+      "file_count": 2,
       "path": "Aetherra/tools/"
-    },
-    {
-      "direct_file_count": 3,
-      "dominant_category": "tooling",
-      "dominant_keep_status": "review-tool",
-      "file_count": 3,
-      "path": "Aetherra/tools/migration/"
     },
     {
       "direct_file_count": 5,
@@ -7733,14 +7726,6 @@
       "keep_status": "review-tool",
       "lifecycle": "maintenance",
       "owner": "Aetherra/tools",
-      "path": "Aetherra/tools/AETHER_SCRIPT_DEMONSTRATION_SUMMARY.md",
-      "purpose": "Aetherra package tools"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/tools",
       "path": "Aetherra/tools/README.md",
       "purpose": "Aetherra package tools"
     },
@@ -7749,95 +7734,7 @@
       "keep_status": "review-tool",
       "lifecycle": "maintenance",
       "owner": "Aetherra/tools",
-      "path": "Aetherra/tools/aether_script_executor.py",
-      "purpose": "Aetherra package tools"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/tools",
-      "path": "Aetherra/tools/aetherra_file_watcher.py",
-      "purpose": "Aetherra package tools"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/tools",
-      "path": "Aetherra/tools/async_memory_integration.py",
-      "purpose": "Aetherra package tools"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/tools",
-      "path": "Aetherra/tools/causal_branch_simulator.py",
-      "purpose": "Aetherra package tools"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/tools",
-      "path": "Aetherra/tools/code_generator.py",
-      "purpose": "Aetherra package tools"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/tools",
       "path": "Aetherra/tools/curiosity_conflict_resolution.aether",
-      "purpose": "Aetherra package tools"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/tools",
-      "path": "Aetherra/tools/memory_analyzer.py",
-      "purpose": "Aetherra package tools"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/tools",
-      "path": "Aetherra/tools/migration/README.md",
-      "purpose": "Aetherra package tools"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/tools",
-      "path": "Aetherra/tools/migration/component_migrator.py",
-      "purpose": "Aetherra package tools"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/tools",
-      "path": "Aetherra/tools/migration/migration_plan.json",
-      "purpose": "Aetherra package tools"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/tools",
-      "path": "Aetherra/tools/qfac_integration.py",
-      "purpose": "Aetherra package tools"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "Aetherra/tools",
-      "path": "Aetherra/tools/quantum_memory_bridge.py",
       "purpose": "Aetherra package tools"
     },
     {
@@ -17345,8 +17242,8 @@
     "provisional-runtime": 690,
     "review-by-suite": 514,
     "review-doc": 264,
-    "review-tool": 239
+    "review-tool": 227
   },
-  "tracked_directory_count": 235,
-  "tracked_file_count": 1960
+  "tracked_directory_count": 234,
+  "tracked_file_count": 1948
 }
