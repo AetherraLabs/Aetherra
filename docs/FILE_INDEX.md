@@ -1869,16 +1869,13 @@ aetherra_event_bus.py — !/usr/bin/env python3
 aetherra_file_watcher.py — Determine if a file should be processed."""
 aetherra_hmr_controller.py — Hot Module Reload controller service.
 aetherra_kernel_loop.py — Evaluate production backpressure & plugin safety invariants.
-aetherra_live_monitor.py — !/usr/bin/env python3
 aetherra_meta_memory.py — Initialize the meta-memory database."""
 aetherra_module_manager.py — Minimal, safe module manager with a clear contract."""
 aetherra_os.py — Launch the designated Aetherra GUI interface and start OS backend"""
 aetherra_os_launcher.py — Return the most recent launcher readiness snapshot, if available."""
 aetherra_outbox.py — !/usr/bin/env python3
 aetherra_persistent_memory.py — Individual memory node with cognitive metadata."""
-aetherra_plugin_catalog.json
 aetherra_plugin_discovery.py — Plugin metadata structure."""
-aetherra_plugin_viewer.py — Simple GUI to view discovered plugins."""
 aetherra_quantum_meta_learning.py — Calculate measurement probability for this state."""
 aetherra_registry_client.py — SPDX-License-Identifier: GPL-3.0-or-later
 aetherra_registry_daemon.py — !/usr/bin/env python3
@@ -1898,11 +1895,8 @@ config.production.json
 CONTRIBUTING.md — Contributing
 GOVERNANCE.md — Project Governance
 INSTALL.md — Installation & Quickstart
-intelligence_report_generator.py — Load analysis data from JSON file"""
 LEGAL_COMPLIANCE.md — Aetherra Project - Legal Compliance Documentation
 LICENSE_POLICY.md — License Policy & Enforcement Gates
-licenses_unknown_history.json
-licenses_unknown_history.requirements-ci.lock.json
 main.py — Convenience launcher alias for aetherra_os main entry point.
 OWNERSHIP.md — Ownership & Release Authority
 PRIVACY.md — Privacy Policy (Project Repository)
@@ -1912,7 +1906,6 @@ README.md — Aetherra
 RELEASE_NOTES_0.5.0-beta.0.md — Aetherra 0.5.0-beta.0 Release Notes
 SECURITY.md — Security Policy
 setup.py — !/usr/bin/env python3
-setup_dev.py — Print the Aetherra setup banner"""
 STEWARDSHIP.md — Aetherra Stewardship Statement
 SUPPORT.md — Support
 unicode_logger.py — Unicode-Safe Logging Configuration for Aetherra OS.

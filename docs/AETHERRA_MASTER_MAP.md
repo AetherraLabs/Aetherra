@@ -15,11 +15,11 @@ marked for review before removal.
 
 ## Current Inventory
 
-- Tracked files: 2021
+- Tracked files: 2014
 - Tracked directories: 257
 - Files confirmed keep: 240
-- Files requiring suite/doc/tool/provisional review: 1781
-- Runtime/candidate/unknown files needing evidence: 786
+- Files requiring suite/doc/tool/provisional review: 1774
+- Runtime/candidate/unknown files needing evidence: 779
 
 ### By Category
 
@@ -30,7 +30,7 @@ marked for review before removal.
 - legacy-or-archive: 4
 - legacy-or-experimental-review: 1
 - operational-runtime: 574
-- root-review-candidate: 22
+- root-review-candidate: 15
 - test: 512
 - tooling: 226
 - unclassified: 279
@@ -50,7 +50,7 @@ marked for review before removal.
 - runtime-support: 1
 - runtime-ui: 3
 - unknown: 279
-- unknown-or-compatibility: 25
+- unknown-or-compatibility: 18
 - verification: 512
 
 ## Top-Level Folder Map
@@ -601,7 +601,7 @@ yet proven direct active use.
 - `Aetherra/aetherra_core/memory/memory_core.py` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/memory/memory_core_adapter.py` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/memory/memory_kernel.py` - provisional-runtime; Core runtime package
-- ... 666 more in `docs/AETHERRA_FILE_MANIFEST.json`
+- ... 659 more in `docs/AETHERRA_FILE_MANIFEST.json`
 
 ## Cleanup Process
 

@@ -7,7 +7,7 @@
     "legacy-or-archive": 4,
     "legacy-or-experimental-review": 1,
     "operational-runtime": 574,
-    "root-review-candidate": 22,
+    "root-review-candidate": 15,
     "test": 512,
     "tooling": 226,
     "unclassified": 279
@@ -9219,14 +9219,6 @@
       "keep_status": "needs-evidence",
       "lifecycle": "unknown-or-compatibility",
       "owner": "repo-root",
-      "path": "aetherra_live_monitor.py",
-      "purpose": "Root-level compatibility, legacy, or unverified operational file"
-    },
-    {
-      "category": "root-review-candidate",
-      "keep_status": "needs-evidence",
-      "lifecycle": "unknown-or-compatibility",
-      "owner": "repo-root",
       "path": "aetherra_meta_memory.py",
       "purpose": "Root-level compatibility, legacy, or unverified operational file"
     },
@@ -9283,23 +9275,7 @@
       "keep_status": "needs-evidence",
       "lifecycle": "unknown-or-compatibility",
       "owner": "repo-root",
-      "path": "aetherra_plugin_catalog.json",
-      "purpose": "Root-level compatibility, legacy, or unverified operational file"
-    },
-    {
-      "category": "root-review-candidate",
-      "keep_status": "needs-evidence",
-      "lifecycle": "unknown-or-compatibility",
-      "owner": "repo-root",
       "path": "aetherra_plugin_discovery.py",
-      "purpose": "Root-level compatibility, legacy, or unverified operational file"
-    },
-    {
-      "category": "root-review-candidate",
-      "keep_status": "needs-evidence",
-      "lifecycle": "unknown-or-compatibility",
-      "owner": "repo-root",
-      "path": "aetherra_plugin_viewer.py",
       "purpose": "Root-level compatibility, legacy, or unverified operational file"
     },
     {
@@ -12023,36 +11999,12 @@
       "purpose": "Examples"
     },
     {
-      "category": "root-review-candidate",
-      "keep_status": "needs-evidence",
-      "lifecycle": "unknown-or-compatibility",
-      "owner": "repo-root",
-      "path": "intelligence_report_generator.py",
-      "purpose": "Root-level compatibility, legacy, or unverified operational file"
-    },
-    {
       "category": "configuration",
       "keep_status": "keep",
       "lifecycle": "build-or-ci",
       "owner": "repo-root",
       "path": "license_overrides.yml",
       "purpose": "Repository configuration"
-    },
-    {
-      "category": "root-review-candidate",
-      "keep_status": "needs-evidence",
-      "lifecycle": "unknown-or-compatibility",
-      "owner": "repo-root",
-      "path": "licenses_unknown_history.json",
-      "purpose": "Root-level compatibility, legacy, or unverified operational file"
-    },
-    {
-      "category": "root-review-candidate",
-      "keep_status": "needs-evidence",
-      "lifecycle": "unknown-or-compatibility",
-      "owner": "repo-root",
-      "path": "licenses_unknown_history.requirements-ci.lock.json",
-      "purpose": "Root-level compatibility, legacy, or unverified operational file"
     },
     {
       "category": "unclassified",
@@ -12349,14 +12301,6 @@
       "owner": "repo-root",
       "path": "setup.py",
       "purpose": "Repository configuration"
-    },
-    {
-      "category": "root-review-candidate",
-      "keep_status": "needs-evidence",
-      "lifecycle": "unknown-or-compatibility",
-      "owner": "repo-root",
-      "path": "setup_dev.py",
-      "purpose": "Root-level compatibility, legacy, or unverified operational file"
     },
     {
       "category": "test",
@@ -17987,7 +17931,7 @@
   "keep_status": {
     "candidate-review": 4,
     "keep": 240,
-    "needs-evidence": 25,
+    "needs-evidence": 18,
     "needs-review": 279,
     "provisional-runtime": 478,
     "review-by-suite": 512,
@@ -17995,5 +17939,5 @@
     "review-tool": 226
   },
   "tracked_directory_count": 257,
-  "tracked_file_count": 2021
+  "tracked_file_count": 2014
 }
