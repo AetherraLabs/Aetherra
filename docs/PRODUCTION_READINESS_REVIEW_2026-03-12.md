@@ -108,7 +108,7 @@ Aetherra OS is **production-ready** for beta release with comprehensive feature 
 | **TESTING_GUIDE.md**                           | Test suite organization, running tests       | ✅         | Nov 2025          |
 | **SECURITY_OPERATIONS_GUIDE.md**               | Operations, detection, incident response     | ✅         | Nov 2025          |
 | **PACKAGING_AND_RELEASE.md**                   | Build, SBOM, manifest, signing               | ✅         | Current           |
-| **ROADMAP_TRACKING.md**                        | Phase status, evidence, drift audit          | ✅         | 2026-03-12        |
+| **MASTER_ROADMAP.md**                          | Consolidated roadmap, evidence, claims audit | ✅         | 2026-07-16        |
 | **GO_NO_GO_GATES.md**                          | 8 deterministic release gates                | ✅         | Current           |
 | **SELFINC_PRODUCTION_READINESS.md**            | Self-incorporation hardening, env vars       | ✅         | Sept 2025         |
 | **docs/reports/release/BETA_READINESS_REPORT.md** | Structural integrity, coverage signals    | ✅         | Sept 2025         |
@@ -369,8 +369,7 @@ These items are **intentionally deferred** until after roadmap implementation co
 
 ## Related Documents
 
-- [PRODUCTION_ROADMAP.md](./PRODUCTION_ROADMAP.md) — Phase timeline and completion tracking
-- [ROADMAP_TRACKING.md](./docs/ROADMAP_TRACKING.md) — Detailed progress status
+- [MASTER_ROADMAP.md](./MASTER_ROADMAP.md) — Consolidated roadmap and claims audit
 - [GO_NO_GO_GATES.md](./docs/GO_NO_GO_GATES.md) — Release gates and validation criteria
 - [DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md) — Multi-tier deployment procedures
 - [BETA_READINESS_REPORT.md](./reports/release/BETA_READINESS_REPORT.md) — Structural integrity metrics

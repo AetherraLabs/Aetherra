@@ -9,6 +9,7 @@ Real implementation for memory integration across all databases
 # Standard library imports
 import json
 import sqlite3
+from contextlib import suppress
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -30,7 +31,7 @@ class MemoryAdapterImpl:
         """Connect to all available databases"""
         connection_status = {}
 
-        for category, db_dir in self.db_paths.items():
+        for _category, db_dir in self.db_paths.items():
             if db_dir.exists():
                 db_files = list(db_dir.glob("*.db"))
                 for db_file in db_files:
@@ -312,11 +313,9 @@ class MemoryAdapterImpl:
 
     def close_all_connections(self):
         """Close all database connections"""
-        for db_name, conn in self.connections.items():
-            try:
+        for _db_name, conn in self.connections.items():
+            with suppress(Exception):
                 conn.close()
-            except Exception:
-                pass
 
         self.connections.clear()
 
@@ -361,13 +360,13 @@ class MemoryAdapterImpl:
 
 def main():
     """Test memory adapter implementation"""
-    workspace = Path(r"c:\Users\enigm\Desktop\Aetherra Project")
-    aetherra_v2 = workspace / "Aetherra_v2"
+    project_root = Path(__file__).resolve().parents[3]
+    aetherra_root = project_root / "Aetherra"
 
     print("🧠 TESTING MEMORY ADAPTER IMPLEMENTATION")
     print("=" * 50)
 
-    adapter = MemoryAdapterImpl(aetherra_v2)
+    adapter = MemoryAdapterImpl(aetherra_root)
 
     # Run integration test
     test_results = adapter.test_memory_integration()

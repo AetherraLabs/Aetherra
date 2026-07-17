@@ -184,8 +184,8 @@ jobs:
         run: |
           ruff check --select TID252 . || true
 
-  gui-smoke:
-    name: "🧪 GUI monitor smoke"
+  runtime-ui-smoke:
+    name: "Runtime UI smoke"
     runs-on: ubuntu-latest
     continue-on-error: true
     timeout-minutes: 10
@@ -204,9 +204,26 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests
 
-      - name: "🔍 Snapshot run (no-Qt)"
+      - name: "Runtime UI read-only snapshot"
         run: |
-          python Aetherra/gui/aetherra_os_gui.py --once || exit 1
+          python - <<'PY'
+          from Aetherra.runtime_ui import (
+              build_runtime_ui_bootstrap_payload,
+              parse_observatory_mode,
+          )
+
+          mode = parse_observatory_mode("overview")
+          assert mode is not None
+          payload = build_runtime_ui_bootstrap_payload(
+              mode=mode,
+              user_name="CI",
+              limit=5,
+          )
+          assert payload["ok"] is True
+          assert payload["read_only"] is True
+          assert payload["observatory"]["mode"] == "overview"
+          assert payload["manifest"]["authority"]["approve"] == "guardian"
+          PY
 
   lyrixa-gui-import:
     name: "🧪 Lyrixa GUI import smoke"

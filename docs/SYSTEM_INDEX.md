@@ -16,6 +16,10 @@ Status meanings:
 
 ## Foundational Documents
 
+- Who Is Aetherra? - ./WHO_IS_AETHERRA.md
+- Alpha Readiness Checklist - ./ALPHA_READINESS_CHECKLIST.md
+- Alpha Operator Runbook - ./ALPHA_OPERATOR_RUNBOOK.md
+- Alpha Readiness Decision - ./ALPHA_READINESS_DECISION.md
 - Aetherra Manifesto - ./../Aetherra/docs/AETHERRA_MANIFESTO.md
 - AI OS Manifesto - ./../Aetherra/docs/AI_OS_MANIFESTO.md
 - Aetherra Labs Vision - ./../Aetherra/docs/aetherra_labs_vision.md
@@ -125,7 +129,7 @@ Status meanings:
 
 - Start here for system overviews and contracts.
 - Use `docs/ACTIVE_SYSTEMS.md` for the current operational dashboard.
-- Use `docs/BUILD_ORDER.md` for the active build sequence.
+- Use `docs/MASTER_ROADMAP.md` for the active build sequence and roadmap claims audit.
 - Use `docs/UNDERSTANDING_RULE.md` before marking any system complete.
 - For a full repository file index, see `docs/FILE_INDEX.md`.
 

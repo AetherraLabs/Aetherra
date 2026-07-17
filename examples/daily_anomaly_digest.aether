@@ -1,0 +1,53 @@
+# @signature: 079360c28be9dbd4d64589d0e3c88b7be5dac0dee1447fdf8a07de8bf18e1cf4
+# Aether Script Language System v1.1 — Daily Anomaly Digest
+
+goal: "Generate daily anomaly digest with safe effects and full observability"
+
+meta:
+  version: "1.1"
+  author: "Aetherra Labs"
+  seed: 1337
+
+policy:
+  risk_budget: 0.10
+  token_budget: 20000
+  data_class: "internal"
+  deterministic: true
+  mock_io: true
+  seed: 1337
+
+require:
+  plugins:
+    - "anomaly_detector>=0.3,<0.5"
+    - "report_merger==1.2.1"
+  capabilities: ["memory.read", "storage.write"]
+
+# Observability hooks for operators
+trace(level="debug")
+log("starting daily anomaly job")
+
+# Concurrency: summarize system and user logs in parallel
+parallel:
+  sys_sum: summarize(load_logs(tag="system"))
+  usr_sum: summarize(load_logs(tag="user"))
+
+await sys_sum, usr_sum
+
+# Detect anomalies on both summaries
+sys_flags: List[Anomaly] = detect_anomalies(sys_sum)
+usr_flags: List[Anomaly] = detect_anomalies(usr_sum)
+
+# Merge reports via plugin binding
+merged: run_plugin("report_merger", [sys_flags, usr_flags])
+
+on_error:
+  - when: Timeout
+    do: escalate_to("Lyrixa")
+  - when: PermissionError
+    do: narrate("missing capability: storage.write")
+
+# Safe effects wrapped in a transaction (atomic with rollback token)
+transaction:
+  - store(merged, tag="daily")
+  - metrics({"coherence": 0.97, "contradictions": len(sys_flags) + len(usr_flags)})
+  - log("daily anomaly job complete")

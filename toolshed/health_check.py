@@ -44,7 +44,7 @@ async def _live_check(timeout_s: float = 2.5) -> dict[str, Any]:
         # Aetherra imports
         from aetherra_service_registry import get_service_registry  # type: ignore
     except Exception as e:  # pragma: no cover - import-time failure path
-        raise RuntimeError(f"registry import failed: {e}")
+        raise RuntimeError(f"registry import failed: {e}") from e
 
     # Acquire registry (it's async)
     reg = await asyncio.wait_for(get_service_registry(), timeout=timeout_s)

@@ -6,6 +6,7 @@ Returns status/graph data or 501 for unimplemented features.
 from __future__ import annotations
 
 # Third party imports
+import logging
 from typing import Any
 
 from flask import Blueprint, jsonify
@@ -14,6 +15,7 @@ from flask import Blueprint, jsonify
 from ..services import registry_client
 
 bp = Blueprint("memory", __name__)
+logger = logging.getLogger(__name__)
 
 
 @bp.get("/api/memory/status")
@@ -50,12 +52,11 @@ def memory_status():
             status["storm"] = dict(storm_metrics)
 
         return jsonify(status), 200
-    except Exception as exc:
+    except Exception:
         # Fallback to disabled status on error
+        logger.exception("Memory status unavailable")
         return (
-            jsonify(
-                {"ok": False, "enabled": False, "error": f"status_unavailable: {exc}"}
-            ),
+            jsonify({"ok": False, "enabled": False, "error": "status_unavailable"}),
             200,
         )
 
@@ -92,10 +93,9 @@ def memory_audit():
             return jsonify(out), 200
         # Fallback: audit not available
         return jsonify({"ok": True, "enabled": False, "audit": None}), 200
-    except Exception as exc:  # pragma: no cover - defensive best-effort
+    except Exception:  # pragma: no cover - defensive best-effort
+        logger.exception("Memory audit unavailable")
         return (
-            jsonify(
-                {"ok": False, "enabled": False, "error": f"audit_unavailable: {exc}"}
-            ),
+            jsonify({"ok": False, "enabled": False, "error": "audit_unavailable"}),
             200,
         )

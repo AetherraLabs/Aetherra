@@ -6,7 +6,6 @@ on:
       - "main"
       - "feat/federation-signing-telemetry"
     paths:
-      - 'aetherra-website/**'
       - 'docs/**'
   workflow_dispatch:
 
@@ -28,23 +27,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: 'aetherra-website/package-lock.json'
-
-      - name: Install dependencies
-        working-directory: 'aetherra-website'
-        run: npm ci
-
-      - name: Build website (to docs)
-        working-directory: 'aetherra-website'
-        run: npm run build
-
-      # CNAME is bundled from public/ into dist by Vite
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

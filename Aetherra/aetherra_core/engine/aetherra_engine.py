@@ -15,8 +15,10 @@ import hashlib
 import json
 import logging
 import os
+import re
 import time
 import traceback
+import uuid
 from contextlib import suppress
 from datetime import datetime
 from threading import Lock
@@ -183,14 +185,20 @@ except ImportError as exc:
 try:
     # Prefer canonical path
     # Local imports
-    from ..agents.agent_orchestrator import AgentOrchestrator
+    from ..agents.agent_orchestrator import AgentOrchestrator, Task, TaskPriority
 except ImportError:
     try:
         # Fallback to deprecated shim (emits DeprecationWarning)
         # Local imports
-        from ..orchestration.agent_orchestrator import AgentOrchestrator  # type: ignore
+        from ..orchestration.agent_orchestrator import (  # type: ignore
+            AgentOrchestrator,
+            Task,
+            TaskPriority,
+        )
     except ImportError as exc:
         COMPONENT_IMPORT_ERRORS["agent_orchestrator"] = exc
+        Task = None  # type: ignore[assignment]
+        TaskPriority = None  # type: ignore[assignment]
 
         class AgentOrchestrator:
             def __init__(self, *args, **kwargs):
@@ -240,6 +248,20 @@ REQUIRED_COMPONENT_KEYS = {
     "agent_orchestrator",
 }
 
+ENGINE_PROCESSING_ERROR_CODE = "engine_processing_failed"
+ENGINE_PROCESSING_ERROR_MESSAGE = (
+    "I apologize, but I encountered an internal processing error."
+)
+PROMPT_INJECTION_PHRASES = (
+    "ignore previous",
+    "disregard previous",
+    "system prompt",
+    "instructions above",
+)
+TASK_PRIORITY_VALUES = frozenset({"low", "normal", "high", "critical"})
+DEFAULT_TASK_TIMEOUT_SEC = 300
+MAX_TASK_TIMEOUT_SEC = 3600
+
 
 def _hash_value(value: Any) -> str | None:
     if value is None:
@@ -248,6 +270,18 @@ def _hash_value(value: Any) -> str | None:
     if not raw:
         return None
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _short_trace_id(*parts: Any) -> str:
+    raw = "|".join(str(part) for part in parts if part is not None)
+    if not raw:
+        raw = str(time.time_ns())
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+
+
+def _stable_percent_bucket(key: str) -> int:
+    digest = hashlib.sha256(key.encode("utf-8")).digest()
+    return int.from_bytes(digest[:8], "big") % 100
 
 
 def _guardian_capability_checker(requester: str, capability: str) -> bool:
@@ -1096,14 +1130,8 @@ class AetherraEngine:
                 },
             }
 
-        except Exception as e:
-            logger.error(f"Error processing message: {e}")
-            return {
-                "response": "I apologize, but I encountered an error processing your message.",
-                "error": str(e),
-                "session_id": self.session_id,
-                "timestamp": datetime.now().isoformat(),
-            }
+        except Exception as exc:
+            return self._build_processing_error_response(exc)
 
     def _generate_response(self, message: str, reasoning_result, relevant_memories: List) -> str:
         """Generate response based on message and context (baseline implementation)."""
@@ -1214,11 +1242,22 @@ class AetherraEngine:
     ) -> str:
         """Execute a task using the agent orchestrator"""
 
-        # Create a simple task dict for mock orchestrator
+        if not isinstance(task_data, dict):
+            raise TypeError("task_data must be a dictionary")
+        normalized_name = str(task_name or "").strip()
+        if not normalized_name:
+            raise ValueError("task_name is required")
+        normalized_priority = self._normalize_task_priority(priority)
+        required_capabilities = self._normalize_string_list(
+            task_data.get("required_capabilities", [])
+        )
+        dependencies = self._normalize_string_list(task_data.get("dependencies", []))
+        timeout_sec = self._normalize_task_timeout(task_data.get("timeout"))
+
         # Observer-aware: infer sensitivity and coherence estimate for policy gating
         sensitive = bool(task_data.get("sensitive", False))
         try:
-            nm = str(task_name or "").lower()
+            nm = normalized_name.lower()
             if any(
                 nm.startswith(p)
                 for p in [
@@ -1233,9 +1272,8 @@ class AetherraEngine:
                 sensitive = True
         except Exception:
             pass
-        req_caps = task_data.get("required_capabilities", [])
         try:
-            caps = [str(c).lower() for c in (req_caps or [])]
+            caps = [cap.lower() for cap in required_capabilities]
             if any(c in {"network", "filesystem_write", "external_call", "danger"} for c in caps):
                 sensitive = True
         except Exception:
@@ -1243,10 +1281,16 @@ class AetherraEngine:
         # Coherence estimate (0..1) — env override, else simple heuristic from session metrics
         coherence_est = self._estimate_coherence()
         require_human = bool(task_data.get("require_human", False))
+        policy_task_data = {
+            **task_data,
+            "required_capabilities": required_capabilities,
+            "dependencies": dependencies,
+            "timeout": timeout_sec,
+        }
         decision = _guardian_preflight_engine_task(
-            task_name=task_name,
-            task_data=task_data,
-            priority=priority,
+            task_name=normalized_name,
+            task_data=policy_task_data,
+            priority=normalized_priority,
             sensitive=sensitive,
             coherence_est=coherence_est,
             require_human=require_human,
@@ -1254,32 +1298,73 @@ class AetherraEngine:
         if not decision.allowed:
             raise PermissionError(decision.reason)
 
-        task = {
-            "task_id": f"task_{datetime.now().isoformat()}",
-            "name": task_name,
-            "description": f"User requested task: {task_name}",
-            "required_capabilities": task_data.get("required_capabilities", []),
+        task_record = {
+            "task_id": f"task_{uuid.uuid4().hex}",
+            "name": normalized_name,
+            "description": f"User requested task: {normalized_name}",
+            "required_capabilities": required_capabilities,
             "input_data": {
-                **task_data,
+                **policy_task_data,
                 # Observer-aware fields
                 "observer_gate": True,
                 "sensitive": sensitive,
                 "coherence_est": coherence_est,
                 "require_human_approval": require_human,
             },
-            "priority": priority,
-            "max_execution_time": task_data.get("timeout", 300),
-            "dependencies": task_data.get("dependencies", []),
+            "priority": normalized_priority,
+            "max_execution_time": timeout_sec,
+            "dependencies": dependencies,
         }
 
-        task_id = await self.agent_orchestrator.submit_task(task)
-        self.active_tasks[task_id] = task
+        orchestrator_task = self._build_orchestrator_task(task_record)
+        task_id = await self.agent_orchestrator.submit_task(orchestrator_task)
+        self.active_tasks[task_id] = task_record
 
         return task_id
 
     def get_task_status(self, task_id: str) -> Optional[Dict[str, Any]]:
         """Get status of a specific task"""
         return self.agent_orchestrator.get_task_status(task_id)
+
+    def _normalize_task_priority(self, priority: Any) -> str:
+        value = str(priority or "normal").strip().lower()
+        return value if value in TASK_PRIORITY_VALUES else "normal"
+
+    def _normalize_task_timeout(self, timeout: Any) -> int:
+        if timeout is None:
+            return DEFAULT_TASK_TIMEOUT_SEC
+        try:
+            timeout_sec = int(timeout)
+        except (TypeError, ValueError):
+            return DEFAULT_TASK_TIMEOUT_SEC
+        return max(1, min(MAX_TASK_TIMEOUT_SEC, timeout_sec))
+
+    def _normalize_string_list(self, value: Any) -> List[str]:
+        if value is None:
+            return []
+        if isinstance(value, str | bytes):
+            values = [value]
+        else:
+            try:
+                values = list(value)
+            except TypeError:
+                values = [value]
+        return [str(item).strip() for item in values if str(item).strip()]
+
+    def _build_orchestrator_task(self, task_record: Dict[str, Any]) -> Any:
+        if Task is None or TaskPriority is None:
+            return task_record
+        priority = TaskPriority(task_record["priority"])
+        return Task(
+            task_id=task_record["task_id"],
+            name=task_record["name"],
+            description=task_record["description"],
+            required_capabilities=list(task_record["required_capabilities"]),
+            input_data=dict(task_record["input_data"]),
+            priority=priority,
+            max_execution_time=int(task_record["max_execution_time"]),
+            dependencies=list(task_record["dependencies"]),
+        )
 
     def _estimate_coherence(self) -> float:
         """Best-effort coherence estimate for observer-aware policy.
@@ -1341,19 +1426,19 @@ class AetherraEngine:
     def _sanitize_input(self, text: str) -> str:
         """Best-effort prompt-injection hardening (lightweight)."""
         try:
-            lowered = text.lower()
-            banned = [
-                "ignore previous",
-                "disregard previous",
-                "system prompt",
-                "instructions above",
-            ]
-            if any(b in lowered for b in banned):
-                # Redact risky phrases
+            sanitized = str(text)
+            matched = False
+            for phrase in PROMPT_INJECTION_PHRASES:
+                sanitized, replacements = re.subn(
+                    re.escape(phrase),
+                    "[redacted]",
+                    sanitized,
+                    flags=re.IGNORECASE,
+                )
+                matched = matched or replacements > 0
+            if matched:
                 self.session_metrics["safety_filters_triggered"] += 1
-                for b in banned:
-                    lowered = lowered.replace(b, "[redacted]")
-                return lowered
+                return sanitized
         except Exception:
             pass
         return text
@@ -1361,17 +1446,36 @@ class AetherraEngine:
     def _apply_output_filters(self, text: str) -> str:
         """Apply simple output policy filters before returning to user."""
         try:
-            # Basic redaction of secrets-like patterns
-            patterns = [
-                ("api_key=", "api_key=[redacted]"),
-                ("password=", "password=[redacted]"),
-            ]
-            out = text
-            for pat, rep in patterns:
-                out = out.replace(pat, rep)
+            out = str(text)
+            patterns = (
+                (r"(?i)\b(api[_-]?key)\s*=\s*([^\s,;]+)", r"\1=[redacted]"),
+                (r"(?i)\b(password)\s*=\s*([^\s,;]+)", r"\1=[redacted]"),
+                (r"(?i)\b(token)\s*=\s*([^\s,;]+)", r"\1=[redacted]"),
+                (r"(?i)\b(secret)\s*=\s*([^\s,;]+)", r"\1=[redacted]"),
+            )
+            for pattern, replacement in patterns:
+                out = re.sub(pattern, replacement, out)
             return out
         except Exception:
             return text
+
+    def _build_processing_error_response(self, exc: Exception) -> Dict[str, Any]:
+        """Return a stable user-safe processing error without leaking internals."""
+        trace_id = _short_trace_id(
+            type(exc).__name__,
+            self.session_id,
+            time.time_ns(),
+        )
+        logger.exception("Aetherra Engine message processing failed trace_id=%s", trace_id)
+        return {
+            "response": ENGINE_PROCESSING_ERROR_MESSAGE,
+            "error": {
+                "code": ENGINE_PROCESSING_ERROR_CODE,
+                "trace_id": trace_id,
+            },
+            "session_id": self.session_id,
+            "timestamp": datetime.now().isoformat(),
+        }
 
     def add_scratch(self, entry: Dict[str, Any]):
         """Append to ephemeral scratchpad (not persisted)."""
@@ -1411,7 +1515,7 @@ class AetherraEngine:
         except Exception:
             seed = 7
         key = f"{self.session_id or 'nosess'}:{self._msg_counter}:{seed}"
-        bucket_val = abs(hash(key)) % 100
+        bucket_val = _stable_percent_bucket(key)
         with suppress(Exception):
             self._msg_counter += 1
         return "quantum" if bucket_val < max(0, min(100, pct)) else "classical"

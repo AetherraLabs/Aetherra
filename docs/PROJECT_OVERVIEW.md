@@ -43,7 +43,7 @@ Core (Aetherra/aetherra_core) includes engine, kernel, memory, plugins, config. 
 
 Lyrixa (assistant) spans intelligence, gui, plugins, memory, launcher and integrates with the OS through the registry and Hub. The chat service is workspace-aware and can suggest/apply safe fixes with deterministic fallbacks when offline.
 
-Hub & Federation includes server, federation, node_assets. When Flask is present, the local Hub exposes health, stats, plugin registry, federation sync, and a Lyrixa chat bridge.
+Hub & Federation includes the Flask compatibility entry, blueprint API layer, service adapters, and federation support. When Flask is present, the local Hub exposes health, stats, plugin registry, federation sync, and a Lyrixa chat bridge.
 
 QFAC (Quantum Fractal Adaptive Compression) is present (integration, dashboard, analyzer). It is an optional extension that can be enabled via environment flags and verified via capability tests.
 
@@ -87,7 +87,6 @@ Additional parity test added: `tests/integration/test_hub_compat_parity.py` (ens
 - AETHERRA_HUB_ENABLED
 - AETHERRA_IMPORT_UPDATE_REPORT
 - AETHERRA_INTELLIGENCE_PROVIDER
-- AETHERRA_INTERFACE_TYPE
 - AETHERRA_LOG_LEVEL
 - AETHERRA_LYRIXA_CLEANUP_REPORT
 - AETHERRA_MAINTENANCE_ENABLED
@@ -447,13 +446,12 @@ sum by () (aetherra_style_empathy_total)
 
 ## Environment Variables — Chat and Base URLs (Aug 31, 2025)
 
-The chat system and demos recognize these common variables:
+The chat system and API clients recognize these common variables:
 
 - `AETHERRA_BASE_URL` — Base URL for Hub/API when clients are external to the process
 - `AETHERRA_CHAT_MAX_TOKENS` — Default output token cap for chat completions
 - `AETHERRA_CHAT_SAFETY_MODE` — Safety preset: strict | standard (affects policy gates)
 - `AETHERRA_CHAT_TEMPERATURE` — Default sampling temperature for chat
-- `AETHERRA_DEMO` — 1/0 to enable demo paths/features in UIs and tools
 - `AETHERRA_LLM_MODEL` — Preferred default LLM model identifier
 // Chat transport, versioning, and idempotency
 - `AETHERRA_AI_API_WS` — 1/0 to enable WebSocket transport endpoints; when enabled, clients can use ws://.../ws/ai/stream
@@ -502,7 +500,6 @@ Core toggles and networking:
 - `AETHERRA_HUB_WS_PORT`
 - `AETHERRA_NET_STRICT`
 - `AETHERRA_POLICY_HOME` — Override directory for security policy files (capabilities.json, net_policy.json); default: `~/.aetherra/policy`. Useful for CI/tests or sharing policy across instances.
-- `AETHERRA_OS_MODE`
 - `AETHERRA_PEERS`
 - `AETHERRA_QFAC_IN_OS`
 - `AETHERRA_QFAC_MODE`
@@ -584,7 +581,6 @@ Chat and client defaults:
 - `AETHERRA_CHAT_MAX_TOKENS`
 - `AETHERRA_CHAT_SAFETY_MODE`
 - `AETHERRA_CHAT_TEMPERATURE`
-- `AETHERRA_DEMO`
 - `AETHERRA_LLM_MODEL`
 // Chat transport, versioning, and idempotency
 - `AETHERRA_AI_API_WS`

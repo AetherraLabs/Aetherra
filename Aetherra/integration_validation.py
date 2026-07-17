@@ -72,6 +72,7 @@ def _run_validation(workspace_root: Path, *, profile: str) -> IntegrationValidat
         checks.append(_check_guardian_security_chain())
         checks.append(_check_homeostasis_observation_diagnosis())
         checks.append(_check_maintenance_coordination_chain())
+        checks.append(_check_self_incorporation_scope_and_rollback())
         checks.append(_check_aether_script_runtime_gate())
 
     return IntegrationValidationReport(
@@ -286,6 +287,100 @@ def _check_maintenance_coordination_chain() -> IntegrationValidationCheck:
             "cycle_status": completed.status.value if completed else None,
             "can_execute": cycle.can_execute(),
             "event_count": completed.summary()["event_count"] if completed else 0,
+        },
+    )
+
+
+def _check_self_incorporation_scope_and_rollback() -> IntegrationValidationCheck:
+    from aetherra_self_incorporation import (
+        SelfIncorporationConfig,
+        SelfIncorporationService,
+    )
+
+    async def _run() -> tuple[dict[str, Any], dict[str, Any]]:
+        with tempfile.TemporaryDirectory(prefix="aetherra-selfinc-validation-") as tmp_dir:
+            temp_path = Path(tmp_dir)
+            config = SelfIncorporationConfig()
+            config.hmr_enabled = True
+            config.index_db_path = temp_path / "selfinc_index.db"
+            config.index_jsonl_path = temp_path / "selfinc_index.jsonl"
+            config.audit_db_path = temp_path / "selfinc_audit.db"
+            service = SelfIncorporationService(config)
+
+            scope_plan = {
+                "plan_id": "integration-validation-scope-lock",
+                "status": "ready",
+                "actions": [
+                    {
+                        "action": "register_workflow",
+                        "target": {"file_id": "approved-workflow"},
+                        "deps": [],
+                    }
+                ],
+            }
+
+            async def scope_plan_runner(include_experimental: bool = False):
+                return scope_plan
+
+            async def mutate_after_approval(approved_plan: dict[str, Any]):
+                approved_plan["actions"].append(
+                    {
+                        "action": "register_workflow",
+                        "target": {"file_id": "scope-expansion"},
+                        "deps": [],
+                    }
+                )
+                return {
+                    "overall_score": 0.95,
+                    "risk_factors": [],
+                    "reasoning": ["validation mutation after approval"],
+                }
+
+            service._run_integration_planning = scope_plan_runner  # type: ignore[method-assign]
+            service._evaluate_plan_ethics = mutate_after_approval  # type: ignore[method-assign]
+            scope_result = await service.trigger_integrate(dry_run=True)
+
+            rollback_plan = {
+                "plan_id": "integration-validation-rollback-required",
+                "status": "ready",
+                "actions": [
+                    {
+                        "action": "register_plugin",
+                        "target": {"file_id": "plugin-needs-hmr-rollback"},
+                        "deps": [],
+                    }
+                ],
+            }
+
+            async def rollback_plan_runner(include_experimental: bool = False):
+                return rollback_plan
+
+            service._run_integration_planning = rollback_plan_runner  # type: ignore[method-assign]
+            service.service_registry = None
+            rollback_result = await service.trigger_integrate(dry_run=False)
+
+            return scope_result, rollback_result
+
+    scope_result, rollback_result = asyncio.run(_run())
+    passed = bool(
+        scope_result.get("ok") is False
+        and scope_result.get("status") == "scope_mismatch"
+        and scope_result.get("applied") == 0
+        and rollback_result.get("ok") is False
+        and rollback_result.get("status") == "rollback_unavailable"
+        and rollback_result.get("reason")
+        == "rollback_unavailable:register_plugin:hmr_controller_unavailable"
+    )
+    return IntegrationValidationCheck(
+        name="self_incorporation_scope_and_rollback",
+        passed=passed,
+        summary="Self-Incorporation rejects post-approval scope drift and rollback-less mutation",
+        details={
+            "scope_status": scope_result.get("status"),
+            "scope_reason": scope_result.get("reason"),
+            "scope_applied": scope_result.get("applied"),
+            "rollback_status": rollback_result.get("status"),
+            "rollback_reason": rollback_result.get("reason"),
         },
     )
 

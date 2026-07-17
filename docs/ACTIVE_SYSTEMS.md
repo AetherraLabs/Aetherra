@@ -4,6 +4,9 @@ This is the project dashboard for systems that currently define Aetherra. It
 tracks what exists, what state each system is in, and which document should be
 treated as the primary reference.
 
+For the human-readable identity, authority model, and core lifecycle of the
+project, see `docs/WHO_IS_AETHERRA.md`.
+
 Status meanings:
 
 - Functional foundation complete: the system has a working bounded foundation,
@@ -53,4 +56,4 @@ operations foundation. New systems should integrate with those foundations
 instead of bypassing them.
 
 When a system reaches a functional milestone, update this file, the system
-document, and `docs/BUILD_ORDER.md` in the same change.
+document, and `docs/MASTER_ROADMAP.md` in the same change.

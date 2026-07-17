@@ -1,14 +1,17 @@
 # Aetherra Documentation Index
 
-This is the canonical navigation surface for active (living) specifications, operator guides, and core system references. For broader thematic and historical material, see `../docs-organized/`.
+This is the canonical navigation surface for active specifications, operator
+guides, and core system references. Historical material lives under
+`docs/archive/` when it must be retained for traceability.
 
 ## Dashboards & Meta
 
 - Active Systems Dashboard: `ACTIVE_SYSTEMS.md`
-- Build Order: `BUILD_ORDER.md`
+- Master Roadmap: `MASTER_ROADMAP.md`
 - System Status Dashboard: `SYSTEM_INDEX.md`
 - Documentation Architecture: `DOCS_ARCHITECTURE.md`
 - Master Map: `AETHERRA_MASTER_MAP.md`
+- File Manifest: `AETHERRA_FILE_MANIFEST.json`
 - Mind Map: `AETHERRA_MIND_MAP.md`
 - Claims Validation: `AETHERRA_CLAIMS_VALIDATION.md`
 
@@ -53,8 +56,7 @@ This is the canonical navigation surface for active (living) specifications, ope
 ## Architecture & Roadmaps
 
 - OS Architecture Map: `aetherra_os_architecture_map_v_1.md`
-- Quantum Roadmap (v1): `aetherra_quantum_roadmap_v_1.md`
-- Beta Roadmap: `BETA_ROADMAP_0.5.0.md`
+- Master Roadmap: `MASTER_ROADMAP.md`
 - Beta Milestone: `BETA_MILESTONE.md`
 
 ## Metrics & Observability
@@ -81,6 +83,7 @@ This is the canonical navigation surface for active (living) specifications, ope
 
 ## Generated & Reports
 
+- Aetherra File Manifest: `AETHERRA_FILE_MANIFEST.json`
 - File Index: `FILE_INDEX.md`
 - Docs Consistency: `DOCS_CONSISTENCY.md`
 - Docs Consistency Report: `DOCS_CONSISTENCY_REPORT.md`

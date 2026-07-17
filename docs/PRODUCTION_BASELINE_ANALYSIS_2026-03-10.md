@@ -55,8 +55,8 @@ Updates after initial baseline capture:
   debt was removed in template rendering and analytics comments.
 - `Aetherra/security/sandbox.py` pass-only exception classes were replaced
   with concrete typed exception implementations.
-- `Aetherra/aetherra_core/agents/chat_router_old.py` legacy lexical marker
-  debt was reduced to zero while retaining compatibility shims.
+- Legacy `chat_router_old.py` compatibility modules were removed after no
+  active runtime imports were found.
 - `Aetherra/aetherra_core/agents/conversation_manager.py` pass-only fallback
   constructors were replaced with concrete compatibility state handling.
 - `Aetherra/aetherra_core/agents/enhanced_interpreter.py` control-flow
@@ -229,10 +229,8 @@ Implication:
 
 ## Legacy Signals
 
-Legacy-named files detected: `4`
+Legacy-named files detected: `2`
 
-- `Aetherra/core/chat_router_old.py`
-- `Aetherra/aetherra_core/agents/chat_router_old.py`
 - `tools/migrate_legacy_aether.py`
 - `tools/storm_backup.py`
 

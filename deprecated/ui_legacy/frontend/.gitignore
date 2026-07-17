@@ -1,7 +1,0 @@
-node_modules/
-dist/
-.env
-# Prevent accidental commits of Python/venv artifacts
-**/Lib/
-**/site-packages/
-**/*.dist-info/

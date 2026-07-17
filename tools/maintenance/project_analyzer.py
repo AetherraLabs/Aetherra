@@ -248,7 +248,6 @@ class AetherraProjectAnalyzer:
             "tests": "Testing infrastructure and test files",
             "doc": "Documentation files",
             "docs": "Documentation files",
-            "docs-organized": "Organized documentation library",
             "config": "Configuration files",
             "data": "Data storage and databases",
             "db": "Database files",

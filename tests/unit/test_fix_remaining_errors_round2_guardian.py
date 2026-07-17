@@ -28,9 +28,7 @@ def _guardian_entries(root):
 
 def _create_round2_tree(tmp_path):
     generator = tmp_path / "Aetherra" / "lyrixa" / "gui" / "phase3_auto_generator.py"
-    roadmap = tmp_path / "Aetherra" / "consciousness" / "EXTENDED_ROADMAP.md"
     generator.parent.mkdir(parents=True)
-    roadmap.parent.mkdir(parents=True)
     generator.write_text(
         'class Phase3Generator:\n'
         '    """Generator."""\n'
@@ -38,18 +36,14 @@ def _create_round2_tree(tmp_path):
         "        return component.name\n",
         encoding="utf-8",
     )
-    roadmap.write_text(
-        "### Phase 7.1: Old Status\nold text\n\n### Phase 7.2: Next\n",
-        encoding="utf-8",
-    )
-    return generator, roadmap
+    return generator
 
 
 def test_round2_fixes_use_guardian_approval_and_sanitized_audit(
     monkeypatch, tmp_path
 ):
     audit_root = _configure_guardian(monkeypatch, tmp_path)
-    generator, roadmap = _create_round2_tree(tmp_path)
+    generator = _create_round2_tree(tmp_path)
     plans = fix_remaining_errors_round2.plan_round2_fixes(tmp_path)
     pending = fix_remaining_errors_round2._guardian_preflight_round2_fixes(
         project_root=tmp_path,
@@ -67,12 +61,10 @@ def test_round2_fixes_use_guardian_approval_and_sanitized_audit(
 
     assert result == 0
     assert "_safe_get_attr" in generator.read_text(encoding="utf-8")
-    assert "Phase 7.1 repair pass complete" in roadmap.read_text(encoding="utf-8")
     assert entries[-1]["details"]["intent"]["action"] == "maintenance.round_two_error_fix"
     assert entries[-1]["details"]["decision"]["reason"] == "approved_with_guardian_approval"
     assert "maintenance_operation" in entries[-1]["details"]["risk"]["factors"]
     assert "phase3_auto_generator.py" not in ledger_text
-    assert "EXTENDED_ROADMAP.md" not in ledger_text
 
 
 def test_round2_fixes_deny_external_requester_before_mutation(monkeypatch, tmp_path):
@@ -80,16 +72,14 @@ def test_round2_fixes_deny_external_requester_before_mutation(monkeypatch, tmp_p
     monkeypatch.setenv("AETHERRA_REQUIRE_CAPABILITIES", "1")
     monkeypatch.setenv("AETHERRA_POLICY_HOME", str(audit_root / "policy"))
     monkeypatch.setenv("AETHERRA_PRINCIPAL", "untrusted_operator")
-    generator, roadmap = _create_round2_tree(tmp_path)
+    generator = _create_round2_tree(tmp_path)
     original_generator = generator.read_text(encoding="utf-8")
-    original_roadmap = roadmap.read_text(encoding="utf-8")
 
     result = fix_remaining_errors_round2.apply_round2_fixes(tmp_path)
     entries = _guardian_entries(audit_root)
 
     assert result == 1
     assert generator.read_text(encoding="utf-8") == original_generator
-    assert roadmap.read_text(encoding="utf-8") == original_roadmap
     assert entries[-1]["details"]["intent"]["requester"] == "untrusted_operator"
     assert entries[-1]["details"]["decision"]["reason"] == "missing_capability"
 

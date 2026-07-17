@@ -282,7 +282,6 @@ extend-exclude = [
     "Aetherra/plugins/extra_plugins/*_gui.py",
     "tests/gui",
     "tests/ai/test_neural_interface.py",
-    "demos/demo_intelligent_error_handler_8.py",
 ]
 
 [tool.ruff.lint]

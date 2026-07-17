@@ -40,7 +40,7 @@ routing:
 
 ## Validation Checks
 
-The current runner performs four non-destructive checks:
+The current runner performs five non-destructive checks:
 
 1. `guardian_security_chain`
    - Guardian allows an internal script runtime intent.
@@ -56,7 +56,13 @@ The current runner performs four non-destructive checks:
    - Uses Guardian decision state and Security enforcement state.
    - Records dry-run execution, Homeostasis verification, and learning outcome.
 
-4. `aether_script_runtime_gate`
+4. `self_incorporation_scope_and_rollback`
+   - Confirms Self-Incorporation rejects post-approval plan scope drift.
+   - Confirms non-dry-run plugin integration fails closed when rollback support
+     is unavailable.
+   - Applies no runtime mutation.
+
+5. `aether_script_runtime_gate`
    - Executes a benign internal validation script.
    - Blocks an external strict-mode script before interpreter mutation.
 
@@ -82,6 +88,7 @@ This system is foundation-complete because:
 - It has a bounded executable validation runner.
 - It exercises multiple completed foundations in one chain.
 - It validates both allow and deny behavior.
+- It validates Self-Incorporation scope-lock and rollback fail-closed behavior.
 - It avoids destructive actions, network calls, real self-modification, and UI
   dependencies.
 - It is covered by focused tests and a CLI smoke path.

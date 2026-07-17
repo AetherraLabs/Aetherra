@@ -1,6 +1,6 @@
 # Aetherra Quantum Layer: Overview
 
-Roadmap Status: Active — see `docs/roadmap/aetherra_quantum_roadmap_v_1.md` (v1.0)
+Roadmap Status: Tracked in `docs/MASTER_ROADMAP.md`.
 
 This document tracks the initial Quantum bridge, QRNG, and configuration.
 

@@ -27,16 +27,17 @@ def test_memory_engine_store_retrieve():
     assert any("integration test entry" in r["content"] for r in results)
 
 
-# Quantum dashboards
-def test_qfac_dashboard_endpoint():
-    # Third party imports
-    from memory.qfac_dashboard import app
+# Quantum memory administration
+def test_qfac_admin_endpoint():
+    from aetherra_hub.app import create_app
 
+    app = create_app()
     with app.test_client() as client:
-        response = client.get("/qfac/metrics")
+        response = client.get("/api/qfac/admin/show")
         assert response.status_code == 200
         data = response.get_json()
-        assert "phases" in data
+        assert isinstance(data, dict)
+        assert "retrieval_policy" in data
 
 
 def test_quantum_web_status():

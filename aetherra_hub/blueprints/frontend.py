@@ -11,6 +11,7 @@ from pathlib import Path
 
 from flask import Blueprint, send_from_directory
 from flask.wrappers import Response
+from werkzeug.security import safe_join
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,21 @@ else:
     # Running from source
     base_path = Path(__file__).parent.parent.parent
     FRONTEND_DIST = base_path / "Aetherra" / "lyrixa" / "gui" / "dist"
+
+
+def _safe_frontend_asset(path: str) -> str | None:
+    """Return a safe relative frontend asset path, or None for SPA fallback."""
+
+    if not path:
+        return None
+    dist_root = str(FRONTEND_DIST.resolve())
+    safe_path = safe_join(dist_root, path)
+    if safe_path is None:
+        return None
+    candidate = Path(safe_path)
+    if not candidate.is_file():
+        return None
+    return candidate.relative_to(dist_root).as_posix()
 
 
 @bp.route("/", defaults={"path": ""})
@@ -45,9 +61,10 @@ def serve_frontend(path: str) -> Response | tuple[str, int]:
                 404,
             )
 
-        # Serve requested file if it exists
-        if path and (FRONTEND_DIST / path).exists():
-            return send_from_directory(FRONTEND_DIST, path)
+        # Serve requested file if it exists inside the frontend dist root.
+        asset_path = _safe_frontend_asset(path)
+        if asset_path is not None:
+            return send_from_directory(FRONTEND_DIST, asset_path)
 
         # Fallback to index.html for SPA routing
         index_path = FRONTEND_DIST / "index.html"
@@ -57,9 +74,9 @@ def serve_frontend(path: str) -> Response | tuple[str, int]:
         logger.error("[FRONTEND] index.html not found in %s", FRONTEND_DIST)
         return "<h1>Frontend Error</h1><p>index.html not found</p>", 500
 
-    except Exception as e:
-        logger.exception("[FRONTEND] Error serving file: %s", e)
-        return f"<h1>Error</h1><p>{e}</p>", 500
+    except Exception:
+        logger.exception("[FRONTEND] Error serving frontend asset")
+        return "<h1>Error</h1><p>frontend_unavailable</p>", 500
 
 
 logger.info("[FRONTEND] Blueprint registered (serving from %s)", FRONTEND_DIST)

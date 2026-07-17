@@ -3,7 +3,7 @@
 - Status: Accepted
 - Date: 2026-03-10
 - Owners: Phase 1 Team
-- Related: `PRODUCTION_ROADMAP.md` section 1.1.3
+- Related: `docs/MASTER_ROADMAP.md`
 
 ## Context
 
