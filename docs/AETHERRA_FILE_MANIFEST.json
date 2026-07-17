@@ -1,13 +1,12 @@
 {
   "categories": {
-    "configuration": 94,
-    "documentation": 313,
+    "configuration": 95,
+    "documentation": 314,
     "legacy-or-archive": 4,
-    "operational-runtime": 791,
+    "operational-runtime": 793,
     "rename-debt": 1,
-    "test": 512,
-    "tooling": 252,
-    "unclassified": 26
+    "test": 514,
+    "tooling": 252
   },
   "directories": [
     {
@@ -74,10 +73,10 @@
       "path": ".vscode/"
     },
     {
-      "direct_file_count": 9,
+      "direct_file_count": 6,
       "dominant_category": "operational-runtime",
       "dominant_keep_status": "provisional-runtime",
-      "file_count": 754,
+      "file_count": 734,
       "path": "Aetherra/"
     },
     {
@@ -501,137 +500,11 @@
       "path": "Aetherra/core/utils/"
     },
     {
-      "direct_file_count": 0,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 14,
-      "path": "Aetherra/data/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 1,
-      "path": "Aetherra/data/contradiction_data/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 1,
-      "path": "Aetherra/data/curiosity_data/"
-    },
-    {
-      "direct_file_count": 0,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 3,
-      "path": "Aetherra/data/databases/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 1,
-      "path": "Aetherra/data/databases/core/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 1,
-      "path": "Aetherra/data/databases/lyrixa/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 1,
-      "path": "Aetherra/data/databases/shared/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 1,
-      "path": "Aetherra/data/growth_trajectory_data/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 1,
-      "path": "Aetherra/data/learning_loop_data/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 1,
-      "path": "Aetherra/data/memory_continuity_data/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 1,
-      "path": "Aetherra/data/meta_learning_data/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 1,
-      "path": "Aetherra/data/metrics_data/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 1,
-      "path": "Aetherra/data/operations/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 1,
-      "path": "Aetherra/data/question_generator_data/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 1,
-      "path": "Aetherra/data/self_directed_learning_data/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 1,
-      "path": "Aetherra/data/self_metrics_data/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 1,
-      "path": "Aetherra/db/"
-    },
-    {
       "direct_file_count": 6,
       "dominant_category": "documentation",
       "dominant_keep_status": "review-doc",
       "file_count": 6,
       "path": "Aetherra/docs/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 1,
-      "path": "Aetherra/growth_trajectory_data/"
     },
     {
       "direct_file_count": 14,
@@ -884,13 +757,6 @@
       "dominant_keep_status": "provisional-runtime",
       "file_count": 2,
       "path": "Aetherra/memory/core/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "unclassified",
-      "dominant_keep_status": "needs-review",
-      "file_count": 1,
-      "path": "Aetherra/memory_continuity_data/"
     },
     {
       "direct_file_count": 1,
@@ -2279,20 +2145,20 @@
       "purpose": "Repository configuration"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "documentation",
+      "keep_status": "review-doc",
+      "lifecycle": "documentation",
+      "owner": "Aetherra",
       "path": "Aetherra/README.md",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package overview"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "keep",
+      "lifecycle": "runtime-support",
+      "owner": "Aetherra",
       "path": "Aetherra/__init__.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Aetherra package API"
     },
     {
       "category": "operational-runtime",
@@ -4175,20 +4041,12 @@
       "purpose": "Core runtime package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/aetherra_file_router.py",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "operational-runtime",
+      "keep_status": "keep",
+      "lifecycle": "runtime-api",
+      "owner": "Aetherra",
       "path": "Aetherra/aetherra_hub_integration.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Hub integration client"
     },
     {
       "category": "operational-runtime",
@@ -4207,12 +4065,12 @@
       "purpose": "AI coordination package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "test",
+      "keep_status": "review-by-suite",
+      "lifecycle": "verification",
+      "owner": "verification",
       "path": "Aetherra/alpha_boot_validation.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Alpha boot validation contract"
     },
     {
       "category": "operational-runtime",
@@ -5415,126 +5273,6 @@
       "purpose": "Legacy core compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/data/contradiction_data/README.md",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/data/curiosity_data/README.md",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/data/databases/core/README.md",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/data/databases/lyrixa/README.md",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/data/databases/shared/README.md",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/data/growth_trajectory_data/README.md",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/data/learning_loop_data/README.md",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/data/memory_continuity_data/README.md",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/data/meta_learning_data/README.md",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/data/metrics_data/README.md",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/data/operations/README.md",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/data/question_generator_data/README.md",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/data/self_directed_learning_data/README.md",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/data/self_metrics_data/README.md",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/db/README.md",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
       "category": "documentation",
       "keep_status": "review-doc",
       "lifecycle": "documentation",
@@ -5581,14 +5319,6 @@
       "owner": "Aetherra/docs",
       "path": "Aetherra/docs/architecture_diagram.png.png",
       "purpose": "Legacy package documentation"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/growth_trajectory_data/README.md",
-      "purpose": "No current classification rule matched this tracked file"
     },
     {
       "category": "operational-runtime",
@@ -6007,12 +5737,12 @@
       "purpose": "Integration bridge package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "test",
+      "keep_status": "review-by-suite",
+      "lifecycle": "verification",
+      "owner": "verification",
       "path": "Aetherra/integration_validation.py",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Cross-system integration validation"
     },
     {
       "category": "operational-runtime",
@@ -6839,14 +6569,6 @@
       "purpose": "Lyrixa plugin compatibility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/main.py",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
       "category": "operational-runtime",
       "keep_status": "provisional-runtime",
       "lifecycle": "governed-runtime",
@@ -6973,14 +6695,6 @@
       "owner": "Aetherra/memory",
       "path": "Aetherra/memory/quantum_web_dashboard.py",
       "purpose": "Memory compatibility package"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/memory_continuity_data/README.md",
-      "purpose": "No current classification rule matched this tracked file"
     },
     {
       "category": "operational-runtime",
@@ -8239,14 +7953,6 @@
       "purpose": "Runtime utility package"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/verify_lyrixa_merge.py",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
       "category": "operational-runtime",
       "keep_status": "provisional-runtime",
       "lifecycle": "runtime-support",
@@ -9063,12 +8769,12 @@
       "purpose": "OS compatibility entrypoint"
     },
     {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
+      "category": "configuration",
+      "keep_status": "keep",
+      "lifecycle": "build-or-ci",
+      "owner": "repo-root",
       "path": "aetherra_os.spec",
-      "purpose": "No current classification rule matched this tracked file"
+      "purpose": "Repository configuration"
     },
     {
       "category": "operational-runtime",
@@ -17738,14 +17444,13 @@
   "generated_on": "2026-07-16",
   "keep_status": {
     "candidate-review": 4,
-    "keep": 245,
+    "keep": 248,
     "keep-rename": 1,
-    "needs-review": 26,
     "provisional-runtime": 690,
-    "review-by-suite": 512,
-    "review-doc": 263,
+    "review-by-suite": 514,
+    "review-doc": 264,
     "review-tool": 252
   },
-  "tracked_directory_count": 254,
-  "tracked_file_count": 1993
+  "tracked_directory_count": 235,
+  "tracked_file_count": 1973
 }

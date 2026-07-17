@@ -445,46 +445,12 @@ Aetherra/
     README.md — core
     syntax_tree.py — Calculate the maximum depth of a syntax tree (legacy function)
     webhook_manager.py — Manages webhook registration, triggering, and error handling."""
-  data/
-    contradiction_data/
-      README.md — contradiction_data
-    curiosity_data/
-      README.md — curiosity_data
-    databases/
-      core/
-        README.md — core
-      lyrixa/
-        README.md — lyrixa
-      shared/
-        README.md — shared
-    growth_trajectory_data/
-      README.md — growth_trajectory_data
-    learning_loop_data/
-      README.md — learning_loop_data
-    memory_continuity_data/
-      README.md — memory_continuity_data
-    meta_learning_data/
-      README.md — meta_learning_data
-    metrics_data/
-      README.md — metrics_data
-    operations/
-      README.md — operations
-    question_generator_data/
-      README.md — question_generator_data
-    self_directed_learning_data/
-      README.md — self_directed_learning_data
-    self_metrics_data/
-      README.md — self_metrics_data
-  db/
-    README.md — db
   docs/
     aetherra_labs_vision.md — Aetherra Labs Vision
     AETHERRA_MANIFESTO.md — AETHERRA MANIFESTO (v6.0 – July 2025)
     AI_OS_MANIFESTO.md — 🧬 The AI Operating System Manifesto
     README.md — docs
     SELF_ORGANIZING_INTELLIGENCE.md — 🧠 Aetherra Self-Organizing Intelligence System
-  growth_trajectory_data/
-    README.md — growth_trajectory_data
   guardian/
     __init__.py — Aetherra Guardian System public API.
     approval.py — Approval request persistence for Guardian."""
@@ -678,8 +644,6 @@ Aetherra/
     graph_optics.py — SPDX-License-Identifier: GPL-3.0-or-later
     observer_effects.py — Compatibility shim for legacy ``memory.observer_effects`` imports.
     quantum_web_dashboard.py — Compatibility shim for legacy ``memory.quantum_web_dashboard`` imports.
-  memory_continuity_data/
-    README.md — memory_continuity_data
   observability/
     metrics_service.py — Lightweight in-process metrics exposure service.
   perception_bus/
@@ -872,13 +836,10 @@ Aetherra/
     __init__.py — Get current web system status."""
     README.md — web
   __init__.py — Aetherra package public API.
-  aetherra_file_router.py — SPDX-License-Identifier: GPL-3.0-or-later
   aetherra_hub_integration.py — Async context manager entry"""
   alpha_boot_validation.py — CI-friendly alpha boot validation for Aetherra.
   integration_validation.py — Cross-system integration validation for Aetherra foundations.
-  main.py — SPDX-License-Identifier: GPL-3.0-or-later
-  README.md — Aetherra - AI-Native Development Platform
-  verify_lyrixa_merge.py — !/usr/bin/env python3
+  README.md — Aetherra Package
 docs/
   adr/
     ADR-0000-template.md — ADR-0000: SHORT TITLE PLACEHOLDER

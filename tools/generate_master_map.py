@@ -55,6 +55,13 @@ OPERATIONAL_ROOT_FILES = {
     "unicode_logger.py": ("Unicode-safe logging support", "runtime-support"),
 }
 
+OPERATIONAL_AETHERRA_FILES = {
+    "Aetherra/__init__.py": ("Aetherra package API", "runtime-support"),
+    "Aetherra/aetherra_hub_integration.py": ("Hub integration client", "runtime-api"),
+    "Aetherra/alpha_boot_validation.py": ("Alpha boot validation contract", "verification"),
+    "Aetherra/integration_validation.py": ("Cross-system integration validation", "verification"),
+}
+
 CONFIG_ROOT_FILES = {
     ".coveragerc",
     ".editorconfig",
@@ -82,6 +89,7 @@ CONFIG_ROOT_FILES = {
     "requirements.lock",
     "requirements.txt",
     "setup.py",
+    "aetherra_os.spec",
 }
 
 PUBLIC_DOC_ROOT_FILES = {
@@ -103,6 +111,10 @@ PUBLIC_DOC_ROOT_FILES = {
     "SECURITY.md",
     "STEWARDSHIP.md",
     "SUPPORT.md",
+}
+
+PUBLIC_DOC_AETHERRA_FILES = {
+    "Aetherra/README.md": "Aetherra package overview",
 }
 
 RUNTIME_PREFIXES = {
@@ -251,6 +263,13 @@ def classify(path: str) -> FileRecord:
         purpose, lifecycle = OPERATIONAL_ROOT_FILES[path]
         return FileRecord(path, "operational-runtime", lifecycle, "runtime", purpose, "keep")
 
+    if path in OPERATIONAL_AETHERRA_FILES:
+        purpose, lifecycle = OPERATIONAL_AETHERRA_FILES[path]
+        category = "test" if lifecycle == "verification" else "operational-runtime"
+        owner = "verification" if lifecycle == "verification" else "Aetherra"
+        keep_status = "review-by-suite" if lifecycle == "verification" else "keep"
+        return FileRecord(path, category, lifecycle, owner, purpose, keep_status)
+
     prefix, value = first_matching_prefix(path, RUNTIME_PREFIXES)
     if prefix and isinstance(value, tuple):
         purpose, lifecycle = value
@@ -275,6 +294,16 @@ def classify(path: str) -> FileRecord:
 
     if path in PUBLIC_DOC_ROOT_FILES:
         return FileRecord(path, "documentation", "documentation", "repo-root", "Public project documentation", "keep")
+
+    if path in PUBLIC_DOC_AETHERRA_FILES:
+        return FileRecord(
+            path,
+            "documentation",
+            "documentation",
+            "Aetherra",
+            PUBLIC_DOC_AETHERRA_FILES[path],
+            "review-doc",
+        )
 
     prefix, purpose = first_matching_prefix(path, TOOL_PREFIXES)
     if prefix:

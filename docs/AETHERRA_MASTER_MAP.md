@@ -15,46 +15,44 @@ marked for review before removal.
 
 ## Current Inventory
 
-- Tracked files: 1993
-- Tracked directories: 254
-- Files confirmed keep: 245
-- Files requiring suite/doc/tool/provisional review: 1748
-- Runtime/candidate/unknown files needing evidence: 720
+- Tracked files: 1973
+- Tracked directories: 235
+- Files confirmed keep: 248
+- Files requiring suite/doc/tool/provisional review: 1725
+- Runtime/candidate/unknown files needing evidence: 694
 
 ### By Category
 
-- configuration: 94
-- documentation: 313
+- configuration: 95
+- documentation: 314
 - legacy-or-archive: 4
-- operational-runtime: 791
+- operational-runtime: 793
 - rename-debt: 1
-- test: 512
+- test: 514
 - tooling: 252
-- unclassified: 26
 
 ### By Lifecycle
 
 - boot: 4
-- build-or-ci: 94
-- documentation: 313
+- build-or-ci: 95
+- documentation: 314
 - governed-runtime: 30
 - historical: 4
 - maintenance: 252
 - operator: 9
 - plugin-runtime: 91
 - runtime: 543
-- runtime-api: 72
-- runtime-support: 33
+- runtime-api: 73
+- runtime-support: 34
 - runtime-ui: 9
-- unknown: 26
 - unknown-or-compatibility: 1
-- verification: 512
+- verification: 514
 
 ## Top-Level Folder Map
 
 | Folder | Files | Category | Status |
 | --- | ---: | --- | --- |
-| `Aetherra/` | 754 | operational-runtime | provisional-runtime |
+| `Aetherra/` | 734 | operational-runtime | provisional-runtime |
 | `tests/` | 512 | test | review-by-suite |
 | `docs/` | 266 | documentation | review-doc |
 | `tools/` | 188 | tooling | review-tool |
@@ -89,6 +87,7 @@ marked for review before removal.
 These are files currently classified as directly involved in boot,
 runtime, governed runtime, API operation, plugin operation, or Runtime UI.
 
+- `Aetherra/__init__.py` - Aetherra package API (runtime-support; keep)
 - `Aetherra/aetherra_core/README.md` - Core runtime package (runtime; provisional-runtime)
 - `Aetherra/aetherra_core/__init__.py` - Core runtime package (runtime; provisional-runtime)
 - `Aetherra/aetherra_core/agents/aetherra_grammar.py` - Core runtime package (runtime; provisional-runtime)
@@ -208,8 +207,7 @@ runtime, governed runtime, API operation, plugin operation, or Runtime UI.
 - `Aetherra/aetherra_core/memory/memory_learning.py` - Core runtime package (runtime; provisional-runtime)
 - `Aetherra/aetherra_core/memory/models.py` - Core runtime package (runtime; provisional-runtime)
 - `Aetherra/aetherra_core/memory/narrator/README.md` - Core runtime package (runtime; provisional-runtime)
-- `Aetherra/aetherra_core/memory/narrator/__init__.py` - Core runtime package (runtime; provisional-runtime)
-- ... 671 more in `docs/AETHERRA_FILE_MANIFEST.json`
+- ... 673 more in `docs/AETHERRA_FILE_MANIFEST.json`
 
 ## Configuration And Build Files
 
@@ -282,6 +280,7 @@ runtime, governed runtime, API operation, plugin operation, or Runtime UI.
 - `Aetherra/pyproject.toml` - Aetherra package configuration (build-or-ci; keep)
 - `Dockerfile` - Repository configuration (build-or-ci; keep)
 - `MANIFEST.in` - Repository configuration (build-or-ci; keep)
+- `aetherra_os.spec` - Repository configuration (build-or-ci; keep)
 - `commitlint.config.js` - Repository configuration (build-or-ci; keep)
 - `config.autonomy.production.json` - Repository configuration (build-or-ci; keep)
 - `config.autonomy.staging.json` - Repository configuration (build-or-ci; keep)
@@ -292,14 +291,15 @@ runtime, governed runtime, API operation, plugin operation, or Runtime UI.
 - `config/self_model.json` - Configuration files (build-or-ci; keep)
 - `configs/qfac.yaml` - Configuration files (build-or-ci; keep)
 - `configs/sql/storm_schema_v1.sql` - Configuration files (build-or-ci; keep)
-- `configs/storm.yaml` - Configuration files (build-or-ci; keep)
-- ... 14 more in `docs/AETHERRA_FILE_MANIFEST.json`
+- ... 15 more in `docs/AETHERRA_FILE_MANIFEST.json`
 
 ## Verification Surface
 
 Tests are not runtime files, but they are required until each suite is
 mapped to a current system, replaced, or intentionally retired.
 
+- `Aetherra/alpha_boot_validation.py` - Alpha boot validation contract (verification; review-by-suite)
+- `Aetherra/integration_validation.py` - Cross-system integration validation (verification; review-by-suite)
 - `tests/README.md` - Automated tests and probes (verification; review-by-suite)
 - `tests/__init__.py` - Automated tests and probes (verification; review-by-suite)
 - `tests/acceptance/test_autonomous_error_correction_golden_paths.py` - Automated tests and probes (verification; review-by-suite)
@@ -378,15 +378,14 @@ mapped to a current system, replaced, or intentionally retired.
 - `tests/capabilities/test_transcendence_deterministic_metrics.py` - Automated tests and probes (verification; review-by-suite)
 - `tests/capabilities/test_working_api_coverage.py` - Automated tests and probes (verification; review-by-suite)
 - `tests/coding/test_revert_and_diff.py` - Automated tests and probes (verification; review-by-suite)
-- `tests/conftest.py` - Automated tests and probes (verification; review-by-suite)
-- `tests/consciousness/conftest.py` - Automated tests and probes (verification; review-by-suite)
-- ... 432 more in `docs/AETHERRA_FILE_MANIFEST.json`
+- ... 434 more in `docs/AETHERRA_FILE_MANIFEST.json`
 
 ## Documentation Surface
 
 Documentation is retained when it is active, architectural, legal,
 operator-facing, or historical material that still explains project context.
 
+- `Aetherra/README.md` - Aetherra package overview (documentation; review-doc)
 - `Aetherra/docs/AETHERRA_MANIFESTO.md` - Legacy package documentation (documentation; review-doc)
 - `Aetherra/docs/AI_OS_MANIFESTO.md` - Legacy package documentation (documentation; review-doc)
 - `Aetherra/docs/README.md` - Legacy package documentation (documentation; review-doc)
@@ -466,8 +465,7 @@ operator-facing, or historical material that still explains project context.
 - `docs/AETHERRA_SERVICE_REGISTRY.md` - Active documentation (documentation; keep)
 - `docs/AETHERRA_WEBSOCKET_API.md` - Active documentation (documentation; keep)
 - `docs/AETHER_SCRIPT_TUTORIAL.md` - Active documentation (documentation; review-doc)
-- `docs/ALPHA_OPERATOR_RUNBOOK.md` - Active documentation (documentation; review-doc)
-- ... 233 more in `docs/AETHERRA_FILE_MANIFEST.json`
+- ... 234 more in `docs/AETHERRA_FILE_MANIFEST.json`
 
 ## Review Queues
 
@@ -478,8 +476,6 @@ yet proven direct active use.
 
 ### Root Or Unknown Candidates
 
-- `Aetherra/README.md` - needs-review; No current classification rule matched this tracked file
-- `Aetherra/__init__.py` - needs-review; No current classification rule matched this tracked file
 - `Aetherra/aetherra_core/README.md` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/__init__.py` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/agents/aetherra_grammar.py` - provisional-runtime; Core runtime package
@@ -598,7 +594,9 @@ yet proven direct active use.
 - `Aetherra/aetherra_core/memory/memory_kernel.py` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/memory/memory_learning.py` - provisional-runtime; Core runtime package
 - `Aetherra/aetherra_core/memory/models.py` - provisional-runtime; Core runtime package
-- ... 600 more in `docs/AETHERRA_FILE_MANIFEST.json`
+- `Aetherra/aetherra_core/memory/narrator/README.md` - provisional-runtime; Core runtime package
+- `Aetherra/aetherra_core/memory/narrator/__init__.py` - provisional-runtime; Core runtime package
+- ... 574 more in `docs/AETHERRA_FILE_MANIFEST.json`
 
 ## Cleanup Process
 
