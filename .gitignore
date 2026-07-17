@@ -334,6 +334,7 @@ frontend/Lib/
 frontend/Scripts/
 
 # ===== COMPILED EXTENSIONS =====
+*.exe
 *.pyd
 *.dll
 *.dylib

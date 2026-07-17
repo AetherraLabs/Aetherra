@@ -1896,11 +1896,9 @@ config.autonomy.staging.json
 config.json
 config.production.json
 CONTRIBUTING.md — Contributing
-copyright_header.py — !/usr/bin/env python3
 GOVERNANCE.md — Project Governance
 INSTALL.md — Installation & Quickstart
 intelligence_report_generator.py — Load analysis data from JSON file"""
-launch_aetherra_unicode.py — Legacy shim retained for backward compatibility; delegates to aetherra_os."""
 LEGAL_COMPLIANCE.md — Aetherra Project - Legal Compliance Documentation
 LICENSE_POLICY.md — License Policy & Enforcement Gates
 licenses_unknown_history.json
@@ -1917,6 +1915,5 @@ setup.py — !/usr/bin/env python3
 setup_dev.py — Print the Aetherra setup banner"""
 STEWARDSHIP.md — Aetherra Stewardship Statement
 SUPPORT.md — Support
-test_unicode_workflow_fix.py — Test that Unicode issues are resolved
 unicode_logger.py — Unicode-Safe Logging Configuration for Aetherra OS.
 ```

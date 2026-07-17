@@ -7,10 +7,10 @@
     "legacy-or-archive": 4,
     "legacy-or-experimental-review": 1,
     "operational-runtime": 574,
-    "root-review-candidate": 25,
+    "root-review-candidate": 22,
     "test": 512,
     "tooling": 226,
-    "unclassified": 295
+    "unclassified": 279
   },
   "directories": [
     {
@@ -80,7 +80,7 @@
       "direct_file_count": 9,
       "dominant_category": "operational-runtime",
       "dominant_keep_status": "provisional-runtime",
-      "file_count": 785,
+      "file_count": 769,
       "path": "Aetherra/"
     },
     {
@@ -1050,10 +1050,10 @@
       "path": "Aetherra/schedulers/"
     },
     {
-      "direct_file_count": 25,
+      "direct_file_count": 9,
       "dominant_category": "unclassified",
       "dominant_keep_status": "needs-review",
-      "file_count": 26,
+      "file_count": 10,
       "path": "Aetherra/scripts/"
     },
     {
@@ -8051,22 +8051,6 @@
       "keep_status": "needs-review",
       "lifecycle": "unknown",
       "owner": "unknown",
-      "path": "Aetherra/scripts/dotenv.exe",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/scripts/f2py.exe",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
       "path": "Aetherra/scripts/fast_cleanup.py",
       "purpose": "No current classification rule matched this tracked file"
     },
@@ -8075,71 +8059,7 @@
       "keep_status": "needs-review",
       "lifecycle": "unknown",
       "owner": "unknown",
-      "path": "Aetherra/scripts/flask.exe",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/scripts/huggingface-cli.exe",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/scripts/isympy.exe",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/scripts/normalizer.exe",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/scripts/numpy-config.exe",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
       "path": "Aetherra/scripts/organize_system.py",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/scripts/pip3.13.exe",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/scripts/pip3.exe",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/scripts/plotly_get_chrome.exe",
       "purpose": "No current classification rule matched this tracked file"
     },
     {
@@ -8156,54 +8076,6 @@
       "lifecycle": "unknown",
       "owner": "unknown",
       "path": "Aetherra/scripts/simple_audit.py",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/scripts/tiny-agents.exe",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/scripts/torchfrtrace.exe",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/scripts/torchrun.exe",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/scripts/tqdm.exe",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/scripts/transformers-cli.exe",
-      "purpose": "No current classification rule matched this tracked file"
-    },
-    {
-      "category": "unclassified",
-      "keep_status": "needs-review",
-      "lifecycle": "unknown",
-      "owner": "unknown",
-      "path": "Aetherra/scripts/transformers.exe",
       "purpose": "No current classification rule matched this tracked file"
     },
     {
@@ -9645,14 +9517,6 @@
       "owner": "configs",
       "path": "configs/storm.yaml",
       "purpose": "Configuration files"
-    },
-    {
-      "category": "root-review-candidate",
-      "keep_status": "needs-evidence",
-      "lifecycle": "unknown-or-compatibility",
-      "owner": "repo-root",
-      "path": "copyright_header.py",
-      "purpose": "Root-level compatibility, legacy, or unverified operational file"
     },
     {
       "category": "tooling",
@@ -12167,14 +12031,6 @@
       "purpose": "Root-level compatibility, legacy, or unverified operational file"
     },
     {
-      "category": "root-review-candidate",
-      "keep_status": "needs-evidence",
-      "lifecycle": "unknown-or-compatibility",
-      "owner": "repo-root",
-      "path": "launch_aetherra_unicode.py",
-      "purpose": "Root-level compatibility, legacy, or unverified operational file"
-    },
-    {
       "category": "configuration",
       "keep_status": "keep",
       "lifecycle": "build-or-ci",
@@ -12500,14 +12356,6 @@
       "lifecycle": "unknown-or-compatibility",
       "owner": "repo-root",
       "path": "setup_dev.py",
-      "purpose": "Root-level compatibility, legacy, or unverified operational file"
-    },
-    {
-      "category": "root-review-candidate",
-      "keep_status": "needs-evidence",
-      "lifecycle": "unknown-or-compatibility",
-      "owner": "repo-root",
-      "path": "test_unicode_workflow_fix.py",
       "purpose": "Root-level compatibility, legacy, or unverified operational file"
     },
     {
@@ -18139,13 +17987,13 @@
   "keep_status": {
     "candidate-review": 4,
     "keep": 240,
-    "needs-evidence": 28,
-    "needs-review": 295,
+    "needs-evidence": 25,
+    "needs-review": 279,
     "provisional-runtime": 478,
     "review-by-suite": 512,
     "review-doc": 257,
     "review-tool": 226
   },
   "tracked_directory_count": 257,
-  "tracked_file_count": 2040
+  "tracked_file_count": 2021
 }
