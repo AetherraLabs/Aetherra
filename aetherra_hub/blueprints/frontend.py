@@ -11,6 +11,7 @@ from pathlib import Path
 
 from flask import Blueprint, send_from_directory
 from flask.wrappers import Response
+from werkzeug.security import safe_join
 
 logger = logging.getLogger(__name__)
 
@@ -32,12 +33,11 @@ def _safe_frontend_asset(path: str) -> str | None:
 
     if not path:
         return None
-    dist_root = FRONTEND_DIST.resolve()
-    candidate = (dist_root / path).resolve()
-    try:
-        candidate.relative_to(dist_root)
-    except ValueError:
+    dist_root = str(FRONTEND_DIST.resolve())
+    safe_path = safe_join(dist_root, path)
+    if safe_path is None:
         return None
+    candidate = Path(safe_path)
     if not candidate.is_file():
         return None
     return candidate.relative_to(dist_root).as_posix()
