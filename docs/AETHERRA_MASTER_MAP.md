@@ -15,10 +15,10 @@ marked for review before removal.
 
 ## Current Inventory
 
-- Tracked files: 1933
-- Tracked directories: 234
+- Tracked files: 1929
+- Tracked directories: 231
 - Files confirmed keep: 248
-- Files requiring suite/doc/tool/provisional review: 1685
+- Files requiring suite/doc/tool/provisional review: 1681
 - Runtime/candidate/unknown files needing evidence: 694
 
 ### By Category
@@ -29,7 +29,7 @@ marked for review before removal.
 - operational-runtime: 793
 - rename-debt: 1
 - test: 514
-- tooling: 212
+- tooling: 208
 
 ### By Lifecycle
 
@@ -38,7 +38,7 @@ marked for review before removal.
 - documentation: 314
 - governed-runtime: 30
 - historical: 4
-- maintenance: 212
+- maintenance: 208
 - operator: 9
 - plugin-runtime: 91
 - runtime: 543
@@ -67,7 +67,6 @@ marked for review before removal.
 | `config/` | 3 | configuration | keep |
 | `configs/` | 3 | configuration | keep |
 | `demos/` | 3 | tooling | review-tool |
-| `ISSUE_TEMPLATE/` | 2 | tooling | review-tool |
 | `examples/` | 2 | tooling | review-tool |
 | `lyrixa/` | 2 | operational-runtime | provisional-runtime |
 | `schema_validators/` | 2 | configuration | keep |
@@ -77,10 +76,8 @@ marked for review before removal.
 | `.vscode/` | 1 | configuration | keep |
 | `badge/` | 1 | tooling | review-tool |
 | `cli/` | 1 | operational-runtime | provisional-runtime |
-| `development/` | 1 | tooling | review-tool |
 | `documentation/` | 1 | documentation | review-doc |
 | `metadata/` | 1 | documentation | review-doc |
-| `metrics/` | 1 | tooling | review-tool |
 
 ## Operational Runtime Files
 

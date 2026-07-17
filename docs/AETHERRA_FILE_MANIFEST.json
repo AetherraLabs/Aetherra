@@ -6,7 +6,7 @@
     "operational-runtime": 793,
     "rename-debt": 1,
     "test": 514,
-    "tooling": 212
+    "tooling": 208
   },
   "directories": [
     {
@@ -962,13 +962,6 @@
       "path": "Aetherra/web/server/"
     },
     {
-      "direct_file_count": 2,
-      "dominant_category": "tooling",
-      "dominant_keep_status": "review-tool",
-      "file_count": 2,
-      "path": "ISSUE_TEMPLATE/"
-    },
-    {
       "direct_file_count": 7,
       "dominant_category": "operational-runtime",
       "dominant_keep_status": "provisional-runtime",
@@ -1065,13 +1058,6 @@
       "dominant_keep_status": "review-tool",
       "file_count": 3,
       "path": "demos/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "tooling",
-      "dominant_keep_status": "review-tool",
-      "file_count": 1,
-      "path": "development/"
     },
     {
       "direct_file_count": 154,
@@ -1366,13 +1352,6 @@
       "dominant_keep_status": "review-doc",
       "file_count": 1,
       "path": "metadata/"
-    },
-    {
-      "direct_file_count": 1,
-      "dominant_category": "tooling",
-      "dominant_keep_status": "review-tool",
-      "file_count": 1,
-      "path": "metrics/"
     },
     {
       "direct_file_count": 8,
@@ -7898,22 +7877,6 @@
       "purpose": "Public project documentation"
     },
     {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "ISSUE_TEMPLATE",
-      "path": "ISSUE_TEMPLATE/README.md",
-      "purpose": "Issue template compatibility folder"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "ISSUE_TEMPLATE",
-      "path": "ISSUE_TEMPLATE/feature_request.md",
-      "purpose": "Issue template compatibility folder"
-    },
-    {
       "category": "documentation",
       "keep_status": "keep",
       "lifecycle": "documentation",
@@ -8856,14 +8819,6 @@
       "owner": "demos",
       "path": "demos/storm_traffic_test.py",
       "purpose": "Demonstrations"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "development",
-      "path": "development/README.md",
-      "purpose": "Development support"
     },
     {
       "category": "documentation",
@@ -11224,14 +11179,6 @@
       "owner": "metadata",
       "path": "metadata/selfinc_readiness.json",
       "purpose": "Project metadata"
-    },
-    {
-      "category": "tooling",
-      "keep_status": "review-tool",
-      "lifecycle": "maintenance",
-      "owner": "metrics",
-      "path": "metrics/learning_metrics.jsonl",
-      "purpose": "Metrics support assets"
     },
     {
       "category": "operational-runtime",
@@ -17122,8 +17069,8 @@
     "provisional-runtime": 690,
     "review-by-suite": 514,
     "review-doc": 264,
-    "review-tool": 212
+    "review-tool": 208
   },
-  "tracked_directory_count": 234,
-  "tracked_file_count": 1933
+  "tracked_directory_count": 231,
+  "tracked_file_count": 1929
 }

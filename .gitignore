@@ -235,6 +235,8 @@ audit/*.jsonl
 ui_standards_report.md
 aetherra_kernel_metrics.json
 data/aetherra_kernel_metrics.json
+metrics/*.jsonl
+metrics/*.json
 
 # Database files (contain user data)
 *.db
