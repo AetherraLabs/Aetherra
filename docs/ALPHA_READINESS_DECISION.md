@@ -1,8 +1,8 @@
 # Alpha Readiness Decision
 
-Updated: 2026-06-21
+Updated: 2026-07-18
 
-This document records the controlled alpha go/no-go decision for Aetherra. It
+This document records the internal alpha go/no-go decision for Aetherra. It
 should be completed only after the alpha readiness checklist has been reviewed.
 
 ## Decision
@@ -27,7 +27,7 @@ Release or commit:
 
 ## Summary
 
-Use this section to summarize whether Aetherra is ready for controlled alpha
+Use this section to summarize whether Aetherra is ready for internal alpha
 testing and why.
 
 Required conclusion:
@@ -81,7 +81,7 @@ List accepted limitations here. Each limitation should include:
 
 ## Go Conditions
 
-Aetherra can be marked ready for controlled alpha only if:
+Aetherra can be marked ready for internal alpha only if:
 
 - No unexplained safety failure remains.
 - No privileged action bypasses Guardian or Security.

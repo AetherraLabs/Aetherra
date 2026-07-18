@@ -453,6 +453,7 @@ The chat system and API clients recognize these common variables:
 - `AETHERRA_CHAT_SAFETY_MODE` — Safety preset: strict | standard (affects policy gates)
 - `AETHERRA_CHAT_TEMPERATURE` — Default sampling temperature for chat
 - `AETHERRA_LLM_MODEL` — Preferred default LLM model identifier
+- `AETHERRA_LLM_TIMEOUT_SEC` — Engine LLM call timeout in seconds; clamped to a safe upper bound by the Engine runtime.
 // Chat transport, versioning, and idempotency
 - `AETHERRA_AI_API_WS` — 1/0 to enable WebSocket transport endpoints; when enabled, clients can use ws://.../ws/ai/stream
 - `AETHERRA_CHAT_VERSION_REQUIRED` — If set to `2`, require header `X-Aetherra-Chat-Version: 2` on chat endpoints (reject otherwise)
@@ -582,6 +583,7 @@ Chat and client defaults:
 - `AETHERRA_CHAT_SAFETY_MODE`
 - `AETHERRA_CHAT_TEMPERATURE`
 - `AETHERRA_LLM_MODEL`
+- `AETHERRA_LLM_TIMEOUT_SEC` — Engine LLM call timeout in seconds; clamped to a safe upper bound by the Engine runtime.
 // Chat transport, versioning, and idempotency
 - `AETHERRA_AI_API_WS`
 - `AETHERRA_CHAT_VERSION_REQUIRED`

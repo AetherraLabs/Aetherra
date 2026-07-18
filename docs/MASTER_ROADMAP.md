@@ -1,6 +1,6 @@
 # Aetherra Master Roadmap
 
-Updated: 2026-07-16
+Updated: 2026-07-18
 
 This is the single source of truth for Aetherra roadmap planning.
 
@@ -27,12 +27,13 @@ Aetherra is in alpha foundation hardening.
 
 The current objective is not production autonomy. The current objective is to
 make the existing cognitive operating layer functional, bounded, observable,
-and safe enough for controlled alpha testing.
+and safe enough for internal alpha testing.
 
 Authoritative identity and system references:
 
 - `docs/WHO_IS_AETHERRA.md`
 - `docs/ACTIVE_SYSTEMS.md`
+- `docs/BUILD_ORDER.md`
 - `docs/SYSTEM_INDEX.md`
 - `docs/ALPHA_READINESS_CHECKLIST.md`
 - `docs/ALPHA_OPERATOR_RUNBOOK.md`
@@ -59,6 +60,7 @@ verification run on 2026-07-16.
 | Runtime UI | Functional foundation complete | Runtime UI build and focused tests |
 | Lyrixa | Functional foundation complete | System docs; Lyrixa is persona/interface, not a separate intelligence |
 | Hub | Functional foundation complete | Alpha boot validation readiness contract |
+| Engine | Functional complete | Engine system contract and focused hardening tests |
 | Artificial Intelligence | Functional foundation complete | System docs and boot/import validation |
 | Consciousness | Functional foundation complete | System docs; older transcendence claims are historical/unverified |
 | Coding | Functional foundation complete | System docs; governed proposal/verification posture |
@@ -139,17 +141,18 @@ Results:
 | 13 | Kernel | Runtime readiness foundation | Complete |
 | 14 | Hub | API readiness foundation | Complete |
 | 15 | Lyrixa | Guided interaction foundation | Complete |
-| 16 | Artificial Intelligence | Engine readiness foundation | Complete |
-| 17 | Chat | Transport readiness foundation | Complete |
-| 18 | Coding | Proposal and verification foundation | Complete |
-| 19 | AI Trainer | Training readiness foundation | Complete |
-| 20 | Controlled Public Alpha | Safe alpha release gate | Pending |
-| 21 | Beta Hardening | CI/security/stability maturity | Planned |
-| 22 | Production Readiness | Operational maturity and release discipline | Planned |
+| 16 | Engine | Functional cognitive coordinator | Complete |
+| 17 | Artificial Intelligence | Engine readiness foundation | Complete |
+| 18 | Chat | Transport readiness foundation | Complete |
+| 19 | Coding | Proposal and verification foundation | Complete |
+| 20 | AI Trainer | Training readiness foundation | Complete |
+| 21 | Internal Alpha | Safe internal alpha gate | Active |
+| 22 | Beta Hardening | CI/security/stability maturity | Planned |
+| 23 | Production Readiness | Operational maturity and release discipline | Planned |
 
-## Current Priority: Controlled Public Alpha
+## Current Priority: Internal Alpha
 
-The next roadmap milestone is controlled public alpha readiness.
+The next roadmap milestone is internal alpha readiness.
 
 Primary gate:
 
@@ -181,7 +184,7 @@ Open alpha work:
 
 ## Beta Hardening Roadmap
 
-Beta begins only after controlled alpha readiness is accepted.
+Beta begins only after internal alpha readiness is accepted.
 
 | Workstream | Objective | Success Signal |
 | --- | --- | --- |
@@ -334,7 +337,7 @@ Next:
 | Root `ROADMAP.md` | Beta 0.2/0.3/0.4 sequence | Superseded by alpha foundation and 0.5.0 planning |
 | `PRODUCTION_ROADMAP.md` | Beta-to-production phase plan | Historical production plan; not current status authority |
 | `docs/BETA_ROADMAP_0.5.0.md` | Community beta focus | Folded into Beta Hardening workstreams |
-| `docs/BUILD_ORDER.md` | Active build order | Folded into this Master Roadmap |
+| `docs/BUILD_ORDER.md` | Active build order | Restored as the active build dashboard; keep synchronized with this roadmap |
 | Memory roadmaps | Multiple advanced phases marked complete | Foundation complete; advanced claims require current verification |
 | Plugin roadmaps | Registry and marketplace launch timelines | Superseded; safe plugin primitives remain backlog |
 | Consciousness roadmaps | Phase 7/8 transcendence completion claims | Historical/experimental; not alpha readiness claims |
@@ -353,7 +356,6 @@ be recreated as separate roadmap sources:
 - `Aetherra/consciousness/ROADMAP.md`
 - `Aetherra/consciousness/EXTENDED_ROADMAP.md`
 - `docs/BETA_ROADMAP_0.5.0.md`
-- `docs/BUILD_ORDER.md`
 - `docs/ROADMAP_TRACKING.md`
 - `docs/QFAC_ROADMAP.ipynb`
 - `docs/aetherra_quantum_roadmap_v_1.md`
@@ -364,11 +366,13 @@ be recreated as separate roadmap sources:
 When roadmap status changes:
 
 1. Update this file.
-2. Update `docs/ACTIVE_SYSTEMS.md` and `docs/SYSTEM_INDEX.md` only if system
+2. Update `docs/BUILD_ORDER.md` if milestone order, status, or active focus
+   changed.
+3. Update `docs/ACTIVE_SYSTEMS.md` and `docs/SYSTEM_INDEX.md` only if system
    status changed.
-3. Run the relevant verification commands.
-4. Record limitations honestly.
-5. Do not create a new roadmap file.
+4. Run the relevant verification commands.
+5. Record limitations honestly.
+6. Do not create additional roadmap files.
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

@@ -20,6 +20,7 @@ Status meanings:
 - Alpha Readiness Checklist - ./ALPHA_READINESS_CHECKLIST.md
 - Alpha Operator Runbook - ./ALPHA_OPERATOR_RUNBOOK.md
 - Alpha Readiness Decision - ./ALPHA_READINESS_DECISION.md
+- Build Order - ./BUILD_ORDER.md
 - Aetherra Manifesto - ./../Aetherra/docs/AETHERRA_MANIFESTO.md
 - AI OS Manifesto - ./../Aetherra/docs/AI_OS_MANIFESTO.md
 - Aetherra Labs Vision - ./../Aetherra/docs/aetherra_labs_vision.md
@@ -36,8 +37,13 @@ Status meanings:
   - Status: Functional foundation complete
   - Dependencies: required by all systems
 
+- Aetherra Engine System - ./AETHERRA_ENGINE_SYSTEM.md
+  - Purpose: Cognitive runtime coordinator for intent intake, context construction, reasoning, governed work submission, and readiness reporting.
+  - Status: Functional complete
+  - Dependencies: Guardian, Security, Memory, Kernel, Hub, Agents, Self-Improvement, Homeostasis
+
 - Aetherra Artificial Intelligence System - ./AETHERRA_ARTIFICIAL_INTELLIGENCE_SYSTEM.md
-  - Purpose: Core AI engine, subsystems, contracts, observability, and extension points.
+  - Purpose: AI subsystem contracts, model/runtime integration, observability, and extension points around the Engine.
   - Status: Functional foundation complete
 
 - Aetherra Consciousness System - ./AETHERRA_CONSCIOUSNESS_SYSTEM.md
@@ -120,7 +126,7 @@ Status meanings:
 
 ## Quick Status
 
-- Functional complete: 2
+- Functional complete: 3
 - Functional foundation complete: 17
 - Partial: 0
 - Planned: 0
@@ -129,6 +135,7 @@ Status meanings:
 
 - Start here for system overviews and contracts.
 - Use `docs/ACTIVE_SYSTEMS.md` for the current operational dashboard.
+- Use `docs/BUILD_ORDER.md` for the active build sequence.
 - Use `docs/MASTER_ROADMAP.md` for the active build sequence and roadmap claims audit.
 - Use `docs/UNDERSTANDING_RULE.md` before marking any system complete.
 - For a full repository file index, see `docs/FILE_INDEX.md`.
