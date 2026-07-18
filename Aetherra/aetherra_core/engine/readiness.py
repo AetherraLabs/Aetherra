@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from contextlib import suppress
 from collections.abc import Mapping
+from contextlib import suppress
 from typing import Any
 
-AI_READINESS_CONTRACT_VERSION = "1.0"
+AI_READINESS_CONTRACT_VERSION = "1.1"
 
 _REQUIRED_STATUS_KEYS = frozenset(
     {
@@ -36,6 +36,75 @@ def _component_state(value: Any) -> str:
     return "available"
 
 
+def _engine_import_error_code(status: Mapping[str, Any]) -> str | None:
+    return "engine_import_unavailable" if status.get("engine_import_error") else None
+
+
+def _diagnostic_state(value: Any) -> str:
+    data = _mapping(value)
+    status = str(data.get("status") or data.get("event") or "").lower()
+    if status in {
+        "degraded",
+        "unavailable",
+        "failed",
+        "error",
+        "preflight_failed",
+        "submission_failed",
+    }:
+        return "degraded"
+    if status in {"pending", "preflight", "approved"}:
+        return "pending"
+    if status in {"stored", "recorded", "ready", "submitted", "emitted", "ok", "started"}:
+        return "available"
+    if status in {"disabled", "not_requested", "not_attempted", "not_sampled"}:
+        return "not_required"
+    if not data:
+        return "unknown"
+    return "available"
+
+
+def _nested_degraded_paths(value: Any, prefix: str) -> list[str]:
+    data = _mapping(value)
+    degraded: list[str] = []
+    for key, item in data.items():
+        path = f"{prefix}.{key}"
+        state = _diagnostic_state(item)
+        if state == "degraded":
+            degraded.append(path)
+        elif isinstance(item, Mapping):
+            degraded.extend(_nested_degraded_paths(item, path))
+    return degraded
+
+
+def _public_engine_status(status: Mapping[str, Any] | None) -> dict[str, Any] | None:
+    status_map = _mapping(status)
+    if not status_map:
+        return None
+
+    return {
+        "engine_status": status_map.get("engine_status")
+        or status_map.get("status")
+        or "unknown",
+        "session_active": bool(status_map.get("session_active", False)),
+        "components": {
+            "memory_system": _component_state(status_map.get("memory_system")),
+            "improvement_system": _component_state(status_map.get("improvement_system")),
+            "agent_orchestrator": _component_state(status_map.get("agent_orchestrator")),
+            "health_monitoring": _component_state(status_map.get("health_monitoring")),
+        },
+        "engine_import_error": _engine_import_error_code(status_map),
+        "diagnostics": {
+            "persistent_memory": _diagnostic_state(
+                status_map.get("persistent_memory")
+            ),
+            "task_execution": _diagnostic_state(status_map.get("task_execution")),
+            "lifecycle_diagnostics": len(
+                _mapping(status_map.get("lifecycle")).get("diagnostics", []) or []
+            ),
+        },
+    }
+
+
 def assess_ai_readiness(status: Mapping[str, Any] | None) -> dict[str, Any]:
     """Assess whether the AI engine foundation is safe enough for clients."""
 
@@ -49,6 +118,8 @@ def assess_ai_readiness(status: Mapping[str, Any] | None) -> dict[str, Any]:
         reasons.append("engine_not_initialized")
     elif missing_keys:
         reasons.append("status_contract_incomplete")
+    if _engine_import_error_code(status_map):
+        reasons.append("engine_import_unavailable")
 
     engine_active = status_map.get("engine_status") == "active"
     if status_map and not engine_active:
@@ -78,13 +149,58 @@ def assess_ai_readiness(status: Mapping[str, Any] | None) -> dict[str, Any]:
     if safety_filters > 0:
         reasons.append("safety_filters_triggered")
 
+    persistent_memory_state = _diagnostic_state(status_map.get("persistent_memory"))
+    if persistent_memory_state == "degraded":
+        reasons.append("persistent_memory_degraded")
+
+    task_execution_state = _diagnostic_state(status_map.get("task_execution"))
+    if task_execution_state == "degraded":
+        reasons.append("task_execution_degraded")
+
+    lifecycle_diagnostics = _mapping(status_map.get("lifecycle")).get(
+        "diagnostics", []
+    )
+    lifecycle_diagnostic_count = (
+        len(lifecycle_diagnostics) if isinstance(lifecycle_diagnostics, list) else 0
+    )
+    if lifecycle_diagnostic_count:
+        reasons.append("lifecycle_diagnostics_present")
+
+    degraded_diagnostics: list[str] = []
+    for key in (
+        "session_start",
+        "input_persistence",
+        "response_persistence",
+        "optional_processing",
+        "scratchpad",
+        "coherence",
+        "reflection",
+    ):
+        if _diagnostic_state(status_map.get(key)) == "degraded":
+            degraded_diagnostics.append(key)
+        else:
+            degraded_diagnostics.extend(_nested_degraded_paths(status_map.get(key), key))
+    for path in degraded_diagnostics:
+        reasons.append(f"diagnostic_degraded:{path}")
+
     if not status_map:
         readiness = "offline"
-    elif missing_keys or "engine_not_initialized" in reasons:
+    elif (
+        missing_keys
+        or "engine_not_initialized" in reasons
+        or "engine_import_unavailable" in reasons
+        or unavailable_components
+    ):
         readiness = "blocked"
-    elif unavailable_components:
-        readiness = "blocked"
-    elif not engine_active or degraded_components or safety_filters > 0:
+    elif (
+        not engine_active
+        or degraded_components
+        or safety_filters > 0
+        or persistent_memory_state == "degraded"
+        or task_execution_state == "degraded"
+        or lifecycle_diagnostic_count
+        or degraded_diagnostics
+    ):
         readiness = "degraded"
     else:
         readiness = "ready"
@@ -103,6 +219,10 @@ def assess_ai_readiness(status: Mapping[str, Any] | None) -> dict[str, Any]:
             "components": components,
             "safety_filters_triggered": safety_filters,
             "session_active": bool(status_map.get("session_active", False)),
+            "persistent_memory": persistent_memory_state,
+            "task_execution": task_execution_state,
+            "lifecycle_diagnostic_count": lifecycle_diagnostic_count,
+            "degraded_diagnostics": sorted(set(degraded_diagnostics)),
         },
         "authority": {
             "owns": [
@@ -129,6 +249,6 @@ def build_ai_readiness_payload(status: Mapping[str, Any] | None) -> dict[str, An
 
     return {
         "ok": True,
-        "engine": status if isinstance(status, Mapping) else None,
+        "engine": _public_engine_status(status),
         "readiness": assess_ai_readiness(status),
     }

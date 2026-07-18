@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
 # Standard library imports
+import asyncio
 import os
 import time
 
@@ -16,15 +17,36 @@ PORT = 3014
 BASE = f"http://localhost:{PORT}"
 
 
+class MockEngine:
+    async def process_message(self, msg: str, ctx: dict | None = None):
+        return {
+            "text": f"echo: {msg}",
+            "confidence": 0.5,
+            "confidence_details": {"sources": [], "calibration": "mock"},
+            "context_used": bool(ctx),
+        }
+
+
+async def _register_mock_engine():
+    from aetherra_service_registry import get_service_registry
+
+    reg = await get_service_registry()
+    await reg.register_service("aetherra_engine", MockEngine())
+
+
 def _ensure_env():
     os.environ["AETHERRA_AI_API_ENABLED"] = "1"
     os.environ["AETHERRA_AI_API_STREAM"] = "1"
     os.environ["AETHERRA_AI_API_REQUIRE_TOKEN"] = "0"
     os.environ["AETHERRA_IDEMPOTENCY_ENFORCE"] = "1"
+    from aetherra_hub.services.idempotency import manager as idempotency_manager
+
+    idempotency_manager._cache.clear()
 
 
 def _start_hub():
     _ensure_env()
+    asyncio.run(_register_mock_engine())
     start_hub_server(PORT)
     # Wait briefly for server readiness
     for _ in range(50):

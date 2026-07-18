@@ -19,32 +19,32 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Try to import aetherra_engine if available
+# Try to import aetherra_engine if available.
 try:
-    # Local imports
     from .aetherra_engine import AetherraEngine
 
     AETHERRA_ENGINE_AVAILABLE = True
-except ImportError as e:
-    logger.debug(f"AetherraEngine not available: {e}")
+    AETHERRA_ENGINE_IMPORT_ERROR = None
+except ImportError as exc:
+    logger.debug("AetherraEngine import unavailable: %s", type(exc).__name__)
     AETHERRA_ENGINE_AVAILABLE = False
+    AETHERRA_ENGINE_IMPORT_ERROR = "engine_import_unavailable"
 
-    # Create a mock class for development
     class AetherraEngine:
-        """Mock AetherraEngine for development when actual engine isn't available."""
+        """Unavailable Engine placeholder that fails closed."""
 
         def __init__(self, *args, **kwargs):
-            logger.warning("Using mock AetherraEngine - actual engine not available")
+            raise RuntimeError("AetherraEngine unavailable: engine_import_unavailable")
 
         async def process(self, *args, **kwargs):
-            return {"status": "mock", "message": "AetherraEngine not available"}
+            raise RuntimeError("AetherraEngine unavailable: engine_import_unavailable")
 
 
 # Try to import intelligence modules
 try:
     INTELLIGENCE_AVAILABLE = True
 except ImportError as e:
-    logger.debug(f"Intelligence modules not available: {e}")
+    logger.debug("Intelligence modules not available: %s", type(e).__name__)
     INTELLIGENCE_AVAILABLE = False
 
 try:
@@ -54,7 +54,7 @@ try:
         build_ai_readiness_payload,
     )
 except ImportError as e:
-    logger.debug(f"AI readiness contract not available: {e}")
+    logger.debug("AI readiness contract not available: %s", type(e).__name__)
     AI_READINESS_CONTRACT_VERSION = "unavailable"
     assess_ai_readiness = None
     build_ai_readiness_payload = None
@@ -68,7 +68,10 @@ ENGINE_SYSTEMS = {
 
 def get_engine_status():
     """Get the status of all engine systems."""
-    return ENGINE_SYSTEMS.copy()
+    return {
+        **ENGINE_SYSTEMS,
+        "engine_import_error": AETHERRA_ENGINE_IMPORT_ERROR,
+    }
 
 
 # Export main components
@@ -77,6 +80,7 @@ __all__ = [
     "get_engine_status",
     "ENGINE_SYSTEMS",
     "AETHERRA_ENGINE_AVAILABLE",
+    "AETHERRA_ENGINE_IMPORT_ERROR",
     "INTELLIGENCE_AVAILABLE",
     "AI_READINESS_CONTRACT_VERSION",
     "assess_ai_readiness",

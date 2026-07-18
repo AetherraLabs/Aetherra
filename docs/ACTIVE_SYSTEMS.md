@@ -7,6 +7,8 @@ treated as the primary reference.
 For the human-readable identity, authority model, and core lifecycle of the
 project, see `docs/WHO_IS_AETHERRA.md`.
 
+For the active build sequence, see `docs/BUILD_ORDER.md`.
+
 Status meanings:
 
 - Functional foundation complete: the system has a working bounded foundation,
@@ -41,6 +43,7 @@ Status meanings:
 
 | System | Status | Primary Reference |
 | --- | --- | --- |
+| Engine | Functional complete | `docs/AETHERRA_ENGINE_SYSTEM.md` |
 | Artificial Intelligence | Functional foundation complete | `docs/AETHERRA_ARTIFICIAL_INTELLIGENCE_SYSTEM.md` |
 | Consciousness | Functional foundation complete | `docs/AETHERRA_CONSCIOUSNESS_SYSTEM.md` |
 | Coding | Functional foundation complete | `docs/AETHERRA_CODING_SYSTEM.md` |

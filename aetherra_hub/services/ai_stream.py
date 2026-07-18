@@ -16,6 +16,7 @@ from __future__ import annotations
 
 # Standard library imports
 import asyncio
+import contextlib
 import json
 import logging
 import os
@@ -28,13 +29,15 @@ from typing import Any
 
 # Local imports
 from ..utils.http import run_coro_blocking
+from . import metrics_accum
 
 # Import chat_metrics at module scope for type checkers (was imported lazily earlier)
 from .guardian_chat import evaluate_chat_ingress
-from .metrics_accum import chat_metrics as CHAT_METRICS
 from .metrics_accum import inc_chat_rate_limited
 from .security import policy_snapshot, safety_precheck
 from .tokenizer import count_tokens
+
+CHAT_METRICS = metrics_accum.chat_metrics
 
 # Global replay buffers keyed by trace_id for P1 lightweight gap replay
 # Each entry: (event_id, timestamp, frame_string)
@@ -67,7 +70,7 @@ def _json_default(o: Any):
             except Exception:
                 return "<callable>"
         # Bytes → utf-8 string (lossy-safe)
-        if isinstance(o, (bytes, bytearray)):
+        if isinstance(o, bytes | bytearray):
             try:
                 return o.decode("utf-8", errors="replace")
             except Exception:
@@ -90,12 +93,10 @@ async def _get_engine_async():  # pragma: no cover (network/async heavy)
         if inst is not None:
             return inst
         # Fallback: allow STARTING engines for early test registration usage
-        try:
+        with contextlib.suppress(Exception):
             info = reg.get_service_info("aetherra_engine")  # type: ignore
             if info and getattr(info, "instance", None):
                 return info.instance
-        except Exception:
-            pass
         return None
     except Exception:
         return None
@@ -104,21 +105,15 @@ async def _get_engine_async():  # pragma: no cover (network/async heavy)
 def _get_engine():
     # Retry briefly to allow registry lazy boot in tests
     for attempt in range(15):
-        try:
+        with contextlib.suppress(Exception):
             eng = run_coro_blocking(_get_engine_async())
             if eng is not None:
-                try:
+                with contextlib.suppress(Exception):
                     logger.debug("engine fetched on attempt %s", attempt)
-                except Exception:
-                    pass
                 return eng
-        except Exception:
-            pass
         time.sleep(0.03)
-    try:
+    with contextlib.suppress(Exception):
         logger.debug("engine fetch failed after retries")
-    except Exception:
-        pass
     return None
 
 
@@ -149,16 +144,13 @@ class StreamContext:
         # Defensive: drop known non-JSON-safe internals if present in payloads
         # e.g., engines that echo input context with callback functions or metadata
         if event == "final" and isinstance(data, dict):
-            try:
+            with contextlib.suppress(Exception):
                 res = data.get("result")
-                if isinstance(res, dict):
+                if isinstance(res, dict) and any(k in res for k in _INTERNAL_KEYS):
                     # Strip any internal keys from result to prevent leakage
-                    if any(k in res for k in _INTERNAL_KEYS):
-                        res = {k: v for k, v in res.items() if k not in _INTERNAL_KEYS}
-                        data = dict(data)
-                        data["result"] = res
-            except Exception:
-                pass
+                    res = {k: v for k, v in res.items() if k not in _INTERNAL_KEYS}
+                    data = dict(data)
+                    data["result"] = res
 
         env = {
             "id": self.next_id,
@@ -175,7 +167,7 @@ class StreamContext:
 
     def mark_ttft(self):
         if not self.ttft_done:
-            try:
+            with contextlib.suppress(Exception):
                 dt_ms = (time.time() - self.ttft_t0) * 1000.0
                 # Local imports
                 from .metrics_accum import chat_metrics as _cm
@@ -191,8 +183,6 @@ class StreamContext:
                 if not placed:
                     # treat as +Inf by bumping last bucket
                     _cm.ttft_hist[2000] = int(_cm.ttft_hist.get(2000, 0)) + 1
-            except Exception:
-                pass
             self.ttft_done = True
 
 
@@ -305,12 +295,10 @@ def stream_sse(
         yield ctx.envelope("debug", dbg)
 
     # Metrics: streams + request + sizes
-    try:
+    with contextlib.suppress(Exception):
         CHAT_METRICS.start_stream(principal)
         CHAT_METRICS.inc_request()
         CHAT_METRICS.add_input_stats(red_prompt, count_tokens(red_prompt))
-    except Exception:  # pragma: no cover
-        pass
 
     # Scratchpad policy handling (P1 #11): default to 'redacted' unless explicitly provided and allowed.
     supplied_sp = str(body.get("scratchpad_policy") or "").strip().lower()
@@ -361,10 +349,8 @@ def stream_sse(
     engine_wait_ms_cfg = _int_env("AETHERRA_ENGINE_WAIT_MS", 0)
 
     def _emit(evt: str, data: dict[str, Any]):
-        try:
+        with contextlib.suppress(Exception):
             q.put((evt, data))
-        except Exception:
-            pass
 
     async def _run_engine():
         engine = _get_engine()
@@ -378,7 +364,8 @@ def stream_sse(
                 time.sleep(min(5, engine_wait_ms_cfg / 1000.0))
             # Offline fallback; emulate final usage with mock path
             # Record mock fallback path (correct metrics handle)
-            CHAT_METRICS.record_mock_fallback()
+            with contextlib.suppress(Exception):
+                CHAT_METRICS.record_mock_fallback()
             ctx.mark_ttft()  # immediate
             mock_resp = {"response": "offline", "trace_id": trace_id}
             if ctx.scratchpad_policy:
@@ -387,17 +374,11 @@ def stream_sse(
             _emit("final", {"ok": True, "result": mock_resp})
             return
         # Synthetic fast-path: if engine class name hints rate limit, raise accordingly
+        nm = type(engine).__name__.lower()
+        synthetic_rate_limited = nm.startswith("ratelimited") or "ratelimit" in nm
         try:
-            nm = type(engine).__name__.lower()
-            if nm.startswith("ratelimited") or "ratelimit" in nm:
-                raise Exception("Rate limit: synthetic fast-path")
-        except Exception:
-            pass
-        try:
-            try:
+            with contextlib.suppress(Exception):
                 logger.debug("[ai_stream] engine acquired: %s", type(engine))
-            except Exception:
-                pass
             # Optional artificial wait (engine_wait_ms) for test pacing / profiling
             if engine_wait_ms_cfg > 0:
                 time.sleep(min(5, engine_wait_ms_cfg / 1000.0))
@@ -418,6 +399,8 @@ def stream_sse(
                     ),
                 },
             }
+            if synthetic_rate_limited:
+                raise RuntimeError("Rate limit: synthetic fast-path")
             result = await engine.process_message(red_prompt, ic)
             if ctx.scratchpad_policy and isinstance(result, dict):
                 result.setdefault("scratchpad_policy", ctx.scratchpad_policy)
@@ -430,10 +413,12 @@ def stream_sse(
                             result[key] = "[redacted]"
             _emit("final", {"ok": True, "result": result})
         except Exception as e:  # engine failure => error + final
-            try:
-                logger.debug("[ai_stream] engine exception: %s", e)
-            except Exception:
-                pass
+            with contextlib.suppress(Exception):
+                logger.debug(
+                    "[ai_stream] engine exception type=%s trace_id=%s",
+                    type(e).__name__,
+                    trace_id,
+                )
             msg = str(e)
             # Lightweight rate limit detection based on message pattern
             lmsg = msg.lower()
@@ -449,7 +434,7 @@ def stream_sse(
                     {
                         "error": {
                             "code": "rate_limited",
-                            "message": msg,
+                            "message": "AI service rate limit exceeded",
                             "details": {"retry_after_sec": ra_val},
                         }
                     },
@@ -465,20 +450,30 @@ def stream_sse(
                     },
                 )
             elif "timeout" in lmsg:
-                try:
-                    # Increment breaker (timeout) counter
+                # Increment breaker (timeout) counter
+                with contextlib.suppress(Exception):
                     CHAT_METRICS.breaker_open_total += 1
-                except Exception:
-                    pass
                 _emit(
                     "error",
-                    {"error": {"code": "timeout", "message": msg}},
+                    {
+                        "error": {
+                            "code": "timeout",
+                            "message": "AI engine request timed out",
+                            "details": {"trace_id": trace_id},
+                        }
+                    },
                 )
                 _emit("final", {"ok": False, "error": {"code": "timeout"}})
             else:
                 _emit(
                     "error",
-                    {"error": {"code": "engine_error", "message": msg}},
+                    {
+                        "error": {
+                            "code": "engine_error",
+                            "message": "AI engine stream failed",
+                            "details": {"trace_id": trace_id},
+                        }
+                    },
                 )
                 _emit("final", {"ok": False, "error": {"code": "engine_error"}})
 
@@ -491,10 +486,8 @@ def stream_sse(
             loop.run_until_complete(_run_engine())
         finally:
             if loop:
-                try:
+                with contextlib.suppress(Exception):
                     loop.close()
-                except Exception:
-                    pass
 
     # Pre-flight: give registry a moment if engine likely not ready
     preflight_engine = _get_engine()
@@ -509,16 +502,12 @@ def stream_sse(
 
     # Schedule an early heartbeat chunk if engine produces no events quickly to unblock TTFT metrics/tests
     def _early_heartbeat():
-        try:
+        with contextlib.suppress(Exception):
             if q.empty():
                 q.put(("chunk", {"text": "heartbeat"}))
-        except Exception:
-            pass
 
-    try:
+    with contextlib.suppress(Exception):
         threading.Timer(0.4, _early_heartbeat).start()
-    except Exception:
-        pass
 
     # Replay path: if client supplied Last-Event-ID and replay configured
     if last_event_id and replay_max_events > 0:
@@ -539,11 +528,9 @@ def stream_sse(
             gap_frames = [f for (eid, _, f) in per_trace_buf if eid > le]
             if gap_frames:
                 # Increment resume gap metric if a discontinuity was detected
-                try:
+                with contextlib.suppress(Exception):
                     if gap_frames[0]:  # trivial guard
                         CHAT_METRICS.resume_gaps_total += 1  # type: ignore[attr-defined]
-                except Exception:
-                    pass
             # Enforce max events limit from tail
             if replay_max_events and len(gap_frames) > replay_max_events:
                 gap_frames = gap_frames[-replay_max_events:]
@@ -569,10 +556,8 @@ def stream_sse(
                         CHAT_METRICS.soft_timeouts_total += 1  # type: ignore[attr-defined]
                     except AttributeError:
                         # Initialize lazily if not present
-                        try:
+                        with contextlib.suppress(Exception):
                             CHAT_METRICS.soft_timeouts_total = 1  # type: ignore[attr-defined]
-                        except Exception:
-                            pass
                     err_env = ctx.envelope("error", {"error": {"code": "soft_timeout"}})
                     fin_env = ctx.envelope(
                         "final", {"ok": False, "error": {"code": "soft_timeout"}}
@@ -593,18 +578,14 @@ def stream_sse(
                 and not offline_injected
                 and not payload_emitted
             ):
-                try:
+                with contextlib.suppress(Exception):
                     CHAT_METRICS.record_mock_fallback()
-                except Exception:
-                    pass
                 if not ctx.ttft_done:
                     ctx.mark_ttft()
                 # Update output stats for usage prior to final
-                try:
+                with contextlib.suppress(Exception):
                     out_txt = "offline"
                     CHAT_METRICS.add_output_stats(out_txt, count_tokens(out_txt))
-                except Exception:
-                    pass
                 # Emit chunk, usage, and final (include scratchpad_policy if set)
                 offline_chunk = ctx.envelope("chunk", {"text": "offline"})
                 usage = {
@@ -635,18 +616,14 @@ def stream_sse(
                 and not offline_injected
                 and payload_emitted
             ):
-                try:
+                with contextlib.suppress(Exception):
                     CHAT_METRICS.record_mock_fallback()
-                except Exception:
-                    pass
                 if not ctx.ttft_done:
                     ctx.mark_ttft()
                 # Update output stats for usage prior to final
-                try:
+                with contextlib.suppress(Exception):
                     out_txt = "offline"
                     CHAT_METRICS.add_output_stats(out_txt, count_tokens(out_txt))
-                except Exception:
-                    pass
                 usage = {
                     "tokens_in": CHAT_METRICS.tokens_in_total,
                     "tokens_out": CHAT_METRICS.tokens_out_total,
@@ -687,16 +664,14 @@ def stream_sse(
                 break
             continue
         if evt == "chunk":
-            try:
+            with contextlib.suppress(Exception):
                 CHAT_METRICS.chunks_total += 1
-            except Exception:
-                pass
             if not ctx.ttft_done:
                 ctx.mark_ttft()
             payload_emitted = True
         elif evt == "error":
             # Reinforce breaker increment if timeout error surfaced via event path (defensive)
-            try:
+            with contextlib.suppress(Exception):
                 err_code = (
                     (data.get("error") or {}).get("code")
                     if isinstance(data, dict)
@@ -704,31 +679,25 @@ def stream_sse(
                 )
                 if err_code == "timeout":
                     CHAT_METRICS.breaker_open_total += 1
-            except Exception:
-                pass
             if not ctx.ttft_done:
                 ctx.mark_ttft()
             payload_emitted = True
         if evt == "final":
             # Output metrics (usage) before final
-            try:
+            with contextlib.suppress(Exception):
                 out_txt = ""
                 res = data.get("result") if isinstance(data, dict) else {}
                 if isinstance(res, dict):
                     out_txt = str(res.get("response") or res.get("text") or "")
                 CHAT_METRICS.add_output_stats(out_txt, count_tokens(out_txt))
-            except Exception:
-                pass
             if not ctx.ttft_done:
                 ctx.mark_ttft()
             # Defensive breaker increment if final itself signals timeout (some engines may only surface error in final)
-            try:
+            with contextlib.suppress(Exception):
                 if isinstance(data, dict):
                     err_obj = data.get("error")
                     if isinstance(err_obj, dict) and err_obj.get("code") == "timeout":
                         CHAT_METRICS.breaker_open_total += 1
-            except Exception:
-                pass
             usage = {
                 "tokens_in": CHAT_METRICS.tokens_in_total,
                 "tokens_out": CHAT_METRICS.tokens_out_total,
@@ -743,7 +712,7 @@ def stream_sse(
             final_emitted = True
             # Append to per-trace replay buffer
             if replay_max_events > 0:
-                try:
+                with contextlib.suppress(Exception):
                     buf = _REPLAY_PER_TRACE.setdefault(trace_id, [])
                     buf.append((ctx.next_id - 2, time.time(), usage_frame))
                     buf.append((ctx.next_id - 1, time.time(), final_frame))
@@ -752,7 +721,7 @@ def stream_sse(
                         _REPLAY_PER_TRACE[trace_id] = buf[-(replay_max_events * 2) :]
                     # Global trace cap eviction (FIFO by insertion order heuristic)
                     if len(_REPLAY_PER_TRACE) > _REPLAY_GLOBAL_MAX_TRACES:
-                        try:
+                        with contextlib.suppress(Exception):
                             # Remove oldest by earliest first event timestamp
                             oldest_tid = min(
                                 _REPLAY_PER_TRACE.items(),
@@ -760,29 +729,21 @@ def stream_sse(
                             )[0]
                             if oldest_tid != trace_id:
                                 _REPLAY_PER_TRACE.pop(oldest_tid, None)
-                        except Exception:
-                            pass
-                except Exception:
-                    pass
             break
         else:
             frame = ctx.envelope(evt, data)
             yield frame
             payload_emitted = True
             if replay_max_events > 0:
-                try:
+                with contextlib.suppress(Exception):
                     buf = _REPLAY_PER_TRACE.setdefault(trace_id, [])
                     buf.append((ctx.next_id - 1, time.time(), frame))
                     if replay_max_events and len(buf) > replay_max_events * 2:
                         _REPLAY_PER_TRACE[trace_id] = buf[-(replay_max_events * 2) :]
-                except Exception:
-                    pass
 
     # Decrement active stream counters
-    try:
+    with contextlib.suppress(Exception):
         CHAT_METRICS.end_stream(principal)
-    except Exception:  # pragma: no cover
-        pass
 
 
 def _gen_trace_id() -> str:

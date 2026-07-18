@@ -97,7 +97,7 @@ This system is foundation-complete because:
 
 Integration Validation does not yet prove:
 
-- Full public alpha readiness.
+- Full internal alpha readiness.
 - Long-running runtime stability.
 - UI/operator workflow quality.
 - End-to-end live Hub behavior.

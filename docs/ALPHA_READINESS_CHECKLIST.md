@@ -1,9 +1,9 @@
 # Alpha Readiness Checklist
 
-Updated: 2026-06-21
+Updated: 2026-07-18
 
 This checklist defines what must be true before Aetherra should be called ready
-for a controlled public alpha. It is not a marketing launch checklist. It is a
+for an internal alpha. It is not a marketing launch checklist. It is a
 technical and safety gate for proving that the current functional foundations
 operate together as a bounded cognitive operating layer.
 
@@ -48,6 +48,7 @@ Required before alpha:
 
 - Security is functional complete.
 - Guardian is functional complete.
+- Engine is functional complete.
 - Homeostasis, Self-Improvement, Maintenance, Self-Incorporation, Memory,
   Kernel, Agent System, Aether Script, Integration Validation, Runtime UI,
   Lyrixa, Hub, Artificial Intelligence, Consciousness, Coding, Chat, and AI

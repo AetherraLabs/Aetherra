@@ -1,10 +1,10 @@
 # Alpha Operator Runbook
 
-Updated: 2026-06-21
+Updated: 2026-07-18
 
-This runbook explains how to operate Aetherra during controlled alpha
-validation. It assumes a reviewed development environment, not production
-autonomy.
+This runbook explains how to operate Aetherra during internal alpha validation.
+It assumes a reviewed development environment, not production autonomy or public
+external testing.
 
 ## Operating Rule
 
