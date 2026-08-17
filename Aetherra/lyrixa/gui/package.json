@@ -11,7 +11,7 @@
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
     },
     "dependencies": {
-        "@radix-ui/react-dialog": "^1.0.5",
+        "@radix-ui/react-dialog": "^1.1.23",
         "@radix-ui/react-progress": "^1.1.16",
         "@radix-ui/react-slot": "^1.0.2",
         "@radix-ui/react-tabs": "^1.1.21",
