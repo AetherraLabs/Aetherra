@@ -20,7 +20,7 @@
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.0.0",
         "framer-motion": "^13.1.1",
-        "lucide-react": "^1.28.0",
+        "lucide-react": "^1.35.0",
         "react": "^19.2.8",
         "react-dom": "^19.2.8",
         "recharts": "^3.10.1",
