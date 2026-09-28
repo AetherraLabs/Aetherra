@@ -57,7 +57,7 @@ jobs:
         shell: bash
       - name: Upload static report artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: aether-static-report-${{ matrix.os }}
           path: aether_static_report.md
