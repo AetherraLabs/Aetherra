@@ -19,7 +19,7 @@
         "@react-three/fiber": "^9.7.0",
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.0.0",
-        "framer-motion": "^13.2.0",
+        "framer-motion": "^13.4.3",
         "lucide-react": "^1.48.0",
         "react": "^19.3.0",
         "react-dom": "^19.3.0",
