@@ -8,7 +8,8 @@
         "dev": "vite",
         "build": "tsc && vite build",
         "preview": "vite preview",
-        "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+        "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+        "test": "node --test tests/*.test.mjs"
     },
     "dependencies": {
         "@radix-ui/react-dialog": "^1.1.23",
@@ -29,11 +30,12 @@
         "three": "^0.186.0"
     },
     "devDependencies": {
+        "@eslint/js": "^10.0.1",
         "@types/node": "^26.4.1",
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
         "@types/three": "^0.186.0",
-        "@typescript-eslint/eslint-plugin": "^8.70.1",
+        "@typescript-eslint/eslint-plugin": "^8.71.1",
         "@typescript-eslint/parser": "^8.71.1",
         "@vitejs/plugin-react": "^6.1.1",
         "autoprefixer": "^10.6.1",
@@ -41,8 +43,8 @@
         "eslint-plugin-react-hooks": "^7.1.1",
         "eslint-plugin-react-refresh": "^0.5.7",
         "postcss": "^8.5.29",
-        "tailwindcss": "^4.3.3",
-        "typescript": "^7.0.2",
+        "tailwindcss": "^3.4.19",
+        "typescript": "~6.0.3",
         "vite": "^8.3.4"
     }
 }
