@@ -12,22 +12,20 @@ Tests cover:
 - Ethics weight calculation
 """
 
+# Standard library imports
 import json
-import os
-import sys
 import tempfile
 import unittest
 from datetime import datetime, timedelta
 from pathlib import Path
 
-# Add parent directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+# Third party imports
+import pytest
 
+# Aetherra imports
 from Aetherra.aetherra_core.system.policy_manager import (
     EthicsProfile,
-    Policy,
     PolicyManager,
-    PolicyMetadata,
     PolicyValidator,
     SafetyConstraints,
 )
@@ -44,14 +42,16 @@ class TestEthicsProfile(unittest.TestCase):
             virtue=0.25,
             care=0.25,
         )
-        self.assertEqual(profile.utilitarian, 0.25)
-        self.assertEqual(profile.deontological, 0.25)
-        self.assertEqual(profile.virtue, 0.25)
-        self.assertEqual(profile.care, 0.25)
+        assert profile.utilitarian == 0.25
+        assert profile.deontological == 0.25
+        assert profile.virtue == 0.25
+        assert profile.care == 0.25
 
     def test_02_invalid_weights_sum(self):
-        """Test that weights must sum to 1.0."""
-        with self.assertRaises(ValueError):
+        """Test that zero weights are rejected even when the sum is 1.0."""
+        with pytest.raises(
+            ValueError, match="Ethics weights must be positive and non-zero"
+        ):
             EthicsProfile(
                 utilitarian=0.5,
                 deontological=0.5,
@@ -71,7 +71,7 @@ class TestEthicsProfile(unittest.TestCase):
         total = (
             profile.utilitarian + profile.deontological + profile.virtue + profile.care
         )
-        self.assertAlmostEqual(total, 1.0, places=2)
+        assert round(abs(total - 1.0), 2) == 0
 
 
 class TestSafetyConstraints(unittest.TestCase):
@@ -80,9 +80,9 @@ class TestSafetyConstraints(unittest.TestCase):
     def test_01_default_constraints(self):
         """Test default safety constraints."""
         constraints = SafetyConstraints()
-        self.assertEqual(constraints.max_autonomy_level, 3)
-        self.assertTrue(constraints.require_verification)
-        self.assertTrue(constraints.audit_trail)
+        assert constraints.max_autonomy_level == 3
+        assert constraints.require_verification
+        assert constraints.audit_trail
 
     def test_02_custom_constraints(self):
         """Test custom safety constraints."""
@@ -91,15 +91,15 @@ class TestSafetyConstraints(unittest.TestCase):
             require_verification=False,
             max_code_generation_size=50000,
         )
-        self.assertEqual(constraints.max_autonomy_level, 5)
-        self.assertFalse(constraints.require_verification)
-        self.assertEqual(constraints.max_code_generation_size, 50000)
+        assert constraints.max_autonomy_level == 5
+        assert not constraints.require_verification
+        assert constraints.max_code_generation_size == 50000
 
     def test_03_disallowed_operations(self):
         """Test disallowed operations list."""
         constraints = SafetyConstraints()
-        self.assertIn("rm -rf", constraints.disallowed_operations)
-        self.assertIn("format C:", constraints.disallowed_operations)
+        assert "rm -rf" in constraints.disallowed_operations
+        assert "format C:" in constraints.disallowed_operations
 
 
 class TestPolicyValidator(unittest.TestCase):
@@ -130,8 +130,8 @@ class TestPolicyValidator(unittest.TestCase):
             },
         }
         is_valid, errors = self.validator.validate_schema(valid_policy)
-        self.assertTrue(is_valid, f"Valid policy failed: {errors}")
-        self.assertEqual(len(errors), 0)
+        assert is_valid, f"Valid policy failed: {errors}"
+        assert len(errors) == 0
 
     def test_02_missing_required_fields(self):
         """Test validation catches missing required fields."""
@@ -141,8 +141,8 @@ class TestPolicyValidator(unittest.TestCase):
             # Missing profiles and constraints
         }
         is_valid, errors = self.validator.validate_schema(invalid_policy)
-        self.assertFalse(is_valid)
-        self.assertTrue(any("profiles" in e for e in errors))
+        assert not is_valid
+        assert any("profiles" in e for e in errors)
 
     def test_03_invalid_weights_sum(self):
         """Test validation catches illegal weight sums."""
@@ -165,7 +165,7 @@ class TestPolicyValidator(unittest.TestCase):
         # Change to invalid sum
         invalid_policy["profiles"]["test"]["virtue"] = 0.1
         is_valid, errors = self.validator.validate_schema(invalid_policy)
-        self.assertFalse(is_valid)
+        assert not is_valid
 
     def test_04_invalid_autonomy_level(self):
         """Test validation catches invalid autonomy levels."""
@@ -188,7 +188,7 @@ class TestPolicyValidator(unittest.TestCase):
             },
         }
         is_valid, errors = self.validator.validate_schema(invalid_policy)
-        self.assertFalse(is_valid)
+        assert not is_valid
 
     def test_05_invalid_code_size_limit(self):
         """Test validation catches invalid code size limits."""
@@ -211,7 +211,7 @@ class TestPolicyValidator(unittest.TestCase):
             },
         }
         is_valid, errors = self.validator.validate_schema(invalid_policy)
-        self.assertFalse(is_valid)
+        assert not is_valid
 
 
 class TestPolicyManager(unittest.TestCase):
@@ -224,6 +224,7 @@ class TestPolicyManager(unittest.TestCase):
 
     def tearDown(self):
         """Clean up temporary directory."""
+        # Standard library imports
         import shutil
 
         shutil.rmtree(self.temp_dir, ignore_errors=True)
@@ -232,114 +233,114 @@ class TestPolicyManager(unittest.TestCase):
     def test_01_predefined_strict_profile(self):
         """Test loading predefined strict profile."""
         success, policy, msg = self.manager.load_policy("strict")
-        self.assertTrue(success)
-        self.assertIsNotNone(policy)
-        self.assertEqual(policy.constraints.max_autonomy_level, 1)
-        self.assertTrue(policy.constraints.require_verification)
+        assert success
+        assert policy is not None
+        assert policy.constraints.max_autonomy_level == 1
+        assert policy.constraints.require_verification
 
     def test_02_predefined_balanced_profile(self):
         """Test loading predefined balanced profile."""
         success, policy, msg = self.manager.load_policy("balanced")
-        self.assertTrue(success)
-        self.assertIsNotNone(policy)
-        self.assertEqual(policy.constraints.max_autonomy_level, 3)
+        assert success
+        assert policy is not None
+        assert policy.constraints.max_autonomy_level == 3
 
     def test_03_predefined_permissive_profile(self):
         """Test loading predefined permissive profile."""
         success, policy, msg = self.manager.load_policy("permissive")
-        self.assertTrue(success)
-        self.assertIsNotNone(policy)
-        self.assertEqual(policy.constraints.max_autonomy_level, 4)
-        self.assertFalse(policy.constraints.require_verification)
+        assert success
+        assert policy is not None
+        assert policy.constraints.max_autonomy_level == 4
+        assert not policy.constraints.require_verification
 
     def test_04_get_ethics_weights(self):
         """Test retrieving ethics weights from policy."""
         weights = self.manager.get_ethics_weights("balanced")
-        self.assertIn("utilitarian", weights)
-        self.assertIn("deontological", weights)
-        self.assertIn("virtue", weights)
-        self.assertIn("care", weights)
+        assert "utilitarian" in weights
+        assert "deontological" in weights
+        assert "virtue" in weights
+        assert "care" in weights
         total = (
             weights["utilitarian"]
             + weights["deontological"]
             + weights["virtue"]
             + weights["care"]
         )
-        self.assertAlmostEqual(total, 1.0, places=2)
+        assert round(abs(total - 1.0), 2) == 0
 
     def test_05_validate_allowed_operation(self):
         """Test validating allowed operation."""
         is_allowed, reason = self.manager.validate_operation(
             "code_generation", "balanced", code_size=100
         )
-        self.assertTrue(is_allowed)
+        assert is_allowed
 
     def test_06_validate_disallowed_operation(self):
         """Test validating explicitly disallowed operation."""
         is_allowed, reason = self.manager.validate_operation("rm -rf", "balanced")
-        self.assertFalse(is_allowed)
-        self.assertIn("disallowed", reason)
+        assert not is_allowed
+        assert "disallowed" in reason
 
     def test_07_validate_oversized_code(self):
         """Test validation rejects code exceeding size limit."""
         is_allowed, reason = self.manager.validate_operation(
             "code_generation", "strict", code_size=2000
         )
-        self.assertFalse(is_allowed)
-        self.assertIn("exceeds", reason)
+        assert not is_allowed
+        assert "exceeds" in reason
 
     def test_08_policy_caching(self):
         """Test that policies are cached."""
         success1, policy1, _ = self.manager.load_policy("balanced")
         success2, policy2, _ = self.manager.load_policy("balanced")
-        self.assertTrue(success1)
-        self.assertTrue(success2)
+        assert success1
+        assert success2
         # Same object reference indicates caching
-        self.assertIs(policy1, policy2)
+        assert policy1 is policy2
 
     def test_09_cache_expiration(self):
         """Test cache TTL expiration."""
         manager = PolicyManager(cache_ttl=1)  # 1 second TTL
         # Load policy
         success, policy, _ = manager.load_policy("balanced")
-        self.assertTrue(success)
+        assert success
         # Check it's cached
-        self.assertIn("balanced", manager.policies)
+        assert "balanced" in manager.policies
         # Simulate expiration
         manager.policies["balanced"].loaded_at = datetime.now() - timedelta(seconds=2)
         # Load again (should reload)
         success, policy2, msg = manager.load_policy("balanced", force_refresh=False)
-        self.assertIn("loaded", msg.lower())
+        assert "loaded" in msg.lower()
 
     def test_10_clear_cache(self):
         """Test clearing policy cache."""
         self.manager.load_policy("balanced")
-        self.assertGreater(len(self.manager.policies), 0)
+        assert len(self.manager.policies) > 0
         self.manager.clear_cache()
-        self.assertEqual(len(self.manager.policies), 0)
+        assert len(self.manager.policies) == 0
 
     def test_11_list_available_profiles(self):
         """Test listing available profiles."""
         profiles = self.manager.list_available_profiles()
-        self.assertIn("strict", profiles)
-        self.assertIn("balanced", profiles)
-        self.assertIn("permissive", profiles)
+        assert "strict" in profiles
+        assert "balanced" in profiles
+        assert "permissive" in profiles
 
     def test_12_get_policy_info(self):
         """Test retrieving policy information."""
         info = self.manager.get_policy_info("balanced")
-        self.assertIsNotNone(info)
-        self.assertIn("version", info)
-        self.assertIn("max_autonomy_level", info)
-        self.assertIn("profiles", info)
-        self.assertEqual(info["max_autonomy_level"], 3)
+        assert info is not None
+        assert "version" in info
+        assert "max_autonomy_level" in info
+        assert "profiles" in info
+        assert info["max_autonomy_level"] == 3
 
     def test_13_policy_hash_calculation(self):
         """Test policy hash is calculated correctly."""
         success, policy, _ = self.manager.load_policy("balanced")
-        self.assertTrue(success)
-        self.assertIsNotNone(policy.policy_hash)
-        self.assertEqual(len(policy.policy_hash), 64)  # SHA-256 is 64 hex chars
+        assert success
+        assert policy.policy_hash is not None
+        assert len(policy.policy_hash) == 64  # SHA-256 is 64 hex chars
 
     def test_14_load_from_json_file(self):
         """Test loading policy from JSON file."""
@@ -371,9 +372,9 @@ class TestPolicyManager(unittest.TestCase):
 
         # Load from file manually
         success, policy, msg = self.manager._load_from_file(str(policy_file))
-        self.assertTrue(success)
-        self.assertIsNotNone(policy)
-        self.assertEqual(policy.constraints.max_autonomy_level, 2)
+        assert success
+        assert policy is not None
+        assert policy.constraints.max_autonomy_level == 2
 
     def test_15_operation_validation_strict_mode(self):
         """Test operation validation in strict mode."""
@@ -381,13 +382,13 @@ class TestPolicyManager(unittest.TestCase):
         is_allowed, reason = self.manager.validate_operation(
             "code_generation", "strict", code_size=500
         )
-        self.assertFalse(is_allowed)
+        assert not is_allowed
 
         # But small code should be allowed
         is_allowed, reason = self.manager.validate_operation(
             "code_generation", "strict", code_size=100
         )
-        self.assertTrue(is_allowed)
+        assert is_allowed
 
 
 class TestPolicyCaching(unittest.TestCase):
@@ -406,21 +407,21 @@ class TestPolicyCaching(unittest.TestCase):
         self.manager.load_policy("balanced")
         policy1 = self.manager.policies["balanced"]
         success, policy2, _ = self.manager.load_policy("balanced")
-        self.assertIs(policy1, policy2)
+        assert policy1 is policy2
 
     def test_02_force_refresh_reloads(self):
         """Test force_refresh bypasses cache."""
         success, policy1, _ = self.manager.load_policy("balanced")
         success, policy2, _ = self.manager.load_policy("balanced", force_refresh=True)
         # New instance after refresh
-        self.assertIsNot(policy1, policy2)
+        assert policy1 is not policy2
 
     def test_03_multiple_profiles_cached(self):
         """Test multiple profiles can be cached independently."""
         self.manager.load_policy("strict")
         self.manager.load_policy("balanced")
         self.manager.load_policy("permissive")
-        self.assertEqual(len(self.manager.policies), 3)
+        assert len(self.manager.policies) == 3
 
 
 if __name__ == "__main__":
