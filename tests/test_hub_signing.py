@@ -1,102 +1,81 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
-
-# Standard library imports
-import importlib.util
-import time
+"""Signing enforcement through real loopback Hub requests and committed registry state."""
 
 # Third party imports
-import pytest
+import requests
 
 # Aetherra imports
-from aetherra_hub.compat import AetherraHubServer
-
-HAS_FLASK = importlib.util.find_spec("flask") is not None
-HAS_NACL = importlib.util.find_spec("nacl") is not None
+from Aetherra.security.plugin_signing import generate_keypair, sign_manifest
 
 
-def _start_server(port=3011):
-    server = AetherraHubServer(port)
-    ok = server.start_server()
-    assert ok
-    # wait briefly for thread to start
-    time.sleep(0.3)
-    return server
-
-
-def _post_json(url, payload):
-    # Third party imports
-    import requests
-
-    return requests.post(url, json=payload, timeout=5)
-
-
-@pytest.mark.skipif(not HAS_FLASK, reason="Flask not installed")
-def test_register_unsigned_non_strict(monkeypatch):
+def test_register_unsigned_non_strict(monkeypatch, signing_hub):
     monkeypatch.delenv("AETHERRA_SIGNING_STRICT", raising=False)
-    srv = _start_server(3012)
-    try:
-        resp = _post_json(
-            "http://localhost:3012/api/plugins/register",
-            {
-                "name": "unsigned_plugin",
-                "version": "1.0.0",
-                "description": "Unsigned plugin for non-strict registration test",
-            },
-        )
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["status"] == "ok"
-    finally:
-        srv.stop_server()
+    base, store = signing_hub
+    response = requests.post(
+        f"{base}/api/plugins/register",
+        json={
+            "name": "unsigned_plugin",
+            "version": "1.0.0",
+            "description": "Synthetic unsigned manifest",
+        },
+        timeout=5,
+        allow_redirects=False,
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "ok"
+    listing = requests.get(f"{base}/api/plugins", timeout=5, allow_redirects=False)
+    assert listing.status_code == 200
+    assert any(
+        plugin["name"] == "unsigned_plugin" for plugin in listing.json()["plugins"]
+    )
 
 
-@pytest.mark.skipif(not HAS_FLASK, reason="Flask not installed")
-def test_register_unsigned_strict(monkeypatch):
+def test_register_unsigned_strict(monkeypatch, signing_hub):
     monkeypatch.setenv("AETHERRA_SIGNING_STRICT", "1")
-    srv = _start_server(3013)
-    try:
-        resp = _post_json(
-            "http://localhost:3013/api/plugins/register",
-            {
-                "name": "unsigned_plugin",
-                "version": "1.0.0",
-                "description": "Unsigned plugin for strict registration test",
-            },
-        )
-        assert resp.status_code == 400
-    finally:
-        srv.stop_server()
+    base, store = signing_hub
+    response = requests.post(
+        f"{base}/api/plugins/register",
+        json={
+            "name": "unsigned_plugin",
+            "version": "1.0.0",
+            "description": "Synthetic unsigned manifest",
+        },
+        timeout=5,
+        allow_redirects=False,
+    )
+    assert response.status_code == 400
+    assert store.get("unsigned_plugin") is None
+    listing = requests.get(f"{base}/api/plugins", timeout=5, allow_redirects=False)
+    assert listing.status_code == 200
+    assert all(
+        plugin["name"] != "unsigned_plugin" for plugin in listing.json()["plugins"]
+    )
 
 
-@pytest.mark.skipif(
-    not HAS_FLASK or not HAS_NACL, reason="Flask or PyNaCl not installed"
-)
-def test_register_signed_valid(monkeypatch):
+def test_register_signed_valid(monkeypatch, signing_hub):
     monkeypatch.setenv("AETHERRA_SIGNING_STRICT", "1")
-    # Generate key and sign
-    # Aetherra imports
-    from Aetherra.security.plugin_signing import generate_keypair, sign_manifest
-
-    pub, secret = generate_keypair()
-    manifest = {
-        "name": "signed_plugin",
-        "version": "1.0.0",
-        "description": "Signed plugin registration test",
-    }
-    signed = sign_manifest(manifest, secret)
-
-    srv = _start_server(3014)
-    try:
-        resp = _post_json("http://localhost:3014/api/plugins/register", signed)
-        assert resp.status_code == 200
-        # Fetch back
-        # Third party imports
-        import requests
-
-        r2 = requests.get("http://localhost:3014/api/plugins/signed_plugin", timeout=5)
-        assert r2.status_code == 200
-        pdata = r2.json()
-        assert pdata.get("signature_verified") is True
-    finally:
-        srv.stop_server()
+    base, store = signing_hub
+    public, secret = generate_keypair()
+    signed = sign_manifest(
+        {
+            "name": "signed_plugin",
+            "version": "1.0.0",
+            "description": "Synthetic signed manifest",
+        },
+        secret,
+    )
+    response = requests.post(
+        f"{base}/api/plugins/register", json=signed, timeout=5, allow_redirects=False
+    )
+    assert response.status_code == 200
+    listing = requests.get(f"{base}/api/plugins", timeout=5, allow_redirects=False)
+    assert listing.status_code == 200
+    assert any(
+        plugin["name"] == "signed_plugin" for plugin in listing.json()["plugins"]
+    )
+    stored = store.get("signed_plugin")
+    assert stored is not None
+    assert stored["signature_verified"] is True
+    assert stored["pubkey"] == public
+    assert stored["signature"] == signed["signature"]

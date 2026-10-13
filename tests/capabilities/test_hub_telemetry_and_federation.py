@@ -2,40 +2,49 @@
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
 # Third party imports
-import pytest
 import requests
 
-# Aetherra imports
-from aetherra_hub.compat import start_hub_server
 
-HAS_FLASK = True
-try:
-    # Third party imports
-    import flask  # noqa: F401
-except Exception:
-    HAS_FLASK = False
+def test_telemetry_and_federation_endpoints(signing_hub, monkeypatch):
+    # Aetherra imports
+    from aetherra_hub.blueprints import telemetry
 
+    base, _ = signing_hub
+    monkeypatch.setenv("AETHERRA_HUB_CONTROL_TOKEN", "synthetic-control-test")
+    monkeypatch.setenv("AETHERRA_FEDERATION_ENABLED", "0")
+    monkeypatch.setattr(telemetry, "_state", {"telemetry_received": 0})
+    headers = {"X-Aetherra-Control-Token": "synthetic-control-test"}
 
-@pytest.mark.skipif(not HAS_FLASK, reason="Flask not installed")
-def test_telemetry_and_federation_endpoints():
-    # Start hub server on a test port
-    server = start_hub_server(port=3011)
-    assert server.is_running()
+    denied = requests.post(
+        f"{base}/api/telemetry",
+        json={"event": "ping"},
+        timeout=5,
+        allow_redirects=False,
+    )
+    assert denied.status_code == 401
+    assert telemetry._state["telemetry_received"] == 0
+    response = requests.post(
+        f"{base}/api/telemetry",
+        headers=headers,
+        json={"event": "ping"},
+        timeout=5,
+        allow_redirects=False,
+    )
+    assert response.status_code == 200
+    assert response.json() == {"ok": True}
+    stats = requests.get(f"{base}/api/stats", timeout=5, allow_redirects=False)
+    assert stats.status_code == 200
+    assert stats.json()["telemetry_received"] == 1
 
-    # Telemetry ingest
-    r = requests.post("http://localhost:3011/api/telemetry", json={"event": "ping"})
-    assert r.status_code == 200
-
-    # Stats reflect telemetry
-    s = requests.get("http://localhost:3011/api/stats").json()
-    assert s.get("telemetry_received", 0) >= 1
-
-    # Federation endpoints should respond (even if disabled)
-    a = requests.post("http://localhost:3011/api/peers/announce")
-    assert a.status_code in (200, 501)
-    y = requests.post("http://localhost:3011/api/peers/sync")
-    assert y.status_code in (200, 501)
-
-    # Memory graph optics responds (may be disabled)
-    g = requests.get("http://localhost:3011/api/memory/graph")
-    assert g.status_code in (200, 501)
+    for path in ("announce", "sync"):
+        response = requests.post(
+            f"{base}/api/peers/{path}",
+            headers=headers,
+            timeout=5,
+            allow_redirects=False,
+        )
+        assert response.status_code == 501
+        assert response.json()["status"] == "federation_disabled"
+    graph = requests.get(f"{base}/api/memory/graph", timeout=5, allow_redirects=False)
+    assert graph.status_code == 501
+    assert graph.json()["status"] == "memory_graph_disabled"
