@@ -8,7 +8,7 @@ Verify Aetherra OS Architecture Map (v1.x) conformance
 Checks for the presence of core components, modules, and contracts referenced
 in docs/aetherra_os_architecture_map_v_1.md and prints a compact PASS/FAIL report.
 Can optionally perform light runtime probes (Hub HTTP endpoints) and validate
-Agent Fabric capability policies + env/HMR flags behavior.
+Security capability policies + env/HMR flags behavior.
 
 Usage:
     python tools/verify_architecture_map.py
@@ -26,13 +26,20 @@ from __future__ import annotations
 # Standard library imports
 import argparse
 import contextlib
+import http.client
 import importlib
+import json
 import os
 import socket
+import subprocess
 import sys
+import tempfile
 import time
-import urllib.request
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 
 def _exists(path: str) -> bool:
@@ -225,19 +232,21 @@ def check_hub_minimal_api_probe(port: int | None = None, timeout: float = 1.5) -
         return {"ok": False, "errors": ["hub failed to start"], "port": p}
     # Give it a brief moment
     time.sleep(0.2)
-    base = f"http://localhost:{p}"
 
     def _get(path: str) -> tuple[int, str]:
-        url = base + path
+        connection = http.client.HTTPConnection("localhost", p, timeout=timeout)
         try:
-            with urllib.request.urlopen(url, timeout=timeout) as resp:  # nosec B310
-                code = int(resp.status)
-                ctype = str(resp.headers.get("Content-Type") or "")
-                body = resp.read().decode("utf-8", errors="replace")
-                return code, (ctype or "") + "\n" + body[:200]
-        except Exception as e:  # pragma: no cover - network timing sensitive
-            errors.append(f"GET {path}: {e}")
+            connection.request("GET", path)
+            response = connection.getresponse()
+            code = int(response.status)
+            ctype = str(response.getheader("Content-Type", ""))
+            body = response.read().decode("utf-8", errors="replace")
+            return code, ctype + "\n" + body[:200]
+        except Exception as error:  # pragma: no cover - network timing sensitive
+            errors.append(f"GET {path}: {type(error).__name__}")
             return 0, ""
+        finally:
+            connection.close()
 
     # Probe a few minimal endpoints
     c_health, b_health = _get("/health")
@@ -270,108 +279,93 @@ def check_hub_minimal_api_probe(port: int | None = None, timeout: float = 1.5) -
 
 
 def check_capability_policies_and_deny_defaults() -> dict:
-    """Instantiate AgentFabric with a stub registry and verify policies.
-
-    - Executor denied in headless/safe, allowed in full
-    - Retriever denied in safe
-    - Summarizer allowed across modes
-    - Unknown capability defaults to deny
-    - read_only respects AAR_* env
-    """
-    # Standard library imports
-    import asyncio as _a
-    from types import SimpleNamespace
-
-    class _StubReg:
-        def __init__(self):
-            self.svcs = {}
-
-        async def register_service(self, name, inst, metadata=None):
-            self.svcs[name] = SimpleNamespace(instance=inst, metadata=metadata)
-
-        def get_service(self, name):
-            return None
-
-        async def send_message(self, *args, **kwargs):
-            return None
-
-        async def update_heartbeat(self, *args, **kwargs):
-            return None
-
-    def _run_and_check(env: dict[str, str]) -> dict[str, bool | str]:
-        # Snapshot and apply env
-        saved = {k: os.environ.get(k) for k in env}
-        try:
-            for k, v in env.items():
-                if v is None:
-                    os.environ.pop(k, None)
-                else:
-                    os.environ[k] = v
-            # Aetherra imports
-            from aetherra_agent_fabric import AgentFabric
-
-            reg = _StubReg()
-
-            async def _start():
-                fab = AgentFabric(reg)
-                await fab.start()
-                return fab
-
-            fab = _a.run(_start())
-            # Checks
-            g = fab.gate
-            ret = {
-                "executor_execute": g.check("agent.executor", "execute"),
-                "retriever_retrieve": g.check("agent.retriever", "retrieve"),
-                "summarizer_summarize": g.check("agent.summarizer", "summarize"),
-                "unknown_cap": g.check("agent.executor", "definitely_unknown"),
-                "read_only": bool(getattr(fab, "read_only", False)),
-                "mode": str(getattr(fab, "mode", "")),
-            }
-            # Cleanup agents
-            _a.run(fab.shutdown())
-            return ret
-        finally:
-            # restore env
-            for k, v in saved.items():
-                if v is None:
-                    os.environ.pop(k, None)
-                else:
-                    os.environ[k] = v
-
-    # Matrix
-    res_full = _run_and_check({"AAR_MODE": "full", "AAR_READ_ONLY": "0"})
-    res_headless = _run_and_check({"AAR_MODE": "headless", "AAR_READ_ONLY": "0"})
-    res_safe = _run_and_check({"AAR_MODE": "safe", "AAR_READ_ONLY": "0"})
-    # Read-only override
-    res_ro = _run_and_check({"AAR_MODE": "headless", "AAR_READ_ONLY": "1"})
-    # Local writes allowed in headless disables read_only
-    res_headless_w = _run_and_check(
-        {"AAR_MODE": "headless", "AAR_ALLOW_LOCAL_WRITES": "1", "AAR_READ_ONLY": "0"}
-    )
-
-    ok = (
-        res_full["executor_execute"] is True
-        and res_headless["executor_execute"] is False
-        and res_safe["executor_execute"] is False
-        and res_safe["retriever_retrieve"] is False
-        and res_headless["summarizer_summarize"] is True
-        and res_full["summarizer_summarize"] is True
-        and res_headless["unknown_cap"] is False
-        and res_ro["read_only"] is True
-        and res_headless_w["read_only"] is False
-    )
-
+    """Verify the active capability API using isolated child-process policies."""
+    probe = """
+import json
+from Aetherra.security.capabilities import check_capability, has_capability
+print(json.dumps({
+    "allowed": has_capability("architecture:principal", "agent:read"),
+    "ungranted": has_capability("architecture:principal", "agent:execute_task"),
+    "unknown_principal": check_capability("architecture:unknown", "agent:read"),
+}))
+"""
+    cases = {
+        "strict_dev": ("dev", "1", "valid"),
+        "production": ("prod", "0", "valid"),
+        "production_alias": ("production", "0", "valid"),
+        "missing_policy": ("prod", "0", "missing"),
+        "malformed_policy": ("prod", "0", "malformed"),
+    }
+    matrix = {}
+    root = Path(__file__).resolve().parents[1]
+    try:
+        with tempfile.TemporaryDirectory(prefix="aetherra-policy-probe-") as scratch:
+            for name, (profile, strict, policy_kind) in cases.items():
+                policy_home = Path(scratch) / name
+                policy_home.mkdir()
+                policy = policy_home / "capabilities.json"
+                if policy_kind == "valid":
+                    policy.write_text(
+                        json.dumps(
+                            {"allow": {"architecture:principal": ["agent:read"]}}
+                        ),
+                        encoding="utf-8",
+                    )
+                elif policy_kind == "malformed":
+                    policy.write_text("{", encoding="utf-8")
+                env = {
+                    key: value
+                    for key, value in os.environ.items()
+                    if key.upper() in {"PATH", "SYSTEMROOT", "WINDIR", "TEMP", "TMP"}
+                }
+                env.update(
+                    {
+                        "AETHERRA_PROFILE": profile,
+                        "AETHERRA_REQUIRE_CAPABILITIES": strict,
+                        "AETHERRA_PROD_UNSAFE_ALLOW": "0",
+                        "AETHERRA_POLICY_HOME": str(policy_home),
+                        "PYTHONIOENCODING": "utf-8",
+                    }
+                )
+                result = subprocess.run(
+                    [sys.executable, "-c", probe],
+                    cwd=root,
+                    env=env,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    timeout=15,
+                    check=False,
+                )
+                if result.returncode:
+                    raise ValueError("policy_probe_failed")
+                actual = json.loads(result.stdout)
+                expected = {
+                    "allowed": policy_kind == "valid",
+                    "ungranted": False,
+                    "unknown_principal": False,
+                }
+                if not isinstance(actual, dict) or set(actual) != set(expected):
+                    raise ValueError("policy_probe_invalid")
+                if any(type(value) is not bool for value in actual.values()):
+                    raise ValueError("policy_probe_invalid")
+                matrix[name] = actual
+                if actual != expected:
+                    return {
+                        "ok": False,
+                        "matrix": matrix,
+                        "errors": ["capability_policy_contract_mismatch"],
+                    }
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        return {
+            "ok": False,
+            "matrix": matrix,
+            "errors": ["capability_policy_probe_failed"],
+        }
     return {
-        "ok": ok,
-        "notes": "Capability profiles across modes + deny-by-default verified",
-        "matrix": {
-            "full": res_full,
-            "headless": res_headless,
-            "safe": res_safe,
-            "read_only_override": res_ro,
-            "headless_allow_writes": res_headless_w,
-        },
+        "ok": True,
+        "matrix": matrix,
+        "notes": "Explicit grants and strict default denial verified via Security API",
     }
 
 
@@ -410,7 +404,7 @@ def check_hmr_env_behavior() -> dict:
         return {
             "ok": ok,
             "notes": "HMR env flags parsed into controller",
-            "allowed_sources": sorted(list(ctrl.allowed_sources)),
+            "allowed_sources": sorted(ctrl.allowed_sources),
             "audit_path": ctrl.audit_path,
             "audit_max_bytes": int(ctrl.audit_max_bytes),
             "audit_max_backups": int(ctrl.audit_max_backups),
