@@ -54,7 +54,7 @@ jobs:
         shell: bash
       - name: Static verify .aether scripts (strict)
         run: |
-          python tools/verify_aether_scripts.py --strict --output aether_static_report.md || echo "Static verify found issues"
+          python tools/verify_aether_scripts.py --strict --output aether_static_report.md
         shell: bash
       - name: Upload static report artifact
         if: always()
