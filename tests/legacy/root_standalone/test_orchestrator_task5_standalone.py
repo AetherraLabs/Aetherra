@@ -8,19 +8,21 @@ Covers:
 - CodeOrchestrator E2E flow (10 tests)
 
 Run with:
-    python tests/legacy/root_standalone/test_orchestrator_task5_standalone.py
+    python -m tests.legacy.root_standalone.test_orchestrator_task5_standalone
 """
 
 from __future__ import annotations
 
-import os
+# Standard library imports
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Third party imports
+import pytest
 
+# Aetherra imports
 from aetherra_coding.orchestrator import (
     CodeGenerationPlan,
     CodeGenerationWorkflow,
@@ -114,11 +116,11 @@ for case_name, intent, expected_type, expected_target in _intent_cases():
         def _test(self):
             parser = IntentParser()
             parsed = parser.parse(_intent)
-            self.assertEqual(parsed.intent_type, _expected_type)
-            self.assertEqual(parsed.target_name, _expected_target)
-            self.assertIsInstance(parsed.requirements, list)
-            self.assertIsInstance(parsed.constraints, list)
-            self.assertIsInstance(parsed.dependencies, list)
+            assert parsed.intent_type == _expected_type
+            assert parsed.target_name == _expected_target
+            assert isinstance(parsed.requirements, list)
+            assert isinstance(parsed.constraints, list)
+            assert isinstance(parsed.dependencies, list)
 
         return _test
 
@@ -200,30 +202,28 @@ for case_name, parsed, scope, expected_target in _plan_cases():
         def _test(self):
             gen = PlanGenerator()
             plan = gen.generate(_parsed, _scope)
-            self.assertEqual(plan.target_file, _expected_target)
-            self.assertEqual(plan.parsed_intent.target_name, _parsed.target_name)
-            self.assertEqual(len(plan.steps), 5)
+            assert plan.target_file == _expected_target
+            assert plan.parsed_intent.target_name == _parsed.target_name
+            assert len(plan.steps) == 5
             if _case == "effort_low":
-                self.assertEqual(plan.estimated_effort, "1-2h")
+                assert plan.estimated_effort == "1-2h"
             if _case == "effort_medium":
-                self.assertEqual(plan.estimated_effort, "3-5h")
+                assert plan.estimated_effort == "3-5h"
             if _case == "effort_high":
-                self.assertEqual(plan.estimated_effort, "6-10h")
+                assert plan.estimated_effort == "6-10h"
             if _case == "steps_names_order":
                 names = [s.name for s in plan.steps]
-                self.assertEqual(
-                    names, ["skeleton", "logic", "errors", "docs", "tests"]
-                )
+                assert names == ["skeleton", "logic", "errors", "docs", "tests"]
             if _case == "steps_output_types":
                 outputs = [s.output_type for s in plan.steps]
-                self.assertIn("tests", outputs)
-                self.assertIn("docs", outputs)
+                assert "tests" in outputs
+                assert "docs" in outputs
             if _case == "derive_test_file_custom_scope":
-                self.assertTrue(plan.test_file.endswith("test_mod.py"))
+                assert plan.test_file.endswith("test_mod.py")
             if _case == "plan_contains_tests_step":
-                self.assertTrue(any(s.name == "tests" for s in plan.steps))
+                assert any(s.name == "tests" for s in plan.steps)
             if _case == "plan_contains_docs_step":
-                self.assertTrue(any(s.name == "docs" for s in plan.steps))
+                assert any(s.name == "docs" for s in plan.steps)
 
         return _test
 
@@ -297,38 +297,38 @@ for case_name, parsed in _workflow_cases():
             wf = CodeGenerationWorkflow()
             plan = _workflow_plan(_parsed)
             out = wf.execute(plan)
-            self.assertTrue(out.source_code)
-            self.assertTrue(out.test_code)
-            self.assertTrue(out.docs)
+            assert out.source_code
+            assert out.test_code
+            assert out.docs
 
             if _case == "function_skeleton":
-                self.assertIn("def compute", out.source_code)
+                assert "def compute" in out.source_code
             if _case == "class_skeleton":
-                self.assertIn("class MyClass", out.source_code)
+                assert "class MyClass" in out.source_code
             if _case == "async_skeleton":
-                self.assertIn("async def fetch", out.source_code)
+                assert "async def fetch" in out.source_code
             if _case == "factorial_logic":
-                self.assertIn("factorial(value - 1)", out.source_code)
+                assert "factorial(value - 1)" in out.source_code
             if _case == "error_handling_added":
-                self.assertIn("raise ValueError", out.source_code)
+                assert "raise ValueError" in out.source_code
             if _case == "docs_generated":
-                self.assertIn("Intent type", out.docs)
+                assert "Intent type" in out.docs
             if _case == "tests_generated":
-                self.assertIn("def test_", out.test_code)
+                assert "def test_" in out.test_code
             if _case == "class_tests_reference_class":
-                self.assertIn("Widget", out.test_code)
+                assert "Widget" in out.test_code
             if _case == "function_tests_reference_function":
-                self.assertIn("echo", out.test_code)
+                assert "echo" in out.test_code
             if _case == "docs_include_constraints":
-                self.assertIn("recursive", out.docs)
+                assert "recursive" in out.docs
             if _case == "docs_include_dependencies":
-                self.assertIn("flask", out.docs)
+                assert "flask" in out.docs
             if _case == "recursive_constraint_preserved":
-                self.assertIn("factorial", out.source_code)
+                assert "factorial" in out.source_code
             if _case == "source_non_empty":
-                self.assertGreater(len(out.source_code), 10)
+                assert len(out.source_code) > 10
             if _case == "test_non_empty":
-                self.assertGreater(len(out.test_code), 10)
+                assert len(out.test_code) > 10
 
         return _test
 
@@ -396,39 +396,35 @@ for case_name, intent, scope in _orchestrator_cases():
                 orch = CodeOrchestrator(repo_root=repo)
 
                 plan = orch.plan(_intent, scope=_scope)
-                self.assertGreaterEqual(len(plan.steps), 1)
+                assert len(plan.steps) >= 1
 
                 if _case == "plan_without_scope":
-                    self.assertTrue(
-                        orch._codegen_plan.target_file.startswith("generated/")
-                    )
+                    assert orch._codegen_plan.target_file.startswith("generated/")
 
                 if _case == "generate_invalid_step_index_raises":
-                    with self.assertRaises(IndexError):
+                    with pytest.raises(IndexError):
                         orch.generate(999)
                     return
 
                 patch = orch.generate(0, dry_run=True)
-                self.assertFalse(patch.applied)
-                self.assertTrue(patch.diff)
+                assert not patch.applied
+                assert patch.diff
 
                 if _case == "generate_step0_dry_run":
-                    self.assertIn("***", patch.diff)
+                    assert "***" in patch.diff
                 if _case == "plan_stores_internal_parsed_intent":
-                    self.assertIsNotNone(orch._parsed_intent)
-                    self.assertEqual(orch._parsed_intent.intent_type, "function")
+                    assert orch._parsed_intent is not None
+                    assert orch._parsed_intent.intent_type == "function"
                 if _case == "plan_sets_codegen_plan":
-                    self.assertIsNotNone(orch._codegen_plan)
+                    assert orch._codegen_plan is not None
                 if _case == "generate_for_new_file_contains_def":
-                    self.assertIn("def sanitize", patch.diff)
+                    assert "def sanitize" in patch.diff
                 if _case == "generate_summary_contains_target":
-                    self.assertIn("clamp.py", patch.summary)
+                    assert "clamp.py" in patch.summary
                 if _case == "plan_complexity_high":
-                    self.assertEqual(orch._parsed_intent.complexity, "high")
+                    assert orch._parsed_intent.complexity == "high"
                 if _case == "plan_logs_steps":
-                    self.assertTrue(
-                        any("skeleton" in s.description for s in plan.steps)
-                    )
+                    assert any("skeleton" in s.description for s in plan.steps)
 
         return _test
 
