@@ -13,10 +13,24 @@ SCRIPT = Path(__file__).resolve().parents[2] / "scripts/precommit_block_artifact
 GIT = shutil.which("git")
 
 
+def git_environment(directory):
+    env = {
+        key: value
+        for key, value in os.environ.items()
+        if not key.upper().startswith("GIT_")
+    }
+    env["GIT_CEILING_DIRECTORIES"] = str(directory.parent)
+    return env
+
+
 @pytest.fixture
 def repository(tmp_path):
     assert GIT is not None, "Git is required to verify the pre-commit hook"
-    subprocess.run([GIT, "init", "--quiet", str(tmp_path)], check=True)
+    subprocess.run(
+        [GIT, "init", "--quiet", str(tmp_path)],
+        env=git_environment(tmp_path),
+        check=True,
+    )
     return tmp_path
 
 
@@ -28,7 +42,7 @@ def run_hook(directory):
         capture_output=True,
         text=True,
         timeout=15,
-        env={**os.environ, "GIT_CEILING_DIRECTORIES": str(directory.parent)},
+        env=git_environment(directory),
     )
 
 
@@ -36,7 +50,12 @@ def stage(repository, filename):
     path = repository / filename
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("synthetic artifact", encoding="utf-8")
-    subprocess.run([GIT, "add", "--", filename], cwd=repository, check=True)
+    subprocess.run(
+        [GIT, "add", "--", filename],
+        cwd=repository,
+        env=git_environment(repository),
+        check=True,
+    )
 
 
 def test_hook_allows_empty_index(repository):
@@ -85,3 +104,27 @@ def test_hook_fails_closed_when_git_is_missing(monkeypatch, capsys):
     monkeypatch.setattr(hook["shutil"], "which", lambda name: None)
     assert hook["main"]() == 1
     assert "failed to list staged files (RuntimeError)" in capsys.readouterr().err
+
+
+def test_git_overrides_cannot_redirect_test_index(repository, monkeypatch):
+    foreign = repository / "foreign"
+    foreign.mkdir()
+    clean_env = git_environment(foreign)
+    subprocess.run([GIT, "init", "--quiet", str(foreign)], env=clean_env, check=True)
+    (foreign / "state.db").write_text("synthetic external artifact", encoding="utf-8")
+    subprocess.run(
+        [GIT, "add", "--", "state.db"], cwd=foreign, env=clean_env, check=True
+    )
+    (foreign / "source").mkdir()
+    (foreign / "source/main.py").write_text(
+        "synthetic external source", encoding="utf-8"
+    )
+    index = foreign / ".git/index"
+    before = index.read_bytes()
+    monkeypatch.setenv("GIT_DIR", str(foreign / ".git"))
+    monkeypatch.setenv("GIT_WORK_TREE", str(foreign))
+    monkeypatch.setenv("GIT_INDEX_FILE", str(index))
+    stage(repository, "source/main.py")
+    result = run_hook(repository)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert index.read_bytes() == before
