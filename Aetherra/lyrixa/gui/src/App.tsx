@@ -150,31 +150,32 @@ const FALLBACK_BOOTSTRAP: BootstrapPayload = {
     },
 };
 
+async function loadBootstrap(): Promise<{ payload: BootstrapPayload; source: "api" | "fallback" }> {
+    try {
+        const response = await fetch("/api/runtime-ui/bootstrap?mode=first_launch&user=Tim&limit=8", {
+            headers: { Accept: "application/json" },
+        });
+        if (!response.ok) {
+            throw new Error(`runtime-ui:${response.status}`);
+        }
+        const nextPayload = (await response.json()) as BootstrapPayload;
+        return { payload: normalizeBootstrap(nextPayload), source: "api" };
+    } catch {
+        return { payload: normalizeBootstrap(FALLBACK_BOOTSTRAP), source: "fallback" };
+    }
+}
+
 function App() {
     const [payload, setPayload] = useState<BootstrapPayload>(FALLBACK_BOOTSTRAP);
     const [selectedNode, setSelectedNode] = useState("guardian");
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [source, setSource] = useState<"api" | "fallback">("fallback");
 
-    const refresh = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch("/api/runtime-ui/bootstrap?mode=first_launch&user=Tim&limit=8", {
-                headers: { Accept: "application/json" },
-            });
-            if (!response.ok) {
-                throw new Error(`runtime-ui:${response.status}`);
-            }
-            const nextPayload = (await response.json()) as BootstrapPayload;
-            setPayload(normalizeBootstrap(nextPayload));
-            setSource("api");
-        } catch {
-            setPayload(normalizeBootstrap(FALLBACK_BOOTSTRAP));
-            setSource("fallback");
-        } finally {
-            setLoading(false);
-        }
-    };
+    const refresh = () => loadBootstrap().then((next) => {
+        setPayload(next.payload);
+        setSource(next.source);
+        setLoading(false);
+    });
 
     useEffect(() => {
         void refresh();
@@ -226,7 +227,10 @@ function App() {
                         <p className="eyebrow">Architect Mode</p>
                         <h2>Living Systems</h2>
                     </div>
-                    <button className="icon-button" type="button" onClick={() => void refresh()} aria-label="Refresh runtime state">
+                    <button className="icon-button" type="button" onClick={() => {
+                        setLoading(true);
+                        void refresh();
+                    }} aria-label="Refresh runtime state">
                         <RefreshCw className={loading ? "spin" : ""} size={18} />
                     </button>
                 </div>
