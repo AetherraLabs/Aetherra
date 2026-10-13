@@ -42,3 +42,6 @@ aiohttp>=3.8.0
 
 # Date/Time Utilities
 python-dateutil>=2.8.0
+
+# Plugin signing
+PyNaCl>=1.6.2

@@ -38,6 +38,7 @@ dependencies = [
     "prometheus-client>=0.19.0",
     "pyyaml>=6.0",
     "cryptography>=41.0.0",
+    "PyNaCl>=1.6.2",
     "numpy>=1.24.0",
     "qiskit>=1.0.0",
     "qiskit-aer>=0.13.0",
