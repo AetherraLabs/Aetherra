@@ -1,17 +1,33 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+# Standard library imports
 import importlib.util
 import json
+import os
 import time
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 import Aetherra.aetherra_core.plugins.plugin_manager as plugin_manager_module
 import Aetherra.homeostasis.homeostasis_core as homeostasis_core
 import Aetherra.security.api_keys as api_keys
 from Aetherra.guardian import ContainmentAction, IntentDeclaration
 from Aetherra.guardian.containment import record_containment
+
+
+@pytest.fixture(autouse=True)
+def restore_safe_mode_environment():
+    original = os.environ.get("AETHERRA_SAFE_MODE")
+    try:
+        yield
+    finally:
+        if original is None:
+            os.environ.pop("AETHERRA_SAFE_MODE", None)
+        else:
+            os.environ["AETHERRA_SAFE_MODE"] = original
 
 
 def test_execute_plugin_writes_security_audit_entry(monkeypatch, tmp_path):
@@ -104,7 +120,9 @@ def test_plugin_load_passes_through_guardian(monkeypatch, tmp_path):
     assert "TOP_SECRET_LOAD_TOKEN" not in raw_audit
 
 
-def test_plugin_load_denied_before_import_when_capability_missing(monkeypatch, tmp_path):
+def test_plugin_load_denied_before_import_when_capability_missing(
+    monkeypatch, tmp_path
+):
     monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(tmp_path))
     monkeypatch.setenv("AETHERRA_GUARDIAN_MODE", "enforcing")
     monkeypatch.setattr(plugin_manager_module, "has_capability", lambda *_args: False)
@@ -125,7 +143,9 @@ def test_plugin_load_denied_before_import_when_capability_missing(monkeypatch, t
 
     assert manager.load_plugin("blocked") is False
     assert marker_path.exists() is False
-    assert manager.plugin_states["blocked"] == plugin_manager_module.PluginState.DISABLED
+    assert (
+        manager.plugin_states["blocked"] == plugin_manager_module.PluginState.DISABLED
+    )
 
     audit_path = tmp_path / ".aetherra" / "security" / "plugin_audit.jsonl"
     entries = [
@@ -133,7 +153,9 @@ def test_plugin_load_denied_before_import_when_capability_missing(monkeypatch, t
         for line in audit_path.read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
-    denied_entry = next(entry for entry in entries if entry["event_type"] == "plugin_denied")
+    denied_entry = next(
+        entry for entry in entries if entry["event_type"] == "plugin_denied"
+    )
 
     assert denied_entry["plugin_name"] == "blocked"
     assert denied_entry["reason"] == "missing_capability"
@@ -223,6 +245,7 @@ def test_security_system_writes_central_audit_events(monkeypatch, tmp_path):
     monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(workspace_root))
     monkeypatch.delenv("AETHERRA_SECURITY_AUDIT_PATH", raising=False)
 
+    # Aetherra imports
     from Aetherra.aetherra_core.system import security_system
 
     security_system.append_security_audit_entry(
@@ -279,6 +302,7 @@ def test_emergency_lockdown_enables_safe_mode(monkeypatch, tmp_path):
     monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(workspace_root))
     monkeypatch.delenv("AETHERRA_SAFE_MODE", raising=False)
 
+    # Aetherra imports
     from Aetherra.aetherra_core.system import security_system
 
     security_system.trigger_emergency_lockdown(
@@ -316,6 +340,7 @@ def test_security_lockdown_recovery_requires_authorized_actor(monkeypatch, tmp_p
     workspace_root.mkdir()
     monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(workspace_root))
 
+    # Aetherra imports
     from Aetherra.aetherra_core.system import security_system
 
     security_system.trigger_emergency_lockdown("test", actor="security")
@@ -342,6 +367,7 @@ def test_tampered_lockdown_state_is_treated_as_unsafe(monkeypatch, tmp_path):
     monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(workspace_root))
     monkeypatch.delenv("AETHERRA_SAFE_MODE", raising=False)
 
+    # Aetherra imports
     from Aetherra.aetherra_core.system import security_system
 
     security_system.trigger_emergency_lockdown("tamper_test", actor="security")
@@ -358,6 +384,7 @@ def test_unauthorized_security_state_change_is_audited(monkeypatch, tmp_path):
     workspace_root.mkdir()
     monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(workspace_root))
 
+    # Aetherra imports
     from Aetherra.aetherra_core.system import security_system
 
     try:
@@ -417,6 +444,7 @@ def test_lockdown_recovery_requires_recovery_context(monkeypatch, tmp_path):
     workspace_root.mkdir()
     monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(workspace_root))
 
+    # Aetherra imports
     from Aetherra.aetherra_core.system import security_system
 
     security_system.trigger_emergency_lockdown("test", actor="security")
@@ -444,6 +472,7 @@ def test_lockdown_recovery_fails_closed_when_audit_is_tampered(monkeypatch, tmp_
     workspace_root.mkdir()
     monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(workspace_root))
 
+    # Aetherra imports
     from Aetherra.aetherra_core.system import security_system
     from Aetherra.security.audit_ledger import AuditLedgerError
 
