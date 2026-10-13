@@ -11,12 +11,14 @@ Tests cover:
   - Error reporting
 """
 
+# Standard library imports
 import json
 import os
 import tempfile
 import unittest
 from pathlib import Path
 
+# Third party imports
 import yaml
 
 
@@ -25,6 +27,7 @@ class TestValidationError(unittest.TestCase):
 
     def test_create_error(self):
         """Test creating validation error."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ErrorLevel,
             ValidationError,
@@ -37,12 +40,13 @@ class TestValidationError(unittest.TestCase):
             step_name="step1",
         )
 
-        self.assertEqual(error.level, ErrorLevel.ERROR)
-        self.assertEqual(error.message, "Test error")
-        self.assertEqual(error.line, 10)
+        assert error.level == ErrorLevel.ERROR
+        assert error.message == "Test error"
+        assert error.line == 10
 
     def test_error_string_representation(self):
         """Test error string representation."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ErrorLevel,
             ValidationError,
@@ -56,9 +60,9 @@ class TestValidationError(unittest.TestCase):
         )
 
         error_str = str(error)
-        self.assertIn("ERROR", error_str)
-        self.assertIn("Test error", error_str)
-        self.assertIn("step1", error_str)
+        assert "ERROR" in error_str
+        assert "Test error" in error_str
+        assert "step1" in error_str
 
 
 class TestValidationResult(unittest.TestCase):
@@ -66,6 +70,7 @@ class TestValidationResult(unittest.TestCase):
 
     def test_create_result(self):
         """Test creating validation result."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ValidationResult,
         )
@@ -75,11 +80,12 @@ class TestValidationResult(unittest.TestCase):
             valid=True,
         )
 
-        self.assertEqual(result.script_path, "/test/script.aether")
-        self.assertTrue(result.valid)
+        assert result.script_path == "/test/script.aether"
+        assert result.valid
 
     def test_add_error(self):
         """Test adding error to result."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ValidationResult,
         )
@@ -90,11 +96,12 @@ class TestValidationResult(unittest.TestCase):
         )
         result.add_error("Test error", step_name="step1")
 
-        self.assertEqual(len(result.errors), 1)
-        self.assertEqual(result.errors[0].message, "Test error")
+        assert len(result.errors) == 1
+        assert result.errors[0].message == "Test error"
 
     def test_add_warning(self):
         """Test adding warning to result."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ValidationResult,
         )
@@ -105,11 +112,12 @@ class TestValidationResult(unittest.TestCase):
         )
         result.add_warning("Test warning", step_name="step1")
 
-        self.assertEqual(len(result.warnings), 1)
-        self.assertEqual(result.warnings[0].message, "Test warning")
+        assert len(result.warnings) == 1
+        assert result.warnings[0].message == "Test warning"
 
     def test_is_valid_with_errors(self):
         """Test validation status with errors."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ValidationResult,
         )
@@ -120,10 +128,11 @@ class TestValidationResult(unittest.TestCase):
         )
         result.add_error("Test error")
 
-        self.assertFalse(result.is_valid())
+        assert not result.is_valid()
 
     def test_is_valid_without_errors(self):
         """Test validation status without errors."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ValidationResult,
         )
@@ -134,10 +143,11 @@ class TestValidationResult(unittest.TestCase):
         )
         result.add_warning("Test warning")
 
-        self.assertTrue(result.is_valid())
+        assert result.is_valid()
 
     def test_result_summary(self):
         """Test result summary message."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ValidationResult,
         )
@@ -150,9 +160,9 @@ class TestValidationResult(unittest.TestCase):
         result.add_warning("Warning 1")
 
         summary = result.summary()
-        self.assertIn("FAILED", summary)
-        self.assertIn("1 errors", summary)
-        self.assertIn("1 warnings", summary)
+        assert "FAILED" in summary
+        assert "1 errors" in summary
+        assert "1 warnings" in summary
 
 
 class TestStepDefinition(unittest.TestCase):
@@ -160,6 +170,7 @@ class TestStepDefinition(unittest.TestCase):
 
     def test_create_shell_step(self):
         """Test creating shell step definition."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             StepDefinition,
         )
@@ -170,12 +181,13 @@ class TestStepDefinition(unittest.TestCase):
             command="echo hello",
         )
 
-        self.assertEqual(step.name, "test_step")
-        self.assertEqual(step.step_type, "shell")
-        self.assertEqual(step.command, "echo hello")
+        assert step.name == "test_step"
+        assert step.step_type == "shell"
+        assert step.command == "echo hello"
 
     def test_step_with_dependencies(self):
         """Test step with dependencies."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             StepDefinition,
         )
@@ -187,7 +199,7 @@ class TestStepDefinition(unittest.TestCase):
             depends_on=["step1"],
         )
 
-        self.assertEqual(step.depends_on, ["step1"])
+        assert step.depends_on == ["step1"]
 
 
 class TestScriptValidator(unittest.TestCase):
@@ -211,6 +223,7 @@ class TestScriptValidator(unittest.TestCase):
 
     def test_validator_initialization(self):
         """Test validator initialization."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ScriptValidator,
         )
@@ -218,10 +231,11 @@ class TestScriptValidator(unittest.TestCase):
         script_path = self._create_script("test.aether", "steps: []")
         validator = ScriptValidator(script_path)
 
-        self.assertEqual(str(validator.script_path), script_path)
+        assert str(validator.script_path) == script_path
 
     def test_validate_missing_file(self):
         """Test validation fails for missing file."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ScriptValidator,
         )
@@ -229,11 +243,12 @@ class TestScriptValidator(unittest.TestCase):
         validator = ScriptValidator("/path/that/does/not/exist.aether")
         result = validator.validate()
 
-        self.assertFalse(result.valid)
-        self.assertGreater(len(result.errors), 0)
+        assert not result.valid
+        assert len(result.errors) > 0
 
     def test_validate_invalid_yaml(self):
         """Test validation fails for invalid YAML."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ScriptValidator,
         )
@@ -242,10 +257,11 @@ class TestScriptValidator(unittest.TestCase):
         validator = ScriptValidator(script_path)
         result = validator.validate()
 
-        self.assertFalse(result.valid)
+        assert not result.valid
 
     def test_validate_missing_steps(self):
         """Test validation fails when steps missing."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ScriptValidator,
         )
@@ -257,10 +273,11 @@ class TestScriptValidator(unittest.TestCase):
         validator = ScriptValidator(script_path)
         result = validator.validate()
 
-        self.assertFalse(result.valid)
+        assert not result.valid
 
     def test_validate_empty_steps(self):
         """Test validation warns for empty steps."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ScriptValidator,
         )
@@ -272,10 +289,11 @@ class TestScriptValidator(unittest.TestCase):
         validator = ScriptValidator(script_path)
         result = validator.validate()
 
-        self.assertGreater(len(result.warnings), 0)
+        assert len(result.warnings) > 0
 
     def test_validate_simple_script(self):
         """Test validation of simple valid script."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ScriptValidator,
         )
@@ -294,11 +312,12 @@ class TestScriptValidator(unittest.TestCase):
         validator = ScriptValidator(script_path)
         result = validator.validate()
 
-        self.assertTrue(result.valid)
-        self.assertEqual(len(validator.steps), 1)
+        assert result.valid
+        assert len(validator.steps) == 1
 
     def test_validate_invalid_step_type(self):
         """Test validation fails for invalid step type."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ScriptValidator,
         )
@@ -316,11 +335,12 @@ class TestScriptValidator(unittest.TestCase):
         validator = ScriptValidator(script_path)
         result = validator.validate()
 
-        self.assertFalse(result.valid)
-        self.assertGreater(len(result.errors), 0)
+        assert not result.valid
+        assert len(result.errors) > 0
 
     def test_validate_shell_missing_command(self):
         """Test validation fails for shell without command."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ScriptValidator,
         )
@@ -337,10 +357,11 @@ class TestScriptValidator(unittest.TestCase):
         validator = ScriptValidator(script_path)
         result = validator.validate()
 
-        self.assertFalse(result.valid)
+        assert not result.valid
 
     def test_validate_plugin_missing_fields(self):
         """Test validation fails for plugin without name/method."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ScriptValidator,
         )
@@ -357,11 +378,12 @@ class TestScriptValidator(unittest.TestCase):
         validator = ScriptValidator(script_path)
         result = validator.validate()
 
-        self.assertFalse(result.valid)
-        self.assertGreater(len(result.errors), 1)
+        assert not result.valid
+        assert len(result.errors) > 1
 
     def test_validate_invalid_timeout(self):
         """Test validation fails for invalid timeout."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ScriptValidator,
         )
@@ -380,10 +402,11 @@ class TestScriptValidator(unittest.TestCase):
         validator = ScriptValidator(script_path)
         result = validator.validate()
 
-        self.assertFalse(result.valid)
+        assert not result.valid
 
     def test_validate_undefined_reference(self):
         """Test validation fails for undefined step reference."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ScriptValidator,
         )
@@ -402,10 +425,11 @@ class TestScriptValidator(unittest.TestCase):
         validator = ScriptValidator(script_path)
         result = validator.validate()
 
-        self.assertFalse(result.valid)
+        assert not result.valid
 
     def test_validate_circular_dependency(self):
         """Test validation fails for circular dependencies."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ScriptValidator,
         )
@@ -430,10 +454,11 @@ class TestScriptValidator(unittest.TestCase):
         validator = ScriptValidator(script_path)
         result = validator.validate()
 
-        self.assertFalse(result.valid)
+        assert not result.valid
 
     def test_validate_unused_variable(self):
         """Test validation warns for unused variables."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ScriptValidator,
         )
@@ -454,10 +479,11 @@ class TestScriptValidator(unittest.TestCase):
         validator = ScriptValidator(script_path)
         result = validator.validate()
 
-        self.assertGreater(len(result.warnings), 0)
+        assert len(result.warnings) > 0
 
     def test_validate_metadata(self):
         """Test validation includes metadata."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ScriptValidator,
         )
@@ -477,11 +503,12 @@ class TestScriptValidator(unittest.TestCase):
         validator = ScriptValidator(script_path)
         result = validator.validate()
 
-        self.assertIn("steps_count", result.metadata)
-        self.assertEqual(result.metadata["steps_count"], 1)
+        assert "steps_count" in result.metadata
+        assert result.metadata["steps_count"] == 1
 
     def test_validate_json_format(self):
         """Test validation accepts JSON format."""
+        # Aetherra imports
         from Aetherra.aetherra_core.script_service.script_validator import (
             ScriptValidator,
         )
@@ -499,7 +526,7 @@ class TestScriptValidator(unittest.TestCase):
         validator = ScriptValidator(script_path)
         result = validator.validate()
 
-        self.assertTrue(result.valid)
+        assert result.valid
 
 
 if __name__ == "__main__":
