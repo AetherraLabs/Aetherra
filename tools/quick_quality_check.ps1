@@ -28,15 +28,15 @@ Invoke-Step "ruff lint" { ruff check . }
 if (-not $Fix) { Invoke-Step "ruff format (dry)" { ruff format --check . } } else { Invoke-Step "ruff format (apply)" { ruff format . } }
 
 # 3. Black
-if (-not $Fix) { Invoke-Step "black --check" { black --line-length 100 --check . } } else { Invoke-Step "black (apply)" { black --line-length 100 . } }
+if (-not $Fix) { Invoke-Step "black --check" { black --check . } } else { Invoke-Step "black (apply)" { black . } }
 
 # 4. isort
-if (-not $Fix) { Invoke-Step "isort --check-only" { isort --profile black --line-length 100 --check-only . } } else { Invoke-Step "isort (apply)" { isort --profile black --line-length 100 . } }
+if (-not $Fix) { Invoke-Step "isort --check-only" { isort --profile black --check-only . } } else { Invoke-Step "isort (apply)" { isort --profile black . } }
 
 # 5. Minimal tests (single fast file if exists)
 $test = "tests/capabilities/test_lyrixa_chat_bridge_schema.py"
 if (Test-Path $test) {
-    Invoke-Step "pytest minimal" { pytest -q -o addopts= $test::test_edit_plan_mirrors_suggestions_and_confidence_defaults }
+    Invoke-Step "pytest minimal" { pytest -q -o addopts= "${test}::test_edit_plan_mirrors_suggestions_and_confidence_defaults" }
 }
 
 # 6. Parse baseline sample

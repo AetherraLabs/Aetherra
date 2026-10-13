@@ -68,9 +68,9 @@ jobs:
             echo '--- Ruff format check'
             ruff format --check .
             echo '--- Black check'
-            black --line-length 100 --check . || (echo 'Black failed' && exit 1)
+            black --check . || (echo 'Black failed' && exit 1)
             echo '--- isort check'
-            isort --profile black --line-length 100 --check-only .
+            isort --profile black --check-only .
           fi
           echo '--- Minimal pytest'
           if [ -f tests/capabilities/test_lyrixa_chat_bridge_schema.py ]; then pytest -q -o addopts= tests/capabilities/test_lyrixa_chat_bridge_schema.py::test_edit_plan_mirrors_suggestions_and_confidence_defaults; fi
