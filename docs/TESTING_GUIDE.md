@@ -3,7 +3,7 @@
 > Maintained and officially operated by **Aetherra Labs**.
 > **Powered by Aetherra Labs.**
 
-Updated: 2025-11-01
+Updated: 2026-10-13
 
 This guide covers testing practices, test suite structure, and how to write and run tests for Aetherra OS, Hub, and related components.
 
@@ -15,6 +15,41 @@ This guide covers testing practices, test suite structure, and how to write and 
 - Use mocking and fixtures effectively
 - Measure and maintain test coverage
 - Integrate testing into CI/CD pipelines
+
+## Trustworthy Test Evidence
+
+Tests must exercise production code and assert observable behavior. Boundary mocks
+are appropriate for isolating dependencies, but asserting a mock's preconfigured
+return value or unconditional success is not evidence that a system works.
+
+On 2026-10-13, two prototype suites were retired:
+
+- `tests/integration/test_plugin_ecosystem.py` configured mock registries,
+  executors, planners and UI components without importing production code.
+- `tests/unit/test_self_evolving_behavior.py` asserted fabricated personality,
+  reflection, memory-tuning and learning results without exercising their
+  production implementations.
+
+Their removal does not establish that those proposed capabilities are complete.
+Historical analysis reports may still mention these retired prototypes; those
+reports are not current acceptance evidence. No coverage threshold, test selector
+or security requirement was relaxed as part of this retirement.
+
+Existing tests provide narrower, concrete evidence:
+
+- `tests/unit/test_plugin_manager_audit.py` exercises production plugin loading,
+  execution, capability denial, containment and audit behavior.
+- `tests/test_hub_signing.py` and `tests/test_discovery_signing.py` exercise Hub
+  registration and discovery signing contracts.
+- `tests/capabilities/test_self_improvement_metrics.py` exercises the production
+  proposal engine's metrics, proposal lifecycle and prohibition on autonomous
+  implementation.
+- `tests/unit/test_night_cycle_tz.py` exercises the kernel's time-zone guard and
+  scheduling decision, not the full overnight maintenance workload.
+
+These contracts do not prove complete plugin-UI integration, personality
+adaptation or long-term self-learning. Such claims require dedicated tests of
+their actual runtime paths before they can count as acceptance evidence.
 
 ## Test Suite Overview
 
