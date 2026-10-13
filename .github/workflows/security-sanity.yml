@@ -46,10 +46,11 @@ jobs:
             tests/unit/test_hub_plugin_registration_non_strict.py \
             tests/unit/test_hub_plugin_registration_signed_strict.py
         shell: bash
-      - name: Run GUI smoke test (offscreen, LyrixaBasicWindow)
+      - name: Verify Runtime UI read-only contract and authority ownership
         run: |
-          export QT_QPA_PLATFORM=offscreen
-          python -m pytest -q tests/unit/test_gui_smoke.py || echo "GUI smoke test skipped"
+          python -m pytest -q -o addopts= \
+            tests/unit/test_runtime_ui_contract.py \
+            tests/unit/test_runtime_ui_manifest.py
         shell: bash
       - name: Static verify .aether scripts (strict)
         run: |
