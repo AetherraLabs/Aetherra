@@ -31,6 +31,7 @@
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
+        "@tailwindcss/postcss": "^4.3.3",
         "@types/node": "^26.4.1",
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
@@ -38,13 +39,20 @@
         "@typescript-eslint/eslint-plugin": "^8.71.1",
         "@typescript-eslint/parser": "^8.71.1",
         "@vitejs/plugin-react": "^6.1.1",
-        "autoprefixer": "^10.6.1",
         "eslint": "^10.12.0",
         "eslint-plugin-react-hooks": "^7.1.1",
         "eslint-plugin-react-refresh": "^0.5.7",
         "postcss": "^8.5.29",
-        "tailwindcss": "^3.4.19",
+        "semver": "^7",
+        "tailwindcss": "^4.3.3",
         "typescript": "~6.0.3",
         "vite": "^8.3.4"
+    },
+    "overrides": {
+        "eslint": {
+            "minimatch": {
+                "brace-expansion": "^5.0.12"
+            }
+        }
     }
 }

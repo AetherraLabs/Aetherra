@@ -6,9 +6,9 @@ import test from 'node:test'
 import vm from 'node:vm'
 import { ESLint } from 'eslint'
 import postcss from 'postcss'
-import tailwindcss from 'tailwindcss'
+import tailwindcss from '@tailwindcss/postcss'
 import ts from 'typescript'
-import tailwindConfig from '../tailwind.config.js'
+import semver from 'semver'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
 
@@ -71,6 +71,22 @@ test('the lockfile matches both manifest dependency sections', async () => {
     }
 })
 
+test('known vulnerable selector and brace paths are removed or patched', async () => {
+    const lock = JSON.parse(await readFile(new URL('../package-lock.json', import.meta.url)))
+    for (const [name, vulnerable] of [
+        ['postcss-selector-parser', '<7.1.6'],
+        ['brace-expansion', '>=4.0.0 <5.0.12'],
+        ['braces', '<=3.0.3'],
+    ]) {
+        const instances = Object.entries(lock.packages).filter(([location]) =>
+            location.endsWith(`/node_modules/${name}`) || location === `node_modules/${name}`)
+        for (const [location, dependency] of instances) {
+            assert.ok(semver.valid(dependency.version), `${location}: invalid version`)
+            assert.equal(semver.satisfies(dependency.version, vulnerable), false, `${location}: ${dependency.version}`)
+        }
+    }
+})
+
 test('TypeScript linting rejects unused bindings and explicit any', async () => {
     const eslint = new ESLint({ cwd: root })
     const [result] = await eslint.lintText('const unused: any = 1;', {
@@ -100,12 +116,13 @@ test('the active Observatory source passes every configured lint rule', async ()
 
 test('Tailwind compiles existing CSS directives and retains Observatory styles', async () => {
     const from = path.join(root, 'src/index.css')
-    const css = await readFile(from, 'utf8')
+    const css = await readFile(from, 'utf8') + '\n@source inline("text-red-500 text-aetherra-green");'
     const result = await postcss([
-        tailwindcss({ ...tailwindConfig, content: [{ raw: '<div class="text-red-500" />' }] }),
+        tailwindcss({ base: root }),
     ]).process(css, { from })
     assert.equal(result.warnings().length, 0)
     assert.doesNotMatch(result.css, /@tailwind\s/)
     assert.match(result.css, /\.text-red-500\s*\{/)
+    assert.match(result.css, /\.text-aetherra-green\s*\{/)
     assert.match(result.css, /\.observatory-shell\s*\{/)
 })
