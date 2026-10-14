@@ -37,8 +37,13 @@ def test_policy_bootstrap_creates_files(tmp_path, monkeypatch):
 
     assert "allow" in cap_data
     assert isinstance(cap_data["allow"], dict)
-    allow_domains = net_data.get("allow_domains", [])
-    assert "localhost" in allow_domains
-    assert ".aetherra.dev" in allow_domains
-    assert "api.example.com" in allow_domains
-    assert ".corp.example" in allow_domains
+    assert net_data == {
+        "allow_domains": [
+            "localhost",
+            "127.0.0.1",
+            ".aetherra.dev",
+            "api.example.com",
+            ".corp.example",
+        ],
+        "deny_domains": [],
+    }
