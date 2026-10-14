@@ -15,6 +15,7 @@ Test Categories:
 Total: 27 comprehensive tests
 """
 
+# Standard library imports
 import json
 import sys
 import tempfile
@@ -22,9 +23,9 @@ import time
 from pathlib import Path
 
 # Add project root to path
-ROOT_DIR = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT_DIR))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
+# Aetherra imports
 # Import modules directly (no engine init)
 from Aetherra.aetherra_core.script_service.script_service_logging import (
     EventLevel,

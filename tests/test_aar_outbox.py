@@ -39,7 +39,8 @@ async def test_read_only_queues_and_list_clear(tmp_path, monkeypatch):
         assert res.get("ok") is True
         assert res.get("queued") is True
         key = res.get("outbox_key")
-        assert key and isinstance(key, str)
+        assert key
+        assert isinstance(key, str)
 
         # List via new endpoint
         listed = await fabric.handle_message("agents.outbox.list", {})

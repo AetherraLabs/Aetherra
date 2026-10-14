@@ -30,11 +30,15 @@ async def test_pipeline_queue_and_summarize(tmp_path, monkeypatch):
         )
         assert res.get("ok") is True
         stages = res.get("stages") or {}
-        assert "plan" in stages and stages["plan"].get("ok")
-        assert "retrieve" in stages and stages["retrieve"].get("ok")
-        assert "summarize" in stages and stages["summarize"].get("ok")
+        assert "plan" in stages
+        assert stages["plan"].get("ok")
+        assert "retrieve" in stages
+        assert stages["retrieve"].get("ok")
+        assert "summarize" in stages
+        assert stages["summarize"].get("ok")
         # Execute should be queued in read_only
         exec_stage = stages.get("execute")
-        assert exec_stage and exec_stage.get("queued") is True
+        assert exec_stage
+        assert exec_stage.get("queued") is True
     finally:
         os.chdir(old_cwd)

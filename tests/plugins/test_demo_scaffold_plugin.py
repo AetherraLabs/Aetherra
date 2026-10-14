@@ -21,7 +21,8 @@ def test_plugin_scaffold():
         spec = importlib.util.spec_from_file_location(
             "demo_scaffold_plugin_fallback", plugin_path
         )
-        assert spec and spec.loader
+        assert spec
+        assert spec.loader
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)  # type: ignore
     cls = mod.DemoScaffoldPlugin
