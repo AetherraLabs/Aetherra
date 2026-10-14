@@ -6,17 +6,20 @@ Run with:
 
 from __future__ import annotations
 
+# Standard library imports
 import json
-import os
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
+# Aetherra imports
 from tools.phase5_report_rollup import rollup_reports
+
+ROOT_DIR = Path(__file__).resolve().parents[3]
 
 
 class TestPhase5ReportRollup(unittest.TestCase):
@@ -107,25 +110,23 @@ class TestPhase5ReportRollup(unittest.TestCase):
             )
 
             out = rollup_reports([str(p1), str(p2)])
-            self.assertEqual(out["summary"]["reports"], 2)
-            self.assertEqual(out["summary"]["passing_reports"], 1)
-            self.assertAlmostEqual(
-                out["summary"]["aggregate_run_pass_rate"], 0.9, places=3
-            )
-            self.assertIn("categories", out)
+            assert out["summary"]["reports"] == 2
+            assert out["summary"]["passing_reports"] == 1
+            assert round(out["summary"]["aggregate_run_pass_rate"] - 0.9, 3) == 0
+            assert "categories" in out
             perf = next(
                 row
                 for row in out["categories"]["results"]
                 if row["category"] == "performance"
             )
-            self.assertEqual(perf["reports"], 2)
-            self.assertEqual(perf["total"], 4)
-            self.assertAlmostEqual(perf["aggregate_pass_rate"], 0.75, places=3)
-            self.assertIn("performance_evidence", out)
-            self.assertEqual(out["performance_evidence"]["samples"], 4)
-            self.assertEqual(out["performance_evidence"]["scenario_count"], 2)
-            self.assertIn("performance_thresholds", out)
-            self.assertTrue(out["performance_thresholds"]["passed"])
+            assert perf["reports"] == 2
+            assert perf["total"] == 4
+            assert round(perf["aggregate_pass_rate"] - 0.75, 3) == 0
+            assert "performance_evidence" in out
+            assert out["performance_evidence"]["samples"] == 4
+            assert out["performance_evidence"]["scenario_count"] == 2
+            assert "performance_thresholds" in out
+            assert out["performance_thresholds"]["passed"]
 
     def test_rollup_performance_threshold_gate_fails(self):
         with tempfile.TemporaryDirectory() as td:
@@ -166,8 +167,8 @@ class TestPhase5ReportRollup(unittest.TestCase):
                 performance_max_scenario_duration_sec=0.001,
                 performance_min_pass_rate=1.0,
             )
-            self.assertFalse(out["performance_thresholds"]["passed"])
-            self.assertEqual(len(out["performance_thresholds"]["checks"]), 3)
+            assert not out["performance_thresholds"]["passed"]
+            assert len(out["performance_thresholds"]["checks"]) == 3
 
     def test_rollup_grouped_trends_against_previous_rollup(self):
         with tempfile.TemporaryDirectory() as td:
@@ -212,20 +213,20 @@ class TestPhase5ReportRollup(unittest.TestCase):
                 },
             }
             out = rollup_reports([str(p1)], previous_rollup=previous)
-            self.assertTrue(out["grouped_trends"]["has_previous"])
-            self.assertTrue(out["grouped_trends"]["category_deltas"])
-            self.assertTrue(out["grouped_trends"]["performance_deltas"])
+            assert out["grouped_trends"]["has_previous"]
+            assert out["grouped_trends"]["category_deltas"]
+            assert out["grouped_trends"]["performance_deltas"]
 
     def test_rollup_handles_bad_json(self):
         with tempfile.TemporaryDirectory() as td:
             bad = Path(td) / "bad.json"
             bad.write_text("{ invalid json", encoding="utf-8")
             out = rollup_reports([str(bad)])
-            self.assertEqual(out["summary"]["reports"], 1)
-            self.assertEqual(out["summary"]["passing_reports"], 0)
-            self.assertEqual(out["reports"][0]["status"], "error")
-            self.assertEqual(out["categories"]["results"], [])
-            self.assertEqual(out["performance_evidence"]["samples"], 0)
+            assert out["summary"]["reports"] == 1
+            assert out["summary"]["passing_reports"] == 0
+            assert out["reports"][0]["status"] == "error"
+            assert out["categories"]["results"] == []
+            assert out["performance_evidence"]["samples"] == 0
 
     def test_cli_writes_rollup(self):
         with tempfile.TemporaryDirectory() as td:
@@ -263,7 +264,7 @@ class TestPhase5ReportRollup(unittest.TestCase):
 
             cmd = [
                 sys.executable,
-                "tools/phase5_report_rollup.py",
+                str(ROOT_DIR / "tools" / "phase5_report_rollup.py"),
                 "--inputs",
                 str(r),
                 "--output",
@@ -271,20 +272,20 @@ class TestPhase5ReportRollup(unittest.TestCase):
             ]
             proc = subprocess.run(
                 cmd,
-                cwd=os.path.dirname(os.path.abspath(__file__)),
+                cwd=ROOT_DIR,
                 capture_output=True,
                 text=True,
                 encoding="utf-8",
                 errors="replace",
             )
-            self.assertEqual(proc.returncode, 0)
-            self.assertTrue(o.exists())
+            assert proc.returncode == 0
+            assert o.exists()
             payload = json.loads(o.read_text(encoding="utf-8"))
-            self.assertEqual(payload["summary"]["reports"], 1)
-            self.assertIn("categories", payload)
-            self.assertIn("performance_evidence", payload)
-            self.assertIn("performance_thresholds", payload)
-            self.assertIn("grouped_trends", payload)
+            assert payload["summary"]["reports"] == 1
+            assert "categories" in payload
+            assert "performance_evidence" in payload
+            assert "performance_thresholds" in payload
+            assert "grouped_trends" in payload
 
 
 if __name__ == "__main__":

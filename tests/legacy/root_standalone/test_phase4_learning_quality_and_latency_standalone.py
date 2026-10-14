@@ -6,7 +6,7 @@ Run with:
 
 from __future__ import annotations
 
-import os
+# Standard library imports
 import sys
 import tempfile
 import time
@@ -14,8 +14,9 @@ import unittest
 from datetime import UTC, datetime
 from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
+# Aetherra imports
 from Aetherra.aetherra_core.memory.aetherra_memory_engine import AetherraMemoryEngine
 from Aetherra.consciousness.decision_engine import Decision
 from Aetherra.consciousness.learning_loop import LearningLoop
@@ -98,11 +99,11 @@ class TestPhase4LearningQualityAndLatency(unittest.TestCase):
                 )
 
             hints = loop.get_decision_hints(context, action=action)
-            self.assertEqual(hints["source"], "learned")
-            self.assertEqual(hints["attempts"], 12)
-            self.assertGreaterEqual(hints["success_rate"], 0.9)
-            self.assertGreaterEqual(hints["confidence_hint"], 0.85)
-            self.assertEqual(hints["risk_hint"], "low")
+            assert hints["source"] == "learned"
+            assert hints["attempts"] == 12
+            assert hints["success_rate"] >= 0.9
+            assert hints["confidence_hint"] >= 0.85
+            assert hints["risk_hint"] == "low"
 
     def test_memory_recall_latency_under_100ms(self):
         engine = AetherraMemoryEngine()
@@ -121,8 +122,8 @@ class TestPhase4LearningQualityAndLatency(unittest.TestCase):
         rows = engine.recall("deploy testing", limit=20)
         elapsed = time.perf_counter() - start
 
-        self.assertEqual(len(rows), 20)
-        self.assertLess(elapsed, 0.1)
+        assert len(rows) == 20
+        assert elapsed < 0.1
 
     def test_reflector_behavior_analysis_latency_under_100ms(self):
         plugin = ReflectorPlugin()
@@ -141,9 +142,9 @@ class TestPhase4LearningQualityAndLatency(unittest.TestCase):
         analysis = plugin.analyze_behavior("latency-check")
         elapsed = time.perf_counter() - start
 
-        self.assertIn("patterns", analysis)
-        self.assertIn("efficiency_metrics", analysis)
-        self.assertLess(elapsed, 0.1)
+        assert "patterns" in analysis
+        assert "efficiency_metrics" in analysis
+        assert elapsed < 0.1
 
 
 if __name__ == "__main__":
