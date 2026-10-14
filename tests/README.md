@@ -19,7 +19,7 @@ tests/
 Tests for AI functionality, intelligence systems, and machine learning components:
 - `test_ai_fallback.py` - AI fallback system tests
 - `test_chat_intelligence.py` - Chat AI functionality
-- `test_intelligence_core.py` - Core intelligence systems
+- Retired mock-only prototypes are recorded in [the Testing Guide](../docs/TESTING_GUIDE.md); they are not runtime acceptance evidence.
 - `test_multi_*.py` - Multi-agent and multi-provider tests
 - `test_neural_*.py` - Neural interface tests
 - `test_openai_integration.py` - OpenAI API integration
@@ -63,7 +63,7 @@ pytest tests/unit/        # Unit tests only
 
 ### Run Specific Test Files
 ```bash
-pytest tests/ai/test_intelligence_core.py
+pytest tests/unit/test_agent_orchestrator_guardian.py
 pytest tests/gui/test_gui.py
 ```
 
