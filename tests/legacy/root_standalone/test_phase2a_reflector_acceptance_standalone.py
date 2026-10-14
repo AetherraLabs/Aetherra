@@ -6,6 +6,7 @@ Run with:
 
 from __future__ import annotations
 
+# Standard library imports
 import os
 import sys
 import tempfile
@@ -14,9 +15,9 @@ import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-ROOT_DIR = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT_DIR))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
+# Aetherra imports
 from Aetherra.aetherra_core.kernel.reflector import MemoryReflector
 from Aetherra.aetherra_core.memory.fractal_mesh.base import (
     ConceptCluster,
@@ -69,8 +70,8 @@ class TestPhase2AReflectorAcceptance(unittest.TestCase):
 
             insights = reflector.reflect_on_past_range(fragments, (start, end))
 
-            self.assertIsInstance(insights, list)
-            self.assertTrue(reflector.reflection_sessions)
+            assert isinstance(insights, list)
+            assert reflector.reflection_sessions
 
     def test_kernel_reflector_compatibility_shims_work(self):
         with tempfile.TemporaryDirectory() as td:
@@ -85,8 +86,8 @@ class TestPhase2AReflectorAcceptance(unittest.TestCase):
             )
             connections = reflector.explore_concept_connections(fragments, None)
 
-            self.assertIsInstance(contradictions, list)
-            self.assertIsInstance(connections, list)
+            assert isinstance(contradictions, list)
+            assert isinstance(connections, list)
 
     def test_plugin_reflector_analysis_latency_under_100ms(self):
         plugin = ReflectorPlugin()
@@ -105,9 +106,9 @@ class TestPhase2AReflectorAcceptance(unittest.TestCase):
         report = plugin.analyze_behavior("phase2a-acceptance")
         elapsed = time.perf_counter() - start
 
-        self.assertIn("patterns", report)
-        self.assertIn("efficiency_metrics", report)
-        self.assertLess(elapsed, 0.1)
+        assert "patterns" in report
+        assert "efficiency_metrics" in report
+        assert elapsed < 0.1
 
 
 if __name__ == "__main__":

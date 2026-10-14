@@ -6,15 +6,16 @@ Run with:
 
 from __future__ import annotations
 
-import os
+# Standard library imports
 import sys
 import tempfile
 import unittest
 from datetime import datetime
 from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
+# Aetherra imports
 from Aetherra.consciousness.autonomy_governor import AutonomyGovernor
 from Aetherra.consciousness.decision_engine import ConsciousnessDecisionEngine
 from Aetherra.consciousness.learning_loop import LearningLoop
@@ -86,17 +87,17 @@ class TestAutonomyLearningChain(unittest.TestCase):
                     "risk_score": 0.2,
                 }
             )
-            self.assertTrue(gate.allowed)
+            assert gate.allowed
 
             adjustment = loop.process_outcome(
                 decision,
                 {"context": "repo", "success": True, "quality": 0.92, "latency_ms": 25},
             )
-            self.assertEqual(adjustment.strategy_delta, "increase_autonomy")
+            assert adjustment.strategy_delta == "increase_autonomy"
 
             hints = loop.get_decision_hints("repo", action=decision.action)
-            self.assertEqual(hints["source"], "learned")
-            self.assertGreater(hints["confidence_hint"], 0.6)
+            assert hints["source"] == "learned"
+            assert hints["confidence_hint"] > 0.6
 
     def test_denied_flow_learns_caution(self):
         with tempfile.TemporaryDirectory() as td:
@@ -118,7 +119,7 @@ class TestAutonomyLearningChain(unittest.TestCase):
                     "risk_score": 0.9,
                 }
             )
-            self.assertFalse(gate.allowed)
+            assert not gate.allowed
 
             adjustment = loop.process_outcome(
                 decision,
@@ -130,8 +131,8 @@ class TestAutonomyLearningChain(unittest.TestCase):
                     "regression": True,
                 },
             )
-            self.assertEqual(adjustment.strategy_delta, "increase_caution")
-            self.assertEqual(adjustment.recommended_risk_hint, "high")
+            assert adjustment.strategy_delta == "increase_caution"
+            assert adjustment.recommended_risk_hint == "high"
 
     def test_chain_records_episodes_and_memory(self):
         with tempfile.TemporaryDirectory() as td:
@@ -143,8 +144,8 @@ class TestAutonomyLearningChain(unittest.TestCase):
                 decision, {"context": "repo", "success": True, "quality": 0.8}
             )
             rows = loop.recent_similar_episodes("repo", decision.action, limit=5)
-            self.assertGreaterEqual(len(rows), 1)
-            self.assertEqual(len(self.memory.saved), 1)
+            assert len(rows) >= 1
+            assert len(self.memory.saved) == 1
 
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ Run with:
 
 from __future__ import annotations
 
+# Standard library imports
 import json
 import subprocess
 import sys
@@ -13,10 +14,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-ROOT_DIR = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT_DIR))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
+# Aetherra imports
 from tools.phase5_validation_harness import build_plan, run_validation
+
+ROOT_DIR = Path(__file__).resolve().parents[3]
 
 
 class TestPhase5ValidationHarness(unittest.TestCase):
@@ -27,20 +30,20 @@ class TestPhase5ValidationHarness(unittest.TestCase):
         quick_categories = {s.category for s in quick}
         full_categories = {s.category for s in full}
 
-        self.assertGreaterEqual(len(quick), 3)
-        self.assertGreater(len(full), len(quick))
-        self.assertEqual(quick[0].name, "decision-governor-learning-chain")
-        self.assertIn("governance", quick_categories)
-        self.assertIn("performance", quick_categories)
-        self.assertIn("integration", full_categories)
-        self.assertIn("security", full_categories)
-        self.assertIn("plugin-system-safety", full_names)
-        self.assertIn("hub-blueprints-integration", full_names)
-        self.assertIn("policy-governance-guardrails", full_names)
-        self.assertIn("signature-verifier-security", full_names)
-        self.assertIn("optimization-executor-safety", full_names)
-        self.assertIn("phase5-harness-self-check", full_names)
-        self.assertIn("phase5-rollup-self-check", full_names)
+        assert len(quick) >= 3
+        assert len(full) > len(quick)
+        assert quick[0].name == "decision-governor-learning-chain"
+        assert "governance" in quick_categories
+        assert "performance" in quick_categories
+        assert "integration" in full_categories
+        assert "security" in full_categories
+        assert "plugin-system-safety" in full_names
+        assert "hub-blueprints-integration" in full_names
+        assert "policy-governance-guardrails" in full_names
+        assert "signature-verifier-security" in full_names
+        assert "optimization-executor-safety" in full_names
+        assert "phase5-harness-self-check" in full_names
+        assert "phase5-rollup-self-check" in full_names
 
     def test_run_validation_aggregates_pass_fail(self):
         plan = build_plan("quick")[:2]
@@ -63,15 +66,15 @@ class TestPhase5ValidationHarness(unittest.TestCase):
             }
 
         report = run_validation(plan, timeout=10, runner=fake_runner)
-        self.assertEqual(report["total"], 2)
-        self.assertEqual(report["passed"], 1)
-        self.assertEqual(report["failed"], 1)
-        self.assertEqual(report["status"], "fail")
-        self.assertEqual(report["runs"], 1)
-        self.assertEqual(report["full_pass_runs"], 0)
-        self.assertIn("category_summaries", report)
-        self.assertTrue(
-            any(row["category"] == "governance" for row in report["category_summaries"])
+        assert report["total"] == 2
+        assert report["passed"] == 1
+        assert report["failed"] == 1
+        assert report["status"] == "fail"
+        assert report["runs"] == 1
+        assert report["full_pass_runs"] == 0
+        assert "category_summaries" in report
+        assert any(
+            row["category"] == "governance" for row in report["category_summaries"]
         )
 
     def test_run_validation_repeat_runs_reports_pass_rate(self):
@@ -90,10 +93,10 @@ class TestPhase5ValidationHarness(unittest.TestCase):
             }
 
         report = run_validation(plan, timeout=10, runs=3, runner=flaky_runner)
-        self.assertEqual(report["runs"], 3)
-        self.assertEqual(report["full_pass_runs"], 2)
-        self.assertAlmostEqual(report["run_pass_rate"], 2 / 3, places=3)
-        self.assertEqual(len(report["run_summaries"]), 3)
+        assert report["runs"] == 3
+        assert report["full_pass_runs"] == 2
+        assert round(report["run_pass_rate"] - 2 / 3, 3) == 0
+        assert len(report["run_summaries"]) == 3
 
     def test_run_validation_handles_runner_interrupt(self):
         plan = build_plan("quick")[:1]
@@ -102,10 +105,10 @@ class TestPhase5ValidationHarness(unittest.TestCase):
             raise KeyboardInterrupt("simulated stop")
 
         report = run_validation(plan, timeout=10, runs=1, runner=interrupting_runner)
-        self.assertEqual(report["status"], "fail")
-        self.assertEqual(report["passed"], 0)
-        self.assertEqual(report["failed"], 1)
-        self.assertIn("runner_exception", report["scenarios"][0]["stderr"])
+        assert report["status"] == "fail"
+        assert report["passed"] == 0
+        assert report["failed"] == 1
+        assert "runner_exception" in report["scenarios"][0]["stderr"]
 
     def test_cli_dry_run_writes_plan(self):
         with tempfile.TemporaryDirectory() as td:
@@ -129,14 +132,14 @@ class TestPhase5ValidationHarness(unittest.TestCase):
                 encoding="utf-8",
                 errors="replace",
             )
-            self.assertEqual(proc.returncode, 0)
-            self.assertTrue(out.exists())
+            assert proc.returncode == 0
+            assert out.exists()
             payload = json.loads(out.read_text(encoding="utf-8"))
-            self.assertEqual(payload["profile"], "quick")
-            self.assertEqual(payload["runs"], 5)
-            self.assertGreaterEqual(payload["total"], 3)
-            self.assertIn("category_summaries", payload)
-            self.assertTrue(all("category" in row for row in payload["scenarios"]))
+            assert payload["profile"] == "quick"
+            assert payload["runs"] == 5
+            assert payload["total"] >= 3
+            assert "category_summaries" in payload
+            assert all("category" in row for row in payload["scenarios"])
 
 
 if __name__ == "__main__":

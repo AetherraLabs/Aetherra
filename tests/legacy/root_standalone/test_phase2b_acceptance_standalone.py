@@ -6,14 +6,15 @@ Run with:
 
 from __future__ import annotations
 
+# Standard library imports
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-ROOT_DIR = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT_DIR))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
+# Aetherra imports
 from aetherra_coding.analysis import ImpactAnalyzer
 from aetherra_coding.orchestrator import CodeOrchestrator
 from aetherra_coding.verification import VerificationEngine
@@ -42,9 +43,9 @@ class TestPhase2BAcceptance(unittest.TestCase):
                 root,
             )
 
-            self.assertLess(low.score, high.score)
-            self.assertIn(low.risk_level, {"low", "medium", "high"})
-            self.assertIn(high.risk_level, {"low", "medium", "high"})
+            assert low.score < high.score
+            assert low.risk_level in {"low", "medium", "high"}
+            assert high.risk_level in {"low", "medium", "high"}
 
     def test_codegen_output_is_verifiable(self):
         with tempfile.TemporaryDirectory() as td:
@@ -52,8 +53,8 @@ class TestPhase2BAcceptance(unittest.TestCase):
             orch.plan("Create a function to normalize with docstring and tests")
             patch = orch.generate(0, dry_run=True)
 
-            self.assertTrue(patch.diff)
-            self.assertEqual(patch.risk_level, "low")
+            assert patch.diff
+            assert patch.risk_level == "low"
 
             generated_code = (
                 "def normalize(value):\n"
@@ -62,7 +63,7 @@ class TestPhase2BAcceptance(unittest.TestCase):
                 "    return value\n"
             )
             vr = VerificationEngine().verify_code(generated_code)
-            self.assertTrue(vr.passed)
+            assert vr.passed
 
     def test_safe_generation_consistency_over_10_runs(self):
         verifier = VerificationEngine()
@@ -72,7 +73,7 @@ class TestPhase2BAcceptance(unittest.TestCase):
             for _ in range(10):
                 orch.plan("Create a function factorial recursive with error handling")
                 patch = orch.generate(0, dry_run=True)
-                self.assertTrue(patch.diff)
+                assert patch.diff
                 generated = (
                     "def factorial(value):\n"
                     "    if value < 0:\n"
@@ -85,7 +86,7 @@ class TestPhase2BAcceptance(unittest.TestCase):
                 if result.passed:
                     passed += 1
 
-            self.assertEqual(passed, 10)
+            assert passed == 10
 
 
 if __name__ == "__main__":
