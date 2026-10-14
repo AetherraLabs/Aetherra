@@ -268,7 +268,7 @@ async def _load_interactive_lyrixa(self):
 
 ### Hub Metrics Integration
 
-Extend Hub metrics endpoint (`tools/maintenance/clean_hub_tmp.py` or equivalent):
+Extend the canonical Hub metrics endpoint (`aetherra_hub/blueprints/metrics.py`):
 
 ```python
 def _get_interactive_lyrixa_metrics():
