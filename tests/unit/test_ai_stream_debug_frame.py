@@ -1,5 +1,6 @@
 # Standard library imports
 import json
+from contextlib import suppress
 
 # Third party imports
 from flask import Flask
@@ -36,10 +37,8 @@ def _read_sse_events(body: str):
         events.append(cur)
     for e in events:
         if "data" in e:
-            try:
+            with suppress(Exception):
                 e["json"] = json.loads("\n".join(e["data"]))
-            except Exception:
-                pass
     return events
 
 
@@ -78,9 +77,8 @@ def test_debug_frame_emitted(monkeypatch):
         assert k in payload  # type: ignore[operator]
 
     # Confirm soft timeout final sequence present
-    assert "error" in kinds and "final" in kinds, (
-        "Expected soft timeout error/final events"
-    )
+    assert "error" in kinds, "Expected soft timeout error/final events"
+    assert "final" in kinds, "Expected soft timeout error/final events"
 
     # Metrics export includes soft timeout counter
     mresp = client.get("/metrics")
