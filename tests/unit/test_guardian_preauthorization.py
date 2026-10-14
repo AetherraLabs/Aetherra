@@ -1,7 +1,10 @@
+# Standard library imports
 import json
 
+# Third party imports
 import pytest
 
+# Aetherra imports
 from Aetherra.guardian import (
     GuardianMode,
     GuardianStatus,
@@ -102,7 +105,9 @@ def test_preauthorization_is_single_scope_and_single_use(monkeypatch, tmp_path):
     assert changed_scope.reason != "preauthorized_guardian_grant"
 
 
-def test_preauthorization_rejects_privileged_or_non_reversible_intents(monkeypatch, tmp_path):
+def test_preauthorization_rejects_privileged_or_non_reversible_intents(
+    monkeypatch, tmp_path
+):
     monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(tmp_path))
     privileged = _routine_intent(
         action="plugin.execute",
@@ -112,7 +117,9 @@ def test_preauthorization_rejects_privileged_or_non_reversible_intents(monkeypat
     )
     privileged_risk = assess_risk(privileged)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="preauthorization is only valid for routine_guarded intents"
+    ):
         create_preauthorization(
             privileged,
             privileged_risk,
@@ -122,7 +129,10 @@ def test_preauthorization_rejects_privileged_or_non_reversible_intents(monkeypat
 
     non_reversible = _routine_intent(reversible=False, rollback_plan=None)
     non_reversible_risk = assess_risk(non_reversible)
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match="preauthorization requires a reversible intent with rollback metadata",
+    ):
         create_preauthorization(
             non_reversible,
             non_reversible_risk,
@@ -135,7 +145,9 @@ def test_preauthorization_invalidates_on_policy_change(monkeypatch, tmp_path):
     monkeypatch.setenv("AETHERRA_WORKSPACE_ROOT", str(tmp_path))
     policy_path = tmp_path / ".aetherra" / "guardian" / "policy.json"
     policy_path.parent.mkdir(parents=True)
-    policy_path.write_text(json.dumps({"version": 1, "default": "allow"}), encoding="utf-8")
+    policy_path.write_text(
+        json.dumps({"version": 1, "default": "allow"}), encoding="utf-8"
+    )
     intent = _routine_intent()
     risk = assess_risk(intent)
     tier = classify_decision_tier(intent, risk)
@@ -145,7 +157,9 @@ def test_preauthorization_invalidates_on_policy_change(monkeypatch, tmp_path):
         decision_tier=tier,
         guardian_mode=GuardianMode.ENFORCING,
     )
-    policy_path.write_text(json.dumps({"version": 2, "default": "allow"}), encoding="utf-8")
+    policy_path.write_text(
+        json.dumps({"version": 2, "default": "allow"}), encoding="utf-8"
+    )
 
     decision = evaluate_intent(intent, preauthorization_id=grant.grant_id)
 

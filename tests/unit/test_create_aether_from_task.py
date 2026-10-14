@@ -49,7 +49,8 @@ async def test_create_aether_from_task_custom_template(monkeypatch, tmp_path):
     # Assert: file exists and contains replaced fields and lenient requires
     assert out_file.exists()
     text = out_file.read_text(encoding="utf-8")
-    assert "@meta:" in text and "Build a memory smoke test" in text
+    assert "@meta:" in text
+    assert "Build a memory smoke test" in text
     # lenient requires contains no version pin
     assert "require module requests" in text
     assert 'version="^2"' not in text

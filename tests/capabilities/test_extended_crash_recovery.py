@@ -84,7 +84,8 @@ async def test_extended_crash_recovery_and_service_rehydration():
         registry._check_dependencies()
     )  # internal call acceptable for capability guard
     info_agent = registry.get_service_info("agent.planner")
-    assert info_agent is not None and info_agent.status == ServiceStatus.HEALTHY
+    assert info_agent is not None
+    assert info_agent.status == ServiceStatus.HEALTHY
 
     # Phase 4: Post-recovery memory write
     post_id = await recovered.store_memory(

@@ -29,12 +29,16 @@ def test_policy_bootstrap_creates_files(tmp_path, monkeypatch):
 
     cap = policy_dir / "capabilities.json"
     net = policy_dir / "net_policy.json"
-    assert cap.exists() and net.exists()
+    assert cap.exists()
+    assert net.exists()
 
     cap_data = json.loads(cap.read_text(encoding="utf-8"))
     net_data = json.loads(net.read_text(encoding="utf-8"))
 
-    assert "allow" in cap_data and isinstance(cap_data["allow"], dict)
+    assert "allow" in cap_data
+    assert isinstance(cap_data["allow"], dict)
     allow_domains = net_data.get("allow_domains", [])
-    assert "localhost" in allow_domains and ".aetherra.dev" in allow_domains
-    assert "api.example.com" in allow_domains and ".corp.example" in allow_domains
+    assert "localhost" in allow_domains
+    assert ".aetherra.dev" in allow_domains
+    assert "api.example.com" in allow_domains
+    assert ".corp.example" in allow_domains

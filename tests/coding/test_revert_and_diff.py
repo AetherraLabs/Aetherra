@@ -11,7 +11,8 @@ def test_apply_and_revert_new_file(tmp_path: pathlib.Path):
     orch = CodeOrchestrator(repo_root=tmp_path)
     diff = ops_engine.build_new_file_diff(tmp_path / "foo.txt", "hello\n")
     pr = orch.apply_patch(diff)
-    assert pr.applied and pr.rollback_token
+    assert pr.applied
+    assert pr.rollback_token
     assert (tmp_path / "foo.txt").exists()
     rv = orch.revert(pr.rollback_token)
     assert rv.applied
@@ -26,7 +27,8 @@ def test_risk_classification():
     big_lines = "\n".join(f"+L{i}" for i in range(60))
     diff = f"*** Begin Patch\n*** Update File: a.txt\n{big_lines}\n*** End Patch"
     lvl2, changed2 = ops_engine.classify_risk(diff)
-    assert lvl2 in {"medium", "high"} and changed2 >= 60
+    assert lvl2 in {"medium", "high"}
+    assert changed2 >= 60
 
 
 def test_risk_medium_and_high_thresholds(tmp_path: pathlib.Path):

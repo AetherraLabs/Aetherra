@@ -19,8 +19,7 @@ from Aetherra.plugins.lifecycle.plugin_analytics import PluginMetricsCollector
 
 def _create_legacy_v1_db(path: str):
     with sqlite3.connect(path) as conn:
-        conn.execute(
-            """
+        conn.execute("""
             CREATE TABLE plugin_executions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 plugin_id TEXT NOT NULL,
@@ -33,21 +32,16 @@ def _create_legacy_v1_db(path: str):
                 context_hash TEXT,
                 user_session TEXT
             )
-            """
-        )
-        conn.execute(
-            """
+            """)
+        conn.execute("""
             CREATE TABLE plugin_schema_version (version INTEGER NOT NULL)
-            """
-        )
+            """)
         # Explicitly set legacy version 1
         conn.execute("INSERT INTO plugin_schema_version (version) VALUES (1)")
-        conn.execute(
-            """
+        conn.execute("""
             INSERT INTO plugin_executions (plugin_id, execution_time, success, error_message, memory_usage, cpu_usage, timestamp, context_hash, user_session)
             VALUES ('demo_plugin', 0.123, 1, NULL, 10.5, 5.2, '2025-01-01T00:00:00', 'hash123', 'sess1')
-            """
-        )
+            """)
 
 
 def test_migrator_upgrades_and_is_idempotent(tmp_path: Path):
@@ -79,7 +73,8 @@ def test_migrator_upgrades_and_is_idempotent(tmp_path: Path):
         row = conn.execute(
             "SELECT latency_ms FROM plugin_executions WHERE plugin_id='demo_plugin'"
         ).fetchone()
-        assert row is not None and row[0] is None
+        assert row is not None
+        assert row[0] is None
 
     # Record a new execution and ensure latency_ms populated
     collector.record_execution(
@@ -93,9 +88,9 @@ def test_migrator_upgrades_and_is_idempotent(tmp_path: Path):
             "SELECT latency_ms FROM plugin_executions ORDER BY id DESC LIMIT 1"
         )
         lat = cur.fetchone()[0]
-        assert (
-            lat is not None and lat >= 50 - 2 and lat <= 50 + 2
-        )  # allow rounding jitter
+        assert lat is not None
+        assert lat >= 50 - 2  # allow rounding jitter
+        assert lat <= 50 + 2
 
     # Re-instantiate to assert idempotent (no error, version stable)
     _ = PluginMetricsCollector(str(db_path))
