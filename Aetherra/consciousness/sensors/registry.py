@@ -6,9 +6,14 @@ Provides a simple function to start a default set of sensors.
 
 from __future__ import annotations
 
+# Standard library imports
+import logging
+
 # Local imports
 from .file_change_sensor import FileChangeSensor
 from .system_sensor import SystemSensor
+
+logger = logging.getLogger(__name__)
 
 _DEFAULT_SENSORS = []
 
@@ -31,6 +36,6 @@ def stop_all_sensors():
     for s in _DEFAULT_SENSORS:
         try:
             s.stop()
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("Default sensor shutdown failed (%s)", type(exc).__name__)
     _DEFAULT_SENSORS = []
