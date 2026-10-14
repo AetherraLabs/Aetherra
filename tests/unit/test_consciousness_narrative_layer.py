@@ -63,4 +63,5 @@ def test_narrative_chapter_generation(tmp_path, monkeypatch):
     coherence = (
         narrative_events[-1].raw.get("coherence") if narrative_events[-1].raw else None
     )
-    assert coherence is not None and 0.0 <= coherence <= 1.0, "Coherence out of bounds"
+    assert coherence is not None, "Coherence out of bounds"
+    assert 0.0 <= coherence <= 1.0, "Coherence out of bounds"

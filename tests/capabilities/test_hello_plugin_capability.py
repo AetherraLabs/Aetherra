@@ -30,7 +30,8 @@ async def test_hello_plugin_basic_execution(tmp_path):
         context={"trace_id": "abc123"},
     )
     assert chain.status == ExecutionStatus.COMPLETED
-    assert chain.results and len(chain.results) == 1
+    assert chain.results
+    assert len(chain.results) == 1
     result = chain.results[0]
     assert result.success is True
     out = result.output

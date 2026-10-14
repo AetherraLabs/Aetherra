@@ -30,7 +30,8 @@ async def test_transactions_and_trace(monkeypatch):
     assert any(t.get("name") == "t1" for t in payload.get("transactions", []))
     # Results include assignment and narrate with idempotent True
     types = [r.get("type") for r in payload["results"]]
-    assert "assignment" in types and "narrate" in types
+    assert "assignment" in types
+    assert "narrate" in types
     for r in payload["results"]:
         if r["type"] in ("assignment", "narrate"):
             assert r.get("idempotent") is True

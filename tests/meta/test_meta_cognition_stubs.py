@@ -34,7 +34,8 @@ def test_enhance_self_knowledge_and_reflection(meta_cog: MetaCognitionSystem):
         confidence=0.5,
         source="unit_test",
     )
-    assert isinstance(node_id, str) and node_id
+    assert isinstance(node_id, str)
+    assert node_id
 
     # Should not raise and should return an entry-like object
     reflection = meta_cog.conduct_self_reflection(trigger_event="unit")
@@ -44,12 +45,14 @@ def test_enhance_self_knowledge_and_reflection(meta_cog: MetaCognitionSystem):
 def test_domain_specific_enhancements(meta_cog: MetaCognitionSystem):
     nid1 = meta_cog.enhance_cognitive_patterns_knowledge()
     nid2 = meta_cog.enhance_system_capabilities_knowledge()
-    assert isinstance(nid1, str) and isinstance(nid2, str)
+    assert isinstance(nid1, str)
+    assert isinstance(nid2, str)
 
 
 def test_coverage_and_summary_shapes(meta_cog: MetaCognitionSystem):
     coverage = meta_cog.assess_meta_memory_coverage()
-    assert "overall_coverage" in coverage and "domain_coverages" in coverage
+    assert "overall_coverage" in coverage
+    assert "domain_coverages" in coverage
 
     summary = meta_cog.get_self_knowledge_summary()
     assert "meta_memory_status" in summary

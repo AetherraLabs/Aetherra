@@ -3,9 +3,11 @@
 
 from __future__ import annotations
 
+# Third party imports
 import numpy as np
 import pytest
 
+# Aetherra imports
 from Aetherra.aetherra_core.memory.models import MemoryRecallResult
 from Aetherra.aetherra_core.memory.storm.engine import StormConfig, StormEngine
 from Aetherra.aetherra_core.memory.storm.tt_compression import approximate_cost_matrix
@@ -19,7 +21,8 @@ def test_approximate_cost_matrix_basic_shape_and_rank():
     assert meta.applied
     assert meta.rank_used == 3
     # Error should be finite and non-negative
-    assert meta.err_fro is not None and meta.err_fro >= 0.0
+    assert meta.err_fro is not None
+    assert meta.err_fro >= 0.0
 
 
 def test_approximate_cost_matrix_noop_when_rank_zero():

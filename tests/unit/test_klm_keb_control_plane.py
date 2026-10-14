@@ -41,8 +41,10 @@ def test_module_manager_basic_lifecycle():
 
     # Metrics sanity
     m = mm.get_metrics()
-    assert "loads_total" in m and m["loads_total"] >= 1
-    assert "reloads_total" in m and m["reloads_total"] >= 1
+    assert "loads_total" in m
+    assert m["loads_total"] >= 1
+    assert "reloads_total" in m
+    assert m["reloads_total"] >= 1
 
 
 def test_event_bus_pub_sub_ack_and_metrics():

@@ -39,6 +39,7 @@ def test_submit_plugin_invoke_envelope():
         assert data["timeout_sec"] == 5.5
         assert data["memory_mb"] == 128
         # envelope fields exist
-        assert task.get("trace_id") and task.get("enqueued_ts")
+        assert task.get("trace_id")
+        assert task.get("enqueued_ts")
 
     asyncio.run(run())
