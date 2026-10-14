@@ -25,15 +25,20 @@ from __future__ import annotations
 
 # Standard library imports
 import json
+import logging
 import os
 import re
 import subprocess
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
+from uuid import uuid4
 
 # Local imports
 from . import audit, ops_engine, safety
+
+logger = logging.getLogger(__name__)
+_ROLLBACK_UNAVAILABLE = "Files changed; no verified rollback snapshot is available. Rollback is unavailable."
 
 
 # -------- Result dataclasses ---------
@@ -417,28 +422,33 @@ class CodeOrchestrator:
         # Autonomy mode could auto-stage
         if raw.applied and not dry_run and self.mode in {"co-drive", "autopilot"}:
             self._git_add_from_diff(diff_text)
+        rollback_token = None
+        diagnostics = list(raw.diagnostics)
         if raw.applied and raw.rollback_token:
-            self._persist_rollback_snapshot(raw.rollback_token, raw.originals)
+            rollback_token = self._persist_rollback_snapshot(
+                raw.rollback_token, raw.originals
+            )
+            if rollback_token is None:
+                diagnostics.append(_ROLLBACK_UNAVAILABLE)
         # Use detailed risk classification for richer diagnostics
         risk_level, changed, added, removed = ops_engine.classify_risk_detailed(
             raw.diff
         )
         colored_diff = self._colorize_diff(raw.diff) if colorize else raw.diff
-        pr = PatchResult(
+        return PatchResult(
             applied=raw.applied,
             dry_run=raw.dry_run,
             diff=colored_diff,
-            rollback_token=raw.rollback_token,
+            rollback_token=rollback_token,
             summary=(
-                f"Applied patch ({len(raw.diagnostics)} diag, risk={risk_level}, +{added}/-{removed}, changed={changed})"
+                f"Applied patch ({len(diagnostics)} diag, risk={risk_level}, +{added}/-{removed}, changed={changed})"
                 if raw.applied
                 else f"Dry run (risk={risk_level}, +{added}/-{removed}, changed={changed})"
             ),
-            diagnostics=raw.diagnostics,
+            diagnostics=diagnostics,
             risk_level=risk_level,
             changed_lines=changed,
         )
-        return pr
 
     def verify(
         self,
@@ -548,6 +558,26 @@ class CodeOrchestrator:
                 diagnostics=[f"No snapshot for token {token}"],
             )
         data = json.loads(snapshot_path.read_text(encoding="utf-8"))
+        for file_path, meta in data.items():
+            if "expected_content" not in meta:
+                continue
+            reason = None
+            try:
+                current = (self.repo_root / file_path).read_text(encoding="utf-8")
+            except (OSError, UnicodeError) as exc:
+                reason = f"Rollback precondition unavailable ({type(exc).__name__})"
+            else:
+                if current != meta["expected_content"]:
+                    reason = "Rollback blocked: target changed since application"
+            if reason is not None:
+                return PatchResult(
+                    applied=False,
+                    dry_run=False,
+                    diff="",
+                    rollback_token=None,
+                    summary=reason,
+                    diagnostics=[reason],
+                )
         diagnostics: list[str] = []
         restored = deleted = 0
         for file_path, meta in data.items():
@@ -619,45 +649,76 @@ class CodeOrchestrator:
             },
             indent=2,
         )
-        runtime_py.write_text(runtime_content, encoding="utf-8")
-        test_py.write_text(test_content, encoding="utf-8")
-        manifest.write_text(manifest_content + "\n", encoding="utf-8")
-        files_created[str(runtime_py.relative_to(self.repo_root))] = runtime_content
-        files_created[str(test_py.relative_to(self.repo_root))] = test_content
-        files_created[str(manifest.relative_to(self.repo_root))] = manifest_content
+        snapshot: dict[str, dict] = {}
+        targets = (
+            (runtime_py, runtime_content),
+            (test_py, test_content),
+            (manifest, manifest_content + "\n"),
+        )
+        for target, _content in targets:
+            relative = str(target.relative_to(self.repo_root))
+            existed = target.exists()
+            snapshot[relative] = {
+                "content": target.read_text(encoding="utf-8") if existed else "",
+                "existed": existed,
+            }
+        for target, content in targets:
+            target.write_text(content, encoding="utf-8")
+            files_created[str(target.relative_to(self.repo_root))] = content
         token = f"scaffold-{int(time.time())}"
-        snapshot = {
-            k: {"content": v, "existed": False} for k, v in files_created.items()
-        }
-        self._persist_rollback_snapshot(token, snapshot)
-        audit.record_event("plugin_scaffold", {"name": name, "token": token})
+        diagnostics = [f"Created {len(files_created)} files"]
         diff_summary = "\n".join(files_created.keys())
         # Update central registered plugins index for auto-registration
+        registration_confirmed = True
         try:
             registry_dir = self.repo_root / "Aetherra" / "plugins" / "core"
             registry_dir.mkdir(parents=True, exist_ok=True)
             registry_file = registry_dir / "registered_plugins.json"
-            if registry_file.exists():
+            registry_existed = registry_file.exists()
+            original_registry = (
+                registry_file.read_text(encoding="utf-8") if registry_existed else ""
+            )
+            if registry_existed:
                 try:
-                    reg_data = json.loads(registry_file.read_text(encoding="utf-8"))
+                    reg_data = json.loads(original_registry)
                 except Exception:
                     reg_data = {"plugins": []}
             else:
                 reg_data = {"plugins": []}
             if name not in reg_data.get("plugins", []):
                 reg_data.setdefault("plugins", []).append(name)
-                registry_file.write_text(
-                    json.dumps(reg_data, indent=2), encoding="utf-8"
-                )
-        except Exception:  # pragma: no cover
-            pass
+                registry_content = json.dumps(reg_data, indent=2)
+                snapshot[str(registry_file.relative_to(self.repo_root))] = {
+                    "content": original_registry,
+                    "existed": registry_existed,
+                }
+                registration_confirmed = False
+                if registry_file.write_text(registry_content, encoding="utf-8") != len(
+                    registry_content
+                ):
+                    raise OSError("Incomplete plugin registry write")
+                snapshot[str(registry_file.relative_to(self.repo_root))][
+                    "expected_content"
+                ] = registry_content
+                registration_confirmed = True
+        except Exception as exc:  # pragma: no cover
+            logger.warning("Plugin registry update failed (%s)", type(exc).__name__)
+            diagnostics.append("Plugin registry update unavailable")
+        token = (
+            self._persist_rollback_snapshot(token, snapshot)
+            if registration_confirmed
+            else None
+        )
+        if token is None:
+            diagnostics.append(_ROLLBACK_UNAVAILABLE)
+        audit.record_event("plugin_scaffold", {"name": name, "token": token})
         return PatchResult(
             applied=True,
             dry_run=False,
             diff=diff_summary,
             rollback_token=token,
             summary=f"Created plugin {name}",
-            diagnostics=[f"Created {len(files_created)} files"],
+            diagnostics=diagnostics,
         )
 
     # ---- Helpers ----
@@ -709,22 +770,58 @@ class CodeOrchestrator:
 
     def _persist_rollback_snapshot(
         self, token: str, originals: dict[str, dict]
-    ) -> None:
+    ) -> str | None:
+        pending_path = None
+        pending_owned = False
+        lock_path = None
+        lock_owned = False
         try:
-            snap_path = self._rollback_store / f"{token}.json"
-            snap_path.write_text(
-                json.dumps(originals, ensure_ascii=False), encoding="utf-8"
+            receipt = f"{token}-{uuid4().hex}"
+            snap_path = self._rollback_store / f"{receipt}.json"
+            payload = json.dumps(originals, ensure_ascii=False)
+            lock_path = self._rollback_store / f".{receipt}.lock"
+            with lock_path.open("x", encoding="utf-8"):
+                lock_owned = True
+            if snap_path.exists():
+                raise FileExistsError("Rollback receipt already exists")
+            pending_path = self._rollback_store / f".{receipt}.tmp"
+            with pending_path.open("x", encoding="utf-8") as stream:
+                pending_owned = True
+                if stream.write(payload) != len(payload):
+                    raise OSError("Incomplete rollback snapshot write")
+                stream.flush()
+                os.fsync(stream.fileno())
+            pending_path.replace(snap_path)
+            pending_owned = False
+            return receipt
+        except (OSError, TypeError, ValueError) as exc:
+            logger.warning(
+                "Rollback snapshot persistence failed (%s)", type(exc).__name__
             )
-        except Exception:  # pragma: no cover
-            pass
+            return None
+        finally:
+            if pending_owned and pending_path is not None:
+                try:
+                    pending_path.unlink(missing_ok=True)
+                except OSError as exc:
+                    logger.warning(
+                        "Rollback snapshot cleanup failed (%s)", type(exc).__name__
+                    )
+            if lock_owned and lock_path is not None:
+                try:
+                    lock_path.unlink(missing_ok=True)
+                except OSError as exc:
+                    logger.warning(
+                        "Rollback receipt lock cleanup failed (%s)", type(exc).__name__
+                    )
 
     def _colorize_diff(self, diff_text: str) -> str:
         if os.getenv("NO_COLOR", "0") == "1":
             return diff_text
-        GREEN = "\x1b[32m"
-        RED = "\x1b[31m"
-        CYAN = "\x1b[36m"
-        RESET = "\x1b[0m"
+        green = "\x1b[32m"
+        red = "\x1b[31m"
+        cyan = "\x1b[36m"
+        reset = "\x1b[0m"
         out_lines: list[str] = []
         for line in diff_text.splitlines():
             if (
@@ -732,11 +829,11 @@ class CodeOrchestrator:
                 or line.startswith("+++")
                 or line.startswith("---")
             ):
-                out_lines.append(CYAN + line + RESET)
+                out_lines.append(cyan + line + reset)
             elif line.startswith("+") and not line.startswith("+++ "):
-                out_lines.append(GREEN + line + RESET)
+                out_lines.append(green + line + reset)
             elif line.startswith("-") and not line.startswith("--- "):
-                out_lines.append(RED + line + RESET)
+                out_lines.append(red + line + reset)
             else:
                 out_lines.append(line)
         return "\n".join(out_lines)
